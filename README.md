@@ -110,4 +110,4 @@ yarn dev
 
 ---
 
-Created with ❤️ using Next.js and the wisdom of the stars 
+Created with ❤️ using Next.js and the wisdom of the stars
