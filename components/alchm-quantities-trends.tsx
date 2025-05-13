@@ -9,7 +9,8 @@ import {
   CartesianGrid, 
   Tooltip, 
   Legend, 
-  ResponsiveContainer 
+  ResponsiveContainer,
+  Label
 } from "recharts"
 
 type QuantityPoint = {
@@ -62,42 +63,80 @@ const planetaryInfluence = {
   }
 };
 
+// Custom tooltip component for token values
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white dark:bg-gray-800 p-3 border rounded-md shadow-md">
+        <p className="font-medium text-sm mb-1">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <div key={`token-${index}`} className="flex items-center gap-2">
+            <div 
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: entry.color }}
+            />
+            <span className="text-xs font-medium">{entry.name}:</span>
+            <span className="text-xs font-mono font-bold">{(entry.value/10).toFixed(3)} tokens</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return null;
+};
+
 export default function AlchmQuantitiesTrends() {
   const [trendData, setTrendData] = useState<QuantityPoint[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [forecastDays, setForecastDays] = useState(7)
+  const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
     async function generateTrendData() {
       setLoading(true)
       setError(null)
+      
       try {
         const data: QuantityPoint[] = []
         const today = new Date()
         
         // Fetch current values to anchor our calculations
-        let currentValues = {
-          Spirit: 5.0,
-          Essence: 5.0,
-          Matter: 5.0,
-          Substance: 5.0
-        };
+        console.log('Fetching current alchemical quantities for trend calculations...')
         
-        try {
-          const response = await fetch('/api/alchm-quantities')
-          if (response.ok) {
-            const apiData = await response.json()
-            currentValues = {
-              Spirit: apiData.quantities.Spirit || 5.0,
-              Essence: apiData.quantities.Essence || 5.0,
-              Matter: apiData.quantities.Matter || 5.0,
-              Substance: apiData.quantities.Substance || 5.0
-            }
-          }
-        } catch (err) {
-          console.error("Could not fetch current values, using defaults:", err)
+        // Add a small delay to ensure API server is ready
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        const response = await fetch('/api/alchm-quantities', {
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          },
+          cache: 'no-store',
+        })
+        
+        if (!response.ok) {
+          throw new Error(`API responded with status: ${response.status}`)
         }
+        
+        const apiData = await response.json()
+        console.log('Received API data for trends:', apiData)
+        
+        if (!apiData || !apiData.quantities) {
+          throw new Error('Invalid data format received from API')
+        }
+        
+        const currentValues = {
+          Spirit: apiData.quantities.Spirit || 0,
+          Essence: apiData.quantities.Essence || 0, 
+          Matter: apiData.quantities.Matter || 0,
+          Substance: apiData.quantities.Substance || 0
+        }
+        
+        console.log('Current values for trend calculation:', currentValues)
         
         // Collect data for past days first
         for (let i = -3; i <= 0; i++) {
@@ -114,10 +153,10 @@ export default function AlchmQuantitiesTrends() {
           if (i === 0) {
             data.push({
               time: displayDate,
-              Spirit: normalizeValue(currentValues.Spirit),
-              Essence: normalizeValue(currentValues.Essence),
-              Matter: normalizeValue(currentValues.Matter),
-              Substance: normalizeValue(currentValues.Substance)
+              Spirit: keepRawTokenValue(currentValues.Spirit),
+              Essence: keepRawTokenValue(currentValues.Essence),
+              Matter: keepRawTokenValue(currentValues.Matter),
+              Substance: keepRawTokenValue(currentValues.Substance)
             })
           } else {
             // For past days, calculate based on planetary cycles
@@ -125,10 +164,10 @@ export default function AlchmQuantitiesTrends() {
             
             data.push({
               time: displayDate,
-              Spirit: normalizeValue(calculateQuantityForDay("Spirit", dayOffset, currentValues.Spirit)),
-              Essence: normalizeValue(calculateQuantityForDay("Essence", dayOffset, currentValues.Essence)),
-              Matter: normalizeValue(calculateQuantityForDay("Matter", dayOffset, currentValues.Matter)),
-              Substance: normalizeValue(calculateQuantityForDay("Substance", dayOffset, currentValues.Substance))
+              Spirit: keepRawTokenValue(calculateQuantityForDay("Spirit", dayOffset, currentValues.Spirit)),
+              Essence: keepRawTokenValue(calculateQuantityForDay("Essence", dayOffset, currentValues.Essence)),
+              Matter: keepRawTokenValue(calculateQuantityForDay("Matter", dayOffset, currentValues.Matter)),
+              Substance: keepRawTokenValue(calculateQuantityForDay("Substance", dayOffset, currentValues.Substance))
             })
           }
         }
@@ -145,10 +184,10 @@ export default function AlchmQuantitiesTrends() {
           
           data.push({
             time: displayDate,
-            Spirit: normalizeValue(calculateQuantityForDay("Spirit", i, currentValues.Spirit)),
-            Essence: normalizeValue(calculateQuantityForDay("Essence", i, currentValues.Essence)),
-            Matter: normalizeValue(calculateQuantityForDay("Matter", i, currentValues.Matter)),
-            Substance: normalizeValue(calculateQuantityForDay("Substance", i, currentValues.Substance))
+            Spirit: keepRawTokenValue(calculateQuantityForDay("Spirit", i, currentValues.Spirit)),
+            Essence: keepRawTokenValue(calculateQuantityForDay("Essence", i, currentValues.Essence)),
+            Matter: keepRawTokenValue(calculateQuantityForDay("Matter", i, currentValues.Matter)),
+            Substance: keepRawTokenValue(calculateQuantityForDay("Substance", i, currentValues.Substance))
           })
         }
         
@@ -156,13 +195,22 @@ export default function AlchmQuantitiesTrends() {
       } catch (err) {
         console.error("Error generating trend data:", err)
         setError(err instanceof Error ? err.message : "Failed to generate trend data")
+        
+        // Retry logic - retry up to 3 times with increasing delay
+        if (retryCount < 3) {
+          const retryDelay = 2000 * (retryCount + 1)
+          console.log(`Retrying trend data in ${retryDelay}ms (attempt ${retryCount + 1}/3)`)
+          setTimeout(() => {
+            setRetryCount(prev => prev + 1)
+          }, retryDelay)
+        }
       } finally {
         setLoading(false)
       }
     }
     
     generateTrendData()
-  }, [forecastDays])
+  }, [forecastDays, retryCount])
   
   // Function to calculate a quantity value for a specific day offset from today
   function calculateQuantityForDay(type: string, dayOffset: number, currentValue: number): number {
@@ -196,11 +244,14 @@ export default function AlchmQuantitiesTrends() {
     return Math.max(0, Math.min(10, value));
   }
   
-  // Function to normalize alchemical values to 0-100 range
-  function normalizeValue(value: number): number {
-    // Usually alchemical values are between 0-10, so multiply by 10
-    const normalized = value * 10;
-    return Math.min(Math.max(normalized, 0), 100);
+  // Function to keep the raw token value but multiply by 10 for chart visibility
+  function keepRawTokenValue(value: number): number {
+    // For chart scaling, we multiply by 10 but preserve the actual token value
+    return value * 10;
+  }
+  
+  const handleRetry = () => {
+    setRetryCount(0) // Reset retry count to trigger a new attempt
   }
 
   if (error) {
@@ -208,13 +259,22 @@ export default function AlchmQuantitiesTrends() {
       <div className="p-4 bg-red-50 text-red-500 rounded-lg border border-red-200">
         <h3 className="font-semibold mb-2">Error Loading Trend Data</h3>
         <p>{error}</p>
+        <button 
+          onClick={handleRetry}
+          className="mt-3 px-3 py-1 bg-red-100 hover:bg-red-200 rounded text-sm font-medium"
+        >
+          Retry Now
+        </button>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-between items-center mb-4">
+        <div className="text-sm font-medium text-muted-foreground">
+          Token Quantity Forecast
+        </div>
         <select 
           className="p-1 border rounded text-sm"
           value={forecastDays}
@@ -228,25 +288,31 @@ export default function AlchmQuantitiesTrends() {
       </div>
       
       {loading ? (
-        <div className="h-72 flex justify-center items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="h-72 flex flex-col justify-center items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+          <p className="text-muted-foreground">Calculating token forecasts based on planetary movements...</p>
         </div>
-      ) : (
+      ) : trendData.length > 0 ? (
         <ResponsiveContainer width="100%" height={300}>
           <LineChart 
             data={trendData}
-            margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+            margin={{ top: 5, right: 30, left: 5, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
             <XAxis dataKey="time" />
-            <YAxis domain={[0, 100]} />
-            <Tooltip 
-              formatter={(value) => [`${value.toFixed(1)}%`, '']}
-              labelFormatter={(label) => `Date: ${label}`}
-            />
+            <YAxis domain={[0, 100]}>
+              <Label 
+                value="Token Quantity (÷10)" 
+                angle={-90} 
+                position="insideLeft" 
+                style={{ textAnchor: 'middle', fontSize: '12px' }}
+              />
+            </YAxis>
+            <Tooltip content={<CustomTooltip />} />
             <Legend />
             <Line 
               type="monotone" 
+              name="Spirit"
               dataKey="Spirit" 
               stroke="#ef4444" 
               strokeWidth={2}
@@ -255,6 +321,7 @@ export default function AlchmQuantitiesTrends() {
             />
             <Line 
               type="monotone" 
+              name="Essence"
               dataKey="Essence" 
               stroke="#3b82f6" 
               strokeWidth={2}
@@ -263,6 +330,7 @@ export default function AlchmQuantitiesTrends() {
             />
             <Line 
               type="monotone" 
+              name="Matter"
               dataKey="Matter" 
               stroke="#b45309" 
               strokeWidth={2}
@@ -271,6 +339,7 @@ export default function AlchmQuantitiesTrends() {
             />
             <Line 
               type="monotone" 
+              name="Substance"
               dataKey="Substance" 
               stroke="#8b5cf6" 
               strokeWidth={2}
@@ -279,11 +348,24 @@ export default function AlchmQuantitiesTrends() {
             />
           </LineChart>
         </ResponsiveContainer>
+      ) : (
+        <div className="h-72 flex justify-center items-center border rounded-lg">
+          <div className="text-center text-muted-foreground p-4">
+            <p className="font-medium">No forecasting data available</p>
+            <p className="mt-2 text-sm">Unable to calculate token quantity trends.</p>
+            <button 
+              onClick={handleRetry}
+              className="mt-3 px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
       )}
       
       <div className="text-sm text-muted-foreground mt-4">
         <p>
-          <span className="font-semibold">Planetary Agents Analysis:</span> The chart shows the projected trends in alchemical quantities based on planetary movements.
+          <span className="font-semibold">Planetary Agents Analysis:</span> The chart shows the projected token quantities based on planetary movements.
         </p>
         <ul className="list-disc pl-5 mt-2 space-y-1">
           <li><span className="text-red-500 font-medium">Spirit</span> follows Mars and Sun cycles, peaking during conjunctions.</li>

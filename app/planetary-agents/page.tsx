@@ -1,4 +1,5 @@
 import PlanetaryAgentChat from "@/components/planetary-agent-chat"
+import { Suspense } from "react"
 
 export default function PlanetaryAgentsPage() {
   return (
@@ -9,7 +10,9 @@ export default function PlanetaryAgentsPage() {
         degree to receive wisdom tailored to that celestial configuration.
       </p>
 
-      <PlanetaryAgentChat />
+      <Suspense fallback={<div className="text-center p-4">Loading planetary agent...</div>}>
+        <PlanetaryAgentChat />
+      </Suspense>
     </div>
   )
 }

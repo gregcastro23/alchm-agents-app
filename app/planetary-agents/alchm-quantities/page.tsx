@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Flame, Droplets, Wind, Mountain } from "lucide-react"
 import AlchmQuantitiesDisplay from "@/components/alchm-quantities-display"
 import AlchmQuantitiesTrends from "@/components/alchm-quantities-trends"
+import { Suspense } from "react"
 
 export default function AlchmQuantitiesPage() {
   return (
@@ -22,7 +23,11 @@ export default function AlchmQuantitiesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <AlchmQuantitiesDisplay />
+            <Suspense fallback={<div className="flex justify-center items-center h-40">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>}>
+              <AlchmQuantitiesDisplay />
+            </Suspense>
           </CardContent>
         </Card>
 
@@ -34,7 +39,11 @@ export default function AlchmQuantitiesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <AlchmQuantitiesTrends />
+            <Suspense fallback={<div className="flex justify-center items-center h-40">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>}>
+              <AlchmQuantitiesTrends />
+            </Suspense>
           </CardContent>
         </Card>
       </div>

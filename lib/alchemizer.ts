@@ -618,6 +618,8 @@ export function alchemize(birth_info: Record<string, any>, horoscope_dict: Recor
 // Function to generate alchemical data for the current moment
 export async function generateAlchmForCurrentMoment(): Promise<Record<string, any>> {
   try {
+    console.log('Generating alchemical data for current moment...')
+    
     // Get current date and time
     const now = new Date()
     
@@ -632,6 +634,8 @@ export async function generateAlchmForCurrentMoment(): Promise<Record<string, an
     const minute = String(now.getMinutes()).padStart(2, '0')
     const timeString = `${hour}:${minute}`
     
+    console.log(`Current datetime: ${dateString} ${timeString}`)
+    
     // Create birth info object for the current moment
     const currentMomentInfo = {
       year: year,
@@ -645,7 +649,42 @@ export async function generateAlchmForCurrentMoment(): Promise<Record<string, an
     
     // Import the getCurrentPlanetaryPositions function to get accurate positions
     const { getCurrentPlanetaryPositions } = await import('./calculate-transits')
+    
+    console.log('Fetching current planetary positions...')
     const currentPositions = getCurrentPlanetaryPositions()
+    
+    if (!currentPositions || Object.keys(currentPositions).length === 0) {
+      throw new Error('Failed to get current planetary positions')
+    }
+    
+    console.log('Current positions obtained:', Object.keys(currentPositions).join(', '))
+    
+    // Ensure all required planets are present
+    const requiredPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Ascendant']
+    for (const planet of requiredPlanets) {
+      if (!currentPositions[planet]) {
+        console.error(`Missing position data for ${planet}`)
+        currentPositions[planet] = { sign: 'Aries', degree: 0 } // Fallback only if absolutely necessary
+      }
+    }
+    
+    // Ensure each planet has a sign and degree
+    Object.entries(currentPositions).forEach(([planet, data]) => {
+      if (!data.sign) {
+        console.error(`Missing sign for ${planet}, using fallback`)
+        currentPositions[planet].sign = 'Aries' // Fallback
+      }
+      if (data.degree === undefined) {
+        console.error(`Missing degree for ${planet}, using fallback`)
+        currentPositions[planet].degree = 0 // Fallback
+      }
+    })
+    
+    // Log what we're working with
+    console.log('Building horoscope with the following positions:')
+    Object.entries(currentPositions).forEach(([planet, data]) => {
+      console.log(`${planet}: ${data.sign} ${data.degree}°`)
+    })
     
     // Create a horoscope object using the calculated positions
     const horoscope = {
@@ -680,27 +719,107 @@ export async function generateAlchmForCurrentMoment(): Promise<Record<string, an
           pluto: { ChartPosition: { Ecliptic: { ArcDegreesFormatted30: `${currentPositions['Pluto'].degree}°` } } }
         },
         Aspects: {
-          points: {
-            sun: [
-              { aspectKey: "conjunction", point1Label: "Sun", point2Label: "Mercury" },
-              { aspectKey: "trine", point1Label: "Sun", point2Label: "Mars" }
-            ],
-            moon: [
-              { aspectKey: "square", point1Label: "Moon", point2Label: "Venus" }
-            ],
-            // More aspects would be defined here
-          }
+          points: generateCurrentAspects(currentPositions)
         }
       }
     }
     
+    console.log('Calculating alchemical data...')
     // Calculate alchemical data using the alchemize function
     const alchmData = alchemize(currentMomentInfo, horoscope)
+    
+    // Log the calculated values
+    console.log('Alchemical calculations complete:')
+    console.log(`Spirit: ${alchmData['Alchemy Effects']['Total Spirit']}`)
+    console.log(`Essence: ${alchmData['Alchemy Effects']['Total Essence']}`)
+    console.log(`Matter: ${alchmData['Alchemy Effects']['Total Matter']}`)
+    console.log(`Substance: ${alchmData['Alchemy Effects']['Total Substance']}`)
     
     return alchmData
   } catch (error) {
     console.error("Error generating alchemical data:", error)
     throw error
+  }
+}
+
+// Helper function to generate aspects based on current planetary positions
+function generateCurrentAspects(positions: Record<string, any>): Record<string, any> {
+  const aspects: Record<string, any> = {}
+  const planets = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']
+  
+  // Initialize aspect arrays for each planet
+  planets.forEach(planet => {
+    aspects[planet] = []
+  })
+  
+  // Calculate aspects between planets
+  for (let i = 0; i < planets.length; i++) {
+    const planet1 = planets[i]
+    const planet1Cap = planet1.charAt(0).toUpperCase() + planet1.slice(1)
+    
+    for (let j = i + 1; j < planets.length; j++) {
+      const planet2 = planets[j]
+      const planet2Cap = planet2.charAt(0).toUpperCase() + planet2.slice(1)
+      
+      // Skip if either planet's position is missing
+      if (!positions[planet1Cap] || !positions[planet2Cap]) continue
+      
+      // Get sign indices (0-11 for Aries-Pisces)
+      const signIndices = getSignIndices()
+      const planet1SignIndex = signIndices[positions[planet1Cap].sign] || 0
+      const planet2SignIndex = signIndices[positions[planet2Cap].sign] || 0
+      
+      // Calculate aspect type based on sign relationship
+      const difference = Math.abs(planet1SignIndex - planet2SignIndex)
+      
+      let aspectType = ""
+      
+      // Simple aspect calculation based on sign relationships
+      if (difference === 0) {
+        aspectType = "conjunction"
+      } else if (difference === 4 || difference === 8) {
+        aspectType = "trine"
+      } else if (difference === 3 || difference === 9) {
+        aspectType = "square"
+      } else if (difference === 6) {
+        aspectType = "opposition"
+      } else {
+        continue // No significant aspect
+      }
+      
+      // Add the aspect to both planets' arrays
+      aspects[planet1].push({
+        aspectKey: aspectType,
+        point1Label: planet1Cap,
+        point2Label: planet2Cap
+      })
+      
+      aspects[planet2].push({
+        aspectKey: aspectType,
+        point1Label: planet2Cap,
+        point2Label: planet1Cap
+      })
+    }
+  }
+  
+  return aspects
+}
+
+// Helper function to get sign indices
+function getSignIndices(): Record<string, number> {
+  return {
+    'Aries': 0,
+    'Taurus': 1,
+    'Gemini': 2,
+    'Cancer': 3,
+    'Leo': 4,
+    'Virgo': 5,
+    'Libra': 6,
+    'Scorpio': 7,
+    'Sagittarius': 8,
+    'Capricorn': 9,
+    'Aquarius': 10,
+    'Pisces': 11
   }
 }
 
