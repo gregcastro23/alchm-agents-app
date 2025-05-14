@@ -320,6 +320,20 @@ const saturnData: PlanetData = {
       'Slow Cooking': 0.8,
       'Fermentation': 0.7,
       'Traditional Methods': 0.9
+    },
+    'TransitDates': {
+      'Pisces': { 'Start': '2023-03-07', 'End': '2025-05-24' },
+      'Aries': { 'Start': '2025-05-24', 'End': '2028-02-13' },
+      'Taurus': { 'Start': '2028-02-13', 'End': '2030-04-28' },
+      'Gemini': { 'Start': '2030-04-28', 'End': '2032-08-12' },
+      'Cancer': { 'Start': '2032-08-12', 'End': '2035-03-23' },
+      'Leo': { 'Start': '2035-03-23', 'End': '2037-06-20' },
+      'Virgo': { 'Start': '2037-06-20', 'End': '2039-10-14' },
+      'Libra': { 'Start': '2039-10-14', 'End': '2042-04-07' },
+      'Scorpio': { 'Start': '2042-04-07', 'End': '2044-06-21' },
+      'Sagittarius': { 'Start': '2044-06-21', 'End': '2046-12-22' },
+      'Capricorn': { 'Start': '2046-12-22', 'End': '2049-02-28' },
+      'Aquarius': { 'Start': '2049-02-28', 'End': '2051-06-01' }
     }
   }
 };

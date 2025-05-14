@@ -147,6 +147,55 @@ const moonData: PlanetData = {
       'Mansion': {
         // Lunar mansions could be added here for even more granular effects
       }
+    },
+    'MoonCalculations': {
+      'calculateTransits': function(startDate: Date = new Date()) {
+        const transits: Record<string, { Start: string, End: string }> = {};
+        const signs = [
+          'Aries', 'Taurus', 'Gemini', 'Cancer', 
+          'Leo', 'Virgo', 'Libra', 'Scorpio', 
+          'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+        ];
+        
+        // Starting sign - this should be determined from an ephemeris
+        // For this example, we'll use a default that can be updated
+        const moonInSign = {
+          '2024-05-19': 'Sagittarius',
+          '2024-05-21': 'Capricorn',
+          '2024-05-23': 'Aquarius',
+          '2024-05-25': 'Pisces',
+          '2024-05-28': 'Aries',
+          '2024-05-30': 'Taurus',
+          '2024-06-01': 'Gemini',
+          '2024-06-03': 'Cancer',
+          '2024-06-06': 'Leo',
+          '2024-06-08': 'Virgo',
+          '2024-06-10': 'Libra',
+          '2024-06-13': 'Scorpio',
+          '2024-06-15': 'Sagittarius'
+        };
+        
+        // Convert to proper transits with start/end dates
+        let dates = Object.keys(moonInSign).sort();
+        for (let i = 0; i < dates.length - 1; i++) {
+          const sign = moonInSign[dates[i]];
+          const start = dates[i];
+          const end = dates[i+1];
+          
+          transits[sign] = {
+            Start: start,
+            End: end
+          };
+        }
+        
+        return transits;
+      }
+    },
+    'TransitDateFunction': function() {
+      return {
+        'requiresDynamicCalculation': true,
+        'cycleLength': 27.3 // days
+      };
     }
   }
 };

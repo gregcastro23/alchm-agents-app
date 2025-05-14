@@ -317,6 +317,20 @@ const jupiterData: PlanetData = {
       'Educational Dining': 0.7,
       'Festive Preparation': 0.9,
       'Generous Hospitality': 0.9
+    },
+    'TransitDates': {
+      'Gemini': { 'Start': '2024-05-25', 'End': '2025-06-09' },
+      'Cancer': { 'Start': '2025-06-09', 'End': '2026-07-14' },
+      'Leo': { 'Start': '2026-07-14', 'End': '2027-08-10' },
+      'Virgo': { 'Start': '2027-08-10', 'End': '2028-09-18' },
+      'Libra': { 'Start': '2028-09-18', 'End': '2029-10-29' },
+      'Scorpio': { 'Start': '2029-10-29', 'End': '2030-11-08' },
+      'Sagittarius': { 'Start': '2030-11-08', 'End': '2031-12-14' },
+      'Capricorn': { 'Start': '2031-12-14', 'End': '2033-01-02' },
+      'Aquarius': { 'Start': '2033-01-02', 'End': '2034-01-19' },
+      'Pisces': { 'Start': '2034-01-19', 'End': '2035-02-14' },
+      'Aries': { 'Start': '2035-02-14', 'End': '2036-03-25' },
+      'Taurus': { 'Start': '2036-03-25', 'End': '2037-04-12' }
     }
   }
 };
