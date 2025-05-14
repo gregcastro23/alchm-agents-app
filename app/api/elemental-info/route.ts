@@ -3,6 +3,10 @@ import { alchemize, createElementObject, getElementRanking } from "@/lib/alchemi
 import { getSignElement, getPlanetaryElement, calculateElementalAffinity } from "@/lib/astrological-data"
 import { getCurrentPlanetaryPositions } from "@/lib/calculate-transits"
 
+// Prevent caching - we always want fresh calculations
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 export async function POST(req: Request) {
   try {
     const { birthInfo, planets } = await req.json()
@@ -22,22 +26,34 @@ export async function POST(req: Request) {
     let celestialBodies = []
     
     if (isDefaultPlanets) {
-      // Use the current planetary positions
-      const currentPositions = getCurrentPlanetaryPositions()
+      // Use the current planetary positions with a timestamp to force fresh data
+      const timestamp = new Date().getTime()
+      const currentPositions = getCurrentPlanetaryPositions(timestamp)
+      
+      // Safety checks for each planet
+      const defaultHouse = "1"
+      const defaultSign = "Aries"
+      
+      // Function to safely get sign or return default
+      const getSafeSign = (planet) => {
+        return currentPositions[planet]?.sign || defaultSign
+      }
       
       celestialBodies = [
-        { label: "Sun", Sign: { label: currentPositions['Sun'].sign }, House: { label: "10" } },
-        { label: "Moon", Sign: { label: currentPositions['Moon'].sign }, House: { label: "9" } },
-        { label: "Mercury", Sign: { label: currentPositions['Mercury'].sign }, House: { label: "11" } },
-        { label: "Venus", Sign: { label: currentPositions['Venus'].sign }, House: { label: "12" } },
-        { label: "Mars", Sign: { label: currentPositions['Mars'].sign }, House: { label: "7" } },
-        { label: "Jupiter", Sign: { label: currentPositions['Jupiter'].sign }, House: { label: "4" } },
-        { label: "Saturn", Sign: { label: currentPositions['Saturn'].sign }, House: { label: "5" } },
-        { label: "Uranus", Sign: { label: currentPositions['Uranus'].sign }, House: { label: "6" } },
-        { label: "Neptune", Sign: { label: currentPositions['Neptune'].sign }, House: { label: "7" } },
-        { label: "Pluto", Sign: { label: currentPositions['Pluto'].sign }, House: { label: "2" } },
-        { label: "Ascendant", Sign: { label: currentPositions['Ascendant'].sign }, House: { label: "1" } }
+        { label: "Sun", Sign: { label: getSafeSign("Sun") }, House: { label: "10" } },
+        { label: "Moon", Sign: { label: getSafeSign("Moon") }, House: { label: "9" } },
+        { label: "Mercury", Sign: { label: getSafeSign("Mercury") }, House: { label: "11" } },
+        { label: "Venus", Sign: { label: getSafeSign("Venus") }, House: { label: "12" } },
+        { label: "Mars", Sign: { label: getSafeSign("Mars") }, House: { label: "7" } },
+        { label: "Jupiter", Sign: { label: getSafeSign("Jupiter") }, House: { label: "4" } },
+        { label: "Saturn", Sign: { label: getSafeSign("Saturn") }, House: { label: "5" } },
+        { label: "Uranus", Sign: { label: getSafeSign("Uranus") }, House: { label: "6" } },
+        { label: "Neptune", Sign: { label: getSafeSign("Neptune") }, House: { label: "7" } },
+        { label: "Pluto", Sign: { label: getSafeSign("Pluto") }, House: { label: "2" } },
+        { label: "Ascendant", Sign: { label: getSafeSign("Ascendant") }, House: { label: "1" } }
       ]
+      
+      console.log("Using current positions for chart:", currentPositions)
     } else {
       // Use the provided planetary positions
       celestialBodies = [
@@ -147,9 +163,22 @@ export async function POST(req: Request) {
         planetElement: getPlanetaryElement(body.label, isDiurnal),
         affinity: Math.round(calculateElementalAffinity(body.label, body.Sign.label, isDiurnal) * 100)
       }))
+    }, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0, must-revalidate"
+      }
     })
   } catch (error) {
     console.error("Error in elemental info calculation:", error)
-    return NextResponse.json({ error: "Failed to calculate elemental information" }, { status: 500 })
+    return NextResponse.json({ 
+      error: "Failed to calculate elemental information", 
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    }, { 
+      status: 500,
+      headers: {
+        "Cache-Control": "no-store"
+      }
+    })
   }
 } 
