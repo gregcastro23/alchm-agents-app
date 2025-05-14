@@ -7,7 +7,7 @@ export default function HomePage() {
     <div className="container py-12 px-4 mx-auto">
       <section className="flex flex-col items-center text-center mb-16">
         <h1 className="text-4xl font-bold tracking-tight mb-6">
-          Alchm Kitchen - Astrological Agents
+          Alchm © - Astrological Agents
         </h1>
         <p className="text-xl max-w-3xl mb-8">
           Explore the wisdom of the cosmos through our advanced astrological agents powered by AI

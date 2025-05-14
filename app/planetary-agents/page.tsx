@@ -11,7 +11,7 @@ export default function PlanetaryAgentsPage() {
       </p>
 
       <Suspense fallback={<div className="text-center p-4">Loading planetary agent...</div>}>
-        <PlanetaryAgentChat />
+      <PlanetaryAgentChat />
       </Suspense>
     </div>
   )

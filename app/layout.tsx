@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Alchm Kitchen - Astrological Agents",
+  title: "Alchm © - Astrological Agents",
   description: "Advanced astrological agents powered by AI",
     generator: 'v0.dev'
 }
@@ -25,7 +25,7 @@ export default function RootLayout({
           <header className="border-b">
             <div className="container flex items-center justify-between h-16">
               <Link href="/" className="font-bold text-xl">
-                Alchm Kitchen
+                Alchm ©
               </Link>
               <nav className="hidden md:flex items-center gap-6">
                 <Link href="/astrological-agents" className="text-sm font-medium">

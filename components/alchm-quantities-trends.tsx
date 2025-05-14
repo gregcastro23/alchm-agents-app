@@ -306,7 +306,7 @@ export default function AlchmQuantitiesTrends() {
                 angle={-90} 
                 position="insideLeft" 
                 style={{ textAnchor: 'middle', fontSize: '12px' }}
-              />
+            />
             </YAxis>
             <Tooltip content={<CustomTooltip />} />
             <Legend />

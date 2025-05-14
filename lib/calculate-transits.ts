@@ -76,48 +76,48 @@ export function getCurrentPlanetaryPositions(): Record<string, { sign: string, d
   try {
     console.log('Calculating current planetary positions...')
     
-    // Reference date: May 13, 2024
-    const referenceDate = new Date(2024, 4, 13)
+  // Reference date: May 13, 2024
+  const referenceDate = new Date(2024, 4, 13)
     const currentDate = new Date()
     
     console.log(`Reference date: ${referenceDate.toISOString()}, Current date: ${currentDate.toISOString()}`)
     console.log(`Days since reference: ${(currentDate.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24)}`)
-    
-    // Reference positions provided by the user
-    const referencePositions = {
-      'Sun': { sign: 'Taurus', degree: 22 },
-      'Moon': { sign: 'Scorpio', degree: 28 },
-      'Mercury': { sign: 'Taurus', degree: 4 },
-      'Venus': { sign: 'Aries', degree: 8 },
-      'Mars': { sign: 'Leo', degree: 11 },
-      'Jupiter': { sign: 'Gemini', degree: 23 },
-      'Saturn': { sign: 'Pisces', degree: 29 },
-      'Uranus': { sign: 'Taurus', degree: 27 },
-      'Neptune': { sign: 'Aries', degree: 1 },
-      'Pluto': { sign: 'Aquarius', degree: 3 },
-      'Ascendant': { sign: 'Capricorn', degree: 29 }
-    }
-    
+  
+  // Reference positions provided by the user
+  const referencePositions = {
+    'Sun': { sign: 'Taurus', degree: 22 },
+    'Moon': { sign: 'Scorpio', degree: 28 },
+    'Mercury': { sign: 'Taurus', degree: 4 },
+    'Venus': { sign: 'Aries', degree: 8 },
+    'Mars': { sign: 'Leo', degree: 11 },
+    'Jupiter': { sign: 'Gemini', degree: 23 },
+    'Saturn': { sign: 'Pisces', degree: 29 },
+    'Uranus': { sign: 'Taurus', degree: 27 },
+    'Neptune': { sign: 'Aries', degree: 1 },
+    'Pluto': { sign: 'Aquarius', degree: 3 },
+    'Ascendant': { sign: 'Capricorn', degree: 29 }
+  }
+  
     // Verification to ensure the signIndices are correctly loaded
     console.log('Sign indices loaded:', Object.keys(signIndices).length)
     
     const currentPositions: Record<string, { sign: string, degree: number }> = {}
-    
-    // Calculate current position for each planet
-    for (const [planet, reference] of Object.entries(referencePositions)) {
+  
+  // Calculate current position for each planet
+  for (const [planet, reference] of Object.entries(referencePositions)) {
       console.log(`Calculating position for ${planet} (reference: ${reference.sign} ${reference.degree}°)`)
       
       try {
-        const { sign, degree } = calculatePlanetPosition(
-          planet, 
-          referenceDate, 
-          reference.sign, 
+    const { sign, degree } = calculatePlanetPosition(
+      planet, 
+      referenceDate, 
+      reference.sign, 
           reference.degree,
           currentDate
-        )
-        
-        currentPositions[planet] = {
-          sign,
+    )
+    
+    currentPositions[planet] = {
+      sign,
           degree
         }
         
@@ -129,10 +129,10 @@ export function getCurrentPlanetaryPositions(): Record<string, { sign: string, d
           sign: reference.sign,
           degree: reference.degree
         }
-      }
     }
-    
-    return currentPositions
+  }
+  
+  return currentPositions
   } catch (error) {
     console.error('Error in getCurrentPlanetaryPositions:', error)
     // Return basic fallback data if the calculation fails completely

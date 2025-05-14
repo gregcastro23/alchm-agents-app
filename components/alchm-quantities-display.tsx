@@ -169,7 +169,7 @@ export default function AlchmQuantitiesDisplay() {
           <div className="mb-4 p-2 bg-gray-50 dark:bg-gray-900 rounded-lg text-center text-sm">
             <p>These token quantities are determined by astrological calculations for the current planetary positions.</p>
           </div>
-          
+
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
             <TokenDisplay 
               value={data.quantities.Spirit}
@@ -186,7 +186,7 @@ export default function AlchmQuantitiesDisplay() {
               color="bg-blue-500 hover:bg-blue-600"
               description="Essence represents the fluid, connective energy. Associated with the Moon, Venus, and Neptune."
             />
-            
+
             <TokenDisplay 
               value={data.quantities.Matter}
               icon={<Mountain className="h-6 w-6 text-amber-700" />}
@@ -194,7 +194,7 @@ export default function AlchmQuantitiesDisplay() {
               color="bg-amber-700 hover:bg-amber-800"
               description="Matter represents physical manifestation and substance. Associated with Saturn, Mars, and the Moon."
             />
-            
+
             <TokenDisplay 
               value={data.quantities.Substance}
               icon={<Wind className="h-6 w-6 text-purple-500" />}
