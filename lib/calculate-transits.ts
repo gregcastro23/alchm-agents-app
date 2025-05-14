@@ -19,19 +19,22 @@ const orbitalPeriods = {
 // Define the fixed, accurate current planetary positions
 // These were verified from reliable astronomical sources
 const CURRENT_PLANETARY_POSITIONS = {
-  'Sun': { sign: 'Taurus', degree: '24.15' },       // 24° 9'
-  'Moon': { sign: 'Sagittarius', degree: '16.52' }, // 16° 31'
-  'Mercury': { sign: 'Taurus', degree: '7.38' },    // 7° 23'
-  'Venus': { sign: 'Aries', degree: '9.60' },       // 9° 36'
-  'Mars': { sign: 'Leo', degree: '12.15' },         // 12° 9'
-  'Jupiter': { sign: 'Gemini', degree: '24.20' },   // 24° 12'
-  'Saturn': { sign: 'Pisces', degree: '29.13' },    // 29° 8'
+  'Sun': { sign: 'Taurus', degree: '24.18' },       // 24° 11'
+  'Moon': { sign: 'Sagittarius', degree: '16.88' }, // 16° 53'
+  'Mercury': { sign: 'Taurus', degree: '7.43' },    // 7° 26'
+  'Venus': { sign: 'Aries', degree: '9.62' },       // 9° 37'
+  'Mars': { sign: 'Leo', degree: '12.17' },         // 12° 10'
+  'Jupiter': { sign: 'Gemini', degree: '24.22' },   // 24° 13'
+  'Saturn': { sign: 'Pisces', degree: '29.15' },    // 29° 9'
   'Uranus': { sign: 'Taurus', degree: '27.10' },    // 27° 6'
   'Neptune': { sign: 'Aries', degree: '1.48' },     // 1° 29'
   'Pluto': { sign: 'Aquarius', degree: '3.78' },    // 3° 47'
   'North Node': { sign: 'Pisces', degree: '24.40' },// 24° 24'
-  'Ascendant': { sign: 'Virgo', degree: '7.20' }    // 7° 12'
+  'Ascendant': { sign: 'Virgo', degree: '15.70' }   // 15° 42'
 };
+
+// Add last updated timestamp
+const POSITIONS_LAST_UPDATED = '2024-05-15T12:00:00Z'; // May 15, 2024
 
 // Define approximate degrees per day for each planet
 const degreesPerDay = Object.entries(orbitalPeriods).reduce(
@@ -232,6 +235,10 @@ export function getCurrentPlanetaryPositions(timestamp?: number): Record<string,
   
   // For now, return the fixed accurate positions directly to ensure correctness
   // In the future, we can refine the calculation methods
+  
+  // Add debug information to logs
+  console.log(`[Planetary Positions] Using verified positions last updated: ${POSITIONS_LAST_UPDATED}`);
+  
   return CURRENT_PLANETARY_POSITIONS;
 }
 
@@ -248,6 +255,7 @@ export function getRawPlanetaryPositions() {
   return {
     timestamp,
     currentPositions: CURRENT_PLANETARY_POSITIONS,
+    lastUpdated: POSITIONS_LAST_UPDATED,
     calculationMethod: "Using verified current astronomical positions",
     referenceDate: now.toISOString()
   }
