@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { RefreshCw } from "lucide-react"
 import { getPlanetaryDignity, getSignElement, getPlanetaryElement } from "@/lib/astrological-data"
 import { getCurrentPlanetaryPositions } from "@/lib/calculate-transits"
 import ElementalChart from "@/components/elemental-chart"
@@ -14,10 +16,16 @@ export default function ChartOfTheMomentPage() {
   const [isDiurnal, setIsDiurnal] = useState(true)
   const [currentPlanetaryPositions, setCurrentPlanetaryPositions] = useState<Record<string, { sign: string, degree: string }>>({})
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
   
-  // Get the current planetary positions, date, and time on component mount
-  useEffect(() => {
+  // Get the current planetary positions, date, and time
+  const fetchPlanetaryPositions = () => {
+    setRefreshing(true)
+    
     const now = new Date()
+    // Force a timestamp to prevent caching
+    const timestamp = now.getTime()
     
     // Format date as YYYY-MM-DD
     const date = now.toISOString().split('T')[0]
@@ -34,10 +42,26 @@ export default function ChartOfTheMomentPage() {
     setCurrentTime(time)
     setIsDiurnal(diurnal)
     
-    // Calculate current planetary positions
-    const positions = getCurrentPlanetaryPositions()
+    // Calculate current planetary positions with the timestamp to prevent caching
+    const positions = getCurrentPlanetaryPositions(timestamp)
+    
+    // Check if positions seem valid
+    const positionCount = Object.keys(positions).length
+    if (positionCount < 10 && retryCount < 3) {
+      console.log(`Incomplete positions (${positionCount}), retrying...`, positions)
+      setRetryCount(retryCount + 1)
+      setTimeout(fetchPlanetaryPositions, 1000)
+      return
+    }
+    
     setCurrentPlanetaryPositions(positions)
     setLoading(false)
+    setRefreshing(false)
+  }
+  
+  // Fetch on mount and when retry count changes
+  useEffect(() => {
+    fetchPlanetaryPositions()
   }, [])
   
   // Prepare data for ElementalChart component
@@ -87,7 +111,15 @@ export default function ChartOfTheMomentPage() {
       <div className="container py-12 px-4 mx-auto">
         <h1 className="text-3xl font-bold text-center mb-4">Current Planetary Positions</h1>
         <div className="flex justify-center items-center h-60">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
+            <p>Calculating planetary positions...</p>
+            {retryCount > 0 && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Retrying calculation ({retryCount}/3)...
+              </p>
+            )}
+          </div>
         </div>
       </div>
     )
@@ -96,61 +128,67 @@ export default function ChartOfTheMomentPage() {
   return (
     <div className="container py-12 px-4 mx-auto">
       <h1 className="text-3xl font-bold text-center mb-4">Current Planetary Positions</h1>
-      <p className="text-center mb-8 max-w-2xl mx-auto">
+      <p className="text-center mb-4 max-w-2xl mx-auto">
         Explore the current planetary alignments and their elemental influences
       </p>
       
-      <div className="flex flex-col gap-6 md:flex-row">
-        <div className="w-full md:w-1/2">
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-center">Chart of the Moment</CardTitle>
-              <div className="text-center text-sm text-muted-foreground">
-                {currentDate} at {currentTime} - {isDiurnal ? "Day" : "Night"} Chart
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 gap-3">
-                {Object.entries(currentPlanetaryPositions).map(([planet, data]) => {
-                  const dignity = getPlanetaryDignity(planet, data.sign)
-                  const signElement = getSignElement(data.sign)
-                  const planetElement = getPlanetaryElement(planet, isDiurnal)
-                  
-                  return (
-                    <Link 
-                      href={`/planetary-agents?planet=${planet}&sign=${data.sign}&degree=${data.degree}`}
-                      key={planet} 
-                      className={`p-3 rounded-md border flex justify-between items-center ${getDignityColor(dignity)} hover:opacity-90 transition-opacity`}
-                    >
-                      <div className="flex flex-col">
-                        <span className="font-semibold">{planet}</span>
-                        <span>
-                          {data.sign} {data.degree}°
-                        </span>
-                      </div>
-                      <div className="flex gap-2">
-                        <Badge className={getElementColor(signElement)}>
-                          {signElement}
-                        </Badge>
-                        <Badge className={getElementColor(planetElement)}>
-                          {planetElement}
-                        </Badge>
-                        <Badge className={getDignityBadge(dignity)}>
-                          {dignity}
-                        </Badge>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div className="w-full md:w-1/2">
-          <ElementalChart planets={chartPlanets} />
-        </div>
+      <div className="flex justify-center mb-6">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={fetchPlanetaryPositions}
+          disabled={refreshing}
+          className="gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          {refreshing ? 'Refreshing...' : 'Refresh Positions'}
+        </Button>
       </div>
+      
+      <div className="mb-2 text-center text-sm text-muted-foreground">
+        {currentDate} at {currentTime} - {isDiurnal ? "Day" : "Night"} Chart
+      </div>
+      
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-center">Chart of the Moment</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-3">
+            {Object.entries(currentPlanetaryPositions).map(([planet, data]) => {
+              const dignity = getPlanetaryDignity(planet, data.sign)
+              const signElement = getSignElement(data.sign)
+              const planetElement = getPlanetaryElement(planet, isDiurnal)
+              
+              return (
+                <Link 
+                  href={`/planetary-agents?planet=${planet}&sign=${data.sign}&degree=${data.degree}`}
+                  key={planet} 
+                  className={`p-3 rounded-md border flex justify-between items-center ${getDignityColor(dignity)} hover:opacity-90 transition-opacity`}
+                >
+                  <div className="flex flex-col">
+                    <span className="font-semibold">{planet}</span>
+                    <span>
+                      {data.sign} {data.degree}°
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge className={getElementColor(signElement)}>
+                      {signElement}
+                    </Badge>
+                    <Badge className={getElementColor(planetElement)}>
+                      {planetElement}
+                    </Badge>
+                    <Badge className={getDignityBadge(dignity)}>
+                      {dignity}
+                    </Badge>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 } 

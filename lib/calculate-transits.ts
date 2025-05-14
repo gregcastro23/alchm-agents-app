@@ -251,94 +251,164 @@ export function calculatePlanetPosition(
   }
 }
 
-// Calculate current positions based on the reference data for May 19, 2024
-export function getCurrentPlanetaryPositions(): Record<string, { sign: string, degree: number }> {
-  try {
-    console.log('Calculating current planetary positions...')
-    
-    // Reference date: May 19, 2024 (today)
-    const referenceDate = new Date(2024, 4, 19)
-    const currentDate = new Date()
-    
-    console.log(`Reference date: ${referenceDate.toISOString()}, Current date: ${currentDate.toISOString()}`)
-    console.log(`Days since reference: ${(currentDate.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24)}`)
+/**
+ * Calculates the current positions of planets based on reference positions and orbital speeds
+ * Optionally accepts a timestamp to prevent caching
+ * @param timestamp Optional timestamp to force recalculation
+ * @returns Object with planet names as keys and their current sign and degree
+ */
+export function getCurrentPlanetaryPositions(timestamp?: number): Record<string, { sign: string, degree: string }> {
+  const now = new Date()
   
-    // Updated reference positions from the user's provided current positions
-    const referencePositions = {
-      'Sun': { sign: 'Taurus', degree: 24.13 },      // 24° 8'
-      'Moon': { sign: 'Sagittarius', degree: 16.22 }, // 16° 13'
-      'Mercury': { sign: 'Taurus', degree: 7.33 },    // 7° 20'
-      'Venus': { sign: 'Aries', degree: 9.58 },       // 9° 35'
-      'Mars': { sign: 'Leo', degree: 12.13 },         // 12° 8'
-      'Jupiter': { sign: 'Gemini', degree: 24.2 },    // 24° 12'
-      'Saturn': { sign: 'Pisces', degree: 29.13 },    // 29° 8'
-      'Uranus': { sign: 'Taurus', degree: 27.1 },     // 27° 6'
-      'Neptune': { sign: 'Aries', degree: 1.48 },     // 1° 29'
-      'Pluto': { sign: 'Aquarius', degree: 3.78 },    // 3° 47'
-      'Ascendant': { sign: 'Virgo', degree: 0.1 }     // 0° 6'
-    }
+  // If a timestamp is provided, log it to verify fresh data
+  if (timestamp) {
+    console.log(`Calculating positions with timestamp: ${timestamp}`)
+  }
   
-    // Verification to ensure the signIndices are correctly loaded
-    console.log('Sign indices loaded:', Object.keys(signIndices).length)
-    if (Object.keys(signIndices).length === 0) {
-      console.error('Sign indices not loaded correctly')
-      return referencePositions
-    }
-    
-    const currentPositions: Record<string, { sign: string, degree: number }> = {}
+  // Get the current reference positions
+  const referencePositions = planetaryReferencePositions
   
-    // For today's date, just use the reference positions directly
-    // as they're already the current positions we want to display
-    if (Math.abs((currentDate.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24)) < 1) {
-      console.log('Using reference positions directly as current date matches reference date')
-      return referencePositions
-    }
+  // Reference date (May 15, 2024)
+  const referenceDate = new Date(2024, 4, 15)
   
-    // Calculate current position for each planet
-    for (const [planet, reference] of Object.entries(referencePositions)) {
-      console.log(`Calculating position for ${planet} (reference: ${reference.sign} ${reference.degree}°)`)
+  // Calculate days since reference date
+  const daysSinceReference = (now.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24)
+  
+  // Calculate current positions based on reference positions and days elapsed
+  const currentPositions: Record<string, { sign: string, degree: string }> = {}
+  
+  for (const planet in referencePositions) {
+    try {
+      // Skip if planet not in degreesPerDay
+      if (!degreesPerDay[planet]) continue
       
-      try {
-        const { sign, degree } = calculatePlanetPosition(
-          planet, 
-          referenceDate, 
-          reference.sign, 
-          reference.degree,
-          currentDate
-        )
-    
+      // Get position from transit dates if available
+      const transitPosition = getTransitPositionFromDates(planet, now)
+      
+      if (transitPosition) {
         currentPositions[planet] = {
-          sign,
-          degree
+          sign: transitPosition.sign,
+          degree: transitPosition.degree
         }
-        
-        console.log(`${planet} calculated position: ${sign} ${degree}°`)
-      } catch (err) {
-        console.error(`Error calculating position for ${planet}:`, err)
-        // Fallback to reference data if calculation fails
-        currentPositions[planet] = {
-          sign: reference.sign,
-          degree: reference.degree
-        }
+        continue
+      }
+      
+      // Calculate position based on reference position and orbital speed
+      const refPosition = referencePositions[planet]
+      const refDegree = parseFloat(refPosition.degree)
+      const refSignIndex = signIndices[refPosition.sign]
+      
+      // Calculate new degree
+      let newDegree = refDegree + (daysSinceReference * degreesPerDay[planet])
+      
+      // Normalize degree to be within 0-360
+      newDegree = newDegree % 360
+      if (newDegree < 0) newDegree += 360
+      
+      // Calculate new sign index
+      const newSignIndex = Math.floor(newDegree / 30)
+      
+      // Calculate degree within sign
+      const degreeInSign = newDegree % 30
+      
+      // Get sign name from index
+      const newSign = Object.keys(signIndices).find(
+        key => signIndices[key] === newSignIndex
+      ) || refPosition.sign
+      
+      currentPositions[planet] = {
+        sign: newSign,
+        degree: degreeInSign.toFixed(2)
+      }
+    } catch (error) {
+      console.error(`Error calculating position for ${planet}:`, error)
+      // Use reference position as fallback
+      currentPositions[planet] = referencePositions[planet]
+    }
+  }
+  
+  return currentPositions
+}
+
+/**
+ * Gets the raw planetary positions directly from calculations
+ * This is used for debugging purposes
+ */
+export function getRawPlanetaryPositions() {
+  const now = new Date()
+  
+  // Force a timestamp to prevent caching
+  const timestamp = now.getTime()
+  
+  // Get the current reference positions
+  const referencePositions = planetaryReferencePositions
+  
+  // Reference date (May 15, 2024)
+  const referenceDate = new Date(2024, 4, 15)
+  
+  // Calculate days since reference date
+  const daysSinceReference = (now.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24)
+  
+  // Calculate current positions based on reference positions and days elapsed
+  const currentPositions: Record<string, { sign: string, degree: string, rawDegree: number }> = {}
+  
+  for (const planet in referencePositions) {
+    try {
+      // Skip if planet not in degreesPerDay
+      if (!degreesPerDay[planet]) continue
+      
+      // Get position from transit dates if available
+      const transitPosition = getTransitPositionFromDates(planet, now)
+      
+      if (transitPosition) {
+        currentPositions[planet] = transitPosition
+        continue
+      }
+      
+      // Calculate position based on reference position and orbital speed
+      const refPosition = referencePositions[planet]
+      const refDegree = parseFloat(refPosition.degree)
+      const refSignIndex = signIndices[refPosition.sign]
+      
+      // Calculate new degree
+      let newDegree = refDegree + (daysSinceReference * degreesPerDay[planet])
+      
+      // Normalize degree to be within 0-360
+      newDegree = newDegree % 360
+      if (newDegree < 0) newDegree += 360
+      
+      // Calculate new sign index
+      const newSignIndex = Math.floor(newDegree / 30)
+      
+      // Calculate degree within sign
+      const degreeInSign = newDegree % 30
+      
+      // Get sign name from index
+      const newSign = Object.keys(signIndices).find(
+        key => signIndices[key] === newSignIndex
+      ) || refPosition.sign
+      
+      currentPositions[planet] = {
+        sign: newSign,
+        degree: degreeInSign.toFixed(2),
+        rawDegree: newDegree
+      }
+    } catch (error) {
+      console.error(`Error calculating position for ${planet}:`, error)
+      // Use reference position as fallback
+      currentPositions[planet] = {
+        ...referencePositions[planet],
+        rawDegree: parseFloat(referencePositions[planet].degree)
       }
     }
+  }
   
-    return currentPositions
-  } catch (error) {
-    console.error('Error in getCurrentPlanetaryPositions:', error)
-    // Return the current positions from May 19 as fallback data
-    return {
-      'Sun': { sign: 'Taurus', degree: 24.13 },      
-      'Moon': { sign: 'Sagittarius', degree: 16.22 }, 
-      'Mercury': { sign: 'Taurus', degree: 7.33 },    
-      'Venus': { sign: 'Aries', degree: 9.58 },       
-      'Mars': { sign: 'Leo', degree: 12.13 },         
-      'Jupiter': { sign: 'Gemini', degree: 24.2 },    
-      'Saturn': { sign: 'Pisces', degree: 29.13 },    
-      'Uranus': { sign: 'Taurus', degree: 27.1 },     
-      'Neptune': { sign: 'Aries', degree: 1.48 },     
-      'Pluto': { sign: 'Aquarius', degree: 3.78 },    
-      'Ascendant': { sign: 'Virgo', degree: 0.1 }
-    }
+  return {
+    timestamp,
+    calculatedPositions: currentPositions,
+    referencePositions,
+    referenceDate: referenceDate.toISOString(),
+    daysSinceReference,
+    degreesPerDay
   }
 } 
