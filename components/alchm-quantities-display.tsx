@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Flame, Droplets, Wind, Mountain, Coins, AlertTriangle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { useGalileoLog } from "@/hooks/useGalileoLog"
 
 type AlchemyQuantities = {
   Spirit: number
@@ -39,34 +40,22 @@ function TokenDisplay({
   color: string;
   description: string;
 }) {
-  // Round to 3 decimal places for token display
-  const tokenValue = value.toFixed(3)
+  // Round to 2 decimal places
+  const formattedValue = Math.round(value * 100) / 100;
   
   return (
-    <div className="p-4 rounded-lg border bg-white dark:bg-gray-800 transition-all hover:shadow-md">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          {icon}
-          <span className="font-bold text-lg">{name}</span>
-        </div>
-        <Badge className={color}>{name.substring(0, 3).toUpperCase()}</Badge>
+    <div className={`bg-${color}-50 dark:bg-${color}-950 border border-${color}-200 dark:border-${color}-800 rounded-lg p-4 flex flex-col items-center justify-center transition-all hover:shadow-md`}>
+      <div className={`text-${color}-500 mb-2`}>
+        {icon}
       </div>
-      
-      <div className="flex items-center gap-2 mb-2">
-        <Coins className="h-5 w-5 text-yellow-500" />
-        <span className="text-xl font-mono font-bold">{tokenValue}</span>
+      <div className="flex items-center gap-2">
+        <span className="text-2xl font-bold">{formattedValue}</span>
+        <Coins className="h-4 w-4 text-gray-400" />
       </div>
-      
-      <p className="text-sm text-muted-foreground mt-2">
-        {description}
-      </p>
-      
-      <div className="flex justify-between items-center mt-3 text-xs text-muted-foreground">
-        <span>Token ID: {name.toLowerCase()}-{Math.floor(Date.now()/1000000)}</span>
-        <span>Market: Planetary</span>
-      </div>
+      <div className="text-sm font-medium mt-1">{name}</div>
+      <div className="text-xs text-gray-500 mt-1 text-center">{description}</div>
     </div>
-  )
+  );
 }
 
 export default function AlchmQuantitiesDisplay() {
@@ -74,7 +63,7 @@ export default function AlchmQuantitiesDisplay() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
-  const [detailedError, setDetailedError] = useState<string | null>(null)
+  const { info, error: logError } = useGalileoLog()
 
   useEffect(() => {
     let isMounted = true
@@ -84,230 +73,198 @@ export default function AlchmQuantitiesDisplay() {
       
       setLoading(true)
       setError(null)
-      setDetailedError(null)
-      
-      // Add a small delay to ensure API server is ready (with exponential backoff)
-      const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 10000)
-      await new Promise(resolve => setTimeout(resolve, backoffTime))
       
       try {
-        console.log(`Fetching alchm quantities data... (attempt ${retryCount + 1})`)
+        console.log(`Fetching alchemical quantities... (attempt ${retryCount + 1})`)
         
-        // Create a timeout promise to handle hanging requests
-        const timeoutPromise = new Promise<Response>((_, reject) => 
-          setTimeout(() => reject(new Error("Request timed out after 15 seconds")), 15000)
-        )
+        // Add a small delay with exponential backoff based on retry count
+        const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 10000)
+        await new Promise(resolve => setTimeout(resolve, backoffTime))
         
-        // Create the fetch promise
-        const fetchPromise = fetch('/api/alchm-quantities', {
-          method: 'GET',
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-          },
-          cache: 'no-store',
+        // Create a timeout promise to handle hanging request
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("Request timed out")), 15000)
         })
         
-        // Race the promises
+        // The actual fetch request
+        const fetchPromise = fetch("/api/alchm-quantities", {
+          headers: {
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache"
+          }
+        })
+        
+        // Use Promise.race to implement timeout
         const response = await Promise.race([fetchPromise, timeoutPromise]) as Response
         
+        if (!isMounted) return
+        
         if (!response.ok) {
-          let errorDetail = `API responded with status: ${response.status}`
-          
-          try {
-            // Try to extract detailed error message from API response
-            const errorData = await response.json()
-            if (errorData.error) {
-              errorDetail = errorData.error
-              if (errorData.details) {
-                setDetailedError(errorData.details)
-              }
-            }
-          } catch (e) {
-            console.error("Error parsing error response:", e)
-          }
-          
-          throw new Error(errorDetail)
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`)
         }
         
-        const jsonData = await response.json()
-        console.log('Received data:', jsonData)
+        const result = await response.json()
         
-        if (!jsonData || !jsonData.quantities) {
-          throw new Error('Invalid data format received from API')
+        if (!isMounted) return
+        
+        if (!result || typeof result !== 'object' || !result.quantities) {
+          throw new Error("Invalid data format")
         }
         
-        // Validate all expected values are present and are numbers
-        ['Spirit', 'Essence', 'Matter', 'Substance'].forEach(key => {
-          if (typeof jsonData.quantities[key] !== 'number') {
-            throw new Error(`Invalid format for ${key}: expected number but got ${typeof jsonData.quantities[key]}`)
-          }
+        setData(result)
+        setLoading(false)
+        setRetryCount(0)
+        
+        // Log successful data fetch to Galileo
+        info('Alchemical quantities fetched successfully', {
+          quantities: result.quantities,
+          dominantElement: result.dominantElement,
+          timestamp: result.timestamp,
+          application: 'planetary-agents',
+          component: 'AlchmQuantitiesDisplay'
         })
         
-        if (isMounted) {
-          setData(jsonData)
-          // Reset retry count on success
-          setRetryCount(0)
-        }
       } catch (err) {
-        console.error("Error fetching Alchm quantities:", err)
+        if (!isMounted) return
         
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : "Failed to fetch data")
-          
-          // Retry logic - retry up to 5 times with exponential backoff
-          if (retryCount < 5) {
-            const retryDelay = Math.min(2000 * Math.pow(2, retryCount), 30000)
-            console.log(`Retrying in ${retryDelay}ms (attempt ${retryCount + 1}/5)`)
-            setTimeout(() => {
-              if (isMounted) {
-                setRetryCount(prev => prev + 1)
-              }
-            }, retryDelay)
-          }
+        console.error("Error fetching alchm quantities:", err)
+        
+        const errorMessage = err instanceof Error ? err.message : String(err)
+        setError(errorMessage)
+        setLoading(false)
+        
+        // Log error to Galileo
+        logError('Error fetching alchemical quantities', {
+          error: errorMessage,
+          retryCount,
+          application: 'planetary-agents',
+          component: 'AlchmQuantitiesDisplay'
+        })
+        
+        // If we've reached the maximum number of retries, give up
+        if (retryCount >= 3) {
+          console.error("Maximum retry count reached, giving up")
+          return
         }
-      } finally {
-        if (isMounted) {
-          setLoading(false)
-        }
+        
+        // Otherwise increment the retry count for next attempt
+        setRetryCount(prev => prev + 1)
+        
+        // Schedule another attempt
+        setTimeout(fetchAlchmQuantities, 2000)
       }
     }
     
     fetchAlchmQuantities()
     
-    // Refresh data every 5 minutes
-    const intervalId = setInterval(fetchAlchmQuantities, 5 * 60 * 1000)
-    
-    // Cleanup
     return () => {
       isMounted = false
-      clearInterval(intervalId)
     }
-  }, [retryCount])
+  }, [retryCount, info, logError])
 
-  const handleRetry = () => {
-    setRetryCount(0) // Reset retry count to trigger a new attempt
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] p-6 border rounded-lg bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
+        <p className="text-lg font-medium text-center">Calculating Alchemical Quantities...</p>
+        <p className="text-sm text-center text-muted-foreground mt-2">
+          Fetching real-time planetary positions to generate accurate token values
+        </p>
+      </div>
+    )
   }
 
   if (error) {
     return (
-      <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-800">
-        <div className="flex items-center gap-2 mb-2">
-          <AlertTriangle className="h-5 w-5" />
-          <h3 className="font-semibold">Error Loading Data</h3>
-        </div>
-        <p className="mb-2">{error}</p>
-        {detailedError && (
-          <details className="mt-2 mb-3">
-            <summary className="cursor-pointer text-sm">Technical Details</summary>
-            <p className="mt-1 text-xs bg-red-100 dark:bg-red-900/40 p-2 rounded whitespace-pre-wrap">
-              {detailedError}
-            </p>
-          </details>
-        )}
+      <div className="flex flex-col items-center justify-center min-h-[200px] p-6 border rounded-lg bg-red-50 dark:bg-red-900/20">
+        <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
+        <h3 className="text-lg font-medium text-center">Error Loading Alchemical Data</h3>
+        <p className="text-sm text-center text-muted-foreground mt-2">{error}</p>
         <button 
-          onClick={handleRetry}
-          className="mt-3 px-3 py-1 bg-red-100 hover:bg-red-200 dark:bg-red-900/50 hover:dark:bg-red-800/70 rounded text-sm font-medium"
+          onClick={() => { setRetryCount(0); setLoading(true); }}
+          className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
         >
-          Retry Now
+          Try Again
         </button>
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[200px] p-6 border rounded-lg bg-gray-50 dark:bg-gray-900">
+        <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
+        <h3 className="text-lg font-medium text-center">No Data Available</h3>
+        <p className="text-sm text-center text-muted-foreground mt-2">
+          Unable to retrieve alchemical quantities. Please try again later.
+        </p>
       </div>
     )
   }
 
   return (
     <div>
-      {loading ? (
-        <div className="flex flex-col justify-center items-center h-60 space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p className="text-muted-foreground">Calculating current alchemical quantities...</p>
-          {retryCount > 0 && (
-            <p className="text-xs text-muted-foreground">Retry attempt {retryCount}/5...</p>
-          )}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <TokenDisplay 
+          value={data.quantities.Spirit} 
+          icon={<Flame className="h-6 w-6" />} 
+          name="SPIRIT" 
+          color="red"
+          description="Cosmic creative force"
+        />
+        <TokenDisplay 
+          value={data.quantities.Essence} 
+          icon={<Droplets className="h-6 w-6" />} 
+          name="ESSENCE" 
+          color="blue"
+          description="Life-giving principle"
+        />
+        <TokenDisplay 
+          value={data.quantities.Matter} 
+          icon={<Mountain className="h-6 w-6" />} 
+          name="MATTER" 
+          color="amber"
+          description="Physical substance"
+        />
+        <TokenDisplay 
+          value={data.quantities.Substance} 
+          icon={<Wind className="h-6 w-6" />} 
+          name="SUBSTANCE" 
+          color="purple"
+          description="Etheric foundation"
+        />
+      </div>
+      
+      <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">Dominant: {data.dominantElement}</Badge>
+            <Badge variant="outline">Sun in {data.sunSign}</Badge>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Updated: {new Date(data.timestamp).toLocaleTimeString()}
+          </div>
         </div>
-      ) : data ? (
-        <>
-          <div className="flex flex-col sm:flex-row sm:justify-between text-sm mb-4">
-            <div><span className="font-medium">Sun Sign:</span> {data.sunSign || "Unknown"}</div>
-            <div><span className="font-medium">Dominant Element:</span> {data.dominantElement || "Unknown"}</div>
-            <div><span className="font-medium">Chart Ruler:</span> {data.chartRuler || "Unknown"}</div>
+        
+        <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
+          <div className="flex items-center justify-between">
+            <span>Heat:</span>
+            <span className="font-mono">{(data.heat * 100).toFixed(2)}</span>
           </div>
-          
-          <div className="mb-4 p-2 bg-gray-50 dark:bg-gray-900 rounded-lg text-center text-sm">
-            <p>These token quantities are determined by astrological calculations for the current planetary positions.</p>
+          <div className="flex items-center justify-between">
+            <span>Entropy:</span>
+            <span className="font-mono">{(data.entropy * 100).toFixed(2)}</span>
           </div>
-
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-            <TokenDisplay 
-              value={data.quantities.Spirit}
-              icon={<Flame className="h-6 w-6 text-red-500" />}
-              name="Spirit"
-              color="bg-red-500 hover:bg-red-600"
-              description="Spirit represents the active, transformative energy in the system. Associated with the Sun, Mars, and Jupiter."
-            />
-            
-            <TokenDisplay 
-              value={data.quantities.Essence}
-              icon={<Droplets className="h-6 w-6 text-blue-500" />}
-              name="Essence"
-              color="bg-blue-500 hover:bg-blue-600"
-              description="Essence represents the fluid, connective energy. Associated with the Moon, Venus, and Neptune."
-            />
-
-            <TokenDisplay 
-              value={data.quantities.Matter}
-              icon={<Mountain className="h-6 w-6 text-amber-700" />}
-              name="Matter"
-              color="bg-amber-700 hover:bg-amber-800"
-              description="Matter represents physical manifestation and substance. Associated with Saturn, Mars, and the Moon."
-            />
-
-            <TokenDisplay 
-              value={data.quantities.Substance}
-              icon={<Wind className="h-6 w-6 text-purple-500" />}
-              name="Substance"
-              color="bg-purple-500 hover:bg-purple-600"
-              description="Substance represents foundational stability and framework. Associated with Mercury, Neptune, and Saturn."
-            />
+          <div className="flex items-center justify-between">
+            <span>Reactivity:</span>
+            <span className="font-mono">{(data.reactivity * 100).toFixed(2)}</span>
           </div>
-          
-          <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-lg mt-4 text-sm">
-            <div className="text-center text-muted-foreground mb-2">
-              Thermodynamic Properties
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center justify-between p-1 border-b border-gray-200 dark:border-gray-700">
-                <span className="font-medium">Heat:</span>
-                <span className="font-mono">{data.heat.toFixed(4)}</span>
-              </div>
-              <div className="flex items-center justify-between p-1 border-b border-gray-200 dark:border-gray-700">
-                <span className="font-medium">Entropy:</span>
-                <span className="font-mono">{data.entropy.toFixed(4)}</span>
-              </div>
-              <div className="flex items-center justify-between p-1 border-b border-gray-200 dark:border-gray-700">
-                <span className="font-medium">Reactivity:</span>
-                <span className="font-mono">{data.reactivity.toFixed(4)}</span>
-              </div>
-              <div className="flex items-center justify-between p-1 border-b border-gray-200 dark:border-gray-700">
-                <span className="font-medium">Energy:</span>
-                <span className="font-mono">{data.energy.toFixed(4)}</span>
-              </div>
-            </div>
+          <div className="flex items-center justify-between">
+            <span>Energy:</span>
+            <span className="font-mono">{(data.energy * 100).toFixed(2)}</span>
           </div>
-        </>
-      ) : (
-        <div className="text-center text-muted-foreground p-8 border rounded-lg">
-          <p className="font-medium">Unable to load alchemical data</p>
-          <p className="mt-2 text-sm">The system couldn't retrieve current planetary token quantities.</p>
-          <button 
-            onClick={handleRetry}
-            className="mt-3 px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium"
-          >
-            Try Again
-          </button>
         </div>
-      )}
+      </div>
     </div>
   )
 } 
