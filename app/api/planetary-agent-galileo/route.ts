@@ -8,16 +8,21 @@ import {
   calculateElementalAffinity 
 } from "@/lib/astrological-data"
 
-export async function POST(req: Request) {
-  // Verify API keys are available
-  if (!verifyApiKeys()) {
-    return NextResponse.json(
-      { error: "API keys not configured. Please set up environment variables." },
-      { status: 500 },
-    )
-  }
+export const dynamic = "force-dynamic"
+export const revalidate = 0
 
+export async function POST(req: Request) {
   try {
+    // Verify API keys are available
+    if (!verifyApiKeys()) {
+      console.error("API keys not configured. Providing fallback response for Galileo agent.")
+      // Return a fallback response that still provides value to the user
+      return NextResponse.json({
+        response: "I'm currently experiencing connectivity issues and cannot access the Galileo planetary wisdom. Please check your environment variables or try again later when API services are restored.",
+        error: "API_KEY_MISSING"
+      }, { status: 200 })
+    }
+
     const { planet, sign, degree, question, time } = await req.json()
 
     // Format the model ID based on planet and sign
@@ -54,6 +59,7 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
         model: galileo(planetModel),
         system: systemPrompt,
         prompt: question || "Tell me about this planetary position",
+        maxTokens: 500,
       })
 
       return NextResponse.json({ 
@@ -66,17 +72,25 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
         }
       })
     } catch (modelError) {
-      console.error("Error with Galileo model, falling back to OpenAI:", modelError)
+      console.error("Error with Galileo model, falling back to default response:", modelError)
 
-      // If the specific Galileo model fails, we can implement a fallback strategy
-      // This could be logging the error, using a default model, or other error handling
-      return NextResponse.json(
-        { error: "The requested planetary model is not available. Please try a different configuration." },
-        { status: 404 },
-      )
+      // Return a dignified response even when the model fails
+      return NextResponse.json({
+        response: `As ${planet || "the Sun"} in ${sign || "Aries"}, I bring the wisdom of ${signElement} energy. Currently, my full capabilities are limited, but I can tell you that this combination offers unique insights into how ${planetElement} and ${signElement} energies interact. Please try again later for more detailed guidance.`,
+        elementalInfo: {
+          signElement,
+          planetElement,
+          elementalAffinity: Math.round(elementalAffinity * 100),
+          isDiurnal
+        },
+        error: "MODEL_UNAVAILABLE"
+      }, { status: 200 })
     }
   } catch (error) {
     console.error("Error in Galileo planetary agent:", error)
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 })
+    return NextResponse.json({ 
+      error: "Failed to process request",
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 })
   }
 }

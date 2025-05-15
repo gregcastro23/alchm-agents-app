@@ -94,7 +94,11 @@ export default function AlchmQuantitiesTrends() {
   const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
+    let isMounted = true
+    
     async function generateTrendData() {
+      if (!isMounted) return
+      
       setLoading(true)
       setError(null)
       
@@ -103,12 +107,19 @@ export default function AlchmQuantitiesTrends() {
         const today = new Date()
         
         // Fetch current values to anchor our calculations
-        console.log('Fetching current alchemical quantities for trend calculations...')
+        console.log(`Fetching current alchemical quantities for trend calculations... (attempt ${retryCount + 1})`)
         
-        // Add a small delay to ensure API server is ready
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // Add a small delay with exponential backoff based on retry count
+        const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 10000)
+        await new Promise(resolve => setTimeout(resolve, backoffTime))
         
-        const response = await fetch('/api/alchm-quantities', {
+        // Create a timeout promise to handle hanging requests
+        const timeoutPromise = new Promise<Response>((_, reject) => 
+          setTimeout(() => reject(new Error("Request timed out after 15 seconds")), 15000)
+        )
+        
+        // Create the fetch promise  
+        const fetchPromise = fetch('/api/alchm-quantities', {
           method: 'GET',
           headers: {
             'Cache-Control': 'no-cache',
@@ -118,8 +129,23 @@ export default function AlchmQuantitiesTrends() {
           cache: 'no-store',
         })
         
+        // Race the promises
+        const response = await Promise.race([fetchPromise, timeoutPromise]) as Response
+        
         if (!response.ok) {
-          throw new Error(`API responded with status: ${response.status}`)
+          let errorDetail = `API responded with status: ${response.status}`
+          
+          try {
+            // Try to extract detailed error message from API response
+            const errorData = await response.json()
+            if (errorData.error) {
+              errorDetail = errorData.error
+            }
+          } catch (e) {
+            console.error("Error parsing error response:", e)
+          }
+          
+          throw new Error(errorDetail)
         }
         
         const apiData = await response.json()
@@ -127,6 +153,14 @@ export default function AlchmQuantitiesTrends() {
         
         if (!apiData || !apiData.quantities) {
           throw new Error('Invalid data format received from API')
+        }
+        
+        // Validate that necessary data is present
+        const requiredKeys = ['Spirit', 'Essence', 'Matter', 'Substance']
+        for (const key of requiredKeys) {
+          if (typeof apiData.quantities[key] !== 'number') {
+            throw new Error(`Missing or invalid ${key} value in API response`)
+          }
         }
         
         const currentValues = {
@@ -191,25 +225,41 @@ export default function AlchmQuantitiesTrends() {
           })
         }
         
-        setTrendData(data)
+        if (isMounted) {
+          setTrendData(data)
+          // Reset retry count on success
+          setRetryCount(0)
+        }
       } catch (err) {
         console.error("Error generating trend data:", err)
-        setError(err instanceof Error ? err.message : "Failed to generate trend data")
         
-        // Retry logic - retry up to 3 times with increasing delay
-        if (retryCount < 3) {
-          const retryDelay = 2000 * (retryCount + 1)
-          console.log(`Retrying trend data in ${retryDelay}ms (attempt ${retryCount + 1}/3)`)
-          setTimeout(() => {
-            setRetryCount(prev => prev + 1)
-          }, retryDelay)
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : "Failed to generate trend data")
+          
+          // Retry logic - retry up to 5 times with exponential backoff
+          if (retryCount < 5) {
+            const retryDelay = Math.min(2000 * Math.pow(2, retryCount), 30000)
+            console.log(`Retrying trend data in ${retryDelay}ms (attempt ${retryCount + 1}/5)`)
+            setTimeout(() => {
+              if (isMounted) {
+                setRetryCount(prev => prev + 1)
+              }
+            }, retryDelay)
+          }
         }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
     
     generateTrendData()
+    
+    // Cleanup function
+    return () => {
+      isMounted = false
+    }
   }, [forecastDays, retryCount])
   
   // Function to calculate a quantity value for a specific day offset from today

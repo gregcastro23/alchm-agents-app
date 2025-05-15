@@ -1,10 +1,24 @@
 import { NextResponse } from "next/server"
 import { generateAlchmForCurrentMoment } from "@/lib/alchemizer"
 
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 export async function GET() {
   try {
+    console.log("API: alchm-quantities endpoint called")
+    
     // Generate alchemical data for the current moment
     const alchmData = await generateAlchmForCurrentMoment()
+    
+    // Validate the response data
+    if (!alchmData || typeof alchmData !== 'object') {
+      console.error("API: Invalid alchm data format:", alchmData)
+      return NextResponse.json(
+        { error: "Invalid data format returned from alchemizer" },
+        { status: 500 }
+      )
+    }
     
     // Extract the specific Alchemy Effects that we want to return
     const quantities = {
@@ -29,11 +43,17 @@ export async function GET() {
       timestamp: new Date().toISOString()
     }
     
-    return NextResponse.json(responseData)
+    console.log("API: Successfully generated alchm quantities")
+    
+    return NextResponse.json(responseData, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0, must-revalidate"
+      }
+    })
   } catch (error) {
-    console.error("Error generating Alchm quantities:", error)
+    console.error("API Error generating Alchm quantities:", error)
     return NextResponse.json(
-      { error: "Failed to generate Alchm quantities" },
+      { error: "Failed to generate Alchm quantities", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

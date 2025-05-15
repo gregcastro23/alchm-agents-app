@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Flame, Droplets, Wind, Mountain, Coins } from "lucide-react"
+import { Flame, Droplets, Wind, Mountain, Coins, AlertTriangle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 type AlchemyQuantities = {
@@ -74,18 +74,32 @@ export default function AlchmQuantitiesDisplay() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
+  const [detailedError, setDetailedError] = useState<string | null>(null)
 
   useEffect(() => {
+    let isMounted = true
+    
     async function fetchAlchmQuantities() {
+      if (!isMounted) return
+      
       setLoading(true)
       setError(null)
+      setDetailedError(null)
       
-      // Add a small delay to ensure API server is ready
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Add a small delay to ensure API server is ready (with exponential backoff)
+      const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 10000)
+      await new Promise(resolve => setTimeout(resolve, backoffTime))
       
       try {
-        console.log('Fetching alchm quantities data...')
-        const response = await fetch('/api/alchm-quantities', {
+        console.log(`Fetching alchm quantities data... (attempt ${retryCount + 1})`)
+        
+        // Create a timeout promise to handle hanging requests
+        const timeoutPromise = new Promise<Response>((_, reject) => 
+          setTimeout(() => reject(new Error("Request timed out after 15 seconds")), 15000)
+        )
+        
+        // Create the fetch promise
+        const fetchPromise = fetch('/api/alchm-quantities', {
           method: 'GET',
           headers: {
             'Cache-Control': 'no-cache',
@@ -95,8 +109,26 @@ export default function AlchmQuantitiesDisplay() {
           cache: 'no-store',
         })
         
+        // Race the promises
+        const response = await Promise.race([fetchPromise, timeoutPromise]) as Response
+        
         if (!response.ok) {
-          throw new Error(`API responded with status: ${response.status}`)
+          let errorDetail = `API responded with status: ${response.status}`
+          
+          try {
+            // Try to extract detailed error message from API response
+            const errorData = await response.json()
+            if (errorData.error) {
+              errorDetail = errorData.error
+              if (errorData.details) {
+                setDetailedError(errorData.details)
+              }
+            }
+          } catch (e) {
+            console.error("Error parsing error response:", e)
+          }
+          
+          throw new Error(errorDetail)
         }
         
         const jsonData = await response.json()
@@ -106,21 +138,39 @@ export default function AlchmQuantitiesDisplay() {
           throw new Error('Invalid data format received from API')
         }
         
-        setData(jsonData)
+        // Validate all expected values are present and are numbers
+        ['Spirit', 'Essence', 'Matter', 'Substance'].forEach(key => {
+          if (typeof jsonData.quantities[key] !== 'number') {
+            throw new Error(`Invalid format for ${key}: expected number but got ${typeof jsonData.quantities[key]}`)
+          }
+        })
+        
+        if (isMounted) {
+          setData(jsonData)
+          // Reset retry count on success
+          setRetryCount(0)
+        }
       } catch (err) {
         console.error("Error fetching Alchm quantities:", err)
-        setError(err instanceof Error ? err.message : "Failed to fetch data")
         
-        // Retry logic - retry up to 3 times with increasing delay
-        if (retryCount < 3) {
-          const retryDelay = 2000 * (retryCount + 1)
-          console.log(`Retrying in ${retryDelay}ms (attempt ${retryCount + 1}/3)`)
-          setTimeout(() => {
-            setRetryCount(prev => prev + 1)
-          }, retryDelay)
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : "Failed to fetch data")
+          
+          // Retry logic - retry up to 5 times with exponential backoff
+          if (retryCount < 5) {
+            const retryDelay = Math.min(2000 * Math.pow(2, retryCount), 30000)
+            console.log(`Retrying in ${retryDelay}ms (attempt ${retryCount + 1}/5)`)
+            setTimeout(() => {
+              if (isMounted) {
+                setRetryCount(prev => prev + 1)
+              }
+            }, retryDelay)
+          }
         }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
     
@@ -129,7 +179,11 @@ export default function AlchmQuantitiesDisplay() {
     // Refresh data every 5 minutes
     const intervalId = setInterval(fetchAlchmQuantities, 5 * 60 * 1000)
     
-    return () => clearInterval(intervalId)
+    // Cleanup
+    return () => {
+      isMounted = false
+      clearInterval(intervalId)
+    }
   }, [retryCount])
 
   const handleRetry = () => {
@@ -138,12 +192,23 @@ export default function AlchmQuantitiesDisplay() {
 
   if (error) {
     return (
-      <div className="p-4 bg-red-50 text-red-500 rounded-lg border border-red-200">
-        <h3 className="font-semibold mb-2">Error Loading Data</h3>
-        <p>{error}</p>
+      <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-800">
+        <div className="flex items-center gap-2 mb-2">
+          <AlertTriangle className="h-5 w-5" />
+          <h3 className="font-semibold">Error Loading Data</h3>
+        </div>
+        <p className="mb-2">{error}</p>
+        {detailedError && (
+          <details className="mt-2 mb-3">
+            <summary className="cursor-pointer text-sm">Technical Details</summary>
+            <p className="mt-1 text-xs bg-red-100 dark:bg-red-900/40 p-2 rounded whitespace-pre-wrap">
+              {detailedError}
+            </p>
+          </details>
+        )}
         <button 
           onClick={handleRetry}
-          className="mt-3 px-3 py-1 bg-red-100 hover:bg-red-200 rounded text-sm font-medium"
+          className="mt-3 px-3 py-1 bg-red-100 hover:bg-red-200 dark:bg-red-900/50 hover:dark:bg-red-800/70 rounded text-sm font-medium"
         >
           Retry Now
         </button>
@@ -157,6 +222,9 @@ export default function AlchmQuantitiesDisplay() {
         <div className="flex flex-col justify-center items-center h-60 space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           <p className="text-muted-foreground">Calculating current alchemical quantities...</p>
+          {retryCount > 0 && (
+            <p className="text-xs text-muted-foreground">Retry attempt {retryCount}/5...</p>
+          )}
         </div>
       ) : data ? (
         <>
