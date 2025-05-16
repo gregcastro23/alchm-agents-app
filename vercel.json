@@ -1,0 +1,9 @@
+{
+  "buildCommand": "next build",
+  "installCommand": "yarn install --production=false",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
+  "env": {
+    "SKIP_INSTALL_DEPS": "1"
+  }
+} 
