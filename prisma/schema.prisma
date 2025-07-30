@@ -1,0 +1,152 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// AI Personalities Table
+model AIPersonality {
+  id                   String                @id @default(uuid())
+  userId               String
+  personalityId        String                @unique
+  birthChartData       Json
+  currentMomentChart   Json?
+  basePersonality      Json
+  trainingScores       Json
+  totalXp              Int                   @default(0)
+  level                Int                   @default(1)
+  
+  // Survey integration
+  surveyId             String?
+  consciousnessProfileId String?
+  
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  
+  // Relations
+  interactions         TrainingInteraction[]
+  achievements         Achievement[]
+  survey               ConsciousnessSurvey?  @relation("SurveyToPersonality", fields: [surveyId], references: [id])
+  consciousnessProfile ConsciousnessProfile? @relation("ProfileToPersonality", fields: [consciousnessProfileId], references: [id])
+  consciousnessState   ConsciousnessState?
+  
+  @@index([userId])
+  @@index([personalityId])
+  @@index([surveyId])
+  @@index([consciousnessProfileId])
+}
+
+// Training Interactions Table
+model TrainingInteraction {
+  id                   String                @id @default(uuid())
+  personalityId        String
+  userMessage          String
+  aiResponse           String
+  userFeedback         Json?
+  xpGained             Int                   @default(0)
+  trainingFocus        String?
+  createdAt            DateTime              @default(now())
+  
+  // Relations
+  personality          AIPersonality         @relation(fields: [personalityId], references: [personalityId])
+  
+  @@index([personalityId])
+  @@index([createdAt])
+}
+
+// Achievements Table
+model Achievement {
+  id                   String                @id @default(uuid())
+  personalityId        String
+  achievementType      String
+  achievementData      Json
+  unlockedAt           DateTime              @default(now())
+  
+  // Relations
+  personality          AIPersonality         @relation(fields: [personalityId], references: [personalityId])
+  
+  @@unique([personalityId, achievementType])
+  @@index([personalityId])
+}
+
+// User Sessions Table (for Redis-backed session tracking)
+model UserSession {
+  id                   String                @id @default(uuid())
+  userId               String
+  personalityId        String
+  sessionData          Json
+  lastActive           DateTime              @default(now())
+  expiresAt            DateTime
+  
+  @@index([userId])
+  @@index([personalityId])
+  @@index([expiresAt])
+}
+
+// Consciousness Survey Data
+model ConsciousnessSurvey {
+  id                   String                @id @default(uuid())
+  userId               String
+  responses            Json                  // Survey responses array
+  completedAt          DateTime              @default(now())
+  timeSpent            Int                   // seconds
+  version              String                @default("1.0.0")
+  
+  // Relations
+  aiPersonalities      AIPersonality[]       @relation("SurveyToPersonality")
+  consciousnessProfiles ConsciousnessProfile[]
+  
+  @@index([userId])
+  @@index([completedAt])
+}
+
+// Consciousness Profile (processed survey results)
+model ConsciousnessProfile {
+  id                   String                @id @default(uuid())
+  userId               String
+  surveyId             String
+  profileData          Json                  // Complete consciousness profile
+  insights             Json                  // Personality insights
+  compatibilityScore   Int                   // 0-100
+  trainingFocus        Json                  // Recommended training areas
+  conversationStarters Json                  // Initial conversation starters
+  personalitySummary   String
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  
+  // Relations
+  survey               ConsciousnessSurvey   @relation(fields: [surveyId], references: [id])
+  aiPersonalities      AIPersonality[]       @relation("ProfileToPersonality")
+  
+  @@unique([userId, surveyId])
+  @@index([userId])
+}
+
+// Consciousness State (enhanced personality with survey integration)
+model ConsciousnessState {
+  id                   String                @id @default(uuid())
+  personalityId        String                @unique
+  unifiedArchetype     String
+  consciousnessSignature String
+  enhancedPersonality  Json                  // Enhanced personality data
+  trainingPlan         Json                  // Personalized training plan
+  behavioralMatrix     Json                  // AI behavioral configuration
+  growthTrajectory     Json                  // Growth trajectory mapping
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  
+  // Relations
+  personality          AIPersonality         @relation(fields: [personalityId], references: [personalityId])
+  
+  @@index([personalityId])
+}
