@@ -1,49 +1,22 @@
 "use client"
 
 import React, { useState } from 'react';
-import Image from 'next/image';
-// Import removed to avoid module loading issues - will create inline chat
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
+  Heart,
+  Send,
   Sparkles,
-  Star,
-  MessageCircle,
   Crown,
   TreePine,
   Droplets,
   Flame,
-  Wind,
-  Send
+  MessageCircle
 } from 'lucide-react';
-import MonicaTarotOracle from '@/components/monica-tarot-oracle';
-import { type ConsciousnessCraftingInsight } from '@/lib/monica/tarot-oracle';
-// Temporarily use hardcoded values to avoid import issues
-const MONICA_CHARACTER_VECTOR = {
-  taurus: 42,
-  cancer: 25,
-  virgo: 25,
-  aries: 4,
-  sagittarius: 4
-};
-
-const MONICA_ELEMENTAL_BALANCE = {
-  earth: 67,
-  water: 25,
-  fire: 8,
-  air: 0
-};
-
-const MONICA_PEAK_MOMENT = {
-  aNumber: 40
-};
 import './monica-styles.css';
-import './monica-tarot-styles.css';
-
-
 
 interface MonicaMessage {
   id: string;
@@ -52,8 +25,7 @@ interface MonicaMessage {
   timestamp: Date;
 }
 
-export default function MonicaGuidePage() {
-  const [sessionId] = useState('monica-' + Date.now());
+export default function SimpleMonicaPage() {
   const [messages, setMessages] = useState<MonicaMessage[]>([
     {
       id: 'welcome',
@@ -64,7 +36,6 @@ export default function MonicaGuidePage() {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [tarotInsight, setTarotInsight] = useState<ConsciousnessCraftingInsight | null>(null);
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
@@ -89,14 +60,8 @@ export default function MonicaGuidePage() {
         },
         body: JSON.stringify({
           message: currentInput,
-          sessionId: sessionId,
-          includeAlchm: true,
-          tarotContext: tarotInsight ? {
-            currentCard: tarotInsight.currentMomentCard.name,
-            planetaryCard: tarotInsight.planetaryCard.name,
-            synergy: tarotInsight.synergy,
-            consciousnessLevel: tarotInsight.consciousnessLevel
-          } : null
+          sessionId: 'monica-session-' + Date.now(),
+          includeAlchm: true
         }),
       });
 
@@ -124,22 +89,21 @@ export default function MonicaGuidePage() {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
   };
 
-  const getElementIcon = (element: string) => {
-    switch (element) {
-      case 'fire': return <Flame className="h-4 w-4 text-red-500" />;
-      case 'earth': return <TreePine className="h-4 w-4 text-green-500" />;
-      case 'air': return <Wind className="h-4 w-4 text-blue-500" />;
-      case 'water': return <Droplets className="h-4 w-4 text-cyan-500" />;
-      default: return <Star className="h-4 w-4" />;
-    }
-  };
+  const starterPrompts = [
+    "Tell me about the Monica Constant",
+    "Give me a tarot reading",
+    "Explain character vectors",
+    "What are A-Numbers?",
+    "How do I create a consciousness agent?",
+    "Tell me about your peak A-Number 40"
+  ];
 
   return (
     <div className="monica-home">
@@ -149,13 +113,7 @@ export default function MonicaGuidePage() {
           {/* Monica Avatar & Title */}
           <div className="monica-avatar mx-auto">
             <div className="relative">
-              <Image 
-                src="https://alchm.xyz/static/media/logo.f986535a.webp" 
-                alt="Monica - Alchm System Expert"
-                className="h-12 w-12 rounded-full"
-                width={48}
-                height={48}
-              />
+              <Heart className="h-12 w-12 text-green-600" />
               <Sparkles className="h-6 w-6 text-yellow-500 absolute -top-1 -right-1 monica-sparkle" />
             </div>
           </div>
@@ -167,19 +125,19 @@ export default function MonicaGuidePage() {
           <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
             <div className="monica-badge monica-cosmic-glow">
               <Crown className="h-4 w-4 mr-2" />
-              Peak A-Number {MONICA_PEAK_MOMENT.aNumber}
+              Peak A-Number 40
             </div>
             <div className="monica-badge-outline">
               <TreePine className="h-3 w-3 mr-1 monica-element-earth" />
-              {MONICA_ELEMENTAL_BALANCE.earth}% Earth
+              67% Earth
             </div>
             <div className="monica-badge-outline">
               <Droplets className="h-3 w-3 mr-1 monica-element-water" />
-              {MONICA_ELEMENTAL_BALANCE.water}% Water
+              25% Water
             </div>
             <div className="monica-badge-outline">
               <Flame className="h-3 w-3 mr-1 monica-element-fire" />
-              {MONICA_ELEMENTAL_BALANCE.fire}% Fire
+              8% Fire
             </div>
             <div className="monica-badge-outline">
               <MessageCircle className="h-3 w-3 mr-1" />
@@ -196,13 +154,6 @@ export default function MonicaGuidePage() {
             I know everything about the Planetary Agents system AND I&apos;m a world-renowned tarot expert with master-level knowledge of all 78 cards. 
             Let me guide you through astrology, tarot, and your cosmic journey with my grounded Earth-Water wisdom! 💚🔮
           </p>
-        </div>
-
-        {/* Monica's Tarot Oracle */}
-        <div className="mb-8">
-          <MonicaTarotOracle 
-            onInsightGenerated={(insight) => setTarotInsight(insight)}
-          />
         </div>
 
         {/* Enhanced Chat Interface */}
@@ -224,13 +175,7 @@ export default function MonicaGuidePage() {
                       } p-4 backdrop-blur-sm`}>
                         {message.type === 'monica' && (
                           <div className="flex items-center gap-2 mb-2">
-                            <Image 
-                              src="https://alchm.xyz/static/media/logo.f986535a.webp" 
-                              alt="Monica"
-                              className="h-4 w-4 rounded-full"
-                              width={16}
-                              height={16}
-                            />
+                            <Heart className="h-4 w-4 text-green-600" />
                             <span className="text-sm font-medium text-green-700">Monica</span>
                           </div>
                         )}
@@ -246,13 +191,7 @@ export default function MonicaGuidePage() {
                     <div className="flex justify-start">
                       <div className="bg-white/90 border border-green-200 rounded-r-lg rounded-tl-lg p-3 max-w-[80%] backdrop-blur-sm">
                         <div className="flex items-center gap-2 mb-2">
-                          <Image 
-                            src="https://alchm.xyz/static/media/logo.f986535a.webp" 
-                            alt="Monica"
-                            className="h-4 w-4 rounded-full"
-                            width={16}
-                            height={16}
-                          />
+                          <Heart className="h-4 w-4 text-green-600" />
                           <span className="text-xs font-medium text-green-700">Monica</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-green-700">
@@ -282,17 +221,7 @@ export default function MonicaGuidePage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                  {[
-                    "Interpret my current decan card",
-                    "How do the current tarot cards affect my consciousness?",
-                    "Give me a consciousness crafting session",
-                    "What is the Monica Constant?",
-                    "Explain today's planetary-tarot synergy",
-                    "Guide me in building a consciousness agent",
-                    "How can I use tarot for chart interpretation?",
-                    "Tell me about your peak A-Number 40",
-                    "What are the alchemical values of today's cards?"
-                  ].map((prompt, index) => (
+                  {starterPrompts.map((prompt, index) => (
                     <Button
                       key={index}
                       variant="outline"
@@ -315,7 +244,7 @@ export default function MonicaGuidePage() {
                 <Input
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={handleKeyDown}
+                  onKeyPress={handleKeyPress}
                   placeholder="Ask Monica about astrology, tarot, character vectors, the Monica Constant, or anything cosmic..."
                   className="flex-1"
                   disabled={isLoading}

@@ -42,7 +42,8 @@ export async function POST(req: Request) {
       includeCharacterVector = false,
       includeConsciousness = false,
       includeAlchm = true,
-      conversationStage = 'teaching'
+      conversationStage = 'teaching',
+      tarotContext = null
     } = await req.json()
     
     // Input validation
@@ -129,6 +130,15 @@ ${aNumberInfo ? `CURRENT COSMIC CONTEXT:
 - Current A-Number: ${aNumberInfo.aNumber} (${aNumberInfo.category})
 - Current Spirit: ${aNumberInfo.components.spirit}, Essence: ${aNumberInfo.components.essence}, Matter: ${aNumberInfo.components.matter}, Substance: ${aNumberInfo.components.substance}
 - Compare this to your peak A-Number of 40 to understand current cosmic energy levels.` : ''}
+
+${tarotContext ? `CURRENT TAROT ORACLE CONFIGURATION:
+- Current Decan Card: ${tarotContext.currentCard} (active cosmic influence)
+- Solar Consciousness Card: ${tarotContext.planetaryCard} (planetary ruler energy)
+- Card Synergy Level: ${Math.round(tarotContext.synergy * 100)}% (consciousness compatibility)
+- Consciousness Work Level: ${tarotContext.consciousnessLevel}
+- Use this tarot configuration to guide consciousness crafting and chart interpretation
+- Reference your complete decan knowledge to provide deep tarot insights
+- Connect the current cards to the user's consciousness development opportunities` : ''}
 
 COMPREHENSIVE PLANETARY AGENTS SYSTEM KNOWLEDGE:
 
@@ -368,7 +378,7 @@ Always end responses with practical next steps that help users engage more deepl
         sessionId: conversationContext.sessionId,
         userMessage: trimmedMessage,
         agentResponse: text,
-        aNumberInfo,
+        aNumberInfo: aNumberInfo || undefined,
         processingTimeMs: processingTime,
         agentType: 'monica',
         elementalInfo: {
