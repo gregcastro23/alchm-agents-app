@@ -104,7 +104,7 @@ Include knowledge from classical texts as well as modern interpretations.`
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="planet">Planet</Label>
-                  <Select value={selectedPlanet} onValueChange={setSelectedPlanet}>
+                  <Select value={selectedPlanet} onValueChange={(value: string) => setSelectedPlanet(value)}>
                     <SelectTrigger id="planet">
                       <SelectValue placeholder="Select Planet" />
                     </SelectTrigger>
@@ -120,7 +120,7 @@ Include knowledge from classical texts as well as modern interpretations.`
 
                 <div className="space-y-2">
                   <Label htmlFor="sign">Sign</Label>
-                  <Select value={selectedSign} onValueChange={setSelectedSign}>
+                  <Select value={selectedSign} onValueChange={(value: string) => setSelectedSign(value)}>
                     <SelectTrigger id="sign">
                       <SelectValue placeholder="Select Sign" />
                     </SelectTrigger>

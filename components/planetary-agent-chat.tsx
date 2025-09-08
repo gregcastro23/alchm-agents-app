@@ -39,6 +39,7 @@ export default function PlanetaryAgentChat() {
   const [degree, setDegree] = useState(searchParams.get("degree") || "1")
   const [time, setTime] = useState("12:00")
   const [elementalInfo, setElementalInfo] = useState<ElementalInfo | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const planets = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"]
@@ -78,7 +79,12 @@ export default function PlanetaryAgentChat() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!input.trim()) return
+    console.log("Form submitted! Planet:", planet, "Sign:", sign, "Input:", input)
+    
+    if (!input.trim()) {
+      console.log("Empty input, returning early")
+      return
+    }
 
     const userMessage: Message = { role: "user", content: input }
     setMessages((prev) => [...prev, userMessage])
@@ -86,17 +92,35 @@ export default function PlanetaryAgentChat() {
     setLoading(true)
 
     try {
+      const requestData = { 
+        planet, 
+        sign, 
+        degree, 
+        question: input, 
+        time,
+        sessionId 
+      }
+      console.log("Making API request with data:", requestData)
+      
       const response = await fetch("/api/planetary-agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planet, sign, degree, question: input, time }),
+        body: JSON.stringify(requestData),
       })
 
+      console.log("Response status:", response.status)
       const data = await response.json()
+      console.log("Response data:", data)
 
       if (response.ok) {
         const agentMessage: Message = { role: "agent", content: data.response }
         setMessages((prev) => [...prev, agentMessage])
+        
+        // Store session ID for subsequent requests
+        if (data.sessionId && !sessionId) {
+          setSessionId(data.sessionId)
+        }
+        
         if (data.elementalInfo) {
           setElementalInfo(data.elementalInfo)
         }
@@ -107,7 +131,7 @@ export default function PlanetaryAgentChat() {
       console.error("Error:", error)
       const errorMessage: Message = {
         role: "agent",
-        content: "Sorry, I encountered an error while processing your request.",
+        content: "Sorry, I encountered an error while processing your request. Error: " + (error as Error).message,
       }
       setMessages((prev) => [...prev, errorMessage])
     } finally {
@@ -178,9 +202,21 @@ export default function PlanetaryAgentChat() {
           <Badge variant="outline">{isDiurnal ? "Day" : "Night"} Time</Badge>
           <Badge variant="outline">Affinity: {Math.round(elementalAffinity * 100)}%</Badge>
         </div>
+
+        <div className="text-center mt-3 pt-2 border-t">
+          <a 
+            href={`/agents/${encodeURIComponent(planet)}/${encodeURIComponent(sign)}/${degree}`}
+            className="text-sm text-blue-600 hover:text-blue-800 underline flex items-center justify-center gap-1"
+          >
+            🔮 Open dedicated chat for this exact degree
+          </a>
+          <p className="text-xs text-muted-foreground mt-1">
+            Enhanced with historical context for {planet} at {degree}° {sign}
+          </p>
+        </div>
         
         <div className="flex flex-wrap gap-2 mt-4 justify-center">
-          <Select value={planet} onValueChange={setPlanet}>
+                          <Select value={planet} onValueChange={(value: string) => setPlanet(value)}>
             <SelectTrigger className="w-[120px]">
               <SelectValue placeholder="Planet" />
             </SelectTrigger>
@@ -193,7 +229,7 @@ export default function PlanetaryAgentChat() {
             </SelectContent>
           </Select>
 
-          <Select value={sign} onValueChange={setSign}>
+                      <Select value={sign} onValueChange={(value: string) => setSign(value)}>
             <SelectTrigger className="w-[120px]">
               <SelectValue placeholder="Sign" />
             </SelectTrigger>
@@ -206,7 +242,7 @@ export default function PlanetaryAgentChat() {
             </SelectContent>
           </Select>
 
-          <Select value={degree} onValueChange={setDegree}>
+                      <Select value={degree} onValueChange={(value: string) => setDegree(value)}>
             <SelectTrigger className="w-[120px]">
               <SelectValue placeholder="Degree" />
             </SelectTrigger>
@@ -219,7 +255,7 @@ export default function PlanetaryAgentChat() {
             </SelectContent>
           </Select>
           
-          <Select value={time} onValueChange={setTime}>
+                      <Select value={time} onValueChange={(value: string) => setTime(value)}>
             <SelectTrigger className="w-[120px]">
               <SelectValue placeholder="Time" />
             </SelectTrigger>

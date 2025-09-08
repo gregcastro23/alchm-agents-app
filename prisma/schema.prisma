@@ -30,6 +30,9 @@ model AIPersonality {
   surveyId             String?
   consciousnessProfileId String?
   
+  // Planetary memory integration
+  planetaryMemoryId    String?               @unique
+  
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   
@@ -39,11 +42,106 @@ model AIPersonality {
   survey               ConsciousnessSurvey?  @relation("SurveyToPersonality", fields: [surveyId], references: [id])
   consciousnessProfile ConsciousnessProfile? @relation("ProfileToPersonality", fields: [consciousnessProfileId], references: [id])
   consciousnessState   ConsciousnessState?
+  planetaryMemory      PlanetaryMemory?      @relation("PlanetaryMemoryToPersonality", fields: [planetaryMemoryId], references: [id])
   
   @@index([userId])
   @@index([personalityId])
   @@index([surveyId])
   @@index([consciousnessProfileId])
+  @@index([planetaryMemoryId])
+}
+
+// Historical Planetary Transit Data
+model PlanetaryTransit {
+  id              String   @id @default(uuid())
+  planet          String
+  sign            String
+  degreeStart     Float
+  degreeEnd       Float
+  dateStart       DateTime
+  dateEnd         DateTime
+  retrograde      Boolean  @default(false)
+  historicalNote  String?
+  
+  // Relations
+  events          HistoricalEvent[]
+  patterns        TransitPattern[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([planet, sign])
+  @@index([dateStart, dateEnd])
+  @@index([planet, dateStart])
+}
+
+// Historical Events linked to planetary positions
+model HistoricalEvent {
+  id              String   @id @default(uuid())
+  date            DateTime
+  eventType       String   // political, cultural, scientific, etc.
+  description     String
+  significance    Int      // 1-10 scale
+  
+  // Planetary configuration at time of event
+  planetaryConfig Json     // Full chart data
+  
+  // Relations
+  transits        PlanetaryTransit[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([date])
+  @@index([eventType])
+}
+
+// Recurring Transit Patterns
+model TransitPattern {
+  id              String   @id @default(uuid())
+  planet          String
+  patternType     String   // return, opposition, conjunction, etc.
+  cycleLength     Float    // in days
+  description     String
+  themes          Json     // Array of recurring themes
+  reliability     Float    // 0-1 confidence score
+  
+  // Relations
+  transits        PlanetaryTransit[]
+  memories        PlanetaryMemory[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([planet, patternType])
+}
+
+// Planetary Agent Memory System
+model PlanetaryMemory {
+  id              String   @id @default(uuid())
+  planet          String
+  sign            String
+  degree          Float
+  
+  // Historical knowledge for this position
+  historicalData  Json     // Previous occurrences, events, themes
+  lastOccurrence  DateTime?
+  nextOccurrence  DateTime?
+  occurrenceCount Int      @default(0)
+  
+  // Training data
+  trainedThemes   Json     // Themes this agent knows about
+  contextualNotes String?
+  
+  // Relations
+  patterns        TransitPattern[]
+  personality     AIPersonality?  @relation("PlanetaryMemoryToPersonality")
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([planet, sign, degree])
+  @@index([planet, sign])
 }
 
 // Training Interactions Table

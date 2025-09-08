@@ -34,9 +34,12 @@ export interface PlanetData {
   'AstrologicalProperties'?: {
     'AlchemicalName'?: string;
     'BeneficType'?: string;
+    'MaleficType'?: string;
     'DualDomicile'?: {
       'Spring'?: string;
+      'Summer'?: string;
       'Autumn'?: string;
+      'Winter'?: string;
     };
     'HouseJoy'?: number;
     'CyclePeriod'?: {
@@ -78,6 +81,13 @@ export interface PlanetData {
     'Matter': number;
     'Substance': number;
   };
+  'ANumberModifiers'?: {
+    'Base': number;
+    'HighDignitiy': number;
+    'LowDignity': number;
+    'AspectBonus': Record<string, number>;
+    'SeasonalAdjustment'?: Record<string, number>;
+  };
   'FoodAssociations'?: string[];
   'FlavorProfiles'?: {
     'Sweet': number;
@@ -95,7 +105,13 @@ export interface PlanetData {
     'Square': number;
     'Sextile': number;
   }>;
-  'PlanetSpecific'?: Record<string, unknown>;
+  'PlanetSpecific'?: {
+    'TransitDates'?: TransitData;
+    'MoonCalculations'?: {
+      'calculateTransits'?: Function;
+    };
+    [key: string]: unknown;
+  };
 }
 
 // Type for Moon-specific data
@@ -164,4 +180,18 @@ export interface MercurySpecificData {
   };
 }
 
-// Additional planet-specific interfaces can be added as needed 
+// Additional planet-specific interfaces can be added as needed
+
+// Transit Data Types
+export interface TransitPeriod {
+  start: string;
+  end: string;
+}
+
+export interface TransitData {
+  // For sign-based transits
+  [signName: string]: TransitPeriod | string | unknown;
+  
+  // Alternative formats
+  hasOwnProperty?: (prop: string) => boolean;
+}

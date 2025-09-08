@@ -61,7 +61,10 @@ export default function SimpleMonicaPage() {
         body: JSON.stringify({
           message: currentInput,
           sessionId: 'monica-session-' + Date.now(),
-          includeAlchm: true
+          includeAlchm: true,
+          quickProfile: { goal: 'quick_start', mood: 'curious', topFocus: ['character_vector'] },
+          model: 'gpt-4o-mini',
+          preferredStyle: { temperature: 0.6 }
         }),
       });
 

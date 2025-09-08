@@ -1,0 +1,79 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  images: {
+    unoptimized: true,
+  },
+  transpilePackages: [
+    'form-data-encoder',
+    'formdata-node',
+    'galileo',
+    'openai'
+  ],
+  webpack: (config, { isServer }) => {
+    // Fix for problematic packages
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // Force consistent version of the node-fetch polyfill
+      'node-fetch': require.resolve('node-fetch'),
+    };
+    
+    // Exclude specific modules from the server build
+    if (isServer) {
+      config.externals = [...config.externals, 'encoding'];
+    }
+    
+    // Provide empty mocks for Node.js modules in browser environment
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        os: false,
+        util: false,
+        crypto: false,
+        stream: false,
+        http: false,
+        https: false,
+        zlib: false,
+        net: false,
+        tls: false,
+      };
+    }
+    
+    // Fix for the self-reference dependency issues
+    config.module.rules.push(
+      // Process form-data-encoder
+      {
+        test: /node_modules\/(form-data-encoder|formdata-node)\/.*\.js$/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['next/babel'],
+            plugins: ['@babel/plugin-transform-modules-commonjs']
+          },
+        },
+      },
+      // Process OpenAI shims
+      {
+        test: /node_modules\/openai\/.*\.(js|mjs)$/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['next/babel'],
+            plugins: ['@babel/plugin-transform-modules-commonjs']
+          },
+        },
+      }
+    );
+    
+    return config;
+  },
+}
+
+export default nextConfig

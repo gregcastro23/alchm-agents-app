@@ -1,0 +1,261 @@
+{
+  "timestamp": "2025-07-28T05:03:09.565Z",
+  "summary": {
+    "totalTests": 50,
+    "passed": 49,
+    "failed": 1,
+    "successRate": 98
+  },
+  "tests": [
+    {
+      "name": "File exists: lib/types/consciousness-survey.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: lib/consciousness-survey/survey-questions.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: lib/consciousness-survey/survey-processor.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: lib/consciousness-survey/consciousness-initializer.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: components/consciousness-survey.tsx",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: components/survey-question-component.tsx",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: components/personalized-ai-chat.tsx",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: app/consciousness-survey/page.tsx",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: app/api/consciousness-survey/route.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: app/api/personalized-ai-chat/route.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: prisma/schema.prisma",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "components/consciousness-survey.tsx has \"use client\"",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "components/consciousness-survey.tsx has exports",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "components/consciousness-survey.tsx uses TypeScript",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "components/survey-question-component.tsx has \"use client\"",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "components/survey-question-component.tsx has exports",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "components/survey-question-component.tsx uses TypeScript",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "components/personalized-ai-chat.tsx has \"use client\"",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "components/personalized-ai-chat.tsx has exports",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "components/personalized-ai-chat.tsx uses TypeScript",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Schema has AIPersonality model",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Schema has ConsciousnessSurvey model",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Schema has ConsciousnessProfile model",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Schema has ConsciousnessState model",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Schema has TrainingInteraction model",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Schema has Achievement model",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Schema has relationships",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Survey questions file contains questions array",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Survey has writing style questions",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Survey has language complexity question",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Survey has text question type",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Survey has adequate questions",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Survey processor contains main function",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Survey processor has writing style analysis",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Survey processor builds consciousness profile",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Survey processor generates insights",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Survey processor handles creativity section",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "XP system contains calculation function",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "XP system handles bonuses",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Level system contains calculation function",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Level system has tier structure",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Achievement system contains definitions",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Achievement system has checking function",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Achievement system has different types",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Achievement system handles XP rewards",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Dual chart system contains creation function",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Dual chart system handles birth chart",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Dual chart system handles current moment",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Dual chart system handles transits",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "API endpoints",
+      "passed": false,
+      "details": "Server not running or connection failed"
+    }
+  ]
+}

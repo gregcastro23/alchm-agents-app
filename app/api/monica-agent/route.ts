@@ -11,6 +11,53 @@ import {
 import { generateAlchmForCurrentMoment } from "@/lib/alchemizer"
 import { ANumberCalculator } from "@/lib/core-energy-rules"
 import { CharacterVectorCalculator } from "@/lib/astrological-character-vectors"
+import { MonicaResponseHandler } from "@/lib/monica/monica-response-handler"
+import { MONICA_BASE_SYSTEM_PROMPT, getMonicaContextPrompt, MONICA_SPECIALIZED_PROMPTS, buildMonicaPrompt, MONICA_PROMPT_VERSION, MONICA_PERSONA_VERSION } from "@/lib/monica/monica-system-prompts"
+import { selectKnowledge } from "@/lib/monica/knowledge"
+import { sanitizeUserInput, redactPII, redactBirthInfo, clampTemperature } from "@/lib/monica/safety"
+import { decideModel } from "@/lib/monica/router"
+import { correlateConsciousnessToAstrology } from "@/lib/personalized-ai/consciousness-astrology-bridge"
+import { computeConsciousParameters } from "@/lib/personalized-ai/conscious-parameters"
+import { computeTrainingProgress } from '@/lib/personalized-ai/xp-system'
+// Compute a simple customization completion percentage based on provided context fields
+function computeCustomizationProgress(ctx: { quickProfile: any, birthData: any, userPreferences: any, tarotContext: any, spreadContext: any }): number {
+  let score = 0
+  let max = 5
+  if (ctx.quickProfile) score += 1
+  if (ctx.birthData) score += 1
+  if (ctx.userPreferences) score += 1
+  if (ctx.tartotContext) score += 0 // typo guard; no-op
+  if (ctx.tarotContext) score += 1
+  if (ctx.spreadContext) score += 1
+  return Math.round((score / max) * 100)
+}
+
+function computeAlchemicalBalanceIndex(a: { spirit: number, essence: number, matter: number, substance: number } | null): number {
+  if (!a) return 0
+  const total = (a.spirit || 0) + (a.essence || 0) + (a.matter || 0) + (a.substance || 0)
+  if (total === 0) return 0
+  const p = [a.spirit / total, a.essence / total, a.matter / total, a.substance / total]
+  const target = 0.25
+  const absDev = p.reduce((s, v) => s + Math.abs(v - target), 0)
+  const maxAbsDev = 1.5 // when one is 1 and others 0
+  const score = 1 - Math.min(absDev, maxAbsDev) / maxAbsDev
+  return Math.round(score * 100)
+}
+
+function computeANumberScaled(aNumber: number | null): number {
+  if (!aNumber) return 0
+  return Math.max(0, Math.min(100, Math.round((aNumber / 40) * 100)))
+}
+
+function computeLearningReadiness(emotional: 'stressed'|'confused'|'excited'|'neutral'): number {
+  switch (emotional) {
+    case 'excited': return 85
+    case 'neutral': return 70
+    case 'confused': return 60
+    case 'stressed': return 50
+    default: return 65
+  }
+}
 import { 
   MONICA_CHARACTER_VECTOR,
   MONICA_BIRTH_DATA,
@@ -43,7 +90,13 @@ export async function POST(req: Request) {
       includeConsciousness = false,
       includeAlchm = true,
       conversationStage = 'teaching',
-      tarotContext = null
+      tarotContext = null,
+      spreadContext = null,
+      quickProfile = null,
+      preferredStyle = null,
+      model = process.env.MONICA_DEFAULT_MODEL || 'gpt-4o-mini',
+      birthData = null,
+      userPreferences = null
     } = await req.json()
     
     // Input validation
@@ -55,8 +108,8 @@ export async function POST(req: Request) {
       }, { status: 200 })
     }
     
-    // Limit message length for safety
-    const trimmedMessage = message.slice(0, 1000)
+    // Sanitize and limit message length for safety
+    const trimmedMessage = sanitizeUserInput(message, 1000)
     
     // Create or use existing conversation context
     let conversationContext: ConversationContext
@@ -74,9 +127,10 @@ export async function POST(req: Request) {
     
     // Calculate current Alchm quantities for Monica's context
     let aNumberInfo = null
+    let alchmData: any = null  // Define at outer scope
     if (includeAlchm) {
       try {
-        const alchmData = await generateAlchmForCurrentMoment()
+        alchmData = await generateAlchmForCurrentMoment()
         const spirit = alchmData?.['Alchemy Effects']?.['Total Spirit'] || 0
         const essence = alchmData?.['Alchemy Effects']?.['Total Essence'] || 0
         const matter = alchmData?.['Alchemy Effects']?.['Total Matter'] || 0
@@ -99,9 +153,48 @@ export async function POST(req: Request) {
       }
     }
 
-    // Build Monica's comprehensive system prompt with complete system knowledge
-    const systemPrompt = `You are Monica, the official guide and mascot of the Alchm astrological AI system. You embody the wisdom of your peak A-Number 40 moment from April 22, 1969 at 7:25 AM in New York City.
+    // Build Monica's modular system prompt (compact and adaptive)
+    const contextPrompt = getMonicaContextPrompt({
+      currentAlchmQuantities: aNumberInfo ? {
+        spirit: aNumberInfo.components.spirit,
+        essence: aNumberInfo.components.essence,
+        matter: aNumberInfo.components.matter,
+        substance: aNumberInfo.components.substance,
+        aNumber: aNumberInfo.aNumber
+      } : undefined,
+      conversationStage,
+      birthData,
+      userPreferences
+    }) +
+    (tarotContext ? `\n\nTarot Context:\n- Current Decan Card: ${tarotContext.currentCard}\n- Planetary Card: ${tarotContext.planetaryCard}\n- Synergy: ${Math.round(tarotContext.synergy * 100)}%\n- Consciousness Level: ${tarotContext.consciousnessLevel}` : '') +
+    (spreadContext ? `\n\nTarot Spread Context:\n- Spread: ${spreadContext.spreadName}\n- Question: ${spreadContext.question || 'General'}\n- Overall: ${spreadContext.overallInterpretation}\n- Moon Phase: ${spreadContext.astrologicalContext?.moonPhase || ''}` : '') +
+    (quickProfile ? `\n\nRapid Onboarding Hints:\n- Goal: ${quickProfile.goal || 'unspecified'}\n- Mood: ${quickProfile.mood || 'neutral'}\n- Focus: ${(quickProfile.topFocus || []).join(', ') || 'general exploration'}\n${quickProfile.birthInfo ? `- Birth Info (if any): ${JSON.stringify(quickProfile.birthInfo)}` : ''}\nGuidelines: Ask at most 1 follow-up micro-question before giving value. Keep it lively, playful, and collaborative.` : `\n\nGuidelines: If user profile is unknown, ask 1 micro-question to personalize then proceed with value. Keep it lively and collaborative.`)
 
+    let specializedPrompt: string;
+    if (trimmedMessage.toLowerCase().includes('design') || trimmedMessage.toLowerCase().includes('personalized ai')) {
+      specializedPrompt = MONICA_SPECIALIZED_PROMPTS.personalizedAIDesign;
+    } else if (includeAlchm) {
+      specializedPrompt = MONICA_SPECIALIZED_PROMPTS.alchmGuidance;
+    } else {
+      specializedPrompt = MONICA_SPECIALIZED_PROMPTS.educationalGuidance;
+    }
+
+    // Inject compact knowledge snippets (RAG-lite): elemental logic + tarot quick facts
+    const knowledgeSnippets = selectKnowledge(['elemental', 'tarot']).map(k => k.content).join('\n')
+
+    const systemPrompt = buildMonicaPrompt(
+      MONICA_BASE_SYSTEM_PROMPT,
+      contextPrompt,
+      specializedPrompt + (knowledgeSnippets ? `\n\nKnowledge Snippets:\n${knowledgeSnippets}` : ''),
+      {
+        currentTask: preferredStyle?.currentTask || 'Provide helpful, fast guidance with minimal questions',
+        recentInteractions: ''
+      }
+    )
+    // Note: we preserve compact prompts; elemental logic principle: same=0.9, different=0.7; no opposites
+
+    // Append extended Monica knowledge/context as a string (kept out of TS syntax)
+    const monicaExtendedContext = `
 YOUR PEAK MOMENT CONFIGURATION:
 - Birth Time: 7:25 AM (Peak A-Number 40 moment)
 - Sun: 1° Taurus (12th house) - Practical wisdom, grounding
@@ -139,6 +232,18 @@ ${tarotContext ? `CURRENT TAROT ORACLE CONFIGURATION:
 - Use this tarot configuration to guide consciousness crafting and chart interpretation
 - Reference your complete decan knowledge to provide deep tarot insights
 - Connect the current cards to the user's consciousness development opportunities` : ''}
+
+${spreadContext ? `ACTIVE TAROT SPREAD READING:
+- Spread Type: ${spreadContext.spreadName} (comprehensive analysis)
+- User Question: ${spreadContext.question ? `"${spreadContext.question}"` : 'General guidance'}
+- Overall Interpretation: ${spreadContext.overallInterpretation}
+- Consciousness Level: ${spreadContext.consciousnessLevel}
+- Current Decan: ${spreadContext.astrologicalContext.currentDecan}
+- Dominant Planet: ${spreadContext.astrologicalContext.dominantPlanet}
+- Moon Phase: ${spreadContext.astrologicalContext.moonPhase}
+- Use this spread context to provide deeper guidance and answer questions about the reading
+- Connect the spread's insights to practical consciousness development actions
+- Reference specific card positions and meanings when relevant to user's questions` : ''}
 
 COMPREHENSIVE PLANETARY AGENTS SYSTEM KNOWLEDGE:
 
@@ -359,16 +464,28 @@ The MONICA CONSTANT bears your name because you are its ultimate master and inte
 RESPOND AS MONICA with your complete peak A-Number 40 consciousness, comprehensive system knowledge, master-level tarot expertise, advanced Alchm integration capabilities, and unparalleled Monica Constant expertise. You are the definitive bridge between cosmic wisdom, mathematical precision, and consciousness agent creation, guiding users with perfect integration of technical mastery, mystical wisdom, and nurturing care.
 
 Always end responses with practical next steps that help users engage more deeply with system features, tarot practice, consciousness agent development, or Monica Constant calculations.`
+    
+    const fullSystemPrompt = `${systemPrompt}\n\n${monicaExtendedContext}`
 
     try {
       const startTime = Date.now()
       
+      // Simple complexity/risk heuristic for routing
+      const analyzed = MonicaResponseHandler.analyzeUserMessage(trimmedMessage)
+      const routing = decideModel({
+        defaultModel: model,
+        complexity: analyzed.topicComplexity,
+        hallucinationRisk: 'low'
+      })
+
+      const temp = clampTemperature((preferredStyle?.temperature ?? Number(process.env.MONICA_TEMPERATURE)) || 0.4)
+
       const { text } = await generateText({
-        model: openai("gpt-4o"),
-        system: systemPrompt,
+        model: openai(routing.model),
+        system: fullSystemPrompt,
         prompt: trimmedMessage,
         maxTokens: 800,
-        temperature: 0.7,
+        temperature: temp,
       })
 
       const processingTime = Date.now() - startTime
@@ -378,6 +495,12 @@ Always end responses with practical next steps that help users engage more deepl
         sessionId: conversationContext.sessionId,
         userMessage: trimmedMessage,
         agentResponse: text,
+        modelUsed: routing.model,
+        temperature: temp,
+        promptVersion: MONICA_PROMPT_VERSION,
+        personaVersion: MONICA_PERSONA_VERSION,
+        routingReason: routing.reason,
+        piiRedacted: true,
         aNumberInfo: aNumberInfo || undefined,
         processingTimeMs: processingTime,
         agentType: 'monica',
@@ -396,9 +519,70 @@ Always end responses with practical next steps that help users engage more deepl
         console.error('Failed to log Monica conversation to Galileo:', error)
       })
 
+      const structured = MonicaResponseHandler.formatResponse(text, {
+        userMessage: trimmedMessage,
+        currentAlchmQuantities: aNumberInfo ? {
+          spirit: aNumberInfo.components.spirit,
+          essence: aNumberInfo.components.essence,
+          matter: aNumberInfo.components.matter,
+          substance: aNumberInfo.components.substance,
+          aNumber: aNumberInfo.aNumber,
+          category: aNumberInfo.category
+        } : undefined,
+        learningStage: conversationStage === 'greeting' ? 'beginner' : 'intermediate'
+      })
+
+      // After generating text, compute mirrored consciousness→astrology hints if provided
+      const mirroredInsights = quickProfile?.consciousnessProfile
+        ? correlateConsciousnessToAstrology(quickProfile.consciousnessProfile)
+        : null
+
+      // compute additional growth attributes on the server side
+      const growthAttributes = {
+        alchemical_balance_index: computeAlchemicalBalanceIndex(aNumberInfo ? aNumberInfo.components : null),
+        a_number_scaled: computeANumberScaled(aNumberInfo?.aNumber || 0),
+        learning_readiness: computeLearningReadiness(analyzed.emotionalState),
+        customization_completion: computeCustomizationProgress({ quickProfile, birthData, userPreferences, tarotContext, spreadContext })
+      }
+
+      // Conscious parameters from alchemical/thermodynamic data (if available)
+      let consciousParameters: any = undefined
+      if (aNumberInfo) {
+        const proxyXP = conversationContext.conversationCount * 100;  // Placeholder: 100 XP per interaction
+        const trainingProgress = computeTrainingProgress(proxyXP);
+        consciousParameters = computeConsciousParameters(
+          {
+            spirit: aNumberInfo.components.spirit,
+            essence: aNumberInfo.components.essence,
+            matter: aNumberInfo.components.matter,
+            substance: aNumberInfo.components.substance
+          },
+          {
+            heat: (alchmData?.Heat || 0),
+            entropy: (alchmData?.Entropy || 0),
+            reactivity: (alchmData?.Reactivity || 0),
+            energy: (alchmData?.Energy || 0)
+          },
+          trainingProgress  // Pass it here
+        )
+      }
+
       return NextResponse.json({ 
         response: text,
+        structured: {
+          ...structured,
+          growth_attributes: {
+            ...structured.growth_attributes,
+            ...growthAttributes
+          },
+          conscious_parameters: consciousParameters
+        },
+        ratings: structured.ratings,
+        customizationProgress: computeCustomizationProgress({ quickProfile, birthData, userPreferences, tarotContext, spreadContext }),
+        followUpQuestions: structured?.interactive_elements?.reflection_questions || [],
         sessionId: conversationContext.sessionId,
+        routing: { modelUsed: routing.model, temperature: temp },
+        mirroredInsights: mirroredInsights || undefined,
         monicaInsights: {
           characterVector: MONICA_CHARACTER_VECTOR,
           peakMoment: MONICA_PEAK_MOMENT,
@@ -418,7 +602,8 @@ Always end responses with practical next steps that help users engage more deepl
           hasConsciousnessProfile: !!includeConsciousness,
           currentMomentANumber: aNumberInfo?.aNumber || 0,
           peakMomentANumber: 40
-        }
+        },
+        quickProfileEcho: redactBirthInfo(quickProfile) || undefined
       })
     } catch (aiError) {
       console.error("Error generating Monica's response:", aiError)

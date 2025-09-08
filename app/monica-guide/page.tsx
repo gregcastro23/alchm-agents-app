@@ -20,7 +20,9 @@ import {
   Send
 } from 'lucide-react';
 import MonicaTarotOracle from '@/components/monica-tarot-oracle';
+import MonicaTarotSpreads from '@/components/monica-tarot-spreads';
 import { type ConsciousnessCraftingInsight } from '@/lib/monica/tarot-oracle';
+import { type SpreadReading } from '@/lib/monica/tarot-spreads';
 // Temporarily use hardcoded values to avoid import issues
 const MONICA_CHARACTER_VECTOR = {
   taurus: 42,
@@ -42,6 +44,7 @@ const MONICA_PEAK_MOMENT = {
 };
 import './monica-styles.css';
 import './monica-tarot-styles.css';
+import './monica-tarot-spreads-styles.css';
 
 
 
@@ -65,6 +68,8 @@ export default function MonicaGuidePage() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [tarotInsight, setTarotInsight] = useState<ConsciousnessCraftingInsight | null>(null);
+  const [currentTab, setCurrentTab] = useState<'oracle' | 'spreads'>('oracle');
+  const [spreadReading, setSpreadReading] = useState<SpreadReading | null>(null);
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
@@ -91,11 +96,28 @@ export default function MonicaGuidePage() {
           message: currentInput,
           sessionId: sessionId,
           includeAlchm: true,
+          // Rapid onboarding instead of long survey
+          quickProfile: {
+            goal: 'discover_personalized_ai',
+            mood: 'curious',
+            topFocus: ['character_vector', 'tarot_oracle', 'ai_personality'],
+            birthInfo: null
+          },
+          // Prefer faster, cheaper model by default; can be overridden
+          model: 'gpt-4o-mini',
+          preferredStyle: { temperature: 0.6, currentTask: 'fast interactive guidance' },
           tarotContext: tarotInsight ? {
             currentCard: tarotInsight.currentMomentCard.name,
             planetaryCard: tarotInsight.planetaryCard.name,
             synergy: tarotInsight.synergy,
             consciousnessLevel: tarotInsight.consciousnessLevel
+          } : null,
+          spreadContext: spreadReading ? {
+            spreadName: spreadReading.spread.name,
+            question: spreadReading.question,
+            overallInterpretation: spreadReading.spread.overallInterpretation,
+            consciousnessLevel: spreadReading.consciousnessLevel,
+            astrologicalContext: spreadReading.astrologicalContext
           } : null
         }),
       });
@@ -198,11 +220,42 @@ export default function MonicaGuidePage() {
           </p>
         </div>
 
-        {/* Monica's Tarot Oracle */}
+        {/* Tarot Oracle Tabs */}
         <div className="mb-8">
-          <MonicaTarotOracle 
-            onInsightGenerated={(insight) => setTarotInsight(insight)}
-          />
+          <Card className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 mb-4">
+            <CardContent className="pt-4">
+              <div className="flex justify-center gap-2">
+                <Button
+                  variant={currentTab === 'oracle' ? 'default' : 'outline'}
+                  onClick={() => setCurrentTab('oracle')}
+                  className="flex items-center gap-2"
+                >
+                  <Star className="h-4 w-4" />
+                  Current Moment Oracle
+                </Button>
+                <Button
+                  variant={currentTab === 'spreads' ? 'default' : 'outline'}
+                  onClick={() => setCurrentTab('spreads')}
+                  className="flex items-center gap-2"
+                >
+                  <Crown className="h-4 w-4" />
+                  Sacred Tarot Spreads
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {currentTab === 'oracle' && (
+            <MonicaTarotOracle 
+              onInsightGenerated={(insight) => setTarotInsight(insight)}
+            />
+          )}
+
+          {currentTab === 'spreads' && (
+            <MonicaTarotSpreads 
+              onReadingComplete={(reading) => setSpreadReading(reading)}
+            />
+          )}
         </div>
 
         {/* Enhanced Chat Interface */}
@@ -291,7 +344,11 @@ export default function MonicaGuidePage() {
                     "Guide me in building a consciousness agent",
                     "How can I use tarot for chart interpretation?",
                     "Tell me about your peak A-Number 40",
-                    "What are the alchemical values of today's cards?"
+                    "What are the alchemical values of today's cards?",
+                    "Generate a Celtic Cross reading for me",
+                    "Do a Three-Card Past-Present-Future spread",
+                    "Create an Astrological Houses reading",
+                    "Show me a Consciousness Evolution spread"
                   ].map((prompt, index) => (
                     <Button
                       key={index}
@@ -307,6 +364,23 @@ export default function MonicaGuidePage() {
               </CardContent>
             </Card>
           )}
+
+          {/* Create AI Quick Builder */}
+          <Card className="mt-4 border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-sm">Create your AI (60 seconds)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Simple inline wizard without dynamic import to keep it stable */}
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Button size="sm" variant="default" onClick={() => setInputValue('Help me create my AI with a practical, concise style focused on tarot and astrology.')}>Use a practical, concise style</Button>
+                  <Button size="sm" variant="outline" onClick={() => setInputValue('Create my AI with a poetic, deep style focused on creativity and reflection.')}>Use a poetic, deep style</Button>
+                </div>
+                <div className="text-xs text-muted-foreground">Tip: You can also click a preset and hit send to get a ready-to-edit config with a live preview.</div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Message Input */}
           <Card className="mt-4 border-0 bg-white/80 backdrop-blur-sm">

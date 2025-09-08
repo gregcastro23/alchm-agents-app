@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { alchemize, createElementObject, getElementRanking } from "@/lib/alchemizer"
 import { getSignElement, getPlanetaryElement, calculateElementalAffinity } from "@/lib/astrological-data"
 import { getCurrentPlanetaryPositions } from "@/lib/calculate-transits"
+import { performanceCache, createRequestHash } from "@/lib/performance-cache"
 
 // Prevent caching - we always want fresh calculations
 export const dynamic = "force-dynamic"
@@ -10,6 +11,19 @@ export const revalidate = 0
 export async function POST(req: Request) {
   try {
     const { birthInfo, planets } = await req.json()
+    
+    // Create a hash of the request for caching
+    const requestHash = createRequestHash({ birthInfo, planets })
+    
+    // Check cache first
+    const cachedResult = performanceCache.getElementalData(requestHash)
+    if (cachedResult) {
+      return NextResponse.json(cachedResult, {
+        headers: {
+          "Cache-Control": "public, max-age=60, s-maxage=60"
+        }
+      })
+    }
     
     // Extract basic information
     const { date, time, location } = birthInfo
@@ -35,7 +49,7 @@ export async function POST(req: Request) {
       const defaultSign = "Aries"
       
       // Function to safely get sign or return default
-      const getSafeSign = (planet) => {
+      const getSafeSign = (planet: string) => {
         return currentPositions[planet]?.sign || defaultSign
       }
       
@@ -143,8 +157,15 @@ export async function POST(req: Request) {
     const reactivity = alchemicalInfo['Reactivity'] || 0
     const energy = alchemicalInfo['Energy'] || 0
     
-    // Return the elemental information
-    return NextResponse.json({
+    // Calculate A-Number from Alchemy Effects
+    const spirit = alchemicalInfo['Alchemy Effects']?.['Total Spirit'] || 0
+    const essence = alchemicalInfo['Alchemy Effects']?.['Total Essence'] || 0
+    const matter = alchemicalInfo['Alchemy Effects']?.['Total Matter'] || 0
+    const substance = alchemicalInfo['Alchemy Effects']?.['Total Substance'] || 0
+    const aNumber = spirit + essence + matter + substance
+    
+    // Prepare the result
+    const result = {
       elementalTotals,
       dominantElement,
       alchemicalInfo: {
@@ -153,7 +174,14 @@ export async function POST(req: Request) {
         heat,
         entropy,
         reactivity,
-        energy
+        energy,
+        aNumber,
+        alchemicalProperties: {
+          spirit,
+          essence,
+          matter,
+          substance
+        }
       },
       isDiurnal,
       planetaryElements: horoscope.tropical.CelestialBodies.all.map((body: any) => ({
@@ -163,17 +191,23 @@ export async function POST(req: Request) {
         planetElement: getPlanetaryElement(body.label, isDiurnal),
         affinity: Math.round(calculateElementalAffinity(body.label, body.Sign.label, isDiurnal) * 100)
       }))
-    }, {
+    }
+    
+    // Cache the result
+    performanceCache.setElementalData(requestHash, result)
+    
+    // Return the elemental information
+    return NextResponse.json(result, {
       headers: {
-        "Cache-Control": "no-store, max-age=0, must-revalidate"
+        "Cache-Control": "public, max-age=60, s-maxage=60"
       }
     })
   } catch (error) {
     console.error("Error in elemental info calculation:", error)
     return NextResponse.json({ 
       error: "Failed to calculate elemental information", 
-      message: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      message: error instanceof Error ? error.message : String(error),
+      stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
     }, { 
       status: 500,
       headers: {

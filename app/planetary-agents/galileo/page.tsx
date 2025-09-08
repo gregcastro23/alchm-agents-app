@@ -169,7 +169,7 @@ export default function GalileoAgentPage() {
               </div>
               <div className="text-sm font-medium">{getDignityText()}</div>
               <div className="flex flex-wrap gap-2 mt-4">
-                <Select value={planet} onValueChange={setPlanet}>
+                <Select value={planet} onValueChange={(value: string) => setPlanet(value)}>
                   <SelectTrigger className="w-[120px]">
                     <SelectValue placeholder="Planet" />
                   </SelectTrigger>
@@ -182,7 +182,7 @@ export default function GalileoAgentPage() {
                   </SelectContent>
                 </Select>
 
-                <Select value={sign} onValueChange={setSign}>
+                <Select value={sign} onValueChange={(value: string) => setSign(value)}>
                   <SelectTrigger className="w-[120px]">
                     <SelectValue placeholder="Sign" />
                   </SelectTrigger>
@@ -195,7 +195,7 @@ export default function GalileoAgentPage() {
                   </SelectContent>
                 </Select>
 
-                <Select value={degree} onValueChange={setDegree}>
+                <Select value={degree} onValueChange={(value: string) => setDegree(value)}>
                   <SelectTrigger className="w-[120px]">
                     <SelectValue placeholder="Degree" />
                   </SelectTrigger>

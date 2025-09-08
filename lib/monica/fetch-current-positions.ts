@@ -21,65 +21,135 @@ export interface AlchemizeApiResponse {
   };
 }
 
-export async function fetchCurrentPlanetaryPositions(): Promise<AlchemizeApiResponse | null> {
+// Cache for preventing concurrent requests
+let currentRequest: Promise<AlchemizeApiResponse | null> | null = null
+let lastRequestTime = 0
+const REQUEST_CACHE_DURATION = 30000 // 30 seconds
+
+export async function fetchCurrentPlanetaryPositions(signal?: AbortSignal): Promise<AlchemizeApiResponse | null> {
+  // Return cached request if one is in progress or recently completed
+  const now = Date.now()
+  if (currentRequest && (now - lastRequestTime) < REQUEST_CACHE_DURATION) {
+    console.log('Using cached/in-progress request for planetary positions')
+    return currentRequest
+  }
+
+  // Create new request
+  currentRequest = performFetch(signal)
+  lastRequestTime = now
+  
   try {
-    // Get current date and time
-    const now = new Date()
+    const result = await currentRequest
+    return result
+  } finally {
+    // Clear the request after completion
+    setTimeout(() => {
+      if (Date.now() - lastRequestTime >= REQUEST_CACHE_DURATION) {
+        currentRequest = null
+      }
+    }, REQUEST_CACHE_DURATION)
+  }
+}
+
+async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse | null> {
+  try {
+    // Use our local API instead of external alchm.xyz API
+    console.log('Fetching current planetary positions from local API...')
     
-    // Use January-0 indexing (month is already 0-indexed in JavaScript)
-    const month = now.getMonth() // 0-11, so January = 0
-    const day = now.getDate()
-    const year = now.getFullYear()
-    const hour = now.getHours()
-    const minute = now.getMinutes()
-    
-    // For current location, using NYC as default (Monica's birth location)
-    const latitude = 40.7128
-    const longitude = -74.0060
-    
-    console.log(`Fetching positions for: ${year}-${month + 1}-${day} ${hour}:${minute}`)
-    console.log(`Using month index: ${month} (January-0 indexing)`)
-    
-    // Build the API request body with proper January-0 indexing
-    const requestBody = {
-      year: year,
-      month: month, // Using 0-indexed month directly
-      day: day,
-      hour: hour,
-      minute: minute,
-      latitude: latitude,
-      longitude: longitude
-    }
-    
-    console.log('Alchemize API request:', requestBody)
-    
-    // Call the Alchemize API
-    const response = await fetch('https://alchm.xyz/api/alchemize', {
+    // Call our local elemental-info API which has the current planetary positions
+    const response = await fetch('/api/elemental-info', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify({
+        birthInfo: {
+          date: new Date().toISOString().split('T')[0],
+          time: new Date().toTimeString().slice(0, 5),
+          location: 'New York' // Default location
+        },
+        planets: {} // Use current planetary positions
+      }),
+      signal
     })
     
     if (!response.ok) {
-      console.error('Alchemize API error:', response.status, response.statusText)
-      const errorText = await response.text()
-      console.error('Error details:', errorText)
+      console.error('Local API error:', response.status, response.statusText)
       return null
     }
     
     const data = await response.json()
-    console.log('Alchemize API response received:', {
-      hasPlanetPositions: !!data['Planet Positions'],
-      hasAlchemyEffects: !!data['Alchemy Effects'],
-      hasDecanEffects: !!data['Decan Effects']
+    
+    // Transform our local API response to match the expected AlchemizeApiResponse format
+    const transformedData: AlchemizeApiResponse = {
+      "Planet Positions": {},
+      "Alchemy Effects": {
+        "Total Spirit": data.alchemicalInfo?.alchemicalProperties?.spirit || 0,
+        "Total Essence": data.alchemicalInfo?.alchemicalProperties?.essence || 0,
+        "Total Matter": data.alchemicalInfo?.alchemicalProperties?.matter || 0,
+        "Total Substance": data.alchemicalInfo?.alchemicalProperties?.substance || 0,
+      },
+      "Major Arcana": [],
+      "Minor Arcana": [],
+      "Decan Effects": {}
+    }
+    
+    // Transform planetary elements to planetary positions
+    if (data.planetaryElements) {
+      data.planetaryElements.forEach((planet: any) => {
+        if (transformedData["Planet Positions"]) {
+          transformedData["Planet Positions"][planet.planet] = {
+            sign: planet.sign,
+            degree: 15 // Default degree since we don't have exact degrees in our API
+          }
+        }
+      })
+    }
+    
+    console.log('Local API response transformed:', {
+      hasPlanetPositions: !!transformedData['Planet Positions'],
+      hasAlchemyEffects: !!transformedData['Alchemy Effects'],
+      planetCount: Object.keys(transformedData['Planet Positions'] || {}).length
     })
     
-    return data
+    return transformedData
   } catch (error) {
-    console.error('Error fetching planetary positions:', error)
-    return null
+    console.error('Error fetching planetary positions from local API:', error)
+    
+    // Fallback: return a minimal response with current positions from our calculate-transits
+    try {
+      const { getCurrentPlanetaryPositions } = await import('../calculate-transits')
+      const positions = getCurrentPlanetaryPositions()
+      
+      const fallbackData: AlchemizeApiResponse = {
+        "Planet Positions": {},
+        "Alchemy Effects": {
+          "Total Spirit": 5,
+          "Total Essence": 7,
+          "Total Matter": 6,
+          "Total Substance": 2,
+        },
+        "Major Arcana": [],
+        "Minor Arcana": [],
+        "Decan Effects": {}
+      }
+      
+      // Convert positions to the expected format
+      if (fallbackData["Planet Positions"]) {
+        Object.entries(positions).forEach(([planet, pos]) => {
+          fallbackData["Planet Positions"]![planet] = {
+            sign: pos.sign,
+            degree: parseFloat(pos.degree) || 15
+          }
+        })
+      }
+      
+      console.log('Using fallback planetary positions')
+      return fallbackData
+    } catch (fallbackError) {
+      console.error('Fallback also failed:', fallbackError)
+      return null
+    }
   }
 }
 

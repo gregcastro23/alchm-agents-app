@@ -50,6 +50,24 @@ const moonData: PlanetData = {
     'Promotes fermentation processes',
     'Strengthens emotional connections to food'
   ],
+  'ANumberModifiers': {
+    'Base': 0.8, // Moon adds moderate A-Number boost through Essence and Matter
+    'HighDignitiy': 0.4, // Extra boost in Cancer/Taurus
+    'LowDignity': -0.2, // Reduction in Capricorn/Scorpio
+    'AspectBonus': {
+      'conjunction': 0.2,
+      'trine': 0.15,
+      'square': -0.1,
+      'opposition': -0.15,
+      'sextile': 0.1
+    },
+    'SeasonalAdjustment': {
+      'summer': 0.1, // Mild boost in watery summer
+      'spring': 0.3, // Growth and new beginnings
+      'autumn': 0.2, // Harvest and preservation
+      'winter': 0.0  // Neutral in cold season
+    }
+  },
   'AspectsEffect': {
     'Sun': {
       'Conjunction': 0.5,
@@ -178,7 +196,7 @@ const moonData: PlanetData = {
         // Convert to proper transits with start/end dates
         let dates = Object.keys(moonInSign).sort();
         for (let i = 0; i < dates.length - 1; i++) {
-          const sign = moonInSign[dates[i]];
+          const sign = moonInSign[dates[i] as keyof typeof moonInSign];
           const start = dates[i];
           const end = dates[i+1];
           

@@ -30,7 +30,7 @@ export function useGalileoLog(defaultComponentName?: string) {
     return () => {
       if (defaultComponentName) {
         logEvent('Component unmounted', { 
-          component: defaultComponentName,
+          componentName: defaultComponentName,
           level: 'info'
         });
       }
@@ -42,7 +42,7 @@ export function useGalileoLog(defaultComponentName?: string) {
   useEffect(() => {
     if (componentMounted && defaultComponentName) {
       logEvent('Component mounted', { 
-        component: defaultComponentName,
+        componentName: defaultComponentName,
         level: 'info'
       });
     }

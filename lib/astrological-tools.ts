@@ -22,7 +22,7 @@ export const calculatePlanetaryPosition = {
       longitude: z.number(),
     }),
   }),
-  execute: async ({ planet, date, time, location }) => {
+  execute: async ({ planet, date, time, location }: { planet: string, date: string, time: string, location: { latitude: number, longitude: number } }) => {
     // In a real implementation, you would use an astronomical calculation library
     // This is a placeholder for demonstration
 
@@ -104,7 +104,7 @@ export const getHistoricalInterpretation = {
     ]),
     source: z.enum(["Ptolemy", "Lilly", "Alan Leo", "Modern"]),
   }),
-  execute: async ({ planet, sign, source }) => {
+  execute: async ({ planet, sign, source }: { planet: string, sign: string, source: string }) => {
     // Mock historical interpretations
     const interpretations: Record<string, Record<string, Record<string, string>>> = {
       Ptolemy: {
@@ -156,7 +156,7 @@ export const calculateElementalInfo = {
       }),
     }),
   }),
-  execute: async ({ birthInfo }) => {
+  execute: async ({ birthInfo }: { birthInfo: any }) => {
     // This is a simplified implementation to demonstrate integration
     // A real implementation would use calculations from the Alchemizer
     

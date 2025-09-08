@@ -45,6 +45,24 @@ const sunData: PlanetData = {
     'Increases fermentation activity',
     'Strengthens preserving techniques'
   ],
+  'ANumberModifiers': {
+    'Base': 1.2, // Sun adds strong baseline A-Number boost
+    'HighDignitiy': 0.5, // Extra boost in Leo/Aries
+    'LowDignity': -0.3, // Reduction in Aquarius/Libra
+    'AspectBonus': {
+      'conjunction': 0.3,
+      'trine': 0.2,
+      'square': -0.1,
+      'opposition': -0.2,
+      'sextile': 0.1
+    },
+    'SeasonalAdjustment': {
+      'summer': 0.4, // Peak solar energy
+      'spring': 0.2, // Growing energy
+      'autumn': 0.0, // Balanced energy
+      'winter': -0.2  // Reduced solar energy
+    }
+  },
   'AspectsEffect': {
     'Moon': {
       'Conjunction': 0.5,

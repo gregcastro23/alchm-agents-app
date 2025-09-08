@@ -1,3 +1,19 @@
+## Monica: Fast, playful onboarding and streaming
+
+- Streaming endpoint: `POST /api/monica-agent/stream` (SSE-like). Emits token chunks, final envelope, and done.
+- Non-stream fallback: `POST /api/monica-agent`.
+- Lightweight memory API: `GET/POST/DELETE /api/monica-memory` with `userId` or `sessionId`.
+- Create-AI quick builder: `POST /api/personalized-ai` with `{ answers, styleCards }` returns editable config and preview id.
+
+Environment knobs:
+- `MONICA_DEFAULT_MODEL` (default `gpt-4o-mini`)
+- `MONICA_TEMPERATURE` (default 0.4)
+- `BACKGROUND_REFRESH_INTERVAL_MS` (default 600000)
+
+Run:
+```
+yarn dev
+```
 # Planetary Agents
 
 A Next.js application that explores astrological wisdom through AI-powered planetary agents and elemental charts.
@@ -38,7 +54,7 @@ Get detailed interpretations of astrological charts:
 
 - **Frontend**: Next.js, React, TypeScript, Tailwind CSS
 - **UI Components**: shadcn/ui, Radix UI
-- **AI Integration**: AI SDK (OpenAI)
+- **AI Integration**: AI SDK (OpenAI), Anthropic Claude API (Upgraded Subscription)
 - **Styling**: Tailwind CSS with theming support
 - **Package Management**: Yarn
 
@@ -77,6 +93,19 @@ yarn dev
 ```
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 🤖 AI Capabilities
+
+### Claude 3.5 Integration
+
+This application leverages the latest Claude 3.5 models for enhanced astrological analysis:
+
+- **Claude 3.5 Sonnet**: Complex reasoning and detailed chart interpretation
+- **Claude 3.5 Haiku**: Fast responses for quick queries and general guidance
+- **200K Context Window**: Process entire birth charts and comprehensive planetary data
+- **Enhanced Reasoning**: More accurate astrological calculations and interpretations
+
+For detailed information about the Claude upgrade, see [CLAUDE_UPGRADE_GUIDE.md](./CLAUDE_UPGRADE_GUIDE.md).
 
 ## 🌟 Usage
 

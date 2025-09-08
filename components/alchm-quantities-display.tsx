@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Flame, Droplets, Wind, Mountain, Coins, AlertTriangle } from "lucide-react"
+import { Flame, Droplets, Wind, Mountain, Coins, AlertTriangle, Calculator } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { useGalileoLog } from "@/hooks/useGalileoLog"
 
@@ -10,6 +10,7 @@ type AlchemyQuantities = {
   Essence: number
   Matter: number
   Substance: number
+  ANumber: number
   DayEssence: number
   NightEssence: number
 }
@@ -202,6 +203,16 @@ export default function AlchmQuantitiesDisplay() {
     )
   }
 
+  // Helper function to get A-Number category
+  const getANumberCategory = (aNumber: number): string => {
+    if (aNumber >= 3.0) return "Maximum Power";
+    if (aNumber >= 2.5) return "High Energy";
+    if (aNumber >= 2.0) return "Balanced Energy";
+    if (aNumber >= 1.5) return "Moderate Energy";
+    if (aNumber >= 1.0) return "Focused Energy";
+    return "Subtle Energy";
+  };
+
   return (
     <div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -233,6 +244,30 @@ export default function AlchmQuantitiesDisplay() {
           color="purple"
           description="Etheric foundation"
         />
+      </div>
+      
+      {/* A-Number Special Display */}
+      <div className="mb-6">
+        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 border-2 border-indigo-200 dark:border-indigo-800 rounded-lg p-6">
+          <div className="flex items-center justify-center mb-4">
+            <Calculator className="h-8 w-8 text-indigo-600 dark:text-indigo-400 mr-3" />
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-indigo-800 dark:text-indigo-200">A-Number</h3>
+              <p className="text-sm text-indigo-600 dark:text-indigo-400">Total Alchemical Energy</p>
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-indigo-900 dark:text-indigo-100 mb-2">
+              {Math.round(data.quantities.ANumber * 100) / 100}
+            </div>
+            <Badge variant="outline" className="text-lg px-4 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">
+              {getANumberCategory(data.quantities.ANumber)}
+            </Badge>
+            <p className="text-sm text-indigo-700 dark:text-indigo-300 mt-2">
+              Spirit + Essence + Matter + Substance = {Math.round(data.quantities.ANumber * 100) / 100}
+            </p>
+          </div>
+        </div>
       </div>
       
       <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">

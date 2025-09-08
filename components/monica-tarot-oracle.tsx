@@ -20,6 +20,7 @@ import {
   getCurrentDecan, 
   getPlanetaryRulerCard, 
   generateConsciousnessCraftingInsight,
+  DECAN_TAROT_MAPPINGS,
   type TarotCard,
   type MajorArcanaCard,
   type ConsciousnessCraftingInsight
@@ -164,13 +165,19 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
   const [sunPosition, setSunPosition] = useState<string>('')
 
   useEffect(() => {
+    const abortController = new AbortController()
+    
     // Calculate current cosmic tarot configuration
     const loadTarotConfiguration = async () => {
       setIsLoading(true)
       
       try {
         // Get current decan card with real-time positions
-        const { card: decanCard, sunPosition: position } = await getCurrentDecan()
+        const { card: decanCard, sunPosition: position } = await getCurrentDecan(abortController.signal)
+        
+        // Check if component was unmounted or aborted
+        if (abortController.signal.aborted) return
+        
         setCurrentDecanCard(decanCard)
         setSunPosition(position)
         
@@ -195,13 +202,43 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
         }
       } catch (error) {
         console.error('Error loading tarot configuration:', error)
+        
+        // Check if the error is due to abortion
+        if (abortController.signal.aborted) {
+          console.log('Request was aborted')
+          return
+        }
+        
+        // Fallback: set default values if API fails
+        const fallbackCard = DECAN_TAROT_MAPPINGS[110] // Default Cancer 3rd decan
+        setCurrentDecanCard(fallbackCard || null)
+        setSunPosition('Unable to determine (using fallback)')
+        
+        // Set fallback planetary card
+        const fallbackRulerCard = getPlanetaryRulerCard('Sun')
+        setPlanetaryCard(fallbackRulerCard)
+        
+        // Generate fallback insight
+        if (fallbackCard && fallbackRulerCard) {
+          const fallbackInsight = generateConsciousnessCraftingInsight(fallbackCard, fallbackRulerCard)
+          setInsight(fallbackInsight)
+          onInsightGenerated?.(fallbackInsight)
+        }
+      } finally {
+        // Always clear loading state unless aborted
+        if (!abortController.signal.aborted) {
+          setIsLoading(false)
+        }
       }
-      
-      setIsLoading(false)
     }
 
     loadTarotConfiguration()
-  }, [onInsightGenerated])
+    
+    // Cleanup function to abort the request if component unmounts
+    return () => {
+      abortController.abort()
+    }
+  }, []) // Remove onInsightGenerated dependency to prevent unnecessary re-runs
 
   if (isLoading) {
     return (
@@ -263,47 +300,213 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
         )}
       </div>
 
-      {/* Consciousness Crafting Insight */}
+      {/* Advanced Consciousness Crafting Insight */}
       {insight && (
-        <Card className="border-2 border-gold-200 bg-gradient-to-r from-gold-50 to-yellow-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Eye className="h-5 w-5 text-gold-600" />
-              Consciousness Crafting Insight
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">
-                Synergy: {Math.round(insight.synergy * 100)}%
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                {insight.consciousnessLevel}
-              </Badge>
-            </div>
-          </CardHeader>
-          
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <h4 className="font-medium text-purple-800">💫 Cosmic Guidance</h4>
-              <p className="text-sm text-gray-700 leading-relaxed">
-                {insight.guidance}
-              </p>
-            </div>
+        <div className="space-y-4">
+          {/* Main Insight Card */}
+          <Card className="border-2 border-gold-200 bg-gradient-to-r from-gold-50 to-yellow-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Eye className="h-5 w-5 text-gold-600" />
+                Advanced Consciousness Crafting
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs">
+                  Synergy: {Math.round(insight.synergy * 100)}%
+                </Badge>
+                <Badge variant="secondary" className="text-xs">
+                  {insight.consciousnessLevel}
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  {insight.alchemicalBalance.dominantElement} Dominant
+                </Badge>
+              </div>
+            </CardHeader>
             
-            <div className="space-y-2">
-              <h4 className="font-medium text-purple-800">🎯 Practical Application</h4>
-              <p className="text-sm text-gray-700 leading-relaxed">
-                {insight.practicalApplication}
-              </p>
-            </div>
-            
-            <div className="bg-purple-100 p-3 rounded-lg">
-              <p className="text-sm font-medium text-purple-800">
-                🧠 Current Consciousness Work: Focus on integrating {insight.currentMomentCard.element} energy 
-                with {insight.planetaryCard.element} wisdom for optimal growth.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <h4 className="font-medium text-purple-800">💫 Cosmic Guidance</h4>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {insight.guidance}
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <h4 className="font-medium text-purple-800">🎯 Practical Application</h4>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {insight.practicalApplication}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Detailed Analysis Grid */}
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Chakra Activation */}
+            <Card className="border border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Eye className="h-4 w-4 text-indigo-600" />
+                  Chakra Activation
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Primary:</span>
+                  <span className="font-medium text-indigo-700">{insight.chakraActivation.primaryChakra}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Secondary:</span>
+                  <span className="font-medium text-indigo-700">{insight.chakraActivation.secondaryChakra}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Activation:</span>
+                  <span className="font-medium">{Math.round(insight.chakraActivation.activationLevel * 100)}%</span>
+                </div>
+                {insight.chakraActivation.balancingNeeded.length > 0 && (
+                  <div className="text-xs text-gray-600 mt-2">
+                    <strong>Balance needed:</strong> {insight.chakraActivation.balancingNeeded.join(', ')}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Alchemical Balance */}
+            <Card className="border border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-emerald-600" />
+                  Alchemical Balance
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="flex justify-between">
+                    <span>Spirit:</span>
+                    <span className="font-mono">{insight.alchemicalBalance.spirit.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Essence:</span>
+                    <span className="font-mono">{insight.alchemicalBalance.essence.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Matter:</span>
+                    <span className="font-mono">{insight.alchemicalBalance.matter.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Substance:</span>
+                    <span className="font-mono">{insight.alchemicalBalance.substance.toFixed(2)}</span>
+                  </div>
+                </div>
+                <div className="text-xs text-emerald-700 font-medium">
+                  Elemental Harmony: {Math.round(insight.alchemicalBalance.elementalHarmony * 100)}%
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Development Path */}
+            <Card className="border border-orange-200 bg-gradient-to-br from-orange-50 to-red-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Star className="h-4 w-4 text-orange-600" />
+                  Development Path
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="text-xs">
+                  <div className="flex justify-between mb-1">
+                    <span>Current Phase:</span>
+                    <span className="font-medium text-orange-700">{insight.developmentPath.currentPhase}</span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Next Phase:</span>
+                    <span className="font-medium text-orange-700">{insight.developmentPath.nextPhase}</span>
+                  </div>
+                  <div className="space-y-1">
+                    <strong>Focus Skills:</strong>
+                    <div className="flex flex-wrap gap-1">
+                      {insight.developmentPath.skillsToFocus.map((skill, index) => (
+                        <Badge key={index} variant="outline" className="text-xs py-0">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Time Recommendations */}
+            <Card className="border border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Moon className="h-4 w-4 text-blue-600" />
+                  Optimal Timing
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="text-xs space-y-1">
+                  <div className="flex justify-between">
+                    <span>Best Time:</span>
+                    <span className="font-medium text-blue-700">{insight.timeRecommendations.bestTimeForPractice}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Duration:</span>
+                    <span className="font-medium">{insight.timeRecommendations.duration}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Frequency:</span>
+                    <span className="font-medium">{insight.timeRecommendations.frequency}</span>
+                  </div>
+                  <div className="text-blue-700 font-medium mt-2">
+                    🌙 {insight.timeRecommendations.moonPhaseAlignment}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Shadow Work & Integration */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <Card className="border border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-purple-600" />
+                  Shadow Work
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="text-xs space-y-1">
+                  {insight.developmentPath.shadowWork.map((work, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-purple-500">•</span>
+                      <span>{work}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="border border-teal-200 bg-gradient-to-br from-teal-50 to-emerald-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Heart className="h-4 w-4 text-teal-600" />
+                  Integration Practices
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="text-xs space-y-1">
+                  {insight.developmentPath.integration.map((practice, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-teal-500">•</span>
+                      <span>{practice}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       )}
 
       {/* Action Buttons */}

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server"
 import { generateAlchmForCurrentMoment } from "@/lib/alchemizer"
+import { logQuantitiesToGalileo, type AlchemicalMetrics } from "@/lib/galileo-logger"
+import { getCurrentPlanetaryPositions } from "@/lib/calculate-transits"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -26,9 +28,13 @@ export async function GET() {
       Essence: alchmData?.['Alchemy Effects']?.['Total Essence'] || 0,
       Matter: alchmData?.['Alchemy Effects']?.['Total Matter'] || 0,
       Substance: alchmData?.['Alchemy Effects']?.['Total Substance'] || 0,
+      ANumber: alchmData?.['Alchemy Effects']?.['A #'] || 0,
       DayEssence: alchmData?.['Alchemy Effects']?.['Total Day Essence'] || 0,
       NightEssence: alchmData?.['Alchemy Effects']?.['Total Night Essence'] || 0
     }
+    
+    // Get current planetary positions for additional context
+    const planetaryPositions = getCurrentPlanetaryPositions()
     
     // Include some additional data that may be useful for the client
     const responseData = {
@@ -41,6 +47,23 @@ export async function GET() {
       sunSign: alchmData?.['Sun Sign'] || "",
       chartRuler: alchmData?.['Chart Ruler'] || "",
       timestamp: new Date().toISOString()
+    }
+    
+    // Log quantities to Galileo for dashboard tracking
+    try {
+      const metricsData: AlchemicalMetrics = {
+        ...responseData,
+        planetaryPositions
+      }
+      
+      await logQuantitiesToGalileo(metricsData, {
+        api_endpoint: '/api/alchm-quantities',
+        request_timestamp: new Date().toISOString(),
+        calculation_method: 'real-time-planetary-positions'
+      })
+    } catch (galileoError) {
+      console.warn('Failed to log quantities to Galileo:', galileoError)
+      // Don't fail the API call if Galileo logging fails
     }
     
     console.log("API: Successfully generated alchm quantities")

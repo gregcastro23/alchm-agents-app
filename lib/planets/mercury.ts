@@ -186,6 +186,24 @@ const mercuryData: PlanetData = {
     'Facilitates learning new cooking techniques',
     'Enhances food presentation details'
   ],
+  'ANumberModifiers': {
+    'Base': 1.0, // Mercury adds balanced A-Number boost through Spirit and Substance
+    'HighDignitiy': 0.6, // Significant boost in Gemini/Virgo
+    'LowDignity': -0.4, // Notable reduction in Sagittarius/Pisces
+    'AspectBonus': {
+      'conjunction': 0.25,
+      'trine': 0.2,
+      'square': -0.15,
+      'opposition': -0.2,
+      'sextile': 0.15
+    },
+    'SeasonalAdjustment': {
+      'summer': 0.2, // Quick communication and movement
+      'spring': 0.3, // New ideas and learning
+      'autumn': 0.1, // Harvest of knowledge
+      'winter': -0.1  // Slower mental processes
+    }
+  },
   'AspectsEffect': {
     'Sun': {
       'Conjunction': 0.2,

@@ -1,6 +1,8 @@
 // Alchemizer Engine
 // This module implements the core alchemical calculation system
 
+import { performanceCache, createBirthInfoHash } from './performance-cache';
+
 // Zodiac signs indexed by number
 export const signs: Record<number, string> = {
   0: 'Aries',
@@ -348,6 +350,13 @@ export function getComplementaryElement(element: string): string {
 
 // Main alchemizer function
 export function alchemize(birth_info: Record<string, any>, horoscope_dict: Record<string, any>): Record<string, any> {
+  // Check cache first
+  const birthInfoHash = createBirthInfoHash(birth_info);
+  const cachedResult = performanceCache.getAlchemicalData(birthInfoHash);
+  if (cachedResult) {
+    return cachedResult;
+  }
+  
   // Simplified implementation for UI integration
   const horoscope = horoscope_dict['tropical'] || horoscope_dict;
   const silent_mode = true;
@@ -612,6 +621,12 @@ export function alchemize(birth_info: Record<string, any>, horoscope_dict: Recor
   alchmInfo['Reactivity'] = ((spirit**2 + substance**2 + essence**2 + fire**2 + air**2 + water**2) / ((matter + earth)**2 || 1)) || 0;
   alchmInfo['Energy'] = (alchmInfo['Heat'] - (alchmInfo['Reactivity'] * alchmInfo['Entropy'])) || 0;
   
+  // Calculate A-Number: Total Spirit + Total Essence + Total Matter + Total Substance
+  alchmInfo['Alchemy Effects']['A #'] = spirit + essence + matter + substance;
+  
+  // Cache the result before returning
+  performanceCache.setAlchemicalData(birthInfoHash, alchmInfo);
+  
   return alchmInfo;
 }
 
@@ -664,7 +679,7 @@ export async function generateAlchmForCurrentMoment(): Promise<Record<string, an
     for (const planet of requiredPlanets) {
       if (!currentPositions[planet]) {
         console.error(`Missing position data for ${planet}`)
-        currentPositions[planet] = { sign: 'Aries', degree: 0 } // Fallback only if absolutely necessary
+        currentPositions[planet] = { sign: 'Aries', degree: '0' } // Fallback only if absolutely necessary
       }
     }
     
@@ -676,7 +691,7 @@ export async function generateAlchmForCurrentMoment(): Promise<Record<string, an
       }
       if (data.degree === undefined) {
         console.error(`Missing degree for ${planet}, using fallback`)
-        currentPositions[planet].degree = 0 // Fallback
+        currentPositions[planet].degree = '0' // Fallback
       }
     })
     
@@ -824,4 +839,5 @@ function getSignIndices(): Record<string, number> {
 }
 
 // Export the main alchemizer function
-export default { alchemize, generateAlchmForCurrentMoment }; 
+const alchemizerExport = { alchemize, generateAlchmForCurrentMoment };
+export default alchemizerExport; 

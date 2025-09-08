@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
@@ -31,17 +31,17 @@ export default function ElementalChart({ birthInfo, planets }: ElementalChartPro
   const [error, setError] = useState<string | null>(null)
 
   // Default birth info if none provided
-  const defaultBirthInfo = {
+  const defaultBirthInfo = useMemo(() => ({
     date: "2000-01-01",
     time: "12:00",
     location: {
       latitude: 40.7128,
       longitude: -74.0060,
     }
-  }
+  }), [])
 
   // Default planets if none provided
-  const defaultPlanets = {
+  const defaultPlanets = useMemo(() => ({
     sunSign: "Leo",
     moonSign: "Cancer",
     mercurySign: "Virgo",
@@ -53,7 +53,7 @@ export default function ElementalChart({ birthInfo, planets }: ElementalChartPro
     neptuneSign: "Pisces",
     plutoSign: "Scorpio",
     ascendantSign: "Aries"
-  }
+  }), [])
 
   useEffect(() => {
     async function fetchElementalData() {
@@ -87,7 +87,7 @@ export default function ElementalChart({ birthInfo, planets }: ElementalChartPro
     }
     
     fetchElementalData()
-  }, [birthInfo, planets])
+  }, [birthInfo, planets, defaultBirthInfo, defaultPlanets])
 
   // Get color for element
   const getElementColor = (element: string) => {
@@ -274,6 +274,29 @@ export default function ElementalChart({ birthInfo, planets }: ElementalChartPro
               <span className="text-sm text-muted-foreground">Energy</span>
             </div>
           </div>
+          
+          {/* A-Number Display */}
+          {alchemicalInfo.aNumber !== undefined && (
+            <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-950 rounded-lg border border-indigo-200 dark:border-indigo-800">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-indigo-800 dark:text-indigo-200">
+                  A-Number: {Math.round(alchemicalInfo.aNumber * 100) / 100}
+                </div>
+                <div className="text-sm text-indigo-600 dark:text-indigo-400 mt-1">
+                  Total Alchemical Energy
+                </div>
+                {alchemicalInfo.alchemicalProperties && (
+                  <div className="text-xs text-indigo-500 dark:text-indigo-500 mt-2">
+                    Spirit: {Math.round(alchemicalInfo.alchemicalProperties.spirit * 100) / 100} + 
+                    Essence: {Math.round(alchemicalInfo.alchemicalProperties.essence * 100) / 100} + 
+                    Matter: {Math.round(alchemicalInfo.alchemicalProperties.matter * 100) / 100} + 
+                    Substance: {Math.round(alchemicalInfo.alchemicalProperties.substance * 100) / 100}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
           <div className="mt-4 text-center">
             <div><span className="font-semibold">Sun Sign:</span> {alchemicalInfo.sunSign}</div>
             <div><span className="font-semibold">Chart Ruler:</span> {alchemicalInfo.chartRuler}</div>

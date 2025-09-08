@@ -1,6 +1,7 @@
 import { planetInfo } from './planets'
 import { signIndices } from './alchemizer'
 import { sunData, moonData, mercuryData, venusData, marsData, jupiterData, saturnData, uranusData, neptuneData, plutoData } from './planets'
+import type { PlanetData, TransitData } from './planets/types'
 
 // Define orbital periods for planets in days
 const orbitalPeriods = {
@@ -19,22 +20,22 @@ const orbitalPeriods = {
 // Define the fixed, accurate current planetary positions
 // These were verified from reliable astronomical sources
 const CURRENT_PLANETARY_POSITIONS = {
-  'Sun': { sign: 'Taurus', degree: '25.57' },       // 25° 34'
-  'Moon': { sign: 'Capricorn', degree: '4.43' },    // 4° 26'
-  'Mercury': { sign: 'Taurus', degree: '10.08' },   // 10° 5'
-  'Venus': { sign: 'Aries', degree: '10.78' },      // 10° 47'
-  'Mars': { sign: 'Leo', degree: '12.88' },         // 12° 53'
-  'Jupiter': { sign: 'Gemini', degree: '24.52' },   // 24° 31'
-  'Saturn': { sign: 'Pisces', degree: '29.27' },    // 29° 16'
-  'Uranus': { sign: 'Taurus', degree: '27.18' },    // 27° 11'
-  'Neptune': { sign: 'Aries', degree: '1.52' },     // 1° 31'
-  'Pluto': { sign: 'Aquarius', degree: '3.78' },    // 3° 47'
-  'North Node': { sign: 'Pisces', degree: '24.33' },// 24° 20'
-  'Ascendant': { sign: 'Capricorn', degree: '28.85' }// 28° 51'
+  'Sun': { sign: 'Virgo', degree: '13', retrograde: false },
+  'Moon': { sign: 'Aquarius', degree: '17', retrograde: false },
+  'Mercury': { sign: 'Virgo', degree: '6', retrograde: false },
+  'Venus': { sign: 'Leo', degree: '13', retrograde: false },
+  'Mars': { sign: 'Libra', degree: '19', retrograde: false },
+  'Jupiter': { sign: 'Cancer', degree: '18', retrograde: false },
+  'Saturn': { sign: 'Pisces', degree: '29', retrograde: true },
+  'Uranus': { sign: 'Gemini', degree: '1', retrograde: false },
+  'Neptune': { sign: 'Aries', degree: '1', retrograde: true },
+  'Pluto': { sign: 'Aquarius', degree: '1', retrograde: true },
+  'North Node': { sign: 'Pisces', degree: '24.33', retrograde: false }, // Retained from previous
+  'Ascendant': { sign: 'Capricorn', degree: '28.85', retrograde: false } // Retained from previous
 };
 
 // Add last updated timestamp
-const POSITIONS_LAST_UPDATED = new Date().toISOString(); // Updated today
+const POSITIONS_LAST_UPDATED = new Date().toISOString(); // Updated with latest positions
 
 // Define approximate degrees per day for each planet
 const degreesPerDay = Object.entries(orbitalPeriods).reduce(
@@ -44,6 +45,8 @@ const degreesPerDay = Object.entries(orbitalPeriods).reduce(
   }),
   {} as Record<string, number>
 )
+
+import { performanceCache } from './performance-cache';
 
 // Current planetary data with transit dates
 const planetDataWithTransits = {
@@ -69,37 +72,43 @@ function getTransitDates(planet: string): Record<string, {Start: string, End: st
       return (calculateTransits as Function)(new Date());
     }
     
-    if (!planetDataWithTransits[planet]?.PlanetSpecific?.TransitDates) {
+    const planetData = planetDataWithTransits[planet as keyof typeof planetDataWithTransits];
+    if (!planetData?.PlanetSpecific?.TransitDates) {
       return null
     }
     
-    const transitData = planetDataWithTransits[planet].PlanetSpecific.TransitDates
+    const transitData = planetData.PlanetSpecific?.TransitDates as TransitData
     
     // Handle different transit date formats
-    if (transitData.hasOwnProperty('Aries') || 
-        transitData.hasOwnProperty('Taurus') ||
-        transitData.hasOwnProperty('Gemini')) {
+    if (transitData && typeof transitData === 'object' &&
+        ('Aries' in transitData || 'Taurus' in transitData || 'Gemini' in transitData)) {
       // Simple format like Mars or Venus
       return transitData as Record<string, {Start: string, End: string}>
     } 
-    else if (transitData.hasOwnProperty('DirectPhasesQ2_2024')) {
+    else if (transitData && typeof transitData === 'object' &&
+             'DirectPhasesQ2_2024' in transitData) {
       // Mercury format
+      const q2Data = (transitData as any).DirectPhasesQ2_2024;
+      const q4Data = (transitData as any).DirectPhasesQ4_2024;
       return {
-        ...transitData.DirectPhasesQ2_2024,
-        ...transitData.DirectPhasesQ4_2024
+        ...q2Data,
+        ...q4Data
       } as Record<string, {Start: string, End: string}>
     }
-    else if (transitData.hasOwnProperty('Pisces') || 
-             transitData.hasOwnProperty('Taurus') && transitData.Taurus.hasOwnProperty('1stDecan')) {
+    else if (transitData && typeof transitData === 'object' &&
+             ('Pisces' in transitData || ('Taurus' in transitData && 
+              typeof (transitData as any).Taurus === 'object' && 
+              '1stDecan' in (transitData as any).Taurus))) {
       // Neptune/Pluto/Uranus format with decans
       // We'll simplify and use the first decan as the start and the last decan end as the end
       const simplifiedTransits: Record<string, {Start: string, End: string}> = {}
       
       for (const sign in transitData) {
-        if (transitData[sign]['1stDecan']) {
+        const signData = (transitData as any)[sign];
+        if (signData && typeof signData === 'object' && '1stDecan' in signData) {
           const decans = ['1stDecan', '2ndDecan', '3rdDecan']
-          const firstDecan = transitData[sign]['1stDecan']
-          const lastDecan = transitData[sign][decans.find(d => transitData[sign][d]) || '3rdDecan']
+          const firstDecan = signData['1stDecan']
+          const lastDecan = signData[decans.find(d => d in signData) || '3rdDecan']
           
           simplifiedTransits[sign] = {
             Start: firstDecan.Start,
@@ -206,7 +215,7 @@ function calculateMoonPosition(date: Date): { sign: string, degree: number } {
 }
 
 // Function to get transit position from dates
-function getTransitPositionFromDates(planet: string, date: Date = new Date()): { sign: string, degree: string } | null {
+function getTransitPositionFromDates(planet: string, date: Date = new Date()): { sign: string, degree: string, retrograde: boolean } | null {
   try {
     const transitPosition = findSignFromTransitDates(planet, date)
     if (!transitPosition) return null
@@ -225,9 +234,17 @@ function getTransitPositionFromDates(planet: string, date: Date = new Date()): {
  * Calculates the current positions of planets based on reference positions and orbital speeds
  * Optionally accepts a timestamp to prevent caching
  * @param timestamp Optional timestamp to force recalculation
- * @returns Object with planet names as keys and their current sign and degree
+ * @returns Object with planet names as keys and their current sign, degree, and retrograde status
  */
-export function getCurrentPlanetaryPositions(timestamp?: number): Record<string, { sign: string, degree: string }> {
+export function getCurrentPlanetaryPositions(timestamp?: number): Record<string, { sign: string, degree: string, retrograde: boolean }> {
+  // Check cache first (unless forced timestamp is provided)
+  if (!timestamp) {
+    const cachedPositions = performanceCache.getPlanetaryPositions<Record<string, { sign: string, degree: string }>>();
+    if (cachedPositions) {
+      return cachedPositions;
+    }
+  }
+  
   // If a timestamp is provided, log it to verify fresh data is being used
   if (timestamp) {
     console.log(`Using current positions with timestamp: ${timestamp}`)
@@ -237,7 +254,7 @@ export function getCurrentPlanetaryPositions(timestamp?: number): Record<string,
   const calculationDate = new Date();
   
   // Initialize with empty positions that will be populated from calculations
-  let calculatedPositions: Record<string, { sign: string, degree: string }> = {};
+  let calculatedPositions: Record<string, { sign: string, degree: string, retrograde: boolean }> = {};
   
   // Calculate all planetary positions using transit data 
   const planets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
@@ -247,14 +264,23 @@ export function getCurrentPlanetaryPositions(timestamp?: number): Record<string,
       calculatedPositions[planet] = transitPosition;
     } else {
       // Fallback to hardcoded positions if transit calculation fails
-      calculatedPositions[planet] = CURRENT_PLANETARY_POSITIONS[planet];
-      console.log(`Using fallback position for ${planet}:`, CURRENT_PLANETARY_POSITIONS[planet]);
+      calculatedPositions[planet] = CURRENT_PLANETARY_POSITIONS[planet as keyof typeof CURRENT_PLANETARY_POSITIONS];
+      console.log(`Using fallback position for ${planet}:`, CURRENT_PLANETARY_POSITIONS[planet as keyof typeof CURRENT_PLANETARY_POSITIONS]);
     }
   });
   
   // For North Node and Ascendant, use hardcoded values as they require specialized calculations
-  calculatedPositions['North Node'] = CURRENT_PLANETARY_POSITIONS['North Node'];
-  calculatedPositions['Ascendant'] = CURRENT_PLANETARY_POSITIONS['Ascendant'];
+  calculatedPositions['North Node'] = { 
+    ...CURRENT_PLANETARY_POSITIONS['North Node'], 
+    retrograde: false 
+  };
+  calculatedPositions['Ascendant'] = { 
+    ...CURRENT_PLANETARY_POSITIONS['Ascendant'], 
+    retrograde: false 
+  };
+  
+  // Cache the calculated positions
+  performanceCache.setPlanetaryPositions(calculatedPositions);
   
   // Update last updated timestamp
   const lastUpdated = new Date().toISOString();

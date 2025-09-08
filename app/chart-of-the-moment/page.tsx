@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -9,6 +9,7 @@ import { RefreshCw } from "lucide-react"
 import { getPlanetaryDignity, getSignElement, getPlanetaryElement } from "@/lib/astrological-data"
 import { getCurrentPlanetaryPositions } from "@/lib/calculate-transits"
 import ElementalChart from "@/components/elemental-chart"
+import TarotCosmicWidget from "@/components/tarot-cosmic-widget"
 
 export default function ChartOfTheMomentPage() {
   const [currentTime, setCurrentTime] = useState("")
@@ -20,7 +21,7 @@ export default function ChartOfTheMomentPage() {
   const [retryCount, setRetryCount] = useState(0)
   
   // Get the current planetary positions, date, and time
-  const fetchPlanetaryPositions = () => {
+  const fetchPlanetaryPositions = useCallback(() => {
     setRefreshing(true)
     
     const now = new Date()
@@ -57,12 +58,12 @@ export default function ChartOfTheMomentPage() {
     setCurrentPlanetaryPositions(positions)
     setLoading(false)
     setRefreshing(false)
-  }
+  }, [retryCount])
   
   // Fetch on mount and when retry count changes
   useEffect(() => {
     fetchPlanetaryPositions()
-  }, [])
+  }, [fetchPlanetaryPositions])
   
   // Prepare data for ElementalChart component
   const chartPlanets = Object.entries(currentPlanetaryPositions).reduce(
@@ -147,6 +148,11 @@ export default function ChartOfTheMomentPage() {
       
       <div className="mb-2 text-center text-sm text-muted-foreground">
         {currentDate} at {currentTime} - {isDiurnal ? "Day" : "Night"} Chart
+      </div>
+      
+      {/* Cosmic Tarot Moment */}
+      <div className="mb-8 max-w-md mx-auto">
+        <TarotCosmicWidget variant="card" showExpanded={false} />
       </div>
       
       <Card className="mb-6">
