@@ -127,6 +127,49 @@ For detailed information about the Claude upgrade, see [CLAUDE_UPGRADE_GUIDE.md]
 2. Enter birth details or use current moment
 3. Receive a detailed interpretation of the chart
 
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory with the following configuration:
+
+```bash
+# AI API Keys
+OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_anthropic_key
+
+# Database Configuration (if using)
+DATABASE_URL="postgresql://postgres:password@localhost:5432/planetary_agents_db?schema=public"
+REDIS_URL="redis://localhost:6379"
+
+# Galileo Logging (Optional)
+GALILEO_API_KEY=your_galileo_api_key
+GALILEO_PROJECT=AlchmPlanetaryAgents
+GALILEO_LOG_STREAM=test
+GALILEO_LOG_ENABLED=true
+GALILEO_FAIL_SILENTLY=true
+GALILEO_VERBOSE_FALLBACK=true
+```
+
+### Galileo Logging Flags
+
+- `GALILEO_LOG_ENABLED`: Enable/disable logging to Galileo (default: true)
+- `GALILEO_FAIL_SILENTLY`: Never throw errors, always fallback to console logging (default: true)  
+- `GALILEO_VERBOSE_FALLBACK`: Include detailed fallback logging information (default: true)
+
+When `GALILEO_LOG_ENABLED=false`, all logging will be disabled.
+When `GALILEO_FAIL_SILENTLY=true`, API errors will not crash the application.
+
+### Disabling Logging Locally
+
+To disable Galileo logging during local development:
+
+```bash
+GALILEO_LOG_ENABLED=false
+```
+
+This will skip all logging attempts and prevent any API calls to Galileo.
+
 ## 📄 License
 
 [Add your license information here]

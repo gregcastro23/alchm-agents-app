@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     
     const responseText = aiResponse.content
       .filter(c => c.type === 'text')
-      .map(c => c.text)
+      .map(c => c.type === 'text' ? c.text : '')
       .join('\n');
     
     return NextResponse.json({

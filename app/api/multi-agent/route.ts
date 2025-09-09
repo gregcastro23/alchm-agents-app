@@ -279,11 +279,7 @@ export async function POST(req: Request) {
       },
       aNumberInfo: aNumberInfo || undefined,
       processingTimeMs: processingTime,
-      agentType: 'planetary' as const,
-      metadata: {
-        agentCount: selectedAgents.length,
-        agents: selectedAgents
-      }
+      agentType: 'planetary' as const
     }
     
     // Log to Galileo (don't await)

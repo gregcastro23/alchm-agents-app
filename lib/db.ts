@@ -16,31 +16,21 @@ if (process.env.NODE_ENV === 'production') {
   prisma = (global as any).prisma;
 }
 
-// Redis client singleton - make it optional for build time
+// Redis client singleton - optional (only when REDIS_URL is provided)
 let redis: Redis | null = null;
 
-// Only initialize Redis if we're not in a build context
-if (typeof window === 'undefined' && process.env.NODE_ENV !== 'production') {
+// Initialize Redis only if explicitly configured
+if (typeof window === 'undefined' && process.env.REDIS_URL) {
   try {
-    if (process.env.REDIS_URL) {
-      redis = new Redis(process.env.REDIS_URL);
-    } else {
-      // Default to localhost for development
-      redis = new Redis({
-        host: 'localhost',
-        port: 6379,
-        retryStrategy: (times) => {
-          const delay = Math.min(times * 50, 2000);
-          return delay;
-        },
-        lazyConnect: true, // Don't connect immediately
-        maxRetriesPerRequest: 0 // Don't retry on connection failure
-      });
-    }
+    redis = new Redis(process.env.REDIS_URL, {
+      lazyConnect: true,
+      maxRetriesPerRequest: 0,
+      retryStrategy: (times) => Math.min(times * 50, 2000)
+    });
 
-    // Redis error handling
+    // Redis error handling (silent in absence of REDIS_URL)
     redis.on('error', (err) => {
-      console.error('Redis connection error:', err);
+      console.warn('Redis connection error (non-fatal):', err?.message || err);
     });
 
     redis.on('connect', () => {

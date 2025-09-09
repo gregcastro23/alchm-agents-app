@@ -7,10 +7,11 @@ import type { PersonalizedAIConfig } from '@/lib/types/personalized-ai';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const personalityId = params.id;
+    const resolvedParams = await params;
+    const personalityId = resolvedParams.id;
     
     if (!personalityId) {
       return NextResponse.json(
@@ -75,10 +76,11 @@ export async function GET(
 // PUT /api/personalized-ai/[id] - Update AI configuration
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const personalityId = params.id;
+    const resolvedParams = await params;
+    const personalityId = resolvedParams.id;
     const body = await request.json();
     
     // Update in database

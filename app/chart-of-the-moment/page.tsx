@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
 import { getPlanetaryDignity, getSignElement, getPlanetaryElement } from "@/lib/astrological-data"
-import { getCurrentPlanetaryPositions } from "@/lib/calculate-transits"
+import { usePlanetaryPositionsOnly } from "@/hooks/usePlanetaryPositions"
 import ElementalChart from "@/components/elemental-chart"
 import TarotCosmicWidget from "@/components/tarot-cosmic-widget"
 
@@ -15,18 +15,16 @@ export default function ChartOfTheMomentPage() {
   const [currentTime, setCurrentTime] = useState("")
   const [currentDate, setCurrentDate] = useState("")
   const [isDiurnal, setIsDiurnal] = useState(true)
-  const [currentPlanetaryPositions, setCurrentPlanetaryPositions] = useState<Record<string, { sign: string, degree: string }>>({})
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
-  const [retryCount, setRetryCount] = useState(0)
   
-  // Get the current planetary positions, date, and time
-  const fetchPlanetaryPositions = useCallback(() => {
-    setRefreshing(true)
-    
+  // Use unified planetary positions hook for consistency
+  const { positions: currentPlanetaryPositions, loading, error, refresh } = usePlanetaryPositionsOnly({
+    refreshInterval: 30000, // 30 seconds
+    useApi: false // Use direct calculation for backward compatibility
+  })
+  
+  // Update time and date display
+  const updateTimeAndDate = useCallback(() => {
     const now = new Date()
-    // Force a timestamp to prevent caching
-    const timestamp = now.getTime()
     
     // Format date as YYYY-MM-DD
     const date = now.toISOString().split('T')[0]
@@ -42,28 +40,14 @@ export default function ChartOfTheMomentPage() {
     setCurrentDate(date)
     setCurrentTime(time)
     setIsDiurnal(diurnal)
-    
-    // Calculate current planetary positions with the timestamp to prevent caching
-    const positions = getCurrentPlanetaryPositions(timestamp)
-    
-    // Check if positions seem valid
-    const positionCount = Object.keys(positions).length
-    if (positionCount < 10 && retryCount < 3) {
-      console.log(`Incomplete positions (${positionCount}), retrying...`, positions)
-      setRetryCount(retryCount + 1)
-      setTimeout(fetchPlanetaryPositions, 1000)
-      return
-    }
-    
-    setCurrentPlanetaryPositions(positions)
-    setLoading(false)
-    setRefreshing(false)
-  }, [retryCount])
+  }, [])
   
-  // Fetch on mount and when retry count changes
+  // Update time and date on mount and every minute
   useEffect(() => {
-    fetchPlanetaryPositions()
-  }, [fetchPlanetaryPositions])
+    updateTimeAndDate()
+    const interval = setInterval(updateTimeAndDate, 60000) // Update every minute
+    return () => clearInterval(interval)
+  }, [updateTimeAndDate])
   
   // Prepare data for ElementalChart component
   const chartPlanets = Object.entries(currentPlanetaryPositions).reduce(
@@ -115,9 +99,9 @@ export default function ChartOfTheMomentPage() {
           <div className="flex flex-col items-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
             <p>Calculating planetary positions...</p>
-            {retryCount > 0 && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Retrying calculation ({retryCount}/3)...
+            {error && (
+              <p className="text-sm text-red-500 mt-2">
+                {error}
               </p>
             )}
           </div>
@@ -137,12 +121,12 @@ export default function ChartOfTheMomentPage() {
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={fetchPlanetaryPositions}
-          disabled={refreshing}
+          onClick={refresh}
+          disabled={loading}
           className="gap-2"
         >
-          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-          {refreshing ? 'Refreshing...' : 'Refresh Positions'}
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          {loading ? 'Refreshing...' : 'Refresh Positions'}
         </Button>
       </div>
       

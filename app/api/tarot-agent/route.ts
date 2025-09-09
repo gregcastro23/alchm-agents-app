@@ -87,11 +87,11 @@ export async function POST(req: Request) {
         startTime: Date.now(),
         planet: cardName, // Using cardName as the primary identifier
         sign: suit || readingType,
-        degree: 1,
+        degree: "1",
         conversationCount: 1
       }
     } else {
-      conversationContext = createConversationContext(cardName || "Tarot", suit || readingType, 1)
+      conversationContext = createConversationContext(cardName || "Tarot", suit || readingType, "1")
     }
     
     // Get card information

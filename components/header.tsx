@@ -14,19 +14,44 @@ export function Header() {
     setTheme(theme === "dark" ? "light" : "dark")
   }
 
-  const navigation = [
-    { href: "/monica-guide", label: "💚 Meet Monica" },
-    { href: "/tarot-dashboard", label: "🔮 Tarot Dashboard" },
-    { href: "/consciousness-survey", label: "🧠 Consciousness AI" },
-    { href: "/chart-of-the-moment", label: "Chart of the Moment" },
-    { href: "/astrological-agents", label: "Agents" },
-    { href: "/planetary-agents", label: "Planetary Wisdom" },
-    { href: "/chart-interpreter", label: "Chart Interpreter" },
-    { href: "/planetary-agents/galileo", label: "Galileo Agents" },
-    { href: "/planetary-agents/model-training", label: "Model Training" },
-    { href: "/planetary-agents/alchm-quantities", label: "Alchm Quantities" },
-    { href: "/galileo-setup", label: "Galileo Setup" },
+  const navigationGroups = [
+    {
+      title: "🧠 Core AI",
+      items: [
+        { href: "/monica-guide", label: "Meet Monica" },
+        { href: "/philosophers-stone", label: "The Philosopher's Stone" },
+      ]
+    },
+    {
+      title: "🔮 Divination",
+      items: [
+        { href: "/tarot-dashboard", label: "Tarot Dashboard" },
+        { href: "/chart-interpreter", label: "Chart Interpreter" },
+        { href: "/moon-phases", label: "Moon Phases" },
+      ]
+    },
+    {
+      title: "🌟 Analysis",
+      items: [
+        { href: "/planetary-agents", label: "Planetary Wisdom" },
+        { href: "/", label: "Current Chart" },
+        { href: "/elemental-chart", label: "Elemental Chart" },
+        { href: "/planetary-agents/alchm-quantities", label: "Alchm Quantities" },
+      ]
+    },
+    {
+      title: "⚙️ System",
+      items: [
+        { href: "/astrological-agents", label: "Agents" },
+        { href: "/galileo-setup", label: "Galileo Setup" },
+        { href: "/consciousness-survey", label: "Survey" },
+        { href: "/universe-learning", label: "Learning" },
+      ]
+    }
   ]
+
+  // Flatten for mobile view
+  const allNavItems = navigationGroups.flatMap(group => group.items)
 
   return (
     <header className="border-b">
@@ -36,8 +61,32 @@ export function Header() {
         </Link>
         
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
-          {navigation.map((item) => (
+        <nav className="hidden lg:flex items-center gap-8">
+          {navigationGroups.map((group) => (
+            <div key={group.title} className="relative group">
+              <span className="text-sm font-medium text-muted-foreground cursor-default">
+                {group.title}
+              </span>
+              <div className="absolute top-full left-0 mt-2 w-48 bg-background border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="py-2">
+                  {group.items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        {/* Simplified Desktop Navigation for medium screens */}
+        <nav className="hidden md:flex lg:hidden items-center gap-4">
+          {allNavItems.slice(0, 6).map((item) => (
             <Link 
               key={item.href}
               href={item.href} 
@@ -90,16 +139,25 @@ export function Header() {
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t">
-          <nav className="container py-4 flex flex-col gap-4">
-            {navigation.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-sm font-medium hover:text-primary transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
+          <nav className="container py-4 space-y-4">
+            {navigationGroups.map((group) => (
+              <div key={group.title} className="space-y-2">
+                <h3 className="text-sm font-semibold text-muted-foreground px-2">
+                  {group.title}
+                </h3>
+                <div className="space-y-1">
+                  {group.items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="block py-2 px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             ))}
           </nav>
         </div>

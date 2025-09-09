@@ -170,59 +170,70 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
     // Calculate current cosmic tarot configuration
     const loadTarotConfiguration = async () => {
       setIsLoading(true)
-      
+
       try {
-        // Get current decan card with real-time positions
-        const { card: decanCard, sunPosition: position } = await getCurrentDecan(abortController.signal)
-        
-        // Check if component was unmounted or aborted
-        if (abortController.signal.aborted) return
-        
-        setCurrentDecanCard(decanCard)
-        setSunPosition(position)
-        
-        // Get the decan's planetary ruler card
-        let rulerCard: MajorArcanaCard | null = null
-        if (decanCard && decanCard.planetaryRuler) {
-          rulerCard = getPlanetaryRulerCard(decanCard.planetaryRuler)
-        }
-        
-        // If no ruler card found, fallback to Sun
-        if (!rulerCard) {
-          rulerCard = getPlanetaryRulerCard('Sun')
-        }
-        
-        setPlanetaryCard(rulerCard)
-        
-        // Generate consciousness crafting insight
-        if (decanCard && rulerCard) {
-          const craftingInsight = generateConsciousnessCraftingInsight(decanCard, rulerCard)
-          setInsight(craftingInsight)
-          onInsightGenerated?.(craftingInsight)
-        }
-      } catch (error) {
-        console.error('Error loading tarot configuration:', error)
-        
-        // Check if the error is due to abortion
+        // Early abort check before any async operations
         if (abortController.signal.aborted) {
-          console.log('Request was aborted')
+          console.log('Tarot configuration request aborted before starting')
           return
         }
+
+        // Get current decan card with real-time positions
+        const { card: decanCard, sunPosition: position } = await getCurrentDecan(abortController.signal)
+
+        // Check if component was unmounted or aborted after async operation
+        if (abortController.signal.aborted) return
         
-        // Fallback: set default values if API fails
-        const fallbackCard = DECAN_TAROT_MAPPINGS[110] // Default Cancer 3rd decan
-        setCurrentDecanCard(fallbackCard || null)
-        setSunPosition('Unable to determine (using fallback)')
-        
-        // Set fallback planetary card
-        const fallbackRulerCard = getPlanetaryRulerCard('Sun')
-        setPlanetaryCard(fallbackRulerCard)
-        
-        // Generate fallback insight
-        if (fallbackCard && fallbackRulerCard) {
-          const fallbackInsight = generateConsciousnessCraftingInsight(fallbackCard, fallbackRulerCard)
-          setInsight(fallbackInsight)
-          onInsightGenerated?.(fallbackInsight)
+        // Only update state if not aborted
+        if (!abortController.signal.aborted) {
+          setCurrentDecanCard(decanCard)
+          setSunPosition(position)
+
+          // Get the decan's planetary ruler card
+          let rulerCard: MajorArcanaCard | null = null
+          if (decanCard && decanCard.planetaryRuler) {
+            rulerCard = getPlanetaryRulerCard(decanCard.planetaryRuler)
+          }
+
+          // If no ruler card found, fallback to Sun
+          if (!rulerCard) {
+            rulerCard = getPlanetaryRulerCard('Sun')
+          }
+
+          setPlanetaryCard(rulerCard)
+
+          // Generate consciousness crafting insight
+          if (decanCard && rulerCard) {
+            const craftingInsight = generateConsciousnessCraftingInsight(decanCard, rulerCard)
+            setInsight(craftingInsight)
+            onInsightGenerated?.(craftingInsight)
+          }
+        }
+      } catch (error) {
+        // Check if the error is due to abortion - handle this gracefully
+        if (abortController.signal.aborted || error instanceof Error && error.name === 'AbortError') {
+          console.log('Tarot configuration request was aborted - component likely unmounted')
+          return
+        }
+
+        console.error('Error loading tarot configuration:', error)
+
+        // Fallback: set default values if API fails (only if not aborted)
+        if (!abortController.signal.aborted) {
+          const fallbackCard = DECAN_TAROT_MAPPINGS[110] // Default Cancer 3rd decan
+          setCurrentDecanCard(fallbackCard || null)
+          setSunPosition('Unable to determine (using fallback)')
+
+          // Set fallback planetary card
+          const fallbackRulerCard = getPlanetaryRulerCard('Sun')
+          setPlanetaryCard(fallbackRulerCard)
+
+          // Generate fallback insight
+          if (fallbackCard && fallbackRulerCard) {
+            const fallbackInsight = generateConsciousnessCraftingInsight(fallbackCard, fallbackRulerCard)
+            setInsight(fallbackInsight)
+            onInsightGenerated?.(fallbackInsight)
+          }
         }
       } finally {
         // Always clear loading state unless aborted
@@ -264,7 +275,7 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
         <CardHeader className="text-center">
           <CardTitle className="flex items-center justify-center gap-2 text-xl">
             <Crown className="h-6 w-6 text-purple-600" />
-            Monica's Tarot Oracle
+            Monica&apos;s Tarot Oracle
             <Sparkles className="h-6 w-6 text-gold-500" />
           </CardTitle>
           <CardDescription className="text-purple-700">

@@ -146,12 +146,12 @@ export function AlchemicalConsciousnessDashboard({
       </div>
 
       <Tabs defaultValue="alchemical" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">  // Change to 5
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="alchemical">Alchemical</TabsTrigger>
           <TabsTrigger value="elemental">Elemental</TabsTrigger>
           <TabsTrigger value="coefficients">Coefficients</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          <TabsTrigger value="pillars">Pillars</TabsTrigger>  // New tab
+          <TabsTrigger value="pillars">Pillars</TabsTrigger>
         </TabsList>
 
         {/* Alchemical Quantities */}

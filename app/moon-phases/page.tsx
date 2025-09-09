@@ -11,7 +11,7 @@ export default function MoonPhasesPage() {
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold">Moon Phase Oracle System</h1>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          Experience the Moon's wisdom through {Object.values(MOON_PHASES).length} distinct phases, 
+          Experience the Moon&apos;s wisdom through {Object.values(MOON_PHASES).length} distinct phases,
           each expressing uniquely through the 12 zodiac signs at every degree
         </p>
         <div className="flex justify-center gap-4">
@@ -56,7 +56,7 @@ export default function MoonPhasesPage() {
           <CardHeader>
             <CardTitle>Zodiacal Expressions</CardTitle>
             <CardDescription>
-              The Moon expresses differently through each sign's element and modality
+              The Moon expresses differently through each sign&apos;s element and modality
             </CardDescription>
           </CardHeader>
           <CardContent>

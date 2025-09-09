@@ -796,8 +796,18 @@ import { fetchCurrentPlanetaryPositions, getSunDecanFromPosition } from './fetch
 // Calculate current decan based on Sun's actual position from API
 export async function getCurrentDecan(signal?: AbortSignal): Promise<{ decan: number; card: TarotCard | null; sunPosition: string }> {
   try {
+    // Check if already aborted before making the request
+    if (signal?.aborted) {
+      throw new Error('Request aborted')
+    }
+    
     // Fetch real-time planetary positions
     const positions = await fetchCurrentPlanetaryPositions(signal)
+    
+    // Check if aborted after the request
+    if (signal?.aborted) {
+      throw new Error('Request aborted')
+    }
     
     if (positions && positions['Planet Positions'] && positions['Planet Positions']['Sun']) {
       const sunData = positions['Planet Positions']['Sun']
@@ -814,26 +824,128 @@ export async function getCurrentDecan(signal?: AbortSignal): Promise<{ decan: nu
       }
     }
   } catch (error) {
+    // Handle AbortError specifically
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw error // Re-throw AbortError so it can be caught by the calling component
+    }
     console.error('Error fetching current decan:', error)
   }
   
   // Fallback to date-based calculation if API fails
   const now = new Date()
-  const month = now.getMonth() + 1
+  const month = now.getMonth() + 1 // Note: Using 1-indexed months (January = 1)
   const day = now.getDate()
   
   let decan = 110 // Default to 3rd decan Cancer
+  let fallbackSign = 'Cancer'
   
-  // Simple date-based fallback (less accurate but reliable)
-  if (month === 7 && day >= 23) decan = 120 // Leo 1st decan
-  else if (month === 8 && day <= 2) decan = 120 // Leo 1st decan
-  else if (month === 8 && day <= 12) decan = 130 // Leo 2nd decan
-  else if (month === 8 && day <= 22) decan = 140 // Leo 3rd decan
+  // Complete date-based fallback for all seasons
+  if (month === 1) { // January - Capricorn/Aquarius
+    if (day <= 19) {
+      decan = day <= 9 ? 290 : 300 // Capricorn 3rd decan or Aquarius 1st decan
+      fallbackSign = day <= 19 ? 'Capricorn' : 'Aquarius'
+    } else {
+      decan = day <= 29 ? 300 : 310 // Aquarius 1st or 2nd decan
+      fallbackSign = 'Aquarius'
+    }
+  } else if (month === 2) { // February - Aquarius/Pisces
+    if (day <= 18) {
+      decan = day <= 8 ? 310 : 320 // Aquarius 2nd or 3rd decan
+      fallbackSign = 'Aquarius'
+    } else {
+      decan = 330 // Pisces 1st decan
+      fallbackSign = 'Pisces'
+    }
+  } else if (month === 3) { // March - Pisces/Aries
+    if (day <= 20) {
+      decan = day <= 10 ? 340 : 350 // Pisces 2nd or 3rd decan
+      fallbackSign = 'Pisces'
+    } else {
+      decan = 0 // Aries 1st decan
+      fallbackSign = 'Aries'
+    }
+  } else if (month === 4) { // April - Aries/Taurus
+    if (day <= 19) {
+      decan = day <= 9 ? 10 : 20 // Aries 2nd or 3rd decan
+      fallbackSign = 'Aries'
+    } else {
+      decan = 30 // Taurus 1st decan
+      fallbackSign = 'Taurus'
+    }
+  } else if (month === 5) { // May - Taurus/Gemini
+    if (day <= 20) {
+      decan = day <= 10 ? 40 : 50 // Taurus 2nd or 3rd decan
+      fallbackSign = 'Taurus'
+    } else {
+      decan = 60 // Gemini 1st decan
+      fallbackSign = 'Gemini'
+    }
+  } else if (month === 6) { // June - Gemini/Cancer
+    if (day <= 20) {
+      decan = day <= 10 ? 70 : 80 // Gemini 2nd or 3rd decan
+      fallbackSign = 'Gemini'
+    } else {
+      decan = 90 // Cancer 1st decan
+      fallbackSign = 'Cancer'
+    }
+  } else if (month === 7) { // July - Cancer/Leo
+    if (day <= 22) {
+      decan = day <= 12 ? 100 : 110 // Cancer 2nd or 3rd decan
+      fallbackSign = 'Cancer'
+    } else {
+      decan = 120 // Leo 1st decan
+      fallbackSign = 'Leo'
+    }
+  } else if (month === 8) { // August - Leo/Virgo
+    if (day <= 22) {
+      decan = day <= 12 ? 130 : 140 // Leo 2nd or 3rd decan
+      fallbackSign = 'Leo'
+    } else {
+      decan = 150 // Virgo 1st decan
+      fallbackSign = 'Virgo'
+    }
+  } else if (month === 9) { // September - Virgo/Libra
+    if (day <= 22) {
+      decan = day <= 12 ? 160 : 170 // Virgo 2nd or 3rd decan
+      fallbackSign = 'Virgo'
+    } else {
+      decan = 180 // Libra 1st decan
+      fallbackSign = 'Libra'
+    }
+  } else if (month === 10) { // October - Libra/Scorpio
+    if (day <= 22) {
+      decan = day <= 12 ? 190 : 200 // Libra 2nd or 3rd decan
+      fallbackSign = 'Libra'
+    } else {
+      decan = 210 // Scorpio 1st decan
+      fallbackSign = 'Scorpio'
+    }
+  } else if (month === 11) { // November - Scorpio/Sagittarius
+    if (day <= 21) {
+      decan = day <= 11 ? 220 : 230 // Scorpio 2nd or 3rd decan
+      fallbackSign = 'Scorpio'
+    } else {
+      decan = 240 // Sagittarius 1st decan
+      fallbackSign = 'Sagittarius'
+    }
+  } else if (month === 12) { // December - Sagittarius/Capricorn
+    if (day <= 21) {
+      decan = day <= 11 ? 250 : 260 // Sagittarius 2nd or 3rd decan
+      fallbackSign = 'Sagittarius'
+    } else {
+      decan = 270 // Capricorn 1st decan
+      fallbackSign = 'Capricorn'
+    }
+  }
+  
+  // Calculate approximate degree within the decan for fallback
+  const baseDecanDegree = decan % 360
+  const approximateDegree = baseDecanDegree + Math.floor((day % 10) * 1.0) // Rough approximation
   
   return {
     decan,
     card: DECAN_TAROT_MAPPINGS[decan] || DECAN_TAROT_MAPPINGS[110],
-    sunPosition: 'Approximate (API unavailable)'
+    sunPosition: `${fallbackSign} ${approximateDegree.toFixed(1)}° (calculated)`
   }
 }
 

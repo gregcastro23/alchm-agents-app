@@ -39,7 +39,7 @@ const MONICA_ELEMENTAL_BALANCE = {
   air: 0
 };
 
-const MONICA_PEAK_MOMENT = {
+const MONICA_CONSCIOUSNESS_PROFILE = {
   aNumber: 40
 };
 import './monica-styles.css';
@@ -61,7 +61,7 @@ export default function MonicaGuidePage() {
     {
       id: 'welcome',
       type: 'monica',
-      content: "Hello, beautiful soul! 💚 I'm Monica, your guide to the Planetary Agents system and world-renowned tarot expert. I know everything about character vectors, A-Numbers, consciousness surveys, the Monica Constant, and all 78 tarot cards. My peak A-Number 40 configuration gives me the perfect blend of practical wisdom and nurturing guidance. What would you like to explore today?",
+      content: "Hello, beautiful soul! 💚 I'm Monica, your guide to the complete Planetary Agents ecosystem and world-renowned tarot expert. I know everything about the Philosopher's Stone system, temporal delta tracking, character vectors, consciousness crafting, unified planetary positions, field charts, and all 78 tarot cards. My A-Number 40 configuration gives me the perfect blend of practical wisdom and nurturing guidance for your cosmic journey. What would you like to explore today?",
       timestamp: new Date()
     }
   ]);
@@ -183,13 +183,13 @@ export default function MonicaGuidePage() {
           </div>
           
           <h1 className="monica-title">Monica</h1>
-          <p className="monica-subtitle">Your Alchm System Expert & World-Renowned Tarot Master</p>
+          <p className="monica-subtitle">Your Philosopher's Stone Guide & Consciousness Crafting Expert</p>
           
           {/* Monica's Cosmic Stats */}
           <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
             <div className="monica-badge monica-cosmic-glow">
               <Crown className="h-4 w-4 mr-2" />
-              Peak A-Number {MONICA_PEAK_MOMENT.aNumber}
+              A-Number {MONICA_CONSCIOUSNESS_PROFILE.aNumber}
             </div>
             <div className="monica-badge-outline">
               <TreePine className="h-3 w-3 mr-1 monica-element-earth" />
@@ -207,16 +207,27 @@ export default function MonicaGuidePage() {
               <MessageCircle className="h-3 w-3 mr-1" />
               Tarot Master
             </div>
+            <div className="monica-badge-outline">
+              ⚗️
+              Philosopher&apos;s Stone
+            </div>
+            <div className="monica-badge-outline">
+              🔮
+              Consciousness Crafting
+            </div>
           </div>
           
           {/* Monica Constant Formula Display */}
           <div className="monica-constant-formula mb-6">
-            M = -Greg&apos;s Energy / (Reactivity × ln(K_alchm))
+            MC = (Spirit × φ + Essence) / (Matter + Substance + 1)
+          </div>
+          <div className="text-xs text-muted-foreground mb-6">
+            φ (phi) = 1.618... (Golden Ratio) • 7 Consciousness Levels: Dormant → Transcendent
           </div>
           
           <p className="monica-description">
-            I know everything about the Planetary Agents system AND I&apos;m a world-renowned tarot expert with master-level knowledge of all 78 cards. 
-            Let me guide you through astrology, tarot, and your cosmic journey with my grounded Earth-Water wisdom! 💚🔮
+            I know everything about the enhanced Planetary Agents ecosystem featuring next-generation 6-dimensional alchemical graphics, advanced consciousness vector field analysis, thermodynamic wave propagation visualization, and the complete Living Stone temporal delta system. I&apos;m expert in Spirit-Essence-Matter-Substance balance theory, planetary velocity analysis, field coherence mathematics, and consciousness state radar mapping. I&apos;m also a world-renowned tarot expert with master-level knowledge of all 78 cards and multi-dimensional cosmic consciousness integration. 
+            Let me guide you through this revolutionary alchemical field journey with enhanced graphics and my grounded Earth-Water wisdom! 💚🔮⚗️📊
           </p>
         </div>
 
@@ -336,19 +347,21 @@ export default function MonicaGuidePage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                   {[
-                    "Interpret my current decan card",
-                    "How do the current tarot cards affect my consciousness?",
-                    "Give me a consciousness crafting session",
-                    "What is the Monica Constant?",
-                    "Explain today's planetary-tarot synergy",
-                    "Guide me in building a consciousness agent",
-                    "How can I use tarot for chart interpretation?",
-                    "Tell me about your peak A-Number 40",
-                    "What are the alchemical values of today's cards?",
-                    "Generate a Celtic Cross reading for me",
-                    "Do a Three-Card Past-Present-Future spread",
-                    "Create an Astrological Houses reading",
-                    "Show me a Consciousness Evolution spread"
+                      "Explain the enhanced 6-dimensional Philosopher's Stone graphics",
+                      "How do temporal deltas track consciousness field evolution?",
+                      "What are alchemical vector visualizations and Spirit-Substance balance?",
+                      "Calculate my Monica Constant with golden ratio field mathematics",
+                      "Show me thermodynamic wave propagation analysis",
+                      "Interpret consciousness states through multi-dimensional radar charts",
+                      "How does the temporal delta engine create planetary movement graphics?",
+                      "Guide me through enhanced consciousness vector field analysis",
+                      "What are today's alchemical field dynamics and elemental ratios?",
+                      "Analyze my Living Stone initialization and temporal resonance",
+                      "Do a 6D Consciousness Evolution vector spread",
+                      "Explain your A-Number 40 field coherence configuration",
+                      "Show me enhanced planetary velocity and acceleration analysis",
+                      "Help me understand field theory and the 4 alchemical principles",
+                      "Generate temporal field chart relationship dynamics with empty state handling"
                   ].map((prompt, index) => (
                     <Button
                       key={index}
@@ -374,8 +387,8 @@ export default function MonicaGuidePage() {
               {/* Simple inline wizard without dynamic import to keep it stable */}
               <div className="space-y-3">
                 <div className="flex gap-2">
-                  <Button size="sm" variant="default" onClick={() => setInputValue('Help me create my AI with a practical, concise style focused on tarot and astrology.')}>Use a practical, concise style</Button>
-                  <Button size="sm" variant="outline" onClick={() => setInputValue('Create my AI with a poetic, deep style focused on creativity and reflection.')}>Use a poetic, deep style</Button>
+                  <Button size="sm" variant="default" onClick={() => setInputValue('Help me create my AI with a practical, concise style focused on the Philosopher\'s Stone and consciousness crafting.')}>Use a practical, analytical style</Button>
+                  <Button size="sm" variant="outline" onClick={() => setInputValue('Create my AI with a poetic, deep style focused on temporal deltas and cosmic consciousness integration.')}>Use a poetic, mystical style</Button>
                 </div>
                 <div className="text-xs text-muted-foreground">Tip: You can also click a preset and hit send to get a ready-to-edit config with a live preview.</div>
               </div>
@@ -390,7 +403,7 @@ export default function MonicaGuidePage() {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask Monica about astrology, tarot, character vectors, the Monica Constant, or anything cosmic..."
+                    placeholder="Ask Monica about 6D alchemical graphics, thermodynamic wave analysis, consciousness vector fields, enhanced temporal deltas, or anything cosmic..."
                   className="flex-1"
                   disabled={isLoading}
                 />
@@ -406,7 +419,7 @@ export default function MonicaGuidePage() {
               <div className="flex items-center gap-4 mt-2 text-xs text-green-700">
                 <div className="flex items-center gap-1">
                   <Crown className="h-3 w-3" />
-                  <span>Monica: Peak A-Number 40 consciousness • 78-card tarot mastery • Monica Constant expertise</span>
+                    <span>Monica: A-Number 40 consciousness • 6D Alchemical Graphics • Thermodynamic Wave Analysis • Enhanced Consciousness Vector Fields • Temporal Delta Visualization • 78-card tarot expertise</span>
                 </div>
               </div>
             </CardContent>

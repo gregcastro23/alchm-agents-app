@@ -8,6 +8,8 @@ const GALILEO_API_KEY = process.env.GALILEO_API_KEY;
 const GALILEO_PROJECT = process.env.GALILEO_PROJECT || 'AlchmPlanetaryAgents';
 const QUANTITIES_STREAM = process.env.GALILEO_QUANTITIES_STREAM || 'alchm-quantities';
 const GALILEO_BASE_URL = process.env.GALILEO_BASE_URL || 'https://api.galileo.ai';
+const GALILEO_FAIL_SILENTLY = (process.env.GALILEO_FAIL_SILENTLY ?? 'true') !== 'false';
+const GALILEO_VERBOSE_FALLBACK = (process.env.GALILEO_VERBOSE_FALLBACK ?? 'true') !== 'false';
 
 export interface QuantitiesData {
   Spirit: number;
@@ -282,6 +284,14 @@ class GalileoLogger {
 
       if (!response.ok) {
         const errorText = await response.text();
+        // Provide a helpful hint for project type mismatches (422)
+        if (response.status === 422 && errorText.includes('not of type Observe')) {
+          const hint = 'Hint: Configure GALILEO_PROJECT as an Observe project or set GALILEO_FAIL_SILENTLY=true';
+          const message = `Galileo API error: ${response.status} ${response.statusText} - ${errorText}\n${hint}`;
+          if (GALILEO_VERBOSE_FALLBACK) console.warn(message);
+          // fall through to fallback logging below
+          throw new Error(message);
+        }
         throw new Error(`Galileo API error: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
@@ -290,9 +300,9 @@ class GalileoLogger {
       return true;
       
     } catch (error) {
-      console.error('Error logging session to Galileo:', error);
+      if (GALILEO_VERBOSE_FALLBACK) console.error('Error logging session to Galileo:', error);
       
-      // Fallback: log to console with structured format
+      // Fallback: log to console with structured format (non-fatal)
       console.log('====== GALILEO SESSION LOG (FALLBACK) ======');
       console.log('Project:', GALILEO_PROJECT);
       console.log('Stream:', QUANTITIES_STREAM);
@@ -303,7 +313,8 @@ class GalileoLogger {
       console.log('Error:', error instanceof Error ? error.message : String(error));
       console.log('=============================================');
       
-      return true; // Return true for fallback logging
+      // Never throw; optionally signal success to avoid UX degradation
+      return GALILEO_FAIL_SILENTLY ? true : false;
     }
   }
 

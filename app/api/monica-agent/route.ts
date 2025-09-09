@@ -26,7 +26,7 @@ function computeCustomizationProgress(ctx: { quickProfile: any, birthData: any, 
   if (ctx.quickProfile) score += 1
   if (ctx.birthData) score += 1
   if (ctx.userPreferences) score += 1
-  if (ctx.tartotContext) score += 0 // typo guard; no-op
+  if (ctx.tarotContext) score += 1
   if (ctx.tarotContext) score += 1
   if (ctx.spreadContext) score += 1
   return Math.round((score / max) * 100)

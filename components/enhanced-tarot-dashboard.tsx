@@ -60,6 +60,12 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
       setIsLoading(true)
       
       try {
+        // Early abort check before any async operations
+        if (abortController.signal.aborted) {
+          console.log('Enhanced tarot dashboard request aborted before starting')
+          return
+        }
+        
         const { card: decanCard, sunPosition: position } = await getCurrentDecan(abortController.signal)
         
         if (abortController.signal.aborted) return
@@ -83,20 +89,33 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
           setInsight(craftingInsight)
         }
       } catch (error) {
+        // Check if the error is due to abortion first
+        if (abortController.signal.aborted) {
+          console.log('Enhanced tarot dashboard request was aborted')
+          return
+        }
+        
+        // Handle AbortError specifically
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.log('Enhanced tarot dashboard AbortError caught:', error.message)
+          return
+        }
+        
         console.error('Error loading tarot dashboard:', error)
         
-        if (abortController.signal.aborted) return
-        
-        const fallbackCard = DECAN_TAROT_MAPPINGS[110]
-        const fallbackRulerCard = getPlanetaryRulerCard('Sun')
-        
-        setCurrentCard(fallbackCard)
-        setSunPosition('Fallback position')
-        setPlanetaryCard(fallbackRulerCard)
-        
-        if (fallbackCard && fallbackRulerCard) {
-          const fallbackInsight = generateConsciousnessCraftingInsight(fallbackCard, fallbackRulerCard)
-          setInsight(fallbackInsight)
+        // Only update state if not aborted
+        if (!abortController.signal.aborted) {
+          const fallbackCard = DECAN_TAROT_MAPPINGS[110]
+          const fallbackRulerCard = getPlanetaryRulerCard('Sun')
+          
+          setCurrentCard(fallbackCard)
+          setSunPosition('Fallback position')
+          setPlanetaryCard(fallbackRulerCard)
+          
+          if (fallbackCard && fallbackRulerCard) {
+            const fallbackInsight = generateConsciousnessCraftingInsight(fallbackCard, fallbackRulerCard)
+            setInsight(fallbackInsight)
+          }
         }
       } finally {
         if (!abortController.signal.aborted) {

@@ -434,7 +434,7 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
         <CardHeader className="text-center">
           <CardTitle className="flex items-center justify-center gap-2 text-xl">
             <Crown className="h-6 w-6 text-purple-600" />
-            Monica's Tarot Spread Oracle
+            Monica&apos;s Tarot Spread Oracle
             <Sparkles className="h-6 w-6 text-gold-500" />
           </CardTitle>
           <CardDescription className="text-purple-700">

@@ -46,6 +46,12 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
     
     const loadCurrentCard = async () => {
       try {
+        // Early abort check before any async operations
+        if (abortController.signal.aborted) {
+          console.log('TarotCosmicWidget request aborted before starting')
+          return
+        }
+        
         const { card, sunPosition } = await getCurrentDecan(abortController.signal)
         
         if (abortController.signal.aborted) return
@@ -53,11 +59,25 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
         setCurrentCard(card)
         setSunPosition(sunPosition)
       } catch (error) {
-        if (abortController.signal.aborted) return
+        // Check if the error is due to abortion first
+        if (abortController.signal.aborted) {
+          console.log('TarotCosmicWidget request was aborted')
+          return
+        }
+        
+        // Handle AbortError specifically
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.log('TarotCosmicWidget AbortError caught:', error.message)
+          return
+        }
         
         console.error('Widget error:', error)
-        setCurrentCard(DECAN_TAROT_MAPPINGS[110])
-        setSunPosition('Fallback position')
+        
+        // Only update state if not aborted
+        if (!abortController.signal.aborted) {
+          setCurrentCard(DECAN_TAROT_MAPPINGS[110])
+          setSunPosition('Fallback position')
+        }
       } finally {
         if (!abortController.signal.aborted) {
           setIsLoading(false)
@@ -165,7 +185,7 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
                 </Button>
                 
                 {linkToFullOracle && (
-                  <Link href="/monica-guide">
+                  <Link href="/tarot-dashboard">
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
                       <ChevronRight className="h-3 w-3" />
                     </Button>
@@ -213,7 +233,7 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
         )}
         
         {linkToFullOracle && (
-          <Link href="/monica-guide">
+          <Link href="/tarot-dashboard">
             <Button variant="ghost" size="sm" className="h-6 px-2">
               <ChevronRight className="h-3 w-3" />
             </Button>
@@ -237,7 +257,7 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
           </>
         )}
         {linkToFullOracle && (
-          <Link href="/monica-guide" className="text-purple-600 hover:text-purple-800">
+          <Link href="/tarot-dashboard" className="text-purple-600 hover:text-purple-800">
             <ChevronRight className="h-3 w-3" />
           </Link>
         )}
@@ -335,9 +355,9 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
               </Button>
               
               {linkToFullOracle && (
-                <Link href="/monica-guide">
+                <Link href="/tarot-dashboard">
                   <Button variant="outline" size="sm" className="h-7 px-3 text-xs">
-                    Full Oracle
+                    Tarot Dashboard
                     <ChevronRight className="h-3 w-3 ml-1" />
                   </Button>
                 </Link>

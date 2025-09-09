@@ -5367,6 +5367,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lucide-react@npm:^0.542.0":
+  version: 0.542.0
+  resolution: "lucide-react@npm:0.542.0"
+  peerDependencies:
+    react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 3ccdb898a480f0194f93abef0b6f0347bc2647db24051e65a17c1dbd22ca0d10a7636d9af68c92665b42b6c9e761567a0d65944fe8568fb0e30a7ea57281ccec
+  languageName: node
+  linkType: hard
+
 "make-fetch-happen@npm:^14.0.3":
   version: 14.0.3
   resolution: "make-fetch-happen@npm:14.0.3"
@@ -6136,6 +6145,7 @@ __metadata:
     globals: "npm:^16.3.0"
     input-otp: "npm:^1.4.2"
     ioredis: "npm:^5.6.1"
+    lucide-react: "npm:^0.542.0"
     next: "npm:^15.5.2"
     next-themes: "npm:^0.4.6"
     openai: "npm:4.11.0"
@@ -6146,10 +6156,10 @@ __metadata:
     react-day-picker: "npm:^9.8.0"
     react-dom: "npm:^18.3.1"
     react-hook-form: "npm:^7.60.0"
-    react-remove-scroll: "npm:^2.7.1"
+    react-remove-scroll: "npm:^2.5.5"
     react-remove-scroll-bar: "npm:^2.3.8"
     react-resizable-panels: "npm:^3.0.3"
-    react-style-singleton: "npm:^2.2.3"
+    react-style-singleton: "npm:^2.2.1"
     recharts: "npm:2.9.0"
     redis: "npm:^5.6.1"
     sonner: "npm:^2.0.6"
@@ -6157,8 +6167,9 @@ __metadata:
     tailwind-merge: "npm:^3.3.0"
     tailwindcss: "npm:3.3.3"
     tailwindcss-animate: "npm:^1.0.7"
-    tslib: "npm:^2.6.3"
+    tslib: "npm:^2.6.0"
     typescript: "npm:5.2.2"
+    use-callback-ref: "npm:^1.3.3"
     vaul: "npm:^1.1.2"
     zod: "npm:^3.23.8"
   languageName: unknown
@@ -6400,7 +6411,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-remove-scroll@npm:^2.6.3, react-remove-scroll@npm:^2.7.1":
+"react-remove-scroll@npm:^2.5.5, react-remove-scroll@npm:^2.6.3":
   version: 2.7.1
   resolution: "react-remove-scroll@npm:2.7.1"
   dependencies:
@@ -6455,7 +6466,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-style-singleton@npm:^2.2.2, react-style-singleton@npm:^2.2.3":
+"react-style-singleton@npm:^2.2.1, react-style-singleton@npm:^2.2.2, react-style-singleton@npm:^2.2.3":
   version: 2.2.3
   resolution: "react-style-singleton@npm:2.2.3"
   dependencies:
@@ -7444,7 +7455,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.4.0, tslib@npm:^2.6.3, tslib@npm:^2.8.0":
+"tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.4.0, tslib@npm:^2.6.0, tslib@npm:^2.8.0":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62

@@ -5,6 +5,44 @@
 const GALILEO_API_KEY = process.env.GALILEO_API_KEY;
 const GALILEO_PROJECT = process.env.GALILEO_PROJECT || 'AlchmPlanetaryAgents';
 const GALILEO_LOG_STREAM = process.env.GALILEO_LOG_STREAM || 'test';
+// Feature flags / guardrails
+const GALILEO_LOG_ENABLED = (process.env.GALILEO_LOG_ENABLED ?? 'true') !== 'false';
+const GALILEO_FAIL_SILENTLY = (process.env.GALILEO_FAIL_SILENTLY ?? 'true') !== 'false';
+const GALILEO_VERBOSE_FALLBACK = (process.env.GALILEO_VERBOSE_FALLBACK ?? 'true') !== 'false';
+
+// In-memory ring buffer for failed payloads (development debugging)
+interface FailedLogPayload {
+  timestamp: Date;
+  error: string;
+  payload: any;
+  sessionId: string;
+}
+
+class FailureRingBuffer {
+  private buffer: FailedLogPayload[] = [];
+  private maxSize = 50;
+  
+  add(failure: FailedLogPayload): void {
+    this.buffer.push(failure);
+    if (this.buffer.length > this.maxSize) {
+      this.buffer.shift(); // Remove oldest entry
+    }
+  }
+  
+  getAll(): FailedLogPayload[] {
+    return [...this.buffer]; // Return copy
+  }
+  
+  clear(): void {
+    this.buffer = [];
+  }
+  
+  size(): number {
+    return this.buffer.length;
+  }
+}
+
+const failureBuffer = new FailureRingBuffer();
 
 export interface AgentInteractionData {
   sessionId: string;
@@ -60,19 +98,29 @@ export async function logAgentConversation(
   interaction: AgentInteractionData,
   context: ConversationContext
 ): Promise<boolean> {
-  if (!GALILEO_API_KEY) {
-    console.warn('Galileo API key not configured - logging agent conversation to console instead');
-    console.log('====== AGENT CONVERSATION LOG ======');
-    console.log('Session ID:', interaction.sessionId);
-    console.log('Planet Configuration:', `${interaction.planet} in ${interaction.sign} ${interaction.degree}°`);
-    console.log('User:', interaction.userMessage);
-    console.log('Agent:', interaction.agentResponse);
-    console.log('Processing Time:', interaction.processingTimeMs, 'ms');
-    console.log('=====================================');
+  if (!GALILEO_LOG_ENABLED || !GALILEO_API_KEY) {
+    if (GALILEO_VERBOSE_FALLBACK) {
+      console.warn('Galileo logging disabled or API key missing - logging conversation locally');
+      console.log('====== AGENT CONVERSATION LOG ======');
+      console.log('Session ID:', interaction.sessionId);
+      console.log('Planet Configuration:', `${interaction.planet} in ${interaction.sign} ${interaction.degree}°`);
+      console.log('User:', interaction.userMessage);
+      console.log('Agent:', interaction.agentResponse);
+      console.log('Processing Time:', interaction.processingTimeMs, 'ms');
+      console.log('=====================================');
+    }
     return false;
   }
 
   try {
+    // If logging disabled by flag, short-circuit to fallback
+    if (!GALILEO_LOG_ENABLED) {
+      if (GALILEO_VERBOSE_FALLBACK) {
+        console.log('[Galileo] Logging disabled by GALILEO_LOG_ENABLED=false');
+      }
+      return true;
+    }
+
     // Create workflow data structure for Galileo API
     const workflow = {
       created_at_ns: Date.now() * 1000000,
@@ -169,7 +217,40 @@ export async function logAgentConversation(
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Galileo API error: ${response.status} ${response.statusText} - ${errorText}`);
+      let message = `Galileo API error: ${response.status} ${response.statusText} - ${errorText}`;
+      
+      // Detect specific API type error and provide helpful hint
+      if (response.status === 422 && errorText.includes('not of type Observe')) {
+        message += '\nHint: Verify project type is Observe or set GALILEO_LOG_ENABLED=false';
+      }
+      
+      // Store failed payload in ring buffer for debugging
+      failureBuffer.add({
+        timestamp: new Date(),
+        error: message,
+        payload: logData,
+        sessionId: interaction.sessionId
+      });
+      
+      if (GALILEO_FAIL_SILENTLY) {
+        if (GALILEO_VERBOSE_FALLBACK) console.warn(message);
+        // Silent fallback without throwing
+        console.log('====== AGENT CONVERSATION LOG (FALLBACK) ======');
+        console.log('Project:', GALILEO_PROJECT);
+        console.log('Stream:', GALILEO_LOG_STREAM);
+        console.log('Session ID:', interaction.sessionId);
+        console.log('Conversation #:', context.conversationCount);
+        console.log('Planet Configuration:', `${interaction.planet} in ${interaction.sign} ${interaction.degree}° (${interaction.dignity})`);
+        console.log('Elemental Info:', interaction.elementalInfo);
+        console.log('User Message:', interaction.userMessage);
+        console.log('Agent Response:', interaction.agentResponse);
+        console.log('Processing Time:', interaction.processingTimeMs, 'ms');
+        console.log('Agent Type:', interaction.agentType);
+        console.log('Error:', message);
+        console.log('===============================================');
+        return true;
+      }
+      throw new Error(message);
     }
 
     const result = await response.json();
@@ -177,25 +258,42 @@ export async function logAgentConversation(
     return true;
 
   } catch (error) {
-    console.error('Error logging agent conversation to Galileo:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     
-    // Fallback: log to console with structured format
-    console.log('====== AGENT CONVERSATION LOG (FALLBACK) ======');
-    console.log('Project:', GALILEO_PROJECT);
-    console.log('Stream:', GALILEO_LOG_STREAM);
-    console.log('Session ID:', interaction.sessionId);
-    console.log('Conversation #:', context.conversationCount);
-    console.log('Planet Configuration:', `${interaction.planet} in ${interaction.sign} ${interaction.degree}° (${interaction.dignity})`);
-    console.log('Elemental Info:', interaction.elementalInfo);
-    console.log('User Message:', interaction.userMessage);
-    console.log('Agent Response:', interaction.agentResponse);
-    console.log('Processing Time:', interaction.processingTimeMs, 'ms');
-    console.log('Agent Type:', interaction.agentType);
-    console.log('Error:', error instanceof Error ? error.message : String(error));
-    console.log('===============================================');
+    // Store failed payload in ring buffer for debugging (if logData exists)
+    const payloadForBuffer = typeof logData !== 'undefined' ? logData : { error: 'No payload data available' };
+    failureBuffer.add({
+      timestamp: new Date(),
+      error: errorMessage,
+      payload: payloadForBuffer,
+      sessionId: interaction.sessionId
+    });
     
-    // Still return true for fallback logging
-    return true;
+    if (GALILEO_VERBOSE_FALLBACK) console.error('Error logging agent conversation to Galileo:', error);
+    
+    // When GALILEO_FAIL_SILENTLY is true, never throw - always fallback silently
+    if (GALILEO_FAIL_SILENTLY) {
+      // Fallback: log to console with structured format
+      console.log('====== AGENT CONVERSATION LOG (FALLBACK) ======');
+      console.log('Project:', GALILEO_PROJECT);
+      console.log('Stream:', GALILEO_LOG_STREAM);
+      console.log('Session ID:', interaction.sessionId);
+      console.log('Conversation #:', context.conversationCount);
+      console.log('Planet Configuration:', `${interaction.planet} in ${interaction.sign} ${interaction.degree}° (${interaction.dignity})`);
+      console.log('Elemental Info:', interaction.elementalInfo);
+      console.log('User Message:', interaction.userMessage);
+      console.log('Agent Response:', interaction.agentResponse);
+      console.log('Processing Time:', interaction.processingTimeMs, 'ms');
+      console.log('Agent Type:', interaction.agentType);
+      console.log('Error:', errorMessage);
+      console.log('===============================================');
+      
+      // Still return true for fallback logging
+      return true;
+    }
+    
+    // If not failing silently, propagate the error
+    throw error;
   }
 }
 
@@ -244,6 +342,33 @@ export function getAgentLoggingConfig() {
     project: GALILEO_PROJECT,
     logStream: GALILEO_LOG_STREAM,
     agentLoggerInitialized: true,
+  };
+}
+
+/**
+ * Get recent failed logging attempts for debugging
+ */
+export function getRecentFailedLogs(): FailedLogPayload[] {
+  return failureBuffer.getAll();
+}
+
+/**
+ * Clear the failed logs buffer
+ */
+export function clearFailedLogs(): void {
+  failureBuffer.clear();
+}
+
+/**
+ * Get failure buffer statistics
+ */
+export function getFailureStats(): { count: number; maxSize: number; oldestTimestamp?: Date; newestTimestamp?: Date } {
+  const failures = failureBuffer.getAll();
+  return {
+    count: failures.length,
+    maxSize: 50,
+    oldestTimestamp: failures.length > 0 ? failures[0].timestamp : undefined,
+    newestTimestamp: failures.length > 0 ? failures[failures.length - 1].timestamp : undefined
   };
 }
 

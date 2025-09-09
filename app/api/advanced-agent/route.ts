@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     }
 
     // Calculate A-number for current moment to provide additional context
-    let aNumberInfo = null
+    let aNumberInfo: { aNumber: number; category: string; components: { spirit: number; essence: number; matter: number; substance: number } } | undefined = undefined
     try {
       const alchmData = await generateAlchmForCurrentMoment()
       const spirit = alchmData?.['Alchemy Effects']?.['Total Spirit'] || 0

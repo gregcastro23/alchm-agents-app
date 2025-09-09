@@ -53,6 +53,11 @@ export async function fetchCurrentPlanetaryPositions(signal?: AbortSignal): Prom
 
 async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse | null> {
   try {
+    // Check if already aborted before making the request
+    if (signal?.aborted) {
+      throw new Error('Request aborted')
+    }
+    
     // Use our local API instead of external alchm.xyz API
     console.log('Fetching current planetary positions from local API...')
     
@@ -114,6 +119,11 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
     
     return transformedData
   } catch (error) {
+    // Handle AbortError specifically - don't fallback if request was aborted
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw error // Re-throw AbortError so it can be caught by the calling function
+    }
+    
     console.error('Error fetching planetary positions from local API:', error)
     
     // Fallback: return a minimal response with current positions from our calculate-transits

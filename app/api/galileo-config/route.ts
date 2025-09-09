@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getGalileoConfig, isQuantitiesTrackingConfigured, logQuantitiesToGalileo } from "@/lib/galileo-logger";
-import { getAgentLoggingConfig, isAgentLoggingConfigured, testAgentLogging, logAgentConversation, createConversationContext, type AgentInteractionData } from "@/lib/galileo-agent-logger";
+import { getAgentLoggingConfig, isAgentLoggingConfigured, testAgentLogging, logAgentConversation, createConversationContext, getRecentFailedLogs, clearFailedLogs, getFailureStats, type AgentInteractionData } from "@/lib/galileo-agent-logger";
 
 // Test function for tarot agent logging
 async function testTarotAgentLogging(): Promise<{ success: boolean; message: string; details?: any }> {
@@ -61,15 +61,42 @@ async function testTarotAgentLogging(): Promise<{ success: boolean; message: str
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const action = searchParams.get('action');
+    
+    // Handle recent failures action
+    if (action === 'recentFailures') {
+      const failures = getRecentFailedLogs();
+      const stats = getFailureStats();
+      
+      return NextResponse.json({
+        failures,
+        stats,
+        message: `Found ${failures.length} recent failed logging attempts`
+      });
+    }
+    
+    // Handle clear failures action
+    if (action === 'clearFailures') {
+      clearFailedLogs();
+      return NextResponse.json({
+        success: true,
+        message: 'Failed logs buffer cleared successfully'
+      });
+    }
+    
+    // Default: return configuration info
     const quantitiesConfig = getGalileoConfig();
     const agentConfig = getAgentLoggingConfig();
+    const failureStats = getFailureStats();
     
     return NextResponse.json({
       configured: isQuantitiesTrackingConfigured() && isAgentLoggingConfigured(),
       quantitiesConfig,
       agentConfig,
+      failureStats,
       recommendations: {
         nextSteps: (isQuantitiesTrackingConfigured() && isAgentLoggingConfigured()) 
           ? [

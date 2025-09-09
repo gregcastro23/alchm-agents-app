@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     }
     
     const { message, personalityId, userId, trainingFocus, feedbackData, context } = body;
+    const normalizedTrainingFocus = trainingFocus || null;
     
     console.log(`Processing chat for personality: ${personalityId}`);
     
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
         aiPersonality,
         message,
         transits,
-        trainingFocus,
+        normalizedTrainingFocus,
         context
       );
       
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
       const xpCalculation = calculateXP(
         interactionQuality,
         feedbackData || null,
-        trainingFocus,
+        normalizedTrainingFocus,
         currentStreak,
         message.split(' ').length,
         astrologicalInfluence
@@ -123,7 +124,7 @@ export async function POST(request: NextRequest) {
       // 8. Update training scores
       const updatedTrainingScores = updateTrainingScores(
         aiPersonality.trainingScores as any,
-        trainingFocus,
+        normalizedTrainingFocus,
         xpCalculation.totalXP,
         interactionQuality
       );
@@ -150,7 +151,7 @@ export async function POST(request: NextRequest) {
           aiResponse: aiResponseText,
           userFeedback: feedbackData as any,
           xpGained: xpCalculation.totalXP,
-          trainingFocus: trainingFocus || null
+          trainingFocus: normalizedTrainingFocus
         }
       });
       
@@ -185,7 +186,7 @@ export async function POST(request: NextRequest) {
         level: newLevel,
         levelUp: levelUpCheck.leveledUp,
         trainingScores: updatedTrainingScores,
-        personalityAdjustments: generatePersonalityAdjustments(transits, trainingFocus),
+        personalityAdjustments: generatePersonalityAdjustments(transits, normalizedTrainingFocus),
         streakBonus: currentStreak > 1 ? Math.round(xpCalculation.streakMultiplier * 100 - 100) : 0,
         astrologicalBonus: Math.round(xpCalculation.astrologicalBonus)
       };
@@ -228,7 +229,7 @@ async function buildConsciousnessPrompt(
   aiPersonality: any,
   userMessage: string,
   transits: any,
-  trainingFocus?: TrainingCategory,
+  trainingFocus: TrainingCategory | null,
   context?: InteractionContext
 ): Promise<string> {
   
@@ -412,7 +413,7 @@ function updateTrainingScores(
 /**
  * Generate personality adjustments based on current transits
  */
-function generatePersonalityAdjustments(transits: any, trainingFocus?: TrainingCategory): string[] {
+function generatePersonalityAdjustments(transits: any, trainingFocus: TrainingCategory | null): string[] {
   const adjustments: string[] = [];
   
   if (transits.currentMood.energy > 70) {

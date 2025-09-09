@@ -9,12 +9,19 @@ import { CheckCircle, XCircle, AlertCircle, RefreshCw, PlayCircle } from "lucide
 
 type GalileoConfig = {
   configured: boolean;
-  config: {
+  quantitiesConfig: {
     hasApiKey: boolean;
     project: string;
     quantitiesStream: string;
-    sdkInitialized: boolean;
+    loggerInitialized: boolean;
   };
+  agentConfig: {
+    hasApiKey: boolean;
+    project: string;
+    logStream: string;
+    agentLoggerInitialized: boolean;
+  };
+  failureStats: any;
   recommendations: {
     nextSteps: string[];
   };
@@ -127,22 +134,22 @@ export default function GalileoSetupPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div className="flex flex-col">
               <span className="text-sm font-medium">API Key</span>
-              <Badge variant={config?.config.hasApiKey ? "default" : "destructive"}>
-                {config?.config.hasApiKey ? "Set" : "Missing"}
+              <Badge variant={config?.quantitiesConfig?.hasApiKey ? "default" : "destructive"}>
+                {config?.quantitiesConfig?.hasApiKey ? "Set" : "Missing"}
               </Badge>
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-medium">Project</span>
-              <Badge variant="outline">{config?.config.project}</Badge>
+              <Badge variant="outline">{config?.quantitiesConfig?.project}</Badge>
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-medium">Stream</span>
-              <Badge variant="outline">{config?.config.quantitiesStream}</Badge>
+              <Badge variant="outline">{config?.quantitiesConfig?.quantitiesStream}</Badge>
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-medium">SDK</span>
-              <Badge variant={config?.config.sdkInitialized ? "default" : "destructive"}>
-                {config?.config.sdkInitialized ? "Ready" : "Not initialized"}
+              <Badge variant={config?.quantitiesConfig?.loggerInitialized ? "default" : "destructive"}>
+                {config?.quantitiesConfig?.loggerInitialized ? "Ready" : "Not initialized"}
               </Badge>
             </div>
           </div>
@@ -289,7 +296,7 @@ GALILEO_QUANTITIES_STREAM=alchm-quantities`}
             </div>
 
             <div>
-              <h4 className="font-medium">Stream: <code>{config?.config.quantitiesStream}</code></h4>
+              <h4 className="font-medium">Stream: <code>{config?.quantitiesConfig?.quantitiesStream}</code></h4>
               <p className="text-sm text-muted-foreground">
                 All workflow data is organized in your project&apos;s log stream with complete traceability
                 from input (planetary positions) to output (calculated quantities and metrics).

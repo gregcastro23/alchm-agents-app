@@ -1,8 +1,87 @@
+"use client"
+
+import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { RefreshCw } from "lucide-react"
+import { getPlanetaryDignity, getSignElement, getPlanetaryElement } from "@/lib/astrological-data"
+import { usePlanetaryPositionsOnly } from "@/hooks/usePlanetaryPositions"
 import TarotCosmicWidget from "@/components/tarot-cosmic-widget"
 
 export default function HomePage() {
+  const [currentTime, setCurrentTime] = useState("")
+  const [currentDate, setCurrentDate] = useState("")
+  const [isDiurnal, setIsDiurnal] = useState(true)
+  
+  // Use unified planetary positions hook for consistency
+  const { positions: currentPlanetaryPositions, loading, error, refresh } = usePlanetaryPositionsOnly({
+    refreshInterval: 30000, // 30 seconds
+    useApi: false // Use direct calculation for backward compatibility
+  })
+  
+  // Update time and date display
+  const updateTimeAndDate = useCallback(() => {
+    const now = new Date()
+    
+    // Format date as YYYY-MM-DD
+    const date = now.toISOString().split('T')[0]
+    
+    // Format time as HH:MM
+    const hours = now.getHours().toString().padStart(2, '0')
+    const minutes = now.getMinutes().toString().padStart(2, '0')
+    const time = `${hours}:${minutes}`
+    
+    // Determine if it's day or night
+    const diurnal = now.getHours() >= 6 && now.getHours() < 18
+    
+    setCurrentDate(date)
+    setCurrentTime(time)
+    setIsDiurnal(diurnal)
+  }, [])
+  
+  // Update time and date on mount and every minute
+  useEffect(() => {
+    updateTimeAndDate()
+    const interval = setInterval(updateTimeAndDate, 60000) // Update every minute
+    return () => clearInterval(interval)
+  }, [updateTimeAndDate])
+  
+  // Get color for element
+  const getElementColor = (element: string) => {
+    switch (element) {
+      case "Fire": return "bg-red-500 hover:bg-red-600"
+      case "Water": return "bg-blue-500 hover:bg-blue-600"
+      case "Air": return "bg-yellow-500 hover:bg-yellow-600"
+      case "Earth": return "bg-green-500 hover:bg-green-600"
+      default: return "bg-gray-500 hover:bg-gray-600"
+    }
+  }
+  
+  // Get background color based on dignity
+  const getDignityColor = (dignity: string) => {
+    switch (dignity) {
+      case "domicile": return "bg-emerald-100 dark:bg-emerald-950"
+      case "exaltation": return "bg-blue-100 dark:bg-blue-950"
+      case "detriment": return "bg-red-100 dark:bg-red-950"
+      case "fall": return "bg-orange-100 dark:bg-orange-950"
+      default: return "bg-gray-100 dark:bg-gray-950"
+    }
+  }
+  
+  // Get dignity badge style
+  const getDignityBadge = (dignity: string) => {
+    switch (dignity) {
+      case "domicile": return "bg-emerald-500"
+      case "exaltation": return "bg-blue-500"
+      case "detriment": return "bg-red-500"
+      case "fall": return "bg-orange-500"
+      default: return "bg-gray-500"
+    }
+  }
+
   return (
     <div className="container py-12 px-4 mx-auto">
       <section className="flex flex-col items-center text-center mb-16">
@@ -26,12 +105,6 @@ export default function HomePage() {
             Explore Planetary Agents
           </Link>
           <Link 
-            href="/chart-of-the-moment" 
-            className="bg-accent text-accent-foreground hover:bg-accent/90 px-6 py-3 rounded-md font-medium"
-          >
-            Current Planetary Chart
-          </Link>
-          <Link 
             href="/chart-interpreter" 
             className="bg-secondary text-secondary-foreground hover:bg-secondary/90 px-6 py-3 rounded-md font-medium"
           >
@@ -52,7 +125,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="grid md:grid-cols-5 gap-6 mb-16">
+      <section className="grid md:grid-cols-4 gap-6 mb-16">
         <div className="border p-6 rounded-lg bg-gradient-to-br from-green-50 to-blue-50 border-green-200">
           <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
             💚 Monica - Your AI Guide
@@ -76,13 +149,6 @@ export default function HomePage() {
             Try it now →
           </Link>
         </div>
-        <div className="border p-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-3">Today&apos;s Chart</h2>
-          <p className="mb-4">View the current planetary positions and explore their elemental influences.</p>
-          <Link href="/chart-of-the-moment" className="text-blue-600 dark:text-blue-400 font-medium">
-            View now →
-          </Link>
-        </div>
         <div className="border p-6 rounded-lg bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200">
           <h2 className="text-xl font-semibold mb-3">🪐 Planetary Council</h2>
           <p className="mb-4">Consult multiple planetary agents simultaneously for collective cosmic wisdom.</p>
@@ -92,10 +158,82 @@ export default function HomePage() {
         </div>
       </section>
       
-      {/* Cosmic Tarot Moment Widget */}
+      {/* Current Chart of the Moment */}
       <section className="mb-16">
-        <div className="max-w-2xl mx-auto">
-          <TarotCosmicWidget variant="card" showExpanded={false} />
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-6">Chart of the Moment</h2>
+          
+          <div className="flex justify-center mb-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={refresh}
+              disabled={loading}
+              className="gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              {loading ? 'Refreshing...' : 'Refresh Positions'}
+            </Button>
+          </div>
+          
+          <div className="mb-4 text-center text-sm text-muted-foreground">
+            {currentDate} at {currentTime} - {isDiurnal ? "Day" : "Night"} Chart
+          </div>
+          
+          {loading ? (
+            <div className="flex justify-center items-center h-40">
+              <div className="flex flex-col items-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
+                <p>Calculating planetary positions...</p>
+              </div>
+            </div>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-center">Current Planetary Positions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 gap-3">
+                  {Object.entries(currentPlanetaryPositions).map(([planet, data]) => {
+                    const dignity = getPlanetaryDignity(planet, data.sign)
+                    const signElement = getSignElement(data.sign)
+                    const planetElement = getPlanetaryElement(planet, isDiurnal)
+                    
+                    return (
+                      <Link 
+                        href={`/planetary-agents?planet=${planet}&sign=${data.sign}&degree=${data.degree}`}
+                        key={planet} 
+                        className={`p-3 rounded-md border flex justify-between items-center ${getDignityColor(dignity)} hover:opacity-90 transition-opacity`}
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-semibold">{planet}</span>
+                          <span>
+                            {data.sign} {data.degree}°
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          <Badge className={getElementColor(signElement)}>
+                            {signElement}
+                          </Badge>
+                          <Badge className={getElementColor(planetElement)}>
+                            {planetElement}
+                          </Badge>
+                          <Badge className={getDignityBadge(dignity)}>
+                            {dignity}
+                          </Badge>
+                        </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* Keep small tarot element */}
+          <div className="mt-6 max-w-md mx-auto">
+            <TarotCosmicWidget variant="card" showExpanded={false} />
+          </div>
         </div>
       </section>
       
@@ -136,8 +274,8 @@ export default function HomePage() {
                 🤖 AI-Powered Agents
               </h3>
               <p className="text-sm">
-                Each planetary agent embodies the unique consciousness of its celestial body. From Monica's 
-                Earth wisdom to the Planetary Council's collective insights, our agents provide multi-dimensional 
+                Each planetary agent embodies the unique consciousness of its celestial body. From Monica&apos;s
+                Earth wisdom to the Planetary Council&apos;s collective insights, our agents provide multi-dimensional
                 perspectives on your questions and challenges.
               </p>
             </div>
@@ -172,12 +310,6 @@ export default function HomePage() {
                 className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-3 rounded-md font-medium"
               >
                 🪐 Explore Planets
-              </Link>
-              <Link 
-                href="/chart-of-the-moment" 
-                className="bg-accent text-accent-foreground hover:bg-accent/90 px-6 py-3 rounded-md font-medium"
-              >
-                📊 View Current Chart
               </Link>
             </div>
           </div>
