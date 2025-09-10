@@ -127,22 +127,42 @@ export function PlanetaryMovementChart({ delta }: Props) {
     )
   }
 
-  const data = delta.planetaryMovement.slice(0, 10).map(movement => ({
-    planet: movement.planet,
-    degrees: Math.abs(movement.movedDegrees),
-    from: `${movement.from.sign} ${movement.from.degree.toFixed(1)}°`,
-    to: `${movement.to.sign} ${movement.to.degree.toFixed(1)}°`,
-    color: PLANET_COLORS[movement.planet as keyof typeof PLANET_COLORS] || '#6b7280',
-    expectedSpeed: PLANET_SPEEDS[movement.planet as keyof typeof PLANET_SPEEDS] || 0.1,
-    acceleration: movement.movedDegrees / (delta.daysSinceLast || 1)
-  }))
+  const data = delta.planetaryMovement.slice(0, 10).map(movement => {
+    // Ensure all numeric values are valid and not NaN
+    const movedDegrees = isNaN(movement.movedDegrees) ? 0 : movement.movedDegrees
+    const fromDegree = isNaN(movement.from.degree) ? 0 : movement.from.degree
+    const toDegree = isNaN(movement.to.degree) ? 0 : movement.to.degree
+    const daysSince = isNaN(delta.daysSinceLast) || delta.daysSinceLast <= 0 ? 1 : delta.daysSinceLast
+    
+    return {
+      planet: movement.planet || 'Unknown',
+      degrees: Math.abs(movedDegrees),
+      from: `${movement.from.sign || 'Unknown'} ${fromDegree.toFixed(1)}°`,
+      to: `${movement.to.sign || 'Unknown'} ${toDegree.toFixed(1)}°`,
+      color: PLANET_COLORS[movement.planet as keyof typeof PLANET_COLORS] || '#6b7280',
+      expectedSpeed: PLANET_SPEEDS[movement.planet as keyof typeof PLANET_SPEEDS] || 0.1,
+      acceleration: movedDegrees / daysSince
+    }
+  })
 
-  // Calculate movement statistics
-  const totalMovement = data.reduce((sum, item) => sum + item.degrees, 0)
-  const fastestPlanet = data.reduce((fastest, current) => 
-    current.acceleration > fastest.acceleration ? current : fastest
-  )
-  const mostActive = data.filter(item => item.degrees > item.expectedSpeed * (delta.daysSinceLast || 1))
+  // Calculate movement statistics with NaN protection
+  const totalMovement = data.reduce((sum, item) => {
+    const degrees = isNaN(item.degrees) ? 0 : item.degrees
+    return sum + degrees
+  }, 0)
+  
+  const fastestPlanet = data.reduce((fastest, current) => {
+    const currentAccel = isNaN(current.acceleration) ? 0 : current.acceleration
+    const fastestAccel = isNaN(fastest.acceleration) ? 0 : fastest.acceleration
+    return currentAccel > fastestAccel ? current : fastest
+  })
+  
+  const daysSince = isNaN(delta.daysSinceLast) || delta.daysSinceLast <= 0 ? 1 : delta.daysSinceLast
+  const mostActive = data.filter(item => {
+    const degrees = isNaN(item.degrees) ? 0 : item.degrees
+    const expectedSpeed = isNaN(item.expectedSpeed) ? 0 : item.expectedSpeed
+    return degrees > expectedSpeed * daysSince
+  })
 
   return (
     <Card>
@@ -154,11 +174,11 @@ export function PlanetaryMovementChart({ delta }: Props) {
         <div className="flex flex-wrap gap-2">
           <Badge variant="outline" className="flex items-center gap-1">
             <TrendingUp className="w-3 h-3" />
-            {totalMovement.toFixed(1)}° total
+            {(isNaN(totalMovement) ? 0 : totalMovement).toFixed(1)}° total
           </Badge>
           <Badge variant="outline" className="flex items-center gap-1">
             <Zap className="w-3 h-3" />
-            {fastestPlanet.planet} leading
+            {fastestPlanet?.planet || 'Unknown'} leading
           </Badge>
           <Badge variant="outline" className="flex items-center gap-1">
             <Calendar className="w-3 h-3" />
@@ -189,7 +209,7 @@ export function PlanetaryMovementChart({ delta }: Props) {
               />
               <Tooltip 
                 formatter={(value: number, name: string, props: any) => [
-                  `${value.toFixed(3)}°`,
+                  `${(isNaN(value) ? 0 : value).toFixed(3)}°`,
                   'Movement'
                 ]}
                 labelFormatter={(label: string, payload: any[]) => {
@@ -201,7 +221,7 @@ export function PlanetaryMovementChart({ delta }: Props) {
                         {data.from} <ArrowRight className="inline w-3 h-3 mx-1" /> {data.to}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Speed: {data.acceleration.toFixed(3)}°/day
+                        Speed: {(isNaN(data.acceleration) ? 0 : data.acceleration).toFixed(3)}°/day
                       </div>
                     </div>
                   ) : label
@@ -247,7 +267,7 @@ export function PlanetaryMovementChart({ delta }: Props) {
                 fontSize={12}
               />
               <Tooltip 
-                formatter={(value: number) => [`${value.toFixed(3)}°/day`, 'Velocity']}
+                formatter={(value: number) => [`${(isNaN(value) ? 0 : value).toFixed(3)}°/day`, 'Velocity']}
                 contentStyle={{
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   border: '1px solid #e5e7eb',
@@ -284,11 +304,11 @@ export function PlanetaryMovementChart({ delta }: Props) {
                 <div className="flex items-center gap-2">
                   <div 
                     className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: fastestPlanet.color }}
+                    style={{ backgroundColor: fastestPlanet?.color || '#6b7280' }}
                   />
-                  <span>{fastestPlanet.planet}</span>
+                  <span>{fastestPlanet?.planet || 'Unknown'}</span>
                   <span className="text-muted-foreground">
-                    ({fastestPlanet.acceleration.toFixed(3)}°/day)
+                    ({(isNaN(fastestPlanet?.acceleration) ? 0 : fastestPlanet.acceleration).toFixed(3)}°/day)
                   </span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
@@ -306,7 +326,7 @@ export function PlanetaryMovementChart({ delta }: Props) {
               
               <div>
                 <div className="font-medium text-purple-600">Field Coherence</div>
-                <div>{((mostActive.length / data.length) * 100).toFixed(0)}%</div>
+                <div>{data.length > 0 ? ((mostActive.length / data.length) * 100).toFixed(0) : 0}%</div>
                 <div className="text-xs text-muted-foreground mt-1">
                   Synchronization with temporal flow
                 </div>
