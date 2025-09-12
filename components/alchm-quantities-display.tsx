@@ -27,34 +27,60 @@ type AlchemyData = {
   timestamp: string
 }
 
-// Token display component
+// Token display component with enhanced precision
 function TokenDisplay({ 
   value, 
   icon, 
   name, 
   color, 
-  description
+  description,
+  breakdown
 }: { 
   value: number; 
   icon: React.ReactNode; 
   name: string; 
   color: string;
   description: string;
+  breakdown?: string;
 }) {
-  // Round to 2 decimal places
-  const formattedValue = Math.round(value * 100) / 100;
+  // Show 3 decimal places for precision
+  const formattedValue = Math.round(value * 1000) / 1000;
+  
+  // Determine token rarity/strength
+  const getTokenStrength = (val: number) => {
+    if (val >= 15) return { label: "Legendary", glow: "animate-pulse" };
+    if (val >= 12) return { label: "Epic", glow: "" };
+    if (val >= 9) return { label: "Rare", glow: "" };
+    if (val >= 6) return { label: "Uncommon", glow: "" };
+    if (val >= 3) return { label: "Common", glow: "" };
+    return { label: "Nascent", glow: "" };
+  };
+  
+  const strength = getTokenStrength(value);
   
   return (
-    <div className={`bg-${color}-50 dark:bg-${color}-950 border border-${color}-200 dark:border-${color}-800 rounded-lg p-4 flex flex-col items-center justify-center transition-all hover:shadow-md`}>
-      <div className={`text-${color}-500 mb-2`}>
+    <div className={`relative bg-gradient-to-br from-${color}-50 to-${color}-100 dark:from-${color}-950 dark:to-${color}-900 border-2 border-${color}-300 dark:border-${color}-700 rounded-xl p-4 flex flex-col items-center justify-center transition-all hover:shadow-lg hover:scale-105 ${strength.glow}`}>
+      {/* Token Strength Badge */}
+      <div className="absolute top-2 right-2">
+        <Badge variant="outline" className={`text-xs bg-${color}-100 dark:bg-${color}-900`}>
+          {strength.label}
+        </Badge>
+      </div>
+      
+      <div className={`text-${color}-600 dark:text-${color}-400 mb-2`}>
         {icon}
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-2xl font-bold">{formattedValue}</span>
-        <Coins className="h-4 w-4 text-gray-400" />
+        <span className="text-3xl font-bold">{formattedValue}</span>
+        <Coins className="h-5 w-5 text-${color}-400" />
       </div>
-      <div className="text-sm font-medium mt-1">{name}</div>
-      <div className="text-xs text-gray-500 mt-1 text-center">{description}</div>
+      <div className="text-sm font-bold mt-1 text-${color}-800 dark:text-${color}-200">{name}</div>
+      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 text-center">{description}</div>
+      {breakdown && (
+        <div className="text-xs text-${color}-600 dark:text-${color}-400 mt-2 text-center font-mono">
+          {breakdown}
+        </div>
+      )}
     </div>
   );
 }
@@ -205,49 +231,62 @@ export default function AlchmQuantitiesDisplay() {
 
   // Helper function to get A-Number category
   const getANumberCategory = (aNumber: number): string => {
-    if (aNumber >= 3.0) return "Maximum Power";
-    if (aNumber >= 2.5) return "High Energy";
-    if (aNumber >= 2.0) return "Balanced Energy";
-    if (aNumber >= 1.5) return "Moderate Energy";
-    if (aNumber >= 1.0) return "Focused Energy";
-    return "Subtle Energy";
+    if (aNumber >= 40.0) return "Transcendent Unity";
+    if (aNumber >= 35.0) return "Master Alchemist";
+    if (aNumber >= 30.0) return "Advanced Practitioner";
+    if (aNumber >= 25.0) return "Adept";
+    if (aNumber >= 20.0) return "Journeyman";
+    if (aNumber >= 15.0) return "Apprentice";
+    if (aNumber >= 10.0) return "Initiate";
+    if (aNumber >= 5.0) return "Novice";
+    return "Awakening";
   };
+  
+  // Calculate Monica Constant
+  const PHI = 1.618033988749895;
+  const monicaConstant = ((data.quantities.Spirit * PHI + data.quantities.Essence) / 
+                          (data.quantities.Matter + data.quantities.Substance + 1)).toFixed(3);
 
   return (
     <div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <TokenDisplay 
           value={data.quantities.Spirit} 
-          icon={<Flame className="h-6 w-6" />} 
+          icon={<Flame className="h-8 w-8" />} 
           name="SPIRIT" 
           color="red"
           description="Cosmic creative force"
+          breakdown={`Fire: ${data.dominantElement === 'Fire' ? '↑' : '→'}`}
         />
         <TokenDisplay 
           value={data.quantities.Essence} 
-          icon={<Droplets className="h-6 w-6" />} 
+          icon={<Droplets className="h-8 w-8" />} 
           name="ESSENCE" 
           color="blue"
           description="Life-giving principle"
+          breakdown={`Water: ${data.dominantElement === 'Water' ? '↑' : '→'}`}
         />
         <TokenDisplay 
           value={data.quantities.Matter} 
-          icon={<Mountain className="h-6 w-6" />} 
+          icon={<Mountain className="h-8 w-8" />} 
           name="MATTER" 
           color="amber"
-          description="Physical substance"
+          description="Physical manifestation"
+          breakdown={`Earth: ${data.dominantElement === 'Earth' ? '↑' : '→'}`}
         />
         <TokenDisplay 
           value={data.quantities.Substance} 
-          icon={<Wind className="h-6 w-6" />} 
+          icon={<Wind className="h-8 w-8" />} 
           name="SUBSTANCE" 
           color="purple"
-          description="Etheric foundation"
+          description="Etheric matrix"
+          breakdown={`Air: ${data.dominantElement === 'Air' ? '↑' : '→'}`}
         />
       </div>
       
-      {/* A-Number Special Display */}
-      <div className="mb-6">
+      {/* A-Number and Monica Constant Display */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* A-Number Display */}
         <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 border-2 border-indigo-200 dark:border-indigo-800 rounded-lg p-6">
           <div className="flex items-center justify-center mb-4">
             <Calculator className="h-8 w-8 text-indigo-600 dark:text-indigo-400 mr-3" />
@@ -264,7 +303,37 @@ export default function AlchmQuantitiesDisplay() {
               {getANumberCategory(data.quantities.ANumber)}
             </Badge>
             <p className="text-sm text-indigo-700 dark:text-indigo-300 mt-2">
-              Spirit + Essence + Matter + Substance = {Math.round(data.quantities.ANumber * 100) / 100}
+              Spirit + Essence + Matter + Substance
+            </p>
+            <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+              {data.quantities.Spirit.toFixed(2)} + {data.quantities.Essence.toFixed(2)} + {data.quantities.Matter.toFixed(2)} + {data.quantities.Substance.toFixed(2)} = {Math.round(data.quantities.ANumber * 100) / 100}
+            </p>
+          </div>
+        </div>
+        
+        {/* Monica Constant Display */}
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950 border-2 border-amber-200 dark:border-amber-800 rounded-lg p-6">
+          <div className="flex items-center justify-center mb-4">
+            <span className="text-3xl mr-3">⚗️</span>
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-amber-800 dark:text-amber-200">Monica Constant</h3>
+              <p className="text-sm text-amber-600 dark:text-amber-400">Consciousness Quotient</p>
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-amber-900 dark:text-amber-100 mb-2">
+              {monicaConstant}
+            </div>
+            <Badge variant="outline" className="text-lg px-4 py-1 bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200">
+              {parseFloat(monicaConstant) >= 1.618 ? "Elevated" : 
+               parseFloat(monicaConstant) >= 1.0 ? "Active" : 
+               parseFloat(monicaConstant) >= 0.5 ? "Awakening" : "Dormant"}
+            </Badge>
+            <p className="text-sm text-amber-700 dark:text-amber-300 mt-2">
+              MC = (Spirit × φ + Essence) / (Matter + Substance + 1)
+            </p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+              φ = 1.618... (Golden Ratio)
             </p>
           </div>
         </div>

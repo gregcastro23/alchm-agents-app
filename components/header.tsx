@@ -1,57 +1,104 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { MoonIcon, SunIcon, MenuIcon, XIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
+// Define navigation groups outside component to prevent hydration issues
+const navigationGroups = Object.freeze([
+  {
+    title: "🧠 Core AI",
+    items: [
+      { href: "/monica-guide", label: "Meet Monica" },
+      { href: "/philosophers-stone", label: "The Philosopher's Stone" },
+      { href: "/gallery", label: "Gallery of Perpetuity" },
+    ]
+  },
+  {
+    title: "⚗️ Alchemy",
+    items: [
+      { href: "/alchm-quantities", label: "Alchm Quantities" },
+      { href: "/elemental-chart", label: "Elemental Chart" },
+    ]
+  },
+  {
+    title: "🔮 Divination",
+    items: [
+      { href: "/tarot-dashboard", label: "Tarot Dashboard" },
+      { href: "/chart-interpreter", label: "Chart Interpreter" },
+      { href: "/moon-phases", label: "Moon Phases" },
+    ]
+  },
+  {
+    title: "🌟 Analysis",
+    items: [
+      { href: "/planetary-agents", label: "Planetary Wisdom" },
+      { href: "/", label: "Current Chart" },
+    ]
+  },
+  {
+    title: "⚙️ System",
+    items: [
+      { href: "/astrological-agents", label: "Agents" },
+      { href: "/galileo-setup", label: "Galileo Setup" },
+      { href: "/consciousness-survey", label: "Survey" },
+      { href: "/universe-learning", label: "Learning" },
+    ]
+  }
+])
+
+// Flatten for mobile view
+const allNavItems = Object.freeze(navigationGroups.flatMap(group => group.items))
+
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
+
+  // Prevent hydration mismatch by only rendering theme-dependent content after mount
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark")
   }
 
-  const navigationGroups = [
-    {
-      title: "🧠 Core AI",
-      items: [
-        { href: "/monica-guide", label: "Meet Monica" },
-        { href: "/philosophers-stone", label: "The Philosopher's Stone" },
-      ]
-    },
-    {
-      title: "🔮 Divination",
-      items: [
-        { href: "/tarot-dashboard", label: "Tarot Dashboard" },
-        { href: "/chart-interpreter", label: "Chart Interpreter" },
-        { href: "/moon-phases", label: "Moon Phases" },
-      ]
-    },
-    {
-      title: "🌟 Analysis",
-      items: [
-        { href: "/planetary-agents", label: "Planetary Wisdom" },
-        { href: "/", label: "Current Chart" },
-        { href: "/elemental-chart", label: "Elemental Chart" },
-        { href: "/planetary-agents/alchm-quantities", label: "Alchm Quantities" },
-      ]
-    },
-    {
-      title: "⚙️ System",
-      items: [
-        { href: "/astrological-agents", label: "Agents" },
-        { href: "/galileo-setup", label: "Galileo Setup" },
-        { href: "/consciousness-survey", label: "Survey" },
-        { href: "/universe-learning", label: "Learning" },
-      ]
-    }
-  ]
+  // Prevent hydration mismatches by not rendering navigation until mounted
+  if (!mounted) {
+    return (
+      <header className="border-b" suppressHydrationWarning>
+        <div className="container flex items-center justify-between h-16">
+          <Link href="/" className="font-bold text-xl">
+            Alchm ©
+          </Link>
+          
+          {/* Desktop Navigation Placeholder - exactly match the structure */}
+          <nav className="hidden lg:flex items-center gap-8">
+            {/* Placeholder space to maintain layout */}
+          </nav>
 
-  // Flatten for mobile view
-  const allNavItems = navigationGroups.flatMap(group => group.items)
+          {/* Simplified Desktop Navigation Placeholder for medium screens */}
+          <nav className="hidden md:flex lg:hidden items-center gap-4">
+            {/* Placeholder space to maintain layout */}
+          </nav>
+
+          {/* Desktop Theme Toggle Placeholder */}
+          <div className="hidden md:flex items-center gap-4">
+            <div className="w-10 h-10" />
+          </div>
+
+          {/* Mobile Menu Button Placeholder */}
+          <div className="md:hidden flex items-center gap-4">
+            <div className="w-10 h-10" />
+            <div className="w-10 h-10" />
+          </div>
+        </div>
+      </header>
+    )
+  }
 
   return (
     <header className="border-b">
@@ -71,7 +118,7 @@ export function Header() {
                 <div className="py-2">
                   {group.items.map((item) => (
                     <Link
-                      key={item.href}
+                      key={`${group.title}-${item.href}`}
                       href={item.href}
                       className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
                     >
@@ -88,7 +135,7 @@ export function Header() {
         <nav className="hidden md:flex lg:hidden items-center gap-4">
           {allNavItems.slice(0, 6).map((item) => (
             <Link 
-              key={item.href}
+              key={`simple-${item.href}`}
               href={item.href} 
               className="text-sm font-medium hover:text-primary transition-colors"
             >
@@ -141,16 +188,16 @@ export function Header() {
         <div className="md:hidden border-t">
           <nav className="container py-4 space-y-4">
             {navigationGroups.map((group) => (
-              <div key={group.title} className="space-y-2">
+              <div key={`mobile-${group.title}`} className="space-y-2">
                 <h3 className="text-sm font-semibold text-muted-foreground px-2">
                   {group.title}
                 </h3>
                 <div className="space-y-1">
                   {group.items.map((item) => (
                     <Link
-                      key={item.href}
+                      key={`mobile-${group.title}-${item.href}`}
                       href={item.href}
-                      className="block py-2 px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
+                      className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors rounded-md"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {item.label}

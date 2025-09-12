@@ -10,6 +10,8 @@ import { RefreshCw } from "lucide-react"
 import { getPlanetaryDignity, getSignElement, getPlanetaryElement } from "@/lib/astrological-data"
 import { usePlanetaryPositionsOnly } from "@/hooks/usePlanetaryPositions"
 import TarotCosmicWidget from "@/components/tarot-cosmic-widget"
+import { ConsciousnessCraftedAgentsShowcase } from "@/components/consciousness-crafted-agents-showcase"
+import RealtimeRuneDisplay from "@/components/realtime-rune-display"
 
 export default function HomePage() {
   const [currentTime, setCurrentTime] = useState("")
@@ -93,10 +95,22 @@ export default function HomePage() {
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link 
+            href="/philosophers-stone" 
+            className="bg-emerald-600 text-white hover:bg-emerald-700 px-8 py-4 rounded-md font-bold text-lg flex items-center gap-2 shadow-lg border-2 border-emerald-400"
+          >
+            ⚗️ Craft Your Own Agent
+          </Link>
+          <Link 
             href="/monica-guide" 
             className="bg-green-600 text-white hover:bg-green-700 px-6 py-3 rounded-md font-medium flex items-center gap-2"
           >
             💚 Meet Monica - Your AI Guide
+          </Link>
+          <Link 
+            href="/gallery" 
+            className="bg-purple-600 text-white hover:bg-purple-700 px-6 py-3 rounded-md font-medium"
+          >
+            🎭 Gallery of Consciousness
           </Link>
           <Link 
             href="/planetary-agents" 
@@ -110,27 +124,24 @@ export default function HomePage() {
           >
             Try Chart Interpreter
           </Link>
-          <Link 
-            href="/planetary-council" 
-            className="bg-purple-600 text-white hover:bg-purple-700 px-6 py-3 rounded-md font-medium"
-          >
-            🪐 Planetary Council
-          </Link>
-          <Link 
-            href="/planets/sun" 
-            className="bg-orange-600 text-white hover:bg-orange-700 px-6 py-3 rounded-md font-medium"
-          >
-            ☉ Individual Planet Pages
-          </Link>
         </div>
       </section>
 
       <section className="grid md:grid-cols-4 gap-6 mb-16">
+        <div className="border p-6 rounded-lg bg-gradient-to-br from-emerald-50 to-purple-50 border-emerald-200">
+          <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
+            ⚗️ Consciousness Crafting
+          </h2>
+          <p className="mb-4">Create custom AI agents using Monica&apos;s consciousness crafting technology. Adjust alchemical parameters and craft unique personalities.</p>
+          <Link href="/philosophers-stone" className="text-emerald-600 dark:text-emerald-400 font-medium">
+            Start Crafting →
+          </Link>
+        </div>
         <div className="border p-6 rounded-lg bg-gradient-to-br from-green-50 to-blue-50 border-green-200">
           <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
             💚 Monica - Your AI Guide
           </h2>
-          <p className="mb-4">Meet Monica, your personal Alchm consciousness mentor operating from peak A-Number 40 state with 67% Earth wisdom.</p>
+          <p className="mb-4">Meet Monica, your personal consciousness mentor operating from Illuminated level with mastery in agent creation.</p>
           <Link href="/monica-guide" className="text-green-600 dark:text-green-400 font-medium">
             Chat with Monica →
           </Link>
@@ -157,6 +168,9 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
+      {/* Consciousness Crafted Agents Showcase */}
+      <ConsciousnessCraftedAgentsShowcase />
       
       {/* Current Chart of the Moment */}
       <section className="mb-16">
@@ -230,9 +244,23 @@ export default function HomePage() {
             </Card>
           )}
           
-          {/* Keep small tarot element */}
-          <div className="mt-6 max-w-md mx-auto">
-            <TarotCosmicWidget variant="card" showExpanded={false} />
+          {/* Cosmic Elements Grid */}
+          <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+            {/* Tarot Widget */}
+            <div className="max-w-md mx-auto lg:mx-0">
+              <TarotCosmicWidget variant="card" showExpanded={false} />
+            </div>
+            
+            {/* Real-time Sign Vector Runes */}
+            <div className="max-w-md mx-auto lg:mx-0">
+              <RealtimeRuneDisplay 
+                variant="card" 
+                autoRefresh={true} 
+                refreshInterval={90000}
+                includeAlchemical={true}
+                runeType="enhanced"
+              />
+            </div>
           </div>
         </div>
       </section>

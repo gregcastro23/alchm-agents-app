@@ -243,7 +243,7 @@ export function TemporalClient() {
       const newRelations = [...relations, enriched]
       setRelations(newRelations)
       setDataSource(prev => (prev === 'mixed' ? 'mixed' : usedBackend ? prev : prev === 'backend' ? 'mixed' : 'local'))
-      setFreshness(new Date().toLocaleTimeString())
+      setFreshness('Updated')
 
       const agg = newRelations.reduce((acc, r) => {
         const a = r.alchm?.['Alchemy Effects'] || {}

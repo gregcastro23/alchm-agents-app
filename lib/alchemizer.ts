@@ -2,6 +2,7 @@
 // This module implements the core alchemical calculation system
 
 import { performanceCache, createBirthInfoHash } from './performance-cache';
+import { generateAccurateHoroscope } from './monica/horoscope-generator';
 
 // Zodiac signs indexed by number
 export const signs: Record<number, string> = {
@@ -481,16 +482,33 @@ export function alchemize(birth_info: Record<string, any>, horoscope_dict: Recor
         if (element) {
           alchmInfo['Total Effect Value'][element] += 1;
           
-          // Add elemental effect from planet-sign affinity
+          // Add elemental effect from planet-sign affinity (using core alchemizer logic)
           if (planetInfo[planet]) {
-            const planetElement = diurnal_or_nocturnal === 'Diurnal' 
-              ? planetInfo[planet]['Diurnal Element'] 
-              : planetInfo[planet]['Nocturnal Element'];
+            let elemental_effect_value = 0;
             
-            // Element match increases value
-            if (planetElement === element) {
-              alchmInfo['Total Effect Value'][element] += 0.5;
+            // Different logic for Sun/Moon vs other planets
+            if (planet === 'Sun' || planet === 'Moon') {
+              // For Sun/Moon: use time-based diurnal/nocturnal element
+              const planetElement = diurnal_or_nocturnal === 'Diurnal' 
+                ? planetInfo[planet]['Diurnal Element'] 
+                : planetInfo[planet]['Nocturnal Element'];
+              
+              if (planetElement === element) {
+                elemental_effect_value = 1;
+              }
+            } else {
+              // For other planets: check both diurnal and nocturnal elements
+              if (planetInfo[planet]['Diurnal Element'] === element) {
+                elemental_effect_value = 1;
+              } else if (planetInfo[planet]['Nocturnal Element'] === element) {
+                elemental_effect_value = 1;
+              } else {
+                elemental_effect_value = -1;
+              }
             }
+            
+            // Apply the elemental effect
+            alchmInfo['Total Effect Value'][element] += elemental_effect_value;
             
             // Store the planet's sign and element
             if (!alchmInfo['Planets'][planet]) {
@@ -511,34 +529,57 @@ export function alchemize(birth_info: Record<string, any>, horoscope_dict: Recor
             // Store the total effect multiplier
             alchmInfo['Planets'][planet]['Total Effect Multiplier'] = total_effect_multiplier;
             
-            // Calculate alchemical values for this planet
+            // Calculate alchemical values for this planet (following core alchemizer logic)
             if (planetInfo[planet]['Alchemy']) {
-              const alchemy_values = planetInfo[planet]['Alchemy'];
+              const base_alchemy_values = planetInfo[planet]['Alchemy'];
+              const alchemy_values: Record<string, any> = {};
               
-              // Apply each alchemical value to the totals
-              for (const [key, value] of Object.entries(alchemy_values)) {
-                if (typeof value === 'number') {
-                  const adjusted_value = value * total_effect_multiplier;
-                  
-                  // Add to the respective total
-                  if (key === 'Spirit') {
-                    alchmInfo['Alchemy Effects']['Total Spirit'] += adjusted_value;
-                  } else if (key === 'Essence') {
-                    alchmInfo['Alchemy Effects']['Total Essence'] += adjusted_value;
-                    
-                    // Add to day or night essence based on time
-                    if (diurnal_or_nocturnal === 'Diurnal') {
-                      alchmInfo['Alchemy Effects']['Total Day Essence'] += adjusted_value;
-                    } else {
-                      alchmInfo['Alchemy Effects']['Total Night Essence'] += adjusted_value;
-                    }
-                  } else if (key === 'Matter') {
-                    alchmInfo['Alchemy Effects']['Total Matter'] += adjusted_value;
-                  } else if (key === 'Substance') {
-                    alchmInfo['Alchemy Effects']['Total Substance'] += adjusted_value;
-                  }
+              // Initialize Day/Night Alchemy tracking for this planet
+              if (!alchmInfo['Planets'][planet]['Alchemy Effects']) {
+                alchmInfo['Planets'][planet]['Alchemy Effects'] = {};
+              }
+              
+              // Spirit - goes to Day Alchemy
+              if (base_alchemy_values['Spirit']) {
+                const spirit_bonus = base_alchemy_values['Spirit'] * total_effect_multiplier;
+                alchemy_values['Spirit'] = spirit_bonus;
+                alchmInfo['Alchemy Effects']['Total Spirit'] += spirit_bonus;
+                alchemy_values['Day Alchemy'] = {'Spirit': spirit_bonus};
+              }
+              
+              // Essence - goes to Night if planet has Spirit, Day if not
+              if (base_alchemy_values['Essence']) {
+                const essence_bonus = base_alchemy_values['Essence'] * total_effect_multiplier;
+                alchemy_values['Essence'] = essence_bonus;
+                alchmInfo['Alchemy Effects']['Total Essence'] += essence_bonus;
+                
+                if (alchemy_values['Spirit']) {
+                  alchemy_values['Night Alchemy'] = {'Essence': essence_bonus};
+                  alchmInfo['Alchemy Effects']['Total Night Essence'] += essence_bonus;
+                } else {
+                  alchemy_values['Day Alchemy'] = {'Essence': essence_bonus};
+                  alchmInfo['Alchemy Effects']['Total Day Essence'] += essence_bonus;
                 }
               }
+              
+              // Matter - goes to Night Alchemy
+              if (base_alchemy_values['Matter']) {
+                const matter_bonus = base_alchemy_values['Matter'] * total_effect_multiplier;
+                alchemy_values['Matter'] = matter_bonus;
+                alchmInfo['Alchemy Effects']['Total Matter'] += matter_bonus;
+                alchemy_values['Night Alchemy'] = {'Matter': matter_bonus};
+              }
+              
+              // Substance - goes to Night Alchemy
+              if (base_alchemy_values['Substance']) {
+                const substance_bonus = base_alchemy_values['Substance'] * total_effect_multiplier;
+                alchemy_values['Substance'] = substance_bonus;
+                alchmInfo['Alchemy Effects']['Total Substance'] += substance_bonus;
+                alchemy_values['Night Alchemy'] = {'Substance': substance_bonus};
+              }
+              
+              // Store the planet's alchemy effects
+              alchmInfo['Planets'][planet]['Alchemy Effects'] = alchemy_values;
             }
           }
         }
@@ -841,3 +882,66 @@ function getSignIndices(): Record<string, number> {
 // Export the main alchemizer function
 const alchemizerExport = { alchemize, generateAlchmForCurrentMoment };
 export default alchemizerExport; 
+
+// Generate alchemical data for a provided birth date/time/location
+// Accepts flexible string inputs and normalizes to BirthInfo used by horoscope generator
+export async function generateAlchmForBirthInfo(input: {
+  birthDate: string; // YYYY-MM-DD or any Date-parsable string
+  birthTime?: string; // HH:MM
+  birthLocation?: string; // Optional (not geocoded in this helper)
+}): Promise<Record<string, any>> {
+  try {
+    const dateObj = new Date(input.birthDate);
+    if (isNaN(dateObj.getTime())) {
+      // Try manual parse for YYYY-MM-DD
+      const [y, m, d] = input.birthDate.split('-').map(v => parseInt(v, 10));
+      if (!y || !m || !d) throw new Error('Invalid birthDate format');
+      // month expected 1-12 by horoscope generator
+      dateObj.setFullYear(y);
+      dateObj.setMonth((m - 1));
+      dateObj.setDate(d);
+    }
+
+    const time = input.birthTime || '12:00';
+    const [hhStr, mmStr] = time.split(':');
+    const hour = Math.max(0, Math.min(23, parseInt(hhStr || '12', 10)));
+    const minute = Math.max(0, Math.min(59, parseInt(mmStr || '0', 10)));
+
+    const year = dateObj.getFullYear();
+    const month = (dateObj.getMonth() + 1); // horoscope generator expects 1-12
+    const day = dateObj.getDate();
+
+    const birthInfo = {
+      year,
+      month,
+      day,
+      hour,
+      minute,
+      // Default coordinates; future enhancement: parse input.birthLocation
+      latitude: 0,
+      longitude: 0,
+    };
+
+    const horoscope = generateAccurateHoroscope(birthInfo as any);
+    const alchmData = alchemize(birthInfo as any, horoscope as any);
+    return alchmData;
+  } catch (error) {
+    console.error('generateAlchmForBirthInfo error:', error);
+    // Provide a minimal fallback to avoid breaking callers
+    return {
+      'Alchemy Effects': {
+        'Total Spirit': 0,
+        'Total Essence': 0,
+        'Total Matter': 0,
+        'Total Substance': 0,
+        'A #': 0,
+      },
+      'Total Effect Value': createElementObject(),
+      'Dominant Element': 'Fire',
+      'Heat': 0,
+      'Entropy': 0,
+      'Reactivity': 0,
+      'Energy': 0,
+    };
+  }
+}

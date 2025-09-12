@@ -10,7 +10,19 @@ export const revalidate = 0
 
 export async function POST(req: Request) {
   try {
-    const { birthInfo, planets } = await req.json()
+    let birthInfo: any = null
+    let planets: any = null
+    try {
+      const raw = await req.text()
+      if (raw && raw.trim().length > 0) {
+        const parsed = JSON.parse(raw)
+        birthInfo = parsed.birthInfo
+        planets = parsed.planets
+      }
+    } catch (_e) {
+      // Fallback to empty payload if body is not valid JSON
+    }
+    birthInfo = birthInfo || { date: new Date().toISOString().slice(0,10), time: '12:00', location: { lat: 0, lon: 0, name: 'Equator' } }
     
     // Create a hash of the request for caching
     const requestHash = createRequestHash({ birthInfo, planets })

@@ -26,7 +26,8 @@ export async function fetchAstrologizeWheel(birth: BirthInfo): Promise<Astrologi
   const payload = {
     name: birth.name || 'Subject',
     year: birth.year,
-    month: birth.month,
+    // External API expects 1-based month; internal is 0-based [[memory:3826859]]
+    month: birth.month + 1,
     day: birth.day,
     hour: birth.hour,
     minute: birth.minute,
@@ -55,7 +56,12 @@ export async function fetchAstrologizeWheel(birth: BirthInfo): Promise<Astrologi
   })
 
   if (!execResult.result) {
-    throw new Error('Astrologize call degraded')
+    // Return fallback data when API is degraded
+    return {
+      svg: null,
+      imageUrl: null,
+      meta: { degraded: true, fallback: true }
+    }
   }
   if (execResult.degraded) {
     execResult.result.meta = { ...(execResult.result.meta || {}), degraded: true }
@@ -78,7 +84,8 @@ export async function fetchAlchmAlchemize(birth: BirthInfo): Promise<AlchmRespon
   const payload = {
     name: birth.name || 'Subject',
     year: birth.year,
-    month: birth.month,
+    // External API expects 1-based month; internal is 0-based [[memory:3826859]]
+    month: birth.month + 1,
     day: birth.day,
     hour: birth.hour,
     minute: birth.minute,
@@ -101,7 +108,14 @@ export async function fetchAlchmAlchemize(birth: BirthInfo): Promise<AlchmRespon
   })
 
   if (!execResult.result) {
-    throw new Error('Alchm /alchemize degraded')
+    // Return fallback data when API is degraded
+    return {
+      spirit: 1.0,
+      essence: 1.0,
+      matter: 1.0,
+      substance: 1.0,
+      meta: { degraded: true, fallback: true }
+    }
   }
   if ((execResult as any).degraded) {
     (execResult.result as any).meta = { ...((execResult.result as any).meta || {}), degraded: true }

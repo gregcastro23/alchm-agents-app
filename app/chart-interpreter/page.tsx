@@ -23,6 +23,24 @@ import { SavedChart } from "@/hooks/useSavedCharts"
 
 type ChartType = 'birth' | 'current' | 'synastry'
 
+interface ParsedChartData {
+  name?: string
+  birthDate?: string
+  birthTime?: string
+  birthPlace?: string
+  latitude?: number
+  longitude?: number
+}
+
+interface AgentResponse {
+  agent: string
+  response: string
+}
+
+interface MultiAgentApiResponse {
+  responses: AgentResponse[]
+}
+
 interface ChartData {
   name: string
   birthDate: string
@@ -77,7 +95,7 @@ export default function ChartInterpreterPage() {
   })
 
   // Handle quick input parsed data
-  const handleQuickInputParsed = (parsedData: any) => {
+  const handleQuickInputParsed = (parsedData: ParsedChartData) => {
     setChartData(prev => ({
       ...prev,
       name: parsedData.name || "",
@@ -162,12 +180,12 @@ export default function ChartInterpreterPage() {
         }),
       })
 
-      const data = await response.json()
+      const data = await response.json() as MultiAgentApiResponse
 
       if (response.ok && data.responses) {
         // Format multi-agent responses
         const formattedInterpretation = data.responses
-          .map((r: any) => `**${r.agent}**: ${r.response}`)
+          .map((r: AgentResponse) => `**${r.agent}**: ${r.response}`)
           .join('\n\n')
         
         setInterpretation(formattedInterpretation)
@@ -233,9 +251,9 @@ export default function ChartInterpreterPage() {
   }, [chartData.chartType, planetaryPositions])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50/10 via-background to-purple-50/10 dark:from-indigo-950/20 dark:via-background dark:to-purple-950/20">
       {/* Header */}
-      <div className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+      <div className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="container py-6">
           <div className="flex items-center justify-between">
             <div>

@@ -290,9 +290,19 @@ class GalileoLogger {
           const message = `Galileo API error: ${response.status} ${response.statusText} - ${errorText}\n${hint}`;
           if (GALILEO_VERBOSE_FALLBACK) console.warn(message);
           // fall through to fallback logging below
+          if (!GALILEO_FAIL_SILENTLY) {
+            throw new Error(message);
+          }
+          // Return early for silent failure
+          return;
+        }
+        const message = `Galileo API error: ${response.status} ${response.statusText} - ${errorText}`;
+        if (GALILEO_VERBOSE_FALLBACK) console.warn(message);
+        if (!GALILEO_FAIL_SILENTLY) {
           throw new Error(message);
         }
-        throw new Error(`Galileo API error: ${response.status} ${response.statusText} - ${errorText}`);
+        // Return early for silent failure
+        return;
       }
 
       const result = await response.json();

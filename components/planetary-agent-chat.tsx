@@ -270,7 +270,7 @@ export default function PlanetaryAgentChat() {
         </div>
       </CardHeader>
 
-      <CardContent className="h-[400px] overflow-y-auto border rounded-md p-4 mb-4 bg-white dark:bg-gray-950">
+      <CardContent className="h-[400px] overflow-y-auto border rounded-md p-4 mb-4 bg-background dark:bg-gray-950">
         {messages.length === 0 ? (
           <div className="text-center text-muted-foreground h-full flex items-center justify-center">
             Ask the {planet} in {sign} for guidance

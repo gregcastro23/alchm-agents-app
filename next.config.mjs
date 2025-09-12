@@ -11,56 +11,16 @@ const nextConfig = {
   },
   // Fix workspace root detection
   outputFileTracingRoot: '/Users/GregCastro/Desktop/planetary-agents',
-  // Enhanced webpack configuration for better module resolution
-  webpack: (config, { dev, isServer }) => {
-    // Improved module resolution
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-      net: false,
-      tls: false,
-    };
-
-    // Fix react-remove-scroll module resolution issue
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      'react-remove-scroll-bar/constants': 'react-remove-scroll-bar/dist/es2015/constants',
-    };
-
-    // Better error handling in development
-    if (dev) {
-      // Optimize watch options for better performance
-      config.watchOptions = {
-        poll: 3000, // Less aggressive polling
-        aggregateTimeout: 1000, // Longer debounce
-        ignored: [
-          '**/node_modules',
-          '**/.next',
-          '**/.git',
-          '**/coverage',
-          '**/*.log'
-        ],
-      };
-
-      // Enable webpack optimizations for dev
-      config.optimization = {
-        ...config.optimization,
-        removeAvailableModules: false,
-        removeEmptyChunks: false,
-        splitChunks: false,
-      };
-
-      // Add cache configuration for better rebuild performance
-      config.cache = {
-        type: 'filesystem',
-        buildDependencies: {
-          config: [import.meta.url],
-        },
-      };
-    }
-
-    return config;
-  },
+  
+  // Transpile packages that need special handling
+  transpilePackages: [
+    'form-data-encoder',
+    'formdata-node',
+    'galileo',
+    'openai',
+    'react-remove-scroll-bar'
+  ],
+  
   experimental: {
     optimizePackageImports: [
       'lucide-react',
@@ -71,15 +31,43 @@ const nextConfig = {
     // Enable faster refresh
     swcPlugins: [],
   },
-  // Optimize dev server
-  fastRefresh: true,
-  // Reduce bundle analysis overhead
-  webpackDevMiddleware: {
-    stats: {
-      preset: 'minimal',
-      moduleTrace: false,
-      errorDetails: false,
+
+  // Modern Turbopack configuration (moved from experimental.turbo)
+  turbopack: {
+    resolveAlias: {
+      // Fix react-remove-scroll module resolution issue
+      'react-remove-scroll-bar/constants': 'react-remove-scroll-bar/dist/es2015/constants',
     },
+    // Configure module resolution for problematic packages
+    resolveExtensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+  },
+  
+  // Minimal webpack config for when Turbopack is not used (production builds)
+  webpack: (config, { dev, isServer }) => {
+    // Only apply webpack config when not using turbopack
+    if (process.env.TURBOPACK) {
+      return config;
+    }
+    
+    // Basic fallbacks for browser environment
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        path: false,
+        os: false,
+      };
+    }
+
+    // Fix react-remove-scroll module resolution issue
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'react-remove-scroll-bar/constants': 'react-remove-scroll-bar/dist/es2015/constants',
+    };
+
+    return config;
   },
 }
 

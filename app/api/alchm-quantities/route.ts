@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { generateAlchmForCurrentMoment } from "@/lib/alchemizer"
 import { logQuantitiesToGalileo, type AlchemicalMetrics } from "@/lib/galileo-logger"
 import { getCurrentPlanetaryPositions } from "@/lib/calculate-transits"
+import { CharacterVectorCalculator } from "@/lib/astrological-character-vectors"
+import { generateRealTimeSignVectorRune } from "@/lib/runes/sign-vector-runes"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -36,6 +38,9 @@ export async function GET() {
     // Get current planetary positions for additional context
     const planetaryPositions = getCurrentPlanetaryPositions()
     
+    // Generate real-time sign vector rune
+    const realtimeRune = generateRealTimeSignVectorRune(planetaryPositions, { quantities })
+    
     // Include some additional data that may be useful for the client
     const responseData = {
       quantities,
@@ -46,6 +51,8 @@ export async function GET() {
       energy: alchmData?.['Energy'] || 0,
       sunSign: alchmData?.['Sun Sign'] || "",
       chartRuler: alchmData?.['Chart Ruler'] || "",
+      realtimeRune,
+      planetaryPositions: Object.keys(planetaryPositions).length,
       timestamp: new Date().toISOString()
     }
     

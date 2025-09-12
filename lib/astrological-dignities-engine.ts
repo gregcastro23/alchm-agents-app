@@ -72,17 +72,17 @@ export const ESSENTIAL_DIGNITIES = {
 };
 
 export const ALCHEMICAL_PLANETARY_CORRESPONDENCES = {
-  Sun: { spirit: 0.9, essence: 0.3, matter: 0.4, substance: 0.1 }, // Pure Spirit/Fire
-  Moon: { spirit: 0.2, essence: 0.9, matter: 0.2, substance: 0.3 }, // Pure Essence/Water
-  Mercury: { spirit: 0.3, essence: 0.1, matter: 0.1, substance: 0.9 }, // Pure Substance/Air
-  Venus: { spirit: 0.4, essence: 0.7, matter: 0.6, substance: 0.2 }, // Essence + Matter harmony
-  Mars: { spirit: 0.8, essence: 0.2, matter: 0.5, substance: 0.1 }, // Spirit + Matter force
-  Jupiter: { spirit: 0.6, essence: 0.4, matter: 0.3, substance: 0.5 }, // Expansive wisdom
-  Saturn: { spirit: 0.1, essence: 0.2, matter: 0.9, substance: 0.6 }, // Matter + Substance structure
+  Sun: { spirit: 1, essence: 0, matter: 0, substance: 0 }, // Pure Spirit
+  Moon: { spirit: 0, essence: 1, matter: 1, substance: 0 }, // Essence + Matter
+  Mercury: { spirit: 1, essence: 0, matter: 0, substance: 1 }, // Spirit + Substance
+  Venus: { spirit: 0, essence: 1, matter: 1, substance: 0 }, // Essence + Matter
+  Mars: { spirit: 0, essence: 1, matter: 1, substance: 0 }, // Essence + Matter
+  Jupiter: { spirit: 1, essence: 1, matter: 0, substance: 0 }, // Spirit + Essence
+  Saturn: { spirit: 1, essence: 0, matter: 1, substance: 0 }, // Spirit + Matter
   // Modern planets
-  Uranus: { spirit: 0.7, essence: 0.1, matter: 0.2, substance: 0.8 }, // Revolutionary Spirit/Substance
-  Neptune: { spirit: 0.5, essence: 0.8, matter: 0.1, substance: 0.4 }, // Mystical Essence
-  Pluto: { spirit: 0.6, essence: 0.7, matter: 0.8, substance: 0.3 } // Transformative power
+  Uranus: { spirit: 0, essence: 1, matter: 1, substance: 0 }, // Essence + Matter
+  Neptune: { spirit: 0, essence: 1, matter: 0, substance: 1 }, // Essence + Substance
+  Pluto: { spirit: 0, essence: 1, matter: 1, substance: 0 } // Essence + Matter
 };
 
 export const SIGN_ELEMENTAL_QUALITIES = {
@@ -110,7 +110,7 @@ export const SIGN_ELEMENTAL_QUALITIES = {
 /**
  * Calculate planetary dignity and strength
  */
-export function calculatePlanetaryDignity(planet: string, sign: string, degree: number, house: number): PlanetaryDignity {
+export function calculatePlanetaryDignity(planet: string, sign: string, degree: number, house: number, sunDegree?: number, isRetrograde?: boolean): PlanetaryDignity {
   const dignities = ESSENTIAL_DIGNITIES[planet as keyof typeof ESSENTIAL_DIGNITIES];
   let strength_score = 0;
   let essential_dignity: PlanetaryDignity['essential_dignity'] = 'neutral';
@@ -130,7 +130,23 @@ export function calculatePlanetaryDignity(planet: string, sign: string, degree: 
       essential_dignity = 'fall';
       strength_score = -5;
     }
-    // TODO: Add triplicity, term, and face calculations for more precision
+    // Triplicity (elemental rulership) calculation
+    const signElement = getSignElement(sign);
+    const planetaryTripilicityRulers = getTriplicityRulers(signElement);
+    if (planetaryTripilicityRulers.includes(planet)) {
+      if (essential_dignity === 'neutral') {
+        essential_dignity = 'triplicity';
+        strength_score += 2;
+      }
+    }
+    
+    // Term and Face calculations (simplified approximation)
+    const degreePosition = Math.floor(degree);
+    if (degreePosition >= 0 && degreePosition < 6) { // First 6 degrees - often term rulers
+      if (isTermRuler(planet, sign, degreePosition)) {
+        strength_score += 1;
+      }
+    }
   }
   
   // Accidental Dignity Analysis
@@ -158,11 +174,11 @@ export function calculatePlanetaryDignity(planet: string, sign: string, degree: 
       angular_house,
       succedent_house,
       cadent_house,
-      oriental: false, // TODO: Calculate based on Sun position
-      occidental: false, // TODO: Calculate based on Sun position
-      direct_motion: true, // TODO: Calculate retrograde status
-      cazimi: false, // TODO: Calculate based on exact Sun conjunction
-      combust: false // TODO: Calculate based on Sun proximity
+      oriental: isOriental(planet, sunDegree || 0, degree),
+      occidental: isOccidental(planet, sunDegree || 0, degree),
+      direct_motion: !isRetrograde || false, // Based on optional retrograde parameter
+      cazimi: isCazimi(planet, sunDegree || 0, degree),
+      combust: isCombust(planet, sunDegree || 0, degree)
     },
     alchemical_influence: {
       spirit_amplification: planetaryCorrespondence.spirit * dignity_multiplier * signQuality.fire,
@@ -402,4 +418,78 @@ export interface AlchemicalConsciousnessTask {
   base_reward: number;
   alchemical_bonus: { spirit: number; essence: number; matter: number; substance: number };
   optimal_timing: string;
+}
+
+// Helper functions for completing dignity calculations
+
+function getSignElement(sign: string): string {
+  const fireSign = ['Aries', 'Leo', 'Sagittarius'];
+  const earthSigns = ['Taurus', 'Virgo', 'Capricorn'];
+  const airSigns = ['Gemini', 'Libra', 'Aquarius'];
+  const waterSigns = ['Cancer', 'Scorpio', 'Pisces'];
+  
+  if (fireSign.includes(sign)) return 'fire';
+  if (earthSigns.includes(sign)) return 'earth';
+  if (airSigns.includes(sign)) return 'air';
+  if (waterSigns.includes(sign)) return 'water';
+  return 'unknown';
+}
+
+function getTriplicityRulers(element: string): string[] {
+  switch (element) {
+    case 'fire': return ['Sun', 'Jupiter', 'Mars'];
+    case 'earth': return ['Venus', 'Moon', 'Saturn'];
+    case 'air': return ['Mercury', 'Uranus', 'Saturn'];
+    case 'water': return ['Moon', 'Neptune', 'Mars'];
+    default: return [];
+  }
+}
+
+function isTermRuler(planet: string, sign: string, degree: number): boolean {
+  // Simplified term calculation - in practice this would use Egyptian terms
+  // This is a basic approximation for the first few degrees
+  const termRulers: {[key: string]: string[]} = {
+    'Aries': ['Mars', 'Sun', 'Venus', 'Mercury', 'Jupiter'],
+    'Taurus': ['Venus', 'Mercury', 'Mars', 'Jupiter', 'Saturn'],
+    'Gemini': ['Mercury', 'Jupiter', 'Venus', 'Mars', 'Saturn'],
+    'Cancer': ['Moon', 'Venus', 'Mercury', 'Mars', 'Jupiter'],
+    'Leo': ['Sun', 'Jupiter', 'Mercury', 'Venus', 'Mars'],
+    'Virgo': ['Mercury', 'Venus', 'Jupiter', 'Mars', 'Sun']
+  };
+  
+  const rulers = termRulers[sign] || [];
+  const termIndex = Math.floor(degree / 6); // Simple 6-degree divisions
+  return rulers[termIndex] === planet;
+}
+
+function isOriental(planet: string, sunDegree: number, planetDegree: number): boolean {
+  if (planet === 'Sun') return false; // Sun can't be oriental to itself
+  
+  // Oriental means rising before the Sun (planet degree < sun degree in most cases)
+  const diff = planetDegree - sunDegree;
+  return diff < 0 && diff > -180; // Planet rises before Sun
+}
+
+function isOccidental(planet: string, sunDegree: number, planetDegree: number): boolean {
+  if (planet === 'Sun') return false; // Sun can't be occidental to itself
+  
+  // Occidental means setting after the Sun (planet degree > sun degree)
+  const diff = planetDegree - sunDegree;
+  return diff > 0 && diff < 180; // Planet sets after Sun
+}
+
+function isCazimi(planet: string, sunDegree: number, planetDegree: number): boolean {
+  if (planet === 'Sun') return false; // Sun can't be cazimi with itself
+  
+  // Cazimi is within 17 minutes (approximately 0.28 degrees) of the Sun
+  const diff = Math.abs(planetDegree - sunDegree);
+  return diff <= 0.28;
+}
+
+function isCombust(planet: string, sunDegree: number, planetDegree: number): boolean {
+  if (planet === 'Sun') return false; // Sun can't be combust
+  
+  // Combust is within 8.5 degrees of the Sun (but not cazimi)
+  const diff = Math.abs(planetDegree - sunDegree);
+  return diff > 0.28 && diff <= 8.5;
 }

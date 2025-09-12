@@ -4,7 +4,7 @@ import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, ReferenceLine } from "recharts"
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, ReferenceLine, Cell } from "recharts"
 import { Clock, TrendingUp, Orbit, Zap, ArrowRight, Calendar, BarChart3 } from "lucide-react"
 import type { TemporalDelta } from "@/lib/philosophers-stone/temporal-delta"
 
@@ -128,21 +128,47 @@ export function PlanetaryMovementChart({ delta }: Props) {
   }
 
   const data = delta.planetaryMovement.slice(0, 10).map(movement => {
-    // Ensure all numeric values are valid and not NaN
-    const movedDegrees = isNaN(movement.movedDegrees) ? 0 : movement.movedDegrees
-    const fromDegree = isNaN(movement.from.degree) ? 0 : movement.from.degree
-    const toDegree = isNaN(movement.to.degree) ? 0 : movement.to.degree
-    const daysSince = isNaN(delta.daysSinceLast) || delta.daysSinceLast <= 0 ? 1 : delta.daysSinceLast
+    // Ensure all numeric values are valid numbers with comprehensive NaN protection
+    const movedDegreesRaw: any = (movement as any).movedDegrees
+    const fromDegreeRaw: any = (movement as any).from?.degree
+    const toDegreeRaw: any = (movement as any).to?.degree
+    const movedDegreesNum = Number(movedDegreesRaw)
+    const fromDegreeNum = Number(fromDegreeRaw)
+    const toDegreeNum = Number(toDegreeRaw)
+    const movedDegrees = Number.isFinite(movedDegreesNum) ? movedDegreesNum : 0
+    const fromDegree = Number.isFinite(fromDegreeNum) ? fromDegreeNum : 0
+    const toDegree = Number.isFinite(toDegreeNum) ? toDegreeNum : 0
+    const daysSinceNum = Number(delta.daysSinceLast)
+    const daysSince = Number.isFinite(daysSinceNum) && daysSinceNum > 0 ? daysSinceNum : 1
+    
+    // Calculate acceleration with complete NaN protection
+    const acceleration = movedDegrees / daysSince
+    const safeAcceleration = Number.isFinite(acceleration) ? acceleration : 0
+    
+    // Get expected speed with fallback
+    const expectedSpeed = PLANET_SPEEDS[movement.planet as keyof typeof PLANET_SPEEDS]
+    const safeExpectedSpeed = Number.isFinite(expectedSpeed) ? expectedSpeed : 0.1
+    
+    // Ensure degrees is always positive and finite
+    const safeDegrees = Number.isFinite(Math.abs(movedDegrees)) ? Math.abs(movedDegrees) : 0
     
     return {
       planet: movement.planet || 'Unknown',
-      degrees: Math.abs(movedDegrees),
-      from: `${movement.from.sign || 'Unknown'} ${fromDegree.toFixed(1)}°`,
-      to: `${movement.to.sign || 'Unknown'} ${toDegree.toFixed(1)}°`,
+      degrees: safeDegrees,
+      from: `${movement.from?.sign || 'Unknown'} ${fromDegree.toFixed(1)}°`,
+      to: `${movement.to?.sign || 'Unknown'} ${toDegree.toFixed(1)}°`,
       color: PLANET_COLORS[movement.planet as keyof typeof PLANET_COLORS] || '#6b7280',
-      expectedSpeed: PLANET_SPEEDS[movement.planet as keyof typeof PLANET_SPEEDS] || 0.1,
-      acceleration: movedDegrees / daysSince
+      expectedSpeed: safeExpectedSpeed,
+      acceleration: safeAcceleration
     }
+  }).filter(item => {
+    // Filter out any items that still have invalid values - triple check
+    const degreesValid = Number.isFinite(item.degrees) && item.degrees >= 0
+    const accelerationValid = Number.isFinite(item.acceleration)
+    const expectedSpeedValid = Number.isFinite(item.expectedSpeed) && item.expectedSpeed > 0
+    const planetValid = item.planet && item.planet !== 'Unknown'
+    
+    return degreesValid && accelerationValid && expectedSpeedValid && planetValid
   })
 
   // Calculate movement statistics with NaN protection
@@ -163,6 +189,33 @@ export function PlanetaryMovementChart({ delta }: Props) {
     const expectedSpeed = isNaN(item.expectedSpeed) ? 0 : item.expectedSpeed
     return degrees > expectedSpeed * daysSince
   })
+
+  // Final safety check - if we don't have valid data, show empty state
+  if (data.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Orbit className="w-5 h-5 text-purple-500" />
+            Temporal Movement Analysis
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            No valid planetary movement data available for visualization.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex flex-col items-center justify-center py-8 space-y-4">
+            <div className="text-center space-y-2">
+              <h3 className="font-medium">Data Processing Issue</h3>
+              <p className="text-sm text-muted-foreground max-w-md">
+                The planetary movement data contains invalid values. Please try refreshing or check the temporal delta calculations.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>
@@ -206,6 +259,8 @@ export function PlanetaryMovementChart({ delta }: Props) {
               <YAxis 
                 label={{ value: 'Degrees Moved', angle: -90, position: 'insideLeft' }}
                 fontSize={12}
+                domain={[0, 'dataMax']}
+                allowDataOverflow={false}
               />
               <Tooltip 
                 formatter={(value: number, name: string, props: any) => [
@@ -234,12 +289,11 @@ export function PlanetaryMovementChart({ delta }: Props) {
               />
               <Bar 
                 dataKey="degrees" 
-                fill={(entry: any) => entry.color}
                 name="Degrees Moved"
                 radius={[2, 2, 0, 0]}
               >
                 {data.map((entry, index) => (
-                  <Bar key={`bar-${index}`} fill={entry.color} />
+                  <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Bar>
             </BarChart>
@@ -265,6 +319,8 @@ export function PlanetaryMovementChart({ delta }: Props) {
               <YAxis 
                 label={{ value: 'Velocity (°/day)', angle: -90, position: 'insideLeft' }}
                 fontSize={12}
+                domain={['dataMin', 'dataMax']}
+                allowDataOverflow={false}
               />
               <Tooltip 
                 formatter={(value: number) => [`${(isNaN(value) ? 0 : value).toFixed(3)}°/day`, 'Velocity']}

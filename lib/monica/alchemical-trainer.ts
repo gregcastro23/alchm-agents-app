@@ -535,11 +535,36 @@ export async function trainWithRetrogrades(numSamples: number = 20): Promise<any
   };
 }
 
-function identifyRetrogrades(_positions: any): string[] {
-  // In a real implementation, this would check ephemeris data
-  // For now, return empty array as placeholder
-  // TODO: Integrate with ephemeris data for actual retrograde detection
-  return [];
+function identifyRetrogrades(positions: any): string[] {
+  const retrogrades: string[] = [];
+  
+  if (!positions || typeof positions !== 'object') {
+    return retrogrades;
+  }
+  
+  // Check each planet for retrograde status
+  const planets = ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
+  
+  planets.forEach(planet => {
+    const planetData = positions[planet] || positions[planet.toLowerCase()];
+    
+    if (planetData) {
+      // Check if retrograde flag is explicitly set
+      if (planetData.retrograde === true) {
+        retrogrades.push(planet);
+      }
+      // Also check for 'R' indicator in various formats
+      else if (typeof planetData.direction === 'string' && planetData.direction.includes('R')) {
+        retrogrades.push(planet);
+      }
+      // Check motion indicator
+      else if (planetData.motion && planetData.motion < 0) {
+        retrogrades.push(planet);
+      }
+    }
+  });
+  
+  return retrogrades;
 }
 
 function calculateRetrogradeImpact(_samples: any): any {

@@ -45,6 +45,15 @@ type AgentConfig = {
   moonDegree?: number
 }
 
+interface AgentResponse {
+  agent: string
+  response: string
+}
+
+interface MultiAgentApiResponse {
+  responses: AgentResponse[]
+}
+
 const PLANET_SYMBOLS: Record<string, string> = {
   Sun: "☉",
   Moon: "☽",
@@ -175,7 +184,7 @@ export default function MultiAgentChat() {
       if (response.ok) {
         // Add responses from each agent
         if (data.responses && Array.isArray(data.responses)) {
-          const agentMessages = data.responses.map((resp: any) => ({
+          const agentMessages = data.responses.map((resp: AgentResponse) => ({
             role: "agent" as const,
             content: resp.response,
             agent: resp.agent,

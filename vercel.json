@@ -1,7 +1,7 @@
 {
   "framework": "nextjs",
   "buildCommand": "next build",
-  "installCommand": "yarn install --frozen-lockfile",
+  "installCommand": "yarn install --immutable",
   "outputDirectory": ".next",
   "regions": ["iad1"],
   "functions": {

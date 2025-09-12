@@ -79,16 +79,15 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
       angle: 180
     },
     {
-      axis: 'Balance',
-      value: Math.min(100, 100 - (Math.abs(alchmQuantities.spirit - alchmQuantities.substance) + 
-                                  Math.abs(alchmQuantities.essence - alchmQuantities.matter)) * 10),
-      rawValue: 0,
+      axis: 'Heat',
+      value: Math.min(100, Math.abs(alchmQuantities.Heat || 0) * 100),
+      rawValue: alchmQuantities.Heat || 0,
       angle: 240
     },
     {
-      axis: 'Harmony',
-      value: Math.min(100, monicaConstant * 10),
-      rawValue: monicaConstant,
+      axis: 'Energy',
+      value: Math.min(100, Math.abs(alchmQuantities.Energy || 0) * 100),
+      rawValue: alchmQuantities.Energy || 0,
       angle: 300
     }
   ]
@@ -223,7 +222,7 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
             6-Dimensional Alchemical Vector Space
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Spirit, Essence, Matter, Substance + Balance & Harmony dimensions
+            Spirit, Essence, Matter, Substance + Heat & Energy thermodynamic dimensions
           </p>
         </CardHeader>
         <CardContent>
@@ -373,7 +372,7 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
               <br />
               <span className="text-muted-foreground">
                 Where φ (phi) = 1.618... represents the golden ratio, harmonizing active and receptive principles 
-                through the mathematical perfection found throughout nature's consciousness-matter interface.
+                through the mathematical perfection found throughout nature&apos;s consciousness-matter interface.
               </span>
             </p>
           </div>
