@@ -20,8 +20,8 @@ import {
 /**
  * Process survey responses into a comprehensive consciousness profile
  */
-export function processSurveyResponses(survey: ConsciousnessSurvey): SurveyAnalysis {
-  const profile = buildConsciousnessProfile(survey.responses);
+export async function processSurveyResponses(survey: ConsciousnessSurvey): Promise<SurveyAnalysis> {
+  const profile = await buildConsciousnessProfile(survey.responses);
   const insights = generatePersonalityInsights(profile);
   const compatibilityScore = calculateCompatibilityScore(profile);
   const trainingFocus = recommendTrainingFocus(profile);
@@ -41,7 +41,7 @@ export function processSurveyResponses(survey: ConsciousnessSurvey): SurveyAnaly
 /**
  * Build detailed consciousness profile from responses
  */
-function buildConsciousnessProfile(responses: SurveyResponse[]): ConsciousnessProfile {
+async function buildConsciousnessProfile(responses: SurveyResponse[]): Promise<ConsciousnessProfile> {
   const responseMap = new Map(responses.map(r => [r.questionId, r]));
   
   // Helper function to get scale value (1-7 -> 0-100)
@@ -153,7 +153,7 @@ function buildConsciousnessProfile(responses: SurveyResponse[]): ConsciousnessPr
     },
 
     // Astrological foundation and alchemical consciousness
-    astrological_foundation: processAstrologicalFoundation(responseMap)
+    astrological_foundation: await processAstrologicalFoundation(responseMap)
   };
 }
 
@@ -654,7 +654,7 @@ function generateConversationStarters(profile: ConsciousnessProfile): string[] {
 /**
  * Process astrological birth data and generate consciousness stats
  */
-function processAstrologicalFoundation(responses: Map<string, SurveyResponse>): {
+async function processAstrologicalFoundation(responses: Map<string, SurveyResponse>): Promise<{
   birth_data: {
     date: string;
     time: string | null;
@@ -677,7 +677,7 @@ function processAstrologicalFoundation(responses: Map<string, SurveyResponse>): 
   };
   // Calculated astrological data - now implemented!
   calculated_consciousness_stats?: ConsciousnessStats;
-} {
+}> {
   const birthDate = responses.get('birth_date_precise')?.value as string || '';
   const birthTime = responses.get('birth_time_exact')?.value as string || null;
   const birthLocation = responses.get('birth_location')?.value as string || '';
