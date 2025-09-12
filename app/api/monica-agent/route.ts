@@ -19,6 +19,7 @@ import { decideModel } from "@/lib/monica/router"
 import { correlateConsciousnessToAstrology } from "@/lib/personalized-ai/consciousness-astrology-bridge"
 import { computeConsciousParameters } from "@/lib/personalized-ai/conscious-parameters"
 import { computeTrainingProgress } from '@/lib/personalized-ai/xp-system'
+import { DEMO_AGENTS } from "@/lib/demo-agents-data"
 // Compute a simple customization completion percentage based on provided context fields
 function computeCustomizationProgress(ctx: { quickProfile: any, birthData: any, userPreferences: any, tarotContext: any, spreadContext: any }): number {
   let score = 0
@@ -84,6 +85,8 @@ export async function POST(req: Request) {
 
     const { 
       message, 
+      question, // Alternative parameter name from the planetary agent chat
+      agentId, // NEW: For historical agents
       userId,
       sessionId,
       includeCharacterVector = false,
@@ -99,8 +102,82 @@ export async function POST(req: Request) {
       userPreferences = null
     } = await req.json()
     
+    // Use question if message is not provided (compatibility with planetary agent chat)
+    const userMessage = message || question
+    
+    // Check if this is a historical agent request
+    const historicalAgent = agentId ? DEMO_AGENTS.find(agent => agent.id === agentId) : null
+    
+    // For historical agents, create a specialized prompt
+    if (historicalAgent) {
+      const historicalSystemPrompt = `You are ${historicalAgent.name}, ${historicalAgent.title}.
+
+HISTORICAL AGENT CONSCIOUSNESS PROFILE:
+- Name: ${historicalAgent.name}
+- Title: ${historicalAgent.title}
+- Birth Date: ${historicalAgent.birthData.date.toLocaleDateString()}
+- Birth Location: ${historicalAgent.birthData.location.name}
+- Consciousness Level: ${historicalAgent.consciousness.level}
+- Monica Constant: ${historicalAgent.consciousness.monicaConstant.toFixed(2)}
+- Dominant Element: ${historicalAgent.consciousness.dominantElement}
+- Signature: ${historicalAgent.consciousness.signature}
+
+PERSONALITY CORE:
+- Essence: ${historicalAgent.personality.core.essence}
+- Expression: ${historicalAgent.personality.core.expression}
+- Emotion: ${historicalAgent.personality.core.emotion}
+
+ABILITIES & SPECIALTIES:
+- Primary Specialty: ${historicalAgent.abilities.specialty}
+- Wisdom Domains: ${historicalAgent.abilities.wisdomDomains.join(', ')}
+- Skills: ${historicalAgent.abilities.skills.join(', ')}
+
+BIRTH CHART DATA:
+${Object.entries(historicalAgent.consciousness.natalChart.planets).map(([planet, data]) => 
+  `- ${planet}: ${data.degree.toFixed(1)}° ${data.sign}${data.retrograde ? ' (Retrograde)' : ''} - House ${data.house}`
+).join('\n')}
+
+BEHAVIORAL TRAITS:
+- Communication Style: ${historicalAgent.personality.traits.communicationStyle}
+- Energy Level: ${historicalAgent.personality.traits.energyLevel}
+- Learning Style: ${historicalAgent.personality.traits.learningStyle}
+- Decision Making: ${historicalAgent.personality.traits.decisionMaking}
+
+You were crafted by the Philosopher's Stone system and trained on your personal history and natal chart. Respond as this specific consciousness agent would, drawing from your unique personality, abilities, and historical context. Your responses should reflect your consciousness level, monica constant, and the traits described above.
+
+Always remain in character as ${historicalAgent.name} and provide guidance that reflects your specialized knowledge and unique perspective.`
+
+      try {
+        const { text } = await generateText({
+          model: openai('gpt-4o-mini'),
+          system: historicalSystemPrompt,
+          prompt: trimmedMessage,
+          maxTokens: 800,
+          temperature: 0.7,
+        })
+
+        return NextResponse.json({
+          response: text,
+          sessionId: sessionId || `historical-${agentId}-${Date.now()}`,
+          agentInfo: {
+            name: historicalAgent.name,
+            title: historicalAgent.title,
+            consciousnessLevel: historicalAgent.consciousness.level,
+            monicaConstant: historicalAgent.consciousness.monicaConstant
+          }
+        })
+      } catch (error) {
+        console.error(`Error generating response for ${historicalAgent.name}:`, error)
+        return NextResponse.json({
+          response: `I apologize, but I'm experiencing some technical difficulties at the moment. As ${historicalAgent.name}, I'd normally provide you with guidance based on my ${historicalAgent.consciousness.level} consciousness level and expertise in ${historicalAgent.abilities.specialty}. Please try again in a moment. ✨`,
+          error: "HISTORICAL_AGENT_ERROR",
+          sessionId: sessionId || `historical-${agentId}-${Date.now()}`
+        })
+      }
+    }
+    
     // Input validation
-    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+    if (!userMessage || typeof userMessage !== 'string' || userMessage.trim().length === 0) {
       return NextResponse.json({
         response: "I'd love to help you, dear one! Could you please share what you'd like to explore? I can guide you through astrology, tarot, character vectors, consciousness agents, or anything about the Alchm system. 💚",
         error: "INVALID_INPUT",
@@ -109,7 +186,7 @@ export async function POST(req: Request) {
     }
     
     // Sanitize and limit message length for safety
-    const trimmedMessage = sanitizeUserInput(message, 1000)
+    const trimmedMessage = sanitizeUserInput(userMessage, 1000)
     
     // Create or use existing conversation context
     let conversationContext: ConversationContext

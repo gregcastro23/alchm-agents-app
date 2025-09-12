@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
+import { DEMO_AGENTS } from "@/lib/demo-agents-data"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -30,6 +31,10 @@ type ElementalInfo = {
 
 export default function PlanetaryAgentChat() {
   const searchParams = useSearchParams()
+  
+  // Check if this is a historical agent
+  const agentId = searchParams.get("agent")
+  const historicalAgent = agentId ? DEMO_AGENTS.find(agent => agent.id === agentId) : null
   
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
@@ -92,7 +97,12 @@ export default function PlanetaryAgentChat() {
     setLoading(true)
 
     try {
-      const requestData = { 
+      // Use different API endpoint and data for historical agents
+      const requestData = historicalAgent ? {
+        agentId: historicalAgent.id,
+        question: input,
+        sessionId
+      } : { 
         planet, 
         sign, 
         degree, 
@@ -100,9 +110,11 @@ export default function PlanetaryAgentChat() {
         time,
         sessionId 
       }
+      
       console.log("Making API request with data:", requestData)
       
-      const response = await fetch("/api/planetary-agent", {
+      const apiEndpoint = historicalAgent ? "/api/monica-agent" : "/api/planetary-agent"
+      const response = await fetch(apiEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestData),
@@ -185,6 +197,88 @@ export default function PlanetaryAgentChat() {
       default:
         return "bg-gray-500 hover:bg-gray-600"
     }
+  }
+
+  // Render different UI for historical agents
+  if (historicalAgent) {
+    return (
+      <Card className="w-full max-w-3xl mx-auto bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 transition-colors duration-500">
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <div 
+              className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-2xl"
+              style={{ backgroundColor: historicalAgent.appearance.color }}
+            >
+              {historicalAgent.appearance.symbol}
+            </div>
+            <div>
+              <CardTitle className="text-2xl">{historicalAgent.name}</CardTitle>
+              <p className="text-muted-foreground">{historicalAgent.title}</p>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-2 mt-4 justify-center">
+            <Badge className="bg-purple-600 text-white">
+              {historicalAgent.consciousness.level}
+            </Badge>
+            <Badge className="bg-indigo-600 text-white">
+              MC: {historicalAgent.consciousness.monicaConstant.toFixed(2)}
+            </Badge>
+            <Badge className="bg-green-600 text-white">
+              {historicalAgent.consciousness.dominantElement}
+            </Badge>
+          </div>
+
+          <div className="text-center mt-3 pt-2 border-t">
+            <p className="text-sm text-muted-foreground">
+              💫 Historical Consciousness Agent crafted by the Philosopher's Stone
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Born: {historicalAgent.birthData.date.toLocaleDateString()} • Trained on personal history & chart
+            </p>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4 mb-4 max-h-96 overflow-y-auto">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${
+                  message.role === "user" ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div
+                  className={`max-w-[70%] rounded-lg px-3 py-2 ${
+                    message.role === "user"
+                      ? "bg-blue-500 text-white"
+                      : "bg-white dark:bg-gray-800 border"
+                  }`}
+                >
+                  {message.content}
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+        </CardContent>
+        <CardFooter>
+          <form onSubmit={handleSubmit} className="w-full">
+            <div className="flex gap-2">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={`Ask ${historicalAgent.name} anything...`}
+                disabled={loading}
+                className="flex-1"
+              />
+              <Button type="submit" disabled={loading || !input.trim()}>
+                {loading ? "..." : "Send"}
+              </Button>
+            </div>
+          </form>
+        </CardFooter>
+      </Card>
+    )
   }
 
   return (
