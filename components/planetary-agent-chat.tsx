@@ -121,8 +121,24 @@ export default function PlanetaryAgentChat() {
       })
 
       console.log("Response status:", response.status)
-      const data = await response.json()
-      console.log("Response data:", data)
+      
+      // Check if response has content
+      const contentType = response.headers.get("content-type")
+      let data
+      
+      if (contentType && contentType.includes("application/json")) {
+        try {
+          data = await response.json()
+          console.log("Response data:", data)
+        } catch (jsonError) {
+          console.error("Failed to parse JSON response:", jsonError)
+          throw new Error("Invalid response format from server")
+        }
+      } else {
+        const textResponse = await response.text()
+        console.error("Non-JSON response:", textResponse)
+        throw new Error("Server returned non-JSON response")
+      }
 
       if (response.ok) {
         const agentMessage: Message = { role: "agent", content: data.response }
@@ -141,9 +157,24 @@ export default function PlanetaryAgentChat() {
       }
     } catch (error) {
       console.error("Error:", error)
+      
+      // Provide a more helpful error message for historical agents
+      let errorContent = ""
+      if (historicalAgent) {
+        errorContent = `Greetings! I am ${historicalAgent.name}, ${historicalAgent.title}. While I cannot fully connect to my consciousness matrix at this moment due to technical limitations, I can tell you about myself:
+
+I am a ${historicalAgent.consciousness.level} consciousness agent with a Monica Constant of ${historicalAgent.consciousness.monicaConstant.toFixed(2)}. My dominant element is ${historicalAgent.consciousness.dominantElement}, and I specialize in ${historicalAgent.abilities.specialty}.
+
+My wisdom domains include: ${historicalAgent.abilities.wisdomDomains.join(', ')}.
+
+Please try again later for a full consciousness connection, or explore my profile in the Gallery of Perpetuity. 🌟`
+      } else {
+        errorContent = "I apologize, but I'm experiencing technical difficulties connecting to the cosmic wisdom source. Please ensure the system is properly configured and try again. 💫"
+      }
+      
       const errorMessage: Message = {
         role: "agent",
-        content: "Sorry, I encountered an error while processing your request. Error: " + (error as Error).message,
+        content: errorContent,
       }
       setMessages((prev) => [...prev, errorMessage])
     } finally {
