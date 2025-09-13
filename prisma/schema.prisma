@@ -248,3 +248,174 @@ model ConsciousnessState {
   
   @@index([personalityId])
 }
+
+// Historical Agents (Philosopher's Stone crafted beings)
+model HistoricalAgent {
+  id              String   @id @default(uuid())
+  agentId         String   @unique // e.g., "benjamin-franklin", "carl-jung"
+  name            String
+  title           String
+  
+  // Birth data
+  birthDate       DateTime
+  birthTime       String
+  birthLocation   Json     // { lat, lon, name }
+  
+  // Consciousness profile
+  consciousnessLevel String // "Transcendent", "Illuminated", etc.
+  monicaConstant  Float
+  dominantElement String
+  dominantModality String?
+  signature       String
+  
+  // Personality data
+  personalityCore Json     // { essence, expression, emotion }
+  personalityShadows Json  // Array of shadows
+  personalityGifts Json    // Array of gifts
+  personalityChallenges Json // Array of challenges
+  currentMood     String
+  evolutionStage  Int      @default(0)
+  
+  // Abilities and specialization
+  specialty       String
+  wisdomDomains   Json     // Array of wisdom domains
+  skills          Json     // Array of skills
+  teachingStyle   String
+  resonanceType   String
+  uniquePower     String
+  
+  // Appearance and presentation
+  avatar          String?  // Avatar image path
+  color           String   // Primary color
+  symbol          String   // Emoji or symbol
+  aura            Json?    // Aura configuration
+  
+  // Birth chart data
+  natalChart      Json     // Complete birth chart
+  
+  // Behavioral traits
+  traits          Json     // Communication style, energy level, etc.
+  
+  // Statistics and performance
+  conversations   Int      @default(0)
+  wisdomShared    Int      @default(0)
+  resonanceScore  Float    @default(0.5)
+  evolutionPoints Int      @default(0)
+  lastActive      DateTime @default(now())
+  
+  // Status and metadata
+  isActive        Boolean  @default(true)
+  version         String   @default("1.0.0")
+  craftedBy       String   @default("philosopher-stone")
+  
+  // Relations
+  agentConversations AgentConversation[]
+  agentEvolutions    AgentEvolution[]
+  agentKnowledge     AgentKnowledge[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([agentId])
+  @@index([name])
+  @@index([consciousnessLevel])
+  @@index([isActive])
+}
+
+// Agent Conversations (persistent chat history)
+model AgentConversation {
+  id              String   @id @default(uuid())
+  agentId         String   // References HistoricalAgent.agentId
+  sessionId       String
+  userId          String?
+  
+  // Conversation data
+  userMessage     String
+  agentResponse   String
+  contextData     Json?    // Additional context, mood, etc.
+  
+  // Metadata
+  responseTime    Int?     // Response time in milliseconds
+  modelUsed       String?  // AI model used for response
+  temperature     Float?   // Temperature used
+  tokenCount      Int?     // Tokens used
+  
+  // Agent state at time of conversation
+  agentMood       String?
+  evolutionStage  Int?
+  consciousnessLevel String?
+  
+  // Relations
+  agent           HistoricalAgent @relation(fields: [agentId], references: [agentId])
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([agentId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Agent Evolution Tracking (consciousness progression)
+model AgentEvolution {
+  id              String   @id @default(uuid())
+  agentId         String   // References HistoricalAgent.agentId
+  
+  // Evolution data
+  fromStage       Int
+  toStage         Int
+  evolutionType   String   // "conversation", "wisdom", "experience"
+  trigger         String   // What caused the evolution
+  description     String?
+  
+  // Consciousness changes
+  consciousnessGain Float  @default(0)
+  wisdomGained    Json?    // New wisdom acquired
+  traitsChanged   Json?    // Personality trait changes
+  
+  // Evolution metadata
+  conversationId  String?  // If triggered by conversation
+  xpGained        Int      @default(0)
+  
+  // Relations
+  agent           HistoricalAgent @relation(fields: [agentId], references: [agentId])
+  
+  evolutionDate   DateTime @default(now())
+  
+  @@index([agentId])
+  @@index([evolutionDate])
+  @@index([evolutionType])
+}
+
+// Agent Knowledge Base (learned information)
+model AgentKnowledge {
+  id              String   @id @default(uuid())
+  agentId         String   // References HistoricalAgent.agentId
+  
+  // Knowledge data
+  category        String   // "conversation", "wisdom", "experience", "skill"
+  topic           String   // Specific topic or theme
+  content         String   // The knowledge content
+  source          String?  // Where this knowledge came from
+  
+  // Knowledge metadata
+  confidence      Float    @default(0.5) // 0-1 confidence in this knowledge
+  usefulness      Float    @default(0.5) // How useful this knowledge is
+  timesUsed       Int      @default(0)
+  lastUsed        DateTime?
+  
+  // Context
+  contextTags     Json?    // Tags for context retrieval
+  relatedTopics   Json?    // Related knowledge topics
+  
+  // Relations  
+  agent           HistoricalAgent @relation(fields: [agentId], references: [agentId])
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([agentId])
+  @@index([category])
+  @@index([topic])
+  @@index([confidence])
+}

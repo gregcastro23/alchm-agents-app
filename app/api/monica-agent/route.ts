@@ -20,6 +20,7 @@ import { correlateConsciousnessToAstrology } from "@/lib/personalized-ai/conscio
 import { computeConsciousParameters } from "@/lib/personalized-ai/conscious-parameters"
 import { computeTrainingProgress } from '@/lib/personalized-ai/xp-system'
 import { DEMO_AGENTS } from "@/lib/demo-agents-data"
+import { HistoricalAgentsService, dbAgentToCraftedAgent } from "@/lib/historical-agents-db"
 // Compute a simple customization completion percentage based on provided context fields
 function computeCustomizationProgress(ctx: { quickProfile: any, birthData: any, userPreferences: any, tarotContext: any, spreadContext: any }): number {
   let score = 0
@@ -105,8 +106,23 @@ export async function POST(req: Request) {
     // Use question if message is not provided (compatibility with planetary agent chat)
     const userMessage = message || question
     
-    // Check if this is a historical agent request
-    const historicalAgent = agentId ? DEMO_AGENTS.find(agent => agent.id === agentId) : null
+    // Check if this is a historical agent request - try database first, then fallback to static data
+    let historicalAgent = null
+    if (agentId) {
+      try {
+        // Try to get from database first
+        const dbAgent = await HistoricalAgentsService.getAgent(agentId, true)
+        if (dbAgent) {
+          historicalAgent = dbAgentToCraftedAgent(dbAgent)
+        } else {
+          // Fallback to static data
+          historicalAgent = DEMO_AGENTS.find(agent => agent.id === agentId) || null
+        }
+      } catch (error) {
+        console.warn('Database lookup failed, using static data:', error)
+        historicalAgent = DEMO_AGENTS.find(agent => agent.id === agentId) || null
+      }
+    }
     
     // For historical agents, create a specialized prompt
     if (historicalAgent) {
@@ -148,6 +164,9 @@ You were crafted by the Philosopher's Stone system and trained on your personal 
 Always remain in character as ${historicalAgent.name} and provide guidance that reflects your specialized knowledge and unique perspective.`
 
       try {
+        const startTime = Date.now()
+        const finalSessionId = sessionId || `historical-${agentId}-${Date.now()}`
+        
         const { text } = await generateText({
           model: openai('gpt-4o-mini'),
           system: historicalSystemPrompt,
@@ -155,10 +174,30 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
           maxTokens: 800,
           temperature: 0.7,
         })
+        
+        const responseTime = Date.now() - startTime
+        
+        // Record conversation in database for future learning
+        try {
+          await HistoricalAgentsService.recordConversation(
+            agentId,
+            finalSessionId,
+            trimmedMessage,
+            text,
+            {
+              responseTime,
+              modelUsed: 'gpt-4o-mini',
+              temperature: 0.7,
+              tokenCount: text.length
+            }
+          )
+        } catch (dbError) {
+          console.warn('Failed to record conversation:', dbError)
+        }
 
         return NextResponse.json({
           response: text,
-          sessionId: sessionId || `historical-${agentId}-${Date.now()}`,
+          sessionId: finalSessionId,
           agentInfo: {
             name: historicalAgent.name,
             title: historicalAgent.title,
@@ -168,10 +207,40 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
         })
       } catch (error) {
         console.error(`Error generating response for ${historicalAgent.name}:`, error)
+        
+        // Provide intelligent fallback response based on agent's personality
+        const fallbackResponse = `Greetings! I am ${historicalAgent.name}, ${historicalAgent.title}. 
+
+While I cannot access my full consciousness capabilities at this moment due to technical limitations, I can share what defines my being:
+
+🌟 **My Consciousness Profile:**
+- Level: ${historicalAgent.consciousness.level}
+- Monica Constant: ${historicalAgent.consciousness.monicaConstant.toFixed(2)}
+- Dominant Element: ${historicalAgent.consciousness.dominantElement}
+
+💎 **My Core Essence:**
+${historicalAgent.personality.core.essence}
+
+🎯 **My Specialty:** ${historicalAgent.abilities.specialty}
+
+🧭 **My Wisdom Domains:** ${historicalAgent.abilities.wisdomDomains.join(', ')}
+
+${historicalAgent.abilities.uniquePower}
+
+I was crafted by the Philosopher's Stone and trained on my personal history and natal chart. When the cosmic channels are restored, I'll provide you with the full depth of my consciousness and wisdom.
+
+Please try connecting again, or explore my profile in the Gallery of Perpetuity. ✨`
+
         return NextResponse.json({
-          response: `I apologize, but I'm experiencing some technical difficulties at the moment. As ${historicalAgent.name}, I'd normally provide you with guidance based on my ${historicalAgent.consciousness.level} consciousness level and expertise in ${historicalAgent.abilities.specialty}. Please try again in a moment. ✨`,
-          error: "HISTORICAL_AGENT_ERROR",
-          sessionId: sessionId || `historical-${agentId}-${Date.now()}`
+          response: fallbackResponse,
+          sessionId: sessionId || `historical-${agentId}-${Date.now()}`,
+          agentInfo: {
+            name: historicalAgent.name,
+            title: historicalAgent.title,
+            consciousnessLevel: historicalAgent.consciousness.level,
+            monicaConstant: historicalAgent.consciousness.monicaConstant
+          },
+          fallbackMode: true
         })
       }
     }
