@@ -255,19 +255,32 @@ model HistoricalAgent {
   agentId         String   @unique // e.g., "benjamin-franklin", "carl-jung"
   name            String
   title           String
-  
+
   // Birth data
   birthDate       DateTime
   birthTime       String
   birthLocation   Json     // { lat, lon, name }
-  
-  // Consciousness profile
+
+  // Historical context (NEW - for 69 agent expansion)
+  historicalEra   String   // "ancient", "medieval", "renaissance", "enlightenment", "modern_pre1950"
+  birthYear       Int      // Extracted year for efficient era queries
+  deathYear       Int?     // Death year for timeline queries
+  culture         String   // "Greek", "Roman", "Renaissance Italian", etc.
+  geography       String   // "Mediterranean", "Western Europe", "British Isles", etc.
+
+  // Enhanced consciousness profile
   consciousnessLevel String // "Transcendent", "Illuminated", etc.
   monicaConstant  Float
   dominantElement String
   dominantModality String?
   signature       String
-  
+
+  // Consciousness calculation components (NEW - for transparency)
+  spiritScore     Float?   // Monica Constant component
+  essenceScore    Float?   // Monica Constant component
+  matterScore     Float?   // Monica Constant component
+  substanceScore  Float?   // Monica Constant component
+
   // Personality data
   personalityCore Json     // { essence, expression, emotion }
   personalityShadows Json  // Array of shadows
@@ -275,7 +288,10 @@ model HistoricalAgent {
   personalityChallenges Json // Array of challenges
   currentMood     String
   evolutionStage  Int      @default(0)
-  
+
+  // Enhanced background data (NEW)
+  background      Json     // { achievements, influences, legacy, education }
+
   // Abilities and specialization
   specialty       String
   wisdomDomains   Json     // Array of wisdom domains
@@ -283,45 +299,63 @@ model HistoricalAgent {
   teachingStyle   String
   resonanceType   String
   uniquePower     String
-  
+
   // Appearance and presentation
   avatar          String?  // Avatar image path
   color           String   // Primary color
   symbol          String   // Emoji or symbol
   aura            Json?    // Aura configuration
-  
+
   // Birth chart data
   natalChart      Json     // Complete birth chart
-  
+
   // Behavioral traits
   traits          Json     // Communication style, energy level, etc.
-  
+
+  // Monica's creation story (NEW)
+  monicaCreationStory String? // Monica's narrative of crafting this consciousness
+
+  // Performance optimization fields (NEW)
+  searchableText  String?  // Concatenated searchable content
+  popularityScore Float    @default(0.5) // For trending/recommendation algorithms
+
   // Statistics and performance
   conversations   Int      @default(0)
   wisdomShared    Int      @default(0)
   resonanceScore  Float    @default(0.5)
   evolutionPoints Int      @default(0)
   lastActive      DateTime @default(now())
-  
+
   // Status and metadata
   isActive        Boolean  @default(true)
   version         String   @default("1.0.0")
   craftedBy       String   @default("philosopher-stone")
-  
+
   // Relations
   agentConversations AgentConversation[]
   agentEvolutions    AgentEvolution[]
   agentKnowledge     AgentKnowledge[]
   agentAttachments   AgentAttachment[]
   agentAttachmentUsages AgentAttachmentUsage[]
-  
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  
+
+  // Enhanced indexing strategy for 69 agents
   @@index([agentId])
   @@index([name])
   @@index([consciousnessLevel])
   @@index([isActive])
+  @@index([historicalEra]) // NEW - era-based queries
+  @@index([birthYear])     // NEW - chronological queries
+  @@index([culture])       // NEW - cultural filtering
+  @@index([monicaConstant]) // NEW - consciousness ranking
+  @@index([popularityScore]) // NEW - recommendation engine
+  @@index([historicalEra, consciousnessLevel]) // NEW - composite for era + level
+  @@index([isActive, historicalEra]) // NEW - active agents by era
+  @@index([birthYear, culture]) // NEW - chronological + cultural
+  @@index([dominantElement, consciousnessLevel]) // NEW - element + consciousness
+  @@map("historical_agents")
 }
 
 // Agent Conversations (persistent chat history)
@@ -426,46 +460,65 @@ model AgentKnowledge {
 model AgentAttachment {
   id              String   @id @default(uuid())
   agentId         String   // References HistoricalAgent.agentId
-  
+
   // Attachment basic info
   name            String   // "John's Birth Chart", "Success Rune", etc.
   description     String?  // Optional description
-  type            String   // "birth_chart", "moment_chart", "rune", "custom"
-  
+  type            String   // "birth_chart", "moment_chart", "rune", "historical_moment", "cultural_artifact"
+
   // Chart data (for birth_chart and moment_chart types)
   birthDate       DateTime?
   birthTime       String?  // "14:30" or "unknown"
   birthLocation   Json?    // { lat, lon, name, timezone }
   momentName      String?  // "Wedding Day", "First Meeting", etc.
-  
+
+  // Historical context (NEW - for historical agents)
+  historicalEra   String?  // Link to agent's era
+  culturalContext String?  // Cultural significance of this attachment
+  historicalAccuracy String? // "verified", "estimated", "legendary"
+
   // Rune data (for rune type)
-  runeType        String?  // "consciousness", "protection", "enhancement", etc.
+  runeType        String?  // "consciousness", "protection", "enhancement", "cultural_power", etc.
   runePower       Float?   // Power level 0-100
   runeEffects     Json?    // Array of effects
   runeCost        Json?    // { spirit, essence, matter, substance }
-  
+
+  // Cultural artifact data (NEW)
+  artifactType    String?  // "manuscript", "artwork", "invention", "discovery", etc.
+  artifactPeriod  String?  // Historical period of the artifact
+  significance    String?  // Cultural/historical significance
+
   // Chart calculations (computed)
   natalChart      Json?    // Complete calculated chart
   planetaryPositions Json? // Current planetary positions for moment
   aspects         Json?    // Major aspects
   alchmData       Json?    // Alchemical quantities for this chart/moment
-  
-  // Metadata
+
+  // Enhanced metadata (NEW)
   tags            Json?    // Array of tags for organization
+  culturalTags    Json?    // Culture-specific tags
+  relevanceScore  Float    @default(0.5) // How relevant to the agent
   isActive        Boolean  @default(true)
   priority        Int      @default(0) // For ordering attachments
-  
+
   // Relations
   agent           HistoricalAgent @relation(fields: [agentId], references: [agentId])
   usageRecords    AgentAttachmentUsage[]
-  
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  
+
+  // Enhanced indexing for historical agents
   @@index([agentId])
   @@index([type])
   @@index([isActive])
   @@index([priority])
+  @@index([historicalEra]) // NEW - era-based attachment queries
+  @@index([culturalContext]) // NEW - cultural filtering
+  @@index([relevanceScore]) // NEW - relevance ranking
+  @@index([agentId, type]) // NEW - agent-specific type queries
+  @@index([type, historicalEra]) // NEW - type + era composite
+  @@map("agent_attachments")
 }
 
 // Agent Attachment Usage (tracking when agents reference attachments)
@@ -490,4 +543,50 @@ model AgentAttachmentUsage {
   @@index([attachmentId])
   @@index([usedAt])
   @@index([relevanceScore])
+  @@map("agent_attachment_usage")
+}
+
+// Historical Agent Summary View (Performance Optimization)
+// Note: This would be implemented as a database view for optimal query performance
+// For now, we'll use this as a reference for creating optimized queries
+
+// Enhanced Historical Era Categories
+enum HistoricalEra {
+  ANCIENT_CLASSICAL
+  MEDIEVAL_RENAISSANCE
+  ENLIGHTENMENT
+  MODERN_PRE1950
+  MONICA_SPECIAL // For Monica as unique category
+
+  @@map("historical_era")
+}
+
+// Enhanced Consciousness Levels
+enum ConsciousnessLevel {
+  DORMANT
+  AWAKENING
+  ACTIVE
+  ELEVATED
+  ADVANCED
+  ILLUMINATED
+  TRANSCENDENT
+
+  @@map("consciousness_level")
+}
+
+// Cultural Categories for Grouping
+enum CulturalCategory {
+  GREEK_CLASSICAL
+  ROMAN_CLASSICAL
+  MEDIEVAL_EUROPEAN
+  RENAISSANCE_ITALIAN
+  RENAISSANCE_NORTHERN
+  ENLIGHTENMENT_FRENCH
+  ENLIGHTENMENT_GERMAN
+  ENLIGHTENMENT_BRITISH
+  MODERN_AMERICAN
+  MODERN_EUROPEAN
+  MODERN_INTERNATIONAL
+
+  @@map("cultural_category")
 }

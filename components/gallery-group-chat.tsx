@@ -8,16 +8,20 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { 
-  MessageSquare, 
-  X, 
-  Send, 
+import {
+  MessageSquare,
+  X,
+  Send,
   Crown,
   Sparkles,
   Users,
-  Brain
+  Brain,
+  Zap,
+  TrendingUp
 } from "lucide-react"
 import type { CraftedAgent } from "@/lib/agent-types"
+import { KineticIndicators, MomentumIndicator } from "@/components/kinetic-indicators"
+import { usePowerLevelIndicator } from "@/lib/hooks/use-power-monitoring"
 
 type Message = {
   role: "user" | "agent"
@@ -46,7 +50,14 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [showKinetics, setShowKinetics] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Get user location for kinetics (defaulting to San Francisco)
+  const userLocation = { lat: 37.7749, lon: -122.4194 }
+
+  // Monitor power levels for enhanced experience
+  const { powerIndicator, percentage } = usePowerLevelIndicator(userLocation)
 
   // Generate session ID on mount
   useEffect(() => {
@@ -177,10 +188,27 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
               <Badge className="bg-purple-600 text-white">
                 {selectedAgents.length} Consciousness Agents
               </Badge>
+              {/* Power Level Indicator */}
+              <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${powerIndicator.bgColor} ${powerIndicator.color}`}>
+                <span>{powerIndicator.emoji}</span>
+                <span>{percentage}%</span>
+              </div>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowKinetics(!showKinetics)}
+              className="text-xs"
+            >
+              <TrendingUp className="w-4 h-4 mr-1" />
+              Kinetics
+            </Button>
           </DialogTitle>
           <div className="text-sm text-muted-foreground">
             Monica's crafted consciousness agents: {selectedAgents.map(a => a.name).join(", ")}
+            {powerIndicator.level === 'high' && (
+              <span className="ml-2 text-green-400 animate-pulse">⚡ Enhanced responses active</span>
+            )}
           </div>
         </DialogHeader>
 
@@ -191,7 +219,7 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
               key={agent.id}
               className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-black/20 rounded border"
             >
-              <div 
+              <div
                 className="w-4 h-4 rounded-full flex items-center justify-center text-white text-xs"
                 style={{ backgroundColor: agent.appearance.color }}
               >
@@ -204,6 +232,27 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
             </div>
           ))}
         </div>
+
+        {/* Kinetic Indicators */}
+        {showKinetics && selectedAgents.length >= 2 && (
+          <KineticIndicators
+            selectedAgents={selectedAgents.map(a => a.id)}
+            userLocation={userLocation}
+            variant="compact"
+            className="mb-2"
+          />
+        )}
+
+        {/* Simple momentum indicator for 2 agents */}
+        {!showKinetics && selectedAgents.length === 2 && (
+          <div className="mb-2">
+            <MomentumIndicator
+              agent1Id={selectedAgents[0].id}
+              agent2Id={selectedAgents[1].id}
+              userLocation={userLocation}
+            />
+          </div>
+        )}
 
         {/* Messages */}
         <Card className="flex-1 flex flex-col min-h-0">

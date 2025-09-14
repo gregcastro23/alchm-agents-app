@@ -230,7 +230,50 @@ export async function trainOnAlchemicalValues(numSamples: number = 15): Promise<
 }
 
 // Calculate today's hourly alchemical values
-export async function todayHourlyAlchemize(location = { latitude: 37.7749, longitude: -122.4194 }): Promise<any> {
+export async function todayHourlyAlchemize(location = { latitude: 37.7749, longitude: -122.4194 }, useBatchAPI = false): Promise<any> {
+  if (useBatchAPI) {
+    try {
+      const today = new Date();
+      const startTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0).toISOString();
+      const endTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59).toISOString();
+      
+      // Use centralized kinetics client
+      const { AlchemicalKineticsClient } = await import('../kinetics-client')
+      const response = await AlchemicalKineticsClient.put({
+        lat: location.latitude,
+        lon: location.longitude,
+        'start-time': startTime,
+        'end-time': endTime,
+        'time-interval': 60,
+        exportFormat: 'json'
+      })
+      if (!response.ok) throw new Error('Batch API failed')
+      const { data } = await response.json()
+      
+      // Transform batch data to match original samples format
+      const samples = data.map((row: any) => ({
+        hour: new Date(row.Timestamp).getHours(),
+        spirit: row.Total_Spirit,
+        essence: row.Total_Essence,
+        matter: row.Total_Matter,
+        substance: row.Total_Substance,
+        heat: row.Heat,
+        entropy: row.Entropy,
+        planetaryRuler: 'Unknown', // Batch API doesn't include planetary hour yet - TODO
+        isDaytime: true // Placeholder
+      }));
+      
+      // Proceed with analysis...
+      // (copy the analysis code here)
+      
+      return { samples /* add analysis */ };
+    } catch (error) {
+      console.error('Batch API failed, falling back to original:', error);
+      // Fall back to original implementation
+    }
+  }
+  
+  // Original implementation as fallback
   const today = new Date();
   const samples: any[] = [];
   const planetaryCalculator = new PlanetaryHourCalculator(location.latitude, location.longitude);

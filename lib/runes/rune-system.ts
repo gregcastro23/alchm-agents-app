@@ -15,7 +15,8 @@ export interface AlchemicalCost {
 }
 
 export interface RuneEffect {
-  type: 'consciousness' | 'protection' | 'enhancement' | 'manifestation' | 'divination';
+  type: 'consciousness' | 'protection' | 'enhancement' | 'manifestation' | 'divination' | 'passive' | 'active';
+  name?: string; // Optional name for sign-vector rune effects
   power: number; // 1-100
   duration: 'instant' | 'hours' | 'days' | 'permanent';
   description: string;
@@ -40,6 +41,10 @@ export interface Rune {
   description: string;
   craftingTime: number; // in minutes
   cooldown?: number; // in hours
+  powerLevel?: number; // Optional power level for enhanced runes
+  type?: string; // Optional type alias for compatibility
+  cost?: AlchemicalCost; // Optional cost alias for compatibility
+  metadata?: any; // Optional metadata for dynamic runes
 }
 
 // Base Rune Catalog

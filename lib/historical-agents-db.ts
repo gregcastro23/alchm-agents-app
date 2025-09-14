@@ -16,102 +16,299 @@ export interface EnhancedHistoricalAgent extends HistoricalAgent {
 export class HistoricalAgentsService {
   
   /**
-   * Migrate static demo agents to database
-   * This will populate the database with all existing agents
+   * Enhanced migration for 69-agent Gallery of Perpetuity expansion
+   * This will populate the database with all existing and new agents
    */
-  static async migrateStaticAgents(): Promise<{ success: boolean; migrated: number; errors: string[] }> {
-    const results = { success: true, migrated: 0, errors: [] as string[] }
-    
-    console.log('Starting migration of', DEMO_AGENTS.length, 'historical agents...')
-    
-    for (const agent of DEMO_AGENTS) {
+  static async migrateHistoricalAgents(agents: CraftedAgent[] = DEMO_AGENTS): Promise<{
+    success: boolean;
+    migrated: number;
+    updated: number;
+    errors: string[];
+    byEra: Record<string, number>;
+  }> {
+    const results = {
+      success: true,
+      migrated: 0,
+      updated: 0,
+      errors: [] as string[],
+      byEra: {} as Record<string, number>
+    }
+
+    console.log('Starting enhanced migration of', agents.length, 'historical agents...')
+
+    for (const agent of agents) {
       try {
         // Check if agent already exists
         const existing = await prisma.historicalAgent.findUnique({
           where: { agentId: agent.id }
         })
-        
+
+        // Enhanced agent transformation with new fields
+        const historicalAgent = this.transformCraftedAgentToDb(agent)
+
         if (existing) {
-          console.log(`Agent ${agent.name} already exists, skipping...`)
-          continue
+          // Update existing agent with enhanced fields
+          await prisma.historicalAgent.update({
+            where: { agentId: agent.id },
+            data: historicalAgent
+          })
+          results.updated++
+          console.log(`↻ Updated ${agent.name} (${agent.id})`)
+        } else {
+          // Create new agent
+          await prisma.historicalAgent.create({
+            data: historicalAgent
+          })
+          results.migrated++
+          console.log(`✓ Migrated ${agent.name} (${agent.id})`)
         }
-        
-        // Transform CraftedAgent to HistoricalAgent format
-        const historicalAgent = {
-          agentId: agent.id,
-          name: agent.name,
-          title: agent.title,
-          
-          // Birth data
-          birthDate: agent.birthData.date,
-          birthTime: agent.birthData.time,
-          birthLocation: agent.birthData.location,
-          
-          // Consciousness profile
-          consciousnessLevel: agent.consciousness.level,
-          monicaConstant: agent.consciousness.monicaConstant,
-          dominantElement: agent.consciousness.dominantElement,
-          dominantModality: agent.consciousness.dominantModality || null,
-          signature: agent.consciousness.signature,
-          
-          // Personality data
-          personalityCore: agent.personality.core,
-          personalityShadows: agent.personality.shadows,
-          personalityGifts: agent.personality.gifts,
-          personalityChallenges: agent.personality.challenges,
-          currentMood: agent.personality.currentMood,
-          evolutionStage: agent.personality.evolutionStage || 0,
-          
-          // Abilities
-          specialty: agent.abilities.specialty,
-          wisdomDomains: agent.abilities.wisdomDomains,
-          skills: agent.abilities.skills || [],
-          teachingStyle: agent.abilities.teachingStyle,
-          resonanceType: agent.abilities.resonanceType,
-          uniquePower: agent.abilities.uniquePower,
-          
-          // Appearance
-          avatar: agent.appearance.avatar || null,
-          color: agent.appearance.color,
-          symbol: agent.appearance.symbol,
-          aura: agent.appearance.aura || null,
-          
-          // Birth chart
-          natalChart: agent.consciousness.natalChart,
-          
-          // Traits
-          traits: agent.personality.traits || {},
-          
-          // Statistics
-          conversations: agent.stats?.conversations || 0,
-          wisdomShared: agent.stats?.wisdomShared || 0,
-          resonanceScore: agent.stats?.resonanceScore || 0.5,
-          evolutionPoints: agent.stats?.evolutionPoints || 0,
-          lastActive: agent.stats?.lastActive || new Date(),
-          
-          // Metadata
-          version: '1.0.0',
-          craftedBy: 'philosopher-stone'
-        }
-        
-        await prisma.historicalAgent.create({
-          data: historicalAgent
-        })
-        
-        results.migrated++
-        console.log(`✓ Migrated ${agent.name} (${agent.id})`)
-        
+
+        // Track by era
+        const era = historicalAgent.historicalEra
+        results.byEra[era] = (results.byEra[era] || 0) + 1
+
       } catch (error) {
-        const errorMsg = `Failed to migrate ${agent.name}: ${error instanceof Error ? error.message : String(error)}`
+        const errorMsg = `Failed to process ${agent.name}: ${error instanceof Error ? error.message : String(error)}`
         results.errors.push(errorMsg)
         console.error('✗', errorMsg)
       }
     }
-    
+
     results.success = results.errors.length === 0
-    console.log(`Migration complete: ${results.migrated} agents migrated, ${results.errors.length} errors`)
-    
+    console.log(`Enhanced migration complete: ${results.migrated} new, ${results.updated} updated, ${results.errors.length} errors`)
+    console.log('By era:', results.byEra)
+
     return results
+  }
+
+  /**
+   * Transform CraftedAgent to enhanced database format with new fields
+   */
+  private static transformCraftedAgentToDb(agent: CraftedAgent): any {
+    // Determine historical era and cultural context
+    const eraInfo = this.determineHistoricalEra(agent)
+
+    // Calculate Monica Constant components if not present
+    const monicaComponents = this.calculateMonicaComponents(agent.consciousness.monicaConstant)
+
+    // Generate searchable text for performance
+    const searchableText = this.generateSearchableText(agent)
+
+    return {
+      agentId: agent.id,
+      name: agent.name,
+      title: agent.title,
+
+      // Birth data
+      birthDate: agent.birthData.date,
+      birthTime: agent.birthData.time,
+      birthLocation: agent.birthData.location,
+
+      // Enhanced historical context
+      historicalEra: eraInfo.era,
+      birthYear: agent.birthData.date.getFullYear(),
+      deathYear: eraInfo.deathYear,
+      culture: eraInfo.culture,
+      geography: eraInfo.geography,
+
+      // Enhanced consciousness profile
+      consciousnessLevel: agent.consciousness.level,
+      monicaConstant: agent.consciousness.monicaConstant,
+      dominantElement: agent.consciousness.dominantElement,
+      dominantModality: agent.consciousness.dominantModality || null,
+      signature: agent.consciousness.signature,
+
+      // Monica Constant components
+      spiritScore: monicaComponents.spirit,
+      essenceScore: monicaComponents.essence,
+      matterScore: monicaComponents.matter,
+      substanceScore: monicaComponents.substance,
+
+      // Personality data
+      personalityCore: agent.personality.core,
+      personalityShadows: agent.personality.shadows,
+      personalityGifts: agent.personality.gifts,
+      personalityChallenges: agent.personality.challenges,
+      currentMood: agent.personality.currentMood,
+      evolutionStage: agent.personality.evolutionStage || 0,
+
+      // Enhanced background (if available from agent)
+      background: (agent as any).background || this.generateDefaultBackground(agent),
+
+      // Abilities
+      specialty: agent.abilities.specialty,
+      wisdomDomains: agent.abilities.wisdomDomains,
+      skills: (agent.abilities as any).skills || [],
+      teachingStyle: agent.abilities.teachingStyle,
+      resonanceType: agent.abilities.resonanceType,
+      uniquePower: agent.abilities.uniquePower,
+
+      // Appearance
+      avatar: agent.appearance.avatar || null,
+      color: agent.appearance.color,
+      symbol: agent.appearance.symbol,
+      aura: agent.appearance.aura || null,
+
+      // Birth chart
+      natalChart: agent.consciousness.natalChart,
+
+      // Traits
+      traits: (agent.personality as any).traits || {},
+
+      // Monica's creation story
+      monicaCreationStory: (agent as any).monicaCreationStory || null,
+
+      // Performance optimization
+      searchableText: searchableText,
+      popularityScore: 0.5,
+
+      // Statistics
+      conversations: agent.stats?.conversations || 0,
+      wisdomShared: agent.stats?.wisdomShared || 0,
+      resonanceScore: agent.stats?.resonanceScore || 0.5,
+      evolutionPoints: agent.stats?.evolutionPoints || 0,
+      lastActive: agent.stats?.lastActive || new Date(),
+
+      // Metadata
+      version: '2.0.0', // Updated version for 69-agent expansion
+      craftedBy: 'philosopher-stone'
+    }
+  }
+
+  /**
+   * Determine historical era and cultural context from agent data
+   */
+  private static determineHistoricalEra(agent: CraftedAgent): {
+    era: string;
+    deathYear?: number;
+    culture: string;
+    geography: string;
+  } {
+    const birthYear = agent.birthData.date.getFullYear()
+    const agentId = agent.id.toLowerCase()
+
+    // Handle Monica specially
+    if (agentId === 'monica-001') {
+      return {
+        era: 'monica_special',
+        culture: 'Consciousness Crafter',
+        geography: 'Interdimensional'
+      }
+    }
+
+    // Determine era based on birth year and agent ID patterns
+    if (birthYear < 500) {
+      return {
+        era: 'ancient',
+        culture: this.determineCulture(agentId, birthYear),
+        geography: 'Mediterranean/Classical World'
+      }
+    } else if (birthYear < 1500) {
+      return {
+        era: 'medieval',
+        culture: this.determineCulture(agentId, birthYear),
+        geography: 'Medieval Europe'
+      }
+    } else if (birthYear < 1650) {
+      return {
+        era: 'renaissance',
+        culture: this.determineCulture(agentId, birthYear),
+        geography: 'Renaissance Europe'
+      }
+    } else if (birthYear < 1800) {
+      return {
+        era: 'enlightenment',
+        culture: this.determineCulture(agentId, birthYear),
+        geography: 'Enlightenment Europe/Americas'
+      }
+    } else {
+      return {
+        era: 'modern_pre1950',
+        culture: this.determineCulture(agentId, birthYear),
+        geography: 'Modern World'
+      }
+    }
+  }
+
+  /**
+   * Determine cultural context from agent ID and birth year
+   */
+  private static determineCulture(agentId: string, birthYear: number): string {
+    // Cultural patterns based on agent ID
+    if (agentId.includes('shakespeare') || agentId.includes('chaucer')) return 'English'
+    if (agentId.includes('leonardo') || agentId.includes('dante') || agentId.includes('michelangelo')) return 'Italian Renaissance'
+    if (agentId.includes('descartes') || agentId.includes('voltaire')) return 'French'
+    if (agentId.includes('kant') || agentId.includes('einstein')) return 'German'
+    if (agentId.includes('aristotle') || agentId.includes('plato') || agentId.includes('homer')) return 'Ancient Greek'
+    if (agentId.includes('caesar') || agentId.includes('cicero')) return 'Ancient Roman'
+    if (agentId.includes('dickens') || agentId.includes('austen')) return 'Victorian British'
+    if (agentId.includes('twain') || agentId.includes('dickinson')) return 'American'
+
+    // Default based on era
+    if (birthYear < 500) return 'Classical'
+    if (birthYear < 1500) return 'Medieval European'
+    if (birthYear < 1650) return 'Renaissance European'
+    if (birthYear < 1800) return 'Enlightenment European'
+    return 'Modern International'
+  }
+
+  /**
+   * Calculate Monica Constant components from total value
+   */
+  private static calculateMonicaComponents(monicaConstant: number): {
+    spirit: number;
+    essence: number;
+    matter: number;
+    substance: number;
+  } {
+    // Reverse engineer Monica Constant: MC = (Spirit × φ + Essence) / (Matter + Substance + 1)
+    // For now, use reasonable defaults based on consciousness level
+    const phi = 1.618033988749895
+
+    if (monicaConstant >= 5.5) { // Transcendent
+      return { spirit: 9.0, essence: 9.5, matter: 7.0, substance: 8.5 }
+    } else if (monicaConstant >= 4.5) { // Illuminated
+      return { spirit: 8.5, essence: 8.8, matter: 6.5, substance: 7.8 }
+    } else if (monicaConstant >= 3.5) { // Advanced
+      return { spirit: 7.8, essence: 8.0, matter: 6.0, substance: 7.0 }
+    } else if (monicaConstant >= 2.5) { // Elevated
+      return { spirit: 6.5, essence: 7.0, matter: 5.5, substance: 6.0 }
+    } else if (monicaConstant >= 1.5) { // Active
+      return { spirit: 5.5, essence: 6.0, matter: 5.0, substance: 5.5 }
+    } else if (monicaConstant >= 1.0) { // Awakening
+      return { spirit: 4.0, essence: 4.5, matter: 4.5, substance: 5.0 }
+    } else { // Dormant
+      return { spirit: 2.5, essence: 3.0, matter: 4.0, substance: 4.5 }
+    }
+  }
+
+  /**
+   * Generate searchable text for performance optimization
+   */
+  private static generateSearchableText(agent: CraftedAgent): string {
+    const searchComponents = [
+      agent.name,
+      agent.title,
+      agent.abilities.specialty,
+      agent.abilities.wisdomDomains.join(' '),
+      agent.personality.core.essence,
+      agent.personality.core.expression,
+      agent.personality.core.emotion
+    ]
+
+    return searchComponents.join(' ').toLowerCase()
+  }
+
+  /**
+   * Generate default background for agents without explicit background
+   */
+  private static generateDefaultBackground(agent: CraftedAgent): any {
+    return {
+      achievements: [`Master of ${agent.abilities.specialty}`],
+      influences: ['Historical context', 'Cultural environment'],
+      legacy: `Enduring impact in ${agent.abilities.specialty}`,
+      education: 'Period-appropriate education and experience'
+    }
   }
   
   /**
@@ -148,17 +345,120 @@ export class HistoricalAgentsService {
   }
   
   /**
-   * Get all active historical agents
+   * Get all active historical agents with enhanced filtering
    */
-  static async getAllAgents(includeStats = false): Promise<HistoricalAgent[]> {
+  static async getAllAgents(options: {
+    includeStats?: boolean;
+    era?: string;
+    culture?: string;
+    consciousnessLevel?: string;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<HistoricalAgent[]> {
+    const where: any = { isActive: true }
+
+    if (options.era) where.historicalEra = options.era
+    if (options.culture) where.culture = { contains: options.culture, mode: 'insensitive' }
+    if (options.consciousnessLevel) where.consciousnessLevel = options.consciousnessLevel
+
     return await prisma.historicalAgent.findMany({
-      where: { isActive: true },
+      where,
       orderBy: [
         { consciousnessLevel: 'desc' },
         { monicaConstant: 'desc' },
         { name: 'asc' }
-      ]
+      ],
+      take: options.limit,
+      skip: options.offset
     })
+  }
+
+  /**
+   * Get agents by historical era with enhanced filtering
+   */
+  static async getAgentsByEra(era: string, options: {
+    limit?: number;
+    consciousnessLevel?: string;
+    culture?: string;
+  } = {}): Promise<HistoricalAgent[]> {
+    const where: any = {
+      isActive: true,
+      historicalEra: era
+    }
+
+    if (options.consciousnessLevel) where.consciousnessLevel = options.consciousnessLevel
+    if (options.culture) where.culture = { contains: options.culture, mode: 'insensitive' }
+
+    return await prisma.historicalAgent.findMany({
+      where,
+      orderBy: [
+        { monicaConstant: 'desc' },
+        { birthYear: 'asc' },
+        { name: 'asc' }
+      ],
+      take: options.limit
+    })
+  }
+
+  /**
+   * Get era statistics for all agents
+   */
+  static async getEraStatistics(): Promise<{
+    totalAgents: number;
+    byEra: Record<string, {
+      count: number;
+      averageMonicaConstant: number;
+      topConsciousnessLevel: string;
+      cultures: string[];
+    }>;
+  }> {
+    const allAgents = await prisma.historicalAgent.findMany({
+      where: { isActive: true },
+      select: {
+        historicalEra: true,
+        monicaConstant: true,
+        consciousnessLevel: true,
+        culture: true
+      }
+    })
+
+    const byEra: Record<string, any> = {}
+
+    for (const agent of allAgents) {
+      const era = agent.historicalEra
+      if (!byEra[era]) {
+        byEra[era] = {
+          count: 0,
+          monicaConstants: [],
+          consciousnessLevels: [],
+          cultures: new Set()
+        }
+      }
+
+      byEra[era].count++
+      byEra[era].monicaConstants.push(agent.monicaConstant)
+      byEra[era].consciousnessLevels.push(agent.consciousnessLevel)
+      byEra[era].cultures.add(agent.culture)
+    }
+
+    // Process statistics
+    for (const era in byEra) {
+      const eraData = byEra[era]
+      eraData.averageMonicaConstant = eraData.monicaConstants.reduce((a: number, b: number) => a + b, 0) / eraData.count
+
+      // Find most advanced consciousness level
+      const levels = ['Transcendent', 'Illuminated', 'Advanced', 'Elevated', 'Active', 'Awakening', 'Dormant']
+      eraData.topConsciousnessLevel = levels.find(level => eraData.consciousnessLevels.includes(level)) || 'Dormant'
+
+      eraData.cultures = Array.from(eraData.cultures)
+      delete eraData.monicaConstants
+      delete eraData.consciousnessLevels
+    }
+
+    return {
+      totalAgents: allAgents.length,
+      byEra
+    }
   }
   
   /**
