@@ -312,6 +312,8 @@ model HistoricalAgent {
   agentConversations AgentConversation[]
   agentEvolutions    AgentEvolution[]
   agentKnowledge     AgentKnowledge[]
+  agentAttachments   AgentAttachment[]
+  agentAttachmentUsages AgentAttachmentUsage[]
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -418,4 +420,74 @@ model AgentKnowledge {
   @@index([category])
   @@index([topic])
   @@index([confidence])
+}
+
+// Agent Attachments (charts and runes that can be attached to agents)
+model AgentAttachment {
+  id              String   @id @default(uuid())
+  agentId         String   // References HistoricalAgent.agentId
+  
+  // Attachment basic info
+  name            String   // "John's Birth Chart", "Success Rune", etc.
+  description     String?  // Optional description
+  type            String   // "birth_chart", "moment_chart", "rune", "custom"
+  
+  // Chart data (for birth_chart and moment_chart types)
+  birthDate       DateTime?
+  birthTime       String?  // "14:30" or "unknown"
+  birthLocation   Json?    // { lat, lon, name, timezone }
+  momentName      String?  // "Wedding Day", "First Meeting", etc.
+  
+  // Rune data (for rune type)
+  runeType        String?  // "consciousness", "protection", "enhancement", etc.
+  runePower       Float?   // Power level 0-100
+  runeEffects     Json?    // Array of effects
+  runeCost        Json?    // { spirit, essence, matter, substance }
+  
+  // Chart calculations (computed)
+  natalChart      Json?    // Complete calculated chart
+  planetaryPositions Json? // Current planetary positions for moment
+  aspects         Json?    // Major aspects
+  alchmData       Json?    // Alchemical quantities for this chart/moment
+  
+  // Metadata
+  tags            Json?    // Array of tags for organization
+  isActive        Boolean  @default(true)
+  priority        Int      @default(0) // For ordering attachments
+  
+  // Relations
+  agent           HistoricalAgent @relation(fields: [agentId], references: [agentId])
+  usageRecords    AgentAttachmentUsage[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([agentId])
+  @@index([type])
+  @@index([isActive])
+  @@index([priority])
+}
+
+// Agent Attachment Usage (tracking when agents reference attachments)
+model AgentAttachmentUsage {
+  id              String   @id @default(uuid())
+  agentId         String   // References HistoricalAgent.agentId
+  attachmentId    String   // References AgentAttachment.id
+  conversationId  String?  // If used in a conversation
+  
+  // Usage context
+  usageType       String   // "reference", "analysis", "comparison", "guidance"
+  context         String   // What the agent was discussing when they used it
+  relevanceScore  Float    @default(0.5) // How relevant was this attachment (0-1)
+  
+  // Relations
+  agent           HistoricalAgent @relation(fields: [agentId], references: [agentId])
+  attachment      AgentAttachment @relation(fields: [attachmentId], references: [id])
+  
+  usedAt          DateTime @default(now())
+  
+  @@index([agentId])
+  @@index([attachmentId])
+  @@index([usedAt])
+  @@index([relevanceScore])
 }

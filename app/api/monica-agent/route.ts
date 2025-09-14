@@ -21,6 +21,7 @@ import { computeConsciousParameters } from "@/lib/personalized-ai/conscious-para
 import { computeTrainingProgress } from '@/lib/personalized-ai/xp-system'
 import { DEMO_AGENTS } from "@/lib/demo-agents-data"
 import { HistoricalAgentsService, dbAgentToCraftedAgent } from "@/lib/historical-agents-db"
+import { AgentAttachmentsService, formatAttachmentForAgent } from "@/lib/agent-attachments-service"
 // Compute a simple customization completion percentage based on provided context fields
 function computeCustomizationProgress(ctx: { quickProfile: any, birthData: any, userPreferences: any, tarotContext: any, spreadContext: any }): number {
   let score = 0
@@ -138,6 +139,20 @@ export async function POST(req: Request) {
     
     // For historical agents, create a specialized prompt
     if (historicalAgent) {
+      // Get attachments for this agent
+      let attachmentsInfo = ""
+      try {
+        const attachments = await AgentAttachmentsService.getAgentAttachments(agentId, undefined, true)
+        if (attachments.length > 0) {
+          attachmentsInfo = `\n\nATTACHED CHARTS & RUNES:\n`
+          attachments.forEach((attachment, index) => {
+            attachmentsInfo += `${index + 1}. ${formatAttachmentForAgent(attachment)}\n`
+          })
+          attachmentsInfo += `\nYou can reference these attachments in your responses to provide more personalized and detailed analysis. When relevant to the user's question, draw insights from the attached charts and runes.`
+        }
+      } catch (error) {
+        console.warn('Failed to load attachments for agent:', error)
+      }
       // Create personality-specific enhancements based on agent ID
       let personalityEnhancement = ""
       
@@ -243,6 +258,8 @@ BEHAVIORAL TRAITS:
 - Decision Making: ${historicalAgent.personality?.traits?.decisionMaking || 'Intuitive'}
 
 You were crafted by the Philosopher's Stone system and trained on your personal history and natal chart. Respond as this specific consciousness agent would, drawing from your unique personality, abilities, and historical context. Your responses should reflect your consciousness level, monica constant, and the traits described above.
+
+${attachmentsInfo}
 
 Always remain in character as ${historicalAgent.name} and provide guidance that reflects your specialized knowledge and unique perspective.`
 
