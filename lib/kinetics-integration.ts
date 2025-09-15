@@ -37,7 +37,8 @@ export class KineticsIntegration {
         lon: location.lon,
         date: new Date().toISOString().split('T')[0],
         includeElemental: true,
-        includePlanetary: true
+        includePlanetary: true,
+        window: 3
       })
 
       const enhanced: EnhancedKineticData = {

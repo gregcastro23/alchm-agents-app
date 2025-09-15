@@ -225,7 +225,10 @@ export function generateAccurateHoroscope(birthInfo: BirthInfo): GeneratedHorosc
   
   // Calculate Sun sign accurately
   const sunSign = getZodiacSign(birthInfo.month, birthInfo.day);
-  const sunDegree = ((birthInfo.day - 1) / 30) * 30; // Simplified degree within sign
+
+  // Calculate more accurate sun degree within sign
+  const sunPosition = calculatePlanetPosition('Sun', birthDate);
+  const sunDegree = sunPosition.degree;
   
   // Calculate ascendant
   const ascendant = calculateAscendant(birthInfo);

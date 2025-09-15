@@ -97,7 +97,7 @@ export async function GET(req: Request) {
     const metricVelocity = computeMetricVelocity(metricInput)
 
     // Compute power (Potentia)
-    const power = computePower(powerInput)
+    const power = computePower(powerInput, { window: smoothingWindow })
 
     // Compute inertia and momentum
     let elementalMomentum: Array<{ t: Date; p: ElementVector; magnitude: number; momentumType: 'building' | 'sustained' | 'dissipating' }> = []
@@ -245,7 +245,7 @@ export async function POST(req: Request) {
 
     const elementalVelocity = includeElemental ? computeElementalVelocity(elementalInput) : []
     const metricVelocity = computeMetricVelocity(metricInput)
-    const power = computePower(powerInput)
+    const power = computePower(powerInput, { window: Math.max(1, parseInt(String(body.window ?? '1')) || 1) })
 
     let elementalMomentum: Array<{ t: Date; p: ElementVector; magnitude: number; momentumType: 'building' | 'sustained' | 'dissipating' }> = []
     if (includeElemental) {

@@ -17,10 +17,12 @@ import {
   Users,
   Brain,
   Zap,
-  TrendingUp
+  TrendingUp,
+  Activity
 } from "lucide-react"
 import type { CraftedAgent } from "@/lib/agent-types"
 import { KineticIndicators, MomentumIndicator } from "@/components/kinetic-indicators"
+import { DynamicAspectsIndicators, CompactAspectsIndicator } from "@/components/dynamic-aspects-indicators"
 import { usePowerLevelIndicator } from "@/lib/hooks/use-power-monitoring"
 
 type Message = {
@@ -243,6 +245,17 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
           />
         )}
 
+        {/* Dynamic Aspects Indicators */}
+        {showKinetics && selectedAgents.length >= 2 && (
+          <div className="mb-2">
+            <DynamicAspectsIndicators
+              selectedAgents={selectedAgents}
+              showDetails={false}
+              compact={true}
+            />
+          </div>
+        )}
+
         {/* Simple momentum indicator for 2 agents */}
         {!showKinetics && selectedAgents.length === 2 && (
           <div className="mb-2">
@@ -251,6 +264,9 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
               agent2Id={selectedAgents[1].id}
               userLocation={userLocation}
             />
+            <div className="mt-2">
+              <CompactAspectsIndicator selectedAgents={selectedAgents} />
+            </div>
           </div>
         )}
 

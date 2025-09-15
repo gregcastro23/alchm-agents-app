@@ -56,10 +56,18 @@ export async function GET() {
       timestamp: new Date().toISOString()
     }
     
-    // Log quantities to Galileo for dashboard tracking
+    // Log quantities to Galileo for dashboard tracking (null-guarded)
     try {
       const metricsData: AlchemicalMetrics = {
-        ...responseData,
+        quantities,
+        dominantElement: responseData.dominantElement || 'unknown',
+        heat: responseData.heat || 0,
+        entropy: responseData.entropy || 0,
+        reactivity: responseData.reactivity || 0,
+        energy: responseData.energy || 0,
+        sunSign: responseData.sunSign || 'unknown',
+        chartRuler: responseData.chartRuler || 'unknown',
+        timestamp: responseData.timestamp,
         planetaryPositions
       }
       

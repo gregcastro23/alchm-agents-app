@@ -9,9 +9,10 @@ Planetary Agents has evolved from a basic astrological AI platform into a revolu
 3. [Enhanced Tarot System](#enhanced-tarot-system)
 4. [Multi-Agent Planetary Council](#multi-agent-planetary-council)
 5. [Personalized AI Consciousness Training](#personalized-ai-consciousness-training)
-6. [Technical Infrastructure](#technical-infrastructure)
-7. [Performance Metrics](#performance-metrics)
-8. [Testing & Quality Assurance](#testing--quality-assurance)
+6. [Applying & Separating Aspects System](#applying--separating-aspects-system)
+7. [Technical Infrastructure](#technical-infrastructure)
+8. [Performance Metrics](#performance-metrics)
+9. [Testing & Quality Assurance](#testing--quality-assurance)
 
 ---
 
@@ -114,6 +115,54 @@ Planetary Agents has evolved from a basic astrological AI platform into a revolu
 - **Unified Archetype System**: Psychological + astrological integration
 - **Consciousness Signatures**: Unique identity markers
 - **Behavioral Programming**: AI responses based on user psychology
+
+---
+
+## Applying & Separating Aspects System
+
+### September 2025 - Dynamic Aspect Analysis
+- **Real-Time Aspect Detection**: Revolutionary applying vs. separating planetary aspect analysis
+- **Temporal Dynamics Engine**: Time-series sampling with velocity-based calculations
+- **Kinetics Integration**: Enhanced confidence weighting using alchemical power analysis
+- **Traditional Aspect Support**: Complete major aspect system (conjunction, opposition, trine, square, sextile)
+
+### Core Features
+- **Angular Rate Calculation**: Degrees per hour aspect progression tracking
+- **Orb Progression Analysis**: Precise applying/exact/separating classification
+- **Time-Series Sampling**: Integration with existing `sampleHourlyAlchm` infrastructure
+- **Kinetics Bridge**: Consciousness-weighted confidence scoring using power dynamics
+
+### API Implementation
+- **`/api/aspects-dynamics`**: Full aspect analysis endpoint
+  - Parameters: `lat`, `lon`, `date`, `window`, `planets`, `includeKinetics`
+  - Returns: Aspect type, orb degrees, status, rate per hour, confidence, timestamps
+- **Enhanced `/api/realtime-runes`**: Aspect metadata integration
+  - Nearest applying aspect detection for rune enhancement
+  - Cosmic alignment descriptions for consciousness context
+
+### Technical Architecture
+- **`lib/aspects-dynamics.ts`**: Core helper functions for aspect calculations
+  - Angle normalization and separation calculations
+  - Closest aspect detection with traditional orbs
+  - Angular rate computation with velocity analysis
+  - Applying/separating classification logic
+  - Enhanced confidence scoring with kinetics integration
+- **`lib/aspects-sampling.ts`**: Time-series integration layer
+  - Builds on existing alchemical kinetics foundation
+  - Uses `sampleHourlyAlchm` for temporal data collection
+  - Horoscope integration for planetary position extraction
+  - Comprehensive aspect dynamics analysis
+
+### Traditional Astrological Accuracy
+- **Major Aspects with Classical Orbs**:
+  - Conjunction: 0° (±10° orb)
+  - Opposition: 180° (±10° orb)
+  - Trine: 120° (±8° orb)
+  - Square: 90° (±8° orb)
+  - Sextile: 60° (±6° orb)
+- **Planetary Motion Rates**: Traditional daily motion calculations
+- **Orb-Based Classification**: Precise applying/separating determination
+- **Confidence Weighting**: Kinetics-enhanced reliability scoring
 
 ---
 
@@ -245,6 +294,6 @@ The combination of ancient wisdom with cutting-edge technology, backed by robust
 
 ---
 
-*Last Updated: January 2025*
-*Version: 2.0.0*
+*Last Updated: September 2025*
+*Version: 2.1.0*
 *Status: Production Ready*

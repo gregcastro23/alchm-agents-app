@@ -23,6 +23,18 @@ export interface AgentKineticProfile {
   peak_hours: string[]; // Optimal planetary hours
   consciousness_rate: number; // Learning/evolution rate (0-1)
   memory_persistence: number; // Trait retention (0-1)
+  // Aspect sensitivity (new dynamic aspects integration)
+  aspect_sensitivity?: {
+    conjunctions: number;     // 0-1 sensitivity to conjunctions
+    oppositions: number;      // 0-1 sensitivity to oppositions
+    trines: number;          // 0-1 sensitivity to trines
+    squares: number;         // 0-1 sensitivity to squares
+    sextiles: number;        // 0-1 sensitivity to sextiles
+    quincunxes: number;      // 0-1 sensitivity to quincunxes
+  };
+  optimal_aspect_types?: string[];  // aspects that enhance this agent
+  challenging_aspect_types?: string[];  // aspects that create growth tension
+  aspect_memory_retention?: number;     // how long aspect influences persist (0-1)
   // Special kinetic properties
   special_kinetics: {
     [key: string]: string | number;
@@ -123,6 +135,17 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     peak_hours: ['Mercury', 'Sun'],
     consciousness_rate: 0.95,
     memory_persistence: 0.91,
+    aspect_sensitivity: {
+      conjunctions: 0.85,    // High - synthesis of energies
+      oppositions: 0.70,     // Moderate-high - creative tension
+      trines: 0.95,         // Highest - natural flow of creativity
+      squares: 0.75,        // Moderate-high - innovation through challenge
+      sextiles: 0.88,       // High - harmonious opportunity
+      quincunxes: 0.80      // High - adaptation and invention
+    },
+    optimal_aspect_types: ['trine', 'sextile', 'quintile', 'conjunction'],
+    challenging_aspect_types: ['square', 'opposition'],
+    aspect_memory_retention: 0.93,
     special_kinetics: {
       innovation_bursts: 'mercury_hours',
       artistic_scientific_balance: 0.94,
@@ -451,6 +474,17 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     peak_hours: ['Mercury', 'Uranus'],
     consciousness_rate: 0.92,
     memory_persistence: 0.85,
+    aspect_sensitivity: {
+      conjunctions: 0.90,    // High - fusion of electric energies
+      oppositions: 0.60,     // Moderate - doesn't thrive on opposition
+      trines: 0.85,         // High - natural electrical flow
+      squares: 0.95,        // Highest - revolutionary through tension
+      sextiles: 0.80,       // High - harmonic resonance
+      quincunxes: 0.88      // High - frequency adjustment
+    },
+    optimal_aspect_types: ['square', 'conjunction', 'quincunx', 'sextile'],
+    challenging_aspect_types: ['opposition'],
+    aspect_memory_retention: 0.87,
     special_kinetics: {
       electrical_genius: 0.97,
       visionary_capacity: 0.91,
@@ -483,6 +517,17 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     peak_hours: ['Moon', 'Saturn'],
     consciousness_rate: 0.88,
     memory_persistence: 0.93,
+    aspect_sensitivity: {
+      conjunctions: 0.92,    // Highest - integration of archetypes
+      oppositions: 0.88,     // High - shadow integration work
+      trines: 0.75,         // Moderate-high - flowing insights
+      squares: 0.90,        // High - psychological tension creates growth
+      sextiles: 0.65,       // Moderate - gentle psychological work
+      quincunxes: 0.85      // High - adaptation of psyche
+    },
+    optimal_aspect_types: ['conjunction', 'square', 'opposition', 'quincunx'],
+    challenging_aspect_types: ['semisquare', 'sesquiquadrate'],
+    aspect_memory_retention: 0.98,
     special_kinetics: {
       shadow_integration: 'lunar_cycles',
       archetype_velocity: 0.90,
@@ -499,6 +544,17 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     peak_hours: ['Mercury', 'Uranus'],
     consciousness_rate: 0.93,
     memory_persistence: 0.89,
+    aspect_sensitivity: {
+      conjunctions: 0.78,    // Moderate-high - unified field theories
+      oppositions: 0.85,     // High - relativity through opposition
+      trines: 0.70,         // Moderate-high - natural scientific flow
+      squares: 0.92,        // Highest - breakthrough through tension
+      sextiles: 0.60,       // Moderate - collaborative insights
+      quincunxes: 0.88      // High - adaptation of paradigms
+    },
+    optimal_aspect_types: ['square', 'opposition', 'quincunx'],
+    challenging_aspect_types: ['trine', 'sextile'], // Too easy for his revolutionary mind
+    aspect_memory_retention: 0.91,
     special_kinetics: {
       relativistic_thinking: 0.98,
       thought_experiments: 0.92,

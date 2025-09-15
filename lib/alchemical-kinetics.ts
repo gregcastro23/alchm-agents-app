@@ -277,10 +277,11 @@ export function computeElementalMomentum(
  * Power = dEnergy/dt with optional solar amplification for planetary hour = Sun.
  */
 export function computePower(
-  samples: Array<{ t: Date; Energy: number; planetaryHour?: PlanetaryHour }>
+  samples: Array<{ t: Date; Energy: number; planetaryHour?: PlanetaryHour }>,
+  options: { window?: number } = {}
 ): Array<{ t: Date; power: number; solarAmplification?: number }> {
   if (!samples || samples.length === 0) return [];
-  const out: Array<{ t: Date; power: number; solarAmplification?: number }> = [];
+  const raw: Array<{ t: Date; power: number; solarAmplification?: number }> = [];
   for (let i = 0; i < samples.length; i++) {
     const current = samples[i];
     const previous = i > 0 ? samples[i - 1] : undefined;
@@ -289,9 +290,21 @@ export function computePower(
     const basePower = safeDivide(dE, dt);
     const solarAmplification = getSolarAmplification(current.planetaryHour);
     const power = basePower * solarAmplification;
-    out.push({ t: current.t, power, solarAmplification: solarAmplification !== 1 ? solarAmplification : undefined });
+    raw.push({ t: current.t, power, solarAmplification: solarAmplification !== 1 ? solarAmplification : undefined });
   }
-  return out;
+
+  // Optional smoothing using simple moving average over window
+  const windowSize = Math.max(1, Math.floor(options.window ?? 1));
+  if (windowSize <= 1) return raw;
+
+  const smoothed: Array<{ t: Date; power: number; solarAmplification?: number }> = [];
+  for (let i = 0; i < raw.length; i++) {
+    const start = Math.max(0, i - windowSize + 1);
+    const slice = raw.slice(start, i + 1);
+    const avg = slice.reduce((sum, s) => sum + (isFinite(s.power) ? s.power : 0), 0) / slice.length;
+    smoothed.push({ t: raw[i].t, power: avg, solarAmplification: raw[i].solarAmplification });
+  }
+  return smoothed;
 }
 
 // ---- Inertia Helpers (optional for callers to compute provided inertia) ----

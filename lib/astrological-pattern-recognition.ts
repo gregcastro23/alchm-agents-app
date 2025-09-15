@@ -1,11 +1,14 @@
 // Astrological Pattern Recognition System
 // Detects Grand Trines, T-Squares, Yods, Stelliums, and other significant patterns
 
+import { planetaryMotionTracker } from './planetary-motion-tracker'
+
 export interface PlanetPosition {
   planet: string
   sign: string
   degree: number
   house: number
+  date?: Date  // Add optional date for motion calculations
 }
 
 export interface Aspect {
@@ -15,6 +18,11 @@ export interface Aspect {
   angle: number
   orb: number
   applying: boolean
+  separating: boolean
+  orbVelocity?: number  // degrees per day the orb is changing
+  peakDate?: Date | null  // when aspect will be exact (if applying)
+  daysToExact?: number    // days until exact (if applying)
+  daysSinceExact?: number // days since exact (if separating)
   strength: 'exact' | 'tight' | 'moderate' | 'wide'
 }
 
@@ -119,28 +127,71 @@ function calculateAngle(degree1: number, degree2: number): number {
   return angle
 }
 
-// Determine if two planets are in aspect
-function calculateAspect(
+// Determine if two planets are in aspect with dynamic applying/separating analysis
+async function calculateAspect(
   planet1: PlanetPosition,
   planet2: PlanetPosition
-): Aspect | null {
+): Promise<Aspect | null> {
   const degree1 = getAbsoluteDegree(planet1.sign, planet1.degree)
   const degree2 = getAbsoluteDegree(planet2.sign, planet2.degree)
   const angle = calculateAngle(degree1, degree2)
-  
+  const aspectDate = planet1.date || planet2.date || new Date()
+
   // Check each aspect type
   for (const [aspectType, definition] of Object.entries(ASPECT_DEFINITIONS)) {
     const orb = Math.abs(angle - definition.angle)
     if (orb <= definition.orb) {
-      // Determine if applying or separating
-      const applying = degree1 < degree2
-      
+      // Calculate velocity-based applying/separating using motion tracker
+      let applying = false
+      let separating = false
+      let orbVelocity: number | undefined
+      let peakDate: Date | null | undefined
+      let daysToExact: number | undefined
+      let daysSinceExact: number | undefined
+
+      try {
+        // Get separation velocity (negative = applying, positive = separating)
+        orbVelocity = await planetaryMotionTracker.calculateSeparationVelocity(
+          planet1.planet, degree1,
+          planet2.planet, degree2,
+          definition.angle,
+          aspectDate
+        )
+
+        applying = orbVelocity < -0.01  // Orb tightening
+        separating = orbVelocity > 0.01  // Orb widening
+
+        if (applying) {
+          // Predict when aspect will be exact
+          const exactTiming = await planetaryMotionTracker.predictExactAspectTiming(
+            planet1.planet, degree1,
+            planet2.planet, degree2,
+            definition.angle,
+            90, // max 90 days ahead
+            aspectDate
+          )
+
+          if (exactTiming) {
+            peakDate = exactTiming.date
+            daysToExact = Math.round((exactTiming.date.getTime() - aspectDate.getTime()) / (1000 * 60 * 60 * 24))
+          }
+        } else if (separating) {
+          // Estimate days since exact (approximate)
+          daysSinceExact = Math.round(Math.abs(orb / orbVelocity))
+        }
+      } catch (error) {
+        console.warn(`Could not calculate dynamic aspect data for ${planet1.planet}-${planet2.planet}:`, error)
+        // Fallback to simple position comparison for backward compatibility
+        applying = degree1 < degree2
+        separating = !applying
+      }
+
       // Determine strength based on orb
       let strength: Aspect['strength'] = 'wide'
       if (orb <= 1) strength = 'exact'
       else if (orb <= definition.orb * 0.5) strength = 'tight'
       else if (orb <= definition.orb * 0.75) strength = 'moderate'
-      
+
       return {
         planet1: planet1.planet,
         planet2: planet2.planet,
@@ -148,27 +199,74 @@ function calculateAspect(
         angle: definition.angle,
         orb,
         applying,
+        separating,
+        orbVelocity,
+        peakDate,
+        daysToExact,
+        daysSinceExact,
         strength
       }
     }
   }
-  
+
   return null
 }
 
-// Calculate all aspects in a chart
-export function calculateAllAspects(planets: PlanetPosition[]): Aspect[] {
+// Calculate all aspects in a chart with dynamic analysis
+export async function calculateAllAspects(planets: PlanetPosition[]): Promise<Aspect[]> {
   const aspects: Aspect[] = []
-  
+
   for (let i = 0; i < planets.length; i++) {
     for (let j = i + 1; j < planets.length; j++) {
-      const aspect = calculateAspect(planets[i], planets[j])
+      const aspect = await calculateAspect(planets[i], planets[j])
       if (aspect) {
         aspects.push(aspect)
       }
     }
   }
-  
+
+  return aspects
+}
+
+// Backward compatibility function for static aspect calculation
+export function calculateAllAspectsStatic(planets: PlanetPosition[]): Aspect[] {
+  const aspects: Aspect[] = []
+
+  for (let i = 0; i < planets.length; i++) {
+    for (let j = i + 1; j < planets.length; j++) {
+      const degree1 = getAbsoluteDegree(planets[i].sign, planets[i].degree)
+      const degree2 = getAbsoluteDegree(planets[j].sign, planets[j].degree)
+      const angle = calculateAngle(degree1, degree2)
+
+      // Check each aspect type (static calculation)
+      for (const [aspectType, definition] of Object.entries(ASPECT_DEFINITIONS)) {
+        const orb = Math.abs(angle - definition.angle)
+        if (orb <= definition.orb) {
+          // Simple applying/separating (for backward compatibility)
+          const applying = degree1 < degree2
+
+          // Determine strength based on orb
+          let strength: Aspect['strength'] = 'wide'
+          if (orb <= 1) strength = 'exact'
+          else if (orb <= definition.orb * 0.5) strength = 'tight'
+          else if (orb <= definition.orb * 0.75) strength = 'moderate'
+
+          aspects.push({
+            planet1: planets[i].planet,
+            planet2: planets[j].planet,
+            type: aspectType as AspectType,
+            angle: definition.angle,
+            orb,
+            applying,
+            separating: !applying,
+            strength
+          })
+          break // Only find the first matching aspect
+        }
+      }
+    }
+  }
+
   return aspects
 }
 
@@ -451,14 +549,14 @@ function detectGrandCross(planets: PlanetPosition[], aspects: Aspect[]): Pattern
   return patterns
 }
 
-// Main pattern detection function
-export function detectPatterns(planets: PlanetPosition[]): {
+// Main pattern detection function with dynamic aspects
+export async function detectPatterns(planets: PlanetPosition[]): Promise<{
   aspects: Aspect[]
   patterns: PatternConfiguration[]
-} {
-  // Calculate all aspects
-  const aspects = calculateAllAspects(planets)
-  
+}> {
+  // Calculate all aspects with dynamic analysis
+  const aspects = await calculateAllAspects(planets)
+
   // Detect various patterns
   const patterns: PatternConfiguration[] = [
     ...detectGrandTrine(planets, aspects),
@@ -467,10 +565,36 @@ export function detectPatterns(planets: PlanetPosition[]): {
     ...detectStellium(planets, aspects),
     ...detectGrandCross(planets, aspects)
   ]
-  
+
   // Sort patterns by strength
   patterns.sort((a, b) => b.strength - a.strength)
-  
+
+  return {
+    aspects,
+    patterns
+  }
+}
+
+// Backward compatibility function for static pattern detection
+export function detectPatternsStatic(planets: PlanetPosition[]): {
+  aspects: Aspect[]
+  patterns: PatternConfiguration[]
+} {
+  // Calculate all aspects (static)
+  const aspects = calculateAllAspectsStatic(planets)
+
+  // Detect various patterns
+  const patterns: PatternConfiguration[] = [
+    ...detectGrandTrine(planets, aspects),
+    ...detectTSquare(planets, aspects),
+    ...detectYod(planets, aspects),
+    ...detectStellium(planets, aspects),
+    ...detectGrandCross(planets, aspects)
+  ]
+
+  // Sort patterns by strength
+  patterns.sort((a, b) => b.strength - a.strength)
+
   return {
     aspects,
     patterns
