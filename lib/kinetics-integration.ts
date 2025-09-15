@@ -18,15 +18,18 @@ export class KineticsIntegration {
   }
 
   // Get enhanced kinetic data with caching
-  async getEnhancedKinetics(location: { lat: number; lon: number }, options: {
-    includeAgentOptimization?: boolean
-    includePowerPrediction?: boolean
-    includeResonanceMap?: boolean
-  } = {}): Promise<EnhancedKineticData> {
+  async getEnhancedKinetics(
+    location: { lat: number; lon: number },
+    options: {
+      includeAgentOptimization?: boolean
+      includePowerPrediction?: boolean
+      includeResonanceMap?: boolean
+    } = {}
+  ): Promise<EnhancedKineticData> {
     const cacheKey = `${location.lat},${location.lon}-${JSON.stringify(options)}`
     const cached = this.kineticCache.get(cacheKey)
 
-    if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
+    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
       return cached.data
     }
 
@@ -38,7 +41,7 @@ export class KineticsIntegration {
         date: new Date().toISOString().split('T')[0],
         includeElemental: true,
         includePlanetary: true,
-        window: 3
+        window: 3,
       })
 
       const enhanced: EnhancedKineticData = {
@@ -47,19 +50,21 @@ export class KineticsIntegration {
         currentHour: kinetics.timing?.planetaryHours[0] || 'Sun',
         momentum: this.calculateMomentum(kinetics),
         velocity: this.calculateVelocity(kinetics),
-        agentOptimization: options.includeAgentOptimization ?
-          await this.calculateAgentOptimization(kinetics) : undefined,
-        powerPrediction: options.includePowerPrediction ?
-          this.predictPowerTrends(kinetics) : undefined,
-        resonanceMap: options.includeResonanceMap ?
-          await this.buildResonanceMap(kinetics) : undefined,
-        timestamp: Date.now()
+        agentOptimization: options.includeAgentOptimization
+          ? await this.calculateAgentOptimization(kinetics)
+          : undefined,
+        powerPrediction: options.includePowerPrediction
+          ? this.predictPowerTrends(kinetics)
+          : undefined,
+        resonanceMap: options.includeResonanceMap
+          ? await this.buildResonanceMap(kinetics)
+          : undefined,
+        timestamp: Date.now(),
       }
 
       // Cache the result
       this.kineticCache.set(cacheKey, { data: enhanced, timestamp: Date.now() })
       return enhanced
-
     } catch (error) {
       console.error('Enhanced kinetics calculation error:', error)
       throw new Error('Failed to calculate enhanced kinetics')
@@ -89,7 +94,7 @@ export class KineticsIntegration {
 
     // Mercury principle: velocity of change
     // Mars principle: force behind change
-    return Math.min(1.0, (mercury * 0.7) + (mars * 0.3))
+    return Math.min(1.0, mercury * 0.7 + mars * 0.3)
   }
 
   // Find optimal agents for current kinetic conditions
@@ -130,7 +135,7 @@ export class KineticsIntegration {
           agentId,
           name: profile.name,
           score,
-          reason: this.getOptimizationReason(score, profile, currentHour)
+          reason: this.getOptimizationReason(score, profile, currentHour),
         })
       }
     })
@@ -143,8 +148,8 @@ export class KineticsIntegration {
       currentConditions: {
         hour: currentHour,
         power,
-        momentum: this.calculateMomentum(kinetics)
-      }
+        momentum: this.calculateMomentum(kinetics),
+      },
     }
   }
 
@@ -166,7 +171,7 @@ export class KineticsIntegration {
         trend: 'stable',
         confidence: 0.3,
         nextHourPower: 0.5,
-        peakWindow: null
+        peakWindow: null,
       }
     }
 
@@ -192,9 +197,9 @@ export class KineticsIntegration {
 
     return {
       trend: trendLabel,
-      confidence: Math.min(0.9, 0.4 + (powerData.length * 0.1)),
+      confidence: Math.min(0.9, 0.4 + powerData.length * 0.1),
       nextHourPower,
-      peakWindow
+      peakWindow,
     }
   }
 
@@ -226,12 +231,15 @@ export class KineticsIntegration {
       pairwiseResonances: map,
       strongGroups,
       averageResonance: this.calculateAverageResonance(map),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
   }
 
-  private findResonanceGroups(map: Record<string, Record<string, number>>,
-                             threshold: number, minSize: number): ResonanceGroup[] {
+  private findResonanceGroups(
+    map: Record<string, Record<string, number>>,
+    threshold: number,
+    minSize: number
+  ): ResonanceGroup[] {
     const groups: ResonanceGroup[] = []
     const agents = Object.keys(map)
     const visited = new Set<string>()
@@ -240,16 +248,18 @@ export class KineticsIntegration {
       if (visited.has(agent)) return
 
       const group = [agent]
-      const candidates = agents.filter(a => a !== agent &&
-        map[agent][a] && map[agent][a] >= threshold)
+      const candidates = agents.filter(
+        a => a !== agent && map[agent][a] && map[agent][a] >= threshold
+      )
 
       // Build connected group
       candidates.forEach(candidate => {
         if (visited.has(candidate)) return
 
         // Check if candidate resonates with all current group members
-        const resonatesWithAll = group.every(member =>
-          map[candidate][member] && map[candidate][member] >= threshold)
+        const resonatesWithAll = group.every(
+          member => map[candidate][member] && map[candidate][member] >= threshold
+        )
 
         if (resonatesWithAll) {
           group.push(candidate)
@@ -263,7 +273,7 @@ export class KineticsIntegration {
         groups.push({
           agents: group,
           averageResonance: avgResonance,
-          description: `High-synergy group of ${group.length} agents`
+          description: `High-synergy group of ${group.length} agents`,
         })
       }
     })
@@ -271,7 +281,10 @@ export class KineticsIntegration {
     return groups.sort((a, b) => b.averageResonance - a.averageResonance)
   }
 
-  private calculateGroupResonance(agents: string[], map: Record<string, Record<string, number>>): number {
+  private calculateGroupResonance(
+    agents: string[],
+    map: Record<string, Record<string, number>>
+  ): number {
     let totalResonance = 0
     let pairCount = 0
 
@@ -300,7 +313,10 @@ export class KineticsIntegration {
   }
 
   // Get kinetic enhancements for agent responses
-  async getAgentEnhancements(agentId: string, location: { lat: number; lon: number }): Promise<AgentEnhancements> {
+  async getAgentEnhancements(
+    agentId: string,
+    location: { lat: number; lon: number }
+  ): Promise<AgentEnhancements> {
     try {
       const profile = getAgentKineticProfile(agentId)
       if (!profile) {
@@ -314,7 +330,7 @@ export class KineticsIntegration {
         profile,
         currentAlignment: this.calculateCurrentAlignment(profile, kinetics),
         suggestedEnhancements: [],
-        powerBoost: 1.0
+        powerBoost: 1.0,
       }
 
       // Calculate power boost
@@ -341,12 +357,11 @@ export class KineticsIntegration {
       }
 
       return enhancements
-
     } catch (error) {
       console.error('Agent enhancement calculation error:', error)
       return {
         available: false,
-        reason: 'Failed to calculate kinetic enhancements'
+        reason: 'Failed to calculate kinetic enhancements',
       }
     }
   }
@@ -377,7 +392,7 @@ export class KineticsIntegration {
     return {
       size: this.kineticCache.size,
       oldest: timestamps.length > 0 ? Math.min(...timestamps) : 0,
-      newest: timestamps.length > 0 ? Math.max(...timestamps) : 0
+      newest: timestamps.length > 0 ? Math.max(...timestamps) : 0,
     }
   }
 }
@@ -466,8 +481,12 @@ export async function getGroupKinetics(
     if (enhanced.resonanceMap!.pairwiseResonances[agentId]) {
       filteredResonances[agentId] = {}
       agentIds.forEach(otherAgentId => {
-        if (agentId !== otherAgentId && enhanced.resonanceMap!.pairwiseResonances[agentId][otherAgentId]) {
-          filteredResonances[agentId][otherAgentId] = enhanced.resonanceMap!.pairwiseResonances[agentId][otherAgentId]
+        if (
+          agentId !== otherAgentId &&
+          enhanced.resonanceMap!.pairwiseResonances[agentId][otherAgentId]
+        ) {
+          filteredResonances[agentId][otherAgentId] =
+            enhanced.resonanceMap!.pairwiseResonances[agentId][otherAgentId]
         }
       })
     }

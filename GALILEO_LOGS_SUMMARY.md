@@ -7,8 +7,9 @@ Your Planetary Agents application is now actively sending structured tracking da
 ## 📊 Generated Events Summary
 
 ### **Total Events Sent: 30+**
+
 - ✅ 5 Alchemical quantities tracking events
-- ✅ 5 Planetary agent interaction events  
+- ✅ 5 Planetary agent interaction events
 - ✅ 5 Custom events
 - ✅ 5 Performance events
 - ✅ 5 Page view events
@@ -18,27 +19,30 @@ Your Planetary Agents application is now actively sending structured tracking da
 ## 🏷️ Tags Structure in Galileo
 
 ### **Base Tags (Always Present)**
+
 ```javascript
-[
-  "alchemical_quantities",      // Base category
-  "planetary_agents",           // Planetary system
-  "astrological_data",          // Astrological calculations
-  "thermodynamic_calculations"  // Energy calculations
+;[
+  'alchemical_quantities', // Base category
+  'planetary_agents', // Planetary system
+  'astrological_data', // Astrological calculations
+  'thermodynamic_calculations', // Energy calculations
 ]
 ```
 
 ### **Dynamic Tags (Based on Current State)**
+
 - `element_[element]` - Based on dominant element
-- `modality_[modality]` - Based on dominant modality  
+- `modality_[modality]` - Based on dominant modality
 - `sun_sign_[sign]` - Based on current sun sign
 
 ## 📋 Metadata Structure in Galileo
 
 ### **Key Metadata Examples**
+
 ```javascript
 {
   "Sun Sign": "Gemini",
-  "Chart Ruler": "Mercury", 
+  "Chart Ruler": "Mercury",
   "Alchemy Effects_Total Spirit": 4.5800,
   "Alchemy Effects_Total Essence": 9.7000,
   "Alchemy Effects_Total Matter": 8.1000,
@@ -58,6 +62,7 @@ Your Planetary Agents application is now actively sending structured tracking da
 ## 🔍 What to Look For in Galileo Dashboard
 
 ### **1. Event Types**
+
 - `alchemical_quantities` - Alchemical calculations
 - `planetary_agent_interaction` - User interactions with planetary agents
 - `custom_event` - Custom application events
@@ -66,15 +71,18 @@ Your Planetary Agents application is now actively sending structured tracking da
 - `api_request` - API call tracking
 
 ### **2. Source Filter**
+
 - Filter by `source: "site-metrics-tracker"` to see all our events
 
 ### **3. Tags Filtering**
+
 - Filter by `alchemical_quantities` for all alchemical data
 - Filter by `planetary_agents` for planetary interactions
 - Filter by `astrological_data` for astrological calculations
 - Filter by `thermodynamic_calculations` for energy data
 
 ### **4. Metadata Search**
+
 - Search for specific alchemical values like `Alchemy_Effects_Total_Spirit`
 - Search for thermodynamic values like `Heat`, `Energy`, `K_alchm`
 - Search for astrological data like `Sun_Sign`, `Chart_Ruler`
@@ -86,7 +94,7 @@ Your Planetary Agents application is now actively sending structured tracking da
   "event_type": "alchemical_quantities",
   "tags": [
     "alchemical_quantities",
-    "planetary_agents", 
+    "planetary_agents",
     "astrological_data",
     "thermodynamic_calculations"
   ],
@@ -113,16 +121,19 @@ Your Planetary Agents application is now actively sending structured tracking da
 ## 🎯 Key Benefits Achieved
 
 ### **1. Structured Data**
+
 - ✅ All alchm quantities are now searchable metadata keys
 - ✅ Consistent format across all tracking events
 - ✅ Easy filtering and querying in Galileo
 
 ### **2. Comprehensive Coverage**
+
 - ✅ 88 metadata keys covering all alchemical calculations
 - ✅ Real-time tracking of every calculated value
 - ✅ Automatic tagging for categorization
 
 ### **3. Production Ready**
+
 - ✅ Robust error handling and fallbacks
 - ✅ Automatic buffering and batch sending
 - ✅ Integration with existing Galileo setup
@@ -130,18 +141,21 @@ Your Planetary Agents application is now actively sending structured tracking da
 ## 🔧 How to Use in Galileo
 
 ### **1. Filter by Event Type**
+
 ```
 event_type: "alchemical_quantities"
 ```
 
 ### **2. Filter by Tags**
+
 ```
 tags: "alchemical_quantities"
-tags: "planetary_agents" 
+tags: "planetary_agents"
 tags: "astrological_data"
 ```
 
 ### **3. Search Metadata**
+
 ```
 metadata.Alchemy_Effects_Total_Spirit: > 4
 metadata.Heat: > 0.03
@@ -149,6 +163,7 @@ metadata.Sun_Sign: "Gemini"
 ```
 
 ### **4. Filter by Source**
+
 ```
 source: "site-metrics-tracker"
 ```
@@ -174,9 +189,10 @@ The system is now actively tracking:
 ## 🎉 Success!
 
 Your Planetary Agents application now has comprehensive, structured tracking with:
+
 - **88 metadata keys** for all alchemical data
 - **4 base tags** + dynamic tags for categorization
 - **Real-time Galileo integration** for monitoring
 - **Production-ready** error handling and fallbacks
 
-The tracking system is live and actively sending data to your Galileo dashboard! 🚀 
+The tracking system is live and actively sending data to your Galileo dashboard! 🚀

@@ -1,68 +1,60 @@
-"use client"
+'use client'
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import {
-  Activity,
-  TrendingUp,
-  Users,
-  AlertTriangle,
-  CheckCircle,
-  Target,
-  Zap
-} from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { Activity, TrendingUp, Users, AlertTriangle, CheckCircle, Target, Zap } from 'lucide-react'
 
 export interface HarmonicMetrics {
-  Spirit: { period: number; phase: number; amplitude: number };
-  currentWave: number;
+  Spirit: { period: number; phase: number; amplitude: number }
+  currentWave: number
 }
 
 export interface AgentTrigger {
-  planet: string;
-  confidence: number; // 0-1
-  reason: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  action: 'consult' | 'consolidate' | 'activate' | 'balance';
-  element?: 'fire' | 'water' | 'air' | 'earth';
+  planet: string
+  confidence: number // 0-1
+  reason: string
+  priority: 'low' | 'medium' | 'high' | 'urgent'
+  action: 'consult' | 'consolidate' | 'activate' | 'balance'
+  element?: 'fire' | 'water' | 'air' | 'earth'
 }
 
 export interface CouncilRecommendation {
-  triggers: AgentTrigger[];
-  dominantAction: string;
-  harmonicState: 'chaotic' | 'fluctuating' | 'stable' | 'resonant' | 'transcendent';
-  overallConfidence: number;
-  summary: string;
+  triggers: AgentTrigger[]
+  dominantAction: string
+  harmonicState: 'chaotic' | 'fluctuating' | 'stable' | 'resonant' | 'transcendent'
+  overallConfidence: number
+  summary: string
 }
 
 export interface HarmonicAnalysisBridgeProps {
-  metrics: HarmonicMetrics;
-  onCouncilRecommendation?: (recommendation: CouncilRecommendation) => void;
-  autoAnalyze?: boolean;
-  className?: string;
+  metrics: HarmonicMetrics
+  onCouncilRecommendation?: (recommendation: CouncilRecommendation) => void
+  autoAnalyze?: boolean
+  className?: string
 }
 
 /**
  * Pure function to get council recommendations from harmonic metrics
  */
 export function getCouncilRecommendations(metrics: HarmonicMetrics): CouncilRecommendation {
-  const { Spirit, currentWave } = metrics;
-  const { period, phase, amplitude } = Spirit;
+  const { Spirit, currentWave } = metrics
+  const { period, phase, amplitude } = Spirit
 
   // Validate inputs
-  const validAmplitude = Math.max(0, Math.min(1, amplitude || 0));
-  const validPhase = Math.abs(phase || 0) % (2 * Math.PI);
-  const validPeriod = Math.max(0.1, period || 1);
-  const validCurrentWave = Math.max(0, Math.min(1, currentWave || 0));
+  const validAmplitude = Math.max(0, Math.min(1, amplitude || 0))
+  const validPhase = Math.abs(phase || 0) % (2 * Math.PI)
+  const validPeriod = Math.max(0.1, period || 1)
+  const validCurrentWave = Math.max(0, Math.min(1, currentWave || 0))
 
-  const triggers: AgentTrigger[] = [];
+  const triggers: AgentTrigger[] = []
 
   // High amplitude + peak phase -> Action agents (Mars/Mercury)
-  const phasePosition = Math.cos(validPhase); // -1 to 1, peak at phase=0
-  const isNearPeak = Math.abs(phasePosition) > 0.7; // Near peak or trough
-  const isHighAmplitude = validAmplitude > 0.6;
+  const phasePosition = Math.cos(validPhase) // -1 to 1, peak at phase=0
+  const isNearPeak = Math.abs(phasePosition) > 0.7 // Near peak or trough
+  const isHighAmplitude = validAmplitude > 0.6
 
   if (isHighAmplitude && isNearPeak) {
     if (phasePosition > 0) {
@@ -73,8 +65,8 @@ export function getCouncilRecommendations(metrics: HarmonicMetrics): CouncilReco
         reason: `High amplitude (${(validAmplitude * 100).toFixed(0)}%) at positive peak phase suggests powerful initiative energy`,
         priority: validAmplitude > 0.8 ? 'urgent' : 'high',
         action: 'activate',
-        element: 'fire'
-      });
+        element: 'fire',
+      })
 
       triggers.push({
         planet: 'Mercury',
@@ -82,8 +74,8 @@ export function getCouncilRecommendations(metrics: HarmonicMetrics): CouncilReco
         reason: `Peak harmonic phase indicates optimal communication and decision-making timing`,
         priority: 'medium',
         action: 'consult',
-        element: 'air'
-      });
+        element: 'air',
+      })
     } else {
       // Negative peak - release and transformation
       triggers.push({
@@ -92,8 +84,8 @@ export function getCouncilRecommendations(metrics: HarmonicMetrics): CouncilReco
         reason: `High amplitude at negative peak suggests deep transformation and restructuring energy`,
         priority: 'high',
         action: 'consolidate',
-        element: 'earth'
-      });
+        element: 'earth',
+      })
     }
   }
 
@@ -105,8 +97,8 @@ export function getCouncilRecommendations(metrics: HarmonicMetrics): CouncilReco
       reason: `Low amplitude (${(validAmplitude * 100).toFixed(0)}%) indicates need for grounding and stability`,
       priority: 'medium',
       action: 'consolidate',
-      element: 'earth'
-    });
+      element: 'earth',
+    })
 
     triggers.push({
       planet: 'Venus',
@@ -114,8 +106,8 @@ export function getCouncilRecommendations(metrics: HarmonicMetrics): CouncilReco
       reason: `Gentle harmonic state calls for harmony and relationship balance`,
       priority: 'low',
       action: 'balance',
-      element: 'water'
-    });
+      element: 'water',
+    })
   }
 
   // Very short periods -> Quick decision agents
@@ -126,8 +118,8 @@ export function getCouncilRecommendations(metrics: HarmonicMetrics): CouncilReco
       reason: `Rapid harmonic period (${validPeriod.toFixed(2)}) suggests need for quick mental processing`,
       priority: 'high',
       action: 'consult',
-      element: 'air'
-    });
+      element: 'air',
+    })
   }
 
   // Very long periods -> Wisdom/patience agents
@@ -138,8 +130,8 @@ export function getCouncilRecommendations(metrics: HarmonicMetrics): CouncilReco
       reason: `Extended harmonic period (${validPeriod.toFixed(2)}) indicates deep wisdom and expansion energy`,
       priority: 'medium',
       action: 'consult',
-      element: 'fire'
-    });
+      element: 'fire',
+    })
   }
 
   // Current wave state analysis
@@ -150,8 +142,8 @@ export function getCouncilRecommendations(metrics: HarmonicMetrics): CouncilReco
       reason: `High current wave (${(validCurrentWave * 100).toFixed(0)}%) suggests peak creative and leadership energy`,
       priority: 'high',
       action: 'activate',
-      element: 'fire'
-    });
+      element: 'fire',
+    })
   }
 
   if (validCurrentWave < 0.2) {
@@ -161,115 +153,119 @@ export function getCouncilRecommendations(metrics: HarmonicMetrics): CouncilReco
       reason: `Low current wave (${(validCurrentWave * 100).toFixed(0)}%) indicates introspective and intuitive timing`,
       priority: 'medium',
       action: 'consult',
-      element: 'water'
-    });
+      element: 'water',
+    })
   }
 
   // Remove duplicates and sort by confidence
   const uniqueTriggers = triggers.reduce((acc, trigger) => {
-    const existing = acc.find(t => t.planet === trigger.planet);
+    const existing = acc.find(t => t.planet === trigger.planet)
     if (existing) {
       // Keep the one with higher confidence
       if (trigger.confidence > existing.confidence) {
-        acc = acc.filter(t => t.planet !== trigger.planet);
-        acc.push(trigger);
+        acc = acc.filter(t => t.planet !== trigger.planet)
+        acc.push(trigger)
       }
     } else {
-      acc.push(trigger);
+      acc.push(trigger)
     }
-    return acc;
-  }, [] as AgentTrigger[]);
+    return acc
+  }, [] as AgentTrigger[])
 
-  const sortedTriggers = uniqueTriggers
-    .sort((a, b) => b.confidence - a.confidence)
-    .slice(0, 5); // Max 5 triggers for planetary council limit
+  const sortedTriggers = uniqueTriggers.sort((a, b) => b.confidence - a.confidence).slice(0, 5) // Max 5 triggers for planetary council limit
 
   // Determine harmonic state
-  let harmonicState: CouncilRecommendation['harmonicState'] = 'stable';
-  const harmonicComplexity = validAmplitude * Math.abs(Math.sin(validPhase)) * (1 / Math.max(0.1, validPeriod));
+  let harmonicState: CouncilRecommendation['harmonicState'] = 'stable'
+  const harmonicComplexity =
+    validAmplitude * Math.abs(Math.sin(validPhase)) * (1 / Math.max(0.1, validPeriod))
 
-  if (harmonicComplexity > 0.8) harmonicState = 'chaotic';
-  else if (harmonicComplexity > 0.6) harmonicState = 'fluctuating';
-  else if (harmonicComplexity < 0.1 && validAmplitude > 0.7) harmonicState = 'resonant';
-  else if (harmonicComplexity < 0.05 && validAmplitude > 0.9) harmonicState = 'transcendent';
+  if (harmonicComplexity > 0.8) harmonicState = 'chaotic'
+  else if (harmonicComplexity > 0.6) harmonicState = 'fluctuating'
+  else if (harmonicComplexity < 0.1 && validAmplitude > 0.7) harmonicState = 'resonant'
+  else if (harmonicComplexity < 0.05 && validAmplitude > 0.9) harmonicState = 'transcendent'
 
   // Determine dominant action
-  const actionCounts: Record<string, number> = {};
+  const actionCounts: Record<string, number> = {}
   sortedTriggers.forEach(trigger => {
-    actionCounts[trigger.action] = (actionCounts[trigger.action] || 0) + trigger.confidence;
-  });
-  
-  const dominantAction = Object.entries(actionCounts)
-    .sort(([,a], [,b]) => b - a)[0]?.[0] || 'balance';
+    actionCounts[trigger.action] = (actionCounts[trigger.action] || 0) + trigger.confidence
+  })
+
+  const dominantAction =
+    Object.entries(actionCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || 'balance'
 
   // Calculate overall confidence
-  const overallConfidence = sortedTriggers.length > 0
-    ? sortedTriggers.reduce((sum, t) => sum + t.confidence, 0) / sortedTriggers.length
-    : 0.5;
+  const overallConfidence =
+    sortedTriggers.length > 0
+      ? sortedTriggers.reduce((sum, t) => sum + t.confidence, 0) / sortedTriggers.length
+      : 0.5
 
   // Generate summary
-  const summary = sortedTriggers.length > 0
-    ? `Harmonic analysis recommends ${dominantAction} action with ${sortedTriggers.length} planetary triggers. ` +
-      `State: ${harmonicState}. Primary agents: ${sortedTriggers.slice(0, 3).map(t => t.planet).join(', ')}.`
-    : `Harmonic patterns suggest stable ${harmonicState} state with balanced energy distribution.`;
+  const summary =
+    sortedTriggers.length > 0
+      ? `Harmonic analysis recommends ${dominantAction} action with ${sortedTriggers.length} planetary triggers. ` +
+        `State: ${harmonicState}. Primary agents: ${sortedTriggers
+          .slice(0, 3)
+          .map(t => t.planet)
+          .join(', ')}.`
+      : `Harmonic patterns suggest stable ${harmonicState} state with balanced energy distribution.`
 
   return {
     triggers: sortedTriggers,
     dominantAction,
     harmonicState,
     overallConfidence,
-    summary
-  };
+    summary,
+  }
 }
 
 export function HarmonicAnalysisBridge({
   metrics,
   onCouncilRecommendation,
   autoAnalyze = true,
-  className = ""
+  className = '',
 }: HarmonicAnalysisBridgeProps) {
-  const [lastAnalysis, setLastAnalysis] = useState<Date | null>(null);
-  const [analysisCount, setAnalysisCount] = useState(0);
+  const [lastAnalysis, setLastAnalysis] = useState<Date | null>(null)
+  const [analysisCount, setAnalysisCount] = useState(0)
 
   // Calculate recommendations
   const recommendations = useMemo(() => {
-    return getCouncilRecommendations(metrics);
-  }, [metrics]);
+    return getCouncilRecommendations(metrics)
+  }, [metrics])
 
   // Auto-analyze effect
   useEffect(() => {
     if (autoAnalyze) {
-      setLastAnalysis(new Date());
-      setAnalysisCount(prev => prev + 1);
-      onCouncilRecommendation?.(recommendations);
+      setLastAnalysis(new Date())
+      setAnalysisCount(prev => prev + 1)
+      onCouncilRecommendation?.(recommendations)
     }
-  }, [recommendations, autoAnalyze, onCouncilRecommendation]);
+  }, [recommendations, autoAnalyze, onCouncilRecommendation])
 
   const handleManualAnalysis = () => {
-    setLastAnalysis(new Date());
-    setAnalysisCount(prev => prev + 1);
-    onCouncilRecommendation?.(recommendations);
-  };
+    setLastAnalysis(new Date())
+    setAnalysisCount(prev => prev + 1)
+    onCouncilRecommendation?.(recommendations)
+  }
 
   const getPriorityColor = (priority: AgentTrigger['priority']) => {
     const colors = {
       low: 'bg-gray-100 text-gray-800',
       medium: 'bg-blue-100 text-blue-800',
       high: 'bg-orange-100 text-orange-800',
-      urgent: 'bg-red-100 text-red-800'
-    };
-    return colors[priority];
-  };
+      urgent: 'bg-red-100 text-red-800',
+    }
+    return colors[priority]
+  }
 
   const getActionIcon = (action: AgentTrigger['action']) => {
     const icons = {
       consult: <Users className="h-3 w-3" />,
       consolidate: <Target className="h-3 w-3" />,
       activate: <Zap className="h-3 w-3" />,
-      balance: <Activity className="h-3 w-3" />
-    };
-    return icons[action];
-  };
+      balance: <Activity className="h-3 w-3" />,
+    }
+    return icons[action]
+  }
 
   const getStateColor = (state: CouncilRecommendation['harmonicState']) => {
     const colors = {
@@ -277,10 +273,10 @@ export function HarmonicAnalysisBridge({
       fluctuating: 'text-orange-600',
       stable: 'text-green-600',
       resonant: 'text-blue-600',
-      transcendent: 'text-purple-600'
-    };
-    return colors[state];
-  };
+      transcendent: 'text-purple-600',
+    }
+    return colors[state]
+  }
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -298,9 +294,7 @@ export function HarmonicAnalysisBridge({
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline">
-                Analyses: {analysisCount}
-              </Badge>
+              <Badge variant="outline">Analyses: {analysisCount}</Badge>
               <Badge className={getStateColor(recommendations.harmonicState)}>
                 {recommendations.harmonicState}
               </Badge>
@@ -317,7 +311,9 @@ export function HarmonicAnalysisBridge({
             </div>
             <div className="space-y-1">
               <div className="text-muted-foreground">Phase</div>
-              <div className="font-medium">{(metrics.Spirit.phase % (2 * Math.PI)).toFixed(2)}π</div>
+              <div className="font-medium">
+                {(metrics.Spirit.phase % (2 * Math.PI)).toFixed(2)}π
+              </div>
             </div>
             <div className="space-y-1">
               <div className="text-muted-foreground">Amplitude</div>
@@ -333,7 +329,9 @@ export function HarmonicAnalysisBridge({
 
           <div className="flex items-center justify-between pt-2 border-t">
             <div className="text-sm text-muted-foreground">
-              {lastAnalysis ? `Last analysis: ${lastAnalysis.toLocaleTimeString()}` : 'No analysis yet'}
+              {lastAnalysis
+                ? `Last analysis: ${lastAnalysis.toLocaleTimeString()}`
+                : 'No analysis yet'}
             </div>
             <Button
               variant="outline"
@@ -355,9 +353,7 @@ export function HarmonicAnalysisBridge({
             <Users className="h-5 w-5" />
             Council Recommendations
           </CardTitle>
-          <CardDescription>
-            Suggested planetary agents based on harmonic patterns
-          </CardDescription>
+          <CardDescription>Suggested planetary agents based on harmonic patterns</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -367,9 +363,7 @@ export function HarmonicAnalysisBridge({
               <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
               <div>
                 <div className="font-medium text-blue-900">Analysis Summary</div>
-                <div className="text-sm text-blue-700 mt-1">
-                  {recommendations.summary}
-                </div>
+                <div className="text-sm text-blue-700 mt-1">{recommendations.summary}</div>
                 <div className="flex items-center gap-4 mt-2 text-xs text-blue-600">
                   <span>Confidence: {(recommendations.overallConfidence * 100).toFixed(0)}%</span>
                   <span>Dominant Action: {recommendations.dominantAction}</span>
@@ -397,13 +391,9 @@ export function HarmonicAnalysisBridge({
                             {getActionIcon(trigger.action)}
                             {trigger.action}
                           </Badge>
-                          {trigger.element && (
-                            <Badge variant="secondary">{trigger.element}</Badge>
-                          )}
+                          {trigger.element && <Badge variant="secondary">{trigger.element}</Badge>}
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          {trigger.reason}
-                        </div>
+                        <div className="text-sm text-muted-foreground">{trigger.reason}</div>
                       </div>
                       <div className="text-right">
                         <div className="text-sm font-medium">
@@ -434,7 +424,5 @@ export function HarmonicAnalysisBridge({
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
-
-

@@ -1,9 +1,9 @@
 /* Cosmic Theme Overrides */
 
 /* Force dark mode backgrounds for all cards */
-.dark .bg-gradient-to-br[class*="from-"][class*="to-"],
-.dark [class*="bg-"][class*="-50"],
-.dark [class*="bg-"][class*="-100"] {
+.dark .bg-gradient-to-br[class*='from-'][class*='to-'],
+.dark [class*='bg-'][class*='-50'],
+.dark [class*='bg-'][class*='-100'] {
   background: rgba(20, 20, 40, 0.8) !important;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(139, 92, 246, 0.2);
@@ -59,24 +59,24 @@
 }
 
 /* Ensure text is readable */
-.dark [class*="text-"][class*="-800"] {
+.dark [class*='text-'][class*='-800'] {
   color: rgb(209, 213, 219) !important;
 }
 
-.dark [class*="text-"][class*="-700"] {
+.dark [class*='text-'][class*='-700'] {
   color: rgb(229, 231, 235) !important;
 }
 
-.dark [class*="text-"][class*="-600"] {
+.dark [class*='text-'][class*='-600'] {
   color: rgb(243, 244, 246) !important;
 }
 
 /* Fix borders */
-.dark [class*="border-"][class*="-200"] {
+.dark [class*='border-'][class*='-200'] {
   border-color: rgba(139, 92, 246, 0.3) !important;
 }
 
-.dark [class*="border-"][class*="-400"] {
+.dark [class*='border-'][class*='-400'] {
   border-color: rgba(167, 139, 250, 0.5) !important;
 }
 

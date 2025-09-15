@@ -30,7 +30,6 @@ export interface AttachmentRune {
 }
 
 export class AgentAttachmentsService {
-  
   /**
    * Add a birth chart attachment to an agent
    */
@@ -46,9 +45,9 @@ export class AgentAttachmentsService {
       birth_lat: chartData.location.lat,
       birth_lon: chartData.location.lon,
       birth_location: chartData.location.name,
-      timezone: chartData.location.timezone || 'UTC'
+      timezone: chartData.location.timezone || 'UTC',
     })
-    
+
     return await prisma.agentAttachment.create({
       data: {
         agentId,
@@ -61,8 +60,8 @@ export class AgentAttachmentsService {
         alchmData: alchmData,
         natalChart: alchmData, // For now, use alchm data as natal chart
         isActive: true,
-        priority: 0
-      }
+        priority: 0,
+      },
     })
   }
 
@@ -82,9 +81,9 @@ export class AgentAttachmentsService {
       birth_lat: chartData.location.lat,
       birth_lon: chartData.location.lon,
       birth_location: chartData.location.name,
-      timezone: chartData.location.timezone || 'UTC'
+      timezone: chartData.location.timezone || 'UTC',
     })
-    
+
     return await prisma.agentAttachment.create({
       data: {
         agentId,
@@ -98,8 +97,8 @@ export class AgentAttachmentsService {
         alchmData: alchmData,
         planetaryPositions: alchmData, // Current positions for the moment
         isActive: true,
-        priority: 0
-      }
+        priority: 0,
+      },
     })
   }
 
@@ -123,8 +122,8 @@ export class AgentAttachmentsService {
         runeEffects: runeData.runeEffects,
         runeCost: runeData.runeCost,
         isActive: true,
-        priority: 0
-      }
+        priority: 0,
+      },
     })
   }
 
@@ -137,21 +136,18 @@ export class AgentAttachmentsService {
     activeOnly: boolean = true
   ): Promise<AgentAttachment[]> {
     const where: any = { agentId }
-    
+
     if (activeOnly) {
       where.isActive = true
     }
-    
+
     if (type) {
       where.type = type
     }
 
     return await prisma.agentAttachment.findMany({
       where,
-      orderBy: [
-        { priority: 'desc' },
-        { createdAt: 'desc' }
-      ]
+      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
     })
   }
 
@@ -170,7 +166,7 @@ export class AgentAttachmentsService {
   ): Promise<AgentAttachment> {
     return await prisma.agentAttachment.update({
       where: { id: attachmentId },
-      data: updates
+      data: updates,
     })
   }
 
@@ -179,7 +175,7 @@ export class AgentAttachmentsService {
    */
   static async deleteAttachment(attachmentId: string): Promise<void> {
     await prisma.agentAttachment.delete({
-      where: { id: attachmentId }
+      where: { id: attachmentId },
     })
   }
 
@@ -201,8 +197,8 @@ export class AgentAttachmentsService {
         conversationId,
         usageType,
         context,
-        relevanceScore: Math.max(0, Math.min(1, relevanceScore))
-      }
+        relevanceScore: Math.max(0, Math.min(1, relevanceScore)),
+      },
     })
   }
 
@@ -218,24 +214,28 @@ export class AgentAttachmentsService {
     const usages = await prisma.agentAttachmentUsage.findMany({
       where: { attachmentId },
       orderBy: { usedAt: 'desc' },
-      take: 10
+      take: 10,
     })
 
     const totalUsages = usages.length
-    const averageRelevance = totalUsages > 0 
-      ? usages.reduce((sum, usage) => sum + usage.relevanceScore, 0) / totalUsages 
-      : 0
+    const averageRelevance =
+      totalUsages > 0
+        ? usages.reduce((sum, usage) => sum + usage.relevanceScore, 0) / totalUsages
+        : 0
 
-    const usageTypes = usages.reduce((acc, usage) => {
-      acc[usage.usageType] = (acc[usage.usageType] || 0) + 1
-      return acc
-    }, {} as { [key: string]: number })
+    const usageTypes = usages.reduce(
+      (acc, usage) => {
+        acc[usage.usageType] = (acc[usage.usageType] || 0) + 1
+        return acc
+      },
+      {} as { [key: string]: number }
+    )
 
     return {
       totalUsages,
       averageRelevance,
       usageTypes,
-      recentUsages: usages
+      recentUsages: usages,
     }
   }
 
@@ -252,13 +252,10 @@ export class AgentAttachmentsService {
     return await prisma.agentAttachment.findMany({
       where: {
         agentId,
-        isActive: true
+        isActive: true,
       },
-      orderBy: [
-        { priority: 'desc' },
-        { createdAt: 'desc' }
-      ],
-      take: maxResults
+      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
+      take: maxResults,
     })
   }
 }
@@ -266,7 +263,7 @@ export class AgentAttachmentsService {
 // Helper function to format attachment data for agent consumption
 export function formatAttachmentForAgent(attachment: AgentAttachment): string {
   let formatted = `**${attachment.name}**\n`
-  
+
   if (attachment.description) {
     formatted += `Description: ${attachment.description}\n`
   }

@@ -23,7 +23,7 @@ export function usePowerMonitoring(options: PowerNotificationOptions = {}) {
     checkInterval = 120000, // 2 minutes
     onHighPower,
     onMediumPower,
-    onPowerChange
+    onPowerChange,
   } = options
 
   const lastPowerLevel = useRef<number>(0)
@@ -37,7 +37,7 @@ export function usePowerMonitoring(options: PowerNotificationOptions = {}) {
           lat: userLocation.lat,
           lon: userLocation.lon,
           date: new Date().toISOString().split('T')[0],
-          includePlanetary: true
+          includePlanetary: true,
         })
 
         const currentPower = kinetics.power[kinetics.power.length - 1]?.power || 0.5
@@ -66,7 +66,7 @@ export function usePowerMonitoring(options: PowerNotificationOptions = {}) {
               type: 'high',
               power: currentPower,
               planetaryHour: currentHour,
-              duration: notificationDuration
+              duration: notificationDuration,
             })
           }
           lastNotificationTime.current = now
@@ -85,7 +85,7 @@ export function usePowerMonitoring(options: PowerNotificationOptions = {}) {
               type: 'medium',
               power: currentPower,
               planetaryHour: currentHour,
-              duration: Math.floor(notificationDuration * 0.6)
+              duration: Math.floor(notificationDuration * 0.6),
             })
           }
           lastNotificationTime.current = now
@@ -116,12 +116,12 @@ export function usePowerMonitoring(options: PowerNotificationOptions = {}) {
     checkInterval,
     onHighPower,
     onMediumPower,
-    onPowerChange
+    onPowerChange,
   ])
 
   return {
     currentPower: lastPowerLevel.current,
-    isMonitoring: !!intervalRef.current
+    isMonitoring: !!intervalRef.current,
   }
 }
 
@@ -152,13 +152,13 @@ function showPowerNotification({ type, power, planetaryHour, duration }: PowerNo
               if (typeof window !== 'undefined' && window.location) {
                 window.location.href = '/gallery'
               }
-            }
-          }
+            },
+          },
         })
       } else {
         toastFunction.info('⚡ Power levels rising', {
           description: `${(power * 100).toFixed(0)}% power during ${planetaryHour} hour - good time for agent interactions`,
-          duration
+          duration,
         })
       }
       return
@@ -166,26 +166,26 @@ function showPowerNotification({ type, power, planetaryHour, duration }: PowerNo
 
     // Fallback to native browser notification if available
     if ('Notification' in window && Notification.permission === 'granted') {
-      const title = type === 'high'
-        ? '🔥 High Power Period Active!'
-        : '⚡ Power Levels Rising'
+      const title = type === 'high' ? '🔥 High Power Period Active!' : '⚡ Power Levels Rising'
 
-      const body = type === 'high'
-        ? `Agent consciousness enhanced during ${planetaryHour} hour. Perfect for deep conversations.`
-        : `${(power * 100).toFixed(0)}% power during ${planetaryHour} hour - good interaction time.`
+      const body =
+        type === 'high'
+          ? `Agent consciousness enhanced during ${planetaryHour} hour. Perfect for deep conversations.`
+          : `${(power * 100).toFixed(0)}% power during ${planetaryHour} hour - good interaction time.`
 
       new Notification(title, {
         body,
         icon: '/favicon.ico',
         tag: 'power-notification',
-        requireInteraction: type === 'high'
+        requireInteraction: type === 'high',
       })
       return
     }
 
     // Console fallback for development
-    console.log(`🌟 Power Notification: ${type === 'high' ? 'HIGH' : 'MEDIUM'} power (${(power * 100).toFixed(0)}%) during ${planetaryHour} hour`)
-
+    console.log(
+      `🌟 Power Notification: ${type === 'high' ? 'HIGH' : 'MEDIUM'} power (${(power * 100).toFixed(0)}%) during ${planetaryHour} hour`
+    )
   } catch (error) {
     console.error('Notification error:', error)
   }
@@ -212,7 +212,7 @@ export function useNotificationPermission() {
 export function usePowerLevelIndicator(userLocation?: { lat: number; lon: number }) {
   const { currentPower } = usePowerMonitoring({
     userLocation,
-    checkInterval: 300000 // 5 minutes for less frequent checks
+    checkInterval: 300000, // 5 minutes for less frequent checks
   })
 
   const getPowerIndicator = () => {
@@ -223,7 +223,7 @@ export function usePowerLevelIndicator(userLocation?: { lat: number; lon: number
         bgColor: 'bg-green-500/20',
         emoji: '🔥',
         label: 'Peak Power',
-        description: 'Maximum consciousness active'
+        description: 'Maximum consciousness active',
       }
     } else if (currentPower > 0.6) {
       return {
@@ -232,7 +232,7 @@ export function usePowerLevelIndicator(userLocation?: { lat: number; lon: number
         bgColor: 'bg-yellow-500/20',
         emoji: '⚡',
         label: 'High Power',
-        description: 'Enhanced responses available'
+        description: 'Enhanced responses available',
       }
     } else if (currentPower > 0.4) {
       return {
@@ -241,7 +241,7 @@ export function usePowerLevelIndicator(userLocation?: { lat: number; lon: number
         bgColor: 'bg-blue-500/20',
         emoji: '💫',
         label: 'Active',
-        description: 'Standard consciousness level'
+        description: 'Standard consciousness level',
       }
     } else {
       return {
@@ -250,7 +250,7 @@ export function usePowerLevelIndicator(userLocation?: { lat: number; lon: number
         bgColor: 'bg-gray-500/20',
         emoji: '🌙',
         label: 'Quiet',
-        description: 'Building energy period'
+        description: 'Building energy period',
       }
     }
   }
@@ -258,7 +258,7 @@ export function usePowerLevelIndicator(userLocation?: { lat: number; lon: number
   return {
     currentPower,
     powerIndicator: getPowerIndicator(),
-    percentage: Math.round(currentPower * 100)
+    percentage: Math.round(currentPower * 100),
   }
 }
 

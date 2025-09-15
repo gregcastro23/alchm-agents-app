@@ -7,17 +7,18 @@ async function testMonicaSystem() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        message: "Monica, explain the consciousness survey system and how it integrates with character vectors. What are the 35 questions about?",
-        includeAlchm: true
-      })
-    });
+        message:
+          'Monica, explain the consciousness survey system and how it integrates with character vectors. What are the 35 questions about?',
+        includeAlchm: true,
+      }),
+    })
 
-    const data = await response.json();
-    console.log('Monica System Knowledge Response:');
-    console.log(data.response);
+    const data = await response.json()
+    console.log('Monica System Knowledge Response:')
+    console.log(data.response)
   } catch (error) {
-    console.error('Error testing Monica system knowledge:', error);
+    console.error('Error testing Monica system knowledge:', error)
   }
 }
 
-testMonicaSystem();
+testMonicaSystem()

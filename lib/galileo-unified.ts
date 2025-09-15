@@ -36,7 +36,7 @@ export class UnifiedGalileoService {
       project: config.project || process.env.GALILEO_PROJECT || 'AlchmPlanetaryAgents',
       stream: config.stream || process.env.GALILEO_LOG_STREAM || 'default',
       baseUrl: config.baseUrl || 'https://console.rungalileo.io/api',
-      failSilently: config.failSilently || process.env.GALILEO_FAIL_SILENTLY === 'true'
+      failSilently: config.failSilently || process.env.GALILEO_FAIL_SILENTLY === 'true',
     }
   }
 
@@ -51,10 +51,10 @@ export class UnifiedGalileoService {
     }
 
     try {
-      const result = await withRetries(
-        () => circuitBreaker(() => this.sendToGalileo(entry)),
-        { maxRetries: 3, baseDelayMs: 1000 }
-      )
+      const result = await withRetries(() => circuitBreaker(() => this.sendToGalileo(entry)), {
+        maxRetries: 3,
+        baseDelayMs: 1000,
+      })
       return result
     } catch (error) {
       this.handleLogError(error, entry)
@@ -68,7 +68,7 @@ export class UnifiedGalileoService {
       this.logToConsole({
         message: `Session: ${sessionData.name}`,
         level: 'info',
-        metadata: { sessionId: sessionData.id, traces: sessionData.traces.length }
+        metadata: { sessionId: sessionData.id, traces: sessionData.traces.length },
       })
       return false
     }
@@ -86,20 +86,28 @@ export class UnifiedGalileoService {
   }
 
   // Quantities-specific logging (replaces galileo-quantities-tracker)
-  async logQuantities(quantities: Record<string, number>, metadata?: Record<string, any>): Promise<boolean> {
+  async logQuantities(
+    quantities: Record<string, number>,
+    metadata?: Record<string, any>
+  ): Promise<boolean> {
     return this.log({
       message: 'Alchemical quantities calculated',
       level: 'info',
       metadata: {
         quantities,
         ...metadata,
-        component: 'alchemizer'
-      }
+        component: 'alchemizer',
+      },
     })
   }
 
   // Agent-specific logging
-  async logAgentInteraction(agentId: string, input: any, output: any, metadata?: Record<string, any>): Promise<boolean> {
+  async logAgentInteraction(
+    agentId: string,
+    input: any,
+    output: any,
+    metadata?: Record<string, any>
+  ): Promise<boolean> {
     return this.log({
       message: `Agent interaction: ${agentId}`,
       level: 'info',
@@ -108,8 +116,8 @@ export class UnifiedGalileoService {
         input: typeof input === 'object' ? JSON.stringify(input) : input,
         output: typeof output === 'object' ? JSON.stringify(output) : output,
         ...metadata,
-        component: 'agent-system'
-      }
+        component: 'agent-system',
+      },
     })
   }
 
@@ -121,10 +129,8 @@ export class UnifiedGalileoService {
     }
 
     try {
-      const results = await Promise.allSettled(
-        entries.map(entry => this.log(entry))
-      )
-      return results.map(result => result.status === 'fulfilled' ? result.value : false)
+      const results = await Promise.allSettled(entries.map(entry => this.log(entry)))
+      return results.map(result => (result.status === 'fulfilled' ? result.value : false))
     } catch (error) {
       console.error('Batch logging failed:', error)
       return entries.map(() => false)
@@ -141,32 +147,36 @@ export class UnifiedGalileoService {
       level: entry.level,
       metadata: {
         ...entry.metadata,
-        source: 'planetary-agents'
-      }
+        source: 'planetary-agents',
+      },
     }
 
     const response = await fetch(`${this.config.baseUrl}/logs`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${this.config.apiKey}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${this.config.apiKey}`,
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     })
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error')
-      
+
       // Handle specific 422 error for project type
       if (response.status === 422 && errorText.includes('not of type Observe')) {
         const message = `Galileo API error: 422 unknown - ${errorText}`
         if (this.config.failSilently) {
-          console.warn(`${message}\nHint: Configure GALILEO_PROJECT as an Observe project or set GALILEO_FAIL_SILENTLY=true`)
+          console.warn(
+            `${message}\nHint: Configure GALILEO_PROJECT as an Observe project or set GALILEO_FAIL_SILENTLY=true`
+          )
           return false
         }
-        throw new Error(`${message}\nHint: Configure GALILEO_PROJECT as an Observe project or set GALILEO_FAIL_SILENTLY=true`)
+        throw new Error(
+          `${message}\nHint: Configure GALILEO_PROJECT as an Observe project or set GALILEO_FAIL_SILENTLY=true`
+        )
       }
-      
+
       throw new Error(`Galileo API error: ${response.status} ${response.statusText} - ${errorText}`)
     }
 
@@ -178,21 +188,23 @@ export class UnifiedGalileoService {
       ...sessionData,
       project: this.config.project,
       stream: this.config.stream,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
 
     const response = await fetch(`${this.config.baseUrl}/sessions`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${this.config.apiKey}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${this.config.apiKey}`,
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     })
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error')
-      throw new Error(`Galileo Session API error: ${response.status} ${response.statusText} - ${errorText}`)
+      throw new Error(
+        `Galileo Session API error: ${response.status} ${response.statusText} - ${errorText}`
+      )
     }
 
     return true
@@ -201,7 +213,7 @@ export class UnifiedGalileoService {
   private logToConsole(entry: LogEntry): void {
     const timestamp = entry.timestamp || new Date().toISOString()
     const prefix = `[${timestamp}] [${entry.level.toUpperCase()}]`
-    
+
     switch (entry.level) {
       case 'error':
         console.error(prefix, entry.message, entry.metadata)
@@ -227,7 +239,7 @@ export class UnifiedGalileoService {
         this.fallbackLogs.shift() // Remove oldest
       }
       this.fallbackLogs.push(entry)
-      
+
       console.error('Galileo logging failed:', error)
       this.logToConsole(entry)
     }
@@ -238,7 +250,7 @@ export class UnifiedGalileoService {
     this.logToConsole({
       message: `Session failed to log: ${sessionData.name}`,
       level: 'error',
-      metadata: { sessionId: sessionData.id, error: error.message }
+      metadata: { sessionId: sessionData.id, error: error.message },
     })
   }
 
@@ -260,17 +272,21 @@ export class UnifiedGalileoService {
 export const galileoService = new UnifiedGalileoService({})
 
 // Convenience functions
-export const logInfo = (message: string, metadata?: Record<string, any>) => 
+export const logInfo = (message: string, metadata?: Record<string, any>) =>
   galileoService.log({ message, level: 'info', metadata })
 
-export const logError = (message: string, metadata?: Record<string, any>) => 
+export const logError = (message: string, metadata?: Record<string, any>) =>
   galileoService.log({ message, level: 'error', metadata })
 
-export const logWarn = (message: string, metadata?: Record<string, any>) => 
+export const logWarn = (message: string, metadata?: Record<string, any>) =>
   galileoService.log({ message, level: 'warn', metadata })
 
 export const logQuantities = (quantities: Record<string, number>, metadata?: Record<string, any>) =>
   galileoService.logQuantities(quantities, metadata)
 
-export const logAgentInteraction = (agentId: string, input: any, output: any, metadata?: Record<string, any>) =>
-  galileoService.logAgentInteraction(agentId, input, output, metadata)
+export const logAgentInteraction = (
+  agentId: string,
+  input: any,
+  output: any,
+  metadata?: Record<string, any>
+) => galileoService.logAgentInteraction(agentId, input, output, metadata)

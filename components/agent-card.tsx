@@ -1,35 +1,54 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Progress } from "@/components/ui/progress"
-import { Crown, MessageCircle, Info, Sparkles, Zap, Brain, Users, Calendar } from "lucide-react"
-import Link from "next/link"
-import type { CraftedAgent, AgentCardVariant, Coordinates } from "@/lib/agent-types"
+import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Progress } from '@/components/ui/progress'
+import { Crown, MessageCircle, Info, Sparkles, Zap, Brain, Users, Calendar, BarChart3 } from 'lucide-react'
+import Link from 'next/link'
+import type { CraftedAgent, AgentCardVariant, Coordinates } from '@/lib/agent-types'
+import { AgentDetailedStats } from '@/components/agent-detailed-stats'
 
 const getElementColor = (element: string) => {
   switch (element) {
-    case "Fire": return "bg-red-500 text-white"
-    case "Water": return "bg-blue-500 text-white"
-    case "Air": return "bg-yellow-500 text-white"
-    case "Earth": return "bg-green-500 text-white"
-    default: return "bg-gray-500 text-white"
+    case 'Fire':
+      return 'bg-red-500 text-white'
+    case 'Water':
+      return 'bg-blue-500 text-white'
+    case 'Air':
+      return 'bg-yellow-500 text-white'
+    case 'Earth':
+      return 'bg-green-500 text-white'
+    default:
+      return 'bg-gray-500 text-white'
   }
 }
 
 const getConsciousnessColor = (level: string) => {
   switch (level) {
-    case "Transcendent": return "bg-purple-600 text-white"
-    case "Illuminated": return "bg-indigo-600 text-white"
-    case "Advanced": return "bg-blue-600 text-white"
-    case "Elevated": return "bg-green-600 text-white"
-    case "Active": return "bg-yellow-600 text-white"
-    case "Awakening": return "bg-orange-600 text-white"
-    default: return "bg-gray-600 text-white"
+    case 'Transcendent':
+      return 'bg-purple-600 text-white'
+    case 'Illuminated':
+      return 'bg-indigo-600 text-white'
+    case 'Advanced':
+      return 'bg-blue-600 text-white'
+    case 'Elevated':
+      return 'bg-green-600 text-white'
+    case 'Active':
+      return 'bg-yellow-600 text-white'
+    case 'Awakening':
+      return 'bg-orange-600 text-white'
+    default:
+      return 'bg-gray-600 text-white'
   }
 }
 
@@ -45,23 +64,26 @@ interface AgentCardProps {
   showActions?: boolean
 }
 
-export function AgentCard({ 
-  agent, 
-  variant = "card", 
-  selected = false, 
+export function AgentCard({
+  agent,
+  variant = 'card',
+  selected = false,
   onSelect,
-  showActions = true 
+  showActions = true,
 }: AgentCardProps) {
   const [showDetails, setShowDetails] = useState(false)
 
   // Mini card variant for homepage showcase
-  if (variant === "mini") {
+  if (variant === 'mini') {
     return (
-      <Card className={`cursor-pointer transition-all hover:shadow-lg hover:scale-105 ${
-        selected ? 'ring-2 ring-primary' : ''
-      }`} onClick={() => onSelect?.(agent.id)}>
+      <Card
+        className={`cursor-pointer transition-all hover:shadow-lg hover:scale-105 ${
+          selected ? 'ring-2 ring-primary' : ''
+        }`}
+        onClick={() => onSelect?.(agent.id)}
+      >
         <CardContent className="p-4 text-center space-y-2">
-          <div 
+          <div
             className="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white font-bold text-xl mb-2"
             style={{ backgroundColor: agent.appearance.color }}
           >
@@ -78,21 +100,24 @@ export function AgentCard({
   }
 
   // List variant for gallery list view
-  if (variant === "list") {
+  if (variant === 'list') {
     return (
-      <Card className={`cursor-pointer transition-all hover:shadow-md ${
-        selected ? 'border-primary bg-primary/5' : ''
-      }`} onClick={() => onSelect?.(agent.id)}>
+      <Card
+        className={`cursor-pointer transition-all hover:shadow-md ${
+          selected ? 'border-primary bg-primary/5' : ''
+        }`}
+        onClick={() => onSelect?.(agent.id)}
+      >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 flex-1">
-              <div 
+              <div
                 className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
                 style={{ backgroundColor: agent.appearance.color }}
               >
                 {agent.appearance.symbol}
               </div>
-              
+
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="font-semibold">{agent.name}</h4>
@@ -109,10 +134,12 @@ export function AgentCard({
 
             <div className="flex items-center gap-4">
               <div className="text-right text-sm">
-                <div className="font-medium">MC: {agent.consciousness.monicaConstant.toFixed(2)}</div>
+                <div className="font-medium">
+                  Kalchm: {agent.consciousness.monicaConstant.toFixed(2)}
+                </div>
                 <div className="text-muted-foreground">{agent.stats.conversations} chats</div>
               </div>
-              
+
               {showActions && (
                 <div className="flex gap-1">
                   <Button size="sm" variant="outline" asChild>
@@ -124,11 +151,17 @@ export function AgentCard({
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button size="sm" variant="ghost">
-                        <Info className="w-3 h-3" />
+                        <BarChart3 className="w-3 h-3" />
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
-                      <AgentDetailsModal agent={agent} />
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <Brain className="w-5 h-5" />
+                          {agent.name} - Consciousness Metrics
+                        </DialogTitle>
+                      </DialogHeader>
+                      <AgentDetailedStats agent={agent} variant="modal" />
                     </DialogContent>
                   </Dialog>
                 </div>
@@ -141,13 +174,16 @@ export function AgentCard({
   }
 
   // Party slot variant (for future party system)
-  if (variant === "party-slot") {
+  if (variant === 'party-slot') {
     return (
-      <Card className={`cursor-pointer transition-all hover:shadow-lg ${
-        selected ? 'ring-2 ring-primary' : ''
-      }`} onClick={() => onSelect?.(agent.id)}>
+      <Card
+        className={`cursor-pointer transition-all hover:shadow-lg ${
+          selected ? 'ring-2 ring-primary' : ''
+        }`}
+        onClick={() => onSelect?.(agent.id)}
+      >
         <CardContent className="p-3 text-center">
-          <div 
+          <div
             className="w-12 h-12 rounded-full mx-auto flex items-center justify-center text-white font-bold mb-2"
             style={{ backgroundColor: agent.appearance.color }}
           >
@@ -155,7 +191,7 @@ export function AgentCard({
           </div>
           <p className="text-xs font-medium line-clamp-1">{agent.name}</p>
           <Badge size="sm" variant="outline" className="mt-1">
-            MC: {agent.consciousness.monicaConstant.toFixed(1)}
+            Kalchm: {agent.consciousness.monicaConstant.toFixed(1)}
           </Badge>
         </CardContent>
       </Card>
@@ -164,19 +200,22 @@ export function AgentCard({
 
   // Default card variant
   return (
-    <Card className={`cursor-pointer transition-all hover:shadow-lg ${
-      selected ? 'border-primary bg-primary/5' : ''
-    }`} onClick={() => onSelect?.(agent.id)}>
+    <Card
+      className={`cursor-pointer transition-all hover:shadow-lg ${
+        selected ? 'border-primary bg-primary/5' : ''
+      }`}
+      onClick={() => onSelect?.(agent.id)}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div 
+            <div
               className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg relative"
               style={{ backgroundColor: agent.appearance.color }}
             >
               {agent.appearance.symbol}
               {/* Aura effect */}
-              <div 
+              <div
                 className="absolute inset-0 rounded-full animate-pulse opacity-30"
                 style={{ backgroundColor: agent.appearance.aura.color }}
               />
@@ -196,12 +235,10 @@ export function AgentCard({
           </Badge>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {agent.abilities.specialty}
-        </p>
-        
+        <p className="text-sm text-muted-foreground line-clamp-2">{agent.abilities.specialty}</p>
+
         {/* Monica's creation attribution */}
         {agent.monicaCreationStory && (
           <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 mt-1">
@@ -209,17 +246,26 @@ export function AgentCard({
             <span>Crafted by Monica</span>
           </div>
         )}
-        
+
         {/* Consciousness Metrics */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span>Monica Constant</span>
+            <span>Kalchm</span>
             <span className="font-medium">{agent.consciousness.monicaConstant.toFixed(2)}</span>
           </div>
-          <Progress 
-            value={Math.min((agent.consciousness.monicaConstant / 6) * 100, 100)} 
+          <Progress
+            value={Math.min((agent.consciousness.monicaConstant / 6) * 100, 100)}
             className="h-2"
           />
+        </div>
+
+        {/* Birth Date */}
+        <div className="text-xs text-muted-foreground">
+          Born: {agent.birthData.date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })} in {agent.birthData.location.name}
         </div>
 
         {/* Element and Modality */}
@@ -227,12 +273,8 @@ export function AgentCard({
           <Badge className={getElementColor(agent.consciousness.dominantElement)}>
             {agent.consciousness.dominantElement}
           </Badge>
-          <Badge variant="outline">
-            {agent.consciousness.dominantModality}
-          </Badge>
-          <Badge variant="secondary">
-            Stage {agent.personality.evolutionStage}
-          </Badge>
+          <Badge variant="outline">{agent.consciousness.dominantModality}</Badge>
+          <Badge variant="secondary">Stage {agent.personality.evolutionStage}</Badge>
         </div>
 
         {/* Wisdom Domains */}
@@ -276,11 +318,18 @@ export function AgentCard({
             <Dialog>
               <DialogTrigger asChild>
                 <Button size="sm" variant="outline">
-                  <Info className="w-3 h-3" />
+                  <BarChart3 className="w-3 h-3 mr-1" />
+                  Stats
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <AgentDetailsModal agent={agent} />
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Brain className="w-5 h-5" />
+                    {agent.name} - Consciousness Metrics
+                  </DialogTitle>
+                </DialogHeader>
+                <AgentDetailedStats agent={agent} variant="modal" />
               </DialogContent>
             </Dialog>
           </div>
@@ -296,7 +345,7 @@ function AgentDetailsModal({ agent }: { agent: CraftedAgent }) {
     <>
       <DialogHeader>
         <DialogTitle className="flex items-center gap-3">
-          <div 
+          <div
             className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
             style={{ backgroundColor: agent.appearance.color }}
           >
@@ -350,10 +399,16 @@ function AgentDetailsModal({ agent }: { agent: CraftedAgent }) {
                     {agent.monicaCreationStory}
                   </p>
                   <div className="mt-3 flex items-center gap-2">
-                    <Badge variant="outline" className="bg-green-100 dark:bg-green-900 border-green-300">
-                      Crafted with Monica Constant {agent.consciousness.monicaConstant.toFixed(2)}
+                    <Badge
+                      variant="outline"
+                      className="bg-green-100 dark:bg-green-900 border-green-300"
+                    >
+                      Crafted with Kalchm {agent.consciousness.monicaConstant.toFixed(2)}
                     </Badge>
-                    <Badge variant="outline" className="bg-purple-100 dark:bg-purple-900 border-purple-300">
+                    <Badge
+                      variant="outline"
+                      className="bg-purple-100 dark:bg-purple-900 border-purple-300"
+                    >
                       Using Philosopher's Stone
                     </Badge>
                   </div>
@@ -371,18 +426,25 @@ function AgentDetailsModal({ agent }: { agent: CraftedAgent }) {
           </h4>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span>Monica Constant</span>
+              <span>Kalchm</span>
               <Badge className={getConsciousnessColor(agent.consciousness.level)}>
                 {agent.consciousness.monicaConstant.toFixed(2)} - {agent.consciousness.level}
               </Badge>
             </div>
-            <Progress 
-              value={Math.min((agent.consciousness.monicaConstant / 6) * 100, 100)} 
+            <Progress
+              value={Math.min((agent.consciousness.monicaConstant / 6) * 100, 100)}
               className="h-3"
             />
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>Element: <Badge className={getElementColor(agent.consciousness.dominantElement)}>{agent.consciousness.dominantElement}</Badge></div>
-              <div>Modality: <Badge variant="outline">{agent.consciousness.dominantModality}</Badge></div>
+              <div>
+                Element:{' '}
+                <Badge className={getElementColor(agent.consciousness.dominantElement)}>
+                  {agent.consciousness.dominantElement}
+                </Badge>
+              </div>
+              <div>
+                Modality: <Badge variant="outline">{agent.consciousness.dominantModality}</Badge>
+              </div>
             </div>
           </div>
         </div>
@@ -394,10 +456,19 @@ function AgentDetailsModal({ agent }: { agent: CraftedAgent }) {
             Personality Core
           </h4>
           <div className="space-y-2 text-sm">
-            <div><strong>Essence:</strong> {agent.personality.core.essence}</div>
-            <div><strong>Expression:</strong> {agent.personality.core.expression}</div>
-            <div><strong>Emotion:</strong> {agent.personality.core.emotion}</div>
-            <div><strong>Current Mood:</strong> <Badge variant="secondary">{agent.personality.currentMood}</Badge></div>
+            <div>
+              <strong>Essence:</strong> {agent.personality.core.essence}
+            </div>
+            <div>
+              <strong>Expression:</strong> {agent.personality.core.expression}
+            </div>
+            <div>
+              <strong>Emotion:</strong> {agent.personality.core.emotion}
+            </div>
+            <div>
+              <strong>Current Mood:</strong>{' '}
+              <Badge variant="secondary">{agent.personality.currentMood}</Badge>
+            </div>
           </div>
         </div>
 
@@ -465,9 +536,7 @@ function AgentDetailsModal({ agent }: { agent: CraftedAgent }) {
             </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href={`/synastry?agent=${agent.id}`}>
-              Synastry Analysis
-            </Link>
+            <Link href={`/synastry?agent=${agent.id}`}>Synastry Analysis</Link>
           </Button>
         </div>
       </div>

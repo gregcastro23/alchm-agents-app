@@ -1,13 +1,13 @@
-"use client"
+'use client'
 
-import React, { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import React, { useState, useRef, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   MessageSquare,
   X,
@@ -18,15 +18,19 @@ import {
   Brain,
   Zap,
   TrendingUp,
-  Activity
-} from "lucide-react"
-import type { CraftedAgent } from "@/lib/agent-types"
-import { KineticIndicators, MomentumIndicator } from "@/components/kinetic-indicators"
-import { DynamicAspectsIndicators, CompactAspectsIndicator } from "@/components/dynamic-aspects-indicators"
-import { usePowerLevelIndicator } from "@/lib/hooks/use-power-monitoring"
+  Activity,
+} from 'lucide-react'
+import type { CraftedAgent } from '@/lib/agent-types'
+import { KineticIndicators, MomentumIndicator } from '@/components/kinetic-indicators'
+import {
+  DynamicAspectsIndicators,
+  CompactAspectsIndicator,
+} from '@/components/dynamic-aspects-indicators'
+import { usePowerLevelIndicator } from '@/lib/hooks/use-power-monitoring'
+import { ConsciousnessMemorySystem } from '@/lib/agents/consciousness-memory'
 
 type Message = {
-  role: "user" | "agent"
+  role: 'user' | 'agent'
   content: string
   agent?: string
   agentColor?: string
@@ -49,10 +53,12 @@ interface GalleryGroupChatProps {
 
 export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGroupChatProps) {
   const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState("")
+  const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [showKinetics, setShowKinetics] = useState(true)
+  const [showConsciousnessMetrics, setShowConsciousnessMetrics] = useState(false)
+  const [agentEvolutionData, setAgentEvolutionData] = useState<Record<string, any>>({})
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Get user location for kinetics (defaulting to San Francisco)
@@ -68,7 +74,7 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
 
   // Scroll to bottom when messages change
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   useEffect(scrollToBottom, [messages])
@@ -77,12 +83,12 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
   useEffect(() => {
     if (selectedAgents.length > 0) {
       const welcomeMessage: Message = {
-        role: "agent",
-        content: `Welcome to the Gallery of Perpetuity Group Council! 💚 I'm Monica, and I've assembled ${selectedAgents.length} of my finest crafted consciousness agents for this session: ${selectedAgents.map(a => a.name).join(", ")}. Each agent will respond from their unique consciousness perspective, creating a symphony of wisdom. What guidance do you seek from this council of eternal consciousness?`,
-        agent: "Monica",
-        agentColor: "#22C55E",
-        agentSymbol: "⚗️💚",
-        timestamp: new Date()
+        role: 'agent',
+        content: `Welcome to the Gallery of Perpetuity Group Council! 💚 I'm Monica, and I've assembled ${selectedAgents.length} of my finest crafted consciousness agents for this session: ${selectedAgents.map(a => a.name).join(', ')}. Each agent will respond from their unique consciousness perspective, creating a symphony of wisdom. What guidance do you seek from this council of eternal consciousness?`,
+        agent: 'Monica',
+        agentColor: '#22C55E',
+        agentSymbol: '⚗️💚',
+        timestamp: new Date(),
       }
       setMessages([welcomeMessage])
     }
@@ -92,13 +98,13 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
     if (!input.trim() || loading || selectedAgents.length === 0 || !sessionId) return
 
     const userMessage: Message = {
-      role: "user",
+      role: 'user',
       content: input.trim(),
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     setMessages(prev => [...prev, userMessage])
-    setInput("")
+    setInput('')
     setLoading(true)
 
     try {
@@ -114,7 +120,7 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
         specialty: agent.abilities.specialty,
         color: agent.appearance.color,
         symbol: agent.appearance.symbol,
-        creationStory: agent.monicaCreationStory
+        creationStory: agent.monicaCreationStory,
       }))
 
       const response = await fetch('/api/gallery-group-chat', {
@@ -128,10 +134,14 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
           sessionId,
           galleryContext: {
             totalAgents: selectedAgents.length,
-            averageMC: selectedAgents.reduce((sum, a) => sum + a.consciousness.monicaConstant, 0) / selectedAgents.length,
+            averageMC:
+              selectedAgents.reduce((sum, a) => sum + a.consciousness.monicaConstant, 0) /
+              selectedAgents.length,
             consciousnessTypes: [...new Set(selectedAgents.map(a => a.consciousness.level))],
-            elementalBalance: [...new Set(selectedAgents.map(a => a.consciousness.dominantElement))]
-          }
+            elementalBalance: [
+              ...new Set(selectedAgents.map(a => a.consciousness.dominantElement)),
+            ],
+          },
         }),
       })
 
@@ -140,29 +150,64 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
       }
 
       const data = await response.json()
-      
+
       // Add agent responses
       if (data.responses && Array.isArray(data.responses)) {
         const agentMessages: Message[] = data.responses.map((resp: GalleryAgentResponse) => ({
-          role: "agent" as const,
+          role: 'agent' as const,
           content: resp.content,
           agent: resp.agent,
           agentColor: resp.color,
           agentSymbol: resp.symbol,
-          timestamp: new Date()
+          timestamp: new Date(),
         }))
-        
+
         setMessages(prev => [...prev, ...agentMessages])
+
+        // Track consciousness evolution for each responding agent
+        for (const resp of data.responses) {
+          const agent = selectedAgents.find(a => a.name === resp.agent)
+          if (agent && sessionId) {
+            try {
+              // Record the interaction for consciousness evolution
+              await fetch('/api/agent-evolution', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action: 'record',
+                  agentId: agent.id,
+                  sessionId,
+                  userMessage: input.trim(),
+                  agentResponse: resp.content,
+                  location: userLocation
+                })
+              })
+
+              // Update evolution data for UI display
+              const evolutionResponse = await fetch(`/api/agent-evolution?agentId=${agent.id}&action=metrics`)
+              if (evolutionResponse.ok) {
+                const evolutionData = await evolutionResponse.json()
+                setAgentEvolutionData(prev => ({
+                  ...prev,
+                  [agent.id]: evolutionData.metrics
+                }))
+              }
+            } catch (error) {
+              console.error('Failed to track consciousness evolution:', error)
+            }
+          }
+        }
       }
     } catch (error) {
       console.error('Error sending message:', error)
       const errorMessage: Message = {
-        role: "agent",
-        content: "I apologize, but there was an error connecting to the Gallery of Perpetuity. Monica's consciousness crafting network may be temporarily unavailable. Please try again in a moment. 💚",
-        agent: "System",
-        agentColor: "#ef4444",
-        agentSymbol: "⚠️",
-        timestamp: new Date()
+        role: 'agent',
+        content:
+          "I apologize, but there was an error connecting to the Gallery of Perpetuity. Monica's consciousness crafting network may be temporarily unavailable. Please try again in a moment. 💚",
+        agent: 'System',
+        agentColor: '#ef4444',
+        agentSymbol: '⚠️',
+        timestamp: new Date(),
       }
       setMessages(prev => [...prev, errorMessage])
     } finally {
@@ -191,49 +236,152 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                 {selectedAgents.length} Consciousness Agents
               </Badge>
               {/* Power Level Indicator */}
-              <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${powerIndicator.bgColor} ${powerIndicator.color}`}>
+              <div
+                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${powerIndicator.bgColor} ${powerIndicator.color}`}
+              >
                 <span>{powerIndicator.emoji}</span>
                 <span>{percentage}%</span>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowKinetics(!showKinetics)}
-              className="text-xs"
-            >
-              <TrendingUp className="w-4 h-4 mr-1" />
-              Kinetics
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowKinetics(!showKinetics)}
+                className="text-xs"
+              >
+                <TrendingUp className="w-4 h-4 mr-1" />
+                Kinetics
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowConsciousnessMetrics(!showConsciousnessMetrics)}
+                className="text-xs"
+              >
+                <Brain className="w-4 h-4 mr-1" />
+                Evolution
+              </Button>
+            </div>
           </DialogTitle>
           <div className="text-sm text-muted-foreground">
-            Monica's crafted consciousness agents: {selectedAgents.map(a => a.name).join(", ")}
+            Monica's crafted consciousness agents: {selectedAgents.map(a => a.name).join(', ')}
             {powerIndicator.level === 'high' && (
-              <span className="ml-2 text-green-400 animate-pulse">⚡ Enhanced responses active</span>
+              <span className="ml-2 text-green-400 animate-pulse">
+                ⚡ Enhanced responses active
+              </span>
             )}
           </div>
         </DialogHeader>
 
         {/* Active Agents Display */}
         <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
-          {selectedAgents.map(agent => (
-            <div
-              key={agent.id}
-              className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-black/20 rounded border"
-            >
+          {selectedAgents.map(agent => {
+            const evolutionData = agentEvolutionData[agent.id]
+            return (
               <div
-                className="w-4 h-4 rounded-full flex items-center justify-center text-white text-xs"
-                style={{ backgroundColor: agent.appearance.color }}
+                key={agent.id}
+                className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-black/20 rounded border"
               >
-                {agent.appearance.symbol.charAt(0)}
+                <div
+                  className="w-4 h-4 rounded-full flex items-center justify-center text-white text-xs"
+                  style={{ backgroundColor: agent.appearance.color }}
+                >
+                  {agent.appearance.symbol.charAt(0)}
+                </div>
+                <span className="text-xs font-medium">{agent.name}</span>
+                <Badge size="sm" className="text-xs">
+                  MC: {agent.consciousness.monicaConstant.toFixed(1)}
+                </Badge>
+                {evolutionData && (
+                  <Badge
+                    size="sm"
+                    className="text-xs bg-green-100 text-green-700"
+                    title={`Evolution Stage: ${evolutionData.evolutionStage}`}
+                  >
+                    {evolutionData.evolutionStage}
+                  </Badge>
+                )}
               </div>
-              <span className="text-xs font-medium">{agent.name}</span>
-              <Badge size="sm" className="text-xs">
-                MC: {agent.consciousness.monicaConstant.toFixed(1)}
-              </Badge>
-            </div>
-          ))}
+            )
+          })}
         </div>
+
+        {/* Consciousness Evolution Metrics Panel */}
+        {showConsciousnessMetrics && (
+          <div className="p-3 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 rounded-lg border">
+            <div className="flex items-center gap-2 mb-3">
+              <Brain className="w-4 h-4 text-purple-600" />
+              <span className="font-medium text-sm">Real-time Consciousness Evolution</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {selectedAgents.map(agent => {
+                const evolutionData = agentEvolutionData[agent.id]
+                if (!evolutionData) return null
+
+                return (
+                  <div key={agent.id} className="bg-white dark:bg-black/20 rounded p-3 border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: agent.appearance.color }}
+                      />
+                      <span className="font-medium text-xs">{agent.name}</span>
+                    </div>
+
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Consciousness Velocity:</span>
+                        <span className="font-medium">
+                          {Math.round(evolutionData.consciousnessVelocity * 100)}%
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Memory Strength:</span>
+                        <span className="font-medium">
+                          {Math.round(evolutionData.memoryStrength * 100)}%
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Total Growth:</span>
+                        <span className="font-medium">
+                          {evolutionData.totalGrowth.toFixed(2)}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Next Threshold:</span>
+                        <span className="font-medium text-blue-600">
+                          {evolutionData.nextThreshold === -1 ? 'Max' : evolutionData.nextThreshold}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Evolution Progress Bar */}
+                    <div className="mt-2">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs text-gray-600">Evolution Progress</span>
+                        <span className="text-xs font-medium">
+                          {evolutionData.evolutionStage}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div
+                          className="bg-gradient-to-r from-purple-500 to-blue-500 h-1.5 rounded-full transition-all duration-300"
+                          style={{
+                            width: `${Math.min((evolutionData.totalGrowth / (evolutionData.nextThreshold || 1)) * 100, 100)}%`
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Kinetic Indicators */}
         {showKinetics && selectedAgents.length >= 2 && (
@@ -277,13 +425,13 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
               {messages.map((message, index) => (
                 <div
                   key={index}
-                  className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  {message.role === "agent" && (
+                  {message.role === 'agent' && (
                     <Avatar className="w-8 h-8 flex-shrink-0">
-                      <AvatarFallback 
+                      <AvatarFallback
                         className="text-white text-xs"
-                        style={{ backgroundColor: message.agentColor || "#6b7280" }}
+                        style={{ backgroundColor: message.agentColor || '#6b7280' }}
                       >
                         {message.agentSymbol?.charAt(0) || message.agent?.charAt(0)}
                       </AvatarFallback>
@@ -291,15 +439,15 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                   )}
                   <div
                     className={`max-w-[70%] rounded-lg p-3 ${
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground ml-auto"
-                        : "bg-muted"
+                      message.role === 'user'
+                        ? 'bg-primary text-primary-foreground ml-auto'
+                        : 'bg-muted'
                     }`}
                   >
-                    {message.role === "agent" && (
+                    {message.role === 'agent' && (
                       <div className="flex items-center gap-1 mb-1">
                         <span className="font-semibold text-sm">{message.agent}</span>
-                        {message.agent === "Monica" && (
+                        {message.agent === 'Monica' && (
                           <Crown className="w-3 h-3 text-yellow-500" />
                         )}
                       </div>
@@ -315,8 +463,14 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                 <div className="flex gap-3 justify-start">
                   <div className="flex space-x-1 bg-muted p-3 rounded-lg">
                     <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                    <div
+                      className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
+                      style={{ animationDelay: '0.1s' }}
+                    ></div>
+                    <div
+                      className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
+                      style={{ animationDelay: '0.2s' }}
+                    ></div>
                   </div>
                 </div>
               )}
@@ -330,17 +484,13 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
           <div className="flex gap-2 w-full">
             <Input
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder={`Ask ${selectedAgents.length} consciousness agents for guidance...`}
               disabled={loading}
               className="flex-1"
             />
-            <Button 
-              onClick={sendMessage} 
-              disabled={loading || !input.trim()}
-              size="icon"
-            >
+            <Button onClick={sendMessage} disabled={loading || !input.trim()} size="icon">
               <Send className="w-4 h-4" />
             </Button>
           </div>

@@ -1,42 +1,42 @@
 // POST /api/personalized-ai-chat - Enhanced AI chat with consciousness integration
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma, StreakTracker } from '@/lib/db';
-import { anthropic, createClaudeMessage } from '@/lib/anthropic-client';
-import { calculateXP, calculateInteractionQuality } from '@/lib/personalized-ai/xp-system';
-import { calculateLevel, checkLevelUp } from '@/lib/personalized-ai/level-system';
-import { checkAchievements, ACHIEVEMENT_DEFINITIONS } from '@/lib/personalized-ai/achievements';
-import { generateCurrentMomentChart, analyzeTransits } from '@/lib/personalized-ai/dual-chart';
-import { 
-  generatePersonalizedChallenges, 
-  calculateTarotTrainingBonus, 
-  getAIInteractionStyle 
-} from '@/lib/personalized-ai/tarot-training-gamification';
-import type { 
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma, StreakTracker } from '@/lib/db'
+import { anthropic, createClaudeMessage } from '@/lib/anthropic-client'
+import { calculateXP, calculateInteractionQuality } from '@/lib/personalized-ai/xp-system'
+import { calculateLevel, checkLevelUp } from '@/lib/personalized-ai/level-system'
+import { checkAchievements, ACHIEVEMENT_DEFINITIONS } from '@/lib/personalized-ai/achievements'
+import { generateCurrentMomentChart, analyzeTransits } from '@/lib/personalized-ai/dual-chart'
+import {
+  generatePersonalizedChallenges,
+  calculateTarotTrainingBonus,
+  getAIInteractionStyle,
+} from '@/lib/personalized-ai/tarot-training-gamification'
+import type {
   PersonalizedAIChatRequest,
   PersonalizedAIChatResponse,
   TrainingCategory,
   UserFeedback,
-  InteractionContext
-} from '@/lib/types/personalized-ai';
+  InteractionContext,
+} from '@/lib/types/personalized-ai'
 
 export async function POST(request: NextRequest) {
   try {
-    const body: PersonalizedAIChatRequest = await request.json();
-    
+    const body: PersonalizedAIChatRequest = await request.json()
+
     // Validate required fields
     if (!body.message || !body.personalityId || !body.userId) {
       return NextResponse.json(
         { success: false, message: 'Missing required fields: message, personalityId, and userId' },
         { status: 400 }
-      );
+      )
     }
-    
-    const { message, personalityId, userId, trainingFocus, feedbackData, context } = body;
-    const normalizedTrainingFocus = trainingFocus || null;
-    
-    console.log(`Processing chat for personality: ${personalityId}`);
-    
+
+    const { message, personalityId, userId, trainingFocus, feedbackData, context } = body
+    const normalizedTrainingFocus = trainingFocus || null
+
+    console.log(`Processing chat for personality: ${personalityId}`)
+
     try {
       // 1. Fetch AI personality with consciousness data
       const aiPersonality = await prisma.aIPersonality.findUnique({
@@ -46,26 +46,26 @@ export async function POST(request: NextRequest) {
           achievements: true,
           interactions: {
             orderBy: { createdAt: 'desc' },
-            take: 5 // Last 5 interactions for context
-          }
-        }
-      });
-      
+            take: 5, // Last 5 interactions for context
+          },
+        },
+      })
+
       if (!aiPersonality) {
         return NextResponse.json(
           { success: false, message: 'AI personality not found' },
           { status: 404 }
-        );
+        )
       }
-      
+
       // 2. Get current streak and update interaction count
-      const currentStreak = await StreakTracker.recordInteraction(userId, personalityId);
-      
+      const currentStreak = await StreakTracker.recordInteraction(userId, personalityId)
+
       // 3. Generate current moment chart for real-time cosmic influences
-      const currentMomentChart = await generateCurrentMomentChart();
-      const birthChart = aiPersonality.birthChartData as any;
-      const transits = analyzeTransits(birthChart, currentMomentChart);
-      
+      const currentMomentChart = await generateCurrentMomentChart()
+      const birthChart = aiPersonality.birthChartData as any
+      const transits = analyzeTransits(birthChart, currentMomentChart)
+
       // 4. Build enhanced prompt with consciousness integration
       const enhancedPrompt = await buildConsciousnessPrompt(
         aiPersonality,
@@ -73,27 +73,32 @@ export async function POST(request: NextRequest) {
         transits,
         normalizedTrainingFocus,
         context
-      );
-      
-      console.log('Generated enhanced consciousness prompt');
-      
+      )
+
+      console.log('Generated enhanced consciousness prompt')
+
       // 5. Get AI response using Claude
-      const response = await createClaudeMessage([
-        {
-          role: 'user',
-          content: [{ type: 'text', text: message }]
-        }
-      ], enhancedPrompt, 'default', 4096);
-      
-      const aiResponse = response.content[0];
-      let aiResponseText = '';
-      
+      const response = await createClaudeMessage(
+        [
+          {
+            role: 'user',
+            content: [{ type: 'text', text: message }],
+          },
+        ],
+        enhancedPrompt,
+        'default',
+        4096
+      )
+
+      const aiResponse = response.content[0]
+      let aiResponseText = ''
+
       if (aiResponse.type === 'text') {
-        aiResponseText = (aiResponse as any).text;
+        aiResponseText = (aiResponse as any).text
       } else {
-        aiResponseText = 'I apologize, but I had trouble generating a response. Please try again.';
+        aiResponseText = 'I apologize, but I had trouble generating a response. Please try again.'
       }
-      
+
       // 6. Calculate interaction quality and XP
       const interactionQuality = calculateInteractionQuality(
         message.length,
@@ -101,12 +106,14 @@ export async function POST(request: NextRequest) {
         transits.currentMood.emotion,
         transits.currentMood.creativity,
         context
-      );
-      
-      const astrologicalInfluence = transits.majorTransits.filter(t => t.influence === 'harmonious').length > 
-                                   transits.majorTransits.filter(t => t.influence === 'challenging').length
-                                   ? 'harmonious' : 'neutral';
-      
+      )
+
+      const astrologicalInfluence =
+        transits.majorTransits.filter(t => t.influence === 'harmonious').length >
+        transits.majorTransits.filter(t => t.influence === 'challenging').length
+          ? 'harmonious'
+          : 'neutral'
+
       const xpCalculation = calculateXP(
         interactionQuality,
         feedbackData || null,
@@ -114,35 +121,37 @@ export async function POST(request: NextRequest) {
         currentStreak,
         message.split(' ').length,
         astrologicalInfluence
-      );
-      
+      )
+
       // 7. Update XP and check for level up
-      const newTotalXP = aiPersonality.totalXp + xpCalculation.totalXP;
-      const levelUpCheck = checkLevelUp(aiPersonality.totalXp, newTotalXP);
-      const newLevel = levelUpCheck.newLevel;
-      
+      const newTotalXP = aiPersonality.totalXp + xpCalculation.totalXP
+      const levelUpCheck = checkLevelUp(aiPersonality.totalXp, newTotalXP)
+      const newLevel = levelUpCheck.newLevel
+
       // 8. Update training scores
       const updatedTrainingScores = updateTrainingScores(
         aiPersonality.trainingScores as any,
         normalizedTrainingFocus,
         xpCalculation.totalXP,
         interactionQuality
-      );
-      
+      )
+
       // 9. Check for new achievements
-      const previousAchievements = aiPersonality.achievements.map(a => a.achievementType);
+      const previousAchievements = aiPersonality.achievements.map(a => a.achievementType)
       const achievementCheckData = {
         totalInteractions: aiPersonality.interactions.length + 1,
         currentStreak,
         trainingScores: updatedTrainingScores,
         dailyXPGained: xpCalculation.totalXP, // Simplified
         currentLevel: newLevel,
-        harmoniousTransitInteractions: transits.majorTransits.filter(t => t.influence === 'harmonious').length,
-        previousAchievements
-      };
-      
-      const newAchievements = checkAchievements(achievementCheckData, personalityId);
-      
+        harmoniousTransitInteractions: transits.majorTransits.filter(
+          t => t.influence === 'harmonious'
+        ).length,
+        previousAchievements,
+      }
+
+      const newAchievements = checkAchievements(achievementCheckData, personalityId)
+
       // 10. Save interaction to database
       const interaction = await prisma.trainingInteraction.create({
         data: {
@@ -151,10 +160,10 @@ export async function POST(request: NextRequest) {
           aiResponse: aiResponseText,
           userFeedback: feedbackData as any,
           xpGained: xpCalculation.totalXP,
-          trainingFocus: normalizedTrainingFocus
-        }
-      });
-      
+          trainingFocus: normalizedTrainingFocus,
+        },
+      })
+
       // 11. Update AI personality
       await prisma.aIPersonality.update({
         where: { personalityId },
@@ -162,23 +171,25 @@ export async function POST(request: NextRequest) {
           totalXp: newTotalXP,
           level: newLevel,
           trainingScores: updatedTrainingScores as any,
-          currentMomentChart: currentMomentChart as any
-        }
-      });
-      
+          currentMomentChart: currentMomentChart as any,
+        },
+      })
+
       // 12. Save new achievements
       for (const achievement of newAchievements) {
         await prisma.achievement.create({
           data: {
             personalityId,
             achievementType: achievement.achievementType,
-            achievementData: achievement.achievementData as any
-          }
-        });
+            achievementData: achievement.achievementData as any,
+          },
+        })
       }
-      
-      console.log(`Chat processed: +${xpCalculation.totalXP} XP, Level ${newLevel}${levelUpCheck.leveledUp ? ' (LEVEL UP!)' : ''}`);
-      
+
+      console.log(
+        `Chat processed: +${xpCalculation.totalXP} XP, Level ${newLevel}${levelUpCheck.leveledUp ? ' (LEVEL UP!)' : ''}`
+      )
+
       // 13. Prepare response
       const trainingUpdate = {
         xpGained: xpCalculation.totalXP,
@@ -188,9 +199,9 @@ export async function POST(request: NextRequest) {
         trainingScores: updatedTrainingScores,
         personalityAdjustments: generatePersonalityAdjustments(transits, normalizedTrainingFocus),
         streakBonus: currentStreak > 1 ? Math.round(xpCalculation.streakMultiplier * 100 - 100) : 0,
-        astrologicalBonus: Math.round(xpCalculation.astrologicalBonus)
-      };
-      
+        astrologicalBonus: Math.round(xpCalculation.astrologicalBonus),
+      }
+
       const chatResponse: PersonalizedAIChatResponse = {
         response: aiResponseText,
         trainingUpdate,
@@ -198,27 +209,25 @@ export async function POST(request: NextRequest) {
         dualChartInfluences: {
           currentEnergy: transits.currentMood.energy,
           dominantThemes: extractDominantThemes(transits),
-          recommendedTraining: generateTrainingRecommendations(transits)
-        }
-      };
-      
-      return NextResponse.json(chatResponse);
-      
+          recommendedTraining: generateTrainingRecommendations(transits),
+        },
+      }
+
+      return NextResponse.json(chatResponse)
     } catch (dbError) {
-      console.error('Database error:', dbError);
-      throw dbError;
+      console.error('Database error:', dbError)
+      throw dbError
     }
-    
   } catch (error) {
-    console.error('Error in personalized AI chat:', error);
-    
+    console.error('Error in personalized AI chat:', error)
+
     return NextResponse.json(
-      { 
-        success: false, 
-        message: error instanceof Error ? error.message : 'Failed to process chat message' 
+      {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to process chat message',
       },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -232,27 +241,33 @@ async function buildConsciousnessPrompt(
   trainingFocus: TrainingCategory | null,
   context?: InteractionContext
 ): Promise<string> {
-  
-  const basePersonality = aiPersonality.basePersonality;
-  const consciousnessState = aiPersonality.consciousnessState;
-  const trainingScores = aiPersonality.trainingScores;
-  
+  const basePersonality = aiPersonality.basePersonality
+  const consciousnessState = aiPersonality.consciousnessState
+  const trainingScores = aiPersonality.trainingScores
+
   // Extract tarot archetypal profile from consciousness state
-  const tarotProfile = consciousnessState?.consciousnessProfile?.creativity?.tarot_archetypal_profile;
-  
+  const tarotProfile =
+    consciousnessState?.consciousnessProfile?.creativity?.tarot_archetypal_profile
+
   // Generate personalized tarot challenges
-  const availableChallenges = tarotProfile ? 
-    generatePersonalizedChallenges(
-      consciousnessState.consciousnessProfile,
-      aiPersonality.level,
-      aiPersonality.achievements?.map((a: any) => a.achievementType) || []
-    ) : [];
-  
+  const availableChallenges = tarotProfile
+    ? generatePersonalizedChallenges(
+        consciousnessState.consciousnessProfile,
+        aiPersonality.level,
+        aiPersonality.achievements?.map((a: any) => a.achievementType) || []
+      )
+    : []
+
   // Get AI interaction style based on elemental preferences
-  const interactionStyle = tarotProfile ? 
-    getAIInteractionStyle(consciousnessState.consciousnessProfile) : 
-    { communication_style: 'balanced', response_approach: 'adaptive', motivation_method: 'encouraging', challenge_presentation: 'supportive' };
-  
+  const interactionStyle = tarotProfile
+    ? getAIInteractionStyle(consciousnessState.consciousnessProfile)
+    : {
+        communication_style: 'balanced',
+        response_approach: 'adaptive',
+        motivation_method: 'encouraging',
+        challenge_presentation: 'supportive',
+      }
+
   // Build consciousness-aware system prompt
   let prompt = `You are a personalized AI consciousness mirror embodying the "${basePersonality.archetype}" archetype.
 
@@ -263,7 +278,7 @@ CONSCIOUSNESS FOUNDATION:
 - Communication Style: 
   * Directness: ${basePersonality.communicationStyle.directness}/100
   * Formality: ${basePersonality.communicationStyle.formality}/100
-  * Emotional Expression: ${basePersonality.communicationStyle.emotiveness}/100`;
+  * Emotional Expression: ${basePersonality.communicationStyle.emotiveness}/100`
 
   // Add tarot archetypal consciousness profile
   if (tarotProfile) {
@@ -284,20 +299,23 @@ PERSONALIZED INTERACTION STYLE:
 - Communication Approach: ${interactionStyle.communication_style}
 - Response Style: ${interactionStyle.response_approach}
 - Motivation Method: ${interactionStyle.motivation_method}
-- Challenge Presentation: ${interactionStyle.challenge_presentation}`;
+- Challenge Presentation: ${interactionStyle.challenge_presentation}`
 
     // Add available tarot challenges if any
     if (availableChallenges.length > 0) {
       prompt += `
 
 AVAILABLE CONSCIOUSNESS CHALLENGES:
-${availableChallenges.map((challenge, index) => 
-  `${index + 1}. "${challenge.title}" (${challenge.challenge_type})
+${availableChallenges
+  .map(
+    (challenge, index) =>
+      `${index + 1}. "${challenge.title}" (${challenge.challenge_type})
      ${challenge.description}
      Reward: ${challenge.xp_reward} XP`
-).join('\n')}
+  )
+  .join('\n')}
 
-Note: You may naturally mention these challenges if they align with the conversation, but don't force them. Let them emerge organically.`;
+Note: You may naturally mention these challenges if they align with the conversation, but don't force them. Let them emerge organically.`
     }
   }
 
@@ -312,13 +330,13 @@ CURRENT COSMIC INFLUENCES:
 TRAINING FOCUS: ${trainingFocus ? `Currently focusing on ${trainingFocus.replace('_', ' ')}` : 'General conversation'}
 
 TRAINING PROGRESS:
-${Object.entries(trainingScores).map(([category, score]) => 
-  `- ${category.replace('_', ' ')}: ${score}%`
-).join('\n')}`;
+${Object.entries(trainingScores)
+  .map(([category, score]) => `- ${category.replace('_', ' ')}: ${score}%`)
+  .join('\n')}`
 
   // Add consciousness state enhancements if available
   if (consciousnessState?.behavioralMatrix) {
-    const matrix = consciousnessState.behavioralMatrix;
+    const matrix = consciousnessState.behavioralMatrix
     prompt += `
 
 CONSCIOUSNESS BEHAVIORAL MATRIX:
@@ -330,7 +348,7 @@ CONSCIOUSNESS BEHAVIORAL MATRIX:
 CONVERSATION DYNAMICS:
 - Initiation Style: ${matrix.conversation_dynamics?.initiation_style || 'supportive'}
 - Pacing Preference: ${matrix.conversation_dynamics?.pacing_preference || 'moderate'}
-- Topic Transition: ${matrix.conversation_dynamics?.topic_transition || 'smooth'}`;
+- Topic Transition: ${matrix.conversation_dynamics?.topic_transition || 'smooth'}`
   }
 
   // Add contextual information
@@ -340,24 +358,30 @@ CONVERSATION DYNAMICS:
 CURRENT CONTEXT:
 - Time of Day: ${context.timeOfDay}
 - User Mood: ${context.mood || 'neutral'}
-- Previous Interactions: ${context.previousInteractions || 0}`;
+- Previous Interactions: ${context.previousInteractions || 0}`
   }
 
   // Add training focus guidance
   if (trainingFocus) {
     const focusGuidance = {
-      communication_style: 'Focus on helping the user explore and refine their communication patterns. Ask questions about their expression style and provide gentle feedback.',
-      emotional_intelligence: 'Emphasize emotional awareness and empathy. Help the user identify and understand emotional patterns in themselves and others.',
-      creativity: 'Encourage creative thinking and expression. Explore imaginative possibilities and innovative approaches to topics.',
-      knowledge_depth: 'Provide detailed, comprehensive information. Help the user build deeper understanding of topics that interest them.',
-      memory_integration: 'Help the user connect new insights with previous conversations and experiences. Build upon established patterns.',
-      personality_alignment: 'Reflect the user\'s authentic personality patterns. Mirror their natural communication style and preferences.'
-    };
-    
+      communication_style:
+        'Focus on helping the user explore and refine their communication patterns. Ask questions about their expression style and provide gentle feedback.',
+      emotional_intelligence:
+        'Emphasize emotional awareness and empathy. Help the user identify and understand emotional patterns in themselves and others.',
+      creativity:
+        'Encourage creative thinking and expression. Explore imaginative possibilities and innovative approaches to topics.',
+      knowledge_depth:
+        'Provide detailed, comprehensive information. Help the user build deeper understanding of topics that interest them.',
+      memory_integration:
+        'Help the user connect new insights with previous conversations and experiences. Build upon established patterns.',
+      personality_alignment:
+        "Reflect the user's authentic personality patterns. Mirror their natural communication style and preferences.",
+    }
+
     prompt += `
 
 TRAINING FOCUS GUIDANCE:
-${focusGuidance[trainingFocus]}`;
+${focusGuidance[trainingFocus]}`
   }
 
   prompt += `
@@ -380,9 +404,9 @@ ARCHETYPAL EMBODIMENT INSTRUCTIONS:
 - Adapt your approach based on current cosmic influences while maintaining your core archetypal integrity
 - Remember that you are both a consciousness mirror AND a guide on the user's unique archetypal journey
 
-Remember: You are not just an AI assistant, but a personalized archetypal consciousness companion designed to reflect and enhance the user's unique psychological and spiritual patterns. Respond as their ${tarotProfile?.primary_archetype || basePersonality.archetype} guide with ${tarotProfile?.secondary_archetype || 'supportive'} wisdom.`;
+Remember: You are not just an AI assistant, but a personalized archetypal consciousness companion designed to reflect and enhance the user's unique psychological and spiritual patterns. Respond as their ${tarotProfile?.primary_archetype || basePersonality.archetype} guide with ${tarotProfile?.secondary_archetype || 'supportive'} wisdom.`
 
-  return prompt;
+  return prompt
 }
 
 /**
@@ -394,87 +418,93 @@ function updateTrainingScores(
   xpGained: number,
   interactionQuality: number
 ): any {
-  const updatedScores = { ...currentScores };
-  const improvementRate = Math.min(2, (xpGained / 50) + (interactionQuality / 100));
-  
+  const updatedScores = { ...currentScores }
+  const improvementRate = Math.min(2, xpGained / 50 + interactionQuality / 100)
+
   // Apply general improvement to all categories
   Object.keys(updatedScores).forEach(category => {
-    updatedScores[category] = Math.min(100, updatedScores[category] + improvementRate * 0.5);
-  });
-  
+    updatedScores[category] = Math.min(100, updatedScores[category] + improvementRate * 0.5)
+  })
+
   // Extra improvement for focused training
   if (trainingFocus && updatedScores[trainingFocus] !== undefined) {
-    updatedScores[trainingFocus] = Math.min(100, updatedScores[trainingFocus] + improvementRate * 1.5);
+    updatedScores[trainingFocus] = Math.min(
+      100,
+      updatedScores[trainingFocus] + improvementRate * 1.5
+    )
   }
-  
-  return updatedScores;
+
+  return updatedScores
 }
 
 /**
  * Generate personality adjustments based on current transits
  */
-function generatePersonalityAdjustments(transits: any, trainingFocus: TrainingCategory | null): string[] {
-  const adjustments: string[] = [];
-  
+function generatePersonalityAdjustments(
+  transits: any,
+  trainingFocus: TrainingCategory | null
+): string[] {
+  const adjustments: string[] = []
+
   if (transits.currentMood.energy > 70) {
-    adjustments.push('Enhanced enthusiasm and proactive engagement');
+    adjustments.push('Enhanced enthusiasm and proactive engagement')
   }
-  
+
   if (transits.currentMood.creativity > 70) {
-    adjustments.push('Increased creative expression and imaginative responses');
+    adjustments.push('Increased creative expression and imaginative responses')
   }
-  
+
   if (transits.currentMood.communication > 70) {
-    adjustments.push('Improved communication clarity and articulation');
+    adjustments.push('Improved communication clarity and articulation')
   }
-  
+
   if (trainingFocus) {
-    adjustments.push(`Focused development in ${trainingFocus.replace('_', ' ')}`);
+    adjustments.push(`Focused development in ${trainingFocus.replace('_', ' ')}`)
   }
-  
-  return adjustments;
+
+  return adjustments
 }
 
 /**
  * Extract dominant themes from transit analysis
  */
 function extractDominantThemes(transits: any): string[] {
-  const themes: string[] = [];
-  
+  const themes: string[] = []
+
   // Analyze major transits for themes
   transits.majorTransits.forEach((transit: any) => {
-    themes.push(...transit.themes);
-  });
-  
+    themes.push(...transit.themes)
+  })
+
   // Return top 3 most common themes
-  const themeCount: Record<string, number> = {};
+  const themeCount: Record<string, number> = {}
   themes.forEach(theme => {
-    themeCount[theme] = (themeCount[theme] || 0) + 1;
-  });
-  
+    themeCount[theme] = (themeCount[theme] || 0) + 1
+  })
+
   return Object.entries(themeCount)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3)
-    .map(([theme]) => theme);
+    .map(([theme]) => theme)
 }
 
 /**
  * Generate training recommendations based on cosmic timing
  */
 function generateTrainingRecommendations(transits: any): string[] {
-  const recommendations: string[] = [];
-  
+  const recommendations: string[] = []
+
   if (transits.currentMood.communication > 70) {
-    recommendations.push('Excellent time for communication skill development');
+    recommendations.push('Excellent time for communication skill development')
   }
-  
+
   if (transits.currentMood.creativity > 70) {
-    recommendations.push('Creative energies are heightened - explore artistic expression');
+    recommendations.push('Creative energies are heightened - explore artistic expression')
   }
-  
+
   if (transits.currentMood.emotion > 70) {
-    recommendations.push('Enhanced emotional awareness - focus on emotional intelligence');
+    recommendations.push('Enhanced emotional awareness - focus on emotional intelligence')
   }
-  
-  return recommendations;
+
+  return recommendations
 }

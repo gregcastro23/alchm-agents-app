@@ -1,50 +1,84 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { planetaryDignities } from "@/lib/astrological-data"
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
+import { planetaryDignities } from '@/lib/astrological-data'
 
 export default function ModelTrainingPage() {
-  const [selectedPlanet, setSelectedPlanet] = useState("Sun")
-  const [selectedSign, setSelectedSign] = useState("Aries")
-  const [trainingStatus, setTrainingStatus] = useState<"idle" | "training" | "completed" | "failed">("idle")
+  const [selectedPlanet, setSelectedPlanet] = useState('Sun')
+  const [selectedSign, setSelectedSign] = useState('Aries')
+  const [trainingStatus, setTrainingStatus] = useState<
+    'idle' | 'training' | 'completed' | 'failed'
+  >('idle')
   const [trainingProgress, setTrainingProgress] = useState(0)
   const [useCustomPrompt, setUseCustomPrompt] = useState(false)
-  const [customPrompt, setCustomPrompt] = useState("")
+  const [customPrompt, setCustomPrompt] = useState('')
 
-  const planets = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"]
+  const planets = [
+    'Sun',
+    'Moon',
+    'Mercury',
+    'Venus',
+    'Mars',
+    'Jupiter',
+    'Saturn',
+    'Uranus',
+    'Neptune',
+    'Pluto',
+  ]
   const signs = [
-    "Aries",
-    "Taurus",
-    "Gemini",
-    "Cancer",
-    "Leo",
-    "Virgo",
-    "Libra",
-    "Scorpio",
-    "Sagittarius",
-    "Capricorn",
-    "Aquarius",
-    "Pisces",
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
   ]
 
   // Get the dignity of the current planet in the selected sign
-  const dignity = planetaryDignities[selectedPlanet as keyof typeof planetaryDignities]?.domicile.includes(selectedSign)
-    ? "domicile"
-    : planetaryDignities[selectedPlanet as keyof typeof planetaryDignities]?.exaltation.includes(selectedSign)
-      ? "exaltation"
-      : planetaryDignities[selectedPlanet as keyof typeof planetaryDignities]?.detriment.includes(selectedSign)
-        ? "detriment"
-        : planetaryDignities[selectedPlanet as keyof typeof planetaryDignities]?.fall.includes(selectedSign)
-          ? "fall"
-          : "peregrine"
+  const dignity = planetaryDignities[
+    selectedPlanet as keyof typeof planetaryDignities
+  ]?.domicile.includes(selectedSign)
+    ? 'domicile'
+    : planetaryDignities[selectedPlanet as keyof typeof planetaryDignities]?.exaltation.includes(
+          selectedSign
+        )
+      ? 'exaltation'
+      : planetaryDignities[selectedPlanet as keyof typeof planetaryDignities]?.detriment.includes(
+            selectedSign
+          )
+        ? 'detriment'
+        : planetaryDignities[selectedPlanet as keyof typeof planetaryDignities]?.fall.includes(
+              selectedSign
+            )
+          ? 'fall'
+          : 'peregrine'
 
   // Default training prompt based on planet and sign
   const getDefaultPrompt = () => {
@@ -64,15 +98,15 @@ Include knowledge from classical texts as well as modern interpretations.`
   }
 
   const handleStartTraining = () => {
-    setTrainingStatus("training")
+    setTrainingStatus('training')
     setTrainingProgress(0)
 
     // Simulate training progress
     const interval = setInterval(() => {
-      setTrainingProgress((prev) => {
+      setTrainingProgress(prev => {
         if (prev >= 100) {
           clearInterval(interval)
-          setTrainingStatus("completed")
+          setTrainingStatus('completed')
           return 100
         }
         return prev + 5
@@ -98,18 +132,23 @@ Include knowledge from classical texts as well as modern interpretations.`
           <Card>
             <CardHeader>
               <CardTitle>Train a Planetary Model</CardTitle>
-              <CardDescription>Create a specialized model for a specific planet in a zodiac sign</CardDescription>
+              <CardDescription>
+                Create a specialized model for a specific planet in a zodiac sign
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="planet">Planet</Label>
-                  <Select value={selectedPlanet} onValueChange={(value: string) => setSelectedPlanet(value)}>
+                  <Select
+                    value={selectedPlanet}
+                    onValueChange={(value: string) => setSelectedPlanet(value)}
+                  >
                     <SelectTrigger id="planet">
                       <SelectValue placeholder="Select Planet" />
                     </SelectTrigger>
                     <SelectContent>
-                      {planets.map((planet) => (
+                      {planets.map(planet => (
                         <SelectItem key={planet} value={planet}>
                           {planet}
                         </SelectItem>
@@ -120,12 +159,15 @@ Include knowledge from classical texts as well as modern interpretations.`
 
                 <div className="space-y-2">
                   <Label htmlFor="sign">Sign</Label>
-                  <Select value={selectedSign} onValueChange={(value: string) => setSelectedSign(value)}>
+                  <Select
+                    value={selectedSign}
+                    onValueChange={(value: string) => setSelectedSign(value)}
+                  >
                     <SelectTrigger id="sign">
                       <SelectValue placeholder="Select Sign" />
                     </SelectTrigger>
                     <SelectContent>
-                      {signs.map((sign) => (
+                      {signs.map(sign => (
                         <SelectItem key={sign} value={sign}>
                           {sign}
                         </SelectItem>
@@ -138,12 +180,16 @@ Include knowledge from classical texts as well as modern interpretations.`
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="custom-prompt">Use Custom Training Prompt</Label>
-                  <Switch id="custom-prompt" checked={useCustomPrompt} onCheckedChange={setUseCustomPrompt} />
+                  <Switch
+                    id="custom-prompt"
+                    checked={useCustomPrompt}
+                    onCheckedChange={setUseCustomPrompt}
+                  />
                 </div>
 
                 <Textarea
                   value={useCustomPrompt ? customPrompt : getDefaultPrompt()}
-                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  onChange={e => setCustomPrompt(e.target.value)}
                   disabled={!useCustomPrompt}
                   rows={10}
                   className="font-mono text-sm"
@@ -154,24 +200,25 @@ Include knowledge from classical texts as well as modern interpretations.`
                 <Label>Dignity Status</Label>
                 <div className="p-3 rounded-md bg-secondary/20">
                   <p className="font-medium">
-                    {selectedPlanet} in {selectedSign}: <span className="capitalize">{dignity}</span>
+                    {selectedPlanet} in {selectedSign}:{' '}
+                    <span className="capitalize">{dignity}</span>
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {dignity === "domicile" &&
+                    {dignity === 'domicile' &&
                       `${selectedPlanet} rules ${selectedSign} and is very strong in this sign.`}
-                    {dignity === "exaltation" &&
+                    {dignity === 'exaltation' &&
                       `${selectedPlanet} is exalted in ${selectedSign}, expressing its highest qualities.`}
-                    {dignity === "detriment" &&
+                    {dignity === 'detriment' &&
                       `${selectedPlanet} is in detriment in ${selectedSign}, facing challenges in expression.`}
-                    {dignity === "fall" &&
+                    {dignity === 'fall' &&
                       `${selectedPlanet} is in fall in ${selectedSign}, experiencing significant difficulties.`}
-                    {dignity === "peregrine" &&
+                    {dignity === 'peregrine' &&
                       `${selectedPlanet} is peregrine in ${selectedSign}, neither strengthened nor weakened.`}
                   </p>
                 </div>
               </div>
 
-              {trainingStatus === "training" && (
+              {trainingStatus === 'training' && (
                 <div className="space-y-2">
                   <Label>Training Progress</Label>
                   <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
@@ -184,7 +231,7 @@ Include knowledge from classical texts as well as modern interpretations.`
                 </div>
               )}
 
-              {trainingStatus === "completed" && (
+              {trainingStatus === 'completed' && (
                 <div className="p-3 rounded-md bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
                   <p className="font-medium">Training Completed Successfully!</p>
                   <p className="text-sm mt-1">
@@ -193,22 +240,28 @@ Include knowledge from classical texts as well as modern interpretations.`
                 </div>
               )}
 
-              {trainingStatus === "failed" && (
+              {trainingStatus === 'failed' && (
                 <div className="p-3 rounded-md bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
                   <p className="font-medium">Training Failed</p>
-                  <p className="text-sm mt-1">There was an error training your model. Please try again.</p>
+                  <p className="text-sm mt-1">
+                    There was an error training your model. Please try again.
+                  </p>
                 </div>
               )}
             </CardContent>
             <CardFooter>
-              <Button onClick={handleStartTraining} disabled={trainingStatus === "training"} className="w-full">
-                {trainingStatus === "idle"
-                  ? "Start Training"
-                  : trainingStatus === "training"
-                    ? "Training in Progress..."
-                    : trainingStatus === "completed"
-                      ? "Train Again"
-                      : "Retry Training"}
+              <Button
+                onClick={handleStartTraining}
+                disabled={trainingStatus === 'training'}
+                className="w-full"
+              >
+                {trainingStatus === 'idle'
+                  ? 'Start Training'
+                  : trainingStatus === 'training'
+                    ? 'Training in Progress...'
+                    : trainingStatus === 'completed'
+                      ? 'Train Again'
+                      : 'Retry Training'}
               </Button>
             </CardFooter>
           </Card>
@@ -218,16 +271,21 @@ Include knowledge from classical texts as well as modern interpretations.`
           <Card>
             <CardHeader>
               <CardTitle>Manage Trained Models</CardTitle>
-              <CardDescription>View, test, and manage your trained planetary models</CardDescription>
+              <CardDescription>
+                View, test, and manage your trained planetary models
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <Input placeholder="Search models..." />
 
                 <div className="border rounded-md divide-y">
-                  {planets.slice(0, 3).map((planet) =>
-                    signs.slice(0, 2).map((sign) => (
-                      <div key={`${planet}-${sign}`} className="p-4 flex items-center justify-between">
+                  {planets.slice(0, 3).map(planet =>
+                    signs.slice(0, 2).map(sign => (
+                      <div
+                        key={`${planet}-${sign}`}
+                        className="p-4 flex items-center justify-between"
+                      >
                         <div>
                           <p className="font-medium">
                             {planet} in {sign}
@@ -246,7 +304,7 @@ Include knowledge from classical texts as well as modern interpretations.`
                           </Button>
                         </div>
                       </div>
-                    )),
+                    ))
                   )}
 
                   <div className="p-4 text-center text-muted-foreground">
@@ -268,7 +326,7 @@ Include knowledge from classical texts as well as modern interpretations.`
               <div className="space-y-2">
                 <Label>Select Planets</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-                  {planets.map((planet) => (
+                  {planets.map(planet => (
                     <div key={planet} className="flex items-center space-x-2">
                       <input type="checkbox" id={`planet-${planet}`} className="rounded" />
                       <Label htmlFor={`planet-${planet}`}>{planet}</Label>
@@ -280,7 +338,7 @@ Include knowledge from classical texts as well as modern interpretations.`
               <div className="space-y-2">
                 <Label>Select Signs</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                  {signs.map((sign) => (
+                  {signs.map(sign => (
                     <div key={sign} className="flex items-center space-x-2">
                       <input type="checkbox" id={`sign-${sign}`} className="rounded" />
                       <Label htmlFor={`sign-${sign}`}>{sign}</Label>

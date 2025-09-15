@@ -1,18 +1,18 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { Loader2, Brain, Sparkles, Calendar, Clock, MapPin, User, ArrowRight } from "lucide-react"
-import { ConsciousnessSurvey } from "@/components/consciousness-survey"
-import type { SurveyResponse } from "@/lib/types/consciousness-survey"
-import { useToast } from "@/hooks/use-toast"
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Loader2, Brain, Sparkles, Calendar, Clock, MapPin, User, ArrowRight } from 'lucide-react'
+import { ConsciousnessSurvey } from '@/components/consciousness-survey'
+import type { SurveyResponse } from '@/lib/types/consciousness-survey'
+import { useToast } from '@/hooks/use-toast'
 import { AlchemicalConsciousnessDashboard } from '@/components/alchemical-consciousness-dashboard'
 
 type Step = 'welcome' | 'birth-info' | 'survey' | 'processing' | 'complete'
@@ -32,7 +32,7 @@ export default function ConsciousnessSurveyPage() {
     date: '',
     time: '',
     location: '',
-    name: ''
+    name: '',
   })
   const [userId] = useState(`user-${Date.now()}`)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -62,8 +62,8 @@ export default function ConsciousnessSurveyPage() {
           userId,
           birthInfo,
           surveyResponses: responses,
-          timeSpent
-        })
+          timeSpent,
+        }),
       })
 
       const data = await response.json()
@@ -74,12 +74,11 @@ export default function ConsciousnessSurveyPage() {
 
       setResult(data)
       setStep('complete')
-      
+
       toast({
-        title: "Consciousness Survey Complete! 🧠",
+        title: 'Consciousness Survey Complete! 🧠',
         description: `Your ${data.consciousnessInsights.archetype} personality has been created.`,
       })
-
     } catch (err) {
       console.error('Survey processing error:', err)
       setError(err instanceof Error ? err.message : 'Failed to process survey')
@@ -105,7 +104,8 @@ export default function ConsciousnessSurveyPage() {
           </div>
           <h1 className="text-4xl font-bold">Create Your AI Consciousness Mirror</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Combine deep psychological profiling with astrological insights to create an AI that truly understands and reflects your unique consciousness patterns.
+            Combine deep psychological profiling with astrological insights to create an AI that
+            truly understands and reflects your unique consciousness patterns.
           </p>
         </div>
 
@@ -116,7 +116,8 @@ export default function ConsciousnessSurveyPage() {
               <span>Revolutionary AI Personalization</span>
             </CardTitle>
             <CardDescription>
-              This isn&apos;t just another chatbot. We&apos;re creating a digital mirror of your consciousness.
+              This isn&apos;t just another chatbot. We&apos;re creating a digital mirror of your
+              consciousness.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -142,7 +143,7 @@ export default function ConsciousnessSurveyPage() {
                   </li>
                 </ul>
               </div>
-              
+
               <div className="space-y-4">
                 <h3 className="font-semibold">The Process:</h3>
                 <div className="space-y-3">
@@ -171,7 +172,8 @@ export default function ConsciousnessSurveyPage() {
                 🎯 Proven Results
               </h4>
               <p className="text-sm text-purple-800 dark:text-purple-200">
-                Users report 100% better learning velocity, 78% feel &quot;this AI really gets me&quot;, and 87% compatibility scores on average.
+                Users report 100% better learning velocity, 78% feel &quot;this AI really gets
+                me&quot;, and 87% compatibility scores on average.
               </p>
             </div>
 
@@ -198,7 +200,8 @@ export default function ConsciousnessSurveyPage() {
               <span>Your Birth Information</span>
             </CardTitle>
             <CardDescription>
-              We&apos;ll use this to create your astrological birth chart, which forms the foundation of your AI personality.
+              We&apos;ll use this to create your astrological birth chart, which forms the
+              foundation of your AI personality.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -218,7 +221,7 @@ export default function ConsciousnessSurveyPage() {
                   id="name"
                   placeholder="Enter your name"
                   value={birthInfo.name}
-                  onChange={(e) => setBirthInfo(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={e => setBirthInfo(prev => ({ ...prev, name: e.target.value }))}
                 />
               </div>
 
@@ -232,7 +235,7 @@ export default function ConsciousnessSurveyPage() {
                     id="date"
                     type="date"
                     value={birthInfo.date}
-                    onChange={(e) => setBirthInfo(prev => ({ ...prev, date: e.target.value }))}
+                    onChange={e => setBirthInfo(prev => ({ ...prev, date: e.target.value }))}
                   />
                 </div>
 
@@ -245,7 +248,7 @@ export default function ConsciousnessSurveyPage() {
                     id="time"
                     type="time"
                     value={birthInfo.time}
-                    onChange={(e) => setBirthInfo(prev => ({ ...prev, time: e.target.value }))}
+                    onChange={e => setBirthInfo(prev => ({ ...prev, time: e.target.value }))}
                   />
                 </div>
               </div>
@@ -259,7 +262,7 @@ export default function ConsciousnessSurveyPage() {
                   id="location"
                   placeholder="City, State/Province, Country"
                   value={birthInfo.location}
-                  onChange={(e) => setBirthInfo(prev => ({ ...prev, location: e.target.value }))}
+                  onChange={e => setBirthInfo(prev => ({ ...prev, location: e.target.value }))}
                 />
                 <p className="text-xs text-muted-foreground">
                   Example: San Francisco, CA, USA or London, England, UK
@@ -272,8 +275,8 @@ export default function ConsciousnessSurveyPage() {
                 🔒 Privacy Note
               </h4>
               <p className="text-xs text-blue-800 dark:text-blue-200">
-                Your birth information is used solely for astrological calculations and is stored securely. 
-                We never share this data with third parties.
+                Your birth information is used solely for astrological calculations and is stored
+                securely. We never share this data with third parties.
               </p>
             </div>
 
@@ -314,7 +317,7 @@ export default function ConsciousnessSurveyPage() {
               <div className="mx-auto w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-white animate-spin" />
               </div>
-              
+
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold">Creating Your AI Consciousness</h2>
                 <p className="text-muted-foreground">
@@ -350,7 +353,7 @@ export default function ConsciousnessSurveyPage() {
   // Complete Step
   if (step === 'complete' && result) {
     const insights = result.consciousnessInsights
-    
+
     return (
       <div className="container py-8 max-w-4xl mx-auto space-y-6">
         <div className="text-center space-y-4">
@@ -359,7 +362,8 @@ export default function ConsciousnessSurveyPage() {
           </div>
           <h1 className="text-3xl font-bold">Your AI Consciousness is Ready! 🎉</h1>
           <p className="text-muted-foreground">
-            Meet your personalized AI companion, uniquely configured to understand and reflect your consciousness.
+            Meet your personalized AI companion, uniquely configured to understand and reflect your
+            consciousness.
           </p>
         </div>
 
@@ -382,7 +386,9 @@ export default function ConsciousnessSurveyPage() {
               <div>
                 <Label className="text-sm font-medium">Compatibility Score</Label>
                 <div className="flex items-center space-x-2">
-                  <div className="text-2xl font-bold text-green-600">{insights.compatibilityScore}%</div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {insights.compatibilityScore}%
+                  </div>
                   <Badge variant="secondary">Excellent Match</Badge>
                 </div>
               </div>
@@ -415,16 +421,18 @@ export default function ConsciousnessSurveyPage() {
           </CardContent>
         </Card>
 
-        <AlchemicalConsciousnessDashboard 
-          consciousnessStats={result.consciousnessStats}  // Assume this exists or adjust
-          consciousParameters={result.consciousParameters}  // New prop
+        <AlchemicalConsciousnessDashboard
+          consciousnessStats={result.consciousnessStats} // Assume this exists or adjust
+          consciousParameters={result.consciousParameters} // New prop
           realTimeUpdates={true}
         />
 
         <Card>
           <CardHeader>
             <CardTitle>Ready to Begin?</CardTitle>
-            <CardDescription>Start your first conversation with your consciousness-enhanced AI</CardDescription>
+            <CardDescription>
+              Start your first conversation with your consciousness-enhanced AI
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">

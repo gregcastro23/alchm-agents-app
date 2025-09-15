@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server"
-import { prisma } from "@/lib/db"
-import galileoLogger, { logQuantitiesToGalileo } from "@/lib/galileo-logger"
+import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/db'
+import galileoLogger, { logQuantitiesToGalileo } from '@/lib/galileo-logger'
 
-export const dynamic = "force-dynamic"
+export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 // Minimal session persistence using UserSession
@@ -16,15 +16,17 @@ export async function POST(req: Request) {
         userId,
         personalityId,
         sessionData: snapshot,
-        expiresAt
-      }
+        expiresAt,
+      },
     })
     // lightweight trace for session persistence
     try {
       const sessionName = `ps-session-${userId}-${personalityId}`
       const sessionId = galileoLogger.startSession(sessionName, { userId, personalityId })
       const traceId = galileoLogger.startTrace('persist-session', { record_id: created.id })
-      const spanId = galileoLogger.startSpan('save-session', 'tool', { payload_keys: Object.keys(snapshot || {}) })
+      const spanId = galileoLogger.startSpan('save-session', 'tool', {
+        payload_keys: Object.keys(snapshot || {}),
+      })
       galileoLogger.endSpan(spanId, { ok: true, id: created.id }, 'success')
       galileoLogger.endTrace()
       await galileoLogger.endSession()
@@ -44,7 +46,7 @@ export async function GET(req: Request) {
     const personalityId = searchParams.get('personalityId') || 'stone'
     const last = await prisma.userSession.findFirst({
       where: { userId, personalityId },
-      orderBy: { lastActive: 'desc' }
+      orderBy: { lastActive: 'desc' },
     })
     return NextResponse.json({ session: last })
   } catch (error) {
@@ -52,5 +54,3 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Failed to load session' }, { status: 500 })
   }
 }
-
-

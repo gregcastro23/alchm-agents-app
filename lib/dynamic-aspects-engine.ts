@@ -5,15 +5,20 @@
  * with consciousness evolution integration and predictive capabilities.
  */
 
-import { Aspect, AspectType, PlanetPosition, calculateAllAspects } from './astrological-pattern-recognition'
+import {
+  Aspect,
+  AspectType,
+  PlanetPosition,
+  calculateAllAspects,
+} from './astrological-pattern-recognition'
 import { planetaryMotionTracker, PlanetaryMotion } from './planetary-motion-tracker'
 
 export interface DynamicAspect extends Aspect {
   // Enhanced temporal properties
-  orbVelocity: number       // degrees per day the orb is changing
-  peakDate: Date | null     // when aspect will be exact (if applying)
-  daysToExact: number       // days until exact (if applying)
-  daysSinceExact: number    // days since exact (if separating)
+  orbVelocity: number // degrees per day the orb is changing
+  peakDate: Date | null // when aspect will be exact (if applying)
+  daysToExact: number // days until exact (if applying)
+  daysSinceExact: number // days since exact (if separating)
   strength: 'building' | 'peak' | 'waning' | 'fading'
   momentumType: 'accelerating' | 'steady' | 'slowing'
 
@@ -55,7 +60,11 @@ export interface DynamicAspectsAnalysis {
 export interface OptimalPeriod {
   start: Date
   end: Date
-  type: 'consciousness_expansion' | 'creative_surge' | 'breakthrough_potential' | 'integration_phase'
+  type:
+    | 'consciousness_expansion'
+    | 'creative_surge'
+    | 'breakthrough_potential'
+    | 'integration_phase'
   aspects: DynamicAspect[]
   expectedBenefits: string[]
   recommendedAgents: string[]
@@ -63,31 +72,31 @@ export interface OptimalPeriod {
 
 // Aspect strength definitions for consciousness impact
 const ASPECT_CONSCIOUSNESS_IMPACT: Record<AspectType, number> = {
-  'conjunction': 0.9,      // High impact - fusion of energies
-  'opposition': 0.8,       // High impact - tension creates growth
-  'trine': 0.6,           // Moderate - harmonious flow
-  'square': 0.7,          // Moderate-high - creative tension
-  'sextile': 0.4,         // Moderate - opportunity
-  'quincunx': 0.5,        // Moderate - adjustment required
-  'semisextile': 0.2,     // Low - subtle influence
-  'sesquiquadrate': 0.3,  // Low-moderate - minor stress
-  'semisquare': 0.3,      // Low-moderate - minor stress
-  'quintile': 0.4,        // Moderate - creative potential
-  'biquintile': 0.4       // Moderate - creative potential
+  conjunction: 0.9, // High impact - fusion of energies
+  opposition: 0.8, // High impact - tension creates growth
+  trine: 0.6, // Moderate - harmonious flow
+  square: 0.7, // Moderate-high - creative tension
+  sextile: 0.4, // Moderate - opportunity
+  quincunx: 0.5, // Moderate - adjustment required
+  semisextile: 0.2, // Low - subtle influence
+  sesquiquadrate: 0.3, // Low-moderate - minor stress
+  semisquare: 0.3, // Low-moderate - minor stress
+  quintile: 0.4, // Moderate - creative potential
+  biquintile: 0.4, // Moderate - creative potential
 }
 
 // Planetary consciousness influence multipliers
 const PLANETARY_CONSCIOUSNESS_MULTIPLIERS: Record<string, number> = {
-  'Sun': 1.2,      // Enhanced identity/self-actualization
-  'Moon': 1.1,     // Emotional/intuitive development
-  'Mercury': 1.0,  // Communication/learning
-  'Venus': 0.9,    // Harmony/relationships
-  'Mars': 1.1,     // Action/assertion
-  'Jupiter': 1.3,  // Expansion/wisdom
-  'Saturn': 1.2,   // Structure/mastery
-  'Uranus': 1.4,   // Innovation/awakening
-  'Neptune': 1.1,  // Spirituality/intuition
-  'Pluto': 1.5     // Transformation/rebirth
+  Sun: 1.2, // Enhanced identity/self-actualization
+  Moon: 1.1, // Emotional/intuitive development
+  Mercury: 1.0, // Communication/learning
+  Venus: 0.9, // Harmony/relationships
+  Mars: 1.1, // Action/assertion
+  Jupiter: 1.3, // Expansion/wisdom
+  Saturn: 1.2, // Structure/mastery
+  Uranus: 1.4, // Innovation/awakening
+  Neptune: 1.1, // Spirituality/intuition
+  Pluto: 1.5, // Transformation/rebirth
 }
 
 export class DynamicAspectsEngine {
@@ -104,7 +113,7 @@ export class DynamicAspectsEngine {
     const cacheKey = this.generateCacheKey(planets, futureRange)
     const cached = this.aspectCache.get(cacheKey)
 
-    if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
+    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
       return cached.data
     }
 
@@ -125,7 +134,11 @@ export class DynamicAspectsEngine {
     const upcomingEvents = await this.predictAspectEvents(planets, futureRange)
 
     // Find optimal interaction periods
-    const optimalPeriods = await this.findOptimalPeriods(dynamicAspects, upcomingEvents, futureRange)
+    const optimalPeriods = await this.findOptimalPeriods(
+      dynamicAspects,
+      upcomingEvents,
+      futureRange
+    )
 
     const analysis: DynamicAspectsAnalysis = {
       currentAspects: dynamicAspects,
@@ -134,7 +147,7 @@ export class DynamicAspectsEngine {
       separatingAspects,
       peakAspects,
       optimalPeriods,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     // Cache the result
@@ -154,11 +167,14 @@ export class DynamicAspectsEngine {
   ): Promise<DynamicAspect | null> {
     const analysis = await this.calculateDynamicAspects(planets)
 
-    return analysis.currentAspects.find(aspect =>
-      ((aspect.planet1 === planet1 && aspect.planet2 === planet2) ||
-       (aspect.planet1 === planet2 && aspect.planet2 === planet1)) &&
-      aspect.type === aspectType
-    ) || null
+    return (
+      analysis.currentAspects.find(
+        aspect =>
+          ((aspect.planet1 === planet1 && aspect.planet2 === planet2) ||
+            (aspect.planet1 === planet2 && aspect.planet2 === planet1)) &&
+          aspect.type === aspectType
+      ) || null
+    )
   }
 
   /**
@@ -178,7 +194,13 @@ export class DynamicAspectsEngine {
         const planet2 = planets[j]
 
         // Check major aspects
-        const majorAspects: AspectType[] = ['conjunction', 'opposition', 'trine', 'square', 'sextile']
+        const majorAspects: AspectType[] = [
+          'conjunction',
+          'opposition',
+          'trine',
+          'square',
+          'sextile',
+        ]
 
         for (const aspectType of majorAspects) {
           const aspectAngle = this.getAspectAngle(aspectType)
@@ -194,7 +216,11 @@ export class DynamicAspectsEngine {
 
           if (exactTiming) {
             const event = await this.createAspectEvent(
-              planet1, planet2, aspectType, exactTiming.date, exactTiming.orb
+              planet1,
+              planet2,
+              aspectType,
+              exactTiming.date,
+              exactTiming.orb
             )
             events.push(event)
           }
@@ -217,8 +243,8 @@ export class DynamicAspectsEngine {
     const now = new Date()
 
     // Consciousness expansion periods (multiple harmonious aspects)
-    const harmoniousAspects = aspects.filter(a =>
-      (a.type === 'trine' || a.type === 'sextile') && a.applying && a.daysToExact <= 7
+    const harmoniousAspects = aspects.filter(
+      a => (a.type === 'trine' || a.type === 'sextile') && a.applying && a.daysToExact <= 7
     )
 
     if (harmoniousAspects.length >= 2) {
@@ -231,13 +257,13 @@ export class DynamicAspectsEngine {
         type: 'consciousness_expansion',
         aspects: harmoniousAspects,
         expectedBenefits: ['Enhanced learning', 'Spiritual insights', 'Harmonious interactions'],
-        recommendedAgents: this.getRecommendedAgentsForAspects(harmoniousAspects)
+        recommendedAgents: this.getRecommendedAgentsForAspects(harmoniousAspects),
       })
     }
 
     // Breakthrough potential periods (strong transformative aspects)
-    const transformativeAspects = aspects.filter(a =>
-      a.evolutionaryImpact > 0.7 && a.applying && a.daysToExact <= 10
+    const transformativeAspects = aspects.filter(
+      a => a.evolutionaryImpact > 0.7 && a.applying && a.daysToExact <= 10
     )
 
     for (const aspect of transformativeAspects) {
@@ -247,7 +273,7 @@ export class DynamicAspectsEngine {
         type: 'breakthrough_potential',
         aspects: [aspect],
         expectedBenefits: ['Major insights', 'Consciousness leaps', 'Transformative experiences'],
-        recommendedAgents: this.getRecommendedAgentsForAspects([aspect])
+        recommendedAgents: this.getRecommendedAgentsForAspects([aspect]),
       })
     }
 
@@ -282,7 +308,7 @@ export class DynamicAspectsEngine {
       strength,
       momentumType,
       evolutionaryImpact,
-      optimalInteractionWindow
+      optimalInteractionWindow,
     }
   }
 
@@ -295,9 +321,12 @@ export class DynamicAspectsEngine {
     const applyingBonus = aspect.applying ? 1.2 : 0.8
 
     // Tighter orbs have higher impact
-    const orbMultiplier = Math.max(0.3, 1.0 - (aspect.orb / 10))
+    const orbMultiplier = Math.max(0.3, 1.0 - aspect.orb / 10)
 
-    return Math.min(1.0, baseImpact * planet1Multiplier * planet2Multiplier * applyingBonus * orbMultiplier)
+    return Math.min(
+      1.0,
+      baseImpact * planet1Multiplier * planet2Multiplier * applyingBonus * orbMultiplier
+    )
   }
 
   private calculateAspectStrengthPhase(aspect: Aspect): 'building' | 'peak' | 'waning' | 'fading' {
@@ -315,16 +344,18 @@ export class DynamicAspectsEngine {
     return 'steady'
   }
 
-  private calculateOptimalInteractionWindow(aspect: Aspect): DynamicAspect['optimalInteractionWindow'] {
+  private calculateOptimalInteractionWindow(
+    aspect: Aspect
+  ): DynamicAspect['optimalInteractionWindow'] {
     if (!aspect.applying || !aspect.peakDate) return null
 
-    const start = new Date(aspect.peakDate.getTime() - (2 * 24 * 60 * 60 * 1000))
-    const end = new Date(aspect.peakDate.getTime() + (1 * 24 * 60 * 60 * 1000))
+    const start = new Date(aspect.peakDate.getTime() - 2 * 24 * 60 * 60 * 1000)
+    const end = new Date(aspect.peakDate.getTime() + 1 * 24 * 60 * 60 * 1000)
 
     return {
       start,
       end,
-      reason: `Optimal for ${aspect.type} between ${aspect.planet1} and ${aspect.planet2}`
+      reason: `Optimal for ${aspect.type} between ${aspect.planet1} and ${aspect.planet2}`,
     }
   }
 
@@ -349,14 +380,21 @@ export class DynamicAspectsEngine {
       consciousnessImpact: {
         affectedAgents: this.getAffectedAgents(aspectType, planet1.planet, planet2.planet),
         evolutionBoost: this.calculateEvolutionBoost(aspectType, planet1.planet, planet2.planet),
-        recommendedActions: this.getRecommendedActions(aspectType, planet1.planet, planet2.planet)
-      }
+        recommendedActions: this.getRecommendedActions(aspectType, planet1.planet, planet2.planet),
+      },
     }
   }
 
-  private calculateEventInfluence(aspectType: AspectType, planet1: string, planet2: string): 'major' | 'moderate' | 'minor' {
+  private calculateEventInfluence(
+    aspectType: AspectType,
+    planet1: string,
+    planet2: string
+  ): 'major' | 'moderate' | 'minor' {
     const baseInfluence = ASPECT_CONSCIOUSNESS_IMPACT[aspectType]
-    const planetaryInfluence = (PLANETARY_CONSCIOUSNESS_MULTIPLIERS[planet1] + PLANETARY_CONSCIOUSNESS_MULTIPLIERS[planet2]) / 2
+    const planetaryInfluence =
+      (PLANETARY_CONSCIOUSNESS_MULTIPLIERS[planet1] +
+        PLANETARY_CONSCIOUSNESS_MULTIPLIERS[planet2]) /
+      2
 
     const totalInfluence = baseInfluence * planetaryInfluence
 
@@ -371,12 +409,24 @@ export class DynamicAspectsEngine {
     return ['leonardo-da-vinci', 'carl-jung', 'nikola-tesla'] // Placeholder
   }
 
-  private calculateEvolutionBoost(aspectType: AspectType, planet1: string, planet2: string): number {
-    return ASPECT_CONSCIOUSNESS_IMPACT[aspectType] *
-           ((PLANETARY_CONSCIOUSNESS_MULTIPLIERS[planet1] + PLANETARY_CONSCIOUSNESS_MULTIPLIERS[planet2]) / 2)
+  private calculateEvolutionBoost(
+    aspectType: AspectType,
+    planet1: string,
+    planet2: string
+  ): number {
+    return (
+      ASPECT_CONSCIOUSNESS_IMPACT[aspectType] *
+      ((PLANETARY_CONSCIOUSNESS_MULTIPLIERS[planet1] +
+        PLANETARY_CONSCIOUSNESS_MULTIPLIERS[planet2]) /
+        2)
+    )
   }
 
-  private getRecommendedActions(aspectType: AspectType, planet1: string, planet2: string): string[] {
+  private getRecommendedActions(
+    aspectType: AspectType,
+    planet1: string,
+    planet2: string
+  ): string[] {
     const actions: string[] = []
 
     if (aspectType === 'conjunction') {
@@ -413,25 +463,35 @@ export class DynamicAspectsEngine {
 
   private getAspectAngle(aspectType: AspectType): number {
     const angles: Record<AspectType, number> = {
-      'conjunction': 0,
-      'opposition': 180,
-      'trine': 120,
-      'square': 90,
-      'sextile': 60,
-      'quincunx': 150,
-      'semisextile': 30,
-      'sesquiquadrate': 135,
-      'semisquare': 45,
-      'quintile': 72,
-      'biquintile': 144
+      conjunction: 0,
+      opposition: 180,
+      trine: 120,
+      square: 90,
+      sextile: 60,
+      quincunx: 150,
+      semisextile: 30,
+      sesquiquadrate: 135,
+      semisquare: 45,
+      quintile: 72,
+      biquintile: 144,
     }
     return angles[aspectType] || 0
   }
 
   private getAbsoluteDegree(planet: PlanetPosition): number {
     const signOrder = [
-      'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
     ]
     const signIndex = signOrder.indexOf(planet.sign)
     if (signIndex === -1) return 0
@@ -440,7 +500,8 @@ export class DynamicAspectsEngine {
 
   private generateCacheKey(planets: PlanetPosition[], futureRange: number): string {
     const planetData = planets.map(p => `${p.planet}:${p.degree}:${p.sign}`).join('|')
-    const date = planets[0]?.date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0]
+    const date =
+      planets[0]?.date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0]
     return `${planetData}-${futureRange}-${date}`
   }
 
@@ -459,7 +520,7 @@ export class DynamicAspectsEngine {
     return {
       size: this.aspectCache.size,
       oldestEntry: timestamps.length > 0 ? Math.min(...timestamps) : 0,
-      newestEntry: timestamps.length > 0 ? Math.max(...timestamps) : 0
+      newestEntry: timestamps.length > 0 ? Math.max(...timestamps) : 0,
     }
   }
 }
@@ -468,11 +529,17 @@ export class DynamicAspectsEngine {
 export const dynamicAspectsEngine = new DynamicAspectsEngine()
 
 // Convenience functions
-export async function calculateDynamicAspects(planets: PlanetPosition[], futureRange?: number): Promise<DynamicAspectsAnalysis> {
+export async function calculateDynamicAspects(
+  planets: PlanetPosition[],
+  futureRange?: number
+): Promise<DynamicAspectsAnalysis> {
   return dynamicAspectsEngine.calculateDynamicAspects(planets, futureRange)
 }
 
-export async function predictAspectEvents(planets: PlanetPosition[], timeRange?: number): Promise<AspectEvent[]> {
+export async function predictAspectEvents(
+  planets: PlanetPosition[],
+  timeRange?: number
+): Promise<AspectEvent[]> {
   return dynamicAspectsEngine.predictAspectEvents(planets, timeRange)
 }
 

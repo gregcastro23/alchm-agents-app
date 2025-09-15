@@ -41,8 +41,8 @@ export function galileo(modelId: string) {
   return {
     id: `galileo:${modelId}`,
     provider: {
-      id: "galileo",
-      name: "Galileo AI",
+      id: 'galileo',
+      name: 'Galileo AI',
     },
     displayName: `Galileo ${modelId}`,
 
@@ -50,14 +50,14 @@ export function galileo(modelId: string) {
       // Ensure API key is available
       const apiKey = process.env.GALILEO_API_KEY
       if (!apiKey) {
-        throw new Error("GALILEO_API_KEY is not defined")
+        throw new Error('GALILEO_API_KEY is not defined')
       }
 
       try {
-        const response = await fetch("https://api.galileo.ai/v1/generate", {
-          method: "POST",
+        const response = await fetch('https://api.galileo.ai/v1/generate', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
@@ -86,7 +86,7 @@ export function galileo(modelId: string) {
           },
         }
       } catch (error) {
-        console.error("Error calling Galileo API:", error)
+        console.error('Error calling Galileo API:', error)
         throw error
       }
     },

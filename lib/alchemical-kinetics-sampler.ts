@@ -5,55 +5,55 @@
  * Builds on existing alchemizer patterns while adding seasonal and timing validation.
  */
 
-import { alchemize } from './alchemizer';
-import { generateAccurateHoroscope } from './monica/horoscope-generator';
-import { PlanetaryHourCalculator } from './planetary-hour';
-import type { ElementVector, MetricVector, PlanetaryHour } from './alchemical-kinetics';
+import { alchemize } from './alchemizer'
+import { generateAccurateHoroscope } from './monica/horoscope-generator'
+import { PlanetaryHourCalculator } from './planetary-hour'
+import type { ElementVector, MetricVector, PlanetaryHour } from './alchemical-kinetics'
 
 export interface HourlyAlchemicalSample {
-  t: Date;
-  totals: ElementVector;
-  Heat: number;
-  Entropy: number;
-  Reactivity: number;
-  Energy: number;
-  matter: number;
-  earth: number;
-  substance: number;
-  spirit: number;
-  essence: number;
-  planetaryHour: PlanetaryHour;
-  dayNight: 'day' | 'night';
-  seasonalPhase: string;
+  t: Date
+  totals: ElementVector
+  Heat: number
+  Entropy: number
+  Reactivity: number
+  Energy: number
+  matter: number
+  earth: number
+  substance: number
+  spirit: number
+  essence: number
+  planetaryHour: PlanetaryHour
+  dayNight: 'day' | 'night'
+  seasonalPhase: string
 }
 
 export interface SamplerOptions {
-  includePlanetaryHours?: boolean; // Default true
-  validateTiming?: boolean; // Check against traditional expectations
-  timeZone?: string;
-  hoursToSample?: number; // Default 24
-  startHour?: number; // Default 0
+  includePlanetaryHours?: boolean // Default true
+  validateTiming?: boolean // Check against traditional expectations
+  timeZone?: string
+  hoursToSample?: number // Default 24
+  startHour?: number // Default 0
 }
 
 export interface TimingValidationResult {
-  isValid: boolean;
-  warnings: string[];
-  seasonalExpectations: string;
-  planetaryPatterns: Record<string, number>;
+  isValid: boolean
+  warnings: string[]
+  seasonalExpectations: string
+  planetaryPatterns: Record<string, number>
 }
 
 // Seasonal phase calculation based on date
 function getSeasonalPhase(date: Date): string {
-  const month = date.getMonth(); // 0-based (January = 0)
-  const day = date.getDate();
-  
+  const month = date.getMonth() // 0-based (January = 0)
+  const day = date.getDate()
+
   // Approximate seasonal boundaries (Northern Hemisphere)
-  if (month === 11 || month === 0 || month === 1) return 'Winter';
-  if (month === 2 || month === 3 || month === 4) return 'Spring';
-  if (month === 5 || month === 6 || month === 7) return 'Summer';
-  if (month === 8 || month === 9 || month === 10) return 'Autumn';
-  
-  return 'Transitional';
+  if (month === 11 || month === 0 || month === 1) return 'Winter'
+  if (month === 2 || month === 3 || month === 4) return 'Spring'
+  if (month === 5 || month === 6 || month === 7) return 'Summer'
+  if (month === 8 || month === 9 || month === 10) return 'Autumn'
+
+  return 'Transitional'
 }
 
 // Traditional seasonal expectations for validation
@@ -63,31 +63,31 @@ function getSeasonalExpectations(phase: string): string {
     Summer: 'Peak energy, maximum Fire dominance, sustained high velocity',
     Autumn: 'Deceleration patterns, increasing Water/Earth, momentum conservation',
     Winter: 'Stability patterns, Earth dominance, low velocity variance',
-    Transitional: 'Mixed patterns, elemental transitions, moderate variance'
-  };
-  return expectations[phase] || 'Unknown seasonal pattern';
+    Transitional: 'Mixed patterns, elemental transitions, moderate variance',
+  }
+  return expectations[phase] || 'Unknown seasonal pattern'
 }
 
 // Convert alchemizer output to our kinetics-friendly format
 function convertAlchemizerOutput(alchmData: any): {
-  totals: ElementVector;
-  Heat: number;
-  Entropy: number;
-  Reactivity: number;
-  Energy: number;
-  matter: number;
-  earth: number;
-  substance: number;
-  spirit: number;
-  essence: number;
+  totals: ElementVector
+  Heat: number
+  Entropy: number
+  Reactivity: number
+  Energy: number
+  matter: number
+  earth: number
+  substance: number
+  spirit: number
+  essence: number
 } {
   const totals: ElementVector = {
     Fire: alchmData['Total Effect Value']?.['Fire'] || 0,
     Water: alchmData['Total Effect Value']?.['Water'] || 0,
     Air: alchmData['Total Effect Value']?.['Air'] || 0,
     Earth: alchmData['Total Effect Value']?.['Earth'] || 0,
-  };
-  
+  }
+
   return {
     totals,
     Heat: alchmData['Heat'] || 0,
@@ -99,7 +99,7 @@ function convertAlchemizerOutput(alchmData: any): {
     substance: alchmData['Alchemy Effects']?.['Total Substance'] || 0,
     spirit: alchmData['Alchemy Effects']?.['Total Spirit'] || 0,
     essence: alchmData['Alchemy Effects']?.['Total Essence'] || 0,
-  };
+  }
 }
 
 /**
@@ -116,20 +116,20 @@ export async function sampleHourlyAlchm(
     validateTiming = false,
     timeZone,
     hoursToSample = 24,
-    startHour = 0
-  } = options;
+    startHour = 0,
+  } = options
 
-  const samples: HourlyAlchemicalSample[] = [];
-  const planetaryCalculator = includePlanetaryHours 
+  const samples: HourlyAlchemicalSample[] = []
+  const planetaryCalculator = includePlanetaryHours
     ? new PlanetaryHourCalculator(location.latitude, location.longitude)
-    : null;
-  
-  const baseDate = new Date(date);
-  const seasonalPhase = getSeasonalPhase(baseDate);
-  
+    : null
+
+  const baseDate = new Date(date)
+  const seasonalPhase = getSeasonalPhase(baseDate)
+
   for (let i = 0; i < hoursToSample; i++) {
-    const hour = (startHour + i) % 24;
-    
+    const hour = (startHour + i) % 24
+
     // Create birth info for this hour
     const birthInfo = {
       year: baseDate.getFullYear(),
@@ -138,41 +138,46 @@ export async function sampleHourlyAlchm(
       hour,
       minute: 0,
       latitude: location.latitude,
-      longitude: location.longitude
-    };
-    
-    const hourDate = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), hour, 0);
-    
+      longitude: location.longitude,
+    }
+
+    const hourDate = new Date(
+      baseDate.getFullYear(),
+      baseDate.getMonth(),
+      baseDate.getDate(),
+      hour,
+      0
+    )
+
     try {
       // Generate horoscope and alchemical data
-      const horoscope = generateAccurateHoroscope(birthInfo);
-      const alchmData = alchemize(birthInfo, horoscope);
-      
+      const horoscope = generateAccurateHoroscope(birthInfo)
+      const alchmData = alchemize(birthInfo, horoscope)
+
       // Get planetary hour information
-      let planetaryHour: PlanetaryHour = '';
-      let isDaytime = true;
-      
+      let planetaryHour: PlanetaryHour = ''
+      let isDaytime = true
+
       if (planetaryCalculator) {
-        const planetaryInfo = planetaryCalculator.getPlanetaryHour(hourDate);
-        planetaryHour = planetaryInfo.planet;
-        isDaytime = planetaryInfo.isDaytime;
+        const planetaryInfo = planetaryCalculator.getPlanetaryHour(hourDate)
+        planetaryHour = planetaryInfo.planet
+        isDaytime = planetaryInfo.isDaytime
       }
-      
+
       // Convert to kinetics format
-      const converted = convertAlchemizerOutput(alchmData);
-      
+      const converted = convertAlchemizerOutput(alchmData)
+
       const sample: HourlyAlchemicalSample = {
         t: hourDate,
         ...converted,
         planetaryHour,
         dayNight: isDaytime ? 'day' : 'night',
         seasonalPhase,
-      };
-      
-      samples.push(sample);
-      
+      }
+
+      samples.push(sample)
     } catch (error) {
-      console.error(`Error processing hour ${hour}:`, error);
+      console.error(`Error processing hour ${hour}:`, error)
       // Add a minimal sample to maintain time series continuity
       samples.push({
         t: hourDate,
@@ -189,85 +194,83 @@ export async function sampleHourlyAlchm(
         planetaryHour: '',
         dayNight: 'day',
         seasonalPhase,
-      });
+      })
     }
   }
-  
-  return samples;
+
+  return samples
 }
 
 /**
  * Validate timing patterns against traditional expectations
  * Checks for proper planetary hour effects and seasonal alignment
  */
-export function validateTimingPatterns(
-  samples: HourlyAlchemicalSample[]
-): TimingValidationResult {
+export function validateTimingPatterns(samples: HourlyAlchemicalSample[]): TimingValidationResult {
   if (!samples || samples.length === 0) {
     return {
       isValid: false,
       warnings: ['No samples provided for validation'],
       seasonalExpectations: 'Cannot assess without data',
-      planetaryPatterns: {}
-    };
+      planetaryPatterns: {},
+    }
   }
-  
-  const warnings: string[] = [];
-  const planetaryPatterns: Record<string, number> = {};
-  
+
+  const warnings: string[] = []
+  const planetaryPatterns: Record<string, number> = {}
+
   // Group samples by planetary hour
-  const hourGroups: Record<string, HourlyAlchemicalSample[]> = {};
+  const hourGroups: Record<string, HourlyAlchemicalSample[]> = {}
   samples.forEach(sample => {
-    const hour = sample.planetaryHour || 'unknown';
-    if (!hourGroups[hour]) hourGroups[hour] = [];
-    hourGroups[hour].push(sample);
-  });
-  
+    const hour = sample.planetaryHour || 'unknown'
+    if (!hourGroups[hour]) hourGroups[hour] = []
+    hourGroups[hour].push(sample)
+  })
+
   // Calculate averages per planetary hour
   Object.entries(hourGroups).forEach(([hour, hourSamples]) => {
-    if (hourSamples.length === 0) return;
-    
-    const avgFire = hourSamples.reduce((sum, s) => sum + s.totals.Fire, 0) / hourSamples.length;
-    const avgWater = hourSamples.reduce((sum, s) => sum + s.totals.Water, 0) / hourSamples.length;
-    const avgEnergy = hourSamples.reduce((sum, s) => sum + s.Energy, 0) / hourSamples.length;
-    
-    planetaryPatterns[hour] = avgEnergy;
-    
+    if (hourSamples.length === 0) return
+
+    const avgFire = hourSamples.reduce((sum, s) => sum + s.totals.Fire, 0) / hourSamples.length
+    const avgWater = hourSamples.reduce((sum, s) => sum + s.totals.Water, 0) / hourSamples.length
+    const avgEnergy = hourSamples.reduce((sum, s) => sum + s.Energy, 0) / hourSamples.length
+
+    planetaryPatterns[hour] = avgEnergy
+
     // Traditional validation checks
     if (hour === 'Sun' && avgFire < avgWater) {
-      warnings.push('Fire element unexpectedly low during Sun hours');
+      warnings.push('Fire element unexpectedly low during Sun hours')
     }
     if (hour === 'Moon' && avgWater < avgFire * 0.8) {
-      warnings.push('Water element unexpectedly low during Moon hours');
+      warnings.push('Water element unexpectedly low during Moon hours')
     }
-  });
-  
+  })
+
   // Seasonal validation
-  const seasonalPhase = samples[0]?.seasonalPhase || 'Unknown';
-  const seasonalExpectations = getSeasonalExpectations(seasonalPhase);
-  
+  const seasonalPhase = samples[0]?.seasonalPhase || 'Unknown'
+  const seasonalExpectations = getSeasonalExpectations(seasonalPhase)
+
   // Check for seasonal alignment
-  const totalSamples = samples.length;
-  const fireSum = samples.reduce((sum, s) => sum + s.totals.Fire, 0);
-  const earthSum = samples.reduce((sum, s) => sum + s.totals.Earth, 0);
-  const avgFire = fireSum / totalSamples;
-  const avgEarth = earthSum / totalSamples;
-  
+  const totalSamples = samples.length
+  const fireSum = samples.reduce((sum, s) => sum + s.totals.Fire, 0)
+  const earthSum = samples.reduce((sum, s) => sum + s.totals.Earth, 0)
+  const avgFire = fireSum / totalSamples
+  const avgEarth = earthSum / totalSamples
+
   if (seasonalPhase === 'Summer' && avgFire < avgEarth) {
-    warnings.push('Fire dominance expected in Summer but Earth is higher');
+    warnings.push('Fire dominance expected in Summer but Earth is higher')
   }
   if (seasonalPhase === 'Winter' && avgEarth < avgFire * 0.8) {
-    warnings.push('Earth dominance expected in Winter but Fire is disproportionately high');
+    warnings.push('Earth dominance expected in Winter but Fire is disproportionately high')
   }
-  
-  const isValid = warnings.length === 0;
-  
+
+  const isValid = warnings.length === 0
+
   return {
     isValid,
     warnings,
     seasonalExpectations,
-    planetaryPatterns
-  };
+    planetaryPatterns,
+  }
 }
 
 /**
@@ -278,18 +281,18 @@ export async function sampleCurrentMoment(
   location: { latitude: number; longitude: number },
   options: Pick<SamplerOptions, 'includePlanetaryHours' | 'timeZone'> = {}
 ): Promise<HourlyAlchemicalSample> {
-  const now = new Date();
+  const now = new Date()
   const samples = await sampleHourlyAlchm(location, now, {
     ...options,
     hoursToSample: 1,
-    startHour: now.getHours()
-  });
-  
+    startHour: now.getHours(),
+  })
+
   if (samples.length === 0) {
-    throw new Error('Failed to generate current moment sample');
+    throw new Error('Failed to generate current moment sample')
   }
-  
-  return samples[0];
+
+  return samples[0]
 }
 
 /**
@@ -302,26 +305,26 @@ export async function sampleDateRange(
   endDate: Date,
   options: SamplerOptions = {}
 ): Promise<{
-  samples: HourlyAlchemicalSample[];
-  validation: TimingValidationResult;
+  samples: HourlyAlchemicalSample[]
+  validation: TimingValidationResult
 }> {
-  const allSamples: HourlyAlchemicalSample[] = [];
-  
-  const currentDate = new Date(startDate);
+  const allSamples: HourlyAlchemicalSample[] = []
+
+  const currentDate = new Date(startDate)
   while (currentDate <= endDate) {
-    const dailySamples = await sampleHourlyAlchm(location, currentDate, options);
-    allSamples.push(...dailySamples);
-    
+    const dailySamples = await sampleHourlyAlchm(location, currentDate, options)
+    allSamples.push(...dailySamples)
+
     // Move to next day
-    currentDate.setDate(currentDate.getDate() + 1);
+    currentDate.setDate(currentDate.getDate() + 1)
   }
-  
-  const validation = options.validateTiming 
+
+  const validation = options.validateTiming
     ? validateTimingPatterns(allSamples)
-    : { isValid: true, warnings: [], seasonalExpectations: '', planetaryPatterns: {} };
-  
+    : { isValid: true, warnings: [], seasonalExpectations: '', planetaryPatterns: {} }
+
   return {
     samples: allSamples,
-    validation
-  };
+    validation,
+  }
 }

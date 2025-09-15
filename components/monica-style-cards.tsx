@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,7 +13,13 @@ export type StyleCards = {
   advanced: boolean
 }
 
-export function MonicaStyleCards({ value, onChange }: { value: StyleCards; onChange: (v: StyleCards) => void }) {
+export function MonicaStyleCards({
+  value,
+  onChange,
+}: {
+  value: StyleCards
+  onChange: (v: StyleCards) => void
+}) {
   const [local, setLocal] = useState<StyleCards>(value)
   const toggle = (k: keyof StyleCards) => {
     const next = { ...local, [k]: !local[k] }
@@ -43,5 +49,3 @@ export function MonicaStyleCards({ value, onChange }: { value: StyleCards; onCha
     </Card>
   )
 }
-
-

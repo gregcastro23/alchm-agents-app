@@ -1,12 +1,25 @@
-"use client"
+'use client'
 
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, ReferenceLine, Cell } from "recharts"
-import { Clock, TrendingUp, Orbit, Zap, ArrowRight, Calendar, BarChart3 } from "lucide-react"
-import type { TemporalDelta } from "@/lib/philosophers-stone/temporal-delta"
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  LineChart,
+  Line,
+  ReferenceLine,
+  Cell,
+} from 'recharts'
+import { Clock, TrendingUp, Orbit, Zap, ArrowRight, Calendar, BarChart3 } from 'lucide-react'
+import type { TemporalDelta } from '@/lib/philosophers-stone/temporal-delta'
 
 type Props = {
   delta?: TemporalDelta
@@ -14,7 +27,7 @@ type Props = {
 
 const PLANET_COLORS = {
   Sun: '#fbbf24',
-  Moon: '#e5e7eb', 
+  Moon: '#e5e7eb',
   Mercury: '#84cc16',
   Venus: '#10b981',
   Mars: '#ef4444',
@@ -22,7 +35,7 @@ const PLANET_COLORS = {
   Saturn: '#6b7280',
   Uranus: '#06b6d4',
   Neptune: '#3b82f6',
-  Pluto: '#7c2d12'
+  Pluto: '#7c2d12',
 }
 
 const PLANET_SPEEDS = {
@@ -35,7 +48,7 @@ const PLANET_SPEEDS = {
   Saturn: 0.033,
   Uranus: 0.012,
   Neptune: 0.006,
-  Pluto: 0.004
+  Pluto: 0.004,
 }
 
 export function PlanetaryMovementChart({ delta }: Props) {
@@ -62,8 +75,8 @@ export function PlanetaryMovementChart({ delta }: Props) {
             <div className="text-center space-y-2">
               <h3 className="font-medium">Initializing Temporal Field</h3>
               <p className="text-sm text-muted-foreground max-w-md">
-                The Living Stone requires at least one previous session to calculate 
-                planetary movements and temporal consciousness deltas.
+                The Living Stone requires at least one previous session to calculate planetary
+                movements and temporal consciousness deltas.
               </p>
             </div>
           </div>
@@ -81,25 +94,22 @@ export function PlanetaryMovementChart({ delta }: Props) {
                 {Object.entries(PLANET_SPEEDS).map(([planet, speed]) => (
                   <div key={planet} className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: PLANET_COLORS[planet as keyof typeof PLANET_COLORS] }}
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{
+                          backgroundColor: PLANET_COLORS[planet as keyof typeof PLANET_COLORS],
+                        }}
                       />
                       <span className="text-sm font-medium">{planet}</span>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      ~{speed}°/day
-                    </div>
-                    <Progress 
-                      value={Math.min(100, speed * 7.5)} 
-                      className="h-1" 
-                    />
+                    <div className="text-xs text-muted-foreground">~{speed}°/day</div>
+                    <Progress value={Math.min(100, speed * 7.5)} className="h-1" />
                   </div>
                 ))}
               </div>
               <p className="text-xs text-muted-foreground mt-3">
-                These represent average daily movements. Actual movement varies due to 
-                retrograde periods, elliptical orbits, and temporal consciousness resonance.
+                These represent average daily movements. Actual movement varies due to retrograde
+                periods, elliptical orbits, and temporal consciousness resonance.
               </p>
             </CardContent>
           </Card>
@@ -127,62 +137,65 @@ export function PlanetaryMovementChart({ delta }: Props) {
     )
   }
 
-  const data = delta.planetaryMovement.slice(0, 10).map(movement => {
-    // Ensure all numeric values are valid numbers with comprehensive NaN protection
-    const movedDegreesRaw: any = (movement as any).movedDegrees
-    const fromDegreeRaw: any = (movement as any).from?.degree
-    const toDegreeRaw: any = (movement as any).to?.degree
-    const movedDegreesNum = Number(movedDegreesRaw)
-    const fromDegreeNum = Number(fromDegreeRaw)
-    const toDegreeNum = Number(toDegreeRaw)
-    const movedDegrees = Number.isFinite(movedDegreesNum) ? movedDegreesNum : 0
-    const fromDegree = Number.isFinite(fromDegreeNum) ? fromDegreeNum : 0
-    const toDegree = Number.isFinite(toDegreeNum) ? toDegreeNum : 0
-    const daysSinceNum = Number(delta.daysSinceLast)
-    const daysSince = Number.isFinite(daysSinceNum) && daysSinceNum > 0 ? daysSinceNum : 1
-    
-    // Calculate acceleration with complete NaN protection
-    const acceleration = movedDegrees / daysSince
-    const safeAcceleration = Number.isFinite(acceleration) ? acceleration : 0
-    
-    // Get expected speed with fallback
-    const expectedSpeed = PLANET_SPEEDS[movement.planet as keyof typeof PLANET_SPEEDS]
-    const safeExpectedSpeed = Number.isFinite(expectedSpeed) ? expectedSpeed : 0.1
-    
-    // Ensure degrees is always positive and finite
-    const safeDegrees = Number.isFinite(Math.abs(movedDegrees)) ? Math.abs(movedDegrees) : 0
-    
-    return {
-      planet: movement.planet || 'Unknown',
-      degrees: safeDegrees,
-      from: `${movement.from?.sign || 'Unknown'} ${fromDegree.toFixed(1)}°`,
-      to: `${movement.to?.sign || 'Unknown'} ${toDegree.toFixed(1)}°`,
-      color: PLANET_COLORS[movement.planet as keyof typeof PLANET_COLORS] || '#6b7280',
-      expectedSpeed: safeExpectedSpeed,
-      acceleration: safeAcceleration
-    }
-  }).filter(item => {
-    // Filter out any items that still have invalid values - triple check
-    const degreesValid = Number.isFinite(item.degrees) && item.degrees >= 0
-    const accelerationValid = Number.isFinite(item.acceleration)
-    const expectedSpeedValid = Number.isFinite(item.expectedSpeed) && item.expectedSpeed > 0
-    const planetValid = item.planet && item.planet !== 'Unknown'
-    
-    return degreesValid && accelerationValid && expectedSpeedValid && planetValid
-  })
+  const data = delta.planetaryMovement
+    .slice(0, 10)
+    .map(movement => {
+      // Ensure all numeric values are valid numbers with comprehensive NaN protection
+      const movedDegreesRaw: any = (movement as any).movedDegrees
+      const fromDegreeRaw: any = (movement as any).from?.degree
+      const toDegreeRaw: any = (movement as any).to?.degree
+      const movedDegreesNum = Number(movedDegreesRaw)
+      const fromDegreeNum = Number(fromDegreeRaw)
+      const toDegreeNum = Number(toDegreeRaw)
+      const movedDegrees = Number.isFinite(movedDegreesNum) ? movedDegreesNum : 0
+      const fromDegree = Number.isFinite(fromDegreeNum) ? fromDegreeNum : 0
+      const toDegree = Number.isFinite(toDegreeNum) ? toDegreeNum : 0
+      const daysSinceNum = Number(delta.daysSinceLast)
+      const daysSince = Number.isFinite(daysSinceNum) && daysSinceNum > 0 ? daysSinceNum : 1
+
+      // Calculate acceleration with complete NaN protection
+      const acceleration = movedDegrees / daysSince
+      const safeAcceleration = Number.isFinite(acceleration) ? acceleration : 0
+
+      // Get expected speed with fallback
+      const expectedSpeed = PLANET_SPEEDS[movement.planet as keyof typeof PLANET_SPEEDS]
+      const safeExpectedSpeed = Number.isFinite(expectedSpeed) ? expectedSpeed : 0.1
+
+      // Ensure degrees is always positive and finite
+      const safeDegrees = Number.isFinite(Math.abs(movedDegrees)) ? Math.abs(movedDegrees) : 0
+
+      return {
+        planet: movement.planet || 'Unknown',
+        degrees: safeDegrees,
+        from: `${movement.from?.sign || 'Unknown'} ${fromDegree.toFixed(1)}°`,
+        to: `${movement.to?.sign || 'Unknown'} ${toDegree.toFixed(1)}°`,
+        color: PLANET_COLORS[movement.planet as keyof typeof PLANET_COLORS] || '#6b7280',
+        expectedSpeed: safeExpectedSpeed,
+        acceleration: safeAcceleration,
+      }
+    })
+    .filter(item => {
+      // Filter out any items that still have invalid values - triple check
+      const degreesValid = Number.isFinite(item.degrees) && item.degrees >= 0
+      const accelerationValid = Number.isFinite(item.acceleration)
+      const expectedSpeedValid = Number.isFinite(item.expectedSpeed) && item.expectedSpeed > 0
+      const planetValid = item.planet && item.planet !== 'Unknown'
+
+      return degreesValid && accelerationValid && expectedSpeedValid && planetValid
+    })
 
   // Calculate movement statistics with NaN protection
   const totalMovement = data.reduce((sum, item) => {
     const degrees = isNaN(item.degrees) ? 0 : item.degrees
     return sum + degrees
   }, 0)
-  
+
   const fastestPlanet = data.reduce((fastest, current) => {
     const currentAccel = isNaN(current.acceleration) ? 0 : current.acceleration
     const fastestAccel = isNaN(fastest.acceleration) ? 0 : fastest.acceleration
     return currentAccel > fastestAccel ? current : fastest
   })
-  
+
   const daysSince = isNaN(delta.daysSinceLast) || delta.daysSinceLast <= 0 ? 1 : delta.daysSinceLast
   const mostActive = data.filter(item => {
     const degrees = isNaN(item.degrees) ? 0 : item.degrees
@@ -208,7 +221,8 @@ export function PlanetaryMovementChart({ delta }: Props) {
             <div className="text-center space-y-2">
               <h3 className="font-medium">Data Processing Issue</h3>
               <p className="text-sm text-muted-foreground max-w-md">
-                The planetary movement data contains invalid values. Please try refreshing or check the temporal delta calculations.
+                The planetary movement data contains invalid values. Please try refreshing or check
+                the temporal delta calculations.
               </p>
             </div>
           </div>
@@ -249,23 +263,17 @@ export function PlanetaryMovementChart({ delta }: Props) {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis 
-                dataKey="planet" 
-                fontSize={12}
-                angle={-45}
-                textAnchor="end"
-                height={60}
-              />
-              <YAxis 
+              <XAxis dataKey="planet" fontSize={12} angle={-45} textAnchor="end" height={60} />
+              <YAxis
                 label={{ value: 'Degrees Moved', angle: -90, position: 'insideLeft' }}
                 fontSize={12}
                 domain={[0, 'dataMax']}
                 allowDataOverflow={false}
               />
-              <Tooltip 
+              <Tooltip
                 formatter={(value: number, name: string, props: any) => [
                   `${(isNaN(value) ? 0 : value).toFixed(3)}°`,
-                  'Movement'
+                  'Movement',
                 ]}
                 labelFormatter={(label: string, payload: any[]) => {
                   const data = payload[0]?.payload
@@ -279,19 +287,17 @@ export function PlanetaryMovementChart({ delta }: Props) {
                         Speed: {(isNaN(data.acceleration) ? 0 : data.acceleration).toFixed(3)}°/day
                       </div>
                     </div>
-                  ) : label
+                  ) : (
+                    label
+                  )
                 }}
                 contentStyle={{
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   border: '1px solid #e5e7eb',
-                  borderRadius: '6px'
+                  borderRadius: '6px',
                 }}
               />
-              <Bar 
-                dataKey="degrees" 
-                name="Degrees Moved"
-                radius={[2, 2, 0, 0]}
-              >
+              <Bar dataKey="degrees" name="Degrees Moved" radius={[2, 2, 0, 0]}>
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
@@ -309,39 +315,36 @@ export function PlanetaryMovementChart({ delta }: Props) {
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis 
-                dataKey="planet" 
-                fontSize={12}
-                angle={-45}
-                textAnchor="end"
-                height={60}
-              />
-              <YAxis 
+              <XAxis dataKey="planet" fontSize={12} angle={-45} textAnchor="end" height={60} />
+              <YAxis
                 label={{ value: 'Velocity (°/day)', angle: -90, position: 'insideLeft' }}
                 fontSize={12}
                 domain={['dataMin', 'dataMax']}
                 allowDataOverflow={false}
               />
-              <Tooltip 
-                formatter={(value: number) => [`${(isNaN(value) ? 0 : value).toFixed(3)}°/day`, 'Velocity']}
+              <Tooltip
+                formatter={(value: number) => [
+                  `${(isNaN(value) ? 0 : value).toFixed(3)}°/day`,
+                  'Velocity',
+                ]}
                 contentStyle={{
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   border: '1px solid #e5e7eb',
-                  borderRadius: '6px'
+                  borderRadius: '6px',
                 }}
               />
-              <Line 
-                type="monotone" 
-                dataKey="acceleration" 
-                stroke="#3b82f6" 
+              <Line
+                type="monotone"
+                dataKey="acceleration"
+                stroke="#3b82f6"
                 strokeWidth={2}
                 dot={{ r: 4, fill: '#3b82f6' }}
                 activeDot={{ r: 6 }}
               />
-              <Line 
-                type="monotone" 
-                dataKey="expectedSpeed" 
-                stroke="#6b7280" 
+              <Line
+                type="monotone"
+                dataKey="expectedSpeed"
+                stroke="#6b7280"
                 strokeWidth={1}
                 strokeDasharray="5 5"
                 dot={false}
@@ -358,31 +361,39 @@ export function PlanetaryMovementChart({ delta }: Props) {
               <div>
                 <div className="font-medium text-blue-600">Primary Accelerator</div>
                 <div className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
+                  <div
+                    className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: fastestPlanet?.color || '#6b7280' }}
                   />
                   <span>{fastestPlanet?.planet || 'Unknown'}</span>
                   <span className="text-muted-foreground">
-                    ({(isNaN(fastestPlanet?.acceleration) ? 0 : fastestPlanet.acceleration).toFixed(3)}°/day)
+                    (
+                    {(isNaN(fastestPlanet?.acceleration) ? 0 : fastestPlanet.acceleration).toFixed(
+                      3
+                    )}
+                    °/day)
                   </span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
                   Leading the consciousness acceleration field
                 </div>
               </div>
-              
+
               <div>
                 <div className="font-medium text-green-600">Active Resonance</div>
-                <div>{mostActive.length} of {data.length} planets</div>
+                <div>
+                  {mostActive.length} of {data.length} planets
+                </div>
                 <div className="text-xs text-muted-foreground mt-1">
                   Exceeding expected movement rates
                 </div>
               </div>
-              
+
               <div>
                 <div className="font-medium text-purple-600">Field Coherence</div>
-                <div>{data.length > 0 ? ((mostActive.length / data.length) * 100).toFixed(0) : 0}%</div>
+                <div>
+                  {data.length > 0 ? ((mostActive.length / data.length) * 100).toFixed(0) : 0}%
+                </div>
                 <div className="text-xs text-muted-foreground mt-1">
                   Synchronization with temporal flow
                 </div>

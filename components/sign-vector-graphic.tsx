@@ -1,18 +1,18 @@
-"use client"
+'use client'
 
-import React, { useState } from 'react';
-import { SignCharacterVector } from '@/lib/astrological-character-vectors';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import React, { useState } from 'react'
+import { SignCharacterVector } from '@/lib/astrological-character-vectors'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface SignVectorGraphicProps {
-  signVector: SignCharacterVector;
-  size?: 'small' | 'medium' | 'large';
-  showLabels?: boolean;
-  showTooltips?: boolean;
-  animated?: boolean;
-  className?: string;
+  signVector: SignCharacterVector
+  size?: 'small' | 'medium' | 'large'
+  showLabels?: boolean
+  showTooltips?: boolean
+  animated?: boolean
+  className?: string
 }
 
 const ZODIAC_SIGNS = [
@@ -27,15 +27,15 @@ const ZODIAC_SIGNS = [
   { name: 'Sagittarius', symbol: '♐', element: 'fire', color: '#BB8FCE', angle: 240 },
   { name: 'Capricorn', symbol: '♑', element: 'earth', color: '#85C1E9', angle: 270 },
   { name: 'Aquarius', symbol: '♒', element: 'air', color: '#F8C471', angle: 300 },
-  { name: 'Pisces', symbol: '♓', element: 'water', color: '#82E0AA', angle: 330 }
-];
+  { name: 'Pisces', symbol: '♓', element: 'water', color: '#82E0AA', angle: 330 },
+]
 
 const ELEMENT_COLORS = {
   fire: '#FF6B6B',
-  earth: '#4ECDC4', 
+  earth: '#4ECDC4',
   air: '#45B7D1',
-  water: '#96CEB4'
-};
+  water: '#96CEB4',
+}
 
 export default function SignVectorGraphic({
   signVector,
@@ -43,72 +43,75 @@ export default function SignVectorGraphic({
   showLabels = true,
   showTooltips = true,
   animated = true,
-  className = ''
+  className = '',
 }: SignVectorGraphicProps) {
-  const [hoveredSign, setHoveredSign] = useState<string | null>(null);
+  const [hoveredSign, setHoveredSign] = useState<string | null>(null)
 
   // Size configurations
   const sizeConfig = {
     small: { radius: 60, strokeWidth: 8, fontSize: 12, labelDistance: 75 },
     medium: { radius: 100, strokeWidth: 12, fontSize: 16, labelDistance: 120 },
-    large: { radius: 140, strokeWidth: 16, fontSize: 20, labelDistance: 165 }
-  };
+    large: { radius: 140, strokeWidth: 16, fontSize: 20, labelDistance: 165 },
+  }
 
-  const config = sizeConfig[size];
-  const svgSize = config.labelDistance * 2 + 40;
-  const center = svgSize / 2;
+  const config = sizeConfig[size]
+  const svgSize = config.labelDistance * 2 + 40
+  const center = svgSize / 2
 
   // Calculate segment paths for each zodiac sign
   const createSegmentPath = (startAngle: number, percentage: number) => {
-    const endAngle = startAngle + 30; // Each sign gets 30 degrees
-    const innerRadius = config.radius - config.strokeWidth;
-    const outerRadius = config.radius;
-    
+    const endAngle = startAngle + 30 // Each sign gets 30 degrees
+    const innerRadius = config.radius - config.strokeWidth
+    const outerRadius = config.radius
+
     // Scale radius based on percentage (minimum 20% visibility)
-    const scaledRadius = innerRadius + (outerRadius - innerRadius) * Math.max(0.2, percentage / 100);
-    
-    const startAngleRad = (startAngle - 90) * Math.PI / 180;
-    const endAngleRad = (endAngle - 90) * Math.PI / 180;
-    
-    const x1 = center + innerRadius * Math.cos(startAngleRad);
-    const y1 = center + innerRadius * Math.sin(startAngleRad);
-    const x2 = center + scaledRadius * Math.cos(startAngleRad);
-    const y2 = center + scaledRadius * Math.sin(startAngleRad);
-    const x3 = center + scaledRadius * Math.cos(endAngleRad);
-    const y3 = center + scaledRadius * Math.sin(endAngleRad);
-    const x4 = center + innerRadius * Math.cos(endAngleRad);
-    const y4 = center + innerRadius * Math.sin(endAngleRad);
-    
-    return `M ${x1} ${y1} L ${x2} ${y2} A ${scaledRadius} ${scaledRadius} 0 0 1 ${x3} ${y3} L ${x4} ${y4} A ${innerRadius} ${innerRadius} 0 0 0 ${x1} ${y1}`;
-  };
+    const scaledRadius = innerRadius + (outerRadius - innerRadius) * Math.max(0.2, percentage / 100)
+
+    const startAngleRad = ((startAngle - 90) * Math.PI) / 180
+    const endAngleRad = ((endAngle - 90) * Math.PI) / 180
+
+    const x1 = center + innerRadius * Math.cos(startAngleRad)
+    const y1 = center + innerRadius * Math.sin(startAngleRad)
+    const x2 = center + scaledRadius * Math.cos(startAngleRad)
+    const y2 = center + scaledRadius * Math.sin(startAngleRad)
+    const x3 = center + scaledRadius * Math.cos(endAngleRad)
+    const y3 = center + scaledRadius * Math.sin(endAngleRad)
+    const x4 = center + innerRadius * Math.cos(endAngleRad)
+    const y4 = center + innerRadius * Math.sin(endAngleRad)
+
+    return `M ${x1} ${y1} L ${x2} ${y2} A ${scaledRadius} ${scaledRadius} 0 0 1 ${x3} ${y3} L ${x4} ${y4} A ${innerRadius} ${innerRadius} 0 0 0 ${x1} ${y1}`
+  }
 
   // Get label position
   const getLabelPosition = (angle: number) => {
-    const angleRad = (angle - 90 + 15) * Math.PI / 180; // Center of each 30-degree segment
-    const x = center + config.labelDistance * Math.cos(angleRad);
-    const y = center + config.labelDistance * Math.sin(angleRad);
-    return { x, y };
-  };
+    const angleRad = ((angle - 90 + 15) * Math.PI) / 180 // Center of each 30-degree segment
+    const x = center + config.labelDistance * Math.cos(angleRad)
+    const y = center + config.labelDistance * Math.sin(angleRad)
+    return { x, y }
+  }
 
   // Calculate elemental distribution
-  const elementalTotals = ZODIAC_SIGNS.reduce((acc, sign) => {
-    const percentage = signVector[sign.name.toLowerCase() as keyof SignCharacterVector] as number;
-    acc[sign.element] = (acc[sign.element] || 0) + percentage;
-    return acc;
-  }, {} as Record<string, number>);
+  const elementalTotals = ZODIAC_SIGNS.reduce(
+    (acc, sign) => {
+      const percentage = signVector[sign.name.toLowerCase() as keyof SignCharacterVector] as number
+      acc[sign.element] = (acc[sign.element] || 0) + percentage
+      return acc
+    },
+    {} as Record<string, number>
+  )
 
-  const dominantElement = Object.entries(elementalTotals).reduce((a, b) => 
+  const dominantElement = Object.entries(elementalTotals).reduce((a, b) =>
     elementalTotals[a[0]] > elementalTotals[b[0]] ? a : b
-  )[0];
+  )[0]
 
-  const SignSegment = ({ sign, index }: { sign: typeof ZODIAC_SIGNS[0], index: number }) => {
-    const percentage = signVector[sign.name.toLowerCase() as keyof SignCharacterVector] as number;
-    const isHovered = hoveredSign === sign.name;
-    const opacity = percentage < 1 ? 0.3 : Math.max(0.4, percentage / 100);
-    
-    const path = createSegmentPath(sign.angle, percentage);
-    const labelPos = getLabelPosition(sign.angle);
-    
+  const SignSegment = ({ sign, index }: { sign: (typeof ZODIAC_SIGNS)[0]; index: number }) => {
+    const percentage = signVector[sign.name.toLowerCase() as keyof SignCharacterVector] as number
+    const isHovered = hoveredSign === sign.name
+    const opacity = percentage < 1 ? 0.3 : Math.max(0.4, percentage / 100)
+
+    const path = createSegmentPath(sign.angle, percentage)
+    const labelPos = getLabelPosition(sign.angle)
+
     const segment = (
       <g key={sign.name}>
         <path
@@ -149,33 +152,37 @@ export default function SignVectorGraphic({
           </g>
         )}
       </g>
-    );
+    )
 
     if (showTooltips) {
       return (
         <Tooltip key={sign.name}>
-          <TooltipTrigger asChild>
-            {segment}
-          </TooltipTrigger>
+          <TooltipTrigger asChild>{segment}</TooltipTrigger>
           <TooltipContent>
             <div className="text-center">
-              <div className="font-bold">{sign.name} {sign.symbol}</div>
+              <div className="font-bold">
+                {sign.name} {sign.symbol}
+              </div>
               <div className="text-sm text-muted-foreground">
                 {percentage.toFixed(1)}% • {sign.element}
               </div>
               <div className="text-xs mt-1">
-                {percentage > 15 ? 'Strong influence' : 
-                 percentage > 5 ? 'Moderate influence' : 
-                 percentage > 0 ? 'Minor influence' : 'No influence'}
+                {percentage > 15
+                  ? 'Strong influence'
+                  : percentage > 5
+                    ? 'Moderate influence'
+                    : percentage > 0
+                      ? 'Minor influence'
+                      : 'No influence'}
               </div>
             </div>
           </TooltipContent>
         </Tooltip>
-      );
+      )
     }
 
-    return segment;
-  };
+    return segment
+  }
 
   return (
     <TooltipProvider>
@@ -195,7 +202,7 @@ export default function SignVectorGraphic({
             stroke="#e2e8f0"
             strokeWidth={2}
           />
-          
+
           {/* Central element indicator */}
           <circle
             cx={center}
@@ -204,7 +211,7 @@ export default function SignVectorGraphic({
             fill={ELEMENT_COLORS[dominantElement as keyof typeof ELEMENT_COLORS]}
             opacity={0.2}
           />
-          
+
           {/* Central text */}
           <text
             x={center}
@@ -218,26 +225,26 @@ export default function SignVectorGraphic({
           >
             {dominantElement.toUpperCase()}
           </text>
-          
+
           {/* Zodiac segments */}
           {ZODIAC_SIGNS.map((sign, index) => (
             <SignSegment key={sign.name} sign={sign} index={index} />
           ))}
         </svg>
-        
+
         {/* Element distribution summary */}
         {size !== 'small' && (
           <div className="mt-2 flex flex-wrap gap-2 justify-center max-w-xs">
             {Object.entries(elementalTotals)
-              .sort(([,a], [,b]) => b - a)
+              .sort(([, a], [, b]) => b - a)
               .map(([element, total]) => (
-                <Badge 
+                <Badge
                   key={element}
-                  variant="outline" 
+                  variant="outline"
                   className="text-xs"
-                  style={{ 
+                  style={{
                     borderColor: ELEMENT_COLORS[element as keyof typeof ELEMENT_COLORS],
-                    color: ELEMENT_COLORS[element as keyof typeof ELEMENT_COLORS]
+                    color: ELEMENT_COLORS[element as keyof typeof ELEMENT_COLORS],
                   }}
                 >
                   {element} {Math.round(total)}%
@@ -245,7 +252,7 @@ export default function SignVectorGraphic({
               ))}
           </div>
         )}
-        
+
         {hoveredSign && size === 'large' && (
           <Card className="mt-4 w-64 absolute z-10 shadow-lg">
             <CardHeader className="pb-2">
@@ -256,7 +263,13 @@ export default function SignVectorGraphic({
             </CardHeader>
             <CardContent className="pt-0">
               <div className="text-xs text-muted-foreground">
-                <div>Influence: {(signVector[hoveredSign.toLowerCase() as keyof SignCharacterVector] as number).toFixed(1)}%</div>
+                <div>
+                  Influence:{' '}
+                  {(
+                    signVector[hoveredSign.toLowerCase() as keyof SignCharacterVector] as number
+                  ).toFixed(1)}
+                  %
+                </div>
                 <div>Element: {ZODIAC_SIGNS.find(s => s.name === hoveredSign)?.element}</div>
               </div>
             </CardContent>
@@ -264,59 +277,76 @@ export default function SignVectorGraphic({
         )}
       </div>
     </TooltipProvider>
-  );
+  )
 }
 
 // Helper function to calculate sign vectors from natal chart data
 export function calculateSignVectorFromChart(natalChart: any): SignCharacterVector {
-  const placements: Array<{ planet: string; sign: string }> = [];
+  const placements: Array<{ planet: string; sign: string }> = []
 
   // Support multiple natalChart shapes
   // Case 1: natalChart.planets with capitalized planet keys
   if (natalChart?.planets && typeof natalChart.planets === 'object') {
-    const planetKeys = Object.keys(natalChart.planets);
+    const planetKeys = Object.keys(natalChart.planets)
     for (const key of planetKeys) {
-      const data = natalChart.planets[key];
-      const sign = data?.sign;
+      const data = natalChart.planets[key]
+      const sign = data?.sign
       if (typeof sign === 'string' && sign.length > 0) {
-        placements.push({ planet: key.toLowerCase(), sign });
+        placements.push({ planet: key.toLowerCase(), sign })
       }
     }
   } else {
     // Case 2: flat lowercase keys
     const maybePush = (planetKey: string) => {
-      const data = natalChart?.[planetKey];
-      const sign = data?.sign;
+      const data = natalChart?.[planetKey]
+      const sign = data?.sign
       if (typeof sign === 'string' && sign.length > 0) {
-        placements.push({ planet: planetKey, sign });
+        placements.push({ planet: planetKey, sign })
       }
-    };
-    ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto','ascendant']
-      .forEach(maybePush);
+    }
+    ;[
+      'sun',
+      'moon',
+      'mercury',
+      'venus',
+      'mars',
+      'jupiter',
+      'saturn',
+      'uranus',
+      'neptune',
+      'pluto',
+      'ascendant',
+    ].forEach(maybePush)
   }
 
   // Use the character vector calculator
-  const { CharacterVectorCalculator } = require('@/lib/astrological-character-vectors');
-  return CharacterVectorCalculator.calculateSignVectors(placements);
+  const { CharacterVectorCalculator } = require('@/lib/astrological-character-vectors')
+  return CharacterVectorCalculator.calculateSignVectors(placements)
 }
 
 // Component for displaying just the dominant signs as a compact rune-like symbol
-export function SignVectorRune({ signVector, size = 24 }: { signVector: SignCharacterVector, size?: number }) {
+export function SignVectorRune({
+  signVector,
+  size = 24,
+}: {
+  signVector: SignCharacterVector
+  size?: number
+}) {
   const dominantSigns = Object.entries(signVector)
     .filter(([sign]) => sign !== 'total')
-    .sort(([,a], [,b]) => (b as number) - (a as number))
-    .slice(0, 3);
+    .sort(([, a], [, b]) => (b as number) - (a as number))
+    .slice(0, 3)
 
   return (
-    <div 
+    <div
       className="inline-flex items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-pink-100 border-2 border-purple-200"
       style={{ width: size, height: size }}
     >
       <div className="text-xs font-bold text-purple-800">
-        {dominantSigns.map(([sign]) => 
-          ZODIAC_SIGNS.find(s => s.name.toLowerCase() === sign)?.symbol
-        ).join('')}
+        {dominantSigns
+          .map(([sign]) => ZODIAC_SIGNS.find(s => s.name.toLowerCase() === sign)?.symbol)
+          .join('')}
       </div>
     </div>
-  );
+  )
 }

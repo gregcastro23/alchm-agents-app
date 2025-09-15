@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,10 +6,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { 
-  Sparkles, 
-  Star, 
-  Crown, 
+import {
+  Sparkles,
+  Star,
+  Crown,
   Eye,
   Zap,
   Heart,
@@ -21,18 +21,18 @@ import {
   Square,
   Triangle,
   Hexagon,
-  Clock
+  Clock,
 } from 'lucide-react'
-import { 
-  getCurrentDecan, 
-  getPlanetaryRulerCard, 
+import {
+  getCurrentDecan,
+  getPlanetaryRulerCard,
   generateConsciousnessCraftingInsight,
   DECAN_TAROT_MAPPINGS,
   MAJOR_ARCANA_PLANETARY,
   ZODIAC_MAJOR_ARCANA,
   type TarotCard,
   type MajorArcanaCard,
-  type ConsciousnessCraftingInsight
+  type ConsciousnessCraftingInsight,
 } from '@/lib/monica/tarot-oracle'
 
 interface EnhancedTarotDashboardProps {
@@ -41,49 +41,51 @@ interface EnhancedTarotDashboardProps {
   onCardSelect?: (card: TarotCard | MajorArcanaCard) => void
 }
 
-const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({ 
+const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
   variant = 'full',
   showAdvancedInsights = true,
-  onCardSelect 
+  onCardSelect,
 }) => {
   const [currentCard, setCurrentCard] = useState<TarotCard | null>(null)
   const [planetaryCard, setPlanetaryCard] = useState<MajorArcanaCard | null>(null)
   const [insight, setInsight] = useState<ConsciousnessCraftingInsight | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState("current")
+  const [activeTab, setActiveTab] = useState('current')
   const [sunPosition, setSunPosition] = useState<string>('')
 
   useEffect(() => {
     const abortController = new AbortController()
-    
+
     const loadTarotDashboard = async () => {
       setIsLoading(true)
-      
+
       try {
         // Early abort check before any async operations
         if (abortController.signal.aborted) {
           console.log('Enhanced tarot dashboard request aborted before starting')
           return
         }
-        
-        const { card: decanCard, sunPosition: position } = await getCurrentDecan(abortController.signal)
-        
+
+        const { card: decanCard, sunPosition: position } = await getCurrentDecan(
+          abortController.signal
+        )
+
         if (abortController.signal.aborted) return
-        
+
         setCurrentCard(decanCard)
         setSunPosition(position)
-        
+
         let rulerCard: MajorArcanaCard | null = null
         if (decanCard?.planetaryRuler) {
           rulerCard = getPlanetaryRulerCard(decanCard.planetaryRuler)
         }
-        
+
         if (!rulerCard) {
           rulerCard = getPlanetaryRulerCard('Sun')
         }
-        
+
         setPlanetaryCard(rulerCard)
-        
+
         if (decanCard && rulerCard) {
           const craftingInsight = generateConsciousnessCraftingInsight(decanCard, rulerCard)
           setInsight(craftingInsight)
@@ -94,26 +96,29 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
           console.log('Enhanced tarot dashboard request was aborted')
           return
         }
-        
+
         // Handle AbortError specifically
         if (error instanceof Error && error.name === 'AbortError') {
           console.log('Enhanced tarot dashboard AbortError caught:', error.message)
           return
         }
-        
+
         console.error('Error loading tarot dashboard:', error)
-        
+
         // Only update state if not aborted
         if (!abortController.signal.aborted) {
           const fallbackCard = DECAN_TAROT_MAPPINGS[110]
           const fallbackRulerCard = getPlanetaryRulerCard('Sun')
-          
+
           setCurrentCard(fallbackCard)
           setSunPosition('Fallback position')
           setPlanetaryCard(fallbackRulerCard)
-          
+
           if (fallbackCard && fallbackRulerCard) {
-            const fallbackInsight = generateConsciousnessCraftingInsight(fallbackCard, fallbackRulerCard)
+            const fallbackInsight = generateConsciousnessCraftingInsight(
+              fallbackCard,
+              fallbackRulerCard
+            )
             setInsight(fallbackInsight)
           }
         }
@@ -125,7 +130,7 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
     }
 
     loadTarotDashboard()
-    
+
     return () => {
       abortController.abort()
     }
@@ -133,31 +138,46 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
 
   const getElementIcon = (element: string) => {
     switch (element) {
-      case 'Fire': return <Zap className="h-4 w-4 text-red-400" />
-      case 'Water': return <Heart className="h-4 w-4 text-blue-400" />
-      case 'Air': return <Eye className="h-4 w-4 text-gray-400" />
-      case 'Earth': return <Star className="h-4 w-4 text-green-400" />
-      default: return <Sparkles className="h-4 w-4 text-purple-400" />
+      case 'Fire':
+        return <Zap className="h-4 w-4 text-red-400" />
+      case 'Water':
+        return <Heart className="h-4 w-4 text-blue-400" />
+      case 'Air':
+        return <Eye className="h-4 w-4 text-gray-400" />
+      case 'Earth':
+        return <Star className="h-4 w-4 text-green-400" />
+      default:
+        return <Sparkles className="h-4 w-4 text-purple-400" />
     }
   }
 
   const getSuitIcon = (suit: string) => {
     switch (suit) {
-      case 'Wands': return <Wand2 className="h-5 w-5 text-red-500" />
-      case 'Cups': return <Heart className="h-5 w-5 text-blue-500" />
-      case 'Swords': return <Shield className="h-5 w-5 text-gray-500" />
-      case 'Pentacles': return <Star className="h-5 w-5 text-yellow-500" />
-      default: return <Sparkles className="h-5 w-5 text-purple-500" />
+      case 'Wands':
+        return <Wand2 className="h-5 w-5 text-red-500" />
+      case 'Cups':
+        return <Heart className="h-5 w-5 text-blue-500" />
+      case 'Swords':
+        return <Shield className="h-5 w-5 text-gray-500" />
+      case 'Pentacles':
+        return <Star className="h-5 w-5 text-yellow-500" />
+      default:
+        return <Sparkles className="h-5 w-5 text-purple-500" />
     }
   }
 
   const getAlchemicalShape = (element: string) => {
     switch (element) {
-      case 'Fire': return <Triangle className="h-4 w-4 text-red-500" />
-      case 'Water': return <Triangle className="h-4 w-4 text-blue-500 rotate-180" />
-      case 'Air': return <Triangle className="h-4 w-4 text-gray-500" />
-      case 'Earth': return <Square className="h-4 w-4 text-green-500" />
-      default: return <Circle className="h-4 w-4 text-purple-500" />
+      case 'Fire':
+        return <Triangle className="h-4 w-4 text-red-500" />
+      case 'Water':
+        return <Triangle className="h-4 w-4 text-blue-500 rotate-180" />
+      case 'Air':
+        return <Triangle className="h-4 w-4 text-gray-500" />
+      case 'Earth':
+        return <Square className="h-4 w-4 text-green-500" />
+      default:
+        return <Circle className="h-4 w-4 text-purple-500" />
     }
   }
 
@@ -169,9 +189,7 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
             <div className="animate-spin">
               <Crown className="h-8 w-8 text-purple-600 mx-auto" />
             </div>
-            <p className="text-purple-700 font-medium">
-              Consulting the cosmic tarot...
-            </p>
+            <p className="text-purple-700 font-medium">Consulting the cosmic tarot...</p>
           </div>
         </CardContent>
       </Card>
@@ -192,7 +210,9 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
             <div className="flex items-center gap-2">
               {getSuitIcon(currentCard.suit)}
               <span className="font-medium text-sm">{currentCard.name}</span>
-              <Badge variant="outline" className="text-xs">{currentCard.element}</Badge>
+              <Badge variant="outline" className="text-xs">
+                {currentCard.element}
+              </Badge>
             </div>
           )}
           {sunPosition && (
@@ -231,7 +251,9 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
                 </div>
                 <div className="flex items-center gap-2">
                   {getElementIcon(currentCard.element)}
-                  <Badge variant="outline" className="text-xs">{currentCard.element}</Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {currentCard.element}
+                  </Badge>
                 </div>
               </div>
             )}
@@ -317,7 +339,7 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
                       <span>{currentCard.planetaryRuler}</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-1">
                     {currentCard.keywords.map((keyword, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
@@ -326,9 +348,7 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
                     ))}
                   </div>
 
-                  <p className="text-sm text-gray-700 leading-relaxed">
-                    {currentCard.meaning}
-                  </p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{currentCard.meaning}</p>
 
                   <div className="bg-blue-50 p-2 rounded-lg">
                     <p className="text-xs font-medium text-blue-800">
@@ -342,8 +362,8 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
                       <div className="flex items-center gap-1">
                         <span>{currentCard.alchemicalValues.spirit}</span>
                         <div className="w-6 h-1 bg-gray-200 rounded">
-                          <div 
-                            className="h-full bg-red-500 rounded" 
+                          <div
+                            className="h-full bg-red-500 rounded"
                             style={{ width: `${currentCard.alchemicalValues.spirit * 100}%` }}
                           />
                         </div>
@@ -354,8 +374,8 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
                       <div className="flex items-center gap-1">
                         <span>{currentCard.alchemicalValues.essence}</span>
                         <div className="w-6 h-1 bg-gray-200 rounded">
-                          <div 
-                            className="h-full bg-blue-500 rounded" 
+                          <div
+                            className="h-full bg-blue-500 rounded"
                             style={{ width: `${currentCard.alchemicalValues.essence * 100}%` }}
                           />
                         </div>
@@ -366,8 +386,8 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
                       <div className="flex items-center gap-1">
                         <span>{currentCard.alchemicalValues.matter}</span>
                         <div className="w-6 h-1 bg-gray-200 rounded">
-                          <div 
-                            className="h-full bg-green-500 rounded" 
+                          <div
+                            className="h-full bg-green-500 rounded"
                             style={{ width: `${currentCard.alchemicalValues.matter * 100}%` }}
                           />
                         </div>
@@ -378,8 +398,8 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
                       <div className="flex items-center gap-1">
                         <span>{currentCard.alchemicalValues.substance}</span>
                         <div className="w-6 h-1 bg-gray-200 rounded">
-                          <div 
-                            className="h-full bg-purple-500 rounded" 
+                          <div
+                            className="h-full bg-purple-500 rounded"
                             style={{ width: `${currentCard.alchemicalValues.substance * 100}%` }}
                           />
                         </div>
@@ -429,7 +449,7 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
                       <span>{planetaryCard.chakra}</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-1">
                     {planetaryCard.keywords.map((keyword, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
@@ -438,9 +458,7 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
                     ))}
                   </div>
 
-                  <p className="text-sm text-gray-700 leading-relaxed">
-                    {planetaryCard.meaning}
-                  </p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{planetaryCard.meaning}</p>
 
                   <div className="bg-gold-50 p-2 rounded-lg">
                     <p className="text-xs font-medium text-gold-800">
@@ -474,12 +492,8 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
                     Consciousness Crafting Insight
                   </CardTitle>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline">
-                      Synergy: {Math.round(insight.synergy * 100)}%
-                    </Badge>
-                    <Badge variant="secondary">
-                      {insight.consciousnessLevel}
-                    </Badge>
+                    <Badge variant="outline">Synergy: {Math.round(insight.synergy * 100)}%</Badge>
+                    <Badge variant="secondary">{insight.consciousnessLevel}</Badge>
                     <Badge variant="outline">
                       {insight.alchemicalBalance.dominantElement} Dominant
                     </Badge>
@@ -488,11 +502,9 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
                 <CardContent className="space-y-4">
                   <div>
                     <h4 className="font-medium text-purple-800 mb-2">💫 Cosmic Guidance</h4>
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {insight.guidance}
-                    </p>
+                    <p className="text-sm text-gray-700 leading-relaxed">{insight.guidance}</p>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium text-purple-800 mb-2">🎯 Practical Application</h4>
                     <p className="text-sm text-gray-700 leading-relaxed">
@@ -621,7 +633,9 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
                     <div>
                       <div className="flex justify-between mb-1">
                         <span className="font-medium">Best Time:</span>
-                        <span className="text-blue-700">{insight.timeRecommendations.bestTimeForPractice}</span>
+                        <span className="text-blue-700">
+                          {insight.timeRecommendations.bestTimeForPractice}
+                        </span>
                       </div>
                       <div className="flex justify-between mb-1">
                         <span className="font-medium">Duration:</span>
@@ -647,8 +661,8 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
         <TabsContent value="planetary" className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Object.entries(MAJOR_ARCANA_PLANETARY).map(([planet, card]) => (
-              <Card 
-                key={planet} 
+              <Card
+                key={planet}
                 className="cursor-pointer hover:shadow-md transition-shadow border border-gray-200 hover:border-purple-300"
                 onClick={() => onCardSelect?.(card)}
               >
@@ -685,22 +699,33 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {Object.entries({
-                    Spirit: { value: insight.alchemicalBalance.spirit, color: 'red', shape: 'triangle' },
-                    Essence: { value: insight.alchemicalBalance.essence, color: 'blue', shape: 'circle' },
-                    Matter: { value: insight.alchemicalBalance.matter, color: 'green', shape: 'square' },
-                    Substance: { value: insight.alchemicalBalance.substance, color: 'purple', shape: 'hexagon' }
+                    Spirit: {
+                      value: insight.alchemicalBalance.spirit,
+                      color: 'red',
+                      shape: 'triangle',
+                    },
+                    Essence: {
+                      value: insight.alchemicalBalance.essence,
+                      color: 'blue',
+                      shape: 'circle',
+                    },
+                    Matter: {
+                      value: insight.alchemicalBalance.matter,
+                      color: 'green',
+                      shape: 'square',
+                    },
+                    Substance: {
+                      value: insight.alchemicalBalance.substance,
+                      color: 'purple',
+                      shape: 'hexagon',
+                    },
                   }).map(([element, { value, color, shape }]) => (
                     <Card key={element} className="text-center p-4">
                       <div className="space-y-2">
-                        <div className="flex justify-center">
-                          {getAlchemicalShape(element)}
-                        </div>
+                        <div className="flex justify-center">{getAlchemicalShape(element)}</div>
                         <h4 className="font-medium text-sm">{element}</h4>
                         <div className="space-y-1">
-                          <Progress 
-                            value={value * 100} 
-                            className={`w-full`}
-                          />
+                          <Progress value={value * 100} className={`w-full`} />
                           <span className="text-xs font-mono">{value.toFixed(2)}</span>
                         </div>
                       </div>
@@ -715,7 +740,10 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
                       {Math.round(insight.alchemicalBalance.elementalHarmony * 100)}%
                     </Badge>
                   </div>
-                  <Progress value={insight.alchemicalBalance.elementalHarmony * 100} className="mb-2" />
+                  <Progress
+                    value={insight.alchemicalBalance.elementalHarmony * 100}
+                    className="mb-2"
+                  />
                   <p className="text-sm text-emerald-700">
                     Dominant Element: <strong>{insight.alchemicalBalance.dominantElement}</strong>
                   </p>

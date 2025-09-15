@@ -1,18 +1,18 @@
-"use client"
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  BookOpen, 
-  Star, 
-  Users, 
-  Lightbulb, 
-  Target, 
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  BookOpen,
+  Star,
+  Users,
+  Lightbulb,
+  Target,
   Brain,
   Heart,
   Eye,
@@ -23,29 +23,28 @@ import {
   Circle,
   PlayCircle,
   Clock,
-  Award
-} from 'lucide-react';
-import type { 
-  BirthChartFeature, 
-  AstrologicalLearningModule, 
+  Award,
+} from 'lucide-react'
+import type {
+  BirthChartFeature,
+  AstrologicalLearningModule,
   RelationalAstrologyPattern,
   CosmicCurriculumProgress,
-  InteractiveExercise
-} from '@/lib/astrological-education-engine';
-
+  InteractiveExercise,
+} from '@/lib/astrological-education-engine'
 
 interface InteractiveChartTeacherProps {
-  userChartFeatures: BirthChartFeature[];
-  currentModule?: AstrologicalLearningModule;
-  progress: CosmicCurriculumProgress;
-  onModuleSelect?: (moduleId: string) => void;
-  onExerciseComplete?: (exerciseId: string, results: any) => void;
-  universeConnectionLevel: number;
-  userElementalProfile?: string[];
-  userPlanetaryEmphasis?: string[];
-  relationalPatterns?: RelationalAstrologyPattern[];
-  onScenarioComplete?: (scenarioId: string, results: any) => void;
-  onPatternMastery?: (patternId: string) => void;
+  userChartFeatures: BirthChartFeature[]
+  currentModule?: AstrologicalLearningModule
+  progress: CosmicCurriculumProgress
+  onModuleSelect?: (moduleId: string) => void
+  onExerciseComplete?: (exerciseId: string, results: any) => void
+  universeConnectionLevel: number
+  userElementalProfile?: string[]
+  userPlanetaryEmphasis?: string[]
+  relationalPatterns?: RelationalAstrologyPattern[]
+  onScenarioComplete?: (scenarioId: string, results: any) => void
+  onPatternMastery?: (patternId: string) => void
 }
 
 export function InteractiveChartTeacher({
@@ -59,59 +58,85 @@ export function InteractiveChartTeacher({
   userPlanetaryEmphasis = ['sun', 'moon'], // Default example
   relationalPatterns,
   onScenarioComplete,
-  onPatternMastery
+  onPatternMastery,
 }: InteractiveChartTeacherProps) {
-  const [selectedFeature, setSelectedFeature] = useState<BirthChartFeature | null>(null);
-  const [activeExercise, setActiveExercise] = useState<InteractiveExercise | null>(null);
-  const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
+  const [selectedFeature, setSelectedFeature] = useState<BirthChartFeature | null>(null)
+  const [activeExercise, setActiveExercise] = useState<InteractiveExercise | null>(null)
+  const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set())
 
   const getFeatureIcon = (featureType: string) => {
     switch (featureType) {
-      case 'planet_sign': return <Star className="h-5 w-5" />;
-      case 'planet_house': return <Target className="h-5 w-5" />;
-      case 'aspect': return <ArrowRight className="h-5 w-5" />;
-      case 'stellium': return <Sparkles className="h-5 w-5" />;
-      case 'dignity': return <Crown className="h-5 w-5" />;
-      default: return <Circle className="h-5 w-5" />;
+      case 'planet_sign':
+        return <Star className="h-5 w-5" />
+      case 'planet_house':
+        return <Target className="h-5 w-5" />
+      case 'aspect':
+        return <ArrowRight className="h-5 w-5" />
+      case 'stellium':
+        return <Sparkles className="h-5 w-5" />
+      case 'dignity':
+        return <Crown className="h-5 w-5" />
+      default:
+        return <Circle className="h-5 w-5" />
     }
-  };
+  }
 
   const getSignificanceColor = (level: string) => {
     switch (level) {
-      case 'foundational': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'important': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'notable': return 'bg-green-100 text-green-800 border-green-200';
-      case 'subtle': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'foundational':
+        return 'bg-purple-100 text-purple-800 border-purple-200'
+      case 'important':
+        return 'bg-blue-100 text-blue-800 border-blue-200'
+      case 'notable':
+        return 'bg-green-100 text-green-800 border-green-200'
+      case 'subtle':
+        return 'bg-gray-100 text-gray-800 border-gray-200'
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200'
     }
-  };
+  }
 
   const getModuleTypeIcon = (type: string) => {
     switch (type) {
-      case 'foundational': return <BookOpen className="h-4 w-4" />;
-      case 'personal': return <Heart className="h-4 w-4" />;
-      case 'relational': return <Users className="h-4 w-4" />;
-      case 'evolutionary': return <Brain className="h-4 w-4" />;
-      case 'universal': return <Eye className="h-4 w-4" />;
-      default: return <Circle className="h-4 w-4" />;
+      case 'foundational':
+        return <BookOpen className="h-4 w-4" />
+      case 'personal':
+        return <Heart className="h-4 w-4" />
+      case 'relational':
+        return <Users className="h-4 w-4" />
+      case 'evolutionary':
+        return <Brain className="h-4 w-4" />
+      case 'universal':
+        return <Eye className="h-4 w-4" />
+      default:
+        return <Circle className="h-4 w-4" />
     }
-  };
+  }
 
   const getExerciseTypeIcon = (type: string) => {
     switch (type) {
-      case 'visualization': return <Eye className="h-4 w-4" />;
-      case 'meditation': return <Brain className="h-4 w-4" />;
-      case 'journaling': return <BookOpen className="h-4 w-4" />;
-      case 'observation': return <Target className="h-4 w-4" />;
-      case 'experimentation': return <Lightbulb className="h-4 w-4" />;
-      case 'dialogue': return <Users className="h-4 w-4" />;
-      default: return <PlayCircle className="h-4 w-4" />;
+      case 'visualization':
+        return <Eye className="h-4 w-4" />
+      case 'meditation':
+        return <Brain className="h-4 w-4" />
+      case 'journaling':
+        return <BookOpen className="h-4 w-4" />
+      case 'observation':
+        return <Target className="h-4 w-4" />
+      case 'experimentation':
+        return <Lightbulb className="h-4 w-4" />
+      case 'dialogue':
+        return <Users className="h-4 w-4" />
+      default:
+        return <PlayCircle className="h-4 w-4" />
     }
-  };
+  }
 
-  const foundationalFeatures = userChartFeatures.filter(f => f.significance_level === 'foundational');
-  const importantFeatures = userChartFeatures.filter(f => f.significance_level === 'important');
-  const notableFeatures = userChartFeatures.filter(f => f.significance_level === 'notable');
+  const foundationalFeatures = userChartFeatures.filter(
+    f => f.significance_level === 'foundational'
+  )
+  const importantFeatures = userChartFeatures.filter(f => f.significance_level === 'important')
+  const notableFeatures = userChartFeatures.filter(f => f.significance_level === 'notable')
 
   return (
     <div className="space-y-6">
@@ -130,10 +155,14 @@ export function InteractiveChartTeacher({
           <div className="space-y-2">
             <Progress value={universeConnectionLevel} className="h-3" />
             <div className="text-sm text-muted-foreground">
-              {universeConnectionLevel < 25 && "🌱 Beginning cosmic awareness"}
-              {universeConnectionLevel >= 25 && universeConnectionLevel < 50 && "⭐ Recognizing cosmic patterns"}
-              {universeConnectionLevel >= 50 && universeConnectionLevel < 75 && "🌙 Integrating personal-universal wisdom"}
-              {universeConnectionLevel >= 75 && "🌟 Embodying cosmic consciousness"}
+              {universeConnectionLevel < 25 && '🌱 Beginning cosmic awareness'}
+              {universeConnectionLevel >= 25 &&
+                universeConnectionLevel < 50 &&
+                '⭐ Recognizing cosmic patterns'}
+              {universeConnectionLevel >= 50 &&
+                universeConnectionLevel < 75 &&
+                '🌙 Integrating personal-universal wisdom'}
+              {universeConnectionLevel >= 75 && '🌟 Embodying cosmic consciousness'}
             </div>
           </div>
         </CardContent>
@@ -157,12 +186,14 @@ export function InteractiveChartTeacher({
                 Foundational Features
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {foundationalFeatures.map((feature) => (
-                  <Card key={feature.id} 
-                        className={`cursor-pointer transition-all hover:shadow-md ${
-                          selectedFeature?.id === feature.id ? 'ring-2 ring-purple-500' : ''
-                        }`}
-                        onClick={() => setSelectedFeature(feature)}>
+                {foundationalFeatures.map(feature => (
+                  <Card
+                    key={feature.id}
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      selectedFeature?.id === feature.id ? 'ring-2 ring-purple-500' : ''
+                    }`}
+                    onClick={() => setSelectedFeature(feature)}
+                  >
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
                         {getFeatureIcon(feature.feature_type)}
@@ -193,12 +224,14 @@ export function InteractiveChartTeacher({
                 Important Features
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {importantFeatures.map((feature) => (
-                  <Card key={feature.id} 
-                        className={`cursor-pointer transition-all hover:shadow-md ${
-                          selectedFeature?.id === feature.id ? 'ring-2 ring-blue-500' : ''
-                        }`}
-                        onClick={() => setSelectedFeature(feature)}>
+                {importantFeatures.map(feature => (
+                  <Card
+                    key={feature.id}
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      selectedFeature?.id === feature.id ? 'ring-2 ring-blue-500' : ''
+                    }`}
+                    onClick={() => setSelectedFeature(feature)}
+                  >
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
                         {getFeatureIcon(feature.feature_type)}
@@ -255,15 +288,13 @@ export function InteractiveChartTeacher({
                     </ul>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <h4 className="font-medium flex items-center gap-2">
                     <Crown className="h-4 w-4" />
                     Cosmic Purpose
                   </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedFeature.cosmic_purpose}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{selectedFeature.cosmic_purpose}</p>
                 </div>
 
                 <div className="flex gap-2">
@@ -295,9 +326,7 @@ export function InteractiveChartTeacher({
               <CardContent className="space-y-6">
                 <div>
                   <h4 className="font-medium mb-2">Overview</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {currentModule.content.overview}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{currentModule.content.overview}</p>
                 </div>
 
                 <div>
@@ -326,7 +355,7 @@ export function InteractiveChartTeacher({
                 <div>
                   <h4 className="font-medium mb-2">Interactive Exercises</h4>
                   <div className="space-y-3">
-                    {currentModule.content.interactive_exercises.map((exercise) => (
+                    {currentModule.content.interactive_exercises.map(exercise => (
                       <Card key={exercise.id} className="border-l-4 border-l-blue-500">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm flex items-center gap-2">
@@ -343,9 +372,9 @@ export function InteractiveChartTeacher({
                             {exercise.instructions}
                           </p>
                           <div className="flex gap-2">
-                            <Button 
-                              size="sm" 
-                              variant={completedExercises.has(exercise.id) ? "outline" : "default"}
+                            <Button
+                              size="sm"
+                              variant={completedExercises.has(exercise.id) ? 'outline' : 'default'}
                               onClick={() => setActiveExercise(exercise)}
                             >
                               {completedExercises.has(exercise.id) ? (
@@ -405,7 +434,9 @@ export function InteractiveChartTeacher({
               <div className="text-center py-8 text-muted-foreground">
                 <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Relational astrology training is available in the main dashboard</p>
-                <p className="text-sm">Switch to the &quot;Relational Practice&quot; tab to explore patterns</p>
+                <p className="text-sm">
+                  Switch to the &quot;Relational Practice&quot; tab to explore patterns
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -455,11 +486,13 @@ export function InteractiveChartTeacher({
                 </div>
 
                 <div className="flex gap-2">
-                  <Button onClick={() => {
-                    setCompletedExercises(prev => new Set(prev).add(activeExercise.id));
-                    onExerciseComplete?.(activeExercise.id, { completed: true });
-                    setActiveExercise(null);
-                  }}>
+                  <Button
+                    onClick={() => {
+                      setCompletedExercises(prev => new Set(prev).add(activeExercise.id))
+                      onExerciseComplete?.(activeExercise.id, { completed: true })
+                      setActiveExercise(null)
+                    }}
+                  >
                     <CheckCircle className="h-4 w-4 mr-2" />
                     Mark Complete
                   </Button>
@@ -480,5 +513,5 @@ export function InteractiveChartTeacher({
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

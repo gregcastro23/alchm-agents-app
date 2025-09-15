@@ -1,12 +1,12 @@
-"use client"
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
   Crown,
   Star,
   Brain,
@@ -21,35 +21,35 @@ import {
   TrendingUp,
   Calendar,
   Compass,
-  Infinity
-} from 'lucide-react';
-import { InteractiveChartTeacher } from '@/components/interactive-chart-teacher';
-import { RelationalAstrologyTrainer } from '@/components/relational-astrology-trainer';
-import type { 
-  BirthChartFeature, 
-  AstrologicalLearningModule, 
+  Infinity,
+} from 'lucide-react'
+import { InteractiveChartTeacher } from '@/components/interactive-chart-teacher'
+import { RelationalAstrologyTrainer } from '@/components/relational-astrology-trainer'
+import type {
+  BirthChartFeature,
+  AstrologicalLearningModule,
   RelationalAstrologyPattern,
-  CosmicCurriculumProgress
-} from '@/lib/astrological-education-engine';
-import { 
+  CosmicCurriculumProgress,
+} from '@/lib/astrological-education-engine'
+import {
   COSMIC_UNDERSTANDING_MILESTONES,
-  CosmicCurriculumManager
-} from '@/lib/astrological-education-engine';
+  CosmicCurriculumManager,
+} from '@/lib/astrological-education-engine'
 
 interface UniverseConnectionDashboardProps {
   userProfile: {
-    name: string;
-    chartFeatures: BirthChartFeature[];
-    elementalProfile: string[];
-    planetaryEmphasis: string[];
-  };
-  progress: CosmicCurriculumProgress;
-  availableModules: AstrologicalLearningModule[];
-  relationalPatterns: RelationalAstrologyPattern[];
-  onModuleComplete?: (moduleId: string) => void;
-  onScenarioComplete?: (scenarioId: string, results: any) => void;
-  onPatternMastery?: (patternId: string) => void;
-  onInsightUnlocked?: (insight: string) => void;
+    name: string
+    chartFeatures: BirthChartFeature[]
+    elementalProfile: string[]
+    planetaryEmphasis: string[]
+  }
+  progress: CosmicCurriculumProgress
+  availableModules: AstrologicalLearningModule[]
+  relationalPatterns: RelationalAstrologyPattern[]
+  onModuleComplete?: (moduleId: string) => void
+  onScenarioComplete?: (scenarioId: string, results: any) => void
+  onPatternMastery?: (patternId: string) => void
+  onInsightUnlocked?: (insight: string) => void
 }
 
 export function UniverseConnectionDashboard({
@@ -60,65 +60,71 @@ export function UniverseConnectionDashboard({
   onModuleComplete,
   onScenarioComplete,
   onPatternMastery,
-  onInsightUnlocked
+  onInsightUnlocked,
 }: UniverseConnectionDashboardProps) {
-  const [currentModule, setCurrentModule] = useState<AstrologicalLearningModule | null>(null);
-  const [dashboardView, setDashboardView] = useState<'overview' | 'learning' | 'practice'>('overview');
-  
+  const [currentModule, setCurrentModule] = useState<AstrologicalLearningModule | null>(null)
+  const [dashboardView, setDashboardView] = useState<'overview' | 'learning' | 'practice'>(
+    'overview'
+  )
+
   // Calculate universe connection level
-  const curriculumManager = new CosmicCurriculumManager(progress);
-  const universeConnectionLevel = curriculumManager.calculateUniverseConnectionLevel();
-  const cosmicInsight = curriculumManager.getCosmicInsightForLevel(universeConnectionLevel);
-  
+  const curriculumManager = new CosmicCurriculumManager(progress)
+  const universeConnectionLevel = curriculumManager.calculateUniverseConnectionLevel()
+  const cosmicInsight = curriculumManager.getCosmicInsightForLevel(universeConnectionLevel)
+
   // Get next recommended module
-  const nextModule = curriculumManager.getNextRecommendedModule(availableModules);
-  
+  const nextModule = curriculumManager.getNextRecommendedModule(availableModules)
+
   // Calculate milestones
   const achievedMilestones = COSMIC_UNDERSTANDING_MILESTONES.filter(
     milestone => universeConnectionLevel >= milestone.level
-  );
+  )
   const nextMilestone = COSMIC_UNDERSTANDING_MILESTONES.find(
     milestone => universeConnectionLevel < milestone.level
-  );
+  )
 
   // Learning statistics
-  const completedModulesCount = progress.completed_modules.length;
-  const totalModulesCount = availableModules.length;
-  const avgMasteryLevel = Object.values(progress.mastery_levels).length > 0 
-    ? Object.values(progress.mastery_levels).reduce((sum, level) => sum + level, 0) / Object.values(progress.mastery_levels).length 
-    : 0;
-  const avgRelationalUnderstanding = Object.values(progress.relational_understanding).length > 0
-    ? Object.values(progress.relational_understanding).reduce((sum, level) => sum + level, 0) / Object.values(progress.relational_understanding).length
-    : 0;
+  const completedModulesCount = progress.completed_modules.length
+  const totalModulesCount = availableModules.length
+  const avgMasteryLevel =
+    Object.values(progress.mastery_levels).length > 0
+      ? Object.values(progress.mastery_levels).reduce((sum, level) => sum + level, 0) /
+        Object.values(progress.mastery_levels).length
+      : 0
+  const avgRelationalUnderstanding =
+    Object.values(progress.relational_understanding).length > 0
+      ? Object.values(progress.relational_understanding).reduce((sum, level) => sum + level, 0) /
+        Object.values(progress.relational_understanding).length
+      : 0
 
   const getLevelEmoji = (level: number) => {
-    if (level < 20) return "🌱";
-    if (level < 40) return "⭐";
-    if (level < 60) return "🌙";
-    if (level < 80) return "🌟";
-    return "🌌";
-  };
+    if (level < 20) return '🌱'
+    if (level < 40) return '⭐'
+    if (level < 60) return '🌙'
+    if (level < 80) return '🌟'
+    return '🌌'
+  }
 
   const getLevelColor = (level: number) => {
-    if (level < 20) return "from-green-50 to-green-100 border-green-200";
-    if (level < 40) return "from-blue-50 to-blue-100 border-blue-200";
-    if (level < 60) return "from-purple-50 to-purple-100 border-purple-200";
-    if (level < 80) return "from-indigo-50 to-indigo-100 border-indigo-200";
-    return "from-violet-50 to-violet-100 border-violet-200";
-  };
+    if (level < 20) return 'from-green-50 to-green-100 border-green-200'
+    if (level < 40) return 'from-blue-50 to-blue-100 border-blue-200'
+    if (level < 60) return 'from-purple-50 to-purple-100 border-purple-200'
+    if (level < 80) return 'from-indigo-50 to-indigo-100 border-indigo-200'
+    return 'from-violet-50 to-violet-100 border-violet-200'
+  }
 
   const handleModuleSelect = (moduleId: string) => {
-    const selectedModule = availableModules.find(m => m.id === moduleId);
+    const selectedModule = availableModules.find(m => m.id === moduleId)
     if (selectedModule) {
-      setCurrentModule(selectedModule);
-      setDashboardView('learning');
+      setCurrentModule(selectedModule)
+      setDashboardView('learning')
     }
-  };
+  }
 
   const handleExerciseComplete = (exerciseId: string, results: any) => {
     // Handle exercise completion logic
-    console.log('Exercise completed:', exerciseId, results);
-  };
+    console.log('Exercise completed:', exerciseId, results)
+  }
 
   return (
     <div className="space-y-6">
@@ -145,19 +151,23 @@ export function UniverseConnectionDashboard({
               <Progress value={universeConnectionLevel} className="h-3" />
               <p className="text-xs text-muted-foreground">{cosmicInsight}</p>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Modules Completed</span>
-                <span className="text-lg font-bold">{completedModulesCount}/{totalModulesCount}</span>
+                <span className="text-lg font-bold">
+                  {completedModulesCount}/{totalModulesCount}
+                </span>
               </div>
               <Progress value={(completedModulesCount / totalModulesCount) * 100} className="h-3" />
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Cosmic Insights</span>
-                <span className="text-lg font-bold">{progress.cosmic_insights_unlocked.length}</span>
+                <span className="text-lg font-bold">
+                  {progress.cosmic_insights_unlocked.length}
+                </span>
               </div>
               <div className="flex flex-wrap gap-1">
                 {progress.cosmic_insights_unlocked.slice(0, 3).map((insight, idx) => (
@@ -172,7 +182,13 @@ export function UniverseConnectionDashboard({
       </Card>
 
       {/* Navigation Tabs */}
-      <Tabs value={dashboardView} onValueChange={(value: string) => setDashboardView(value as 'overview' | 'learning' | 'practice')} className="w-full">
+      <Tabs
+        value={dashboardView}
+        onValueChange={(value: string) =>
+          setDashboardView(value as 'overview' | 'learning' | 'practice')
+        }
+        className="w-full"
+      >
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="learning">Chart Learning</TabsTrigger>
@@ -198,7 +214,7 @@ export function UniverseConnectionDashboard({
                   </div>
                   <Progress value={avgMasteryLevel} className="h-2" />
                 </div>
-                
+
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Relational Understanding</span>
@@ -214,7 +230,11 @@ export function UniverseConnectionDashboard({
                       <span className="text-sm font-medium">Recommended Next</span>
                     </div>
                     <p className="text-sm text-muted-foreground">{nextModule.title}</p>
-                    <Button size="sm" className="mt-2" onClick={() => handleModuleSelect(nextModule.id)}>
+                    <Button
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => handleModuleSelect(nextModule.id)}
+                    >
                       Start Learning
                     </Button>
                   </div>
@@ -232,34 +252,37 @@ export function UniverseConnectionDashboard({
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {COSMIC_UNDERSTANDING_MILESTONES.map((milestone) => {
-                    const achieved = universeConnectionLevel >= milestone.level;
+                  {COSMIC_UNDERSTANDING_MILESTONES.map(milestone => {
+                    const achieved = universeConnectionLevel >= milestone.level
                     return (
-                      <div key={milestone.level} className={`p-3 rounded-lg border ${
-                        achieved ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
-                      }`}>
+                      <div
+                        key={milestone.level}
+                        className={`p-3 rounded-lg border ${
+                          achieved ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                        }`}
+                      >
                         <div className="flex items-center gap-2 mb-1">
                           {achieved ? (
                             <Award className="h-4 w-4 text-green-600" />
                           ) : (
                             <Target className="h-4 w-4 text-gray-400" />
                           )}
-                          <span className={`text-sm font-medium ${
-                            achieved ? 'text-green-800' : 'text-gray-600'
-                          }`}>
+                          <span
+                            className={`text-sm font-medium ${
+                              achieved ? 'text-green-800' : 'text-gray-600'
+                            }`}
+                          >
                             {milestone.title}
                           </span>
-                          <Badge variant={achieved ? "default" : "outline"}>
+                          <Badge variant={achieved ? 'default' : 'outline'}>
                             {milestone.level}%
                           </Badge>
                         </div>
-                        <p className={`text-xs ${
-                          achieved ? 'text-green-700' : 'text-gray-500'
-                        }`}>
+                        <p className={`text-xs ${achieved ? 'text-green-700' : 'text-gray-500'}`}>
                           {milestone.description}
                         </p>
                       </div>
-                    );
+                    )
                   })}
                 </div>
               </CardContent>
@@ -275,15 +298,17 @@ export function UniverseConnectionDashboard({
                 <div className="text-xs text-muted-foreground">Chart Features</div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-4 text-center">
                 <Users className="h-8 w-8 mx-auto mb-2 text-purple-500" />
-                <div className="text-2xl font-bold">{Object.keys(progress.relational_understanding).length}</div>
+                <div className="text-2xl font-bold">
+                  {Object.keys(progress.relational_understanding).length}
+                </div>
                 <div className="text-xs text-muted-foreground">Relational Patterns</div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-4 text-center">
                 <Brain className="h-8 w-8 mx-auto mb-2 text-green-500" />
@@ -291,7 +316,7 @@ export function UniverseConnectionDashboard({
                 <div className="text-xs text-muted-foreground">Cosmic Insights</div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-4 text-center">
                 <Infinity className="h-8 w-8 mx-auto mb-2 text-violet-500" />
@@ -353,5 +378,5 @@ export function UniverseConnectionDashboard({
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

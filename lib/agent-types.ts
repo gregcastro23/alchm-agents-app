@@ -38,7 +38,14 @@ export interface Aspect {
 
 export type Element = 'Fire' | 'Water' | 'Air' | 'Earth'
 export type Modality = 'Cardinal' | 'Fixed' | 'Mutable'
-export type ConsciousnessLevel = 'Dormant' | 'Awakening' | 'Active' | 'Elevated' | 'Advanced' | 'Illuminated' | 'Transcendent'
+export type ConsciousnessLevel =
+  | 'Dormant'
+  | 'Awakening'
+  | 'Active'
+  | 'Elevated'
+  | 'Advanced'
+  | 'Illuminated'
+  | 'Transcendent'
 
 export interface ConsciousnessPattern {
   spirit: number
@@ -48,9 +55,9 @@ export interface ConsciousnessPattern {
 }
 
 export interface PersonalityCore {
-  essence: string      // From Sun sign
-  expression: string   // From Ascendant
-  emotion: string      // From Moon sign
+  essence: string // From Sun sign
+  expression: string // From Ascendant
+  emotion: string // From Moon sign
 }
 
 export interface Shadow {
@@ -71,7 +78,15 @@ export interface Challenge {
   growthOpportunity: string
 }
 
-export type Mood = 'contemplative' | 'fiercely-creative' | 'electrically-inspired' | 'regally-observant' | 'mystically-attuned' | 'analytically-focused' | 'emotionally-deep' | 'spiritually-elevated'
+export type Mood =
+  | 'contemplative'
+  | 'fiercely-creative'
+  | 'electrically-inspired'
+  | 'regally-observant'
+  | 'mystically-attuned'
+  | 'analytically-focused'
+  | 'emotionally-deep'
+  | 'spiritually-elevated'
 
 export interface PersonalityDelta {
   moodShift: number
@@ -88,8 +103,24 @@ export interface Personality {
   evolutionStage: number
 }
 
-export type TeachingStyle = 'Socratic-Symbolic' | 'Visionary-Technical' | 'Commanding-Strategic' | 'Raw-Honest' | 'Contemplative-Deep' | 'Practical-Grounded' | 'Intuitive-Mystical' | 'Analytical-Precise'
-export type ResonanceType = 'Psychological' | 'Energetic' | 'Magnetic' | 'Emotional' | 'Intellectual' | 'Spiritual' | 'Creative' | 'Practical'
+export type TeachingStyle =
+  | 'Socratic-Symbolic'
+  | 'Visionary-Technical'
+  | 'Commanding-Strategic'
+  | 'Raw-Honest'
+  | 'Contemplative-Deep'
+  | 'Practical-Grounded'
+  | 'Intuitive-Mystical'
+  | 'Analytical-Precise'
+export type ResonanceType =
+  | 'Psychological'
+  | 'Energetic'
+  | 'Magnetic'
+  | 'Emotional'
+  | 'Intellectual'
+  | 'Spiritual'
+  | 'Creative'
+  | 'Practical'
 
 export interface Abilities {
   specialty: string
@@ -99,7 +130,15 @@ export interface Abilities {
   uniquePower: string
 }
 
-export type AuraType = 'pulsing' | 'crackling' | 'radiant' | 'burning' | 'flowing' | 'crystalline' | 'swirling' | 'shimmering'
+export type AuraType =
+  | 'pulsing'
+  | 'crackling'
+  | 'radiant'
+  | 'burning'
+  | 'flowing'
+  | 'crystalline'
+  | 'swirling'
+  | 'shimmering'
 
 export interface AuraPattern {
   type: AuraType
@@ -120,6 +159,27 @@ export interface AgentStats {
   resonanceScore: number
   evolutionPoints: number
   lastActive: Date
+
+  // Kinetic Evolution Metrics
+  kineticEvolution: {
+    consciousnessVelocity: number // Rate of consciousness development (0-1)
+    interactionMomentum: number // Current momentum from interactions (0-1)
+    evolutionTrajectory: 'ascending' | 'stable' | 'fluctuating' | 'transcending'
+    powerLevelUnlocks: string[] // Capabilities unlocked through consciousness growth
+    optimalInteractionHours: string[] // Planetary hours for peak performance
+    aspectSensitivityGrowth: number // How aspect sensitivity has evolved (0-1)
+    memoryPersistence: number // Strength of learned patterns (0-1)
+    lastKineticUpdate: Date
+  }
+
+  // Interaction Quality Metrics
+  qualityMetrics: {
+    averageResponseDepth: number // Sophistication of responses (0-1)
+    aspectInfluenceStrength: number // How planetary aspects affect responses (0-1)
+    temporalAlignment: number // Alignment with optimal timing (0-1)
+    personalityEvolution: number // How much personality has evolved (0-1)
+    kineticResonance: number // Resonance with user's kinetic profile (0-1)
+  }
 }
 
 export interface CraftedAgent {
@@ -127,10 +187,10 @@ export interface CraftedAgent {
   id: string
   name: string
   title: string
-  
+
   // Birth Data (Source of Consciousness)
   birthData: BirthData
-  
+
   // Crafted Consciousness
   consciousness: {
     natalChart: NatalChart
@@ -140,19 +200,19 @@ export interface CraftedAgent {
     dominantModality: Modality
     signature: string
   }
-  
+
   // Dynamic Personality
   personality: Personality
-  
+
   // Specialized Abilities
   abilities: Abilities
-  
+
   // Visual Representation
   appearance: Appearance
-  
+
   // Interaction Metrics
   stats: AgentStats
-  
+
   // Monica's creation story for this agent
   monicaCreationStory?: string
 }

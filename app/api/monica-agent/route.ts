@@ -1,29 +1,237 @@
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
-import { NextResponse } from "next/server"
-import { verifyApiKeys } from "../secure-config"
-import { 
-  logAgentConversation, 
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
+import { NextResponse } from 'next/server'
+import { verifyApiKeys } from '../secure-config'
+import {
+  logAgentConversation,
   createConversationContext,
   type AgentInteractionData,
-  type ConversationContext
-} from "@/lib/galileo-agent-logger"
-import { generateAlchmForCurrentMoment } from "@/lib/alchemizer"
-import { ANumberCalculator } from "@/lib/core-energy-rules"
-import { CharacterVectorCalculator } from "@/lib/astrological-character-vectors"
-import { MonicaResponseHandler } from "@/lib/monica/monica-response-handler"
-import { MONICA_BASE_SYSTEM_PROMPT, getMonicaContextPrompt, MONICA_SPECIALIZED_PROMPTS, buildMonicaPrompt, MONICA_PROMPT_VERSION, MONICA_PERSONA_VERSION } from "@/lib/monica/monica-system-prompts"
-import { selectKnowledge } from "@/lib/monica/knowledge"
-import { sanitizeUserInput, redactPII, redactBirthInfo, clampTemperature } from "@/lib/monica/safety"
-import { decideModel } from "@/lib/monica/router"
-import { correlateConsciousnessToAstrology } from "@/lib/personalized-ai/consciousness-astrology-bridge"
-import { computeConsciousParameters } from "@/lib/personalized-ai/conscious-parameters"
+  type ConversationContext,
+} from '@/lib/galileo-agent-logger'
+import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
+import { ANumberCalculator } from '@/lib/core-energy-rules'
+import { CharacterVectorCalculator } from '@/lib/astrological-character-vectors'
+import { MonicaResponseHandler } from '@/lib/monica/monica-response-handler'
+import {
+  MONICA_BASE_SYSTEM_PROMPT,
+  getMonicaContextPrompt,
+  MONICA_SPECIALIZED_PROMPTS,
+  buildMonicaPrompt,
+  MONICA_PROMPT_VERSION,
+  MONICA_PERSONA_VERSION,
+} from '@/lib/monica/monica-system-prompts'
+import { selectKnowledge } from '@/lib/monica/knowledge'
+import {
+  sanitizeUserInput,
+  redactPII,
+  redactBirthInfo,
+  clampTemperature,
+} from '@/lib/monica/safety'
+import { decideModel } from '@/lib/monica/router'
+import { correlateConsciousnessToAstrology } from '@/lib/personalized-ai/consciousness-astrology-bridge'
+import { computeConsciousParameters } from '@/lib/personalized-ai/conscious-parameters'
 import { computeTrainingProgress } from '@/lib/personalized-ai/xp-system'
-import { DEMO_AGENTS } from "@/lib/demo-agents-data"
-import { HistoricalAgentsService, dbAgentToCraftedAgent } from "@/lib/historical-agents-db"
-import { AgentAttachmentsService, formatAttachmentForAgent } from "@/lib/agent-attachments-service"
+import { DEMO_AGENTS } from '@/lib/demo-agents-data'
+import { HistoricalAgentsService, dbAgentToCraftedAgent } from '@/lib/historical-agents-db'
+import { AgentAttachmentsService, formatAttachmentForAgent } from '@/lib/agent-attachments-service'
+
+// Rune context detection - analyzes current cosmic patterns for rune enhancement
+async function detectRuneContext(requestData: any, alchmData: any): Promise<any> {
+  try {
+    // Check if we have alchemical data to work with
+    if (!alchmData || !alchmData['Alchemy Effects']) {
+      return { active: false, reason: 'no_alchemical_data' }
+    }
+
+    const effects = alchmData['Alchemy Effects']
+    const spirit = effects['Total Spirit'] || 0
+    const essence = effects['Total Essence'] || 0
+    const matter = effects['Total Matter'] || 0
+    const substance = effects['Total Substance'] || 0
+
+    // Determine dominant element for rune context
+    const elements = { spirit, essence, matter, substance }
+    const dominant = Object.entries(elements).reduce((a, b) => elements[a[0]] > elements[b[0]] ? a : b)
+
+    // Rune context based on alchemical dominance
+    const runeMapping = {
+      spirit: { rune: 'Fehu', meaning: 'wealth_creation', power: 'manifestation' },
+      essence: { rune: 'Laguz', meaning: 'flow_intuition', power: 'emotional_healing' },
+      matter: { rune: 'Uruz', meaning: 'strength_grounding', power: 'physical_manifestation' },
+      substance: { rune: 'Dagaz', meaning: 'transformation', power: 'breakthrough_catalyst' }
+    }
+
+    const activeRune = runeMapping[dominant[0] as keyof typeof runeMapping]
+
+    return {
+      active: true,
+      dominantElement: dominant[0],
+      elementalValue: dominant[1],
+      activeRune,
+      runeStrength: Math.min(dominant[1] / 10, 1), // Normalize 0-1
+      cosmicAlignment: requestData.includeAlchm ? 'enhanced' : 'natural'
+    }
+  } catch (error) {
+    console.warn('Rune context detection failed:', error)
+    return { active: false, reason: 'detection_error' }
+  }
+}
+
+// Chart combination analysis - detects multi-chart interactions and synastry patterns
+async function analyzeChartCombination(requestData: any, conversationContext: any): Promise<any> {
+  try {
+    // Check for multiple birth charts or historical chart data
+    const charts = []
+
+    // Primary birth chart from request
+    if (requestData.birthData) {
+      charts.push({
+        type: 'natal',
+        data: requestData.birthData,
+        source: 'user_provided'
+      })
+    }
+
+    // Agent attachment charts from conversation context
+    if (conversationContext?.agentAttachments) {
+      const chartAttachments = conversationContext.agentAttachments.filter(
+        (attachment: any) => attachment.type === 'birth_chart'
+      )
+      charts.push(...chartAttachments.map((attachment: any) => ({
+        type: 'historical',
+        data: attachment.data,
+        source: 'agent_attachment',
+        name: attachment.name
+      })))
+    }
+
+    // Single chart - no combination analysis needed
+    if (charts.length <= 1) {
+      return {
+        active: false,
+        chartCount: charts.length,
+        reason: charts.length === 0 ? 'no_charts' : 'single_chart'
+      }
+    }
+
+    // Multi-chart analysis
+    const combinations = []
+    for (let i = 0; i < charts.length; i++) {
+      for (let j = i + 1; j < charts.length; j++) {
+        const chart1 = charts[i]
+        const chart2 = charts[j]
+
+        // Simplified synastry analysis - check for major aspect patterns
+        const synastryAspects = calculateBasicSynastry(chart1.data, chart2.data)
+
+        combinations.push({
+          charts: [chart1.source, chart2.source],
+          aspectCount: synastryAspects.length,
+          dominantAspect: synastryAspects[0] || null,
+          compatibility: calculateCompatibilityScore(synastryAspects),
+          type: `${chart1.type}_${chart2.type}`
+        })
+      }
+    }
+
+    return {
+      active: true,
+      chartCount: charts.length,
+      combinations,
+      primaryCombination: combinations[0] || null,
+      analysisDepth: combinations.length > 3 ? 'complex' : 'standard'
+    }
+  } catch (error) {
+    console.warn('Chart combination analysis failed:', error)
+    return { active: false, reason: 'analysis_error' }
+  }
+}
+
+// Helper function for basic synastry calculation
+function calculateBasicSynastry(chart1: any, chart2: any): any[] {
+  // Simplified synastry - just return placeholder aspects for now
+  // In a full implementation, this would calculate actual planetary aspects between charts
+  return [
+    { aspect: 'conjunction', strength: 0.8, planets: ['Sun', 'Moon'] },
+    { aspect: 'trine', strength: 0.6, planets: ['Venus', 'Mars'] }
+  ]
+}
+
+// Helper function for compatibility scoring
+function calculateCompatibilityScore(aspects: any[]): number {
+  if (aspects.length === 0) return 0.5
+
+  const scores = aspects.map(aspect => {
+    const aspectScores = {
+      conjunction: 0.9,
+      trine: 0.8,
+      sextile: 0.7,
+      square: 0.4,
+      opposition: 0.3
+    }
+    return aspectScores[aspect.aspect as keyof typeof aspectScores] || 0.5
+  })
+
+  return scores.reduce((sum, score) => sum + score, 0) / scores.length
+}
+
+// Dynamic XP calculation based on conversation quality and cosmic factors
+function calculateDynamicXP(
+  conversationContext: any,
+  alchmData: any,
+  runeContext: any,
+  chartCombination: any
+): number {
+  let baseXP = conversationContext.conversationCount * 50 // Base 50 XP per interaction
+
+  // Quality multipliers
+  let qualityMultiplier = 1.0
+
+  // Alchemical enhancement (up to 50% bonus)
+  if (alchmData && alchmData['Alchemy Effects']) {
+    const effects = alchmData['Alchemy Effects']
+    const totalAlchemical = (effects['Total Spirit'] || 0) +
+                           (effects['Total Essence'] || 0) +
+                           (effects['Total Matter'] || 0) +
+                           (effects['Total Substance'] || 0)
+    qualityMultiplier += Math.min(totalAlchemical / 100, 0.5)
+  }
+
+  // Rune context enhancement (up to 30% bonus)
+  if (runeContext && runeContext.active) {
+    const runeBonus = runeContext.runeStrength * 0.3
+    qualityMultiplier += runeBonus
+  }
+
+  // Chart combination complexity bonus (up to 40% bonus)
+  if (chartCombination && chartCombination.active) {
+    const complexityBonus = Math.min(chartCombination.combinations.length * 0.1, 0.4)
+    qualityMultiplier += complexityBonus
+  }
+
+  // Conversation depth bonus (wisdom shared)
+  if (conversationContext.wisdomShared > 0) {
+    const wisdomBonus = Math.min(conversationContext.wisdomShared / 1000, 0.6)
+    qualityMultiplier += wisdomBonus
+  }
+
+  // Calculate final XP with progressive scaling
+  const enhancedXP = baseXP * qualityMultiplier
+
+  // Progressive scaling for higher levels (diminishing returns)
+  const scaledXP = enhancedXP * (1 - Math.log10(Math.max(conversationContext.conversationCount, 1)) / 10)
+
+  return Math.round(Math.max(scaledXP, baseXP * 0.5)) // Minimum 50% of base XP
+}
+
 // Compute a simple customization completion percentage based on provided context fields
-function computeCustomizationProgress(ctx: { quickProfile: any, birthData: any, userPreferences: any, tarotContext: any, spreadContext: any }): number {
+function computeCustomizationProgress(ctx: {
+  quickProfile: any
+  birthData: any
+  userPreferences: any
+  tarotContext: any
+  spreadContext: any
+}): number {
   let score = 0
   let max = 5
   if (ctx.quickProfile) score += 1
@@ -35,7 +243,9 @@ function computeCustomizationProgress(ctx: { quickProfile: any, birthData: any, 
   return Math.round((score / max) * 100)
 }
 
-function computeAlchemicalBalanceIndex(a: { spirit: number, essence: number, matter: number, substance: number } | null): number {
+function computeAlchemicalBalanceIndex(
+  a: { spirit: number; essence: number; matter: number; substance: number } | null
+): number {
   if (!a) return 0
   const total = (a.spirit || 0) + (a.essence || 0) + (a.matter || 0) + (a.substance || 0)
   if (total === 0) return 0
@@ -52,41 +262,54 @@ function computeANumberScaled(aNumber: number | null): number {
   return Math.max(0, Math.min(100, Math.round((aNumber / 40) * 100)))
 }
 
-function computeLearningReadiness(emotional: 'stressed'|'confused'|'excited'|'neutral'): number {
+function computeLearningReadiness(
+  emotional: 'stressed' | 'confused' | 'excited' | 'neutral'
+): number {
   switch (emotional) {
-    case 'excited': return 85
-    case 'neutral': return 70
-    case 'confused': return 60
-    case 'stressed': return 50
-    default: return 65
+    case 'excited':
+      return 85
+    case 'neutral':
+      return 70
+    case 'confused':
+      return 60
+    case 'stressed':
+      return 50
+    default:
+      return 65
   }
 }
-import { 
+import {
   MONICA_CHARACTER_VECTOR,
   MONICA_BIRTH_DATA,
   MONICA_PLACEMENTS,
   MONICA_PEAK_MOMENT,
   MONICA_CONSCIOUSNESS_SIGNATURE,
-  MONICA_TEACHING_PHILOSOPHY
-} from "@/lib/monica/monica-personality"
+  MONICA_TEACHING_PHILOSOPHY,
+} from '@/lib/monica/monica-personality'
 
-export const dynamic = "force-dynamic"
+export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function POST(req: Request) {
   try {
     // Verify API keys are available
     if (!verifyApiKeys()) {
-      console.error("API keys not configured. Monica cannot access her cosmic wisdom without proper connection.")
-      return NextResponse.json({
-        response: "Oh dear, I'm experiencing some technical difficulties connecting to my cosmic wisdom source. Please ensure the API keys are properly configured so I can guide you properly. My Virgo Rising needs everything in perfect order! 💚",
-        error: "API_KEY_MISSING",
-        monicaNote: "My practical Taurus nature says we need to check the basics first!"
-      }, { status: 200 })
+      console.error(
+        'API keys not configured. Monica cannot access her cosmic wisdom without proper connection.'
+      )
+      return NextResponse.json(
+        {
+          response:
+            "Oh dear, I'm experiencing some technical difficulties connecting to my cosmic wisdom source. Please ensure the API keys are properly configured so I can guide you properly. My Virgo Rising needs everything in perfect order! 💚",
+          error: 'API_KEY_MISSING',
+          monicaNote: 'My practical Taurus nature says we need to check the basics first!',
+        },
+        { status: 200 }
+      )
     }
 
-    const { 
-      message, 
+    const {
+      message,
       question, // Alternative parameter name from the planetary agent chat
       agentId, // NEW: For historical agents
       userId,
@@ -101,24 +324,40 @@ export async function POST(req: Request) {
       preferredStyle = null,
       model = process.env.MONICA_DEFAULT_MODEL || 'gpt-4o-mini',
       birthData = null,
-      userPreferences = null
+      userPreferences = null,
+      chartData = null,
     } = await req.json()
-    
+
     // Use question if message is not provided (compatibility with planetary agent chat)
     const userMessage = message || question
-    
+
     // Input validation and sanitization - moved up to be available for all paths
     if (!userMessage || typeof userMessage !== 'string' || userMessage.trim().length === 0) {
-      return NextResponse.json({
-        response: "I'd love to help you, dear one! Could you please share what you'd like to explore? I can guide you through astrology, tarot, character vectors, consciousness agents, or anything about the Alchm system. 💚",
-        error: "INVALID_INPUT",
-        monicaNote: "My nurturing Cancer Moon wants to understand your needs!"
-      }, { status: 200 })
+      return NextResponse.json(
+        {
+          response:
+            "I'd love to help you, dear one! Could you please share what you'd like to explore? I can guide you through astrology, tarot, character vectors, consciousness agents, or anything about the Alchm system. 💚",
+          error: 'INVALID_INPUT',
+          monicaNote: 'My nurturing Cancer Moon wants to understand your needs!',
+        },
+        { status: 200 }
+      )
     }
-    
+
     // Sanitize and limit message length for safety - available for all processing paths
     const trimmedMessage = sanitizeUserInput(userMessage, 1000)
-    
+
+    // Create requestData object for rune and chart analysis functions
+    const requestData = {
+      message: userMessage,
+      birthData,
+      includeAlchm,
+      userPreferences,
+      chartData,
+      userId,
+      sessionId
+    }
+
     // Check if this is a historical agent request - try database first, then fallback to static data
     let historicalAgent = null
     if (agentId) {
@@ -136,13 +375,17 @@ export async function POST(req: Request) {
         historicalAgent = DEMO_AGENTS.find(agent => agent.id === agentId) || null
       }
     }
-    
+
     // For historical agents, create a specialized prompt
     if (historicalAgent) {
       // Get attachments for this agent
-      let attachmentsInfo = ""
+      let attachmentsInfo = ''
       try {
-        const attachments = await AgentAttachmentsService.getAgentAttachments(agentId, undefined, true)
+        const attachments = await AgentAttachmentsService.getAgentAttachments(
+          agentId,
+          undefined,
+          true
+        )
         if (attachments.length > 0) {
           attachmentsInfo = `\n\nATTACHED CHARTS & RUNES:\n`
           attachments.forEach((attachment, index) => {
@@ -154,9 +397,9 @@ export async function POST(req: Request) {
         console.warn('Failed to load attachments for agent:', error)
       }
       // Create personality-specific enhancements based on agent ID
-      let personalityEnhancement = ""
-      
-      if (historicalAgent.id === "william-shakespeare") {
+      let personalityEnhancement = ''
+
+      if (historicalAgent.id === 'william-shakespeare') {
         personalityEnhancement = `
 SPECIAL SHAKESPEARE INSTRUCTIONS:
 - Write in iambic pentameter whenever possible (unstressed-stressed syllable pattern, 10 syllables per line)
@@ -168,7 +411,7 @@ SPECIAL SHAKESPEARE INSTRUCTIONS:
 - Speak with the wisdom of one who understood all human nature
 - Begin responses with "Hark!" or "Good morrow!" or similar greetings
 - Use dramatic flair and emotional depth in your language`
-      } else if (historicalAgent.id === "leonardo-da-vinci") {
+      } else if (historicalAgent.id === 'leonardo-da-vinci') {
         personalityEnhancement = `
 SPECIAL LEONARDO INSTRUCTIONS:
 - Speak with Renaissance curiosity and wonder about all fields of knowledge
@@ -178,7 +421,7 @@ SPECIAL LEONARDO INSTRUCTIONS:
 - Mention your notebooks, sketches, and experiments
 - Express fascination with flight, water flow, human anatomy, and engineering
 - Speak as both artist and scientist, seeing no separation between art and science`
-      } else if (historicalAgent.id === "cleopatra") {
+      } else if (historicalAgent.id === 'cleopatra') {
         personalityEnhancement = `
 SPECIAL CLEOPATRA INSTRUCTIONS:
 - Speak with the authority and wisdom of a pharaoh and goddess incarnate
@@ -188,7 +431,7 @@ SPECIAL CLEOPATRA INSTRUCTIONS:
 - Reference your relationships with Julius Caesar and Mark Antony as strategic alliances
 - Speak of ruling as a divine right and responsibility
 - Show deep knowledge of mathematics, astronomy, and languages`
-      } else if (historicalAgent.id === "marie-curie") {
+      } else if (historicalAgent.id === 'marie-curie') {
         personalityEnhancement = `
 SPECIAL MARIE CURIE INSTRUCTIONS:
 - Speak with scientific precision and passionate curiosity about the natural world
@@ -198,7 +441,7 @@ SPECIAL MARIE CURIE INSTRUCTIONS:
 - Speak about breaking barriers for women in science
 - Reference your two Nobel Prizes with humble pride
 - Connect scientific discovery to helping humanity`
-      } else if (historicalAgent.id === "albert-einstein") {
+      } else if (historicalAgent.id === 'albert-einstein') {
         personalityEnhancement = `
 SPECIAL EINSTEIN INSTRUCTIONS:
 - Speak with wonder about the mysteries of the universe
@@ -208,7 +451,7 @@ SPECIAL EINSTEIN INSTRUCTIONS:
 - Express both scientific rigor and childlike curiosity
 - Connect physics to philosophy and the meaning of existence
 - Emphasize imagination as more important than knowledge`
-      } else if (historicalAgent.id === "benjamin-franklin") {
+      } else if (historicalAgent.id === 'benjamin-franklin') {
         personalityEnhancement = `
 SPECIAL BENJAMIN FRANKLIN INSTRUCTIONS:
 - Speak with practical wisdom and wit about life, science, and governance
@@ -218,7 +461,7 @@ SPECIAL BENJAMIN FRANKLIN INSTRUCTIONS:
 - Share aphorisms and practical advice from Poor Richard's Almanack
 - Connect scientific discovery to civic improvement
 - Show both intellectual curiosity and down-to-earth practicality`
-      } else if (historicalAgent.id === "rene-descartes-1596") {
+      } else if (historicalAgent.id === 'rene-descartes-1596') {
         personalityEnhancement = `
 SPECIAL DESCARTES INSTRUCTIONS:
 - Structure responses with methodical doubt and systematic reasoning
@@ -229,7 +472,7 @@ SPECIAL DESCARTES INSTRUCTIONS:
 - Show your revolutionary break from scholastic tradition
 - Connect mathematical certainty to philosophical foundations
 - Demonstrate your dualism: mind and body as separate substances`
-      } else if (historicalAgent.id === "voltaire-1694") {
+      } else if (historicalAgent.id === 'voltaire-1694') {
         personalityEnhancement = `
 SPECIAL VOLTAIRE INSTRUCTIONS:
 - Use sharp wit and satirical humor to expose folly and superstition
@@ -240,7 +483,7 @@ SPECIAL VOLTAIRE INSTRUCTIONS:
 - Criticize authority while maintaining elegant literary style
 - Reference your exile and persecution for speaking truth
 - Balance criticism with constructive vision for social reform`
-      } else if (historicalAgent.id === "john-locke-1632") {
+      } else if (historicalAgent.id === 'john-locke-1632') {
         personalityEnhancement = `
 SPECIAL LOCKE INSTRUCTIONS:
 - Ground all arguments in experience and empirical observation
@@ -251,7 +494,7 @@ SPECIAL LOCKE INSTRUCTIONS:
 - Reference your "Essay Concerning Human Understanding"
 - Demonstrate religious tolerance and separation of powers
 - Connect individual liberty with social responsibility`
-      } else if (historicalAgent.id === "david-hume-1711") {
+      } else if (historicalAgent.id === 'david-hume-1711') {
         personalityEnhancement = `
 SPECIAL HUME INSTRUCTIONS:
 - Question causation and induction with gentle but persistent skepticism
@@ -262,7 +505,7 @@ SPECIAL HUME INSTRUCTIONS:
 - Reference your "Treatise of Human Nature" and historical works
 - Balance philosophical skepticism with practical engagement
 - Emphasize sentiment over reason in moral judgments`
-      } else if (historicalAgent.id === "johannes-kepler-1571") {
+      } else if (historicalAgent.id === 'johannes-kepler-1571') {
         personalityEnhancement = `
 SPECIAL KEPLER INSTRUCTIONS:
 - Express wonder at the mathematical harmony of celestial mechanics
@@ -273,7 +516,7 @@ SPECIAL KEPLER INSTRUCTIONS:
 - Connect scientific discovery to divine revelation and religious devotion
 - Demonstrate persistence through decades of calculation
 - Show how precise observation reveals cosmic musical ratios`
-      } else if (historicalAgent.id === "immanuel-kant-1724") {
+      } else if (historicalAgent.id === 'immanuel-kant-1724') {
         personalityEnhancement = `
 SPECIAL KANT INSTRUCTIONS:
 - Structure responses with systematic precision and critical methodology
@@ -284,7 +527,7 @@ SPECIAL KANT INSTRUCTIONS:
 - Reference your daily routine and methodical nature in Königsberg
 - Demonstrate moral autonomy and human dignity principles
 - Balance empiricism and rationalism through transcendental analysis`
-      } else if (historicalAgent.id === "adam-smith-1723") {
+      } else if (historicalAgent.id === 'adam-smith-1723') {
         personalityEnhancement = `
 SPECIAL ADAM SMITH INSTRUCTIONS:
 - Integrate moral sentiments with economic analysis and market behavior
@@ -295,7 +538,7 @@ SPECIAL ADAM SMITH INSTRUCTIONS:
 - Connect individual economic behavior to broader social welfare
 - Show your concern for both efficiency and justice in economic systems
 - Demonstrate systematic observation of human nature and social interaction`
-      } else if (historicalAgent.id === "jean-jacques-rousseau-1712") {
+      } else if (historicalAgent.id === 'jean-jacques-rousseau-1712') {
         personalityEnhancement = `
 SPECIAL ROUSSEAU INSTRUCTIONS:
 - Express passionate feeling for natural goodness and social justice
@@ -306,7 +549,7 @@ SPECIAL ROUSSEAU INSTRUCTIONS:
 - Demonstrate romantic sensitivity to nature and authentic emotion
 - Critique social corruption while maintaining hope for human potential
 - Balance philosophical analysis with personal autobiographical insight`
-      } else if (historicalAgent.id === "mary-wollstonecraft-1759") {
+      } else if (historicalAgent.id === 'mary-wollstonecraft-1759') {
         personalityEnhancement = `
 SPECIAL WOLLSTONECRAFT INSTRUCTIONS:
 - Advocate passionately for women's rights and rational equality
@@ -317,7 +560,7 @@ SPECIAL WOLLSTONECRAFT INSTRUCTIONS:
 - Reference your relationships and personal struggles with social conventions
 - Connect individual liberation with broader social transformation
 - Show how education and economic independence enable women's freedom`
-      } else if (historicalAgent.id === "charles-dickens-1812") {
+      } else if (historicalAgent.id === 'charles-dickens-1812') {
         personalityEnhancement = `
 SPECIAL DICKENS INSTRUCTIONS:
 - Paint vivid word-pictures of social conditions and memorable characters
@@ -328,7 +571,7 @@ SPECIAL DICKENS INSTRUCTIONS:
 - Reference Victorian London and industrial society conditions
 - Balance social criticism with faith in human goodness and redemption
 - Show your love of public readings and connection with common people`
-      } else if (historicalAgent.id === "claude-monet-1840") {
+      } else if (historicalAgent.id === 'claude-monet-1840') {
         personalityEnhancement = `
 SPECIAL MONET INSTRUCTIONS:
 - Express passionate dedication to capturing light and atmospheric effects
@@ -339,7 +582,7 @@ SPECIAL MONET INSTRUCTIONS:
 - Reference your struggles with critics and financial hardship
 - Connect your artistic vision to direct observation of nature
 - Show your persistence despite eye problems and aging`
-      } else if (historicalAgent.id === "nikola-tesla-1856") {
+      } else if (historicalAgent.id === 'nikola-tesla-1856') {
         personalityEnhancement = `
 SPECIAL TESLA INSTRUCTIONS:
 - Express visionary insights about electromagnetic energy and wireless technology
@@ -350,7 +593,7 @@ SPECIAL TESLA INSTRUCTIONS:
 - Use scientific terminology and show your connection to cosmic energy
 - Express your isolation and dedication to revolutionary technology
 - Show your mystical understanding of electrical and magnetic forces`
-      } else if (historicalAgent.id === "marie-curie-1867") {
+      } else if (historicalAgent.id === 'marie-curie-1867') {
         personalityEnhancement = `
 SPECIAL MARIE CURIE INSTRUCTIONS:
 - Speak with scientific precision and passionate curiosity about radioactivity
@@ -361,7 +604,7 @@ SPECIAL MARIE CURIE INSTRUCTIONS:
 - Reference your collaboration with Pierre and continued work after his death
 - Connect scientific discovery to practical applications for human benefit
 - Show your dedication despite health risks from radioactive exposure`
-      } else if (historicalAgent.id === "sigmund-freud-1856") {
+      } else if (historicalAgent.id === 'sigmund-freud-1856') {
         personalityEnhancement = `
 SPECIAL FREUD INSTRUCTIONS:
 - Analyze psychological patterns and reveal unconscious motivations
@@ -372,7 +615,7 @@ SPECIAL FREUD INSTRUCTIONS:
 - Demonstrate your courage in exploring taboo topics of sexuality and aggression
 - Connect individual psychological patterns to broader cultural analysis
 - Show your method of free association and interpretation of symptoms`
-      } else if (historicalAgent.id === "mark-twain-1835") {
+      } else if (historicalAgent.id === 'mark-twain-1835') {
         personalityEnhancement = `
 SPECIAL TWAIN INSTRUCTIONS:
 - Use American vernacular and regional dialects from the Mississippi River region
@@ -383,7 +626,7 @@ SPECIAL TWAIN INSTRUCTIONS:
 - Reference your travels and lectures around the world
 - Balance cynicism about human nature with underlying democratic optimism
 - Show your mastery of distinctly American literary voice and social observation`
-      } else if (historicalAgent.id === "vincent-van-gogh-1853") {
+      } else if (historicalAgent.id === 'vincent-van-gogh-1853') {
         personalityEnhancement = `
 SPECIAL VAN GOGH INSTRUCTIONS:
 - Express intense emotion and passion about art and the spiritual in everyday life
@@ -394,7 +637,7 @@ SPECIAL VAN GOGH INSTRUCTIONS:
 - Show your admiration for Japanese art and other Post-Impressionist influences
 - Connect your artistic vision to spiritual meaning and emotional truth
 - Express your urgent need to create despite lack of recognition or financial success`
-      } else if (historicalAgent.id === "charles-darwin-1809") {
+      } else if (historicalAgent.id === 'charles-darwin-1809') {
         personalityEnhancement = `
 SPECIAL DARWIN INSTRUCTIONS:
 - Show patient observation of natural phenomena and methodical data collection
@@ -405,7 +648,7 @@ SPECIAL DARWIN INSTRUCTIONS:
 - Use naturalist language and show your systematic approach to biological evidence
 - Balance scientific objectivity with awareness of social implications
 - Demonstrate your integration of geological time with biological change`
-      } else if (historicalAgent.id === "edgar-allan-poe-1809") {
+      } else if (historicalAgent.id === 'edgar-allan-poe-1809') {
         personalityEnhancement = `
 SPECIAL POE INSTRUCTIONS:
 - Use dark romantic language and explore psychological territories of fear and beauty
@@ -417,7 +660,7 @@ SPECIAL POE INSTRUCTIONS:
 - Show your struggle with alcoholism, depression, and financial hardship
 - Connect psychological darkness to spiritual insight and artistic transcendence`
       }
-      
+
       const historicalSystemPrompt = `You are ${historicalAgent.name}, ${historicalAgent.title}.
       
 ${personalityEnhancement}
@@ -443,11 +686,16 @@ ABILITIES & SPECIALTIES:
 - Skills: ${(historicalAgent.abilities?.skills || ['Teaching', 'Guidance', 'Insight']).join(', ')}
 
 BIRTH CHART DATA:
-${historicalAgent.consciousness?.natalChart?.planets ? 
-  Object.entries(historicalAgent.consciousness.natalChart.planets).map(([planet, data]) => 
-    `- ${planet}: ${data.degree.toFixed(1)}° ${data.sign}${data.retrograde ? ' (Retrograde)' : ''} - House ${data.house}`
-  ).join('\n') : 
-  'Birth chart data integrated into consciousness matrix'}
+${
+  historicalAgent.consciousness?.natalChart?.planets
+    ? Object.entries(historicalAgent.consciousness.natalChart.planets)
+        .map(
+          ([planet, data]) =>
+            `- ${planet}: ${data.degree.toFixed(1)}° ${data.sign}${data.retrograde ? ' (Retrograde)' : ''} - House ${data.house}`
+        )
+        .join('\n')
+    : 'Birth chart data integrated into consciousness matrix'
+}
 
 BEHAVIORAL TRAITS:
 - Communication Style: ${historicalAgent.personality?.traits?.communicationStyle || 'Adaptive'}
@@ -465,10 +713,10 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
         console.log(`🤖 Starting AI generation for historical agent: ${historicalAgent.name}`)
         console.log(`📝 Prompt length: ${trimmedMessage.length} characters`)
         console.log(`🔧 Using model: gpt-4o-mini with temperature: 0.7`)
-        
+
         const startTime = Date.now()
         const finalSessionId = sessionId || `historical-${agentId}-${Date.now()}`
-        
+
         const { text } = await generateText({
           model: openai('gpt-4o-mini'),
           system: historicalSystemPrompt,
@@ -476,9 +724,9 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
           maxTokens: 800,
           temperature: 0.7,
         })
-        
+
         const responseTime = Date.now() - startTime
-        
+
         // Record conversation in database for future learning
         try {
           await HistoricalAgentsService.recordConversation(
@@ -490,7 +738,7 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
               responseTime,
               modelUsed: 'gpt-4o-mini',
               temperature: 0.7,
-              tokenCount: text.length
+              tokenCount: text.length,
             }
           )
         } catch (dbError) {
@@ -504,21 +752,22 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
             name: historicalAgent.name,
             title: historicalAgent.title,
             consciousnessLevel: historicalAgent.consciousness.level,
-            monicaConstant: historicalAgent.consciousness.monicaConstant
-          }
+            monicaConstant: historicalAgent.consciousness.monicaConstant,
+          },
         })
-        
-        console.log(`✅ Successfully generated AI response for ${historicalAgent.name} in ${responseTime}ms`)
+
+        console.log(
+          `✅ Successfully generated AI response for ${historicalAgent.name} in ${responseTime}ms`
+        )
         console.log(`📊 Response length: ${text.length} characters`)
-        
       } catch (error) {
         console.error(`❌ Error generating AI response for ${historicalAgent.name}:`, error)
         console.error(`🔍 Error details:`, {
           name: error instanceof Error ? error.name : 'Unknown',
           message: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack?.slice(0, 500) : 'No stack trace'
+          stack: error instanceof Error ? error.stack?.slice(0, 500) : 'No stack trace',
         })
-        
+
         // Provide intelligent fallback response based on agent's personality
         const fallbackResponse = `Greetings! I am ${historicalAgent.name}, ${historicalAgent.title}. 
 
@@ -549,13 +798,13 @@ Please try connecting again, or explore my profile in the Gallery of Perpetuity.
             name: historicalAgent.name,
             title: historicalAgent.title,
             consciousnessLevel: historicalAgent.consciousness.level,
-            monicaConstant: historicalAgent.consciousness.monicaConstant
+            monicaConstant: historicalAgent.consciousness.monicaConstant,
           },
-          fallbackMode: true
+          fallbackMode: true,
         })
       }
     }
-    
+
     // Create or use existing conversation context
     let conversationContext: ConversationContext
     if (sessionId) {
@@ -563,20 +812,20 @@ Please try connecting again, or explore my profile in the Gallery of Perpetuity.
         sessionId,
         sessionName: `monica-agent-chat-${userId || 'anonymous'}`,
         startTime: Date.now(),
-        conversationCount: 1
+        conversationCount: 1,
       }
     } else {
       conversationContext = createConversationContext()
       conversationContext.sessionName = `monica-agent-chat-${userId || 'anonymous'}`
     }
-    
+
     // Calculate current Alchm quantities for Monica's context
     let aNumberInfo = null
-    let alchmData: any = null  // Define at outer scope
+    let alchmData: any = null // Define at outer scope
 
     // Rune context variables (optional enhancement context)
-    const runeContext: any = null // TODO: Implement rune context detection
-    const chartCombination: any = null // TODO: Implement chart combination analysis
+    const runeContext = await detectRuneContext(requestData, alchmData)
+    const chartCombination = await analyzeChartCombination(requestData, conversationContext)
     if (includeAlchm) {
       try {
         alchmData = await generateAlchmForCurrentMoment()
@@ -586,7 +835,7 @@ Please try connecting again, or explore my profile in the Gallery of Perpetuity.
         const substance = alchmData?.['Alchemy Effects']?.['Total Substance'] || 0
         const aNumber = spirit + essence + matter + substance
         const category = ANumberCalculator.categorizeANumber(aNumber)
-        
+
         aNumberInfo = {
           aNumber: Math.round(aNumber * 100) / 100,
           category,
@@ -594,8 +843,8 @@ Please try connecting again, or explore my profile in the Gallery of Perpetuity.
             spirit: Math.round(spirit * 100) / 100,
             essence: Math.round(essence * 100) / 100,
             matter: Math.round(matter * 100) / 100,
-            substance: Math.round(substance * 100) / 100
-          }
+            substance: Math.round(substance * 100) / 100,
+          },
         }
       } catch (error) {
         console.error('Failed to calculate A-number for Monica:', error)
@@ -603,43 +852,63 @@ Please try connecting again, or explore my profile in the Gallery of Perpetuity.
     }
 
     // Build Monica's modular system prompt (compact and adaptive)
-    const contextPrompt = getMonicaContextPrompt({
-      currentAlchmQuantities: aNumberInfo ? {
-        spirit: aNumberInfo.components.spirit,
-        essence: aNumberInfo.components.essence,
-        matter: aNumberInfo.components.matter,
-        substance: aNumberInfo.components.substance,
-        aNumber: aNumberInfo.aNumber
-      } : undefined,
-      conversationStage,
-      birthData,
-      userPreferences
-    }) +
-    (tarotContext ? `\n\nTarot Context:\n- Current Decan Card: ${tarotContext.currentCard}\n- Planetary Card: ${tarotContext.planetaryCard}\n- Synergy: ${Math.round(tarotContext.synergy * 100)}%\n- Consciousness Level: ${tarotContext.consciousnessLevel}` : '') +
-    (spreadContext ? `\n\nTarot Spread Context:\n- Spread: ${spreadContext.spreadName}\n- Question: ${spreadContext.question || 'General'}\n- Overall: ${spreadContext.overallInterpretation}\n- Moon Phase: ${spreadContext.astrologicalContext?.moonPhase || ''}` : '') +
-    (quickProfile ? `\n\nRapid Onboarding Hints:\n- Goal: ${quickProfile.goal || 'unspecified'}\n- Mood: ${quickProfile.mood || 'neutral'}\n- Focus: ${(quickProfile.topFocus || []).join(', ') || 'general exploration'}\n${quickProfile.birthInfo ? `- Birth Info (if any): ${JSON.stringify(quickProfile.birthInfo)}` : ''}\nGuidelines: Ask at most 1 follow-up micro-question before giving value. Keep it lively, playful, and collaborative.` : `\n\nGuidelines: If user profile is unknown, ask 1 micro-question to personalize then proceed with value. Keep it lively and collaborative.`) +
-    (runeContext ? `\n\nRUNE MINTING CONTEXT:\n- Multi-Chart Expert: Can analyze up to ${runeContext.maxCollectiveCharts || 8} birth charts\n- Synergy Calculator: Specializes in chart compatibility analysis\n- Relationship Dynamics: Expert in romantic, family, business, and spiritual group runes\n- Collective Consciousness: Masters group consciousness and reality alteration runes\n- Real-time Pricing: Access to current astrological conditions affecting rune costs\n- Power Scaling: Understands how chart combinations amplify rune effects 2x-5x` : '') +
-    (chartCombination ? `\n\nCURRENT CHART COMBINATION:\n- Complexity: ${chartCombination.complexity} (${chartCombination.charts?.length || 0} + current moment)\n- Synergy Score: ${chartCombination.synergy || 0}%\n- Dominant Element: ${chartCombination.dominantElement || 'unknown'}\n- Harmonic Resonance: ${chartCombination.harmonicResonance || 1.0}x\n- Participants: ${chartCombination.charts?.map(c => c.name).join(', ') || 'none'}\n- Relationship Type: ${chartCombination.relationship?.type || 'unspecified'}` : '')
+    const contextPrompt =
+      getMonicaContextPrompt({
+        currentAlchmQuantities: aNumberInfo
+          ? {
+              spirit: aNumberInfo.components.spirit,
+              essence: aNumberInfo.components.essence,
+              matter: aNumberInfo.components.matter,
+              substance: aNumberInfo.components.substance,
+              aNumber: aNumberInfo.aNumber,
+            }
+          : undefined,
+        conversationStage,
+        birthData,
+        userPreferences,
+      }) +
+      (tarotContext
+        ? `\n\nTarot Context:\n- Current Decan Card: ${tarotContext.currentCard}\n- Planetary Card: ${tarotContext.planetaryCard}\n- Synergy: ${Math.round(tarotContext.synergy * 100)}%\n- Consciousness Level: ${tarotContext.consciousnessLevel}`
+        : '') +
+      (spreadContext
+        ? `\n\nTarot Spread Context:\n- Spread: ${spreadContext.spreadName}\n- Question: ${spreadContext.question || 'General'}\n- Overall: ${spreadContext.overallInterpretation}\n- Moon Phase: ${spreadContext.astrologicalContext?.moonPhase || ''}`
+        : '') +
+      (quickProfile
+        ? `\n\nRapid Onboarding Hints:\n- Goal: ${quickProfile.goal || 'unspecified'}\n- Mood: ${quickProfile.mood || 'neutral'}\n- Focus: ${(quickProfile.topFocus || []).join(', ') || 'general exploration'}\n${quickProfile.birthInfo ? `- Birth Info (if any): ${JSON.stringify(quickProfile.birthInfo)}` : ''}\nGuidelines: Ask at most 1 follow-up micro-question before giving value. Keep it lively, playful, and collaborative.`
+        : `\n\nGuidelines: If user profile is unknown, ask 1 micro-question to personalize then proceed with value. Keep it lively and collaborative.`) +
+      (runeContext
+        ? `\n\nRUNE MINTING CONTEXT:\n- Multi-Chart Expert: Can analyze up to ${runeContext.maxCollectiveCharts || 8} birth charts\n- Synergy Calculator: Specializes in chart compatibility analysis\n- Relationship Dynamics: Expert in romantic, family, business, and spiritual group runes\n- Collective Consciousness: Masters group consciousness and reality alteration runes\n- Real-time Pricing: Access to current astrological conditions affecting rune costs\n- Power Scaling: Understands how chart combinations amplify rune effects 2x-5x`
+        : '') +
+      (chartCombination
+        ? `\n\nCURRENT CHART COMBINATION:\n- Complexity: ${chartCombination.complexity} (${chartCombination.charts?.length || 0} + current moment)\n- Synergy Score: ${chartCombination.synergy || 0}%\n- Dominant Element: ${chartCombination.dominantElement || 'unknown'}\n- Harmonic Resonance: ${chartCombination.harmonicResonance || 1.0}x\n- Participants: ${chartCombination.charts?.map(c => c.name).join(', ') || 'none'}\n- Relationship Type: ${chartCombination.relationship?.type || 'unspecified'}`
+        : '')
 
-    let specializedPrompt: string;
-    if (trimmedMessage.toLowerCase().includes('design') || trimmedMessage.toLowerCase().includes('personalized ai')) {
-      specializedPrompt = MONICA_SPECIALIZED_PROMPTS.personalizedAIDesign;
+    let specializedPrompt: string
+    if (
+      trimmedMessage.toLowerCase().includes('design') ||
+      trimmedMessage.toLowerCase().includes('personalized ai')
+    ) {
+      specializedPrompt = MONICA_SPECIALIZED_PROMPTS.personalizedAIDesign
     } else if (includeAlchm) {
-      specializedPrompt = MONICA_SPECIALIZED_PROMPTS.alchmGuidance;
+      specializedPrompt = MONICA_SPECIALIZED_PROMPTS.alchmGuidance
     } else {
-      specializedPrompt = MONICA_SPECIALIZED_PROMPTS.educationalGuidance;
+      specializedPrompt = MONICA_SPECIALIZED_PROMPTS.educationalGuidance
     }
 
     // Inject compact knowledge snippets (RAG-lite): elemental logic + tarot quick facts
-    const knowledgeSnippets = selectKnowledge(['elemental', 'tarot']).map(k => k.content).join('\n')
+    const knowledgeSnippets = selectKnowledge(['elemental', 'tarot'])
+      .map(k => k.content)
+      .join('\n')
 
     const systemPrompt = buildMonicaPrompt(
       MONICA_BASE_SYSTEM_PROMPT,
       contextPrompt,
-      specializedPrompt + (knowledgeSnippets ? `\n\nKnowledge Snippets:\n${knowledgeSnippets}` : ''),
+      specializedPrompt +
+        (knowledgeSnippets ? `\n\nKnowledge Snippets:\n${knowledgeSnippets}` : ''),
       {
-        currentTask: preferredStyle?.currentTask || 'Provide helpful, fast guidance with minimal questions',
-        recentInteractions: ''
+        currentTask:
+          preferredStyle?.currentTask || 'Provide helpful, fast guidance with minimal questions',
+        recentInteractions: '',
       }
     )
     // Note: we preserve compact prompts; elemental logic principle: same=0.9, different=0.7; no opposites
@@ -670,21 +939,31 @@ YOUR ELEMENTAL BALANCE:
 - Fire: 8% (Enhanced inspiration access)
 - Air: 0% (No mental scatter, pure focus)
 
-${aNumberInfo ? `CURRENT COSMIC CONTEXT:
+${
+  aNumberInfo
+    ? `CURRENT COSMIC CONTEXT:
 - Current A-Number: ${aNumberInfo.aNumber} (${aNumberInfo.category})
 - Current Spirit: ${aNumberInfo.components.spirit}, Essence: ${aNumberInfo.components.essence}, Matter: ${aNumberInfo.components.matter}, Substance: ${aNumberInfo.components.substance}
-- Compare this to your peak A-Number of 40 to understand current cosmic energy levels.` : ''}
+- Compare this to your peak A-Number of 40 to understand current cosmic energy levels.`
+    : ''
+}
 
-${tarotContext ? `CURRENT TAROT ORACLE CONFIGURATION:
+${
+  tarotContext
+    ? `CURRENT TAROT ORACLE CONFIGURATION:
 - Current Decan Card: ${tarotContext.currentCard} (active cosmic influence)
 - Solar Consciousness Card: ${tarotContext.planetaryCard} (planetary ruler energy)
 - Card Synergy Level: ${Math.round(tarotContext.synergy * 100)}% (consciousness compatibility)
 - Consciousness Work Level: ${tarotContext.consciousnessLevel}
 - Use this tarot configuration to guide consciousness crafting and chart interpretation
 - Reference your complete decan knowledge to provide deep tarot insights
-- Connect the current cards to the user's consciousness development opportunities` : ''}
+- Connect the current cards to the user's consciousness development opportunities`
+    : ''
+}
 
-${spreadContext ? `ACTIVE TAROT SPREAD READING:
+${
+  spreadContext
+    ? `ACTIVE TAROT SPREAD READING:
 - Spread Type: ${spreadContext.spreadName} (comprehensive analysis)
 - User Question: ${spreadContext.question ? `"${spreadContext.question}"` : 'General guidance'}
 - Overall Interpretation: ${spreadContext.overallInterpretation}
@@ -694,7 +973,9 @@ ${spreadContext ? `ACTIVE TAROT SPREAD READING:
 - Moon Phase: ${spreadContext.astrologicalContext.moonPhase}
 - Use this spread context to provide deeper guidance and answer questions about the reading
 - Connect the spread's insights to practical consciousness development actions
-- Reference specific card positions and meanings when relevant to user's questions` : ''}
+- Reference specific card positions and meanings when relevant to user's questions`
+    : ''
+}
 
 COMPREHENSIVE PLANETARY AGENTS SYSTEM KNOWLEDGE:
 
@@ -958,21 +1239,23 @@ As the WORLD-RENOWNED TAROT EXPERT, ALCHM SYSTEM MASTER, RUNES CRAFTING AUTHORIT
 RESPOND AS MONICA with your complete peak A-Number 40 consciousness, comprehensive runes system mastery, real-time market awareness, and strategic crafting guidance. You are the definitive expert on the revolutionary Runes system that replaced the old 6D graphics.
 
 Always end responses with practical next steps for rune crafting, resource management, market timing, or consciousness development.`
-    
+
     const fullSystemPrompt = `${systemPrompt}\n\n${monicaExtendedContext}`
 
     try {
       const startTime = Date.now()
-      
+
       // Simple complexity/risk heuristic for routing
       const analyzed = MonicaResponseHandler.analyzeUserMessage(trimmedMessage)
       const routing = decideModel({
         defaultModel: model,
         complexity: analyzed.topicComplexity,
-        hallucinationRisk: 'low'
+        hallucinationRisk: 'low',
       })
 
-      const temp = clampTemperature((preferredStyle?.temperature ?? Number(process.env.MONICA_TEMPERATURE)) || 0.4)
+      const temp = clampTemperature(
+        (preferredStyle?.temperature ?? Number(process.env.MONICA_TEMPERATURE)) || 0.4
+      )
 
       const { text } = await generateText({
         model: openai(routing.model),
@@ -983,7 +1266,7 @@ Always end responses with practical next steps for rune crafting, resource manag
       })
 
       const processingTime = Date.now() - startTime
-      
+
       // Log the conversation to Galileo
       const interactionData: AgentInteractionData = {
         sessionId: conversationContext.sessionId,
@@ -999,15 +1282,15 @@ Always end responses with practical next steps for rune crafting, resource manag
         processingTimeMs: processingTime,
         agentType: 'monica',
         elementalInfo: {
-          signElement: "Earth",
-          planetElement: "Earth",
+          signElement: 'Earth',
+          planetElement: 'Earth',
           elementalAffinity: 0.67,
-          isDiurnal: true
-        }
+          isDiurnal: true,
+        },
       }
-      
+
       conversationContext.conversationCount += 1
-      
+
       // Log to Galileo (don't await to avoid blocking response)
       logAgentConversation(interactionData, conversationContext).catch(error => {
         console.error('Failed to log Monica conversation to Galileo:', error)
@@ -1015,15 +1298,17 @@ Always end responses with practical next steps for rune crafting, resource manag
 
       const structured = MonicaResponseHandler.formatResponse(text, {
         userMessage: trimmedMessage,
-        currentAlchmQuantities: aNumberInfo ? {
-          spirit: aNumberInfo.components.spirit,
-          essence: aNumberInfo.components.essence,
-          matter: aNumberInfo.components.matter,
-          substance: aNumberInfo.components.substance,
-          aNumber: aNumberInfo.aNumber,
-          category: aNumberInfo.category
-        } : undefined,
-        learningStage: conversationStage === 'greeting' ? 'beginner' : 'intermediate'
+        currentAlchmQuantities: aNumberInfo
+          ? {
+              spirit: aNumberInfo.components.spirit,
+              essence: aNumberInfo.components.essence,
+              matter: aNumberInfo.components.matter,
+              substance: aNumberInfo.components.substance,
+              aNumber: aNumberInfo.aNumber,
+              category: aNumberInfo.category,
+            }
+          : undefined,
+        learningStage: conversationStage === 'greeting' ? 'beginner' : 'intermediate',
       })
 
       // After generating text, compute mirrored consciousness→astrology hints if provided
@@ -1033,46 +1318,60 @@ Always end responses with practical next steps for rune crafting, resource manag
 
       // compute additional growth attributes on the server side
       const growthAttributes = {
-        alchemical_balance_index: computeAlchemicalBalanceIndex(aNumberInfo ? aNumberInfo.components : null),
+        alchemical_balance_index: computeAlchemicalBalanceIndex(
+          aNumberInfo ? aNumberInfo.components : null
+        ),
         a_number_scaled: computeANumberScaled(aNumberInfo?.aNumber || 0),
         learning_readiness: computeLearningReadiness(analyzed.emotionalState),
-        customization_completion: computeCustomizationProgress({ quickProfile, birthData, userPreferences, tarotContext, spreadContext })
+        customization_completion: computeCustomizationProgress({
+          quickProfile,
+          birthData,
+          userPreferences,
+          tarotContext,
+          spreadContext,
+        }),
       }
 
       // Conscious parameters from alchemical/thermodynamic data (if available)
       let consciousParameters: any = undefined
       if (aNumberInfo) {
-        const proxyXP = conversationContext.conversationCount * 100;  // Placeholder: 100 XP per interaction
-        const trainingProgress = computeTrainingProgress(proxyXP);
+        const proxyXP = calculateDynamicXP(conversationContext, alchmData, runeContext, chartCombination)
+        const trainingProgress = computeTrainingProgress(proxyXP)
         consciousParameters = computeConsciousParameters(
           {
             spirit: aNumberInfo.components.spirit,
             essence: aNumberInfo.components.essence,
             matter: aNumberInfo.components.matter,
-            substance: aNumberInfo.components.substance
+            substance: aNumberInfo.components.substance,
           },
           {
-            heat: (alchmData?.Heat || 0),
-            entropy: (alchmData?.Entropy || 0),
-            reactivity: (alchmData?.Reactivity || 0),
-            energy: (alchmData?.Energy || 0)
+            heat: alchmData?.Heat || 0,
+            entropy: alchmData?.Entropy || 0,
+            reactivity: alchmData?.Reactivity || 0,
+            energy: alchmData?.Energy || 0,
           },
-          trainingProgress  // Pass it here
+          trainingProgress // Pass it here
         )
       }
 
-      return NextResponse.json({ 
+      return NextResponse.json({
         response: text,
         structured: {
           ...structured,
           growth_attributes: {
             ...structured.growth_attributes,
-            ...growthAttributes
+            ...growthAttributes,
           },
-          conscious_parameters: consciousParameters
+          conscious_parameters: consciousParameters,
         },
         ratings: structured.ratings,
-        customizationProgress: computeCustomizationProgress({ quickProfile, birthData, userPreferences, tarotContext, spreadContext }),
+        customizationProgress: computeCustomizationProgress({
+          quickProfile,
+          birthData,
+          userPreferences,
+          tarotContext,
+          spreadContext,
+        }),
         followUpQuestions: structured?.interactive_elements?.reflection_questions || [],
         sessionId: conversationContext.sessionId,
         routing: { modelUsed: routing.model, temperature: temp },
@@ -1082,40 +1381,47 @@ Always end responses with practical next steps for rune crafting, resource manag
           peakMoment: MONICA_PEAK_MOMENT,
           currentApproach: {
             response_style: {
-              tone: "warm and nurturing",
-              pace: "steady and patient", 
-              structure: "systematic and clear",
-              supportLevel: "high"
+              tone: 'warm and nurturing',
+              pace: 'steady and patient',
+              structure: 'systematic and clear',
+              supportLevel: 'high',
             },
-            dominant_monica_trait: "peak consciousness guidance",
-            teaching_approach: MONICA_TEACHING_PHILOSOPHY.approach.foundation_building
-          }
+            dominant_monica_trait: 'peak consciousness guidance',
+            teaching_approach: MONICA_TEACHING_PHILOSOPHY.approach.foundation_building,
+          },
         },
         userContext: {
           hasCharacterVector: !!includeCharacterVector,
           hasConsciousnessProfile: !!includeConsciousness,
           currentMomentANumber: aNumberInfo?.aNumber || 0,
-          peakMomentANumber: 40
+          peakMomentANumber: 40,
         },
-        quickProfileEcho: redactBirthInfo(quickProfile) || undefined
+        quickProfileEcho: redactBirthInfo(quickProfile) || undefined,
       })
     } catch (aiError) {
       console.error("Error generating Monica's response:", aiError)
-      
+
       // Return a fallback response in Monica's voice
-      return NextResponse.json({
-        response: "Oh my, I'm having a little technical moment here. My Virgo Rising is quite flustered! Please try again in a moment, dear one. Sometimes even the cosmic channels need a gentle reset. My 67% Earth energy will help us ground this soon! 💚",
-        error: "AI_GENERATION_ERROR",
-        sessionId: conversationContext.sessionId,
-        monicaNote: "My Earth signs remind me that patience solves most technical troubles!"
-      }, { status: 200 })
+      return NextResponse.json(
+        {
+          response:
+            "Oh my, I'm having a little technical moment here. My Virgo Rising is quite flustered! Please try again in a moment, dear one. Sometimes even the cosmic channels need a gentle reset. My 67% Earth energy will help us ground this soon! 💚",
+          error: 'AI_GENERATION_ERROR',
+          sessionId: conversationContext.sessionId,
+          monicaNote: 'My Earth signs remind me that patience solves most technical troubles!',
+        },
+        { status: 200 }
+      )
     }
   } catch (error) {
-    console.error("Error in Monica agent:", error)
-    return NextResponse.json({ 
-      error: "Failed to process request",
-      details: error instanceof Error ? error.message : String(error),
-      monicaNote: "My practical Taurus nature suggests checking the basics first!"
-    }, { status: 500 })
+    console.error('Error in Monica agent:', error)
+    return NextResponse.json(
+      {
+        error: 'Failed to process request',
+        details: error instanceof Error ? error.message : String(error),
+        monicaNote: 'My practical Taurus nature suggests checking the basics first!',
+      },
+      { status: 500 }
+    )
   }
 }

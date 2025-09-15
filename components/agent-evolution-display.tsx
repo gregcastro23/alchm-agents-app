@@ -29,7 +29,7 @@ export function AgentEvolutionDisplay({
   agentId,
   userLocation = { lat: 37.7749, lon: -122.4194 },
   className = '',
-  variant = 'full'
+  variant = 'full',
 }: AgentEvolutionDisplayProps) {
   const [evolution, setEvolution] = useState<AgentEvolutionData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -45,8 +45,8 @@ export function AgentEvolutionDisplay({
           kind: 'kinetics',
           payload: {
             agentId,
-            location: userLocation
-          }
+            location: userLocation,
+          },
         })
 
         if (result.degraded || !result.output) {
@@ -92,8 +92,12 @@ export function AgentEvolutionDisplay({
   if (variant === 'minimal') {
     return (
       <div className={`flex items-center gap-2 text-xs ${className}`}>
-        <div className={`w-2 h-2 rounded-full ${evolution.optimalTime ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`}></div>
-        <span className="text-gray-400">{(evolution.currentVelocity * 100).toFixed(0)}% velocity</span>
+        <div
+          className={`w-2 h-2 rounded-full ${evolution.optimalTime ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`}
+        ></div>
+        <span className="text-gray-400">
+          {(evolution.currentVelocity * 100).toFixed(0)}% velocity
+        </span>
         {evolution.optimalTime && <span className="text-green-400">⚡ Peak</span>}
       </div>
     )
@@ -101,10 +105,14 @@ export function AgentEvolutionDisplay({
 
   if (variant === 'compact') {
     return (
-      <div className={`p-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-lg ${className}`}>
+      <div
+        className={`p-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-lg ${className}`}
+      >
         <div className="flex items-center justify-between text-xs">
           <span className="text-gray-400">Consciousness:</span>
-          <span className={`font-bold ${evolution.currentVelocity > 0.7 ? 'text-green-400' : 'text-yellow-400'}`}>
+          <span
+            className={`font-bold ${evolution.currentVelocity > 0.7 ? 'text-green-400' : 'text-yellow-400'}`}
+          >
             {(evolution.currentVelocity * 100).toFixed(0)}%
           </span>
         </div>
@@ -114,7 +122,7 @@ export function AgentEvolutionDisplay({
             <div className="w-12 h-1 bg-gray-700 rounded">
               <div
                 className="h-full bg-gradient-to-r from-yellow-400 to-orange-400 rounded"
-                style={{width: `${evolution.powerLevel * 100}%`}}
+                style={{ width: `${evolution.powerLevel * 100}%` }}
               />
             </div>
             <span className="text-orange-400">{(evolution.powerLevel * 100).toFixed(0)}%</span>
@@ -131,14 +139,18 @@ export function AgentEvolutionDisplay({
 
   // Full variant
   return (
-    <div className={`p-3 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-indigo-500/10 rounded-lg border border-gray-700/50 ${className}`}>
+    <div
+      className={`p-3 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-indigo-500/10 rounded-lg border border-gray-700/50 ${className}`}
+    >
       <div className="flex items-center justify-between mb-2">
         <h4 className="text-sm font-medium text-gray-300">{agentProfile.name}</h4>
-        <div className={`px-2 py-1 rounded text-xs ${
-          evolution.optimalTime
-            ? 'bg-green-500/20 text-green-400 animate-pulse'
-            : 'bg-yellow-500/20 text-yellow-400'
-        }`}>
+        <div
+          className={`px-2 py-1 rounded text-xs ${
+            evolution.optimalTime
+              ? 'bg-green-500/20 text-green-400 animate-pulse'
+              : 'bg-yellow-500/20 text-yellow-400'
+          }`}
+        >
           {evolution.peakHour} Hour
         </div>
       </div>
@@ -147,14 +159,16 @@ export function AgentEvolutionDisplay({
       <div className="mb-2">
         <div className="flex items-center justify-between text-xs mb-1">
           <span className="text-gray-400">Consciousness Velocity</span>
-          <span className={`font-bold ${evolution.currentVelocity > 0.7 ? 'text-green-400' : evolution.currentVelocity > 0.5 ? 'text-yellow-400' : 'text-orange-400'}`}>
+          <span
+            className={`font-bold ${evolution.currentVelocity > 0.7 ? 'text-green-400' : evolution.currentVelocity > 0.5 ? 'text-yellow-400' : 'text-orange-400'}`}
+          >
             {(evolution.currentVelocity * 100).toFixed(0)}%
           </span>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-1.5">
           <div
             className="bg-gradient-to-r from-blue-400 to-purple-400 h-1.5 rounded-full transition-all duration-300"
-            style={{width: `${evolution.currentVelocity * 100}%`}}
+            style={{ width: `${evolution.currentVelocity * 100}%` }}
           />
         </div>
       </div>
@@ -170,7 +184,7 @@ export function AgentEvolutionDisplay({
         <div className="w-full bg-gray-700 rounded-full h-1.5">
           <div
             className="bg-gradient-to-r from-yellow-400 to-orange-400 h-1.5 rounded-full transition-all duration-300"
-            style={{width: `${evolution.powerLevel * 100}%`}}
+            style={{ width: `${evolution.powerLevel * 100}%` }}
           />
         </div>
       </div>
@@ -181,7 +195,8 @@ export function AgentEvolutionDisplay({
           <div className="flex items-center gap-2">
             <span className="text-green-400 animate-pulse">⚡</span>
             <span className="text-green-400 font-medium">
-              Enhanced Responses Active! (+{((evolution.enhancementMultiplier - 1) * 100).toFixed(0)}%)
+              Enhanced Responses Active! (+
+              {((evolution.enhancementMultiplier - 1) * 100).toFixed(0)}%)
             </span>
           </div>
           <div className="text-green-400/70 mt-1">
@@ -193,7 +208,9 @@ export function AgentEvolutionDisplay({
       {/* Momentum Type */}
       <div className="mt-2 flex items-center justify-between text-xs">
         <span className="text-gray-400">Momentum:</span>
-        <span className={`px-2 py-1 rounded text-xs capitalize ${getMomentumColor(evolution.momentumType)}`}>
+        <span
+          className={`px-2 py-1 rounded text-xs capitalize ${getMomentumColor(evolution.momentumType)}`}
+        >
           {evolution.momentumType.replace('_', ' ')}
         </span>
       </div>
@@ -211,15 +228,17 @@ export function AgentEvolutionDisplay({
         <div className="mt-2 pt-2 border-t border-gray-700/50">
           <div className="text-xs text-gray-400 mb-1">Special Abilities:</div>
           <div className="flex flex-wrap gap-1">
-            {Object.entries(evolution.specialKinetics).slice(0, 2).map(([key, value]) => (
-              <div
-                key={key}
-                className="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded"
-                title={`${key}: ${value}`}
-              >
-                {key.replace(/_/g, ' ')}
-              </div>
-            ))}
+            {Object.entries(evolution.specialKinetics)
+              .slice(0, 2)
+              .map(([key, value]) => (
+                <div
+                  key={key}
+                  className="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded"
+                  title={`${key}: ${value}`}
+                >
+                  {key.replace(/_/g, ' ')}
+                </div>
+              ))}
           </div>
         </div>
       )}
@@ -268,8 +287,8 @@ export function useAgentEvolution(agentId: string, userLocation?: { lat: number;
           kind: 'kinetics',
           payload: {
             agentId,
-            location: userLocation || { lat: 37.7749, lon: -122.4194 }
-          }
+            location: userLocation || { lat: 37.7749, lon: -122.4194 },
+          },
         })
 
         if (result.degraded || !result.output) {

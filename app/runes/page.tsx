@@ -1,15 +1,15 @@
-"use client"
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Sparkles, 
-  Users, 
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Progress } from '@/components/ui/progress'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Sparkles,
+  Users,
   Wand2,
   Crown,
   Info,
@@ -22,36 +22,36 @@ import {
   TrendingUp,
   TrendingDown,
   Clock,
-  CheckCircle
-} from 'lucide-react';
+  CheckCircle,
+} from 'lucide-react'
 
-import MultiChartInput, { type ChartInput } from '@/components/multi-chart-input';
-import { 
+import MultiChartInput, { type ChartInput } from '@/components/multi-chart-input'
+import {
   MULTI_CHART_RUNE_CATALOG,
-  type ChartCombination, 
+  type ChartCombination,
   type MultiChartRune,
   type AlchemicalCost,
   getAvailableRunesForCharts,
   calculateMultiChartRuneCosts,
-  calculateRunePower
-} from '@/lib/runes/multi-chart-runes';
+  calculateRunePower,
+} from '@/lib/runes/multi-chart-runes'
 
 interface RunesPageState {
-  currentTab: 'input' | 'analysis' | 'minting' | 'minted';
-  charts: ChartInput[];
-  relationshipType: string;
-  isAnalyzing: boolean;
+  currentTab: 'input' | 'analysis' | 'minting' | 'minted'
+  charts: ChartInput[]
+  relationshipType: string
+  isAnalyzing: boolean
   analysisResult: {
-    chartCombination: ChartCombination;
-    availableRunes: MultiChartRune[];
-    compatibilityScore: number;
-  } | null;
-  userResources: AlchemicalCost;
-  currentConditions: Record<string, boolean>;
-  selectedRune: MultiChartRune | null;
-  mintedRunes: any[];
-  isLoading: boolean;
-  error: string | null;
+    chartCombination: ChartCombination
+    availableRunes: MultiChartRune[]
+    compatibilityScore: number
+  } | null
+  userResources: AlchemicalCost
+  currentConditions: Record<string, boolean>
+  selectedRune: MultiChartRune | null
+  mintedRunes: any[]
+  isLoading: boolean
+  error: string | null
 }
 
 export default function RunesPage() {
@@ -66,36 +66,36 @@ export default function RunesPage() {
     selectedRune: null,
     mintedRunes: [],
     isLoading: false,
-    error: null
-  });
+    error: null,
+  })
 
   // Load current astrological conditions on mount
   useEffect(() => {
-    fetchCurrentConditions();
-  }, []);
+    fetchCurrentConditions()
+  }, [])
 
   const fetchCurrentConditions = async () => {
     try {
-      const response = await fetch('/api/runes/current-conditions');
-      const data = await response.json();
-      
+      const response = await fetch('/api/runes/current-conditions')
+      const data = await response.json()
+
       if (data.success) {
-        const conditions: Record<string, boolean> = {};
+        const conditions: Record<string, boolean> = {}
         data.conditions.forEach((condition: any) => {
-          conditions[condition.condition] = condition.active;
-        });
-        setState(prev => ({ ...prev, currentConditions: conditions }));
+          conditions[condition.condition] = condition.active
+        })
+        setState(prev => ({ ...prev, currentConditions: conditions }))
       }
     } catch (error) {
-      console.error('Failed to fetch conditions:', error);
+      console.error('Failed to fetch conditions:', error)
     }
-  };
+  }
 
   const handleAnalyzeCharts = async () => {
-    if (state.charts.length === 0) return;
-    
-    setState(prev => ({ ...prev, isAnalyzing: true, error: null }));
-    
+    if (state.charts.length === 0) return
+
+    setState(prev => ({ ...prev, isAnalyzing: true, error: null }))
+
     try {
       const response = await fetch('/api/runes/analyze-charts', {
         method: 'POST',
@@ -105,47 +105,47 @@ export default function RunesPage() {
             name: chart.name,
             birthDate: chart.birthDate,
             birthTime: chart.birthTime,
-            birthLocation: chart.birthLocation
+            birthLocation: chart.birthLocation,
           })),
-          relationshipType: state.relationshipType
-        })
-      });
-      
-      const data = await response.json();
-      
+          relationshipType: state.relationshipType,
+        }),
+      })
+
+      const data = await response.json()
+
       if (data.success) {
         const availableRunes = getAvailableRunesForCharts(
-          data.chartCombination, 
+          data.chartCombination,
           state.userResources
-        );
-        
+        )
+
         setState(prev => ({
           ...prev,
           analysisResult: {
             chartCombination: data.chartCombination,
             availableRunes,
-            compatibilityScore: data.chartCombination.synergy
+            compatibilityScore: data.chartCombination.synergy,
           },
-          currentTab: 'analysis'
-        }));
+          currentTab: 'analysis',
+        }))
       } else {
-        setState(prev => ({ ...prev, error: data.error }));
+        setState(prev => ({ ...prev, error: data.error }))
       }
     } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
-        error: error instanceof Error ? error.message : 'Analysis failed' 
-      }));
+      setState(prev => ({
+        ...prev,
+        error: error instanceof Error ? error.message : 'Analysis failed',
+      }))
     } finally {
-      setState(prev => ({ ...prev, isAnalyzing: false }));
+      setState(prev => ({ ...prev, isAnalyzing: false }))
     }
-  };
+  }
 
   const handleMintRune = async (rune: MultiChartRune) => {
-    if (!state.analysisResult) return;
-    
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
-    
+    if (!state.analysisResult) return
+
+    setState(prev => ({ ...prev, isLoading: true, error: null }))
+
     try {
       const response = await fetch('/api/runes/mint', {
         method: 'POST',
@@ -154,71 +154,88 @@ export default function RunesPage() {
           runeId: rune.id,
           chartCombination: state.analysisResult.chartCombination,
           userResources: state.userResources,
-          currentConditions: state.currentConditions
-        })
-      });
-      
-      const data = await response.json();
-      
+          currentConditions: state.currentConditions,
+        }),
+      })
+
+      const data = await response.json()
+
       if (data.success) {
         setState(prev => ({
           ...prev,
           mintedRunes: [...prev.mintedRunes, data.mintedRune],
           userResources: data.transaction.remainingResources,
-          currentTab: 'minted'
-        }));
+          currentTab: 'minted',
+        }))
       } else {
-        setState(prev => ({ ...prev, error: data.error }));
+        setState(prev => ({ ...prev, error: data.error }))
       }
     } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
-        error: error instanceof Error ? error.message : 'Minting failed' 
-      }));
+      setState(prev => ({
+        ...prev,
+        error: error instanceof Error ? error.message : 'Minting failed',
+      }))
     } finally {
-      setState(prev => ({ ...prev, isLoading: false }));
+      setState(prev => ({ ...prev, isLoading: false }))
     }
-  };
+  }
 
   const getRuneTypeIcon = (type: string) => {
     switch (type) {
-      case 'offensive': return <Zap className="h-4 w-4 text-red-500" />;
-      case 'defensive': return <Shield className="h-4 w-4 text-blue-500" />;
-      case 'utility': return <Eye className="h-4 w-4 text-green-500" />;
-      case 'cosmic': return <Crown className="h-4 w-4 text-purple-500" />;
-      case 'temporal': return <Clock className="h-4 w-4 text-orange-500" />;
-      default: return <Sparkles className="h-4 w-4" />;
+      case 'offensive':
+        return <Zap className="h-4 w-4 text-red-500" />
+      case 'defensive':
+        return <Shield className="h-4 w-4 text-blue-500" />
+      case 'utility':
+        return <Eye className="h-4 w-4 text-green-500" />
+      case 'cosmic':
+        return <Crown className="h-4 w-4 text-purple-500" />
+      case 'temporal':
+        return <Clock className="h-4 w-4 text-orange-500" />
+      default:
+        return <Sparkles className="h-4 w-4" />
     }
-  };
+  }
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
-      case 'common': return 'bg-gray-100 text-gray-800';
-      case 'uncommon': return 'bg-green-100 text-green-800';
-      case 'rare': return 'bg-blue-100 text-blue-800';
-      case 'epic': return 'bg-purple-100 text-purple-800';
-      case 'legendary': return 'bg-orange-100 text-orange-800';
-      case 'cosmic': return 'bg-gradient-to-r from-purple-500 to-pink-500 text-white';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'common':
+        return 'bg-gray-100 text-gray-800'
+      case 'uncommon':
+        return 'bg-green-100 text-green-800'
+      case 'rare':
+        return 'bg-blue-100 text-blue-800'
+      case 'epic':
+        return 'bg-purple-100 text-purple-800'
+      case 'legendary':
+        return 'bg-orange-100 text-orange-800'
+      case 'cosmic':
+        return 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+      default:
+        return 'bg-gray-100 text-gray-800'
     }
-  };
+  }
 
   const formatCostChange = (baseCost: number, currentCost: number) => {
     if (currentCost < baseCost) {
-      const discount = Math.round(((baseCost - currentCost) / baseCost) * 100);
-      return <span className="text-green-600 flex items-center gap-1">
-        <TrendingDown className="h-3 w-3" />
-        {currentCost} (-{discount}%)
-      </span>;
+      const discount = Math.round(((baseCost - currentCost) / baseCost) * 100)
+      return (
+        <span className="text-green-600 flex items-center gap-1">
+          <TrendingDown className="h-3 w-3" />
+          {currentCost} (-{discount}%)
+        </span>
+      )
     } else if (currentCost > baseCost) {
-      const increase = Math.round(((currentCost - baseCost) / baseCost) * 100);
-      return <span className="text-red-600 flex items-center gap-1">
-        <TrendingUp className="h-3 w-3" />
-        {currentCost} (+{increase}%)
-      </span>;
+      const increase = Math.round(((currentCost - baseCost) / baseCost) * 100)
+      return (
+        <span className="text-red-600 flex items-center gap-1">
+          <TrendingUp className="h-3 w-3" />
+          {currentCost} (+{increase}%)
+        </span>
+      )
     }
-    return <span className="text-gray-600">{currentCost}</span>;
-  };
+    return <span className="text-gray-600">{currentCost}</span>
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-7xl">
@@ -255,24 +272,29 @@ export default function RunesPage() {
               <div className="text-sm text-gray-500">Matter</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{state.userResources.substance}</div>
+              <div className="text-2xl font-bold text-orange-600">
+                {state.userResources.substance}
+              </div>
               <div className="text-sm text-gray-500">Substance</div>
             </div>
           </div>
-          
+
           {/* Active Conditions */}
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Active Astrological Conditions</h4>
             <div className="flex flex-wrap gap-2">
-              {Object.entries(state.currentConditions).map(([condition, active]) => 
-                active && (
-                  <Badge key={condition} variant="outline" className="text-xs">
-                    {condition.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                  </Badge>
-                )
+              {Object.entries(state.currentConditions).map(
+                ([condition, active]) =>
+                  active && (
+                    <Badge key={condition} variant="outline" className="text-xs">
+                      {condition.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </Badge>
+                  )
               )}
               {Object.values(state.currentConditions).every(v => !v) && (
-                <Badge variant="outline" className="text-xs">No special conditions active</Badge>
+                <Badge variant="outline" className="text-xs">
+                  No special conditions active
+                </Badge>
               )}
             </div>
           </div>
@@ -288,7 +310,10 @@ export default function RunesPage() {
       )}
 
       {/* Main Interface */}
-      <Tabs value={state.currentTab} onValueChange={(tab) => setState(prev => ({ ...prev, currentTab: tab as any }))}>
+      <Tabs
+        value={state.currentTab}
+        onValueChange={tab => setState(prev => ({ ...prev, currentTab: tab as any }))}
+      >
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="input" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
@@ -311,8 +336,10 @@ export default function RunesPage() {
         {/* Chart Input Tab */}
         <TabsContent value="input" className="space-y-6">
           <MultiChartInput
-            onChartsChange={(charts) => setState(prev => ({ ...prev, charts }))}
-            onRelationshipTypeChange={(type) => setState(prev => ({ ...prev, relationshipType: type }))}
+            onChartsChange={charts => setState(prev => ({ ...prev, charts }))}
+            onRelationshipTypeChange={type =>
+              setState(prev => ({ ...prev, relationshipType: type }))
+            }
             onAnalyze={handleAnalyzeCharts}
             isAnalyzing={state.isAnalyzing}
             maxCharts={8}
@@ -364,32 +391,42 @@ export default function RunesPage() {
               {/* Available Runes */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Available Runes ({state.analysisResult.availableRunes.length})</CardTitle>
+                  <CardTitle>
+                    Available Runes ({state.analysisResult.availableRunes.length})
+                  </CardTitle>
                   <CardDescription>
                     Runes you can mint with your current chart combination and resources
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {state.analysisResult.availableRunes.map((rune) => {
+                    {state.analysisResult.availableRunes.map(rune => {
                       const costs = calculateMultiChartRuneCosts(
-                        rune, 
-                        state.analysisResult!.chartCombination, 
+                        rune,
+                        state.analysisResult!.chartCombination,
                         state.currentConditions
-                      );
-                      const power = calculateRunePower(rune, state.analysisResult!.chartCombination);
-                      const canAfford = state.userResources.spirit >= costs.spirit &&
-                                       state.userResources.essence >= costs.essence &&
-                                       state.userResources.matter >= costs.matter &&
-                                       state.userResources.substance >= costs.substance;
+                      )
+                      const power = calculateRunePower(rune, state.analysisResult!.chartCombination)
+                      const canAfford =
+                        state.userResources.spirit >= costs.spirit &&
+                        state.userResources.essence >= costs.essence &&
+                        state.userResources.matter >= costs.matter &&
+                        state.userResources.substance >= costs.substance
 
                       return (
-                        <Card 
+                        <Card
                           key={rune.id}
                           className={`cursor-pointer transition-all hover:shadow-lg ${
                             !canAfford ? 'opacity-60' : ''
                           }`}
-                          onClick={() => canAfford && setState(prev => ({ ...prev, selectedRune: rune, currentTab: 'minting' }))}
+                          onClick={() =>
+                            canAfford &&
+                            setState(prev => ({
+                              ...prev,
+                              selectedRune: rune,
+                              currentTab: 'minting',
+                            }))
+                          }
                         >
                           <CardHeader className="pb-3">
                             <div className="flex items-center justify-between">
@@ -408,8 +445,10 @@ export default function RunesPage() {
                             </div>
                           </CardHeader>
                           <CardContent>
-                            <p className="text-xs text-gray-600 mb-3 line-clamp-2">{rune.description}</p>
-                            
+                            <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                              {rune.description}
+                            </p>
+
                             {/* Enhanced Power Display */}
                             <div className="mb-3">
                               <div className="flex justify-between text-xs">
@@ -418,7 +457,7 @@ export default function RunesPage() {
                               </div>
                               <Progress value={Math.min(power, 300)} className="h-2 mt-1" />
                             </div>
-                            
+
                             {/* Costs */}
                             <div className="space-y-1 text-xs">
                               <div className="flex justify-between">
@@ -439,14 +478,18 @@ export default function RunesPage() {
                               </div>
                             </div>
 
-                            <Button 
-                              className="w-full mt-3" 
+                            <Button
+                              className="w-full mt-3"
                               size="sm"
                               disabled={!canAfford}
-                              onClick={(e) => {
-                                e.stopPropagation();
+                              onClick={e => {
+                                e.stopPropagation()
                                 if (canAfford) {
-                                  setState(prev => ({ ...prev, selectedRune: rune, currentTab: 'minting' }));
+                                  setState(prev => ({
+                                    ...prev,
+                                    selectedRune: rune,
+                                    currentTab: 'minting',
+                                  }))
                                 }
                               }}
                             >
@@ -454,7 +497,7 @@ export default function RunesPage() {
                             </Button>
                           </CardContent>
                         </Card>
-                      );
+                      )
                     })}
                   </div>
                 </CardContent>
@@ -488,7 +531,11 @@ export default function RunesPage() {
                         <div className="flex justify-between">
                           <span>Enhanced Power:</span>
                           <span className="font-bold text-purple-600">
-                            {calculateRunePower(state.selectedRune, state.analysisResult.chartCombination)}%
+                            {calculateRunePower(
+                              state.selectedRune,
+                              state.analysisResult.chartCombination
+                            )}
+                            %
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -508,10 +555,10 @@ export default function RunesPage() {
                       <h4 className="font-medium mb-3">Final Costs</h4>
                       {(() => {
                         const costs = calculateMultiChartRuneCosts(
-                          state.selectedRune, 
-                          state.analysisResult.chartCombination, 
+                          state.selectedRune,
+                          state.analysisResult.chartCombination,
                           state.currentConditions
-                        );
+                        )
                         return (
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
@@ -528,20 +575,26 @@ export default function RunesPage() {
                             </div>
                             <div className="flex justify-between">
                               <span>Substance:</span>
-                              {formatCostChange(state.selectedRune.baseCost.substance, costs.substance)}
+                              {formatCostChange(
+                                state.selectedRune.baseCost.substance,
+                                costs.substance
+                              )}
                             </div>
                             <div className="border-t pt-1 flex justify-between font-medium">
                               <span>Total:</span>
-                              {formatCostChange(state.selectedRune.baseCost.totalCost, costs.totalCost)}
+                              {formatCostChange(
+                                state.selectedRune.baseCost.totalCost,
+                                costs.totalCost
+                              )}
                             </div>
                           </div>
-                        );
+                        )
                       })()}
                     </div>
                   </div>
 
                   {/* Mint Button */}
-                  <Button 
+                  <Button
                     onClick={() => handleMintRune(state.selectedRune!)}
                     disabled={state.isLoading}
                     className="w-full h-12 text-lg"
@@ -593,7 +646,8 @@ export default function RunesPage() {
                       </Badge>
                     </CardTitle>
                     <CardDescription>
-                      Minted on {new Date(mintedRune.mintingSignature.mintingTimestamp).toLocaleDateString()}
+                      Minted on{' '}
+                      {new Date(mintedRune.mintingSignature.mintingTimestamp).toLocaleDateString()}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -605,7 +659,9 @@ export default function RunesPage() {
                             <div key={i} className="bg-white p-2 rounded text-sm">
                               <div className="flex justify-between items-start mb-1">
                                 <span className="font-medium">Power: {effect.power}%</span>
-                                <Badge variant="outline" className="text-xs">{effect.duration}</Badge>
+                                <Badge variant="outline" className="text-xs">
+                                  {effect.duration}
+                                </Badge>
                               </div>
                               <p className="text-gray-700">{effect.effect}</p>
                             </div>
@@ -618,7 +674,11 @@ export default function RunesPage() {
                           <h4 className="font-medium mb-2">Participants</h4>
                           <div className="flex flex-wrap gap-1">
                             {mintedRune.collectiveParticipants.map((participant: any) => (
-                              <Badge key={participant.chartId} variant="outline" className="text-xs">
+                              <Badge
+                                key={participant.chartId}
+                                variant="outline"
+                                className="text-xs"
+                              >
                                 {participant.name} ({participant.contributionPercentage}%)
                               </Badge>
                             ))}
@@ -642,15 +702,19 @@ export default function RunesPage() {
               <Heart className="h-8 w-8 mx-auto text-green-600 mb-2" />
               <h3 className="text-lg font-semibold text-green-800">Need Guidance?</h3>
               <p className="text-sm text-green-700">
-                Consult Monica, your Master Rune Minter, for personalized chart analysis and optimal rune recommendations
+                Consult Monica, your Master Rune Minter, for personalized chart analysis and optimal
+                rune recommendations
               </p>
             </div>
-            <Button variant="outline" className="border-green-600 text-green-700 hover:bg-green-100">
+            <Button
+              variant="outline"
+              className="border-green-600 text-green-700 hover:bg-green-100"
+            >
               Chat with Monica About Runes
             </Button>
           </div>
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

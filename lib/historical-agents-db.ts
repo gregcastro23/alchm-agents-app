@@ -4,7 +4,12 @@
 import { prisma } from './db'
 import { DEMO_AGENTS } from './demo-agents-data'
 import type { CraftedAgent } from './agent-types'
-import type { HistoricalAgent, AgentConversation, AgentEvolution, AgentKnowledge } from './generated/prisma'
+import type {
+  HistoricalAgent,
+  AgentConversation,
+  AgentEvolution,
+  AgentKnowledge,
+} from './generated/prisma'
 
 // Enhanced agent interface with database fields
 export interface EnhancedHistoricalAgent extends HistoricalAgent {
@@ -14,24 +19,23 @@ export interface EnhancedHistoricalAgent extends HistoricalAgent {
 }
 
 export class HistoricalAgentsService {
-  
   /**
    * Enhanced migration for 69-agent Gallery of Perpetuity expansion
    * This will populate the database with all existing and new agents
    */
   static async migrateHistoricalAgents(agents: CraftedAgent[] = DEMO_AGENTS): Promise<{
-    success: boolean;
-    migrated: number;
-    updated: number;
-    errors: string[];
-    byEra: Record<string, number>;
+    success: boolean
+    migrated: number
+    updated: number
+    errors: string[]
+    byEra: Record<string, number>
   }> {
     const results = {
       success: true,
       migrated: 0,
       updated: 0,
       errors: [] as string[],
-      byEra: {} as Record<string, number>
+      byEra: {} as Record<string, number>,
     }
 
     console.log('Starting enhanced migration of', agents.length, 'historical agents...')
@@ -40,7 +44,7 @@ export class HistoricalAgentsService {
       try {
         // Check if agent already exists
         const existing = await prisma.historicalAgent.findUnique({
-          where: { agentId: agent.id }
+          where: { agentId: agent.id },
         })
 
         // Enhanced agent transformation with new fields
@@ -50,14 +54,14 @@ export class HistoricalAgentsService {
           // Update existing agent with enhanced fields
           await prisma.historicalAgent.update({
             where: { agentId: agent.id },
-            data: historicalAgent
+            data: historicalAgent,
           })
           results.updated++
           console.log(`↻ Updated ${agent.name} (${agent.id})`)
         } else {
           // Create new agent
           await prisma.historicalAgent.create({
-            data: historicalAgent
+            data: historicalAgent,
           })
           results.migrated++
           console.log(`✓ Migrated ${agent.name} (${agent.id})`)
@@ -66,7 +70,6 @@ export class HistoricalAgentsService {
         // Track by era
         const era = historicalAgent.historicalEra
         results.byEra[era] = (results.byEra[era] || 0) + 1
-
       } catch (error) {
         const errorMsg = `Failed to process ${agent.name}: ${error instanceof Error ? error.message : String(error)}`
         results.errors.push(errorMsg)
@@ -75,7 +78,9 @@ export class HistoricalAgentsService {
     }
 
     results.success = results.errors.length === 0
-    console.log(`Enhanced migration complete: ${results.migrated} new, ${results.updated} updated, ${results.errors.length} errors`)
+    console.log(
+      `Enhanced migration complete: ${results.migrated} new, ${results.updated} updated, ${results.errors.length} errors`
+    )
     console.log('By era:', results.byEra)
 
     return results
@@ -171,7 +176,7 @@ export class HistoricalAgentsService {
 
       // Metadata
       version: '2.0.0', // Updated version for 69-agent expansion
-      craftedBy: 'philosopher-stone'
+      craftedBy: 'philosopher-stone',
     }
   }
 
@@ -179,10 +184,10 @@ export class HistoricalAgentsService {
    * Determine historical era and cultural context from agent data
    */
   private static determineHistoricalEra(agent: CraftedAgent): {
-    era: string;
-    deathYear?: number;
-    culture: string;
-    geography: string;
+    era: string
+    deathYear?: number
+    culture: string
+    geography: string
   } {
     const birthYear = agent.birthData.date.getFullYear()
     const agentId = agent.id.toLowerCase()
@@ -192,7 +197,7 @@ export class HistoricalAgentsService {
       return {
         era: 'monica_special',
         culture: 'Consciousness Crafter',
-        geography: 'Interdimensional'
+        geography: 'Interdimensional',
       }
     }
 
@@ -201,31 +206,31 @@ export class HistoricalAgentsService {
       return {
         era: 'ancient',
         culture: this.determineCulture(agentId, birthYear),
-        geography: 'Mediterranean/Classical World'
+        geography: 'Mediterranean/Classical World',
       }
     } else if (birthYear < 1500) {
       return {
         era: 'medieval',
         culture: this.determineCulture(agentId, birthYear),
-        geography: 'Medieval Europe'
+        geography: 'Medieval Europe',
       }
     } else if (birthYear < 1650) {
       return {
         era: 'renaissance',
         culture: this.determineCulture(agentId, birthYear),
-        geography: 'Renaissance Europe'
+        geography: 'Renaissance Europe',
       }
     } else if (birthYear < 1800) {
       return {
         era: 'enlightenment',
         culture: this.determineCulture(agentId, birthYear),
-        geography: 'Enlightenment Europe/Americas'
+        geography: 'Enlightenment Europe/Americas',
       }
     } else {
       return {
         era: 'modern_pre1950',
         culture: this.determineCulture(agentId, birthYear),
-        geography: 'Modern World'
+        geography: 'Modern World',
       }
     }
   }
@@ -236,10 +241,16 @@ export class HistoricalAgentsService {
   private static determineCulture(agentId: string, birthYear: number): string {
     // Cultural patterns based on agent ID
     if (agentId.includes('shakespeare') || agentId.includes('chaucer')) return 'English'
-    if (agentId.includes('leonardo') || agentId.includes('dante') || agentId.includes('michelangelo')) return 'Italian Renaissance'
+    if (
+      agentId.includes('leonardo') ||
+      agentId.includes('dante') ||
+      agentId.includes('michelangelo')
+    )
+      return 'Italian Renaissance'
     if (agentId.includes('descartes') || agentId.includes('voltaire')) return 'French'
     if (agentId.includes('kant') || agentId.includes('einstein')) return 'German'
-    if (agentId.includes('aristotle') || agentId.includes('plato') || agentId.includes('homer')) return 'Ancient Greek'
+    if (agentId.includes('aristotle') || agentId.includes('plato') || agentId.includes('homer'))
+      return 'Ancient Greek'
     if (agentId.includes('caesar') || agentId.includes('cicero')) return 'Ancient Roman'
     if (agentId.includes('dickens') || agentId.includes('austen')) return 'Victorian British'
     if (agentId.includes('twain') || agentId.includes('dickinson')) return 'American'
@@ -256,28 +267,35 @@ export class HistoricalAgentsService {
    * Calculate Monica Constant components from total value
    */
   private static calculateMonicaComponents(monicaConstant: number): {
-    spirit: number;
-    essence: number;
-    matter: number;
-    substance: number;
+    spirit: number
+    essence: number
+    matter: number
+    substance: number
   } {
     // Reverse engineer Monica Constant: MC = (Spirit × φ + Essence) / (Matter + Substance + 1)
     // For now, use reasonable defaults based on consciousness level
     const phi = 1.618033988749895
 
-    if (monicaConstant >= 5.5) { // Transcendent
+    if (monicaConstant >= 5.5) {
+      // Transcendent
       return { spirit: 9.0, essence: 9.5, matter: 7.0, substance: 8.5 }
-    } else if (monicaConstant >= 4.5) { // Illuminated
+    } else if (monicaConstant >= 4.5) {
+      // Illuminated
       return { spirit: 8.5, essence: 8.8, matter: 6.5, substance: 7.8 }
-    } else if (monicaConstant >= 3.5) { // Advanced
+    } else if (monicaConstant >= 3.5) {
+      // Advanced
       return { spirit: 7.8, essence: 8.0, matter: 6.0, substance: 7.0 }
-    } else if (monicaConstant >= 2.5) { // Elevated
+    } else if (monicaConstant >= 2.5) {
+      // Elevated
       return { spirit: 6.5, essence: 7.0, matter: 5.5, substance: 6.0 }
-    } else if (monicaConstant >= 1.5) { // Active
+    } else if (monicaConstant >= 1.5) {
+      // Active
       return { spirit: 5.5, essence: 6.0, matter: 5.0, substance: 5.5 }
-    } else if (monicaConstant >= 1.0) { // Awakening
+    } else if (monicaConstant >= 1.0) {
+      // Awakening
       return { spirit: 4.0, essence: 4.5, matter: 4.5, substance: 5.0 }
-    } else { // Dormant
+    } else {
+      // Dormant
       return { spirit: 2.5, essence: 3.0, matter: 4.0, substance: 4.5 }
     }
   }
@@ -293,7 +311,7 @@ export class HistoricalAgentsService {
       agent.abilities.wisdomDomains.join(' '),
       agent.personality.core.essence,
       agent.personality.core.expression,
-      agent.personality.core.emotion
+      agent.personality.core.emotion,
     ]
 
     return searchComponents.join(' ').toLowerCase()
@@ -307,54 +325,61 @@ export class HistoricalAgentsService {
       achievements: [`Master of ${agent.abilities.specialty}`],
       influences: ['Historical context', 'Cultural environment'],
       legacy: `Enduring impact in ${agent.abilities.specialty}`,
-      education: 'Period-appropriate education and experience'
+      education: 'Period-appropriate education and experience',
     }
   }
-  
+
   /**
    * Get historical agent by ID from database
    */
-  static async getAgent(agentId: string, includeRelations = false): Promise<EnhancedHistoricalAgent | null> {
-    const include = includeRelations ? {
-      agentConversations: {
-        take: 10,
-        orderBy: { createdAt: 'desc' as const }
-      },
-      agentEvolutions: {
-        take: 5,
-        orderBy: { evolutionDate: 'desc' as const }
-      },
-      agentKnowledge: {
-        take: 20,
-        orderBy: { confidence: 'desc' as const }
-      }
-    } : undefined
-    
-    const agent = await prisma.historicalAgent.findUnique({
+  static async getAgent(
+    agentId: string,
+    includeRelations = false
+  ): Promise<EnhancedHistoricalAgent | null> {
+    const include = includeRelations
+      ? {
+          agentConversations: {
+            take: 10,
+            orderBy: { createdAt: 'desc' as const },
+          },
+          agentEvolutions: {
+            take: 5,
+            orderBy: { evolutionDate: 'desc' as const },
+          },
+          agentKnowledge: {
+            take: 20,
+            orderBy: { confidence: 'desc' as const },
+          },
+        }
+      : undefined
+
+    const agent = (await prisma.historicalAgent.findUnique({
       where: { agentId },
-      include
-    }) as EnhancedHistoricalAgent | null
-    
+      include,
+    })) as EnhancedHistoricalAgent | null
+
     if (agent && includeRelations) {
       agent.recentConversations = agent.agentConversations
       agent.evolutionHistory = agent.agentEvolutions
       agent.knowledgeBase = agent.agentKnowledge
     }
-    
+
     return agent
   }
-  
+
   /**
    * Get all active historical agents with enhanced filtering
    */
-  static async getAllAgents(options: {
-    includeStats?: boolean;
-    era?: string;
-    culture?: string;
-    consciousnessLevel?: string;
-    limit?: number;
-    offset?: number;
-  } = {}): Promise<HistoricalAgent[]> {
+  static async getAllAgents(
+    options: {
+      includeStats?: boolean
+      era?: string
+      culture?: string
+      consciousnessLevel?: string
+      limit?: number
+      offset?: number
+    } = {}
+  ): Promise<HistoricalAgent[]> {
     const where: any = { isActive: true }
 
     if (options.era) where.historicalEra = options.era
@@ -363,27 +388,26 @@ export class HistoricalAgentsService {
 
     return await prisma.historicalAgent.findMany({
       where,
-      orderBy: [
-        { consciousnessLevel: 'desc' },
-        { monicaConstant: 'desc' },
-        { name: 'asc' }
-      ],
+      orderBy: [{ consciousnessLevel: 'desc' }, { monicaConstant: 'desc' }, { name: 'asc' }],
       take: options.limit,
-      skip: options.offset
+      skip: options.offset,
     })
   }
 
   /**
    * Get agents by historical era with enhanced filtering
    */
-  static async getAgentsByEra(era: string, options: {
-    limit?: number;
-    consciousnessLevel?: string;
-    culture?: string;
-  } = {}): Promise<HistoricalAgent[]> {
+  static async getAgentsByEra(
+    era: string,
+    options: {
+      limit?: number
+      consciousnessLevel?: string
+      culture?: string
+    } = {}
+  ): Promise<HistoricalAgent[]> {
     const where: any = {
       isActive: true,
-      historicalEra: era
+      historicalEra: era,
     }
 
     if (options.consciousnessLevel) where.consciousnessLevel = options.consciousnessLevel
@@ -391,12 +415,8 @@ export class HistoricalAgentsService {
 
     return await prisma.historicalAgent.findMany({
       where,
-      orderBy: [
-        { monicaConstant: 'desc' },
-        { birthYear: 'asc' },
-        { name: 'asc' }
-      ],
-      take: options.limit
+      orderBy: [{ monicaConstant: 'desc' }, { birthYear: 'asc' }, { name: 'asc' }],
+      take: options.limit,
     })
   }
 
@@ -404,13 +424,16 @@ export class HistoricalAgentsService {
    * Get era statistics for all agents
    */
   static async getEraStatistics(): Promise<{
-    totalAgents: number;
-    byEra: Record<string, {
-      count: number;
-      averageMonicaConstant: number;
-      topConsciousnessLevel: string;
-      cultures: string[];
-    }>;
+    totalAgents: number
+    byEra: Record<
+      string,
+      {
+        count: number
+        averageMonicaConstant: number
+        topConsciousnessLevel: string
+        cultures: string[]
+      }
+    >
   }> {
     const allAgents = await prisma.historicalAgent.findMany({
       where: { isActive: true },
@@ -418,8 +441,8 @@ export class HistoricalAgentsService {
         historicalEra: true,
         monicaConstant: true,
         consciousnessLevel: true,
-        culture: true
-      }
+        culture: true,
+      },
     })
 
     const byEra: Record<string, any> = {}
@@ -431,7 +454,7 @@ export class HistoricalAgentsService {
           count: 0,
           monicaConstants: [],
           consciousnessLevels: [],
-          cultures: new Set()
+          cultures: new Set(),
         }
       }
 
@@ -444,11 +467,21 @@ export class HistoricalAgentsService {
     // Process statistics
     for (const era in byEra) {
       const eraData = byEra[era]
-      eraData.averageMonicaConstant = eraData.monicaConstants.reduce((a: number, b: number) => a + b, 0) / eraData.count
+      eraData.averageMonicaConstant =
+        eraData.monicaConstants.reduce((a: number, b: number) => a + b, 0) / eraData.count
 
       // Find most advanced consciousness level
-      const levels = ['Transcendent', 'Illuminated', 'Advanced', 'Elevated', 'Active', 'Awakening', 'Dormant']
-      eraData.topConsciousnessLevel = levels.find(level => eraData.consciousnessLevels.includes(level)) || 'Dormant'
+      const levels = [
+        'Transcendent',
+        'Illuminated',
+        'Advanced',
+        'Elevated',
+        'Active',
+        'Awakening',
+        'Dormant',
+      ]
+      eraData.topConsciousnessLevel =
+        levels.find(level => eraData.consciousnessLevels.includes(level)) || 'Dormant'
 
       eraData.cultures = Array.from(eraData.cultures)
       delete eraData.monicaConstants
@@ -457,10 +490,10 @@ export class HistoricalAgentsService {
 
     return {
       totalAgents: allAgents.length,
-      byEra
+      byEra,
     }
   }
-  
+
   /**
    * Record a conversation with an agent
    */
@@ -479,9 +512,9 @@ export class HistoricalAgentsService {
   ): Promise<AgentConversation> {
     // Get current agent state
     const agent = await prisma.historicalAgent.findUnique({
-      where: { agentId }
+      where: { agentId },
     })
-    
+
     const conversation = await prisma.agentConversation.create({
       data: {
         agentId,
@@ -491,7 +524,7 @@ export class HistoricalAgentsService {
         agentResponse,
         contextData: {
           timestamp: new Date().toISOString(),
-          metadata
+          metadata,
         },
         responseTime: metadata.responseTime || null,
         modelUsed: metadata.modelUsed || null,
@@ -499,22 +532,22 @@ export class HistoricalAgentsService {
         tokenCount: metadata.tokenCount || null,
         agentMood: agent?.currentMood || null,
         evolutionStage: agent?.evolutionStage || null,
-        consciousnessLevel: agent?.consciousnessLevel || null
-      }
+        consciousnessLevel: agent?.consciousnessLevel || null,
+      },
     })
-    
+
     // Update agent statistics
     await prisma.historicalAgent.update({
       where: { agentId },
       data: {
         conversations: { increment: 1 },
-        lastActive: new Date()
-      }
+        lastActive: new Date(),
+      },
     })
-    
+
     return conversation
   }
-  
+
   /**
    * Record agent evolution/learning
    */
@@ -538,22 +571,22 @@ export class HistoricalAgentsService {
         agentId,
         ...evolutionData,
         consciousnessGain: evolutionData.consciousnessGain || 0,
-        xpGained: evolutionData.xpGained || 0
-      }
+        xpGained: evolutionData.xpGained || 0,
+      },
     })
-    
+
     // Update agent's evolution stage
     await prisma.historicalAgent.update({
       where: { agentId },
       data: {
         evolutionStage: evolutionData.toStage,
-        evolutionPoints: { increment: evolutionData.xpGained || 0 }
-      }
+        evolutionPoints: { increment: evolutionData.xpGained || 0 },
+      },
     })
-    
+
     return evolution
   }
-  
+
   /**
    * Add knowledge to agent's knowledge base
    */
@@ -575,11 +608,11 @@ export class HistoricalAgentsService {
         agentId,
         ...knowledgeData,
         confidence: knowledgeData.confidence || 0.5,
-        usefulness: knowledgeData.usefulness || 0.5
-      }
+        usefulness: knowledgeData.usefulness || 0.5,
+      },
     })
   }
-  
+
   /**
    * Update agent's consciousness level and Monica Constant
    */
@@ -594,10 +627,10 @@ export class HistoricalAgentsService {
   ): Promise<HistoricalAgent> {
     return await prisma.historicalAgent.update({
       where: { agentId },
-      data: updates
+      data: updates,
     })
   }
-  
+
   /**
    * Get agent conversation history
    */
@@ -606,17 +639,15 @@ export class HistoricalAgentsService {
     sessionId?: string,
     limit = 50
   ): Promise<AgentConversation[]> {
-    const where = sessionId 
-      ? { agentId, sessionId }
-      : { agentId }
-      
+    const where = sessionId ? { agentId, sessionId } : { agentId }
+
     return await prisma.agentConversation.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      take: limit
+      take: limit,
     })
   }
-  
+
   /**
    * Search agents by various criteria
    */
@@ -628,7 +659,7 @@ export class HistoricalAgentsService {
     isActive?: boolean
   }): Promise<HistoricalAgent[]> {
     const where: any = {}
-    
+
     if (criteria.name) {
       where.name = { contains: criteria.name, mode: 'insensitive' }
     }
@@ -644,13 +675,13 @@ export class HistoricalAgentsService {
     if (criteria.isActive !== undefined) {
       where.isActive = criteria.isActive
     }
-    
+
     return await prisma.historicalAgent.findMany({
       where,
-      orderBy: { monicaConstant: 'desc' }
+      orderBy: { monicaConstant: 'desc' },
     })
   }
-  
+
   /**
    * Get agent statistics and performance metrics
    */
@@ -664,44 +695,49 @@ export class HistoricalAgentsService {
     const [agent, conversations, evolutions, knowledge] = await Promise.all([
       prisma.historicalAgent.findUnique({ where: { agentId } }),
       prisma.agentConversation.findMany({ where: { agentId } }),
-      prisma.agentEvolution.findMany({ 
+      prisma.agentEvolution.findMany({
         where: { agentId },
-        orderBy: { evolutionDate: 'asc' }
+        orderBy: { evolutionDate: 'asc' },
       }),
-      prisma.agentKnowledge.findMany({ where: { agentId } })
+      prisma.agentKnowledge.findMany({ where: { agentId } }),
     ])
-    
-    const averageResponseTime = conversations.length > 0
-      ? conversations.reduce((sum, conv) => sum + (conv.responseTime || 0), 0) / conversations.length
-      : null
-      
-    const knowledgeCategories = knowledge.reduce((acc, k) => {
-      acc[k.category] = (acc[k.category] || 0) + 1
-      return acc
-    }, {} as { [key: string]: number })
-    
+
+    const averageResponseTime =
+      conversations.length > 0
+        ? conversations.reduce((sum, conv) => sum + (conv.responseTime || 0), 0) /
+          conversations.length
+        : null
+
+    const knowledgeCategories = knowledge.reduce(
+      (acc, k) => {
+        acc[k.category] = (acc[k.category] || 0) + 1
+        return acc
+      },
+      {} as { [key: string]: number }
+    )
+
     return {
       totalConversations: conversations.length,
       averageResponseTime,
       evolutionHistory: evolutions,
       knowledgeCategories,
-      consciousnessProgression: agent?.evolutionStage || 0
+      consciousnessProgression: agent?.evolutionStage || 0,
     }
   }
-  
+
   /**
    * Clean up old conversations (data maintenance)
    */
   static async cleanupOldConversations(daysToKeep = 90): Promise<number> {
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep)
-    
+
     const result = await prisma.agentConversation.deleteMany({
       where: {
-        createdAt: { lt: cutoffDate }
-      }
+        createdAt: { lt: cutoffDate },
+      },
     })
-    
+
     return result.count
   }
 }
@@ -715,7 +751,7 @@ export function dbAgentToCraftedAgent(dbAgent: HistoricalAgent): CraftedAgent {
     birthData: {
       date: dbAgent.birthDate,
       time: dbAgent.birthTime,
-      location: dbAgent.birthLocation as any
+      location: dbAgent.birthLocation as any,
     },
     consciousness: {
       natalChart: dbAgent.natalChart as any,
@@ -723,7 +759,7 @@ export function dbAgentToCraftedAgent(dbAgent: HistoricalAgent): CraftedAgent {
       level: dbAgent.consciousnessLevel as any,
       dominantElement: dbAgent.dominantElement as any,
       dominantModality: (dbAgent.dominantModality as any) || 'Fixed',
-      signature: dbAgent.signature
+      signature: dbAgent.signature,
     },
     personality: {
       core: dbAgent.personalityCore as any,
@@ -732,7 +768,7 @@ export function dbAgentToCraftedAgent(dbAgent: HistoricalAgent): CraftedAgent {
       challenges: dbAgent.personalityChallenges as any,
       currentMood: dbAgent.currentMood as any,
       evolutionStage: dbAgent.evolutionStage,
-      traits: dbAgent.traits as any
+      traits: dbAgent.traits as any,
     },
     abilities: {
       specialty: dbAgent.specialty,
@@ -740,20 +776,20 @@ export function dbAgentToCraftedAgent(dbAgent: HistoricalAgent): CraftedAgent {
       skills: dbAgent.skills as any,
       teachingStyle: dbAgent.teachingStyle as any,
       resonanceType: dbAgent.resonanceType as any,
-      uniquePower: dbAgent.uniquePower
+      uniquePower: dbAgent.uniquePower,
     },
     appearance: {
       avatar: dbAgent.avatar || '/avatars/default.png',
       color: dbAgent.color,
       symbol: dbAgent.symbol,
-      aura: dbAgent.aura as any
+      aura: dbAgent.aura as any,
     },
     stats: {
       conversations: dbAgent.conversations,
       wisdomShared: dbAgent.wisdomShared,
       resonanceScore: dbAgent.resonanceScore,
       evolutionPoints: dbAgent.evolutionPoints,
-      lastActive: dbAgent.lastActive
-    }
+      lastActive: dbAgent.lastActive,
+    },
   }
 }

@@ -20,16 +20,16 @@ async function testMonicaLargeDataset() {
         Minor Arcana: Four of Cups (Sun decan)
         
         Please calculate the Monica Constant for this dataset and interpret what this complex data reveals about the person's consciousness state, optimal agent personality design, and spiritual development recommendations.`,
-        includeAlchm: true
-      })
-    });
+        includeAlchm: true,
+      }),
+    })
 
-    const data = await response.json();
-    console.log('📊🔬💚 Monica Large Dataset Analysis:');
-    console.log(data.response);
+    const data = await response.json()
+    console.log('📊🔬💚 Monica Large Dataset Analysis:')
+    console.log(data.response)
   } catch (error) {
-    console.error('Error testing Monica large dataset analysis:', error);
+    console.error('Error testing Monica large dataset analysis:', error)
   }
 }
 
-testMonicaLargeDataset();
+testMonicaLargeDataset()

@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { 
+import {
   Crown,
   Sparkles,
   Star,
@@ -24,25 +24,27 @@ import {
   Droplets,
   Mountain,
   Wind,
-  Compass
+  Compass,
 } from 'lucide-react'
 import TarotCosmicWidget from '@/components/tarot-cosmic-widget'
-import { 
-  getCurrentDecan, 
-  getPlanetaryRulerCard, 
+import {
+  getCurrentDecan,
+  getPlanetaryRulerCard,
   DECAN_TAROT_MAPPINGS,
   MAJOR_ARCANA_PLANETARY,
   type TarotCard,
-  type MajorArcanaCard 
+  type MajorArcanaCard,
 } from '@/lib/monica/tarot-oracle'
 import { usePlanetaryPositions } from '@/hooks/usePlanetaryPositions'
 
 export default function TarotDashboardPage() {
   const [selectedCard, setSelectedCard] = useState<TarotCard | MajorArcanaCard | null>(null)
-  const [activeView, setActiveView] = useState<'current' | 'alchemical' | 'spreads' | 'learning'>('current')
+  const [activeView, setActiveView] = useState<'current' | 'alchemical' | 'spreads' | 'learning'>(
+    'current'
+  )
   const [currentDecanCard, setCurrentDecanCard] = useState<TarotCard | null>(null)
   const [planetaryCard, setPlanetaryCard] = useState<MajorArcanaCard | null>(null)
-  
+
   // Get current alchemical data for tarot analysis
   const { alchmQuantities, loading } = usePlanetaryPositions({ useApi: true })
 
@@ -52,7 +54,7 @@ export default function TarotDashboardPage() {
     if (decan?.card) {
       setCurrentDecanCard(decan.card)
     }
-    
+
     // Get planetary ruler card (simplified for dashboard)
     const rulerCard = getPlanetaryRulerCard()
     if (rulerCard) {
@@ -83,7 +85,11 @@ export default function TarotDashboardPage() {
         <TarotCosmicWidget variant="header" linkToFullOracle={false} />
       </div>
 
-      <Tabs value={activeView} onValueChange={(value) => setActiveView(value as any)} className="space-y-8">
+      <Tabs
+        value={activeView}
+        onValueChange={value => setActiveView(value as any)}
+        className="space-y-8"
+      >
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="current" className="flex items-center gap-2">
             <Eye className="h-4 w-4" />
@@ -122,15 +128,17 @@ export default function TarotDashboardPage() {
                   <div className="space-y-4">
                     <div className="text-center">
                       <h3 className="text-2xl font-bold">{currentDecanCard.name}</h3>
-                      <p className="text-muted-foreground">{currentDecanCard.element} • {currentDecanCard.suit}</p>
+                      <p className="text-muted-foreground">
+                        {currentDecanCard.element} • {currentDecanCard.suit}
+                      </p>
                     </div>
-                    
+
                     <div className="space-y-3">
                       <div>
                         <h4 className="font-medium mb-1">Card Meaning</h4>
                         <p className="text-sm text-muted-foreground">{currentDecanCard.meaning}</p>
                       </div>
-                      
+
                       <div>
                         <h4 className="font-medium mb-1">Keywords</h4>
                         <div className="flex flex-wrap gap-1">
@@ -141,34 +149,42 @@ export default function TarotDashboardPage() {
                           ))}
                         </div>
                       </div>
-                      
+
                       {'alchemicalValues' in currentDecanCard && (
                         <div>
                           <h4 className="font-medium mb-2">Alchemical Signature</h4>
                           <div className="grid grid-cols-2 gap-2 text-xs">
                             <div className="flex items-center gap-1">
                               <Flame className="h-3 w-3 text-red-500" />
-                              <span>Spirit: {currentDecanCard.alchemicalValues.spirit.toFixed(2)}</span>
+                              <span>
+                                Spirit: {currentDecanCard.alchemicalValues.spirit.toFixed(2)}
+                              </span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Droplets className="h-3 w-3 text-blue-500" />
-                              <span>Essence: {currentDecanCard.alchemicalValues.essence.toFixed(2)}</span>
+                              <span>
+                                Essence: {currentDecanCard.alchemicalValues.essence.toFixed(2)}
+                              </span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Mountain className="h-3 w-3 text-green-500" />
-                              <span>Matter: {currentDecanCard.alchemicalValues.matter.toFixed(2)}</span>
+                              <span>
+                                Matter: {currentDecanCard.alchemicalValues.matter.toFixed(2)}
+                              </span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Wind className="h-3 w-3 text-yellow-500" />
-                              <span>Substance: {currentDecanCard.alchemicalValues.substance.toFixed(2)}</span>
+                              <span>
+                                Substance: {currentDecanCard.alchemicalValues.substance.toFixed(2)}
+                              </span>
                             </div>
                           </div>
                         </div>
                       )}
                     </div>
-                    
-                    <Button 
-                      variant="outline" 
+
+                    <Button
+                      variant="outline"
                       onClick={() => setSelectedCard(currentDecanCard)}
                       className="w-full"
                     >
@@ -200,20 +216,24 @@ export default function TarotDashboardPage() {
                   <div className="space-y-4">
                     <div className="text-center">
                       <h3 className="text-2xl font-bold">{planetaryCard.name}</h3>
-                      <p className="text-muted-foreground">{planetaryCard.element} • {planetaryCard.planetaryRuler}</p>
+                      <p className="text-muted-foreground">
+                        {planetaryCard.element} • {planetaryCard.planetaryRuler}
+                      </p>
                     </div>
-                    
+
                     <div className="space-y-3">
                       <div>
                         <h4 className="font-medium mb-1">Planetary Influence</h4>
                         <p className="text-sm text-muted-foreground">{planetaryCard.meaning}</p>
                       </div>
-                      
+
                       <div>
                         <h4 className="font-medium mb-1">Consciousness Focus</h4>
-                        <p className="text-sm text-muted-foreground">{planetaryCard.consciousness}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {planetaryCard.consciousness}
+                        </p>
                       </div>
-                      
+
                       <div>
                         <h4 className="font-medium mb-1">Keywords</h4>
                         <div className="flex flex-wrap gap-1">
@@ -225,9 +245,9 @@ export default function TarotDashboardPage() {
                         </div>
                       </div>
                     </div>
-                    
-                    <Button 
-                      variant="outline" 
+
+                    <Button
+                      variant="outline"
                       onClick={() => setSelectedCard(planetaryCard)}
                       className="w-full"
                     >
@@ -263,12 +283,12 @@ export default function TarotDashboardPage() {
                       <h4 className="font-medium mb-2">🎯 Core Interpretation</h4>
                       <p className="text-sm">{selectedCard.meaning}</p>
                     </div>
-                    
+
                     <div>
                       <h4 className="font-medium mb-2">🧠 Consciousness Activation</h4>
                       <p className="text-sm">{selectedCard.consciousness}</p>
                     </div>
-                    
+
                     <div>
                       <h4 className="font-medium mb-2">🔮 Tarot Keywords</h4>
                       <div className="flex flex-wrap gap-1">
@@ -280,7 +300,7 @@ export default function TarotDashboardPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-medium mb-2">⚡ Elemental Properties</h4>
@@ -301,7 +321,7 @@ export default function TarotDashboardPage() {
                         )}
                       </div>
                     </div>
-                    
+
                     {'alchemicalValues' in selectedCard && (
                       <div>
                         <h4 className="font-medium mb-2">⚗️ Alchemical Profile</h4>
@@ -311,9 +331,14 @@ export default function TarotDashboardPage() {
                             <div className="flex-1">
                               <div className="flex justify-between text-xs">
                                 <span>Spirit</span>
-                                <span className="font-mono">{selectedCard.alchemicalValues.spirit.toFixed(2)}</span>
+                                <span className="font-mono">
+                                  {selectedCard.alchemicalValues.spirit.toFixed(2)}
+                                </span>
                               </div>
-                              <Progress value={selectedCard.alchemicalValues.spirit * 100} className="h-1 mt-1" />
+                              <Progress
+                                value={selectedCard.alchemicalValues.spirit * 100}
+                                className="h-1 mt-1"
+                              />
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -321,9 +346,14 @@ export default function TarotDashboardPage() {
                             <div className="flex-1">
                               <div className="flex justify-between text-xs">
                                 <span>Essence</span>
-                                <span className="font-mono">{selectedCard.alchemicalValues.essence.toFixed(2)}</span>
+                                <span className="font-mono">
+                                  {selectedCard.alchemicalValues.essence.toFixed(2)}
+                                </span>
                               </div>
-                              <Progress value={selectedCard.alchemicalValues.essence * 100} className="h-1 mt-1" />
+                              <Progress
+                                value={selectedCard.alchemicalValues.essence * 100}
+                                className="h-1 mt-1"
+                              />
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -331,9 +361,14 @@ export default function TarotDashboardPage() {
                             <div className="flex-1">
                               <div className="flex justify-between text-xs">
                                 <span>Matter</span>
-                                <span className="font-mono">{selectedCard.alchemicalValues.matter.toFixed(2)}</span>
+                                <span className="font-mono">
+                                  {selectedCard.alchemicalValues.matter.toFixed(2)}
+                                </span>
                               </div>
-                              <Progress value={selectedCard.alchemicalValues.matter * 100} className="h-1 mt-1" />
+                              <Progress
+                                value={selectedCard.alchemicalValues.matter * 100}
+                                className="h-1 mt-1"
+                              />
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -341,9 +376,14 @@ export default function TarotDashboardPage() {
                             <div className="flex-1">
                               <div className="flex justify-between text-xs">
                                 <span>Substance</span>
-                                <span className="font-mono">{selectedCard.alchemicalValues.substance.toFixed(2)}</span>
+                                <span className="font-mono">
+                                  {selectedCard.alchemicalValues.substance.toFixed(2)}
+                                </span>
                               </div>
-                              <Progress value={selectedCard.alchemicalValues.substance * 100} className="h-1 mt-1" />
+                              <Progress
+                                value={selectedCard.alchemicalValues.substance * 100}
+                                className="h-1 mt-1"
+                              />
                             </div>
                           </div>
                         </div>
@@ -351,10 +391,10 @@ export default function TarotDashboardPage() {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="pt-4 border-t">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => setSelectedCard(null)}
                     className="w-full"
                   >
@@ -392,35 +432,53 @@ export default function TarotDashboardPage() {
                       <CardContent className="p-4 text-center">
                         <Flame className="h-8 w-8 text-red-500 mx-auto mb-2" />
                         <h3 className="font-medium text-red-800 dark:text-red-200">Spirit</h3>
-                        <p className="text-2xl font-bold text-red-600 dark:text-red-400">{alchmQuantities.spirit.toFixed(2)}</p>
-                        <p className="text-xs text-red-600/70 dark:text-red-400/70">Active • Transformative</p>
+                        <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                          {alchmQuantities.spirit.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-red-600/70 dark:text-red-400/70">
+                          Active • Transformative
+                        </p>
                       </CardContent>
                     </Card>
-                    
+
                     <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200">
                       <CardContent className="p-4 text-center">
                         <Droplets className="h-8 w-8 text-blue-500 mx-auto mb-2" />
                         <h3 className="font-medium text-blue-800 dark:text-blue-200">Essence</h3>
-                        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{alchmQuantities.essence.toFixed(2)}</p>
-                        <p className="text-xs text-blue-600/70 dark:text-blue-400/70">Receptive • Flowing</p>
+                        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                          {alchmQuantities.essence.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-blue-600/70 dark:text-blue-400/70">
+                          Receptive • Flowing
+                        </p>
                       </CardContent>
                     </Card>
-                    
+
                     <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200">
                       <CardContent className="p-4 text-center">
                         <Mountain className="h-8 w-8 text-green-500 mx-auto mb-2" />
                         <h3 className="font-medium text-green-800 dark:text-green-200">Matter</h3>
-                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">{alchmQuantities.matter.toFixed(2)}</p>
-                        <p className="text-xs text-green-600/70 dark:text-green-400/70">Structural • Grounding</p>
+                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                          {alchmQuantities.matter.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-green-600/70 dark:text-green-400/70">
+                          Structural • Grounding
+                        </p>
                       </CardContent>
                     </Card>
-                    
+
                     <Card className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950 dark:to-amber-950 border-yellow-200">
                       <CardContent className="p-4 text-center">
                         <Wind className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                        <h3 className="font-medium text-yellow-800 dark:text-yellow-200">Substance</h3>
-                        <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{alchmQuantities.substance.toFixed(2)}</p>
-                        <p className="text-xs text-yellow-600/70 dark:text-yellow-400/70">Connective • Bridging</p>
+                        <h3 className="font-medium text-yellow-800 dark:text-yellow-200">
+                          Substance
+                        </h3>
+                        <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                          {alchmQuantities.substance.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-yellow-600/70 dark:text-yellow-400/70">
+                          Connective • Bridging
+                        </p>
                       </CardContent>
                     </Card>
                   </div>
@@ -433,45 +491,81 @@ export default function TarotDashboardPage() {
                         <div className="flex items-start gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-950/30">
                           <Wand2 className="h-5 w-5 text-red-500 mt-0.5" />
                           <div>
-                            <h4 className="font-medium text-red-800 dark:text-red-200">Wands = Spirit ({alchmQuantities.spirit.toFixed(2)})</h4>
-                            <p className="text-sm text-red-600 dark:text-red-400 mb-2">Fire element, creativity, passion, spiritual energy</p>
+                            <h4 className="font-medium text-red-800 dark:text-red-200">
+                              Wands = Spirit ({alchmQuantities.spirit.toFixed(2)})
+                            </h4>
+                            <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+                              Fire element, creativity, passion, spiritual energy
+                            </p>
                             <p className="text-xs text-red-600/80 dark:text-red-400/80">
-                              Current tarot influence: {alchmQuantities.spirit > 5 ? 'High creative fire energy' : alchmQuantities.spirit > 3 ? 'Moderate spiritual activation' : 'Gentle creative stirring'}
+                              Current tarot influence:{' '}
+                              {alchmQuantities.spirit > 5
+                                ? 'High creative fire energy'
+                                : alchmQuantities.spirit > 3
+                                  ? 'Moderate spiritual activation'
+                                  : 'Gentle creative stirring'}
                             </p>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30">
                           <Heart className="h-5 w-5 text-blue-500 mt-0.5" />
                           <div>
-                            <h4 className="font-medium text-blue-800 dark:text-blue-200">Cups = Essence ({alchmQuantities.essence.toFixed(2)})</h4>
-                            <p className="text-sm text-blue-600 dark:text-blue-400 mb-2">Water element, emotions, relationships, intuition</p>
+                            <h4 className="font-medium text-blue-800 dark:text-blue-200">
+                              Cups = Essence ({alchmQuantities.essence.toFixed(2)})
+                            </h4>
+                            <p className="text-sm text-blue-600 dark:text-blue-400 mb-2">
+                              Water element, emotions, relationships, intuition
+                            </p>
                             <p className="text-xs text-blue-600/80 dark:text-blue-400/80">
-                              Current tarot influence: {alchmQuantities.essence > 8 ? 'Deep emotional flow and intuitive insights' : alchmQuantities.essence > 5 ? 'Active emotional processing' : 'Subtle emotional awareness'}
+                              Current tarot influence:{' '}
+                              {alchmQuantities.essence > 8
+                                ? 'Deep emotional flow and intuitive insights'
+                                : alchmQuantities.essence > 5
+                                  ? 'Active emotional processing'
+                                  : 'Subtle emotional awareness'}
                             </p>
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-4">
                         <div className="flex items-start gap-3 p-3 rounded-lg bg-green-50 dark:bg-green-950/30">
                           <Shield className="h-5 w-5 text-green-500 mt-0.5" />
                           <div>
-                            <h4 className="font-medium text-green-800 dark:text-green-200">Pentacles = Matter ({alchmQuantities.matter.toFixed(2)})</h4>
-                            <p className="text-sm text-green-600 dark:text-green-400 mb-2">Earth element, material world, resources, manifestation</p>
+                            <h4 className="font-medium text-green-800 dark:text-green-200">
+                              Pentacles = Matter ({alchmQuantities.matter.toFixed(2)})
+                            </h4>
+                            <p className="text-sm text-green-600 dark:text-green-400 mb-2">
+                              Earth element, material world, resources, manifestation
+                            </p>
                             <p className="text-xs text-green-600/80 dark:text-green-400/80">
-                              Current tarot influence: {alchmQuantities.matter > 7 ? 'Strong manifestation and material focus' : alchmQuantities.matter > 4 ? 'Practical grounding energy' : 'Gentle material awareness'}
+                              Current tarot influence:{' '}
+                              {alchmQuantities.matter > 7
+                                ? 'Strong manifestation and material focus'
+                                : alchmQuantities.matter > 4
+                                  ? 'Practical grounding energy'
+                                  : 'Gentle material awareness'}
                             </p>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-start gap-3 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/30">
                           <Compass className="h-5 w-5 text-yellow-500 mt-0.5" />
                           <div>
-                            <h4 className="font-medium text-yellow-800 dark:text-yellow-200">Swords = Substance ({alchmQuantities.substance.toFixed(2)})</h4>
-                            <p className="text-sm text-yellow-600 dark:text-yellow-400 mb-2">Air element, thoughts, communication, mental clarity</p>
+                            <h4 className="font-medium text-yellow-800 dark:text-yellow-200">
+                              Swords = Substance ({alchmQuantities.substance.toFixed(2)})
+                            </h4>
+                            <p className="text-sm text-yellow-600 dark:text-yellow-400 mb-2">
+                              Air element, thoughts, communication, mental clarity
+                            </p>
                             <p className="text-xs text-yellow-600/80 dark:text-yellow-400/80">
-                              Current tarot influence: {alchmQuantities.substance > 3 ? 'Active mental processing and communication' : alchmQuantities.substance > 1 ? 'Clear thinking and connections' : 'Subtle mental bridging'}
+                              Current tarot influence:{' '}
+                              {alchmQuantities.substance > 3
+                                ? 'Active mental processing and communication'
+                                : alchmQuantities.substance > 1
+                                  ? 'Clear thinking and connections'
+                                  : 'Subtle mental bridging'}
                             </p>
                           </div>
                         </div>
@@ -644,23 +738,37 @@ export default function TarotDashboardPage() {
                 <div className="space-y-3">
                   <div className="border-l-4 border-red-500 pl-4">
                     <h4 className="font-medium">Fire - Wands</h4>
-                    <p className="text-sm text-muted-foreground">Spirit energy, creativity, passion, spiritual growth</p>
+                    <p className="text-sm text-muted-foreground">
+                      Spirit energy, creativity, passion, spiritual growth
+                    </p>
                     <p className="text-xs text-red-600 mt-1">Aces-Kings • Pages through Kings</p>
                   </div>
                   <div className="border-l-4 border-blue-500 pl-4">
                     <h4 className="font-medium">Water - Cups</h4>
-                    <p className="text-sm text-muted-foreground">Essence flow, emotions, relationships, intuition</p>
-                    <p className="text-xs text-blue-600 mt-1">Hearts and healing • Emotional depths</p>
+                    <p className="text-sm text-muted-foreground">
+                      Essence flow, emotions, relationships, intuition
+                    </p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      Hearts and healing • Emotional depths
+                    </p>
                   </div>
                   <div className="border-l-4 border-green-500 pl-4">
                     <h4 className="font-medium">Earth - Pentacles</h4>
-                    <p className="text-sm text-muted-foreground">Matter manifestation, material world, resources</p>
-                    <p className="text-xs text-green-600 mt-1">Physical realm • Practical application</p>
+                    <p className="text-sm text-muted-foreground">
+                      Matter manifestation, material world, resources
+                    </p>
+                    <p className="text-xs text-green-600 mt-1">
+                      Physical realm • Practical application
+                    </p>
                   </div>
                   <div className="border-l-4 border-yellow-500 pl-4">
                     <h4 className="font-medium">Air - Swords</h4>
-                    <p className="text-sm text-muted-foreground">Substance bridge, thoughts, communication, clarity</p>
-                    <p className="text-xs text-yellow-600 mt-1">Mental realm • Intellectual connection</p>
+                    <p className="text-sm text-muted-foreground">
+                      Substance bridge, thoughts, communication, clarity
+                    </p>
+                    <p className="text-xs text-yellow-600 mt-1">
+                      Mental realm • Intellectual connection
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -677,16 +785,28 @@ export default function TarotDashboardPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="bg-purple-50 dark:bg-purple-950 p-3 rounded border-l-4 border-purple-400">
-                    <h4 className="font-medium text-purple-800 dark:text-purple-200">The Fool's Journey</h4>
-                    <p className="text-sm text-purple-700 dark:text-purple-300">Spiritual evolution from 0 to 21</p>
+                    <h4 className="font-medium text-purple-800 dark:text-purple-200">
+                      The Fool's Journey
+                    </h4>
+                    <p className="text-sm text-purple-700 dark:text-purple-300">
+                      Spiritual evolution from 0 to 21
+                    </p>
                   </div>
                   <div className="bg-amber-50 dark:bg-amber-950 p-3 rounded border-l-4 border-amber-400">
-                    <h4 className="font-medium text-amber-800 dark:text-amber-200">Planetary Rulers</h4>
-                    <p className="text-sm text-amber-700 dark:text-amber-300">Each card corresponds to planetary energy</p>
+                    <h4 className="font-medium text-amber-800 dark:text-amber-200">
+                      Planetary Rulers
+                    </h4>
+                    <p className="text-sm text-amber-700 dark:text-amber-300">
+                      Each card corresponds to planetary energy
+                    </p>
                   </div>
                   <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded border-l-4 border-blue-400">
-                    <h4 className="font-medium text-blue-800 dark:text-blue-200">Alchemical Integration</h4>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">Spirit, Essence, Matter, Substance qualities</p>
+                    <h4 className="font-medium text-blue-800 dark:text-blue-200">
+                      Alchemical Integration
+                    </h4>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      Spirit, Essence, Matter, Substance qualities
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -705,49 +825,63 @@ export default function TarotDashboardPage() {
                   <div className="flex justify-between items-center">
                     <span className="flex items-center gap-2">
                       <span>☉ Sun</span>
-                      <Badge variant="outline" className="text-xs">The Sun</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        The Sun
+                      </Badge>
                     </span>
                     <span className="text-muted-foreground">Vitality, consciousness</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="flex items-center gap-2">
                       <span>☽ Moon</span>
-                      <Badge variant="outline" className="text-xs">The Moon</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        The Moon
+                      </Badge>
                     </span>
                     <span className="text-muted-foreground">Intuition, subconscious</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="flex items-center gap-2">
                       <span>☿ Mercury</span>
-                      <Badge variant="outline" className="text-xs">The Magician</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        The Magician
+                      </Badge>
                     </span>
                     <span className="text-muted-foreground">Communication, skill</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="flex items-center gap-2">
                       <span>♀ Venus</span>
-                      <Badge variant="outline" className="text-xs">The Empress</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        The Empress
+                      </Badge>
                     </span>
                     <span className="text-muted-foreground">Love, beauty, creation</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="flex items-center gap-2">
                       <span>♂ Mars</span>
-                      <Badge variant="outline" className="text-xs">The Tower</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        The Tower
+                      </Badge>
                     </span>
                     <span className="text-muted-foreground">Action, transformation</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="flex items-center gap-2">
                       <span>♃ Jupiter</span>
-                      <Badge variant="outline" className="text-xs">Wheel of Fortune</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        Wheel of Fortune
+                      </Badge>
                     </span>
                     <span className="text-muted-foreground">Expansion, wisdom</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="flex items-center gap-2">
                       <span>♄ Saturn</span>
-                      <Badge variant="outline" className="text-xs">The World</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        The World
+                      </Badge>
                     </span>
                     <span className="text-muted-foreground">Structure, mastery</span>
                   </div>

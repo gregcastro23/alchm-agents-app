@@ -1,14 +1,24 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import { ChevronLeft, ChevronRight, Brain, Sparkles, Clock, CheckCircle } from "lucide-react"
-import { CONSCIOUSNESS_SURVEY_QUESTIONS, SURVEY_METADATA } from "@/lib/consciousness-survey/survey-questions"
-import type { SurveyQuestion, SurveyResponse } from "@/lib/types/consciousness-survey"
-import { SurveyQuestionComponent } from "./survey-question-component"
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
+import { ChevronLeft, ChevronRight, Brain, Sparkles, Clock, CheckCircle } from 'lucide-react'
+import {
+  CONSCIOUSNESS_SURVEY_QUESTIONS,
+  SURVEY_METADATA,
+} from '@/lib/consciousness-survey/survey-questions'
+import type { SurveyQuestion, SurveyResponse } from '@/lib/types/consciousness-survey'
+import { SurveyQuestionComponent } from './survey-question-component'
 
 interface ConsciousnessSurveyProps {
   onComplete: (responses: SurveyResponse[], timeSpent: number) => void
@@ -31,12 +41,16 @@ export function ConsciousnessSurvey({ onComplete, onCancel }: ConsciousnessSurve
     setQuestionStartTime(Date.now())
   }, [currentQuestionIndex])
 
-  const handleResponse = (questionId: string, value: string | number | string[], confidence?: number) => {
+  const handleResponse = (
+    questionId: string,
+    value: string | number | string[],
+    confidence?: number
+  ) => {
     const newResponses = new Map(responses)
     newResponses.set(questionId, {
       questionId,
       value,
-      confidence
+      confidence,
     })
     setResponses(newResponses)
   }
@@ -76,35 +90,43 @@ export function ConsciousnessSurvey({ onComplete, onCancel }: ConsciousnessSurve
             </div>
             <CardTitle className="text-3xl">Consciousness Survey</CardTitle>
             <CardDescription className="text-lg max-w-2xl mx-auto">
-              Welcome to your personalized AI consciousness mapping journey. This comprehensive survey will help us understand your unique psychological patterns, communication preferences, and growth aspirations.
+              Welcome to your personalized AI consciousness mapping journey. This comprehensive
+              survey will help us understand your unique psychological patterns, communication
+              preferences, and growth aspirations.
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             <div className="grid md:grid-cols-3 gap-4">
               <div className="text-center p-4 bg-muted/50 rounded-lg">
                 <Clock className="w-6 h-6 mx-auto mb-2 text-primary" />
                 <h3 className="font-semibold">~{SURVEY_METADATA.estimatedTimeMinutes} Minutes</h3>
-                <p className="text-sm text-muted-foreground">Take your time, there&apos;s no rush</p>
+                <p className="text-sm text-muted-foreground">
+                  Take your time, there&apos;s no rush
+                </p>
               </div>
-              
+
               <div className="text-center p-4 bg-muted/50 rounded-lg">
                 <Sparkles className="w-6 h-6 mx-auto mb-2 text-primary" />
                 <h3 className="font-semibold">{SURVEY_METADATA.totalQuestions} Questions</h3>
-                <p className="text-sm text-muted-foreground">Thoughtfully crafted for deep insights</p>
+                <p className="text-sm text-muted-foreground">
+                  Thoughtfully crafted for deep insights
+                </p>
               </div>
-              
+
               <div className="text-center p-4 bg-muted/50 rounded-lg">
                 <CheckCircle className="w-6 h-6 mx-auto mb-2 text-primary" />
                 <h3 className="font-semibold">Personalized AI</h3>
-                <p className="text-sm text-muted-foreground">Creates your unique consciousness mirror</p>
+                <p className="text-sm text-muted-foreground">
+                  Creates your unique consciousness mirror
+                </p>
               </div>
             </div>
 
             <div className="space-y-4">
               <h3 className="text-xl font-semibold">What We&apos;ll Explore Together:</h3>
               <div className="grid md:grid-cols-2 gap-3">
-                {SURVEY_METADATA.categories.map((category) => (
+                {SURVEY_METADATA.categories.map(category => (
                   <div key={category} className="flex items-center space-x-2">
                     <Badge variant="outline" className="text-xs">
                       {category.replace('_', ' ').toLowerCase()}
@@ -119,7 +141,8 @@ export function ConsciousnessSurvey({ onComplete, onCancel }: ConsciousnessSurve
                 🔒 Your Privacy Matters
               </h4>
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                Your responses are used solely to create your personalized AI. We never share your data, and you can delete your profile at any time.
+                Your responses are used solely to create your personalized AI. We never share your
+                data, and you can delete your profile at any time.
               </p>
             </div>
           </CardContent>
@@ -150,9 +173,7 @@ export function ConsciousnessSurvey({ onComplete, onCancel }: ConsciousnessSurve
               <CardTitle className="text-lg">
                 Question {currentQuestionIndex + 1} of {CONSCIOUSNESS_SURVEY_QUESTIONS.length}
               </CardTitle>
-              <CardDescription>
-                {answeredQuestions} questions completed
-              </CardDescription>
+              <CardDescription>{answeredQuestions} questions completed</CardDescription>
             </div>
             <Badge variant="outline" className="text-xs">
               {currentQuestion.category.replace('_', ' ')}
@@ -165,16 +186,14 @@ export function ConsciousnessSurvey({ onComplete, onCancel }: ConsciousnessSurve
       {/* Current Question */}
       <Card className="min-h-[400px]">
         <CardHeader>
-          <CardTitle className="text-xl leading-relaxed">
-            {currentQuestion.question}
-          </CardTitle>
+          <CardTitle className="text-xl leading-relaxed">{currentQuestion.question}</CardTitle>
           {currentQuestion.description && (
-            <CardDescription className="text-base">
-              {currentQuestion.description}
-            </CardDescription>
+            <CardDescription className="text-base">{currentQuestion.description}</CardDescription>
           )}
           {currentQuestion.required && (
-            <Badge variant="secondary" className="w-fit">Required</Badge>
+            <Badge variant="secondary" className="w-fit">
+              Required
+            </Badge>
           )}
         </CardHeader>
 
@@ -188,11 +207,7 @@ export function ConsciousnessSurvey({ onComplete, onCancel }: ConsciousnessSurve
         </CardContent>
 
         <CardFooter className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentQuestionIndex === 0}
-          >
+          <Button variant="outline" onClick={handlePrevious} disabled={currentQuestionIndex === 0}>
             <ChevronLeft className="w-4 h-4 mr-2" />
             Previous
           </Button>
@@ -203,11 +218,8 @@ export function ConsciousnessSurvey({ onComplete, onCancel }: ConsciousnessSurve
                 Response required
               </Badge>
             )}
-            
-            <Button
-              onClick={handleNext}
-              disabled={!canAdvance}
-            >
+
+            <Button onClick={handleNext} disabled={!canAdvance}>
               {currentQuestionIndex === CONSCIOUSNESS_SURVEY_QUESTIONS.length - 1 ? (
                 <>
                   Complete Survey

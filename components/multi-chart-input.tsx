@@ -1,19 +1,25 @@
-"use client"
+'use client'
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { 
-  Plus, 
-  Trash2, 
-  Users, 
+import React, { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Progress } from '@/components/ui/progress'
+import {
+  Plus,
+  Trash2,
+  Users,
   Heart,
   Briefcase,
   Home,
@@ -21,24 +27,24 @@ import {
   Info,
   Calendar,
   MapPin,
-  Clock
-} from 'lucide-react';
+  Clock,
+} from 'lucide-react'
 
 export interface ChartInput {
-  id: string;
-  name: string;
-  birthDate: string;
-  birthTime: string;
-  birthLocation: string;
-  isValid: boolean;
+  id: string
+  name: string
+  birthDate: string
+  birthTime: string
+  birthLocation: string
+  isValid: boolean
 }
 
 export interface MultiChartInputProps {
-  onChartsChange: (charts: ChartInput[]) => void;
-  onRelationshipTypeChange: (type: string) => void;
-  onAnalyze: () => void;
-  isAnalyzing?: boolean;
-  maxCharts?: number;
+  onChartsChange: (charts: ChartInput[]) => void
+  onRelationshipTypeChange: (type: string) => void
+  onAnalyze: () => void
+  isAnalyzing?: boolean
+  maxCharts?: number
 }
 
 const RELATIONSHIP_TYPES = [
@@ -46,174 +52,198 @@ const RELATIONSHIP_TYPES = [
   { value: 'friendship', label: 'Friendship', icon: Users, color: 'text-blue-500' },
   { value: 'family', label: 'Family Bond', icon: Home, color: 'text-green-500' },
   { value: 'business', label: 'Business/Professional', icon: Briefcase, color: 'text-purple-500' },
-  { value: 'spiritual', label: 'Spiritual/Consciousness Work', icon: Sparkles, color: 'text-amber-500' }
-];
+  {
+    value: 'spiritual',
+    label: 'Spiritual/Consciousness Work',
+    icon: Sparkles,
+    color: 'text-amber-500',
+  },
+]
 
 const COMMON_LOCATIONS = [
   'New York, NY, USA',
-  'Los Angeles, CA, USA', 
+  'Los Angeles, CA, USA',
   'London, England, UK',
   'Paris, France',
   'Tokyo, Japan',
   'Sydney, Australia',
   'Toronto, Canada',
-  'Berlin, Germany'
-];
+  'Berlin, Germany',
+]
 
-export default function MultiChartInput({ 
-  onChartsChange, 
+export default function MultiChartInput({
+  onChartsChange,
   onRelationshipTypeChange,
   onAnalyze,
   isAnalyzing = false,
-  maxCharts = 8 
+  maxCharts = 8,
 }: MultiChartInputProps) {
-  const [charts, setCharts] = useState<ChartInput[]>([]);
-  const [relationshipType, setRelationshipType] = useState<string>('');
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [charts, setCharts] = useState<ChartInput[]>([])
+  const [relationshipType, setRelationshipType] = useState<string>('')
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Add new chart
   const addChart = () => {
-    if (charts.length >= maxCharts) return;
-    
+    if (charts.length >= maxCharts) return
+
     const newChart: ChartInput = {
       id: `chart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: '',
       birthDate: '',
       birthTime: '12:00',
       birthLocation: 'New York, NY, USA',
-      isValid: false
-    };
-    
-    const updatedCharts = [...charts, newChart];
-    setCharts(updatedCharts);
-    onChartsChange(updatedCharts);
-  };
+      isValid: false,
+    }
+
+    const updatedCharts = [...charts, newChart]
+    setCharts(updatedCharts)
+    onChartsChange(updatedCharts)
+  }
 
   // Remove chart
   const removeChart = (chartId: string) => {
-    const updatedCharts = charts.filter(c => c.id !== chartId);
-    setCharts(updatedCharts);
-    onChartsChange(updatedCharts);
-    
+    const updatedCharts = charts.filter(c => c.id !== chartId)
+    setCharts(updatedCharts)
+    onChartsChange(updatedCharts)
+
     // Clear errors for removed chart
-    const newErrors = { ...errors };
-    delete newErrors[chartId];
-    setErrors(newErrors);
-  };
+    const newErrors = { ...errors }
+    delete newErrors[chartId]
+    setErrors(newErrors)
+  }
 
   // Update chart field
   const updateChart = (chartId: string, field: keyof ChartInput, value: string) => {
     const updatedCharts = charts.map(chart => {
       if (chart.id === chartId) {
-        const updated = { ...chart, [field]: value };
-        updated.isValid = validateChart(updated);
-        return updated;
+        const updated = { ...chart, [field]: value }
+        updated.isValid = validateChart(updated)
+        return updated
       }
-      return chart;
-    });
-    
-    setCharts(updatedCharts);
-    onChartsChange(updatedCharts);
-    
+      return chart
+    })
+
+    setCharts(updatedCharts)
+    onChartsChange(updatedCharts)
+
     // Clear field-specific error
     if (errors[`${chartId}_${field}`]) {
-      const newErrors = { ...errors };
-      delete newErrors[`${chartId}_${field}`];
-      setErrors(newErrors);
+      const newErrors = { ...errors }
+      delete newErrors[`${chartId}_${field}`]
+      setErrors(newErrors)
     }
-  };
+  }
 
   // Validate individual chart
   const validateChart = (chart: ChartInput): boolean => {
-    if (!chart.name.trim()) return false;
-    if (!chart.birthDate) return false;
-    if (!chart.birthLocation.trim()) return false;
-    
+    if (!chart.name.trim()) return false
+    if (!chart.birthDate) return false
+    if (!chart.birthLocation.trim()) return false
+
     // Basic date validation
-    const date = new Date(chart.birthDate);
-    if (isNaN(date.getTime())) return false;
-    if (date > new Date()) return false; // Future dates not allowed
-    
-    return true;
-  };
+    const date = new Date(chart.birthDate)
+    if (isNaN(date.getTime())) return false
+    if (date > new Date()) return false // Future dates not allowed
+
+    return true
+  }
 
   // Validate all charts and show errors
   const validateAll = (): boolean => {
-    const newErrors: Record<string, string> = {};
-    let isValid = true;
-    
+    const newErrors: Record<string, string> = {}
+    let isValid = true
+
     if (charts.length === 0) {
-      newErrors.general = 'At least one chart is required';
-      isValid = false;
+      newErrors.general = 'At least one chart is required'
+      isValid = false
     }
-    
+
     charts.forEach(chart => {
       if (!chart.name.trim()) {
-        newErrors[`${chart.id}_name`] = 'Name is required';
-        isValid = false;
+        newErrors[`${chart.id}_name`] = 'Name is required'
+        isValid = false
       }
-      
+
       if (!chart.birthDate) {
-        newErrors[`${chart.id}_birthDate`] = 'Birth date is required';
-        isValid = false;
+        newErrors[`${chart.id}_birthDate`] = 'Birth date is required'
+        isValid = false
       } else {
-        const date = new Date(chart.birthDate);
+        const date = new Date(chart.birthDate)
         if (isNaN(date.getTime())) {
-          newErrors[`${chart.id}_birthDate`] = 'Invalid date format';
-          isValid = false;
+          newErrors[`${chart.id}_birthDate`] = 'Invalid date format'
+          isValid = false
         } else if (date > new Date()) {
-          newErrors[`${chart.id}_birthDate`] = 'Birth date cannot be in the future';
-          isValid = false;
+          newErrors[`${chart.id}_birthDate`] = 'Birth date cannot be in the future'
+          isValid = false
         }
       }
-      
+
       if (!chart.birthLocation.trim()) {
-        newErrors[`${chart.id}_birthLocation`] = 'Birth location is required';
-        isValid = false;
+        newErrors[`${chart.id}_birthLocation`] = 'Birth location is required'
+        isValid = false
       }
-    });
-    
+    })
+
     if (charts.length > 1 && !relationshipType) {
-      newErrors.relationship = 'Please select relationship type for multi-chart analysis';
-      isValid = false;
+      newErrors.relationship = 'Please select relationship type for multi-chart analysis'
+      isValid = false
     }
-    
-    setErrors(newErrors);
-    return isValid;
-  };
+
+    setErrors(newErrors)
+    return isValid
+  }
 
   // Handle analyze button
   const handleAnalyze = () => {
     if (validateAll()) {
-      onAnalyze();
+      onAnalyze()
     }
-  };
+  }
 
   // Handle relationship type change
   const handleRelationshipTypeChange = (type: string) => {
-    setRelationshipType(type);
-    onRelationshipTypeChange(type);
-    
+    setRelationshipType(type)
+    onRelationshipTypeChange(type)
+
     if (errors.relationship) {
-      const newErrors = { ...errors };
-      delete newErrors.relationship;
-      setErrors(newErrors);
+      const newErrors = { ...errors }
+      delete newErrors.relationship
+      setErrors(newErrors)
     }
-  };
+  }
 
   // Get complexity info
   const getComplexityInfo = () => {
-    const count = charts.length;
-    if (count === 0) return { name: 'Solo', description: 'Current cosmic moment only', color: 'bg-gray-100 text-gray-800' };
-    if (count === 1) return { name: 'Dual', description: 'Current moment + birth chart', color: 'bg-blue-100 text-blue-800' };
-    if (count === 2) return { name: 'Trinity', description: 'Three-chart synergy analysis', color: 'bg-purple-100 text-purple-800' };
-    return { name: 'Collective', description: `${count + 1}-chart group consciousness`, color: 'bg-amber-100 text-amber-800' };
-  };
+    const count = charts.length
+    if (count === 0)
+      return {
+        name: 'Solo',
+        description: 'Current cosmic moment only',
+        color: 'bg-gray-100 text-gray-800',
+      }
+    if (count === 1)
+      return {
+        name: 'Dual',
+        description: 'Current moment + birth chart',
+        color: 'bg-blue-100 text-blue-800',
+      }
+    if (count === 2)
+      return {
+        name: 'Trinity',
+        description: 'Three-chart synergy analysis',
+        color: 'bg-purple-100 text-purple-800',
+      }
+    return {
+      name: 'Collective',
+      description: `${count + 1}-chart group consciousness`,
+      color: 'bg-amber-100 text-amber-800',
+    }
+  }
 
-  const complexity = getComplexityInfo();
-  const validChartCount = charts.filter(c => c.isValid).length;
-  const totalChartCount = charts.length + 1; // +1 for current moment
-  const progressPercentage = charts.length > 0 ? (validChartCount / charts.length) * 100 : 0;
+  const complexity = getComplexityInfo()
+  const validChartCount = charts.filter(c => c.isValid).length
+  const totalChartCount = charts.length + 1 // +1 for current moment
+  const progressPercentage = charts.length > 0 ? (validChartCount / charts.length) * 100 : 0
 
   return (
     <div className="space-y-6">
@@ -225,14 +255,13 @@ export default function MultiChartInput({
             Multi-Chart Rune Analysis
           </CardTitle>
           <CardDescription>
-            Combine multiple birth charts with the current cosmic moment to mint powerful consciousness runes
+            Combine multiple birth charts with the current cosmic moment to mint powerful
+            consciousness runes
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
-            <Badge className={complexity.color}>
-              {complexity.name} Complexity
-            </Badge>
+            <Badge className={complexity.color}>{complexity.name} Complexity</Badge>
             <span className="text-sm text-gray-600">{complexity.description}</span>
             <span className="text-sm font-medium">
               {totalChartCount} chart{totalChartCount !== 1 ? 's' : ''} total
@@ -248,7 +277,9 @@ export default function MultiChartInput({
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Chart Completion</span>
-                <span>{validChartCount}/{charts.length} ready</span>
+                <span>
+                  {validChartCount}/{charts.length} ready
+                </span>
               </div>
               <Progress value={progressPercentage} className="h-2" />
             </div>
@@ -267,8 +298,8 @@ export default function MultiChartInput({
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-              {RELATIONSHIP_TYPES.map((type) => {
-                const Icon = type.icon;
+              {RELATIONSHIP_TYPES.map(type => {
+                const Icon = type.icon
                 return (
                   <Button
                     key={type.value}
@@ -279,7 +310,7 @@ export default function MultiChartInput({
                     <Icon className={`h-5 w-5 ${type.color}`} />
                     <span className="text-xs text-center">{type.label}</span>
                   </Button>
-                );
+                )
               })}
             </div>
             {errors.relationship && (
@@ -309,7 +340,10 @@ export default function MultiChartInput({
         </div>
 
         {charts.map((chart, index) => (
-          <Card key={chart.id} className={`border-l-4 ${chart.isValid ? 'border-l-green-500' : 'border-l-gray-300'}`}>
+          <Card
+            key={chart.id}
+            className={`border-l-4 ${chart.isValid ? 'border-l-green-500' : 'border-l-gray-300'}`}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">
@@ -333,7 +367,7 @@ export default function MultiChartInput({
                 <Input
                   id={`name_${chart.id}`}
                   value={chart.name}
-                  onChange={(e) => updateChart(chart.id, 'name', e.target.value)}
+                  onChange={e => updateChart(chart.id, 'name', e.target.value)}
                   placeholder="Enter person's name"
                   className={errors[`${chart.id}_name`] ? 'border-red-500' : ''}
                 />
@@ -353,7 +387,7 @@ export default function MultiChartInput({
                     id={`date_${chart.id}`}
                     type="date"
                     value={chart.birthDate}
-                    onChange={(e) => updateChart(chart.id, 'birthDate', e.target.value)}
+                    onChange={e => updateChart(chart.id, 'birthDate', e.target.value)}
                     className={errors[`${chart.id}_birthDate`] ? 'border-red-500' : ''}
                   />
                   {errors[`${chart.id}_birthDate`] && (
@@ -371,7 +405,7 @@ export default function MultiChartInput({
                     id={`time_${chart.id}`}
                     type="time"
                     value={chart.birthTime}
-                    onChange={(e) => updateChart(chart.id, 'birthTime', e.target.value)}
+                    onChange={e => updateChart(chart.id, 'birthTime', e.target.value)}
                   />
                   <p className="text-xs text-gray-500">If unknown, noon is used as default</p>
                 </div>
@@ -385,13 +419,15 @@ export default function MultiChartInput({
                 </Label>
                 <Select
                   value={chart.birthLocation}
-                  onValueChange={(value) => updateChart(chart.id, 'birthLocation', value)}
+                  onValueChange={value => updateChart(chart.id, 'birthLocation', value)}
                 >
-                  <SelectTrigger className={errors[`${chart.id}_birthLocation`] ? 'border-red-500' : ''}>
+                  <SelectTrigger
+                    className={errors[`${chart.id}_birthLocation`] ? 'border-red-500' : ''}
+                  >
                     <SelectValue placeholder="Select birth location" />
                   </SelectTrigger>
                   <SelectContent>
-                    {COMMON_LOCATIONS.map((location) => (
+                    {COMMON_LOCATIONS.map(location => (
                       <SelectItem key={location} value={location}>
                         {location}
                       </SelectItem>
@@ -401,7 +437,9 @@ export default function MultiChartInput({
                 {errors[`${chart.id}_birthLocation`] && (
                   <p className="text-sm text-red-500">{errors[`${chart.id}_birthLocation`]}</p>
                 )}
-                <p className="text-xs text-gray-500">Custom locations can be added in advanced mode</p>
+                <p className="text-xs text-gray-500">
+                  Custom locations can be added in advanced mode
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -455,7 +493,7 @@ export default function MultiChartInput({
                 </div>
               )}
             </Button>
-            
+
             <div className="text-center text-sm text-gray-600">
               This will combine your charts with the current cosmic moment to reveal available runes
             </div>
@@ -472,15 +510,23 @@ export default function MultiChartInput({
           </CardTitle>
         </CardHeader>
         <CardContent className="text-sm space-y-2">
-          <p><strong>Solo Runes:</strong> Based on current cosmic moment alone</p>
-          <p><strong>Dual Runes:</strong> Your birth chart + current moment (enhanced personal power)</p>
-          <p><strong>Trinity Runes:</strong> Three charts create relationship synergy runes</p>
-          <p><strong>Collective Runes:</strong> 4+ charts unlock group consciousness tools</p>
+          <p>
+            <strong>Solo Runes:</strong> Based on current cosmic moment alone
+          </p>
+          <p>
+            <strong>Dual Runes:</strong> Your birth chart + current moment (enhanced personal power)
+          </p>
+          <p>
+            <strong>Trinity Runes:</strong> Three charts create relationship synergy runes
+          </p>
+          <p>
+            <strong>Collective Runes:</strong> 4+ charts unlock group consciousness tools
+          </p>
           <p className="text-blue-700 mt-3">
             Higher complexity = more powerful runes, but requires better synergy between charts
           </p>
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

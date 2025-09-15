@@ -23,8 +23,8 @@ async function testAPIFallback() {
       essence: alchmResult.essence,
       matter: alchmResult.matter,
       substance: alchmResult.substance,
-      isFallback: (alchmResult as any).meta?.fallback,
-      isDegraded: (alchmResult as any).meta?.degraded
+      isFallback: alchmResult.meta?.fallback,
+      isDegraded: alchmResult.meta?.degraded
     })
   } catch (error) {
     console.log('❌ Alchemize Error:', error.message)

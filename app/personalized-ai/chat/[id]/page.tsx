@@ -1,15 +1,15 @@
-"use client"
+'use client'
 
-import { useState, useEffect, useCallback } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, Brain, ArrowLeft, Settings, TrendingUp } from "lucide-react"
-import { PersonalizedAIChat } from "@/components/personalized-ai-chat"
-import type { PersonalizedAIConfig } from "@/lib/types/personalized-ai"
-import { useToast } from "@/hooks/use-toast"
+import { useState, useEffect, useCallback } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2, Brain, ArrowLeft, Settings, TrendingUp } from 'lucide-react'
+import { PersonalizedAIChat } from '@/components/personalized-ai-chat'
+import type { PersonalizedAIConfig } from '@/lib/types/personalized-ai'
+import { useToast } from '@/hooks/use-toast'
 
 export default function PersonalizedAIChatPage() {
   const params = useParams()
@@ -48,18 +48,22 @@ export default function PersonalizedAIChatPage() {
 
   const handleXPUpdate = (newXP: number, newLevel: number) => {
     if (aiConfig) {
-      setAiConfig(prev => prev ? {
-        ...prev,
-        totalXp: newXP,
-        level: newLevel
-      } : null)
+      setAiConfig(prev =>
+        prev
+          ? {
+              ...prev,
+              totalXp: newXP,
+              level: newLevel,
+            }
+          : null
+      )
     }
   }
 
   const handleAchievementUnlock = (achievements: any[]) => {
     achievements.forEach(achievement => {
       toast({
-        title: "🏆 Achievement Unlocked!",
+        title: '🏆 Achievement Unlocked!',
         description: `${achievement.achievementData.name}: ${achievement.achievementData.description}`,
         duration: 5000,
       })
@@ -100,7 +104,7 @@ export default function PersonalizedAIChatPage() {
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
-            
+
             <div className="space-y-2">
               <h3 className="font-medium">What you can do:</h3>
               <ul className="text-sm text-muted-foreground space-y-1">
@@ -115,9 +119,7 @@ export default function PersonalizedAIChatPage() {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Go Back
               </Button>
-              <Button onClick={() => router.push('/consciousness-survey')}>
-                Create New AI
-              </Button>
+              <Button onClick={() => router.push('/consciousness-survey')}>Create New AI</Button>
             </div>
           </CardContent>
         </Card>
@@ -134,15 +136,11 @@ export default function PersonalizedAIChatPage() {
       {/* Navigation Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => router.back()}
-          >
+          <Button variant="ghost" size="sm" onClick={() => router.back()}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-          
+
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
               <Brain className="w-4 h-4 text-white" />
@@ -161,7 +159,7 @@ export default function PersonalizedAIChatPage() {
             <TrendingUp className="w-3 h-3" />
             <span>Level {aiConfig.level}</span>
           </Badge>
-          
+
           <Button variant="ghost" size="sm">
             <Settings className="w-4 h-4" />
           </Button>

@@ -46,9 +46,11 @@ npm run dev
 The system uses the official Galileo SDK (`galileo` npm package) with proper hierarchical logging:
 
 #### Traces
+
 Each alchemical calculation creates a trace that represents the complete workflow from planetary input to calculated quantities output using `logger.startTrace()` and `logger.conclude()`.
 
 #### Spans
+
 Each trace contains multiple spans representing discrete operations:
 
 1. **Retriever Span:** `get-planetary-positions`
@@ -57,7 +59,7 @@ Each trace contains multiple spans representing discrete operations:
    - Input: Request for planetary positions with timestamp
    - Output: Planetary positions, sun sign, chart ruler
 
-2. **Tool Span:** `calculate-base-quantities` 
+2. **Tool Span:** `calculate-base-quantities`
    - Created with `logger.addSpan({ spanType: 'tool' })`
    - Calculates Spirit, Essence, Matter, Substance from planetary data
    - Input: Planetary data and calculation method
@@ -76,26 +78,30 @@ Each trace contains multiple spans representing discrete operations:
 Each workflow logs the following data to your Galileo dashboard:
 
 #### Quantities
+
 - **Spirit**: Cosmic creative force
-- **Essence**: Life-giving principle  
+- **Essence**: Life-giving principle
 - **Matter**: Physical substance
 - **Substance**: Etheric foundation
 - **Day Essence**: Diurnal elemental energy
 - **Night Essence**: Nocturnal elemental energy
 
 #### Alchemical Metrics
+
 - **Heat**: Intensity of alchemical processes
 - **Entropy**: Degree of systemic disorder
 - **Reactivity**: Potential for change
 - **Energy**: Overall system vitality
 
 #### Astrological Context
+
 - **Sun Sign**: Current zodiac sign of the Sun
 - **Chart Ruler**: Ruling planet of the ascendant
 - **Planetary Positions**: Complete ephemeris data
 - **Dominant Element**: Primary elemental influence
 
 #### Application Metadata
+
 - Timestamp of calculation
 - API endpoint used
 - Calculation method
@@ -105,13 +111,15 @@ Each workflow logs the following data to your Galileo dashboard:
 
 Once configured, you can create dashboards in Galileo to visualize:
 
-### Trace-Level Analysis  
+### Trace-Level Analysis
+
 1. **Workflow Traces**: See complete calculation workflows from input to output
 2. **Trace Duration**: Monitor how long complete calculations take via `durationNs`
 3. **Trace Success Rates**: Track successful vs failed calculation attempts
 4. **Input/Output Analysis**: Review complete request/response data
 
 ### Span-Level Analysis
+
 1. **Span Performance**: Individual operation timings for each retriever/tool span
 2. **Span Types**: Visualize workflow steps by span type (retriever, tool)
 3. **Span Outputs**: Detailed view of each calculation step's results
@@ -119,6 +127,7 @@ Once configured, you can create dashboards in Galileo to visualize:
 5. **Error Analysis**: Identify which spans fail and why
 
 ### Metrics Visualization
+
 1. **Real-time Quantities**: Current values of Spirit, Essence, Matter, Substance
 2. **Alchemical Metrics**: Heat, entropy, reactivity, energy over time
 3. **Astrological Correlations**: How planetary positions influence quantities
@@ -145,6 +154,7 @@ Once configured, you can create dashboards in Galileo to visualize:
 ### Validation Steps
 
 Use the `/galileo-setup` page to:
+
 1. Check configuration status
 2. Send test data
 3. Verify streams are working
@@ -157,30 +167,32 @@ Use the `/galileo-setup` page to:
 ```json
 {
   "project_name": "AlchmPlanetaryAgents",
-  "workflows": [{
-    "created_at_ns": 1753175650085000000,
-    "duration_ns": 150000000,
-    "input": "{\"session_id\":\"session_123\",\"session_name\":\"alchemical-quantities-calculation\",\"trace_name\":\"calculate-alchemical-quantities\",\"spans_count\":3}",
-    "output": "{\"spans\":[{\"name\":\"get-planetary-positions\",\"type\":\"retriever\",\"status\":\"success\",\"duration_ms\":25},{\"name\":\"calculate-base-quantities\",\"type\":\"tool\",\"status\":\"success\",\"duration_ms\":75},{\"name\":\"calculate-alchemical-metrics\",\"type\":\"tool\",\"status\":\"success\",\"duration_ms\":50}],\"trace_metadata\":{\"dominant_element\":\"Fire\",\"api_endpoint\":\"/api/alchm-quantities\"},\"session_metadata\":{\"timestamp\":\"2025-07-22T10:00:00.000Z\",\"sun_sign\":\"Leo\",\"chart_ruler\":\"Sun\"}}",
-    "name": "calculate-alchemical-quantities",
-    "type": "workflow",
-    "metadata": {
-      "session_id": "session_123",
-      "session_name": "alchemical-quantities-calculation", 
-      "trace_id": "trace_456",
-      "spans_count": "3",
-      "duration_ms": "150",
-      "span_0_name": "get-planetary-positions",
-      "span_0_type": "retriever",
-      "span_0_status": "success",
-      "span_1_name": "calculate-base-quantities", 
-      "span_1_type": "tool",
-      "span_1_status": "success",
-      "span_2_name": "calculate-alchemical-metrics",
-      "span_2_type": "tool", 
-      "span_2_status": "success"
+  "workflows": [
+    {
+      "created_at_ns": 1753175650085000000,
+      "duration_ns": 150000000,
+      "input": "{\"session_id\":\"session_123\",\"session_name\":\"alchemical-quantities-calculation\",\"trace_name\":\"calculate-alchemical-quantities\",\"spans_count\":3}",
+      "output": "{\"spans\":[{\"name\":\"get-planetary-positions\",\"type\":\"retriever\",\"status\":\"success\",\"duration_ms\":25},{\"name\":\"calculate-base-quantities\",\"type\":\"tool\",\"status\":\"success\",\"duration_ms\":75},{\"name\":\"calculate-alchemical-metrics\",\"type\":\"tool\",\"status\":\"success\",\"duration_ms\":50}],\"trace_metadata\":{\"dominant_element\":\"Fire\",\"api_endpoint\":\"/api/alchm-quantities\"},\"session_metadata\":{\"timestamp\":\"2025-07-22T10:00:00.000Z\",\"sun_sign\":\"Leo\",\"chart_ruler\":\"Sun\"}}",
+      "name": "calculate-alchemical-quantities",
+      "type": "workflow",
+      "metadata": {
+        "session_id": "session_123",
+        "session_name": "alchemical-quantities-calculation",
+        "trace_id": "trace_456",
+        "spans_count": "3",
+        "duration_ms": "150",
+        "span_0_name": "get-planetary-positions",
+        "span_0_type": "retriever",
+        "span_0_status": "success",
+        "span_1_name": "calculate-base-quantities",
+        "span_1_type": "tool",
+        "span_1_status": "success",
+        "span_2_name": "calculate-alchemical-metrics",
+        "span_2_type": "tool",
+        "span_2_status": "success"
+      }
     }
-  }]
+  ]
 }
 ```
 

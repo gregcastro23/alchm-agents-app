@@ -11,11 +11,11 @@ export const config = {
 export function verifyApiKeys() {
   const missingKeys = []
 
-  if (!config.galileoApiKey) missingKeys.push("GALILEO_API_KEY")
-  if (!config.openaiApiKey) missingKeys.push("OPENAI_API_KEY")
+  if (!config.galileoApiKey) missingKeys.push('GALILEO_API_KEY')
+  if (!config.openaiApiKey) missingKeys.push('OPENAI_API_KEY')
 
   if (missingKeys.length > 0) {
-    console.error(`Missing required environment variables: ${missingKeys.join(", ")}`)
+    console.error(`Missing required environment variables: ${missingKeys.join(', ')}`)
     return false
   }
 

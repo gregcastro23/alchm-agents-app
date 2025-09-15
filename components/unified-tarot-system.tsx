@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -42,73 +42,90 @@ interface UnifiedTarotSystemProps {
 // Consolidated tarot data (simplified for demo)
 const MAJOR_ARCANA: TarotCard[] = [
   {
-    name: "The Fool",
+    name: 'The Fool',
     number: 0,
-    meaning: "New beginnings, innocence, spontaneity",
-    reversedMeaning: "Recklessness, taken advantage of, inconsideration",
-    keywords: ["new beginnings", "innocence", "journey", "potential"],
-    element: "Air",
-    consciousness: "Pure potential and infinite possibility",
-    chakra: "Crown"
+    meaning: 'New beginnings, innocence, spontaneity',
+    reversedMeaning: 'Recklessness, taken advantage of, inconsideration',
+    keywords: ['new beginnings', 'innocence', 'journey', 'potential'],
+    element: 'Air',
+    consciousness: 'Pure potential and infinite possibility',
+    chakra: 'Crown',
   },
   {
-    name: "The Magician", 
+    name: 'The Magician',
     number: 1,
-    meaning: "Manifestation, resourcefulness, power",
-    reversedMeaning: "Manipulation, poor planning, untapped talents",
-    keywords: ["manifestation", "power", "skill", "concentration"],
-    element: "Air",
-    consciousness: "Focused will and creative power",
-    chakra: "Throat"
-  }
+    meaning: 'Manifestation, resourcefulness, power',
+    reversedMeaning: 'Manipulation, poor planning, untapped talents',
+    keywords: ['manifestation', 'power', 'skill', 'concentration'],
+    element: 'Air',
+    consciousness: 'Focused will and creative power',
+    chakra: 'Throat',
+  },
   // Add more cards as needed...
 ]
 
 const MINOR_ARCANA_SAMPLE: TarotCard[] = [
   {
-    name: "Two of Wands",
-    suit: "Wands",
+    name: 'Two of Wands',
+    suit: 'Wands',
     number: 2,
-    meaning: "Personal power and future planning",
-    reversedMeaning: "Lack of planning, fear of unknown",
-    keywords: ["planning", "power", "dominion", "leadership"],
-    element: "Fire",
-    consciousness: "Cardinal Fire initiation - the spark of individual will",
-    alchemicalValues: { spirit: 0.7, essence: 0.2, matter: 0.1, substance: 0.0 }
-  }
+    meaning: 'Personal power and future planning',
+    reversedMeaning: 'Lack of planning, fear of unknown',
+    keywords: ['planning', 'power', 'dominion', 'leadership'],
+    element: 'Fire',
+    consciousness: 'Cardinal Fire initiation - the spark of individual will',
+    alchemicalValues: { spirit: 0.7, essence: 0.2, matter: 0.1, substance: 0.0 },
+  },
   // Add more cards as needed...
 ]
 
-export function UnifiedTarotSystem({ mode = 'dashboard', onReadingComplete }: UnifiedTarotSystemProps) {
+export function UnifiedTarotSystem({
+  mode = 'dashboard',
+  onReadingComplete,
+}: UnifiedTarotSystemProps) {
   const [currentReading, setCurrentReading] = useState<TarotReading | null>(null)
   const [isDrawing, setIsDrawing] = useState(false)
   const [selectedSpread, setSelectedSpread] = useState('three-card')
 
   const spreads = {
     'three-card': { name: 'Three Card Spread', positions: ['Past', 'Present', 'Future'] },
-    'celtic-cross': { name: 'Celtic Cross', positions: ['Present', 'Challenge', 'Past', 'Future', 'Crown', 'Foundation', 'Advice', 'External', 'Hopes', 'Outcome'] },
-    'single-card': { name: 'Daily Card', positions: ['Guidance'] }
+    'celtic-cross': {
+      name: 'Celtic Cross',
+      positions: [
+        'Present',
+        'Challenge',
+        'Past',
+        'Future',
+        'Crown',
+        'Foundation',
+        'Advice',
+        'External',
+        'Hopes',
+        'Outcome',
+      ],
+    },
+    'single-card': { name: 'Daily Card', positions: ['Guidance'] },
   }
 
   const drawCards = async (spreadType: string) => {
     setIsDrawing(true)
-    
+
     // Simulate card drawing with animation delay
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     const spread = spreads[spreadType as keyof typeof spreads]
     const allCards = [...MAJOR_ARCANA, ...MINOR_ARCANA_SAMPLE]
     const shuffled = [...allCards].sort(() => Math.random() - 0.5)
     const drawnCards = shuffled.slice(0, spread.positions.length)
-    
+
     const reading: TarotReading = {
       id: `reading_${Date.now()}`,
       spread: spread.name,
       cards: drawnCards,
       interpretation: generateInterpretation(drawnCards, spread.positions),
-      timestamp: new Date()
+      timestamp: new Date(),
     }
-    
+
     setCurrentReading(reading)
     setIsDrawing(false)
     onReadingComplete?.(reading)
@@ -116,10 +133,10 @@ export function UnifiedTarotSystem({ mode = 'dashboard', onReadingComplete }: Un
 
   const generateInterpretation = (cards: TarotCard[], positions: string[]): string => {
     // Simple interpretation generation
-    const cardMeanings = cards.map((card, index) => 
-      `${positions[index]}: ${card.name} - ${card.meaning}`
-    ).join('. ')
-    
+    const cardMeanings = cards
+      .map((card, index) => `${positions[index]}: ${card.name} - ${card.meaning}`)
+      .join('. ')
+
     return `Your reading reveals: ${cardMeanings}. The cards suggest a time of transformation and growth.`
   }
 
@@ -136,8 +153,8 @@ export function UnifiedTarotSystem({ mode = 'dashboard', onReadingComplete }: Un
         <CardContent>
           {!currentReading ? (
             <div className="text-center space-y-4">
-              <Button 
-                onClick={() => drawCards('single-card')} 
+              <Button
+                onClick={() => drawCards('single-card')}
                 disabled={isDrawing}
                 className="bg-purple-600 hover:bg-purple-700"
               >
@@ -147,14 +164,8 @@ export function UnifiedTarotSystem({ mode = 'dashboard', onReadingComplete }: Un
           ) : (
             <div className="space-y-4">
               <TarotCardDisplay card={currentReading.cards[0]} />
-              <p className="text-sm text-purple-700 italic">
-                {currentReading.interpretation}
-              </p>
-              <Button 
-                variant="outline" 
-                onClick={() => setCurrentReading(null)}
-                className="w-full"
-              >
+              <p className="text-sm text-purple-700 italic">{currentReading.interpretation}</p>
+              <Button variant="outline" onClick={() => setCurrentReading(null)} className="w-full">
                 Draw New Card
               </Button>
             </div>
@@ -176,7 +187,7 @@ export function UnifiedTarotSystem({ mode = 'dashboard', onReadingComplete }: Un
               {Object.entries(spreads).map(([key, spread]) => (
                 <Button
                   key={key}
-                  variant={selectedSpread === key ? "default" : "outline"}
+                  variant={selectedSpread === key ? 'default' : 'outline'}
                   onClick={() => setSelectedSpread(key)}
                   className="h-auto p-4 flex flex-col items-center gap-2"
                 >
@@ -188,12 +199,14 @@ export function UnifiedTarotSystem({ mode = 'dashboard', onReadingComplete }: Un
               ))}
             </div>
 
-            <Button 
-              onClick={() => drawCards(selectedSpread)} 
+            <Button
+              onClick={() => drawCards(selectedSpread)}
               disabled={isDrawing}
               className="w-full"
             >
-              {isDrawing ? 'Drawing Cards...' : `Draw ${spreads[selectedSpread as keyof typeof spreads].name}`}
+              {isDrawing
+                ? 'Drawing Cards...'
+                : `Draw ${spreads[selectedSpread as keyof typeof spreads].name}`}
             </Button>
           </CardContent>
         </Card>
@@ -234,15 +247,15 @@ export function UnifiedTarotSystem({ mode = 'dashboard', onReadingComplete }: Un
           <TabsTrigger value="spreads">Spreads</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="oracle">
           <UnifiedTarotSystem mode="oracle" onReadingComplete={onReadingComplete} />
         </TabsContent>
-        
+
         <TabsContent value="spreads">
           <UnifiedTarotSystem mode="spreads" onReadingComplete={onReadingComplete} />
         </TabsContent>
-        
+
         <TabsContent value="history">
           <Card>
             <CardHeader>
@@ -263,9 +276,7 @@ function TarotCardDisplay({ card }: { card: TarotCard }) {
     <Card className="relative overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200">
       <CardContent className="p-4 space-y-3">
         {/* Card Name */}
-        <h3 className="font-bold text-lg text-center text-indigo-900">
-          {card.name}
-        </h3>
+        <h3 className="font-bold text-lg text-center text-indigo-900">{card.name}</h3>
 
         {/* Keywords */}
         <div className="flex flex-wrap gap-1 justify-center">
@@ -277,9 +288,7 @@ function TarotCardDisplay({ card }: { card: TarotCard }) {
         </div>
 
         {/* Meaning */}
-        <p className="text-sm text-gray-700 leading-relaxed text-center">
-          {card.meaning}
-        </p>
+        <p className="text-sm text-gray-700 leading-relaxed text-center">{card.meaning}</p>
 
         {/* Element & Consciousness */}
         {card.element && (
@@ -320,7 +329,7 @@ function TarotCardDisplay({ card }: { card: TarotCard }) {
             </div>
           </div>
         )}
-        
+
         {/* Chakra for Major Arcana */}
         {card.chakra && (
           <div className="flex items-center justify-center gap-2 text-sm">
@@ -329,7 +338,7 @@ function TarotCardDisplay({ card }: { card: TarotCard }) {
           </div>
         )}
       </CardContent>
-      
+
       {/* Mystical corner decoration */}
       <div className="absolute top-2 right-2 opacity-20">
         <Sparkles className="h-6 w-6 text-purple-400" />

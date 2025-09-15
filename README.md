@@ -6,14 +6,17 @@
 - Create-AI quick builder: `POST /api/personalized-ai` with `{ answers, styleCards }` returns editable config and preview id.
 
 Environment knobs:
+
 - `MONICA_DEFAULT_MODEL` (default `gpt-4o-mini`)
 - `MONICA_TEMPERATURE` (default 0.4)
 - `BACKGROUND_REFRESH_INTERVAL_MS` (default 600000)
 
 Run:
+
 ```
 yarn dev
 ```
+
 # Planetary Agents
 
 A Next.js application that explores astrological wisdom through AI-powered planetary agents and elemental charts.
@@ -32,6 +35,7 @@ Planetary Agents is an advanced astrology application that combines traditional 
 ### Planetary Wisdom Agents
 
 Consult with AI agents representing each planet in their specific dignities:
+
 - Select a planet, sign, and degree to receive wisdom
 - Chat with the agent about any question
 - Get insights based on the elemental affinities and dignities
@@ -39,6 +43,7 @@ Consult with AI agents representing each planet in their specific dignities:
 ### Elemental Charts
 
 Explore your elemental profile based on planetary positions:
+
 - View real-time elemental distributions (Fire, Water, Air, Earth)
 - See planetary elements and their affinities
 - Analyze alchemical properties such as Heat, Entropy, and Reactivity
@@ -46,6 +51,7 @@ Explore your elemental profile based on planetary positions:
 ### Chart Interpretation
 
 Get detailed interpretations of astrological charts:
+
 - Upload your birth data or use the current moment
 - Receive in-depth analysis of your chart's unique features
 - Understand the alchemical and elemental influences
@@ -77,17 +83,20 @@ The application incorporates a unique alchemical system where:
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/yourusername/planetary-agents.git
 cd planetary-agents
 ```
 
 2. Install dependencies:
+
 ```bash
 yarn install
 ```
 
 3. Run the development server:
+
 ```bash
 yarn dev
 ```
@@ -112,8 +121,9 @@ For detailed information about the Claude upgrade, see [CLAUDE_UPGRADE_GUIDE.md]
 ### Planetary Agents
 
 1. Navigate to the Planetary Agents page
-2. Select a planet, sign, degree, and time
-3. Ask questions to receive wisdom from the specific planetary configuration
+2. Select a planet from the interactive grid showing current positions and dignities
+3. Access the degree-specific agent interface with rich historical context
+4. Ask questions to receive wisdom from that exact planetary degree with enhanced temporal awareness
 
 ### Elemental Chart
 
@@ -154,7 +164,7 @@ GALILEO_VERBOSE_FALLBACK=true
 ### Galileo Logging Flags
 
 - `GALILEO_LOG_ENABLED`: Enable/disable logging to Galileo (default: true)
-- `GALILEO_FAIL_SILENTLY`: Never throw errors, always fallback to console logging (default: true)  
+- `GALILEO_FAIL_SILENTLY`: Never throw errors, always fallback to console logging (default: true)
 - `GALILEO_VERBOSE_FALLBACK`: Include detailed fallback logging information (default: true)
 
 When `GALILEO_LOG_ENABLED=false`, all logging will be disabled.

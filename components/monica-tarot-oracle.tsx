@@ -1,29 +1,18 @@
-"use client"
+'use client'
 
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { 
-  Sparkles, 
-  Star, 
-  Crown, 
-  Eye,
-  Zap,
-  Heart,
-  Sun,
-  Moon,
-  Wand2,
-  Shield
-} from 'lucide-react'
-import { 
-  getCurrentDecan, 
-  getPlanetaryRulerCard, 
+import { Sparkles, Star, Crown, Eye, Zap, Heart, Sun, Moon, Wand2, Shield } from 'lucide-react'
+import {
+  getCurrentDecan,
+  getPlanetaryRulerCard,
   generateConsciousnessCraftingInsight,
   DECAN_TAROT_MAPPINGS,
   type TarotCard,
   type MajorArcanaCard,
-  type ConsciousnessCraftingInsight
+  type ConsciousnessCraftingInsight,
 } from '@/lib/monica/tarot-oracle'
 
 interface TarotCardDisplayProps {
@@ -33,29 +22,39 @@ interface TarotCardDisplayProps {
   glowColor?: string
 }
 
-const TarotCardDisplay: React.FC<TarotCardDisplayProps> = ({ 
-  card, 
-  type, 
-  title, 
-  glowColor = 'purple' 
+const TarotCardDisplay: React.FC<TarotCardDisplayProps> = ({
+  card,
+  type,
+  title,
+  glowColor = 'purple',
 }) => {
   const getSuitIcon = (suit: string) => {
     switch (suit) {
-      case 'Wands': return <Wand2 className="h-5 w-5 text-red-500" />
-      case 'Cups': return <Heart className="h-5 w-5 text-blue-500" />
-      case 'Swords': return <Shield className="h-5 w-5 text-gray-500" />
-      case 'Pentacles': return <Star className="h-5 w-5 text-yellow-500" />
-      default: return <Sparkles className="h-5 w-5 text-purple-500" />
+      case 'Wands':
+        return <Wand2 className="h-5 w-5 text-red-500" />
+      case 'Cups':
+        return <Heart className="h-5 w-5 text-blue-500" />
+      case 'Swords':
+        return <Shield className="h-5 w-5 text-gray-500" />
+      case 'Pentacles':
+        return <Star className="h-5 w-5 text-yellow-500" />
+      default:
+        return <Sparkles className="h-5 w-5 text-purple-500" />
     }
   }
 
   const getElementIcon = (element: string) => {
     switch (element) {
-      case 'Fire': return <Zap className="h-4 w-4 text-red-400" />
-      case 'Water': return <Heart className="h-4 w-4 text-blue-400" />
-      case 'Air': return <Eye className="h-4 w-4 text-gray-400" />
-      case 'Earth': return <Star className="h-4 w-4 text-green-400" />
-      default: return <Sparkles className="h-4 w-4 text-purple-400" />
+      case 'Fire':
+        return <Zap className="h-4 w-4 text-red-400" />
+      case 'Water':
+        return <Heart className="h-4 w-4 text-blue-400" />
+      case 'Air':
+        return <Eye className="h-4 w-4 text-gray-400" />
+      case 'Earth':
+        return <Star className="h-4 w-4 text-green-400" />
+      default:
+        return <Sparkles className="h-4 w-4 text-purple-400" />
     }
   }
 
@@ -74,11 +73,9 @@ const TarotCardDisplay: React.FC<TarotCardDisplayProps> = ({
             {type === 'minor' && 'number' in card ? `${card.number}` : 'Major'}
           </Badge>
         </div>
-        <CardDescription className="text-sm font-medium text-purple-700">
-          {title}
-        </CardDescription>
+        <CardDescription className="text-sm font-medium text-purple-700">{title}</CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-3">
         {/* Element and Planetary Ruler */}
         <div className="flex items-center justify-between text-sm">
@@ -102,15 +99,11 @@ const TarotCardDisplay: React.FC<TarotCardDisplayProps> = ({
         </div>
 
         {/* Meaning */}
-        <p className="text-sm text-gray-700 leading-relaxed">
-          {card.meaning}
-        </p>
+        <p className="text-sm text-gray-700 leading-relaxed">{card.meaning}</p>
 
         {/* Consciousness Level */}
         <div className="bg-purple-50 p-2 rounded-lg">
-          <p className="text-xs font-medium text-purple-800">
-            🧠 {card.consciousness}
-          </p>
+          <p className="text-xs font-medium text-purple-800">🧠 {card.consciousness}</p>
         </div>
 
         {/* Alchemical Values for Minor Arcana */}
@@ -134,7 +127,7 @@ const TarotCardDisplay: React.FC<TarotCardDisplayProps> = ({
             </div>
           </div>
         )}
-        
+
         {/* Chakra for Major Arcana */}
         {type === 'major' && 'chakra' in card && (
           <div className="flex items-center gap-2 text-sm">
@@ -143,7 +136,7 @@ const TarotCardDisplay: React.FC<TarotCardDisplayProps> = ({
           </div>
         )}
       </CardContent>
-      
+
       {/* Mystical corner decoration */}
       <div className="absolute top-2 right-2 opacity-20">
         <Sparkles className="h-6 w-6 text-purple-400" />
@@ -166,7 +159,7 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
 
   useEffect(() => {
     const abortController = new AbortController()
-    
+
     // Calculate current cosmic tarot configuration
     const loadTarotConfiguration = async () => {
       setIsLoading(true)
@@ -179,11 +172,13 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
         }
 
         // Get current decan card with real-time positions
-        const { card: decanCard, sunPosition: position } = await getCurrentDecan(abortController.signal)
+        const { card: decanCard, sunPosition: position } = await getCurrentDecan(
+          abortController.signal
+        )
 
         // Check if component was unmounted or aborted after async operation
         if (abortController.signal.aborted) return
-        
+
         // Only update state if not aborted
         if (!abortController.signal.aborted) {
           setCurrentDecanCard(decanCard)
@@ -211,7 +206,10 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
         }
       } catch (error) {
         // Check if the error is due to abortion - handle this gracefully
-        if (abortController.signal.aborted || error instanceof Error && error.name === 'AbortError') {
+        if (
+          abortController.signal.aborted ||
+          (error instanceof Error && error.name === 'AbortError')
+        ) {
           console.log('Tarot configuration request was aborted - component likely unmounted')
           return
         }
@@ -230,7 +228,10 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
 
           // Generate fallback insight
           if (fallbackCard && fallbackRulerCard) {
-            const fallbackInsight = generateConsciousnessCraftingInsight(fallbackCard, fallbackRulerCard)
+            const fallbackInsight = generateConsciousnessCraftingInsight(
+              fallbackCard,
+              fallbackRulerCard
+            )
             setInsight(fallbackInsight)
             onInsightGenerated?.(fallbackInsight)
           }
@@ -244,7 +245,7 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
     }
 
     loadTarotConfiguration()
-    
+
     // Cleanup function to abort the request if component unmounts
     return () => {
       abortController.abort()
@@ -259,9 +260,7 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
             <div className="animate-spin">
               <Crown className="h-8 w-8 text-purple-600 mx-auto" />
             </div>
-            <p className="text-purple-700 font-medium">
-              Consulting the cosmic tarot...
-            </p>
+            <p className="text-purple-700 font-medium">Consulting the cosmic tarot...</p>
           </div>
         </CardContent>
       </Card>
@@ -300,7 +299,7 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
             glowColor="blue"
           />
         )}
-        
+
         {planetaryCard && (
           <TarotCardDisplay
             card={planetaryCard}
@@ -333,15 +332,13 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
                 </Badge>
               </div>
             </CardHeader>
-            
+
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <h4 className="font-medium text-purple-800">💫 Cosmic Guidance</h4>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {insight.guidance}
-                </p>
+                <p className="text-sm text-gray-700 leading-relaxed">{insight.guidance}</p>
               </div>
-              
+
               <div className="space-y-2">
                 <h4 className="font-medium text-purple-800">🎯 Practical Application</h4>
                 <p className="text-sm text-gray-700 leading-relaxed">
@@ -364,19 +361,26 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
               <CardContent className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Primary:</span>
-                  <span className="font-medium text-indigo-700">{insight.chakraActivation.primaryChakra}</span>
+                  <span className="font-medium text-indigo-700">
+                    {insight.chakraActivation.primaryChakra}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Secondary:</span>
-                  <span className="font-medium text-indigo-700">{insight.chakraActivation.secondaryChakra}</span>
+                  <span className="font-medium text-indigo-700">
+                    {insight.chakraActivation.secondaryChakra}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Activation:</span>
-                  <span className="font-medium">{Math.round(insight.chakraActivation.activationLevel * 100)}%</span>
+                  <span className="font-medium">
+                    {Math.round(insight.chakraActivation.activationLevel * 100)}%
+                  </span>
                 </div>
                 {insight.chakraActivation.balancingNeeded.length > 0 && (
                   <div className="text-xs text-gray-600 mt-2">
-                    <strong>Balance needed:</strong> {insight.chakraActivation.balancingNeeded.join(', ')}
+                    <strong>Balance needed:</strong>{' '}
+                    {insight.chakraActivation.balancingNeeded.join(', ')}
                   </div>
                 )}
               </CardContent>
@@ -398,7 +402,9 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
                   </div>
                   <div className="flex justify-between">
                     <span>Essence:</span>
-                    <span className="font-mono">{insight.alchemicalBalance.essence.toFixed(2)}</span>
+                    <span className="font-mono">
+                      {insight.alchemicalBalance.essence.toFixed(2)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Matter:</span>
@@ -406,7 +412,9 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
                   </div>
                   <div className="flex justify-between">
                     <span>Substance:</span>
-                    <span className="font-mono">{insight.alchemicalBalance.substance.toFixed(2)}</span>
+                    <span className="font-mono">
+                      {insight.alchemicalBalance.substance.toFixed(2)}
+                    </span>
                   </div>
                 </div>
                 <div className="text-xs text-emerald-700 font-medium">
@@ -427,11 +435,15 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
                 <div className="text-xs">
                   <div className="flex justify-between mb-1">
                     <span>Current Phase:</span>
-                    <span className="font-medium text-orange-700">{insight.developmentPath.currentPhase}</span>
+                    <span className="font-medium text-orange-700">
+                      {insight.developmentPath.currentPhase}
+                    </span>
                   </div>
                   <div className="flex justify-between mb-2">
                     <span>Next Phase:</span>
-                    <span className="font-medium text-orange-700">{insight.developmentPath.nextPhase}</span>
+                    <span className="font-medium text-orange-700">
+                      {insight.developmentPath.nextPhase}
+                    </span>
                   </div>
                   <div className="space-y-1">
                     <strong>Focus Skills:</strong>
@@ -459,7 +471,9 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
                 <div className="text-xs space-y-1">
                   <div className="flex justify-between">
                     <span>Best Time:</span>
-                    <span className="font-medium text-blue-700">{insight.timeRecommendations.bestTimeForPractice}</span>
+                    <span className="font-medium text-blue-700">
+                      {insight.timeRecommendations.bestTimeForPractice}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Duration:</span>
@@ -522,16 +536,16 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
 
       {/* Action Buttons */}
       <div className="flex justify-center gap-4">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="monica-mystical-button"
           onClick={() => window.location.reload()}
         >
           <Sparkles className="h-4 w-4 mr-2" />
           Refresh Oracle
         </Button>
-        
-        <Button 
+
+        <Button
           className="bg-purple-600 hover:bg-purple-700 monica-mystical-button"
           onClick={() => {
             // Could trigger a deeper tarot reading or consciousness analysis

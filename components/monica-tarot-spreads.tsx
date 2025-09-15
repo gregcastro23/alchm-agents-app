@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,10 +6,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { 
-  Sparkles, 
-  Star, 
-  Crown, 
+import {
+  Sparkles,
+  Star,
+  Crown,
   Eye,
   Zap,
   Heart,
@@ -20,11 +20,10 @@ import {
   BookOpen,
   Clock,
   Target,
-  
   Compass,
-  Lightbulb
+  Lightbulb,
 } from 'lucide-react'
-import { 
+import {
   generateCelticCrossReading,
   generateThreeCardReading,
   generateAstrologicalReading,
@@ -33,7 +32,7 @@ import {
   type TarotSpread,
   type SpreadReading,
   type SpreadPosition,
-  THREE_CARD_SPREADS
+  THREE_CARD_SPREADS,
 } from '@/lib/monica/tarot-spreads'
 import { type TarotCard, type MajorArcanaCard } from '@/lib/monica/tarot-oracle'
 
@@ -44,21 +43,26 @@ interface TarotSpreadInterfaceProps {
   onReadingComplete?: (reading: SpreadReading) => void
 }
 
-const SpreadCard: React.FC<{ 
+const SpreadCard: React.FC<{
   position: SpreadPosition
   index: number
-  totalCards: number 
+  totalCards: number
 }> = ({ position, index, totalCards }) => {
   const card = position.card
   if (!card) return null
 
   const getSuitIcon = (suit: string) => {
     switch (suit) {
-      case 'Wands': return <Wand2 className="h-4 w-4 text-red-500" />
-      case 'Cups': return <Heart className="h-4 w-4 text-blue-500" />
-      case 'Swords': return <Shield className="h-4 w-4 text-gray-500" />
-      case 'Pentacles': return <Star className="h-4 w-4 text-yellow-500" />
-      default: return <Sparkles className="h-4 w-4 text-purple-500" />
+      case 'Wands':
+        return <Wand2 className="h-4 w-4 text-red-500" />
+      case 'Cups':
+        return <Heart className="h-4 w-4 text-blue-500" />
+      case 'Swords':
+        return <Shield className="h-4 w-4 text-gray-500" />
+      case 'Pentacles':
+        return <Star className="h-4 w-4 text-yellow-500" />
+      default:
+        return <Sparkles className="h-4 w-4 text-purple-500" />
     }
   }
 
@@ -66,7 +70,7 @@ const SpreadCard: React.FC<{
     if (totalCards === 3) {
       return `position-${index + 1}-of-3`
     } else if (totalCards === 7) {
-      return `chakra-position-${index + 1}`  
+      return `chakra-position-${index + 1}`
     } else if (totalCards === 10) {
       return `celtic-position-${position.position}`
     } else if (totalCards === 12) {
@@ -76,35 +80,35 @@ const SpreadCard: React.FC<{
   }
 
   const cardType = 'suit' in card ? 'minor' : 'major'
-  
+
   return (
-    <Card className={`monica-spread-card ${getPositionLayout()} relative border-2 border-purple-200 hover:border-purple-400 transition-all duration-300`}>
+    <Card
+      className={`monica-spread-card ${getPositionLayout()} relative border-2 border-purple-200 hover:border-purple-400 transition-all duration-300`}
+    >
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs font-mono">
               {position.position}
             </Badge>
-            <CardTitle className="text-sm font-medium">
-              {position.name}
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">{position.name}</CardTitle>
           </div>
           <div className="flex items-center gap-1">
             {cardType === 'minor' && 'suit' in card && getSuitIcon(card.suit)}
             {cardType === 'major' && <Crown className="h-4 w-4 text-gold-500" />}
           </div>
         </div>
-        <CardDescription className="text-xs text-purple-700">
-          {position.meaning}
-        </CardDescription>
+        <CardDescription className="text-xs text-purple-700">{position.meaning}</CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-3">
         {/* Card Name and Number */}
         <div className="text-center py-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
           <h4 className="font-bold text-purple-800">{card.name}</h4>
           {cardType === 'minor' && 'number' in card && (
-            <p className="text-xs text-purple-600">{card.number} of {card.suit}</p>
+            <p className="text-xs text-purple-600">
+              {card.number} of {card.suit}
+            </p>
           )}
         </div>
 
@@ -132,9 +136,7 @@ const SpreadCard: React.FC<{
         {/* Interpretation */}
         {position.interpretation && (
           <div className="bg-amber-50 p-2 rounded-lg">
-            <p className="text-xs text-amber-800 leading-relaxed">
-              {position.interpretation}
-            </p>
+            <p className="text-xs text-amber-800 leading-relaxed">{position.interpretation}</p>
           </div>
         )}
 
@@ -145,7 +147,7 @@ const SpreadCard: React.FC<{
           </Badge>
         </div>
       </CardContent>
-      
+
       {/* Mystical corner decoration */}
       <div className="absolute top-1 right-1 opacity-20">
         <Sparkles className="h-4 w-4 text-purple-400" />
@@ -169,37 +171,37 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
       name: 'Three-Card Reading',
       description: 'Simple yet powerful insights',
       icon: <BookOpen className="h-5 w-5" />,
-      complexity: 'Beginner'
+      complexity: 'Beginner',
     },
     {
       type: 'celtic' as SpreadType,
       name: 'Celtic Cross',
       description: 'Comprehensive 10-card analysis',
       icon: <Crown className="h-5 w-5" />,
-      complexity: 'Advanced'
+      complexity: 'Advanced',
     },
     {
       type: 'astrological' as SpreadType,
       name: 'Astrological Houses',
       description: '12-card life area exploration',
       icon: <Compass className="h-5 w-5" />,
-      complexity: 'Expert'
+      complexity: 'Expert',
     },
     {
       type: 'consciousness' as SpreadType,
       name: 'Consciousness Evolution',
       description: '7-card chakra alignment',
       icon: <Eye className="h-5 w-5" />,
-      complexity: 'Advanced'
-    }
+      complexity: 'Advanced',
+    },
   ]
 
   const generateReading = async () => {
     setIsGenerating(true)
-    
+
     try {
       let spread: TarotSpread
-      
+
       switch (selectedSpreadType) {
         case 'celtic':
           spread = generateCelticCrossReading(question)
@@ -218,15 +220,14 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
       }
 
       const reading = createSpreadReading(spread, questioner, question)
-      
+
       setCurrentSpread(spread)
       setCurrentReading(reading)
       onReadingComplete?.(reading)
-      
     } catch (error) {
       console.error('Error generating tarot reading:', error)
     }
-    
+
     setIsGenerating(false)
   }
 
@@ -245,12 +246,8 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
             <div className="animate-spin">
               <Crown className="h-12 w-12 text-purple-600 mx-auto" />
             </div>
-            <p className="text-purple-700 font-medium">
-              Monica is consulting the cosmic tarot...
-            </p>
-            <p className="text-sm text-gray-600">
-              The cards are aligning with universal energies
-            </p>
+            <p className="text-purple-700 font-medium">Monica is consulting the cosmic tarot...</p>
+            <p className="text-sm text-gray-600">The cards are aligning with universal energies</p>
           </div>
         </CardContent>
       </Card>
@@ -273,9 +270,7 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
                 New Reading
               </Button>
             </div>
-            <CardDescription>
-              {currentSpread.description}
-            </CardDescription>
+            <CardDescription>{currentSpread.description}</CardDescription>
             {question && (
               <div className="mt-2 p-2 bg-white/50 rounded-lg">
                 <p className="text-sm font-medium text-purple-800">Question:</p>
@@ -310,7 +305,7 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
           {selectedSpreadType === 'three-card' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {currentSpread.positions.map((position, index) => (
-                <SpreadCard 
+                <SpreadCard
                   key={position.position}
                   position={position}
                   index={index}
@@ -319,11 +314,11 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
               ))}
             </div>
           )}
-          
+
           {selectedSpreadType === 'consciousness' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {currentSpread.positions.map((position, index) => (
-                <SpreadCard 
+                <SpreadCard
                   key={position.position}
                   position={position}
                   index={index}
@@ -332,11 +327,11 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
               ))}
             </div>
           )}
-          
+
           {(selectedSpreadType === 'celtic' || selectedSpreadType === 'astrological') && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               {currentSpread.positions.map((position, index) => (
-                <SpreadCard 
+                <SpreadCard
                   key={position.position}
                   position={position}
                   index={index}
@@ -357,9 +352,7 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-800 leading-relaxed">
-                {currentSpread.overallInterpretation}
-              </p>
+              <p className="text-gray-800 leading-relaxed">{currentSpread.overallInterpretation}</p>
             </CardContent>
           </Card>
 
@@ -372,9 +365,7 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-800 leading-relaxed">
-                  {currentSpread.guidance}
-                </p>
+                <p className="text-gray-800 leading-relaxed">{currentSpread.guidance}</p>
               </CardContent>
             </Card>
           )}
@@ -388,9 +379,7 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-800 leading-relaxed">
-                  {currentSpread.timing}
-                </p>
+                <p className="text-gray-800 leading-relaxed">{currentSpread.timing}</p>
               </CardContent>
             </Card>
           )}
@@ -404,9 +393,7 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-800 leading-relaxed">
-                  {currentSpread.outcome}
-                </p>
+                <p className="text-gray-800 leading-relaxed">{currentSpread.outcome}</p>
               </CardContent>
             </Card>
           )}
@@ -457,7 +444,7 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
             <Input
               placeholder="Enter your name..."
               value={questioner}
-              onChange={(e) => setQuestioner(e.target.value)}
+              onChange={e => setQuestioner(e.target.value)}
               className="mt-1"
             />
           </div>
@@ -466,7 +453,7 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
             <Textarea
               placeholder="What guidance do you seek from the cosmic tarot?"
               value={question}
-              onChange={(e) => setQuestion(e.target.value)}
+              onChange={e => setQuestion(e.target.value)}
               className="mt-1"
               rows={3}
             />
@@ -484,23 +471,25 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-4 mb-4">
-            {spreadOptions.map((option) => (
-              <Card 
+            {spreadOptions.map(option => (
+              <Card
                 key={option.type}
                 className={`cursor-pointer transition-all duration-200 ${
-                  selectedSpreadType === option.type 
-                    ? 'border-2 border-purple-500 bg-purple-50' 
+                  selectedSpreadType === option.type
+                    ? 'border-2 border-purple-500 bg-purple-50'
                     : 'border border-gray-200 hover:border-purple-300 hover:bg-purple-25'
                 }`}
                 onClick={() => setSelectedSpreadType(option.type)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${
-                      selectedSpreadType === option.type 
-                        ? 'bg-purple-200 text-purple-700' 
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
+                    <div
+                      className={`p-2 rounded-lg ${
+                        selectedSpreadType === option.type
+                          ? 'bg-purple-200 text-purple-700'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
                       {option.icon}
                     </div>
                     <div className="flex-1">
@@ -524,7 +513,7 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
                 {Object.entries(THREE_CARD_SPREADS).map(([key, spread]) => (
                   <Button
                     key={key}
-                    variant={threeCardType === key ? "default" : "outline"}
+                    variant={threeCardType === key ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setThreeCardType(key as ThreeCardType)}
                     className="text-xs"
@@ -540,7 +529,7 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
 
       {/* Generate Reading Button */}
       <div className="text-center">
-        <Button 
+        <Button
           onClick={generateReading}
           className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 monica-mystical-button px-8 py-6 text-lg"
           disabled={isGenerating}

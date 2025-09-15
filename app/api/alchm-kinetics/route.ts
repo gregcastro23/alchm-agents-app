@@ -52,7 +52,9 @@ export async function GET(req: Request) {
     const includePlanetary = parseBool(searchParams.get('includePlanetary'), true)
     const validateTraditional = parseBool(searchParams.get('validateTraditional'), false)
 
-    const smoothingWindow = Number.isFinite(parseInt(windowStr || '')) ? Math.max(1, parseInt(windowStr!)) : 3
+    const smoothingWindow = Number.isFinite(parseInt(windowStr || ''))
+      ? Math.max(1, parseInt(windowStr!))
+      : 3
 
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
       return NextResponse.json({ error: 'Invalid lat/lon' }, { status: 400 })
@@ -61,7 +63,11 @@ export async function GET(req: Request) {
     let targetDate: Date
     if (dateStr) {
       const [y, m, d] = dateStr.split('-').map(v => parseInt(v, 10))
-      if (!y || !m || !d) return NextResponse.json({ error: 'Invalid date format, expected YYYY-MM-DD' }, { status: 400 })
+      if (!y || !m || !d)
+        return NextResponse.json(
+          { error: 'Invalid date format, expected YYYY-MM-DD' },
+          { status: 400 }
+        )
       // Use zero-based month indexing for Date ctor (January = 0)
       targetDate = new Date(y, m - 1, d)
     } else {
@@ -82,15 +88,53 @@ export async function GET(req: Request) {
 
     // Optionally apply smoothing to the base time-series prior to derivatives
     const smoothed = samples.map((s, idx, arr) => {
-      return s
+      // Apply Mercury triad smoothing for traditional calibration
+      if (idx === 0 || idx === arr.length - 1) {
+        return s // Keep first and last samples unchanged
+      }
+
+      const prev = arr[idx - 1]
+      const next = arr[idx + 1]
+
+      // Mercury triad smoothing: weighted average with neighboring samples
+      const smoothingFactor = 0.2 // 20% influence from neighbors
+
+      const smoothedTotals = {
+        spirit: s.totals.spirit * (1 - smoothingFactor) +
+                (prev.totals.spirit + next.totals.spirit) * smoothingFactor / 2,
+        essence: s.totals.essence * (1 - smoothingFactor) +
+                 (prev.totals.essence + next.totals.essence) * smoothingFactor / 2,
+        matter: s.totals.matter * (1 - smoothingFactor) +
+                (prev.totals.matter + next.totals.matter) * smoothingFactor / 2,
+        substance: s.totals.substance * (1 - smoothingFactor) +
+                  (prev.totals.substance + next.totals.substance) * smoothingFactor / 2,
+      }
+
+      return {
+        ...s,
+        totals: smoothedTotals
+      }
     })
-    // Note: We keep core totals intact; smoothing may be introduced in a future calibration.
-    // TODO(traditional-calibration): Evaluate Mercury triad smoothing on per-element totals.
+    // Mercury triad smoothing applied for traditional calibration
 
     // Build inputs for kinetics
-    const elementalInput = samples.map(s => ({ t: s.t, totals: s.totals, planetaryHour: s.planetaryHour }))
-    const metricInput = samples.map(s => ({ t: s.t, Heat: s.Heat, Entropy: s.Entropy, Reactivity: s.Reactivity, Energy: s.Energy }))
-    const powerInput = samples.map(s => ({ t: s.t, Energy: s.Energy, planetaryHour: s.planetaryHour }))
+    const elementalInput = smoothed.map(s => ({
+      t: s.t,
+      totals: s.totals,
+      planetaryHour: s.planetaryHour,
+    }))
+    const metricInput = samples.map(s => ({
+      t: s.t,
+      Heat: s.Heat,
+      Entropy: s.Entropy,
+      Reactivity: s.Reactivity,
+      Energy: s.Energy,
+    }))
+    const powerInput = samples.map(s => ({
+      t: s.t,
+      Energy: s.Energy,
+      planetaryHour: s.planetaryHour,
+    }))
 
     // Compute velocities
     const elementalVelocity = includeElemental ? computeElementalVelocity(elementalInput) : []
@@ -100,11 +144,21 @@ export async function GET(req: Request) {
     const power = computePower(powerInput, { window: smoothingWindow })
 
     // Compute inertia and momentum
-    let elementalMomentum: Array<{ t: Date; p: ElementVector; magnitude: number; momentumType: 'building' | 'sustained' | 'dissipating' }> = []
+    let elementalMomentum: Array<{
+      t: Date
+      p: ElementVector
+      magnitude: number
+      momentumType: 'building' | 'sustained' | 'dissipating'
+    }> = []
     if (includeElemental) {
       const momentumInput = elementalVelocity.map((vRec, i) => {
         const s = samples[i]
-        const inertia = computeInertia({ matter: s.matter, earth: s.earth, substance: s.substance, planetaryHour: s.planetaryHour })
+        const inertia = computeInertia({
+          matter: s.matter,
+          earth: s.earth,
+          substance: s.substance,
+          planetaryHour: s.planetaryHour,
+        })
         return { t: vRec.t, v: vRec.v, inertia, substance: s.substance }
       })
       elementalMomentum = computeElementalMomentum(momentumInput)
@@ -114,7 +168,10 @@ export async function GET(req: Request) {
     let traditionalValidation: any = undefined
     if (validateTraditional) {
       const kineticsForValidation: any = {
-        elementalVelocity: elementalVelocity.map((r, i) => ({ ...r, planetaryHour: samples[i]?.planetaryHour })),
+        elementalVelocity: elementalVelocity.map((r, i) => ({
+          ...r,
+          planetaryHour: samples[i]?.planetaryHour,
+        })),
         metricVelocity,
         elementalMomentum,
         power: power.map((p, i) => ({ ...p, planetaryHour: samples[i]?.planetaryHour })),
@@ -126,14 +183,22 @@ export async function GET(req: Request) {
       })
 
       // Elemental balance qualitative assessment
-      const totalsAvg: ElementVector = samples.reduce((acc, s) => ({
-        Fire: acc.Fire + s.totals.Fire,
-        Water: acc.Water + s.totals.Water,
-        Air: acc.Air + s.totals.Air,
-        Earth: acc.Earth + s.totals.Earth,
-      }), { Fire: 0, Water: 0, Air: 0, Earth: 0 })
+      const totalsAvg: ElementVector = samples.reduce(
+        (acc, s) => ({
+          Fire: acc.Fire + s.totals.Fire,
+          Water: acc.Water + s.totals.Water,
+          Air: acc.Air + s.totals.Air,
+          Earth: acc.Earth + s.totals.Earth,
+        }),
+        { Fire: 0, Water: 0, Air: 0, Earth: 0 }
+      )
       const n = samples.length
-      const avg: ElementVector = { Fire: totalsAvg.Fire / n, Water: totalsAvg.Water / n, Air: totalsAvg.Air / n, Earth: totalsAvg.Earth / n }
+      const avg: ElementVector = {
+        Fire: totalsAvg.Fire / n,
+        Water: totalsAvg.Water / n,
+        Air: totalsAvg.Air / n,
+        Earth: totalsAvg.Earth / n,
+      }
       const maxAvg = Math.max(avg.Fire, avg.Water, avg.Air, avg.Earth)
 
       traditionalValidation = {
@@ -193,13 +258,18 @@ export async function POST(req: Request) {
     const lon = parseFloat(String(body.lon ?? '-122.4194'))
     const startTime = body.startTime as string | undefined
     const endTime = body.endTime as string | undefined
-    const intervalMinutes = Number.isFinite(Number(body.intervalMinutes)) ? Math.max(1, Number(body.intervalMinutes)) : 60
+    const intervalMinutes = Number.isFinite(Number(body.intervalMinutes))
+      ? Math.max(1, Number(body.intervalMinutes))
+      : 60
     const includeElemental = body.includeElemental !== false
     const includePlanetary = body.includePlanetary !== false
     const validateTraditional = body.validateTraditional === true
 
     if (!startTime || !endTime) {
-      return NextResponse.json({ error: 'startTime and endTime are required (ISO strings)' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'startTime and endTime are required (ISO strings)' },
+        { status: 400 }
+      )
     }
 
     const start = new Date(startTime)
@@ -235,23 +305,52 @@ export async function POST(req: Request) {
     }
 
     if (samples.length === 0) {
-      return NextResponse.json({ error: 'No samples generated for the requested range' }, { status: 500 })
+      return NextResponse.json(
+        { error: 'No samples generated for the requested range' },
+        { status: 500 }
+      )
     }
 
     // Build inputs for kinetics
-    const elementalInput = samples.map(s => ({ t: s.t, totals: s.totals, planetaryHour: s.planetaryHour }))
-    const metricInput = samples.map(s => ({ t: s.t, Heat: s.Heat, Entropy: s.Entropy, Reactivity: s.Reactivity, Energy: s.Energy }))
-    const powerInput = samples.map(s => ({ t: s.t, Energy: s.Energy, planetaryHour: s.planetaryHour }))
+    const elementalInput = samples.map(s => ({
+      t: s.t,
+      totals: s.totals,
+      planetaryHour: s.planetaryHour,
+    }))
+    const metricInput = samples.map(s => ({
+      t: s.t,
+      Heat: s.Heat,
+      Entropy: s.Entropy,
+      Reactivity: s.Reactivity,
+      Energy: s.Energy,
+    }))
+    const powerInput = samples.map(s => ({
+      t: s.t,
+      Energy: s.Energy,
+      planetaryHour: s.planetaryHour,
+    }))
 
     const elementalVelocity = includeElemental ? computeElementalVelocity(elementalInput) : []
     const metricVelocity = computeMetricVelocity(metricInput)
-    const power = computePower(powerInput, { window: Math.max(1, parseInt(String(body.window ?? '1')) || 1) })
+    const power = computePower(powerInput, {
+      window: Math.max(1, parseInt(String(body.window ?? '1')) || 1),
+    })
 
-    let elementalMomentum: Array<{ t: Date; p: ElementVector; magnitude: number; momentumType: 'building' | 'sustained' | 'dissipating' }> = []
+    let elementalMomentum: Array<{
+      t: Date
+      p: ElementVector
+      magnitude: number
+      momentumType: 'building' | 'sustained' | 'dissipating'
+    }> = []
     if (includeElemental) {
       const momentumInput = elementalVelocity.map((vRec, i) => {
         const s = samples[i]
-        const inertia = computeInertia({ matter: s.matter, earth: s.earth, substance: s.substance, planetaryHour: s.planetaryHour })
+        const inertia = computeInertia({
+          matter: s.matter,
+          earth: s.earth,
+          substance: s.substance,
+          planetaryHour: s.planetaryHour,
+        })
         return { t: vRec.t, v: vRec.v, inertia, substance: s.substance }
       })
       elementalMomentum = computeElementalMomentum(momentumInput)
@@ -260,7 +359,10 @@ export async function POST(req: Request) {
     let traditionalValidation: any = undefined
     if (validateTraditional) {
       const kineticsForValidation: any = {
-        elementalVelocity: elementalVelocity.map((r, i) => ({ ...r, planetaryHour: samples[i]?.planetaryHour })),
+        elementalVelocity: elementalVelocity.map((r, i) => ({
+          ...r,
+          planetaryHour: samples[i]?.planetaryHour,
+        })),
         metricVelocity,
         elementalMomentum,
         power: power.map((p, i) => ({ ...p, planetaryHour: samples[i]?.planetaryHour })),
@@ -291,7 +393,7 @@ export async function POST(req: Request) {
 // Helper function to flatten alchemical data for CSV export
 function flattenAlchemyInfo(alchmData: any): Record<string, any> {
   const flattened: Record<string, any> = {}
-  
+
   // Core alchemical values
   if (alchmData['Alchemy Effects']) {
     flattened['Total_Spirit'] = alchmData['Alchemy Effects']['Total Spirit'] || 0
@@ -302,13 +404,13 @@ function flattenAlchemyInfo(alchmData: any): Record<string, any> {
     flattened['Total_Day_Essence'] = alchmData['Alchemy Effects']['Total Day Essence'] || 0
     flattened['Total_Night_Essence'] = alchmData['Alchemy Effects']['Total Night Essence'] || 0
   }
-  
+
   // Thermodynamic metrics
   flattened['Heat'] = alchmData['Heat'] || 0
   flattened['Entropy'] = alchmData['Entropy'] || 0
   flattened['Reactivity'] = alchmData['Reactivity'] || 0
   flattened['Energy'] = alchmData['Energy'] || 0
-  
+
   // Elemental totals
   if (alchmData['Total Effect Value']) {
     flattened['Fire_Total'] = alchmData['Total Effect Value']['Fire'] || 0
@@ -316,31 +418,36 @@ function flattenAlchemyInfo(alchmData: any): Record<string, any> {
     flattened['Air_Total'] = alchmData['Total Effect Value']['Air'] || 0
     flattened['Earth_Total'] = alchmData['Total Effect Value']['Earth'] || 0
   }
-  
+
   // Chart info
   flattened['Sun_Sign'] = alchmData['Sun Sign'] || ''
   flattened['Dominant_Element'] = alchmData['Dominant Element'] || ''
   flattened['Chart_Ruler'] = alchmData['Chart Ruler'] || ''
   flattened['Total_Chart_Absolute_Effect'] = alchmData['Total Chart Absolute Effect'] || 0
-  
+
   // Modality info
   flattened['Cardinal_Count'] = alchmData['# Cardinal'] || 0
   flattened['Fixed_Count'] = alchmData['# Fixed'] || 0
   flattened['Mutable_Count'] = alchmData['# Mutable'] || 0
   flattened['Dominant_Modality'] = alchmData['Dominant Modality'] || ''
-  
+
   return flattened
 }
 
 // Helper function to generate birth info range (time series)
-function generateBirthInfoRange(startTime: string, endTime: string, intervalMinutes: number, location: { latitude: number; longitude: number }) {
+function generateBirthInfoRange(
+  startTime: string,
+  endTime: string,
+  intervalMinutes: number,
+  location: { latitude: number; longitude: number }
+) {
   const start = new Date(startTime)
   const end = new Date(endTime)
   const interval = intervalMinutes * 60 * 1000 // convert to milliseconds
-  
+
   const birthInfoList = []
   let current = new Date(start)
-  
+
   while (current <= end) {
     birthInfoList.push({
       year: current.getFullYear(),
@@ -350,12 +457,12 @@ function generateBirthInfoRange(startTime: string, endTime: string, intervalMinu
       minute: current.getMinutes(),
       latitude: location.latitude,
       longitude: location.longitude,
-      ISO: current.toISOString()
+      ISO: current.toISOString(),
     })
-    
+
     current = new Date(current.getTime() + interval)
   }
-  
+
   return birthInfoList
 }
 
@@ -379,9 +486,12 @@ export async function PUT(req: Request) {
     }
 
     console.log('alchm-kinetics >>> REQUEST -> /alchmize-batch equivalent')
-    
+
     // Generate birth info range
-    const birthInfoList = generateBirthInfoRange(startTime, endTime, timeInterval, { latitude: lat, longitude: lon })
+    const birthInfoList = generateBirthInfoRange(startTime, endTime, timeInterval, {
+      latitude: lat,
+      longitude: lon,
+    })
     const alchmInfoList = []
 
     // Process each birth info through our sampler
@@ -391,9 +501,9 @@ export async function PUT(req: Request) {
         const samples = await sampleHourlyAlchm({ latitude: lat, longitude: lon }, date, {
           hoursToSample: 1,
           startHour: birthInfo.hour,
-          includePlanetaryHours: true
+          includePlanetaryHours: true,
         })
-        
+
         if (samples && samples.length > 0) {
           const sample = samples[0]
           // Convert sample to alchemical format for flattening
@@ -408,24 +518,31 @@ export async function PUT(req: Request) {
                 'Total Substance': sample.substance,
                 'A #': sample.spirit + sample.essence + sample.matter + sample.substance,
                 'Total Day Essence': sample.essence * 0.6, // Approximate day/night split
-                'Total Night Essence': sample.essence * 0.4
+                'Total Night Essence': sample.essence * 0.4,
               },
-              'Heat': sample.Heat,
-              'Entropy': sample.Entropy,
-              'Reactivity': sample.Reactivity,
-              'Energy': sample.Energy,
+              Heat: sample.Heat,
+              Entropy: sample.Entropy,
+              Reactivity: sample.Reactivity,
+              Energy: sample.Energy,
               'Total Effect Value': sample.totals,
               'Sun Sign': 'Unknown', // Would need full chart calculation
-              'Dominant Element': sample.totals.Fire > Math.max(sample.totals.Water, sample.totals.Air, sample.totals.Earth) ? 'Fire' :
-                                sample.totals.Water > Math.max(sample.totals.Air, sample.totals.Earth) ? 'Water' :
-                                sample.totals.Air > sample.totals.Earth ? 'Air' : 'Earth',
+              'Dominant Element':
+                sample.totals.Fire >
+                Math.max(sample.totals.Water, sample.totals.Air, sample.totals.Earth)
+                  ? 'Fire'
+                  : sample.totals.Water > Math.max(sample.totals.Air, sample.totals.Earth)
+                    ? 'Water'
+                    : sample.totals.Air > sample.totals.Earth
+                      ? 'Air'
+                      : 'Earth',
               'Chart Ruler': 'Unknown',
-              'Total Chart Absolute Effect': sample.totals.Fire + sample.totals.Water + sample.totals.Air + sample.totals.Earth,
+              'Total Chart Absolute Effect':
+                sample.totals.Fire + sample.totals.Water + sample.totals.Air + sample.totals.Earth,
               '# Cardinal': 0, // Would need full chart
               '# Fixed': 0,
               '# Mutable': 0,
-              'Dominant Modality': 'Unknown'
-            }
+              'Dominant Modality': 'Unknown',
+            },
           }
           alchmInfoList.push(alchmInfo)
         }
@@ -435,11 +552,20 @@ export async function PUT(req: Request) {
         alchmInfoList.push({
           birth_info: birthInfo,
           alchemy_info: {
-            'Alchemy Effects': { 'Total Spirit': 0, 'Total Essence': 0, 'Total Matter': 0, 'Total Substance': 0, 'A #': 0 },
-            'Heat': 0, 'Entropy': 0, 'Reactivity': 0, 'Energy': 0,
+            'Alchemy Effects': {
+              'Total Spirit': 0,
+              'Total Essence': 0,
+              'Total Matter': 0,
+              'Total Substance': 0,
+              'A #': 0,
+            },
+            Heat: 0,
+            Entropy: 0,
+            Reactivity: 0,
+            Energy: 0,
             'Total Effect Value': { Fire: 0, Water: 0, Air: 0, Earth: 0 },
-            'Dominant Element': 'Unknown'
-          }
+            'Dominant Element': 'Unknown',
+          },
         })
       }
     }
@@ -450,7 +576,7 @@ export async function PUT(req: Request) {
       return {
         Timestamp: info.birth_info?.ISO || '',
         Planetary_Hour: (info as any).planetaryHour || '',
-        ...flatAlchemy
+        ...flatAlchemy,
       }
     })
 
@@ -459,40 +585,44 @@ export async function PUT(req: Request) {
         success: true,
         data: rows,
         count: rows.length,
-        range: { startTime, endTime, intervalMinutes: timeInterval }
+        range: { startTime, endTime, intervalMinutes: timeInterval },
       })
     }
 
     // Generate CSV
     if (rows.length === 0) {
-      return NextResponse.json({ error: 'No data generated for the specified range' }, { status: 500 })
+      return NextResponse.json(
+        { error: 'No data generated for the specified range' },
+        { status: 500 }
+      )
     }
 
     const headers = Object.keys(rows[0])
     const csvContent = [
       headers.join(','), // Header row
-      ...rows.map(row => headers.map(header => {
-        const value = (row as any)[header]
-        // Escape commas and quotes in CSV
-        if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
-          return `"${value.replace(/"/g, '""')}"`
-        }
-        return value
-      }).join(','))
+      ...rows.map(row =>
+        headers
+          .map(header => {
+            const value = (row as any)[header]
+            // Escape commas and quotes in CSV
+            if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+              return `"${value.replace(/"/g, '""')}"`
+            }
+            return value
+          })
+          .join(',')
+      ),
     ].join('\n')
 
     return new Response(csvContent, {
       status: 200,
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': 'attachment; filename="alchemy_kinetics_batch.csv"'
-      }
+        'Content-Disposition': 'attachment; filename="alchemy_kinetics_batch.csv"',
+      },
     })
-
   } catch (error) {
     console.error('alchm-kinetics PUT error:', error)
     return NextResponse.json({ error: 'Failed to generate batch CSV' }, { status: 500 })
   }
 }
-
-

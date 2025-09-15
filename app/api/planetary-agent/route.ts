@@ -1,37 +1,50 @@
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
-import { NextResponse } from "next/server"
-import { verifyApiKeys } from "../secure-config"
-import { 
-  logAgentConversation, 
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
+import { NextResponse } from 'next/server'
+import { verifyApiKeys } from '../secure-config'
+import {
+  logAgentConversation,
   createConversationContext,
   type AgentInteractionData,
-  type ConversationContext
-} from "@/lib/galileo-agent-logger"
-import { getPlanetaryDignity, getSignElement, getPlanetaryElement, calculateElementalAffinity } from "@/lib/astrological-data"
-import { generateAlchmForCurrentMoment } from "@/lib/alchemizer"
-import { ANumberCalculator } from "@/lib/core-energy-rules"
-import { findLastOccurrence, findNextOccurrence, getHistoricalEvents } from "@/lib/historical-transits"
-import { identifyPlanetaryThemes, findHistoricalPatterns } from "@/lib/transit-patterns"
-import { getTransitsByPlanet } from "@/lib/historical-transit-data"
+  type ConversationContext,
+} from '@/lib/galileo-agent-logger'
+import {
+  getPlanetaryDignity,
+  getSignElement,
+  getPlanetaryElement,
+  calculateElementalAffinity,
+} from '@/lib/astrological-data'
+import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
+import { ANumberCalculator } from '@/lib/core-energy-rules'
+import {
+  findLastOccurrence,
+  findNextOccurrence,
+  getHistoricalEvents,
+} from '@/lib/historical-transits'
+import { identifyPlanetaryThemes, findHistoricalPatterns } from '@/lib/transit-patterns'
+import { getTransitsByPlanet } from '@/lib/historical-transit-data'
 
-export const dynamic = "force-dynamic"
+export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function POST(req: Request) {
   try {
     // Verify API keys are available
     if (!verifyApiKeys()) {
-      console.error("API keys not configured. Providing fallback response instead of using OpenAI.")
+      console.error('API keys not configured. Providing fallback response instead of using OpenAI.')
       // Return a fallback response that still provides value to the user
-      return NextResponse.json({
-        response: "I'm currently experiencing connectivity issues and cannot access the planetary wisdom. Please check your environment variables or try again later when API services are restored.",
-        error: "API_KEY_MISSING"
-      }, { status: 200 })
+      return NextResponse.json(
+        {
+          response:
+            "I'm currently experiencing connectivity issues and cannot access the planetary wisdom. Please check your environment variables or try again later when API services are restored.",
+          error: 'API_KEY_MISSING',
+        },
+        { status: 200 }
+      )
     }
 
     const { planet, sign, degree, question, time, sessionId } = await req.json()
-    
+
     // Create or use existing conversation context
     let conversationContext: ConversationContext
     if (sessionId) {
@@ -43,12 +56,12 @@ export async function POST(req: Request) {
         planet,
         sign,
         degree,
-        conversationCount: 1 // Would increment from stored value in production
+        conversationCount: 1, // Would increment from stored value in production
       }
     } else {
       conversationContext = createConversationContext(planet, sign, degree)
     }
-    
+
     // Calculate elemental and dignity information
     const hour = time ? parseInt(time.split(':')[0]) : 12
     const isDiurnal = hour >= 6 && hour < 18
@@ -58,7 +71,13 @@ export async function POST(req: Request) {
     const elementalAffinity = calculateElementalAffinity(planet, sign, isDiurnal)
 
     // Calculate A-number for current moment to provide additional context
-    let aNumberInfo: { aNumber: number; category: string; components: { spirit: number; essence: number; matter: number; substance: number } } | undefined = undefined
+    let aNumberInfo:
+      | {
+          aNumber: number
+          category: string
+          components: { spirit: number; essence: number; matter: number; substance: number }
+        }
+      | undefined = undefined
     try {
       const alchmData = await generateAlchmForCurrentMoment()
       const spirit = alchmData?.['Alchemy Effects']?.['Total Spirit'] || 0
@@ -67,11 +86,11 @@ export async function POST(req: Request) {
       const substance = alchmData?.['Alchemy Effects']?.['Total Substance'] || 0
       const aNumber = spirit + essence + matter + substance
       const category = ANumberCalculator.categorizeANumber(aNumber)
-      
+
       aNumberInfo = {
         aNumber: Math.round(aNumber * 100) / 100,
         category,
-        components: { spirit, essence, matter, substance }
+        components: { spirit, essence, matter, substance },
       }
     } catch (aNumberError) {
       console.error('Failed to calculate A-number for agent context:', aNumberError)
@@ -82,50 +101,63 @@ export async function POST(req: Request) {
     try {
       const currentDate = new Date()
       const degreeNum = parseFloat(degree) || 15
-      
+
       // Find when this configuration last occurred
       const lastOccurrence = findLastOccurrence(planet, sign, degreeNum, currentDate)
       const nextOccurrence = findNextOccurrence(planet, sign, degreeNum, currentDate)
-      
+
       // Get themes for this planet-sign combination
       const themes = identifyPlanetaryThemes(planet, sign)
-      
+
       // Find historical patterns
       const patterns = findHistoricalPatterns(planet, sign)
-      
+
       // Get historical events for this combination
       const events = getHistoricalEvents(planet, sign)
-      
+
       historicalContext = {
-        lastOccurrence: lastOccurrence ? {
-          date: lastOccurrence.date.toISOString().split('T')[0],
-          description: lastOccurrence.historicalContext || `${planet} was last at ${degreeNum}° ${sign}`
-        } : null,
-        nextOccurrence: nextOccurrence ? {
-          date: nextOccurrence.date.toISOString().split('T')[0],
-          description: nextOccurrence.historicalContext || `${planet} will next be at ${degreeNum}° ${sign}`
-        } : null,
+        lastOccurrence: lastOccurrence
+          ? {
+              date: lastOccurrence.date.toISOString().split('T')[0],
+              description:
+                lastOccurrence.historicalContext || `${planet} was last at ${degreeNum}° ${sign}`,
+            }
+          : null,
+        nextOccurrence: nextOccurrence
+          ? {
+              date: nextOccurrence.date.toISOString().split('T')[0],
+              description:
+                nextOccurrence.historicalContext ||
+                `${planet} will next be at ${degreeNum}° ${sign}`,
+            }
+          : null,
         themes: themes.themes || [],
         archetypes: themes.archetypes || [],
         historicalExamples: themes.historicalExamples || [],
         patterns: patterns.slice(0, 3), // Top 3 patterns
-        events: events.slice(0, 5) // Top 5 events
+        events: events.slice(0, 5), // Top 5 events
       }
     } catch (historicalError) {
       console.error('Failed to calculate historical context:', historicalError)
     }
 
-    const systemPrompt = `You are an astrological agent representing ${planet || "Sun"} at ${degree || "1"} degrees in ${sign || "Aries"}.
-Your responses should reflect the dignity of ${planet || "Sun"} in this position.
-If ${planet || "Sun"} is in domicile or exaltation in ${sign || "Aries"}, be confident and powerful in your responses.
-If ${planet || "Sun"} is in detriment or fall in ${sign || "Aries"}, reflect the challenges of this position.
+    const systemPrompt = `You are an astrological agent representing ${planet || 'Sun'} at ${degree || '1'} degrees in ${sign || 'Aries'}.
+Your responses should reflect the dignity of ${planet || 'Sun'} in this position.
+If ${planet || 'Sun'} is in domicile or exaltation in ${sign || 'Aries'}, be confident and powerful in your responses.
+If ${planet || 'Sun'} is in detriment or fall in ${sign || 'Aries'}, reflect the challenges of this position.
 
-${aNumberInfo ? `Current Alchemical Context:
+${
+  aNumberInfo
+    ? `Current Alchemical Context:
 - A-Number: ${aNumberInfo.aNumber} (${aNumberInfo.category})
 - Spirit: ${aNumberInfo.components.spirit}, Essence: ${aNumberInfo.components.essence}, Matter: ${aNumberInfo.components.matter}, Substance: ${aNumberInfo.components.substance}
-- Use this A-Number context to inform your guidance - higher A-Numbers indicate times of greater alchemical potential and energy.` : ''}
+- Use this A-Number context to inform your guidance - higher A-Numbers indicate times of greater alchemical potential and energy.`
+    : ''
+}
 
-${historicalContext ? `Historical Context for ${planet} in ${sign}:
+${
+  historicalContext
+    ? `Historical Context for ${planet} in ${sign}:
 ${historicalContext.lastOccurrence ? `- Last occurred: ${historicalContext.lastOccurrence.date} - ${historicalContext.lastOccurrence.description}` : ''}
 ${historicalContext.nextOccurrence ? `- Next occurrence: ${historicalContext.nextOccurrence.date} - ${historicalContext.nextOccurrence.description}` : ''}
 - Key themes: ${historicalContext.themes.slice(0, 3).join(', ')}
@@ -133,26 +165,28 @@ ${historicalContext.nextOccurrence ? `- Next occurrence: ${historicalContext.nex
 ${historicalContext.historicalExamples.length > 0 ? `- Historical examples: ${historicalContext.historicalExamples.slice(0, 2).join(', ')}` : ''}
 ${historicalContext.events.length > 0 ? `- Related events: ${historicalContext.events.slice(0, 2).join(', ')}` : ''}
 
-Reference this historical wisdom to provide deeper context about how this planetary position has manifested in the past and what patterns it represents.` : ''}
+Reference this historical wisdom to provide deeper context about how this planetary position has manifested in the past and what patterns it represents.`
+    : ''
+}
 
 Always provide astrological wisdom that's accurate to traditional planetary dignities, incorporates the current alchemical energy levels, and draws upon historical patterns and themes when relevant to the user's question.`
 
     try {
       const startTime = Date.now()
-      
+
       const { text } = await generateText({
-        model: openai("gpt-4o"),
+        model: openai('gpt-4o'),
         system: systemPrompt,
-        prompt: question || "Tell me about this planetary position",
+        prompt: question || 'Tell me about this planetary position',
         maxTokens: 500,
       })
 
       const processingTime = Date.now() - startTime
-      
+
       // Log the conversation to Galileo
       const interactionData: AgentInteractionData = {
         sessionId: conversationContext.sessionId,
-        userMessage: question || "Tell me about this planetary position",
+        userMessage: question || 'Tell me about this planetary position',
         agentResponse: text,
         planet,
         sign,
@@ -162,48 +196,54 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
           signElement,
           planetElement,
           elementalAffinity,
-          isDiurnal
+          isDiurnal,
         },
         aNumberInfo,
         historicalContext,
         processingTimeMs: processingTime,
-        agentType: 'planetary'
+        agentType: 'planetary',
       }
-      
+
       conversationContext.conversationCount += 1
-      
+
       // Log to Galileo (don't await to avoid blocking response)
       logAgentConversation(interactionData, conversationContext).catch(error => {
         console.error('Failed to log conversation to Galileo:', error)
       })
 
-      return NextResponse.json({ 
+      return NextResponse.json({
         response: text,
         sessionId: conversationContext.sessionId,
         elementalInfo: {
           signElement,
           planetElement,
           elementalAffinity,
-          isDiurnal
+          isDiurnal,
         },
         aNumberInfo,
-        historicalContext
+        historicalContext,
       })
     } catch (aiError) {
-      console.error("Error generating response with AI:", aiError)
-      
+      console.error('Error generating response with AI:', aiError)
+
       // Return a fallback response on AI error
-      return NextResponse.json({
-        response: `As ${planet || "the Sun"} in ${sign || "Aries"}, I'm experiencing some cosmic interference and cannot fully channel my wisdom at this time. Please try again later.`,
-        error: "AI_GENERATION_ERROR",
-        sessionId: conversationContext.sessionId
-      }, { status: 200 })
+      return NextResponse.json(
+        {
+          response: `As ${planet || 'the Sun'} in ${sign || 'Aries'}, I'm experiencing some cosmic interference and cannot fully channel my wisdom at this time. Please try again later.`,
+          error: 'AI_GENERATION_ERROR',
+          sessionId: conversationContext.sessionId,
+        },
+        { status: 200 }
+      )
     }
   } catch (error) {
-    console.error("Error in planetary agent:", error)
-    return NextResponse.json({ 
-      error: "Failed to process request",
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 })
+    console.error('Error in planetary agent:', error)
+    return NextResponse.json(
+      {
+        error: 'Failed to process request',
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    )
   }
 }

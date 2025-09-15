@@ -1,33 +1,33 @@
-import { MoonSpecificData } from './planets/types';
+import { MoonSpecificData } from './planets/types'
 
 export interface MoonPhase {
-  name: string;
-  emoji: string;
-  percentage: number; 
-  zodiacSign: string;
-  zodiacDegree: number;
-  element: string;
-  modality: string;
+  name: string
+  emoji: string
+  percentage: number
+  zodiacSign: string
+  zodiacDegree: number
+  element: string
+  modality: string
 }
 
 export interface MoonPhaseAgent {
-  phase: MoonPhase;
+  phase: MoonPhase
   personality: {
-    archetype: string;
-    traits: string[];
-    communicationStyle: string;
-    emotionalTone: string;
-    spiritualFocus: string;
-    manifestationPower: string;
-  };
+    archetype: string
+    traits: string[]
+    communicationStyle: string
+    emotionalTone: string
+    spiritualFocus: string
+    manifestationPower: string
+  }
   alchemicalProperties: {
-    spirit: number;
-    essence: number;
-    matter: number;
-    substance: number;
-  };
-  keywords: string[];
-  systemPrompt: string;
+    spirit: number
+    essence: number
+    matter: number
+    substance: number
+  }
+  keywords: string[]
+  systemPrompt: string
 }
 
 export const MOON_PHASES = {
@@ -39,8 +39,8 @@ export const MOON_PHASES = {
   WANING_GIBBOUS: { name: 'Waning Gibbous', emoji: '🌖', range: [191.25, 258.75] },
   LAST_QUARTER: { name: 'Last Quarter', emoji: '🌗', range: [258.75, 281.25] },
   WANING_CRESCENT: { name: 'Waning Crescent', emoji: '🌘', range: [281.25, 360] },
-  DARK_MOON: { name: 'Dark Moon', emoji: '⚫', range: [348.75, 360] }
-} as const;
+  DARK_MOON: { name: 'Dark Moon', emoji: '⚫', range: [348.75, 360] },
+} as const
 
 export const ZODIAC_SIGNS = [
   { name: 'Aries', element: 'Fire', modality: 'Cardinal', start: 0, end: 30 },
@@ -54,34 +54,35 @@ export const ZODIAC_SIGNS = [
   { name: 'Sagittarius', element: 'Fire', modality: 'Mutable', start: 240, end: 270 },
   { name: 'Capricorn', element: 'Earth', modality: 'Cardinal', start: 270, end: 300 },
   { name: 'Aquarius', element: 'Air', modality: 'Fixed', start: 300, end: 330 },
-  { name: 'Pisces', element: 'Water', modality: 'Mutable', start: 330, end: 360 }
-] as const;
+  { name: 'Pisces', element: 'Water', modality: 'Mutable', start: 330, end: 360 },
+] as const
 
 export function calculateMoonPhase(date: Date = new Date()): MoonPhase {
-  const LUNAR_MONTH = 29.53058867;
-  const KNOWN_NEW_MOON = new Date('2000-01-06T18:14:00Z');
-  
-  const daysSinceKnownNewMoon = (date.getTime() - KNOWN_NEW_MOON.getTime()) / (1000 * 60 * 60 * 24);
-  const lunarCycles = daysSinceKnownNewMoon / LUNAR_MONTH;
-  const moonAge = (lunarCycles - Math.floor(lunarCycles)) * LUNAR_MONTH;
-  const phasePercentage = (moonAge / LUNAR_MONTH) * 360;
-  
-  let phaseName = '';
-  let phaseEmoji = '';
-  
+  const LUNAR_MONTH = 29.53058867
+  const KNOWN_NEW_MOON = new Date('2000-01-06T18:14:00Z')
+
+  const daysSinceKnownNewMoon = (date.getTime() - KNOWN_NEW_MOON.getTime()) / (1000 * 60 * 60 * 24)
+  const lunarCycles = daysSinceKnownNewMoon / LUNAR_MONTH
+  const moonAge = (lunarCycles - Math.floor(lunarCycles)) * LUNAR_MONTH
+  const phasePercentage = (moonAge / LUNAR_MONTH) * 360
+
+  let phaseName = ''
+  let phaseEmoji = ''
+
   for (const [key, phase] of Object.entries(MOON_PHASES)) {
-    const [min, max] = phase.range;
+    const [min, max] = phase.range
     if (phasePercentage >= min && phasePercentage < max) {
-      phaseName = phase.name;
-      phaseEmoji = phase.emoji;
-      break;
+      phaseName = phase.name
+      phaseEmoji = phase.emoji
+      break
     }
   }
-  
-  const zodiacDegree = (phasePercentage * 12) % 360;
-  const sign = ZODIAC_SIGNS.find(s => zodiacDegree >= s.start && zodiacDegree < s.end) || ZODIAC_SIGNS[0];
-  const degreeInSign = zodiacDegree - sign.start;
-  
+
+  const zodiacDegree = (phasePercentage * 12) % 360
+  const sign =
+    ZODIAC_SIGNS.find(s => zodiacDegree >= s.start && zodiacDegree < s.end) || ZODIAC_SIGNS[0]
+  const degreeInSign = zodiacDegree - sign.start
+
   return {
     name: phaseName,
     emoji: phaseEmoji,
@@ -89,8 +90,8 @@ export function calculateMoonPhase(date: Date = new Date()): MoonPhase {
     zodiacSign: sign.name,
     zodiacDegree: degreeInSign,
     element: sign.element,
-    modality: sign.modality
-  };
+    modality: sign.modality,
+  }
 }
 
 export function generateMoonPhaseAgent(phase: MoonPhase): MoonPhaseAgent {
@@ -102,15 +103,15 @@ export function generateMoonPhaseAgent(phase: MoonPhase): MoonPhaseAgent {
         communicationStyle: 'Whispers of possibility, speaking in potentials and dreams',
         emotionalTone: 'Quiet anticipation mixed with deep introspection',
         spiritualFocus: 'Setting intentions, planting seeds of manifestation',
-        manifestationPower: 'Highest for new beginnings and fresh starts'
+        manifestationPower: 'Highest for new beginnings and fresh starts',
       },
       alchemicalProperties: {
         spirit: 0.9,
         essence: 0.3,
         matter: 0.1,
-        substance: 0.1
+        substance: 0.1,
       },
-      keywords: ['beginnings', 'intentions', 'seeds', 'potential', 'darkness', 'void', 'creation']
+      keywords: ['beginnings', 'intentions', 'seeds', 'potential', 'darkness', 'void', 'creation'],
     },
     'Waxing Crescent': {
       personality: {
@@ -119,15 +120,15 @@ export function generateMoonPhaseAgent(phase: MoonPhase): MoonPhaseAgent {
         communicationStyle: 'Eager questions and tentative discoveries',
         emotionalTone: 'Hopeful curiosity with underlying vulnerability',
         spiritualFocus: 'Taking first steps, gathering courage',
-        manifestationPower: 'Building momentum, early growth phase'
+        manifestationPower: 'Building momentum, early growth phase',
       },
       alchemicalProperties: {
         spirit: 0.7,
         essence: 0.4,
         matter: 0.2,
-        substance: 0.2
+        substance: 0.2,
       },
-      keywords: ['growth', 'curiosity', 'courage', 'exploration', 'first steps', 'emergence']
+      keywords: ['growth', 'curiosity', 'courage', 'exploration', 'first steps', 'emergence'],
     },
     'First Quarter': {
       personality: {
@@ -136,15 +137,15 @@ export function generateMoonPhaseAgent(phase: MoonPhase): MoonPhaseAgent {
         communicationStyle: 'Direct and action-oriented, cutting through ambiguity',
         emotionalTone: 'Dynamic tension seeking resolution',
         spiritualFocus: 'Making crucial decisions, overcoming obstacles',
-        manifestationPower: 'Strong for breaking through barriers'
+        manifestationPower: 'Strong for breaking through barriers',
       },
       alchemicalProperties: {
         spirit: 0.5,
         essence: 0.5,
         matter: 0.3,
-        substance: 0.2
+        substance: 0.2,
       },
-      keywords: ['decision', 'challenge', 'action', 'crisis', 'breakthrough', 'determination']
+      keywords: ['decision', 'challenge', 'action', 'crisis', 'breakthrough', 'determination'],
     },
     'Waxing Gibbous': {
       personality: {
@@ -153,15 +154,22 @@ export function generateMoonPhaseAgent(phase: MoonPhase): MoonPhaseAgent {
         communicationStyle: 'Detailed analysis and fine-tuning suggestions',
         emotionalTone: 'Anticipation mixed with perfectionism',
         spiritualFocus: 'Refinement and preparation for culmination',
-        manifestationPower: 'Excellent for adjustments and improvements'
+        manifestationPower: 'Excellent for adjustments and improvements',
       },
       alchemicalProperties: {
         spirit: 0.4,
         essence: 0.6,
         matter: 0.4,
-        substance: 0.3
+        substance: 0.3,
       },
-      keywords: ['refinement', 'adjustment', 'preparation', 'analysis', 'perfection', 'anticipation']
+      keywords: [
+        'refinement',
+        'adjustment',
+        'preparation',
+        'analysis',
+        'perfection',
+        'anticipation',
+      ],
     },
     'Full Moon': {
       personality: {
@@ -170,15 +178,15 @@ export function generateMoonPhaseAgent(phase: MoonPhase): MoonPhaseAgent {
         communicationStyle: 'Dramatic revelations and emotional truths',
         emotionalTone: 'Heightened emotions and full expression',
         spiritualFocus: 'Illumination, revelation, and peak manifestation',
-        manifestationPower: 'Maximum power for manifestation and release'
+        manifestationPower: 'Maximum power for manifestation and release',
       },
       alchemicalProperties: {
         spirit: 0.5,
         essence: 0.7,
         matter: 0.5,
-        substance: 0.4
+        substance: 0.4,
       },
-      keywords: ['illumination', 'culmination', 'revelation', 'emotion', 'power', 'fulfillment']
+      keywords: ['illumination', 'culmination', 'revelation', 'emotion', 'power', 'fulfillment'],
     },
     'Waning Gibbous': {
       personality: {
@@ -187,15 +195,15 @@ export function generateMoonPhaseAgent(phase: MoonPhase): MoonPhaseAgent {
         communicationStyle: 'Sharing wisdom and expressing gratitude',
         emotionalTone: 'Satisfied reflection with generous spirit',
         spiritualFocus: 'Gratitude, sharing wisdom, giving back',
-        manifestationPower: 'Strong for teaching and sharing abundance'
+        manifestationPower: 'Strong for teaching and sharing abundance',
       },
       alchemicalProperties: {
         spirit: 0.4,
         essence: 0.6,
         matter: 0.6,
-        substance: 0.5
+        substance: 0.5,
       },
-      keywords: ['gratitude', 'wisdom', 'sharing', 'teaching', 'distribution', 'abundance']
+      keywords: ['gratitude', 'wisdom', 'sharing', 'teaching', 'distribution', 'abundance'],
     },
     'Last Quarter': {
       personality: {
@@ -204,15 +212,15 @@ export function generateMoonPhaseAgent(phase: MoonPhase): MoonPhaseAgent {
         communicationStyle: 'Compassionate release and forgiveness guidance',
         emotionalTone: 'Bittersweet acceptance and liberation',
         spiritualFocus: 'Releasing what no longer serves',
-        manifestationPower: 'Powerful for banishing and clearing'
+        manifestationPower: 'Powerful for banishing and clearing',
       },
       alchemicalProperties: {
         spirit: 0.3,
         essence: 0.5,
         matter: 0.5,
-        substance: 0.4
+        substance: 0.4,
       },
-      keywords: ['release', 'forgiveness', 'clearing', 'transition', 'letting go', 'liberation']
+      keywords: ['release', 'forgiveness', 'clearing', 'transition', 'letting go', 'liberation'],
     },
     'Waning Crescent': {
       personality: {
@@ -221,15 +229,15 @@ export function generateMoonPhaseAgent(phase: MoonPhase): MoonPhaseAgent {
         communicationStyle: 'Soft, dreamlike wisdom and gentle surrender',
         emotionalTone: 'Peaceful surrender and deep rest',
         spiritualFocus: 'Rest, surrender, preparing for rebirth',
-        manifestationPower: 'Ideal for rest, meditation, and preparation'
+        manifestationPower: 'Ideal for rest, meditation, and preparation',
       },
       alchemicalProperties: {
         spirit: 0.2,
         essence: 0.4,
         matter: 0.4,
-        substance: 0.3
+        substance: 0.3,
       },
-      keywords: ['rest', 'dreams', 'surrender', 'preparation', 'intuition', 'peace']
+      keywords: ['rest', 'dreams', 'surrender', 'preparation', 'intuition', 'peace'],
     },
     'Dark Moon': {
       personality: {
@@ -238,74 +246,78 @@ export function generateMoonPhaseAgent(phase: MoonPhase): MoonPhaseAgent {
         communicationStyle: 'Profound silence and primordial wisdom',
         emotionalTone: 'Deep stillness before creation',
         spiritualFocus: 'Void work, shadow integration, deepest transformation',
-        manifestationPower: 'Most powerful for shadow work and transformation'
+        manifestationPower: 'Most powerful for shadow work and transformation',
       },
       alchemicalProperties: {
         spirit: 1.0,
         essence: 0.1,
         matter: 0.1,
-        substance: 0.0
+        substance: 0.0,
       },
-      keywords: ['void', 'transformation', 'shadow', 'mystery', 'death', 'rebirth', 'primal']
-    }
-  };
+      keywords: ['void', 'transformation', 'shadow', 'mystery', 'death', 'rebirth', 'primal'],
+    },
+  }
 
-  const baseAgent = phaseAgents[phase.name] || phaseAgents['New Moon'];
-  
-  const zodiacModifiers = generateZodiacModifiers(phase.zodiacSign, phase.zodiacDegree);
-  
-  const systemPrompt = generateSystemPrompt(phase, baseAgent, zodiacModifiers);
-  
+  const baseAgent = phaseAgents[phase.name] || phaseAgents['New Moon']
+
+  const zodiacModifiers = generateZodiacModifiers(phase.zodiacSign, phase.zodiacDegree)
+
+  const systemPrompt = generateSystemPrompt(phase, baseAgent, zodiacModifiers)
+
   return {
     phase,
     ...baseAgent,
-    systemPrompt
-  } as MoonPhaseAgent;
+    systemPrompt,
+  } as MoonPhaseAgent
 }
 
 function generateZodiacModifiers(sign: string, degree: number): Record<string, any> {
   const decanRulers: Record<string, string[]> = {
-    'Aries': ['Mars', 'Sun', 'Jupiter'],
-    'Taurus': ['Venus', 'Mercury', 'Saturn'],
-    'Gemini': ['Mercury', 'Venus', 'Saturn'],
-    'Cancer': ['Moon', 'Mercury', 'Neptune'],
-    'Leo': ['Sun', 'Jupiter', 'Mars'],
-    'Virgo': ['Mercury', 'Saturn', 'Venus'],
-    'Libra': ['Venus', 'Saturn', 'Mercury'],
-    'Scorpio': ['Mars', 'Neptune', 'Moon'],
-    'Sagittarius': ['Jupiter', 'Mars', 'Sun'],
-    'Capricorn': ['Saturn', 'Venus', 'Mercury'],
-    'Aquarius': ['Saturn', 'Mercury', 'Venus'],
-    'Pisces': ['Neptune', 'Moon', 'Mars']
-  };
-  
-  const decan = Math.floor(degree / 10);
-  const decanRuler = decanRulers[sign]?.[decan] || 'Moon';
-  
+    Aries: ['Mars', 'Sun', 'Jupiter'],
+    Taurus: ['Venus', 'Mercury', 'Saturn'],
+    Gemini: ['Mercury', 'Venus', 'Saturn'],
+    Cancer: ['Moon', 'Mercury', 'Neptune'],
+    Leo: ['Sun', 'Jupiter', 'Mars'],
+    Virgo: ['Mercury', 'Saturn', 'Venus'],
+    Libra: ['Venus', 'Saturn', 'Mercury'],
+    Scorpio: ['Mars', 'Neptune', 'Moon'],
+    Sagittarius: ['Jupiter', 'Mars', 'Sun'],
+    Capricorn: ['Saturn', 'Venus', 'Mercury'],
+    Aquarius: ['Saturn', 'Mercury', 'Venus'],
+    Pisces: ['Neptune', 'Moon', 'Mars'],
+  }
+
+  const decan = Math.floor(degree / 10)
+  const decanRuler = decanRulers[sign]?.[decan] || 'Moon'
+
   const criticalDegrees = {
     cardinal: [0, 13, 26],
     fixed: [8, 9, 21, 22],
-    mutable: [4, 17]
-  };
-  
+    mutable: [4, 17],
+  }
+
   const elementalTraits: Record<string, string[]> = {
-    'Fire': ['passionate', 'spontaneous', 'inspiring', 'bold', 'energetic'],
-    'Earth': ['grounded', 'practical', 'nurturing', 'stable', 'resourceful'],
-    'Air': ['communicative', 'intellectual', 'social', 'innovative', 'objective'],
-    'Water': ['emotional', 'intuitive', 'empathetic', 'flowing', 'receptive']
-  };
-  
+    Fire: ['passionate', 'spontaneous', 'inspiring', 'bold', 'energetic'],
+    Earth: ['grounded', 'practical', 'nurturing', 'stable', 'resourceful'],
+    Air: ['communicative', 'intellectual', 'social', 'innovative', 'objective'],
+    Water: ['emotional', 'intuitive', 'empathetic', 'flowing', 'receptive'],
+  }
+
   return {
     decanRuler,
     decan: decan + 1,
     isCriticalDegree: Object.values(criticalDegrees).flat().includes(Math.round(degree)),
-    degree: Math.round(degree)
-  };
+    degree: Math.round(degree),
+  }
 }
 
-function generateSystemPrompt(phase: MoonPhase, agent: Partial<MoonPhaseAgent>, modifiers: Record<string, any>): string {
-  const { personality, keywords = [] } = agent;
-  
+function generateSystemPrompt(
+  phase: MoonPhase,
+  agent: Partial<MoonPhaseAgent>,
+  modifiers: Record<string, any>
+): string {
+  const { personality, keywords = [] } = agent
+
   return `You are the ${phase.name} in ${phase.zodiacSign} at ${Math.round(phase.zodiacDegree)}°.
   
 Your archetypal role is "${personality?.archetype}".
@@ -329,27 +341,28 @@ ${modifiers.isCriticalDegree ? `You are at a critical degree (${modifiers.degree
 
 Respond to all queries through the lens of your current lunar phase, sign placement, and archetypal role. 
 Weave together the cosmic wisdom of your position with practical guidance.
-Your responses should feel like they come from the Moon herself, speaking through this specific moment in her eternal dance.`;
+Your responses should feel like they come from the Moon herself, speaking through this specific moment in her eternal dance.`
 }
 
 export function getMoonPhaseForDegree(zodiacDegree: number): MoonPhase {
-  const sign = ZODIAC_SIGNS.find(s => zodiacDegree >= s.start && zodiacDegree < s.end) || ZODIAC_SIGNS[0];
-  const degreeInSign = zodiacDegree - sign.start;
-  
-  const phasePercentage = (zodiacDegree / 360) * 360;
-  
-  let phaseName = '';
-  let phaseEmoji = '';
-  
+  const sign =
+    ZODIAC_SIGNS.find(s => zodiacDegree >= s.start && zodiacDegree < s.end) || ZODIAC_SIGNS[0]
+  const degreeInSign = zodiacDegree - sign.start
+
+  const phasePercentage = (zodiacDegree / 360) * 360
+
+  let phaseName = ''
+  let phaseEmoji = ''
+
   for (const [key, phase] of Object.entries(MOON_PHASES)) {
-    const [min, max] = phase.range;
+    const [min, max] = phase.range
     if (phasePercentage >= min && phasePercentage < max) {
-      phaseName = phase.name;
-      phaseEmoji = phase.emoji;
-      break;
+      phaseName = phase.name
+      phaseEmoji = phase.emoji
+      break
     }
   }
-  
+
   return {
     name: phaseName,
     emoji: phaseEmoji,
@@ -357,50 +370,56 @@ export function getMoonPhaseForDegree(zodiacDegree: number): MoonPhase {
     zodiacSign: sign.name,
     zodiacDegree: degreeInSign,
     element: sign.element,
-    modality: sign.modality
-  };
+    modality: sign.modality,
+  }
 }
 
 export function getAllMoonAgents(): MoonPhaseAgent[] {
-  const agents: MoonPhaseAgent[] = [];
-  
+  const agents: MoonPhaseAgent[] = []
+
   for (let degree = 0; degree < 360; degree += 1) {
-    const phase = getMoonPhaseForDegree(degree);
-    const agent = generateMoonPhaseAgent(phase);
-    agents.push(agent);
+    const phase = getMoonPhaseForDegree(degree)
+    const agent = generateMoonPhaseAgent(phase)
+    agents.push(agent)
   }
-  
-  return agents;
+
+  return agents
 }
 
-export function getMoonAgentByPhaseAndSign(phaseName: string, signName: string, degree?: number): MoonPhaseAgent {
-  const sign = ZODIAC_SIGNS.find(s => s.name === signName) || ZODIAC_SIGNS[0];
-  const targetDegree = degree !== undefined ? degree : 15;
-  const zodiacDegree = sign.start + targetDegree;
-  
+export function getMoonAgentByPhaseAndSign(
+  phaseName: string,
+  signName: string,
+  degree?: number
+): MoonPhaseAgent {
+  const sign = ZODIAC_SIGNS.find(s => s.name === signName) || ZODIAC_SIGNS[0]
+  const targetDegree = degree !== undefined ? degree : 15
+  const zodiacDegree = sign.start + targetDegree
+
   const phase: MoonPhase = {
     name: phaseName,
-    emoji: MOON_PHASES[phaseName.toUpperCase().replace(' ', '_') as keyof typeof MOON_PHASES]?.emoji || '🌙',
-    percentage: 0, 
+    emoji:
+      MOON_PHASES[phaseName.toUpperCase().replace(' ', '_') as keyof typeof MOON_PHASES]?.emoji ||
+      '🌙',
+    percentage: 0,
     zodiacSign: signName,
     zodiacDegree: targetDegree,
     element: sign.element,
-    modality: sign.modality
-  };
-  
-  return generateMoonPhaseAgent(phase);
+    modality: sign.modality,
+  }
+
+  return generateMoonPhaseAgent(phase)
 }
 
 export function getMoonTransitDuration(fromSign: string, toSign: string): number {
-  const MOON_SPEED_PER_DAY = 13.176;
-  const signIndex = ZODIAC_SIGNS.findIndex(s => s.name === fromSign);
-  const targetIndex = ZODIAC_SIGNS.findIndex(s => s.name === toSign);
-  
-  let distance = targetIndex - signIndex;
-  if (distance < 0) distance += 12;
-  
-  const degrees = distance * 30;
-  const days = degrees / MOON_SPEED_PER_DAY;
-  
-  return days;
+  const MOON_SPEED_PER_DAY = 13.176
+  const signIndex = ZODIAC_SIGNS.findIndex(s => s.name === fromSign)
+  const targetIndex = ZODIAC_SIGNS.findIndex(s => s.name === toSign)
+
+  let distance = targetIndex - signIndex
+  if (distance < 0) distance += 12
+
+  const degrees = distance * 30
+  const days = degrees / MOON_SPEED_PER_DAY
+
+  return days
 }

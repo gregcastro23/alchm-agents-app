@@ -8,12 +8,35 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { identifyPlanetaryThemes, findHistoricalPatterns } from '@/lib/transit-patterns'
-import { findLastOccurrence, findNextOccurrence, getPlanetCycleLength } from '@/lib/historical-transits'
+import {
+  findLastOccurrence,
+  findNextOccurrence,
+  getPlanetCycleLength,
+} from '@/lib/historical-transits'
 import { getTransitsByPlanet } from '@/lib/historical-transit-data'
-import { DegreeSpecificHistoryService, type DegreeHistoricalData } from '@/lib/degree-specific-history'
+import {
+  DegreeSpecificHistoryService,
+  type DegreeHistoricalData,
+} from '@/lib/degree-specific-history'
 import { HistoricalTransitCard } from '@/components/historical-transit-card'
 import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
-import { ArrowLeft, Calendar, History, MessageCircle, Star, Clock, Globe, TrendingUp, Activity } from 'lucide-react'
+import {
+  getPlanetaryDignity,
+  getSignElement,
+  getPlanetaryElement,
+  calculateElementalAffinity,
+} from '@/lib/astrological-data'
+import {
+  ArrowLeft,
+  Calendar,
+  History,
+  MessageCircle,
+  Star,
+  Clock,
+  Globe,
+  TrendingUp,
+  Activity,
+} from 'lucide-react'
 import Link from 'next/link'
 
 interface Message {
@@ -21,7 +44,6 @@ interface Message {
   content: string
   timestamp: Date
 }
-
 
 export default function DegreeSpecificAgentPage() {
   const params = useParams()
@@ -34,10 +56,12 @@ export default function DegreeSpecificAgentPage() {
   const [loading, setLoading] = useState(false)
   const [historicalData, setHistoricalData] = useState<any>(null)
   const [planetaryThemes, setPlanetaryThemes] = useState<any>(null)
-  const [degreeHistoricalData, setDegreeHistoricalData] = useState<DegreeHistoricalData | null>(null)
+  const [degreeHistoricalData, setDegreeHistoricalData] = useState<DegreeHistoricalData | null>(
+    null
+  )
   const [currentTransitData, setCurrentTransitData] = useState<any>(null)
   const [recentTransits, setRecentTransits] = useState<any[]>([])
-  
+
   useEffect(() => {
     loadHistoricalData()
     loadCurrentTransits()
@@ -50,23 +74,23 @@ export default function DegreeSpecificAgentPage() {
 
     // Find historical patterns
     const patterns = findHistoricalPatterns(planet, sign)
-    
+
     // Get last and next occurrences for this specific degree
     const lastOccurrence = findLastOccurrence(planet, sign, degree)
     const nextOccurrence = findNextOccurrence(planet, sign, degree)
-    
+
     // Calculate more detailed transit information
     const cycleLength = getPlanetCycleLength(planet)
     const daysPerDegree = cycleLength / 360
-    const approxDaysInSign = (cycleLength / 12)
-    
+    const approxDaysInSign = cycleLength / 12
+
     setHistoricalData({
       lastOccurrence,
       nextOccurrence,
       patterns: patterns.slice(0, 3),
       cycleLength,
       daysPerDegree: Math.round(daysPerDegree * 10) / 10,
-      approxDaysInSign: Math.round(approxDaysInSign)
+      approxDaysInSign: Math.round(approxDaysInSign),
     })
 
     // Generate detailed degree-specific historical data for outer planets
@@ -78,66 +102,84 @@ export default function DegreeSpecificAgentPage() {
         console.error('Error generating degree-specific history:', error)
       }
     }
-    
+
     // Calculate recent transits for this degree
     calculateRecentTransits()
   }
-  
+
   const loadCurrentTransits = () => {
     // Get current planetary positions
     const currentPositions = getCurrentPlanetaryPositions()
     const currentPlanetPosition = currentPositions[planet]
-    
+
     if (currentPlanetPosition) {
       const currentDegree = parseFloat(currentPlanetPosition.degree)
       const degreeDifference = Math.abs(currentDegree - degree)
       const isCurrentlyAtDegree = currentPlanetPosition.sign === sign && degreeDifference < 1
-      
+
       setCurrentTransitData({
         currentSign: currentPlanetPosition.sign,
         currentDegree: currentDegree,
         isAtRequestedPosition: isCurrentlyAtDegree,
         degreeDifference: degreeDifference,
-        daysUntilReturn: calculateDaysUntilReturn(planet, sign, degree, currentPlanetPosition)
+        daysUntilReturn: calculateDaysUntilReturn(planet, sign, degree, currentPlanetPosition),
       })
     }
   }
-  
-  const calculateDaysUntilReturn = (planet: string, targetSign: string, targetDegree: number, currentPosition: any) => {
+
+  const calculateDaysUntilReturn = (
+    planet: string,
+    targetSign: string,
+    targetDegree: number,
+    currentPosition: any
+  ) => {
     const cycleLength = getPlanetCycleLength(planet)
     const degreesPerDay = 360 / cycleLength
-    
+
     // Calculate absolute positions
-    const signOrder = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+    const signOrder = [
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
+    ]
     const currentSignIndex = signOrder.indexOf(currentPosition.sign)
     const targetSignIndex = signOrder.indexOf(targetSign)
-    
-    const currentAbsolute = (currentSignIndex * 30) + parseFloat(currentPosition.degree)
-    const targetAbsolute = (targetSignIndex * 30) + targetDegree
-    
+
+    const currentAbsolute = currentSignIndex * 30 + parseFloat(currentPosition.degree)
+    const targetAbsolute = targetSignIndex * 30 + targetDegree
+
     let degreesToTravel = targetAbsolute - currentAbsolute
     if (degreesToTravel <= 0) {
       degreesToTravel += 360 // Need to go around the zodiac
     }
-    
+
     return Math.round(degreesToTravel / degreesPerDay)
   }
-  
+
   const calculateRecentTransits = () => {
     const cycleLength = getPlanetCycleLength(planet)
     const now = new Date()
     const transits = []
-    
+
     // Calculate last 3-5 times this planet was at this degree
     for (let i = 1; i <= 5; i++) {
       const daysAgo = cycleLength * i
       const transitDate = new Date(now)
       transitDate.setDate(transitDate.getDate() - daysAgo)
-      
+
       // Calculate what historical events might have occurred
       const year = transitDate.getFullYear()
       let historicalContext = ''
-      
+
       if (year >= 2020) {
         historicalContext = 'Recent modern history'
       } else if (year >= 2000) {
@@ -151,18 +193,19 @@ export default function DegreeSpecificAgentPage() {
       } else {
         historicalContext = 'Historical period'
       }
-      
+
       transits.push({
         date: transitDate,
         cycleNumber: i,
-        yearsAgo: Math.round((now.getTime() - transitDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25)),
-        historicalContext
+        yearsAgo: Math.round(
+          (now.getTime() - transitDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25)
+        ),
+        historicalContext,
       })
     }
-    
+
     setRecentTransits(transits)
   }
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -171,7 +214,7 @@ export default function DegreeSpecificAgentPage() {
     const userMessage: Message = {
       role: 'user',
       content: input,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
     setMessages(prev => [...prev, userMessage])
     setInput('')
@@ -186,8 +229,8 @@ export default function DegreeSpecificAgentPage() {
           sign,
           degree: degree.toString(),
           question: input,
-          time: '12:00'
-        })
+          time: '12:00',
+        }),
       })
 
       const data = await response.json()
@@ -196,7 +239,7 @@ export default function DegreeSpecificAgentPage() {
         const agentMessage: Message = {
           role: 'agent',
           content: data.response,
-          timestamp: new Date()
+          timestamp: new Date(),
         }
         setMessages(prev => [...prev, agentMessage])
       } else {
@@ -205,8 +248,9 @@ export default function DegreeSpecificAgentPage() {
     } catch (error) {
       const errorMessage: Message = {
         role: 'agent',
-        content: 'I apologize, but I encountered an error while channeling the cosmic wisdom. Please try again.',
-        timestamp: new Date()
+        content:
+          'I apologize, but I encountered an error while channeling the cosmic wisdom. Please try again.',
+        timestamp: new Date(),
       }
       setMessages(prev => [...prev, errorMessage])
     } finally {
@@ -216,8 +260,16 @@ export default function DegreeSpecificAgentPage() {
 
   const getPlanetEmoji = (planet: string): string => {
     const emojis: Record<string, string> = {
-      'Sun': '☉', 'Moon': '☽', 'Mercury': '☿', 'Venus': '♀', 'Mars': '♂',
-      'Jupiter': '♃', 'Saturn': '♄', 'Uranus': '⛢', 'Neptune': '♆', 'Pluto': '♇'
+      Sun: '☉',
+      Moon: '☽',
+      Mercury: '☿',
+      Venus: '♀',
+      Mars: '♂',
+      Jupiter: '♃',
+      Saturn: '♄',
+      Uranus: '⛢',
+      Neptune: '♆',
+      Pluto: '♇',
     }
     return emojis[planet] || '●'
   }
@@ -226,7 +278,7 @@ export default function DegreeSpecificAgentPage() {
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     })
   }
 
@@ -247,9 +299,7 @@ export default function DegreeSpecificAgentPage() {
               <h1 className="text-3xl font-bold">
                 {planet} at {degree}° {sign}
               </h1>
-              <p className="text-muted-foreground">
-                Degree-Specific Planetary Consciousness
-              </p>
+              <p className="text-muted-foreground">Degree-Specific Planetary Consciousness</p>
             </div>
           </div>
         </div>
@@ -287,9 +337,7 @@ export default function DegreeSpecificAgentPage() {
                       <div
                         key={index}
                         className={`p-4 rounded-lg ${
-                          message.role === 'user'
-                            ? 'bg-primary/10 ml-8'
-                            : 'bg-secondary/10 mr-8'
+                          message.role === 'user' ? 'bg-primary/10 ml-8' : 'bg-secondary/10 mr-8'
                         }`}
                       >
                         <div className="flex items-start gap-3">
@@ -313,7 +361,7 @@ export default function DegreeSpecificAgentPage() {
               <form onSubmit={handleSubmit} className="flex gap-2">
                 <Input
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={e => setInput(e.target.value)}
                   placeholder={`Ask ${planet} at ${degree}° ${sign} for guidance...`}
                   disabled={loading}
                   className="flex-1"
@@ -330,7 +378,11 @@ export default function DegreeSpecificAgentPage() {
         <div className="space-y-6">
           {/* Current Transit Status */}
           {currentTransitData && (
-            <Card className={currentTransitData.isAtRequestedPosition ? 'border-green-500 border-2' : ''}>
+            <Card
+              className={
+                currentTransitData.isAtRequestedPosition ? 'border-green-500 border-2' : ''
+              }
+            >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Activity className="h-5 w-5" />
@@ -340,7 +392,9 @@ export default function DegreeSpecificAgentPage() {
               <CardContent className="space-y-3">
                 {currentTransitData.isAtRequestedPosition ? (
                   <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
-                    <p className="text-sm font-semibold text-green-700 dark:text-green-400">🎯 Currently Active!</p>
+                    <p className="text-sm font-semibold text-green-700 dark:text-green-400">
+                      🎯 Currently Active!
+                    </p>
                     <p className="text-xs text-green-600 dark:text-green-500 mt-1">
                       {planet} is currently at {currentTransitData.currentDegree.toFixed(2)}° {sign}
                     </p>
@@ -350,7 +404,8 @@ export default function DegreeSpecificAgentPage() {
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Current Position:</span>
                       <Badge variant="secondary">
-                        {currentTransitData.currentDegree.toFixed(2)}° {currentTransitData.currentSign}
+                        {currentTransitData.currentDegree.toFixed(2)}°{' '}
+                        {currentTransitData.currentSign}
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
@@ -358,14 +413,15 @@ export default function DegreeSpecificAgentPage() {
                       <Badge variant="outline">{currentTransitData.daysUntilReturn} days</Badge>
                     </div>
                     <div className="text-xs text-muted-foreground mt-2">
-                      Approximately {Math.round(currentTransitData.daysUntilReturn / 365.25 * 10) / 10} years
+                      Approximately{' '}
+                      {Math.round((currentTransitData.daysUntilReturn / 365.25) * 10) / 10} years
                     </div>
                   </>
                 )}
               </CardContent>
             </Card>
           )}
-          
+
           {/* Current Position Info */}
           <Card>
             <CardHeader>
@@ -386,6 +442,28 @@ export default function DegreeSpecificAgentPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Degree:</span>
                 <Badge variant="outline">{degree}°</Badge>
+              </div>
+              <div className="pt-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Dignity:</span>
+                  <Badge variant="outline">{getPlanetaryDignity(planet, sign)}</Badge>
+                </div>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-sm text-muted-foreground">Sign Element:</span>
+                  <Badge variant="outline">{getSignElement(sign)}</Badge>
+                </div>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-sm text-muted-foreground">Time of Day:</span>
+                  <Badge variant="outline">{(new Date().getHours() >= 6 && new Date().getHours() < 18) ? 'Day' : 'Night'}</Badge>
+                </div>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-sm text-muted-foreground">Planet Element:</span>
+                  <Badge variant="outline">{getPlanetaryElement(planet, (new Date().getHours() >= 6 && new Date().getHours() < 18))}</Badge>
+                </div>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-sm text-muted-foreground">Affinity:</span>
+                  <Badge variant="outline">{Math.round(calculateElementalAffinity(planet, sign, (new Date().getHours() >= 6 && new Date().getHours() < 18)) * 100)}%</Badge>
+                </div>
               </div>
               {historicalData && (
                 <>
@@ -418,7 +496,7 @@ export default function DegreeSpecificAgentPage() {
               )}
             </CardContent>
           </Card>
-          
+
           {/* Recent Transit History */}
           {recentTransits.length > 0 && (
             <Card>
@@ -436,16 +514,12 @@ export default function DegreeSpecificAgentPage() {
                   {recentTransits.slice(0, 3).map((transit, index) => (
                     <div key={index} className="p-3 bg-muted/30 rounded-lg">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium">
-                          {transit.date.getFullYear()}
-                        </span>
+                        <span className="text-sm font-medium">{transit.date.getFullYear()}</span>
                         <Badge variant="outline" className="text-xs">
                           {transit.yearsAgo} years ago
                         </Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {transit.historicalContext}
-                      </p>
+                      <p className="text-xs text-muted-foreground">{transit.historicalContext}</p>
                       <p className="text-xs text-muted-foreground mt-1">
                         Cycle #{transit.cycleNumber}
                       </p>
@@ -475,22 +549,20 @@ export default function DegreeSpecificAgentPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
-                          <span className="font-semibold text-sm">
-                            {occurrence.year}
-                          </span>
+                          <span className="font-semibold text-sm">{occurrence.year}</span>
                           <Badge variant="outline" className="text-xs">
                             Cycle {occurrence.cycleNumber}
                           </Badge>
                         </div>
                       </div>
-                      
+
                       <div>
                         <p className="text-xs text-muted-foreground mb-2">Cultural Context:</p>
                         <p className="text-xs italic text-blue-600 dark:text-blue-400">
                           {occurrence.culturalContext}
                         </p>
                       </div>
-                      
+
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Major Events:</p>
                         <ul className="text-xs space-y-1">
@@ -504,7 +576,9 @@ export default function DegreeSpecificAgentPage() {
                       </div>
 
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">Planetary Significance:</p>
+                        <p className="text-xs text-muted-foreground mb-1">
+                          Planetary Significance:
+                        </p>
                         <p className="text-xs text-green-600 dark:text-green-400 leading-tight">
                           {occurrence.significance}
                         </p>
@@ -519,7 +593,8 @@ export default function DegreeSpecificAgentPage() {
                         <span className="font-semibold text-sm text-blue-600">Next Occurrence</span>
                       </div>
                       <p className="text-xs text-blue-600 dark:text-blue-400">
-                        {planet} will return to {degree}° {sign} around {degreeHistoricalData.nextOccurrence.getFullYear()}
+                        {planet} will return to {degree}° {sign} around{' '}
+                        {degreeHistoricalData.nextOccurrence.getFullYear()}
                       </p>
                     </div>
                   )}

@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import React, { ReactNode } from 'react'
 import TarotCosmicWidget from './tarot-cosmic-widget'
@@ -17,7 +17,7 @@ const TarotEnhancedLayout: React.FC<TarotEnhancedLayoutProps> = ({
   variant = 'minimal',
   showFullDashboard = false,
   title,
-  description
+  description,
 }) => {
   if (variant === 'with-sidebar') {
     return (
@@ -28,27 +28,18 @@ const TarotEnhancedLayout: React.FC<TarotEnhancedLayoutProps> = ({
             {title && (
               <div className="mb-8">
                 <h1 className="text-3xl font-bold mb-2">{title}</h1>
-                {description && (
-                  <p className="text-gray-600">{description}</p>
-                )}
+                {description && <p className="text-gray-600">{description}</p>}
               </div>
             )}
             {children}
           </div>
-          
+
           {/* Sidebar with Tarot Widget */}
           <div className="lg:col-span-1 space-y-6">
-            <TarotCosmicWidget 
-              variant="sidebar" 
-              showExpanded={false}
-              linkToFullOracle={true}
-            />
-            
+            <TarotCosmicWidget variant="sidebar" showExpanded={false} linkToFullOracle={true} />
+
             {showFullDashboard && (
-              <EnhancedTarotDashboard 
-                variant="compact"
-                showAdvancedInsights={false}
-              />
+              <EnhancedTarotDashboard variant="compact" showAdvancedInsights={false} />
             )}
           </div>
         </div>
@@ -64,27 +55,19 @@ const TarotEnhancedLayout: React.FC<TarotEnhancedLayoutProps> = ({
           {title && (
             <div className="mb-4">
               <h1 className="text-3xl font-bold mb-2">{title}</h1>
-              {description && (
-                <p className="text-gray-600">{description}</p>
-              )}
+              {description && <p className="text-gray-600">{description}</p>}
             </div>
           )}
-          
-          <TarotCosmicWidget 
-            variant="header"
-            linkToFullOracle={true}
-          />
+
+          <TarotCosmicWidget variant="header" linkToFullOracle={true} />
         </div>
-        
+
         {/* Main Content */}
         {children}
-        
+
         {showFullDashboard && (
           <div className="mt-12">
-            <EnhancedTarotDashboard 
-              variant="compact"
-              showAdvancedInsights={true}
-            />
+            <EnhancedTarotDashboard variant="compact" showAdvancedInsights={true} />
           </div>
         )}
       </div>
@@ -97,20 +80,15 @@ const TarotEnhancedLayout: React.FC<TarotEnhancedLayoutProps> = ({
         {title && (
           <div className="mb-8 text-center">
             <h1 className="text-3xl font-bold mb-2">{title}</h1>
-            {description && (
-              <p className="text-gray-600 max-w-2xl mx-auto">{description}</p>
-            )}
+            {description && <p className="text-gray-600 max-w-2xl mx-auto">{description}</p>}
           </div>
         )}
-        
+
         {/* Full Tarot Dashboard */}
         <div className="mb-12">
-          <EnhancedTarotDashboard 
-            variant="full"
-            showAdvancedInsights={true}
-          />
+          <EnhancedTarotDashboard variant="full" showAdvancedInsights={true} />
         </div>
-        
+
         {/* Main Content */}
         {children}
       </div>
@@ -123,23 +101,17 @@ const TarotEnhancedLayout: React.FC<TarotEnhancedLayoutProps> = ({
       {title && (
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">{title}</h1>
-          {description && (
-            <p className="text-gray-600">{description}</p>
-          )}
+          {description && <p className="text-gray-600">{description}</p>}
         </div>
       )}
-      
+
       {/* Main Content */}
       {children}
-      
+
       {/* Small Tarot Widget at Bottom */}
       <div className="mt-12">
         <div className="max-w-md mx-auto">
-          <TarotCosmicWidget 
-            variant="card" 
-            showExpanded={false}
-            linkToFullOracle={true}
-          />
+          <TarotCosmicWidget variant="card" showExpanded={false} linkToFullOracle={true} />
         </div>
       </div>
     </div>

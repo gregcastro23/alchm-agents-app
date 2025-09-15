@@ -4,41 +4,41 @@
  */
 
 export interface AgentKineticProfile {
-  id: string;
-  name: string;
+  id: string
+  name: string
   // Velocity metrics (0-1 scale)
-  v_creative?: number;
-  v_linguistic?: number;
-  v_scientific?: number;
-  v_strategic?: number;
-  v_charismatic?: number;
-  v_inventive?: number;
-  v_social?: number;
-  v_psychological?: number;
-  v_mystical?: number;
-  v_philosophical?: number;
+  v_creative?: number
+  v_linguistic?: number
+  v_scientific?: number
+  v_strategic?: number
+  v_charismatic?: number
+  v_inventive?: number
+  v_social?: number
+  v_psychological?: number
+  v_mystical?: number
+  v_philosophical?: number
   // Core kinetic properties
-  momentum_type: 'sustained' | 'building' | 'oscillating' | 'explosive' | 'gradual';
-  power_alignment: string; // Planetary alignments separated by underscore
-  peak_hours: string[]; // Optimal planetary hours
-  consciousness_rate: number; // Learning/evolution rate (0-1)
-  memory_persistence: number; // Trait retention (0-1)
+  momentum_type: 'sustained' | 'building' | 'oscillating' | 'explosive' | 'gradual'
+  power_alignment: string // Planetary alignments separated by underscore
+  peak_hours: string[] // Optimal planetary hours
+  consciousness_rate: number // Learning/evolution rate (0-1)
+  memory_persistence: number // Trait retention (0-1)
   // Aspect sensitivity (new dynamic aspects integration)
   aspect_sensitivity?: {
-    conjunctions: number;     // 0-1 sensitivity to conjunctions
-    oppositions: number;      // 0-1 sensitivity to oppositions
-    trines: number;          // 0-1 sensitivity to trines
-    squares: number;         // 0-1 sensitivity to squares
-    sextiles: number;        // 0-1 sensitivity to sextiles
-    quincunxes: number;      // 0-1 sensitivity to quincunxes
-  };
-  optimal_aspect_types?: string[];  // aspects that enhance this agent
-  challenging_aspect_types?: string[];  // aspects that create growth tension
-  aspect_memory_retention?: number;     // how long aspect influences persist (0-1)
+    conjunctions: number // 0-1 sensitivity to conjunctions
+    oppositions: number // 0-1 sensitivity to oppositions
+    trines: number // 0-1 sensitivity to trines
+    squares: number // 0-1 sensitivity to squares
+    sextiles: number // 0-1 sensitivity to sextiles
+    quincunxes: number // 0-1 sensitivity to quincunxes
+  }
+  optimal_aspect_types?: string[] // aspects that enhance this agent
+  challenging_aspect_types?: string[] // aspects that create growth tension
+  aspect_memory_retention?: number // how long aspect influences persist (0-1)
   // Special kinetic properties
   special_kinetics: {
-    [key: string]: string | number;
-  };
+    [key: string]: string | number
+  }
 }
 
 export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
@@ -56,8 +56,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       power_accumulation: 'sustained',
       diplomatic_velocity: 0.82,
-      leadership_momentum: 'amplifying'
-    }
+      leadership_momentum: 'amplifying',
+    },
   },
   'marcus-aurelius': {
     id: 'marcus-aurelius',
@@ -72,10 +72,10 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       stoic_stability: 0.95,
       wisdom_accumulation: 'gradual',
-      leadership_consistency: 0.88
-    }
+      leadership_consistency: 0.88,
+    },
   },
-  'aristotle': {
+  aristotle: {
     id: 'aristotle',
     name: 'Aristotle',
     v_philosophical: 0.94,
@@ -83,13 +83,13 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     momentum_type: 'sustained',
     power_alignment: 'mercury_jupiter',
     peak_hours: ['Mercury', 'Jupiter'],
-    consciousness_rate: 0.90,
+    consciousness_rate: 0.9,
     memory_persistence: 0.93,
     special_kinetics: {
       logical_precision: 0.92,
       systematic_thinking: 0.89,
-      knowledge_synthesis: 'comprehensive'
-    }
+      knowledge_synthesis: 'comprehensive',
+    },
   },
   'julius-caesar': {
     id: 'julius-caesar',
@@ -104,10 +104,10 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       military_genius: 0.93,
       political_velocity: 0.87,
-      ambition_momentum: 'accelerating'
-    }
+      ambition_momentum: 'accelerating',
+    },
   },
-  'confucius': {
+  confucius: {
     id: 'confucius',
     name: 'Confucius',
     v_philosophical: 0.89,
@@ -120,8 +120,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       ethical_consistency: 0.96,
       social_harmony: 0.88,
-      wisdom_transmission: 'generational'
-    }
+      wisdom_transmission: 'generational',
+    },
   },
 
   // Medieval Era
@@ -136,12 +136,12 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     consciousness_rate: 0.95,
     memory_persistence: 0.91,
     aspect_sensitivity: {
-      conjunctions: 0.85,    // High - synthesis of energies
-      oppositions: 0.70,     // Moderate-high - creative tension
-      trines: 0.95,         // Highest - natural flow of creativity
-      squares: 0.75,        // Moderate-high - innovation through challenge
-      sextiles: 0.88,       // High - harmonious opportunity
-      quincunxes: 0.80      // High - adaptation and invention
+      conjunctions: 0.85, // High - synthesis of energies
+      oppositions: 0.7, // Moderate-high - creative tension
+      trines: 0.95, // Highest - natural flow of creativity
+      squares: 0.75, // Moderate-high - innovation through challenge
+      sextiles: 0.88, // High - harmonious opportunity
+      quincunxes: 0.8, // High - adaptation and invention
     },
     optimal_aspect_types: ['trine', 'sextile', 'quintile', 'conjunction'],
     challenging_aspect_types: ['square', 'opposition'],
@@ -149,8 +149,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       innovation_bursts: 'mercury_hours',
       artistic_scientific_balance: 0.94,
-      invention_power: 'solar_maximum'
-    }
+      invention_power: 'solar_maximum',
+    },
   },
   'joan-of-arc': {
     id: 'joan-of-arc',
@@ -165,10 +165,10 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       divine_inspiration: 0.92,
       courage_velocity: 0.95,
-      faith_momentum: 'unwavering'
-    }
+      faith_momentum: 'unwavering',
+    },
   },
-  'saladin': {
+  saladin: {
     id: 'saladin',
     name: 'Saladin',
     v_strategic: 0.88,
@@ -181,8 +181,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       military_wisdom: 0.89,
       diplomatic_balance: 0.84,
-      honor_consistency: 0.93
-    }
+      honor_consistency: 0.93,
+    },
   },
   'hildegard-von-bingen': {
     id: 'hildegard-von-bingen',
@@ -197,8 +197,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       visionary_capacity: 0.94,
       healing_wisdom: 0.86,
-      musical_inspiration: 'divine'
-    }
+      musical_inspiration: 'divine',
+    },
   },
   'marco-polo': {
     id: 'marco-polo',
@@ -213,8 +213,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       exploration_velocity: 0.88,
       cultural_adaptability: 0.91,
-      trade_momentum: 'expanding'
-    }
+      trade_momentum: 'expanding',
+    },
   },
 
   // Renaissance Era
@@ -231,8 +231,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       iambic_momentum: 'persistent',
       metaphor_velocity: 0.88,
-      dramatic_power_bursts: 'solar_aligned'
-    }
+      dramatic_power_bursts: 'solar_aligned',
+    },
   },
   'galileo-galilei': {
     id: 'galileo-galilei',
@@ -247,8 +247,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       observational_precision: 0.94,
       revolutionary_thinking: 0.89,
-      scientific_courage: 0.91
-    }
+      scientific_courage: 0.91,
+    },
   },
   'queen-elizabeth-i': {
     id: 'queen-elizabeth-i',
@@ -259,14 +259,14 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     power_alignment: 'sun_saturn',
     peak_hours: ['Sun', 'Saturn'],
     consciousness_rate: 0.76,
-    memory_persistence: 0.90,
+    memory_persistence: 0.9,
     special_kinetics: {
       political_mastery: 0.91,
       cultural_patronage: 0.85,
-      sovereignty_power: 'absolute'
-    }
+      sovereignty_power: 'absolute',
+    },
   },
-  'michelangelo': {
+  michelangelo: {
     id: 'michelangelo',
     name: 'Michelangelo',
     v_creative: 0.94,
@@ -279,8 +279,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       artistic_intensity: 0.96,
       sculptural_precision: 0.93,
-      divine_inspiration: 'concentrated'
-    }
+      divine_inspiration: 'concentrated',
+    },
   },
   'christopher-columbus': {
     id: 'christopher-columbus',
@@ -295,8 +295,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       exploration_drive: 0.89,
       navigational_intuition: 0.76,
-      ambitious_momentum: 'relentless'
-    }
+      ambitious_momentum: 'relentless',
+    },
   },
 
   // Enlightenment Era
@@ -313,10 +313,10 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       lightning_metaphors: 'storm_aligned',
       wit_velocity: 0.84,
-      civic_momentum: 'building'
-    }
+      civic_momentum: 'building',
+    },
   },
-  'voltaire': {
+  voltaire: {
     id: 'voltaire',
     name: 'Voltaire',
     v_linguistic: 0.89,
@@ -329,8 +329,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       satirical_precision: 0.92,
       intellectual_velocity: 0.88,
-      enlightenment_power: 'revolutionary'
-    }
+      enlightenment_power: 'revolutionary',
+    },
   },
   'catherine-the-great': {
     id: 'catherine-the-great',
@@ -345,10 +345,10 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       cultural_expansion: 0.88,
       political_velocity: 0.85,
-      imperial_momentum: 'ascending'
-    }
+      imperial_momentum: 'ascending',
+    },
   },
-  'mozart': {
+  mozart: {
     id: 'mozart',
     name: 'Wolfgang Amadeus Mozart',
     v_creative: 0.96,
@@ -361,8 +361,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       musical_genius: 0.98,
       compositional_velocity: 0.94,
-      harmonic_resonance: 'transcendent'
-    }
+      harmonic_resonance: 'transcendent',
+    },
   },
   'isaac-newton': {
     id: 'isaac-newton',
@@ -377,8 +377,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       mathematical_precision: 0.97,
       universal_laws: 0.93,
-      gravitational_insight: 'fundamental'
-    }
+      gravitational_insight: 'fundamental',
+    },
   },
 
   // Modern Era
@@ -395,8 +395,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       military_genius: 0.95,
       imperial_ambition: 0.92,
-      tactical_velocity: 'lightning'
-    }
+      tactical_velocity: 'lightning',
+    },
   },
   'mary-shelley': {
     id: 'mary-shelley',
@@ -411,8 +411,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       gothic_imagination: 0.91,
       psychological_depth: 0.87,
-      literary_innovation: 'pioneering'
-    }
+      literary_innovation: 'pioneering',
+    },
   },
   'charles-darwin': {
     id: 'charles-darwin',
@@ -426,9 +426,9 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     memory_persistence: 0.89,
     special_kinetics: {
       observational_patience: 0.93,
-      evolutionary_insight: 0.90,
-      theoretical_momentum: 'transformative'
-    }
+      evolutionary_insight: 0.9,
+      theoretical_momentum: 'transformative',
+    },
   },
   'harriet-tubman': {
     id: 'harriet-tubman',
@@ -443,8 +443,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       liberation_velocity: 0.92,
       underground_navigation: 0.89,
-      courage_consistency: 0.95
-    }
+      courage_consistency: 0.95,
+    },
   },
   'abraham-lincoln': {
     id: 'abraham-lincoln',
@@ -459,8 +459,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       moral_clarity: 0.91,
       political_wisdom: 0.86,
-      unifying_power: 'transcendent'
-    }
+      unifying_power: 'transcendent',
+    },
   },
 
   // 20th Century
@@ -475,12 +475,12 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     consciousness_rate: 0.92,
     memory_persistence: 0.85,
     aspect_sensitivity: {
-      conjunctions: 0.90,    // High - fusion of electric energies
-      oppositions: 0.60,     // Moderate - doesn't thrive on opposition
-      trines: 0.85,         // High - natural electrical flow
-      squares: 0.95,        // Highest - revolutionary through tension
-      sextiles: 0.80,       // High - harmonic resonance
-      quincunxes: 0.88      // High - frequency adjustment
+      conjunctions: 0.9, // High - fusion of electric energies
+      oppositions: 0.6, // Moderate - doesn't thrive on opposition
+      trines: 0.85, // High - natural electrical flow
+      squares: 0.95, // Highest - revolutionary through tension
+      sextiles: 0.8, // High - harmonic resonance
+      quincunxes: 0.88, // High - frequency adjustment
     },
     optimal_aspect_types: ['square', 'conjunction', 'quincunx', 'sextile'],
     challenging_aspect_types: ['opposition'],
@@ -488,8 +488,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       electrical_genius: 0.97,
       visionary_capacity: 0.91,
-      innovative_frequency: 'resonant'
-    }
+      innovative_frequency: 'resonant',
+    },
   },
   'marie-curie': {
     id: 'marie-curie',
@@ -500,12 +500,12 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     power_alignment: 'saturn_pluto',
     peak_hours: ['Saturn', 'Mercury'],
     consciousness_rate: 0.86,
-    memory_persistence: 0.90,
+    memory_persistence: 0.9,
     special_kinetics: {
       radioactive_insight: 0.94,
       scientific_persistence: 0.92,
-      pioneering_momentum: 'barrier_breaking'
-    }
+      pioneering_momentum: 'barrier_breaking',
+    },
   },
   'carl-jung': {
     id: 'carl-jung',
@@ -518,21 +518,21 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     consciousness_rate: 0.88,
     memory_persistence: 0.93,
     aspect_sensitivity: {
-      conjunctions: 0.92,    // Highest - integration of archetypes
-      oppositions: 0.88,     // High - shadow integration work
-      trines: 0.75,         // Moderate-high - flowing insights
-      squares: 0.90,        // High - psychological tension creates growth
-      sextiles: 0.65,       // Moderate - gentle psychological work
-      quincunxes: 0.85      // High - adaptation of psyche
+      conjunctions: 0.92, // Highest - integration of archetypes
+      oppositions: 0.88, // High - shadow integration work
+      trines: 0.75, // Moderate-high - flowing insights
+      squares: 0.9, // High - psychological tension creates growth
+      sextiles: 0.65, // Moderate - gentle psychological work
+      quincunxes: 0.85, // High - adaptation of psyche
     },
     optimal_aspect_types: ['conjunction', 'square', 'opposition', 'quincunx'],
     challenging_aspect_types: ['semisquare', 'sesquiquadrate'],
     aspect_memory_retention: 0.98,
     special_kinetics: {
       shadow_integration: 'lunar_cycles',
-      archetype_velocity: 0.90,
-      collective_unconscious_power: 'neptune_aligned'
-    }
+      archetype_velocity: 0.9,
+      collective_unconscious_power: 'neptune_aligned',
+    },
   },
   'albert-einstein': {
     id: 'albert-einstein',
@@ -545,12 +545,12 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     consciousness_rate: 0.93,
     memory_persistence: 0.89,
     aspect_sensitivity: {
-      conjunctions: 0.78,    // Moderate-high - unified field theories
-      oppositions: 0.85,     // High - relativity through opposition
-      trines: 0.70,         // Moderate-high - natural scientific flow
-      squares: 0.92,        // Highest - breakthrough through tension
-      sextiles: 0.60,       // Moderate - collaborative insights
-      quincunxes: 0.88      // High - adaptation of paradigms
+      conjunctions: 0.78, // Moderate-high - unified field theories
+      oppositions: 0.85, // High - relativity through opposition
+      trines: 0.7, // Moderate-high - natural scientific flow
+      squares: 0.92, // Highest - breakthrough through tension
+      sextiles: 0.6, // Moderate - collaborative insights
+      quincunxes: 0.88, // High - adaptation of paradigms
     },
     optimal_aspect_types: ['square', 'opposition', 'quincunx'],
     challenging_aspect_types: ['trine', 'sextile'], // Too easy for his revolutionary mind
@@ -558,13 +558,13 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       relativistic_thinking: 0.98,
       thought_experiments: 0.92,
-      spacetime_insight: 'revolutionary'
-    }
+      spacetime_insight: 'revolutionary',
+    },
   },
   'winston-churchill': {
     id: 'winston-churchill',
     name: 'Winston Churchill',
-    v_charismatic: 0.90,
+    v_charismatic: 0.9,
     v_strategic: 0.85,
     momentum_type: 'sustained',
     power_alignment: 'mars_jupiter',
@@ -574,8 +574,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       oratory_power: 0.93,
       wartime_leadership: 0.91,
-      resilience_momentum: 'indomitable'
-    }
+      resilience_momentum: 'indomitable',
+    },
   },
   'rosa-parks': {
     id: 'rosa-parks',
@@ -590,8 +590,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       civil_courage: 0.95,
       quiet_strength: 0.89,
-      historical_catalyst: 'transformative'
-    }
+      historical_catalyst: 'transformative',
+    },
   },
   'martin-luther-king': {
     id: 'martin-luther-king',
@@ -606,8 +606,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       dream_velocity: 0.96,
       nonviolent_power: 0.91,
-      inspirational_resonance: 'universal'
-    }
+      inspirational_resonance: 'universal',
+    },
   },
   'alan-turing': {
     id: 'alan-turing',
@@ -622,8 +622,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       computational_genius: 0.95,
       cryptographic_insight: 0.91,
-      artificial_thinking: 'foundational'
-    }
+      artificial_thinking: 'foundational',
+    },
   },
   'frida-kahlo': {
     id: 'frida-kahlo',
@@ -638,8 +638,8 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       pain_transformation: 0.93,
       symbolic_depth: 0.88,
-      artistic_authenticity: 'raw'
-    }
+      artistic_authenticity: 'raw',
+    },
   },
   'stephen-hawking': {
     id: 'stephen-hawking',
@@ -654,57 +654,66 @@ export const agentKineticProfiles: Record<string, AgentKineticProfile> = {
     special_kinetics: {
       cosmological_insight: 0.96,
       quantum_gravity: 0.92,
-      intellectual_persistence: 'extraordinary'
-    }
-  }
-};
+      intellectual_persistence: 'extraordinary',
+    },
+  },
+}
 
 // Helper function to get agent profile by ID
 export function getAgentKineticProfile(agentId: string): AgentKineticProfile | undefined {
-  return agentKineticProfiles[agentId];
+  return agentKineticProfiles[agentId]
 }
 
 // Helper function to get agents by momentum type
-export function getAgentsByMomentumType(momentumType: AgentKineticProfile['momentum_type']): AgentKineticProfile[] {
-  return Object.values(agentKineticProfiles).filter(profile => profile.momentum_type === momentumType);
+export function getAgentsByMomentumType(
+  momentumType: AgentKineticProfile['momentum_type']
+): AgentKineticProfile[] {
+  return Object.values(agentKineticProfiles).filter(
+    profile => profile.momentum_type === momentumType
+  )
 }
 
 // Helper function to get agents optimal for current planetary hour
 export function getOptimalAgentsForHour(planetaryHour: string): AgentKineticProfile[] {
   return Object.values(agentKineticProfiles).filter(profile =>
     profile.peak_hours.includes(planetaryHour)
-  );
+  )
 }
 
 // Calculate kinetic compatibility between two agents
 export function calculateKineticCompatibility(agent1Id: string, agent2Id: string): number {
-  const agent1 = agentKineticProfiles[agent1Id];
-  const agent2 = agentKineticProfiles[agent2Id];
+  const agent1 = agentKineticProfiles[agent1Id]
+  const agent2 = agentKineticProfiles[agent2Id]
 
-  if (!agent1 || !agent2) return 0;
+  if (!agent1 || !agent2) return 0
 
   // Check for shared peak hours
-  const sharedHours = agent1.peak_hours.filter(hour => agent2.peak_hours.includes(hour));
-  const hourCompatibility = sharedHours.length / Math.max(agent1.peak_hours.length, agent2.peak_hours.length);
+  const sharedHours = agent1.peak_hours.filter(hour => agent2.peak_hours.includes(hour))
+  const hourCompatibility =
+    sharedHours.length / Math.max(agent1.peak_hours.length, agent2.peak_hours.length)
 
   // Check for compatible momentum types
-  const momentumCompatibility = calculateMomentumCompatibility(agent1.momentum_type, agent2.momentum_type);
+  const momentumCompatibility = calculateMomentumCompatibility(
+    agent1.momentum_type,
+    agent2.momentum_type
+  )
 
   // Check consciousness rate similarity
-  const consciousnessCompatibility = 1 - Math.abs(agent1.consciousness_rate - agent2.consciousness_rate);
+  const consciousnessCompatibility =
+    1 - Math.abs(agent1.consciousness_rate - agent2.consciousness_rate)
 
   // Calculate overall compatibility
-  return (hourCompatibility * 0.4 + momentumCompatibility * 0.3 + consciousnessCompatibility * 0.3);
+  return hourCompatibility * 0.4 + momentumCompatibility * 0.3 + consciousnessCompatibility * 0.3
 }
 
 function calculateMomentumCompatibility(type1: string, type2: string): number {
   const compatibility: Record<string, Record<string, number>> = {
-    'sustained': { 'sustained': 0.9, 'building': 0.8, 'gradual': 0.7, 'oscillating': 0.5, 'explosive': 0.3 },
-    'building': { 'sustained': 0.8, 'building': 0.9, 'gradual': 0.6, 'oscillating': 0.6, 'explosive': 0.5 },
-    'oscillating': { 'sustained': 0.5, 'building': 0.6, 'gradual': 0.4, 'oscillating': 0.8, 'explosive': 0.7 },
-    'explosive': { 'sustained': 0.3, 'building': 0.5, 'gradual': 0.2, 'oscillating': 0.7, 'explosive': 0.9 },
-    'gradual': { 'sustained': 0.7, 'building': 0.6, 'gradual': 0.9, 'oscillating': 0.4, 'explosive': 0.2 }
-  };
+    sustained: { sustained: 0.9, building: 0.8, gradual: 0.7, oscillating: 0.5, explosive: 0.3 },
+    building: { sustained: 0.8, building: 0.9, gradual: 0.6, oscillating: 0.6, explosive: 0.5 },
+    oscillating: { sustained: 0.5, building: 0.6, gradual: 0.4, oscillating: 0.8, explosive: 0.7 },
+    explosive: { sustained: 0.3, building: 0.5, gradual: 0.2, oscillating: 0.7, explosive: 0.9 },
+    gradual: { sustained: 0.7, building: 0.6, gradual: 0.9, oscillating: 0.4, explosive: 0.2 },
+  }
 
-  return compatibility[type1]?.[type2] || 0.5;
+  return compatibility[type1]?.[type2] || 0.5
 }

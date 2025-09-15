@@ -1,14 +1,20 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, MapPin, Scroll, Trash2, Plus } from "lucide-react"
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import { Calendar, Clock, MapPin, Scroll, Trash2, Plus } from 'lucide-react'
 
 interface Attachment {
   id: string
@@ -45,7 +51,7 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
     momentName: '',
     runeType: 'consciousness',
     runePower: 50,
-    runeEffects: ['']
+    runeEffects: [''],
   })
 
   useEffect(() => {
@@ -56,7 +62,7 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
     try {
       const response = await fetch(`/api/agent-attachments?agentId=${agentId}`)
       const data = await response.json()
-      
+
       if (data.success) {
         setAttachments(data.attachments)
       }
@@ -73,7 +79,7 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
         agentId,
         type: newAttachment.type,
         name: newAttachment.name,
-        description: newAttachment.description
+        description: newAttachment.description,
       }
 
       if (newAttachment.type === 'birth_chart') {
@@ -81,7 +87,7 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
           ...requestData,
           birthDate: newAttachment.birthDate,
           birthTime: newAttachment.birthTime,
-          birthLocation: newAttachment.birthLocation
+          birthLocation: newAttachment.birthLocation,
         }
       } else if (newAttachment.type === 'moment_chart') {
         requestData = {
@@ -89,25 +95,25 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
           momentDate: newAttachment.birthDate,
           momentTime: newAttachment.birthTime,
           momentLocation: newAttachment.birthLocation,
-          momentName: newAttachment.momentName
+          momentName: newAttachment.momentName,
         }
       } else if (newAttachment.type === 'rune') {
         requestData = {
           ...requestData,
           runeType: newAttachment.runeType,
           runePower: newAttachment.runePower,
-          runeEffects: newAttachment.runeEffects.filter(effect => effect.trim() !== '')
+          runeEffects: newAttachment.runeEffects.filter(effect => effect.trim() !== ''),
         }
       }
 
       const response = await fetch('/api/agent-attachments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestData)
+        body: JSON.stringify(requestData),
       })
 
       const data = await response.json()
-      
+
       if (data.success) {
         await loadAttachments()
         setShowAddForm(false)
@@ -126,11 +132,11 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
 
     try {
       const response = await fetch(`/api/agent-attachments?attachmentId=${attachmentId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
 
       const data = await response.json()
-      
+
       if (data.success) {
         await loadAttachments()
       } else {
@@ -153,7 +159,7 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
       momentName: '',
       runeType: 'consciousness',
       runePower: 50,
-      runeEffects: ['']
+      runeEffects: [''],
     })
   }
 
@@ -193,10 +199,7 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
           <h3 className="text-xl font-semibold">Attachments for {agentName}</h3>
           <p className="text-gray-600">Charts and runes attached to this agent</p>
         </div>
-        <Button 
-          onClick={() => setShowAddForm(true)}
-          className="flex items-center gap-2"
-        >
+        <Button onClick={() => setShowAddForm(true)} className="flex items-center gap-2">
           <Plus className="w-4 h-4" />
           Add Attachment
         </Button>
@@ -211,9 +214,10 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="type">Type</Label>
-              <Select value={newAttachment.type} onValueChange={(value) => 
-                setNewAttachment(prev => ({ ...prev, type: value }))
-              }>
+              <Select
+                value={newAttachment.type}
+                onValueChange={value => setNewAttachment(prev => ({ ...prev, type: value }))}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select attachment type" />
                 </SelectTrigger>
@@ -230,7 +234,7 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
               <Input
                 id="name"
                 value={newAttachment.name}
-                onChange={(e) => setNewAttachment(prev => ({ ...prev, name: e.target.value }))}
+                onChange={e => setNewAttachment(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="Enter attachment name"
               />
             </div>
@@ -240,7 +244,7 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
               <Textarea
                 id="description"
                 value={newAttachment.description}
-                onChange={(e) => setNewAttachment(prev => ({ ...prev, description: e.target.value }))}
+                onChange={e => setNewAttachment(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Enter description"
               />
             </div>
@@ -254,12 +258,14 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
                     <Input
                       id="momentName"
                       value={newAttachment.momentName}
-                      onChange={(e) => setNewAttachment(prev => ({ ...prev, momentName: e.target.value }))}
+                      onChange={e =>
+                        setNewAttachment(prev => ({ ...prev, momentName: e.target.value }))
+                      }
                       placeholder="e.g., Wedding Day, First Meeting"
                     />
                   </div>
                 )}
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="birthDate">Date</Label>
@@ -267,7 +273,9 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
                       id="birthDate"
                       type="date"
                       value={newAttachment.birthDate}
-                      onChange={(e) => setNewAttachment(prev => ({ ...prev, birthDate: e.target.value }))}
+                      onChange={e =>
+                        setNewAttachment(prev => ({ ...prev, birthDate: e.target.value }))
+                      }
                     />
                   </div>
                   <div>
@@ -276,7 +284,9 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
                       id="birthTime"
                       type="time"
                       value={newAttachment.birthTime}
-                      onChange={(e) => setNewAttachment(prev => ({ ...prev, birthTime: e.target.value }))}
+                      onChange={e =>
+                        setNewAttachment(prev => ({ ...prev, birthTime: e.target.value }))
+                      }
                     />
                   </div>
                 </div>
@@ -286,10 +296,12 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
                   <Input
                     id="locationName"
                     value={newAttachment.birthLocation.name}
-                    onChange={(e) => setNewAttachment(prev => ({ 
-                      ...prev, 
-                      birthLocation: { ...prev.birthLocation, name: e.target.value }
-                    }))}
+                    onChange={e =>
+                      setNewAttachment(prev => ({
+                        ...prev,
+                        birthLocation: { ...prev.birthLocation, name: e.target.value },
+                      }))
+                    }
                     placeholder="e.g., New York, NY, USA"
                   />
                 </div>
@@ -302,10 +314,15 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
                       type="number"
                       step="0.000001"
                       value={newAttachment.birthLocation.lat}
-                      onChange={(e) => setNewAttachment(prev => ({ 
-                        ...prev, 
-                        birthLocation: { ...prev.birthLocation, lat: parseFloat(e.target.value) || 0 }
-                      }))}
+                      onChange={e =>
+                        setNewAttachment(prev => ({
+                          ...prev,
+                          birthLocation: {
+                            ...prev.birthLocation,
+                            lat: parseFloat(e.target.value) || 0,
+                          },
+                        }))
+                      }
                       placeholder="40.7128"
                     />
                   </div>
@@ -316,10 +333,15 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
                       type="number"
                       step="0.000001"
                       value={newAttachment.birthLocation.lon}
-                      onChange={(e) => setNewAttachment(prev => ({ 
-                        ...prev, 
-                        birthLocation: { ...prev.birthLocation, lon: parseFloat(e.target.value) || 0 }
-                      }))}
+                      onChange={e =>
+                        setNewAttachment(prev => ({
+                          ...prev,
+                          birthLocation: {
+                            ...prev.birthLocation,
+                            lon: parseFloat(e.target.value) || 0,
+                          },
+                        }))
+                      }
                       placeholder="-74.0060"
                     />
                   </div>
@@ -332,9 +354,12 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
               <>
                 <div>
                   <Label htmlFor="runeType">Rune Type</Label>
-                  <Select value={newAttachment.runeType} onValueChange={(value) => 
-                    setNewAttachment(prev => ({ ...prev, runeType: value }))
-                  }>
+                  <Select
+                    value={newAttachment.runeType}
+                    onValueChange={value =>
+                      setNewAttachment(prev => ({ ...prev, runeType: value }))
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -356,10 +381,12 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
                     min="0"
                     max="100"
                     value={newAttachment.runePower}
-                    onChange={(e) => setNewAttachment(prev => ({ 
-                      ...prev, 
-                      runePower: parseInt(e.target.value) || 0 
-                    }))}
+                    onChange={e =>
+                      setNewAttachment(prev => ({
+                        ...prev,
+                        runePower: parseInt(e.target.value) || 0,
+                      }))
+                    }
                   />
                 </div>
 
@@ -368,10 +395,12 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
                   <Textarea
                     id="runeEffects"
                     value={newAttachment.runeEffects.join('\n')}
-                    onChange={(e) => setNewAttachment(prev => ({ 
-                      ...prev, 
-                      runeEffects: e.target.value.split('\n')
-                    }))}
+                    onChange={e =>
+                      setNewAttachment(prev => ({
+                        ...prev,
+                        runeEffects: e.target.value.split('\n'),
+                      }))
+                    }
                     placeholder="Enhanced intuition&#10;Increased awareness&#10;Spiritual protection"
                   />
                 </div>
@@ -380,10 +409,13 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
 
             <div className="flex gap-2 pt-4">
               <Button onClick={handleAddAttachment}>Add Attachment</Button>
-              <Button variant="outline" onClick={() => {
-                setShowAddForm(false)
-                resetForm()
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAddForm(false)
+                  resetForm()
+                }}
+              >
                 Cancel
               </Button>
             </div>
@@ -396,11 +428,13 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
         {attachments.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">
-              <p className="text-gray-500">No attachments yet. Add a birth chart, moment chart, or rune to get started.</p>
+              <p className="text-gray-500">
+                No attachments yet. Add a birth chart, moment chart, or rune to get started.
+              </p>
             </CardContent>
           </Card>
         ) : (
-          attachments.map((attachment) => (
+          attachments.map(attachment => (
             <Card key={attachment.id}>
               <CardContent className="p-4">
                 <div className="flex justify-between items-start">
@@ -412,7 +446,7 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
                         {attachment.type.replace('_', ' ')}
                       </Badge>
                     </div>
-                    
+
                     {attachment.description && (
                       <p className="text-gray-600 text-sm mb-2">{attachment.description}</p>
                     )}
@@ -424,14 +458,14 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
                           {new Date(attachment.birthDate).toLocaleDateString()}
                         </div>
                       )}
-                      
+
                       {attachment.birthTime && (
                         <div className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {attachment.birthTime}
                         </div>
                       )}
-                      
+
                       {attachment.birthLocation?.name && (
                         <div className="flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
@@ -440,9 +474,7 @@ export function AgentAttachmentsManager({ agentId, agentName }: AgentAttachments
                       )}
 
                       {attachment.momentName && (
-                        <div className="text-blue-600">
-                          Moment: {attachment.momentName}
-                        </div>
+                        <div className="text-blue-600">Moment: {attachment.momentName}</div>
                       )}
 
                       {attachment.runeType && (

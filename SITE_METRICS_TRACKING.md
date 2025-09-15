@@ -7,20 +7,23 @@ The Site Metrics Tracking System provides comprehensive monitoring and analytics
 ## Key Features
 
 ### 🏷️ Tags Structure
+
 - **Automatic categorization** of alchemical data
 - **Dynamic tag generation** based on current astrological state
 - **Filterable analytics** for easy data exploration
 - **Consistent naming convention** for all tags
 
 ### 📋 Metadata Structure
+
 - **Flattened data structure** using underscore notation
 - **All alchm keys become metadata keys** with their values
 - **Comprehensive tracking** of every calculated value
 - **Searchable and queryable** data format
 
 ### 🔄 Real-time Tracking
+
 - **Automatic tracking** of alchemical quantities
-- **User interaction monitoring** 
+- **User interaction monitoring**
 - **Performance metrics** collection
 - **Error tracking** and debugging
 - **Galileo integration** for centralized logging
@@ -43,47 +46,49 @@ The Site Metrics Tracking System provides comprehensive monitoring and analytics
 ## Tags Structure
 
 ### Base Tags
+
 Every tracking event includes these base tags:
 
 ```javascript
-[
-  'alchemical_quantities',      // Base category
-  'planetary_agents',           // Planetary system
-  'astrological_data',          // Astrological calculations  
-  'thermodynamic_calculations'  // Energy calculations
+;[
+  'alchemical_quantities', // Base category
+  'planetary_agents', // Planetary system
+  'astrological_data', // Astrological calculations
+  'thermodynamic_calculations', // Energy calculations
 ]
 ```
 
 ### Dynamic Tags
+
 Additional tags are generated based on current state:
 
 ```javascript
 // Element-based tags
-`element_${dominantElement.toLowerCase()}`  // e.g., 'element_fire'
-
-// Modality-based tags  
+;`element_${dominantElement.toLowerCase()}` // e.g., 'element_fire'
+// Modality-based tags
 `modality_${dominantModality.toLowerCase()}` // e.g., 'modality_cardinal'
-
 // Sun sign tags
-`sun_sign_${sunSign.toLowerCase()}`         // e.g., 'sun_sign_aries'
+`sun_sign_${sunSign.toLowerCase()}` // e.g., 'sun_sign_aries'
 ```
 
 ### Example Tags Output
+
 ```javascript
-[
+;[
   'alchemical_quantities',
-  'planetary_agents', 
+  'planetary_agents',
   'astrological_data',
   'thermodynamic_calculations',
   'element_fire',
   'modality_cardinal',
-  'sun_sign_aries'
+  'sun_sign_aries',
 ]
 ```
 
 ## Metadata Structure
 
 ### Flattening Process
+
 All nested alchm data is flattened using underscore notation:
 
 ```javascript
@@ -108,28 +113,30 @@ All nested alchm data is flattened using underscore notation:
 
 ### Key Metadata Examples
 
-| Original Key | Metadata Key | Description |
-|--------------|--------------|-------------|
-| `Alchemy Effects.Total Spirit` | `Alchemy_Effects_Total_Spirit` | Spirit quantity |
-| `Alchemy Effects.Total Essence` | `Alchemy_Effects_Total_Essence` | Essence quantity |
-| `Alchemy Effects.Total Matter` | `Alchemy_Effects_Total_Matter` | Matter quantity |
-| `Alchemy Effects.Total Substance` | `Alchemy_Effects_Total_Substance` | Substance quantity |
-| `Heat` | `Heat` | Thermodynamic heat |
-| `Entropy` | `Entropy` | Thermodynamic entropy |
-| `Reactivity` | `Reactivity` | Thermodynamic reactivity |
-| `Energy` | `Energy` | Thermodynamic energy |
-| `K_alchm` | `K_alchm` | Kalchm constant |
-| `MonicaConstant` | `MonicaConstant` | Monica constant |
-| `Dominant Element` | `Dominant_Element` | Dominant element |
-| `Sun Sign` | `Sun_Sign` | Current sun sign |
-| `Chart Ruler` | `Chart_Ruler` | Chart ruler planet |
+| Original Key                      | Metadata Key                      | Description              |
+| --------------------------------- | --------------------------------- | ------------------------ |
+| `Alchemy Effects.Total Spirit`    | `Alchemy_Effects_Total_Spirit`    | Spirit quantity          |
+| `Alchemy Effects.Total Essence`   | `Alchemy_Effects_Total_Essence`   | Essence quantity         |
+| `Alchemy Effects.Total Matter`    | `Alchemy_Effects_Total_Matter`    | Matter quantity          |
+| `Alchemy Effects.Total Substance` | `Alchemy_Effects_Total_Substance` | Substance quantity       |
+| `Heat`                            | `Heat`                            | Thermodynamic heat       |
+| `Entropy`                         | `Entropy`                         | Thermodynamic entropy    |
+| `Reactivity`                      | `Reactivity`                      | Thermodynamic reactivity |
+| `Energy`                          | `Energy`                          | Thermodynamic energy     |
+| `K_alchm`                         | `K_alchm`                         | Kalchm constant          |
+| `MonicaConstant`                  | `MonicaConstant`                  | Monica constant          |
+| `Dominant Element`                | `Dominant_Element`                | Dominant element         |
+| `Sun Sign`                        | `Sun_Sign`                        | Current sun sign         |
+| `Chart Ruler`                     | `Chart_Ruler`                     | Chart ruler planet       |
 
 ## API Endpoints
 
 ### GET `/api/site-metrics`
+
 Retrieves current site metrics including tags and metadata.
 
 **Response:**
+
 ```javascript
 {
   "alchemicalQuantities": { /* ... */ },
@@ -148,9 +155,11 @@ Retrieves current site metrics including tags and metadata.
 ```
 
 ### POST `/api/site-metrics`
+
 Tracks various events with the new structure.
 
 **Actions:**
+
 - `track_alchemical_quantities` - Track current alchemical state
 - `track_planetary_agent_interaction` - Track user interactions
 - `track_page_view` - Track page navigation
@@ -160,47 +169,55 @@ Tracks various events with the new structure.
 ## Usage Examples
 
 ### Tracking Alchemical Quantities
+
 ```javascript
-import { trackAlchemicalQuantities } from '@/lib/site-metrics-tracker';
+import { trackAlchemicalQuantities } from '@/lib/site-metrics-tracker'
 
 // Automatically tracks with tags and metadata
-await trackAlchemicalQuantities();
+await trackAlchemicalQuantities()
 ```
 
 ### Tracking User Interactions
+
 ```javascript
-import { trackPlanetaryAgentInteraction } from '@/lib/site-metrics-tracker';
+import { trackPlanetaryAgentInteraction } from '@/lib/site-metrics-tracker'
 
 await trackPlanetaryAgentInteraction(
-  'Mars',           // planet
-  'Aries',          // sign
-  '15°',            // degree
+  'Mars', // planet
+  'Aries', // sign
+  '15°', // degree
   'What is Mars like today?', // userQuery
-  'Mars is currently...',     // aiResponse
-  1250,             // responseTime (ms)
-  'user-123'        // userId (optional)
-);
+  'Mars is currently...', // aiResponse
+  1250, // responseTime (ms)
+  'user-123' // userId (optional)
+)
 ```
 
 ### Tracking Custom Events
-```javascript
-import { trackCustomEvent } from '@/lib/site-metrics-tracker';
 
-await trackCustomEvent('user_registration', {
-  registrationMethod: 'email',
-  source: 'landing_page',
-  timestamp: new Date().toISOString()
-}, 'user-456');
+```javascript
+import { trackCustomEvent } from '@/lib/site-metrics-tracker'
+
+await trackCustomEvent(
+  'user_registration',
+  {
+    registrationMethod: 'email',
+    source: 'landing_page',
+    timestamp: new Date().toISOString(),
+  },
+  'user-456'
+)
 ```
 
 ### Tracking Performance
+
 ```javascript
-import { trackPerformance } from '@/lib/site-metrics-tracker';
+import { trackPerformance } from '@/lib/site-metrics-tracker'
 
 await trackPerformance('api_response_time', 150, 'ms', {
   endpoint: '/api/alchm-quantities',
-  method: 'GET'
-});
+  method: 'GET',
+})
 ```
 
 ## Galileo Integration
@@ -239,6 +256,7 @@ node test-site-metrics.js
 ```
 
 This will test:
+
 - ✅ Site metrics API functionality
 - ✅ Tags structure generation
 - ✅ Metadata flattening
@@ -248,18 +266,21 @@ This will test:
 ## Benefits
 
 ### For Developers
+
 - **Structured data** for easy querying and analysis
 - **Consistent format** across all tracking events
 - **Comprehensive coverage** of all alchemical calculations
 - **Real-time monitoring** for debugging and optimization
 
 ### For Analysts
+
 - **Filterable data** using tags for targeted analysis
 - **Searchable metadata** for finding specific values
 - **Historical tracking** for trend analysis
 - **Performance insights** for optimization
 
 ### For Users
+
 - **Real-time updates** of alchemical quantities
 - **Transparent tracking** of system performance
 - **Reliable data** with error handling and fallbacks
@@ -298,4 +319,4 @@ Monitor the tracking system through:
 
 ---
 
-The Site Metrics Tracking System provides a robust foundation for monitoring and analyzing the Planetary Agents application with structured, searchable, and comprehensive data tracking. 
+The Site Metrics Tracking System provides a robust foundation for monitoring and analyzing the Planetary Agents application with structured, searchable, and comprehensive data tracking.

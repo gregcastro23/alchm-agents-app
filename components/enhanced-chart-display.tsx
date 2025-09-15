@@ -1,14 +1,20 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Star, Sun, Moon, Zap, Eye, Info } from "lucide-react"
-import CircularNatalHoroscope from "@/components/circular-natal-horoscope"
-import { getPlanetaryDignity, getSignElement } from "@/lib/astrological-data"
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Star, Sun, Moon, Zap, Eye, Info } from 'lucide-react'
+import CircularNatalHoroscope from '@/components/circular-natal-horoscope'
+import { getPlanetaryDignity, getSignElement } from '@/lib/astrological-data'
 
 interface Planet {
   name: string
@@ -27,45 +33,45 @@ interface EnhancedChartDisplayProps {
 }
 
 const PLANET_SYMBOLS: Record<string, string> = {
-  sun: "☉",
-  moon: "☽", 
-  mercury: "☿",
-  venus: "♀",
-  mars: "♂",
-  jupiter: "♃",
-  saturn: "♄",
-  uranus: "♅",
-  neptune: "♆",
-  pluto: "♇"
+  sun: '☉',
+  moon: '☽',
+  mercury: '☿',
+  venus: '♀',
+  mars: '♂',
+  jupiter: '♃',
+  saturn: '♄',
+  uranus: '♅',
+  neptune: '♆',
+  pluto: '♇',
 }
 
 const PLANET_COLORS: Record<string, string> = {
-  sun: "text-yellow-600",
-  moon: "text-blue-400",
-  mercury: "text-green-600",
-  venus: "text-pink-500",
-  mars: "text-red-600",
-  jupiter: "text-purple-600",
-  saturn: "text-gray-700",
-  uranus: "text-cyan-500",
-  neptune: "text-blue-600",
-  pluto: "text-gray-900"
+  sun: 'text-yellow-600',
+  moon: 'text-blue-400',
+  mercury: 'text-green-600',
+  venus: 'text-pink-500',
+  mars: 'text-red-600',
+  jupiter: 'text-purple-600',
+  saturn: 'text-gray-700',
+  uranus: 'text-cyan-500',
+  neptune: 'text-blue-600',
+  pluto: 'text-gray-900',
 }
 
 const DIGNITY_COLORS: Record<string, string> = {
-  domicile: "bg-green-100 text-green-800",
-  exaltation: "bg-blue-100 text-blue-800", 
-  detriment: "bg-red-100 text-red-800",
-  fall: "bg-orange-100 text-orange-800",
-  neutral: "bg-gray-100 text-gray-600"
+  domicile: 'bg-green-100 text-green-800',
+  exaltation: 'bg-blue-100 text-blue-800',
+  detriment: 'bg-red-100 text-red-800',
+  fall: 'bg-orange-100 text-orange-800',
+  neutral: 'bg-gray-100 text-gray-600',
 }
 
-export default function EnhancedChartDisplay({ 
-  planets, 
-  chartName = "Natal Chart",
+export default function EnhancedChartDisplay({
+  planets,
+  chartName = 'Natal Chart',
   onPlanetClick,
   selectedPlanet,
-  className = ""
+  className = '',
 }: EnhancedChartDisplayProps) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null)
   const [showDetails, setShowDetails] = useState(false)
@@ -74,16 +80,21 @@ export default function EnhancedChartDisplay({
     name: name.charAt(0).toUpperCase() + name.slice(1),
     ...data,
     dignity: getPlanetaryDignity(name, data.sign),
-    element: getSignElement(data.sign)
+    element: getSignElement(data.sign),
   }))
 
   const getDignityText = (dignity: string) => {
-    switch(dignity) {
-      case 'domicile': return 'Domicile (Strong)'
-      case 'exaltation': return 'Exaltation (Very Strong)'
-      case 'detriment': return 'Detriment (Challenged)'
-      case 'fall': return 'Fall (Very Challenged)'
-      default: return 'Neutral'
+    switch (dignity) {
+      case 'domicile':
+        return 'Domicile (Strong)'
+      case 'exaltation':
+        return 'Exaltation (Very Strong)'
+      case 'detriment':
+        return 'Detriment (Challenged)'
+      case 'fall':
+        return 'Fall (Very Challenged)'
+      default:
+        return 'Neutral'
     }
   }
 
@@ -102,11 +113,7 @@ export default function EnhancedChartDisplay({
           {chartName}
         </h3>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowDetails(!showDetails)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setShowDetails(!showDetails)}>
             <Eye className="w-4 h-4 mr-1" />
             {showDetails ? 'Hide' : 'Show'} Details
           </Button>
@@ -118,7 +125,7 @@ export default function EnhancedChartDisplay({
         <CardContent className="p-6">
           <div className="relative">
             <CircularNatalHoroscope className="w-full" />
-            
+
             {/* Interactive Overlay for Future Enhancement */}
             <div className="absolute inset-0 pointer-events-none">
               {/* This will be enhanced with clickable planetary elements */}
@@ -138,11 +145,11 @@ export default function EnhancedChartDisplay({
           </CardHeader>
           <CardContent>
             <div className="grid gap-3">
-              {planetList.map((planet) => (
+              {planetList.map(planet => (
                 <TooltipProvider key={planet.name}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div 
+                      <div
                         className={`
                           flex items-center justify-between p-3 rounded-lg border cursor-pointer
                           hover:bg-muted/50 transition-colors
@@ -163,13 +170,12 @@ export default function EnhancedChartDisplay({
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
-                          <Badge 
-                            variant="secondary"
-                            className={DIGNITY_COLORS[planet.dignity]}
-                          >
-                            {planet.dignity === 'neutral' ? 'Neutral' : getDignityText(planet.dignity)}
+                          <Badge variant="secondary" className={DIGNITY_COLORS[planet.dignity]}>
+                            {planet.dignity === 'neutral'
+                              ? 'Neutral'
+                              : getDignityText(planet.dignity)}
                           </Badge>
                           <Badge variant="outline" className="text-xs">
                             {planet.element}
@@ -179,8 +185,12 @@ export default function EnhancedChartDisplay({
                     </TooltipTrigger>
                     <TooltipContent>
                       <div className="space-y-1 text-sm">
-                        <div className="font-medium">{planet.name} in {planet.sign}</div>
-                        <div>Position: {planet.degree}° • House {planet.house}</div>
+                        <div className="font-medium">
+                          {planet.name} in {planet.sign}
+                        </div>
+                        <div>
+                          Position: {planet.degree}° • House {planet.house}
+                        </div>
                         <div>Dignity: {getDignityText(planet.dignity)}</div>
                         <div>Element: {planet.element}</div>
                         {planet.retrograde && <div className="text-orange-600">⚹ Retrograde</div>}
@@ -210,7 +220,7 @@ export default function EnhancedChartDisplay({
               {(() => {
                 const planet = planetList.find(p => p.name.toLowerCase() === selectedPlanet)
                 if (!planet) return null
-                
+
                 return (
                   <>
                     <div className="grid grid-cols-2 gap-4 text-sm">
@@ -231,21 +241,19 @@ export default function EnhancedChartDisplay({
                         <div className="font-medium">{planet.element}</div>
                       </div>
                     </div>
-                    
+
                     <div>
                       <span className="text-muted-foreground text-sm">Dignity:</span>
-                      <Badge 
-                        className={`ml-2 ${DIGNITY_COLORS[planet.dignity]}`}
-                      >
+                      <Badge className={`ml-2 ${DIGNITY_COLORS[planet.dignity]}`}>
                         {getDignityText(planet.dignity)}
                       </Badge>
                     </div>
-                    
+
                     <div className="p-3 bg-muted rounded-lg">
                       <div className="text-sm">
-                        <strong>Interpretation:</strong> {planet.name} in {planet.sign} 
-                        {planet.dignity !== 'neutral' && ` (${planet.dignity})`} brings 
-                        {planet.element.toLowerCase()} energy to house {planet.house} 
+                        <strong>Interpretation:</strong> {planet.name} in {planet.sign}
+                        {planet.dignity !== 'neutral' && ` (${planet.dignity})`} brings
+                        {planet.element.toLowerCase()} energy to house {planet.house}
                         matters. Click "Consult Council" for detailed analysis.
                       </div>
                     </div>

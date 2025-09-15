@@ -5,7 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { calculateReturnPattern, identifyPlanetaryThemes } from '@/lib/transit-patterns'
 import { findLastOccurrence, findNextOccurrence } from '@/lib/historical-transits'
@@ -17,17 +23,35 @@ export default function MoonPlanetPage() {
   const [selectedSign, setSelectedSign] = useState('Cancer')
   const [selectedDegree, setSelectedDegree] = useState(15)
   const [moonPhase, setMoonPhase] = useState('Full Moon')
-  const [currentPosition, setCurrentPosition] = useState<{ sign: string; degree: string } | null>(null)
+  const [currentPosition, setCurrentPosition] = useState<{ sign: string; degree: string } | null>(
+    null
+  )
   const [themes, setThemes] = useState<any>(null)
 
   const signs = [
-    'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
   ]
 
   const moonPhases = [
-    'New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous',
-    'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'
+    'New Moon',
+    'Waxing Crescent',
+    'First Quarter',
+    'Waxing Gibbous',
+    'Full Moon',
+    'Waning Gibbous',
+    'Last Quarter',
+    'Waning Crescent',
   ]
 
   useEffect(() => {
@@ -78,13 +102,23 @@ export default function MoonPlanetPage() {
       'Full Moon': '🌕',
       'Waning Gibbous': '🌖',
       'Last Quarter': '🌗',
-      'Waning Crescent': '🌘'
+      'Waning Crescent': '🌘',
     }
     return emojis[phase] || '🌙'
   }
 
   const getMoonKeywords = () => {
-    return ['Intuition', 'Emotions', 'Nurturing', 'Memory', 'Cycles', 'Receptivity', 'Comfort', 'Home', 'Family']
+    return [
+      'Intuition',
+      'Emotions',
+      'Nurturing',
+      'Memory',
+      'Cycles',
+      'Receptivity',
+      'Comfort',
+      'Home',
+      'Family',
+    ]
   }
 
   const getMoonColors = () => {
@@ -105,9 +139,9 @@ export default function MoonPlanetPage() {
       'Adventurous seeker',
       'Structured builder',
       'Innovative humanitarian',
-      'Transcendent dreamer'
+      'Transcendent dreamer',
     ]
-    
+
     const index = Math.floor((degree / 30) % 12)
     return personalities[index]
   }
@@ -170,14 +204,17 @@ export default function MoonPlanetPage() {
                 <div>
                   <h4 className="font-semibold mb-2">Emotional Core</h4>
                   <p className="text-sm text-muted-foreground">
-                    The Moon represents your emotional nature, instincts, and subconscious patterns. It reveals how you nurture and seek comfort.
+                    The Moon represents your emotional nature, instincts, and subconscious patterns.
+                    It reveals how you nurture and seek comfort.
                   </p>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Keywords</h4>
                   <div className="flex flex-wrap gap-2">
                     {getMoonKeywords().map((keyword: string) => (
-                      <Badge key={keyword} variant="secondary">{keyword}</Badge>
+                      <Badge key={keyword} variant="secondary">
+                        {keyword}
+                      </Badge>
                     ))}
                   </div>
                 </div>
@@ -189,10 +226,14 @@ export default function MoonPlanetPage() {
                         key={color}
                         className="w-8 h-8 rounded-full border-2 border-gray-300"
                         style={{
-                          backgroundColor: color.toLowerCase() === 'silver' ? '#C0C0C0' : 
-                                         color.toLowerCase() === 'white' ? '#FFFFFF' :
-                                         color.toLowerCase() === 'pearl' ? '#F8F8FF' :
-                                         color.toLowerCase().replace(' ', ''),
+                          backgroundColor:
+                            color.toLowerCase() === 'silver'
+                              ? '#C0C0C0'
+                              : color.toLowerCase() === 'white'
+                                ? '#FFFFFF'
+                                : color.toLowerCase() === 'pearl'
+                                  ? '#F8F8FF'
+                                  : color.toLowerCase().replace(' ', ''),
                         }}
                         title={color}
                       />
@@ -210,19 +251,19 @@ export default function MoonPlanetPage() {
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <span className="text-muted-foreground">Distance from Earth:</span>
                   <span>238,855 miles (384,400 km)</span>
-                  
+
                   <span className="text-muted-foreground">Diameter:</span>
                   <span>2,159 miles (3,474 km)</span>
-                  
+
                   <span className="text-muted-foreground">Surface Temperature:</span>
                   <span>-173°C to 127°C (-279°F to 260°F)</span>
-                  
+
                   <span className="text-muted-foreground">Rotation Period:</span>
                   <span>27.3 Earth days (tidally locked)</span>
-                  
+
                   <span className="text-muted-foreground">Orbit Period:</span>
                   <span>27.3 days (sidereal month)</span>
-                  
+
                   <span className="text-muted-foreground">Phase Cycle:</span>
                   <span>29.5 days (synodic month)</span>
                 </div>
@@ -264,15 +305,16 @@ export default function MoonPlanetPage() {
                 <Sparkles className="h-5 w-5" />
                 Moon Phase System
               </CardTitle>
-              <CardDescription>
-                Each lunar phase carries unique energy and wisdom
-              </CardDescription>
+              <CardDescription>Each lunar phase carries unique energy and wisdom</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {moonPhases.map(phase => (
-                  <Card key={phase} className="cursor-pointer hover:bg-muted/50 transition-colors"
-                        onClick={() => setMoonPhase(phase)}>
+                  <Card
+                    key={phase}
+                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => setMoonPhase(phase)}
+                  >
                     <CardContent className="pt-6 text-center">
                       <div className="text-4xl mb-2">{getPhaseEmoji(phase)}</div>
                       <p className="font-semibold text-sm">{phase}</p>
@@ -297,14 +339,22 @@ export default function MoonPlanetPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    {moonPhase === 'New Moon' && 'Time for new beginnings, setting intentions, and planting seeds for the future.'}
-                    {moonPhase === 'Waxing Crescent' && 'Building momentum, taking first actions toward your intentions.'}
-                    {moonPhase === 'First Quarter' && 'Facing challenges, making decisions, pushing through resistance.'}
-                    {moonPhase === 'Waxing Gibbous' && 'Refining your approach, adjusting course, persevering toward goals.'}
-                    {moonPhase === 'Full Moon' && 'Peak illumination, harvest time, emotions heightened, clarity achieved.'}
-                    {moonPhase === 'Waning Gibbous' && 'Sharing wisdom, expressing gratitude, giving back to others.'}
-                    {moonPhase === 'Last Quarter' && 'Releasing what no longer serves, forgiveness, clearing space.'}
-                    {moonPhase === 'Waning Crescent' && 'Rest and reflection, preparing for renewal, deep introspection.'}
+                    {moonPhase === 'New Moon' &&
+                      'Time for new beginnings, setting intentions, and planting seeds for the future.'}
+                    {moonPhase === 'Waxing Crescent' &&
+                      'Building momentum, taking first actions toward your intentions.'}
+                    {moonPhase === 'First Quarter' &&
+                      'Facing challenges, making decisions, pushing through resistance.'}
+                    {moonPhase === 'Waxing Gibbous' &&
+                      'Refining your approach, adjusting course, persevering toward goals.'}
+                    {moonPhase === 'Full Moon' &&
+                      'Peak illumination, harvest time, emotions heightened, clarity achieved.'}
+                    {moonPhase === 'Waning Gibbous' &&
+                      'Sharing wisdom, expressing gratitude, giving back to others.'}
+                    {moonPhase === 'Last Quarter' &&
+                      'Releasing what no longer serves, forgiveness, clearing space.'}
+                    {moonPhase === 'Waning Crescent' &&
+                      'Rest and reflection, preparing for renewal, deep introspection.'}
                   </p>
                 </CardContent>
               </Card>
@@ -323,10 +373,12 @@ export default function MoonPlanetPage() {
             <CardContent className="space-y-4">
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium">Select Lunar Degree: {selectedDegree}°</label>
+                  <label className="text-sm font-medium">
+                    Select Lunar Degree: {selectedDegree}°
+                  </label>
                   <Slider
                     value={[selectedDegree]}
-                    onValueChange={(value) => setSelectedDegree(value[0])}
+                    onValueChange={value => setSelectedDegree(value[0])}
                     min={0}
                     max={359}
                     step={1}
@@ -353,15 +405,27 @@ export default function MoonPlanetPage() {
                   <CardContent className="pt-6">
                     <h4 className="font-semibold mb-2">Personality at {selectedDegree}°</h4>
                     <p className="text-sm mb-3">{getLunarPersonality(selectedDegree)}</p>
-                    
+
                     <div className="space-y-2 text-sm">
                       <div>
                         <span className="text-muted-foreground">Emotional Style: </span>
-                        <span>{selectedDegree < 120 ? 'Initiating' : selectedDegree < 240 ? 'Stabilizing' : 'Transforming'}</span>
+                        <span>
+                          {selectedDegree < 120
+                            ? 'Initiating'
+                            : selectedDegree < 240
+                              ? 'Stabilizing'
+                              : 'Transforming'}
+                        </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Intuitive Mode: </span>
-                        <span>{selectedDegree % 30 < 10 ? 'Instinctual' : selectedDegree % 30 < 20 ? 'Receptive' : 'Integrative'}</span>
+                        <span>
+                          {selectedDegree % 30 < 10
+                            ? 'Instinctual'
+                            : selectedDegree % 30 < 20
+                              ? 'Receptive'
+                              : 'Integrative'}
+                        </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Nurturing Approach: </span>
@@ -387,7 +451,8 @@ export default function MoonPlanetPage() {
               <div className="p-4 bg-blue-50/50 dark:bg-blue-900/20 rounded-lg">
                 <h4 className="font-semibold mb-2">Lunar Return (Monthly)</h4>
                 <p className="text-sm text-muted-foreground mb-3">
-                  The Moon returns to its natal position every 27.3 days, marking your emotional reset cycle.
+                  The Moon returns to its natal position every 27.3 days, marking your emotional
+                  reset cycle.
                 </p>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -414,15 +479,21 @@ export default function MoonPlanetPage() {
                 <div className="space-y-2 text-sm">
                   <div className="p-3 border rounded-lg">
                     <p className="font-medium">27-30 Year Cycle</p>
-                    <p className="text-muted-foreground">The progressed Moon completes a full zodiac cycle</p>
+                    <p className="text-muted-foreground">
+                      The progressed Moon completes a full zodiac cycle
+                    </p>
                   </div>
                   <div className="p-3 border rounded-lg">
                     <p className="font-medium">2.5 Years per Sign</p>
-                    <p className="text-muted-foreground">Major emotional themes shift every 2.5 years</p>
+                    <p className="text-muted-foreground">
+                      Major emotional themes shift every 2.5 years
+                    </p>
                   </div>
                   <div className="p-3 border rounded-lg">
                     <p className="font-medium">Monthly Lunations</p>
-                    <p className="text-muted-foreground">13 lunar returns per year, 13 emotional resets</p>
+                    <p className="text-muted-foreground">
+                      13 lunar returns per year, 13 emotional resets
+                    </p>
                   </div>
                 </div>
               </div>
@@ -432,7 +503,9 @@ export default function MoonPlanetPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 border rounded-lg">
                     <p className="font-medium">Lunar Eclipses</p>
-                    <p className="text-xs text-muted-foreground">Emotional revelations and releases</p>
+                    <p className="text-xs text-muted-foreground">
+                      Emotional revelations and releases
+                    </p>
                   </div>
                   <div className="p-3 border rounded-lg">
                     <p className="font-medium">Nodal Return</p>
@@ -461,11 +534,13 @@ export default function MoonPlanetPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {signs.map(sign => (
-                        <SelectItem key={sign} value={sign}>{sign}</SelectItem>
+                        <SelectItem key={sign} value={sign}>
+                          {sign}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  
+
                   <Select value={moonPhase} onValueChange={setMoonPhase}>
                     <SelectTrigger>
                       <SelectValue />
@@ -482,10 +557,13 @@ export default function MoonPlanetPage() {
 
                 <div className="text-center py-4">
                   <p className="text-sm text-muted-foreground mb-4">
-                    Consult with the Lunar consciousness at {selectedSign} {selectedDegree}° during {moonPhase}
+                    Consult with the Lunar consciousness at {selectedSign} {selectedDegree}° during{' '}
+                    {moonPhase}
                   </p>
-                  <Button 
-                    onClick={() => window.location.href = `/planetary-agents?planet=Moon&sign=${selectedSign}&degree=${selectedDegree}`}
+                  <Button
+                    onClick={() =>
+                      (window.location.href = `/agents/Moon/${encodeURIComponent(selectedSign)}/${selectedDegree}`)
+                    }
                     className="w-full md:w-auto"
                   >
                     Start Lunar Consultation

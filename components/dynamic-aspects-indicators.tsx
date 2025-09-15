@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import React, { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import {
   TrendingUp,
   TrendingDown,
@@ -12,9 +12,9 @@ import {
   Sparkles,
   Target,
   ArrowUp,
-  ArrowDown
-} from "lucide-react"
-import type { CraftedAgent } from "@/lib/agent-types"
+  ArrowDown,
+} from 'lucide-react'
+import type { CraftedAgent } from '@/lib/agent-types'
 
 interface DynamicAspect {
   planet1: string
@@ -74,7 +74,7 @@ const calculateMockAspects = (agents: CraftedAgent[]): AgentAspectConnection[] =
           daysToExact: 3,
           daysSinceExact: 0,
           strength: 'building',
-          evolutionaryImpact: 0.85
+          evolutionaryImpact: 0.85,
         })
       }
 
@@ -90,7 +90,7 @@ const calculateMockAspects = (agents: CraftedAgent[]): AgentAspectConnection[] =
           daysToExact: 0,
           daysSinceExact: 2,
           strength: 'waning',
-          evolutionaryImpact: 0.72
+          evolutionaryImpact: 0.72,
         })
       }
 
@@ -106,13 +106,20 @@ const calculateMockAspects = (agents: CraftedAgent[]): AgentAspectConnection[] =
           daysToExact: 1,
           daysSinceExact: 0,
           strength: 'building',
-          evolutionaryImpact: 0.93
+          evolutionaryImpact: 0.93,
         })
       }
 
-      const harmony = mockAspects.reduce((sum, aspect) =>
-        sum + (aspect.type === 'trine' || aspect.type === 'sextile' ? 0.3 :
-               aspect.type === 'conjunction' ? 0.2 : 0.1), 0)
+      const harmony = mockAspects.reduce(
+        (sum, aspect) =>
+          sum +
+          (aspect.type === 'trine' || aspect.type === 'sextile'
+            ? 0.3
+            : aspect.type === 'conjunction'
+              ? 0.2
+              : 0.1),
+        0
+      )
 
       if (mockAspects.length > 0) {
         connections.push({
@@ -120,12 +127,15 @@ const calculateMockAspects = (agents: CraftedAgent[]): AgentAspectConnection[] =
           agent2: agent2.id,
           aspects: mockAspects,
           harmony,
-          recommendedInteraction: harmony > 0.4 || mockAspects.some(a => a.applying && a.daysToExact <= 3),
-          optimalWindow: mockAspects.some(a => a.applying) ? {
-            start: new Date(),
-            end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-            reason: 'Peak consciousness synergy period'
-          } : undefined
+          recommendedInteraction:
+            harmony > 0.4 || mockAspects.some(a => a.applying && a.daysToExact <= 3),
+          optimalWindow: mockAspects.some(a => a.applying)
+            ? {
+                start: new Date(),
+                end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                reason: 'Peak consciousness synergy period',
+              }
+            : undefined,
         })
       }
     }
@@ -141,7 +151,7 @@ const getAspectSymbol = (type: string): string => {
     trine: '△',
     square: '□',
     sextile: '⚹',
-    quincunx: '⚻'
+    quincunx: '⚻',
   }
   return symbols[type] || '?'
 }
@@ -153,7 +163,7 @@ const getAspectColor = (type: string, applying: boolean): string => {
     trine: '#0000FF',
     square: '#FF6600',
     sextile: '#00AA00',
-    quincunx: '#800080'
+    quincunx: '#800080',
   }
 
   const color = baseColors[type] || '#808080'
@@ -162,15 +172,24 @@ const getAspectColor = (type: string, applying: boolean): string => {
 
 const getStrengthIcon = (strength: string) => {
   switch (strength) {
-    case 'building': return <TrendingUp className="h-3 w-3" />
-    case 'peak': return <Zap className="h-3 w-3" />
-    case 'waning': return <TrendingDown className="h-3 w-3" />
-    case 'fading': return <Minus className="h-3 w-3" />
-    default: return <Clock className="h-3 w-3" />
+    case 'building':
+      return <TrendingUp className="h-3 w-3" />
+    case 'peak':
+      return <Zap className="h-3 w-3" />
+    case 'waning':
+      return <TrendingDown className="h-3 w-3" />
+    case 'fading':
+      return <Minus className="h-3 w-3" />
+    default:
+      return <Clock className="h-3 w-3" />
   }
 }
 
-export function DynamicAspectsIndicators({ selectedAgents, showDetails = true, compact = false }: AspectIndicatorProps) {
+export function DynamicAspectsIndicators({
+  selectedAgents,
+  showDetails = true,
+  compact = false,
+}: AspectIndicatorProps) {
   const [connections, setConnections] = useState<AgentAspectConnection[]>([])
   const [refreshKey, setRefreshKey] = useState(0)
 
@@ -189,13 +208,11 @@ export function DynamicAspectsIndicators({ selectedAgents, showDetails = true, c
 
   if (selectedAgents.length < 2) {
     return (
-      <Card className={compact ? "p-2" : ""}>
-        <CardHeader className={compact ? "p-2 pb-1" : ""}>
-          <CardTitle className={compact ? "text-sm" : "text-base"}>
-            Dynamic Aspects
-          </CardTitle>
+      <Card className={compact ? 'p-2' : ''}>
+        <CardHeader className={compact ? 'p-2 pb-1' : ''}>
+          <CardTitle className={compact ? 'text-sm' : 'text-base'}>Dynamic Aspects</CardTitle>
         </CardHeader>
-        <CardContent className={compact ? "p-2 pt-1" : ""}>
+        <CardContent className={compact ? 'p-2 pt-1' : ''}>
           <p className="text-sm text-muted-foreground">
             Select 2+ agents to see aspect connections
           </p>
@@ -205,9 +222,9 @@ export function DynamicAspectsIndicators({ selectedAgents, showDetails = true, c
   }
 
   return (
-    <Card className={compact ? "p-2" : ""}>
-      <CardHeader className={compact ? "p-2 pb-1" : ""}>
-        <CardTitle className={`${compact ? "text-sm" : "text-base"} flex items-center gap-2`}>
+    <Card className={compact ? 'p-2' : ''}>
+      <CardHeader className={compact ? 'p-2 pb-1' : ''}>
+        <CardTitle className={`${compact ? 'text-sm' : 'text-base'} flex items-center gap-2`}>
           <Sparkles className="h-4 w-4 text-purple-500" />
           Dynamic Aspects
           {connections.some(c => c.recommendedInteraction) && (
@@ -218,7 +235,7 @@ export function DynamicAspectsIndicators({ selectedAgents, showDetails = true, c
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className={compact ? "p-2 pt-1" : ""}>
+      <CardContent className={compact ? 'p-2 pt-1' : ''}>
         <div className="space-y-3">
           {connections.map((connection, index) => {
             const agent1 = selectedAgents.find(a => a.id === connection.agent1)
@@ -227,7 +244,10 @@ export function DynamicAspectsIndicators({ selectedAgents, showDetails = true, c
             if (!agent1 || !agent2) return null
 
             return (
-              <div key={index} className="border rounded-lg p-3 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20">
+              <div
+                key={index}
+                className="border rounded-lg p-3 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20"
+              >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">{agent1.name}</span>
@@ -239,7 +259,7 @@ export function DynamicAspectsIndicators({ selectedAgents, showDetails = true, c
                             className="text-xs px-1 py-0 cursor-help"
                             style={{
                               borderColor: getAspectColor(aspect.type, aspect.applying),
-                              color: getAspectColor(aspect.type, aspect.applying)
+                              color: getAspectColor(aspect.type, aspect.applying),
                             }}
                             title={`${aspect.type} ${aspect.planet1}-${aspect.planet2}: ${aspect.applying ? `Applying, ${aspect.daysToExact} days to exact` : `Separating, ${aspect.daysSinceExact} days since exact`}. Impact: ${(aspect.evolutionaryImpact * 100).toFixed(0)}%`}
                           >
@@ -258,7 +278,10 @@ export function DynamicAspectsIndicators({ selectedAgents, showDetails = true, c
 
                   <div className="flex items-center gap-2">
                     {connection.recommendedInteraction && (
-                      <Badge variant="default" className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                      <Badge
+                        variant="default"
+                        className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                      >
                         <Target className="h-3 w-3 mr-1" />
                         Optimal
                       </Badge>
@@ -268,7 +291,7 @@ export function DynamicAspectsIndicators({ selectedAgents, showDetails = true, c
                       className="text-xs"
                       style={{
                         backgroundColor: `hsl(${connection.harmony * 120}, 70%, 90%)`,
-                        borderColor: `hsl(${connection.harmony * 120}, 70%, 60%)`
+                        borderColor: `hsl(${connection.harmony * 120}, 70%, 60%)`,
                       }}
                     >
                       {Math.round(connection.harmony * 100)}% harmony
@@ -279,7 +302,10 @@ export function DynamicAspectsIndicators({ selectedAgents, showDetails = true, c
                 {showDetails && connection.aspects.length > 0 && (
                   <div className="space-y-1">
                     {connection.aspects.map((aspect, aspectIndex) => (
-                      <div key={aspectIndex} className="text-xs text-muted-foreground flex items-center gap-2">
+                      <div
+                        key={aspectIndex}
+                        className="text-xs text-muted-foreground flex items-center gap-2"
+                      >
                         {getStrengthIcon(aspect.strength)}
                         <span>
                           {aspect.planet1}-{aspect.planet2} {aspect.type}

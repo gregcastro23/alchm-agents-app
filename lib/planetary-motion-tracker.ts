@@ -7,9 +7,9 @@
 
 export interface PlanetaryMotion {
   planet: string
-  currentPosition: number  // degrees (0-360)
-  dailyMotion: number     // degrees per day
-  velocity: number        // current speed relative to average
+  currentPosition: number // degrees (0-360)
+  dailyMotion: number // degrees per day
+  velocity: number // current speed relative to average
   retrograde: boolean
   motionTrend: 'accelerating' | 'decelerating' | 'stable'
   lastUpdated: Date
@@ -26,86 +26,86 @@ export interface PlanetaryVelocityProfile {
 
 // Traditional astrological daily motion rates (degrees per day)
 const PLANETARY_VELOCITY_PROFILES: Record<string, PlanetaryVelocityProfile> = {
-  'Sun': {
+  Sun: {
     planet: 'Sun',
     averageDailyMotion: 0.9856, // ~59 arcminutes
-    maxDailyMotion: 1.0192,     // perihelion
-    minDailyMotion: 0.9529,     // aphelion
-    retrogradeFrequency: 0,     // never retrograde
-    stationaryOrbDuration: 0
+    maxDailyMotion: 1.0192, // perihelion
+    minDailyMotion: 0.9529, // aphelion
+    retrogradeFrequency: 0, // never retrograde
+    stationaryOrbDuration: 0,
   },
-  'Moon': {
+  Moon: {
     planet: 'Moon',
     averageDailyMotion: 13.1764, // ~13° 11'
-    maxDailyMotion: 15.4085,     // perigee
-    minDailyMotion: 11.9603,     // apogee
-    retrogradeFrequency: 0,      // never retrograde
-    stationaryOrbDuration: 0
+    maxDailyMotion: 15.4085, // perigee
+    minDailyMotion: 11.9603, // apogee
+    retrogradeFrequency: 0, // never retrograde
+    stationaryOrbDuration: 0,
   },
-  'Mercury': {
+  Mercury: {
     planet: 'Mercury',
-    averageDailyMotion: 1.3830,  // ~1° 23'
-    maxDailyMotion: 2.2,         // elongation
-    minDailyMotion: -1.4,        // retrograde
-    retrogradeFrequency: 3,      // ~3 times per year
-    stationaryOrbDuration: 3     // ~3 days stationary
+    averageDailyMotion: 1.383, // ~1° 23'
+    maxDailyMotion: 2.2, // elongation
+    minDailyMotion: -1.4, // retrograde
+    retrogradeFrequency: 3, // ~3 times per year
+    stationaryOrbDuration: 3, // ~3 days stationary
   },
-  'Venus': {
+  Venus: {
     planet: 'Venus',
-    averageDailyMotion: 1.2021,  // ~1° 12'
-    maxDailyMotion: 1.27,        // elongation
-    minDailyMotion: -0.7,        // retrograde
-    retrogradeFrequency: 0.625,  // ~19 months
-    stationaryOrbDuration: 5     // ~5 days stationary
+    averageDailyMotion: 1.2021, // ~1° 12'
+    maxDailyMotion: 1.27, // elongation
+    minDailyMotion: -0.7, // retrograde
+    retrogradeFrequency: 0.625, // ~19 months
+    stationaryOrbDuration: 5, // ~5 days stationary
   },
-  'Mars': {
+  Mars: {
     planet: 'Mars',
-    averageDailyMotion: 0.5240,  // ~31'
-    maxDailyMotion: 0.8,         // opposition approach
-    minDailyMotion: -0.5,        // retrograde
-    retrogradeFrequency: 1,      // ~26 months
-    stationaryOrbDuration: 7     // ~7 days stationary
+    averageDailyMotion: 0.524, // ~31'
+    maxDailyMotion: 0.8, // opposition approach
+    minDailyMotion: -0.5, // retrograde
+    retrogradeFrequency: 1, // ~26 months
+    stationaryOrbDuration: 7, // ~7 days stationary
   },
-  'Jupiter': {
+  Jupiter: {
     planet: 'Jupiter',
-    averageDailyMotion: 0.0831,  // ~5'
-    maxDailyMotion: 0.25,        // fastest direct
-    minDailyMotion: -0.1,        // retrograde
-    retrogradeFrequency: 1,      // ~13 months
-    stationaryOrbDuration: 10    // ~10 days stationary
+    averageDailyMotion: 0.0831, // ~5'
+    maxDailyMotion: 0.25, // fastest direct
+    minDailyMotion: -0.1, // retrograde
+    retrogradeFrequency: 1, // ~13 months
+    stationaryOrbDuration: 10, // ~10 days stationary
   },
-  'Saturn': {
+  Saturn: {
     planet: 'Saturn',
-    averageDailyMotion: 0.0335,  // ~2'
-    maxDailyMotion: 0.13,        // fastest direct
-    minDailyMotion: -0.05,       // retrograde
-    retrogradeFrequency: 1,      // ~12.5 months
-    stationaryOrbDuration: 12    // ~12 days stationary
+    averageDailyMotion: 0.0335, // ~2'
+    maxDailyMotion: 0.13, // fastest direct
+    minDailyMotion: -0.05, // retrograde
+    retrogradeFrequency: 1, // ~12.5 months
+    stationaryOrbDuration: 12, // ~12 days stationary
   },
-  'Uranus': {
+  Uranus: {
     planet: 'Uranus',
-    averageDailyMotion: 0.0117,  // ~42"
-    maxDailyMotion: 0.06,        // fastest direct
-    minDailyMotion: -0.02,       // retrograde
-    retrogradeFrequency: 1,      // ~12 months
-    stationaryOrbDuration: 15    // ~15 days stationary
+    averageDailyMotion: 0.0117, // ~42"
+    maxDailyMotion: 0.06, // fastest direct
+    minDailyMotion: -0.02, // retrograde
+    retrogradeFrequency: 1, // ~12 months
+    stationaryOrbDuration: 15, // ~15 days stationary
   },
-  'Neptune': {
+  Neptune: {
     planet: 'Neptune',
-    averageDailyMotion: 0.0060,  // ~22"
-    maxDailyMotion: 0.03,        // fastest direct
-    minDailyMotion: -0.01,       // retrograde
-    retrogradeFrequency: 1,      // ~12 months
-    stationaryOrbDuration: 17    // ~17 days stationary
+    averageDailyMotion: 0.006, // ~22"
+    maxDailyMotion: 0.03, // fastest direct
+    minDailyMotion: -0.01, // retrograde
+    retrogradeFrequency: 1, // ~12 months
+    stationaryOrbDuration: 17, // ~17 days stationary
   },
-  'Pluto': {
+  Pluto: {
     planet: 'Pluto',
-    averageDailyMotion: 0.0039,  // ~14"
-    maxDailyMotion: 0.025,       // fastest direct
-    minDailyMotion: -0.008,      // retrograde
-    retrogradeFrequency: 1,      // ~12 months
-    stationaryOrbDuration: 20    // ~20 days stationary
-  }
+    averageDailyMotion: 0.0039, // ~14"
+    maxDailyMotion: 0.025, // fastest direct
+    minDailyMotion: -0.008, // retrograde
+    retrogradeFrequency: 1, // ~12 months
+    stationaryOrbDuration: 20, // ~20 days stationary
+  },
 }
 
 export class PlanetaryMotionTracker {
@@ -134,7 +134,12 @@ export class PlanetaryMotionTracker {
   /**
    * Predict planetary position at a future date
    */
-  async predictPosition(planet: string, currentPosition: number, targetDate: Date, currentDate: Date = new Date()): Promise<number> {
+  async predictPosition(
+    planet: string,
+    currentPosition: number,
+    targetDate: Date,
+    currentDate: Date = new Date()
+  ): Promise<number> {
     const daysDiff = (targetDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)
     const dailyMotion = await this.calculateDailyMotion(planet, currentDate)
 
@@ -153,11 +158,15 @@ export class PlanetaryMotionTracker {
   /**
    * Get velocity profile for a planet over a date range
    */
-  async getVelocityProfile(planet: string, daysRange: number, startDate: Date = new Date()): Promise<number[]> {
+  async getVelocityProfile(
+    planet: string,
+    daysRange: number,
+    startDate: Date = new Date()
+  ): Promise<number[]> {
     const profile: number[] = []
 
     for (let i = 0; i < daysRange; i++) {
-      const checkDate = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000))
+      const checkDate = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000)
       const velocity = await this.calculateDailyMotion(planet, checkDate)
       profile.push(velocity)
     }
@@ -168,12 +177,16 @@ export class PlanetaryMotionTracker {
   /**
    * Get comprehensive planetary motion data
    */
-  async getPlanetaryMotion(planet: string, currentPosition: number, date: Date = new Date()): Promise<PlanetaryMotion> {
+  async getPlanetaryMotion(
+    planet: string,
+    currentPosition: number,
+    date: Date = new Date()
+  ): Promise<PlanetaryMotion> {
     const cacheKey = `${planet}-${date.toISOString().split('T')[0]}`
     const ttl = this.getCacheTTL(planet)
     const cached = this.motionCache.get(cacheKey)
 
-    if (cached && (Date.now() - cached.timestamp) < ttl) {
+    if (cached && Date.now() - cached.timestamp < ttl) {
       return cached.data
     }
 
@@ -196,7 +209,7 @@ export class PlanetaryMotionTracker {
       velocity,
       retrograde,
       motionTrend,
-      lastUpdated: date
+      lastUpdated: date,
     }
 
     // Cache the result
@@ -210,8 +223,10 @@ export class PlanetaryMotionTracker {
    * Positive = separating, Negative = applying
    */
   async calculateSeparationVelocity(
-    planet1: string, position1: number,
-    planet2: string, position2: number,
+    planet1: string,
+    position1: number,
+    planet2: string,
+    position2: number,
     aspectAngle: number = 0,
     date: Date = new Date()
   ): Promise<number> {
@@ -233,8 +248,18 @@ export class PlanetaryMotionTracker {
     const currentOrbFromExact = Math.abs(currentSeparation - targetSeparation)
 
     // Project one day ahead to see if orb is tightening or widening
-    const futurePosition1 = await this.predictPosition(planet1, position1, new Date(date.getTime() + 24 * 60 * 60 * 1000), date)
-    const futurePosition2 = await this.predictPosition(planet2, position2, new Date(date.getTime() + 24 * 60 * 60 * 1000), date)
+    const futurePosition1 = await this.predictPosition(
+      planet1,
+      position1,
+      new Date(date.getTime() + 24 * 60 * 60 * 1000),
+      date
+    )
+    const futurePosition2 = await this.predictPosition(
+      planet2,
+      position2,
+      new Date(date.getTime() + 24 * 60 * 60 * 1000),
+      date
+    )
 
     let futureSeparation = Math.abs(futurePosition1 - futurePosition2)
     if (futureSeparation > 180) {
@@ -251,13 +276,22 @@ export class PlanetaryMotionTracker {
    * Predict when an aspect will be exact
    */
   async predictExactAspectTiming(
-    planet1: string, position1: number,
-    planet2: string, position2: number,
+    planet1: string,
+    position1: number,
+    planet2: string,
+    position2: number,
     aspectAngle: number,
     maxDays: number = 90,
     date: Date = new Date()
   ): Promise<{ date: Date; orb: number } | null> {
-    const separationVelocity = await this.calculateSeparationVelocity(planet1, position1, planet2, position2, aspectAngle, date)
+    const separationVelocity = await this.calculateSeparationVelocity(
+      planet1,
+      position1,
+      planet2,
+      position2,
+      aspectAngle,
+      date
+    )
 
     // If separating, aspect won't become exact
     if (separationVelocity > 0) {
@@ -278,19 +312,22 @@ export class PlanetaryMotionTracker {
       return null
     }
 
-    const exactDate = new Date(date.getTime() + (daysToExact * 24 * 60 * 60 * 1000))
+    const exactDate = new Date(date.getTime() + daysToExact * 24 * 60 * 60 * 1000)
 
     return {
       date: exactDate,
-      orb: 0 // Will be exact
+      orb: 0, // Will be exact
     }
   }
 
   private getCacheTTL(planet: string): number {
     switch (planet) {
-      case 'Moon': return this.MOON_CACHE_TTL
-      case 'Sun': return this.SUN_CACHE_TTL
-      default: return this.CACHE_TTL
+      case 'Moon':
+        return this.MOON_CACHE_TTL
+      case 'Sun':
+        return this.SUN_CACHE_TTL
+      default:
+        return this.CACHE_TTL
     }
   }
 
@@ -306,7 +343,7 @@ export class PlanetaryMotionTracker {
     const eccentricity = this.getOrbitalEccentricity(planet)
 
     // Simplified seasonal variation based on orbital mechanics
-    const variation = 1 + (eccentricity * Math.cos(orbitalPhase))
+    const variation = 1 + eccentricity * Math.cos(orbitalPhase)
     return Math.max(0.1, Math.min(2.0, variation))
   }
 
@@ -328,16 +365,20 @@ export class PlanetaryMotionTracker {
   private calculateRetrogradePhase(planet: string, date: Date): number {
     // Simplified retrograde phase calculation
     const profile = PLANETARY_VELOCITY_PROFILES[planet]
-    const daysSinceEpoch = (date.getTime() - new Date('2000-01-01').getTime()) / (1000 * 60 * 60 * 24)
+    const daysSinceEpoch =
+      (date.getTime() - new Date('2000-01-01').getTime()) / (1000 * 60 * 60 * 24)
     const cycleDays = 365.25 / profile.retrogradeFrequency
 
     return (daysSinceEpoch % cycleDays) / cycleDays
   }
 
-  private async calculateMotionTrend(planet: string, date: Date): Promise<'accelerating' | 'decelerating' | 'stable'> {
+  private async calculateMotionTrend(
+    planet: string,
+    date: Date
+  ): Promise<'accelerating' | 'decelerating' | 'stable'> {
     // Compare velocity over a 3-day window
-    const prevDate = new Date(date.getTime() - (3 * 24 * 60 * 60 * 1000))
-    const nextDate = new Date(date.getTime() + (3 * 24 * 60 * 60 * 1000))
+    const prevDate = new Date(date.getTime() - 3 * 24 * 60 * 60 * 1000)
+    const nextDate = new Date(date.getTime() + 3 * 24 * 60 * 60 * 1000)
 
     const prevMotion = await this.calculateDailyMotion(planet, prevDate)
     const currentMotion = await this.calculateDailyMotion(planet, date)
@@ -352,16 +393,16 @@ export class PlanetaryMotionTracker {
 
   private getOrbitalEccentricity(planet: string): number {
     const eccentricities: Record<string, number> = {
-      'Sun': 0.0167,    // Earth's orbit
-      'Moon': 0.0549,   // Moon's orbit around Earth
-      'Mercury': 0.2056,
-      'Venus': 0.0067,
-      'Mars': 0.0934,
-      'Jupiter': 0.0489,
-      'Saturn': 0.0565,
-      'Uranus': 0.0463,
-      'Neptune': 0.0095,
-      'Pluto': 0.2488
+      Sun: 0.0167, // Earth's orbit
+      Moon: 0.0549, // Moon's orbit around Earth
+      Mercury: 0.2056,
+      Venus: 0.0067,
+      Mars: 0.0934,
+      Jupiter: 0.0489,
+      Saturn: 0.0565,
+      Uranus: 0.0463,
+      Neptune: 0.0095,
+      Pluto: 0.2488,
     }
     return eccentricities[planet] || 0.05
   }
@@ -387,7 +428,7 @@ export class PlanetaryMotionTracker {
     return {
       size: this.motionCache.size,
       oldestEntry: timestamps.length > 0 ? Math.min(...timestamps) : 0,
-      newestEntry: timestamps.length > 0 ? Math.max(...timestamps) : 0
+      newestEntry: timestamps.length > 0 ? Math.max(...timestamps) : 0,
     }
   }
 }
@@ -396,19 +437,37 @@ export class PlanetaryMotionTracker {
 export const planetaryMotionTracker = new PlanetaryMotionTracker()
 
 // Convenience functions
-export async function calculatePlanetaryVelocity(planet: string, position: number, date: Date = new Date()): Promise<PlanetaryMotion> {
+export async function calculatePlanetaryVelocity(
+  planet: string,
+  position: number,
+  date: Date = new Date()
+): Promise<PlanetaryMotion> {
   return planetaryMotionTracker.getPlanetaryMotion(planet, position, date)
 }
 
-export async function predictPlanetaryPosition(planet: string, currentPosition: number, targetDate: Date, currentDate: Date = new Date()): Promise<number> {
+export async function predictPlanetaryPosition(
+  planet: string,
+  currentPosition: number,
+  targetDate: Date,
+  currentDate: Date = new Date()
+): Promise<number> {
   return planetaryMotionTracker.predictPosition(planet, currentPosition, targetDate, currentDate)
 }
 
 export async function calculateAspectSeparationRate(
-  planet1: string, position1: number,
-  planet2: string, position2: number,
+  planet1: string,
+  position1: number,
+  planet2: string,
+  position2: number,
   aspectAngle: number = 0,
   date: Date = new Date()
 ): Promise<number> {
-  return planetaryMotionTracker.calculateSeparationVelocity(planet1, position1, planet2, position2, aspectAngle, date)
+  return planetaryMotionTracker.calculateSeparationVelocity(
+    planet1,
+    position1,
+    planet2,
+    position2,
+    aspectAngle,
+    date
+  )
 }

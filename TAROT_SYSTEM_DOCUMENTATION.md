@@ -7,6 +7,7 @@ This comprehensive Tarot Galileo Agents system creates 78+ specialized AI agents
 ## 📁 Files Created
 
 ### Primary Implementation
+
 - **`tarot_galileo_agents.py`** - Complete system with all 78 card agents
 - **`tarot_system_demo.py`** - Simplified demonstration version
 - **`TAROT_SYSTEM_DOCUMENTATION.md`** - This documentation file
@@ -35,14 +36,16 @@ This comprehensive Tarot Galileo Agents system creates 78+ specialized AI agents
 ## 🧪 Alchemical Integration
 
 ### Elemental Suit Mappings
+
 ```python
 Wands (Fire):     Spirit 0.7, Essence 0.2, Matter 0.1, Substance 0.0
-Cups (Water):     Spirit 0.1, Essence 0.7, Matter 0.0, Substance 0.2  
+Cups (Water):     Spirit 0.1, Essence 0.7, Matter 0.0, Substance 0.2
 Swords (Air):     Spirit 0.3, Essence 0.0, Matter 0.0, Substance 0.7
 Pentacles (Earth): Spirit 0.0, Essence 0.2, Matter 0.7, Substance 0.1
 ```
 
 ### Major Arcana Planetary Mappings
+
 - The Fool: Uranus (Air/Substance)
 - The Magician: Mercury (Air/Substance)
 - The High Priestess: Moon (Water/Essence)
@@ -53,6 +56,7 @@ Pentacles (Earth): Spirit 0.0, Essence 0.2, Matter 0.7, Substance 0.1
 ## ⏰ Decan Timing System
 
 ### 36 Precise Decan Mappings (10° each)
+
 ```python
 Aries (0°-30°):
 - 2 of Wands: 0°-10° Aries (Mars ruler)
@@ -70,6 +74,7 @@ Taurus (30°-60°):
 ## 🧘 Chakra & Healing Integration
 
 ### Major Arcana Chakra Mappings
+
 - **Root Chakra**: The Emperor (structure/authority)
 - **Sacral Chakra**: The Empress (creativity/sensuality)
 - **Solar Plexus**: The Tower, The Chariot (power/transformation)
@@ -79,6 +84,7 @@ Taurus (30°-60°):
 - **Crown Chakra**: The Fool (spiritual connection/new beginnings)
 
 ### Suit Chakra Associations
+
 - **Wands**: Solar Plexus Chakra (personal power)
 - **Cups**: Heart Chakra (emotional connection)
 - **Swords**: Throat Chakra (communication)
@@ -87,6 +93,7 @@ Taurus (30°-60°):
 ## 🍽️ Culinary Applications
 
 ### Recipe Associations by Suit
+
 - **Wands (Fire)**: Spicy dishes, grilled foods, bold flavors, celebratory feasts
 - **Cups (Water)**: Comfort foods, romantic dinners, healing soups, nostalgic dishes
 - **Swords (Air)**: Fusion cuisine, experimental dishes, balanced meals, cleansing foods
@@ -95,6 +102,7 @@ Taurus (30°-60°):
 ## ⚛️ Quantum Value System
 
 ### Calculation Framework
+
 ```python
 Minor Arcana:
 - Base Value: 1-10 (numbered cards), 1-4 (court cards)
@@ -110,6 +118,7 @@ Major Arcana:
 ## 🎯 System Capabilities
 
 ### Query Types Supported
+
 1. **Individual Card Analysis**: "Tell me about The Fool"
 2. **Suit-Based Guidance**: "Show me Wands energy"
 3. **Multi-Card Spreads**: "Do a 3-card reading"
@@ -118,6 +127,7 @@ Major Arcana:
 6. **Practical Applications**: "Career advice using tarot"
 
 ### Response Format
+
 ```
 🔮 TAROT READING: [Card Name]
 📊 FUNDAMENTAL INFORMATION: Number, suit, element, planetary ruler
@@ -132,6 +142,7 @@ Major Arcana:
 ## 🚀 Usage Instructions
 
 ### Basic Setup
+
 ```bash
 # Install dependencies
 pip install galileo openai-agents pydantic
@@ -142,6 +153,7 @@ export ANTHROPIC_API_KEY="your_key"
 ```
 
 ### Running the System
+
 ```python
 # Full Galileo system
 python tarot_galileo_agents.py
@@ -162,14 +174,16 @@ python tarot_system_demo.py
 ## 🔧 Technical Architecture
 
 ### Dependencies
+
 ```python
 galileo.handlers.openai_agents import GalileoTracingProcessor
-agents import (set_trace_processors, Agent, GuardrailFunctionOutput, 
+agents import (set_trace_processors, Agent, GuardrailFunctionOutput,
                InputGuardrail, Runner)
 pydantic import BaseModel
 ```
 
 ### Agent Structure Pattern
+
 ```python
 card_agent = Agent(
     name="[Card Name] Agent",
@@ -188,12 +202,14 @@ card_agent = Agent(
 ## 🎭 Example Agent Specializations
 
 ### The Fool Agent
+
 - **Expertise**: New beginnings, pure potential, spiritual journeys
 - **Alchemical**: Air element, Uranus ruler, Substance focus
 - **Timing**: New Moon, Spring energy, dawn associations
 - **Practical**: Career changes, spiritual awakening, travel
 
 ### Two of Wands Agent
+
 - **Expertise**: Personal power, future planning, decision making
 - **Decan**: 0°-10° Aries, Mars ruler
 - **Alchemical**: Fire element, Spirit-focused energy
@@ -202,12 +218,14 @@ card_agent = Agent(
 ## 🌟 Advanced Features
 
 ### Real-Time Calculations
+
 - Dynamic alchemical property computation
 - Quantum value generation based on card interactions
 - Astrological timing correlations
 - Chakra energy flow analysis
 
 ### Integration Capabilities
+
 - Current astrological transits
 - Personal birth chart correlations
 - Seasonal energy alignments
@@ -229,4 +247,4 @@ The integration of alchemical properties, quantum calculations, astrological tim
 
 ---
 
-*Generated with Claude Code - The complete system demonstrates the fusion of artificial intelligence with esoteric wisdom, creating agents that serve as knowledgeable companions on the spiritual journey.*
+_Generated with Claude Code - The complete system demonstrates the fusion of artificial intelligence with esoteric wisdom, creating agents that serve as knowledgeable companions on the spiritual journey._

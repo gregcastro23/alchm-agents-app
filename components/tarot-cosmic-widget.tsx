@@ -1,13 +1,13 @@
-"use client"
+'use client'
 
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { 
-  Sparkles, 
-  Star, 
-  Crown, 
+import {
+  Sparkles,
+  Star,
+  Crown,
   Eye,
   Zap,
   Heart,
@@ -16,13 +16,9 @@ import {
   Wand2,
   Shield,
   ChevronRight,
-  Expand
+  Expand,
 } from 'lucide-react'
-import { 
-  getCurrentDecan, 
-  DECAN_TAROT_MAPPINGS,
-  type TarotCard
-} from '@/lib/monica/tarot-oracle'
+import { getCurrentDecan, DECAN_TAROT_MAPPINGS, type TarotCard } from '@/lib/monica/tarot-oracle'
 import Link from 'next/link'
 
 interface TarotCosmicWidgetProps {
@@ -31,10 +27,10 @@ interface TarotCosmicWidgetProps {
   linkToFullOracle?: boolean
 }
 
-const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({ 
+const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
   variant = 'card',
   showExpanded = false,
-  linkToFullOracle = true
+  linkToFullOracle = true,
 }) => {
   const [currentCard, setCurrentCard] = useState<TarotCard | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -43,7 +39,7 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
 
   useEffect(() => {
     const abortController = new AbortController()
-    
+
     const loadCurrentCard = async () => {
       try {
         // Early abort check before any async operations
@@ -51,11 +47,11 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
           console.log('TarotCosmicWidget request aborted before starting')
           return
         }
-        
+
         const { card, sunPosition } = await getCurrentDecan(abortController.signal)
-        
+
         if (abortController.signal.aborted) return
-        
+
         setCurrentCard(card)
         setSunPosition(sunPosition)
       } catch (error) {
@@ -64,15 +60,15 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
           console.log('TarotCosmicWidget request was aborted')
           return
         }
-        
+
         // Handle AbortError specifically
         if (error instanceof Error && error.name === 'AbortError') {
           console.log('TarotCosmicWidget AbortError caught:', error.message)
           return
         }
-        
+
         console.error('Widget error:', error)
-        
+
         // Only update state if not aborted
         if (!abortController.signal.aborted) {
           setCurrentCard(DECAN_TAROT_MAPPINGS[110])
@@ -86,7 +82,7 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
     }
 
     loadCurrentCard()
-    
+
     return () => {
       abortController.abort()
     }
@@ -94,31 +90,43 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
 
   const getSuitIcon = (suit: string) => {
     switch (suit) {
-      case 'Wands': return <Wand2 className="h-4 w-4 text-red-500" />
-      case 'Cups': return <Heart className="h-4 w-4 text-blue-500" />
-      case 'Swords': return <Shield className="h-4 w-4 text-gray-500" />
-      case 'Pentacles': return <Star className="h-4 w-4 text-yellow-500" />
-      default: return <Sparkles className="h-4 w-4 text-purple-500" />
+      case 'Wands':
+        return <Wand2 className="h-4 w-4 text-red-500" />
+      case 'Cups':
+        return <Heart className="h-4 w-4 text-blue-500" />
+      case 'Swords':
+        return <Shield className="h-4 w-4 text-gray-500" />
+      case 'Pentacles':
+        return <Star className="h-4 w-4 text-yellow-500" />
+      default:
+        return <Sparkles className="h-4 w-4 text-purple-500" />
     }
   }
 
   const getElementIcon = (element: string) => {
     switch (element) {
-      case 'Fire': return <Zap className="h-3 w-3 text-red-400" />
-      case 'Water': return <Heart className="h-3 w-3 text-blue-400" />
-      case 'Air': return <Eye className="h-3 w-3 text-gray-400" />
-      case 'Earth': return <Star className="h-3 w-3 text-green-400" />
-      default: return <Sparkles className="h-3 w-3 text-purple-400" />
+      case 'Fire':
+        return <Zap className="h-3 w-3 text-red-400" />
+      case 'Water':
+        return <Heart className="h-3 w-3 text-blue-400" />
+      case 'Air':
+        return <Eye className="h-3 w-3 text-gray-400" />
+      case 'Earth':
+        return <Star className="h-3 w-3 text-green-400" />
+      default:
+        return <Sparkles className="h-3 w-3 text-purple-400" />
     }
   }
 
   if (isLoading) {
     return (
-      <div className={`
+      <div
+        className={`
         ${variant === 'sidebar' ? 'w-full' : ''}
         ${variant === 'header' ? 'flex items-center gap-2' : ''}
         ${variant === 'inline' ? 'inline-flex items-center gap-2' : ''}
-      `}>
+      `}
+      >
         <div className="animate-pulse flex items-center gap-2 p-2 bg-purple-50 rounded">
           <Crown className="h-4 w-4 text-purple-500 animate-spin" />
           <span className="text-sm text-purple-600">Loading cosmic card...</span>
@@ -150,7 +158,7 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
                   </div>
                 </div>
               </div>
-              
+
               {isExpanded && (
                 <div className="space-y-2">
                   <div className="flex flex-wrap gap-1">
@@ -160,11 +168,11 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
                       </Badge>
                     ))}
                   </div>
-                  
+
                   <p className="text-xs text-gray-700 leading-relaxed line-clamp-3">
                     {currentCard.meaning}
                   </p>
-                  
+
                   <div className="bg-purple-100 p-2 rounded text-xs">
                     <p className="text-purple-800 font-medium">
                       {currentCard.consciousness.split(' - ')[0]}
@@ -172,10 +180,10 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
                   </div>
                 </div>
               )}
-              
+
               <div className="flex items-center justify-between">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
                   onClick={() => setIsExpanded(!isExpanded)}
                   className="h-6 px-2 text-xs"
@@ -183,7 +191,7 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
                   <Expand className="h-3 w-3 mr-1" />
                   {isExpanded ? 'Less' : 'More'}
                 </Button>
-                
+
                 {linkToFullOracle && (
                   <Link href="/tarot-dashboard">
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
@@ -192,7 +200,7 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
                   </Link>
                 )}
               </div>
-              
+
               {sunPosition && (
                 <p className="text-xs text-amber-600 border-t pt-2">
                   <Sun className="inline h-3 w-3 mr-1" />
@@ -211,27 +219,25 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
     return (
       <div className="flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
         <Crown className="h-4 w-4 text-purple-600" />
-        
+
         {currentCard && (
           <>
             <div className="flex items-center gap-2">
               {getSuitIcon(currentCard.suit)}
               <span className="font-medium text-sm">{currentCard.name}</span>
             </div>
-            
+
             <div className="flex items-center gap-1">
               {getElementIcon(currentCard.element)}
               <Badge variant="outline" className="text-xs h-5">
                 {currentCard.element}
               </Badge>
             </div>
-            
-            <div className="text-xs text-gray-600">
-              {currentCard.keywords[0]}
-            </div>
+
+            <div className="text-xs text-gray-600">{currentCard.keywords[0]}</div>
           </>
         )}
-        
+
         {linkToFullOracle && (
           <Link href="/tarot-dashboard">
             <Button variant="ghost" size="sm" className="h-6 px-2">
@@ -280,7 +286,7 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
           </CardDescription>
         )}
       </CardHeader>
-      
+
       <CardContent className="space-y-3">
         {currentCard && (
           <>
@@ -301,7 +307,7 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
                 {currentCard.number}
               </Badge>
             </div>
-            
+
             <div className="flex flex-wrap gap-1">
               {currentCard.keywords.slice(0, 3).map((keyword, index) => (
                 <Badge key={index} variant="secondary" className="text-xs">
@@ -309,19 +315,17 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
                 </Badge>
               ))}
             </div>
-            
+
             {isExpanded && (
               <div className="space-y-2">
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {currentCard.meaning}
-                </p>
-                
+                <p className="text-sm text-gray-700 leading-relaxed">{currentCard.meaning}</p>
+
                 <div className="bg-white/50 p-2 rounded">
                   <p className="text-xs font-medium text-purple-800">
                     🧠 {currentCard.consciousness}
                   </p>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="flex justify-between">
                     <span>Spirit:</span>
@@ -342,10 +346,10 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-center justify-between pt-2 border-t border-purple-100">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="h-7 px-3 text-xs"
@@ -353,7 +357,7 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
                 <Expand className="h-3 w-3 mr-1" />
                 {isExpanded ? 'Show Less' : 'Show More'}
               </Button>
-              
+
               {linkToFullOracle && (
                 <Link href="/tarot-dashboard">
                   <Button variant="outline" size="sm" className="h-7 px-3 text-xs">
@@ -363,7 +367,7 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
                 </Link>
               )}
             </div>
-            
+
             {sunPosition && isExpanded && (
               <div className="bg-amber-50 p-2 rounded text-xs">
                 <p className="text-amber-700">

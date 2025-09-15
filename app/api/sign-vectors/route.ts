@@ -1,17 +1,17 @@
-import { NextResponse } from "next/server"
-import { CharacterVectorCalculator } from "@/lib/astrological-character-vectors"
-import { generateSignVectorRune, generateAgentCharacterRune } from "@/lib/runes/sign-vector-runes"
-import { DEMO_AGENTS } from "@/lib/demo-agents-data"
+import { NextResponse } from 'next/server'
+import { CharacterVectorCalculator } from '@/lib/astrological-character-vectors'
+import { generateSignVectorRune, generateAgentCharacterRune } from '@/lib/runes/sign-vector-runes'
+import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 
-export const dynamic = "force-dynamic"
+export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 interface ChartInput {
-  name?: string;
-  birthDate?: string;
-  birthTime?: string;
-  birthLocation?: string;
-  natalChart?: any;
+  name?: string
+  birthDate?: string
+  birthTime?: string
+  birthLocation?: string
+  natalChart?: any
 }
 
 export async function POST(request: Request) {
@@ -22,23 +22,26 @@ export async function POST(request: Request) {
     switch (action) {
       case 'calculate':
         return calculateSignVectors(charts)
-      
+
       case 'generate-rune':
         return generateRuneFromCharts(charts)
-      
+
       case 'agent-rune':
         return generateAgentRune(agentId)
-      
+
       case 'collective-rune':
         return generateCollectiveRune(charts)
-        
+
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
   } catch (error) {
-    console.error("Sign vectors API error:", error)
+    console.error('Sign vectors API error:', error)
     return NextResponse.json(
-      { error: "Failed to process sign vectors", details: error instanceof Error ? error.message : String(error) },
+      {
+        error: 'Failed to process sign vectors',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     )
   }
@@ -60,9 +63,12 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 })
   } catch (error) {
-    console.error("Sign vectors GET API error:", error)
+    console.error('Sign vectors GET API error:', error)
     return NextResponse.json(
-      { error: "Failed to get sign vectors", details: error instanceof Error ? error.message : String(error) },
+      {
+        error: 'Failed to get sign vectors',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     )
   }
@@ -77,13 +83,13 @@ async function calculateSignVectors(charts: ChartInput[]) {
   for (const chart of charts) {
     try {
       const placements = extractPlacements(chart)
-      
+
       if (placements.length === 0) {
         results.push({
           name: chart.name || 'Unknown',
           error: 'No valid planetary placements found',
           signVector: null,
-          chartProfile: null
+          chartProfile: null,
         })
         continue
       }
@@ -95,14 +101,14 @@ async function calculateSignVectors(charts: ChartInput[]) {
         name: chart.name || 'Unknown',
         signVector,
         chartProfile,
-        placements: placements.length
+        placements: placements.length,
       })
     } catch (error) {
       results.push({
         name: chart.name || 'Unknown',
         error: error instanceof Error ? error.message : 'Calculation failed',
         signVector: null,
-        chartProfile: null
+        chartProfile: null,
       })
     }
   }
@@ -110,7 +116,7 @@ async function calculateSignVectors(charts: ChartInput[]) {
   return NextResponse.json({
     success: true,
     results,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   })
 }
 
@@ -125,7 +131,7 @@ async function generateRuneFromCharts(charts: ChartInput[]) {
   try {
     const chart = charts[0] // Use first chart for single rune generation
     const placements = extractPlacements(chart)
-    
+
     if (placements.length === 0) {
       return NextResponse.json({ error: 'No valid planetary placements found' }, { status: 400 })
     }
@@ -137,13 +143,16 @@ async function generateRuneFromCharts(charts: ChartInput[]) {
       success: true,
       rune,
       chartProfile,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    return NextResponse.json({
-      error: 'Failed to generate rune',
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Failed to generate rune',
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -153,7 +162,7 @@ async function generateRuneFromCharts(charts: ChartInput[]) {
 async function generateAgentRune(agentId: string) {
   try {
     const agent = DEMO_AGENTS.find(a => a.id === agentId)
-    
+
     if (!agent) {
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
     }
@@ -165,16 +174,19 @@ async function generateAgentRune(agentId: string) {
       agent: {
         id: agent.id,
         name: agent.name,
-        title: agent.title
+        title: agent.title,
       },
       rune,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    return NextResponse.json({
-      error: 'Failed to generate agent rune',
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Failed to generate agent rune',
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -184,7 +196,10 @@ async function generateAgentRune(agentId: string) {
 async function generateCollectiveRune(charts: any[]) {
   try {
     if (!charts || charts.length < 2) {
-      return NextResponse.json({ error: 'At least 2 charts required for collective rune' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'At least 2 charts required for collective rune' },
+        { status: 400 }
+      )
     }
 
     // If charts contain agent IDs, fetch agent data
@@ -207,13 +222,16 @@ async function generateCollectiveRune(charts: any[]) {
       success: true,
       agents: agents.map(a => ({ id: a.id, name: a.name, title: a.title })),
       rune,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    return NextResponse.json({
-      error: 'Failed to generate collective rune',
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Failed to generate collective rune',
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -223,15 +241,18 @@ async function generateCollectiveRune(charts: any[]) {
 async function getAgentSignVectors(agentId: string) {
   try {
     const agent = DEMO_AGENTS.find(a => a.id === agentId)
-    
+
     if (!agent) {
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
     }
 
     const placements = extractPlacements({ natalChart: agent.consciousness?.natalChart })
-    
+
     if (placements.length === 0) {
-      return NextResponse.json({ error: 'No valid natal chart data found for agent' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'No valid natal chart data found for agent' },
+        { status: 400 }
+      )
     }
 
     const signVector = CharacterVectorCalculator.calculateSignVectors(placements)
@@ -243,18 +264,21 @@ async function getAgentSignVectors(agentId: string) {
         id: agent.id,
         name: agent.name,
         title: agent.title,
-        monicaConstant: agent.consciousness?.monicaConstant
+        monicaConstant: agent.consciousness?.monicaConstant,
       },
       signVector,
       chartProfile,
       placements: placements.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    return NextResponse.json({
-      error: 'Failed to get agent sign vectors',
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Failed to get agent sign vectors',
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -268,13 +292,13 @@ async function getAllAgentSignVectors() {
     for (const agent of DEMO_AGENTS) {
       try {
         const placements = extractPlacements({ natalChart: agent.consciousness?.natalChart })
-        
+
         if (placements.length === 0) {
           results.push({
             agent: { id: agent.id, name: agent.name, title: agent.title },
             error: 'No valid natal chart data',
             signVector: null,
-            dominantSigns: []
+            dominantSigns: [],
           })
           continue
         }
@@ -287,19 +311,19 @@ async function getAllAgentSignVectors() {
             id: agent.id,
             name: agent.name,
             title: agent.title,
-            monicaConstant: agent.consciousness?.monicaConstant
+            monicaConstant: agent.consciousness?.monicaConstant,
           },
           signVector,
           dominantSigns: chartProfile.dominant_signs,
           elementalDistribution: chartProfile.elemental_distribution,
-          placements: placements.length
+          placements: placements.length,
         })
       } catch (error) {
         results.push({
           agent: { id: agent.id, name: agent.name, title: agent.title },
           error: error instanceof Error ? error.message : 'Calculation failed',
           signVector: null,
-          dominantSigns: []
+          dominantSigns: [],
         })
       }
     }
@@ -309,54 +333,71 @@ async function getAllAgentSignVectors() {
       results,
       totalAgents: DEMO_AGENTS.length,
       successfulCalculations: results.filter(r => r.signVector !== null).length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    return NextResponse.json({
-      error: 'Failed to calculate all agent sign vectors',
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Failed to calculate all agent sign vectors',
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    )
   }
 }
 
 /**
  * Extract planetary placements from various chart formats
  */
-function extractPlacements(chart: ChartInput): Array<{planet: string, sign: string, dignity?: string}> {
+function extractPlacements(
+  chart: ChartInput
+): Array<{ planet: string; sign: string; dignity?: string }> {
   const placements = []
-  
+
   // Handle direct natal chart data
   if (chart.natalChart) {
     const natalChart = chart.natalChart
-    
+
     // Handle both formats: planets object and direct properties
     const planets = natalChart.planets || natalChart
-    
-    const planetList = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']
-    
+
+    const planetList = [
+      'sun',
+      'moon',
+      'mercury',
+      'venus',
+      'mars',
+      'jupiter',
+      'saturn',
+      'uranus',
+      'neptune',
+      'pluto',
+    ]
+
     for (const planet of planetList) {
-      const planetData = planets[planet] || planets[planet.charAt(0).toUpperCase() + planet.slice(1)]
-      
+      const planetData =
+        planets[planet] || planets[planet.charAt(0).toUpperCase() + planet.slice(1)]
+
       if (planetData && planetData.sign) {
         placements.push({
           planet,
           sign: planetData.sign,
-          dignity: planetData.dignity
+          dignity: planetData.dignity,
         })
       }
     }
-    
+
     // Handle ascendant
     if (planets.ascendant && planets.ascendant.sign) {
       placements.push({
         planet: 'ascendant',
-        sign: planets.ascendant.sign
+        sign: planets.ascendant.sign,
       })
     }
   }
-  
+
   // Handle other chart formats (birth data -> ephemeris calculation)
   // This could be extended to calculate positions from birth data
-  
+
   return placements
 }

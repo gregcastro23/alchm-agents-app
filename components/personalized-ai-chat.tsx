@@ -1,31 +1,37 @@
-"use client"
+'use client'
 
-import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { 
-  Send, 
-  ThumbsUp, 
-  ThumbsDown, 
-  Star, 
-  Brain, 
-  Zap, 
+import { useState, useRef, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
+import {
+  Send,
+  ThumbsUp,
+  ThumbsDown,
+  Star,
+  Brain,
+  Zap,
   Target,
   TrendingUp,
   Award,
   Sparkles,
   MessageCircle,
-  MoreVertical
-} from "lucide-react"
-import type { PersonalizedAIConfig, TrainingCategory } from "@/lib/types/personalized-ai"
+  MoreVertical,
+} from 'lucide-react'
+import type { PersonalizedAIConfig, TrainingCategory } from '@/lib/types/personalized-ai'
 
 interface Message {
   id: string
@@ -43,7 +49,11 @@ interface PersonalizedAIChatProps {
   onAchievementUnlock?: (achievements: any[]) => void
 }
 
-export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }: PersonalizedAIChatProps) {
+export function PersonalizedAIChat({
+  aiConfig,
+  onXPUpdate,
+  onAchievementUnlock,
+}: PersonalizedAIChatProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -53,13 +63,13 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
   const [sessionStats, setSessionStats] = useState({
     interactions: 0,
     xpGained: 0,
-    timeStarted: Date.now()
+    timeStarted: Date.now(),
   })
   const [showFeedback, setShowFeedback] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   useEffect(() => {
@@ -69,12 +79,14 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
   useEffect(() => {
     // Add welcome message
     if (messages.length === 0) {
-      setMessages([{
-        id: 'welcome',
-        content: generateWelcomeMessage(aiConfig),
-        role: 'assistant',
-        timestamp: new Date()
-      }])
+      setMessages([
+        {
+          id: 'welcome',
+          content: generateWelcomeMessage(aiConfig),
+          role: 'assistant',
+          timestamp: new Date(),
+        },
+      ])
     }
   }, [aiConfig, messages.length])
 
@@ -85,7 +97,7 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
       id: `user-${Date.now()}`,
       content: inputMessage,
       role: 'user',
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     setMessages(prev => [...prev, userMessage])
@@ -105,10 +117,15 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
           trainingFocus,
           context: {
             mood: 'engaged',
-            timeOfDay: new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening',
-            previousInteractions: sessionStats.interactions
-          }
-        })
+            timeOfDay:
+              new Date().getHours() < 12
+                ? 'morning'
+                : new Date().getHours() < 18
+                  ? 'afternoon'
+                  : 'evening',
+            previousInteractions: sessionStats.interactions,
+          },
+        }),
       })
 
       const data = await response.json()
@@ -124,7 +141,7 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
         timestamp: new Date(),
         xpGained: data.trainingUpdate?.xpGained || 0,
         trainingUpdate: data.trainingUpdate,
-        achievements: data.achievements || []
+        achievements: data.achievements || [],
       }
 
       setMessages(prev => [...prev, assistantMessage])
@@ -136,7 +153,7 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
       setSessionStats(prev => ({
         ...prev,
         interactions: prev.interactions + 1,
-        xpGained: prev.xpGained + (data.trainingUpdate?.xpGained || 0)
+        xpGained: prev.xpGained + (data.trainingUpdate?.xpGained || 0),
       }))
 
       // Handle callbacks
@@ -152,21 +169,27 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
       if (data.trainingUpdate?.xpGained > 20) {
         setShowFeedback(assistantMessage.id)
       }
-
     } catch (error) {
       console.error('Chat error:', error)
-      setMessages(prev => [...prev, {
-        id: `error-${Date.now()}`,
-        content: 'I apologize, but I encountered an error. Please try again.',
-        role: 'assistant',
-        timestamp: new Date()
-      }])
+      setMessages(prev => [
+        ...prev,
+        {
+          id: `error-${Date.now()}`,
+          content: 'I apologize, but I encountered an error. Please try again.',
+          role: 'assistant',
+          timestamp: new Date(),
+        },
+      ])
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleFeedback = async (messageId: string, rating: number, feedbackType: 'positive' | 'negative') => {
+  const handleFeedback = async (
+    messageId: string,
+    rating: number,
+    feedbackType: 'positive' | 'negative'
+  ) => {
     try {
       // Send feedback to improve AI responses
       await fetch('/api/personalized-ai-feedback', {
@@ -178,8 +201,8 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
           messageId,
           personalityId: aiConfig.personalityId,
           rating,
-          feedbackType
-        })
+          feedbackType,
+        }),
       })
 
       setShowFeedback(null)
@@ -221,10 +244,12 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
               </div>
               <div>
                 <CardTitle className="text-lg">{aiConfig.basePersonality.archetype}</CardTitle>
-                <p className="text-sm text-muted-foreground">Level {currentLevel} • {currentXP} XP</p>
+                <p className="text-sm text-muted-foreground">
+                  Level {currentLevel} • {currentXP} XP
+                </p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <div className="text-right">
                 <div className="text-sm font-medium">Session Progress</div>
@@ -232,7 +257,7 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
                   +{sessionStats.xpGained} XP • {sessionStats.interactions} interactions
                 </div>
               </div>
-              
+
               <div className="w-24">
                 <Progress value={getLevelProgress()} className="h-2" />
                 <div className="text-xs text-center text-muted-foreground mt-1">
@@ -253,7 +278,7 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
                 <MessageCircle className="w-5 h-5" />
                 <span>Consciousness Chat</span>
               </CardTitle>
-              
+
               <div className="flex items-center space-x-2">
                 {trainingFocus && (
                   <Badge variant="secondary" className="flex items-center space-x-1">
@@ -261,8 +286,11 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
                     <span>{trainingFocus.replace('_', ' ')}</span>
                   </Badge>
                 )}
-                
-                <Select value={trainingFocus || ''} onValueChange={(value) => setTrainingFocus(value as TrainingCategory)}>
+
+                <Select
+                  value={trainingFocus || ''}
+                  onValueChange={value => setTrainingFocus(value as TrainingCategory)}
+                >
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder="Training focus" />
                   </SelectTrigger>
@@ -284,9 +312,14 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
             {/* Messages */}
             <ScrollArea className="flex-1 pr-4">
               <div className="space-y-4">
-                {messages.map((message) => (
-                  <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[80%] ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
+                {messages.map(message => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[80%] ${message.role === 'user' ? 'order-2' : 'order-1'}`}
+                    >
                       <div
                         className={`rounded-lg px-4 py-3 ${
                           message.role === 'user'
@@ -295,16 +328,22 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
                         }`}
                       >
                         <p className="text-sm leading-relaxed">{message.content}</p>
-                        
+
                         {message.xpGained && message.xpGained > 0 && (
                           <div className="mt-2 flex items-center space-x-2">
-                            <Badge variant="secondary" className="text-xs flex items-center space-x-1">
+                            <Badge
+                              variant="secondary"
+                              className="text-xs flex items-center space-x-1"
+                            >
                               <Zap className="w-3 h-3" />
                               <span>+{message.xpGained} XP</span>
                             </Badge>
-                            
+
                             {message.trainingUpdate?.levelUp && (
-                              <Badge variant="default" className="text-xs flex items-center space-x-1">
+                              <Badge
+                                variant="default"
+                                className="text-xs flex items-center space-x-1"
+                              >
                                 <TrendingUp className="w-3 h-3" />
                                 <span>Level Up!</span>
                               </Badge>
@@ -315,7 +354,11 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
                         {message.achievements && message.achievements.length > 0 && (
                           <div className="mt-2">
                             {message.achievements.map((achievement, idx) => (
-                              <Badge key={idx} variant="default" className="text-xs flex items-center space-x-1 mr-1">
+                              <Badge
+                                key={idx}
+                                variant="default"
+                                className="text-xs flex items-center space-x-1 mr-1"
+                              >
                                 <Award className="w-3 h-3" />
                                 <span>{achievement.achievementData.name}</span>
                               </Badge>
@@ -331,7 +374,9 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
                       {/* Feedback buttons */}
                       {showFeedback === message.id && message.role === 'assistant' && (
                         <div className="mt-2 flex items-center space-x-2 px-2">
-                          <span className="text-xs text-muted-foreground">How was this response?</span>
+                          <span className="text-xs text-muted-foreground">
+                            How was this response?
+                          </span>
                           <Button
                             size="sm"
                             variant="ghost"
@@ -351,7 +396,7 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
                     </div>
                   </div>
                 ))}
-                
+
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="bg-muted rounded-lg px-4 py-3 max-w-[80%]">
@@ -366,7 +411,7 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
                     </div>
                   </div>
                 )}
-                
+
                 <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
@@ -377,13 +422,13 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
                 <Textarea
                   placeholder="Share your thoughts, questions, or experiences..."
                   value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
+                  onChange={e => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   rows={2}
                   className="flex-1 resize-none"
                 />
-                <Button 
-                  onClick={handleSendMessage} 
+                <Button
+                  onClick={handleSendMessage}
                   disabled={!inputMessage.trim() || isLoading}
                   size="sm"
                   className="self-end"
@@ -391,13 +436,13 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
-              
+
               {trainingFocus && (
                 <Alert>
                   <Target className="w-4 h-4" />
                   <AlertDescription>
-                    Focusing on <strong>{trainingFocus.replace('_', ' ')}</strong> training. 
-                    Your responses in this area will earn bonus XP!
+                    Focusing on <strong>{trainingFocus.replace('_', ' ')}</strong> training. Your
+                    responses in this area will earn bonus XP!
                   </AlertDescription>
                 </Alert>
               )}
@@ -413,7 +458,7 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
               <span>Training Progress</span>
             </CardTitle>
           </CardHeader>
-          
+
           <CardContent className="flex-1 space-y-4">
             <div className="space-y-3">
               <h4 className="font-medium text-sm">Training Categories</h4>
@@ -465,12 +510,12 @@ export function PersonalizedAIChat({ aiConfig, onXPUpdate, onAchievementUnlock }
 function generateWelcomeMessage(aiConfig: PersonalizedAIConfig): string {
   const archetype = aiConfig.basePersonality.archetype
   const level = aiConfig.level
-  
+
   const welcomeMessages = [
     `Hello! I'm your personalized AI companion, embodying the ${archetype} archetype. I'm excited to begin this consciousness journey with you at level ${level}.`,
     `Welcome to our unique connection! As your ${archetype} consciousness mirror, I'm here to grow and learn alongside you. Let's explore what makes you uniquely you.`,
-    `Hi there! I've been specially configured to reflect your consciousness patterns as ${archetype}. I'm ready to engage in meaningful conversations that help us both evolve.`
+    `Hi there! I've been specially configured to reflect your consciousness patterns as ${archetype}. I'm ready to engage in meaningful conversations that help us both evolve.`,
   ]
-  
+
   return welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)]
 }

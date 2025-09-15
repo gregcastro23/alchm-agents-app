@@ -1,16 +1,16 @@
-"use client"
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  Users, 
-  Heart, 
-  Zap, 
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  Users,
+  Heart,
+  Zap,
   Droplets,
   Wind,
   Mountain,
@@ -28,21 +28,21 @@ import {
   Flame,
   Waves,
   Cloud,
-  TreePine
-} from 'lucide-react';
-import type { 
-  RelationalAstrologyPattern, 
+  TreePine,
+} from 'lucide-react'
+import type {
+  RelationalAstrologyPattern,
   PracticeScenario,
-  CosmicCurriculumProgress 
-} from '@/lib/astrological-education-engine';
+  CosmicCurriculumProgress,
+} from '@/lib/astrological-education-engine'
 
 interface RelationalAstrologyTrainerProps {
-  userElementalProfile: string[]; // Primary elements in user's chart
-  userPlanetaryEmphasis: string[]; // Prominent planets in user's chart
-  availablePatterns: RelationalAstrologyPattern[];
-  progress: CosmicCurriculumProgress;
-  onScenarioComplete?: (scenarioId: string, results: any) => void;
-  onPatternMastery?: (patternId: string) => void;
+  userElementalProfile: string[] // Primary elements in user's chart
+  userPlanetaryEmphasis: string[] // Prominent planets in user's chart
+  availablePatterns: RelationalAstrologyPattern[]
+  progress: CosmicCurriculumProgress
+  onScenarioComplete?: (scenarioId: string, results: any) => void
+  onPatternMastery?: (patternId: string) => void
 }
 
 export function RelationalAstrologyTrainer({
@@ -51,101 +51,115 @@ export function RelationalAstrologyTrainer({
   availablePatterns,
   progress,
   onScenarioComplete,
-  onPatternMastery
+  onPatternMastery,
 }: RelationalAstrologyTrainerProps) {
-  const [selectedPattern, setSelectedPattern] = useState<RelationalAstrologyPattern | null>(null);
-  const [activeScenario, setActiveScenario] = useState<PracticeScenario | null>(null);
-  const [completedScenarios, setCompletedScenarios] = useState<Set<string>>(new Set());
-  const [practiceMode, setPracticeMode] = useState<'learn' | 'practice' | 'integrate'>('learn');
+  const [selectedPattern, setSelectedPattern] = useState<RelationalAstrologyPattern | null>(null)
+  const [activeScenario, setActiveScenario] = useState<PracticeScenario | null>(null)
+  const [completedScenarios, setCompletedScenarios] = useState<Set<string>>(new Set())
+  const [practiceMode, setPracticeMode] = useState<'learn' | 'practice' | 'integrate'>('learn')
 
   const getElementIcon = (element: string) => {
     switch (element.toLowerCase()) {
-      case 'fire': return <Flame className="h-5 w-5 text-red-500" />;
-      case 'water': return <Droplets className="h-5 w-5 text-blue-500" />;
-      case 'air': return <Wind className="h-5 w-5 text-yellow-500" />;
-      case 'earth': return <Mountain className="h-5 w-5 text-green-500" />;
-      default: return <Star className="h-5 w-5" />;
+      case 'fire':
+        return <Flame className="h-5 w-5 text-red-500" />
+      case 'water':
+        return <Droplets className="h-5 w-5 text-blue-500" />
+      case 'air':
+        return <Wind className="h-5 w-5 text-yellow-500" />
+      case 'earth':
+        return <Mountain className="h-5 w-5 text-green-500" />
+      default:
+        return <Star className="h-5 w-5" />
     }
-  };
+  }
 
   const getPlanetIcon = (planet: string) => {
     switch (planet.toLowerCase()) {
-      case 'sun': return <Sun className="h-5 w-5 text-orange-500" />;
-      case 'moon': return <Moon className="h-5 w-5 text-gray-400" />;
-      case 'mercury': return <MessageCircle className="h-5 w-5 text-gray-600" />;
-      case 'venus': return <Heart className="h-5 w-5 text-pink-500" />;
-      case 'mars': return <Zap className="h-5 w-5 text-red-600" />;
-      default: return <Star className="h-5 w-5" />;
+      case 'sun':
+        return <Sun className="h-5 w-5 text-orange-500" />
+      case 'moon':
+        return <Moon className="h-5 w-5 text-gray-400" />
+      case 'mercury':
+        return <MessageCircle className="h-5 w-5 text-gray-600" />
+      case 'venus':
+        return <Heart className="h-5 w-5 text-pink-500" />
+      case 'mars':
+        return <Zap className="h-5 w-5 text-red-600" />
+      default:
+        return <Star className="h-5 w-5" />
     }
-  };
+  }
 
   const getPatternTypeIcon = (type: string) => {
     switch (type) {
-      case 'element_dance': return <Users className="h-5 w-5" />;
-      case 'planetary_dialogue': return <MessageCircle className="h-5 w-5" />;
-      case 'synastry': return <Heart className="h-5 w-5" />;
-      case 'composite': return <Star className="h-5 w-5" />;
-      default: return <Brain className="h-5 w-5" />;
+      case 'element_dance':
+        return <Users className="h-5 w-5" />
+      case 'planetary_dialogue':
+        return <MessageCircle className="h-5 w-5" />
+      case 'synastry':
+        return <Heart className="h-5 w-5" />
+      case 'composite':
+        return <Star className="h-5 w-5" />
+      default:
+        return <Brain className="h-5 w-5" />
     }
-  };
+  }
 
   const getHarmonyColor = (potential: number) => {
-    if (potential >= 90) return 'bg-green-100 text-green-800 border-green-200';
-    if (potential >= 70) return 'bg-blue-100 text-blue-800 border-blue-200';
-    if (potential >= 50) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    return 'bg-gray-100 text-gray-800 border-gray-200';
-  };
+    if (potential >= 90) return 'bg-green-100 text-green-800 border-green-200'
+    if (potential >= 70) return 'bg-blue-100 text-blue-800 border-blue-200'
+    if (potential >= 50) return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    return 'bg-gray-100 text-gray-800 border-gray-200'
+  }
 
   const getChallengeColor = (potential: number) => {
-    if (potential >= 70) return 'bg-red-100 text-red-800 border-red-200';
-    if (potential >= 50) return 'bg-orange-100 text-orange-800 border-orange-200';
-    if (potential >= 30) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    return 'bg-green-100 text-green-800 border-green-200';
-  };
+    if (potential >= 70) return 'bg-red-100 text-red-800 border-red-200'
+    if (potential >= 50) return 'bg-orange-100 text-orange-800 border-orange-200'
+    if (potential >= 30) return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    return 'bg-green-100 text-green-800 border-green-200'
+  }
 
   // Filter patterns relevant to user's chart
   const relevantPatterns = availablePatterns.filter(pattern => {
-    const hasElementalMatch = pattern.participants.some(participant => 
-      userElementalProfile.some(element => 
+    const hasElementalMatch = pattern.participants.some(participant =>
+      userElementalProfile.some(element =>
         participant.toLowerCase().includes(element.toLowerCase())
       )
-    );
+    )
     const hasPlanetaryMatch = pattern.participants.some(participant =>
-      userPlanetaryEmphasis.some(planet =>
-        participant.toLowerCase().includes(planet.toLowerCase())
-      )
-    );
-    return hasElementalMatch || hasPlanetaryMatch;
-  });
+      userPlanetaryEmphasis.some(planet => participant.toLowerCase().includes(planet.toLowerCase()))
+    )
+    return hasElementalMatch || hasPlanetaryMatch
+  })
 
-  const elementalPatterns = relevantPatterns.filter(p => p.pattern_type === 'element_dance');
-  const planetaryPatterns = relevantPatterns.filter(p => p.pattern_type === 'planetary_dialogue');
+  const elementalPatterns = relevantPatterns.filter(p => p.pattern_type === 'element_dance')
+  const planetaryPatterns = relevantPatterns.filter(p => p.pattern_type === 'planetary_dialogue')
 
   const getPatternMastery = (patternId: string): number => {
-    return progress.relational_understanding[patternId] || 0;
-  };
+    return progress.relational_understanding[patternId] || 0
+  }
 
   const handleScenarioComplete = (scenario: PracticeScenario) => {
-    setCompletedScenarios(prev => new Set(prev).add(scenario.id));
-    onScenarioComplete?.(scenario.id, { 
-      completed: true, 
+    setCompletedScenarios(prev => new Set(prev).add(scenario.id))
+    onScenarioComplete?.(scenario.id, {
+      completed: true,
       patternId: selectedPattern?.id,
-      insights: scenario.integration_reflection 
-    });
-    
+      insights: scenario.integration_reflection,
+    })
+
     // Check if pattern is mastered (all scenarios completed)
     if (selectedPattern) {
-      const allScenarios = selectedPattern.practice_scenarios;
-      const allCompleted = allScenarios.every(s => 
-        completedScenarios.has(s.id) || s.id === scenario.id
-      );
+      const allScenarios = selectedPattern.practice_scenarios
+      const allCompleted = allScenarios.every(
+        s => completedScenarios.has(s.id) || s.id === scenario.id
+      )
       if (allCompleted) {
-        onPatternMastery?.(selectedPattern.id);
+        onPatternMastery?.(selectedPattern.id)
       }
     }
-    
-    setActiveScenario(null);
-  };
+
+    setActiveScenario(null)
+  }
 
   return (
     <div className="space-y-6">
@@ -156,14 +170,12 @@ export function RelationalAstrologyTrainer({
             <Users className="h-6 w-6 text-purple-600" />
             Relational Astrology Training
           </CardTitle>
-          <CardDescription>
-            Learn how your cosmic energies interact with others
-          </CardDescription>
+          <CardDescription>Learn how your cosmic energies interact with others</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2 mb-4">
             <div className="text-sm font-medium">Your Elemental Emphasis:</div>
-            {userElementalProfile.map((element) => (
+            {userElementalProfile.map(element => (
               <Badge key={element} variant="outline" className="flex items-center gap-1">
                 {getElementIcon(element)}
                 {element}
@@ -172,7 +184,7 @@ export function RelationalAstrologyTrainer({
           </div>
           <div className="flex flex-wrap gap-2">
             <div className="text-sm font-medium">Your Planetary Emphasis:</div>
-            {userPlanetaryEmphasis.map((planet) => (
+            {userPlanetaryEmphasis.map(planet => (
               <Badge key={planet} variant="outline" className="flex items-center gap-1">
                 {getPlanetIcon(planet)}
                 {planet}
@@ -182,7 +194,13 @@ export function RelationalAstrologyTrainer({
         </CardContent>
       </Card>
 
-              <Tabs value={practiceMode} onValueChange={(value: string) => setPracticeMode(value as 'learn' | 'practice' | 'integrate')} className="w-full">
+      <Tabs
+        value={practiceMode}
+        onValueChange={(value: string) =>
+          setPracticeMode(value as 'learn' | 'practice' | 'integrate')
+        }
+        className="w-full"
+      >
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="learn">Learn Patterns</TabsTrigger>
           <TabsTrigger value="practice">Practice Scenarios</TabsTrigger>
@@ -199,9 +217,9 @@ export function RelationalAstrologyTrainer({
                 Elemental Dynamics
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {elementalPatterns.map((pattern) => (
-                  <Card 
-                    key={pattern.id} 
+                {elementalPatterns.map(pattern => (
+                  <Card
+                    key={pattern.id}
                     className={`cursor-pointer transition-all hover:shadow-md ${
                       selectedPattern?.id === pattern.id ? 'ring-2 ring-blue-500' : ''
                     }`}
@@ -249,9 +267,9 @@ export function RelationalAstrologyTrainer({
                 Planetary Dialogues
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {planetaryPatterns.map((pattern) => (
-                  <Card 
-                    key={pattern.id} 
+                {planetaryPatterns.map(pattern => (
+                  <Card
+                    key={pattern.id}
                     className={`cursor-pointer transition-all hover:shadow-md ${
                       selectedPattern?.id === pattern.id ? 'ring-2 ring-purple-500' : ''
                     }`}
@@ -364,12 +382,12 @@ export function RelationalAstrologyTrainer({
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {selectedPattern.practice_scenarios.map((scenario) => (
-                      <Card 
-                        key={scenario.id} 
+                    {selectedPattern.practice_scenarios.map(scenario => (
+                      <Card
+                        key={scenario.id}
                         className={`border-l-4 ${
-                          completedScenarios.has(scenario.id) 
-                            ? 'border-l-green-500 bg-green-50' 
+                          completedScenarios.has(scenario.id)
+                            ? 'border-l-green-500 bg-green-50'
                             : 'border-l-blue-500'
                         }`}
                       >
@@ -388,9 +406,9 @@ export function RelationalAstrologyTrainer({
                             {scenario.situation_description}
                           </p>
                           <div className="flex gap-2">
-                            <Button 
-                              size="sm" 
-                              variant={completedScenarios.has(scenario.id) ? "outline" : "default"}
+                            <Button
+                              size="sm"
+                              variant={completedScenarios.has(scenario.id) ? 'outline' : 'default'}
                               onClick={() => setActiveScenario(scenario)}
                             >
                               {completedScenarios.has(scenario.id) ? 'Review' : 'Start Practice'}
@@ -485,18 +503,16 @@ export function RelationalAstrologyTrainer({
                 <Award className="h-5 w-5" />
                 Relational Mastery Progress
               </CardTitle>
-              <CardDescription>
-                Your journey in understanding cosmic relationships
-              </CardDescription>
+              <CardDescription>Your journey in understanding cosmic relationships</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {relevantPatterns.map((pattern) => {
-                const mastery = getPatternMastery(pattern.id);
-                const completedCount = pattern.practice_scenarios.filter(s => 
+              {relevantPatterns.map(pattern => {
+                const mastery = getPatternMastery(pattern.id)
+                const completedCount = pattern.practice_scenarios.filter(s =>
                   completedScenarios.has(s.id)
-                ).length;
-                const totalCount = pattern.practice_scenarios.length;
-                
+                ).length
+                const totalCount = pattern.practice_scenarios.length
+
                 return (
                   <div key={pattern.id} className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -510,21 +526,22 @@ export function RelationalAstrologyTrainer({
                     </div>
                     <Progress value={mastery} className="h-2" />
                     <div className="text-xs text-muted-foreground">
-                      {mastery < 25 && "🌱 Beginning awareness"}
-                      {mastery >= 25 && mastery < 50 && "🌿 Growing understanding"}
-                      {mastery >= 50 && mastery < 75 && "🌸 Developing mastery"}
-                      {mastery >= 75 && "🌟 Approaching mastery"}
+                      {mastery < 25 && '🌱 Beginning awareness'}
+                      {mastery >= 25 && mastery < 50 && '🌿 Growing understanding'}
+                      {mastery >= 50 && mastery < 75 && '🌸 Developing mastery'}
+                      {mastery >= 75 && '🌟 Approaching mastery'}
                     </div>
                   </div>
-                );
+                )
               })}
 
               <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
                 <h4 className="font-medium mb-2">Universal Integration Insight</h4>
                 <p className="text-sm text-muted-foreground">
-                  As you master these relational patterns, you develop the wisdom to see yourself 
-                  in others and others in yourself. Each interaction becomes an opportunity to 
-                  understand both your unique nature and the universal principles that connect all beings.
+                  As you master these relational patterns, you develop the wisdom to see yourself in
+                  others and others in yourself. Each interaction becomes an opportunity to
+                  understand both your unique nature and the universal principles that connect all
+                  beings.
                 </p>
               </div>
             </CardContent>
@@ -532,5 +549,5 @@ export function RelationalAstrologyTrainer({
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

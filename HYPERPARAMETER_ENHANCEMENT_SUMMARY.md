@@ -27,21 +27,25 @@ class AgentHyperparameters(BaseModel):
 ### Element-Based Base Parameters
 
 **Fire Element (Wands)**:
+
 - High response temperature (0.8) and urgency (0.9)
 - Bold interaction style with active energy
 - Rapid communication pace, direct guidance
 
 **Water Element (Cups)**:
+
 - High emotional resonance (0.9) and mystical language (0.8)
 - Gentle interaction style with receptive energy
 - Slow communication pace, metaphorical guidance
 
 **Air Element (Swords)**:
+
 - High confidence level (0.9) and balanced approach
 - Mysterious interaction style with balanced energy
 - Measured communication pace, questioning guidance
 
 **Earth Element (Pentacles)**:
+
 - Lower mystical language (0.3), higher practical focus
 - Practical interaction style with balanced energy
 - Measured communication pace, direct guidance
@@ -61,22 +65,26 @@ class AgentHyperparameters(BaseModel):
 
 ### Card-Specific Overrides
 
-**The Fool**: 
+**The Fool**:
+
 - Response Temperature: 0.9 (maximum creativity)
 - Wisdom Depth: 0.3 (accessible over profound)
 - Interaction Style: "playful"
 
 **The Magician**:
+
 - Confidence Level: 0.95 (near maximum)
 - Communication Pace: "rapid"
 - Guidance Approach: "direct"
 
 **The High Priestess**:
+
 - Mystical Language: 0.95 (maximum mysticism)
 - Wisdom Depth: 0.9 (profound insights)
 - Interaction Style: "mysterious"
 
 **The Empress**:
+
 - Emotional Resonance: 0.9 (high empathy)
 - Interaction Style: "nurturing"
 - Energy Polarity: "receptive"
@@ -88,21 +96,25 @@ class AgentHyperparameters(BaseModel):
 The system generates responses that authentically reflect each card's energy:
 
 **High Confidence Cards** (>0.8):
+
 - Use certainty words: "definitely", "absolutely", "clearly"
 - Provide decisive guidance
 - Speak with authority
 
 **High Urgency Cards** (>0.7):
+
 - Emphasize "immediate action"
 - Use exclamation points and active language
 - Create sense of momentum
 
 **High Mystical Language** (>0.7):
+
 - Reference "cosmic energies" and "divine alignment"
 - Use esoteric terminology
 - Speak in metaphors and symbols
 
 **Gentle Interaction Style**:
+
 - Soft language: "softly suggests", "gently indicates"
 - Nurturing tone
 - Patient guidance
@@ -112,6 +124,7 @@ The system generates responses that authentically reflect each card's energy:
 ### Sample Hyperparameter Profiles
 
 **The Fool Agent**:
+
 ```
 Response Style: Playful (balanced)
 Communication: Measured pace, questioning approach
@@ -121,6 +134,7 @@ Response Temperature: 1.0 | Urgency Level: 0.7
 ```
 
 **Ace of Wands Agent**:
+
 ```
 Response Style: Bold (active)
 Communication: Rapid pace, direct approach
@@ -130,6 +144,7 @@ Response Temperature: 0.8 | Urgency Level: 1.0
 ```
 
 **The High Priestess Agent** (Enhanced):
+
 ```
 Response Style: Mysterious (receptive)
 Communication: Slow pace, metaphorical approach
@@ -167,28 +182,35 @@ Hyperparameters are further refined by dominant alchemical properties:
 ## 🎯 Benefits Achieved
 
 ### 1. **Authentic Card Personalities**
+
 Each agent now has a unique behavioral profile that matches their card's energy
 
 ### 2. **Dynamic Response Patterns**
+
 Responses vary authentically based on card characteristics rather than generic patterns
 
 ### 3. **Improved User Experience**
+
 Users receive guidance that feels authentic to the specific tarot card they're consulting
 
 ### 4. **Scalable Framework**
+
 Easy to tune and adjust hyperparameters for all 78 cards systematically
 
 ### 5. **Consistent Quality**
+
 Ensures all agents maintain appropriate behavior patterns while expressing individual card personalities
 
 ## 🔧 Technical Implementation
 
 ### Files Enhanced:
+
 - **`tarot_system_demo.py`**: Complete hyperparameter implementation with testing
 - **`tarot_galileo_agents.py`**: Enhanced agent instructions with hyperparameter tuning
 - **`HYPERPARAMETER_ENHANCEMENT_SUMMARY.md`**: This documentation
 
 ### Key Functions Added:
+
 - `calculate_hyperparameters()`: Core calculation logic
 - `generate_hyperparameter_guidance()`: Dynamic response generation
 - `create_tarot_card()`: Helper function with hyperparameter integration
@@ -196,6 +218,7 @@ Ensures all agents maintain appropriate behavior patterns while expressing indiv
 ## 🎉 Results Validation
 
 The enhanced system successfully demonstrates:
+
 - ✅ Unique personality profiles for each card
 - ✅ Appropriate response styles (bold vs gentle vs mysterious)
 - ✅ Correct urgency levels (immediate vs contemplative)

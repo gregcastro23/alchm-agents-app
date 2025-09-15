@@ -120,7 +120,7 @@ export class ChartKineticIntegration {
         lon: this.birthChart.longitude,
         date: new Date().toISOString().split('T')[0],
         includeElemental: true,
-        includePlanetary: true
+        includePlanetary: true,
       })
 
       // Simulate transit data (in real implementation, would calculate actual transits)
@@ -135,13 +135,12 @@ export class ChartKineticIntegration {
 
       // Apply kinetic power amplification
       const currentPower = kinetics.power[kinetics.power.length - 1]?.power || 0.5
-      const kineticAmplification = 1.0 + (currentPower * 0.3) // Up to 30% boost
+      const kineticAmplification = 1.0 + currentPower * 0.3 // Up to 30% boost
       const finalVelocity = transitVelocity * kineticAmplification
 
       // Determine evolution rate
       const evolutionRate: EvolutionVelocityData['evolutionRate'] =
-        finalVelocity > 0.7 ? 'rapid' :
-        finalVelocity > 0.5 ? 'moderate' : 'steady'
+        finalVelocity > 0.7 ? 'rapid' : finalVelocity > 0.5 ? 'moderate' : 'steady'
 
       return {
         baseVelocity,
@@ -149,7 +148,7 @@ export class ChartKineticIntegration {
         activeTransits: transitModifiers.activeTransits,
         evolutionRate,
         consciousnessAcceleration: `${((finalVelocity - baseVelocity) * 100).toFixed(1)}% boost from transits`,
-        kineticAmplification
+        kineticAmplification,
       }
     } catch (error) {
       console.error('Evolution velocity calculation error:', error)
@@ -159,7 +158,7 @@ export class ChartKineticIntegration {
         activeTransits: [],
         evolutionRate: 'steady',
         consciousnessAcceleration: '0% boost',
-        kineticAmplification: 1.0
+        kineticAmplification: 1.0,
       }
     }
   }
@@ -173,17 +172,17 @@ export class ChartKineticIntegration {
         lat: this.birthChart.latitude,
         lon: this.birthChart.longitude,
         date: new Date().toISOString().split('T')[0],
-        includeElemental: true
+        includeElemental: true,
       })
 
       // Extract Earth element momentum for stability calculation
-      const earthMomentum = kinetics.elementalMomentum
-        ?.find((m: any) => m.p?.Earth !== undefined)?.p.Earth || 0.5
+      const earthMomentum =
+        kinetics.elementalMomentum?.find((m: any) => m.p?.Earth !== undefined)?.p.Earth || 0.5
 
       // Calculate retention scores for each memory
       const processedMemories = memories.map(memory => ({
         ...memory,
-        retentionScore: this.calculateRetentionScore(memory, earthMomentum)
+        retentionScore: this.calculateRetentionScore(memory, earthMomentum),
       }))
 
       // Separate retained vs at-risk memories
@@ -192,8 +191,7 @@ export class ChartKineticIntegration {
 
       // Determine stability level
       const stabilityLevel: MemoryRetentionData['stabilityLevel'] =
-        earthMomentum > 0.7 ? 'high' :
-        earthMomentum > 0.4 ? 'moderate' : 'low'
+        earthMomentum > 0.7 ? 'high' : earthMomentum > 0.4 ? 'moderate' : 'low'
 
       return {
         totalMemories: memories.length,
@@ -202,7 +200,7 @@ export class ChartKineticIntegration {
         earthInertia: earthMomentum,
         stabilityLevel,
         retainedMemories: retained.slice(0, 5), // Top 5 most stable
-        atRiskMemories: atRisk.slice(0, 3) // Top 3 most at risk
+        atRiskMemories: atRisk.slice(0, 3), // Top 3 most at risk
       }
     } catch (error) {
       console.error('Memory persistence calculation error:', error)
@@ -213,7 +211,7 @@ export class ChartKineticIntegration {
         earthInertia: 0.5,
         stabilityLevel: 'moderate',
         retainedMemories: [],
-        atRiskMemories: []
+        atRiskMemories: [],
       }
     }
   }
@@ -230,31 +228,34 @@ export class ChartKineticIntegration {
         lon: this.birthChart.longitude,
         startTime: weekAgo.toISOString(),
         endTime: new Date().toISOString(),
-        intervalMinutes: 1440 // Daily samples
+        intervalMinutes: 1440, // Daily samples
       })
 
       // Calculate average power over the week
-      const avgPower = kinetics.power?.reduce((sum: number, p: any) => sum + p.power, 0) / kinetics.power?.length || 0.5
+      const avgPower =
+        kinetics.power?.reduce((sum: number, p: any) => sum + p.power, 0) /
+          kinetics.power?.length || 0.5
 
       // Process each attachment for decay
       const decayProfiles = attachments.map(attachment => {
-        const ageInDays = (Date.now() - new Date(attachment.createdAt).getTime()) / (24 * 60 * 60 * 1000)
+        const ageInDays =
+          (Date.now() - new Date(attachment.createdAt).getTime()) / (24 * 60 * 60 * 1000)
 
         // Base exponential decay
         const baseDecay = Math.exp(-ageInDays * 0.1)
 
         // Power-influenced decay (lower power = faster decay)
-        const powerModifier = 0.5 + (avgPower * 0.5) // 0.5 to 1.0 modifier
+        const powerModifier = 0.5 + avgPower * 0.5 // 0.5 to 1.0 modifier
 
         // Type-specific decay rates
         const typeModifiers = {
-          'birth_chart': 0.95,  // Very slow decay
-          'moment_chart': 0.90, // Slow decay
-          'rune': 0.85,         // Moderate decay
-          'custom': 0.80        // Faster decay
+          birth_chart: 0.95, // Very slow decay
+          moment_chart: 0.9, // Slow decay
+          rune: 0.85, // Moderate decay
+          custom: 0.8, // Faster decay
         }
 
-        const typeModifier = typeModifiers[attachment.type as keyof typeof typeModifiers] || 0.80
+        const typeModifier = typeModifiers[attachment.type as keyof typeof typeModifiers] || 0.8
         const currentPower = attachment.initialPower * baseDecay * powerModifier * typeModifier
         const decayRate = 0.1 * (1 - powerModifier) * (1 / typeModifier)
 
@@ -265,7 +266,7 @@ export class ChartKineticIntegration {
           currentPower: Math.max(0, currentPower),
           decayRate,
           ageInDays,
-          criticalThreshold: 0.3
+          criticalThreshold: 0.3,
         }
       })
 
@@ -277,9 +278,10 @@ export class ChartKineticIntegration {
 
       return {
         attachments: decayProfiles,
-        averageDecayRate: decayProfiles.reduce((sum, a) => sum + a.decayRate, 0) / decayProfiles.length,
+        averageDecayRate:
+          decayProfiles.reduce((sum, a) => sum + a.decayRate, 0) / decayProfiles.length,
         criticalAttachments,
-        renewalRecommendations
+        renewalRecommendations,
       }
     } catch (error) {
       console.error('Attachment decay monitoring error:', error)
@@ -287,7 +289,7 @@ export class ChartKineticIntegration {
         attachments: [],
         averageDecayRate: 0.1,
         criticalAttachments: [],
-        renewalRecommendations: ['Unable to calculate decay - check kinetics connection']
+        renewalRecommendations: ['Unable to calculate decay - check kinetics connection'],
       }
     }
   }
@@ -302,7 +304,7 @@ export class ChartKineticIntegration {
         lon: this.birthChart.longitude,
         date: new Date().toISOString().split('T')[0],
         includeElemental: true,
-        includePlanetary: true
+        includePlanetary: true,
       })
 
       const currentPower = kinetics.power[kinetics.power.length - 1]?.power || 0.5
@@ -315,7 +317,10 @@ export class ChartKineticIntegration {
       const powerCapabilities = this.getPowerThresholdCapabilities(currentPower)
 
       // Special planetary alignment unlocks
-      const planetaryUnlocks = this.getPlanetaryUnlocks(agentId, kinetics.timing?.planetaryHours || [])
+      const planetaryUnlocks = this.getPlanetaryUnlocks(
+        agentId,
+        kinetics.timing?.planetaryHours || []
+      )
 
       const allUnlocked = [...baseCapabilities, ...powerCapabilities, ...planetaryUnlocks]
       const specialUnlocks = planetaryUnlocks
@@ -339,7 +344,7 @@ export class ChartKineticIntegration {
         powerNeeded,
         specialUnlocks,
         consciousnessLevel,
-        cyclePhase
+        cyclePhase,
       }
     } catch (error) {
       console.error('Power cycle calculation error:', error)
@@ -351,7 +356,7 @@ export class ChartKineticIntegration {
         powerNeeded: 0,
         specialUnlocks: [],
         consciousnessLevel: 'Active',
-        cyclePhase: 'trough'
+        cyclePhase: 'trough',
       }
     }
   }
@@ -359,12 +364,16 @@ export class ChartKineticIntegration {
   /**
    * Generate comprehensive chart kinetic profile
    */
-  async generateProfile(agentId: string, memories: AgentMemory[] = [], attachments: any[] = []): Promise<ChartKineticProfile> {
+  async generateProfile(
+    agentId: string,
+    memories: AgentMemory[] = [],
+    attachments: any[] = []
+  ): Promise<ChartKineticProfile> {
     const [evolutionVelocity, memoryRetention, powerCycles, attachmentDecay] = await Promise.all([
       this.calculateEvolutionVelocity(),
       this.calculateMemoryPersistence(memories),
       this.calculatePowerCycles(agentId, []),
-      this.monitorAttachmentDecay(attachments)
+      this.monitorAttachmentDecay(attachments),
     ])
 
     const currentTransits = await this.getCurrentTransits()
@@ -377,7 +386,7 @@ export class ChartKineticIntegration {
       powerCycles,
       attachmentDecay,
       lastUpdated: new Date(),
-      nextUpdate: new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
+      nextUpdate: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
     }
   }
 
@@ -389,7 +398,7 @@ export class ChartKineticIntegration {
       Sun: { sign: 'Virgo', degree: 20, aspect: 'conjunction', strength: 0.8 },
       Moon: { sign: 'Pisces', degree: 15, aspect: 'opposition', strength: 0.7 },
       Jupiter: { sign: 'Taurus', degree: 10, aspect: 'trine', strength: 0.6 },
-      Saturn: { sign: 'Aquarius', degree: 25, aspect: 'square', strength: 0.5 }
+      Saturn: { sign: 'Aquarius', degree: 25, aspect: 'square', strength: 0.5 },
     }
   }
 
@@ -406,7 +415,7 @@ export class ChartKineticIntegration {
           modifier = 0.15 * data.strength // Accelerates evolution
           break
         case 'trine':
-          modifier = 0.10 * data.strength // Smooth acceleration
+          modifier = 0.1 * data.strength // Smooth acceleration
           break
         case 'square':
           modifier = 0.05 * data.strength // Growth through challenge
@@ -431,11 +440,12 @@ export class ChartKineticIntegration {
     const repetitionFactor = Math.min(1.0, memory.repetitions / 10)
 
     // Inertia-based retention score
-    return Math.min(1.0,
-      earthMomentum * 0.4 +       // Inertia provides stability
-      ageFactor * 0.2 +           // Older memories have momentum
-      emotionalCharge * 0.3 +     // Emotional memories stick
-      repetitionFactor * 0.1      // Repetition reinforces
+    return Math.min(
+      1.0,
+      earthMomentum * 0.4 + // Inertia provides stability
+        ageFactor * 0.2 + // Older memories have momentum
+        emotionalCharge * 0.3 + // Emotional memories stick
+        repetitionFactor * 0.1 // Repetition reinforces
     )
   }
 
@@ -445,7 +455,7 @@ export class ChartKineticIntegration {
       'leonardo-da-vinci': ['artistic_vision', 'scientific_inquiry', 'invention_design'],
       'cleopatra-vii': ['strategic_planning', 'diplomatic_negotiation', 'leadership_presence'],
       'benjamin-franklin': ['inventive_thinking', 'witty_commentary', 'practical_wisdom'],
-      'carl-jung': ['psychological_analysis', 'archetypal_recognition', 'shadow_integration']
+      'carl-jung': ['psychological_analysis', 'archetypal_recognition', 'shadow_integration'],
     }
 
     return capabilities[agentId] || ['basic_reasoning', 'simple_responses']
@@ -489,7 +499,9 @@ export class ChartKineticIntegration {
     return 'Dormant'
   }
 
-  private determineCyclePhase(powerHistory: Array<{ power: number }>): PowerCycleData['cyclePhase'] {
+  private determineCyclePhase(
+    powerHistory: Array<{ power: number }>
+  ): PowerCycleData['cyclePhase'] {
     if (powerHistory.length < 2) return 'trough'
 
     const recent = powerHistory.slice(-3)
@@ -512,17 +524,23 @@ export class ChartKineticIntegration {
     }
 
     if (avgPower < 0.5) {
-      recommendations.push('Low power period - consider waiting for higher energy before renewing attachments')
+      recommendations.push(
+        'Low power period - consider waiting for higher energy before renewing attachments'
+      )
     } else if (avgPower > 0.7) {
       recommendations.push('High power period - excellent time for attachment renewal and creation')
     }
 
     const oldAttachments = profiles.filter(p => p.ageInDays > 30)
     if (oldAttachments.length > 0) {
-      recommendations.push(`${oldAttachments.length} attachments are over 30 days old - monitor for natural decay`)
+      recommendations.push(
+        `${oldAttachments.length} attachments are over 30 days old - monitor for natural decay`
+      )
     }
 
-    return recommendations.length > 0 ? recommendations : ['All attachments stable - no immediate action needed']
+    return recommendations.length > 0
+      ? recommendations
+      : ['All attachments stable - no immediate action needed']
   }
 }
 

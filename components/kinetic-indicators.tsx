@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from 'react'
 import { AlchemicalKineticsClient } from '@/lib/kinetics-client'
 import { routeTask } from '@/lib/agents/router'
-import { getAgentKineticProfile, calculateKineticCompatibility } from '@/lib/agents/kinetic-profiles'
+import {
+  getAgentKineticProfile,
+  calculateKineticCompatibility,
+} from '@/lib/agents/kinetic-profiles'
 
 // Types for kinetic group dynamics
 interface KineticGroupDynamics {
@@ -27,7 +30,7 @@ export function KineticIndicators({
   selectedAgents,
   userLocation = { lat: 37.7749, lon: -122.4194 },
   className = '',
-  variant = 'full'
+  variant = 'full',
 }: KineticIndicatorsProps) {
   const [dynamics, setDynamics] = useState<KineticGroupDynamics | null>(null)
   const [loading, setLoading] = useState(false)
@@ -58,7 +61,7 @@ export function KineticIndicators({
         lon: userLocation.lon,
         date: new Date().toISOString().split('T')[0],
         includeElemental: true,
-        includePlanetary: true
+        includePlanetary: true,
       })
 
       // Calculate pairwise resonances
@@ -108,9 +111,7 @@ export function KineticIndicators({
       // Determine momentum flow
       const power = kinetics.power[kinetics.power.length - 1]?.power || 0.5
       const momentumFlow: KineticGroupDynamics['momentumFlow'] =
-        power > 0.8 ? 'peak' :
-        power > 0.6 ? 'sustained' :
-        power > 0.3 ? 'building' : 'waning'
+        power > 0.8 ? 'peak' : power > 0.6 ? 'sustained' : power > 0.3 ? 'building' : 'waning'
 
       setDynamics({
         agentResonances: resonances,
@@ -119,9 +120,8 @@ export function KineticIndicators({
         optimalSpeaker,
         momentumFlow,
         currentHour,
-        seasonalInfluence: kinetics.timing?.seasonalInfluence || 'Neutral'
+        seasonalInfluence: kinetics.timing?.seasonalInfluence || 'Neutral',
       })
-
     } catch (err) {
       console.error('Kinetics calculation error:', err)
       setError('Unable to calculate group kinetics')
@@ -156,7 +156,9 @@ export function KineticIndicators({
 
   if (variant === 'compact') {
     return (
-      <div className={`p-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg ${className}`}>
+      <div
+        className={`p-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg ${className}`}
+      >
         <div className="flex items-center justify-between text-xs mb-1">
           <span className="text-gray-400">Group Harmony:</span>
           <span className={getHarmonyColor(dynamics.groupHarmony)}>
@@ -171,9 +173,7 @@ export function KineticIndicators({
         )}
 
         {dynamics.momentumFlow === 'peak' && (
-          <div className="text-xs text-green-400 animate-pulse">
-            🔥 Peak momentum flow
-          </div>
+          <div className="text-xs text-green-400 animate-pulse">🔥 Peak momentum flow</div>
         )}
       </div>
     )
@@ -181,11 +181,15 @@ export function KineticIndicators({
 
   // Full variant
   return (
-    <div className={`p-3 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 rounded-lg border border-gray-700/50 ${className}`}>
+    <div
+      className={`p-3 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 rounded-lg border border-gray-700/50 ${className}`}
+    >
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-medium text-gray-300">Group Kinetics</h4>
         <div className="flex items-center gap-2">
-          {loading && <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>}
+          {loading && (
+            <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+          )}
           <div className="text-xs text-gray-400">{dynamics.currentHour} Hour</div>
         </div>
       </div>
@@ -201,7 +205,7 @@ export function KineticIndicators({
         <div className="w-full bg-gray-700 rounded-full h-1.5">
           <div
             className={`h-1.5 rounded-full transition-all duration-500 ${getHarmonyBarColor(dynamics.groupHarmony)}`}
-            style={{width: `${dynamics.groupHarmony * 100}%`}}
+            style={{ width: `${dynamics.groupHarmony * 100}%` }}
           />
         </div>
         <div className="text-xs text-gray-500 mt-1">
@@ -229,7 +233,9 @@ export function KineticIndicators({
       <div className="mb-3">
         <div className="flex items-center justify-between text-xs mb-1">
           <span className="text-gray-400">Momentum Flow</span>
-          <span className={`px-2 py-1 rounded capitalize ${getMomentumColor(dynamics.momentumFlow)}`}>
+          <span
+            className={`px-2 py-1 rounded capitalize ${getMomentumColor(dynamics.momentumFlow)}`}
+          >
             {dynamics.momentumFlow}
           </span>
         </div>
@@ -267,7 +273,10 @@ export function KineticIndicators({
                 const agent1Profile = getAgentKineticProfile(agent1)
                 const agent2Profile = getAgentKineticProfile(agent2)
                 return (
-                  <div key={`${agent1}-${agent2}`} className="flex items-center justify-between text-xs">
+                  <div
+                    key={`${agent1}-${agent2}`}
+                    className="flex items-center justify-between text-xs"
+                  >
                     <span className="text-gray-500 truncate flex-1">
                       {agent1Profile?.name?.split(' ')[0]} × {agent2Profile?.name?.split(' ')[0]}
                     </span>
@@ -297,7 +306,7 @@ export function KineticIndicators({
 export function MomentumIndicator({
   agent1Id,
   agent2Id,
-  userLocation
+  userLocation,
 }: {
   agent1Id: string
   agent2Id: string
@@ -314,8 +323,8 @@ export function MomentumIndicator({
           payload: {
             agent1Id,
             agent2Id,
-            location: userLocation || { lat: 37.7749, lon: -122.4194 }
-          }
+            location: userLocation || { lat: 37.7749, lon: -122.4194 },
+          },
         })
 
         if (!result.degraded && result.output) {
@@ -356,9 +365,7 @@ export function MomentumIndicator({
         </div>
       </div>
       {momentum > 0.7 && (
-        <div className="text-xs text-green-400 mt-1 animate-pulse">
-          Excellent synergy detected!
-        </div>
+        <div className="text-xs text-green-400 mt-1 animate-pulse">Excellent synergy detected!</div>
       )}
     </div>
   )

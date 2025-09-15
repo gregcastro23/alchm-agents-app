@@ -1,73 +1,84 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  Star, 
-  Triangle, 
-  Square, 
-  Circle, 
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Star,
+  Triangle,
+  Square,
+  Circle,
   Hexagon,
   Info,
   TrendingUp,
   TrendingDown,
   Activity,
-  Zap
-} from "lucide-react"
-import { 
-  detectPatterns, 
-  getAspectSymbol, 
+  Zap,
+} from 'lucide-react'
+import {
+  detectPatterns,
+  getAspectSymbol,
   getAspectColor,
   type PlanetPosition,
   type Aspect,
   type PatternConfiguration,
-  type AspectType
-} from "@/lib/astrological-pattern-recognition"
+  type AspectType,
+} from '@/lib/astrological-pattern-recognition'
 
 interface AspectGridProps {
   planets: Record<string, { sign: string; degree: number; house: number }>
   className?: string
 }
 
-const PLANET_ORDER = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']
+const PLANET_ORDER = [
+  'sun',
+  'moon',
+  'mercury',
+  'venus',
+  'mars',
+  'jupiter',
+  'saturn',
+  'uranus',
+  'neptune',
+  'pluto',
+]
 const PLANET_SYMBOLS: Record<string, string> = {
-  sun: "☉",
-  moon: "☽", 
-  mercury: "☿",
-  venus: "♀",
-  mars: "♂",
-  jupiter: "♃",
-  saturn: "♄",
-  uranus: "♅",
-  neptune: "♆",
-  pluto: "♇"
+  sun: '☉',
+  moon: '☽',
+  mercury: '☿',
+  venus: '♀',
+  mars: '♂',
+  jupiter: '♃',
+  saturn: '♄',
+  uranus: '♅',
+  neptune: '♆',
+  pluto: '♇',
 }
 
 const PATTERN_ICONS: Record<string, React.ReactNode> = {
   'grand-trine': <Triangle className="w-4 h-4" />,
   't-square': <Square className="w-4 h-4" />,
   'grand-cross': <Square className="w-4 h-4" />,
-  'yod': <Triangle className="w-4 h-4 rotate-180" />,
-  'stellium': <Circle className="w-4 h-4" />,
+  yod: <Triangle className="w-4 h-4 rotate-180" />,
+  stellium: <Circle className="w-4 h-4" />,
   'mystic-rectangle': <Square className="w-4 h-4" />,
-  'kite': <Hexagon className="w-4 h-4" />
+  kite: <Hexagon className="w-4 h-4" />,
 }
 
 const PATTERN_COLORS: Record<string, string> = {
   'grand-trine': 'bg-blue-100 text-blue-800',
   't-square': 'bg-red-100 text-red-800',
   'grand-cross': 'bg-purple-100 text-purple-800',
-  'yod': 'bg-green-100 text-green-800',
-  'stellium': 'bg-orange-100 text-orange-800',
+  yod: 'bg-green-100 text-green-800',
+  stellium: 'bg-orange-100 text-orange-800',
   'mystic-rectangle': 'bg-indigo-100 text-indigo-800',
-  'kite': 'bg-cyan-100 text-cyan-800'
+  kite: 'bg-cyan-100 text-cyan-800',
 }
 
-export default function AspectGrid({ planets, className = "" }: AspectGridProps) {
+export default function AspectGrid({ planets, className = '' }: AspectGridProps) {
   const [aspects, setAspects] = useState<Aspect[]>([])
   const [patterns, setPatterns] = useState<PatternConfiguration[]>([])
   const [selectedAspect, setSelectedAspect] = useState<Aspect | null>(null)
@@ -81,7 +92,7 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
       planet,
       sign: data.sign,
       degree: data.degree,
-      house: data.house
+      house: data.house,
     }))
 
   useEffect(() => {
@@ -93,14 +104,14 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
   // Create aspect matrix for grid display
   const createAspectMatrix = () => {
     const matrix: Record<string, Record<string, Aspect | null>> = {}
-    
+
     PLANET_ORDER.forEach(p1 => {
       matrix[p1] = {}
       PLANET_ORDER.forEach(p2 => {
         matrix[p1][p2] = null
       })
     })
-    
+
     aspects.forEach(aspect => {
       if (matrix[aspect.planet1]?.[aspect.planet2] !== undefined) {
         matrix[aspect.planet1][aspect.planet2] = aspect
@@ -109,25 +120,32 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
         matrix[aspect.planet2][aspect.planet1] = aspect
       }
     })
-    
+
     return matrix
   }
 
   const aspectMatrix = createAspectMatrix()
 
   // Group aspects by type for analysis
-  const aspectsByType = aspects.reduce((acc, aspect) => {
-    if (!acc[aspect.type]) acc[aspect.type] = []
-    acc[aspect.type].push(aspect)
-    return acc
-  }, {} as Record<AspectType, Aspect[]>)
+  const aspectsByType = aspects.reduce(
+    (acc, aspect) => {
+      if (!acc[aspect.type]) acc[aspect.type] = []
+      acc[aspect.type].push(aspect)
+      return acc
+    },
+    {} as Record<AspectType, Aspect[]>
+  )
 
   const getAspectStrengthColor = (strength: Aspect['strength']) => {
     switch (strength) {
-      case 'exact': return 'text-red-600 font-bold'
-      case 'tight': return 'text-orange-600 font-semibold'
-      case 'moderate': return 'text-yellow-600'
-      default: return 'text-gray-500'
+      case 'exact':
+        return 'text-red-600 font-bold'
+      case 'tight':
+        return 'text-orange-600 font-semibold'
+      case 'moderate':
+        return 'text-yellow-600'
+      default:
+        return 'text-gray-500'
     }
   }
 
@@ -142,9 +160,9 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
           {aspects.length} aspects • {patterns.length} patterns detected
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent>
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+        <Tabs value={activeTab} onValueChange={v => setActiveTab(v as any)}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="grid">Aspect Grid</TabsTrigger>
             <TabsTrigger value="patterns">Patterns</TabsTrigger>
@@ -173,7 +191,7 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
                       </td>
                       {PLANET_ORDER.filter(p => planets[p]).map((planet2, j) => {
                         const aspect = aspectMatrix[planet1]?.[planet2]
-                        
+
                         if (i === j) {
                           // Diagonal - show planet name
                           return (
@@ -182,20 +200,24 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
                             </td>
                           )
                         }
-                        
+
                         if (!aspect) {
-                          return <td key={planet2} className="p-1 text-center">-</td>
+                          return (
+                            <td key={planet2} className="p-1 text-center">
+                              -
+                            </td>
+                          )
                         }
-                        
+
                         return (
                           <TooltipProvider key={planet2}>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <td 
+                                <td
                                   className="p-1 text-center cursor-pointer hover:bg-muted"
                                   onClick={() => setSelectedAspect(aspect)}
                                 >
-                                  <span 
+                                  <span
                                     className={`text-lg ${getAspectStrengthColor(aspect.strength)}`}
                                     style={{ color: getAspectColor(aspect.type) }}
                                   >
@@ -208,7 +230,9 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
                                   <div className="font-medium">
                                     {planet1} {getAspectSymbol(aspect.type)} {planet2}
                                   </div>
-                                  <div>{aspect.type} ({aspect.angle}°)</div>
+                                  <div>
+                                    {aspect.type} ({aspect.angle}°)
+                                  </div>
                                   <div>Orb: {aspect.orb.toFixed(2)}°</div>
                                   <div>Strength: {aspect.strength}</div>
                                   <div>{aspect.applying ? 'Applying' : 'Separating'}</div>
@@ -228,7 +252,16 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
             <div className="border-t pt-4">
               <h4 className="text-sm font-medium mb-2">Aspect Symbols</h4>
               <div className="grid grid-cols-3 md:grid-cols-6 gap-2 text-xs">
-                {(['conjunction', 'opposition', 'trine', 'square', 'sextile', 'quincunx'] as AspectType[]).map(type => (
+                {(
+                  [
+                    'conjunction',
+                    'opposition',
+                    'trine',
+                    'square',
+                    'sextile',
+                    'quincunx',
+                  ] as AspectType[]
+                ).map(type => (
                   <div key={type} className="flex items-center gap-1">
                     <span style={{ color: getAspectColor(type) }} className="text-lg">
                       {getAspectSymbol(type)}
@@ -252,8 +285,8 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
             ) : (
               <div className="space-y-3">
                 {patterns.map((pattern, index) => (
-                  <Card 
-                    key={index} 
+                  <Card
+                    key={index}
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => setSelectedPattern(pattern)}
                   >
@@ -268,17 +301,15 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
                             {pattern.strength.toFixed(0)}% strength
                           </Badge>
                         </div>
-                        {pattern.element && (
-                          <Badge variant="outline">{pattern.element}</Badge>
-                        )}
+                        {pattern.element && <Badge variant="outline">{pattern.element}</Badge>}
                       </div>
-                      
+
                       <div className="text-sm text-muted-foreground mb-2">
                         Planets: {pattern.planets.map(p => PLANET_SYMBOLS[p] || p).join(' - ')}
                       </div>
-                      
+
                       <p className="text-sm">{pattern.interpretation}</p>
-                      
+
                       <div className="mt-2 flex flex-wrap gap-1">
                         {pattern.aspects.map((aspect, i) => (
                           <Badge key={i} variant="secondary" className="text-xs">
@@ -302,7 +333,10 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
                 {Object.entries(aspectsByType).map(([type, typeAspects]) => (
                   <div key={type} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span style={{ color: getAspectColor(type as AspectType) }} className="text-lg">
+                      <span
+                        style={{ color: getAspectColor(type as AspectType) }}
+                        className="text-lg"
+                      >
                         {getAspectSymbol(type as AspectType)}
                       </span>
                       <span className="capitalize text-sm">{type}</span>
@@ -310,11 +344,11 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">{typeAspects.length}</Badge>
                       <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className="h-full bg-primary transition-all"
-                          style={{ 
+                          style={{
                             width: `${(typeAspects.length / aspects.length) * 100}%`,
-                            backgroundColor: getAspectColor(type as AspectType)
+                            backgroundColor: getAspectColor(type as AspectType),
                           }}
                         />
                       </div>
@@ -352,18 +386,14 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
                     <TrendingUp className="w-4 h-4 text-green-600" />
                     <span className="text-sm">Applying</span>
                   </div>
-                  <Badge variant="secondary">
-                    {aspects.filter(a => a.applying).length}
-                  </Badge>
+                  <Badge variant="secondary">{aspects.filter(a => a.applying).length}</Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-muted rounded">
                   <div className="flex items-center gap-2">
                     <TrendingDown className="w-4 h-4 text-blue-600" />
                     <span className="text-sm">Separating</span>
                   </div>
-                  <Badge variant="secondary">
-                    {aspects.filter(a => !a.applying).length}
-                  </Badge>
+                  <Badge variant="secondary">{aspects.filter(a => !a.applying).length}</Badge>
                 </div>
               </div>
             </div>
@@ -372,11 +402,10 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
             <div>
               <h4 className="text-sm font-medium mb-3">Most Aspected Planets</h4>
               <div className="space-y-2">
-                {PLANET_ORDER
-                  .filter(p => planets[p])
+                {PLANET_ORDER.filter(p => planets[p])
                   .map(planet => {
-                    const planetAspects = aspects.filter(a => 
-                      a.planet1 === planet || a.planet2 === planet
+                    const planetAspects = aspects.filter(
+                      a => a.planet1 === planet || a.planet2 === planet
                     )
                     return { planet, count: planetAspects.length }
                   })
@@ -391,7 +420,7 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary">{count} aspects</Badge>
                         <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
-                          <div 
+                          <div
                             className="h-full bg-primary transition-all"
                             style={{ width: `${(count / 10) * 100}%` }}
                           />
@@ -409,9 +438,10 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
           <div className="mt-4 p-3 bg-muted rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <h4 className="font-medium text-sm">
-                {selectedAspect.planet1} {getAspectSymbol(selectedAspect.type)} {selectedAspect.planet2}
+                {selectedAspect.planet1} {getAspectSymbol(selectedAspect.type)}{' '}
+                {selectedAspect.planet2}
               </h4>
-              <button 
+              <button
                 onClick={() => setSelectedAspect(null)}
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
@@ -432,7 +462,8 @@ export default function AspectGrid({ planets, className = "" }: AspectGridProps)
                 <span className="text-muted-foreground">Strength:</span> {selectedAspect.strength}
               </div>
               <div className="col-span-2">
-                <span className="text-muted-foreground">Direction:</span> {selectedAspect.applying ? 'Applying (strengthening)' : 'Separating (weakening)'}
+                <span className="text-muted-foreground">Direction:</span>{' '}
+                {selectedAspect.applying ? 'Applying (strengthening)' : 'Separating (weakening)'}
               </div>
             </div>
           </div>

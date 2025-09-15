@@ -1,57 +1,57 @@
 // Dynamic import of Galileo to avoid build issues
-let galileoModule: any = null;
+let galileoModule: any = null
 
 // Environment variables for Galileo configuration
-const GALILEO_API_KEY = process.env.GALILEO_API_KEY;
-const GALILEO_PROJECT = process.env.GALILEO_PROJECT || 'AlchmPlanetaryAgents';
-const QUANTITIES_STREAM = process.env.GALILEO_QUANTITIES_STREAM || 'alchm-quantities';
+const GALILEO_API_KEY = process.env.GALILEO_API_KEY
+const GALILEO_PROJECT = process.env.GALILEO_PROJECT || 'AlchmPlanetaryAgents'
+const QUANTITIES_STREAM = process.env.GALILEO_QUANTITIES_STREAM || 'alchm-quantities'
 
 // Initialize Galileo client dynamically when needed
-let galileoClient: any = null;
+let galileoClient: any = null
 
 async function initializeGalileoClient() {
   if (galileoClient || !GALILEO_API_KEY) {
-    return galileoClient;
+    return galileoClient
   }
 
   try {
     if (!galileoModule) {
       // Dynamic import to avoid build issues
-      galileoModule = await import('galileo');
+      galileoModule = await import('galileo')
     }
-    
+
     galileoClient = galileoModule.galileo({
       apiKey: GALILEO_API_KEY,
       project: GALILEO_PROJECT,
-    });
-    
-    return galileoClient;
+    })
+
+    return galileoClient
   } catch (error) {
-    console.error('Failed to initialize Galileo client:', error);
-    return null;
+    console.error('Failed to initialize Galileo client:', error)
+    return null
   }
 }
 
 export interface QuantitiesData {
-  Spirit: number;
-  Essence: number;
-  Matter: number;
-  Substance: number;
-  DayEssence: number;
-  NightEssence: number;
+  Spirit: number
+  Essence: number
+  Matter: number
+  Substance: number
+  DayEssence: number
+  NightEssence: number
 }
 
 export interface AlchemicalMetrics {
-  quantities: QuantitiesData;
-  dominantElement: string;
-  heat: number;
-  entropy: number;
-  reactivity: number;
-  energy: number;
-  sunSign: string;
-  chartRuler: string;
-  timestamp: string;
-  planetaryPositions?: Record<string, any>;
+  quantities: QuantitiesData
+  dominantElement: string
+  heat: number
+  entropy: number
+  reactivity: number
+  energy: number
+  sunSign: string
+  chartRuler: string
+  timestamp: string
+  planetaryPositions?: Record<string, any>
 }
 
 /**
@@ -61,16 +61,16 @@ export async function logQuantitiesToGalileo(
   metrics: AlchemicalMetrics,
   context: Record<string, any> = {}
 ): Promise<boolean> {
-  const client = await initializeGalileoClient();
-  
+  const client = await initializeGalileoClient()
+
   if (!client) {
-    console.warn('Galileo client not initialized - logging to console instead');
-    console.log('====== ALCHM QUANTITIES LOG ======');
-    console.log('Stream:', QUANTITIES_STREAM);
-    console.log('Metrics:', JSON.stringify(metrics, null, 2));
-    console.log('Context:', JSON.stringify(context, null, 2));
-    console.log('===================================');
-    return false;
+    console.warn('Galileo client not initialized - logging to console instead')
+    console.log('====== ALCHM QUANTITIES LOG ======')
+    console.log('Stream:', QUANTITIES_STREAM)
+    console.log('Metrics:', JSON.stringify(metrics, null, 2))
+    console.log('Context:', JSON.stringify(context, null, 2))
+    console.log('===================================')
+    return false
   }
 
   try {
@@ -107,26 +107,25 @@ export async function logQuantitiesToGalileo(
         day_essence: metrics.quantities.DayEssence,
         night_essence: metrics.quantities.NightEssence,
       },
-    };
+    }
 
     // Send to Galileo
-    await client.log(logEntry);
-    
-    console.log(`Successfully logged quantities to Galileo stream: ${QUANTITIES_STREAM}`);
-    return true;
-    
+    await client.log(logEntry)
+
+    console.log(`Successfully logged quantities to Galileo stream: ${QUANTITIES_STREAM}`)
+    return true
   } catch (error) {
-    console.error('Error logging quantities to Galileo:', error);
-    
+    console.error('Error logging quantities to Galileo:', error)
+
     // Fallback: log to console
-    console.log('====== ALCHM QUANTITIES LOG (FALLBACK) ======');
-    console.log('Stream:', QUANTITIES_STREAM);
-    console.log('Metrics:', JSON.stringify(metrics, null, 2));
-    console.log('Context:', JSON.stringify(context, null, 2));
-    console.log('Error:', error instanceof Error ? error.message : String(error));
-    console.log('=============================================');
-    
-    return false;
+    console.log('====== ALCHM QUANTITIES LOG (FALLBACK) ======')
+    console.log('Stream:', QUANTITIES_STREAM)
+    console.log('Metrics:', JSON.stringify(metrics, null, 2))
+    console.log('Context:', JSON.stringify(context, null, 2))
+    console.log('Error:', error instanceof Error ? error.message : String(error))
+    console.log('=============================================')
+
+    return false
   }
 }
 
@@ -138,11 +137,11 @@ export async function logQuantityTrends(
   previousQuantities: QuantitiesData,
   context: Record<string, any> = {}
 ): Promise<boolean> {
-  const client = await initializeGalileoClient();
-  
+  const client = await initializeGalileoClient()
+
   if (!client) {
-    console.warn('Galileo client not initialized for trends logging');
-    return false;
+    console.warn('Galileo client not initialized for trends logging')
+    return false
   }
 
   try {
@@ -154,7 +153,7 @@ export async function logQuantityTrends(
       substance_change: currentQuantities.Substance - previousQuantities.Substance,
       day_essence_change: currentQuantities.DayEssence - previousQuantities.DayEssence,
       night_essence_change: currentQuantities.NightEssence - previousQuantities.NightEssence,
-    };
+    }
 
     const logEntry = {
       stream: `${QUANTITIES_STREAM}-trends`,
@@ -171,14 +170,13 @@ export async function logQuantityTrends(
           ...context,
         },
       },
-    };
+    }
 
-    await client.log(logEntry);
-    return true;
-    
+    await client.log(logEntry)
+    return true
   } catch (error) {
-    console.error('Error logging quantity trends to Galileo:', error);
-    return false;
+    console.error('Error logging quantity trends to Galileo:', error)
+    return false
   }
 }
 
@@ -186,7 +184,7 @@ export async function logQuantityTrends(
  * Check if Galileo is properly configured for quantities tracking
  */
 export function isQuantitiesTrackingConfigured(): boolean {
-  return !!GALILEO_API_KEY;
+  return !!GALILEO_API_KEY
 }
 
 /**
@@ -198,5 +196,5 @@ export function getGalileoConfig() {
     project: GALILEO_PROJECT,
     quantitiesStream: QUANTITIES_STREAM,
     clientInitialized: !!galileoClient,
-  };
+  }
 }

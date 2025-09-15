@@ -3,7 +3,7 @@
  * Calculates precise moon phase and degree-specific lunar personalities
  */
 
-export type MoonPhase = 
+export type MoonPhase =
   | 'New Moon'
   | 'Waxing Crescent'
   | 'First Quarter'
@@ -67,7 +67,7 @@ const LUNAR_CYCLE_DAYS = 29.53059 // Average lunar cycle length
 export function calculateMoonPhase(date: Date = new Date()): MoonPhase {
   const moonAge = getMoonAge(date)
   const phaseProgress = (moonAge / LUNAR_CYCLE_DAYS) * 360 // Convert to degrees
-  
+
   if (phaseProgress < 11.25 || phaseProgress >= 348.75) {
     return 'New Moon'
   } else if (phaseProgress < 78.75) {
@@ -93,7 +93,7 @@ export function calculateMoonPhase(date: Date = new Date()): MoonPhase {
 function getMoonAge(date: Date): number {
   // Find the most recent new moon before the given date
   let lastNewMoon = NEW_MOON_DATES[0]
-  
+
   for (const newMoonDate of NEW_MOON_DATES) {
     if (newMoonDate <= date) {
       lastNewMoon = newMoonDate
@@ -101,16 +101,16 @@ function getMoonAge(date: Date): number {
       break
     }
   }
-  
+
   // Calculate days since last new moon
   const daysSince = (date.getTime() - lastNewMoon.getTime()) / (1000 * 60 * 60 * 24)
-  
+
   // Handle cycles beyond our known dates
   if (date > NEW_MOON_DATES[NEW_MOON_DATES.length - 1]) {
     const cyclesSince = Math.floor(daysSince / LUNAR_CYCLE_DAYS)
-    return daysSince - (cyclesSince * LUNAR_CYCLE_DAYS)
+    return daysSince - cyclesSince * LUNAR_CYCLE_DAYS
   }
-  
+
   return daysSince % LUNAR_CYCLE_DAYS
 }
 
@@ -120,14 +120,14 @@ function getMoonAge(date: Date): number {
 export function calculateMoonIllumination(date: Date = new Date()): number {
   const moonAge = getMoonAge(date)
   const phaseProgress = moonAge / LUNAR_CYCLE_DAYS
-  
+
   // Calculate illumination based on phase progress
   if (phaseProgress <= 0.5) {
     // Waxing: 0% to 100%
     return phaseProgress * 200
   } else {
     // Waning: 100% to 0%
-    return 200 - (phaseProgress * 200)
+    return 200 - phaseProgress * 200
   }
 }
 
@@ -145,11 +145,11 @@ export function getMoonDegree(date: Date = new Date()): number {
 export function getLunarDegreePersonality(degree: number, sign?: string): LunarDegreePersonality {
   const phase = getPhaseFromDegree(degree)
   const illumination = getIlluminationFromDegree(degree)
-  
+
   // Each degree has unique personality traits
   const personalities = generateDegreePersonalities()
   const personality = personalities[degree]
-  
+
   // Phase-specific emotional tones
   const emotionalTones: Record<MoonPhase, string> = {
     'New Moon': 'introspective and initiating',
@@ -159,15 +159,15 @@ export function getLunarDegreePersonality(degree: number, sign?: string): LunarD
     'Full Moon': 'illuminated and expressive',
     'Waning Gibbous': 'grateful and sharing',
     'Last Quarter': 'releasing and forgiving',
-    'Waning Crescent': 'contemplative and restful'
+    'Waning Crescent': 'contemplative and restful',
   }
-  
+
   // Communication styles based on degree ranges
   const communicationStyle = getCommunicationStyle(degree)
-  
+
   // Calculate alchemical bonuses based on phase and degree
   const alchemicalBonus = calculateAlchemicalBonus(phase, degree)
-  
+
   return {
     phase,
     degree,
@@ -177,7 +177,7 @@ export function getLunarDegreePersonality(degree: number, sign?: string): LunarD
     communicationStyle,
     strengths: getStrengths(phase, degree),
     challenges: getChallenges(phase, degree),
-    alchemicalBonus
+    alchemicalBonus,
   }
 }
 
@@ -203,7 +203,7 @@ function getIlluminationFromDegree(degree: number): number {
   if (normalized <= 0.5) {
     return normalized * 200
   } else {
-    return 200 - (normalized * 200)
+    return 200 - normalized * 200
   }
 }
 
@@ -212,15 +212,15 @@ function getIlluminationFromDegree(degree: number): number {
  */
 function generateDegreePersonalities(): string[] {
   const personalities: string[] = []
-  
+
   // Generate 360 unique personalities based on degree
   for (let i = 0; i < 360; i++) {
     const phase = getPhaseFromDegree(i)
     const decan = Math.floor(i / 10) // 36 decans
     const microPhase = i % 30 // Position within zodiac sign
-    
+
     let personality = ''
-    
+
     // Base personality from phase
     const phaseTraits: Record<MoonPhase, string> = {
       'New Moon': 'pioneering',
@@ -230,27 +230,49 @@ function generateDegreePersonalities(): string[] {
       'Full Moon': 'illuminating',
       'Waning Gibbous': 'disseminating',
       'Last Quarter': 'reorganizing',
-      'Waning Crescent': 'surrendering'
+      'Waning Crescent': 'surrendering',
     }
-    
+
     // Add decan-specific modifier
     const decanModifiers = [
-      'bold', 'steady', 'curious', 'nurturing', 'creative', 'analytical',
-      'harmonizing', 'transformative', 'adventurous', 'ambitious', 'innovative', 'compassionate'
+      'bold',
+      'steady',
+      'curious',
+      'nurturing',
+      'creative',
+      'analytical',
+      'harmonizing',
+      'transformative',
+      'adventurous',
+      'ambitious',
+      'innovative',
+      'compassionate',
     ]
-    
+
     // Add micro-phase detail
     const microModifiers = [
-      'initiating', 'building', 'stabilizing', 'questioning', 'expanding',
-      'perfecting', 'balancing', 'intensifying', 'philosophizing', 'structuring',
-      'revolutionizing', 'transcending', 'integrating', 'crystallizing', 'releasing'
+      'initiating',
+      'building',
+      'stabilizing',
+      'questioning',
+      'expanding',
+      'perfecting',
+      'balancing',
+      'intensifying',
+      'philosophizing',
+      'structuring',
+      'revolutionizing',
+      'transcending',
+      'integrating',
+      'crystallizing',
+      'releasing',
     ]
-    
+
     personality = `${phaseTraits[phase]}, ${decanModifiers[decan % 12]} and ${microModifiers[Math.floor(microPhase / 2)]}`
-    
+
     personalities.push(personality)
   }
-  
+
   return personalities
 }
 
@@ -270,9 +292,9 @@ function getCommunicationStyle(degree: number): string {
     'philosophical and expansive', // 240-269
     'structured and authoritative', // 270-299
     'innovative and detached', // 300-329
-    'intuitive and compassionate' // 330-359
+    'intuitive and compassionate', // 330-359
   ]
-  
+
   const index = Math.floor(degree / 30)
   return styles[index] || styles[0]
 }
@@ -289,14 +311,12 @@ function getStrengths(phase: MoonPhase, degree: number): string[] {
     'Full Moon': ['illumination', 'fulfillment', 'celebration'],
     'Waning Gibbous': ['wisdom', 'gratitude', 'sharing'],
     'Last Quarter': ['release', 'forgiveness', 'transformation'],
-    'Waning Crescent': ['rest', 'reflection', 'preparation']
+    'Waning Crescent': ['rest', 'reflection', 'preparation'],
   }
-  
+
   // Add degree-specific strength
-  const degreeStrength = degree < 180 
-    ? 'building momentum' 
-    : 'integrating wisdom'
-  
+  const degreeStrength = degree < 180 ? 'building momentum' : 'integrating wisdom'
+
   return [...phaseStrengths[phase], degreeStrength]
 }
 
@@ -312,21 +332,22 @@ function getChallenges(phase: MoonPhase, degree: number): string[] {
     'Full Moon': ['overwhelm', 'exposure', 'emotional intensity'],
     'Waning Gibbous': ['letting go', 'overgiving', 'depletion'],
     'Last Quarter': ['endings', 'crisis', 'breakdown'],
-    'Waning Crescent': ['exhaustion', 'isolation', 'confusion']
+    'Waning Crescent': ['exhaustion', 'isolation', 'confusion'],
   }
-  
+
   // Add degree-specific challenge
-  const degreeChallenge = (degree % 90) < 45 
-    ? 'maintaining focus' 
-    : 'accepting change'
-  
+  const degreeChallenge = degree % 90 < 45 ? 'maintaining focus' : 'accepting change'
+
   return [...phaseChallenges[phase], degreeChallenge]
 }
 
 /**
  * Calculate alchemical bonus based on phase and degree
  */
-function calculateAlchemicalBonus(phase: MoonPhase, degree: number): {
+function calculateAlchemicalBonus(
+  phase: MoonPhase,
+  degree: number
+): {
   spirit: number
   essence: number
   matter: number
@@ -341,19 +362,19 @@ function calculateAlchemicalBonus(phase: MoonPhase, degree: number): {
     'Full Moon': { spirit: 0.5, essence: 0.7, matter: 0.5, substance: 0.4 },
     'Waning Gibbous': { spirit: 0.4, essence: 0.6, matter: 0.6, substance: 0.5 },
     'Last Quarter': { spirit: 0.3, essence: 0.5, matter: 0.5, substance: 0.4 },
-    'Waning Crescent': { spirit: 0.2, essence: 0.4, matter: 0.4, substance: 0.3 }
+    'Waning Crescent': { spirit: 0.2, essence: 0.4, matter: 0.4, substance: 0.3 },
   }
-  
+
   const base = phaseBase[phase]
-  
+
   // Add degree-specific modulation (subtle variations)
   const degreeModulation = Math.sin((degree * Math.PI) / 180) * 0.1
-  
+
   return {
     spirit: Math.max(0, base.spirit + degreeModulation),
     essence: Math.max(0, base.essence + degreeModulation * 0.5),
     matter: Math.max(0, base.matter - degreeModulation * 0.3),
-    substance: Math.max(0, base.substance + degreeModulation * 0.2)
+    substance: Math.max(0, base.substance + degreeModulation * 0.2),
   }
 }
 
@@ -369,7 +390,7 @@ export function getMoonPhaseEmoji(phase: MoonPhase): string {
     'Full Moon': '🌕',
     'Waning Gibbous': '🌖',
     'Last Quarter': '🌗',
-    'Waning Crescent': '🌘'
+    'Waning Crescent': '🌘',
   }
   return emojis[phase]
 }

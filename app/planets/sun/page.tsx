@@ -5,9 +5,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { calculateReturnPattern, identifyPlanetaryThemes, findHistoricalPatterns } from '@/lib/transit-patterns'
-import { findLastOccurrence, findNextOccurrence, getPlanetCycleLength } from '@/lib/historical-transits'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  calculateReturnPattern,
+  identifyPlanetaryThemes,
+  findHistoricalPatterns,
+} from '@/lib/transit-patterns'
+import {
+  findLastOccurrence,
+  findNextOccurrence,
+  getPlanetCycleLength,
+} from '@/lib/historical-transits'
 import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
 import sunData from '@/lib/planets/sun'
 import { Sun, Calendar, History, TrendingUp, Info } from 'lucide-react'
@@ -15,14 +29,26 @@ import { Sun, Calendar, History, TrendingUp, Info } from 'lucide-react'
 export default function SunPlanetPage() {
   const [selectedSign, setSelectedSign] = useState('Leo')
   const [selectedDegree, setSelectedDegree] = useState(15)
-  const [currentPosition, setCurrentPosition] = useState<{ sign: string; degree: string } | null>(null)
+  const [currentPosition, setCurrentPosition] = useState<{ sign: string; degree: string } | null>(
+    null
+  )
   const [themes, setThemes] = useState<any>(null)
   const [lastOccurrence, setLastOccurrence] = useState<any>(null)
   const [nextOccurrence, setNextOccurrence] = useState<any>(null)
 
   const signs = [
-    'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
   ]
 
   useEffect(() => {
@@ -56,10 +82,10 @@ export default function SunPlanetPage() {
 
   const formatDate = (date: Date | undefined) => {
     if (!date) return 'Unknown'
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     })
   }
 
@@ -126,14 +152,17 @@ export default function SunPlanetPage() {
                 <div>
                   <h4 className="font-semibold mb-2">Core Identity</h4>
                   <p className="text-sm text-muted-foreground">
-                    The Sun represents your core self, ego, and life purpose. It illuminates your path and shows where you shine brightest.
+                    The Sun represents your core self, ego, and life purpose. It illuminates your
+                    path and shows where you shine brightest.
                   </p>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Keywords</h4>
                   <div className="flex flex-wrap gap-2">
                     {getSunKeywords().map((keyword: string) => (
-                      <Badge key={keyword} variant="secondary">{keyword}</Badge>
+                      <Badge key={keyword} variant="secondary">
+                        {keyword}
+                      </Badge>
                     ))}
                   </div>
                 </div>
@@ -163,16 +192,16 @@ export default function SunPlanetPage() {
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <span className="text-muted-foreground">Distance from Earth:</span>
                   <span>{sunData.AstronomicalData?.DistanceFromEarth?.Minimum}</span>
-                  
+
                   <span className="text-muted-foreground">Diameter:</span>
                   <span>{sunData.AstronomicalData?.Diameter}</span>
-                  
+
                   <span className="text-muted-foreground">Surface Temperature:</span>
                   <span>{sunData.AstronomicalData?.SurfaceTemperature}</span>
-                  
+
                   <span className="text-muted-foreground">Rotation Period:</span>
                   <span>{sunData.AstronomicalData?.RotationPeriod}</span>
-                  
+
                   <span className="text-muted-foreground">Orbit Period:</span>
                   <span>{sunData.AstronomicalData?.OrbitPeriod}</span>
                 </div>
@@ -214,9 +243,7 @@ export default function SunPlanetPage() {
                 <History className="h-5 w-5" />
                 Historical Context for {selectedSign}
               </CardTitle>
-              <CardDescription>
-                Explore when the Sun was last in this position
-              </CardDescription>
+              <CardDescription>Explore when the Sun was last in this position</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-4">
@@ -226,18 +253,25 @@ export default function SunPlanetPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {signs.map(sign => (
-                      <SelectItem key={sign} value={sign}>{sign}</SelectItem>
+                      <SelectItem key={sign} value={sign}>
+                        {sign}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                
-                <Select value={selectedDegree.toString()} onValueChange={(v) => setSelectedDegree(parseInt(v))}>
+
+                <Select
+                  value={selectedDegree.toString()}
+                  onValueChange={v => setSelectedDegree(parseInt(v))}
+                >
                   <SelectTrigger className="w-[120px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {Array.from({ length: 30 }, (_, i) => i + 1).map(deg => (
-                      <SelectItem key={deg} value={deg.toString()}>{deg}°</SelectItem>
+                      <SelectItem key={deg} value={deg.toString()}>
+                        {deg}°
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -249,7 +283,9 @@ export default function SunPlanetPage() {
                     <h4 className="font-semibold mb-2">Themes for Sun in {selectedSign}</h4>
                     <div className="flex flex-wrap gap-2">
                       {themes.themes?.map((theme: string) => (
-                        <Badge key={theme} variant="outline">{theme}</Badge>
+                        <Badge key={theme} variant="outline">
+                          {theme}
+                        </Badge>
                       ))}
                     </div>
                   </div>
@@ -258,7 +294,9 @@ export default function SunPlanetPage() {
                     <h4 className="font-semibold mb-2">Archetypal Expressions</h4>
                     <div className="flex flex-wrap gap-2">
                       {themes.archetypes?.map((archetype: string) => (
-                        <Badge key={archetype} variant="secondary">{archetype}</Badge>
+                        <Badge key={archetype} variant="secondary">
+                          {archetype}
+                        </Badge>
                       ))}
                     </div>
                   </div>
@@ -292,15 +330,14 @@ export default function SunPlanetPage() {
                 <Calendar className="h-5 w-5" />
                 Solar Cycles
               </CardTitle>
-              <CardDescription>
-                Understanding the Sun's annual journey
-              </CardDescription>
+              <CardDescription>Understanding the Sun's annual journey</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-4 bg-yellow-50/50 dark:bg-yellow-900/20 rounded-lg">
                 <h4 className="font-semibold mb-2">Annual Solar Return</h4>
                 <p className="text-sm text-muted-foreground mb-3">
-                  The Sun returns to its natal position once per year, marking your birthday and a new solar year.
+                  The Sun returns to its natal position once per year, marking your birthday and a
+                  new solar year.
                 </p>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -377,8 +414,10 @@ export default function SunPlanetPage() {
                 <p className="text-muted-foreground mb-4">
                   Consult with the Solar consciousness agent
                 </p>
-                <Button 
-                  onClick={() => window.location.href = `/planetary-agents?planet=Sun&sign=${selectedSign}&degree=${selectedDegree}`}
+                <Button
+                  onClick={() =>
+                    (window.location.href = `/agents/Sun/${encodeURIComponent(selectedSign)}/${selectedDegree}`)
+                  }
                 >
                   Start Solar Consultation
                 </Button>

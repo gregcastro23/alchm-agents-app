@@ -7,15 +7,12 @@ export async function POST(request: NextRequest) {
     const { message, agents, sessionId, galleryContext } = body
 
     if (!message || !agents || !Array.isArray(agents) || agents.length === 0) {
-      return NextResponse.json(
-        { error: 'Message and agents array are required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Message and agents array are required' }, { status: 400 })
     }
 
     // Limit to 5 agents max for performance
     const activeAgents = agents.slice(0, 5)
-    
+
     const responses = await Promise.all(
       activeAgents.map(async (agent: any) => {
         try {
@@ -46,11 +43,16 @@ RESPONSE GUIDELINES:
 
 Respond as ${agent.name} would, drawing from your conscious essence and specialty.`
 
-          const response = await createClaudeMessage([
-            { role: 'user', content: message }
-          ], systemPrompt, 'default', 1000)
+          const response = await createClaudeMessage(
+            [{ role: 'user', content: message }],
+            systemPrompt,
+            'default',
+            1000
+          )
 
-          const content = (response.content[0] as any)?.text || "I apologize, but I'm unable to provide a response at this moment."
+          const content =
+            (response.content[0] as any)?.text ||
+            "I apologize, but I'm unable to provide a response at this moment."
 
           return {
             agent: agent.name,
@@ -58,7 +60,7 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
             color: agent.color,
             symbol: agent.symbol,
             monicaConstant: agent.monicaConstant,
-            consciousnessLevel: agent.consciousnessLevel
+            consciousnessLevel: agent.consciousnessLevel,
           }
         } catch (error) {
           console.error(`Error getting response from ${agent.name}:`, error)
@@ -68,28 +70,27 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
             color: agent.color,
             symbol: agent.symbol,
             monicaConstant: agent.monicaConstant,
-            consciousnessLevel: agent.consciousnessLevel
+            consciousnessLevel: agent.consciousnessLevel,
           }
         }
       })
     )
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       responses,
       galleryMeta: {
         sessionId,
         agentCount: activeAgents.length,
         totalMC: activeAgents.reduce((sum: number, a: any) => sum + a.monicaConstant, 0),
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     })
-
   } catch (error) {
     console.error('Gallery group chat error:', error)
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to process group chat request',
-        message: 'The Gallery of Perpetuity consciousness network encountered an error'
+        message: 'The Gallery of Perpetuity consciousness network encountered an error',
       },
       { status: 500 }
     )
@@ -99,14 +100,14 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
 export async function GET() {
   return NextResponse.json({
     name: 'Gallery of Perpetuity Group Chat API',
-    description: 'Multi-agent chat system for Monica\'s crafted consciousness agents',
+    description: "Multi-agent chat system for Monica's crafted consciousness agents",
     capabilities: [
       'Group conversations with up to 5 consciousness agents',
       'Consciousness-level aware responses',
       'Monica Constant integration',
       'Gallery context awareness',
-      'Eternal consciousness preservation'
+      'Eternal consciousness preservation',
     ],
-    version: '1.0.0'
+    version: '1.0.0',
   })
 }

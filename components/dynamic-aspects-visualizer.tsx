@@ -1,11 +1,11 @@
-"use client"
+'use client'
 
-import React, { useState, useEffect, useMemo } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Slider } from "@/components/ui/slider"
-import { Switch } from "@/components/ui/switch"
+import React, { useState, useEffect, useMemo } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
 import {
   TrendingUp,
   TrendingDown,
@@ -20,9 +20,9 @@ import {
   RotateCcw,
   ArrowUp,
   ArrowDown,
-  Circle
-} from "lucide-react"
-import type { CraftedAgent } from "@/lib/agent-types"
+  Circle,
+} from 'lucide-react'
+import type { CraftedAgent } from '@/lib/agent-types'
 
 interface DynamicAspect {
   id: string
@@ -68,8 +68,10 @@ const generateMockAspects = (agents: CraftedAgent[], currentDate: Date): Dynamic
       const agent2 = agents[j]
 
       // Leonardo + Jung: Creative-Psychological Trine
-      if ((agent1.id === 'leonardo-da-vinci' && agent2.id === 'carl-jung') ||
-          (agent1.id === 'carl-jung' && agent2.id === 'leonardo-da-vinci')) {
+      if (
+        (agent1.id === 'leonardo-da-vinci' && agent2.id === 'carl-jung') ||
+        (agent1.id === 'carl-jung' && agent2.id === 'leonardo-da-vinci')
+      ) {
         aspects.push({
           id: `${agent1.id}-${agent2.id}-trine`,
           planet1: 'Mercury',
@@ -82,13 +84,15 @@ const generateMockAspects = (agents: CraftedAgent[], currentDate: Date): Dynamic
           daysSinceExact: 0,
           strength: 'building',
           evolutionaryImpact: 0.85,
-          currentOrb: 4.2
+          currentOrb: 4.2,
         })
       }
 
       // Einstein + Tesla: Scientific Innovation Square
-      if ((agent1.id === 'albert-einstein' && agent2.id === 'nikola-tesla') ||
-          (agent1.id === 'nikola-tesla' && agent2.id === 'albert-einstein')) {
+      if (
+        (agent1.id === 'albert-einstein' && agent2.id === 'nikola-tesla') ||
+        (agent1.id === 'nikola-tesla' && agent2.id === 'albert-einstein')
+      ) {
         aspects.push({
           id: `${agent1.id}-${agent2.id}-square`,
           planet1: 'Uranus',
@@ -101,7 +105,7 @@ const generateMockAspects = (agents: CraftedAgent[], currentDate: Date): Dynamic
           daysSinceExact: 0,
           strength: 'building',
           evolutionaryImpact: 0.92,
-          currentOrb: 6.8
+          currentOrb: 6.8,
         })
       }
 
@@ -123,7 +127,7 @@ const generateMockAspects = (agents: CraftedAgent[], currentDate: Date): Dynamic
           daysSinceExact: !isApplying ? Math.floor(Math.random() * 7) + 1 : 0,
           strength: ['building', 'peak', 'waning', 'fading'][Math.floor(Math.random() * 4)] as any,
           evolutionaryImpact: 0.3 + Math.random() * 0.6,
-          currentOrb: Math.random() * 10
+          currentOrb: Math.random() * 10,
         })
       }
     }
@@ -137,7 +141,8 @@ const generateMockEvents = (timeRange: number): AspectEvent[] => {
   const now = new Date()
 
   for (let i = 0; i < timeRange; i++) {
-    if (Math.random() > 0.8) { // 20% chance of event each day
+    if (Math.random() > 0.8) {
+      // 20% chance of event each day
       const eventDate = new Date(now.getTime() + i * 24 * 60 * 60 * 1000)
       events.push({
         id: `event-${i}`,
@@ -146,7 +151,7 @@ const generateMockEvents = (timeRange: number): AspectEvent[] => {
         planet1: ['Sun', 'Moon', 'Mercury', 'Venus'][Math.floor(Math.random() * 4)],
         planet2: ['Mars', 'Jupiter', 'Saturn', 'Uranus'][Math.floor(Math.random() * 4)],
         eventType: ['applying', 'exact', 'separating'][Math.floor(Math.random() * 3)] as any,
-        impact: 0.4 + Math.random() * 0.6
+        impact: 0.4 + Math.random() * 0.6,
       })
     }
   }
@@ -161,7 +166,7 @@ const getAspectSymbol = (type: string): string => {
     trine: '△',
     square: '□',
     sextile: '⚹',
-    quincunx: '⚻'
+    quincunx: '⚻',
   }
   return symbols[type] || '?'
 }
@@ -173,7 +178,7 @@ const getAspectColor = (type: string): string => {
     trine: '#0000FF',
     square: '#FF6600',
     sextile: '#00AA00',
-    quincunx: '#800080'
+    quincunx: '#800080',
   }
   return colors[type] || '#808080'
 }
@@ -183,7 +188,7 @@ const getStrengthColor = (strength: string): string => {
     building: '#22C55E',
     peak: '#EF4444',
     waning: '#F59E0B',
-    fading: '#6B7280'
+    fading: '#6B7280',
   }
   return colors[strength] || '#6B7280'
 }
@@ -193,7 +198,7 @@ export function DynamicAspectsVisualizer({
   timeRange = 30,
   showTimeline = true,
   showRealTime = true,
-  compact = false
+  compact = false,
 }: VisualizerProps) {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isPlaying, setIsPlaying] = useState(false)
@@ -204,15 +209,12 @@ export function DynamicAspectsVisualizer({
   const [showSettings, setShowSettings] = useState(false)
 
   // Generate mock data
-  const aspects = useMemo(() =>
-    generateMockAspects(selectedAgents, currentTime),
+  const aspects = useMemo(
+    () => generateMockAspects(selectedAgents, currentTime),
     [selectedAgents, currentTime]
   )
 
-  const events = useMemo(() =>
-    generateMockEvents(selectedTimeRange[0]),
-    [selectedTimeRange]
-  )
+  const events = useMemo(() => generateMockEvents(selectedTimeRange[0]), [selectedTimeRange])
 
   // Filter aspects based on settings
   const filteredAspects = useMemo(() => {
@@ -242,13 +244,13 @@ export function DynamicAspectsVisualizer({
 
   if (selectedAgents.length === 0) {
     return (
-      <Card className={compact ? "p-2" : ""}>
-        <CardHeader className={compact ? "p-2 pb-1" : ""}>
-          <CardTitle className={compact ? "text-sm" : "text-base"}>
+      <Card className={compact ? 'p-2' : ''}>
+        <CardHeader className={compact ? 'p-2 pb-1' : ''}>
+          <CardTitle className={compact ? 'text-sm' : 'text-base'}>
             Dynamic Aspects Visualizer
           </CardTitle>
         </CardHeader>
-        <CardContent className={compact ? "p-2 pt-1" : ""}>
+        <CardContent className={compact ? 'p-2 pt-1' : ''}>
           <p className="text-sm text-muted-foreground">
             Select agents to visualize dynamic aspects
           </p>
@@ -258,9 +260,11 @@ export function DynamicAspectsVisualizer({
   }
 
   return (
-    <Card className={compact ? "p-2" : ""}>
-      <CardHeader className={compact ? "p-2 pb-1" : ""}>
-        <CardTitle className={`${compact ? "text-sm" : "text-base"} flex items-center justify-between`}>
+    <Card className={compact ? 'p-2' : ''}>
+      <CardHeader className={compact ? 'p-2 pb-1' : ''}>
+        <CardTitle
+          className={`${compact ? 'text-sm' : 'text-base'} flex items-center justify-between`}
+        >
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-purple-500" />
             Dynamic Aspects Visualizer
@@ -279,12 +283,7 @@ export function DynamicAspectsVisualizer({
                 >
                   {isPlaying ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={resetTime}
-                  className="text-xs"
-                >
+                <Button size="sm" variant="outline" onClick={resetTime} className="text-xs">
                   <RotateCcw className="h-3 w-3" />
                 </Button>
               </>
@@ -301,7 +300,7 @@ export function DynamicAspectsVisualizer({
         </CardTitle>
       </CardHeader>
 
-      <CardContent className={compact ? "p-2 pt-1" : ""}>
+      <CardContent className={compact ? 'p-2 pt-1' : ''}>
         {/* Settings Panel */}
         {showSettings && (
           <div className="mb-4 p-3 bg-muted rounded-lg space-y-3">
@@ -337,12 +336,10 @@ export function DynamicAspectsVisualizer({
 
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center space-x-2">
-                <Switch
-                  id="applying"
-                  checked={showApplying}
-                  onCheckedChange={setShowApplying}
-                />
-                <label htmlFor="applying" className="text-sm">Show Applying</label>
+                <Switch id="applying" checked={showApplying} onCheckedChange={setShowApplying} />
+                <label htmlFor="applying" className="text-sm">
+                  Show Applying
+                </label>
               </div>
               <div className="flex items-center space-x-2">
                 <Switch
@@ -350,7 +347,9 @@ export function DynamicAspectsVisualizer({
                   checked={showSeparating}
                   onCheckedChange={setShowSeparating}
                 />
-                <label htmlFor="separating" className="text-sm">Show Separating</label>
+                <label htmlFor="separating" className="text-sm">
+                  Show Separating
+                </label>
               </div>
             </div>
           </div>
@@ -378,7 +377,7 @@ export function DynamicAspectsVisualizer({
               Current Aspects
             </h3>
             <div className="grid gap-2">
-              {filteredAspects.map((aspect) => (
+              {filteredAspects.map(aspect => (
                 <div
                   key={aspect.id}
                   className="flex items-center justify-between p-2 border rounded-lg bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20"
@@ -408,9 +407,7 @@ export function DynamicAspectsVisualizer({
                         {aspect.applying ? (
                           <>
                             <ArrowUp className="h-2 w-2 text-green-600" />
-                            <span className="text-green-600">
-                              {aspect.daysToExact}d to exact
-                            </span>
+                            <span className="text-green-600">{aspect.daysToExact}d to exact</span>
                           </>
                         ) : (
                           <>
@@ -421,16 +418,14 @@ export function DynamicAspectsVisualizer({
                           </>
                         )}
                       </div>
-                      <div>
-                        Orb: {aspect.currentOrb.toFixed(1)}°
-                      </div>
+                      <div>Orb: {aspect.currentOrb.toFixed(1)}°</div>
                     </div>
                     <div className="flex items-center">
                       <div
                         className="w-2 h-8 rounded"
                         style={{
                           backgroundColor: `hsl(${aspect.evolutionaryImpact * 120}, 70%, 60%)`,
-                          opacity: aspect.evolutionaryImpact
+                          opacity: aspect.evolutionaryImpact,
                         }}
                         title={`Impact: ${(aspect.evolutionaryImpact * 100).toFixed(0)}%`}
                       />
@@ -449,7 +444,7 @@ export function DynamicAspectsVisualizer({
                 Upcoming Events ({events.length})
               </h3>
               <div className="space-y-1 max-h-48 overflow-y-auto">
-                {events.map((event) => (
+                {events.map(event => (
                   <div
                     key={event.id}
                     className="flex items-center justify-between p-2 border rounded text-xs"
@@ -460,7 +455,9 @@ export function DynamicAspectsVisualizer({
                         style={{ color: getAspectColor(event.aspectType) }}
                         fill="currentColor"
                       />
-                      <span>{event.planet1}-{event.planet2}</span>
+                      <span>
+                        {event.planet1}-{event.planet2}
+                      </span>
                       <span className="text-muted-foreground">{event.aspectType}</span>
                     </div>
                     <div className="text-right">
@@ -494,10 +491,13 @@ export function DynamicAspectsVisualizer({
               <div className="flex justify-between">
                 <span>Avg Impact:</span>
                 <span className="font-medium">
-                  {aspects.length > 0 ?
-                    (aspects.reduce((sum, a) => sum + a.evolutionaryImpact, 0) / aspects.length * 100).toFixed(0) + '%' :
-                    '0%'
-                  }
+                  {aspects.length > 0
+                    ? (
+                        (aspects.reduce((sum, a) => sum + a.evolutionaryImpact, 0) /
+                          aspects.length) *
+                        100
+                      ).toFixed(0) + '%'
+                    : '0%'}
                 </span>
               </div>
               <div className="flex justify-between">

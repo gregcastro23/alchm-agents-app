@@ -1,15 +1,15 @@
-"use client"
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { 
-  Sparkles, 
-  Shield, 
-  Zap, 
-  Eye, 
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import {
+  Sparkles,
+  Shield,
+  Zap,
+  Eye,
   Flame,
   TreePine,
   Wind,
@@ -18,88 +18,120 @@ import {
   Clock,
   Star,
   TrendingUp,
-  TrendingDown
-} from 'lucide-react';
-import { RUNE_CATALOG, calculateRuneCosts, canAffordRune, getRecommendedRunes, type Rune, type AlchemicalCost } from '@/lib/runes/rune-system';
+  TrendingDown,
+} from 'lucide-react'
+import {
+  RUNE_CATALOG,
+  calculateRuneCosts,
+  canAffordRune,
+  getRecommendedRunes,
+  type Rune,
+  type AlchemicalCost,
+} from '@/lib/runes/rune-system'
 
 interface RunesPreviewProps {
-  userResources?: AlchemicalCost;
-  currentConditions?: any;
+  userResources?: AlchemicalCost
+  currentConditions?: any
 }
 
-export default function RunesPreview({ 
+export default function RunesPreview({
   userResources = { spirit: 25, essence: 30, matter: 20, substance: 15, totalCost: 90 },
   currentConditions = {
     jupiter_hour: true,
     waxing_moon: true,
-    planet_exalted: false
-  }
+    planet_exalted: false,
+  },
 }: RunesPreviewProps) {
-  const [selectedRune, setSelectedRune] = useState<Rune | null>(null);
-  const [filteredRunes, setFilteredRunes] = useState<Rune[]>(RUNE_CATALOG);
-  const [filterType, setFilterType] = useState<'all' | 'affordable' | 'recommended'>('all');
+  const [selectedRune, setSelectedRune] = useState<Rune | null>(null)
+  const [filteredRunes, setFilteredRunes] = useState<Rune[]>(RUNE_CATALOG)
+  const [filterType, setFilterType] = useState<'all' | 'affordable' | 'recommended'>('all')
 
   useEffect(() => {
     switch (filterType) {
       case 'affordable':
-        setFilteredRunes(RUNE_CATALOG.filter(rune => canAffordRune(rune, userResources, currentConditions)));
-        break;
+        setFilteredRunes(
+          RUNE_CATALOG.filter(rune => canAffordRune(rune, userResources, currentConditions))
+        )
+        break
       case 'recommended':
-        setFilteredRunes(getRecommendedRunes(userResources, currentConditions));
-        break;
+        setFilteredRunes(getRecommendedRunes(userResources, currentConditions))
+        break
       default:
-        setFilteredRunes(RUNE_CATALOG);
+        setFilteredRunes(RUNE_CATALOG)
     }
-  }, [filterType, userResources, currentConditions]);
+  }, [filterType, userResources, currentConditions])
 
   const getElementIcon = (element: string) => {
     switch (element) {
-      case 'fire': return <Flame className="h-4 w-4 text-red-500" />;
-      case 'earth': return <TreePine className="h-4 w-4 text-green-500" />;
-      case 'air': return <Wind className="h-4 w-4 text-blue-500" />;
-      case 'water': return <Droplets className="h-4 w-4 text-cyan-500" />;
-      case 'spirit': return <Star className="h-4 w-4 text-purple-500" />;
-      default: return <Sparkles className="h-4 w-4" />;
+      case 'fire':
+        return <Flame className="h-4 w-4 text-red-500" />
+      case 'earth':
+        return <TreePine className="h-4 w-4 text-green-500" />
+      case 'air':
+        return <Wind className="h-4 w-4 text-blue-500" />
+      case 'water':
+        return <Droplets className="h-4 w-4 text-cyan-500" />
+      case 'spirit':
+        return <Star className="h-4 w-4 text-purple-500" />
+      default:
+        return <Sparkles className="h-4 w-4" />
     }
-  };
+  }
 
   const getRuneTypeIcon = (type: string) => {
     switch (type) {
-      case 'offensive': return <Zap className="h-4 w-4 text-red-500" />;
-      case 'defensive': return <Shield className="h-4 w-4 text-blue-500" />;
-      case 'utility': return <Eye className="h-4 w-4 text-green-500" />;
-      case 'cosmic': return <Crown className="h-4 w-4 text-purple-500" />;
-      case 'temporal': return <Clock className="h-4 w-4 text-orange-500" />;
-      default: return <Sparkles className="h-4 w-4" />;
+      case 'offensive':
+        return <Zap className="h-4 w-4 text-red-500" />
+      case 'defensive':
+        return <Shield className="h-4 w-4 text-blue-500" />
+      case 'utility':
+        return <Eye className="h-4 w-4 text-green-500" />
+      case 'cosmic':
+        return <Crown className="h-4 w-4 text-purple-500" />
+      case 'temporal':
+        return <Clock className="h-4 w-4 text-orange-500" />
+      default:
+        return <Sparkles className="h-4 w-4" />
     }
-  };
+  }
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
-      case 'common': return 'bg-gray-100 text-gray-800';
-      case 'uncommon': return 'bg-green-100 text-green-800';
-      case 'rare': return 'bg-blue-100 text-blue-800';
-      case 'epic': return 'bg-purple-100 text-purple-800';
-      case 'legendary': return 'bg-orange-100 text-orange-800';
-      case 'cosmic': return 'bg-gradient-to-r from-purple-500 to-pink-500 text-white';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'common':
+        return 'bg-gray-100 text-gray-800'
+      case 'uncommon':
+        return 'bg-green-100 text-green-800'
+      case 'rare':
+        return 'bg-blue-100 text-blue-800'
+      case 'epic':
+        return 'bg-purple-100 text-purple-800'
+      case 'legendary':
+        return 'bg-orange-100 text-orange-800'
+      case 'cosmic':
+        return 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+      default:
+        return 'bg-gray-100 text-gray-800'
     }
-  };
+  }
 
   const formatCostChange = (baseCost: number, currentCost: number) => {
     if (currentCost < baseCost) {
-      return <span className="text-green-600 flex items-center gap-1">
-        <TrendingDown className="h-3 w-3" />
-        {currentCost} (-{Math.round(((baseCost - currentCost) / baseCost) * 100)}%)
-      </span>;
+      return (
+        <span className="text-green-600 flex items-center gap-1">
+          <TrendingDown className="h-3 w-3" />
+          {currentCost} (-{Math.round(((baseCost - currentCost) / baseCost) * 100)}%)
+        </span>
+      )
     } else if (currentCost > baseCost) {
-      return <span className="text-red-600 flex items-center gap-1">
-        <TrendingUp className="h-3 w-3" />
-        {currentCost} (+{Math.round(((currentCost - baseCost) / baseCost) * 100)}%)
-      </span>;
+      return (
+        <span className="text-red-600 flex items-center gap-1">
+          <TrendingUp className="h-3 w-3" />
+          {currentCost} (+{Math.round(((currentCost - baseCost) / baseCost) * 100)}%)
+        </span>
+      )
     }
-    return <span className="text-gray-600">{currentCost}</span>;
-  };
+    return <span className="text-gray-600">{currentCost}</span>
+  }
 
   return (
     <div className="space-y-6">
@@ -111,7 +143,8 @@ export default function RunesPreview({
             Runes System Preview
           </CardTitle>
           <CardDescription>
-            Craft powerful runes using alchemical resources. Prices fluctuate based on astrological conditions.
+            Craft powerful runes using alchemical resources. Prices fluctuate based on astrological
+            conditions.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -171,21 +204,26 @@ export default function RunesPreview({
 
       {/* Filter Controls */}
       <div className="flex gap-2">
-        <Button 
+        <Button
           variant={filterType === 'all' ? 'default' : 'outline'}
           onClick={() => setFilterType('all')}
           size="sm"
         >
           All Runes ({RUNE_CATALOG.length})
         </Button>
-        <Button 
+        <Button
           variant={filterType === 'affordable' ? 'default' : 'outline'}
           onClick={() => setFilterType('affordable')}
           size="sm"
         >
-          Affordable ({RUNE_CATALOG.filter(rune => canAffordRune(rune, userResources, currentConditions)).length})
+          Affordable (
+          {
+            RUNE_CATALOG.filter(rune => canAffordRune(rune, userResources, currentConditions))
+              .length
+          }
+          )
         </Button>
-        <Button 
+        <Button
           variant={filterType === 'recommended' ? 'default' : 'outline'}
           onClick={() => setFilterType('recommended')}
           size="sm"
@@ -196,13 +234,13 @@ export default function RunesPreview({
 
       {/* Runes Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredRunes.map((rune) => {
-          const currentCost = calculateRuneCosts(rune, currentConditions);
-          const canAfford = canAffordRune(rune, userResources, currentConditions);
-          
+        {filteredRunes.map(rune => {
+          const currentCost = calculateRuneCosts(rune, currentConditions)
+          const canAfford = canAffordRune(rune, userResources, currentConditions)
+
           return (
-            <Card 
-              key={rune.id} 
+            <Card
+              key={rune.id}
               className={`cursor-pointer transition-all hover:shadow-lg ${
                 selectedRune?.id === rune.id ? 'ring-2 ring-purple-500' : ''
               } ${!canAfford ? 'opacity-60' : ''}`}
@@ -227,7 +265,7 @@ export default function RunesPreview({
               </CardHeader>
               <CardContent>
                 <p className="text-xs text-gray-600 mb-3 line-clamp-2">{rune.description}</p>
-                
+
                 {/* Costs */}
                 <div className="space-y-2">
                   <div className="text-xs font-medium">Alchemical Cost:</div>
@@ -264,8 +302,8 @@ export default function RunesPreview({
                 </div>
 
                 {/* Action Button */}
-                <Button 
-                  className="w-full mt-3" 
+                <Button
+                  className="w-full mt-3"
                   size="sm"
                   disabled={!canAfford}
                   variant={canAfford ? 'default' : 'outline'}
@@ -274,7 +312,7 @@ export default function RunesPreview({
                 </Button>
               </CardContent>
             </Card>
-          );
+          )
         })}
       </div>
 
@@ -311,16 +349,22 @@ export default function RunesPreview({
                   <h4 className="font-medium mb-2">Requirements:</h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedRune.requirements.minANumber && (
-                      <Badge variant="outline">Min A-Number: {selectedRune.requirements.minANumber}</Badge>
+                      <Badge variant="outline">
+                        Min A-Number: {selectedRune.requirements.minANumber}
+                      </Badge>
                     )}
                     {selectedRune.requirements.planetaryHour && (
-                      <Badge variant="outline">Hour: {selectedRune.requirements.planetaryHour}</Badge>
+                      <Badge variant="outline">
+                        Hour: {selectedRune.requirements.planetaryHour}
+                      </Badge>
                     )}
                     {selectedRune.requirements.moonPhase && (
                       <Badge variant="outline">Moon: {selectedRune.requirements.moonPhase}</Badge>
                     )}
                     {selectedRune.requirements.consciousness_level && (
-                      <Badge variant="outline">Consciousness: Level {selectedRune.requirements.consciousness_level}</Badge>
+                      <Badge variant="outline">
+                        Consciousness: Level {selectedRune.requirements.consciousness_level}
+                      </Badge>
                     )}
                   </div>
                 </div>
@@ -339,5 +383,5 @@ export default function RunesPreview({
         </Card>
       )}
     </div>
-  );
+  )
 }

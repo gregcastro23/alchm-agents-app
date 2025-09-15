@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server"
-import { getCurrentPlanetaryPositions } from "@/lib/calculate-transits"
-import { generateAlchmForCurrentMoment } from "@/lib/alchemizer"
-import { calculateMC } from "@/lib/monica/monica-constant-validator"
-import { logQuantitiesToGalileo, type AlchemicalMetrics } from "@/lib/galileo-logger"
+import { NextResponse } from 'next/server'
+import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
+import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
+import { calculateMC } from '@/lib/monica/monica-constant-validator'
+import { logQuantitiesToGalileo, type AlchemicalMetrics } from '@/lib/galileo-logger'
 
-export const dynamic = "force-dynamic"
+export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function GET() {
@@ -13,13 +13,13 @@ export async function GET() {
     const positions = getCurrentPlanetaryPositions(Date.now())
     const alchm = await generateAlchmForCurrentMoment()
 
-    const planetaryPositions = [
-      'Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'
-    ].map(planet => ({
-      planet,
-      sign: positions[planet]?.sign || 'Aries',
-      degree: parseFloat(String(positions[planet]?.degree || '0'))
-    }))
+    const planetaryPositions = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'].map(
+      planet => ({
+        planet,
+        sign: positions[planet]?.sign || 'Aries',
+        degree: parseFloat(String(positions[planet]?.degree || '0')),
+      })
+    )
 
     const spirit = alchm?.['Alchemy Effects']?.['Total Spirit'] || 0
     const essence = alchm?.['Alchemy Effects']?.['Total Essence'] || 0
@@ -31,16 +31,7 @@ export async function GET() {
     const air = alchm?.['Total Effect Value']?.['Air'] || 0
     const earth = alchm?.['Total Effect Value']?.['Earth'] || 0
 
-    const monicaConstant = calculateMC(
-      spirit,
-      essence,
-      matter,
-      substance,
-      fire,
-      water,
-      air,
-      earth
-    )
+    const monicaConstant = calculateMC(spirit, essence, matter, substance, fire, water, air, earth)
 
     // Build response payload
     const payload = {
@@ -56,7 +47,7 @@ export async function GET() {
         Reactivity: alchm?.['Reactivity'] || 0,
         Energy: alchm?.['Energy'] || 0,
       },
-      monicaConstant
+      monicaConstant,
     }
 
     // Log to Galileo for observability
@@ -70,7 +61,7 @@ export async function GET() {
           Substance: payload.alchmQuantities.substance,
           ANumber: aNumber,
           DayEssence: 0,
-          NightEssence: 0
+          NightEssence: 0,
         },
         dominantElement: alchm?.['Dominant Element'] || '',
         heat: payload.alchmQuantities.Heat || 0,
@@ -80,14 +71,14 @@ export async function GET() {
         sunSign: alchm?.['Sun Sign'] || '',
         chartRuler: alchm?.['Chart Ruler'] || '',
         timestamp,
-        planetaryPositions: positions
+        planetaryPositions: positions,
       }
-      
+
       await logQuantitiesToGalileo(metrics, {
         api_endpoint: '/api/philosophers-stone/positions',
         request_timestamp: timestamp,
         calculation_method: 'real-time-planetary-positions+alchemizer',
-        monica_constant: payload.monicaConstant
+        monica_constant: payload.monicaConstant,
       })
     } catch (e) {
       console.warn('[Galileo] positions logging failed (non-fatal):', e)
@@ -99,5 +90,3 @@ export async function GET() {
     return NextResponse.json({ error: 'Failed to compute current positions' }, { status: 500 })
   }
 }
-
-

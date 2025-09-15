@@ -1,127 +1,128 @@
 // lib/monica/alchemical-trainer.ts
-import { alchemize } from '@/lib/alchemizer';
-import { PlanetaryHourCalculator } from '@/lib/planetary-hour';
-import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits';
-import { generateAccurateHoroscope, validateBirthInfo } from './horoscope-generator';
-import { calculateAverageMonicaConstant } from './monica-constant';
+import { alchemize } from '@/lib/alchemizer'
+import { PlanetaryHourCalculator } from '@/lib/planetary-hour'
+import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
+import { generateAccurateHoroscope, validateBirthInfo } from './horoscope-generator'
+import { calculateAverageMonicaConstant } from './monica-constant'
 
 // Types for alchemical training
 export interface AlchemicalSample {
-  birthInfo: BirthInfo;
-  alchmData: AlchemicalData;
+  birthInfo: BirthInfo
+  alchmData: AlchemicalData
   planetaryHour?: {
-    planet: string;
-    hourNumber: number;
-    isDaytime: boolean;
-  };
-  timestamp: Date;
+    planet: string
+    hourNumber: number
+    isDaytime: boolean
+  }
+  timestamp: Date
 }
 
 export interface BirthInfo {
-  year: number;
-  month: number;
-  day: number;
-  hour: number;
-  minute: number;
-  latitude: number;
-  longitude: number;
+  year: number
+  month: number
+  day: number
+  hour: number
+  minute: number
+  latitude: number
+  longitude: number
 }
 
 export interface AlchemicalData {
-  spirit: number;
-  essence: number;
-  matter: number;
-  substance: number;
-  Heat: number;
-  Entropy: number;
-  Reactivity: number;
-  Energy: number;
-  [key: string]: any;
+  spirit: number
+  essence: number
+  matter: number
+  substance: number
+  Heat: number
+  Entropy: number
+  Reactivity: number
+  Energy: number
+  [key: string]: any
 }
 
 export interface TrainingResult {
-  samples: AlchemicalSample[];
+  samples: AlchemicalSample[]
   statistics: {
-    averages: Record<string, number>;
-    stdDeviation: Record<string, number>;
-    correlations: Record<string, number>;
-    quartiles: Record<string, { q1: number; median: number; q3: number }>;
-  };
+    averages: Record<string, number>
+    stdDeviation: Record<string, number>
+    correlations: Record<string, number>
+    quartiles: Record<string, { q1: number; median: number; q3: number }>
+  }
   patterns: {
-    dominantElement: string;
-    peakHours: Record<string, number>;
-    criticalDegrees: number[];
-  };
-  insights: string[];
+    dominantElement: string
+    peakHours: Record<string, number>
+    criticalDegrees: number[]
+  }
+  insights: string[]
   monicaConstant?: {
-    average: number;
-    min: number;
-    max: number;
-    stdDev: number;
-    interpretation: string;
-  };
+    average: number
+    min: number
+    max: number
+    stdDev: number
+    interpretation: string
+  }
   metadata: {
-    numSamples: number;
-    dateRange: { start: Date; end: Date };
-    locations: Array<{ latitude: number; longitude: number }>;
-    errors?: string[];
-  };
+    numSamples: number
+    dateRange: { start: Date; end: Date }
+    locations: Array<{ latitude: number; longitude: number }>
+    errors?: string[]
+  }
 }
 
 // Generate random birth data with realistic distributions
 function generateRandomBirthData(): BirthInfo {
   // Dynamic year range
-  const currentYear = new Date().getFullYear();
-  const yearWeight = Math.random();
-  const year = yearWeight < 0.7 
-    ? Math.floor(Math.random() * 30) + (currentYear - 30)  // 70% chance: recent 30 years
-    : Math.floor(Math.random() * 70) + (currentYear - 100); // 30% chance: older
-  
-  const month = Math.floor(Math.random() * 12) + 1;
-  const daysInMonth = new Date(year, month, 0).getDate();
-  const day = Math.floor(Math.random() * daysInMonth) + 1;
-  
+  const currentYear = new Date().getFullYear()
+  const yearWeight = Math.random()
+  const year =
+    yearWeight < 0.7
+      ? Math.floor(Math.random() * 30) + (currentYear - 30) // 70% chance: recent 30 years
+      : Math.floor(Math.random() * 70) + (currentYear - 100) // 30% chance: older
+
+  const month = Math.floor(Math.random() * 12) + 1
+  const daysInMonth = new Date(year, month, 0).getDate()
+  const day = Math.floor(Math.random() * daysInMonth) + 1
+
   // Natural birth time distribution (peaks at 2-8 AM)
-  const hourRandom = Math.random();
-  let hour: number;
+  const hourRandom = Math.random()
+  let hour: number
   if (hourRandom < 0.4) {
-    hour = Math.floor(Math.random() * 6) + 2; // 40% chance: 2-8 AM
+    hour = Math.floor(Math.random() * 6) + 2 // 40% chance: 2-8 AM
   } else if (hourRandom < 0.7) {
-    hour = Math.floor(Math.random() * 6) + 8; // 30% chance: 8 AM - 2 PM
+    hour = Math.floor(Math.random() * 6) + 8 // 30% chance: 8 AM - 2 PM
   } else {
-    hour = Math.floor(Math.random() * 10) + 14; // 30% chance: 2 PM - midnight
+    hour = Math.floor(Math.random() * 10) + 14 // 30% chance: 2 PM - midnight
   }
-  
-  const minute = Math.floor(Math.random() * 60);
-  
+
+  const minute = Math.floor(Math.random() * 60)
+
   // Popular global locations with weighted selection
   const locations = [
-    { latitude: 40.7128, longitude: -74.0060, weight: 0.15 }, // New York
-    { latitude: 51.5074, longitude: -0.1278, weight: 0.10 },  // London
-    { latitude: 35.6762, longitude: 139.6503, weight: 0.10 }, // Tokyo
-    { latitude: 34.0522, longitude: -118.2437, weight: 0.10 }, // Los Angeles
-    { latitude: 48.8566, longitude: 2.3522, weight: 0.08 },   // Paris
+    { latitude: 40.7128, longitude: -74.006, weight: 0.15 }, // New York
+    { latitude: 51.5074, longitude: -0.1278, weight: 0.1 }, // London
+    { latitude: 35.6762, longitude: 139.6503, weight: 0.1 }, // Tokyo
+    { latitude: 34.0522, longitude: -118.2437, weight: 0.1 }, // Los Angeles
+    { latitude: 48.8566, longitude: 2.3522, weight: 0.08 }, // Paris
     { latitude: 37.7749, longitude: -122.4194, weight: 0.08 }, // San Francisco
     { latitude: -33.8688, longitude: 151.2093, weight: 0.07 }, // Sydney
-    { latitude: 19.4326, longitude: -99.1332, weight: 0.07 },  // Mexico City
-    { latitude: 28.6139, longitude: 77.2090, weight: 0.07 },   // New Delhi
+    { latitude: 19.4326, longitude: -99.1332, weight: 0.07 }, // Mexico City
+    { latitude: 28.6139, longitude: 77.209, weight: 0.07 }, // New Delhi
     { latitude: -23.5505, longitude: -46.6333, weight: 0.06 }, // São Paulo
-    { latitude: 52.5200, longitude: 13.4050, weight: 0.06 },   // Berlin
-    { latitude: 55.7558, longitude: 37.6173, weight: 0.06 },   // Moscow
-  ];
-  
-  const randomLocation = Math.random();
-  let cumulativeWeight = 0;
-  let selectedLocation = locations[0];
-  
+    { latitude: 52.52, longitude: 13.405, weight: 0.06 }, // Berlin
+    { latitude: 55.7558, longitude: 37.6173, weight: 0.06 }, // Moscow
+  ]
+
+  const randomLocation = Math.random()
+  let cumulativeWeight = 0
+  let selectedLocation = locations[0]
+
   for (const loc of locations) {
-    cumulativeWeight += loc.weight;
+    cumulativeWeight += loc.weight
     if (randomLocation < cumulativeWeight) {
-      selectedLocation = loc;
-      break;
+      selectedLocation = loc
+      break
     }
   }
-  
+
   return {
     year,
     month,
@@ -129,44 +130,50 @@ function generateRandomBirthData(): BirthInfo {
     hour,
     minute,
     latitude: selectedLocation.latitude + (Math.random() - 0.5) * 0.1, // Small variation
-    longitude: selectedLocation.longitude + (Math.random() - 0.5) * 0.1
-  };
+    longitude: selectedLocation.longitude + (Math.random() - 0.5) * 0.1,
+  }
 }
 
 // Main training function with enhanced analysis
 export async function trainOnAlchemicalValues(numSamples: number = 15): Promise<TrainingResult> {
-  const samples: AlchemicalSample[] = [];
-  const planetaryCalculator = new PlanetaryHourCalculator();
-  const errors: string[] = [];
-  
+  const samples: AlchemicalSample[] = []
+  const planetaryCalculator = new PlanetaryHourCalculator()
+  const errors: string[] = []
+
   // Validate and limit sample size
-  const maxSamples = 1000;
-  const validatedSamples = Math.min(Math.max(1, numSamples), maxSamples);
+  const maxSamples = 1000
+  const validatedSamples = Math.min(Math.max(1, numSamples), maxSamples)
   if (numSamples > maxSamples) {
-    errors.push(`Sample size limited to ${maxSamples} (requested: ${numSamples})`);
+    errors.push(`Sample size limited to ${maxSamples} (requested: ${numSamples})`)
   }
-  
+
   // Generate samples
   for (let i = 0; i < validatedSamples; i++) {
-    const birthInfo = generateRandomBirthData();
-    
+    const birthInfo = generateRandomBirthData()
+
     // Validate birth info
-    const validation = validateBirthInfo(birthInfo);
+    const validation = validateBirthInfo(birthInfo)
     if (!validation.valid) {
-      errors.push(`Sample ${i}: ${validation.errors.join(', ')}`);
-      continue;
+      errors.push(`Sample ${i}: ${validation.errors.join(', ')}`)
+      continue
     }
-    
-    const horoscope = generateAccurateHoroscope(birthInfo);
-    
+
+    const horoscope = generateAccurateHoroscope(birthInfo)
+
     // Set planetary hour calculator location
-    planetaryCalculator.setCoordinates(birthInfo.latitude, birthInfo.longitude);
-    const birthDate = new Date(birthInfo.year, birthInfo.month - 1, birthInfo.day, birthInfo.hour, birthInfo.minute);
-    const planetaryHour = planetaryCalculator.getPlanetaryHour(birthDate);
-    
+    planetaryCalculator.setCoordinates(birthInfo.latitude, birthInfo.longitude)
+    const birthDate = new Date(
+      birthInfo.year,
+      birthInfo.month - 1,
+      birthInfo.day,
+      birthInfo.hour,
+      birthInfo.minute
+    )
+    const planetaryHour = planetaryCalculator.getPlanetaryHour(birthDate)
+
     try {
-      const alchmData = alchemize(birthInfo, horoscope);
-      
+      const alchmData = alchemize(birthInfo, horoscope)
+
       samples.push({
         birthInfo,
         alchmData: {
@@ -180,31 +187,31 @@ export async function trainOnAlchemicalValues(numSamples: number = 15): Promise<
           Energy: alchmData['Energy'] || 0,
         },
         planetaryHour,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
     } catch (error) {
-      console.error(`Error processing sample ${i}:`, error);
-      errors.push(`Sample ${i}: Failed to calculate alchemical data`);
+      console.error(`Error processing sample ${i}:`, error)
+      errors.push(`Sample ${i}: Failed to calculate alchemical data`)
     }
   }
-  
+
   // Calculate statistics
-  const statistics = calculateStatistics(samples);
-  const patterns = identifyPatterns(samples);
-  
+  const statistics = calculateStatistics(samples)
+  const patterns = identifyPatterns(samples)
+
   // Calculate Monica Constants
-  let monicaConstantAnalysis;
+  let monicaConstantAnalysis
   if (samples.length > 0) {
-    monicaConstantAnalysis = calculateAverageMonicaConstant(samples.map(s => s.alchmData));
+    monicaConstantAnalysis = calculateAverageMonicaConstant(samples.map(s => s.alchmData))
   }
-  
-  const insights = generateInsights(samples, statistics, patterns);
-  
+
+  const insights = generateInsights(samples, statistics, patterns)
+
   // Add Monica Constant insight if available
   if (monicaConstantAnalysis && monicaConstantAnalysis.average > 0) {
-    insights.unshift(`Monica Constant Analysis: ${monicaConstantAnalysis.interpretation}`);
+    insights.unshift(`Monica Constant Analysis: ${monicaConstantAnalysis.interpretation}`)
   }
-  
+
   return {
     samples,
     statistics,
@@ -213,30 +220,52 @@ export async function trainOnAlchemicalValues(numSamples: number = 15): Promise<
     monicaConstant: monicaConstantAnalysis,
     metadata: {
       numSamples: validatedSamples,
-      dateRange: samples.length > 0 ? {
-        start: new Date(Math.min(...samples.map(s => s.birthInfo.year)), 0, 1),
-        end: new Date(Math.max(...samples.map(s => s.birthInfo.year)), 11, 31)
-      } : {
-        start: new Date(),
-        end: new Date()
-      },
-      locations: [...new Set(samples.map(s => ({ 
-        latitude: Math.round(s.birthInfo.latitude * 100) / 100,
-        longitude: Math.round(s.birthInfo.longitude * 100) / 100
-      })))],
-      errors: errors.length > 0 ? errors : undefined
-    }
-  };
+      dateRange:
+        samples.length > 0
+          ? {
+              start: new Date(Math.min(...samples.map(s => s.birthInfo.year)), 0, 1),
+              end: new Date(Math.max(...samples.map(s => s.birthInfo.year)), 11, 31),
+            }
+          : {
+              start: new Date(),
+              end: new Date(),
+            },
+      locations: [
+        ...new Set(
+          samples.map(s => ({
+            latitude: Math.round(s.birthInfo.latitude * 100) / 100,
+            longitude: Math.round(s.birthInfo.longitude * 100) / 100,
+          }))
+        ),
+      ],
+      errors: errors.length > 0 ? errors : undefined,
+    },
+  }
 }
 
 // Calculate today's hourly alchemical values
-export async function todayHourlyAlchemize(location = { latitude: 37.7749, longitude: -122.4194 }, useBatchAPI = false): Promise<any> {
+export async function todayHourlyAlchemize(
+  location = { latitude: 37.7749, longitude: -122.4194 },
+  useBatchAPI = false
+): Promise<any> {
   if (useBatchAPI) {
     try {
-      const today = new Date();
-      const startTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0).toISOString();
-      const endTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59).toISOString();
-      
+      const today = new Date()
+      const startTime = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        0,
+        0
+      ).toISOString()
+      const endTime = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        23,
+        59
+      ).toISOString()
+
       // Use centralized kinetics client
       const { AlchemicalKineticsClient } = await import('../kinetics-client')
       const response = await AlchemicalKineticsClient.put({
@@ -245,11 +274,11 @@ export async function todayHourlyAlchemize(location = { latitude: 37.7749, longi
         'start-time': startTime,
         'end-time': endTime,
         'time-interval': 60,
-        exportFormat: 'json'
+        exportFormat: 'json',
       })
       if (!response.ok) throw new Error('Batch API failed')
       const { data } = await response.json()
-      
+
       // Transform batch data to match original samples format
       const samples = data.map((row: any) => ({
         hour: new Date(row.Timestamp).getHours(),
@@ -260,24 +289,24 @@ export async function todayHourlyAlchemize(location = { latitude: 37.7749, longi
         heat: row.Heat,
         entropy: row.Entropy,
         planetaryRuler: 'Unknown', // Batch API doesn't include planetary hour yet - TODO
-        isDaytime: true // Placeholder
-      }));
-      
+        isDaytime: true, // Placeholder
+      }))
+
       // Proceed with analysis...
       // (copy the analysis code here)
-      
-      return { samples /* add analysis */ };
+
+      return { samples /* add analysis */ }
     } catch (error) {
-      console.error('Batch API failed, falling back to original:', error);
+      console.error('Batch API failed, falling back to original:', error)
       // Fall back to original implementation
     }
   }
-  
+
   // Original implementation as fallback
-  const today = new Date();
-  const samples: any[] = [];
-  const planetaryCalculator = new PlanetaryHourCalculator(location.latitude, location.longitude);
-  
+  const today = new Date()
+  const samples: any[] = []
+  const planetaryCalculator = new PlanetaryHourCalculator(location.latitude, location.longitude)
+
   for (let hour = 0; hour < 24; hour++) {
     const birthInfo = {
       year: today.getFullYear(),
@@ -286,15 +315,15 @@ export async function todayHourlyAlchemize(location = { latitude: 37.7749, longi
       hour,
       minute: 0,
       latitude: location.latitude,
-      longitude: location.longitude
-    };
-    
-    const horoscope = generateAccurateHoroscope(birthInfo);
-    const hourDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hour, 0);
-    const planetaryHour = planetaryCalculator.getPlanetaryHour(hourDate);
-    
+      longitude: location.longitude,
+    }
+
+    const horoscope = generateAccurateHoroscope(birthInfo)
+    const hourDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hour, 0)
+    const planetaryHour = planetaryCalculator.getPlanetaryHour(hourDate)
+
     try {
-      const alchmData = alchemize(birthInfo, horoscope);
+      const alchmData = alchemize(birthInfo, horoscope)
       samples.push({
         hour,
         spirit: alchmData['Alchemy Effects']?.['Total Spirit'] || 0,
@@ -304,13 +333,13 @@ export async function todayHourlyAlchemize(location = { latitude: 37.7749, longi
         heat: alchmData['Heat'] || 0,
         entropy: alchmData['Entropy'] || 0,
         planetaryRuler: planetaryHour.planet,
-        isDaytime: planetaryHour.isDaytime
-      });
+        isDaytime: planetaryHour.isDaytime,
+      })
     } catch (error) {
-      console.error(`Error processing hour ${hour}:`, error);
+      console.error(`Error processing hour ${hour}:`, error)
     }
   }
-  
+
   // Analysis
   const averages = {
     spirit: samples.reduce((sum, s) => sum + s.spirit, 0) / 24,
@@ -318,79 +347,103 @@ export async function todayHourlyAlchemize(location = { latitude: 37.7749, longi
     matter: samples.reduce((sum, s) => sum + s.matter, 0) / 24,
     substance: samples.reduce((sum, s) => sum + s.substance, 0) / 24,
     heat: samples.reduce((sum, s) => sum + s.heat, 0) / 24,
-    entropy: samples.reduce((sum, s) => sum + s.entropy, 0) / 24
-  };
-  
+    entropy: samples.reduce((sum, s) => sum + s.entropy, 0) / 24,
+  }
+
   // Find peak hours
-  const peakSpirit = samples.reduce((max, s, i) => s.spirit > samples[max].spirit ? i : max, 0);
-  const peakEssence = samples.reduce((max, s, i) => s.essence > samples[max].essence ? i : max, 0);
-  const peakEnergy = samples.reduce((max, s, i) => (s.heat + s.spirit) > (samples[max].heat + samples[max].spirit) ? i : max, 0);
-  
+  const peakSpirit = samples.reduce((max, s, i) => (s.spirit > samples[max].spirit ? i : max), 0)
+  const peakEssence = samples.reduce((max, s, i) => (s.essence > samples[max].essence ? i : max), 0)
+  const peakEnergy = samples.reduce(
+    (max, s, i) => (s.heat + s.spirit > samples[max].heat + samples[max].spirit ? i : max),
+    0
+  )
+
   return {
     samples,
     averages,
     peaks: {
-      spirit: { hour: peakSpirit, value: samples[peakSpirit].spirit, ruler: samples[peakSpirit].planetaryRuler },
-      essence: { hour: peakEssence, value: samples[peakEssence].essence, ruler: samples[peakEssence].planetaryRuler },
-      energy: { hour: peakEnergy, value: samples[peakEnergy].heat + samples[peakEnergy].spirit, ruler: samples[peakEnergy].planetaryRuler }
+      spirit: {
+        hour: peakSpirit,
+        value: samples[peakSpirit].spirit,
+        ruler: samples[peakSpirit].planetaryRuler,
+      },
+      essence: {
+        hour: peakEssence,
+        value: samples[peakEssence].essence,
+        ruler: samples[peakEssence].planetaryRuler,
+      },
+      energy: {
+        hour: peakEnergy,
+        value: samples[peakEnergy].heat + samples[peakEnergy].spirit,
+        ruler: samples[peakEnergy].planetaryRuler,
+      },
     },
     insights: [
       `Today's Spirit peaks at ${peakSpirit}:00 under ${samples[peakSpirit].planetaryRuler}'s rule`,
       `Essence is strongest at ${peakEssence}:00 with ${samples[peakEssence].planetaryRuler} governing`,
       `Maximum energy occurs at ${peakEnergy}:00 during ${samples[peakEnergy].planetaryRuler}'s hour`,
-      `Average entropy today is ${averages.entropy.toFixed(2)}, suggesting ${averages.entropy > 50 ? 'high volatility' : 'stable conditions'}`
-    ]
-  };
+      `Average entropy today is ${averages.entropy.toFixed(2)}, suggesting ${averages.entropy > 50 ? 'high volatility' : 'stable conditions'}`,
+    ],
+  }
 }
 
 // Statistical calculation functions
 function calculateStatistics(samples: AlchemicalSample[]): any {
-  const keys = ['spirit', 'essence', 'matter', 'substance', 'Heat', 'Entropy', 'Reactivity', 'Energy'];
+  const keys = [
+    'spirit',
+    'essence',
+    'matter',
+    'substance',
+    'Heat',
+    'Entropy',
+    'Reactivity',
+    'Energy',
+  ]
   const statistics: any = {
     averages: {},
     stdDeviation: {},
     correlations: {},
-    quartiles: {}
-  };
-  
+    quartiles: {},
+  }
+
   // Handle empty samples
   if (samples.length === 0) {
     keys.forEach(key => {
-      statistics.averages[key] = 0;
-      statistics.stdDeviation[key] = 0;
-      statistics.quartiles[key] = { q1: 0, median: 0, q3: 0 };
-    });
+      statistics.averages[key] = 0
+      statistics.stdDeviation[key] = 0
+      statistics.quartiles[key] = { q1: 0, median: 0, q3: 0 }
+    })
     statistics.correlations = {
       spirit_heat: 0,
       essence_entropy: 0,
-      matter_substance: 0
-    };
-    return statistics;
+      matter_substance: 0,
+    }
+    return statistics
   }
-  
+
   // Calculate averages and standard deviations
   keys.forEach(key => {
-    const values = samples.map(s => s.alchmData[key]).filter(v => !isNaN(v));
-    statistics.averages[key] = mean(values);
-    statistics.stdDeviation[key] = standardDeviation(values);
-    statistics.quartiles[key] = calculateQuartiles(values);
-  });
-  
+    const values = samples.map(s => s.alchmData[key]).filter(v => !isNaN(v))
+    statistics.averages[key] = mean(values)
+    statistics.stdDeviation[key] = standardDeviation(values)
+    statistics.quartiles[key] = calculateQuartiles(values)
+  })
+
   // Calculate key correlations
   statistics.correlations['spirit_heat'] = pearsonCorrelation(
     samples.map(s => s.alchmData.spirit),
     samples.map(s => s.alchmData.Heat)
-  );
+  )
   statistics.correlations['essence_entropy'] = pearsonCorrelation(
     samples.map(s => s.alchmData.essence),
     samples.map(s => s.alchmData.Entropy)
-  );
+  )
   statistics.correlations['matter_substance'] = pearsonCorrelation(
     samples.map(s => s.alchmData.matter),
     samples.map(s => s.alchmData.substance)
-  );
-  
-  return statistics;
+  )
+
+  return statistics
 }
 
 // Pattern identification
@@ -400,141 +453,152 @@ function identifyPatterns(samples: AlchemicalSample[]): any {
     return {
       dominantElement: 'balanced',
       peakHours: { spirit: 0, essence: 0, matter: 0, substance: 0 },
-      criticalDegrees: [0, 15, 29]
-    };
+      criticalDegrees: [0, 15, 29],
+    }
   }
-  
+
   // Identify dominant element based on highest average
   const elementAverages = {
     fire: mean(samples.map(s => s.alchmData.spirit + s.alchmData.Heat)),
     water: mean(samples.map(s => s.alchmData.essence)),
     earth: mean(samples.map(s => s.alchmData.substance)),
-    air: mean(samples.map(s => s.alchmData.matter))
-  };
-  
-  const dominantElement = Object.entries(elementAverages)
-    .filter(([, value]) => !isNaN(value))
-    .sort(([, a], [, b]) => b - a)[0]?.[0] || 'balanced';
-  
+    air: mean(samples.map(s => s.alchmData.matter)),
+  }
+
+  const dominantElement =
+    Object.entries(elementAverages)
+      .filter(([, value]) => !isNaN(value))
+      .sort(([, a], [, b]) => b - a)[0]?.[0] || 'balanced'
+
   // Find peak hours for each component
-  const hourlyAverages: Record<number, Record<string, number>> = {};
+  const hourlyAverages: Record<number, Record<string, number>> = {}
   for (let h = 0; h < 24; h++) {
-    const hourSamples = samples.filter(s => s.birthInfo.hour === h);
+    const hourSamples = samples.filter(s => s.birthInfo.hour === h)
     if (hourSamples.length > 0) {
       hourlyAverages[h] = {
         spirit: mean(hourSamples.map(s => s.alchmData.spirit)),
         essence: mean(hourSamples.map(s => s.alchmData.essence)),
         matter: mean(hourSamples.map(s => s.alchmData.matter)),
-        substance: mean(hourSamples.map(s => s.alchmData.substance))
-      };
+        substance: mean(hourSamples.map(s => s.alchmData.substance)),
+      }
     }
   }
-  
-  const peakHours: Record<string, number> = {};
-  ['spirit', 'essence', 'matter', 'substance'].forEach(key => {
-    let maxHour = 0;
-    let maxValue = 0;
+
+  const peakHours: Record<string, number> = {}
+  ;['spirit', 'essence', 'matter', 'substance'].forEach(key => {
+    let maxHour = 0
+    let maxValue = 0
     Object.entries(hourlyAverages).forEach(([hour, values]) => {
       if (values[key] > maxValue) {
-        maxValue = values[key];
-        maxHour = parseInt(hour);
+        maxValue = values[key]
+        maxHour = parseInt(hour)
       }
-    });
-    peakHours[key] = maxHour;
-  });
-  
+    })
+    peakHours[key] = maxHour
+  })
+
   // Identify critical degrees (simplified)
-  const criticalDegrees = [0, 15, 29]; // Traditional critical degrees
-  
+  const criticalDegrees = [0, 15, 29] // Traditional critical degrees
+
   return {
     dominantElement,
     peakHours,
-    criticalDegrees
-  };
+    criticalDegrees,
+  }
 }
 
 // Generate insights
 function generateInsights(samples: AlchemicalSample[], statistics: any, patterns: any): string[] {
-  const insights: string[] = [];
-  
+  const insights: string[] = []
+
   // Basic statistics insights
-  insights.push(`Average entropy across ${samples.length} samples: ${statistics.averages.Entropy?.toFixed(2) || 'N/A'}`);
-  insights.push(`Dominant element is ${patterns.dominantElement} indicating ${getElementalInsight(patterns.dominantElement)}`);
-  
+  insights.push(
+    `Average entropy across ${samples.length} samples: ${statistics.averages.Entropy?.toFixed(2) || 'N/A'}`
+  )
+  insights.push(
+    `Dominant element is ${patterns.dominantElement} indicating ${getElementalInsight(patterns.dominantElement)}`
+  )
+
   // Correlation insights
   if (Math.abs(statistics.correlations.spirit_heat) > 0.7) {
-    insights.push(`Strong correlation (${statistics.correlations.spirit_heat.toFixed(2)}) between Spirit and Heat suggests unified consciousness patterns`);
+    insights.push(
+      `Strong correlation (${statistics.correlations.spirit_heat.toFixed(2)}) between Spirit and Heat suggests unified consciousness patterns`
+    )
   }
-  
+
   // Temporal insights
-  insights.push(`Peak Spirit hour: ${patterns.peakHours.spirit}:00 - optimal for intention setting`);
-  insights.push(`Peak Essence hour: ${patterns.peakHours.essence}:00 - best for emotional work`);
-  
+  insights.push(`Peak Spirit hour: ${patterns.peakHours.spirit}:00 - optimal for intention setting`)
+  insights.push(`Peak Essence hour: ${patterns.peakHours.essence}:00 - best for emotional work`)
+
   // Volatility insights
   if (statistics.stdDeviation.Entropy > statistics.averages.Entropy * 0.5) {
-    insights.push(`High entropy variability (σ=${statistics.stdDeviation.Entropy?.toFixed(2) || 'N/A'}) indicates diverse consciousness states`);
+    insights.push(
+      `High entropy variability (σ=${statistics.stdDeviation.Entropy?.toFixed(2) || 'N/A'}) indicates diverse consciousness states`
+    )
   }
-  
+
   // Planetary hour insights
-  const planetaryHourCounts: Record<string, number> = {};
+  const planetaryHourCounts: Record<string, number> = {}
   samples.forEach(s => {
     if (s.planetaryHour) {
-      planetaryHourCounts[s.planetaryHour.planet] = (planetaryHourCounts[s.planetaryHour.planet] || 0) + 1;
+      planetaryHourCounts[s.planetaryHour.planet] =
+        (planetaryHourCounts[s.planetaryHour.planet] || 0) + 1
     }
-  });
-  const dominantPlanet = Object.entries(planetaryHourCounts)
-    .sort(([, a], [, b]) => b - a)[0];
+  })
+  const dominantPlanet = Object.entries(planetaryHourCounts).sort(([, a], [, b]) => b - a)[0]
   if (dominantPlanet) {
-    insights.push(`${dominantPlanet[0]} appears most frequently in samples, suggesting ${getPlanetaryInsight(dominantPlanet[0])}`);
+    insights.push(
+      `${dominantPlanet[0]} appears most frequently in samples, suggesting ${getPlanetaryInsight(dominantPlanet[0])}`
+    )
   }
-  
-  return insights;
+
+  return insights
 }
 
 // Helper functions
 function mean(values: number[]): number {
-  if (values.length === 0) return 0;
-  return values.reduce((sum, v) => sum + v, 0) / values.length;
+  if (values.length === 0) return 0
+  return values.reduce((sum, v) => sum + v, 0) / values.length
 }
 
 function standardDeviation(values: number[]): number {
-  if (values.length === 0) return 0;
-  const avg = mean(values);
-  const squareDiffs = values.map(v => Math.pow(v - avg, 2));
-  return Math.sqrt(mean(squareDiffs));
+  if (values.length === 0) return 0
+  const avg = mean(values)
+  const squareDiffs = values.map(v => Math.pow(v - avg, 2))
+  return Math.sqrt(mean(squareDiffs))
 }
 
 function calculateQuartiles(values: number[]): { q1: number; median: number; q3: number } {
-  if (values.length === 0) return { q1: 0, median: 0, q3: 0 };
-  const sorted = [...values].sort((a, b) => a - b);
-  const n = sorted.length;
+  if (values.length === 0) return { q1: 0, median: 0, q3: 0 }
+  const sorted = [...values].sort((a, b) => a - b)
+  const n = sorted.length
   return {
     q1: sorted[Math.floor(n * 0.25)] || 0,
     median: sorted[Math.floor(n * 0.5)] || 0,
-    q3: sorted[Math.floor(n * 0.75)] || 0
-  };
+    q3: sorted[Math.floor(n * 0.75)] || 0,
+  }
 }
 
 function pearsonCorrelation(x: number[], y: number[]): number {
-  if (x.length === 0 || y.length === 0) return 0;
-  const n = x.length;
-  const meanX = mean(x);
-  const meanY = mean(y);
-  
-  let numerator = 0;
-  let denomX = 0;
-  let denomY = 0;
-  
+  if (x.length === 0 || y.length === 0) return 0
+  const n = x.length
+  const meanX = mean(x)
+  const meanY = mean(y)
+
+  let numerator = 0
+  let denomX = 0
+  let denomY = 0
+
   for (let i = 0; i < n; i++) {
-    const diffX = x[i] - meanX;
-    const diffY = y[i] - meanY;
-    numerator += diffX * diffY;
-    denomX += diffX * diffX;
-    denomY += diffY * diffY;
+    const diffX = x[i] - meanX
+    const diffY = y[i] - meanY
+    numerator += diffX * diffY
+    denomX += diffX * diffX
+    denomY += diffY * diffY
   }
-  
-  const denominator = Math.sqrt(denomX * denomY);
-  return denominator === 0 ? 0 : numerator / denominator;
+
+  const denominator = Math.sqrt(denomX * denomY)
+  return denominator === 0 ? 0 : numerator / denominator
 }
 
 function getElementalInsight(element: string): string {
@@ -542,9 +606,9 @@ function getElementalInsight(element: string): string {
     fire: 'high energy and transformative potential',
     water: 'emotional depth and intuitive flow',
     earth: 'grounded stability and material manifestation',
-    air: 'intellectual clarity and communication'
-  };
-  return insights[element] || 'balanced elemental expression';
+    air: 'intellectual clarity and communication',
+  }
+  return insights[element] || 'balanced elemental expression'
 }
 
 function getPlanetaryInsight(planet: string): string {
@@ -555,59 +619,59 @@ function getPlanetaryInsight(planet: string): string {
     Venus: 'venusian harmony and aesthetic sensitivity',
     Mars: 'martial drive and assertive energy',
     Jupiter: 'jovian expansion and wisdom seeking',
-    Saturn: 'saturnine discipline and structural integrity'
-  };
-  return insights[planet] || 'planetary influence';
+    Saturn: 'saturnine discipline and structural integrity',
+  }
+  return insights[planet] || 'planetary influence'
 }
 
 // Advanced training with retrograde analysis
 export async function trainWithRetrogrades(numSamples: number = 20): Promise<any> {
-  const currentPositions = getCurrentPlanetaryPositions();
-  const samples = await trainOnAlchemicalValues(numSamples);
-  
+  const currentPositions = getCurrentPlanetaryPositions()
+  const samples = await trainOnAlchemicalValues(numSamples)
+
   // Analyze impact of current retrogrades
   const retrogradeAnalysis = {
     currentRetrogrades: identifyRetrogrades(currentPositions),
     impact: calculateRetrogradeImpact(samples),
-    recommendations: generateRetrogradeRecommendations(currentPositions)
-  };
-  
+    recommendations: generateRetrogradeRecommendations(currentPositions),
+  }
+
   return {
     ...samples,
-    retrogradeAnalysis
-  };
+    retrogradeAnalysis,
+  }
 }
 
 function identifyRetrogrades(positions: any): string[] {
-  const retrogrades: string[] = [];
-  
+  const retrogrades: string[] = []
+
   if (!positions || typeof positions !== 'object') {
-    return retrogrades;
+    return retrogrades
   }
-  
+
   // Check each planet for retrograde status
-  const planets = ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
-  
+  const planets = ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']
+
   planets.forEach(planet => {
-    const planetData = positions[planet] || positions[planet.toLowerCase()];
-    
+    const planetData = positions[planet] || positions[planet.toLowerCase()]
+
     if (planetData) {
       // Check if retrograde flag is explicitly set
       if (planetData.retrograde === true) {
-        retrogrades.push(planet);
+        retrogrades.push(planet)
       }
       // Also check for 'R' indicator in various formats
       else if (typeof planetData.direction === 'string' && planetData.direction.includes('R')) {
-        retrogrades.push(planet);
+        retrogrades.push(planet)
       }
       // Check motion indicator
       else if (planetData.motion && planetData.motion < 0) {
-        retrogrades.push(planet);
+        retrogrades.push(planet)
       }
     }
-  });
-  
-  return retrogrades;
+  })
+
+  return retrogrades
 }
 
 function calculateRetrogradeImpact(_samples: any): any {
@@ -615,16 +679,16 @@ function calculateRetrogradeImpact(_samples: any): any {
   // Currently returns static modifiers, will be enhanced with actual sample analysis
   return {
     entropyModifier: 1.15, // Retrogrades increase entropy by 15%
-    essenceModifier: 1.08  // Slight increase in essence during retrogrades
-  };
+    essenceModifier: 1.08, // Slight increase in essence during retrogrades
+  }
 }
 
 function generateRetrogradeRecommendations(_positions: any): string[] {
   // Generate recommendations based on current planetary positions
   // Will be enhanced to provide position-specific guidance
   return [
-    "Current planetary configuration suggests introspective work",
-    "Enhanced essence values indicate favorable conditions for emotional processing",
-    "Consider reducing external initiatives during retrograde periods"
-  ];
+    'Current planetary configuration suggests introspective work',
+    'Enhanced essence values indicate favorable conditions for emotional processing',
+    'Consider reducing external initiatives during retrograde periods',
+  ]
 }

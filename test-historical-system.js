@@ -6,7 +6,7 @@ const { findLastOccurrence, findNextOccurrence } = require('./lib/historical-tra
 
 async function testHistoricalSystem() {
   console.log('🧪 Testing Historical Transit System\n')
-  
+
   // Test 1: Get Jupiter transits
   console.log('📅 Test 1: Jupiter Historical Transits')
   try {
@@ -17,20 +17,22 @@ async function testHistoricalSystem() {
     console.error('❌ Error getting Jupiter transits:', error.message)
   }
   console.log('')
-  
+
   // Test 2: Current transits
   console.log('⏰ Test 2: Current Transits')
   try {
     const currentTransits = getCurrentTransits()
     console.log(`Found ${currentTransits.length} active transits:`)
     currentTransits.forEach(transit => {
-      console.log(`- ${transit.planet} in ${transit.sign} (${transit.startDate} to ${transit.endDate})`)
+      console.log(
+        `- ${transit.planet} in ${transit.sign} (${transit.startDate} to ${transit.endDate})`
+      )
     })
   } catch (error) {
     console.error('❌ Error getting current transits:', error.message)
   }
   console.log('')
-  
+
   // Test 3: Planetary themes
   console.log('🎭 Test 3: Planetary Themes')
   try {
@@ -43,7 +45,7 @@ async function testHistoricalSystem() {
     console.error('❌ Error getting themes:', error.message)
   }
   console.log('')
-  
+
   // Test 4: Historical patterns
   console.log('📊 Test 4: Historical Patterns')
   try {
@@ -57,13 +59,13 @@ async function testHistoricalSystem() {
     console.error('❌ Error getting patterns:', error.message)
   }
   console.log('')
-  
+
   // Test 5: Last/Next occurrences (using approximations)
   console.log('🔍 Test 5: Last/Next Occurrences')
   try {
     const lastJupiterAries = findLastOccurrence('Jupiter', 'Aries', 15)
     const nextJupiterAries = findNextOccurrence('Jupiter', 'Aries', 15)
-    
+
     console.log('Jupiter at 15° Aries:')
     if (lastJupiterAries) {
       console.log(`- Last occurred: ${lastJupiterAries.date.toISOString().split('T')[0]}`)
@@ -75,13 +77,12 @@ async function testHistoricalSystem() {
     console.error('❌ Error finding occurrences:', error.message)
   }
   console.log('')
-  
+
   console.log('✅ Historical system test completed!')
 }
 
 // Run the test
-testHistoricalSystem()
-  .catch(error => {
-    console.error('❌ Test failed:', error)
-    process.exit(1)
-  })
+testHistoricalSystem().catch(error => {
+  console.error('❌ Test failed:', error)
+  process.exit(1)
+})

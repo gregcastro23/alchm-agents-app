@@ -3,10 +3,10 @@
 
 // Used for __tests__/testing-library.js
 // Learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom'
 
 // Polyfills for Next.js API testing
-import { TextEncoder, TextDecoder } from 'util';
+import { TextEncoder, TextDecoder } from 'util'
 
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder

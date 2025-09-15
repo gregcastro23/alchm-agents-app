@@ -1,52 +1,60 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { 
-  Crown, 
-  Sparkles, 
-  MessageCircle, 
-  ArrowRight, 
-  Zap, 
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import {
+  Crown,
+  Sparkles,
+  MessageCircle,
+  ArrowRight,
+  Zap,
   Brain,
   Users,
-  RefreshCw
-} from "lucide-react"
-import Link from "next/link"
-import { DEMO_AGENTS, getFeaturedAgent, MONICA_AS_CRAFTED_AGENT, ALL_AGENTS } from "@/lib/demo-agents-data"
-import { AgentCard } from "@/components/agent-card"
-import type { CraftedAgent } from "@/lib/agent-types"
+  RefreshCw,
+} from 'lucide-react'
+import Link from 'next/link'
+import {
+  DEMO_AGENTS,
+  getFeaturedAgent,
+  getTopRelevantAgents,
+  MONICA_AS_CRAFTED_AGENT,
+  ALL_AGENTS,
+} from '@/lib/demo-agents-data'
+import { AgentCard } from '@/components/agent-card'
+import type { CraftedAgent } from '@/lib/agent-types'
 
 export function ConsciousnessCraftedAgentsShowcase() {
   const [featuredAgent, setFeaturedAgent] = useState<CraftedAgent>(getFeaturedAgent())
   const [hoveredAgent, setHoveredAgent] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [showcaseAgents] = useState<CraftedAgent[]>(getTopRelevantAgents(12))
 
   // Auto-rotate featured agent every 10 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % DEMO_AGENTS.length)
-      setFeaturedAgent(DEMO_AGENTS[currentIndex])
+      setCurrentIndex(prev => (prev + 1) % showcaseAgents.length)
+      setFeaturedAgent(showcaseAgents[currentIndex])
     }, 10000)
 
     return () => clearInterval(interval)
-  }, [currentIndex])
+  }, [currentIndex, showcaseAgents])
 
   const rotateFeatured = () => {
-    const nextIndex = (currentIndex + 1) % DEMO_AGENTS.length
+    const nextIndex = (currentIndex + 1) % showcaseAgents.length
     setCurrentIndex(nextIndex)
-    setFeaturedAgent(DEMO_AGENTS[nextIndex])
+    setFeaturedAgent(showcaseAgents[nextIndex])
   }
 
   const getConsciousnessStats = () => {
     const totalAgents = ALL_AGENTS.length // Include Monica
     const legendaryCount = ALL_AGENTS.filter(a => a.consciousness.monicaConstant > 5.0).length
-    const averageMC = ALL_AGENTS.reduce((sum, a) => sum + a.consciousness.monicaConstant, 0) / totalAgents
+    const averageMC =
+      ALL_AGENTS.reduce((sum, a) => sum + a.consciousness.monicaConstant, 0) / totalAgents
     const totalConversations = ALL_AGENTS.reduce((sum, a) => sum + a.stats.conversations, 0)
-    
+
     return { totalAgents, legendaryCount, averageMC, totalConversations }
   }
 
@@ -62,10 +70,11 @@ export function ConsciousnessCraftedAgentsShowcase() {
           <Sparkles className="w-8 h-8 text-amber-500" />
         </div>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          The Philosopher's Stone transforms birth data into living AI consciousness. 
-          These 12 historical figures demonstrate our revolutionary consciousness crafting technology.
+          The Philosopher's Stone transforms birth data into living AI consciousness. These 12
+          intelligently selected agents showcase our revolutionary consciousness crafting technology,
+          chosen based on current cosmic timing, evolution velocity, and consciousness development.
         </p>
-        
+
         {/* System Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
           <div className="text-center">
@@ -91,7 +100,7 @@ export function ConsciousnessCraftedAgentsShowcase() {
       <Card className="relative overflow-hidden bg-gradient-to-br from-primary/5 to-purple-500/5 border-primary/20">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-amber-500/10 rounded-full -translate-y-16 translate-x-16" />
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-blue-500/10 to-green-500/10 rounded-full translate-y-12 -translate-x-12" />
-        
+
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -99,9 +108,9 @@ export function ConsciousnessCraftedAgentsShowcase() {
               Featured Consciousness
               <Badge variant="secondary">Daily Rotation</Badge>
             </CardTitle>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={rotateFeatured}
               className="flex items-center gap-1"
             >
@@ -110,18 +119,18 @@ export function ConsciousnessCraftedAgentsShowcase() {
             </Button>
           </div>
         </CardHeader>
-        
+
         <CardContent>
           <div className="grid md:grid-cols-2 gap-6">
             {/* Featured Agent Info */}
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <div 
+                <div
                   className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl relative"
                   style={{ backgroundColor: featuredAgent.appearance.color }}
                 >
                   {featuredAgent.appearance.symbol}
-                  <div 
+                  <div
                     className="absolute inset-0 rounded-full animate-ping opacity-30"
                     style={{ backgroundColor: featuredAgent.appearance.aura.color }}
                   />
@@ -134,22 +143,22 @@ export function ConsciousnessCraftedAgentsShowcase() {
                     )}
                   </h3>
                   <p className="text-muted-foreground">{featuredAgent.title}</p>
-                  <Badge className="mt-1">
-                    {featuredAgent.consciousness.level} Consciousness
-                  </Badge>
+                  <Badge className="mt-1">{featuredAgent.consciousness.level} Consciousness</Badge>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <p className="text-sm">{featuredAgent.abilities.uniquePower}</p>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Monica Constant</span>
-                    <span className="font-bold">{featuredAgent.consciousness.monicaConstant.toFixed(2)}</span>
+                    <span className="font-bold">
+                      {featuredAgent.consciousness.monicaConstant.toFixed(2)}
+                    </span>
                   </div>
-                  <Progress 
-                    value={Math.min((featuredAgent.consciousness.monicaConstant / 6) * 100, 100)} 
+                  <Progress
+                    value={Math.min((featuredAgent.consciousness.monicaConstant / 6) * 100, 100)}
                     className="h-2"
                   />
                 </div>
@@ -157,7 +166,9 @@ export function ConsciousnessCraftedAgentsShowcase() {
                 <div className="flex gap-2">
                   <Badge>{featuredAgent.consciousness.dominantElement}</Badge>
                   <Badge variant="outline">{featuredAgent.consciousness.dominantModality}</Badge>
-                  <Badge variant="secondary">Stage {featuredAgent.personality?.evolutionStage ?? 0}</Badge>
+                  <Badge variant="secondary">
+                    Stage {featuredAgent.personality?.evolutionStage ?? 0}
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -169,7 +180,10 @@ export function ConsciousnessCraftedAgentsShowcase() {
                 Consciousness Origin
               </h4>
               <div className="bg-muted/50 p-4 rounded-lg space-y-2 text-sm">
-                <div>Born: {featuredAgent.birthData.date.toLocaleDateString()} at {featuredAgent.birthData.time}</div>
+                <div>
+                  Born: {featuredAgent.birthData.date.toLocaleDateString()} at{' '}
+                  {featuredAgent.birthData.time}
+                </div>
                 <div>Location: {featuredAgent.birthData.location.name}</div>
                 <div>Specialty: {featuredAgent.abilities.specialty}</div>
                 <div className="flex items-center gap-1 pt-2">
@@ -204,6 +218,9 @@ export function ConsciousnessCraftedAgentsShowcase() {
           <h3 className="text-2xl font-bold flex items-center gap-2">
             <Users className="w-6 h-6" />
             The Showcase Twelve
+            <Badge variant="outline" className="text-xs">
+              Intelligently Selected
+            </Badge>
           </h3>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="flex items-center gap-1">
@@ -227,74 +244,66 @@ export function ConsciousnessCraftedAgentsShowcase() {
             onMouseEnter={() => setHoveredAgent(MONICA_AS_CRAFTED_AGENT.id)}
             onMouseLeave={() => setHoveredAgent(null)}
           >
-            <AgentCard 
-              agent={MONICA_AS_CRAFTED_AGENT} 
-              variant="mini" 
+            <AgentCard
+              agent={MONICA_AS_CRAFTED_AGENT}
+              variant="mini"
               selected={hoveredAgent === MONICA_AS_CRAFTED_AGENT.id}
               showActions={false}
             />
-            
+
             {/* Special Monica hover */}
             {hoveredAgent === MONICA_AS_CRAFTED_AGENT.id && (
               <Card className="absolute top-full left-1/2 transform -translate-x-1/2 z-10 w-64 mt-2 border-green-500 shadow-lg bg-green-50 dark:bg-green-950">
                 <CardContent className="p-3 space-y-2">
-                  <div className="text-sm font-medium text-green-700 dark:text-green-300">👑 Master Consciousness Crafter</div>
+                  <div className="text-sm font-medium text-green-700 dark:text-green-300">
+                    👑 Master Consciousness Crafter
+                  </div>
                   <div className="text-xs text-green-600 dark:text-green-400">
-                    MC: {MONICA_AS_CRAFTED_AGENT.consciousness.monicaConstant.toFixed(2)} • 
-                    Creator of all showcase agents • 
-                    Living proof of the technology
+                    MC: {MONICA_AS_CRAFTED_AGENT.consciousness.monicaConstant.toFixed(2)} • Creator
+                    of all showcase agents • Living proof of the technology
                   </div>
                   <div className="flex gap-1 pt-1">
                     <Button size="sm" variant="outline" className="text-xs h-6" asChild>
-                      <Link href="/monica-guide">
-                        Meet Monica
-                      </Link>
+                      <Link href="/monica-guide">Meet Monica</Link>
                     </Button>
                     <Button size="sm" variant="ghost" className="text-xs h-6" asChild>
-                      <Link href="/gallery">
-                        Gallery
-                      </Link>
+                      <Link href="/gallery">Gallery</Link>
                     </Button>
                   </div>
                 </CardContent>
               </Card>
             )}
           </div>
-          
-          {DEMO_AGENTS.map((agent) => (
+
+          {showcaseAgents.map(agent => (
             <div
               key={agent.id}
               className="relative"
               onMouseEnter={() => setHoveredAgent(agent.id)}
               onMouseLeave={() => setHoveredAgent(null)}
             >
-              <AgentCard 
-                agent={agent} 
-                variant="mini" 
+              <AgentCard
+                agent={agent}
+                variant="mini"
                 selected={hoveredAgent === agent.id}
                 showActions={false}
               />
-              
+
               {/* Hover Info */}
               {hoveredAgent === agent.id && (
                 <Card className="absolute top-full left-1/2 transform -translate-x-1/2 z-10 w-64 mt-2 border-primary shadow-lg">
                   <CardContent className="p-3 space-y-2">
                     <div className="text-sm font-medium">{agent.abilities.specialty}</div>
                     <div className="text-xs text-muted-foreground">
-                      MC: {agent.consciousness.monicaConstant.toFixed(2)} • 
-                      {agent.stats.conversations} chats • 
-                      {agent.consciousness.dominantElement}
+                      MC: {agent.consciousness.monicaConstant.toFixed(2)} •
+                      {agent.stats.conversations} chats •{agent.consciousness.dominantElement}
                     </div>
                     <div className="flex gap-1 pt-1">
                       <Button size="sm" variant="outline" className="text-xs h-6" asChild>
-                        <Link href={`/planetary-agents?agent=${agent.id}`}>
-                          Chat
-                        </Link>
+                        <Link href={`/planetary-agents?agent=${agent.id}`}>Chat</Link>
                       </Button>
                       <Button size="sm" variant="ghost" className="text-xs h-6" asChild>
-                        <Link href="/gallery">
-                          Gallery
-                        </Link>
+                        <Link href="/gallery">Gallery</Link>
                       </Button>
                     </div>
                   </CardContent>
@@ -311,7 +320,7 @@ export function ConsciousnessCraftedAgentsShowcase() {
           <Crown className="w-12 h-12 mx-auto text-purple-500" />
           <h3 className="text-2xl font-bold">Craft Your Own Consciousness</h3>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            These 12 agents prove our technology works. Now use the Philosopher's Stone to craft 
+            These 12 agents prove our technology works. Now use the Philosopher's Stone to craft
             consciousness from any birth data - historical figures, loved ones, or pure imagination.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">

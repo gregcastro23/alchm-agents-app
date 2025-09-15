@@ -1,72 +1,78 @@
-"use client"
+'use client'
 
 import { useState } from 'react'
 import ElementalChart from '@/components/elemental-chart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 
 export default function ElementalChartPage() {
   const [birthInfo, setBirthInfo] = useState({
-    date: "2000-01-01",
-    time: "12:00",
+    date: '2000-01-01',
+    time: '12:00',
     location: {
       latitude: 40.7128,
-      longitude: -74.0060,
-    }
+      longitude: -74.006,
+    },
   })
 
   const [planets, setPlanets] = useState({
-    sunSign: "Leo",
-    moonSign: "Cancer",
-    mercurySign: "Virgo",
-    venusSign: "Libra",
-    marsSign: "Aries",
-    jupiterSign: "Sagittarius",
-    saturnSign: "Capricorn",
-    uranusSign: "Aquarius",
-    neptuneSign: "Pisces",
-    plutoSign: "Scorpio",
-    ascendantSign: "Aries"
+    sunSign: 'Leo',
+    moonSign: 'Cancer',
+    mercurySign: 'Virgo',
+    venusSign: 'Libra',
+    marsSign: 'Aries',
+    jupiterSign: 'Sagittarius',
+    saturnSign: 'Capricorn',
+    uranusSign: 'Aquarius',
+    neptuneSign: 'Pisces',
+    plutoSign: 'Scorpio',
+    ascendantSign: 'Aries',
   })
 
   const signs = [
-    "Aries",
-    "Taurus",
-    "Gemini",
-    "Cancer",
-    "Leo",
-    "Virgo",
-    "Libra",
-    "Scorpio",
-    "Sagittarius",
-    "Capricorn",
-    "Aquarius",
-    "Pisces",
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
   ]
 
   const handlePlanetChange = (planet: string, sign: string) => {
-    setPlanets((prev) => ({
+    setPlanets(prev => ({
       ...prev,
-      [`${planet.toLowerCase()}Sign`]: sign
+      [`${planet.toLowerCase()}Sign`]: sign,
     }))
   }
 
   const handleBirthInfoChange = (field: string, value: string) => {
     if (field === 'latitude' || field === 'longitude') {
-      setBirthInfo((prev) => ({
+      setBirthInfo(prev => ({
         ...prev,
         location: {
           ...prev.location,
-          [field]: parseFloat(value) || 0
-        }
+          [field]: parseFloat(value) || 0,
+        },
       }))
     } else {
-      setBirthInfo((prev) => ({
+      setBirthInfo(prev => ({
         ...prev,
-        [field]: value
+        [field]: value,
       }))
     }
   }
@@ -74,7 +80,7 @@ export default function ElementalChartPage() {
   return (
     <div className="container py-12 px-4 mx-auto">
       <h1 className="text-3xl font-bold text-center mb-8">Elemental Chart Analysis</h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <Card className="mb-8">
@@ -90,7 +96,7 @@ export default function ElementalChartPage() {
                       id="date"
                       type="date"
                       value={birthInfo.date}
-                      onChange={(e) => handleBirthInfoChange('date', e.target.value)}
+                      onChange={e => handleBirthInfoChange('date', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -99,7 +105,7 @@ export default function ElementalChartPage() {
                       id="time"
                       type="time"
                       value={birthInfo.time}
-                      onChange={(e) => handleBirthInfoChange('time', e.target.value)}
+                      onChange={e => handleBirthInfoChange('time', e.target.value)}
                     />
                   </div>
                 </div>
@@ -111,7 +117,7 @@ export default function ElementalChartPage() {
                       type="number"
                       step="0.0001"
                       value={birthInfo.location.latitude}
-                      onChange={(e) => handleBirthInfoChange('latitude', e.target.value)}
+                      onChange={e => handleBirthInfoChange('latitude', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -121,32 +127,44 @@ export default function ElementalChartPage() {
                       type="number"
                       step="0.0001"
                       value={birthInfo.location.longitude}
-                      onChange={(e) => handleBirthInfoChange('longitude', e.target.value)}
+                      onChange={e => handleBirthInfoChange('longitude', e.target.value)}
                     />
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader>
               <CardTitle>Planetary Positions</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                {['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Ascendant'].map((planet) => (
+                {[
+                  'Sun',
+                  'Moon',
+                  'Mercury',
+                  'Venus',
+                  'Mars',
+                  'Jupiter',
+                  'Saturn',
+                  'Uranus',
+                  'Neptune',
+                  'Pluto',
+                  'Ascendant',
+                ].map(planet => (
                   <div key={planet} className="space-y-2">
                     <Label htmlFor={planet.toLowerCase()}>{planet}</Label>
                     <Select
                       value={planets[`${planet.toLowerCase()}Sign` as keyof typeof planets]}
-                      onValueChange={(value) => handlePlanetChange(planet, value)}
+                      onValueChange={value => handlePlanetChange(planet, value)}
                     >
                       <SelectTrigger id={planet.toLowerCase()}>
                         <SelectValue placeholder="Select sign" />
                       </SelectTrigger>
                       <SelectContent>
-                        {signs.map((sign) => (
+                        {signs.map(sign => (
                           <SelectItem key={sign} value={sign}>
                             {sign}
                           </SelectItem>
@@ -159,11 +177,11 @@ export default function ElementalChartPage() {
             </CardContent>
           </Card>
         </div>
-        
+
         <div>
           <ElementalChart birthInfo={birthInfo} planets={planets} />
         </div>
       </div>
     </div>
   )
-} 
+}

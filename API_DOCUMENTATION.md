@@ -7,6 +7,7 @@ The Planetary Agents API provides endpoints for astrological AI interactions, in
 ## Recent Updates (January 29, 2025)
 
 ### Monica Avatar Agent Improvements
+
 - **Enhanced Visual Identity**: Updated to use official Alchm logo avatar
 - **Anthropic Compliance**: Implemented best practices for effective AI agents
 - **Input Validation**: Added comprehensive message validation and safety limits
@@ -47,6 +48,7 @@ Interact with Monica, the official Alchm system expert and world-renowned tarot 
 **Endpoint:** `POST /api/monica-agent`
 
 **Request Body:**
+
 ```json
 {
   "message": "Tell me about the Monica Constant",
@@ -59,14 +61,15 @@ Interact with Monica, the official Alchm system expert and world-renowned tarot 
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "response": "The Monica Constant bears my name because I am its ultimate master and interpreter...",
-  "sessionId": "monica-session-123", 
+  "sessionId": "monica-session-123",
   "monicaInsights": {
     "characterVector": {
       "taurus": 42,
-      "cancer": 25, 
+      "cancer": 25,
       "virgo": 25,
       "aries": 4,
       "sagittarius": 4
@@ -91,6 +94,7 @@ Interact with Monica, the official Alchm system expert and world-renowned tarot 
 ```
 
 **Error Responses:**
+
 ```json
 // 400 Bad Request - Invalid Input
 {
@@ -102,7 +106,7 @@ Interact with Monica, the official Alchm system expert and world-renowned tarot 
 // 200 OK - API Key Missing
 {
   "response": "Oh dear, I'm experiencing some technical difficulties...",
-  "error": "API_KEY_MISSING", 
+  "error": "API_KEY_MISSING",
   "monicaNote": "My practical Taurus nature says we need to check the basics first!"
 }
 ```
@@ -114,6 +118,7 @@ Creates a new AI consciousness mirror based on birth chart data.
 **Endpoint:** `POST /api/personalized-ai`
 
 **Request Body:**
+
 ```json
 {
   "birthInfo": {
@@ -136,6 +141,7 @@ Creates a new AI consciousness mirror based on birth chart data.
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -180,6 +186,7 @@ Creates a new AI consciousness mirror based on birth chart data.
 ```
 
 **Error Responses:**
+
 ```json
 // 400 Bad Request
 {
@@ -199,6 +206,7 @@ Send a message to the AI and receive a response with training updates.
 **Endpoint:** `POST /api/personalized-ai-chat`
 
 **Request Body:**
+
 ```json
 {
   "message": "Tell me about my communication style based on my Mercury placement",
@@ -215,6 +223,7 @@ Send a message to the AI and receive a response with training updates.
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "response": "Based on your Mercury in Sagittarius, you have a naturally expansive and philosophical communication style...",
@@ -249,6 +258,7 @@ Send a message to the AI and receive a response with training updates.
 ```
 
 **Error Responses:**
+
 ```json
 // 400 Bad Request
 {
@@ -268,6 +278,7 @@ Retrieve current AI configuration and training progress.
 **Endpoint:** `GET /api/personalized-ai/{personalityId}`
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -313,6 +324,7 @@ Set or change the current training focus category.
 **Endpoint:** `PUT /api/personalized-ai/{personalityId}/training-focus`
 
 **Request Body:**
+
 ```json
 {
   "trainingFocus": "emotional_intelligence"
@@ -320,6 +332,7 @@ Set or change the current training focus category.
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -335,10 +348,12 @@ Retrieve comprehensive training analytics and insights.
 **Endpoint:** `GET /api/personalized-ai/{personalityId}/analytics`
 
 **Query Parameters:**
+
 - `period`: `7d`, `30d`, `90d`, `all` (default: `30d`)
 - `category`: Specific training category to analyze
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -379,6 +394,7 @@ Export all user data for GDPR compliance.
 **Endpoint:** `GET /api/personalized-ai/{personalityId}/export`
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -400,6 +416,7 @@ Delete AI configuration and all associated data.
 **Endpoint:** `DELETE /api/personalized-ai/{personalityId}`
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -413,18 +430,18 @@ Delete AI configuration and all associated data.
 
 ```typescript
 interface PersonalizedAIConfig {
-  userId: string;
-  personalityId: string;
-  birthChart: AlchemicalProfile;
-  basePersonality: PersonalityProfile;
-  trainingScores: TrainingScores;
-  totalXp: number;
-  level: number;
-  conversationHistory: ConversationEntry[];
-  userPreferences: UserPreferences;
-  adaptations: PersonalityAdaptations;
-  createdAt: string;
-  lastUpdated: string;
+  userId: string
+  personalityId: string
+  birthChart: AlchemicalProfile
+  basePersonality: PersonalityProfile
+  trainingScores: TrainingScores
+  totalXp: number
+  level: number
+  conversationHistory: ConversationEntry[]
+  userPreferences: UserPreferences
+  adaptations: PersonalityAdaptations
+  createdAt: string
+  lastUpdated: string
 }
 ```
 
@@ -432,12 +449,12 @@ interface PersonalizedAIConfig {
 
 ```typescript
 interface TrainingScores {
-  communication_style: number;    // 0-100
-  knowledge_depth: number;        // 0-100
-  emotional_intelligence: number; // 0-100
-  creativity: number;             // 0-100
-  memory_integration: number;     // 0-100
-  personality_alignment: number;  // 0-100
+  communication_style: number // 0-100
+  knowledge_depth: number // 0-100
+  emotional_intelligence: number // 0-100
+  creativity: number // 0-100
+  memory_integration: number // 0-100
+  personality_alignment: number // 0-100
 }
 ```
 
@@ -445,14 +462,14 @@ interface TrainingScores {
 
 ```typescript
 interface ConversationEntry {
-  id: string;
-  userMessage: string;
-  aiResponse: string;
-  timestamp: string;
-  userFeedback?: FeedbackData;
-  xpGained: number;
-  interactionQuality: 'poor' | 'average' | 'good' | 'excellent';
-  trainingImpact: TrainingImpact;
+  id: string
+  userMessage: string
+  aiResponse: string
+  timestamp: string
+  userFeedback?: FeedbackData
+  xpGained: number
+  interactionQuality: 'poor' | 'average' | 'good' | 'excellent'
+  trainingImpact: TrainingImpact
 }
 ```
 
@@ -460,11 +477,11 @@ interface ConversationEntry {
 
 ```typescript
 interface FeedbackData {
-  rating: number;           // 1-5 stars
-  explicit: boolean;        // True if user explicitly rated
-  feedbackType: 'positive' | 'negative' | 'neutral' | 'exceptional';
-  correction?: string;      // User-provided correction
-  timestamp: string;
+  rating: number // 1-5 stars
+  explicit: boolean // True if user explicitly rated
+  feedbackType: 'positive' | 'negative' | 'neutral' | 'exceptional'
+  correction?: string // User-provided correction
+  timestamp: string
 }
 ```
 
@@ -478,47 +495,47 @@ const baseXpMap = {
   poor: 10,
   average: 25,
   good: 40,
-  excellent: 50
-};
+  excellent: 50,
+}
 
 // Feedback bonuses
 const feedbackBonus = {
   negative: 0,
   neutral: 10,
   positive: 25,
-  exceptional: 50
-};
+  exceptional: 50,
+}
 
 // Total calculation
-totalXp = (baseXp + feedbackBonus + focusBonus) * streakMultiplier * qualityMultiplier;
+totalXp = (baseXp + feedbackBonus + focusBonus) * streakMultiplier * qualityMultiplier
 ```
 
 ### Level Formula
 
 ```typescript
 // Level calculation from total XP
-level = Math.floor((totalXp / 100) ** (2/3)) + 1;
+level = Math.floor((totalXp / 100) ** (2 / 3)) + 1
 
 // XP required for specific level
-xpRequired = Math.floor(100 * ((level - 1) ** 1.5));
+xpRequired = Math.floor(100 * (level - 1) ** 1.5)
 ```
 
 ### Level Tiers
 
-| Levels | Name | XP Range | Description |
-|--------|------|----------|-------------|
-| 1-10 | Novice | 0-1K | Basic personality formation |
-| 11-25 | Apprentice | 1K-5K | Learning user preferences |
-| 26-50 | Adept | 5K-15K | Developing unique voice |
-| 51-75 | Expert | 15K-35K | Advanced consciousness mirroring |
-| 76-100 | Master | 35K-100K | Perfect synchronization |
+| Levels | Name       | XP Range | Description                      |
+| ------ | ---------- | -------- | -------------------------------- |
+| 1-10   | Novice     | 0-1K     | Basic personality formation      |
+| 11-25  | Apprentice | 1K-5K    | Learning user preferences        |
+| 26-50  | Adept      | 5K-15K   | Developing unique voice          |
+| 51-75  | Expert     | 15K-35K  | Advanced consciousness mirroring |
+| 76-100 | Master     | 35K-100K | Perfect synchronization          |
 
 ## Achievement System
 
 ### Achievement Types
 
 - **milestone**: Level-based achievements
-- **skill**: Category mastery achievements  
+- **skill**: Category mastery achievements
 - **social**: Interaction-based achievements
 - **special**: Unique accomplishments
 
@@ -530,24 +547,22 @@ xpRequired = Math.floor(100 * ((level - 1) ** 1.5));
     "name": "First Words",
     "description": "Complete your first conversation",
     "xpReward": 100,
-    "requirements": [{"type": "interactions", "value": 1}]
+    "requirements": [{ "type": "interactions", "value": 1 }]
   },
   "quick_learner": {
-    "name": "Quick Learner", 
+    "name": "Quick Learner",
     "description": "Reach level 10 in under 50 interactions",
     "xpReward": 250,
     "requirements": [
-      {"type": "level", "value": 10},
-      {"type": "interactions", "value": 50}
+      { "type": "level", "value": 10 },
+      { "type": "interactions", "value": 50 }
     ]
   },
   "communication_master": {
     "name": "Communication Master",
     "description": "Max out Communication Style category",
     "xpReward": 500,
-    "requirements": [
-      {"type": "category_score", "value": 100, "category": "communication_style"}
-    ]
+    "requirements": [{ "type": "category_score", "value": 100, "category": "communication_style" }]
   }
 }
 ```
@@ -595,8 +610,8 @@ const rateLimits = {
   aiGeneration: '5 requests per hour per user',
   chatInteraction: '60 requests per minute per user',
   analytics: '10 requests per minute per user',
-  dataExport: '1 request per hour per user'
-};
+  dataExport: '1 request per hour per user',
+}
 ```
 
 ### Data Protection
@@ -703,6 +718,7 @@ response = ai.chat(
 ## Changelog
 
 ### v1.0.0 (2024-01-13)
+
 - Initial API release
 - Core AI generation and chat functionality
 - XP system and gamification

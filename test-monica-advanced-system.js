@@ -13,16 +13,16 @@ async function testMonicaAdvancedSystem() {
         Spirit: 5.66, Essence: 9.12, Matter: 7.7, Substance: 2.18
         
         Please interpret this data and explain how you would help me create a personalized AI agent. Also, tell me which decan tarot cards are activated right now based on the current planetary positions, and how this connects to consciousness agent design.`,
-        includeAlchm: true
-      })
-    });
+        includeAlchm: true,
+      }),
+    })
 
-    const data = await response.json();
-    console.log('🧪🔮🤖 Monica Advanced System Integration Test:');
-    console.log(data.response);
+    const data = await response.json()
+    console.log('🧪🔮🤖 Monica Advanced System Integration Test:')
+    console.log(data.response)
   } catch (error) {
-    console.error('Error testing Monica advanced system capabilities:', error);
+    console.error('Error testing Monica advanced system capabilities:', error)
   }
 }
 
-testMonicaAdvancedSystem();
+testMonicaAdvancedSystem()

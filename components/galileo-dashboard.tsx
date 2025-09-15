@@ -1,12 +1,30 @@
-"use client"
+'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useGalileoLog } from '@/hooks/useGalileoLog'
 import GalileoLogger from './galileo-logger'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Legend,
+} from 'recharts'
 
 const GALILEO_PROJECT_ID = '1e7fd4a1-3e28-4fe1-a719-744f239a13be'
 const GALILEO_LOG_STREAM_ID = '6ed50263-a348-4ad6-ab63-bd04d3a4ffdd'
@@ -43,8 +61,8 @@ export default function GalileoDashboard() {
       await log('Dashboard viewed', {
         metadata: {
           component: 'GalileoDashboard',
-          action: 'view'
-        }
+          action: 'view',
+        },
       })
     }
     logDashboardView()
@@ -58,14 +76,17 @@ export default function GalileoDashboard() {
     await log('Dashboard refreshed', {
       metadata: {
         component: 'GalileoDashboard',
-        action: 'refresh'
-      }
+        action: 'refresh',
+      },
     })
     setIsLoading(false)
   }
 
   const openGalileoUI = () => {
-    window.open(`https://app.galileo.ai/project/${GALILEO_PROJECT_ID}/log-streams/${GALILEO_LOG_STREAM_ID}`, '_blank')
+    window.open(
+      `https://app.galileo.ai/project/${GALILEO_PROJECT_ID}/log-streams/${GALILEO_LOG_STREAM_ID}`,
+      '_blank'
+    )
   }
 
   return (
@@ -76,9 +97,7 @@ export default function GalileoDashboard() {
           <Button variant="outline" onClick={refreshData} disabled={isLoading}>
             {isLoading ? 'Refreshing...' : 'Refresh Data'}
           </Button>
-          <Button onClick={openGalileoUI}>
-            Open Galileo UI
-          </Button>
+          <Button onClick={openGalileoUI}>Open Galileo UI</Button>
         </div>
       </div>
 
@@ -104,7 +123,12 @@ export default function GalileoDashboard() {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="requests" stroke="#8884d8" name="Total Requests" />
+                    <Line
+                      type="monotone"
+                      dataKey="requests"
+                      stroke="#8884d8"
+                      name="Total Requests"
+                    />
                     <Line type="monotone" dataKey="success" stroke="#82ca9d" name="Successful" />
                     <Line type="monotone" dataKey="failure" stroke="#ff7300" name="Failed" />
                   </LineChart>
@@ -127,7 +151,12 @@ export default function GalileoDashboard() {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="avgLatency" stroke="#8884d8" name="Avg Latency (ms)" />
+                    <Line
+                      type="monotone"
+                      dataKey="avgLatency"
+                      stroke="#8884d8"
+                      name="Avg Latency (ms)"
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -163,7 +192,9 @@ export default function GalileoDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Latency by Planet</CardTitle>
-              <CardDescription>Average response time in milliseconds by planetary agent</CardDescription>
+              <CardDescription>
+                Average response time in milliseconds by planetary agent
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-60">
@@ -198,12 +229,23 @@ export default function GalileoDashboard() {
           <div className="space-y-2">
             <p>The Galileo monitoring system provides:</p>
             <ul className="list-disc pl-6 space-y-1">
-              <li><strong>Traces:</strong> Follow requests through your system with detailed logs</li>
-              <li><strong>Metrics:</strong> Track performance, usage patterns, and errors</li>
-              <li><strong>Alerts:</strong> Get notified about issues in your application</li>
-              <li><strong>Tags:</strong> Filter and organize your logs by different dimensions</li>
+              <li>
+                <strong>Traces:</strong> Follow requests through your system with detailed logs
+              </li>
+              <li>
+                <strong>Metrics:</strong> Track performance, usage patterns, and errors
+              </li>
+              <li>
+                <strong>Alerts:</strong> Get notified about issues in your application
+              </li>
+              <li>
+                <strong>Tags:</strong> Filter and organize your logs by different dimensions
+              </li>
             </ul>
-            <p className="mt-4">To set up custom alerts, dashboards, and more advanced analytics, visit the Galileo UI.</p>
+            <p className="mt-4">
+              To set up custom alerts, dashboards, and more advanced analytics, visit the Galileo
+              UI.
+            </p>
           </div>
         </CardContent>
         <CardFooter>
@@ -214,4 +256,4 @@ export default function GalileoDashboard() {
       </Card>
     </div>
   )
-} 
+}

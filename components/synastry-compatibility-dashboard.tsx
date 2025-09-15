@@ -1,13 +1,13 @@
-"use client"
+'use client'
 
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
+import React, { useState, useMemo } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import {
   Heart,
   Users,
   Star,
@@ -29,87 +29,104 @@ import {
   Flame,
   Droplets,
   Wind,
-  Mountain
-} from 'lucide-react';
-import type { 
+  Mountain,
+} from 'lucide-react'
+import type {
   SynastryChart,
   SynastryReport,
   CompatibilityAnalysis,
   SynastryAspect,
   RelationshipStrength,
-  RelationshipChallenge
-} from '@/lib/synastry-compatibility-engine';
-import { 
+  RelationshipChallenge,
+} from '@/lib/synastry-compatibility-engine'
+import {
   SynastryAnalysisEngine,
   getCompatibilityInterpretation,
-  COMPATIBILITY_INTERPRETATIONS
-} from '@/lib/synastry-compatibility-engine';
+  COMPATIBILITY_INTERPRETATIONS,
+} from '@/lib/synastry-compatibility-engine'
 
 interface SynastryCompatibilityDashboardProps {
-  synastryChart: SynastryChart;
-  onReportGenerate?: (report: SynastryReport) => void;
-  onInsightSave?: (insight: string) => void;
+  synastryChart: SynastryChart
+  onReportGenerate?: (report: SynastryReport) => void
+  onInsightSave?: (insight: string) => void
 }
 
 export function SynastryCompatibilityDashboard({
   synastryChart,
   onReportGenerate,
-  onInsightSave
+  onInsightSave,
 }: SynastryCompatibilityDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'aspects' | 'compatibility' | 'guidance'>('overview');
-  const [selectedAspect, setSelectedAspect] = useState<SynastryAspect | null>(null);
-  
+  const [activeTab, setActiveTab] = useState<'overview' | 'aspects' | 'compatibility' | 'guidance'>(
+    'overview'
+  )
+  const [selectedAspect, setSelectedAspect] = useState<SynastryAspect | null>(null)
+
   // Generate complete synastry report
   const synastryReport = useMemo(() => {
-    const report = SynastryAnalysisEngine.generateSynastryReport(synastryChart);
-    onReportGenerate?.(report);
-    return report;
-  }, [synastryChart, onReportGenerate]);
+    const report = SynastryAnalysisEngine.generateSynastryReport(synastryChart)
+    onReportGenerate?.(report)
+    return report
+  }, [synastryChart, onReportGenerate])
 
-  const compatibility = synastryReport.compatibility_analysis;
-  const compatibilityInterpretation = getCompatibilityInterpretation(compatibility.overall_compatibility);
+  const compatibility = synastryReport.compatibility_analysis
+  const compatibilityInterpretation = getCompatibilityInterpretation(
+    compatibility.overall_compatibility
+  )
 
   const getElementIcon = (element: string) => {
     switch (element.toLowerCase()) {
-      case 'fire': return <Flame className="h-4 w-4 text-red-500" />;
-      case 'water': return <Droplets className="h-4 w-4 text-blue-500" />;
-      case 'air': return <Wind className="h-4 w-4 text-yellow-500" />;
-      case 'earth': return <Mountain className="h-4 w-4 text-green-500" />;
-      default: return <Star className="h-4 w-4" />;
+      case 'fire':
+        return <Flame className="h-4 w-4 text-red-500" />
+      case 'water':
+        return <Droplets className="h-4 w-4 text-blue-500" />
+      case 'air':
+        return <Wind className="h-4 w-4 text-yellow-500" />
+      case 'earth':
+        return <Mountain className="h-4 w-4 text-green-500" />
+      default:
+        return <Star className="h-4 w-4" />
     }
-  };
+  }
 
   const getAspectIcon = (aspectType: string) => {
     switch (aspectType) {
-      case 'conjunction': return <Zap className="h-4 w-4 text-purple-500" />;
-      case 'trine': return <Star className="h-4 w-4 text-green-500" />;
-      case 'sextile': return <Sparkles className="h-4 w-4 text-blue-500" />;
-      case 'square': return <AlertTriangle className="h-4 w-4 text-orange-500" />;
-      case 'opposition': return <ArrowRight className="h-4 w-4 text-red-500" />;
-      default: return <Info className="h-4 w-4 text-gray-500" />;
+      case 'conjunction':
+        return <Zap className="h-4 w-4 text-purple-500" />
+      case 'trine':
+        return <Star className="h-4 w-4 text-green-500" />
+      case 'sextile':
+        return <Sparkles className="h-4 w-4 text-blue-500" />
+      case 'square':
+        return <AlertTriangle className="h-4 w-4 text-orange-500" />
+      case 'opposition':
+        return <ArrowRight className="h-4 w-4 text-red-500" />
+      default:
+        return <Info className="h-4 w-4 text-gray-500" />
     }
-  };
+  }
 
   const getCompatibilityColor = (score: number) => {
-    if (score >= 90) return 'from-green-50 to-emerald-50 border-green-200';
-    if (score >= 80) return 'from-blue-50 to-sky-50 border-blue-200';
-    if (score >= 70) return 'from-yellow-50 to-amber-50 border-yellow-200';
-    if (score >= 60) return 'from-orange-50 to-red-50 border-orange-200';
-    return 'from-red-50 to-pink-50 border-red-200';
-  };
+    if (score >= 90) return 'from-green-50 to-emerald-50 border-green-200'
+    if (score >= 80) return 'from-blue-50 to-sky-50 border-blue-200'
+    if (score >= 70) return 'from-yellow-50 to-amber-50 border-yellow-200'
+    if (score >= 60) return 'from-orange-50 to-red-50 border-orange-200'
+    return 'from-red-50 to-pink-50 border-red-200'
+  }
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600';
-    if (score >= 80) return 'text-blue-600';
-    if (score >= 70) return 'text-yellow-600';
-    if (score >= 60) return 'text-orange-600';
-    return 'text-red-600';
-  };
+    if (score >= 90) return 'text-green-600'
+    if (score >= 80) return 'text-blue-600'
+    if (score >= 70) return 'text-yellow-600'
+    if (score >= 60) return 'text-orange-600'
+    return 'text-red-600'
+  }
 
   return (
     <div className="space-y-6">
       {/* Header - Relationship Overview */}
-      <Card className={`bg-gradient-to-r ${getCompatibilityColor(compatibility.overall_compatibility)}`}>
+      <Card
+        className={`bg-gradient-to-r ${getCompatibilityColor(compatibility.overall_compatibility)}`}
+      >
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <Heart className="h-8 w-8 text-pink-600" />
@@ -128,7 +145,9 @@ export function SynastryCompatibilityDashboard({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Overall Compatibility</span>
-                <span className={`text-2xl font-bold ${getScoreColor(compatibility.overall_compatibility)}`}>
+                <span
+                  className={`text-2xl font-bold ${getScoreColor(compatibility.overall_compatibility)}`}
+                >
                   {compatibility.overall_compatibility}%
                 </span>
               </div>
@@ -137,11 +156,13 @@ export function SynastryCompatibilityDashboard({
                 {compatibilityInterpretation.description}
               </p>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Growth Potential</span>
-                <span className="text-lg font-bold">{compatibility.growth_catalyst_potential}%</span>
+                <span className="text-lg font-bold">
+                  {compatibility.growth_catalyst_potential}%
+                </span>
               </div>
               <Progress value={compatibility.growth_catalyst_potential} className="h-3" />
               <div className="flex flex-wrap gap-1">
@@ -152,7 +173,7 @@ export function SynastryCompatibilityDashboard({
                 ))}
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Relationship Purpose</span>
@@ -167,7 +188,11 @@ export function SynastryCompatibilityDashboard({
       </Card>
 
       {/* Navigation Tabs */}
-              <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value)} className="w-full">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value: string) => setActiveTab(value)}
+        className="w-full"
+      >
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="aspects">Aspects</TabsTrigger>
@@ -205,7 +230,7 @@ export function SynastryCompatibilityDashboard({
                       <Badge variant="outline">Secondary</Badge>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium">{synastryChart.person2.name}</h4>
                     <div className="flex items-center gap-2">
@@ -224,11 +249,13 @@ export function SynastryCompatibilityDashboard({
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Elemental Compatibility</span>
-                    <span className={`font-medium ${getScoreColor(compatibility.elemental_harmony)}`}>
+                    <span
+                      className={`font-medium ${getScoreColor(compatibility.elemental_harmony)}`}
+                    >
                       {compatibility.elemental_harmony}%
                     </span>
                   </div>
@@ -247,24 +274,23 @@ export function SynastryCompatibilityDashboard({
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {synastryReport.major_aspects.slice(0, 4).map((aspect) => (
-                    <div 
-                      key={aspect.id} 
+                  {synastryReport.major_aspects.slice(0, 4).map(aspect => (
+                    <div
+                      key={aspect.id}
                       className="p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
                       onClick={() => setSelectedAspect(aspect)}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         {getAspectIcon(aspect.aspect_type)}
                         <span className="text-sm font-medium">
-                          {aspect.person1}&apos;s {aspect.planet1} {aspect.aspect_type} {aspect.person2}&apos;s {aspect.planet2}
+                          {aspect.person1}&apos;s {aspect.planet1} {aspect.aspect_type}{' '}
+                          {aspect.person2}&apos;s {aspect.planet2}
                         </span>
                         <Badge variant="outline" className="text-xs">
                           {aspect.aspect_strength}%
                         </Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {aspect.description}
-                      </p>
+                      <p className="text-xs text-muted-foreground">{aspect.description}</p>
                     </div>
                   ))}
                 </div>
@@ -279,9 +305,7 @@ export function SynastryCompatibilityDashboard({
                 <Calendar className="h-5 w-5" />
                 Relationship Evolution Timeline
               </CardTitle>
-              <CardDescription>
-                The natural phases of your relationship journey
-              </CardDescription>
+              <CardDescription>The natural phases of your relationship journey</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -320,15 +344,13 @@ export function SynastryCompatibilityDashboard({
             <Card>
               <CardHeader>
                 <CardTitle>Major Synastry Aspects</CardTitle>
-                <CardDescription>
-                  Planetary connections between your charts
-                </CardDescription>
+                <CardDescription>Planetary connections between your charts</CardDescription>
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-96">
                   <div className="space-y-3">
-                    {synastryReport.major_aspects.map((aspect) => (
-                      <Card 
+                    {synastryReport.major_aspects.map(aspect => (
+                      <Card
                         key={aspect.id}
                         className={`cursor-pointer transition-all hover:shadow-md ${
                           selectedAspect?.id === aspect.id ? 'ring-2 ring-blue-500' : ''
@@ -381,7 +403,7 @@ export function SynastryCompatibilityDashboard({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm">{selectedAspect.description}</p>
-                  
+
                   <div className="space-y-2">
                     <h4 className="font-medium text-sm">Relationship Themes</h4>
                     <ul className="text-sm space-y-1">
@@ -393,7 +415,7 @@ export function SynastryCompatibilityDashboard({
                       ))}
                     </ul>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <h4 className="font-medium text-sm">Consciousness Lessons</h4>
                     <ul className="text-sm space-y-1">
@@ -427,10 +449,13 @@ export function SynastryCompatibilityDashboard({
                   { label: 'Overall Compatibility', value: compatibility.overall_compatibility },
                   { label: 'Elemental Harmony', value: compatibility.elemental_harmony },
                   { label: 'Communication Match', value: compatibility.communication_style_match },
-                  { label: 'Emotional Compatibility', value: compatibility.emotional_compatibility },
+                  {
+                    label: 'Emotional Compatibility',
+                    value: compatibility.emotional_compatibility,
+                  },
                   { label: 'Values Alignment', value: compatibility.values_alignment },
-                  { label: 'Growth Potential', value: compatibility.growth_catalyst_potential }
-                ].map((item) => (
+                  { label: 'Growth Potential', value: compatibility.growth_catalyst_potential },
+                ].map(item => (
                   <div key={item.label} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">{item.label}</span>
@@ -465,7 +490,7 @@ export function SynastryCompatibilityDashboard({
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="space-y-3">
                   <h4 className="font-medium text-sm flex items-center gap-2">
                     <Target className="h-4 w-4 text-orange-500" />
@@ -496,10 +521,16 @@ export function SynastryCompatibilityDashboard({
                   {compatibility.universal_lesson}
                 </p>
                 <div className="space-y-2">
-                  <h4 className="text-xs font-medium text-violet-700">Consciousness Development Areas:</h4>
+                  <h4 className="text-xs font-medium text-violet-700">
+                    Consciousness Development Areas:
+                  </h4>
                   <div className="flex flex-wrap gap-1">
                     {compatibility.consciousness_development_areas.map((area, index) => (
-                      <Badge key={index} variant="outline" className="text-xs text-violet-700 border-violet-200">
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="text-xs text-violet-700 border-violet-200"
+                      >
                         {area}
                       </Badge>
                     ))}
@@ -543,12 +574,14 @@ export function SynastryCompatibilityDashboard({
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {synastryReport.practical_guidance.communication_strategies.map((strategy, index) => (
-                    <div key={index} className="flex items-start gap-2 text-sm">
-                      <MessageCircle className="h-4 w-4 mt-0.5 text-blue-500" />
-                      {strategy}
-                    </div>
-                  ))}
+                  {synastryReport.practical_guidance.communication_strategies.map(
+                    (strategy, index) => (
+                      <div key={index} className="flex items-start gap-2 text-sm">
+                        <MessageCircle className="h-4 w-4 mt-0.5 text-blue-500" />
+                        {strategy}
+                      </div>
+                    )
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -596,5 +629,5 @@ export function SynastryCompatibilityDashboard({
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

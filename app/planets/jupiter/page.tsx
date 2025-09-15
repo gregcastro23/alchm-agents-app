@@ -12,7 +12,9 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Sparkles, Calendar, TrendingUp } from 'lucide-react'
 
 export default function JupiterPage() {
-  const [currentPosition, setCurrentPosition] = useState<{ sign: string; degree: string } | null>(null)
+  const [currentPosition, setCurrentPosition] = useState<{ sign: string; degree: string } | null>(
+    null
+  )
   const [jupiterTransits, setJupiterTransits] = useState<any[]>([])
   const [currentThemes, setCurrentThemes] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -24,7 +26,7 @@ export default function JupiterPage() {
         const positions = getCurrentPlanetaryPositions()
         if (positions['Jupiter']) {
           setCurrentPosition(positions['Jupiter'])
-          
+
           // Get themes for current position
           const themes = identifyPlanetaryThemes('Jupiter', positions['Jupiter'].sign)
           setCurrentThemes(themes)
@@ -33,7 +35,7 @@ export default function JupiterPage() {
         // Get Jupiter's historical transits
         const transits = getTransitsByPlanet('Jupiter')
         setJupiterTransits(transits.slice(-10)) // Last 10 transits
-        
+
         setLoading(false)
       } catch (error) {
         console.error('Error loading Jupiter data:', error)
@@ -48,7 +50,7 @@ export default function JupiterPage() {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     })
   }
 
@@ -110,23 +112,27 @@ export default function JupiterPage() {
                 Jupiter expands consciousness through {currentPosition.sign}
               </span>
             </div>
-            
+
             {currentThemes && (
               <div className="space-y-3">
                 <div>
                   <h4 className="font-semibold mb-2">Current Themes</h4>
                   <div className="flex flex-wrap gap-2">
                     {currentThemes.themes?.slice(0, 4).map((theme: string) => (
-                      <Badge key={theme} variant="outline">{theme}</Badge>
+                      <Badge key={theme} variant="outline">
+                        {theme}
+                      </Badge>
                     ))}
                   </div>
                 </div>
-                
+
                 <div>
                   <h4 className="font-semibold mb-2">Active Archetypes</h4>
                   <div className="flex flex-wrap gap-2">
                     {currentThemes.archetypes?.slice(0, 3).map((archetype: string) => (
-                      <Badge key={archetype} variant="secondary">{archetype}</Badge>
+                      <Badge key={archetype} variant="secondary">
+                        {archetype}
+                      </Badge>
                     ))}
                   </div>
                 </div>
@@ -144,9 +150,7 @@ export default function JupiterPage() {
                 <Calendar className="h-5 w-5" />
                 Historical Jupiter Transits
               </CardTitle>
-              <CardDescription>
-                Jupiter's journey through the zodiac over time
-              </CardDescription>
+              <CardDescription>Jupiter's journey through the zodiac over time</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -193,7 +197,9 @@ export default function JupiterPage() {
                 <p className="text-sm text-muted-foreground mb-1">Keywords</p>
                 <div className="flex flex-wrap gap-1">
                   {['Expansion', 'Wisdom', 'Growth', 'Teaching', 'Philosophy'].map(keyword => (
-                    <Badge key={keyword} variant="outline" className="text-xs">{keyword}</Badge>
+                    <Badge key={keyword} variant="outline" className="text-xs">
+                      {keyword}
+                    </Badge>
                   ))}
                 </div>
               </div>
@@ -232,9 +238,11 @@ export default function JupiterPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Connect with Jupiter's expansive wisdom
               </p>
-              <Button 
+              <Button
                 className="w-full"
-                onClick={() => window.location.href = `/planetary-agents?planet=Jupiter&sign=${currentPosition?.sign || 'Sagittarius'}&degree=15`}
+                onClick={() =>
+                  (window.location.href = `/agents/Jupiter/${encodeURIComponent(currentPosition?.sign || 'Sagittarius')}/15`)
+                }
               >
                 Chat with Jupiter Agent
               </Button>

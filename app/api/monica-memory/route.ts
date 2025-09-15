@@ -10,7 +10,11 @@ function keyFrom(req: NextRequest): string | null {
 
 export async function GET(req: NextRequest) {
   const key = keyFrom(req)
-  if (!key) return NextResponse.json({ success: false, message: 'Missing userId or sessionId' }, { status: 400 })
+  if (!key)
+    return NextResponse.json(
+      { success: false, message: 'Missing userId or sessionId' },
+      { status: 400 }
+    )
   const data = store.get(key) || null
   return NextResponse.json({ success: true, preferences: data })
 }
@@ -18,7 +22,11 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
   const key = body.userId || body.sessionId
-  if (!key) return NextResponse.json({ success: false, message: 'Missing userId or sessionId' }, { status: 400 })
+  if (!key)
+    return NextResponse.json(
+      { success: false, message: 'Missing userId or sessionId' },
+      { status: 400 }
+    )
   const prev = store.get(key) || {}
   const next = { ...prev, ...(body.preferencesPatch || {}) }
   store.set(key, next)
@@ -27,9 +35,11 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const key = keyFrom(req)
-  if (!key) return NextResponse.json({ success: false, message: 'Missing userId or sessionId' }, { status: 400 })
+  if (!key)
+    return NextResponse.json(
+      { success: false, message: 'Missing userId or sessionId' },
+      { status: 400 }
+    )
   store.delete(key)
   return NextResponse.json({ success: true })
 }
-
-

@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 
@@ -74,68 +74,76 @@ export function useSavedCharts(): UseSavedChartsReturn {
     }
   }, [savedCharts, isStorage])
 
-  const saveChart = useCallback((chart: Omit<SavedChart, 'id' | 'createdAt'>): boolean => {
-    if (!isStorage) return false
+  const saveChart = useCallback(
+    (chart: Omit<SavedChart, 'id' | 'createdAt'>): boolean => {
+      if (!isStorage) return false
 
-    try {
-      const newChart: SavedChart = {
-        ...chart,
-        id: `chart-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        createdAt: new Date().toISOString()
+      try {
+        const newChart: SavedChart = {
+          ...chart,
+          id: `chart-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          createdAt: new Date().toISOString(),
+        }
+
+        setSavedCharts(prev => {
+          const updated = [newChart, ...prev]
+          // Keep only the latest MAX_CHARTS
+          return updated.slice(0, MAX_CHARTS)
+        })
+
+        return true
+      } catch (error) {
+        console.error('Error saving chart:', error)
+        return false
       }
+    },
+    [isStorage]
+  )
 
-      setSavedCharts(prev => {
-        const updated = [newChart, ...prev]
-        // Keep only the latest MAX_CHARTS
-        return updated.slice(0, MAX_CHARTS)
-      })
+  const deleteChart = useCallback(
+    (id: string): boolean => {
+      if (!isStorage) return false
 
-      return true
-    } catch (error) {
-      console.error('Error saving chart:', error)
-      return false
-    }
-  }, [isStorage])
+      try {
+        setSavedCharts(prev => prev.filter(chart => chart.id !== id))
+        return true
+      } catch (error) {
+        console.error('Error deleting chart:', error)
+        return false
+      }
+    },
+    [isStorage]
+  )
 
-  const deleteChart = useCallback((id: string): boolean => {
-    if (!isStorage) return false
+  const loadChart = useCallback(
+    (id: string): SavedChart | null => {
+      try {
+        const chart = savedCharts.find(c => c.id === id)
+        return chart || null
+      } catch (error) {
+        console.error('Error loading chart:', error)
+        return null
+      }
+    },
+    [savedCharts]
+  )
 
-    try {
-      setSavedCharts(prev => prev.filter(chart => chart.id !== id))
-      return true
-    } catch (error) {
-      console.error('Error deleting chart:', error)
-      return false
-    }
-  }, [isStorage])
+  const updateChart = useCallback(
+    (id: string, updates: Partial<SavedChart>): boolean => {
+      if (!isStorage) return false
 
-  const loadChart = useCallback((id: string): SavedChart | null => {
-    try {
-      const chart = savedCharts.find(c => c.id === id)
-      return chart || null
-    } catch (error) {
-      console.error('Error loading chart:', error)
-      return null
-    }
-  }, [savedCharts])
-
-  const updateChart = useCallback((id: string, updates: Partial<SavedChart>): boolean => {
-    if (!isStorage) return false
-
-    try {
-      setSavedCharts(prev => 
-        prev.map(chart => 
-          chart.id === id 
-            ? { ...chart, ...updates }
-            : chart
+      try {
+        setSavedCharts(prev =>
+          prev.map(chart => (chart.id === id ? { ...chart, ...updates } : chart))
         )
-      )
-      return true
-    } catch (error) {
-      console.error('Error updating chart:', error)
-      return false
-    }
-  }, [isStorage])
+        return true
+      } catch (error) {
+        console.error('Error updating chart:', error)
+        return false
+      }
+    },
+    [isStorage]
+  )
 
   const exportCharts = useCallback((): string => {
     try {
@@ -146,35 +154,38 @@ export function useSavedCharts(): UseSavedChartsReturn {
     }
   }, [savedCharts])
 
-  const importCharts = useCallback((jsonData: string): boolean => {
-    if (!isStorage) return false
+  const importCharts = useCallback(
+    (jsonData: string): boolean => {
+      if (!isStorage) return false
 
-    try {
-      const importedCharts = JSON.parse(jsonData) as SavedChart[]
-      
-      // Validate imported data
-      if (!Array.isArray(importedCharts)) {
-        throw new Error('Invalid data format')
+      try {
+        const importedCharts = JSON.parse(jsonData) as SavedChart[]
+
+        // Validate imported data
+        if (!Array.isArray(importedCharts)) {
+          throw new Error('Invalid data format')
+        }
+
+        // Merge with existing charts, avoiding duplicates
+        setSavedCharts(prev => {
+          const existingIds = new Set(prev.map(c => c.id))
+          const newCharts = importedCharts.filter(c => !existingIds.has(c.id))
+          const merged = [...prev, ...newCharts]
+
+          // Sort by creation date (newest first) and limit
+          return merged
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .slice(0, MAX_CHARTS)
+        })
+
+        return true
+      } catch (error) {
+        console.error('Error importing charts:', error)
+        return false
       }
-
-      // Merge with existing charts, avoiding duplicates
-      setSavedCharts(prev => {
-        const existingIds = new Set(prev.map(c => c.id))
-        const newCharts = importedCharts.filter(c => !existingIds.has(c.id))
-        const merged = [...prev, ...newCharts]
-        
-        // Sort by creation date (newest first) and limit
-        return merged
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .slice(0, MAX_CHARTS)
-      })
-
-      return true
-    } catch (error) {
-      console.error('Error importing charts:', error)
-      return false
-    }
-  }, [isStorage])
+    },
+    [isStorage]
+  )
 
   const clearAllCharts = useCallback((): void => {
     if (!isStorage) return
@@ -196,6 +207,6 @@ export function useSavedCharts(): UseSavedChartsReturn {
     exportCharts,
     importCharts,
     clearAllCharts,
-    isStorage
+    isStorage,
   }
 }

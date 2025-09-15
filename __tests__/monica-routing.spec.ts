@@ -13,5 +13,3 @@ describe('Monica model routing', () => {
     expect(r.reason).toBe('complexity_elevate')
   })
 })
-
-

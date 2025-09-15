@@ -9,25 +9,24 @@ Your Claude subscription has been upgraded! This guide covers the new capabiliti
 ### Available Models
 
 #### Claude 3.5 Series (Latest)
+
 - **Claude 3.5 Sonnet** (`claude-3-5-sonnet-20241022`)
   - 200K context window
   - Best for complex reasoning and analysis
   - Ideal for astrological calculations and chart interpretation
-  
 - **Claude 3.5 Haiku** (`claude-3-5-haiku-20241022`)
   - 200K context window
   - Fast and efficient
   - Perfect for quick responses and simple tasks
 
 #### Claude 3 Series
+
 - **Claude 3 Opus** (`claude-3-opus-20240229`)
   - Most capable model
   - Best for advanced reasoning and creative tasks
-  
 - **Claude 3 Sonnet** (`claude-3-sonnet-20240229`)
   - Balanced performance
   - Good for general use cases
-  
 - **Claude 3 Haiku** (`claude-3-haiku-20240307`)
   - Lightweight and fast
   - Cost-effective for simple queries
@@ -100,7 +99,7 @@ curl -X POST http://localhost:3000/api/planetary-agent \
 ### Model Selection
 
 ```typescript
-import { getClaudeModel, createClaudeMessage } from '@/lib/anthropic-client';
+import { getClaudeModel, createClaudeMessage } from '@/lib/anthropic-client'
 
 // For complex astrological calculations
 const complexResponse = await createClaudeMessage(
@@ -108,7 +107,7 @@ const complexResponse = await createClaudeMessage(
   systemPrompt,
   'default', // Uses Claude 3.5 Sonnet
   8192
-);
+)
 
 // For quick responses
 const quickResponse = await createClaudeMessage(
@@ -116,7 +115,7 @@ const quickResponse = await createClaudeMessage(
   systemPrompt,
   'fast', // Uses Claude 3.5 Haiku
   2048
-);
+)
 
 // For most demanding tasks
 const powerfulResponse = await createClaudeMessage(
@@ -124,7 +123,7 @@ const powerfulResponse = await createClaudeMessage(
   systemPrompt,
   'powerful', // Uses Claude 3 Opus
   16384
-);
+)
 ```
 
 ### Context Window Optimization
@@ -143,14 +142,14 @@ With 200K tokens, you can now:
 async function createMessageWithRetry(messages: any[], maxRetries = 3) {
   for (let i = 0; i < maxRetries; i++) {
     try {
-      return await createClaudeMessage(messages);
+      return await createClaudeMessage(messages)
     } catch (error: any) {
       if (error.status === 429 && i < maxRetries - 1) {
-        const delay = Math.pow(2, i) * 1000; // Exponential backoff
-        await new Promise(resolve => setTimeout(resolve, delay));
-        continue;
+        const delay = Math.pow(2, i) * 1000 // Exponential backoff
+        await new Promise(resolve => setTimeout(resolve, delay))
+        continue
       }
-      throw error;
+      throw error
     }
   }
 }
@@ -172,7 +171,7 @@ Use these capabilities to provide:
 - Detailed planetary analysis
 - Comprehensive chart interpretations
 - Personalized guidance based on full context
-`;
+`
 ```
 
 ### 2. Batch Processing
@@ -180,25 +179,25 @@ Use these capabilities to provide:
 ```typescript
 // Process multiple requests efficiently
 async function batchProcessCharts(charts: any[]) {
-  const batchSize = 5; // Adjust based on rate limits
-  const results = [];
-  
+  const batchSize = 5 // Adjust based on rate limits
+  const results = []
+
   for (let i = 0; i < charts.length; i += batchSize) {
-    const batch = charts.slice(i, i + batchSize);
-    const batchPromises = batch.map(chart => 
+    const batch = charts.slice(i, i + batchSize)
+    const batchPromises = batch.map(chart =>
       createClaudeMessage([{ role: 'user', content: chart }], undefined, 'fast')
-    );
-    
-    const batchResults = await Promise.all(batchPromises);
-    results.push(...batchResults);
-    
+    )
+
+    const batchResults = await Promise.all(batchPromises)
+    results.push(...batchResults)
+
     // Rate limit consideration
     if (i + batchSize < charts.length) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000))
     }
   }
-  
-  return results;
+
+  return results
 }
 ```
 
@@ -207,11 +206,11 @@ async function batchProcessCharts(charts: any[]) {
 ### Track Usage
 
 ```typescript
-import { getModelInfo } from '@/lib/anthropic-client';
+import { getModelInfo } from '@/lib/anthropic-client'
 
 // Get information about current model
-const modelInfo = getModelInfo('default');
-console.log(`Using ${modelInfo.name} for ${modelInfo.bestFor}`);
+const modelInfo = getModelInfo('default')
+console.log(`Using ${modelInfo.name} for ${modelInfo.bestFor}`)
 ```
 
 ### Monitor Costs
@@ -266,4 +265,4 @@ console.log(`Using ${modelInfo.name} for ${modelInfo.bestFor}`);
 - [ ] Monitored initial usage
 - [ ] Trained team on new capabilities
 
-Your upgraded Claude subscription opens up new possibilities for more sophisticated astrological analysis and better user experiences. Take advantage of the enhanced capabilities to provide even more accurate and insightful planetary guidance! 
+Your upgraded Claude subscription opens up new possibilities for more sophisticated astrological analysis and better user experiences. Take advantage of the enhanced capabilities to provide even more accurate and insightful planetary guidance!

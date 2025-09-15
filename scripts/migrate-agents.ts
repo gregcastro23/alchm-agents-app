@@ -6,22 +6,22 @@ import { HistoricalAgentsService } from '../lib/historical-agents-db'
 
 async function main() {
   console.log('🚀 Starting Historical Agents Migration...')
-  console.log('=' .repeat(50))
-  
+  console.log('='.repeat(50))
+
   try {
     const result = await HistoricalAgentsService.migrateStaticAgents()
-    
+
     console.log('\n📊 Migration Results:')
     console.log(`✅ Successfully migrated: ${result.migrated} agents`)
     console.log(`❌ Errors encountered: ${result.errors.length}`)
-    
+
     if (result.errors.length > 0) {
       console.log('\n🚨 Errors:')
       result.errors.forEach((error, index) => {
         console.log(`${index + 1}. ${error}`)
       })
     }
-    
+
     if (result.success) {
       console.log('\n🎉 Migration completed successfully!')
       console.log('All historical agents are now stored in the database.')
@@ -30,7 +30,6 @@ async function main() {
       console.log('\n⚠️  Migration completed with some errors.')
       console.log('Please review the errors above and fix any issues.')
     }
-    
   } catch (error) {
     console.error('\n💥 Migration failed:', error)
     process.exit(1)
@@ -43,7 +42,7 @@ main()
     console.log('\n✨ Migration script finished.')
     process.exit(0)
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('Migration script error:', error)
     process.exit(1)
   })

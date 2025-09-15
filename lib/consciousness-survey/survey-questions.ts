@@ -1,6 +1,6 @@
 // Consciousness Survey Questions for Personalized AI
 
-import type { SurveyQuestion } from '../types/consciousness-survey';
+import type { SurveyQuestion } from '../types/consciousness-survey'
 
 export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
   // Communication Style
@@ -13,7 +13,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 9
+    weight: 9,
   },
   {
     id: 'comm_formality',
@@ -25,10 +25,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Friendly but respectful',
       'Professional but warm',
       'Formal and structured',
-      'It depends on the situation'
+      'It depends on the situation',
     ],
     required: true,
-    weight: 8
+    weight: 8,
   },
   {
     id: 'comm_detail_level',
@@ -39,7 +39,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 7
+    weight: 7,
   },
   {
     id: 'comm_humor',
@@ -52,10 +52,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Dry, subtle humor',
       'Gentle, warm humor',
       'I prefer serious conversations',
-      'Mix of different styles depending on mood'
+      'Mix of different styles depending on mood',
     ],
     required: true,
-    weight: 6
+    weight: 6,
   },
   {
     id: 'comm_emotional_expression',
@@ -66,7 +66,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 8
+    weight: 8,
   },
 
   // Thinking Style
@@ -79,7 +79,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 9
+    weight: 9,
   },
   {
     id: 'think_detail_big_picture',
@@ -90,7 +90,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 8
+    weight: 8,
   },
   {
     id: 'think_processing_speed',
@@ -101,25 +101,25 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Give me time to think deeply before responding',
       'I like a moderate pace with some reflection',
       'I prefer quick exchanges and rapid decisions',
-      'It depends entirely on the topic'
+      'It depends entirely on the topic',
     ],
     required: true,
-    weight: 7
+    weight: 7,
   },
   {
     id: 'think_problem_solving',
     category: 'thinking_style',
     type: 'choice',
-    question: 'When facing a complex problem, what\'s your preferred approach?',
+    question: "When facing a complex problem, what's your preferred approach?",
     options: [
       'Break it down systematically step by step',
       'Brainstorm creative and unusual solutions',
       'Discuss it with others to get different perspectives',
       'Trust my gut feeling about the right direction',
-      'Research what others have done in similar situations'
+      'Research what others have done in similar situations',
     ],
     required: true,
-    weight: 8
+    weight: 8,
   },
 
   // Emotional Patterns
@@ -132,7 +132,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 7
+    weight: 7,
   },
   {
     id: 'emotion_expression',
@@ -140,29 +140,29 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     type: 'choice',
     question: 'How do you typically express emotions?',
     options: [
-      'I\'m very open and expressive with my feelings',
+      "I'm very open and expressive with my feelings",
       'I share emotions with close people but am reserved with others',
       'I prefer to process emotions privately',
       'I express emotions through actions rather than words',
-      'I tend to intellectualize my emotions'
+      'I tend to intellectualize my emotions',
     ],
     required: true,
-    weight: 8
+    weight: 8,
   },
   {
     id: 'emotion_stress_response',
     category: 'emotional_patterns',
     type: 'choice',
-    question: 'When you\'re stressed or overwhelmed, what do you typically do?',
+    question: "When you're stressed or overwhelmed, what do you typically do?",
     options: [
       'Withdraw and spend time alone to recharge',
       'Seek support and talk to trusted friends/family',
       'Take immediate action to solve the problem',
       'Analyze the situation thoroughly before acting',
-      'Find a creative outlet or distraction'
+      'Find a creative outlet or distraction',
     ],
     required: true,
-    weight: 8
+    weight: 8,
   },
 
   // Social Preferences
@@ -175,7 +175,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 9
+    weight: 9,
   },
   {
     id: 'social_group_size',
@@ -187,10 +187,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Small groups (3-5 people) with meaningful discussion',
       'Medium groups (6-12 people) with varied topics',
       'Large groups and social events',
-      'I adapt well to any size group'
+      'I adapt well to any size group',
     ],
     required: true,
-    weight: 6
+    weight: 6,
   },
   {
     id: 'social_conflict',
@@ -201,11 +201,11 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'I avoid conflict whenever possible',
       'I try to find compromise and middle ground',
       'I address it directly but diplomatically',
-      'I\'m comfortable with healthy debate and discussion',
-      'I prefer to let others handle conflict resolution'
+      "I'm comfortable with healthy debate and discussion",
+      'I prefer to let others handle conflict resolution',
     ],
     required: true,
-    weight: 7
+    weight: 7,
   },
 
   // Learning Style
@@ -219,10 +219,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Listening and discussion (audio, conversation)',
       'Hands-on practice and experimentation',
       'A combination of multiple approaches',
-      'Teaching or explaining to others'
+      'Teaching or explaining to others',
     ],
     required: true,
-    weight: 7
+    weight: 7,
   },
   {
     id: 'learn_depth_breadth',
@@ -233,7 +233,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 8
+    weight: 8,
   },
   {
     id: 'learn_feedback',
@@ -245,10 +245,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Gentle guidance with encouragement',
       'Detailed explanations of why something works',
       'Examples and demonstrations',
-      'Questions that help me figure it out myself'
+      'Questions that help me figure it out myself',
     ],
     required: true,
-    weight: 8
+    weight: 8,
   },
 
   // Values and Beliefs
@@ -261,7 +261,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 8
+    weight: 8,
   },
   {
     id: 'values_security',
@@ -272,7 +272,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 7
+    weight: 7,
   },
   {
     id: 'values_motivators',
@@ -289,10 +289,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Security and stability',
       'Connection and relationships',
       'Challenge and competition',
-      'Beauty and aesthetics'
+      'Beauty and aesthetics',
     ],
     required: true,
-    weight: 9
+    weight: 9,
   },
 
   // Behavioral Traits
@@ -305,7 +305,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 8
+    weight: 8,
   },
   {
     id: 'behavior_risk',
@@ -316,7 +316,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 7
+    weight: 7,
   },
   {
     id: 'behavior_decision_time',
@@ -328,10 +328,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Take a reasonable amount of time to consider options',
       'Research thoroughly and consider all angles',
       'Seek input from others before deciding',
-      'Go with what feels right intuitively'
+      'Go with what feels right intuitively',
     ],
     required: true,
-    weight: 8
+    weight: 8,
   },
 
   // Creative Expression
@@ -350,10 +350,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Performance and theater',
       'Photography and visual capture',
       'Dance and movement',
-      'I don\'t consider myself creative'
+      "I don't consider myself creative",
     ],
     required: false,
-    weight: 6
+    weight: 6,
   },
   {
     id: 'creative_approach',
@@ -364,7 +364,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 6
+    weight: 6,
   },
 
   // Decision Making
@@ -377,7 +377,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 9
+    weight: 9,
   },
   {
     id: 'decision_independence',
@@ -388,7 +388,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 7
+    weight: 7,
   },
 
   // Life Philosophy
@@ -401,7 +401,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 7
+    weight: 7,
   },
   {
     id: 'philosophy_change',
@@ -413,10 +413,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'I accept change when necessary but prefer stability',
       'I find change stressful but can adapt',
       'I actively resist change when possible',
-      'I\'m neutral about change - it depends on the situation'
+      "I'm neutral about change - it depends on the situation",
     ],
     required: true,
-    weight: 7
+    weight: 7,
   },
 
   // Meta-cognition and Self-awareness
@@ -429,7 +429,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 8
+    weight: 8,
   },
   {
     id: 'meta_growth_mindset',
@@ -440,7 +440,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 8
+    weight: 8,
   },
 
   // AI Interaction Preferences
@@ -455,10 +455,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Like a wise mentor who guides my growth',
       'Like an enthusiastic partner in exploration',
       'Like a calm, supportive presence',
-      'I\'m not sure yet - let\'s discover together'
+      "I'm not sure yet - let's discover together",
     ],
     required: true,
-    weight: 10
+    weight: 10,
   },
   {
     id: 'ai_challenge_level',
@@ -470,10 +470,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Offer mild challenges to help me grow',
       'Give me moderate intellectual challenges',
       'I want to be pushed to think deeply',
-      'Challenge me as much as possible'
+      'Challenge me as much as possible',
     ],
     required: true,
-    weight: 9
+    weight: 9,
   },
   {
     id: 'ai_conversation_topics',
@@ -492,10 +492,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Practical problem-solving',
       'Future possibilities',
       'Relationships and communication',
-      'Nature and environment'
+      'Nature and environment',
     ],
     required: true,
-    weight: 7
+    weight: 7,
   },
 
   // Writing Style Capture
@@ -503,11 +503,13 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     id: 'writing_style_sample',
     category: 'creative_expression',
     type: 'text',
-    question: 'Please write a short paragraph (2-4 sentences) about something that brings you joy. This helps us understand your natural writing style.',
-    description: 'Be authentic - write as you naturally would. This could be about a hobby, memory, person, place, or anything that makes you happy.',
+    question:
+      'Please write a short paragraph (2-4 sentences) about something that brings you joy. This helps us understand your natural writing style.',
+    description:
+      'Be authentic - write as you naturally would. This could be about a hobby, memory, person, place, or anything that makes you happy.',
     required: true,
     weight: 10,
-    maxLength: 500
+    maxLength: 500,
   },
   {
     id: 'writing_tone_preference',
@@ -520,10 +522,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Clear and direct - straightforward communication',
       'Analytical and structured - organized thoughts',
       'Playful and humorous - with wit and wordplay',
-      'Reflective and introspective - thoughtful musings'
+      'Reflective and introspective - thoughtful musings',
     ],
     required: true,
-    weight: 9
+    weight: 9,
   },
   {
     id: 'creative_writing_interest',
@@ -535,11 +537,11 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'I enjoy it occasionally when inspired',
       'I prefer practical writing over creative',
       'I find it challenging but rewarding',
-      'I don\'t really enjoy creative writing',
-      'I\'ve never tried much creative writing'
+      "I don't really enjoy creative writing",
+      "I've never tried much creative writing",
     ],
     required: true,
-    weight: 7
+    weight: 7,
   },
   {
     id: 'language_complexity',
@@ -550,7 +552,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     min: 1,
     max: 7,
     required: true,
-    weight: 8
+    weight: 8,
   },
 
   // REVOLUTIONARY TAROT-BASED CONSCIOUSNESS QUESTIONS
@@ -561,20 +563,20 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     id: 'archetypal_journey',
     category: 'life_philosophy',
     type: 'choice',
-    question: 'Choose the archetypal journey that most resonates with your soul\'s current path:',
-    description: 'Each represents a different approach to life\'s challenges and growth',
+    question: "Choose the archetypal journey that most resonates with your soul's current path:",
+    description: "Each represents a different approach to life's challenges and growth",
     options: [
       '🃏 The Fool - Trusting the unknown, leaping into new adventures with pure faith',
       '🎭 The Magician - Manifesting dreams through focused will and skill mastery',
       '🌙 The High Priestess - Following intuitive wisdom and inner knowing',
       '👸 The Empress - Creating abundance through nurturing and creative expression',
       '👑 The Emperor - Building structure and authority through disciplined leadership',
-      '🎡 Wheel of Fortune - Embracing life\'s cycles and finding opportunity in change',
+      "🎡 Wheel of Fortune - Embracing life's cycles and finding opportunity in change",
       '⭐ The Star - Healing and inspiring others while staying connected to hope',
-      '🌍 The World - Integrating all life experiences into wholeness and completion'
+      '🌍 The World - Integrating all life experiences into wholeness and completion',
     ],
     required: true,
-    weight: 10
+    weight: 10,
   },
 
   // Creative Challenge Response (Tarot Scenario)
@@ -582,11 +584,13 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     id: 'creative_challenge_response',
     category: 'creative_expression',
     type: 'text',
-    question: 'Imagine you draw The Tower card (sudden change/breakthrough). Write a short creative response about how you would dance with this energy rather than resist it.',
-    description: 'Be authentic - this could be a poem, story snippet, metaphor, or stream of consciousness. Show us your creative voice when facing the unexpected.',
+    question:
+      'Imagine you draw The Tower card (sudden change/breakthrough). Write a short creative response about how you would dance with this energy rather than resist it.',
+    description:
+      'Be authentic - this could be a poem, story snippet, metaphor, or stream of consciousness. Show us your creative voice when facing the unexpected.',
     required: true,
     weight: 9,
-    maxLength: 400
+    maxLength: 400,
   },
 
   // Elemental Energy Attraction (Suit Affinity)
@@ -594,16 +598,17 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     id: 'elemental_energy_attraction',
     category: 'values_beliefs',
     type: 'rank',
-    question: 'Rank these elemental energies in order of natural attraction (1 = most drawn to, 4 = least):',
+    question:
+      'Rank these elemental energies in order of natural attraction (1 = most drawn to, 4 = least):',
     description: 'Trust your instinctive response - which energy feels like home?',
     options: [
       '🔥 Fire (Wands) - Passion, action, creativity, spiritual drive',
       '💧 Water (Cups) - Emotions, intuition, love, healing flow',
       '🌪️ Air (Swords) - Intellect, communication, truth, mental clarity',
-      '🌱 Earth (Pentacles) - Manifestation, stability, abundance, practical wisdom'
+      '🌱 Earth (Pentacles) - Manifestation, stability, abundance, practical wisdom',
     ],
     required: true,
-    weight: 9
+    weight: 9,
   },
 
   // Shadow Integration Approach (Reversed Cards)
@@ -611,17 +616,18 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     id: 'shadow_integration_approach',
     category: 'emotional_patterns',
     type: 'choice',
-    question: 'When facing your shadow aspects (like The Devil reversed - breaking free from limitations), how do you naturally respond?',
+    question:
+      'When facing your shadow aspects (like The Devil reversed - breaking free from limitations), how do you naturally respond?',
     options: [
       'I dive deep with curiosity, seeking to understand and integrate',
       'I approach gradually with self-compassion and gentle awareness',
       'I use humor and creativity to lighten and transform the energy',
       'I seek guidance from trusted friends or mentors',
       'I focus on taking practical action to change patterns',
-      'I retreat for reflection and meditation until clarity emerges'
+      'I retreat for reflection and meditation until clarity emerges',
     ],
     required: true,
-    weight: 8
+    weight: 8,
   },
 
   // Planetary Timing Preference (Decan Wisdom)
@@ -638,10 +644,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       '♃ Jupiter - Expansive decisions that seek growth and new possibilities',
       '♄ Saturn - Careful, structured decisions based on long-term stability',
       '☽ Moon - Intuitive decisions that honor cycles and emotional wisdom',
-      '☉ Sun - Heart-centered decisions that align with authentic self-expression'
+      '☉ Sun - Heart-centered decisions that align with authentic self-expression',
     ],
     required: true,
-    weight: 8
+    weight: 8,
   },
 
   // Intuitive Symbol Creation (User-Generated Imagery)
@@ -649,11 +655,13 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     id: 'intuitive_symbol_creation',
     category: 'creative_expression',
     type: 'text',
-    question: 'Create your own personal symbol or sigil that represents your ideal future self. Describe it in words as if drawing it for an artist.',
-    description: 'Include colors, shapes, elements, or imagery that feel meaningful to you. This becomes part of your consciousness signature.',
+    question:
+      'Create your own personal symbol or sigil that represents your ideal future self. Describe it in words as if drawing it for an artist.',
+    description:
+      'Include colors, shapes, elements, or imagery that feel meaningful to you. This becomes part of your consciousness signature.',
     required: true,
     weight: 8,
-    maxLength: 300
+    maxLength: 300,
   },
 
   // Alchemical Transformation Choice (Spiritual Process)
@@ -661,8 +669,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     id: 'alchemical_transformation_choice',
     category: 'life_philosophy',
     type: 'choice',
-    question: 'If you could embody one alchemical transformation process, which resonates most deeply?',
-    description: 'Each represents a different approach to personal growth and spiritual development',
+    question:
+      'If you could embody one alchemical transformation process, which resonates most deeply?',
+    description:
+      'Each represents a different approach to personal growth and spiritual development',
     options: [
       'Calcination - Burning away what no longer serves, emerging purified',
       'Dissolution - Flowing through emotions and allowing natural healing',
@@ -670,10 +680,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Conjunction - Integrating opposites to create something new and whole',
       'Fermentation - Allowing natural decay and rebirth cycles to work',
       'Distillation - Refining essence through repeated practice and focus',
-      'Coagulation - Manifesting spiritual insights into practical reality'
+      'Coagulation - Manifesting spiritual insights into practical reality',
     ],
     required: true,
-    weight: 9
+    weight: 9,
   },
 
   // Chakra Energy Visualization (Interactive Healing)
@@ -681,11 +691,13 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     id: 'chakra_energy_visualization',
     category: 'emotional_patterns',
     type: 'text',
-    question: 'Describe what you see/feel when imagining golden light flowing through your heart chakra (connected to The Lovers and Star cards). What imagery, sensations, or insights arise?',
-    description: 'Trust whatever comes up - colors, symbols, emotions, memories, or abstract sensations.',
+    question:
+      'Describe what you see/feel when imagining golden light flowing through your heart chakra (connected to The Lovers and Star cards). What imagery, sensations, or insights arise?',
+    description:
+      'Trust whatever comes up - colors, symbols, emotions, memories, or abstract sensations.',
     required: true,
     weight: 7,
-    maxLength: 250
+    maxLength: 250,
   },
 
   // Culinary Consciousness Expression (Taste & Creativity)
@@ -693,7 +705,8 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     id: 'culinary_consciousness_expression',
     category: 'creative_expression',
     type: 'choice',
-    question: 'If you were to create a meal that expresses your consciousness, what approach feels most authentic?',
+    question:
+      'If you were to create a meal that expresses your consciousness, what approach feels most authentic?',
     description: 'Each connects to different tarot suit energies and creative expression styles',
     options: [
       'Bold, spicy fusion that surprises and energizes (Fire/Wands energy)',
@@ -701,10 +714,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Experimental, innovative combinations that stimulate thinking (Air/Swords energy)',
       'Traditional, grounding foods made with love and intention (Earth/Pentacles energy)',
       'Raw, living foods that celebrate natural essence and purity',
-      'Artistic presentation that tells a visual story through food'
+      'Artistic presentation that tells a visual story through food',
     ],
     required: true,
-    weight: 6
+    weight: 6,
   },
 
   // Storytelling Archetype Response (Narrative Psychology)
@@ -713,7 +726,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     category: 'thinking_style',
     type: 'choice',
     question: 'In the story of your life, which narrative role do you most naturally embody?',
-    description: 'This reveals your consciousness patterns and how you engage with life\'s journey',
+    description: "This reveals your consciousness patterns and how you engage with life's journey",
     options: [
       'The Hero - Facing challenges head-on to grow and help others',
       'The Sage - Seeking truth and sharing wisdom through experience',
@@ -721,10 +734,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'The Healer - Transforming pain into medicine for yourself and others',
       'The Explorer - Discovering new territories of experience and understanding',
       'The Mystic - Bridging visible and invisible worlds through intuition',
-      'The Guardian - Protecting and nurturing what is precious and sacred'
+      'The Guardian - Protecting and nurturing what is precious and sacred',
     ],
     required: true,
-    weight: 9
+    weight: 9,
   },
 
   // Dream Symbol Integration (Subconscious Tarot)
@@ -741,10 +754,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Earth, mountains, forests, or underground spaces (Earth element themes)',
       'Transformation - shapeshifting, butterflies, or rebirth (Death/renewal themes)',
       'Divine figures, temples, or sacred geometry (Spiritual hierarchy themes)',
-      'Abstract colors, patterns, or impossible architectures (Pure consciousness themes)'
+      'Abstract colors, patterns, or impossible architectures (Pure consciousness themes)',
     ],
     required: true,
-    weight: 7
+    weight: 7,
   },
 
   // Creative Constraint Challenge (Innovation Within Structure)
@@ -752,11 +765,13 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     id: 'creative_constraint_challenge',
     category: 'creative_expression',
     type: 'text',
-    question: 'If you had to express your deepest truth using exactly 7 words (like the 7 chakras or 7 classical planets), what would they be?',
-    description: 'This challenge reveals your core essence through creative constraint. Choose words that capture your soul\'s signature.',
+    question:
+      'If you had to express your deepest truth using exactly 7 words (like the 7 chakras or 7 classical planets), what would they be?',
+    description:
+      "This challenge reveals your core essence through creative constraint. Choose words that capture your soul's signature.",
     required: true,
     weight: 8,
-    maxLength: 100
+    maxLength: 100,
   },
 
   // Energy Transmission Preference (Communication Style)
@@ -773,10 +788,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Through deep, emotional sharing that creates heart connection (Moon/Water)',
       'Through structured, wise teaching that builds understanding (Saturn/Earth)',
       'Through playful, spontaneous interaction that brings joy (Jupiter/Fire)',
-      'Through mysterious, intuitive hints that invite deeper exploration (Neptune/Water)'
+      'Through mysterious, intuitive hints that invite deeper exploration (Neptune/Water)',
     ],
     required: true,
-    weight: 8
+    weight: 8,
   },
 
   // ASTROLOGICAL BIRTH DATA COLLECTION
@@ -787,10 +802,11 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     category: 'astrological_foundation',
     type: 'text',
     question: 'What is your exact birth date?',
-    description: 'Format: YYYY-MM-DD (e.g., 1990-07-22) - This enables precise astrological calculations',
+    description:
+      'Format: YYYY-MM-DD (e.g., 1990-07-22) - This enables precise astrological calculations',
     required: true,
     weight: 10,
-    maxLength: 50
+    maxLength: 50,
   },
 
   {
@@ -804,10 +820,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Approximate time (within 30 minutes)',
       'Morning/afternoon/evening known',
       'Only date known (no time)',
-      'Birth time completely unknown'
+      'Birth time completely unknown',
     ],
     required: true,
-    weight: 9
+    weight: 9,
   },
 
   {
@@ -818,7 +834,7 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     description: 'Format: HH:MM (24-hour format, e.g., 14:30) or specify AM/PM',
     required: false,
     weight: 9,
-    maxLength: 20
+    maxLength: 20,
   },
 
   {
@@ -826,60 +842,69 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     category: 'astrological_foundation',
     type: 'text',
     question: 'Where were you born?',
-    description: 'City, State/Province, Country - This determines your astrological houses and local space',
+    description:
+      'City, State/Province, Country - This determines your astrological houses and local space',
     required: true,
     weight: 9,
-    maxLength: 100
+    maxLength: 100,
   },
 
   // ALCHEMICAL CONSCIOUSNESS SELF-ASSESSMENT
-  
+
   {
     id: 'alchemical_spirit_recognition',
     category: 'creative_expression',
     type: 'scale',
-    question: 'How strongly do you feel your inner "Sacred Fire" - the divine spark that drives inspiration, passion, and creative action?',
-    description: 'Spirit represents the Fire element in consciousness - your connection to divine inspiration and creative force',
+    question:
+      'How strongly do you feel your inner "Sacred Fire" - the divine spark that drives inspiration, passion, and creative action?',
+    description:
+      'Spirit represents the Fire element in consciousness - your connection to divine inspiration and creative force',
     min: 1,
     max: 7,
     required: true,
-    weight: 9
+    weight: 9,
   },
 
   {
     id: 'alchemical_essence_recognition',
     category: 'emotional_patterns',
     type: 'scale',
-    question: 'How deeply do you feel your "Soul Essence" - the flowing, feeling nature that connects you to emotional truth and intuitive wisdom?',
-    description: 'Essence represents the Water element in consciousness - your emotional authenticity and intuitive flow',
+    question:
+      'How deeply do you feel your "Soul Essence" - the flowing, feeling nature that connects you to emotional truth and intuitive wisdom?',
+    description:
+      'Essence represents the Water element in consciousness - your emotional authenticity and intuitive flow',
     min: 1,
     max: 7,
     required: true,
-    weight: 9
+    weight: 9,
   },
 
   {
     id: 'alchemical_matter_recognition',
     category: 'behavioral_traits',
     type: 'scale',
-    question: 'How grounded are you in "Sacred Matter" - your ability to manifest ideas into physical reality and work skillfully with the material world?',
-    description: 'Matter represents the Earth element in consciousness - your manifestation power and practical wisdom',
+    question:
+      'How grounded are you in "Sacred Matter" - your ability to manifest ideas into physical reality and work skillfully with the material world?',
+    description:
+      'Matter represents the Earth element in consciousness - your manifestation power and practical wisdom',
     min: 1,
     max: 7,
     required: true,
-    weight: 9
+    weight: 9,
   },
 
   {
     id: 'alchemical_substance_recognition',
     category: 'thinking_style',
     type: 'scale',
-    question: 'How developed is your "Mental Substance" - your capacity for clear thinking, structured communication, and organizing ideas into coherent patterns?',
-    description: 'Substance represents the Air element in consciousness - your mental clarity and communication structure',
+    question:
+      'How developed is your "Mental Substance" - your capacity for clear thinking, structured communication, and organizing ideas into coherent patterns?',
+    description:
+      'Substance represents the Air element in consciousness - your mental clarity and communication structure',
     min: 1,
     max: 7,
     required: true,
-    weight: 9
+    weight: 9,
   },
 
   // PLANETARY DIGNITY SELF-RECOGNITION
@@ -888,7 +913,8 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     id: 'planetary_dignity_strength_recognition',
     category: 'thinking_style',
     type: 'choice',
-    question: 'In your birth chart, which planetary energy do you feel operates most powerfully and harmoniously in your life?',
+    question:
+      'In your birth chart, which planetary energy do you feel operates most powerfully and harmoniously in your life?',
     description: 'This helps identify your strongest planetary dignities and natural talents',
     options: [
       '☉ Sun - Leadership, vitality, authentic self-expression, creative confidence',
@@ -899,17 +925,18 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       '♃ Jupiter - Wisdom, expansion, teaching, optimism, philosophical insight',
       '♄ Saturn - Structure, discipline, mastery, responsibility, long-term planning',
       'I feel equally strong in multiple planetary energies',
-      'I\'m not sure which planetary energy is strongest for me'
+      "I'm not sure which planetary energy is strongest for me",
     ],
     required: true,
-    weight: 8
+    weight: 8,
   },
 
   {
     id: 'planetary_dignity_challenge_recognition',
     category: 'emotional_patterns',
     type: 'choice',
-    question: 'Which planetary energy do you find most challenging or feel needs the most development in your life?',
+    question:
+      'Which planetary energy do you find most challenging or feel needs the most development in your life?',
     description: 'This helps identify potential planetary weaknesses or areas for growth',
     options: [
       '☉ Sun - Developing confidence, leadership, authentic self-expression',
@@ -920,10 +947,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       '♃ Jupiter - Expanding vision, teaching, developing wisdom',
       '♄ Saturn - Creating structure, discipline, taking responsibility',
       'All planetary energies feel reasonably balanced for me',
-      'I\'m not sure which planetary energy needs most development'
+      "I'm not sure which planetary energy needs most development",
     ],
     required: true,
-    weight: 8
+    weight: 8,
   },
 
   // THERMODYNAMIC CONSCIOUSNESS STATES
@@ -932,8 +959,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     id: 'consciousness_thermodynamic_state',
     category: 'emotional_patterns',
     type: 'choice',
-    question: 'Which description best captures your current consciousness "temperature" or energetic state?',
-    description: 'This reflects the thermodynamic state of your awareness and helps customize training',
+    question:
+      'Which description best captures your current consciousness "temperature" or energetic state?',
+    description:
+      'This reflects the thermodynamic state of your awareness and helps customize training',
     options: [
       'Heating - I feel activated, energized, ready for action and growth',
       'Cooling - I feel calm, reflective, drawn to peace and integration',
@@ -941,10 +970,10 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
       'Contracting - I feel focused, concentrated, drawn to depth and mastery',
       'Stable - I feel balanced, steady, content with current rhythms',
       'Transforming - I feel in flux, changing, processing major shifts',
-      'I experience different states at different times'
+      'I experience different states at different times',
     ],
     required: true,
-    weight: 8
+    weight: 8,
   },
 
   // REAL-TIME CONSCIOUSNESS TRACKING PREFERENCE
@@ -953,19 +982,20 @@ export const CONSCIOUSNESS_SURVEY_QUESTIONS: SurveyQuestion[] = [
     id: 'real_time_tracking_interest',
     category: 'learning_style',
     type: 'choice',
-    question: 'How interested are you in real-time tracking of your consciousness stats (alchemical quantities, planetary influences, consciousness temperature)?',
+    question:
+      'How interested are you in real-time tracking of your consciousness stats (alchemical quantities, planetary influences, consciousness temperature)?',
     description: 'This helps us customize the level of detailed consciousness monitoring',
     options: [
       'Very interested - I want detailed real-time stats and correlations',
-      'Moderately interested - I\'d like periodic updates and insights',
+      "Moderately interested - I'd like periodic updates and insights",
       'Somewhat interested - Simple tracking would be helpful',
       'Not very interested - I prefer focus on the experience itself',
-      'Not interested - I don\'t want numerical tracking of consciousness'
+      "Not interested - I don't want numerical tracking of consciousness",
     ],
     required: true,
-    weight: 7
-  }
-];
+    weight: 7,
+  },
+]
 
 // Survey metadata
 export const SURVEY_METADATA = {
@@ -974,7 +1004,7 @@ export const SURVEY_METADATA = {
   estimatedTimeMinutes: 25,
   categories: [
     'communication',
-    'thinking_style', 
+    'thinking_style',
     'emotional_patterns',
     'social_preferences',
     'learning_style',
@@ -983,21 +1013,21 @@ export const SURVEY_METADATA = {
     'creative_expression',
     'decision_making',
     'life_philosophy',
-    'astrological_foundation'
-  ] as const
-};
+    'astrological_foundation',
+  ] as const,
+}
 
 // Get questions by category
 export function getQuestionsByCategory(category: string): SurveyQuestion[] {
-  return CONSCIOUSNESS_SURVEY_QUESTIONS.filter(q => q.category === category);
+  return CONSCIOUSNESS_SURVEY_QUESTIONS.filter(q => q.category === category)
 }
 
 // Get required questions
 export function getRequiredQuestions(): SurveyQuestion[] {
-  return CONSCIOUSNESS_SURVEY_QUESTIONS.filter(q => q.required);
+  return CONSCIOUSNESS_SURVEY_QUESTIONS.filter(q => q.required)
 }
 
 // Get high-weight questions (most important for personality)
 export function getHighWeightQuestions(minWeight: number = 8): SurveyQuestion[] {
-  return CONSCIOUSNESS_SURVEY_QUESTIONS.filter(q => q.weight >= minWeight);
+  return CONSCIOUSNESS_SURVEY_QUESTIONS.filter(q => q.weight >= minWeight)
 }

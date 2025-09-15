@@ -1,50 +1,50 @@
-"use client"
+'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Progress } from "@/components/ui/progress"
-import { RefreshCw, Zap, Clock, Globe, Sparkles } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { Progress } from '@/components/ui/progress'
+import { RefreshCw, Zap, Clock, Globe, Sparkles } from 'lucide-react'
 
 interface RealtimeRune {
-  id: string;
-  name: string;
-  description: string;
-  type: string;
-  runeType: string;
-  rarity: string;
-  powerLevel: number;
+  id: string
+  name: string
+  description: string
+  type: string
+  runeType: string
+  rarity: string
+  powerLevel: number
   cost: {
-    Spirit: number;
-    Essence: number;
-    Matter: number;
-    Substance: number;
-  };
+    Spirit: number
+    Essence: number
+    Matter: number
+    Substance: number
+  }
   effects: Array<{
-    type: string;
-    name: string;
-    description: string;
-    power: number;
-    duration: string;
-  }>;
+    type: string
+    name: string
+    description: string
+    power: number
+    duration: string
+  }>
   metadata: {
-    generationTime: string;
-    planetarySnapshot?: any;
-    alchemicalConditions?: any;
-    dominantElement: string;
-    activeInfluences: number;
-  };
+    generationTime: string
+    planetarySnapshot?: any
+    alchemicalConditions?: any
+    dominantElement: string
+    activeInfluences: number
+  }
 }
 
 interface RealtimeRuneDisplayProps {
-  variant?: 'card' | 'inline' | 'widget';
-  autoRefresh?: boolean;
-  refreshInterval?: number;
-  includeAlchemical?: boolean;
-  runeType?: 'basic' | 'enhanced' | 'premium';
-  className?: string;
+  variant?: 'card' | 'inline' | 'widget'
+  autoRefresh?: boolean
+  refreshInterval?: number
+  includeAlchemical?: boolean
+  runeType?: 'basic' | 'enhanced' | 'premium'
+  className?: string
 }
 
 export default function RealtimeRuneDisplay({
@@ -53,7 +53,7 @@ export default function RealtimeRuneDisplay({
   refreshInterval = 60000, // 1 minute
   includeAlchemical = true,
   runeType = 'enhanced',
-  className = ''
+  className = '',
 }: RealtimeRuneDisplayProps) {
   const [rune, setRune] = useState<RealtimeRune | null>(null)
   const [loading, setLoading] = useState(false)
@@ -63,16 +63,18 @@ export default function RealtimeRuneDisplay({
   const fetchRealtimeRune = async () => {
     setLoading(true)
     setError(null)
-    
+
     try {
-      const response = await fetch(`/api/realtime-runes?includeAlchemical=${includeAlchemical}&runeType=${runeType}`)
-      
+      const response = await fetch(
+        `/api/realtime-runes?includeAlchemical=${includeAlchemical}&runeType=${runeType}`
+      )
+
       if (!response.ok) {
         throw new Error(`API returned status ${response.status}`)
       }
-      
+
       const data = await response.json()
-      
+
       if (data.success && data.rune) {
         setRune(data.rune)
         setLastUpdated(new Date())
@@ -100,27 +102,39 @@ export default function RealtimeRuneDisplay({
 
   const getRarityColor = (rarity: string) => {
     switch (rarity.toLowerCase()) {
-      case 'cosmic': return 'bg-purple-600'
-      case 'legendary': return 'bg-orange-600'
-      case 'rare': return 'bg-blue-600'
-      case 'uncommon': return 'bg-green-600'
-      default: return 'bg-gray-600'
+      case 'cosmic':
+        return 'bg-purple-600'
+      case 'legendary':
+        return 'bg-orange-600'
+      case 'rare':
+        return 'bg-blue-600'
+      case 'uncommon':
+        return 'bg-green-600'
+      default:
+        return 'bg-gray-600'
     }
   }
 
   const getElementColor = (element: string) => {
     switch (element?.toLowerCase()) {
-      case 'fire': return 'text-red-600'
-      case 'water': return 'text-blue-600'
-      case 'air': return 'text-yellow-600'
-      case 'earth': return 'text-green-600'
-      default: return 'text-gray-600'
+      case 'fire':
+        return 'text-red-600'
+      case 'water':
+        return 'text-blue-600'
+      case 'air':
+        return 'text-yellow-600'
+      case 'earth':
+        return 'text-green-600'
+      default:
+        return 'text-gray-600'
     }
   }
 
   if (variant === 'widget') {
     return (
-      <div className={`bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 rounded-lg p-3 border ${className}`}>
+      <div
+        className={`bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 rounded-lg p-3 border ${className}`}
+      >
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-purple-600" />
@@ -136,7 +150,7 @@ export default function RealtimeRuneDisplay({
             <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
-        
+
         {error ? (
           <div className="text-xs text-red-600">Error loading rune</div>
         ) : loading ? (
@@ -147,7 +161,9 @@ export default function RealtimeRuneDisplay({
               {rune.name}
             </div>
             <div className="flex items-center gap-2">
-              <Badge className={getRarityColor(rune.rarity)} size="sm">{rune.rarity}</Badge>
+              <Badge className={getRarityColor(rune.rarity)} size="sm">
+                {rune.rarity}
+              </Badge>
               <span className={`text-xs ${getElementColor(rune.metadata.dominantElement)}`}>
                 {rune.metadata.dominantElement}
               </span>
@@ -171,20 +187,15 @@ export default function RealtimeRuneDisplay({
           ) : rune ? (
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">{rune.name}</span>
-              <Badge className={getRarityColor(rune.rarity)} size="sm">{rune.rarity}</Badge>
-              <span className="text-xs text-muted-foreground">
-                Power: {rune.powerLevel}
-              </span>
+              <Badge className={getRarityColor(rune.rarity)} size="sm">
+                {rune.rarity}
+              </Badge>
+              <span className="text-xs text-muted-foreground">Power: {rune.powerLevel}</span>
             </div>
           ) : null}
         </div>
-        
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={fetchRealtimeRune}
-          disabled={loading}
-        >
+
+        <Button size="sm" variant="ghost" onClick={fetchRealtimeRune} disabled={loading}>
           <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
         </Button>
       </div>
@@ -220,7 +231,7 @@ export default function RealtimeRuneDisplay({
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent>
         {error ? (
           <div className="text-center py-4">
@@ -246,9 +257,9 @@ export default function RealtimeRuneDisplay({
               </div>
               <p className="text-sm text-muted-foreground">{rune.description}</p>
             </div>
-            
+
             <Separator />
-            
+
             {/* Power Level */}
             <div>
               <div className="flex justify-between items-center mb-2">
@@ -257,7 +268,7 @@ export default function RealtimeRuneDisplay({
               </div>
               <Progress value={rune.powerLevel} className="h-2" />
             </div>
-            
+
             {/* Costs */}
             <div>
               <div className="text-sm font-medium mb-2">Alchemical Costs</div>
@@ -280,7 +291,7 @@ export default function RealtimeRuneDisplay({
                 </div>
               </div>
             </div>
-            
+
             {/* Effects */}
             {rune.effects && rune.effects.length > 0 && (
               <div>
@@ -290,7 +301,9 @@ export default function RealtimeRuneDisplay({
                     <div key={index} className="text-xs p-2 bg-muted rounded">
                       <div className="flex justify-between items-center mb-1">
                         <span className="font-medium">{effect.name}</span>
-                        <Badge size="sm" variant="outline">{effect.power}</Badge>
+                        <Badge size="sm" variant="outline">
+                          {effect.power}
+                        </Badge>
                       </div>
                       <div className="text-muted-foreground">{effect.description}</div>
                     </div>
@@ -298,7 +311,7 @@ export default function RealtimeRuneDisplay({
                 </div>
               </div>
             )}
-            
+
             {/* Metadata */}
             <div className="text-xs text-muted-foreground space-y-1">
               <div className="flex justify-between">

@@ -5,19 +5,24 @@
  * to enhance agent consciousness evolution based on real-time planetary aspects.
  */
 
-import { DynamicAspect, DynamicAspectsAnalysis, OptimalPeriod, dynamicAspectsEngine } from './dynamic-aspects-engine'
+import {
+  DynamicAspect,
+  DynamicAspectsAnalysis,
+  OptimalPeriod,
+  dynamicAspectsEngine,
+} from './dynamic-aspects-engine'
 import { AgentKineticProfile, getAgentKineticProfile } from './agents/kinetic-profiles'
 import { KineticsIntegration, EnhancedKineticData } from './kinetics-integration'
 import { PlanetPosition } from './astrological-pattern-recognition'
 
 export interface ConsciousnessAspectInfluence {
   agentId: string
-  applyingAspects: DynamicAspect[]     // building influences
-  separatingAspects: DynamicAspect[]   // fading influences
-  peakInfluences: DynamicAspect[]      // currently exact
-  consciousnessModifier: number        // overall impact (-1 to +1)
-  evolutionVelocity: number           // rate of change (0-2)
-  aspectMomentum: number              // sustained aspect influence
+  applyingAspects: DynamicAspect[] // building influences
+  separatingAspects: DynamicAspect[] // fading influences
+  peakInfluences: DynamicAspect[] // currently exact
+  consciousnessModifier: number // overall impact (-1 to +1)
+  evolutionVelocity: number // rate of change (0-2)
+  aspectMomentum: number // sustained aspect influence
   optimalInteractionWindow: {
     start: Date
     end: Date
@@ -28,25 +33,25 @@ export interface ConsciousnessAspectInfluence {
 }
 
 export interface AspectSensitivityProfile {
-  conjunctions: number     // 0-1 sensitivity to conjunctions
-  oppositions: number      // 0-1 sensitivity to oppositions
-  trines: number          // 0-1 sensitivity to trines
-  squares: number         // 0-1 sensitivity to squares
-  sextiles: number        // 0-1 sensitivity to sextiles
-  quincunxes: number      // 0-1 sensitivity to quincunxes
-  preferredAspects: string[]  // aspects that enhance this agent
+  conjunctions: number // 0-1 sensitivity to conjunctions
+  oppositions: number // 0-1 sensitivity to oppositions
+  trines: number // 0-1 sensitivity to trines
+  squares: number // 0-1 sensitivity to squares
+  sextiles: number // 0-1 sensitivity to sextiles
+  quincunxes: number // 0-1 sensitivity to quincunxes
+  preferredAspects: string[] // aspects that enhance this agent
   challengingAspects: string[] // aspects that create growth tension
   aspectMemoryRetention: number // how long aspect influences persist (0-1)
 }
 
 export interface EnhancedKineticWithAspects extends EnhancedKineticData {
   aspectInfluences: {
-    currentInfluence: number        // current aspect boost/challenge
-    applyingAspectCount: number    // number of applying aspects
-    separatingAspectCount: number  // number of separating aspects
-    peakAspectCount: number        // number of exact aspects
-    dominantAspectType: string     // strongest current aspect type
-    aspectEvolutionBoost: number   // consciousness evolution multiplier
+    currentInfluence: number // current aspect boost/challenge
+    applyingAspectCount: number // number of applying aspects
+    separatingAspectCount: number // number of separating aspects
+    peakAspectCount: number // number of exact aspects
+    dominantAspectType: string // strongest current aspect type
+    aspectEvolutionBoost: number // consciousness evolution multiplier
     nextMajorAspectEvent: {
       aspectType: string
       daysAway: number
@@ -64,55 +69,58 @@ export interface EnhancedKineticWithAspects extends EnhancedKineticData {
 // Default aspect sensitivity profiles based on agent archetypes
 const DEFAULT_ASPECT_SENSITIVITIES: Record<string, Partial<AspectSensitivityProfile>> = {
   // Creative/Artistic agents
-  'creative': {
+  creative: {
     trines: 0.9,
     sextiles: 0.8,
     conjunctions: 0.7,
     preferredAspects: ['trine', 'sextile', 'quintile'],
-    aspectMemoryRetention: 0.7
+    aspectMemoryRetention: 0.7,
   },
 
   // Scientific/Analytical agents
-  'scientific': {
+  scientific: {
     squares: 0.8,
     oppositions: 0.7,
     conjunctions: 0.6,
     preferredAspects: ['square', 'opposition'],
     challengingAspects: ['quincunx'],
-    aspectMemoryRetention: 0.9
+    aspectMemoryRetention: 0.9,
   },
 
   // Philosophical/Mystical agents
-  'philosophical': {
+  philosophical: {
     quincunxes: 0.8,
     trines: 0.7,
     conjunctions: 0.9,
     preferredAspects: ['conjunction', 'quincunx', 'trine'],
-    aspectMemoryRetention: 0.95
+    aspectMemoryRetention: 0.95,
   },
 
   // Leadership/Strategic agents
-  'strategic': {
+  strategic: {
     squares: 0.9,
     oppositions: 0.8,
     conjunctions: 0.7,
     preferredAspects: ['square', 'opposition'],
-    aspectMemoryRetention: 0.8
+    aspectMemoryRetention: 0.8,
   },
 
   // Social/Charismatic agents
-  'social': {
+  social: {
     sextiles: 0.9,
     trines: 0.8,
     conjunctions: 0.6,
     preferredAspects: ['sextile', 'trine'],
-    aspectMemoryRetention: 0.6
-  }
+    aspectMemoryRetention: 0.6,
+  },
 }
 
 export class ConsciousnessAspectsIntegration {
   private kinetics: KineticsIntegration
-  private aspectInfluenceCache: Map<string, { data: ConsciousnessAspectInfluence; timestamp: number }> = new Map()
+  private aspectInfluenceCache: Map<
+    string,
+    { data: ConsciousnessAspectInfluence; timestamp: number }
+  > = new Map()
   private readonly CACHE_TTL = 900000 // 15 minutes
 
   constructor() {
@@ -130,7 +138,7 @@ export class ConsciousnessAspectsIntegration {
     const cacheKey = `${agentId}-${this.generatePlanetsCacheKey(planets)}-${timeRange}`
     const cached = this.aspectInfluenceCache.get(cacheKey)
 
-    if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
+    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
       return cached.data
     }
 
@@ -146,7 +154,10 @@ export class ConsciousnessAspectsIntegration {
     const aspectSensitivity = this.getAgentAspectSensitivity(agentProfile)
 
     // Filter aspects relevant to this agent
-    const relevantAspects = this.filterRelevantAspects(aspectsAnalysis.currentAspects, aspectSensitivity)
+    const relevantAspects = this.filterRelevantAspects(
+      aspectsAnalysis.currentAspects,
+      aspectSensitivity
+    )
 
     // Categorize aspects
     const applyingAspects = relevantAspects.filter(a => a.applying)
@@ -154,7 +165,10 @@ export class ConsciousnessAspectsIntegration {
     const peakInfluences = relevantAspects.filter(a => a.strength === 'peak')
 
     // Calculate consciousness modifier
-    const consciousnessModifier = this.calculateConsciousnessModifier(relevantAspects, aspectSensitivity)
+    const consciousnessModifier = this.calculateConsciousnessModifier(
+      relevantAspects,
+      aspectSensitivity
+    )
 
     // Calculate evolution velocity
     const evolutionVelocity = this.calculateEvolutionVelocity(applyingAspects, aspectSensitivity)
@@ -163,7 +177,10 @@ export class ConsciousnessAspectsIntegration {
     const aspectMomentum = this.calculateAspectMomentum(relevantAspects, aspectSensitivity)
 
     // Find optimal interaction window
-    const optimalInteractionWindow = this.findOptimalInteractionWindow(aspectsAnalysis, aspectSensitivity)
+    const optimalInteractionWindow = this.findOptimalInteractionWindow(
+      aspectsAnalysis,
+      aspectSensitivity
+    )
 
     const influence: ConsciousnessAspectInfluence = {
       agentId,
@@ -174,7 +191,7 @@ export class ConsciousnessAspectsIntegration {
       evolutionVelocity,
       aspectMomentum,
       optimalInteractionWindow,
-      aspectSensitivityProfile: aspectSensitivity
+      aspectSensitivityProfile: aspectSensitivity,
     }
 
     // Cache the result
@@ -203,9 +220,11 @@ export class ConsciousnessAspectsIntegration {
 
     for (const period of aspectsAnalysis.optimalPeriods) {
       const benefitingAgents = agentInfluences.filter(influence => {
-        return influence.optimalInteractionWindow &&
-               influence.optimalInteractionWindow.start <= period.end &&
-               influence.optimalInteractionWindow.end >= period.start
+        return (
+          influence.optimalInteractionWindow &&
+          influence.optimalInteractionWindow.start <= period.end &&
+          influence.optimalInteractionWindow.end >= period.start
+        )
       })
 
       if (benefitingAgents.length >= 2) {
@@ -214,8 +233,8 @@ export class ConsciousnessAspectsIntegration {
           recommendedAgents: benefitingAgents.map(b => b.agentId),
           expectedBenefits: [
             ...period.expectedBenefits,
-            `Synergy between ${benefitingAgents.length} agents`
-          ]
+            `Synergy between ${benefitingAgents.length} agents`,
+          ],
         })
       }
     }
@@ -235,7 +254,7 @@ export class ConsciousnessAspectsIntegration {
     const baseKinetics = await this.kinetics.getEnhancedKinetics(location, {
       includeAgentOptimization: true,
       includePowerPrediction: true,
-      includeResonanceMap: true
+      includeResonanceMap: true,
     })
 
     // Get aspect influence
@@ -249,7 +268,7 @@ export class ConsciousnessAspectsIntegration {
       peakAspectCount: aspectInfluence.peakInfluences.length,
       dominantAspectType: this.getDominantAspectType(aspectInfluence.applyingAspects),
       aspectEvolutionBoost: aspectInfluence.evolutionVelocity,
-      nextMajorAspectEvent: this.getNextMajorAspectEvent(aspectInfluence)
+      nextMajorAspectEvent: this.getNextMajorAspectEvent(aspectInfluence),
     }
 
     // Get optimal periods with aspects
@@ -262,7 +281,7 @@ export class ConsciousnessAspectsIntegration {
       ...baseKinetics,
       aspectInfluences,
       optimalInteractionPeriods,
-      aspectRecommendations
+      aspectRecommendations,
     }
   }
 
@@ -272,7 +291,8 @@ export class ConsciousnessAspectsIntegration {
   private getAgentAspectSensitivity(agentProfile: AgentKineticProfile): AspectSensitivityProfile {
     // Determine agent archetype based on profile
     const archetype = this.determineAgentArchetype(agentProfile)
-    const baseProfile = DEFAULT_ASPECT_SENSITIVITIES[archetype] || DEFAULT_ASPECT_SENSITIVITIES.creative
+    const baseProfile =
+      DEFAULT_ASPECT_SENSITIVITIES[archetype] || DEFAULT_ASPECT_SENSITIVITIES.creative
 
     return {
       conjunctions: baseProfile.conjunctions || 0.5,
@@ -283,7 +303,7 @@ export class ConsciousnessAspectsIntegration {
       quincunxes: baseProfile.quincunxes || 0.3,
       preferredAspects: baseProfile.preferredAspects || ['trine', 'sextile'],
       challengingAspects: baseProfile.challengingAspects || ['square', 'opposition'],
-      aspectMemoryRetention: baseProfile.aspectMemoryRetention || 0.7
+      aspectMemoryRetention: baseProfile.aspectMemoryRetention || 0.7,
     }
   }
 
@@ -296,26 +316,42 @@ export class ConsciousnessAspectsIntegration {
     return 'creative' // default
   }
 
-  private filterRelevantAspects(aspects: DynamicAspect[], sensitivity: AspectSensitivityProfile): DynamicAspect[] {
+  private filterRelevantAspects(
+    aspects: DynamicAspect[],
+    sensitivity: AspectSensitivityProfile
+  ): DynamicAspect[] {
     return aspects.filter(aspect => {
       const aspectSensitivity = this.getAspectSensitivityValue(aspect.type, sensitivity)
       return aspectSensitivity > 0.3 // Only include aspects agent is somewhat sensitive to
     })
   }
 
-  private getAspectSensitivityValue(aspectType: string, sensitivity: AspectSensitivityProfile): number {
+  private getAspectSensitivityValue(
+    aspectType: string,
+    sensitivity: AspectSensitivityProfile
+  ): number {
     switch (aspectType) {
-      case 'conjunction': return sensitivity.conjunctions
-      case 'opposition': return sensitivity.oppositions
-      case 'trine': return sensitivity.trines
-      case 'square': return sensitivity.squares
-      case 'sextile': return sensitivity.sextiles
-      case 'quincunx': return sensitivity.quincunxes
-      default: return 0.3
+      case 'conjunction':
+        return sensitivity.conjunctions
+      case 'opposition':
+        return sensitivity.oppositions
+      case 'trine':
+        return sensitivity.trines
+      case 'square':
+        return sensitivity.squares
+      case 'sextile':
+        return sensitivity.sextiles
+      case 'quincunx':
+        return sensitivity.quincunxes
+      default:
+        return 0.3
     }
   }
 
-  private calculateConsciousnessModifier(aspects: DynamicAspect[], sensitivity: AspectSensitivityProfile): number {
+  private calculateConsciousnessModifier(
+    aspects: DynamicAspect[],
+    sensitivity: AspectSensitivityProfile
+  ): number {
     let totalModifier = 0
 
     for (const aspect of aspects) {
@@ -335,13 +371,17 @@ export class ConsciousnessAspectsIntegration {
     return Math.max(-1, Math.min(1, totalModifier))
   }
 
-  private calculateEvolutionVelocity(applyingAspects: DynamicAspect[], sensitivity: AspectSensitivityProfile): number {
+  private calculateEvolutionVelocity(
+    applyingAspects: DynamicAspect[],
+    sensitivity: AspectSensitivityProfile
+  ): number {
     if (applyingAspects.length === 0) return 1.0
 
     let velocitySum = 0
     for (const aspect of applyingAspects) {
       const sensitivityValue = this.getAspectSensitivityValue(aspect.type, sensitivity)
-      const aspectVelocity = Math.abs(aspect.orbVelocity) * sensitivityValue * aspect.evolutionaryImpact
+      const aspectVelocity =
+        Math.abs(aspect.orbVelocity) * sensitivityValue * aspect.evolutionaryImpact
       velocitySum += aspectVelocity
     }
 
@@ -349,7 +389,10 @@ export class ConsciousnessAspectsIntegration {
     return Math.min(2.0, 1.0 + velocitySum)
   }
 
-  private calculateAspectMomentum(aspects: DynamicAspect[], sensitivity: AspectSensitivityProfile): number {
+  private calculateAspectMomentum(
+    aspects: DynamicAspect[],
+    sensitivity: AspectSensitivityProfile
+  ): number {
     let momentum = 0
 
     for (const aspect of aspects) {
@@ -370,9 +413,7 @@ export class ConsciousnessAspectsIntegration {
     sensitivity: AspectSensitivityProfile
   ): ConsciousnessAspectInfluence['optimalInteractionWindow'] {
     const relevantPeriods = aspectsAnalysis.optimalPeriods.filter(period =>
-      period.aspects.some(aspect =>
-        sensitivity.preferredAspects.includes(aspect.type)
-      )
+      period.aspects.some(aspect => sensitivity.preferredAspects.includes(aspect.type))
     )
 
     if (relevantPeriods.length === 0) return null
@@ -389,11 +430,14 @@ export class ConsciousnessAspectsIntegration {
       start: bestPeriod.start,
       end: bestPeriod.end,
       reason: `Optimal ${bestPeriod.type} period with ${bestPeriod.aspects.length} favorable aspects`,
-      expectedBoost
+      expectedBoost,
     }
   }
 
-  private scorePeriodForAgent(period: OptimalPeriod, sensitivity: AspectSensitivityProfile): number {
+  private scorePeriodForAgent(
+    period: OptimalPeriod,
+    sensitivity: AspectSensitivityProfile
+  ): number {
     let score = 0
 
     for (const aspect of period.aspects) {
@@ -412,11 +456,12 @@ export class ConsciousnessAspectsIntegration {
       aspectCounts[aspect.type] = (aspectCounts[aspect.type] || 0) + 1
     }
 
-    return Object.entries(aspectCounts)
-      .sort(([,a], [,b]) => b - a)[0][0]
+    return Object.entries(aspectCounts).sort(([, a], [, b]) => b - a)[0][0]
   }
 
-  private getNextMajorAspectEvent(influence: ConsciousnessAspectInfluence): EnhancedKineticWithAspects['aspectInfluences']['nextMajorAspectEvent'] {
+  private getNextMajorAspectEvent(
+    influence: ConsciousnessAspectInfluence
+  ): EnhancedKineticWithAspects['aspectInfluences']['nextMajorAspectEvent'] {
     if (influence.applyingAspects.length === 0) return null
 
     const nextAspect = influence.applyingAspects.reduce((closest, current) => {
@@ -426,34 +471,42 @@ export class ConsciousnessAspectsIntegration {
     return {
       aspectType: nextAspect.type,
       daysAway: nextAspect.daysToExact,
-      expectedImpact: nextAspect.evolutionaryImpact
+      expectedImpact: nextAspect.evolutionaryImpact,
     }
   }
 
-  private generateAspectRecommendations(influence: ConsciousnessAspectInfluence): EnhancedKineticWithAspects['aspectRecommendations'] {
+  private generateAspectRecommendations(
+    influence: ConsciousnessAspectInfluence
+  ): EnhancedKineticWithAspects['aspectRecommendations'] {
     const suggestedActivities: string[] = []
     const aspectWarnings: string[] = []
 
     // Generate activity suggestions based on applying aspects
     for (const aspect of influence.applyingAspects) {
       if (aspect.type === 'trine' || aspect.type === 'sextile') {
-        suggestedActivities.push(`Embrace creative flow with ${aspect.planet1}-${aspect.planet2} harmony`)
+        suggestedActivities.push(
+          `Embrace creative flow with ${aspect.planet1}-${aspect.planet2} harmony`
+        )
       } else if (aspect.type === 'conjunction') {
-        suggestedActivities.push(`Focus on integration of ${aspect.planet1}-${aspect.planet2} energies`)
+        suggestedActivities.push(
+          `Focus on integration of ${aspect.planet1}-${aspect.planet2} energies`
+        )
       }
     }
 
     // Generate warnings for challenging aspects
     for (const aspect of influence.applyingAspects) {
       if (aspect.type === 'square' || aspect.type === 'opposition') {
-        aspectWarnings.push(`Prepare for ${aspect.type} tension between ${aspect.planet1}-${aspect.planet2}`)
+        aspectWarnings.push(
+          `Prepare for ${aspect.type} tension between ${aspect.planet1}-${aspect.planet2}`
+        )
       }
     }
 
     return {
       bestTimeForInteraction: influence.optimalInteractionWindow?.start || null,
       suggestedActivities,
-      aspectWarnings
+      aspectWarnings,
     }
   }
 
@@ -476,7 +529,7 @@ export class ConsciousnessAspectsIntegration {
     return {
       size: this.aspectInfluenceCache.size,
       oldestEntry: timestamps.length > 0 ? Math.min(...timestamps) : 0,
-      newestEntry: timestamps.length > 0 ? Math.max(...timestamps) : 0
+      newestEntry: timestamps.length > 0 ? Math.max(...timestamps) : 0,
     }
   }
 }
@@ -506,5 +559,9 @@ export async function enhanceAgentKineticsWithAspects(
   planets: PlanetPosition[],
   location: { lat: number; lon: number }
 ): Promise<EnhancedKineticWithAspects> {
-  return consciousnessAspectsIntegration.enhanceKineticProfileWithAspects(agentId, planets, location)
+  return consciousnessAspectsIntegration.enhanceKineticProfileWithAspects(
+    agentId,
+    planets,
+    location
+  )
 }

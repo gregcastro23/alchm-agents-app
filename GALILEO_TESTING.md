@@ -54,6 +54,7 @@ Run the complete test suite:
 ```
 
 This script will:
+
 - ✅ Check environment configuration
 - ✅ Verify dependencies
 - ✅ Run unit tests
@@ -90,7 +91,9 @@ node test-galileo.js
 ## Test Files Overview
 
 ### 1. `__tests__/galileo-configuration.test.ts`
+
 Comprehensive unit tests covering:
+
 - Environment variable validation
 - API connectivity with different endpoints
 - Error handling and fallback mechanisms
@@ -98,21 +101,27 @@ Comprehensive unit tests covering:
 - Tracing functionality
 
 ### 2. `__tests__/galileo-dashboard.test.tsx`
+
 Component tests for the Galileo dashboard:
+
 - Rendering of dashboard components
 - Tab navigation
 - Metrics display
 - User interactions
 
 ### 3. `test-galileo-connectivity.js`
+
 Real API connectivity test that:
+
 - Tests multiple Galileo API endpoints
 - Validates authentication
 - Checks response formats
 - Provides detailed error reporting
 
 ### 4. `test-galileo-all.sh`
+
 Comprehensive test runner that:
+
 - Orchestrates all tests
 - Provides colored output
 - Handles environment setup
@@ -177,33 +186,43 @@ When everything is working correctly, you should see:
 ### Common Issues
 
 #### 1. API Key Not Set
+
 ```
 ❌ GALILEO_API_KEY is not set
 ```
+
 **Solution**: Add your Galileo API key to `.env.local`
 
 #### 2. API Authentication Failed
+
 ```
 ❌ Galileo API responded with status: 401
 ```
+
 **Solution**: Verify your API key is correct and has proper permissions
 
 #### 3. Project/Stream Not Found
+
 ```
 ❌ Galileo API responded with status: 404
 ```
+
 **Solution**: Check that your project and log stream IDs are correct
 
 #### 4. Network Connectivity Issues
+
 ```
 ❌ Network Error: fetch failed
 ```
+
 **Solution**: Check your internet connection and firewall settings
 
 #### 5. Build Failures
+
 ```
 ❌ Project build failed
 ```
+
 **Solution**: Check for TypeScript errors or missing dependencies
 
 ### Debug Mode
@@ -229,6 +248,7 @@ Start the development server with Galileo enabled:
 ```
 
 This script will:
+
 - Set Galileo environment variables
 - Prompt for API key if not set
 - Start the development server
@@ -293,4 +313,4 @@ If you encounter issues:
 
 ---
 
-**Note**: Keep your Galileo API key secure and never commit it to version control. Always use environment variables for sensitive configuration. 
+**Note**: Keep your Galileo API key secure and never commit it to version control. Always use environment variables for sensitive configuration.

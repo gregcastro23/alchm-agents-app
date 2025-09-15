@@ -1,21 +1,21 @@
-import { NextResponse } from "next/server"
-import { generateAlchmForCurrentMoment } from "@/lib/alchemizer"
-import { getCurrentPlanetaryPositions } from "@/lib/calculate-transits"
-import { generateRealTimeSignVectorRune } from "@/lib/runes/sign-vector-runes"
-import { logQuantitiesToGalileo, type AlchemicalMetrics } from "@/lib/galileo-logger"
-import { sampleCurrentMoment, sampleHourlyAlchm } from "@/lib/alchemical-kinetics-sampler"
-import { computePower, getSolarAmplification } from "@/lib/alchemical-kinetics"
-import { findNearestApplyingAspect } from "@/lib/aspects-sampling"
+import { NextResponse } from 'next/server'
+import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
+import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
+import { generateRealTimeSignVectorRune } from '@/lib/runes/sign-vector-runes'
+import { logQuantitiesToGalileo, type AlchemicalMetrics } from '@/lib/galileo-logger'
+import { sampleCurrentMoment, sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
+import { computePower, getSolarAmplification } from '@/lib/alchemical-kinetics'
+import { findNearestApplyingAspect } from '@/lib/aspects-sampling'
 
-export const dynamic = "force-dynamic"
+export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 interface RealtimeRuneRequest {
-  includeAlchemical?: boolean;
-  runeType?: 'basic' | 'enhanced' | 'premium';
-  runeCount?: number; // Number of runes to generate (max 5)
-  includeKinetics?: boolean; // Include kinetics-based power calculations
-  location?: { latitude: number; longitude: number }; // For kinetics sampling
+  includeAlchemical?: boolean
+  runeType?: 'basic' | 'enhanced' | 'premium'
+  runeCount?: number // Number of runes to generate (max 5)
+  includeKinetics?: boolean // Include kinetics-based power calculations
+  location?: { latitude: number; longitude: number } // For kinetics sampling
 }
 
 export async function GET(request: Request) {
@@ -27,19 +27,23 @@ export async function GET(request: Request) {
     const smoothingWindow = Math.max(1, parseInt(searchParams.get('window') || '1', 10) || 1)
     const lat = parseFloat(searchParams.get('lat') || '37.7749')
     const lon = parseFloat(searchParams.get('lon') || '-122.4194')
-    
-    console.log("API: Realtime runes endpoint called", { includeAlchemical, runeType, includeKinetics })
-    
+
+    console.log('API: Realtime runes endpoint called', {
+      includeAlchemical,
+      runeType,
+      includeKinetics,
+    })
+
     // Get current planetary positions
     const planetaryPositions = getCurrentPlanetaryPositions()
-    
+
     let alchmData = null
     let quantities = null
-    
+
     // Generate alchemical data if requested
     if (includeAlchemical) {
       alchmData = await generateAlchmForCurrentMoment()
-      
+
       if (alchmData && alchmData['Alchemy Effects']) {
         quantities = {
           Spirit: alchmData['Alchemy Effects']['Total Spirit'] || 0,
@@ -48,17 +52,17 @@ export async function GET(request: Request) {
           Substance: alchmData['Alchemy Effects']['Total Substance'] || 0,
           ANumber: alchmData['Alchemy Effects']['A #'] || 0,
           DayEssence: alchmData['Alchemy Effects']['Total Day Essence'] || 0,
-          NightEssence: alchmData['Alchemy Effects']['Total Night Essence'] || 0
+          NightEssence: alchmData['Alchemy Effects']['Total Night Essence'] || 0,
         }
       }
     }
-    
+
     // Generate real-time rune
     const realtimeRune = generateRealTimeSignVectorRune(
-      planetaryPositions, 
+      planetaryPositions,
       includeAlchemical ? { quantities } : null
     )
-    
+
     // Phase 4: Aspect dynamics integration
     let aspectsMetadata: any = null
     if (includeKinetics) {
@@ -71,21 +75,27 @@ export async function GET(request: Request) {
 
         aspectsMetadata = {
           aspectsHint: aspectsResult.aspectsHint,
-          nearestAspect: aspectsResult.nearestAspect ? {
-            planets: `${aspectsResult.nearestAspect.planet1}-${aspectsResult.nearestAspect.planet2}`,
-            type: aspectsResult.nearestAspect.type,
-            status: aspectsResult.nearestAspect.status,
-            orb: Math.round(aspectsResult.nearestAspect.orb * 100) / 100,
-            confidence: Math.round(aspectsResult.nearestAspect.confidence * 100) / 100
-          } : null,
-          timeToExact: aspectsResult.timeToExact ? Math.round(aspectsResult.timeToExact * 10) / 10 : null
+          nearestAspect: aspectsResult.nearestAspect
+            ? {
+                planets: `${aspectsResult.nearestAspect.planet1}-${aspectsResult.nearestAspect.planet2}`,
+                type: aspectsResult.nearestAspect.type,
+                status: aspectsResult.nearestAspect.status,
+                orb: Math.round(aspectsResult.nearestAspect.orb * 100) / 100,
+                confidence: Math.round(aspectsResult.nearestAspect.confidence * 100) / 100,
+              }
+            : null,
+          timeToExact: aspectsResult.timeToExact
+            ? Math.round(aspectsResult.timeToExact * 10) / 10
+            : null,
         }
 
         // Enhance rune description with aspect information
-        if (aspectsResult.aspectsHint && aspectsResult.aspectsHint !== 'No significant applying aspects detected') {
+        if (
+          aspectsResult.aspectsHint &&
+          aspectsResult.aspectsHint !== 'No significant applying aspects detected'
+        ) {
           realtimeRune.description += ` Cosmic alignment: ${aspectsResult.aspectsHint}.`
         }
-
       } catch (aspectError) {
         console.warn('Aspects integration failed:', aspectError)
         aspectsMetadata = { error: 'Aspects calculation failed', fallback: true }
@@ -98,7 +108,7 @@ export async function GET(request: Request) {
       try {
         // Sample recent hourly data for proper kinetics analysis
         const now = new Date()
-        const startTime = new Date(now.getTime() - (smoothingWindow * 3600000)) // Go back by window hours
+        const startTime = new Date(now.getTime() - smoothingWindow * 3600000) // Go back by window hours
 
         // Get actual historical samples using the established sampler
         const kineticSamples = await sampleHourlyAlchm(
@@ -107,7 +117,7 @@ export async function GET(request: Request) {
           {
             includePlanetaryHours: true,
             hoursToSample: smoothingWindow + 1, // Include current hour
-            startHour: startTime.getHours()
+            startHour: startTime.getHours(),
           }
         )
 
@@ -115,9 +125,9 @@ export async function GET(request: Request) {
         const powerSamples = kineticSamples.map(sample => ({
           t: sample.t,
           Energy: sample.Energy,
-          planetaryHour: sample.planetaryHour
+          planetaryHour: sample.planetaryHour,
         }))
-        
+
         const powerResults = computePower(powerSamples, { window: smoothingWindow })
         const currentPower = powerResults[powerResults.length - 1]
 
@@ -126,29 +136,33 @@ export async function GET(request: Request) {
 
         // Get seasonal modifier (simplified)
         const month = now.getMonth()
-        const seasonalModifier = month >= 2 && month <= 4 ? 1.1 : // Spring acceleration
-                               month >= 5 && month <= 7 ? 1.2 : // Summer peak
-                               month >= 8 && month <= 10 ? 0.95 : // Autumn deceleration
-                               0.9 // Winter stability
+        const seasonalModifier =
+          month >= 2 && month <= 4
+            ? 1.1 // Spring acceleration
+            : month >= 5 && month <= 7
+              ? 1.2 // Summer peak
+              : month >= 8 && month <= 10
+                ? 0.95 // Autumn deceleration
+                : 0.9 // Winter stability
 
         // Calculate enhanced power level
         const basePower = realtimeRune.powerLevel || 100
         const kineticsPower = Math.abs(currentPower?.power || 0) * 50 // Scale factor
         const solarAmplification = getSolarAmplification(currentKineticSample.planetaryHour)
-        
+
         const enhancedPowerLevel = Math.round(
-          basePower + (kineticsPower * solarAmplification * seasonalModifier)
+          basePower + kineticsPower * solarAmplification * seasonalModifier
         )
-        
+
         realtimeRune.powerLevel = Math.max(50, Math.min(250, enhancedPowerLevel))
-        
+
         // Determine power type based on kinetics
         const powerMagnitude = Math.abs(currentPower?.power || 0)
         let powerType: 'building' | 'sustained' | 'peak' | 'waning' = 'sustained'
         if (powerMagnitude > 0.5) powerType = 'peak'
         else if (powerMagnitude > 0.1) powerType = 'building'
         else if (powerMagnitude < -0.1) powerType = 'waning'
-        
+
         kineticsPowerData = {
           rawPower: currentPower?.power || 0,
           solarAmplification,
@@ -156,18 +170,17 @@ export async function GET(request: Request) {
           powerType,
           enhancedPowerLevel,
           planetaryHour: currentKineticSample.planetaryHour,
-          seasonalPhase: currentKineticSample.seasonalPhase
+          seasonalPhase: currentKineticSample.seasonalPhase,
         }
-        
+
         // Add kinetics description to rune
         realtimeRune.description += ` Kinetically enhanced with ${powerType} power during ${currentKineticSample.planetaryHour} hour.`
-        
       } catch (kineticError) {
         console.warn('Kinetics enhancement failed:', kineticError)
         kineticsPowerData = { error: 'Kinetics calculation failed', fallback: true }
       }
     }
-    
+
     // Enhance based on rune type
     if (runeType === 'premium') {
       realtimeRune.powerLevel = Math.round((realtimeRune.powerLevel || 100) * 1.25)
@@ -178,7 +191,7 @@ export async function GET(request: Request) {
       realtimeRune.powerLevel = Math.round((realtimeRune.powerLevel || 100) * 0.8)
       realtimeRune.name = `Basic ${realtimeRune.name}`
     }
-    
+
     const responseData = {
       success: true,
       rune: realtimeRune,
@@ -192,11 +205,11 @@ export async function GET(request: Request) {
         dominantElement: alchmData?.['Dominant Element'],
         sunSign: alchmData?.['Sun Sign'],
         kineticsPowerData,
-        aspectsMetadata
+        aspectsMetadata,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
-    
+
     // Log to Galileo for analytics
     try {
       if (includeAlchemical && quantities) {
@@ -211,38 +224,37 @@ export async function GET(request: Request) {
           sunSign: alchmData?.['Sun Sign'] || 'unknown',
           chartRuler: alchmData?.['Chart Ruler'] || 'unknown',
           timestamp: new Date().toISOString(),
-          planetaryPositions
+          planetaryPositions,
         }
 
         await logQuantitiesToGalileo(metricsData, {
           api_endpoint: '/api/realtime-runes',
           request_timestamp: new Date().toISOString(),
           rune_type: runeType,
-          include_alchemical: includeAlchemical
+          include_alchemical: includeAlchemical,
         })
       }
     } catch (galileoError) {
       console.warn('Failed to log realtime rune to Galileo:', galileoError)
     }
-    
-    console.log("API: Successfully generated realtime rune", {
+
+    console.log('API: Successfully generated realtime rune', {
       runeId: realtimeRune.id,
       powerLevel: realtimeRune.powerLevel,
-      planetaryCount: Object.keys(planetaryPositions).length
+      planetaryCount: Object.keys(planetaryPositions).length,
     })
-    
+
     return NextResponse.json(responseData, {
       headers: {
-        "Cache-Control": "no-store, max-age=0, must-revalidate"
-      }
+        'Cache-Control': 'no-store, max-age=0, must-revalidate',
+      },
     })
-    
   } catch (error) {
-    console.error("API Error generating realtime runes:", error)
+    console.error('API Error generating realtime runes:', error)
     return NextResponse.json(
-      { 
-        error: "Failed to generate realtime runes", 
-        details: error instanceof Error ? error.message : String(error) 
+      {
+        error: 'Failed to generate realtime runes',
+        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     )
@@ -252,22 +264,27 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body: RealtimeRuneRequest = await request.json()
-    const { includeAlchemical = true, runeType = 'enhanced', includeKinetics = false, location } = body
+    const {
+      includeAlchemical = true,
+      runeType = 'enhanced',
+      includeKinetics = false,
+      location,
+    } = body
     const lat = location?.latitude || 37.7749
     const lon = location?.longitude || -122.4194
-    
-    console.log("API: Realtime runes POST endpoint called", body)
-    
+
+    console.log('API: Realtime runes POST endpoint called', body)
+
     // Get current planetary positions
     const planetaryPositions = getCurrentPlanetaryPositions()
-    
+
     let alchmData = null
     let quantities = null
-    
+
     // Generate alchemical data if requested
     if (includeAlchemical) {
       alchmData = await generateAlchmForCurrentMoment()
-      
+
       if (alchmData && alchmData['Alchemy Effects']) {
         quantities = {
           Spirit: alchmData['Alchemy Effects']['Total Spirit'] || 0,
@@ -276,21 +293,21 @@ export async function POST(request: Request) {
           Substance: alchmData['Alchemy Effects']['Total Substance'] || 0,
           ANumber: alchmData['Alchemy Effects']['A #'] || 0,
           DayEssence: alchmData['Alchemy Effects']['Total Day Essence'] || 0,
-          NightEssence: alchmData['Alchemy Effects']['Total Night Essence'] || 0
+          NightEssence: alchmData['Alchemy Effects']['Total Night Essence'] || 0,
         }
       }
     }
-    
+
     // Generate multiple runes for batch processing
     const runeCount = Math.min(5, body.runeCount || 1) // Max 5 runes per request
     const runes = []
-    
+
     for (let i = 0; i < runeCount; i++) {
       const rune = generateRealTimeSignVectorRune(
-        planetaryPositions, 
+        planetaryPositions,
         includeAlchemical ? { quantities } : null
       )
-      
+
       // Add deterministic variation for multiple runes based on iteration
       if (i > 0) {
         rune.id = `${rune.id}-${i}`
@@ -298,13 +315,13 @@ export async function POST(request: Request) {
 
         // Create deterministic variation based on iteration and current time
         const timeBasedSeed = (new Date().getMinutes() + i) % 10
-        const variationFactor = 0.95 + (timeBasedSeed / 100) // 0.95 to 1.04 range
+        const variationFactor = 0.95 + timeBasedSeed / 100 // 0.95 to 1.04 range
         rune.powerLevel = Math.round((rune.powerLevel || 100) * variationFactor)
       }
-      
+
       runes.push(rune)
     }
-    
+
     return NextResponse.json({
       success: true,
       runes,
@@ -314,17 +331,16 @@ export async function POST(request: Request) {
         planetaryPositionsCount: Object.keys(planetaryPositions).length,
         includeAlchemical,
         runeType,
-        alchemicalQuantities: quantities
+        alchemicalQuantities: quantities,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
-    
   } catch (error) {
-    console.error("API POST Error generating realtime runes:", error)
+    console.error('API POST Error generating realtime runes:', error)
     return NextResponse.json(
-      { 
-        error: "Failed to generate realtime runes", 
-        details: error instanceof Error ? error.message : String(error) 
+      {
+        error: 'Failed to generate realtime runes',
+        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     )

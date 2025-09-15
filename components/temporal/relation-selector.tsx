@@ -1,10 +1,10 @@
-"use client"
+'use client'
 
-import React, { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import React, { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export type RelationChart = {
   name: string
@@ -21,11 +21,11 @@ type Props = {
 }
 
 export function RelationSelector({ onAddRelation, relations, onRemoveRelation }: Props) {
-  const [name, setName] = useState("")
-  const [birthDate, setBirthDate] = useState("")
-  const [birthTime, setBirthTime] = useState("")
-  const [latitude, setLatitude] = useState("")
-  const [longitude, setLongitude] = useState("")
+  const [name, setName] = useState('')
+  const [birthDate, setBirthDate] = useState('')
+  const [birthTime, setBirthTime] = useState('')
+  const [latitude, setLatitude] = useState('')
+  const [longitude, setLongitude] = useState('')
 
   const handleAdd = () => {
     if (name && birthDate) {
@@ -34,13 +34,13 @@ export function RelationSelector({ onAddRelation, relations, onRemoveRelation }:
         birthDate,
         birthTime: birthTime || undefined,
         latitude: latitude || undefined,
-        longitude: longitude || undefined
+        longitude: longitude || undefined,
       })
-      setName("")
-      setBirthDate("")
-      setBirthTime("")
-      setLatitude("")
-      setLongitude("")
+      setName('')
+      setBirthDate('')
+      setBirthTime('')
+      setLatitude('')
+      setLongitude('')
     }
   }
 
@@ -56,7 +56,7 @@ export function RelationSelector({ onAddRelation, relations, onRemoveRelation }:
             <Input
               id="name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={e => setName(e.target.value)}
               placeholder="e.g., Brother"
             />
           </div>
@@ -66,7 +66,7 @@ export function RelationSelector({ onAddRelation, relations, onRemoveRelation }:
               id="birthDate"
               type="date"
               value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
+              onChange={e => setBirthDate(e.target.value)}
             />
           </div>
           <div>
@@ -75,7 +75,7 @@ export function RelationSelector({ onAddRelation, relations, onRemoveRelation }:
               id="birthTime"
               type="time"
               value={birthTime}
-              onChange={(e) => setBirthTime(e.target.value)}
+              onChange={e => setBirthTime(e.target.value)}
             />
           </div>
           <div>
@@ -83,7 +83,7 @@ export function RelationSelector({ onAddRelation, relations, onRemoveRelation }:
             <Input
               id="latitude"
               value={latitude}
-              onChange={(e) => setLatitude(e.target.value)}
+              onChange={e => setLatitude(e.target.value)}
               placeholder="e.g., 34.0522"
             />
           </div>
@@ -92,7 +92,7 @@ export function RelationSelector({ onAddRelation, relations, onRemoveRelation }:
             <Input
               id="longitude"
               value={longitude}
-              onChange={(e) => setLongitude(e.target.value)}
+              onChange={e => setLongitude(e.target.value)}
               placeholder="e.g., -118.2437"
             />
           </div>
@@ -107,13 +107,10 @@ export function RelationSelector({ onAddRelation, relations, onRemoveRelation }:
             {relations.map((rel, i) => (
               <div key={i} className="flex items-center justify-between p-2 border rounded">
                 <span className="text-sm">
-                  {rel.name} ({rel.birthDate}{rel.birthTime ? ` ${rel.birthTime}` : ''})
+                  {rel.name} ({rel.birthDate}
+                  {rel.birthTime ? ` ${rel.birthTime}` : ''})
                 </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onRemoveRelation(i)}
-                >
+                <Button variant="ghost" size="sm" onClick={() => onRemoveRelation(i)}>
                   Remove
                 </Button>
               </div>

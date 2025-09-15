@@ -1,104 +1,127 @@
-"use client"
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Flame, 
-  Droplets, 
-  Mountain, 
-  Wind, 
-  Thermometer, 
-  Activity, 
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Flame,
+  Droplets,
+  Mountain,
+  Wind,
+  Thermometer,
+  Activity,
   Zap,
   Target,
   Brain,
   Heart,
   Eye,
-  Crown
-} from 'lucide-react';
-import type { 
-  AlchemicalQuantities, 
-  ConsciousnessStats, 
+  Crown,
+} from 'lucide-react'
+import type {
+  AlchemicalQuantities,
+  ConsciousnessStats,
   AlchemicalConsciousnessTask,
-  ConsciousParameters
-} from '@/lib/astrological-dignities-engine';
+  ConsciousParameters,
+} from '@/lib/astrological-dignities-engine'
 
 interface AlchemicalConsciousnessDashboardProps {
-  consciousnessStats: ConsciousnessStats;
-  consciousParameters: ConsciousParameters;  // Add this
-  onTaskSelect?: (task: AlchemicalConsciousnessTask) => void;
-  realTimeUpdates?: boolean;
+  consciousnessStats: ConsciousnessStats
+  consciousParameters: ConsciousParameters // Add this
+  onTaskSelect?: (task: AlchemicalConsciousnessTask) => void
+  realTimeUpdates?: boolean
 }
 
-export function AlchemicalConsciousnessDashboard({ 
-  consciousnessStats, 
+export function AlchemicalConsciousnessDashboard({
+  consciousnessStats,
   onTaskSelect,
-  realTimeUpdates = false 
+  realTimeUpdates = false,
 }: AlchemicalConsciousnessDashboardProps) {
-  const [currentStats, setCurrentStats] = useState(consciousnessStats);
-  const [animationFrame, setAnimationFrame] = useState(0);
+  const [currentStats, setCurrentStats] = useState(consciousnessStats)
+  const [animationFrame, setAnimationFrame] = useState(0)
 
   // Simulate real-time updates for demonstration
   useEffect(() => {
     if (realTimeUpdates) {
       const interval = setInterval(() => {
-        setAnimationFrame(prev => prev + 1);
+        setAnimationFrame(prev => prev + 1)
         // Subtle fluctuations to simulate real-time consciousness changes
         setCurrentStats(prev => ({
           ...prev,
           current_alchemical_state: {
             ...prev.current_alchemical_state,
-            consciousness_temperature: Math.max(0, Math.min(100, 
-              prev.current_alchemical_state.consciousness_temperature + (Math.random() - 0.5) * 3
-            )),
-            entropy_level: Math.max(0, Math.min(100,
-              prev.current_alchemical_state.entropy_level + (Math.random() - 0.5) * 2
-            ))
-          }
-        }));
-      }, 2000);
-      return () => clearInterval(interval);
+            consciousness_temperature: Math.max(
+              0,
+              Math.min(
+                100,
+                prev.current_alchemical_state.consciousness_temperature + (Math.random() - 0.5) * 3
+              )
+            ),
+            entropy_level: Math.max(
+              0,
+              Math.min(100, prev.current_alchemical_state.entropy_level + (Math.random() - 0.5) * 2)
+            ),
+          },
+        }))
+      }, 2000)
+      return () => clearInterval(interval)
     }
-  }, [realTimeUpdates]);
+  }, [realTimeUpdates])
 
-  const state = currentStats.current_alchemical_state;
+  const state = currentStats.current_alchemical_state
 
   const getElementIcon = (element: string) => {
     switch (element) {
-      case 'fire': return <Flame className="h-5 w-5 text-red-500" />;
-      case 'water': return <Droplets className="h-5 w-5 text-blue-500" />;
-      case 'air': return <Wind className="h-5 w-5 text-gray-500" />;
-      case 'earth': return <Mountain className="h-5 w-5 text-green-500" />;
-      default: return <Activity className="h-5 w-5" />;
+      case 'fire':
+        return <Flame className="h-5 w-5 text-red-500" />
+      case 'water':
+        return <Droplets className="h-5 w-5 text-blue-500" />
+      case 'air':
+        return <Wind className="h-5 w-5 text-gray-500" />
+      case 'earth':
+        return <Mountain className="h-5 w-5 text-green-500" />
+      default:
+        return <Activity className="h-5 w-5" />
     }
-  };
+  }
 
   const getThermodynamicColor = (state: string) => {
     switch (state) {
-      case 'heating': return 'text-red-500 bg-red-50';
-      case 'cooling': return 'text-blue-500 bg-blue-50';
-      case 'expanding': return 'text-purple-500 bg-purple-50';
-      case 'contracting': return 'text-gray-500 bg-gray-50';
-      case 'transforming': return 'text-yellow-500 bg-yellow-50';
-      default: return 'text-green-500 bg-green-50';
+      case 'heating':
+        return 'text-red-500 bg-red-50'
+      case 'cooling':
+        return 'text-blue-500 bg-blue-50'
+      case 'expanding':
+        return 'text-purple-500 bg-purple-50'
+      case 'contracting':
+        return 'text-gray-500 bg-gray-50'
+      case 'transforming':
+        return 'text-yellow-500 bg-yellow-50'
+      default:
+        return 'text-green-500 bg-green-50'
     }
-  };
+  }
 
   const getPhaseColor = (phase: string) => {
     switch (phase) {
-      case 'awakening': return 'bg-gradient-to-r from-yellow-400 to-orange-500';
-      case 'expanding': return 'bg-gradient-to-r from-blue-400 to-purple-500';
-      case 'integrating': return 'bg-gradient-to-r from-green-400 to-blue-500';
-      case 'stabilizing': return 'bg-gradient-to-r from-gray-400 to-gray-600';
-      case 'transforming': return 'bg-gradient-to-r from-purple-400 to-pink-500';
-      case 'transcending': return 'bg-gradient-to-r from-indigo-400 to-purple-600';
-      default: return 'bg-gradient-to-r from-gray-400 to-gray-500';
+      case 'awakening':
+        return 'bg-gradient-to-r from-yellow-400 to-orange-500'
+      case 'expanding':
+        return 'bg-gradient-to-r from-blue-400 to-purple-500'
+      case 'integrating':
+        return 'bg-gradient-to-r from-green-400 to-blue-500'
+      case 'stabilizing':
+        return 'bg-gradient-to-r from-gray-400 to-gray-600'
+      case 'transforming':
+        return 'bg-gradient-to-r from-purple-400 to-pink-500'
+      case 'transcending':
+        return 'bg-gradient-to-r from-indigo-400 to-purple-600'
+      default:
+        return 'bg-gradient-to-r from-gray-400 to-gray-500'
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -244,7 +267,9 @@ export function AlchemicalConsciousnessDashboard({
                 Elemental Consciousness Balance
               </CardTitle>
               <CardDescription>
-                Dominant Element: {currentStats.dominant_element.charAt(0).toUpperCase() + currentStats.dominant_element.slice(1)}
+                Dominant Element:{' '}
+                {currentStats.dominant_element.charAt(0).toUpperCase() +
+                  currentStats.dominant_element.slice(1)}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -275,7 +300,9 @@ export function AlchemicalConsciousnessDashboard({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{currentStats.learning_velocity_multiplier.toFixed(2)}x</div>
+                <div className="text-2xl font-bold">
+                  {currentStats.learning_velocity_multiplier.toFixed(2)}x
+                </div>
                 <div className="text-xs text-muted-foreground">Mercury & Jupiter influence</div>
               </CardContent>
             </Card>
@@ -288,7 +315,9 @@ export function AlchemicalConsciousnessDashboard({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{currentStats.creative_flow_coefficient.toFixed(2)}x</div>
+                <div className="text-2xl font-bold">
+                  {currentStats.creative_flow_coefficient.toFixed(2)}x
+                </div>
                 <div className="text-xs text-muted-foreground">Venus influence</div>
               </CardContent>
             </Card>
@@ -301,7 +330,9 @@ export function AlchemicalConsciousnessDashboard({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{currentStats.manifestation_power_index.toFixed(2)}x</div>
+                <div className="text-2xl font-bold">
+                  {currentStats.manifestation_power_index.toFixed(2)}x
+                </div>
                 <div className="text-xs text-muted-foreground">Mars & Saturn influence</div>
               </CardContent>
             </Card>
@@ -314,7 +345,9 @@ export function AlchemicalConsciousnessDashboard({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{currentStats.intuitive_receptivity_quotient.toFixed(2)}x</div>
+                <div className="text-2xl font-bold">
+                  {currentStats.intuitive_receptivity_quotient.toFixed(2)}x
+                </div>
                 <div className="text-xs text-muted-foreground">Moon influence</div>
               </CardContent>
             </Card>
@@ -354,7 +387,14 @@ export function AlchemicalConsciousnessDashboard({
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Object.entries(consciousParameters.alchemical_pillars).map(([key, value]) => {
-                const level = value < 30 ? 'Novice' : value < 60 ? 'Adept' : value < 90 ? 'Master' : 'Transcendent';
+                const level =
+                  value < 30
+                    ? 'Novice'
+                    : value < 60
+                      ? 'Adept'
+                      : value < 90
+                        ? 'Master'
+                        : 'Transcendent'
                 return (
                   <div key={key} className="space-y-2">
                     <div className="flex justify-between text-sm">
@@ -366,7 +406,7 @@ export function AlchemicalConsciousnessDashboard({
                       Score: {value.toFixed(0)}% - Train to improve!
                     </div>
                   </div>
-                );
+                )
               })}
             </CardContent>
           </Card>
@@ -381,5 +421,5 @@ export function AlchemicalConsciousnessDashboard({
         </div>
       )}
     </div>
-  );
+  )
 }

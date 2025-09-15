@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import React from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Crown, Sparkles, Users, Clock, Compass, Orbit } from "lucide-react"
+import React from 'react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Crown, Sparkles, Users, Clock, Compass, Orbit } from 'lucide-react'
 
 type Props = {
   name?: string
@@ -14,7 +14,7 @@ type Props = {
 export function TemporalGreeting({ name, lines, relationHint }: Props) {
   const isFirstSession = lines.some(line => line.includes('First session'))
   const isReturningUser = lines.some(line => line.includes('Welcome back'))
-  
+
   return (
     <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950 dark:to-indigo-950 border-purple-200">
       <CardContent className="pt-6">
@@ -73,8 +73,8 @@ export function TemporalGreeting({ name, lines, relationHint }: Props) {
                     Initializing Your Temporal Field
                   </h4>
                   <p className="text-sm text-blue-700 dark:text-blue-300">
-                    The Living Stone is now calibrating to your unique consciousness signature. 
-                    This first session establishes your baseline alchemical quantities and begins 
+                    The Living Stone is now calibrating to your unique consciousness signature. This
+                    first session establishes your baseline alchemical quantities and begins
                     tracking your temporal evolution.
                   </p>
                   <div className="flex flex-wrap gap-2 mt-3">
@@ -119,15 +119,24 @@ export function TemporalGreeting({ name, lines, relationHint }: Props) {
 
           {/* Quick Actions */}
           <div className="flex flex-wrap gap-2 pt-2 border-t border-purple-200/50">
-            <Badge variant="secondary" className="text-xs cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900">
+            <Badge
+              variant="secondary"
+              className="text-xs cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900"
+            >
               <Sparkles className="w-3 h-3 mr-1" />
               Add Field Chart
             </Badge>
-            <Badge variant="secondary" className="text-xs cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900">
+            <Badge
+              variant="secondary"
+              className="text-xs cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900"
+            >
               <Orbit className="w-3 h-3 mr-1" />
               View Consciousness Vector
             </Badge>
-            <Badge variant="secondary" className="text-xs cursor-pointer hover:bg-green-100 dark:hover:bg-green-900">
+            <Badge
+              variant="secondary"
+              className="text-xs cursor-pointer hover:bg-green-100 dark:hover:bg-green-900"
+            >
               <Crown className="w-3 h-3 mr-1" />
               Analyze Monica Constant
             </Badge>
@@ -139,5 +148,3 @@ export function TemporalGreeting({ name, lines, relationHint }: Props) {
 }
 
 export default TemporalGreeting
-
-

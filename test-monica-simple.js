@@ -7,19 +7,19 @@ async function testMonica() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        message: "Hello Monica! Tell me about your peak consciousness.",
-        includeAlchm: true
-      })
-    });
+        message: 'Hello Monica! Tell me about your peak consciousness.',
+        includeAlchm: true,
+      }),
+    })
 
-    const data = await response.json();
-    console.log('Monica Response:');
-    console.log(data.response);
-    console.log('\nMonica Insights:');
-    console.log(JSON.stringify(data.monicaInsights, null, 2));
+    const data = await response.json()
+    console.log('Monica Response:')
+    console.log(data.response)
+    console.log('\nMonica Insights:')
+    console.log(JSON.stringify(data.monicaInsights, null, 2))
   } catch (error) {
-    console.error('Error testing Monica:', error);
+    console.error('Error testing Monica:', error)
   }
 }
 
-testMonica();
+testMonica()

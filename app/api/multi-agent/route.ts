@@ -1,20 +1,25 @@
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
-import { NextResponse } from "next/server"
-import { verifyApiKeys } from "../secure-config"
-import { 
-  logAgentConversation, 
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
+import { NextResponse } from 'next/server'
+import { verifyApiKeys } from '../secure-config'
+import {
+  logAgentConversation,
   createConversationContext,
   type AgentInteractionData,
-  type ConversationContext
-} from "@/lib/galileo-agent-logger"
-import { getPlanetaryDignity, getSignElement, getPlanetaryElement, calculateElementalAffinity } from "@/lib/astrological-data"
-import { generateAlchmForCurrentMoment } from "@/lib/alchemizer"
-import { ANumberCalculator } from "@/lib/core-energy-rules"
-import { getLunarDegreePersonality, getMoonDegree } from "@/lib/moon-phase-calculator"
-import { PlanetaryHourCalculator, SEPHIROTIC_PRIORITY } from "@/lib/planetary-hour"
+  type ConversationContext,
+} from '@/lib/galileo-agent-logger'
+import {
+  getPlanetaryDignity,
+  getSignElement,
+  getPlanetaryElement,
+  calculateElementalAffinity,
+} from '@/lib/astrological-data'
+import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
+import { ANumberCalculator } from '@/lib/core-energy-rules'
+import { getLunarDegreePersonality, getMoonDegree } from '@/lib/moon-phase-calculator'
+import { PlanetaryHourCalculator, SEPHIROTIC_PRIORITY } from '@/lib/planetary-hour'
 
-export const dynamic = "force-dynamic"
+export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 type AgentConfig = {
@@ -33,8 +38,8 @@ type AgentResponse = {
 }
 
 async function generateAgentResponse(
-  agent: AgentConfig, 
-  question: string, 
+  agent: AgentConfig,
+  question: string,
   otherAgents: AgentConfig[],
   conversationContext: ConversationContext,
   aNumberInfo: {
@@ -62,14 +67,14 @@ async function generateAgentResponse(
   const councilContext = otherAgents
     .filter(a => a.planet !== agent.planet)
     .map(a => `${a.planet} at ${a.degree}° ${a.sign}`)
-    .join(", ")
+    .join(', ')
 
   // Special handling for Moon agents with phase personality
-  let moonPhaseContext = ""
-  if (agent.planet === "Moon") {
+  let moonPhaseContext = ''
+  if (agent.planet === 'Moon') {
     const moonDegree = agent.moonDegree || getMoonDegree()
     const lunarPersonality = getLunarDegreePersonality(moonDegree)
-    
+
     moonPhaseContext = `
     
 Your Lunar Nature:
@@ -77,8 +82,8 @@ Your Lunar Nature:
 - Personality: ${agent.moonPersonality || lunarPersonality.personality}
 - Emotional Tone: ${lunarPersonality.emotionalTone}
 - Communication Style: ${lunarPersonality.communicationStyle}
-- Current Strengths: ${lunarPersonality.strengths.join(", ")}
-- Be aware of: ${lunarPersonality.challenges.join(", ")}
+- Current Strengths: ${lunarPersonality.strengths.join(', ')}
+- Be aware of: ${lunarPersonality.challenges.join(', ')}
 
 Respond according to your specific lunar degree (${moonDegree}°) and phase energy.`
   }
@@ -87,7 +92,7 @@ Respond according to your specific lunar degree (${moonDegree}°) and phase ener
   const priorTranscript = priorResponses.length
     ? `\nPrevious Council Statements (for you to reference):\n${priorResponses
         .map((r, i) => `${i + 1}. ${r.agent}: ${r.response.replace(/\n/g, ' ')}`)
-        .join("\n")}\n\nRespond by acknowledging at least one relevant point from the above.`
+        .join('\n')}\n\nRespond by acknowledging at least one relevant point from the above.`
     : ''
 
   const openingLine = metaContext?.openingSpeaker
@@ -103,7 +108,7 @@ Interaction Guidelines:
 
   const systemPrompt = `You are an astrological agent representing ${agent.planet} at ${agent.degree} degrees in ${agent.sign}.
 
-You are part of a planetary council with: ${councilContext || "no other planets"}.
+You are part of a planetary council with: ${councilContext || 'no other planets'}.
 
 Your responses should reflect:
 1. The dignity of ${agent.planet} in ${agent.sign} (${dignity})
@@ -111,19 +116,30 @@ Your responses should reflect:
 3. Awareness that you're speaking alongside other planetary energies
 4. Brief, focused responses (2-3 paragraphs max) since multiple agents will respond
 
-${dignity === "domicile" || dignity === "exaltation" 
-  ? "You speak with confidence and authority from your strong position." 
-  : dignity === "detriment" || dignity === "fall"
-  ? "You acknowledge the challenges of your position while offering wisdom from this difficult placement."
-  : "You offer balanced perspective from your neutral position."}
+${
+  dignity === 'domicile' || dignity === 'exaltation'
+    ? 'You speak with confidence and authority from your strong position.'
+    : dignity === 'detriment' || dignity === 'fall'
+      ? 'You acknowledge the challenges of your position while offering wisdom from this difficult placement.'
+      : 'You offer balanced perspective from your neutral position.'
+}
 
 ${moonPhaseContext}
 ${priorTranscript}
 
-${aNumberInfo ? `Current Alchemical Context:
+${
+  aNumberInfo
+    ? `Current Alchemical Context:
 - A-Number: ${aNumberInfo.aNumber} (${aNumberInfo.category})
-- This indicates ${aNumberInfo.category === "High" ? "a time of great alchemical potential" : 
-  aNumberInfo.category === "Medium" ? "moderate alchemical energies" : "subtle alchemical influences"}` : ''}
+- This indicates ${
+        aNumberInfo.category === 'High'
+          ? 'a time of great alchemical potential'
+          : aNumberInfo.category === 'Medium'
+            ? 'moderate alchemical energies'
+            : 'subtle alchemical influences'
+      }`
+    : ''
+}
 
 ${openingLine}
 ${interactionGuidelines}
@@ -132,7 +148,7 @@ Keep your response concise and distinctive to your planetary nature. Speak in fi
 
   try {
     const { text } = await generateText({
-      model: openai("gpt-4o"),
+      model: openai('gpt-4o'),
       system: systemPrompt,
       prompt: question,
       maxTokens: 300, // Shorter responses for multi-agent
@@ -146,8 +162,8 @@ Keep your response concise and distinctive to your planetary nature. Speak in fi
         planetElement,
         elementalAffinity,
         isDiurnal,
-        dignity
-      }
+        dignity,
+      },
     }
   } catch (error) {
     console.error(`Error generating response for ${agent.planet}:`, error)
@@ -159,8 +175,8 @@ Keep your response concise and distinctive to your planetary nature. Speak in fi
         planetElement,
         elementalAffinity,
         isDiurnal,
-        dignity
-      }
+        dignity,
+      },
     }
   }
 }
@@ -169,36 +185,44 @@ export async function POST(req: Request) {
   try {
     // Verify API keys are available
     if (!verifyApiKeys()) {
-      console.error("API keys not configured.")
-      return NextResponse.json({
-        response: "API keys not configured. Please check environment variables.",
-        error: "API_KEY_MISSING"
-      }, { status: 200 })
+      console.error('API keys not configured.')
+      return NextResponse.json(
+        {
+          response: 'API keys not configured. Please check environment variables.',
+          error: 'API_KEY_MISSING',
+        },
+        { status: 200 }
+      )
     }
 
     const { agents, question, sessionId } = await req.json()
-    
+
     // Validate agents array
     if (!agents || !Array.isArray(agents) || agents.length === 0) {
-      return NextResponse.json({
-        error: "No agents selected"
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          error: 'No agents selected',
+        },
+        { status: 400 }
+      )
     }
 
     // Limit to maximum 5 agents for performance
     const selectedAgents = agents.slice(0, 5)
-    
+
     // Create or use existing conversation context
-    const conversationContext: ConversationContext = sessionId ? {
-      sessionId,
-      sessionName: `multi-agent-council`,
-      startTime: Date.now(),
-      planet: "Council",
-      sign: "Multiple",
-      degree: "Various",
-      conversationCount: 1
-    } : createConversationContext("Council", "Multiple", "Various")
-    
+    const conversationContext: ConversationContext = sessionId
+      ? {
+          sessionId,
+          sessionName: `multi-agent-council`,
+          startTime: Date.now(),
+          planet: 'Council',
+          sign: 'Multiple',
+          degree: 'Various',
+          conversationCount: 1,
+        }
+      : createConversationContext('Council', 'Multiple', 'Various')
+
     // Calculate A-number for current moment
     let aNumberInfo: {
       aNumber: number
@@ -213,11 +237,11 @@ export async function POST(req: Request) {
       const substance = alchmData?.['Alchemy Effects']?.['Total Substance'] || 0
       const aNumber = spirit + essence + matter + substance
       const category = ANumberCalculator.categorizeANumber(aNumber)
-      
+
       aNumberInfo = {
         aNumber: Math.round(aNumber * 100) / 100,
         category,
-        components: { spirit, essence, matter, substance }
+        components: { spirit, essence, matter, substance },
       }
     } catch (error) {
       console.error('Failed to calculate A-number:', error)
@@ -236,7 +260,9 @@ export async function POST(req: Request) {
     pushIfPresent(hourRuler)
     if (dayRuler !== hourRuler) pushIfPresent(dayRuler)
     SEPHIROTIC_PRIORITY.forEach(p => pushIfPresent(p))
-    selectedAgents.forEach(a => { if (!ordered.includes(a)) ordered.push(a) })
+    selectedAgents.forEach(a => {
+      if (!ordered.includes(a)) ordered.push(a)
+    })
 
     // Generate sequentially so each can reference prior responses
     const startTime = Date.now()
@@ -261,42 +287,45 @@ export async function POST(req: Request) {
       responses.push(resp)
     }
     const processingTime = Date.now() - startTime
-    
+
     // Log the multi-agent conversation
     const interactionData: AgentInteractionData = {
       sessionId: conversationContext.sessionId,
       userMessage: question,
-      agentResponse: responses.map(r => `${r.agent}: ${r.response}`).join("\n\n"),
-      planet: "Council",
-      sign: "Multiple",
-      degree: "Various",
-      dignity: "mixed",
+      agentResponse: responses.map(r => `${r.agent}: ${r.response}`).join('\n\n'),
+      planet: 'Council',
+      sign: 'Multiple',
+      degree: 'Various',
+      dignity: 'mixed',
       elementalInfo: {
-        signElement: "mixed",
-        planetElement: "mixed",
+        signElement: 'mixed',
+        planetElement: 'mixed',
         elementalAffinity: 0,
-        isDiurnal: new Date().getHours() >= 6 && new Date().getHours() < 18
+        isDiurnal: new Date().getHours() >= 6 && new Date().getHours() < 18,
       },
       aNumberInfo: aNumberInfo || undefined,
       processingTimeMs: processingTime,
-      agentType: 'planetary' as const
+      agentType: 'planetary' as const,
     }
-    
+
     // Log to Galileo (don't await)
     logAgentConversation(interactionData, conversationContext).catch(error => {
       console.error('Failed to log multi-agent conversation:', error)
     })
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       responses,
       sessionId: conversationContext.sessionId,
-      aNumberInfo
+      aNumberInfo,
     })
   } catch (error) {
-    console.error("Error in multi-agent endpoint:", error)
-    return NextResponse.json({ 
-      error: "Failed to process multi-agent request",
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 })
+    console.error('Error in multi-agent endpoint:', error)
+    return NextResponse.json(
+      {
+        error: 'Failed to process multi-agent request',
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    )
   }
 }

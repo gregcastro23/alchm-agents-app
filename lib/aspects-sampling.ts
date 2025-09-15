@@ -5,28 +5,32 @@
  * Builds on existing sampleHourlyAlchm while adding horoscope data collection.
  */
 
-import { sampleHourlyAlchm, type HourlyAlchemicalSample, type SamplerOptions } from './alchemical-kinetics-sampler';
-import { generateAccurateHoroscope } from './monica/horoscope-generator';
-import { computePower } from './alchemical-kinetics';
+import {
+  sampleHourlyAlchm,
+  type HourlyAlchemicalSample,
+  type SamplerOptions,
+} from './alchemical-kinetics-sampler'
+import { generateAccurateHoroscope } from './monica/horoscope-generator'
+import { computePower } from './alchemical-kinetics'
 import {
   extractPlanetaryLongitudes,
   generateAspectSamples,
   analyzeAspectDynamics,
   type AspectAnalysis,
   type AspectDynamicsResult,
-  type PlanetaryLongitude
-} from './aspects-dynamics';
+  type PlanetaryLongitude,
+} from './aspects-dynamics'
 
 export interface AspectsWithKineticsSample {
-  alchemical: HourlyAlchemicalSample;
-  horoscope: any;
-  longitudes: PlanetaryLongitude[];
+  alchemical: HourlyAlchemicalSample
+  horoscope: any
+  longitudes: PlanetaryLongitude[]
 }
 
 export interface AspectsSamplingOptions extends SamplerOptions {
-  targetPlanets?: string[];     // Planets to analyze (default: visible seven)
-  window?: number;              // Smoothing window for kinetics (default: 3)
-  includeKinetics?: boolean;    // Include kinetics-based confidence weighting
+  targetPlanets?: string[] // Planets to analyze (default: visible seven)
+  window?: number // Smoothing window for kinetics (default: 3)
+  includeKinetics?: boolean // Include kinetics-based confidence weighting
 }
 
 /**
@@ -38,29 +42,29 @@ export async function sampleAspectsTimeSeries(
   centerDate: Date,
   options: AspectsSamplingOptions = {}
 ): Promise<{
-  samples: AspectsWithKineticsSample[];
-  kineticData?: { powerAvg: number; window: number };
+  samples: AspectsWithKineticsSample[]
+  kineticData?: { powerAvg: number; window: number }
 }> {
   const {
     targetPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'],
     window = 3,
     includeKinetics = false,
-    hoursToSample = 5,  // Default 5-point sampling for aspect rates
+    hoursToSample = 5, // Default 5-point sampling for aspect rates
     ...samplerOptions
-  } = options;
+  } = options
 
   // Calculate start time for sampling window
-  const halfWindow = Math.floor(hoursToSample / 2);
-  const startDate = new Date(centerDate.getTime() - halfWindow * 60 * 60 * 1000);
+  const halfWindow = Math.floor(hoursToSample / 2)
+  const startDate = new Date(centerDate.getTime() - halfWindow * 60 * 60 * 1000)
 
   // Sample alchemical data using existing infrastructure
   const alchmSamples = await sampleHourlyAlchm(location, startDate, {
     ...samplerOptions,
     hoursToSample,
-    startHour: startDate.getHours()
-  });
+    startHour: startDate.getHours(),
+  })
 
-  const samples: AspectsWithKineticsSample[] = [];
+  const samples: AspectsWithKineticsSample[] = []
 
   // Generate corresponding horoscope data for planetary positions
   for (const alchmSample of alchmSamples) {
@@ -73,34 +77,33 @@ export async function sampleAspectsTimeSeries(
         hour: alchmSample.t.getHours(),
         minute: alchmSample.t.getMinutes(),
         latitude: location.latitude,
-        longitude: location.longitude
-      };
+        longitude: location.longitude,
+      }
 
       // Generate horoscope for planetary positions
-      const horoscope = generateAccurateHoroscope(birthInfo);
+      const horoscope = generateAccurateHoroscope(birthInfo)
 
       // Extract planetary longitudes
-      const longitudes = extractPlanetaryLongitudes(horoscope, targetPlanets);
+      const longitudes = extractPlanetaryLongitudes(horoscope, targetPlanets)
 
       // Update longitude timestamps to match sample time
       longitudes.forEach(lng => {
-        lng.t = alchmSample.t;
-      });
+        lng.t = alchmSample.t
+      })
 
       samples.push({
         alchemical: alchmSample,
         horoscope,
-        longitudes
-      });
-
+        longitudes,
+      })
     } catch (error) {
-      console.warn(`Failed to generate horoscope for ${alchmSample.t.toISOString()}:`, error);
+      console.warn(`Failed to generate horoscope for ${alchmSample.t.toISOString()}:`, error)
       // Continue with other samples - don't fail entire operation
     }
   }
 
   // Calculate kinetic data for confidence weighting if requested
-  let kineticData: { powerAvg: number; window: number } | undefined;
+  let kineticData: { powerAvg: number; window: number } | undefined
 
   if (includeKinetics && samples.length > 0) {
     try {
@@ -108,28 +111,26 @@ export async function sampleAspectsTimeSeries(
       const powerSamples = samples.map(s => ({
         t: s.alchemical.t,
         Energy: s.alchemical.Energy,
-        planetaryHour: s.alchemical.planetaryHour
-      }));
+        planetaryHour: s.alchemical.planetaryHour,
+      }))
 
       // Calculate power with smoothing window
-      const powerData = computePower(powerSamples, { window });
+      const powerData = computePower(powerSamples, { window })
 
       if (powerData.length > 0) {
-        const powerValues = powerData
-          .map(p => p.power)
-          .filter(p => Number.isFinite(p));
+        const powerValues = powerData.map(p => p.power).filter(p => Number.isFinite(p))
 
         if (powerValues.length > 0) {
-          const powerAvg = powerValues.reduce((sum, p) => sum + p, 0) / powerValues.length;
-          kineticData = { powerAvg, window };
+          const powerAvg = powerValues.reduce((sum, p) => sum + p, 0) / powerValues.length
+          kineticData = { powerAvg, window }
         }
       }
     } catch (error) {
-      console.warn('Failed to calculate kinetic data for aspects:', error);
+      console.warn('Failed to calculate kinetic data for aspects:', error)
     }
   }
 
-  return { samples, kineticData };
+  return { samples, kineticData }
 }
 
 /**
@@ -140,18 +141,19 @@ export async function analyzeAllAspectDynamics(
   centerDate: Date,
   options: AspectsSamplingOptions = {}
 ): Promise<AspectDynamicsResult> {
-  const { targetPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'] } = options;
+  const { targetPlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'] } =
+    options
 
   // Sample time-series data
-  const { samples, kineticData } = await sampleAspectsTimeSeries(location, centerDate, options);
+  const { samples, kineticData } = await sampleAspectsTimeSeries(location, centerDate, options)
 
-  const aspects: AspectAnalysis[] = [];
+  const aspects: AspectAnalysis[] = []
 
   // Analyze all planet pairs
   for (let i = 0; i < targetPlanets.length; i++) {
     for (let j = i + 1; j < targetPlanets.length; j++) {
-      const planet1 = targetPlanets[i];
-      const planet2 = targetPlanets[j];
+      const planet1 = targetPlanets[i]
+      const planet2 = targetPlanets[j]
 
       try {
         // Generate aspect samples for this planet pair
@@ -160,18 +162,18 @@ export async function analyzeAllAspectDynamics(
           planet1,
           planet2,
           samples.map(s => s.horoscope)
-        );
+        )
 
-        if (aspectSamples.length < 2) continue;
+        if (aspectSamples.length < 2) continue
 
         // Analyze dynamics for this pair
-        const analysis = analyzeAspectDynamics(planet1, planet2, aspectSamples, kineticData);
+        const analysis = analyzeAspectDynamics(planet1, planet2, aspectSamples, kineticData)
 
         if (analysis) {
-          aspects.push(analysis);
+          aspects.push(analysis)
         }
       } catch (error) {
-        console.warn(`Failed to analyze ${planet1}-${planet2} aspect:`, error);
+        console.warn(`Failed to analyze ${planet1}-${planet2} aspect:`, error)
       }
     }
   }
@@ -184,9 +186,9 @@ export async function analyzeAllAspectDynamics(
     metadata: {
       planetsAnalyzed: targetPlanets,
       samplesGenerated: samples.length,
-      kineticEnhancement: !!kineticData
-    }
-  };
+      kineticEnhancement: !!kineticData,
+    },
+  }
 }
 
 /**
@@ -197,12 +199,12 @@ export async function analyzeCurrentAspects(
   location: { latitude: number; longitude: number },
   options: Omit<AspectsSamplingOptions, 'hoursToSample'> = {}
 ): Promise<AspectDynamicsResult> {
-  const now = new Date();
+  const now = new Date()
 
   return analyzeAllAspectDynamics(location, now, {
     ...options,
     hoursToSample: 3, // Minimal window for current analysis
-  });
+  })
 }
 
 /**
@@ -213,48 +215,48 @@ export async function findNearestApplyingAspect(
   location: { latitude: number; longitude: number },
   options: AspectsSamplingOptions = {}
 ): Promise<{
-  aspectsHint?: string;
-  nearestAspect?: AspectAnalysis;
-  timeToExact?: number; // hours until exact (if applicable)
+  aspectsHint?: string
+  nearestAspect?: AspectAnalysis
+  timeToExact?: number // hours until exact (if applicable)
 }> {
   try {
-    const result = await analyzeCurrentAspects(location, options);
+    const result = await analyzeCurrentAspects(location, options)
 
     // Filter for applying aspects only
-    const applyingAspects = result.aspects.filter(a => a.status === 'applying');
+    const applyingAspects = result.aspects.filter(a => a.status === 'applying')
 
     if (applyingAspects.length === 0) {
-      return { aspectsHint: 'No significant applying aspects detected' };
+      return { aspectsHint: 'No significant applying aspects detected' }
     }
 
     // Sort by confidence and orb tightness
     const nearestAspect = applyingAspects.sort((a, b) => {
       // Prioritize by confidence first, then by tight orb
-      const confidenceScore = b.confidence - a.confidence;
-      if (Math.abs(confidenceScore) > 0.1) return confidenceScore;
+      const confidenceScore = b.confidence - a.confidence
+      if (Math.abs(confidenceScore) > 0.1) return confidenceScore
 
-      return a.orb - b.orb; // Smaller orb is "nearer"
-    })[0];
+      return a.orb - b.orb // Smaller orb is "nearer"
+    })[0]
 
     // Estimate time to exact based on rate
-    let timeToExact: number | undefined;
+    let timeToExact: number | undefined
     if (nearestAspect.rate < 0 && Math.abs(nearestAspect.rate) > 0.001) {
       // Negative rate means applying, calculate hours to zero orb
-      timeToExact = nearestAspect.orb / Math.abs(nearestAspect.rate);
+      timeToExact = nearestAspect.orb / Math.abs(nearestAspect.rate)
     }
 
-    const aspectsHint = `${nearestAspect.planet1}-${nearestAspect.planet2} ${nearestAspect.type} applying` +
-                       (timeToExact ? ` (${timeToExact.toFixed(1)}h to exact)` : '');
+    const aspectsHint =
+      `${nearestAspect.planet1}-${nearestAspect.planet2} ${nearestAspect.type} applying` +
+      (timeToExact ? ` (${timeToExact.toFixed(1)}h to exact)` : '')
 
     return {
       aspectsHint,
       nearestAspect,
-      timeToExact
-    };
-
+      timeToExact,
+    }
   } catch (error) {
-    console.error('Failed to find nearest applying aspect:', error);
-    return { aspectsHint: 'Aspect analysis unavailable' };
+    console.error('Failed to find nearest applying aspect:', error)
+    return { aspectsHint: 'Aspect analysis unavailable' }
   }
 }
 
@@ -266,25 +268,27 @@ export function generateAspectsCacheKey(
   date: Date,
   options: AspectsSamplingOptions
 ): string {
-  const roundedLat = Math.round(location.latitude * 100) / 100;
-  const roundedLon = Math.round(location.longitude * 100) / 100;
-  const hourKey = date.toISOString().slice(0, 13); // Round to hour
-  const planetsKey = (options.targetPlanets || ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']).join(',');
+  const roundedLat = Math.round(location.latitude * 100) / 100
+  const roundedLon = Math.round(location.longitude * 100) / 100
+  const hourKey = date.toISOString().slice(0, 13) // Round to hour
+  const planetsKey = (
+    options.targetPlanets || ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']
+  ).join(',')
 
-  return `aspects:${roundedLat},${roundedLon}:${hourKey}:${planetsKey}:${options.window || 3}:${options.includeKinetics || false}`;
+  return `aspects:${roundedLat},${roundedLon}:${hourKey}:${planetsKey}:${options.window || 3}:${options.includeKinetics || false}`
 }
 
 /**
  * Validation function for aspects sampling
  */
 export function validateAspectsSampling(): {
-  samplingFunction: boolean;
-  horoscopeIntegration: boolean;
-  kineticsBridge: boolean;
+  samplingFunction: boolean
+  horoscopeIntegration: boolean
+  kineticsBridge: boolean
 } {
   return {
     samplingFunction: typeof sampleAspectsTimeSeries === 'function',
     horoscopeIntegration: typeof generateAccurateHoroscope === 'function',
-    kineticsBridge: typeof computePower === 'function'
-  };
+    kineticsBridge: typeof computePower === 'function',
+  }
 }

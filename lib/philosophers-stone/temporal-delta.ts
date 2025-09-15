@@ -45,8 +45,18 @@ function normalizeDegree(deg: number): number {
 
 function signDegreeToAbsolute(sign: string, degree: number): number {
   const order = [
-    'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
-    'Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
   ]
   const idx = order.indexOf(sign)
   const base = idx >= 0 ? idx * 30 : 0
@@ -74,11 +84,11 @@ export function computePlanetaryMovement(
       planet: now.planet,
       movedDegrees: Math.round(moved * 100) / 100,
       from: { sign: prev.sign, degree: prev.degree },
-      to: { sign: now.sign, degree: now.degree }
+      to: { sign: now.sign, degree: now.degree },
     })
   }
   // Sort by greatest movement
-  return result.sort((a,b)=> b.movedDegrees - a.movedDegrees)
+  return result.sort((a, b) => b.movedDegrees - a.movedDegrees)
 }
 
 export function computeTemporalDelta(
@@ -87,19 +97,28 @@ export function computeTemporalDelta(
 ): TemporalDelta {
   const prevTime = new Date(previousSession.timestamp)
   const curTime = new Date(currentSession.timestamp)
-  const daysSinceLast = Math.max(0, Math.round(((curTime.getTime() - prevTime.getTime()) / (1000*60*60*24)) * 10) / 10)
+  const daysSinceLast = Math.max(
+    0,
+    Math.round(((curTime.getTime() - prevTime.getTime()) / (1000 * 60 * 60 * 24)) * 10) / 10
+  )
 
-  const planetaryMovement = computePlanetaryMovement(previousSession.planetaryPositions, currentSession.planetaryPositions)
+  const planetaryMovement = computePlanetaryMovement(
+    previousSession.planetaryPositions,
+    currentSession.planetaryPositions
+  )
 
   let consciousnessDelta: TemporalDelta['consciousnessDelta'] | undefined
-  if (typeof previousSession.monicaConstant === 'number' || typeof currentSession.monicaConstant === 'number') {
+  if (
+    typeof previousSession.monicaConstant === 'number' ||
+    typeof currentSession.monicaConstant === 'number'
+  ) {
     const mcPrev = previousSession.monicaConstant ?? 0
     const mcCur = currentSession.monicaConstant ?? 0
     const energyPrev = previousSession.alchmQuantities?.Energy ?? 0
     const energyCur = currentSession.alchmQuantities?.Energy ?? 0
     consciousnessDelta = {
       monicaConstantDelta: Math.round((mcCur - mcPrev) * 1000) / 1000,
-      energyDelta: Math.round((energyCur - energyPrev) * 100) / 100
+      energyDelta: Math.round((energyCur - energyPrev) * 100) / 100,
     }
   }
 
@@ -114,9 +133,9 @@ export function summarizeDelta(delta: TemporalDelta): string[] {
   const mercuryMove = delta.planetaryMovement.find(p => p.planet.toLowerCase() === 'mercury')
   if (mercuryMove) lines.push(`Mercury has rewired ${mercuryMove.movedDegrees}° of mental patterns`)
   if (delta.consciousnessDelta?.monicaConstantDelta !== undefined) {
-    lines.push(`Your consciousness has expanded by ${delta.consciousnessDelta.monicaConstantDelta} points`)
+    lines.push(
+      `Your consciousness has expanded by ${delta.consciousnessDelta.monicaConstantDelta} points`
+    )
   }
   return lines
 }
-
-

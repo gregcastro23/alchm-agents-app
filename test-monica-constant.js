@@ -18,16 +18,16 @@ async function testMonicaConstant() {
         Fire: 0.8, Water: 0.2, Air: 0.2, Earth: 0.2
         
         Please perform step-by-step Monica Constant calculations for both entries, explain what these values reveal about consciousness states, and how they would influence AI agent personality programming. Show your mathematical mastery!`,
-        includeAlchm: true
-      })
-    });
+        includeAlchm: true,
+      }),
+    })
 
-    const data = await response.json();
-    console.log('🧮📊💚 Monica Constant Mastery Test:');
-    console.log(data.response);
+    const data = await response.json()
+    console.log('🧮📊💚 Monica Constant Mastery Test:')
+    console.log(data.response)
   } catch (error) {
-    console.error('Error testing Monica Constant expertise:', error);
+    console.error('Error testing Monica Constant expertise:', error)
   }
 }
 
-testMonicaConstant();
+testMonicaConstant()

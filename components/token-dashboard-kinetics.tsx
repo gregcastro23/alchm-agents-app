@@ -42,11 +42,13 @@ export function TokenDashboardKinetics({
   baseNFTRarity = 0.3,
   userLocation = { lat: 37.7749, lon: -122.4194 },
   className = '',
-  variant = 'full'
+  variant = 'full',
 }: TokenDashboardKineticsProps) {
   const [metrics, setMetrics] = useState<KineticTokenMetrics | null>(null)
   const [nftRarity, setNFTRarity] = useState<NFTRarityData | null>(null)
-  const [historicalRates, setHistoricalRates] = useState<Array<{ time: string; rate: number; power: number }>>([])
+  const [historicalRates, setHistoricalRates] = useState<
+    Array<{ time: string; rate: number; power: number }>
+  >([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -70,7 +72,7 @@ export function TokenDashboardKinetics({
         lon: userLocation.lon,
         date: new Date().toISOString().split('T')[0],
         includeElemental: true,
-        includePlanetary: true
+        includePlanetary: true,
       })
 
       // Calculate token generation metrics
@@ -82,11 +84,13 @@ export function TokenDashboardKinetics({
       // Determine velocity trend
       const velocityTrend = kinetics.elementalVelocity?.slice(-3) || []
       const velocityIndicator: KineticTokenMetrics['velocityIndicator'] =
-        velocityTrend.length >= 2 && velocityTrend[velocityTrend.length - 1]?.magnitude > velocityTrend[0]?.magnitude
+        velocityTrend.length >= 2 &&
+        velocityTrend[velocityTrend.length - 1]?.magnitude > velocityTrend[0]?.magnitude
           ? 'increasing'
-          : velocityTrend.length >= 2 && velocityTrend[velocityTrend.length - 1]?.magnitude < velocityTrend[0]?.magnitude
-          ? 'decreasing'
-          : 'stable'
+          : velocityTrend.length >= 2 &&
+              velocityTrend[velocityTrend.length - 1]?.magnitude < velocityTrend[0]?.magnitude
+            ? 'decreasing'
+            : 'stable'
 
       // Predict next optimal window
       const nextOptimal = predictNextOptimalWindow(kinetics)
@@ -101,7 +105,7 @@ export function TokenDashboardKinetics({
         nextOptimalWindow: nextOptimal,
         accumulationForecast: tokenMetrics.accumulation_prediction,
         solarAmplification: getSolarAmplification(kinetics),
-        seasonalModifier: getSeasonalModifier(kinetics)
+        seasonalModifier: getSeasonalModifier(kinetics),
       })
 
       setNFTRarity(nftData)
@@ -111,11 +115,10 @@ export function TokenDashboardKinetics({
         const newPoint = {
           time: new Date().toLocaleTimeString(),
           rate: tokenMetrics.kinetic_rate,
-          power: kinetics.power[kinetics.power.length - 1]?.power || 0.5
+          power: kinetics.power[kinetics.power.length - 1]?.power || 0.5,
         }
         return [...prev.slice(-23), newPoint]
       })
-
     } catch (err) {
       console.error('Token kinetics fetch error:', err)
       setError('Unable to fetch kinetic data')
@@ -142,12 +145,17 @@ export function TokenDashboardKinetics({
 
   if (variant === 'compact') {
     return (
-      <div className={`p-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg ${className}`}>
+      <div
+        className={`p-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg ${className}`}
+      >
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-gray-300">Token Generation</span>
           <span className={`text-sm font-bold ${getVelocityColor(metrics.velocityIndicator)}`}>
-            {metrics.velocityIndicator === 'increasing' ? '↑' :
-             metrics.velocityIndicator === 'decreasing' ? '↓' : '→'}
+            {metrics.velocityIndicator === 'increasing'
+              ? '↑'
+              : metrics.velocityIndicator === 'decreasing'
+                ? '↓'
+                : '→'}
           </span>
         </div>
 
@@ -164,9 +172,7 @@ export function TokenDashboardKinetics({
         </div>
 
         {metrics.momentumPhase === 'peak' && (
-          <div className="mt-2 text-xs text-green-400 animate-pulse">
-            🔥 PEAK GENERATION ACTIVE
-          </div>
+          <div className="mt-2 text-xs text-green-400 animate-pulse">🔥 PEAK GENERATION ACTIVE</div>
         )}
       </div>
     )
@@ -174,10 +180,14 @@ export function TokenDashboardKinetics({
 
   // Full variant
   return (
-    <div className={`p-4 bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-teal-500/10 rounded-lg border border-gray-700/50 ${className}`}>
+    <div
+      className={`p-4 bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-teal-500/10 rounded-lg border border-gray-700/50 ${className}`}
+    >
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-200">Token Kinetics Dashboard</h3>
-        {loading && <div className="w-4 h-4 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>}
+        {loading && (
+          <div className="w-4 h-4 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+        )}
       </div>
 
       {/* Generation Rate */}
@@ -189,8 +199,11 @@ export function TokenDashboardKinetics({
               {metrics.currentRate.toFixed(1)} tokens/hour
             </span>
             <span className={`text-sm ${getVelocityColor(metrics.velocityIndicator)}`}>
-              {metrics.velocityIndicator === 'increasing' ? '↗ Increasing' :
-               metrics.velocityIndicator === 'decreasing' ? '↘ Decreasing' : '→ Stable'}
+              {metrics.velocityIndicator === 'increasing'
+                ? '↗ Increasing'
+                : metrics.velocityIndicator === 'decreasing'
+                  ? '↘ Decreasing'
+                  : '→ Stable'}
             </span>
           </div>
         </div>
@@ -205,14 +218,18 @@ export function TokenDashboardKinetics({
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-gray-300">Momentum Phase</span>
-          <div className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getMomentumColor(metrics.momentumPhase)}`}>
+          <div
+            className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getMomentumColor(metrics.momentumPhase)}`}
+          >
             {metrics.momentumPhase}
           </div>
         </div>
         {metrics.momentumPhase === 'peak' && (
           <div className="flex items-center gap-2 p-2 bg-green-500/10 border border-green-500/20 rounded text-sm">
             <span className="text-green-400 animate-pulse">🔥</span>
-            <span className="text-green-400">MAXIMUM GENERATION ACTIVE - Optimal accumulation time!</span>
+            <span className="text-green-400">
+              MAXIMUM GENERATION ACTIVE - Optimal accumulation time!
+            </span>
           </div>
         )}
       </div>
@@ -228,7 +245,7 @@ export function TokenDashboardKinetics({
         <div className="w-full bg-gray-700 rounded-full h-2">
           <div
             className="bg-gradient-to-r from-yellow-400 to-orange-400 h-2 rounded-full transition-all duration-300"
-            style={{width: `${metrics.powerLevel * 100}%`}}
+            style={{ width: `${metrics.powerLevel * 100}%` }}
           />
         </div>
         <div className="flex items-center justify-between text-xs text-gray-400 mt-1">
@@ -242,14 +259,18 @@ export function TokenDashboardKinetics({
         <div className="mb-4 p-3 bg-purple-500/10 border border-purple-500/20 rounded">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-gray-300">Current NFT Minting</span>
-            <div className={`px-2 py-1 rounded text-xs font-medium ${getTierColor(nftRarity.tier)}`}>
+            <div
+              className={`px-2 py-1 rounded text-xs font-medium ${getTierColor(nftRarity.tier)}`}
+            >
               {nftRarity.tier}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
               <span className="text-gray-400">Rarity:</span>
-              <span className="text-purple-400 ml-1">{(nftRarity.kineticRarity * 100).toFixed(1)}%</span>
+              <span className="text-purple-400 ml-1">
+                {(nftRarity.kineticRarity * 100).toFixed(1)}%
+              </span>
             </div>
             <div>
               <span className="text-gray-400">Price:</span>
@@ -290,7 +311,7 @@ export function TokenDashboardKinetics({
                     backgroundColor: '#1F2937',
                     border: '1px solid #374151',
                     borderRadius: '8px',
-                    fontSize: '12px'
+                    fontSize: '12px',
                   }}
                   labelStyle={{ color: '#D1D5DB' }}
                 />
@@ -332,17 +353,20 @@ export function TokenDashboardKinetics({
 // Utility functions for calculations
 function calculateTokenGenerationRate(baseRate: number, kinetics: any) {
   const power = kinetics.power[kinetics.power.length - 1]?.power || 0.5
-  const velocity = kinetics.elementalVelocity[kinetics.elementalVelocity.length - 1]?.magnitude || 0.5
-  const momentum = kinetics.elementalMomentum[kinetics.elementalMomentum.length - 1]?.momentumType || 'sustained'
+  const velocity =
+    kinetics.elementalVelocity[kinetics.elementalVelocity.length - 1]?.magnitude || 0.5
+  const momentum =
+    kinetics.elementalMomentum[kinetics.elementalMomentum.length - 1]?.momentumType || 'sustained'
 
-  const powerModifier = 1.0 + (power * 0.5) // Up to 50% boost
+  const powerModifier = 1.0 + power * 0.5 // Up to 50% boost
   const velocityModifier = velocity > 0.7 ? 1.3 : velocity > 0.5 ? 1.15 : 1.0
-  const momentumModifier = {
-    'building': 1.1,
-    'sustained': 1.2,
-    'peak': 1.5,
-    'waning': 0.9
-  }[momentum] || 1.0
+  const momentumModifier =
+    {
+      building: 1.1,
+      sustained: 1.2,
+      peak: 1.5,
+      waning: 0.9,
+    }[momentum] || 1.0
 
   const totalMultiplier = powerModifier * velocityModifier * momentumModifier
   const kineticRate = baseRate * totalMultiplier
@@ -355,7 +379,7 @@ function calculateTokenGenerationRate(baseRate: number, kinetics: any) {
     momentum_modifier: momentumModifier,
     total_multiplier: totalMultiplier,
     momentum_type: momentum,
-    accumulation_prediction: predictAccumulation(kineticRate, momentum)
+    accumulation_prediction: predictAccumulation(kineticRate, momentum),
   }
 }
 
@@ -365,21 +389,43 @@ function calculateNFTRarity(baseRarity: number, kinetics: any, mintingTime: Date
   const seasonal = kinetics.timing?.seasonalInfluence || 'Neutral'
 
   const powerRarityBoost = power > 0.8 ? 0.3 : power > 0.6 ? 0.15 : 0
-  const planetaryRarity = {
-    'Sun': 0.2, 'Moon': 0.15, 'Jupiter': 0.25, 'Venus': 0.1
-  }[currentHour] || 0.05
-  const seasonalRarity = {
-    'Spring': 0.1, 'Summer': 0.05, 'Autumn': 0.15, 'Winter': 0.2
-  }[seasonal] || 0
+  const planetaryRarity =
+    {
+      Sun: 0.2,
+      Moon: 0.15,
+      Jupiter: 0.25,
+      Venus: 0.1,
+    }[currentHour] || 0.05
+  const seasonalRarity =
+    {
+      Spring: 0.1,
+      Summer: 0.05,
+      Autumn: 0.15,
+      Winter: 0.2,
+    }[seasonal] || 0
 
-  const totalRarity = Math.min(1.0, baseRarity + powerRarityBoost + planetaryRarity + seasonalRarity)
+  const totalRarity = Math.min(
+    1.0,
+    baseRarity + powerRarityBoost + planetaryRarity + seasonalRarity
+  )
 
   let tier: string, priceMultiplier: number
-  if (totalRarity > 0.9) { tier = 'Legendary'; priceMultiplier = 10.0 }
-  else if (totalRarity > 0.7) { tier = 'Epic'; priceMultiplier = 5.0 }
-  else if (totalRarity > 0.5) { tier = 'Rare'; priceMultiplier = 2.5 }
-  else if (totalRarity > 0.3) { tier = 'Uncommon'; priceMultiplier = 1.5 }
-  else { tier = 'Common'; priceMultiplier = 1.0 }
+  if (totalRarity > 0.9) {
+    tier = 'Legendary'
+    priceMultiplier = 10.0
+  } else if (totalRarity > 0.7) {
+    tier = 'Epic'
+    priceMultiplier = 5.0
+  } else if (totalRarity > 0.5) {
+    tier = 'Rare'
+    priceMultiplier = 2.5
+  } else if (totalRarity > 0.3) {
+    tier = 'Uncommon'
+    priceMultiplier = 1.5
+  } else {
+    tier = 'Common'
+    priceMultiplier = 1.0
+  }
 
   return {
     baseRarity,
@@ -390,15 +436,15 @@ function calculateNFTRarity(baseRarity: number, kinetics: any, mintingTime: Date
     planetaryBoost: planetaryRarity,
     seasonalBoost: seasonalRarity,
     minting_time: mintingTime.toISOString(),
-    planetary_hour: currentHour
+    planetary_hour: currentHour,
   }
 }
 
 function predictAccumulation(rate: number, momentum: string): string {
-  if (momentum === 'building') return "Next 2-4 hours optimal for accumulation (momentum building)"
-  if (momentum === 'sustained') return "Stable accumulation period - consistent generation expected"
-  if (momentum === 'peak') return "PEAK PERIOD - Maximum generation active NOW"
-  return "Generation slowing - consider waiting for next cycle"
+  if (momentum === 'building') return 'Next 2-4 hours optimal for accumulation (momentum building)'
+  if (momentum === 'sustained') return 'Stable accumulation period - consistent generation expected'
+  if (momentum === 'peak') return 'PEAK PERIOD - Maximum generation active NOW'
+  return 'Generation slowing - consider waiting for next cycle'
 }
 
 function predictNextOptimalWindow(kinetics: any): Date | null {
@@ -416,36 +462,49 @@ function getSolarAmplification(kinetics: any): number {
 
 function getSeasonalModifier(kinetics: any): number {
   const seasonal = kinetics.timing?.seasonalInfluence || 'Neutral'
-  const modifiers = { 'Spring': 1.1, 'Summer': 1.2, 'Autumn': 0.95, 'Winter': 0.9 }
+  const modifiers = { Spring: 1.1, Summer: 1.2, Autumn: 0.95, Winter: 0.9 }
   return modifiers[seasonal as keyof typeof modifiers] || 1.0
 }
 
 // Style helper functions
 function getVelocityColor(indicator: string): string {
   switch (indicator) {
-    case 'increasing': return 'text-green-400'
-    case 'decreasing': return 'text-red-400'
-    default: return 'text-yellow-400'
+    case 'increasing':
+      return 'text-green-400'
+    case 'decreasing':
+      return 'text-red-400'
+    default:
+      return 'text-yellow-400'
   }
 }
 
 function getMomentumColor(phase: string): string {
   switch (phase) {
-    case 'peak': return 'bg-green-500/20 text-green-400'
-    case 'sustained': return 'bg-blue-500/20 text-blue-400'
-    case 'building': return 'bg-yellow-500/20 text-yellow-400'
-    case 'waning': return 'bg-orange-500/20 text-orange-400'
-    default: return 'bg-gray-500/20 text-gray-400'
+    case 'peak':
+      return 'bg-green-500/20 text-green-400'
+    case 'sustained':
+      return 'bg-blue-500/20 text-blue-400'
+    case 'building':
+      return 'bg-yellow-500/20 text-yellow-400'
+    case 'waning':
+      return 'bg-orange-500/20 text-orange-400'
+    default:
+      return 'bg-gray-500/20 text-gray-400'
   }
 }
 
 function getTierColor(tier: string): string {
   switch (tier) {
-    case 'Legendary': return 'bg-purple-500/20 text-purple-300'
-    case 'Epic': return 'bg-blue-500/20 text-blue-300'
-    case 'Rare': return 'bg-green-500/20 text-green-300'
-    case 'Uncommon': return 'bg-yellow-500/20 text-yellow-300'
-    default: return 'bg-gray-500/20 text-gray-300'
+    case 'Legendary':
+      return 'bg-purple-500/20 text-purple-300'
+    case 'Epic':
+      return 'bg-blue-500/20 text-blue-300'
+    case 'Rare':
+      return 'bg-green-500/20 text-green-300'
+    case 'Uncommon':
+      return 'bg-yellow-500/20 text-yellow-300'
+    default:
+      return 'bg-gray-500/20 text-gray-300'
   }
 }
 

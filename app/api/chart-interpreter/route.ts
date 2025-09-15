@@ -1,6 +1,6 @@
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
-import { NextResponse } from "next/server"
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
+import { NextResponse } from 'next/server'
 
 export async function POST(req: Request) {
   try {
@@ -14,14 +14,14 @@ Analyze the provided chart data and give insightful interpretations based on:
 Your analysis should be thorough but accessible to someone with basic astrological knowledge.`
 
     const { text } = await generateText({
-      model: openai("gpt-4o"),
+      model: openai('gpt-4o'),
       system: systemPrompt,
       prompt: `Please interpret this natal chart data: ${JSON.stringify(chartData || {})}`,
     })
 
     return NextResponse.json({ interpretation: text })
   } catch (error) {
-    console.error("Error in chart interpretation:", error)
-    return NextResponse.json({ error: "Failed to interpret chart" }, { status: 500 })
+    console.error('Error in chart interpretation:', error)
+    return NextResponse.json({ error: 'Failed to interpret chart' }, { status: 500 })
   }
 }

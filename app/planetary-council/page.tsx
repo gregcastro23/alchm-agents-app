@@ -1,8 +1,8 @@
-import MultiAgentChat from "@/components/multi-agent-chat"
+import MultiAgentChat from '@/components/multi-agent-chat'
 
 export const metadata = {
-  title: "Planetary Council - Multi-Agent Chat",
-  description: "Consult with multiple planetary agents simultaneously for collective wisdom",
+  title: 'Planetary Council - Multi-Agent Chat',
+  description: 'Consult with multiple planetary agents simultaneously for collective wisdom',
 }
 
 export default function PlanetaryCouncilPage() {
@@ -11,19 +11,19 @@ export default function PlanetaryCouncilPage() {
       <div className="mb-8 text-center">
         <h1 className="text-4xl font-bold mb-4">Planetary Council Chamber</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Convene a council of planetary agents to receive multifaceted wisdom. 
-          Each planet brings its unique perspective, creating a symphony of cosmic guidance.
+          Convene a council of planetary agents to receive multifaceted wisdom. Each planet brings
+          its unique perspective, creating a symphony of cosmic guidance.
         </p>
         <div className="mt-4 p-3 bg-blue-50 rounded-lg inline-block">
           <p className="text-sm text-blue-700">
-            🌙 <strong>Enhanced Moon Agent:</strong> The Moon agent now includes degree-specific 
+            🌙 <strong>Enhanced Moon Agent:</strong> The Moon agent now includes degree-specific
             personality traits based on current lunar phase and position for more nuanced guidance.
           </p>
         </div>
       </div>
-      
+
       <MultiAgentChat />
-      
+
       <div className="mt-12 max-w-3xl mx-auto">
         <div className="bg-muted/50 rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-3">How the Planetary Council Works</h2>
@@ -50,7 +50,7 @@ export default function PlanetaryCouncilPage() {
             </li>
           </ul>
         </div>
-        
+
         <div className="grid md:grid-cols-2 gap-6 mt-6">
           <div className="bg-muted/30 rounded-lg p-5">
             <h3 className="font-semibold mb-2">Beneficial Combinations</h3>
@@ -61,7 +61,7 @@ export default function PlanetaryCouncilPage() {
               <li>♄ Saturn + ♅ Uranus: Structure meets innovation</li>
             </ul>
           </div>
-          
+
           <div className="bg-muted/30 rounded-lg p-5">
             <h3 className="font-semibold mb-2">Council Dynamics</h3>
             <ul className="text-sm space-y-1 text-muted-foreground">
