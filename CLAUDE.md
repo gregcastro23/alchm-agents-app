@@ -34,6 +34,30 @@ Planetary Agents combines astrological wisdom with AI technology featuring plane
 
 ## 🚀 Major Systems (September 2025)
 
+### 🌌 Applying & Separating Aspects System - COMPLETE
+**Status**: ✅ FULLY IMPLEMENTED
+
+#### Revolutionary Features:
+- **Real-Time Aspect Detection**: Revolutionary applying vs. separating planetary aspect analysis
+- **Temporal Dynamics Engine**: Time-series sampling with velocity-based calculations
+- **Kinetics Integration**: Enhanced confidence weighting using alchemical power analysis
+- **Traditional Astrological Accuracy**: Complete major aspect system with classical orbs
+
+#### Core Implementation:
+- **Angular Rate Calculation**: Degrees per hour aspect progression tracking
+- **Orb Progression Analysis**: Precise applying/exact/separating classification
+- **Time-Series Sampling**: Integration with existing `sampleHourlyAlchm` infrastructure
+- **Kinetics Bridge**: Consciousness-weighted confidence scoring using power dynamics
+
+#### API Endpoints:
+- **`/api/aspects-dynamics`**: Full aspect analysis endpoint with parameters: `lat`, `lon`, `date`, `window`, `planets`, `includeKinetics`
+- **Enhanced `/api/realtime-runes`**: Aspect metadata integration with nearest applying aspect detection
+
+#### Technical Architecture:
+- **`lib/aspects-dynamics.ts`**: Core helper functions for aspect calculations
+- **`lib/aspects-sampling.ts`**: Time-series integration layer using existing kinetics foundation
+- **Traditional Aspects**: Conjunction (0°±10°), Opposition (180°±10°), Trine (120°±8°), Square (90°±8°), Sextile (60°±6°)
+
 ### 🔗 Agent Attachments System - COMPLETE
 **Status**: ✅ FULLY IMPLEMENTED
 
@@ -158,6 +182,15 @@ make attachments-status  # System status
 make db-migrate-attachments # Database updates
 ```
 
+### Aspects Dynamics Commands:
+```bash
+make test-aspects        # Test aspect calculations
+make test-aspects-api    # Test API endpoints
+make validate-aspects    # Validate traditional calculations
+curl "/api/aspects-dynamics?lat=37.7749&lon=-122.4194&includeKinetics=true"  # Test full analysis
+curl "/api/aspects-dynamics?mode=nearest&lat=37.7749&lon=-122.4194"          # Test nearest aspect
+```
+
 ### Gallery Commands:
 ```bash
 make gallery             # Open Gallery of Perpetuity
@@ -252,6 +285,7 @@ REDIS_URL=redis://localhost:6379
 ## Recent Achievements
 
 ### September 2025:
+- 🌌 **Applying & Separating Aspects System**: Revolutionary planetary aspect dynamics with temporal analysis
 - 🔗 **Agent Attachments System**: Complete birth charts, runes, moment tracking
 - 🎭 **Historical Agent Enhancement**: Fixed AI generation bugs, added personalities
 - 📊 **Performance**: 100% test success, <500ms response times
