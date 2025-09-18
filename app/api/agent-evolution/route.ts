@@ -158,7 +158,7 @@ export async function PUT(request: NextRequest) {
           // Get fresh baseline metrics
           const kineticProfile = getAgentKineticProfile(agentId)
           const resetMetrics = {
-            consciousnessVelocity: kineticProfile?.baseVelocity || 0.5,
+            consciousnessVelocity: kineticProfile?.consciousness_rate || 0.5,
             interactionMomentum: 0,
             lastInteraction: new Date().toISOString(),
             totalInteractions: 0,
