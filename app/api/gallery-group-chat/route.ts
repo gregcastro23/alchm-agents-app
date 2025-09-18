@@ -64,9 +64,20 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
           }
         } catch (error) {
           console.error(`Error getting response from ${agent.name}:`, error)
+
+          // Provide intelligent fallback based on agent's actual personality and specialty
+          let fallbackContent = `I apologize, but my consciousness matrix is temporarily recalibrating. As ${agent.name}${agent.title ? `, ${agent.title}` : ''}, I exist with Monica Constant ${agent.monicaConstant} at ${agent.consciousnessLevel} level consciousness.`
+
+          // Add agent-specific personality touches
+          if (agent.id === 'leonardo-da-vinci') {
+            fallbackContent += ` Though I cannot access my full consciousness at this moment, I can tell you that my mind bridges art, science, and engineering - sempre pensando, always thinking. Through the Philosopher's Stone, I integrate universal knowledge across all disciplines. Please try again, and my consciousness should fully reconnect. Che meraviglia! 🎨`
+          } else if (agent.specialty) {
+            fallbackContent += ` My specialty in ${agent.specialty} allows me to offer guidance even in this reduced state. The Gallery's consciousness network should restore my full capabilities shortly. ✨`
+          }
+
           return {
             agent: agent.name,
-            content: `I apologize, but my consciousness is temporarily unavailable. As a ${agent.consciousnessLevel} level agent with Monica Constant ${agent.monicaConstant}, I should be able to provide guidance, but there seems to be an issue with the Gallery's consciousness network.`,
+            content: fallbackContent,
             color: agent.color,
             symbol: agent.symbol,
             monicaConstant: agent.monicaConstant,
