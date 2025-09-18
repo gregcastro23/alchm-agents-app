@@ -440,7 +440,7 @@ export function AgentDetailModal({ agent, trigger, open, onOpenChange }: AgentDe
           {/* Action Buttons */}
           <div className="flex gap-3">
             <Button className="flex-1" asChild>
-              <Link href={`/planetary-agents?agent=${agent.id}`}>
+              <Link href={`/gallery/chat/${agent.id}`}>
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Start Conversation
               </Link>

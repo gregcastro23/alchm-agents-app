@@ -263,7 +263,7 @@ export default function GalleryPage() {
               </div>
               <div className="flex gap-1">
                 <Button size="sm" variant="outline" asChild>
-                  <Link href={`/planetary-agents?agent=${agent.id}`}>Chat with Agent</Link>
+                  <Link href={`/gallery/chat/${agent.id}`}>Chat with Agent</Link>
                 </Button>
                 <Button size="sm" variant="ghost" asChild>
                   <Link href={`/philosophers-stone?template=${agent.id}`}>Remix Consciousness</Link>

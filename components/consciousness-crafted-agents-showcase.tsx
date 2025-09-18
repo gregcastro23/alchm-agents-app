@@ -196,7 +196,7 @@ export function ConsciousnessCraftedAgentsShowcase() {
 
               <div className="flex gap-2">
                 <Button className="flex-1" asChild>
-                  <Link href={`/planetary-agents?agent=${featuredAgent.id}`}>
+                  <Link href={`/gallery/chat/${featuredAgent.id}`}>
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Chat with {featuredAgent.name.split(' ')[0]}
                   </Link>
@@ -300,7 +300,7 @@ export function ConsciousnessCraftedAgentsShowcase() {
                     </div>
                     <div className="flex gap-1 pt-1">
                       <Button size="sm" variant="outline" className="text-xs h-6" asChild>
-                        <Link href={`/planetary-agents?agent=${agent.id}`}>Chat</Link>
+                        <Link href={`/gallery/chat/${agent.id}`}>Chat</Link>
                       </Button>
                       <Button size="sm" variant="ghost" className="text-xs h-6" asChild>
                         <Link href="/gallery">Gallery</Link>

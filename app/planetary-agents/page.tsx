@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -48,8 +49,17 @@ function getDignityLabel(dignity: string) {
   }
 }
 
-export default function PlanetaryAgentsPage() {
+function PlanetaryAgentsContent() {
   const [positions, setPositions] = useState<Record<string, { sign: string; degree: string }>>({})
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const agentId = searchParams.get('agent')
+
+  useEffect(() => {
+    if (agentId) {
+      router.replace(`/gallery/chat/${agentId}`)
+    }
+  }, [agentId, router])
 
   useEffect(() => {
     // Load current planetary positions (cached by helper internally)
@@ -102,6 +112,14 @@ export default function PlanetaryAgentsPage() {
     })
   }, [positions])
 
+  if (agentId) {
+    return (
+      <div className="container py-8 text-center">
+        <p>Redirecting to agent chat...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="container py-8">
       <h1 className="text-3xl font-bold text-center mb-2">Planetary Wisdom Agents</h1>
@@ -116,5 +134,13 @@ export default function PlanetaryAgentsPage() {
         Positions are approximate based on current transit windows.
       </div>
     </div>
+  )
+}
+
+export default function PlanetaryAgentsPage() {
+  return (
+    <Suspense fallback={<div className="container py-8 text-center">Loading...</div>}>
+      <PlanetaryAgentsContent />
+    </Suspense>
   )
 }
