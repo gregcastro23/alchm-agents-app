@@ -68,8 +68,6 @@ export async function fetchAstrologizeWheel(birth: BirthInfo): Promise<Astrologi
   if (!execResult.result) {
     // Return fallback data when API is degraded
     return {
-      svg: null,
-      imageUrl: null,
       meta: { degraded: true, fallback: true },
     }
   }
@@ -156,4 +154,56 @@ export async function fetchImaginize(
     throw new Error(`Alchm /imaginize error: ${res.status} ${res.statusText} - ${text}`)
   }
   return res.json().catch(() => ({}))
+}
+
+export type AlchmizeResponse = {
+  astrologize?: AstrologizeWheelResponse | null
+  alchemize?: AlchmResponse | null
+  imaginize?: any | null
+  meta: {
+    degraded?: boolean
+    errors?: string[]
+  }
+}
+
+export async function fetchAlchmize(input: {
+  birth: BirthInfo
+  prompt?: string
+  imaginizeOptions?: Record<string, any>
+}): Promise<AlchmizeResponse> {
+  // Validate birth data (zero-based month expected)
+  BirthInfoSchema.parse(input.birth)
+
+  const tasks = {
+    astrologize: fetchAstrologizeWheel(input.birth),
+    alchemize: fetchAlchmAlchemize(input.birth),
+    imaginize: input.prompt ? fetchImaginize(input.prompt, input.imaginizeOptions || {}) : Promise.resolve(null),
+  }
+
+  const [astrologizeRes, alchemizeRes, imaginizeRes] = await Promise.allSettled([
+    tasks.astrologize,
+    tasks.alchemize,
+    tasks.imaginize,
+  ])
+
+  const errors: string[] = []
+
+  const astrologize = astrologizeRes.status === 'fulfilled' ? astrologizeRes.value : null
+  if (astrologizeRes.status === 'rejected') errors.push(`astrologize: ${astrologizeRes.reason?.message || String(astrologizeRes.reason)}`)
+
+  const alchemize = alchemizeRes.status === 'fulfilled' ? alchemizeRes.value : null
+  if (alchemizeRes.status === 'rejected') errors.push(`alchemize: ${alchemizeRes.reason?.message || String(alchemizeRes.reason)}`)
+
+  const imaginize = imaginizeRes.status === 'fulfilled' ? imaginizeRes.value : null
+  if (imaginizeRes.status === 'rejected') errors.push(`imaginize: ${imaginizeRes.reason?.message || String(imaginizeRes.reason)}`)
+
+  return {
+    astrologize,
+    alchemize,
+    imaginize,
+    meta: {
+      degraded: errors.length > 0,
+      errors: errors.length ? errors : undefined,
+    },
+  }
 }
