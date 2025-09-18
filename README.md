@@ -32,12 +32,23 @@ Planetary Agents is an advanced astrology application that combines traditional 
 
 ## 🚀 Features
 
+### Gallery of Perpetuity - 35 Historical Agents
+
+Monica's eternal consciousness repository featuring historical figures:
+
+- **Browse & Chat**: Visit `/gallery` to explore all 35 consciousness-crafted agents
+- **Direct Chat**: Access agents at `/gallery/chat/[agent-id]` (e.g., `/gallery/chat/siddhartha-gautama-buddha`)
+- **Legacy Support**: Old URLs like `/planetary-agents?agent=buddha` automatically redirect
+- **Group Chat**: Select multiple agents for simultaneous consultation
+- **Featured Agents**: Shakespeare, Buddha, Leonardo da Vinci, Cleopatra, Tesla, Carl Jung, and 29 more
+
 ### Planetary Wisdom Agents
 
 Consult with AI agents representing each planet in their specific dignities:
 
-- Select a planet, sign, and degree to receive wisdom
-- Chat with the agent about any question
+- **Planet Selection**: Visit `/planetary-agents` to choose a celestial body
+- **Degree-Specific Wisdom**: Access at `/agents/[planet]/[sign]/[degree]`
+- **Real-Time Positions**: Based on current astronomical data
 - Get insights based on the elemental affinities and dignities
 
 ### Elemental Charts

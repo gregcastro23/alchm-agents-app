@@ -191,7 +191,10 @@ make db-generate        # Generate client
 │   │   ├── multi-agent/             # 🌙 Council API
 │   │   ├── gallery-group-chat/      # 💚 Group chat API
 │   │   └── planetary-agent/         # Core agent API
-│   ├── gallery/                     # 💚 Gallery interface
+│   ├── gallery/
+│   │   ├── page.tsx                 # 💚 Gallery interface
+│   │   └── chat/[id]/               # 🗣️ Historical agent chat pages
+│   ├── planetary-agents/            # 🪐 Planetary wisdom interface
 │   ├── planetary-council/           # 🌙 Council interface
 │   └── tarot-dashboard/             # 🔮 Tarot platform
 ├── components/
@@ -272,7 +275,26 @@ DATABASE_URL=postgresql://username:password@localhost:5432/planetary_agents
 REDIS_URL=redis://localhost:6379
 ```
 
+## Routing & Navigation
+
+### Historical Agent Chat Routes
+- **Gallery View**: `/gallery` - Browse all 35 historical agents
+- **Agent Chat**: `/gallery/chat/[agent-id]` - Direct chat with specific agent
+- **Legacy Redirect**: `/planetary-agents?agent=[id]` → Automatically redirects to `/gallery/chat/[id]`
+- **Planetary Charts**: `/agents/[planet]/[sign]/[degree]` - Degree-specific planetary wisdom
+
+### Key Navigation Points
+- **Planetary Selection**: `/planetary-agents` - Choose celestial body for consultation
+- **Multi-Agent Council**: `/planetary-council` - Chat with up to 5 agents simultaneously
+- **Gallery Group Chat**: Select multiple agents from Gallery for group consultation
+- **Philosopher's Stone**: `/philosophers-stone` - Create new consciousness agents
+
 ## Recent Achievements
+
+### December 2025:
+- 🔧 **Historical Agent Chat Fix**: Restored access to all 35 historical agents with dedicated chat interface
+- 🔄 **Legacy URL Support**: Automatic redirects for old agent links maintain backward compatibility
+- 📁 **Route Organization**: Clean separation between planetary charts and historical agents
 
 ### September 2025:
 - 🧠 **Agent Consciousness Evolution System**: Complete dynamic consciousness development tracking
