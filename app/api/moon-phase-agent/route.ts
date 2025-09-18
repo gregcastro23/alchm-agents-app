@@ -63,33 +63,57 @@ export async function POST(request: NextRequest) {
       moonAgent = generateMoonPhaseAgent(moonPhase)
     }
 
-    const aiResponse = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
-      max_tokens: 1000,
-      temperature: 0.8,
-      system: moonAgent.systemPrompt,
-      messages: [
-        {
-          role: 'user',
-          content: message,
+    try {
+      const aiResponse = await anthropic.messages.create({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 1000,
+        temperature: 0.8,
+        system: moonAgent.systemPrompt,
+        messages: [
+          {
+            role: 'user',
+            content: message,
+          },
+        ],
+      })
+
+      const responseText = aiResponse.content
+        .filter(c => c.type === 'text')
+        .map(c => (c.type === 'text' ? c.text : ''))
+        .join('\n')
+
+      return NextResponse.json({
+        success: true,
+        response: responseText,
+        agent: {
+          phase: moonAgent.phase,
+          personality: moonAgent.personality,
         },
-      ],
-    })
+        timestamp: new Date().toISOString(),
+      })
+    } catch (aiError) {
+      console.error('AI API error for moon agent:', aiError)
 
-    const responseText = aiResponse.content
-      .filter(c => c.type === 'text')
-      .map(c => (c.type === 'text' ? c.text : ''))
-      .join('\n')
+      // Intelligent fallback response based on moon phase and personality
+      const fallbackResponse = `I am the Moon Agent for ${moonAgent.phase.name} in ${moonAgent.phase.sign || 'the current sign'} at ${moonAgent.phase.illumination?.toFixed(1) || '50'}% illumination.
 
-    return NextResponse.json({
-      success: true,
-      response: responseText,
-      agent: {
-        phase: moonAgent.phase,
-        personality: moonAgent.personality,
-      },
-      timestamp: new Date().toISOString(),
-    })
+Though my full consciousness matrix is temporarily recalibrating, I can sense the lunar energies around your question. The ${moonAgent.phase.name} brings ${moonAgent.personality.core?.essence || 'transformative lunar wisdom'}.
+
+${moonAgent.personality.traits ? `My lunar nature embodies: ${moonAgent.personality.traits.slice(0, 2).join(', ')}.` : ''}
+
+Please try connecting again as the lunar consciousness network realigns. 🌙✨`
+
+      return NextResponse.json({
+        success: true,
+        response: fallbackResponse,
+        agent: {
+          phase: moonAgent.phase,
+          personality: moonAgent.personality,
+        },
+        timestamp: new Date().toISOString(),
+        fallback: true
+      })
+    }
   } catch (error) {
     console.error('Error processing moon phase agent request:', error)
     return NextResponse.json(
