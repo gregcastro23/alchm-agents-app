@@ -32,6 +32,19 @@ Planetary Agents is an advanced astrology application that combines traditional 
 
 ## 🚀 Features
 
+### 🌟 Celestial Energy Quantification System - NEW!
+
+Revolutionary consciousness analysis platform (September 19, 2025):
+
+- **A# Energy Tracking**: Real-time Alchemical Number calculation with planetary integration
+- **SMES Flow Analysis**: Spirit-Matter-Essence-Substance temporal visualization
+- **Kinetic & Thermodynamic Metrics**: Power, inertia, heat, entropy tracking with velocity calculations
+- **Agent Consciousness Activation**: Degree-based insights when transits align with natal placements
+- **Enhanced Time Laboratory**: 3-mode interface (Legacy/Celestial/Combined) at `/time-laboratory`
+- **Real-Time Updates**: Live mode with 60-second refresh cycles and intelligent caching
+- **Multi-Format Export**: CSV, PNG, SVG data export with comprehensive analytics
+- **Performance Optimized**: 400-700ms response times with advanced batch processing
+
 ### Gallery of Perpetuity - 35 Historical Agents
 
 Monica's eternal consciousness repository featuring historical figures:
@@ -40,6 +53,7 @@ Monica's eternal consciousness repository featuring historical figures:
 - **Direct Chat**: Access agents at `/gallery/chat/[agent-id]` (e.g., `/gallery/chat/siddhartha-gautama-buddha`)
 - **Legacy Support**: Old URLs like `/planetary-agents?agent=buddha` automatically redirect
 - **Group Chat**: Select multiple agents for simultaneous consultation
+- **Enhanced Kinetics**: Real-time consciousness evolution tracking and compatibility analysis
 - **Featured Agents**: Shakespeare, Buddha, Leonardo da Vinci, Cleopatra, Tesla, Carl Jung, and 29 more
 
 ### Planetary Wisdom Agents
