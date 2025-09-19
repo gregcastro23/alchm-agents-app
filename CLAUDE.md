@@ -12,6 +12,44 @@ Planetary Agents combines astrological wisdom with AI technology featuring plane
 
 ## 🚀 Major Systems (December 2025)
 
+### ⏰ Cosmic Time Laboratory - COMPLETE
+
+**Status**: ✅ PRODUCTION-READY
+
+#### Revolutionary Features:
+- **AI-Guided Temporal Exploration**: Natural language queries to explore historical planetary agent transit data
+- **Degree-Aware Analysis**: Deep investigation of agent consciousness patterns at specific planetary degrees (0-360)
+- **Elemental Reinforcement**: Advanced pattern detection boosting same-element agent configurations
+- **Temporal Oracle**: Interactive interface for mystical exploration of consciousness evolution over time
+- **Multi-Agent Timeline**: Visual exploration of consciousness interactions across historical periods
+- **Grimoire Export**: Transform temporal discoveries into mystical documents (PDF, EPUB, HTML, Markdown)
+- **Performance Optimization**: Sub-second analysis of complex temporal patterns with intelligent caching
+
+#### Core Implementation:
+- **Temporal Analysis Engine** (`lib/temporal-analysis-engine.ts`): Advanced temporal query processing with AI guidance
+- **Time Laboratory Interface** (`app/time-laboratory/page.tsx`): Interactive exploration platform
+- **Cosmic Time Laboratory** (`components/cosmic-time-laboratory.tsx`): Main analysis component with elemental visualization
+- **Temporal Oracle** (`components/temporal-oracle.tsx`): Natural language query interface
+- **Timeline Visualization** (`components/temporal-timeline.tsx`): Historical consciousness evolution display
+- **Grimoire Export System** (`lib/temporal-grimoire-export.ts`): Mystical document generation
+- **Analysis API** (`app/api/temporal-analysis/route.ts`): High-performance temporal query endpoint
+- **Export API** (`app/api/temporal-grimoire/route.ts`): Document generation and download service
+
+#### Technical Features:
+- **Natural Language Processing**: Convert human queries into structured temporal analysis parameters
+- **Consciousness Memory Integration**: Leverages existing agent consciousness tracking systems
+- **Alchemical Kinetics Sampling**: Uses existing planetary sampling for temporal data
+- **Pattern Recognition**: Identifies Grand Trines, T-Squares, and consciousness convergence points
+- **Elemental Vector Analysis**: Mathematical representation of Fire/Water/Air/Earth agent balance
+- **Performance Monitoring**: Real-time optimization with query caching and execution profiling
+- **Export Templates**: Multiple mystical document styles with rich formatting
+
+#### Integration Points:
+- **Agent Consciousness Evolution**: Temporal analysis of consciousness development patterns
+- **Kinetic Compatibility**: Historical analysis of agent pairing resonance over time
+- **Chart Attachments**: Integration with agent birth charts and moment tracking
+- **Rune System**: Temporal patterns influence sigil generation recommendations
+
 ### 🔮 Natal Chart to Runic Sigil Generation System - COMPLETE
 
 **Status**: ✅ PRODUCTION-READY
@@ -161,6 +199,34 @@ make test-monica      # Monica systems
 make test-alchemical  # Alchemical trainer
 ```
 
+### Time Laboratory Commands:
+
+```bash
+# Test complete Time Laboratory system
+make test-time-laboratory             # Run comprehensive test suite
+make test-time-laboratory-api         # Test API endpoints
+make test-time-laboratory-grimoire    # Test grimoire export system
+make test-time-laboratory-performance # Test performance monitoring
+
+# Test temporal analysis queries
+curl -X POST "/api/temporal-analysis" -H "Content-Type: application/json" \
+  -d '{"query":{"type":"natural_language","query":"Show Fire reinforcements during Renaissance creativity peaks","agents":["leonardo-da-vinci","michelangelo"],"reinforcementMode":true}}'
+
+# Test structured temporal query
+curl -X POST "/api/temporal-analysis" -H "Content-Type: application/json" \
+  -d '{"query":{"type":"structured","dateRange":{"start":"1450-01-01","end":"1550-01-01"},"elements":["Fire","Air"],"granularity":"monthly","agents":["leonardo-da-vinci","galileo-galilei"]}}'
+
+# Test grimoire export
+curl -X POST "/api/temporal-grimoire" -H "Content-Type: application/json" \
+  -d '{"query":{"type":"natural_language","query":"Renaissance consciousness evolution"},"results":{},"options":{"format":"pdf","template":"mystical","includeVisuals":true}}'
+
+# Access Time Laboratory interface
+open "http://localhost:3000/time-laboratory"
+
+# Check system status
+make time-laboratory-status
+```
+
 ### Natal Sigil Generation Commands:
 
 ```bash
@@ -247,6 +313,8 @@ make db-generate        # Generate client
 │   │   ├── agent-evolution/         # 🧠 Consciousness evolution API
 │   │   ├── agent-attachments/       # 🔗 Attachment CRUD
 │   │   ├── generate-natal-sigil/    # 🔮 Sigil generation API
+│   │   ├── temporal-analysis/       # ⏰ Time Laboratory analysis API
+│   │   ├── temporal-grimoire/       # ⏰ Grimoire export API
 │   │   ├── monica-agent/            # Enhanced Monica API
 │   │   ├── multi-agent/             # 🌙 Council API
 │   │   ├── gallery-group-chat/      # 💚 Group chat API
@@ -254,6 +322,8 @@ make db-generate        # Generate client
 │   ├── gallery/
 │   │   ├── page.tsx                 # 💚 Gallery interface
 │   │   └── chat/[id]/               # 🗣️ Historical agent chat pages
+│   ├── time-laboratory/             # ⏰ Cosmic Time Laboratory platform
+│   │   └── page.tsx                 # Interactive temporal exploration interface
 │   ├── rune-forge/                  # 🔮 Sigil creation platform
 │   │   └── page.tsx                 # Complete sigil generation interface
 │   ├── planetary-agents/            # 🪐 Planetary wisdom interface
@@ -263,6 +333,9 @@ make db-generate        # Generate client
 │   ├── consciousness-velocity-visualizer.tsx # 🧠 Evolution metrics
 │   ├── kinetic-compatibility-indicator.tsx   # 💫 Compatibility analysis
 │   ├── agent-recommendation-system.tsx       # 🎯 Smart recommendations
+│   ├── cosmic-time-laboratory.tsx            # ⏰ Main Time Laboratory interface
+│   ├── temporal-oracle.tsx                  # ⏰ Natural language query interface
+│   ├── temporal-timeline.tsx                # ⏰ Historical consciousness visualization
 │   ├── natal-sigil-generator.tsx             # 🔮 Interactive sigil generation
 │   ├── agent-attachments-manager.tsx         # 🔗 Attachment UI
 │   ├── gallery-group-chat.tsx               # 💚 Group chat
@@ -277,6 +350,8 @@ make db-generate        # Generate client
 │   │   ├── natal-sigil-runes.ts              # 🔮 Sigil rune system extensions
 │   │   ├── pattern-to-rune-converter.ts      # Sacred pattern conversion
 │   │   └── rune-system.ts                    # Base rune infrastructure
+│   ├── temporal-analysis-engine.ts           # ⏰ AI-guided temporal query processing
+│   ├── temporal-grimoire-export.ts           # ⏰ Mystical document generation
 │   ├── chart-geometry-extractor.ts           # 🔮 Aspect coordinate extraction
 │   ├── agent-attachments-service.ts          # 🔗 Attachment logic
 │   ├── historical-agents-db.ts               # Database integration
@@ -309,6 +384,10 @@ make db-generate        # Generate client
 15. **Rune Forge Platform**: Complete sigil creation and management system
 16. **Pattern Recognition**: AI detection of sacred astrological configurations
 17. **Mystical Art Generation**: High-quality sigil imagery via imaginize API
+18. **Cosmic Time Laboratory**: AI-guided exploration of historical consciousness patterns
+19. **Temporal Oracle**: Natural language interface for mystical temporal queries
+20. **Grimoire Export**: Transform temporal discoveries into mystical documents
+21. **Degree-Aware Analysis**: Deep investigation of consciousness at specific planetary degrees
 
 ### Agent Personalities:
 
@@ -414,6 +493,10 @@ REDIS_URL=redis://localhost:6379
 ## Current Status
 
 ### ✅ Production Ready:
+- **Cosmic Time Laboratory** (Complete AI-guided temporal exploration system)
+- **Temporal Analysis Engine** (Natural language + structured query processing)
+- **Grimoire Export System** (PDF, EPUB, HTML, Markdown mystical documents)
+- **Temporal Oracle Interface** (Interactive natural language query system)
 - **Natal Chart to Runic Sigil Generation System** (Complete implementation)
 - **Rune Forge Platform** (Full-featured creation and management)
 - **Pattern Recognition Integration** (9 sacred patterns detected)
