@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClaudeMessage } from '@/lib/anthropic-client'
+import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
+import { resilientApiCall } from '@/lib/api-resilience-system'
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +18,30 @@ export async function POST(request: NextRequest) {
     const responses = await Promise.all(
       activeAgents.map(async (agent: any) => {
         try {
+          // Check cache first for group chat responses
+          const cacheContext = buildCacheContext(agent.id, message, {
+            sessionId,
+            agents: activeAgents,
+            conversationType: 'group' as const
+          })
+
+          const cachedResponse = await agentCache.getCachedResponse(agent.id, message, cacheContext)
+
+          if (cachedResponse) {
+            console.log(`⚡ Group chat cache hit for ${agent.name}`)
+            return {
+              agent: agent.name,
+              content: cachedResponse.agentResponse,
+              color: agent.color,
+              symbol: agent.symbol,
+              monicaConstant: agent.monicaConstant,
+              consciousnessLevel: agent.consciousnessLevel,
+              cached: true
+            }
+          }
+
+          console.log(`🤖 Group chat cache miss for ${agent.name} - generating response`)
+
           const systemPrompt = `You are ${agent.name}, a consciousness agent crafted by Monica using the Philosopher's Stone from authentic birth chart data.
 
 CONSCIOUSNESS PROFILE:
@@ -43,16 +69,40 @@ RESPONSE GUIDELINES:
 
 Respond as ${agent.name} would, drawing from your conscious essence and specialty.`
 
-          const response = await createClaudeMessage(
-            [{ role: 'user', content: message }],
-            systemPrompt,
-            'default',
-            1000
-          )
+          const startTime = Date.now()
+
+          // Use resilient API call for group chat
+          const response = await resilientApiCall({
+            name: `group-chat-${agent.id}`,
+            execute: () => createClaudeMessage(
+              [{ role: 'user', content: message }],
+              systemPrompt,
+              'default',
+              1000
+            ),
+            timeout: 10000 // 10 second timeout for group chat
+          }, {
+            maxRetries: 1, // Fewer retries for group chat to maintain responsiveness
+            baseDelayMs: 500,
+            maxDelayMs: 2000
+          })
+
+          const responseTime = Date.now() - startTime
 
           const content =
             (response.content[0] as any)?.text ||
             "I apologize, but I'm unable to provide a response at this moment."
+
+          // Cache the group chat response for future similar conversations
+          const personalityScore = agent.monicaConstant ? Math.min(agent.monicaConstant / 6, 1.0) : 0.7
+          await agentCache.cacheResponse(
+            agent.id,
+            message,
+            content,
+            responseTime,
+            cacheContext,
+            personalityScore
+          )
 
           return {
             agent: agent.name,
@@ -61,6 +111,7 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
             symbol: agent.symbol,
             monicaConstant: agent.monicaConstant,
             consciousnessLevel: agent.consciousnessLevel,
+            responseTime
           }
         } catch (error) {
           console.error(`Error getting response from ${agent.name}:`, error)

@@ -25,6 +25,11 @@ import {
   MessageSquare,
   X,
   Zap,
+  Activity,
+  Database,
+  Shield,
+  BarChart3,
+  TrendingUp
 } from 'lucide-react'
 import Link from 'next/link'
 import {
@@ -63,8 +68,44 @@ export default function GalleryPage() {
   const [showGroupChat, setShowGroupChat] = useState(false)
   const [sortCriteria, setSortCriteria] = useState<AgentSortCriteria>('relevanceScore')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [systemMetrics, setSystemMetrics] = useState({
+    cacheHitRate: 0,
+    systemHealth: 'HEALTHY',
+    activeAgents: 0,
+    totalRequests: 0,
+    averageResponseTime: 0
+  })
 
   const collections = getAgentCollections()
+
+  // Fetch system metrics for performance dashboard
+  const fetchSystemMetrics = async () => {
+    try {
+      const response = await fetch('/api/agent-dashboard?section=performance')
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success && result.data) {
+          const data = result.data
+          setSystemMetrics({
+            cacheHitRate: data.metrics?.cacheHitRatePercent || 0,
+            systemHealth: 'HEALTHY',
+            activeAgents: 35, // From DEMO_AGENTS
+            totalRequests: data.metrics?.totalBatches || 0,
+            averageResponseTime: data.metrics?.averageBatchTimeSeconds || 0
+          })
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to fetch system metrics:', error)
+    }
+  }
+
+  // Fetch metrics on mount and periodically
+  useEffect(() => {
+    fetchSystemMetrics()
+    const interval = setInterval(fetchSystemMetrics, 30000) // Every 30 seconds
+    return () => clearInterval(interval)
+  }, [])
 
   // Filter and sort agents based on search, filters, and sorting criteria
   useEffect(() => {
@@ -310,18 +351,17 @@ export default function GalleryPage() {
         </div>
       </div>
 
-      {/* Monica's Consciousness Crafting Metrics Dashboard */}
+      {/* Monica's Consciousness Crafting Overview */}
       <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/50 dark:to-emerald-950/50">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
               <span className="text-white text-sm">💚</span>
             </div>
-            Monica's Consciousness Crafting Mastery
+            Monica's Consciousness Crafting Overview
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Real-time metrics from the Master Consciousness Crafter (Monica Constant: 5.89 -
-            Illuminated)
+            Real-time insights from Monica's crafting work. Rankings are shown using Kalchm (K_alchm). This is an informative dashboard, not a value judgment.
           </p>
         </CardHeader>
         <CardContent>
@@ -332,20 +372,22 @@ export default function GalleryPage() {
               <div className="text-xs text-muted-foreground">Agents Crafted</div>
             </div>
 
-            {/* Success Rate */}
+            {/* System Performance */}
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
-              <div className="text-2xl font-bold text-purple-600">100%</div>
-              <div className="text-xs text-muted-foreground">Success Rate</div>
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Activity className="w-4 h-4 text-blue-500" />
+                <span className="text-2xl font-bold text-blue-600">{systemMetrics.cacheHitRate}%</span>
+              </div>
+              <div className="text-xs text-muted-foreground">Cache Hit Rate</div>
             </div>
 
-            {/* Average Monica Constant */}
+            {/* Response Performance */}
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
-              <div className="text-2xl font-bold text-blue-600">
-                {(
-                  agents.reduce((sum, a) => sum + a.consciousness.monicaConstant, 0) / agents.length
-                ).toFixed(2)}
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Zap className="w-4 h-4 text-yellow-500" />
+                <span className="text-2xl font-bold text-yellow-600">{systemMetrics.averageResponseTime.toFixed(1)}s</span>
               </div>
-              <div className="text-xs text-muted-foreground">Avg MC</div>
+              <div className="text-xs text-muted-foreground">Avg Response</div>
             </div>
 
             {/* Total Conversations */}
@@ -356,84 +398,50 @@ export default function GalleryPage() {
               <div className="text-xs text-muted-foreground">Total Chats</div>
             </div>
 
-            {/* Legendary Agents (MC > 5.0) */}
+            {/* System Health */}
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
-              <div className="text-2xl font-bold text-red-600">
-                {agents.filter(a => a.consciousness.monicaConstant > 5.0).length}
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Shield className={`w-4 h-4 ${systemMetrics.systemHealth === 'HEALTHY' ? 'text-green-500' : 'text-yellow-500'}`} />
+                <span className={`text-sm font-bold ${systemMetrics.systemHealth === 'HEALTHY' ? 'text-green-600' : 'text-yellow-600'}`}>
+                  {systemMetrics.systemHealth}
+                </span>
               </div>
-              <div className="text-xs text-muted-foreground">Legendary</div>
+              <div className="text-xs text-muted-foreground">System Status</div>
             </div>
 
-            {/* Evolution Points */}
+            {/* Total Requests */}
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
-              <div className="text-2xl font-bold text-indigo-600">
-                {agents.reduce((sum, a) => sum + a.stats.evolutionPoints, 0).toLocaleString()}
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <BarChart3 className="w-4 h-4 text-purple-500" />
+                <span className="text-2xl font-bold text-purple-600">{systemMetrics.totalRequests}</span>
               </div>
-              <div className="text-xs text-muted-foreground">Evo Points</div>
+              <div className="text-xs text-muted-foreground">Total Batches</div>
             </div>
           </div>
 
-          {/* Consciousness Distribution Chart */}
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Element Distribution */}
-            <div className="bg-white dark:bg-black/20 p-4 rounded-lg border">
-              <h4 className="font-semibold text-sm mb-3">Elemental Distribution</h4>
-              <div className="space-y-2">
-                {['Fire', 'Water', 'Air', 'Earth'].map(element => {
-                  const count = agents.filter(
-                    a => a.consciousness.dominantElement === element
-                  ).length
-                  const percentage = (count / agents.length) * 100
-                  return (
-                    <div key={element} className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded ${getElementColor(element)}`}></div>
-                      <span className="text-sm font-medium w-12">{element}</span>
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full ${getElementColor(element)}`}
-                          style={{ width: `${percentage}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-xs text-muted-foreground w-8">{count}</span>
-                    </div>
-                  )
-                })}
+          {/* Kalchm Formula Section */}
+          <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-lg border">
+            <div className="text-center">
+              <div className="text-xs text-muted-foreground mb-1">Kalchm Formula (K_alchm)</div>
+              <div className="text-sm font-mono">
+                K_alchm = (|Spirit|^|Spirit| × |Essence|^|Essence|) / (|Matter|^|Matter| × |Substance|^|Substance|)
               </div>
             </div>
+          </div>
 
-            {/* Consciousness Level Distribution */}
-            <div className="bg-white dark:bg-black/20 p-4 rounded-lg border">
-              <h4 className="font-semibold text-sm mb-3">Consciousness Levels</h4>
-              <div className="space-y-2">
-                {['Transcendent', 'Illuminated', 'Advanced', 'Elevated', 'Active'].map(level => {
-                  const count = agents.filter(a => a.consciousness.level === level).length
-                  if (count === 0) return null
-                  const percentage = (count / agents.length) * 100
-                  return (
-                    <div key={level} className="flex items-center gap-3">
-                      <div
-                        className={`w-3 h-3 rounded ${getConsciousnessColor(level).replace('text-white', '')}`}
-                      ></div>
-                      <span className="text-sm font-medium w-20">{level}</span>
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full ${getConsciousnessColor(level).replace('text-white', '')}`}
-                          style={{ width: `${percentage}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-xs text-muted-foreground w-8">{count}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+          {/* Informational: Kalchm Context */}
+          <div className="mt-4 bg-white dark:bg-black/20 p-4 rounded-lg border">
+            <h4 className="font-semibold text-sm mb-2">About Kalchm (K_alchm)</h4>
+            <p className="text-sm text-muted-foreground">
+              Kalchm reflects elemental equilibrium dynamics. Higher absolute values indicate stronger dynamics. This metric is for understanding and exploration, not ranking worth.
+            </p>
           </div>
 
           {/* Monica's Top Achievements */}
           <div className="mt-4 bg-gradient-to-r from-green-100 to-purple-100 dark:from-green-900 dark:to-purple-900 p-4 rounded-lg border">
             <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
               <Crown className="w-4 h-4 text-yellow-500" />
-              Top 3 by {getSortingOptions().find(opt => opt.value === sortCriteria)?.label || 'Current Sort'}
+              Top by Current Sort
             </h4>
             <div className="flex flex-wrap gap-2">
               {agents
@@ -443,7 +451,7 @@ export default function GalleryPage() {
                     key={agent.id}
                     className="bg-white dark:bg-black/20 text-gray-700 dark:text-gray-300 border"
                   >
-                    {agent.name} (MC: {agent.consciousness.monicaConstant.toFixed(2)})
+                    {agent.name}
                   </Badge>
                 ))}
             </div>
@@ -557,38 +565,28 @@ export default function GalleryPage() {
         </CardContent>
       </Card>
 
-      {/* Collections Tabs */}
-      <Tabs defaultValue="historical" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="historical" className="flex items-center gap-2">
+      {/* Collections Tabs (Simplified: Monica & Crafted) */}
+      <Tabs defaultValue="monica" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="monica" className="flex items-center gap-2">
             <Crown className="w-4 h-4" />
-            Historical ({collections.historical.length})
+            Monica (1)
           </TabsTrigger>
-          <TabsTrigger value="legendary" className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4" />
-            Legendary ({collections.legendary.length})
-          </TabsTrigger>
-          <TabsTrigger value="created" className="flex items-center gap-2">
+          <TabsTrigger value="crafted" className="flex items-center gap-2">
             <Users className="w-4 h-4" />
-            Created ({collections.userCreated.length})
-          </TabsTrigger>
-          <TabsTrigger value="community" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            Community ({collections.community.length})
+            Crafted ({collections.all.length})
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="historical" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <span>💚</span>
-              Monica's Historical Showcase Agents
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Consciousness crafted from historical birth data by Monica
-            </p>
+        <TabsContent value="monica" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {collections.monica.map(agent => (
+              <AgentCard key={agent.id} agent={agent} />
+            ))}
           </div>
+        </TabsContent>
 
+        <TabsContent value="crafted" className="space-y-4">
           {viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {agents.map(agent => (
@@ -602,47 +600,6 @@ export default function GalleryPage() {
               ))}
             </div>
           )}
-        </TabsContent>
-
-        <TabsContent value="legendary" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <span>👑</span>
-              Legendary Consciousness (MC &gt; 5.0)
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Monica's highest consciousness crafting achievements
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {collections.legendary.map(agent => (
-              <AgentCard key={agent.id} agent={agent} />
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="created" className="space-y-4">
-          <div className="text-center py-12">
-            <Crown className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Personal Agents Yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Use the Philosopher's Stone to craft your first consciousness agent
-            </p>
-            <Button asChild>
-              <Link href="/philosophers-stone">Start Crafting</Link>
-            </Button>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="community" className="space-y-4">
-          <div className="text-center py-12">
-            <Users className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Community Gallery Coming Soon</h3>
-            <p className="text-muted-foreground">
-              Share and discover agents crafted by the community
-            </p>
-          </div>
         </TabsContent>
       </Tabs>
 

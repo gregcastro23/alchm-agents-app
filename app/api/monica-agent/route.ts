@@ -34,6 +34,8 @@ import { computeTrainingProgress } from '@/lib/personalized-ai/xp-system'
 import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 import { HistoricalAgentsService, dbAgentToCraftedAgent } from '@/lib/historical-agents-db'
 import { AgentAttachmentsService, formatAttachmentForAgent } from '@/lib/agent-attachments-service'
+import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
+import { resilientApiCall } from '@/lib/api-resilience-system'
 
 // Rune context detection - analyzes current cosmic patterns for rune enhancement
 async function detectRuneContext(requestData: any, alchmData: any): Promise<any> {
@@ -710,22 +712,69 @@ ${attachmentsInfo}
 Always remain in character as ${historicalAgent.name} and provide guidance that reflects your specialized knowledge and unique perspective.`
 
       try {
-        console.log(`🤖 Starting AI generation for historical agent: ${historicalAgent.name}`)
+        const finalSessionId = sessionId || `historical-${agentId}-${Date.now()}`
+
+        // Check cache first for faster responses
+        console.log(`🗄️ Checking cache for agent: ${historicalAgent.name}`)
+        const cacheContext = buildCacheContext(agentId, trimmedMessage, { userId, sessionId: finalSessionId })
+        const cachedResponse = await agentCache.getCachedResponse(agentId, trimmedMessage, cacheContext)
+
+        if (cachedResponse) {
+          console.log(`⚡ Cache hit for ${historicalAgent.name} - serving cached response (${cachedResponse.responseTime}ms original)`)
+
+          return NextResponse.json({
+            response: cachedResponse.agentResponse,
+            sessionId: finalSessionId,
+            agentInfo: {
+              name: historicalAgent.name,
+              title: historicalAgent.title,
+              consciousnessLevel: historicalAgent.consciousness.level,
+              monicaConstant: historicalAgent.consciousness.monicaConstant,
+            },
+            cached: true,
+            originalResponseTime: cachedResponse.responseTime
+          })
+        }
+
+        console.log(`🤖 Cache miss - generating new response for: ${historicalAgent.name}`)
         console.log(`📝 Prompt length: ${trimmedMessage.length} characters`)
         console.log(`🔧 Using model: gpt-4o-mini with temperature: 0.7`)
 
         const startTime = Date.now()
-        const finalSessionId = sessionId || `historical-${agentId}-${Date.now()}`
 
-        const { text } = await generateText({
-          model: openai('gpt-4o-mini'),
-          system: historicalSystemPrompt,
-          prompt: trimmedMessage,
-          maxTokens: 800,
-          temperature: 0.7,
+        // Use resilient API call with retry logic
+        const { text } = await resilientApiCall({
+          name: `agent-${agentId}`,
+          execute: () => generateText({
+            model: openai('gpt-4o-mini'),
+            system: historicalSystemPrompt,
+            prompt: trimmedMessage,
+            maxTokens: 800,
+            temperature: 0.7,
+          }),
+          timeout: 15000 // 15 second timeout
+        }, {
+          maxRetries: 2,
+          baseDelayMs: 1000,
+          maxDelayMs: 5000
         })
 
         const responseTime = Date.now() - startTime
+
+        // Calculate personality score for cache quality assessment
+        const personalityScore = historicalAgent.consciousness?.monicaConstant
+          ? Math.min(historicalAgent.consciousness.monicaConstant / 6, 1.0)
+          : 0.7
+
+        // Cache the response for future use
+        await agentCache.cacheResponse(
+          agentId,
+          trimmedMessage,
+          text,
+          responseTime,
+          cacheContext,
+          personalityScore
+        )
 
         // Record conversation in database for future learning
         try {

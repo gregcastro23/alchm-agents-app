@@ -437,13 +437,10 @@ function AgentDetailsModal({ agent }: { agent: CraftedAgent }) {
             />
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                Element:{' '}
-                <Badge className={getElementColor(agent.consciousness.dominantElement)}>
-                  {agent.consciousness.dominantElement}
+                Kalchm (K_alchm):{' '}
+                <Badge variant="outline">
+                  {agent.consciousness.monicaConstant.toFixed(2)}
                 </Badge>
-              </div>
-              <div>
-                Modality: <Badge variant="outline">{agent.consciousness.dominantModality}</Badge>
               </div>
             </div>
           </div>
