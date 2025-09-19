@@ -56,6 +56,10 @@ import {
   KineticCompatibilityIndicator,
   MultiAgentCompatibility
 } from '@/components/kinetic-compatibility-indicator'
+import { EnhancedAgentCard } from '@/components/enhanced-agent-card'
+import { RealTimeKineticsWidget } from '@/components/real-time-kinetics-widget'
+import { ChartTransformVisualization } from '@/components/chart-transform-visualization'
+import { MomentBasedRecommendations } from '@/components/moment-based-recommendations'
 
 export default function GalleryPage() {
   const [viewMode, setViewMode] = useState<GalleryViewMode>('grid')
@@ -188,134 +192,6 @@ export default function GalleryPage() {
     }
   }
 
-  const AgentCard = ({
-    agent,
-    variant = 'card',
-  }: {
-    agent: CraftedAgent
-    variant?: 'card' | 'list'
-  }) => {
-    // Calculate sign vector for this agent
-    let signVector = null
-    try {
-      if (agent.consciousness?.natalChart) {
-        signVector = calculateSignVectorFromChart(agent.consciousness.natalChart)
-      }
-    } catch (error) {
-      console.warn(`Failed to calculate sign vector for ${agent.name}:`, error)
-    }
-
-    return (
-      <Card
-        className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-          selectedAgents.includes(agent.id) ? 'border-primary shadow-lg' : 'border-border'
-        }`}
-        onClick={() => toggleAgentSelection(agent.id)}
-      >
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                  style={{ backgroundColor: agent.appearance.color }}
-                >
-                  {agent.appearance.symbol}
-                </div>
-                {/* Sign vector rune overlay */}
-                {signVector && (
-                  <div className="absolute -top-1 -right-1">
-                    <SignVectorRune signVector={signVector} size={20} />
-                  </div>
-                )}
-              </div>
-              <div>
-                <CardTitle className="text-lg">{agent.name}</CardTitle>
-                <p className="text-sm text-muted-foreground">{agent.title}</p>
-              </div>
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              <Badge className={getConsciousnessColor(agent.consciousness.level)}>
-                {agent.consciousness.level}
-              </Badge>
-              {signVector && (
-                <Button size="sm" variant="ghost" className="h-6 text-xs" asChild>
-                  <Link href={`/api/sign-vectors?agentId=${agent.id}&action=agent-rune`}>
-                    <Zap className="w-3 h-3 mr-1" />
-                    Rune
-                  </Link>
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {agent.abilities.specialty}
-            </p>
-
-            <div className="flex flex-wrap gap-1">
-              <Badge
-                variant="outline"
-                className={getElementColor(agent.consciousness.dominantElement)}
-              >
-                {agent.consciousness.dominantElement}
-              </Badge>
-              <Badge variant="outline">MC: {agent.consciousness.monicaConstant.toFixed(2)}</Badge>
-              <Badge variant="outline">Stage {agent.personality?.evolutionStage ?? 0}</Badge>
-            </div>
-
-            <div className="flex flex-wrap gap-1 text-xs">
-              {agent.abilities.wisdomDomains.slice(0, 3).map(domain => (
-                <Badge key={domain} variant="secondary" className="text-xs">
-                  {domain}
-                </Badge>
-              ))}
-            </div>
-
-            {/* Sign Vector Visualization - only show for selected agents or expanded view */}
-            {signVector && selectedAgents.includes(agent.id) && (
-              <div className="mt-4 p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg border border-purple-100 dark:border-purple-800">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-purple-600">🔮</span>
-                  <span className="font-medium text-purple-900 dark:text-purple-100 text-sm">
-                    Zodiacal Character Vector
-                  </span>
-                </div>
-                <div className="flex justify-center">
-                  <SignVectorGraphic
-                    signVector={signVector}
-                    size="small"
-                    showLabels={true}
-                    showTooltips={true}
-                    animated={true}
-                  />
-                </div>
-                <div className="mt-2 text-xs text-center text-muted-foreground">
-                  Click to expand wheel visualization
-                </div>
-              </div>
-            )}
-
-            <div className="flex justify-between items-center pt-2">
-              <div className="text-xs text-muted-foreground">
-                {agent.stats.conversations} conversations
-              </div>
-              <div className="flex gap-1">
-                <Button size="sm" variant="outline" asChild>
-                  <Link href={`/gallery/chat/${agent.id}`}>Chat with Agent</Link>
-                </Button>
-                <Button size="sm" variant="ghost" asChild>
-                  <Link href={`/philosophers-stone?template=${agent.id}`}>Remix Consciousness</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
 
   return (
     <div className="container py-8 space-y-6">
@@ -334,7 +210,7 @@ export default function GalleryPage() {
         <div className="flex items-center gap-3">
           <Badge variant="outline" className="flex items-center gap-1">
             <Users className="w-3 h-3" />
-            {agents.length} Agents
+            {agents.length} Historical Agents
           </Badge>
           {selectedAgents.length > 0 && (
             <Badge variant="secondary" className="flex items-center gap-1">
@@ -358,18 +234,18 @@ export default function GalleryPage() {
             <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
               <span className="text-white text-sm">💚</span>
             </div>
-            Monica's Consciousness Crafting Overview
+            Historical Consciousness Collection
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Real-time insights from Monica's crafting work. Rankings are shown using Kalchm (K_alchm). This is an informative dashboard, not a value judgment.
+            Real-time insights from our 35 historical consciousness agents. Performance data and system metrics for agent interaction.
           </p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
-            {/* Total Agents Crafted */}
+            {/* Total Historical Agents */}
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
               <div className="text-2xl font-bold text-green-600">{agents.length}</div>
-              <div className="text-xs text-muted-foreground">Agents Crafted</div>
+              <div className="text-xs text-muted-foreground">Historical Agents</div>
             </div>
 
             {/* System Performance */}
@@ -429,35 +305,29 @@ export default function GalleryPage() {
             </div>
           </div>
 
-          {/* Informational: Kalchm Context */}
-          <div className="mt-4 bg-white dark:bg-black/20 p-4 rounded-lg border">
-            <h4 className="font-semibold text-sm mb-2">About Kalchm (K_alchm)</h4>
-            <p className="text-sm text-muted-foreground">
-              Kalchm reflects elemental equilibrium dynamics. Higher absolute values indicate stronger dynamics. This metric is for understanding and exploration, not ranking worth.
-            </p>
-          </div>
-
-          {/* Monica's Top Achievements */}
-          <div className="mt-4 bg-gradient-to-r from-green-100 to-purple-100 dark:from-green-900 dark:to-purple-900 p-4 rounded-lg border">
-            <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-              <Crown className="w-4 h-4 text-yellow-500" />
-              Top by Current Sort
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {agents
-                .slice(0, 3)
-                .map(agent => (
-                  <Badge
-                    key={agent.id}
-                    className="bg-white dark:bg-black/20 text-gray-700 dark:text-gray-300 border"
-                  >
-                    {agent.name}
-                  </Badge>
-                ))}
-            </div>
-          </div>
         </CardContent>
       </Card>
+
+      {/* Kinetic Analysis Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Real-Time Kinetics Widget */}
+        <div className="lg:col-span-4">
+          <RealTimeKineticsWidget />
+        </div>
+
+        {/* Chart Transform Visualization */}
+        <div className="lg:col-span-4">
+          <ChartTransformVisualization />
+        </div>
+
+        {/* Moment-Based Recommendations */}
+        <div className="lg:col-span-4">
+          <MomentBasedRecommendations
+            selectedAgents={selectedAgents}
+            onToggleSelection={toggleAgentSelection}
+          />
+        </div>
+      </div>
 
       {/* Search and Filters */}
       <Card>
@@ -565,43 +435,35 @@ export default function GalleryPage() {
         </CardContent>
       </Card>
 
-      {/* Collections Tabs (Simplified: Monica & Crafted) */}
-      <Tabs defaultValue="monica" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="monica" className="flex items-center gap-2">
-            <Crown className="w-4 h-4" />
-            Monica (1)
-          </TabsTrigger>
-          <TabsTrigger value="crafted" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            Crafted ({collections.all.length})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="monica" className="space-y-4">
+      {/* Historical Agents Display */}
+      <div className="space-y-4">
+        {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {collections.monica.map(agent => (
-              <AgentCard key={agent.id} agent={agent} />
+            {agents.map(agent => (
+              <EnhancedAgentCard
+                key={agent.id}
+                agent={agent}
+                isSelected={selectedAgents.includes(agent.id)}
+                onToggleSelection={toggleAgentSelection}
+                showRecommendations={true}
+              />
             ))}
           </div>
-        </TabsContent>
-
-        <TabsContent value="crafted" className="space-y-4">
-          {viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {agents.map(agent => (
-                <AgentCard key={agent.id} agent={agent} />
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {agents.map(agent => (
-                <AgentCard key={agent.id} agent={agent} variant="list" />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+        ) : (
+          <div className="space-y-3">
+            {agents.map(agent => (
+              <EnhancedAgentCard
+                key={agent.id}
+                agent={agent}
+                variant="list"
+                isSelected={selectedAgents.includes(agent.id)}
+                onToggleSelection={toggleAgentSelection}
+                showRecommendations={true}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Selected Agents Actions & Compatibility */}
       {selectedAgents.length > 0 && (

@@ -59,6 +59,11 @@
 }
 
 /* Ensure text is readable */
+.dark .text-black,
+.dark [class*='text-'][class*='-900'],
+.dark [class*='text-'][class*='-950'] {
+  color: rgb(243, 244, 246) !important; /* near-white */
+}
 .dark [class*='text-'][class*='-800'] {
   color: rgb(209, 213, 219) !important;
 }

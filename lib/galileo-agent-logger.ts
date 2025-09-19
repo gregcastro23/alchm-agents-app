@@ -190,8 +190,8 @@ export async function logAgentConversation(
         degree: String(interaction.degree || 'unknown'),
         dignity: interaction.dignity || 'unknown',
         processing_time_ms: String(interaction.processingTimeMs || 0),
-        response_length: String(interaction.agentResponse.length),
-        input_length: String(interaction.userMessage.length),
+        response_length: String(interaction.agentResponse?.length || 0),
+        input_length: String(interaction.userMessage?.length || 0),
         sign_element: interaction.elementalInfo?.signElement || 'unknown',
         planet_element: interaction.elementalInfo?.planetElement || 'unknown',
         elemental_affinity: String(

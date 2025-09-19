@@ -197,6 +197,17 @@ export async function POST(req: Request) {
 
     const { agents, question, sessionId } = await req.json()
 
+    // Validate question parameter
+    if (!question || typeof question !== 'string' || question.trim() === '') {
+      return NextResponse.json(
+        {
+          error: 'Question is required and must be a non-empty string',
+          response: 'Please provide a valid question for the agents to respond to.',
+        },
+        { status: 400 }
+      )
+    }
+
     // Validate agents array
     if (!agents || !Array.isArray(agents) || agents.length === 0) {
       return NextResponse.json(

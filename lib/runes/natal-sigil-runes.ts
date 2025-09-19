@@ -219,7 +219,7 @@ export const SIGIL_STYLE_PARAMS: Record<SigilStyle, {
   alchemical: {
     texture: 'metallic-etched',
     lineStyle: 'geometric-precise',
-    colorScheme: ['#FFD700', '#C0C0C0', '#B87333', '#000000'],
+    colorScheme: ['#FFD700', '#C0C0C0', '#B87333', '#E5E7EB'],
     fontFamily: 'hermetic',
     backgroundElements: ['sacred-geometry', 'planetary-symbols', 'ouroboros'],
     prompt_modifier: 'Precise alchemical diagram with hermetic symbols, gold and silver inlay'

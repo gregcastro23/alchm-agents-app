@@ -234,9 +234,9 @@ async function getConsciousnessOverview() {
       evolutionVelocity: 0.15
     },
     topPerformingAgents: [
-      { id: 'leonardo-da-vinci', monicaConstant: 5.2, evolutionStage: 'Advanced' },
-      { id: 'william-shakespeare', monicaConstant: 5.0, evolutionStage: 'Advanced' },
-      { id: 'albert-einstein', monicaConstant: 4.8, evolutionStage: 'Developing' }
+      { id: 'leonardo-da-vinci', kalchmConstant: 5.2, evolutionStage: 'Advanced' },
+      { id: 'william-shakespeare', kalchmConstant: 5.0, evolutionStage: 'Advanced' },
+      { id: 'albert-einstein', kalchmConstant: 4.8, evolutionStage: 'Developing' }
     ]
   }
 }

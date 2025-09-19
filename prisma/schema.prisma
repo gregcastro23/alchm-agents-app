@@ -270,7 +270,7 @@ model HistoricalAgent {
 
   // Enhanced consciousness profile
   consciousnessLevel String // "Transcendent", "Illuminated", etc.
-  monicaConstant  Float
+  kalchmConstant  Float
   dominantElement String
   dominantModality String?
   signature       String
@@ -349,7 +349,7 @@ model HistoricalAgent {
   @@index([historicalEra]) // NEW - era-based queries
   @@index([birthYear])     // NEW - chronological queries
   @@index([culture])       // NEW - cultural filtering
-  @@index([monicaConstant]) // NEW - consciousness ranking
+  @@index([kalchmConstant]) // NEW - consciousness ranking
   @@index([popularityScore]) // NEW - recommendation engine
   @@index([historicalEra, consciousnessLevel]) // NEW - composite for era + level
   @@index([isActive, historicalEra]) // NEW - active agents by era
@@ -589,4 +589,275 @@ enum CulturalCategory {
   MODERN_INTERNATIONAL
 
   @@map("cultural_category")
+}
+
+// Time Laboratory Models
+// ---------------------
+
+// Agent Transit Events for Temporal Analysis
+model AgentTransitEvent {
+  id                String   @id @default(cuid())
+  agentId          String   // References HistoricalAgent.agentId
+  timestamp        DateTime
+  planetaryDegree  Float    // 0-360 degree position
+  transitingPlanet String   // Planet triggering the transit
+  aspectType       String?  // conjunction, trine, square, etc.
+
+  // Elemental Alignment (0-1 scale for each element)
+  elementalFire    Float    @default(0)
+  elementalWater   Float    @default(0)
+  elementalAir     Float    @default(0)
+  elementalEarth   Float    @default(0)
+
+  // Consciousness Impact Metrics
+  consciousnessImpact Float @default(0) // 0-1 scale
+  significanceScore   Float @default(0) // Enhanced with elemental reinforcement
+
+  // Temporal Context
+  planetaryHour    String   // Planetary hour at time of event
+  seasonalPhase    String   // Spring, Summer, Autumn, Winter
+  powerLevel       Float    @default(0) // Overall power level 0-1
+
+  // Quality Metrics
+  depth            Float    @default(0) // Response depth quality
+  clarity          Float    @default(0) // Clarity of manifestation
+  resonance        Float    @default(0) // Agent-time resonance
+  temporalAlignment Float   @default(0) // How well-timed the event was
+
+  // Pattern Recognition Data
+  patternType      String?  // Type of pattern this event belongs to
+  clusterGroup     String?  // For grouping related events
+  reinforcementScore Float  @default(0) // Elemental reinforcement boost
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Optimized indexing for temporal queries
+  @@index([agentId, planetaryDegree])
+  @@index([timestamp, transitingPlanet])
+  @@index([planetaryDegree, aspectType])
+  @@index([agentId, timestamp])
+  @@index([significanceScore])
+  @@index([reinforcementScore])
+  @@index([seasonalPhase, planetaryHour])
+  @@index([elementalFire, elementalWater, elementalAir, elementalEarth])
+  @@map("agent_transit_events")
+}
+
+// Temporal Query Bookmarks (saved explorations)
+model TemporalBookmark {
+  id          String   @id @default(cuid())
+  userId      String?  // Optional user association
+  title       String   // User-friendly title
+  description String?  // Optional description
+
+  // Query Data
+  queryType   String   // 'natural_language' or 'structured'
+  queryText   String   // Original query string
+  queryData   Json     // Parsed TemporalQuery object
+
+  // Results Cache
+  resultData  Json?    // Cached TemporalAnalysisResult
+  resultHash  String?  // Hash for cache invalidation
+
+  // Usage Metadata
+  accessCount Int      @default(0)
+  lastAccessed DateTime?
+  isPublic    Boolean  @default(false)
+  isFavorite  Boolean  @default(false)
+
+  // Query Performance
+  executionTime Int?   // Milliseconds to execute
+  resultCount   Int?   // Number of events found
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isPublic])
+  @@index([lastAccessed])
+  @@index([accessCount])
+  @@map("temporal_bookmarks")
+}
+
+// Temporal Pattern Cache (detected patterns)
+model TemporalPattern {
+  id          String   @id @default(cuid())
+
+  // Pattern Identification
+  patternType String   // 'recurring_activation', 'elemental_resonance', etc.
+  degree      Float    // Primary degree for this pattern
+  frequency   Int      // Number of occurrences
+
+  // Agent Involvement
+  agentIds    Json     // Array of agent IDs involved
+  agentCount  Int      // Count for indexing
+
+  // Elemental Signature
+  dominantElement     String  // Primary element
+  elementalFireAvg    Float   @default(0)
+  elementalWaterAvg   Float   @default(0)
+  elementalAirAvg     Float   @default(0)
+  elementalEarthAvg   Float   @default(0)
+
+  // Pattern Metrics
+  reinforcementScore Float   @default(0) // Elemental reinforcement score
+  significance       String  // 'low', 'medium', 'high', 'critical'
+  confidenceLevel    Float   @default(0) // 0-1 confidence in pattern
+
+  // Temporal Range
+  firstOccurrence    DateTime
+  lastOccurrence     DateTime
+  peakPeriodStart    DateTime?
+  peakPeriodEnd      DateTime?
+  peakIntensity      Float    @default(0)
+
+  // Pattern Description
+  description        String   // Generated description
+  interpretation     String   // Astrological interpretation
+
+  // Cache Management
+  isActive           Boolean  @default(true)
+  cacheExpiry        DateTime?
+  lastCalculated     DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([patternType, degree])
+  @@index([significance, reinforcementScore])
+  @@index([dominantElement])
+  @@index([agentCount])
+  @@index([firstOccurrence, lastOccurrence])
+  @@index([isActive, cacheExpiry])
+  @@map("temporal_patterns")
+}
+
+// Collaborative Time Session (real-time exploration)
+model CollaborativeTimeSession {
+  id          String   @id @default(cuid())
+  sessionCode String   @unique // Short code for joining
+  title       String   // Session title
+  description String?  // Optional description
+
+  // Session State
+  isActive    Boolean  @default(true)
+  maxUsers    Int      @default(5)
+  currentUserCount Int @default(0)
+
+  // Current Exploration Context
+  currentQuery     Json?    // Active TemporalQuery
+  currentResults   Json?    // Current TemporalAnalysisResult
+  sharedCursor     Json?    // { degree, timestamp, userId }
+
+  // Session Configuration
+  allowedAgents    Json?    // Array of allowed agent IDs
+  timeRangeStart   DateTime?
+  timeRangeEnd     DateTime?
+  explorationMode  String   @default("open") // "guided", "structured", "open"
+
+  // Creator and Management
+  createdBy   String   // User ID of creator
+  moderators  Json?    // Array of moderator user IDs
+
+  // Session Metadata
+  lastActivity DateTime @default(now())
+  expiresAt    DateTime // Auto-cleanup time
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  participants   CollaborativeSessionParticipant[]
+  updates        CollaborativeSessionUpdate[]
+
+  @@index([sessionCode])
+  @@index([isActive, expiresAt])
+  @@index([createdBy])
+  @@index([lastActivity])
+  @@map("collaborative_time_sessions")
+}
+
+// Session Participants
+model CollaborativeSessionParticipant {
+  id          String   @id @default(cuid())
+  sessionId   String
+  userId      String
+  username    String?  // Display name
+
+  // Participation State
+  joinedAt    DateTime @default(now())
+  lastActive  DateTime @default(now())
+  isOnline    Boolean  @default(true)
+
+  // Permissions
+  canModerate Boolean  @default(false)
+  canQuery    Boolean  @default(true)
+  canShare    Boolean  @default(true)
+
+  // Cursor Position (for shared exploration)
+  currentDegree   Float?   // Current degree focus
+  currentTime     DateTime? // Current time focus
+
+  // Relations
+  session     CollaborativeTimeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@index([sessionId, isOnline])
+  @@index([lastActive])
+  @@map("collaborative_session_participants")
+}
+
+// Session Update Log (for real-time sync)
+model CollaborativeSessionUpdate {
+  id          String   @id @default(cuid())
+  sessionId   String
+  userId      String?  // User who triggered the update
+
+  // Update Data
+  updateType  String   // "query", "cursor_move", "pattern_discovery", "bookmark", etc.
+  updateData  Json     // Update payload
+
+  // Broadcast Info
+  shouldBroadcast Boolean @default(true)
+  broadcastedAt   DateTime?
+
+  timestamp   DateTime @default(now())
+
+  // Relations
+  session     CollaborativeTimeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, timestamp])
+  @@index([updateType])
+  @@map("collaborative_session_updates")
+}
+
+// Temporal Analysis Cache (for performance)
+model TemporalAnalysisCache {
+  id          String   @id @default(cuid())
+
+  // Cache Key
+  queryHash   String   @unique  // MD5 hash of query parameters
+  queryData   Json     // Original query for reference
+
+  // Cached Results
+  resultData  Json     // Full TemporalAnalysisResult
+
+  // Cache Metadata
+  executionTime  Int   // Milliseconds to generate
+  resultCount    Int   // Number of events in result
+  patternCount   Int   // Number of patterns detected
+
+  // Cache Management
+  hitCount    Int      @default(0)
+  lastHit     DateTime?
+  expiresAt   DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([queryHash])
+  @@index([expiresAt])
+  @@index([hitCount])
+  @@map("temporal_analysis_cache")
 }
