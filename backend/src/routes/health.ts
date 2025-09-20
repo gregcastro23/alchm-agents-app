@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, Request, Response } from 'express'
 import { alchmClient } from '../services/alchm-client.js'
 import { cacheService } from '../services/cache.js'
 import { asyncHandler } from '../middleware/error-handler.js'
@@ -9,7 +9,7 @@ const router = Router()
  * GET /api/health
  * Basic health check endpoint
  */
-router.get('/', asyncHandler(async (req, res) => {
+router.get('/', asyncHandler(async (req: Request, res: Response) => {
   const startTime = Date.now()
   
   // Check external service health
@@ -64,7 +64,7 @@ router.get('/', asyncHandler(async (req, res) => {
  * GET /api/health/detailed
  * Detailed health check with dependency testing
  */
-router.get('/detailed', asyncHandler(async (req, res) => {
+router.get('/detailed', asyncHandler(async (req: Request, res: Response) => {
   const startTime = Date.now()
   const checks = []
   

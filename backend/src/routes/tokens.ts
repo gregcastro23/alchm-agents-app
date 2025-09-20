@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, Request, Response } from 'express'
 import { body, validationResult } from 'express-validator'
 import { tokenCalculatorService } from '../services/token-calculator.js'
 import { asyncHandler, AppError } from '../middleware/error-handler.js'
@@ -262,7 +262,7 @@ router.post('/events', [
  * GET /api/tokens/info
  * Get information about available tokens
  */
-router.get('/info', (req, res) => {
+router.get('/info', (req: Request, res: Response) => {
   const tokenInfo = {
     Spirit: {
       element: 'Fire',

@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, Request, Response } from 'express'
 import { body, validationResult } from 'express-validator'
 import { asyncHandler, AppError } from '../middleware/error-handler.js'
 
@@ -239,7 +239,7 @@ router.post('/token', [
  * GET /api/kinetics/status
  * Get kinetics system status
  */
-router.get('/status', (req, res) => {
+router.get('/status', (req: Request, res: Response) => {
   const status = {
     system: 'online',
     version: '2.0.0',

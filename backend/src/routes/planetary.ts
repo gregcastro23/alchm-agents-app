@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, Request, Response } from 'express'
 import { body, validationResult } from 'express-validator'
 import { planetaryHoursService } from '../services/planetary-hours.js'
 import { asyncHandler, AppError } from '../middleware/error-handler.js'
@@ -142,7 +142,7 @@ router.post('/optimal-times', [
  * GET /api/planetary/planets
  * Get list of available planets
  */
-router.get('/planets', (req, res) => {
+router.get('/planets', (req: Request, res: Response) => {
   const planets = [
     { name: 'Sun', element: 'Fire', day: 'Sunday' },
     { name: 'Moon', element: 'Water', day: 'Monday' },

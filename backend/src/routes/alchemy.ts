@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, Request, Response } from 'express'
 import { body, validationResult } from 'express-validator'
 import { alchmClient } from '../services/alchm-client.js'
 import { thermodynamicsService } from '../services/thermodynamics.js'
@@ -213,7 +213,7 @@ router.post('/imaginize', [
  * GET /api/alchemy/status
  * Get alchemy service status
  */
-router.get('/status', asyncHandler(async (req, res) => {
+router.get('/status', asyncHandler(async (req: Request, res: Response) => {
   const alchmHealth = await alchmClient.healthCheck()
   const alchmStatus = alchmClient.getStatus()
 

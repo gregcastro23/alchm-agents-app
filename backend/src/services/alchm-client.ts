@@ -192,8 +192,9 @@ class AlchmClientService {
       const result: ImaginizeResponse = {
         ...response.data,
         metadata: {
-          ...response.data.metadata,
-          generationTime: Date.now() - startTime
+          alchmData: response.data.metadata?.alchmData || null,
+          generationTime: Date.now() - startTime,
+          style: response.data.metadata?.style || 'default'
         }
       }
 
