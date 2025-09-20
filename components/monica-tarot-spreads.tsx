@@ -493,7 +493,7 @@ const MonicaTarotSpreads: React.FC<TarotSpreadInterfaceProps> = ({ onReadingComp
                       {option.icon}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{option.name}</h4>
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100">{option.name}</h4>
                       <p className="text-sm text-gray-600">{option.description}</p>
                       <Badge variant="outline" className="mt-1 text-xs">
                         {option.complexity}

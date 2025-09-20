@@ -152,8 +152,36 @@ body::before {
   color-scheme: dark;
 }
 
+/* Ensure all dark text has proper contrast in dark mode */
+.dark .text-gray-900 {
+  color: rgb(243, 244, 246) !important;
+}
+
+.dark .text-gray-800 {
+  color: rgb(243, 244, 246) !important;
+}
+
+.dark .text-black {
+  color: rgb(243, 244, 246) !important;
+}
+
+/* Ensure muted text is readable */
 .dark .text-muted-foreground {
-  color: rgb(156, 163, 175);
+  color: rgb(156, 163, 175) !important;
+}
+
+.dark .text-gray-600 {
+  color: rgb(156, 163, 175) !important;
+}
+
+.dark .text-gray-500 {
+  color: rgb(156, 163, 175) !important;
+}
+
+/* Ensure general text readability without breaking backgrounds */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
+.dark p, .dark span:not([class*="bg-"]), .dark div:not([class*="bg-"]) {
+  color: rgb(243, 244, 246);
 }
 
 /* Ensure proper card styling */

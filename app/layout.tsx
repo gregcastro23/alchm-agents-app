@@ -5,6 +5,7 @@ import './globals.css'
 import './cosmic-theme.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Header } from '@/components/header'
+import { MonicaOmnipresent } from '@/components/monica/monica-omnipresent'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,6 +26,8 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <Header />
           <main>{children}</main>
+          {/* Monica's Omnipresent Guide - appears on all pages */}
+          <MonicaOmnipresent />
         </ThemeProvider>
       </body>
     </html>

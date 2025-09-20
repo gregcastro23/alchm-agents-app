@@ -167,9 +167,7 @@ export class UnifiedGalileoService {
       if (response.status === 422 && errorText.includes('not of type Observe')) {
         const message = `Galileo API error: 422 unknown - ${errorText}`
         if (this.config.failSilently) {
-          console.warn(
-            `${message}\nHint: Configure GALILEO_PROJECT as an Observe project or set GALILEO_FAIL_SILENTLY=true`
-          )
+          // Completely silent when failSilently is enabled
           return false
         }
         throw new Error(

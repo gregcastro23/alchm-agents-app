@@ -285,6 +285,7 @@ model HistoricalAgent {
   // Enhanced consciousness profile
   consciousnessLevel String // "Transcendent", "Illuminated", etc.
   kalchmConstant  Float
+  monicaConstant  Float    @default(0) // Derived from spirit/essence/matter/substance scores
   dominantElement String
   dominantModality String?
   signature       String
@@ -364,6 +365,7 @@ model HistoricalAgent {
   @@index([birthYear])     // NEW - chronological queries
   @@index([culture])       // NEW - cultural filtering
   @@index([kalchmConstant]) // NEW - consciousness ranking
+  @@index([monicaConstant]) // NEW - monica consciousness ranking
   @@index([popularityScore]) // NEW - recommendation engine
   @@index([historicalEra, consciousnessLevel]) // NEW - composite for era + level
   @@index([isActive, historicalEra]) // NEW - active agents by era

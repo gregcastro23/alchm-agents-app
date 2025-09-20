@@ -37,7 +37,7 @@ export class AlchemicalKineticsClient {
   static async get(params: KineticsGetParams): Promise<any> {
     const url = new URL(
       '/api/alchm-kinetics',
-      typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+      typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001'
     )
     url.searchParams.set('lat', String(params.lat))
     url.searchParams.set('lon', String(params.lon))

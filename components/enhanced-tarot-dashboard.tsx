@@ -97,13 +97,17 @@ const EnhancedTarotDashboard: React.FC<EnhancedTarotDashboardProps> = ({
           return
         }
 
-        // Handle AbortError specifically
-        if (error instanceof Error && error.name === 'AbortError') {
+        // Handle AbortError and abort messages specifically
+        if (error instanceof Error && (
+          error.name === 'AbortError' ||
+          error.message.includes('aborted') ||
+          error.message.includes('Request aborted')
+        )) {
           console.log('Enhanced tarot dashboard AbortError caught:', error.message)
           return
         }
 
-        console.error('Error loading tarot dashboard:', error)
+        console.error('Error loading tarot dashboard (non-abort):', error)
 
         // Only update state if not aborted
         if (!abortController.signal.aborted) {

@@ -282,6 +282,22 @@ export function MonicaOmnipresent() {
     return 'bottom-4 right-4' // bottom-right
   }
 
+  // Elemental mode toggle (runtime override)
+  const [additiveOnly, setAdditiveOnly] = useState<boolean>(() => {
+    try {
+      const v = localStorage.getItem('additiveOnlyElements')
+      return v ? v === 'true' : (process.env.NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS === 'true')
+    } catch {
+      return process.env.NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS === 'true'
+    }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('additiveOnlyElements', additiveOnly ? 'true' : 'false')
+    } catch {}
+  }, [additiveOnly])
+
   // Only hide on the main Monica settings page to avoid conflicts
   if (pathname === '/monica') {
     return null
@@ -626,6 +642,15 @@ export function MonicaOmnipresent() {
                 type="checkbox"
                 checked={settings.proactiveTips}
                 onChange={(e) => setSettings(prev => ({ ...prev, proactiveTips: e.target.checked }))}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium">Elemental Mode (Additive Only)</label>
+              <input
+                type="checkbox"
+                checked={additiveOnly}
+                onChange={(e) => setAdditiveOnly(e.target.checked)}
               />
             </div>
 

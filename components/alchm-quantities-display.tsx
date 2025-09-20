@@ -147,6 +147,7 @@ export default function AlchmQuantitiesDisplay() {
           quantities: result.quantities,
           dominantElement: result.dominantElement,
           timestamp: result.timestamp,
+          fallback: result.fallback || false,
           application: 'planetary-agents',
           component: 'AlchmQuantitiesDisplay',
         })
@@ -253,6 +254,22 @@ export default function AlchmQuantitiesDisplay() {
 
   return (
     <div>
+      {/* Fallback data warning */}
+      {data.fallback && (
+        <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              Using fallback data
+            </span>
+          </div>
+          <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+            Real-time calculations are temporarily unavailable. Displaying approximate values.
+            {data.error === 'timeout' && ' (Calculation timeout)'}
+          </p>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <TokenDisplay
           value={data.quantities.Spirit}

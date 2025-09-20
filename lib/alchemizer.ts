@@ -3,6 +3,7 @@
 
 import { performanceCache, createBirthInfoHash } from './performance-cache'
 import { generateAccurateHoroscope } from './monica/horoscope-generator'
+import { recordElementalLogicMode } from './observability'
 
 // Zodiac signs indexed by number
 export const signs: Record<number, string> = {
@@ -365,6 +366,23 @@ export function alchemize(
   birth_info: Record<string, any>,
   horoscope_dict: Record<string, any>
 ): Record<string, any> {
+  // Feature flag: additive-only elemental logic (no negative penalties)
+  // Prefer env var if present; default false to preserve legacy behavior until rollout
+  // Runtime UI override via localStorage if available
+  let uiOverride: boolean | null = null
+  try {
+    if (typeof window !== 'undefined' && window?.localStorage) {
+      const v = window.localStorage.getItem('additiveOnlyElements')
+      if (v === 'true') uiOverride = true
+      else if (v === 'false') uiOverride = false
+    }
+  } catch {}
+
+  const envFlag =
+    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS === 'true') || false
+  const ADDITIVE_ONLY_ELEMENTS = (uiOverride !== null ? uiOverride : envFlag)
+  // Emit analytics for A/B tracking
+  recordElementalLogicMode(ADDITIVE_ONLY_ELEMENTS ? 'additive' : 'legacy')
   // Check cache first
   const birthInfoHash = createBirthInfoHash(birth_info)
   const cachedResult = performanceCache.getAlchemicalData(birthInfoHash)
@@ -519,7 +537,8 @@ export function alchemize(
               } else if (planetInfo[planet]['Nocturnal Element'] === element) {
                 elemental_effect_value = 1
               } else {
-                elemental_effect_value = -1
+                // Elemental logic compliance: if additive-only is enabled, do not penalize mismatches
+                elemental_effect_value = ADDITIVE_ONLY_ELEMENTS ? 0 : -1
               }
             }
 
@@ -700,12 +719,27 @@ export function alchemize(
 }
 
 // Function to generate alchemical data for the current moment
+// Simple cache for current moment calculations (5-minute TTL)
+const currentMomentCache = new Map<string, { data: any; timestamp: number }>()
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+
 export async function generateAlchmForCurrentMoment(): Promise<Record<string, any>> {
   try {
     console.log('Generating alchemical data for current moment...')
 
     // Get current date and time
     const now = new Date()
+
+    // Create cache key (rounded to 5-minute intervals for efficiency)
+    const roundedTime = Math.floor(now.getTime() / (5 * 60 * 1000)) * (5 * 60 * 1000)
+    const cacheKey = `current-moment-${roundedTime}`
+
+    // Check cache first
+    const cached = currentMomentCache.get(cacheKey)
+    if (cached && (now.getTime() - cached.timestamp) < CACHE_TTL) {
+      console.log('Using cached alchemical data for current moment')
+      return cached.data
+    }
 
     // Format date as YYYY-MM-DD
     const year = now.getFullYear()
@@ -906,6 +940,18 @@ export async function generateAlchmForCurrentMoment(): Promise<Record<string, an
     console.log(`Essence: ${alchmData['Alchemy Effects']['Total Essence']}`)
     console.log(`Matter: ${alchmData['Alchemy Effects']['Total Matter']}`)
     console.log(`Substance: ${alchmData['Alchemy Effects']['Total Substance']}`)
+
+    // Cache the result for future requests
+    currentMomentCache.set(cacheKey, {
+      data: alchmData,
+      timestamp: now.getTime()
+    })
+
+    // Clean up old cache entries (keep only last 10)
+    if (currentMomentCache.size > 10) {
+      const oldestKey = currentMomentCache.keys().next().value
+      currentMomentCache.delete(oldestKey)
+    }
 
     return alchmData
   } catch (error) {

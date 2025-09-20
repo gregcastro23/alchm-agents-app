@@ -211,7 +211,7 @@ export function ConsciousnessVelocityVisualizer({
       <Card>
         <CardContent className="p-6 text-center">
           <Brain className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-          <h3 className="font-medium text-gray-900 mb-2">No velocity data available</h3>
+          <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">No velocity data available</h3>
           <p className="text-sm text-gray-600">
             Start interacting with agents to generate consciousness evolution data
           </p>

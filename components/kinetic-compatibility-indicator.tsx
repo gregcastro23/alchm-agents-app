@@ -226,7 +226,7 @@ export function KineticCompatibilityIndicator({
           </div>
 
           <div className="text-right">
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {Math.round(compatibilityData.compatibility.contextual * 100)}%
             </div>
             {compatibilityData.compatibility.enhancement > 1 && (

@@ -840,5 +840,4 @@ ${section.content}
   // (Implementation continued for brevity)
 }
 
-export { TemporalGrimoireExporter }
 export type { GrimoireSection, GrimoireTemplate, ExportOptions }

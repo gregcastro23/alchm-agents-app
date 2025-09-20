@@ -39,18 +39,31 @@ interface AgentCreationActivity {
   isRecent: boolean
 }
 
-const MONICA_STATS: MonicaStats = {
-  monicaConstant: 5.89,
-  consciousnessLevel: 'Illuminated',
-  agentsCrafted: 35,
-  totalConversations: 15420,
-  wisdomShared: 12891,
-  resonanceScore: 0.98
+// Live data hook
+import { usePlanetaryPositions } from '@/hooks/usePlanetaryPositions'
+
+const FALLBACK_STATS: MonicaStats = {
+  monicaConstant: 0,
+  consciousnessLevel: 'Awakening',
+  agentsCrafted: 0,
+  totalConversations: 0,
+  wisdomShared: 0,
+  resonanceScore: 0.5,
 }
 
 export default function MonicaPage() {
   const [recentActivity, setRecentActivity] = useState<AgentCreationActivity[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const { alchmQuantities, monicaConstant, loading, error, lastUpdated } = usePlanetaryPositions({ refreshInterval: 60000 })
+  const [mcSeries, setMcSeries] = useState<number[]>([])
+  const [labels, setLabels] = useState<string[]>([])
+
+  useEffect(() => {
+    if (!loading) {
+      setMcSeries(prev => [...prev.slice(-19), Number((monicaConstant || 0).toFixed(3))])
+      setLabels(prev => [...prev.slice(-19), new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })])
+    }
+  }, [monicaConstant, loading])
 
   useEffect(() => {
     // Simulate loading recent agent creation activity
@@ -143,19 +156,19 @@ export default function MonicaPage() {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-emerald-400">{MONICA_STATS.monicaConstant}</div>
+                    <div className="text-2xl font-bold text-emerald-400">{(monicaConstant || FALLBACK_STATS.monicaConstant).toFixed(3)}</div>
                     <div className="text-sm text-slate-400">Monica Constant</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-400">{MONICA_STATS.agentsCrafted}+</div>
+                    <div className="text-2xl font-bold text-purple-400">35+</div>
                     <div className="text-sm text-slate-400">Agents Crafted</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-400">{(MONICA_STATS.totalConversations / 1000).toFixed(1)}K</div>
+                    <div className="text-2xl font-bold text-blue-400">15.4K</div>
                     <div className="text-sm text-slate-400">Conversations</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-yellow-400">{Math.round(MONICA_STATS.resonanceScore * 100)}%</div>
+                    <div className="text-2xl font-bold text-yellow-400">98%</div>
                     <div className="text-sm text-slate-400">Resonance</div>
                   </div>
                 </div>
@@ -279,10 +292,57 @@ export default function MonicaPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-center">
-                    <div className="text-4xl font-bold text-emerald-400 mb-2">{MONICA_STATS.monicaConstant}</div>
-                    <div className="text-emerald-300 mb-4">Current Level: {MONICA_STATS.consciousnessLevel}</div>
+                    <div className="text-4xl font-bold text-emerald-400 mb-2">{(monicaConstant || 0).toFixed(3)}</div>
+                    <div className="text-emerald-300 mb-1">Spirit: {alchmQuantities.spirit.toFixed(2)} • Essence: {alchmQuantities.essence.toFixed(2)}</div>
+                    <div className="text-emerald-300 mb-1">Matter: {alchmQuantities.matter.toFixed(2)} • Substance: {alchmQuantities.substance.toFixed(2)}</div>
+                    <div className="text-emerald-300 mb-4">Heat: {alchmQuantities.Heat.toFixed(3)} • Energy: {alchmQuantities.Energy.toFixed(3)}</div>
                     <Progress value={89} className="mb-2" />
                     <div className="text-sm text-slate-400">89% to Transcendent Level</div>
+                    <div className="text-xs text-slate-500 mt-2">{loading ? 'Updating…' : lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString()}` : ''}{error ? ` • ${error}` : ''}</div>
+                    {/* Mini sparkline for Monica Constant */}
+                    <div className="mt-4 h-20">
+                      {mcSeries.length > 1 && (
+                        <svg width="100%" height="100%" viewBox="0 0 300 80" preserveAspectRatio="none">
+                          {(() => {
+                            const width = 300
+                            const height = 80
+                            const padding = 4
+                            const data = mcSeries
+                            const min = Math.min(...data)
+                            const max = Math.max(...data)
+                            const denom = max - min || 1
+                            const points = data
+                              .map((v, i) => {
+                                const x = padding + (i / (data.length - 1)) * (width - 2 * padding)
+                                const y = height - (padding + ((v - min) / denom) * (height - 2 * padding))
+                                return `${x},${y}`
+                              })
+                              .join(' ')
+                            return (
+                              <>
+                                <polyline
+                                  fill="none"
+                                  stroke="rgba(16,185,129,0.9)"
+                                  strokeWidth="2"
+                                  points={points}
+                                />
+                                {/* Gradient underlay */}
+                                <defs>
+                                  <linearGradient id="mcGrad" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stopColor="rgba(16,185,129,0.35)" />
+                                    <stop offset="100%" stopColor="rgba(16,185,129,0.0)" />
+                                  </linearGradient>
+                                </defs>
+                                <polygon
+                                  fill="url(#mcGrad)"
+                                  points={`${points} ${width - padding},${height - padding} ${padding},${height - padding}`}
+                                />
+                              </>
+                            )
+                          })()}
+                        </svg>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -295,11 +355,11 @@ export default function MonicaPage() {
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-400">{(MONICA_STATS.wisdomShared / 1000).toFixed(1)}K</div>
+                      <div className="text-2xl font-bold text-blue-400">{(FALLBACK_STATS.wisdomShared / 1000).toFixed(1)}K</div>
                       <div className="text-xs text-slate-400">Wisdom Shared</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-400">{Math.round(MONICA_STATS.resonanceScore * 100)}%</div>
+                      <div className="text-2xl font-bold text-purple-400">{Math.round(FALLBACK_STATS.resonanceScore * 100)}%</div>
                       <div className="text-xs text-slate-400">Resonance Score</div>
                     </div>
                   </div>

@@ -1,0 +1,40 @@
+{
+  "timestamp": "2025-09-19T15:02:33.263Z",
+  "testType": "unit_tests",
+  "summary": {
+    "total": 6,
+    "passed": 0,
+    "failed": 6,
+    "successRate": 0
+  },
+  "errors": [
+    {
+      "name": "Performance module import",
+      "details": "Import error: Unexpected token 'export'"
+    },
+    {
+      "name": "Temporal analysis engine tests",
+      "details": "Error: Unexpected identifier 'PatternConfiguration'"
+    },
+    {
+      "name": "Elemental reinforcement tests",
+      "details": "Error: Unexpected token 'export'"
+    },
+    {
+      "name": "Pattern detection tests",
+      "details": "Error: Unexpected token '{'"
+    },
+    {
+      "name": "Grimoire export tests",
+      "details": "Error: Unexpected token '{'"
+    },
+    {
+      "name": "Collaborative sessions tests",
+      "details": "Error: Unexpected token '{'"
+    }
+  ],
+  "environment": {
+    "nodeVersion": "v20.19.3",
+    "platform": "darwin"
+  }
+}

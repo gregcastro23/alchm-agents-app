@@ -12,8 +12,16 @@ export async function GET() {
   try {
     console.log('API: alchm-quantities endpoint called')
 
-    // Generate alchemical data for the current moment
-    const alchmData = await generateAlchmForCurrentMoment()
+    // Create timeout promise (15 seconds)
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Calculation timeout')), 15000)
+    })
+
+    // Generate alchemical data for the current moment with timeout
+    const alchmData = await Promise.race([
+      generateAlchmForCurrentMoment(),
+      timeoutPromise
+    ])
 
     // Validate the response data
     if (!alchmData || typeof alchmData !== 'object') {
@@ -90,12 +98,42 @@ export async function GET() {
     })
   } catch (error) {
     console.error('API Error generating Alchm quantities:', error)
-    return NextResponse.json(
-      {
-        error: 'Failed to generate Alchm quantities',
-        details: error instanceof Error ? error.message : String(error),
+
+    // Provide fallback data for timeout or calculation errors
+    const fallbackData = {
+      quantities: {
+        Spirit: 3.5,
+        Essence: 4.2,
+        Matter: 2.8,
+        Substance: 3.1,
+        ANumber: 13.6,
+        DayEssence: 2.1,
+        NightEssence: 2.1,
       },
-      { status: 500 }
-    )
+      dominantElement: 'Fire',
+      heat: 0.65,
+      entropy: 0.45,
+      reactivity: 0.55,
+      energy: 0.35,
+      sunSign: 'Virgo',
+      chartRuler: 'Mercury',
+      realtimeRune: {
+        runeType: 'enhanced',
+        element: 'Fire',
+        description: 'Fallback data - calculations temporarily unavailable',
+      },
+      planetaryPositions: 7,
+      timestamp: new Date().toISOString(),
+      fallback: true,
+      error: error instanceof Error && error.message === 'Calculation timeout' ? 'timeout' : 'calculation_error'
+    }
+
+    console.log('API: Returning fallback alchm quantities due to error')
+
+    return NextResponse.json(fallbackData, {
+      headers: {
+        'Cache-Control': 'no-store, max-age=0, must-revalidate',
+      },
+    })
   }
 }

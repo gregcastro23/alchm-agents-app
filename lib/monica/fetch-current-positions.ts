@@ -29,11 +29,25 @@ const REQUEST_CACHE_DURATION = 30000 // 30 seconds
 export async function fetchCurrentPlanetaryPositions(
   signal?: AbortSignal
 ): Promise<AlchemizeApiResponse | null> {
+  // Check if already aborted before starting
+  if (signal?.aborted) {
+    throw new Error('Request aborted')
+  }
+
   // Return cached request if one is in progress or recently completed
   const now = Date.now()
   if (currentRequest && now - lastRequestTime < REQUEST_CACHE_DURATION) {
     console.log('Using cached/in-progress request for planetary positions')
-    return currentRequest
+    try {
+      return await currentRequest
+    } catch (error) {
+      // If cached request failed with AbortError, re-throw it
+      if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
+        throw error
+      }
+      // For other errors, continue to create new request
+      console.log('Cached request failed, creating new request:', error)
+    }
   }
 
   // Create new request
@@ -43,13 +57,23 @@ export async function fetchCurrentPlanetaryPositions(
   try {
     const result = await currentRequest
     return result
+  } catch (error) {
+    // Handle AbortError specifically - don't clear cache, just re-throw
+    if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
+      throw error
+    }
+    // For other errors, log and re-throw
+    console.error('Request failed:', error)
+    throw error
   } finally {
-    // Clear the request after completion
-    setTimeout(() => {
-      if (Date.now() - lastRequestTime >= REQUEST_CACHE_DURATION) {
-        currentRequest = null
-      }
-    }, REQUEST_CACHE_DURATION)
+    // Clear the request after completion (but not for aborted requests)
+    if (!signal?.aborted) {
+      setTimeout(() => {
+        if (Date.now() - lastRequestTime >= REQUEST_CACHE_DURATION) {
+          currentRequest = null
+        }
+      }, REQUEST_CACHE_DURATION)
+    }
   }
 }
 
@@ -122,7 +146,8 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
     return transformedData
   } catch (error) {
     // Handle AbortError specifically - don't fallback if request was aborted
-    if (error instanceof Error && error.name === 'AbortError') {
+    if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
+      console.log('Fetch request was aborted, not attempting fallback')
       throw error // Re-throw AbortError so it can be caught by the calling function
     }
 
@@ -130,6 +155,11 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
 
     // Fallback: return a minimal response with current positions from our calculate-transits
     try {
+      // Check again if aborted during error handling
+      if (signal?.aborted) {
+        throw new Error('Request aborted')
+      }
+
       const { getCurrentPlanetaryPositions } = await import('../calculate-transits')
       const positions = getCurrentPlanetaryPositions()
 
@@ -159,6 +189,10 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
       console.log('Using fallback planetary positions')
       return fallbackData
     } catch (fallbackError) {
+      // If fallback fails due to abort, re-throw abort error
+      if (fallbackError instanceof Error && (fallbackError.name === 'AbortError' || fallbackError.message.includes('aborted'))) {
+        throw fallbackError
+      }
       console.error('Fallback also failed:', fallbackError)
       return null
     }

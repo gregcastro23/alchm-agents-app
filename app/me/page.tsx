@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import CircularNatalHoroscope from '@/components/circular-natal-horoscope'
-import { ConsciousnessVectorDisplay } from '@/components/temporal/consciousness-vector-display'
 import ProfileOnboardingForm from '@/components/profile/onboarding-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -103,14 +102,18 @@ export default async function MePage() {
   const essence = Number(alchm?.['Alchemy Effects']?.['Total Essence'] || 0)
   const matter = Number(alchm?.['Alchemy Effects']?.['Total Matter'] || 0)
   const substance = Number(alchm?.['Alchemy Effects']?.['Total Substance'] || 0)
+
+  // Extract elemental values for display
   const fire = Number(alchm?.['Total Effect Value']?.['Fire'] || 0)
   const water = Number(alchm?.['Total Effect Value']?.['Water'] || 0)
   const air = Number(alchm?.['Total Effect Value']?.['Air'] || 0)
   const earth = Number(alchm?.['Total Effect Value']?.['Earth'] || 0)
+
+  // Extract thermodynamic values
   const Heat = Number(alchm?.['Heat'] || 0)
   const Entropy = Number(alchm?.['Entropy'] || 0)
   const Reactivity = Number(alchm?.['Reactivity'] || 0)
-  const Energy = Number(alchm?.['Energy'] || 0)
+  const EnergyValue = Number(alchm?.['Energy'] || 0)
 
   const monicaConstant = calculateMC(spirit, essence, matter, substance, fire, water, air, earth)
   const dominantElement = String(alchm?.['Dominant Element'] || 'Fire')
@@ -159,30 +162,253 @@ export default async function MePage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <CircularNatalHoroscope
-          className="w-full"
-          birthInfo={{
-            name: profile.name || 'You',
-            year: (profile.birthInfo as any)?.year || 1990,
-            month: (profile.birthInfo as any)?.month || 0,
-            day: (profile.birthInfo as any)?.day || 1,
-            hour: (profile.birthInfo as any)?.hour || 12,
-            minute: (profile.birthInfo as any)?.minute || 0,
-            latitude: (profile.birthInfo as any)?.latitude ?? 0,
-            longitude: (profile.birthInfo as any)?.longitude ?? 0,
-          }}
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Birth Chart with Kinetics */}
+        <div className="lg:col-span-2">
+          <CircularNatalHoroscope
+            className="w-full"
+            showKinetics={true}
+            birthInfo={{
+              name: profile.name || session.user.name || 'You',
+              year: (profile.birthInfo as any)?.year || 1990,
+              month: (profile.birthInfo as any)?.month || 0,
+              day: (profile.birthInfo as any)?.day || 1,
+              hour: (profile.birthInfo as any)?.hour || 12,
+              minute: (profile.birthInfo as any)?.minute || 0,
+              latitude: (profile.birthInfo as any)?.latitude ?? 0,
+              longitude: (profile.birthInfo as any)?.longitude ?? 0,
+            }}
+          />
+        </div>
 
+        {/* Alchemical Transformation */}
         <Card>
           <CardHeader>
-            <CardTitle>Consciousness Vector</CardTitle>
+            <CardTitle>Alchemical Profile</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Your consciousness signature
+            </p>
           </CardHeader>
-          <CardContent>
-            <ConsciousnessVectorDisplay
-              alchmQuantities={{ spirit, essence, matter, substance, Heat, Entropy, Reactivity, Energy }}
-              monicaConstant={monicaConstant}
-            />
+          <CardContent className="space-y-4">
+            {/* Core Alchemical Values */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="text-center p-3 bg-red-50 rounded-lg">
+                <div className="text-2xl font-bold text-red-600">{spirit.toFixed(1)}</div>
+                <div className="text-xs text-red-700">Spirit</div>
+              </div>
+              <div className="text-center p-3 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">{essence.toFixed(1)}</div>
+                <div className="text-xs text-blue-700">Essence</div>
+              </div>
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">{matter.toFixed(1)}</div>
+                <div className="text-xs text-green-700">Matter</div>
+              </div>
+              <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600">{substance.toFixed(1)}</div>
+                <div className="text-xs text-yellow-700">Substance</div>
+              </div>
+            </div>
+
+            {/* Thermodynamic Values */}
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm">Thermodynamic Properties</h4>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex justify-between">
+                  <span>Heat:</span>
+                  <span className="font-mono">{Heat.toFixed(3)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Entropy:</span>
+                  <span className="font-mono">{Entropy.toFixed(3)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Reactivity:</span>
+                  <span className="font-mono">{Reactivity.toFixed(3)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Energy:</span>
+                  <span className="font-mono">{EnergyValue.toFixed(3)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Elemental Distribution */}
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm">Elemental Distribution</h4>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-red-500 rounded"></div>
+                    Fire
+                  </span>
+                  <span className="font-mono">{fire.toFixed(1)}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-blue-500 rounded"></div>
+                    Water
+                  </span>
+                  <span className="font-mono">{water.toFixed(1)}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-yellow-500 rounded"></div>
+                    Air
+                  </span>
+                  <span className="font-mono">{air.toFixed(1)}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-green-500 rounded"></div>
+                    Earth
+                  </span>
+                  <span className="font-mono">{earth.toFixed(1)}</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Detailed Analysis Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Consciousness Metrics */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Consciousness Analysis</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Alchemical balance and thermodynamic properties
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Simple Alchemical Display */}
+            <div className="grid grid-cols-4 gap-3">
+              <div className="text-center">
+                <div className="text-lg font-bold text-red-600">{spirit.toFixed(1)}</div>
+                <div className="text-xs text-muted-foreground">Spirit</div>
+                <div className="w-full bg-red-100 rounded-full h-2 mt-1">
+                  <div 
+                    className="bg-red-500 h-2 rounded-full" 
+                    style={{ width: `${Math.min(100, (spirit / Math.max(spirit, essence, matter, substance)) * 100)}%` }}
+                  ></div>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-blue-600">{essence.toFixed(1)}</div>
+                <div className="text-xs text-muted-foreground">Essence</div>
+                <div className="w-full bg-blue-100 rounded-full h-2 mt-1">
+                  <div 
+                    className="bg-blue-500 h-2 rounded-full" 
+                    style={{ width: `${Math.min(100, (essence / Math.max(spirit, essence, matter, substance)) * 100)}%` }}
+                  ></div>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-green-600">{matter.toFixed(1)}</div>
+                <div className="text-xs text-muted-foreground">Matter</div>
+                <div className="w-full bg-green-100 rounded-full h-2 mt-1">
+                  <div 
+                    className="bg-green-500 h-2 rounded-full" 
+                    style={{ width: `${Math.min(100, (matter / Math.max(spirit, essence, matter, substance)) * 100)}%` }}
+                  ></div>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-yellow-600">{substance.toFixed(1)}</div>
+                <div className="text-xs text-muted-foreground">Substance</div>
+                <div className="w-full bg-yellow-100 rounded-full h-2 mt-1">
+                  <div 
+                    className="bg-yellow-500 h-2 rounded-full" 
+                    style={{ width: `${Math.min(100, (substance / Math.max(spirit, essence, matter, substance)) * 100)}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Monica Constant Display */}
+            <div className="text-center p-4 bg-muted rounded-lg">
+              <div className="text-2xl font-bold">{monicaConstant.toFixed(3)}</div>
+              <div className="text-sm text-muted-foreground">Monica Constant</div>
+              <div className="text-xs mt-1">
+                {monicaConstant < 1 ? 'Foundational' : 
+                 monicaConstant < 2 ? 'Developing' : 
+                 monicaConstant < 3 ? 'Advanced' : 'Transcendent'} Level
+              </div>
+            </div>
+
+            {/* Thermodynamic Properties */}
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="flex justify-between p-2 bg-red-50 rounded">
+                <span>Heat:</span>
+                <span className="font-mono">{Heat.toFixed(3)}</span>
+              </div>
+              <div className="flex justify-between p-2 bg-blue-50 rounded">
+                <span>Entropy:</span>
+                <span className="font-mono">{Entropy.toFixed(3)}</span>
+              </div>
+              <div className="flex justify-between p-2 bg-green-50 rounded">
+                <span>Reactivity:</span>
+                <span className="font-mono">{Reactivity.toFixed(3)}</span>
+              </div>
+              <div className="flex justify-between p-2 bg-yellow-50 rounded">
+                <span>Energy:</span>
+                <span className="font-mono">{EnergyValue.toFixed(3)}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Chart Comparison */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Chart Insights</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Key patterns and recommendations
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div>
+                <h4 className="font-medium text-sm mb-1">Dominant Patterns</h4>
+                <div className="text-sm text-muted-foreground">
+                  Your {dominantElement.toLowerCase()} dominance suggests a natural affinity for {
+                    dominantElement === 'Fire' ? 'creativity and leadership' :
+                    dominantElement === 'Water' ? 'intuition and emotional depth' :
+                    dominantElement === 'Air' ? 'communication and ideas' :
+                    'stability and practical manifestation'
+                  }.
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="font-medium text-sm mb-1">Monica Constant Analysis</h4>
+                <div className="text-sm text-muted-foreground">
+                  At {monicaConstant.toFixed(3)}, your consciousness operates at a {
+                    monicaConstant < 1 ? 'foundational' :
+                    monicaConstant < 2 ? 'developing' :
+                    monicaConstant < 3 ? 'advanced' : 'transcendent'
+                  } level with strong potential for growth.
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-sm mb-1">Alchemical Balance</h4>
+                <div className="text-sm text-muted-foreground">
+                  Your Spirit/Essence ratio of {(spirit/Math.max(essence, 0.1)).toFixed(2)} indicates {
+                    spirit > essence ? 'active initiation energy' : 'receptive integration capacity'
+                  }, while your Matter/Substance foundation provides {
+                    matter > substance ? 'structural stability' : 'connective flexibility'
+                  }.
+                </div>
+              </div>
+
+              {computationError && (
+                <div className="p-3 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded">
+                  Note: Some calculations used fallback data due to: {computationError}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

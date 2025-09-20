@@ -833,11 +833,21 @@ export async function getCurrentDecan(
       }
     }
   } catch (error) {
-    // Handle AbortError specifically
-    if (error instanceof Error && error.name === 'AbortError') {
+    // Handle AbortError and abort messages specifically
+    if (error instanceof Error && (
+      error.name === 'AbortError' ||
+      error.message.includes('aborted') ||
+      error.message.includes('Request aborted')
+    )) {
+      console.log('getCurrentDecan: Request was aborted, re-throwing')
       throw error // Re-throw AbortError so it can be caught by the calling component
     }
-    console.error('Error fetching current decan:', error)
+    console.error('Error fetching current decan (non-abort):', error)
+  }
+
+  // Check once more before fallback
+  if (signal?.aborted) {
+    throw new Error('Request aborted')
   }
 
   // Fallback to date-based calculation if API fails

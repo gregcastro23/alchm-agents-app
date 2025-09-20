@@ -274,8 +274,8 @@ export default function MonicaChatInterface({
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4">
       {/* Chat Messages */}
-      <Card className="h-[500px]">
-        <CardContent className="p-0 h-full">
+      <Card className="min-h-[350px] max-h-[80vh]">
+        <CardContent className="p-0 h-[50vh] md:h-[60vh] lg:h-[70vh]">
           <ScrollArea className="h-full p-4" ref={scrollAreaRef}>
             <div className="space-y-4">
               {messages.map(message => (
@@ -433,6 +433,12 @@ export default function MonicaChatInterface({
                 Monica: World-renowned tarot master & expert guide to the Planetary Agents system
               </span>
             </div>
+            {messages[messages.length - 1]?.type === 'monica' && (messages[messages.length - 1] as any).envelope && (
+              <div className="ml-auto flex items-center gap-2">
+                <span className="text-green-700">XP Gained:</span>
+                <span className="font-semibold text-green-800">{(messages[messages.length - 1] as any).envelope?.xp ?? ''}</span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

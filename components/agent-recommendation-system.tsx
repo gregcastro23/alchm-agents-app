@@ -274,7 +274,7 @@ export function AgentRecommendationSystem({
       <Card>
         <CardContent className="p-6 text-center">
           <Brain className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-          <h3 className="font-medium text-gray-900 mb-2">No optimal recommendations found</h3>
+          <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">No optimal recommendations found</h3>
           <p className="text-sm text-gray-600">
             Try selecting different agents or check back during optimal planetary hours
           </p>
@@ -313,7 +313,7 @@ export function AgentRecommendationSystem({
                     <TypeIcon className={`h-4 w-4 ${typeColor}`} />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">{rec.agent.name}</h3>
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">{rec.agent.name}</h3>
                     <p className="text-sm text-gray-600">{rec.agent.title}</p>
                   </div>
                 </div>

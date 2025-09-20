@@ -55,7 +55,7 @@ const PLANET_COLORS: Record<string, string> = {
   saturn: 'text-gray-700',
   uranus: 'text-cyan-500',
   neptune: 'text-blue-600',
-  pluto: 'text-gray-900',
+  pluto: 'text-gray-900 dark:text-gray-100',
 }
 
 const DIGNITY_COLORS: Record<string, string> = {

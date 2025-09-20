@@ -36,6 +36,7 @@ import { HistoricalAgentsService, dbAgentToCraftedAgent } from '@/lib/historical
 import { AgentAttachmentsService, formatAttachmentForAgent } from '@/lib/agent-attachments-service'
 import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
 import { resilientApiCall } from '@/lib/api-resilience-system'
+import prisma from '@/lib/db'
 
 // Rune context detection - analyzes current cosmic patterns for rune enhancement
 async function detectRuneContext(requestData: any, alchmData: any): Promise<any> {
@@ -794,7 +795,7 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
           console.warn('Failed to record conversation:', dbError)
         }
 
-        return NextResponse.json({
+      return NextResponse.json({
           response: text,
           sessionId: finalSessionId,
           agentInfo: {
@@ -1345,6 +1346,7 @@ Always end responses with practical next steps for rune crafting, resource manag
         console.error('Failed to log Monica conversation to Galileo:', error)
       })
 
+      const xpForThisMessage = aNumberInfo ? calculateDynamicXP(conversationContext, alchmData, runeContext, chartCombination) : 50
       const structured = MonicaResponseHandler.formatResponse(text, {
         userMessage: trimmedMessage,
         currentAlchmQuantities: aNumberInfo
@@ -1403,6 +1405,55 @@ Always end responses with practical next steps for rune crafting, resource manag
         )
       }
 
+      // Persist XP and interaction if userId provided
+      try {
+        if (userId) {
+          const settings = await prisma.monicaUserSettings.upsert({
+            where: { userId },
+            update: {},
+            create: { userId },
+          })
+          const progress = await prisma.monicaUserProgress.upsert({
+            where: { userId },
+            update: {},
+            create: { userId, settingsId: settings.id },
+          })
+
+          const xpGained = aNumberInfo
+            ? calculateDynamicXP(conversationContext, alchmData, runeContext, chartCombination)
+            : 50
+
+          await prisma.monicaUserProgress.update({
+            where: { id: progress.id },
+            data: {
+              totalXP: { increment: xpGained },
+              totalInteractions: { increment: 1 },
+              lastAction: 'monica_chat',
+              lastActiveDate: new Date(),
+            },
+          })
+
+          await prisma.monicaInteraction.create({
+            data: {
+              userId,
+              settingsId: settings.id,
+              pageUrl: '/monica',
+              interactionType: 'chat_response',
+              sessionId: conversationContext.sessionId,
+              contextData: {
+                aNumberInfo: aNumberInfo || null,
+                processingTimeMs: processingTime,
+              } as any,
+              userAction: 'user_message',
+              monicaResponse: text,
+              resultedInAction: false,
+            },
+          })
+        }
+      } catch (persistErr) {
+        console.warn('XP/interaction persistence failed:', persistErr)
+      }
+
       return NextResponse.json({
         response: text,
         structured: {
@@ -1412,8 +1463,10 @@ Always end responses with practical next steps for rune crafting, resource manag
             ...growthAttributes,
           },
           conscious_parameters: consciousParameters,
+          xp: xpForThisMessage,
         },
         ratings: structured.ratings,
+        xp: xpForThisMessage,
         customizationProgress: computeCustomizationProgress({
           quickProfile,
           birthData,
