@@ -2,6 +2,22 @@
 
 All notable changes to Planetary Agents will be documented in this file.
 
+## [2.6.0] - 2025-09-20 - Magnus Opus Kinetics Activation (Backend-first)
+
+### Added
+- Backend enhanced kinetics endpoint: `POST /api/alchm-kinetics/enhanced` (agent optimization, power prediction, resonance map)
+- Group dynamics endpoint: `POST /api/kinetics/group` (harmony, amplification, momentum flow)
+- Token/NFT kinetics endpoint: `POST /api/kinetics/token` (generation rate, rarity bundle)
+- Unified client: `lib/kinetics-unified-client.ts` with `NEXT_PUBLIC_KINETICS_BACKEND` feature flag and graceful fallback
+- Server-side enhancements module: `lib/server/kinetics-enhancements.ts`
+
+### Changed
+- Components `RealTimeKineticsWidget`, `KineticIndicators`, and `TokenDashboardKinetics` now fetch via unified client (non-breaking)
+- Documentation updated: `README.md`, `API_DOCUMENTATION.md`, `API_DOCUMENTATION_UPDATE.md`
+
+### Notes
+- Progressive rollout: enable `NEXT_PUBLIC_KINETICS_BACKEND=true` to route through backend; fallback preserved to avoid breaking Monica’s system.
+
 ## [2.5.0] - 2025-09-19 - Celestial Energy Quantification System
 
 ### 🌟 Major Features Added

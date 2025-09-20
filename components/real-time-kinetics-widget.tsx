@@ -25,7 +25,7 @@ import {
   BarChart3,
   Sparkles
 } from 'lucide-react'
-import { AlchemicalKineticsClient } from '@/lib/kinetics-client'
+import { UnifiedKineticsClient } from '@/lib/kinetics-unified-client'
 
 interface PlanetaryHour {
   planet: string
@@ -86,7 +86,7 @@ export function RealTimeKineticsWidget({
       setError(null)
 
       // Get current alchemical kinetics
-      const kinetics = await AlchemicalKineticsClient.get({
+      const kinetics = await UnifiedKineticsClient.getKinetics({
         lat: userLocation.lat,
         lon: userLocation.lon,
         date: new Date().toISOString().split('T')[0],

@@ -1,3 +1,126 @@
+### Enhanced Kinetics APIs (Platform-wide Activation)
+
+All endpoints return JSON and enforce TypeScript strict types on the server.
+
+Feature flag: set `NEXT_PUBLIC_KINETICS_BACKEND=true` to route frontend through these endpoints via `UnifiedKineticsClient`.
+
+1) POST `/api/alchm-kinetics/enhanced`
+
+Request:
+
+```json
+{
+  "location": { "lat": 37.7749, "lon": -122.4194 },
+  "options": {
+    "includeAgentOptimization": true,
+    "includePowerPrediction": true,
+    "includeResonanceMap": false,
+    "agentIds": ["galileo-galilei", "leonardo-da-vinci"]
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "base": {
+      "power": [{ "t": "2025-09-20T00:00:00Z", "power": 0.62 }],
+      "timing": { "planetaryHours": ["Sun", "Moon", "Mars"], "seasonalInfluence": "Autumn" }
+    },
+    "agentOptimization": { "recommendations": [], "currentConditions": { "hour": "Sun", "power": 0.62, "momentum": "sustained" } },
+    "powerPrediction": { "trend": "rising", "confidence": 0.7, "nextHourPower": 0.68, "peakWindow": null }
+  },
+  "computeTimeMs": 42
+}
+```
+
+2) POST `/api/kinetics/group`
+
+Request:
+
+```json
+{ "agentIds": ["galileo-galilei", "leonardo-da-vinci", "michelangelo"], "location": { "lat": 37.7749, "lon": -122.4194 } }
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "harmony": 0.73,
+    "powerAmplification": 1.2,
+    "momentumFlow": "sustained",
+    "currentPower": 0.65,
+    "resonances": { "galileo-galilei": { "leonardo-da-vinci": 0.82 } }
+  },
+  "computeTimeMs": 35
+}
+```
+
+3) POST `/api/kinetics/token`
+
+Request:
+
+```json
+{ "baseTokenRate": 100, "baseNFTRarity": 0.3, "location": { "lat": 37.7749, "lon": -122.4194 } }
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "currentRate": 138.2,
+    "baseRate": 100,
+    "kineticMultiplier": 1.382,
+    "velocityIndicator": "stable",
+    "momentumPhase": "sustained",
+    "powerLevel": 0.62,
+    "nextOptimalWindow": null,
+    "accumulationForecast": "Stable accumulation period - consistent generation expected",
+    "solarAmplification": 1.0,
+    "seasonalModifier": 1.05,
+    "nftRarity": {
+      "baseRarity": 0.3,
+      "kineticRarity": 0.62,
+      "tier": "Rare",
+      "priceMultiplier": 2.5,
+      "powerBoost": 0.15,
+      "planetaryBoost": 0.2,
+      "seasonalBoost": 0.05,
+      "minting_time": "2025-09-20T12:34:56.000Z",
+      "planetary_hour": "Sun"
+    }
+  },
+  "computeTimeMs": 31
+}
+```
+
+Client usage (frontend):
+
+```ts
+import { UnifiedKineticsClient } from '@/lib/kinetics-unified-client'
+
+// Base kinetics (auto-fallback when flag disabled)
+await UnifiedKineticsClient.getKinetics({ lat, lon, date, includeElemental: true, includePlanetary: true, window: 3 })
+
+// Enhanced kinetics (requires NEXT_PUBLIC_KINETICS_BACKEND=true)
+await UnifiedKineticsClient.getEnhanced({ location: { lat, lon }, options: { includeAgentOptimization: true, includePowerPrediction: true } })
+
+// Group dynamics
+await UnifiedKineticsClient.getGroupDynamics({ agentIds, location: { lat, lon } })
+
+// Token/NFT metrics
+await UnifiedKineticsClient.getTokenMetrics({ baseTokenRate, baseNFTRarity, location: { lat, lon } })
+```
+
+Latency target: <200ms for cached/common paths. Use the unified client to progressively enable backend and fall back to existing client logic on errors.
+
 # API Documentation Update - Natal Sigil Generation
 
 ## New Endpoint: `/api/generate-natal-sigil`

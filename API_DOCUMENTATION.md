@@ -715,6 +715,35 @@ response = ai.chat(
 )
 ```
 
+## Kinetics Engine (Enhanced) - 2025-09-20
+
+Feature flag: set `NEXT_PUBLIC_KINETICS_BACKEND=true` to route frontend through backend enhanced kinetics via `UnifiedKineticsClient`.
+
+Endpoints:
+
+- POST `/api/alchm-kinetics/enhanced`
+  - Body: `{ location: { lat: number, lon: number }, options?: { includeAgentOptimization?: boolean, includePowerPrediction?: boolean, includeResonanceMap?: boolean, agentIds?: string[] } }`
+  - Returns: `{ success, data: { base, agentOptimization?, powerPrediction?, resonanceMap? }, computeTimeMs }`
+
+- POST `/api/kinetics/group`
+  - Body: `{ agentIds: string[], location: { lat: number, lon: number } }`
+  - Returns: `{ success, data: { harmony, powerAmplification, momentumFlow, currentPower, resonances }, computeTimeMs }`
+
+- POST `/api/kinetics/token`
+  - Body: `{ baseTokenRate: number, baseNFTRarity: number, location: { lat: number, lon: number } }`
+  - Returns: token generation metrics and NFT rarity bundle
+
+Client usage:
+
+```ts
+import { UnifiedKineticsClient } from '@/lib/kinetics-unified-client'
+
+await UnifiedKineticsClient.getKinetics({ lat, lon, date, includeElemental: true, includePlanetary: true, window: 3 })
+await UnifiedKineticsClient.getEnhanced({ location: { lat, lon }, options: { includeAgentOptimization: true, includePowerPrediction: true } })
+await UnifiedKineticsClient.getGroupDynamics({ agentIds, location: { lat, lon } })
+await UnifiedKineticsClient.getTokenMetrics({ baseTokenRate, baseNFTRarity, location: { lat, lon } })
+```
+
 ## Changelog
 
 ### v1.0.0 (2024-01-13)

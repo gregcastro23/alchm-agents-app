@@ -11,6 +11,10 @@ Environment knobs:
 - `MONICA_TEMPERATURE` (default 0.4)
 - `BACKGROUND_REFRESH_INTERVAL_MS` (default 600000)
 
+Kinetics feature flags:
+
+- `NEXT_PUBLIC_KINETICS_BACKEND`: when `true`, frontend uses backend enhanced kinetics APIs via unified client; otherwise falls back to existing client with graceful degradation.
+
 Run:
 
 ```

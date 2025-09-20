@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { AlchemicalKineticsClient } from '@/lib/kinetics-client'
+import { UnifiedKineticsClient } from '@/lib/kinetics-unified-client'
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts'
 
 interface KineticTokenMetrics {
@@ -67,7 +67,7 @@ export function TokenDashboardKinetics({
       setError(null)
 
       // Get current kinetics
-      const kinetics = await AlchemicalKineticsClient.get({
+      const kinetics = await UnifiedKineticsClient.getKinetics({
         lat: userLocation.lat,
         lon: userLocation.lon,
         date: new Date().toISOString().split('T')[0],
