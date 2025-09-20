@@ -1057,6 +1057,45 @@ model MonicaInteraction {
   @@map("monica_interactions")
 }
 
+// Agent Evolution State for Kinetics System
+model AgentEvolutionState {
+  id                      String   @id @default(cuid())
+  agentId                 String
+  userId                  String?  @default("anonymous")
+  currentLevel            String   @default("bronze")
+  totalPower              Float    @default(0)
+  interactionCount        Int      @default(0)
+  lastInteraction         DateTime @default(now())
+  specialAbilitiesUnlocked String  @default("[]")
+  evolutionHistory        String   @default("[]")
+  affinityScores          String   @default("{}")
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@unique([agentId, userId])
+  @@index([agentId])
+  @@index([userId])
+  @@map("agent_evolution_states")
+}
+
+// Consciousness Interactions for tracking user engagement
+model ConsciousnessInteraction {
+  id                 String   @id @default(cuid())
+  userId             String?  @default("anonymous")
+  agentId            String
+  interactionType    String
+  powerGained        Float
+  planetaryInfluence String
+  elementalResonance Float
+  timestamp          DateTime @default(now())
+  metadata           String   @default("{}")
+
+  @@index([agentId])
+  @@index([userId])
+  @@index([timestamp])
+  @@map("consciousness_interactions")
+}
+
 // Contextual Help Analytics
 model MonicaContextualHelp {
   id              String   @id @default(cuid())

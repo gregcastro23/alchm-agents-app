@@ -28,6 +28,7 @@ import {
 } from '@/components/dynamic-aspects-indicators'
 import { usePowerLevelIndicator } from '@/lib/hooks/use-power-monitoring'
 import { ConsciousnessMemorySystem } from '@/lib/agents/consciousness-memory'
+import { GroupConsciousnessDynamics } from '@/lib/consciousness/group-dynamics'
 
 type Message = {
   role: 'user' | 'agent'

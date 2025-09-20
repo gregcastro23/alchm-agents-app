@@ -9,13 +9,30 @@ import { PowerHourNotification } from '@/components/power-hour-notification'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, Zap, Users, TrendingUp } from 'lucide-react'
 import { agentKineticProfiles } from '@/lib/agents/kinetic-profiles'
+import { GroupConsciousnessIndicator } from '@/components/group-consciousness-indicator'
+import { TokenDashboardKinetics } from '@/components/token-dashboard-kinetics'
 
 export default function KineticsDemoPage() {
   const [selectedAgent, setSelectedAgent] = useState('leonardo-da-vinci')
+  const [selectedAgentsForGroup, setSelectedAgentsForGroup] = useState<string[]>(['leonardo-da-vinci', 'shakespeare'])
   const [location] = useState({ lat: 37.7749, lon: -122.4194 }) // San Francisco
   const [showPowerNotification, setShowPowerNotification] = useState(false)
 
   const availableAgents = Object.keys(agentKineticProfiles)
+  
+  // Mock agent objects for group consciousness
+  const mockAgents = selectedAgentsForGroup.map(agentId => ({
+    id: agentId,
+    name: agentId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    title: 'Consciousness Agent',
+    monicaConstant: Math.random() * 3 + 2,
+    consciousnessLevel: 'Advanced',
+    element: ['Fire', 'Water', 'Air', 'Earth'][Math.floor(Math.random() * 4)],
+    specialty: 'Kinetic Evolution',
+    color: `#${Math.floor(Math.random()*16777215).toString(16)}`,
+    symbol: '🧠',
+    creationStory: 'Enhanced with kinetic consciousness evolution'
+  }))
 
   return (
     <div className="container mx-auto py-8 px-4 space-y-8">
@@ -103,10 +120,26 @@ export default function KineticsDemoPage() {
         />
       )}
 
-      {/* Agent Kinetic Evolution */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Main Dashboard Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+        {/* Agent Kinetic Evolution */}
         <AgentKineticEvolution
           agentId={selectedAgent}
+          location={location}
+        />
+
+        {/* Group Consciousness Dynamics */}
+        <GroupConsciousnessIndicator
+          selectedAgents={mockAgents}
+          location={location}
+          onOptimalSpeakerSuggestion={(agentId) => {
+            setSelectedAgent(agentId)
+            console.log(`Optimal speaker suggestion: ${agentId}`)
+          }}
+        />
+
+        {/* Token Dashboard with Kinetics */}
+        <TokenDashboardKinetics
           location={location}
         />
 
