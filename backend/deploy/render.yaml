@@ -1,0 +1,44 @@
+# Render.com Deployment Configuration
+services:
+  - type: web
+    name: planetary-agents-backend
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: yarn install && yarn build
+    startCommand: node dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8000
+      - key: WEBSOCKET_PORT
+        value: 8001
+      - key: ALCHM_BACKEND_URL
+        value: https://alchm-backend.onrender.com
+      - key: PLANETARY_HOURS_BACKEND
+        value: true
+      - key: THERMODYNAMICS_BACKEND
+        value: true
+      - key: TOKEN_CALCULATIONS_BACKEND
+        value: true
+      - key: KINETICS_BACKEND
+        value: true
+      - key: LOG_LEVEL
+        value: info
+      - key: LOG_FORMAT
+        value: json
+      - key: ENABLE_WEBSOCKET
+        value: true
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: planetary-cache
+          property: connectionString
+    healthCheckPath: /api/health
+    
+  - type: redis
+    name: planetary-cache
+    region: oregon
+    plan: starter
+    maxmemoryPolicy: allkeys-lru

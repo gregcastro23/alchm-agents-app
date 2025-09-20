@@ -1,0 +1,33 @@
+# Railway.app Deployment Configuration
+[build]
+builder = "NIXPACKS"
+buildCommand = "yarn install && yarn build"
+
+[deploy]
+startCommand = "node dist/index.js"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+[environments.production]
+variables = [
+  "NODE_ENV=production",
+  "PORT=8000",
+  "WEBSOCKET_PORT=8001",
+  "PLANETARY_HOURS_BACKEND=true",
+  "THERMODYNAMICS_BACKEND=true", 
+  "TOKEN_CALCULATIONS_BACKEND=true",
+  "KINETICS_BACKEND=true",
+  "LOG_LEVEL=info",
+  "LOG_FORMAT=json",
+  "ENABLE_WEBSOCKET=true",
+  "ENABLE_METRICS=true"
+]
+
+[environments.staging]
+variables = [
+  "NODE_ENV=staging",
+  "PORT=8000",
+  "LOG_LEVEL=debug"
+]
