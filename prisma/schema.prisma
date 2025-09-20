@@ -14,6 +14,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Basic user Profile for storing personalized birth info
+model Profile {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  name       String?
+  avatarUrl  String?
+  birthInfo  Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@map("profiles")
+}
+
 // AI Personalities Table
 model AIPersonality {
   id                   String                @id @default(uuid())

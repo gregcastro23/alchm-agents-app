@@ -9,9 +9,19 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface CircularNatalHoroscopeProps {
   className?: string
+  birthInfo?: {
+    year: number
+    month: number // zero-based
+    day: number
+    hour: number
+    minute: number
+    latitude: number
+    longitude: number
+    name?: string
+  }
 }
 
-export default function CircularNatalHoroscope({ className }: CircularNatalHoroscopeProps) {
+export default function CircularNatalHoroscope({ className, birthInfo }: CircularNatalHoroscopeProps) {
   const [horoscope, setHoroscope] = useState<AstrologizeWheelResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -19,20 +29,22 @@ export default function CircularNatalHoroscope({ className }: CircularNatalHoros
   useEffect(() => {
     const fetchCurrentMomentChart = async () => {
       try {
-        const now = new Date()
-        // Use zero-based month internally per schema; adapter in API converts to 1-based
-        const currentMomentBirth = {
-          name: 'Current Moment',
-          year: now.getFullYear(),
-          month: now.getMonth(),
-          day: now.getDate(),
-          hour: now.getHours(),
-          minute: now.getMinutes(),
-          latitude: 40.7128, // New York as default
-          longitude: -74.006,
+        let input = birthInfo
+        if (!input) {
+          const now = new Date()
+          input = {
+            name: 'Current Moment',
+            year: now.getFullYear(),
+            month: now.getMonth(),
+            day: now.getDate(),
+            hour: now.getHours(),
+            minute: now.getMinutes(),
+            latitude: 40.7128,
+            longitude: -74.006,
+          }
         }
 
-        const result = await fetchAstrologizeWheel(currentMomentBirth)
+        const result = await fetchAstrologizeWheel(input as any)
         setHoroscope(result)
         setError(null)
       } catch (err) {
@@ -48,7 +60,7 @@ export default function CircularNatalHoroscope({ className }: CircularNatalHoros
     // Refresh every 5 minutes
     const interval = setInterval(fetchCurrentMomentChart, 5 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [birthInfo])
 
   if (loading) {
     return (

@@ -56,10 +56,17 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
+  const [isAuthed, setIsAuthed] = useState(false)
 
   // Prevent hydration mismatch by only rendering theme-dependent content after mount
   useEffect(() => {
     setMounted(true)
+    // Lightweight auth cookie check
+    try {
+      setIsAuthed(typeof document !== 'undefined' && document.cookie.includes('userId='))
+    } catch {
+      setIsAuthed(false)
+    }
   }, [])
 
   const toggleTheme = () => {
@@ -125,6 +132,15 @@ export function Header() {
                       {item.label}
                     </Link>
                   ))}
+                  {isAuthed && (
+                    <Link
+                      key={`${group.title}-me`}
+                      href="/me"
+                      className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                    >
+                      My Alchm
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
@@ -142,6 +158,15 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          {isAuthed && (
+            <Link
+              key="simple-/me"
+              href="/me"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
+              My Space
+            </Link>
+          )}
         </nav>
 
         {/* Desktop Theme Toggle */}
@@ -191,6 +216,16 @@ export function Header() {
                       {item.label}
                     </Link>
                   ))}
+                  {isAuthed && (
+                    <Link
+                      key={`mobile-${group.title}-me`}
+                      href="/me"
+                      className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors rounded-md"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      My Alchm
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}
