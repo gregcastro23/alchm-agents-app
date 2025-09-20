@@ -861,3 +861,265 @@ model TemporalAnalysisCache {
   @@index([hitCount])
   @@map("temporal_analysis_cache")
 }
+
+// Monica Omnipresent System Models
+// --------------------------------
+
+// Monica Settings and Preferences
+model MonicaUserSettings {
+  id              String   @id @default(cuid())
+  userId          String   @unique // User identifier
+
+  // Personality Configuration
+  personality     String   @default("friendly") // friendly, formal, mystical, teacher
+  assistanceLevel Int      @default(2) // 0-4 scale (minimal to maximum)
+  proactiveTips   Boolean  @default(true)
+  explanationDepth String  @default("detailed") // simple, detailed, esoteric
+
+  // Behavior Settings
+  position        String   @default("bottom-right") // bottom-right, bottom-left, floating
+  autoHide        String   @default("never") // never, 30s, 1m, 5m
+
+  // Interaction Preferences
+  preferredTime   String   @default("evening") // morning, afternoon, evening, night
+  learningStyle   String   @default("hands-on") // visual, hands-on, reading, interactive
+  interests       Json     @default("[]") // Array of interest areas
+
+  // Advanced Settings
+  contextualAwareness Boolean @default(true)
+  adaptivePersonality Boolean @default(true)
+  memoryRetention     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  progress        MonicaUserProgress?
+  interactions    MonicaInteraction[]
+
+  @@index([userId])
+  @@map("monica_user_settings")
+}
+
+// User Learning Progress and XP System
+model MonicaUserProgress {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  settingsId      String   @unique
+
+  // Level and XP System
+  level           Int      @default(1)
+  totalXP         Int      @default(0)
+  xpToNextLevel   Int      @default(100)
+
+  // Learning Metrics
+  completedTutorials     Json     @default("[]") // Array of tutorial IDs
+  currentLearning        String?  // Current tutorial ID
+  suggestedNext          Json     @default("[]") // Array of suggested tutorial IDs
+  lastAction             String?  // Last user action
+
+  // Engagement Metrics
+  totalInteractions      Int      @default(0)
+  currentStreak          Int      @default(0) // Days of consecutive activity
+  longestStreak          Int      @default(0)
+  lastActiveDate         DateTime @default(now())
+
+  // Achievement System
+  masteryCertificates    Json     @default("[]") // Array of earned certificates
+  favoriteFeatures       Json     @default("[]") // Array of favorite feature names
+
+  // Learning Analytics
+  averageSessionTime     Int      @default(0) // Average session duration in minutes
+  preferredDifficulty    String   @default("intermediate") // beginner, intermediate, advanced
+  learningVelocity       Float    @default(1.0) // Learning speed multiplier
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  settings        MonicaUserSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+  moduleProgress  MonicaModuleProgress[]
+
+  @@index([userId])
+  @@index([level])
+  @@index([totalXP])
+  @@index([currentStreak])
+  @@map("monica_user_progress")
+}
+
+// Learning Module Progress Tracking
+model MonicaModuleProgress {
+  id              String   @id @default(cuid())
+  userId          String
+  progressId      String
+
+  // Module Identification
+  moduleId        String   // e.g., 'dashboard-basics', 'agent-creation'
+  moduleName      String   // Human-readable name
+  category        String   // basics, intermediate, advanced, master
+
+  // Progress Tracking
+  completed       Boolean  @default(false)
+  progress        Int      @default(0) // 0-100 percentage
+  currentStep     Int      @default(0) // Current step in module
+  totalSteps      Int      @default(1) // Total steps in module
+
+  // Performance Metrics
+  timeSpent       Int      @default(0) // Total time in minutes
+  attemptsCount   Int      @default(0) // Number of attempts
+  hintsUsed       Int      @default(0) // Hints requested
+  mistakesMade    Int      @default(0) // Errors made
+
+  // Completion Data
+  xpEarned        Int      @default(0) // XP awarded for completion
+  completedAt     DateTime? // When module was completed
+  lastAccessed    DateTime @default(now())
+
+  // Learning Context
+  difficultyRating Float?  // User's rating of difficulty (1-5)
+  userFeedback     String? // User's feedback on module
+  struggledWith    Json?   // Array of concepts user struggled with
+  masteredConcepts Json?   // Array of concepts user mastered
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userProgress MonicaUserProgress @relation(fields: [progressId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+  @@index([userId])
+  @@index([moduleId])
+  @@index([category])
+  @@index([completed])
+  @@index([lastAccessed])
+  @@map("monica_module_progress")
+}
+
+// Monica Interaction Log (for learning and personalization)
+model MonicaInteraction {
+  id              String   @id @default(cuid())
+  userId          String
+  settingsId      String
+
+  // Interaction Context
+  pageUrl         String   // Page where interaction occurred
+  interactionType String   // help_request, tip_click, tutorial_start, settings_change, etc.
+  sessionId       String?  // Session identifier
+
+  // Interaction Data
+  contextData     Json?    // Page-specific context
+  userAction      String   // Description of user action
+  monicaResponse  String?  // Monica's response or assistance provided
+
+  // Outcome Metrics
+  wasHelpful      Boolean? // User feedback on helpfulness
+  resultedInAction Boolean @default(false) // Did user take suggested action
+  timeToComplete  Int?     // Time to complete suggested action (seconds)
+
+  // Learning Data
+  userConfidence  Int?     // User's confidence level (1-5) before interaction
+  improvementSeen Boolean  @default(false) // Did user improve after interaction
+  followUpNeeded  Boolean  @default(false) // Does Monica need to follow up
+
+  // Metadata
+  deviceType      String?  // mobile, desktop, tablet
+  browserInfo     String?  // Browser and version
+  timeOfDay       String?  // morning, afternoon, evening, night
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  settings     MonicaUserSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([settingsId])
+  @@index([pageUrl])
+  @@index([interactionType])
+  @@index([createdAt])
+  @@index([wasHelpful])
+  @@map("monica_interactions")
+}
+
+// Contextual Help Analytics
+model MonicaContextualHelp {
+  id              String   @id @default(cuid())
+
+  // Page and Context
+  pageUrl         String   // Page identifier
+  contextType     String   // first_visit, feature_unused, confusion_detected, etc.
+
+  // Help Content
+  tipId           String   // Unique tip identifier
+  tipContent      String   // The help content shown
+  priority        String   // low, medium, high
+  category        String   // navigation, feature, learning, troubleshooting
+
+  // Effectiveness Metrics
+  timesShown      Int      @default(0) // How many times this tip was shown
+  timesActedOn    Int      @default(0) // How many times users acted on this tip
+  averageRating   Float?   // Average user rating of helpfulness
+  successRate     Float    @default(0.0) // Success rate of this tip
+
+  // A/B Testing
+  variant         String?  // For A/B testing different tip versions
+  testGroup       String?  // Control, variant_a, variant_b, etc.
+
+  // Content Evolution
+  version         String   @default("1.0") // Version of the tip content
+  isActive        Boolean  @default(true) // Whether tip is currently active
+  deprecatedAt    DateTime? // When tip was deprecated
+
+  // Performance Data
+  averageViewTime Int      @default(0) // Average time users spend viewing tip (seconds)
+  bounceRate      Float    @default(0.0) // Percentage who immediately dismiss
+  conversionRate  Float    @default(0.0) // Percentage who complete suggested action
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([pageUrl, tipId, version])
+  @@index([pageUrl])
+  @@index([contextType])
+  @@index([priority])
+  @@index([successRate])
+  @@index([isActive])
+  @@map("monica_contextual_help")
+}
+
+// Monica Knowledge Base (what Monica learns about users)
+model MonicaKnowledge {
+  id              String   @id @default(cuid())
+  userId          String
+
+  // Knowledge Type
+  knowledgeType   String   // user_preference, behavioral_pattern, learning_style, expertise_level
+  category        String   // navigation, features, consciousness, astrology, etc.
+
+  // Knowledge Content
+  key             String   // Specific knowledge key (e.g., 'prefers_detailed_explanations')
+  value           String   // Knowledge value (e.g., 'true', 'advanced', 'morning_person')
+  confidence      Float    @default(0.5) // Confidence in this knowledge (0-1)
+
+  // Context and Source
+  sourceType      String   // interaction, explicit_setting, inferred_behavior, etc.
+  sourceData      Json?    // Additional context about how this was learned
+  lastObserved    DateTime @default(now())
+  timesObserved   Int      @default(1)
+
+  // Knowledge Evolution
+  isActive        Boolean  @default(true)
+  supersededBy    String?  // ID of knowledge that replaced this
+  validUntil      DateTime? // Expiration date for temporal knowledge
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, knowledgeType, key])
+  @@index([userId])
+  @@index([knowledgeType])
+  @@index([category])
+  @@index([confidence])
+  @@index([isActive])
+  @@map("monica_knowledge")
+}

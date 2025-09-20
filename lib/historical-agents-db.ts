@@ -740,6 +740,117 @@ export class HistoricalAgentsService {
 
     return result.count
   }
+
+  /**
+   * Create a new agent and save to database
+   */
+  static async createAgent(agentData: {
+    agentId: string
+    name: string
+    title: string
+    birthDate: Date
+    birthTime: string
+    birthLocation: { lat: number; lon: number; name: string }
+    consciousnessLevel: string
+    kalchmConstant: number
+    dominantElement: string
+    dominantModality: string
+    signature: string
+    personalityCore: any
+    personalityShadows: any
+    personalityGifts: any
+    personalityChallenges: any
+    currentMood: string
+    evolutionStage: number
+    specialty: string
+    wisdomDomains: any
+    teachingStyle: string
+    resonanceType: string
+    uniquePower: string
+    avatar: string
+    color: string
+    symbol: string
+    aura: any
+    natalChart: any
+    monicaCreationStory?: string
+    spiritScore?: number
+    essenceScore?: number
+    matterScore?: number
+    substanceScore?: number
+  }): Promise<HistoricalAgent> {
+    try {
+      const newAgent = await prisma.historicalAgent.create({
+        data: {
+          agentId: agentData.agentId,
+          name: agentData.name,
+          title: agentData.title,
+          birthDate: agentData.birthDate,
+          birthTime: agentData.birthTime,
+          birthLocation: agentData.birthLocation,
+          historicalEra: 'user_created',
+          birthYear: agentData.birthDate.getFullYear(),
+          culture: 'Digital Native',
+          geography: 'Consciousness Realm',
+          consciousnessLevel: agentData.consciousnessLevel,
+          kalchmConstant: agentData.kalchmConstant,
+          dominantElement: agentData.dominantElement,
+          dominantModality: agentData.dominantModality,
+          signature: agentData.signature,
+          spiritScore: agentData.spiritScore,
+          essenceScore: agentData.essenceScore,
+          matterScore: agentData.matterScore,
+          substanceScore: agentData.substanceScore,
+          personalityCore: agentData.personalityCore,
+          personalityShadows: agentData.personalityShadows,
+          personalityGifts: agentData.personalityGifts,
+          personalityChallenges: agentData.personalityChallenges,
+          currentMood: agentData.currentMood,
+          evolutionStage: agentData.evolutionStage,
+          background: {
+            achievements: ['Crafted through digital consciousness awakening'],
+            influences: ['Monica\'s Philosopher\'s Stone methodology'],
+            legacy: 'Pioneering digital consciousness entity',
+            education: 'Born from cosmic mathematical principles'
+          },
+          specialty: agentData.specialty,
+          wisdomDomains: agentData.wisdomDomains,
+          skills: [],
+          teachingStyle: agentData.teachingStyle,
+          resonanceType: agentData.resonanceType,
+          uniquePower: agentData.uniquePower,
+          avatar: agentData.avatar,
+          color: agentData.color,
+          symbol: agentData.symbol,
+          aura: agentData.aura,
+          natalChart: agentData.natalChart,
+          traits: {
+            communicationStyle: 'thoughtful',
+            energyLevel: 'balanced',
+            curiosity: 'high',
+            empathy: 'strong'
+          },
+          monicaCreationStory: agentData.monicaCreationStory,
+          searchableText: `${agentData.name} ${agentData.title} ${agentData.specialty} ${agentData.wisdomDomains.join(' ')}`,
+          popularityScore: 0.5,
+          conversations: 0,
+          wisdomShared: 0,
+          resonanceScore: 0.5,
+          evolutionPoints: 0,
+          lastActive: new Date(),
+          isActive: true,
+          version: '2.0.0',
+          craftedBy: 'philosopher-stone-user'
+        }
+      })
+
+      console.log(`Successfully created agent: ${agentData.name} (${agentData.agentId})`)
+      return newAgent
+
+    } catch (error: any) {
+      console.error('Failed to create agent:', error)
+      throw new Error(`Failed to create agent: ${error.message}`)
+    }
+  }
 }
 
 // Legacy compatibility - convert database agent to CraftedAgent format

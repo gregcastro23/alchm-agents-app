@@ -68,7 +68,9 @@ export default function GalleryPage() {
   const [filters, setFilters] = useState<
     AgentFilterBy & { element?: Element | 'all'; consciousnessLevel?: ConsciousnessLevel | 'all' }
   >({})
-  const [agents, setAgents] = useState(DEMO_AGENTS)
+  const [agents, setAgents] = useState<CraftedAgent[]>([])
+  const [filteredAgents, setFilteredAgents] = useState<CraftedAgent[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [showGroupChat, setShowGroupChat] = useState(false)
   const [sortCriteria, setSortCriteria] = useState<AgentSortCriteria>('relevanceScore')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
@@ -81,6 +83,33 @@ export default function GalleryPage() {
   })
 
   const collections = getAgentCollections()
+
+  // Fetch all agents (database + demo)
+  const fetchAgents = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/agents')
+      const result = await response.json()
+
+      if (result.success && result.agents) {
+        setAgents(result.agents)
+        console.log(`Loaded ${result.agents.length} agents (${result.agents.filter((a: any) => a.isUserCreated).length} user-created)`)
+      } else {
+        console.warn('Failed to fetch agents, using fallback')
+        setAgents(DEMO_AGENTS)
+      }
+    } catch (error) {
+      console.error('Error fetching agents:', error)
+      setAgents(DEMO_AGENTS) // Fallback to demo agents
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Load agents on mount
+  useEffect(() => {
+    fetchAgents()
+  }, [])
 
   // Fetch system metrics for performance dashboard
   const fetchSystemMetrics = async () => {
@@ -113,7 +142,7 @@ export default function GalleryPage() {
 
   // Filter and sort agents based on search, filters, and sorting criteria
   useEffect(() => {
-    let filtered = DEMO_AGENTS
+    let filtered = agents
 
     // Search filter
     if (searchQuery) {
@@ -149,8 +178,8 @@ export default function GalleryPage() {
     // Apply sorting
     const sorted = sortAgents(filtered, sortCriteria, sortDirection)
 
-    setAgents(sorted)
-  }, [searchQuery, filters, sortCriteria, sortDirection])
+    setFilteredAgents(sorted)
+  }, [agents, searchQuery, filters, sortCriteria, sortDirection])
 
   const toggleAgentSelection = (agentId: string) => {
     setSelectedAgents(prev =>
@@ -439,28 +468,42 @@ export default function GalleryPage() {
       <div className="space-y-4">
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {agents.map(agent => (
-              <EnhancedAgentCard
-                key={agent.id}
-                agent={agent}
-                isSelected={selectedAgents.includes(agent.id)}
-                onToggleSelection={toggleAgentSelection}
-                showRecommendations={true}
-              />
-            ))}
+            {isLoading ? (
+              <div className="col-span-full text-center py-8">
+                <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p className="text-slate-400">Loading consciousness repository...</p>
+              </div>
+            ) : (
+              filteredAgents.map(agent => (
+                <EnhancedAgentCard
+                  key={agent.id}
+                  agent={agent}
+                  isSelected={selectedAgents.includes(agent.id)}
+                  onToggleSelection={toggleAgentSelection}
+                  showRecommendations={true}
+                />
+              ))
+            )}
           </div>
         ) : (
           <div className="space-y-3">
-            {agents.map(agent => (
-              <EnhancedAgentCard
-                key={agent.id}
-                agent={agent}
-                variant="list"
-                isSelected={selectedAgents.includes(agent.id)}
-                onToggleSelection={toggleAgentSelection}
-                showRecommendations={true}
-              />
-            ))}
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p className="text-slate-400">Loading consciousness repository...</p>
+              </div>
+            ) : (
+              filteredAgents.map(agent => (
+                <EnhancedAgentCard
+                  key={agent.id}
+                  agent={agent}
+                  variant="list"
+                  isSelected={selectedAgents.includes(agent.id)}
+                  onToggleSelection={toggleAgentSelection}
+                  showRecommendations={true}
+                />
+              ))
+            )}
           </div>
         )}
       </div>
@@ -504,7 +547,7 @@ export default function GalleryPage() {
               {/* Display selected agents */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
                 {selectedAgents.map(agentId => {
-                  const agent = agents.find(a => a.id === agentId)
+                  const agent = filteredAgents.find(a => a.id === agentId) || agents.find(a => a.id === agentId)
                   if (!agent) return null
                   return (
                     <div
