@@ -208,13 +208,17 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
         // Check if the error is due to abortion - handle this gracefully
         if (
           abortController.signal.aborted ||
-          (error instanceof Error && error.name === 'AbortError')
+          (error instanceof Error && (
+            error.name === 'AbortError' ||
+            error.message.includes('aborted') ||
+            error.message.includes('Request aborted')
+          ))
         ) {
           console.log('Tarot configuration request was aborted - component likely unmounted')
           return
         }
 
-        console.error('Error loading tarot configuration:', error)
+        console.error('Error loading tarot configuration (non-abort):', error)
 
         // Fallback: set default values if API fails (only if not aborted)
         if (!abortController.signal.aborted) {
@@ -248,7 +252,14 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
 
     // Cleanup function to abort the request if component unmounts
     return () => {
-      abortController.abort()
+      try {
+        if (abortController && !abortController.signal.aborted) {
+          abortController.abort()
+        }
+      } catch (error) {
+        // Silently handle abort errors during cleanup
+        console.debug('AbortController cleanup error (expected during unmount):', error)
+      }
     }
   }, []) // Remove onInsightGenerated dependency to prevent unnecessary re-runs
 

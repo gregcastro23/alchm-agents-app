@@ -4515,7 +4515,14 @@ export function getTopRelevantAgents(count: number = 12): CraftedAgent[] {
     score += consciousnessWeight
 
     // 2. Recent Activity (20% weight) - favor recently active agents
-    const daysSinceActive = Math.floor((now.getTime() - agent.stats.lastActive.getTime()) / (1000 * 60 * 60 * 24))
+    const lastActiveDate = agent.stats.lastActive instanceof Date
+      ? agent.stats.lastActive
+      : new Date(agent.stats.lastActive)
+
+    const daysSinceActive = isNaN(lastActiveDate.getTime())
+      ? 30 // Default to 30 days if invalid date
+      : Math.floor((now.getTime() - lastActiveDate.getTime()) / (1000 * 60 * 60 * 24))
+
     const activityScore = Math.max(0, (30 - daysSinceActive) / 30) * 0.20
     score += activityScore
 
@@ -4643,8 +4650,16 @@ export function sortAgents(
         bValue = b.stats.resonanceScore
         break
       case 'lastActive':
-        aValue = a.stats.lastActive.getTime()
-        bValue = b.stats.lastActive.getTime()
+        // Safe date handling for sorting
+        const aDate = a.stats.lastActive instanceof Date
+          ? a.stats.lastActive
+          : new Date(a.stats.lastActive)
+        const bDate = b.stats.lastActive instanceof Date
+          ? b.stats.lastActive
+          : new Date(b.stats.lastActive)
+
+        aValue = isNaN(aDate.getTime()) ? 0 : aDate.getTime()
+        bValue = isNaN(bDate.getTime()) ? 0 : bDate.getTime()
         break
       case 'evolutionTrajectory':
         const trajectoryOrder = { 'transcending': 4, 'ascending': 3, 'stable': 2, 'fluctuating': 1 }
@@ -4663,7 +4678,17 @@ export function sortAgents(
         const calcRelevance = (agent: CraftedAgent) => {
           let score = 0
           score += agent.consciousness.monicaConstant * 0.25
-          const daysSinceActive = Math.floor((now.getTime() - agent.stats.lastActive.getTime()) / (1000 * 60 * 60 * 24))
+
+          // Safe date handling - convert string dates to Date objects if needed
+          const lastActiveDate = agent.stats.lastActive instanceof Date
+            ? agent.stats.lastActive
+            : new Date(agent.stats.lastActive)
+
+          // Check if date is valid before using it
+          const daysSinceActive = isNaN(lastActiveDate.getTime())
+            ? 30 // Default to 30 days if invalid date
+            : Math.floor((now.getTime() - lastActiveDate.getTime()) / (1000 * 60 * 60 * 24))
+
           score += Math.max(0, (30 - daysSinceActive) / 30) * 0.20
           const trajectoryBonus = { 'transcending': 0.20, 'ascending': 0.15, 'stable': 0.10, 'fluctuating': 0.05 }
           score += trajectoryBonus[agent.stats.kineticEvolution.evolutionTrajectory] || 0

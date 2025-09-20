@@ -312,7 +312,13 @@ export function MomentBasedRecommendations({
 
       setCurrentMomentData(momentData)
 
-      // Calculate recommendations for all agents
+      // Calculate recommendations for all agents (with null safety)
+      if (!allAgents || !Array.isArray(allAgents)) {
+        console.warn('allAgents is undefined or not an array, skipping recommendations')
+        setLoading(false)
+        return
+      }
+
       const agentRecommendations = allAgents
         .map(agent => calculateMomentScore(agent, momentData))
         .sort((a, b) => b.score - a.score)
@@ -378,11 +384,14 @@ export function MomentBasedRecommendations({
   }
 
   useEffect(() => {
-    fetchRecommendations()
+    // Only fetch recommendations if allAgents is available
+    if (allAgents && Array.isArray(allAgents) && allAgents.length > 0) {
+      fetchRecommendations()
 
-    // Update every 5 minutes
-    const interval = setInterval(fetchRecommendations, 300000)
-    return () => clearInterval(interval)
+      // Update every 5 minutes
+      const interval = setInterval(fetchRecommendations, 300000)
+      return () => clearInterval(interval)
+    }
   }, [allAgents, selectedAgents, userLocation])
 
   const getElementIcon = (element: string) => {
@@ -471,13 +480,18 @@ export function MomentBasedRecommendations({
     )
   }
 
-  if (loading) {
+  // Show loading state when loading or when agents are not available
+  if (loading || !allAgents || !Array.isArray(allAgents) || allAgents.length === 0) {
     return (
       <Card className={className}>
         <CardContent className="p-6">
           <div className="flex items-center justify-center space-x-2">
             <RefreshCw className="w-4 h-4 animate-spin" />
-            <span>Calculating moment-based recommendations...</span>
+            <span>
+              {!allAgents || !Array.isArray(allAgents) || allAgents.length === 0
+                ? "Loading agents..."
+                : "Calculating moment-based recommendations..."}
+            </span>
           </div>
         </CardContent>
       </Card>
