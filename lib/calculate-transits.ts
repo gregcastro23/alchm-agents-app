@@ -30,19 +30,20 @@ const orbitalPeriods = {
 
 // Define the fixed, accurate current planetary positions
 // These were verified from reliable astronomical sources
+// All degrees converted to numbers with proper validation
 const CURRENT_PLANETARY_POSITIONS = {
-  Sun: { sign: 'Virgo', degree: '13', retrograde: false },
-  Moon: { sign: 'Aquarius', degree: '17', retrograde: false },
-  Mercury: { sign: 'Virgo', degree: '6', retrograde: false },
-  Venus: { sign: 'Leo', degree: '13', retrograde: false },
-  Mars: { sign: 'Libra', degree: '19', retrograde: false },
-  Jupiter: { sign: 'Cancer', degree: '18', retrograde: false },
-  Saturn: { sign: 'Pisces', degree: '29', retrograde: true },
-  Uranus: { sign: 'Gemini', degree: '1', retrograde: false },
-  Neptune: { sign: 'Aries', degree: '1', retrograde: true },
-  Pluto: { sign: 'Aquarius', degree: '1', retrograde: true },
-  'North Node': { sign: 'Pisces', degree: '24.33', retrograde: false }, // Retained from previous
-  Ascendant: { sign: 'Capricorn', degree: '28.85', retrograde: false }, // Retained from previous
+  Sun: { sign: 'Virgo', degree: 13.0, retrograde: false },
+  Moon: { sign: 'Aquarius', degree: 17.0, retrograde: false },
+  Mercury: { sign: 'Virgo', degree: 6.0, retrograde: false },
+  Venus: { sign: 'Leo', degree: 13.0, retrograde: false },
+  Mars: { sign: 'Libra', degree: 19.0, retrograde: false },
+  Jupiter: { sign: 'Cancer', degree: 18.0, retrograde: false },
+  Saturn: { sign: 'Pisces', degree: 29.0, retrograde: true },
+  Uranus: { sign: 'Gemini', degree: 1.0, retrograde: false },
+  Neptune: { sign: 'Aries', degree: 1.0, retrograde: true },
+  Pluto: { sign: 'Aquarius', degree: 1.0, retrograde: true },
+  'North Node': { sign: 'Pisces', degree: 24.33, retrograde: false }, // Retained from previous
+  Ascendant: { sign: 'Capricorn', degree: 28.85, retrograde: false }, // Retained from previous
 }
 
 // Add last updated timestamp
@@ -58,6 +59,38 @@ const degreesPerDay = Object.entries(orbitalPeriods).reduce(
 )
 
 import { performanceCache } from './performance-cache'
+
+// Utility function to safely convert and validate degrees with comprehensive NaN protection
+function safeDegreeValue(degree: any): number {
+  // Handle different input types and ensure numeric output
+  if (typeof degree === 'number') {
+    // Already a number, check if valid
+    if (Number.isFinite(degree)) {
+      return Math.max(0, Math.min(29.9999, degree))
+    }
+  }
+
+  if (typeof degree === 'string') {
+    // Try to parse string
+    const parsed = parseFloat(degree)
+    if (Number.isFinite(parsed)) {
+      return Math.max(0, Math.min(29.9999, parsed))
+    }
+  }
+
+  // Fallback to 0 for any invalid input
+  console.warn(`Invalid degree value encountered: ${degree}, using fallback value 0`)
+  return 0
+}
+
+// Utility function to ensure valid planetary position object
+function validatePlanetaryPosition(position: any): { sign: string; degree: number; retrograde: boolean } {
+  return {
+    sign: typeof position?.sign === 'string' ? position.sign : 'Aries',
+    degree: safeDegreeValue(position?.degree),
+    retrograde: typeof position?.retrograde === 'boolean' ? position.retrograde : false,
+  }
+}
 
 // Current planetary data with transit dates
 const planetDataWithTransits = {
@@ -267,11 +300,11 @@ function getTransitPositionFromDates(
  */
 export function getCurrentPlanetaryPositions(
   timestamp?: number
-): Record<string, { sign: string; degree: string; retrograde: boolean }> {
+): Record<string, { sign: string; degree: number; retrograde: boolean }> {
   // Check cache first (unless forced timestamp is provided)
   if (!timestamp) {
     const cachedPositions =
-      performanceCache.getPlanetaryPositions<Record<string, { sign: string; degree: string }>>()
+      performanceCache.getPlanetaryPositions<Record<string, { sign: string; degree: number; retrograde: boolean }>>()
     if (cachedPositions) {
       return cachedPositions
     }
@@ -286,7 +319,7 @@ export function getCurrentPlanetaryPositions(
   const calculationDate = new Date()
 
   // Initialize with empty positions that will be populated from calculations
-  let calculatedPositions: Record<string, { sign: string; degree: string; retrograde: boolean }> =
+  let calculatedPositions: Record<string, { sign: string; degree: number; retrograde: boolean }> =
     {}
 
   // Calculate all planetary positions using transit data
@@ -305,27 +338,28 @@ export function getCurrentPlanetaryPositions(
   planets.forEach(planet => {
     const transitPosition = getTransitPositionFromDates(planet, calculationDate)
     if (transitPosition) {
-      calculatedPositions[planet] = transitPosition
+      // Validate and convert transit position to ensure numeric degree
+      calculatedPositions[planet] = validatePlanetaryPosition(transitPosition)
     } else {
       // Fallback to hardcoded positions if transit calculation fails
-      calculatedPositions[planet] =
-        CURRENT_PLANETARY_POSITIONS[planet as keyof typeof CURRENT_PLANETARY_POSITIONS]
+      const fallbackPosition = CURRENT_PLANETARY_POSITIONS[planet as keyof typeof CURRENT_PLANETARY_POSITIONS]
+      calculatedPositions[planet] = validatePlanetaryPosition(fallbackPosition)
       console.log(
         `Using fallback position for ${planet}:`,
-        CURRENT_PLANETARY_POSITIONS[planet as keyof typeof CURRENT_PLANETARY_POSITIONS]
+        calculatedPositions[planet]
       )
     }
   })
 
   // For North Node and Ascendant, use hardcoded values as they require specialized calculations
-  calculatedPositions['North Node'] = {
+  calculatedPositions['North Node'] = validatePlanetaryPosition({
     ...CURRENT_PLANETARY_POSITIONS['North Node'],
     retrograde: false,
-  }
-  calculatedPositions['Ascendant'] = {
+  })
+  calculatedPositions['Ascendant'] = validatePlanetaryPosition({
     ...CURRENT_PLANETARY_POSITIONS['Ascendant'],
     retrograde: false,
-  }
+  })
 
   // Cache the calculated positions
   performanceCache.setPlanetaryPositions(calculatedPositions)

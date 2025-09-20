@@ -57,21 +57,41 @@ const ELEMENT_ICONS = {
   Substance: Wind,
 }
 
+// Enhanced validation function for consciousness data with comprehensive NaN protection
+function safeConsciousnessValue(value: any, fallback: number = 0): number {
+  if (value === null || value === undefined) return fallback
+  if (typeof value === 'number') {
+    if (Number.isFinite(value) && !Number.isNaN(value)) return value
+  }
+  const parsed = parseFloat(String(value))
+  if (Number.isFinite(parsed) && !Number.isNaN(parsed)) return parsed
+  console.warn(`Consciousness data validation: Invalid value ${value}, using fallback ${fallback}`)
+  return fallback
+}
+
 export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: Props) {
-  // Add null safety checks and default values
+  // Enhanced validation with comprehensive NaN protection
   const safeQuantities = {
-    spirit: alchmQuantities?.spirit ?? 0,
-    essence: alchmQuantities?.essence ?? 0,
-    matter: alchmQuantities?.matter ?? 0,
-    substance: alchmQuantities?.substance ?? 0,
-    Heat: alchmQuantities?.Heat ?? 0,
-    Entropy: alchmQuantities?.Entropy ?? 0,
-    Reactivity: alchmQuantities?.Reactivity ?? 0,
-    Energy: alchmQuantities?.Energy ?? 0,
+    spirit: safeConsciousnessValue(alchmQuantities?.spirit, 0),
+    essence: safeConsciousnessValue(alchmQuantities?.essence, 0),
+    matter: safeConsciousnessValue(alchmQuantities?.matter, 0),
+    substance: safeConsciousnessValue(alchmQuantities?.substance, 0),
+    Heat: safeConsciousnessValue(alchmQuantities?.Heat, 0),
+    Entropy: safeConsciousnessValue(alchmQuantities?.Entropy, 0),
+    Reactivity: safeConsciousnessValue(alchmQuantities?.Reactivity, 0),
+    Energy: safeConsciousnessValue(alchmQuantities?.Energy, 0),
   }
 
-  const safeMC = monicaConstant ?? 0
-  const mcClass = classifyMC(safeMC)
+  const safeMC = safeConsciousnessValue(monicaConstant, 0)
+
+  // Validate MC classification to prevent errors
+  let mcClass
+  try {
+    mcClass = classifyMC(safeMC)
+  } catch (error) {
+    console.warn('Error classifying Monica Constant:', error)
+    mcClass = { level: 1, name: 'Initiate', description: 'Beginning consciousness development' }
+  }
 
   // Normalize values to avoid negative or extreme scaling
   const maxAlchemical = Math.max(
@@ -82,45 +102,48 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
     0.1 // Prevent division by zero
   )
 
-  // Create proper 6-dimensional radar chart for alchemical composition
+  // Create proper 6-dimensional radar chart for alchemical composition with enhanced validation
   const alchemicalData = [
     {
       axis: 'Spirit',
-      value: Math.min(100, (safeQuantities.spirit / maxAlchemical) * 100),
+      value: Math.min(100, Math.max(0, safeConsciousnessValue((safeQuantities.spirit / maxAlchemical) * 100, 0))),
       rawValue: safeQuantities.spirit,
       angle: 0,
     },
     {
       axis: 'Essence',
-      value: Math.min(100, (safeQuantities.essence / maxAlchemical) * 100),
+      value: Math.min(100, Math.max(0, safeConsciousnessValue((safeQuantities.essence / maxAlchemical) * 100, 0))),
       rawValue: safeQuantities.essence,
       angle: 60,
     },
     {
       axis: 'Matter',
-      value: Math.min(100, (safeQuantities.matter / maxAlchemical) * 100),
+      value: Math.min(100, Math.max(0, safeConsciousnessValue((safeQuantities.matter / maxAlchemical) * 100, 0))),
       rawValue: safeQuantities.matter,
       angle: 120,
     },
     {
       axis: 'Substance',
-      value: Math.min(100, (safeQuantities.substance / maxAlchemical) * 100),
+      value: Math.min(100, Math.max(0, safeConsciousnessValue((safeQuantities.substance / maxAlchemical) * 100, 0))),
       rawValue: safeQuantities.substance,
       angle: 180,
     },
     {
       axis: 'Heat',
-      value: Math.min(100, Math.abs(safeQuantities.Heat) * 100),
+      value: Math.min(100, Math.max(0, safeConsciousnessValue(Math.abs(safeQuantities.Heat) * 100, 0))),
       rawValue: safeQuantities.Heat,
       angle: 240,
     },
     {
       axis: 'Energy',
-      value: Math.min(100, Math.abs(safeQuantities.Energy) * 100),
+      value: Math.min(100, Math.max(0, safeConsciousnessValue(Math.abs(safeQuantities.Energy) * 100, 0))),
       rawValue: safeQuantities.Energy,
       angle: 300,
     },
-  ]
+  ].filter(item => {
+    // Filter out any items with invalid values
+    return safeConsciousnessValue(item.value, -1) >= 0 && safeConsciousnessValue(item.rawValue, NaN) !== NaN
+  })
 
   // Create pie chart data for composition breakdown
   const pieData = [
@@ -130,38 +153,45 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
     { name: 'Substance', value: safeQuantities.substance, color: ELEMENT_COLORS.Substance },
   ].filter(item => item.value > 0)
 
-  // Thermodynamic wave data for area chart
+  // Thermodynamic wave data for area chart with enhanced validation
   const thermoWaveData = [
     { name: 'Base', Heat: 0, Entropy: 0, Reactivity: 0, Energy: 0 },
     {
       name: '25%',
-      Heat: Math.max(0, safeQuantities.Heat * 25),
-      Entropy: Math.max(0, safeQuantities.Entropy * 25),
-      Reactivity: Math.max(0, safeQuantities.Reactivity * 25),
-      Energy: Math.max(0, safeQuantities.Energy * 25),
+      Heat: Math.max(0, safeConsciousnessValue(safeQuantities.Heat * 25, 0)),
+      Entropy: Math.max(0, safeConsciousnessValue(safeQuantities.Entropy * 25, 0)),
+      Reactivity: Math.max(0, safeConsciousnessValue(safeQuantities.Reactivity * 25, 0)),
+      Energy: Math.max(0, safeConsciousnessValue(safeQuantities.Energy * 25, 0)),
     },
     {
       name: '50%',
-      Heat: Math.max(0, safeQuantities.Heat * 50),
-      Entropy: Math.max(0, safeQuantities.Entropy * 50),
-      Reactivity: Math.max(0, safeQuantities.Reactivity * 50),
-      Energy: Math.max(0, safeQuantities.Energy * 50),
+      Heat: Math.max(0, safeConsciousnessValue(safeQuantities.Heat * 50, 0)),
+      Entropy: Math.max(0, safeConsciousnessValue(safeQuantities.Entropy * 50, 0)),
+      Reactivity: Math.max(0, safeConsciousnessValue(safeQuantities.Reactivity * 50, 0)),
+      Energy: Math.max(0, safeConsciousnessValue(safeQuantities.Energy * 50, 0)),
     },
     {
       name: '75%',
-      Heat: Math.max(0, safeQuantities.Heat * 75),
-      Entropy: Math.max(0, safeQuantities.Entropy * 75),
-      Reactivity: Math.max(0, safeQuantities.Reactivity * 75),
-      Energy: Math.max(0, safeQuantities.Energy * 75),
+      Heat: Math.max(0, safeConsciousnessValue(safeQuantities.Heat * 75, 0)),
+      Entropy: Math.max(0, safeConsciousnessValue(safeQuantities.Entropy * 75, 0)),
+      Reactivity: Math.max(0, safeConsciousnessValue(safeQuantities.Reactivity * 75, 0)),
+      Energy: Math.max(0, safeConsciousnessValue(safeQuantities.Energy * 75, 0)),
     },
     {
       name: 'Peak',
-      Heat: Math.max(0, safeQuantities.Heat * 100),
-      Entropy: Math.max(0, safeQuantities.Entropy * 100),
-      Reactivity: Math.max(0, safeQuantities.Reactivity * 100),
-      Energy: Math.max(0, safeQuantities.Energy * 100),
+      Heat: Math.max(0, safeConsciousnessValue(safeQuantities.Heat * 100, 0)),
+      Entropy: Math.max(0, safeConsciousnessValue(safeQuantities.Entropy * 100, 0)),
+      Reactivity: Math.max(0, safeConsciousnessValue(safeQuantities.Reactivity * 100, 0)),
+      Energy: Math.max(0, safeConsciousnessValue(safeQuantities.Energy * 100, 0)),
     },
-  ]
+  ].map(point => ({
+    ...point,
+    // Ensure all values are valid for chart rendering
+    Heat: safeConsciousnessValue(point.Heat, 0),
+    Entropy: safeConsciousnessValue(point.Entropy, 0),
+    Reactivity: safeConsciousnessValue(point.Reactivity, 0),
+    Energy: safeConsciousnessValue(point.Energy, 0),
+  }))
 
   return (
     <div className="space-y-6">
@@ -255,20 +285,20 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
         </CardContent>
       </Card>
 
-      {/* Enhanced 6D Alchemical Composition */}
+      {/* Consciousness State Radar */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Zap className="w-5 h-5 text-blue-500" />
-            6-Dimensional Alchemical Vector Space
+            Consciousness State Analysis
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Spirit, Essence, Matter, Substance + Heat & Energy thermodynamic dimensions
+            Your current alchemical signature and thermodynamic profile
           </p>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={350}>
-            <RadarChart data={alchemicalData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <RadarChart data={alchemicalData.slice(0, 4)} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
               <PolarGrid gridType="polygon" />
               <PolarAngleAxis dataKey="axis" fontSize={12} />
               <PolarRadiusAxis
@@ -278,7 +308,7 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
                 tickFormatter={value => `${value}%`}
               />
               <Radar
-                name="Current State"
+                name="Alchemical State"
                 dataKey="value"
                 stroke="#3b82f6"
                 fill="#3b82f6"
@@ -360,67 +390,71 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
         </Card>
       )}
 
-      {/* Field Theory Explanation */}
+      {/* Practical Insights */}
       <Card>
         <CardHeader>
-          <CardTitle>Understanding the Alchemical Field</CardTitle>
+          <CardTitle>Practical Applications</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm">
-            <strong>The Living Stone</strong> operates as a unified field where consciousness and
-            matter interact through alchemical principles:
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 font-medium">
-                <Flame className="w-4 h-4 text-red-500" />
-                Spirit - Active Principle
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <h4 className="font-medium">Optimal Times for Action</h4>
+              <div className="text-sm space-y-2">
+                <div className="flex justify-between">
+                  <span>Creative Work:</span>
+                  <span className="text-muted-foreground">
+                    {safeQuantities.spirit > 2 ? 'Excellent' : safeQuantities.spirit > 1 ? 'Good' : 'Moderate'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Emotional Processing:</span>
+                  <span className="text-muted-foreground">
+                    {safeQuantities.essence > 2 ? 'Excellent' : safeQuantities.essence > 1 ? 'Good' : 'Moderate'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Practical Tasks:</span>
+                  <span className="text-muted-foreground">
+                    {safeQuantities.matter > 2 ? 'Excellent' : safeQuantities.matter > 1 ? 'Good' : 'Moderate'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Communication:</span>
+                  <span className="text-muted-foreground">
+                    {safeQuantities.substance > 2 ? 'Excellent' : safeQuantities.substance > 1 ? 'Good' : 'Moderate'}
+                  </span>
+                </div>
               </div>
-              <p className="text-muted-foreground pl-6">
-                The initiating force, creative will, and transformative fire that begins all
-                alchemical processes.
-              </p>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 font-medium">
-                <Droplets className="w-4 h-4 text-blue-500" />
-                Essence - Receptive Principle
+            
+            <div className="space-y-3">
+              <h4 className="font-medium">Development Recommendations</h4>
+              <div className="text-sm space-y-2 text-muted-foreground">
+                {safeQuantities.spirit < 1 && (
+                  <div>• Focus on creative expression and leadership opportunities</div>
+                )}
+                {safeQuantities.essence < 1 && (
+                  <div>• Develop emotional intelligence and intuitive practices</div>
+                )}
+                {safeQuantities.matter < 1 && (
+                  <div>• Strengthen practical skills and physical grounding</div>
+                )}
+                {safeQuantities.substance < 1 && (
+                  <div>• Improve communication and networking abilities</div>
+                )}
+                {Math.min(safeQuantities.spirit, safeQuantities.essence, safeQuantities.matter, safeQuantities.substance) >= 1 && (
+                  <div>• Your alchemical profile shows good balance across all dimensions</div>
+                )}
               </div>
-              <p className="text-muted-foreground pl-6">
-                The fluid, adaptive medium through which transformations flow and consciousness
-                expands.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 font-medium">
-                <Mountain className="w-4 h-4 text-green-500" />
-                Matter - Structural Principle
-              </div>
-              <p className="text-muted-foreground pl-6">
-                The stable foundation and physical manifestation that grounds spiritual insights
-                into reality.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 font-medium">
-                <Wind className="w-4 h-4 text-yellow-500" />
-                Substance - Connective Principle
-              </div>
-              <p className="text-muted-foreground pl-6">
-                The communicating element that bridges all levels and facilitates conscious
-                integration.
-              </p>
             </div>
           </div>
-          <div className="mt-4 p-3 bg-muted rounded-lg">
+          
+          <div className="p-3 bg-muted rounded-lg">
             <p className="text-sm">
-              <strong>Monica Constant (MC):</strong> MC = (Spirit × φ + Essence) / (Matter +
-              Substance + 1)
+              <strong>Monica Constant Formula:</strong> MC = (Spirit × 1.618 + Essence) / (Matter + Substance + 1)
               <br />
               <span className="text-muted-foreground">
-                Where φ (phi) = 1.618... represents the golden ratio, harmonizing active and
-                receptive principles through the mathematical perfection found throughout
-                nature&apos;s consciousness-matter interface.
+                Your current MC of {safeMC.toFixed(3)} indicates {mcClass.name.toLowerCase()} consciousness level.
               </span>
             </p>
           </div>

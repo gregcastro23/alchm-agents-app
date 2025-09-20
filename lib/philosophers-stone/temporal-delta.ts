@@ -37,10 +37,17 @@ export type TemporalDelta = {
   }
 }
 
+// Utility function to safely validate numeric values with comprehensive NaN protection
+function safeNumber(value: any, fallback: number = 0): number {
+  const num = typeof value === 'number' ? value : parseFloat(value)
+  return Number.isFinite(num) ? num : fallback
+}
+
 function normalizeDegree(deg: number): number {
-  // Keep within 0-360
-  const x = ((deg % 360) + 360) % 360
-  return x
+  // Keep within 0-360 with NaN protection
+  const safeDeg = safeNumber(deg, 0)
+  const x = ((safeDeg % 360) + 360) % 360
+  return Number.isFinite(x) ? x : 0
 }
 
 function signDegreeToAbsolute(sign: string, degree: number): number {
@@ -58,67 +65,130 @@ function signDegreeToAbsolute(sign: string, degree: number): number {
     'Aquarius',
     'Pisces',
   ]
-  const idx = order.indexOf(sign)
+
+  // Ensure sign is valid with fallback
+  const validSign = typeof sign === 'string' ? sign : 'Aries'
+  const idx = order.indexOf(validSign)
   const base = idx >= 0 ? idx * 30 : 0
-  return normalizeDegree(base + Math.max(0, Math.min(29.9999, degree)))
+
+  // Ensure degree is valid with comprehensive protection
+  const safeDegree = safeNumber(degree, 0)
+  const clampedDegree = Math.max(0, Math.min(29.9999, safeDegree))
+
+  return normalizeDegree(base + clampedDegree)
 }
 
 function shortestAngularDistance(from: number, to: number): number {
-  const diff = normalizeDegree(to - from)
-  return diff <= 180 ? diff : 360 - diff
+  const safeFrom = safeNumber(from, 0)
+  const safeTo = safeNumber(to, 0)
+  const diff = normalizeDegree(safeTo - safeFrom)
+  return Number.isFinite(diff) && diff <= 180 ? diff : (Number.isFinite(diff) ? 360 - diff : 0)
 }
 
 export function computePlanetaryMovement(
   previous: PlanetPosition[],
   current: PlanetPosition[]
 ): TemporalDelta['planetaryMovement'] {
-  const byPlanetPrev = new Map(previous.map(p => [p.planet.toLowerCase(), p]))
+  // Validate input arrays
+  if (!Array.isArray(previous) || !Array.isArray(current)) {
+    console.warn('Invalid planet position arrays provided, returning empty movement')
+    return []
+  }
+
+  const byPlanetPrev = new Map(previous.map(p => [p.planet?.toLowerCase() || 'unknown', p]))
   const result: TemporalDelta['planetaryMovement'] = []
+
   for (const now of current) {
+    // Validate current position data
+    if (!now || typeof now.planet !== 'string') {
+      console.warn('Invalid planet position data, skipping:', now)
+      continue
+    }
+
     const prev = byPlanetPrev.get(now.planet.toLowerCase())
     if (!prev) continue
+
+    // Calculate movement with comprehensive validation
     const fromAbs = signDegreeToAbsolute(prev.sign, prev.degree)
     const toAbs = signDegreeToAbsolute(now.sign, now.degree)
     const moved = shortestAngularDistance(fromAbs, toAbs)
+
+    // Ensure moved degrees is valid
+    const safeMovedDegrees = safeNumber(moved, 0)
+    const roundedMovement = Math.round(safeMovedDegrees * 100) / 100
+
     result.push({
       planet: now.planet,
-      movedDegrees: Math.round(moved * 100) / 100,
-      from: { sign: prev.sign, degree: prev.degree },
-      to: { sign: now.sign, degree: now.degree },
+      movedDegrees: roundedMovement,
+      from: {
+        sign: typeof prev.sign === 'string' ? prev.sign : 'Aries',
+        degree: safeNumber(prev.degree, 0)
+      },
+      to: {
+        sign: typeof now.sign === 'string' ? now.sign : 'Aries',
+        degree: safeNumber(now.degree, 0)
+      },
     })
   }
-  // Sort by greatest movement
-  return result.sort((a, b) => b.movedDegrees - a.movedDegrees)
+
+  // Sort by greatest movement with NaN protection
+  return result.sort((a, b) => {
+    const aMovement = safeNumber(a.movedDegrees, 0)
+    const bMovement = safeNumber(b.movedDegrees, 0)
+    return bMovement - aMovement
+  })
 }
 
 export function computeTemporalDelta(
   previousSession: SessionSnapshot,
   currentSession: SessionSnapshot
 ): TemporalDelta {
-  const prevTime = new Date(previousSession.timestamp)
-  const curTime = new Date(currentSession.timestamp)
-  const daysSinceLast = Math.max(
-    0,
-    Math.round(((curTime.getTime() - prevTime.getTime()) / (1000 * 60 * 60 * 24)) * 10) / 10
-  )
+  // Validate session snapshots
+  if (!previousSession || !currentSession) {
+    console.warn('Invalid session snapshots provided for temporal delta computation')
+    return {
+      daysSinceLast: 0,
+      planetaryMovement: [],
+      consciousnessDelta: undefined
+    }
+  }
 
+  // Calculate time difference with validation
+  let daysSinceLast = 0
+  try {
+    const prevTime = new Date(previousSession.timestamp || new Date().toISOString())
+    const curTime = new Date(currentSession.timestamp || new Date().toISOString())
+
+    if (!isNaN(prevTime.getTime()) && !isNaN(curTime.getTime())) {
+      const timeDiff = (curTime.getTime() - prevTime.getTime()) / (1000 * 60 * 60 * 24)
+      daysSinceLast = Math.max(0, Math.round(safeNumber(timeDiff, 0) * 10) / 10)
+    }
+  } catch (error) {
+    console.warn('Error computing time difference:', error)
+    daysSinceLast = 0
+  }
+
+  // Compute planetary movement with enhanced validation
   const planetaryMovement = computePlanetaryMovement(
-    previousSession.planetaryPositions,
-    currentSession.planetaryPositions
+    previousSession.planetaryPositions || [],
+    currentSession.planetaryPositions || []
   )
 
+  // Calculate consciousness delta with comprehensive validation
   let consciousnessDelta: TemporalDelta['consciousnessDelta'] | undefined
-  if (
-    typeof previousSession.monicaConstant === 'number' ||
-    typeof currentSession.monicaConstant === 'number'
-  ) {
-    const mcPrev = previousSession.monicaConstant ?? 0
-    const mcCur = currentSession.monicaConstant ?? 0
-    const energyPrev = previousSession.alchmQuantities?.Energy ?? 0
-    const energyCur = currentSession.alchmQuantities?.Energy ?? 0
+  const mcPrev = safeNumber(previousSession.monicaConstant, 0)
+  const mcCur = safeNumber(currentSession.monicaConstant, 0)
+  const energyPrev = safeNumber(previousSession.alchmQuantities?.Energy, 0)
+  const energyCur = safeNumber(currentSession.alchmQuantities?.Energy, 0)
+
+  // Only include consciousness delta if we have valid data
+  if (mcPrev !== 0 || mcCur !== 0 || energyPrev !== 0 || energyCur !== 0) {
+    const mcDelta = mcCur - mcPrev
+    const energyDelta = energyCur - energyPrev
+
     consciousnessDelta = {
-      monicaConstantDelta: Math.round((mcCur - mcPrev) * 1000) / 1000,
-      energyDelta: Math.round((energyCur - energyPrev) * 100) / 100,
+      monicaConstantDelta: Math.round(safeNumber(mcDelta, 0) * 1000) / 1000,
+      energyDelta: Math.round(safeNumber(energyDelta, 0) * 100) / 100,
     }
   }
 

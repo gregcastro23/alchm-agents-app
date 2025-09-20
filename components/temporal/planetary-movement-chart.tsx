@@ -51,8 +51,38 @@ const PLANET_SPEEDS = {
   Pluto: 0.004,
 }
 
+// Utility function for triple validation of numeric values in chart data
+function validateChartNumber(value: any, fallback: number = 0): number {
+  if (value === null || value === undefined) return fallback
+  if (typeof value === 'number') {
+    if (Number.isFinite(value) && !Number.isNaN(value)) return value
+  }
+  const parsed = parseFloat(String(value))
+  if (Number.isFinite(parsed) && !Number.isNaN(parsed)) return parsed
+  console.warn(`Chart data validation: Invalid numeric value ${value}, using fallback ${fallback}`)
+  return fallback
+}
+
+// Validate planetary movement data before processing
+function validatePlanetaryMovement(movement: any): boolean {
+  if (!movement || typeof movement !== 'object') return false
+  if (typeof movement.planet !== 'string' || movement.planet.length === 0) return false
+
+  // Check that all numeric values are valid
+  const movedDegrees = validateChartNumber(movement.movedDegrees, 0)
+  const fromDegree = validateChartNumber(movement.from?.degree, 0)
+  const toDegree = validateChartNumber(movement.to?.degree, 0)
+
+  // Additional sanity checks
+  if (movedDegrees < 0 || movedDegrees > 360) return false
+  if (fromDegree < 0 || fromDegree > 360) return false
+  if (toDegree < 0 || toDegree > 360) return false
+
+  return true
+}
+
 export function PlanetaryMovementChart({ delta }: Props) {
-  // Handle empty state - when no delta is available yet
+  // Enhanced validation - when no delta is available yet
   if (!delta || !delta.planetaryMovement || delta.planetaryMovement.length === 0) {
     return (
       <Card>
@@ -137,32 +167,29 @@ export function PlanetaryMovementChart({ delta }: Props) {
     )
   }
 
-  const data = delta.planetaryMovement
+  // Pre-filter and validate planetary movement data
+  const validMovements = delta.planetaryMovement
+    .filter(movement => validatePlanetaryMovement(movement))
     .slice(0, 10)
-    .map(movement => {
-      // Ensure all numeric values are valid numbers with comprehensive NaN protection
-      const movedDegreesRaw: any = (movement as any).movedDegrees
-      const fromDegreeRaw: any = (movement as any).from?.degree
-      const toDegreeRaw: any = (movement as any).to?.degree
-      const movedDegreesNum = Number(movedDegreesRaw)
-      const fromDegreeNum = Number(fromDegreeRaw)
-      const toDegreeNum = Number(toDegreeRaw)
-      const movedDegrees = Number.isFinite(movedDegreesNum) ? movedDegreesNum : 0
-      const fromDegree = Number.isFinite(fromDegreeNum) ? fromDegreeNum : 0
-      const toDegree = Number.isFinite(toDegreeNum) ? toDegreeNum : 0
-      const daysSinceNum = Number(delta.daysSinceLast)
-      const daysSince = Number.isFinite(daysSinceNum) && daysSinceNum > 0 ? daysSinceNum : 1
 
-      // Calculate acceleration with complete NaN protection
+  const data = validMovements
+    .map(movement => {
+      // Use enhanced validation functions
+      const movedDegrees = validateChartNumber(movement.movedDegrees, 0)
+      const fromDegree = validateChartNumber(movement.from?.degree, 0)
+      const toDegree = validateChartNumber(movement.to?.degree, 0)
+      const daysSince = Math.max(1, validateChartNumber(delta.daysSinceLast, 1))
+
+      // Calculate acceleration with enhanced validation
       const acceleration = movedDegrees / daysSince
-      const safeAcceleration = Number.isFinite(acceleration) ? acceleration : 0
+      const safeAcceleration = validateChartNumber(acceleration, 0)
 
       // Get expected speed with fallback
       const expectedSpeed = PLANET_SPEEDS[movement.planet as keyof typeof PLANET_SPEEDS]
-      const safeExpectedSpeed = Number.isFinite(expectedSpeed) ? expectedSpeed : 0.1
+      const safeExpectedSpeed = validateChartNumber(expectedSpeed, 0.1)
 
       // Ensure degrees is always positive and finite
-      const safeDegrees = Number.isFinite(Math.abs(movedDegrees)) ? Math.abs(movedDegrees) : 0
+      const safeDegrees = validateChartNumber(Math.abs(movedDegrees), 0)
 
       return {
         planet: movement.planet || 'Unknown',
@@ -175,31 +202,31 @@ export function PlanetaryMovementChart({ delta }: Props) {
       }
     })
     .filter(item => {
-      // Filter out any items that still have invalid values - triple check
-      const degreesValid = Number.isFinite(item.degrees) && item.degrees >= 0
-      const accelerationValid = Number.isFinite(item.acceleration)
-      const expectedSpeedValid = Number.isFinite(item.expectedSpeed) && item.expectedSpeed > 0
-      const planetValid = item.planet && item.planet !== 'Unknown'
+      // Final validation pass - ensure all values are chart-ready
+      const degreesValid = validateChartNumber(item.degrees, -1) >= 0
+      const accelerationValid = validateChartNumber(item.acceleration, NaN) !== NaN
+      const expectedSpeedValid = validateChartNumber(item.expectedSpeed, -1) > 0
+      const planetValid = typeof item.planet === 'string' && item.planet !== 'Unknown'
 
       return degreesValid && accelerationValid && expectedSpeedValid && planetValid
     })
 
-  // Calculate movement statistics with NaN protection
+  // Calculate movement statistics with enhanced validation
   const totalMovement = data.reduce((sum, item) => {
-    const degrees = isNaN(item.degrees) ? 0 : item.degrees
+    const degrees = validateChartNumber(item.degrees, 0)
     return sum + degrees
   }, 0)
 
-  const fastestPlanet = data.reduce((fastest, current) => {
-    const currentAccel = isNaN(current.acceleration) ? 0 : current.acceleration
-    const fastestAccel = isNaN(fastest.acceleration) ? 0 : fastest.acceleration
+  const fastestPlanet = data.length > 0 ? data.reduce((fastest, current) => {
+    const currentAccel = validateChartNumber(current.acceleration, 0)
+    const fastestAccel = validateChartNumber(fastest.acceleration, 0)
     return currentAccel > fastestAccel ? current : fastest
-  })
+  }) : { planet: 'None', acceleration: 0, color: '#6b7280' }
 
-  const daysSince = isNaN(delta.daysSinceLast) || delta.daysSinceLast <= 0 ? 1 : delta.daysSinceLast
+  const daysSince = Math.max(1, validateChartNumber(delta.daysSinceLast, 1))
   const mostActive = data.filter(item => {
-    const degrees = isNaN(item.degrees) ? 0 : item.degrees
-    const expectedSpeed = isNaN(item.expectedSpeed) ? 0 : item.expectedSpeed
+    const degrees = validateChartNumber(item.degrees, 0)
+    const expectedSpeed = validateChartNumber(item.expectedSpeed, 0)
     return degrees > expectedSpeed * daysSince
   })
 
@@ -241,11 +268,11 @@ export function PlanetaryMovementChart({ delta }: Props) {
         <div className="flex flex-wrap gap-2">
           <Badge variant="outline" className="flex items-center gap-1">
             <TrendingUp className="w-3 h-3" />
-            {(isNaN(totalMovement) ? 0 : totalMovement).toFixed(1)}° total
+            {validateChartNumber(totalMovement, 0).toFixed(1)}° total
           </Badge>
           <Badge variant="outline" className="flex items-center gap-1">
             <Zap className="w-3 h-3" />
-            {fastestPlanet?.planet || 'Unknown'} leading
+            {fastestPlanet?.planet || 'None'} leading
           </Badge>
           <Badge variant="outline" className="flex items-center gap-1">
             <Calendar className="w-3 h-3" />
@@ -272,7 +299,7 @@ export function PlanetaryMovementChart({ delta }: Props) {
               />
               <Tooltip
                 formatter={(value: number, name: string, props: any) => [
-                  `${(isNaN(value) ? 0 : value).toFixed(3)}°`,
+                  `${validateChartNumber(value, 0).toFixed(3)}°`,
                   'Movement',
                 ]}
                 labelFormatter={(label: string, payload: any[]) => {
@@ -284,7 +311,7 @@ export function PlanetaryMovementChart({ delta }: Props) {
                         {data.from} <ArrowRight className="inline w-3 h-3 mx-1" /> {data.to}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Speed: {(isNaN(data.acceleration) ? 0 : data.acceleration).toFixed(3)}°/day
+                        Speed: {validateChartNumber(data.acceleration, 0).toFixed(3)}°/day
                       </div>
                     </div>
                   ) : (
@@ -324,7 +351,7 @@ export function PlanetaryMovementChart({ delta }: Props) {
               />
               <Tooltip
                 formatter={(value: number) => [
-                  `${(isNaN(value) ? 0 : value).toFixed(3)}°/day`,
+                  `${validateChartNumber(value, 0).toFixed(3)}°/day`,
                   'Velocity',
                 ]}
                 contentStyle={{
@@ -365,12 +392,10 @@ export function PlanetaryMovementChart({ delta }: Props) {
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: fastestPlanet?.color || '#6b7280' }}
                   />
-                  <span>{fastestPlanet?.planet || 'Unknown'}</span>
+                  <span>{fastestPlanet?.planet || 'None'}</span>
                   <span className="text-muted-foreground">
                     (
-                    {(isNaN(fastestPlanet?.acceleration) ? 0 : fastestPlanet.acceleration).toFixed(
-                      3
-                    )}
+                    {validateChartNumber(fastestPlanet?.acceleration, 0).toFixed(3)}
                     °/day)
                   </span>
                 </div>

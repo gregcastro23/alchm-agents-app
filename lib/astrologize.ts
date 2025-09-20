@@ -8,6 +8,9 @@ import {
   AstrologizeWheelSchema,
 } from './schemas'
 import { CircuitBreaker, withRetries } from './resilience'
+import { generateNatalChartSVG, type LocalChartResponse } from './chart-generators/natal-chart-generator'
+import { generateProfessionalHoroscope } from './monica/horoscope-generator'
+import { chartCache } from './chart-generators/chart-cache'
 
 export type AstrologizeWheelResponse = {
   svg?: string
@@ -26,8 +29,22 @@ const alchmCB = new CircuitBreaker()
 
 export async function fetchAstrologizeWheel(birth: BirthInfo): Promise<AstrologizeWheelResponse> {
   BirthInfoSchema.parse(birth)
-  const url = `${getBase()}/astrologize`
 
+  // Check if this is a current moment request (no name or specific birth time)
+  const isCurrentMoment = !birth.name || birth.name === 'Current Moment'
+
+  // Check cache first
+  const cachedResult = chartCache.get(birth, isCurrentMoment)
+  if (cachedResult) {
+    console.log('Returning cached chart result')
+    return {
+      ...cachedResult,
+      meta: { ...cachedResult.meta, cached: true }
+    }
+  }
+
+  // Try external API first
+  const url = `${getBase()}/astrologize`
   const payload = {
     name: birth.name || 'Subject',
     year: birth.year,
@@ -39,6 +56,8 @@ export async function fetchAstrologizeWheel(birth: BirthInfo): Promise<Astrologi
     latitude: birth.latitude,
     longitude: birth.longitude,
     format: 'svg',
+    // Try to pass house system if provided
+    houseSystem: 'placidus', // Default to most popular system
   }
 
   const execResult = await astroCB.exec(async () => {
@@ -65,16 +84,49 @@ export async function fetchAstrologizeWheel(birth: BirthInfo): Promise<Astrologi
     return AstrologizeWheelSchema.parse(normalized)
   })
 
-  if (!execResult.result) {
-    // Return fallback data when API is degraded
+  // If external API succeeded, cache and return result
+  if (execResult.result && (execResult.result.svg || execResult.result.imageUrl)) {
+    if (execResult.degraded) {
+      execResult.result.meta = { ...(execResult.result.meta || {}), degraded: true }
+    }
+
+    // Cache the successful result
+    chartCache.set(birth, execResult.result, isCurrentMoment)
+
+    return execResult.result
+  }
+
+  // External API failed or returned empty result, try local generation with enhanced calculations
+  console.log('External chart API unavailable, generating local chart with enhanced calculations...')
+  try {
+    const localChart = generateNatalChartSVG(birth, { useEnhancedCalculations: true })
+    const result = {
+      svg: localChart.svg,
+      meta: {
+        ...localChart.meta,
+        fallback: true,
+        externalApiDegraded: !execResult.result,
+        enhancedLocalGeneration: true
+      }
+    }
+
+    // Cache the local result as well
+    chartCache.set(birth, result, isCurrentMoment)
+
+    return result
+  } catch (localError) {
+    console.error('Local chart generation failed:', localError)
+
+    // Final fallback - return empty result with clear error indication
     return {
-      meta: { degraded: true, fallback: true },
+      meta: {
+        degraded: true,
+        fallback: true,
+        localGenerationFailed: true,
+        error: localError instanceof Error ? localError.message : 'Unknown error'
+      }
     }
   }
-  if (execResult.degraded) {
-    execResult.result.meta = { ...(execResult.result.meta || {}), degraded: true }
-  }
-  return execResult.result
 }
 
 export type AlchmResponse = {

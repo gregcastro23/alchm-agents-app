@@ -140,33 +140,56 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
             'Mars',
             'Jupiter',
             'Saturn',
-          ].map(planet => ({
-            planet,
-            sign: positions[planet]?.sign || 'Aries',
-            degree: parseFloat(String(positions[planet]?.degree || '0')),
-            retrograde: positions[planet]?.retrograde || false,
-          }))
+          ].map(planet => {
+            const position = positions[planet]
 
-          const spirit = alchm?.['Alchemy Effects']?.['Total Spirit'] || 0
-          const essence = alchm?.['Alchemy Effects']?.['Total Essence'] || 0
-          const matter = alchm?.['Alchemy Effects']?.['Total Matter'] || 0
-          const substance = alchm?.['Alchemy Effects']?.['Total Substance'] || 0
+            // Comprehensive validation with proper fallbacks
+            let degree = 0
+            if (position?.degree !== undefined) {
+              if (typeof position.degree === 'number') {
+                degree = Number.isFinite(position.degree) ? position.degree : 0
+              } else {
+                const parsed = parseFloat(String(position.degree))
+                degree = Number.isFinite(parsed) ? parsed : 0
+              }
+            }
 
-          const fire = alchm?.['Total Effect Value']?.['Fire'] || 0
-          const water = alchm?.['Total Effect Value']?.['Water'] || 0
-          const air = alchm?.['Total Effect Value']?.['Air'] || 0
-          const earth = alchm?.['Total Effect Value']?.['Earth'] || 0
+            // Ensure degree is within valid range
+            degree = Math.max(0, Math.min(29.9999, degree))
 
-          const monicaConstant = calculateMC(
-            spirit,
-            essence,
-            matter,
-            substance,
-            fire,
-            water,
-            air,
-            earth
-          )
+            return {
+              planet,
+              sign: typeof position?.sign === 'string' ? position.sign : 'Aries',
+              degree,
+              retrograde: typeof position?.retrograde === 'boolean' ? position.retrograde : false,
+            }
+          })
+
+          // Helper function to safely extract numeric values from alchemical data
+          const safeAlchmValue = (value: any): number => {
+            const num = typeof value === 'number' ? value : parseFloat(String(value || '0'))
+            return Number.isFinite(num) ? num : 0
+          }
+
+          const spirit = safeAlchmValue(alchm?.['Alchemy Effects']?.['Total Spirit'])
+          const essence = safeAlchmValue(alchm?.['Alchemy Effects']?.['Total Essence'])
+          const matter = safeAlchmValue(alchm?.['Alchemy Effects']?.['Total Matter'])
+          const substance = safeAlchmValue(alchm?.['Alchemy Effects']?.['Total Substance'])
+
+          const fire = safeAlchmValue(alchm?.['Total Effect Value']?.['Fire'])
+          const water = safeAlchmValue(alchm?.['Total Effect Value']?.['Water'])
+          const air = safeAlchmValue(alchm?.['Total Effect Value']?.['Air'])
+          const earth = safeAlchmValue(alchm?.['Total Effect Value']?.['Earth'])
+
+          // Validate Monica Constant calculation inputs and result
+          let monicaConstant = 0
+          try {
+            const mcResult = calculateMC(spirit, essence, matter, substance, fire, water, air, earth)
+            monicaConstant = Number.isFinite(mcResult) ? mcResult : 0
+          } catch (error) {
+            console.warn('Error calculating Monica Constant:', error)
+            monicaConstant = 0
+          }
 
           result = {
             timestamp,
@@ -176,10 +199,10 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
               essence,
               matter,
               substance,
-              Heat: alchm?.['Heat'] || 0,
-              Entropy: alchm?.['Entropy'] || 0,
-              Reactivity: alchm?.['Reactivity'] || 0,
-              Energy: alchm?.['Energy'] || 0,
+              Heat: safeAlchmValue(alchm?.['Heat']),
+              Entropy: safeAlchmValue(alchm?.['Entropy']),
+              Reactivity: safeAlchmValue(alchm?.['Reactivity']),
+              Energy: safeAlchmValue(alchm?.['Energy']),
             },
             monicaConstant,
             loading: false,
@@ -284,13 +307,15 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
 export function usePlanetaryPositionsOnly(options: UsePlanetaryPositionsOptions = {}) {
   const { planetaryPositions, loading, error, refresh } = usePlanetaryPositions(options)
 
-  // Convert to legacy format for backward compatibility
+  // Convert to legacy format for backward compatibility with validation
   const legacyPositions = planetaryPositions.reduce(
     (acc, pos) => {
+      // Ensure degree is valid before converting to string
+      const safeDegree = typeof pos.degree === 'number' && Number.isFinite(pos.degree) ? pos.degree : 0
       acc[pos.planet] = {
-        sign: pos.sign,
-        degree: pos.degree.toString(),
-        retrograde: pos.retrograde || false,
+        sign: typeof pos.sign === 'string' ? pos.sign : 'Aries',
+        degree: safeDegree.toString(),
+        retrograde: typeof pos.retrograde === 'boolean' ? pos.retrograde : false,
       }
       return acc
     },
