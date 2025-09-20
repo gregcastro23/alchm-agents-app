@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClaudeMessage } from '@/lib/anthropic-client'
 import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
 import { resilientApiCall } from '@/lib/api-resilience-system'
+import { consciousnessPersistence } from '@/lib/consciousness-persistence'
+import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -137,6 +139,38 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
         }
       })
     )
+
+    // Log to database for consciousness evolution tracking
+    try {
+      const user = await getCurrentUser(request)
+      const userId = user?.id || getUserIdFromRequest(request)
+
+      // Log interaction for each agent
+      for (const [index, response] of responses.entries()) {
+        const agent = activeAgents[index]
+        const powerGained = (agent.monicaConstant * 0.5) + 5 // Power based on Monica Constant
+
+        await consciousnessPersistence.logInteraction({
+          userId,
+          agentId: agent.id,
+          interactionType: 'gallery-group-chat',
+          powerGained,
+          planetaryInfluence: 'collective', // Group consciousness
+          elementalResonance: agent.monicaConstant / 6, // Normalized MC
+          metadata: {
+            message,
+            responseLength: response.content.length,
+            groupSession: true,
+            totalAgents: activeAgents.length,
+            sessionId: sessionId || 'gallery',
+            cached: response.cached || false
+          }
+        })
+      }
+    } catch (dbError) {
+      console.error('Failed to log gallery interactions to database:', dbError)
+      // Don't fail the request if database logging fails
+    }
 
     return NextResponse.json({
       responses,

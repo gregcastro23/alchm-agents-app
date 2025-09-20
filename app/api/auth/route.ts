@@ -74,11 +74,11 @@ async function handleRegister(email: string, password: string, name?: string) {
         position: 'bottom-right',
         autoHide: 'never',
         preferredTime: 'evening',
-        soundEnabled: true,
-        volume: 50,
-        aiModel: 'claude-sonnet',
-        contextDepth: 10,
-        learningSpeed: 1.0
+        learningStyle: 'hands-on',
+        interests: JSON.stringify([]),
+        contextualAwareness: true,
+        adaptivePersonality: true,
+        memoryRetention: true
       }
     })
 
@@ -92,7 +92,15 @@ async function handleRegister(email: string, password: string, name?: string) {
         xpToNextLevel: 100,
         completedTutorials: JSON.stringify([]),
         suggestedNext: JSON.stringify(['getting-started', 'understanding-agents']),
-        lastLevelUp: new Date()
+        totalInteractions: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        lastActiveDate: new Date(),
+        masteryCertificates: JSON.stringify([]),
+        favoriteFeatures: JSON.stringify([]),
+        averageSessionTime: 0,
+        preferredDifficulty: 'intermediate',
+        learningVelocity: 1.0
       }
     })
 
