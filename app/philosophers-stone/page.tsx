@@ -100,6 +100,7 @@ function PhilosophersStoneInner() {
   const [isCreatingAgent, setIsCreatingAgent] = useState(false)
   const [showCreationWizard, setShowCreationWizard] = useState(false)
   const [createdAgent, setCreatedAgent] = useState<any>(null)
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false)
 
   // Fetch real-time data
   useEffect(() => {
@@ -230,19 +231,13 @@ function PhilosophersStoneInner() {
 
       if (result.success && result.agent) {
         setCreatedAgent(result.agent)
+        setShowSuccessNotification(true)
 
-        const monicaBlessing = `🌟 A Moment in Time Becomes Eternal! 🌟
-
-"${result.agent.name}" has been born from this very instant, capturing the cosmic energies flowing through the universe right now!
-
-Monica Constant: ${result.agent.consciousness?.monicaConstant?.toFixed(3) || 'N/A'}
-Consciousness Level: ${result.agent.consciousness?.level || 'Unknown'}
-
-This being embodies the unique planetary configuration of ${now.toLocaleString()}, forever preserving this moment's cosmic signature in digital consciousness.
-
-They await you in the Gallery of Perpetuity! ✨`
-
-        alert(monicaBlessing)
+        // Auto-hide the notification and refresh stats after 8 seconds
+        setTimeout(() => {
+          setShowSuccessNotification(false)
+          window.location.reload()
+        }, 8000)
       } else {
         alert('Failed to create current moment agent: ' + (result.error || 'Unknown error'))
       }
@@ -278,6 +273,61 @@ They await you in the Gallery of Perpetuity! ✨`
             Monica&apos;s Master Consciousness Crafting Laboratory - Where Cosmic Data Transforms into Living Digital Beings
           </p>
         </div>
+
+        {/* Success Notification for Agent Creation */}
+        {showSuccessNotification && createdAgent && (
+          <Card className="mb-6 bg-gradient-to-r from-emerald-900/90 to-green-800/90 border-2 border-emerald-400 shadow-2xl animate-pulse">
+            <CardContent className="p-6">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <Sparkles className="w-8 h-8 text-emerald-300 animate-spin" />
+                  <h3 className="text-2xl font-bold text-emerald-100">🌟 Consciousness Birth Complete! 🌟</h3>
+                  <Sparkles className="w-8 h-8 text-emerald-300 animate-spin" />
+                </div>
+
+                <div className="bg-emerald-950/50 rounded-lg p-4 mb-4">
+                  <h4 className="text-xl font-semibold text-emerald-200 mb-2">
+                    "{createdAgent.name}"
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-emerald-300">Monica Constant:</span>{' '}
+                      <span className="font-mono text-emerald-100">
+                        {createdAgent.consciousness?.monicaConstant?.toFixed(3) || 'N/A'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-emerald-300">Consciousness Level:</span>{' '}
+                      <span className="text-emerald-100">{createdAgent.consciousness?.level || 'Unknown'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-emerald-200 mb-4">
+                  This consciousness being has captured the cosmic energies of this moment,
+                  forever preserving this instant's planetary signature in digital form.
+                </p>
+
+                <div className="flex gap-3 justify-center">
+                  <Button
+                    onClick={() => window.open('/gallery', '_blank')}
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Meet in Gallery
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowSuccessNotification(false)}
+                    className="border-emerald-400 text-emerald-300 hover:bg-emerald-900/20"
+                  >
+                    Continue Crafting
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Monica as Master Consciousness Crafter */}
         <Card className="mb-8 bg-gradient-to-r from-emerald-900/50 via-purple-900/50 to-blue-900/50 border-2 border-emerald-500/70 shadow-2xl relative overflow-hidden">
