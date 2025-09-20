@@ -93,7 +93,7 @@ body {
   }
 }
 
-/* Cosmic starry background */
+/* Enhanced cosmic background with multiple layers */
 body::before {
   content: '';
   position: fixed;
@@ -101,24 +101,33 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
-  z-index: -2;
+  background:
+    radial-gradient(ellipse at top, #2E1065 0%, #1E0A3C 25%, #0C0319 50%, #050210 100%),
+    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(120, 200, 255, 0.1) 0%, transparent 50%);
+  background-size: 100% 100%, 80% 80%, 60% 60%, 40% 40%;
+  z-index: -3;
 }
 
-/* Animated stars */
+/* Animated cosmic particles and nebula */
 @keyframes twinkle {
-  0% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
 }
 
-.dark body::after {
+@keyframes drift {
+  0% { transform: rotate(0deg) translateX(0px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(30px) rotate(-360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* Main starfield */
+body::after {
   content: '';
   position: fixed;
   top: 0;
@@ -126,25 +135,59 @@ body::before {
   width: 100%;
   height: 100%;
   background-image:
-    radial-gradient(2px 2px at 20% 30%, white, transparent),
-    radial-gradient(2px 2px at 60% 70%, white, transparent),
-    radial-gradient(1px 1px at 50% 50%, white, transparent),
-    radial-gradient(1px 1px at 80% 10%, white, transparent),
-    radial-gradient(2px 2px at 90% 60%, white, transparent),
-    radial-gradient(1px 1px at 30% 80%, white, transparent),
-    radial-gradient(1px 1px at 70% 40%, white, transparent);
-  background-size: 300% 300%;
-  animation: twinkle 5s ease-in-out infinite;
-  z-index: -1;
+    radial-gradient(3px 3px at 10% 20%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(2px 2px at 85% 15%, rgba(120, 200, 255, 0.9), transparent),
+    radial-gradient(1px 1px at 30% 70%, rgba(255, 180, 255, 0.8), transparent),
+    radial-gradient(2px 2px at 70% 80%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 90% 50%, rgba(180, 255, 180, 0.7), transparent),
+    radial-gradient(3px 3px at 20% 90%, rgba(255, 200, 120, 0.5), transparent),
+    radial-gradient(1px 1px at 60% 30%, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(2px 2px at 40% 60%, rgba(120, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 80% 70%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 15% 50%, rgba(255, 150, 255, 0.7), transparent);
+  background-size: 400% 400%, 350% 350%, 300% 300%, 280% 280%, 320% 320%,
+                   360% 360%, 250% 250%, 330% 330%, 290% 290%, 310% 310%;
+  animation: twinkle 8s ease-in-out infinite, drift 20s linear infinite;
+  z-index: -2;
   pointer-events: none;
 }
 
-/* Ensure cards have proper backgrounds in dark mode */
+/* Additional cosmic dust layer */
+.dark body:before {
+  background:
+    radial-gradient(ellipse at top, #2E1065 0%, #1E0A3C 25%, #0C0319 50%, #050210 100%),
+    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(120, 200, 255, 0.1) 0%, transparent 50%),
+    linear-gradient(45deg, rgba(138, 43, 226, 0.1) 0%, transparent 50%);
+}
+
+/* Enhanced cosmic card styling */
 .dark .bg-card,
-.dark [class*='bg-'] {
-  background-color: rgba(20, 20, 40, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.dark [class*='bg-']:not(.bg-transparent):not(.bg-gradient-) {
+  background:
+    linear-gradient(135deg,
+      rgba(30, 20, 60, 0.9) 0%,
+      rgba(15, 10, 40, 0.85) 50%,
+      rgba(25, 15, 50, 0.9) 100%
+    );
+  backdrop-filter: blur(15px) saturate(1.2);
+  border: 1px solid rgba(138, 43, 226, 0.3);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 20px rgba(138, 43, 226, 0.15);
+}
+
+/* Special styling for primary cards */
+.dark .bg-card:hover {
+  border-color: rgba(138, 43, 226, 0.5);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 0 30px rgba(138, 43, 226, 0.25);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
 }
 
 /* Fix text contrast */
@@ -184,8 +227,36 @@ body::before {
   color: rgb(243, 244, 246);
 }
 
-/* Ensure proper card styling */
+/* Enhanced cosmic container styling */
 .dark .rounded-lg {
-  background-color: rgba(30, 30, 50, 0.9);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background:
+    linear-gradient(135deg,
+      rgba(30, 20, 60, 0.95) 0%,
+      rgba(20, 15, 45, 0.9) 50%,
+      rgba(35, 25, 65, 0.95) 100%
+    );
+  border: 1px solid rgba(138, 43, 226, 0.3);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.dark .rounded-md {
+  background:
+    linear-gradient(135deg,
+      rgba(25, 15, 50, 0.9) 0%,
+      rgba(15, 10, 35, 0.85) 50%,
+      rgba(30, 20, 55, 0.9) 100%
+    );
+  border: 1px solid rgba(138, 43, 226, 0.25);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Cosmic glow effects for interactive elements */
+.dark button:hover,
+.dark .cursor-pointer:hover {
+  box-shadow:
+    0 0 20px rgba(138, 43, 226, 0.4),
+    0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
 }

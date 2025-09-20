@@ -36,7 +36,7 @@ import { HistoricalAgentsService, dbAgentToCraftedAgent } from '@/lib/historical
 import { AgentAttachmentsService, formatAttachmentForAgent } from '@/lib/agent-attachments-service'
 import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
 import { resilientApiCall } from '@/lib/api-resilience-system'
-import prisma from '@/lib/db'
+import { prisma } from '@/lib/db'
 
 // Rune context detection - analyzes current cosmic patterns for rune enhancement
 async function detectRuneContext(requestData: any, alchmData: any): Promise<any> {

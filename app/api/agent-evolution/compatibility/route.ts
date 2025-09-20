@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { routeTask } from '@/lib/agents/router'
-import { calculateKineticCompatibility, getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
+import { agentKineticProfiles, type KineticProfile } from '@/lib/agents/kinetic-profiles'
 import { ConsciousnessMemorySystem } from '@/lib/agents/consciousness-memory'
 import { AlchemicalKineticsClient } from '@/lib/kinetics-client'
 
@@ -22,12 +22,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Both agent1 and agent2 IDs required' }, { status: 400 })
     }
 
-    // Get basic kinetic compatibility
-    const baseCompatibility = calculateKineticCompatibility(agent1Id, agent2Id)
-
     // Get profiles
-    const agent1Profile = getAgentKineticProfile(agent1Id)
-    const agent2Profile = getAgentKineticProfile(agent2Id)
+    const agent1Profile = agentKineticProfiles[agent1Id]
+    const agent2Profile = agentKineticProfiles[agent2Id]
 
     if (!agent1Profile || !agent2Profile) {
       return NextResponse.json({
@@ -45,22 +42,27 @@ export async function GET(request: NextRequest) {
 
     const currentHour = kinetics.timing?.planetaryHours[0] || 'Sun'
 
+    // Calculate basic kinetic compatibility (element compatibility)
+    const elementCompatibility = calculateElementCompatibility(agent1Profile.elements, agent2Profile.elements)
+    const astrologyCompatibility = calculateAstrologyCompatibility(agent1Profile.astrology, agent2Profile.astrology)
+    const baseCompatibility = (elementCompatibility + astrologyCompatibility) / 2
+
     // Calculate enhanced compatibility with current context
-    const agent1Optimal = agent1Profile.peak_hours.includes(currentHour)
-    const agent2Optimal = agent2Profile.peak_hours.includes(currentHour)
+    const agent1Optimal = agent1Profile.alignment.includes(currentHour)
+    const agent2Optimal = agent2Profile.alignment.includes(currentHour)
     const bothOptimal = agent1Optimal && agent2Optimal
 
     const contextualCompatibility = bothOptimal ? baseCompatibility * 1.3 : baseCompatibility
 
     // Shared peak hours analysis
-    const sharedPeakHours = agent1Profile.peak_hours.filter(hour =>
-      agent2Profile.peak_hours.includes(hour)
+    const sharedPeakHours = agent1Profile.alignment.filter(hour =>
+      agent2Profile.alignment.includes(hour)
     )
 
     // Momentum synergy analysis
     const momentumSynergy = calculateMomentumSynergy(
-      agent1Profile.momentum_type,
-      agent2Profile.momentum_type
+      agent1Profile.momentum || 'steady',
+      agent2Profile.momentum || 'steady'
     )
 
     let result: any = {
@@ -81,7 +83,7 @@ export async function GET(request: NextRequest) {
         sharedPeakHours,
         sharedPeakCount: sharedPeakHours.length,
         momentumSynergy,
-        combinedConsciousnessRate: (agent1Profile.consciousness_rate + agent2Profile.consciousness_rate) / 2
+        combinedConsciousnessRate: (agent1Profile.evolutionRate + agent2Profile.evolutionRate) / 2
       },
       recommendations: generateCompatibilityRecommendations(
         agent1Profile,
@@ -245,7 +247,7 @@ function generateCompatibilityRecommendations(
     recommendations.push('🌟 Peak synergy time - ideal for deep conversations')
     recommendations.push('💫 Enhanced consciousness resonance active')
   } else {
-    const sharedHours = agent1.peak_hours.filter((hour: string) => agent2.peak_hours.includes(hour))
+    const sharedHours = agent1.alignment.filter((hour: string) => agent2.alignment.includes(hour))
     if (sharedHours.length > 0) {
       recommendations.push(`⏰ Optimal interaction during ${sharedHours.join(', ')} hours`)
     }
@@ -262,8 +264,10 @@ function generateCompatibilityRecommendations(
   }
 
   // Momentum-specific recommendations
-  if (agent1.momentum_type === agent2.momentum_type) {
-    recommendations.push(`🎯 Matched ${agent1.momentum_type} momentum - consistent energy`)
+  const momentum1 = agent1.momentum || 'steady'
+  const momentum2 = agent2.momentum || 'steady'
+  if (momentum1 === momentum2) {
+    recommendations.push(`🎯 Matched ${momentum1} momentum - consistent energy`)
   } else {
     recommendations.push(`🌊 Complementary momentum types - diverse perspectives`)
   }
@@ -316,4 +320,74 @@ function calculateEvolutionCompatibility(evolution1: any, evolution2: any): {
     score: Math.min(score, 1),
     factors
   }
+}
+
+// Helper functions for compatibility calculation
+function calculateElementCompatibility(elements1: string[], elements2: string[]): number {
+  if (!elements1 || !elements2) return 0.5
+
+  const shared = elements1.filter(el => elements2.includes(el))
+  const totalUnique = new Set([...elements1, ...elements2]).size
+
+  return shared.length / Math.max(totalUnique, 1)
+}
+
+function calculateAstrologyCompatibility(astrology1: any, astrology2: any): number {
+  if (!astrology1 || !astrology2) return 0.5
+
+  let compatibility = 0.5
+
+  // Planet compatibility
+  if (astrology1.planet && astrology2.planet) {
+    const planetCompatibility = calculatePlanetCompatibility(astrology1.planet, astrology2.planet)
+    compatibility += planetCompatibility * 0.3
+  }
+
+  // Sign compatibility
+  if (astrology1.sign && astrology2.sign) {
+    const signCompatibility = calculateSignCompatibility(astrology1.sign, astrology2.sign)
+    compatibility += signCompatibility * 0.2
+  }
+
+  return Math.min(compatibility, 1)
+}
+
+function calculatePlanetCompatibility(planet1: string, planet2: string): number {
+  const planetaryAffinities: Record<string, string[]> = {
+    'Sun': ['Mars', 'Jupiter', 'Venus'],
+    'Moon': ['Venus', 'Jupiter', 'Mercury'],
+    'Mercury': ['Moon', 'Venus', 'Uranus'],
+    'Venus': ['Sun', 'Moon', 'Mercury', 'Jupiter'],
+    'Mars': ['Sun', 'Pluto', 'Jupiter'],
+    'Jupiter': ['Sun', 'Moon', 'Venus', 'Mars'],
+    'Saturn': ['Capricorn', 'Aquarius'],
+    'Uranus': ['Mercury', 'Aquarius'],
+    'Neptune': ['Pisces', 'Jupiter'],
+    'Pluto': ['Mars', 'Scorpio']
+  }
+
+  if (planet1 === planet2) return 0.8
+  if (planetaryAffinities[planet1]?.includes(planet2)) return 0.6
+  return 0.4
+}
+
+function calculateSignCompatibility(sign1: string, sign2: string): number {
+  const signAffinities: Record<string, string[]> = {
+    'Aries': ['Leo', 'Sagittarius', 'Gemini', 'Aquarius'],
+    'Taurus': ['Virgo', 'Capricorn', 'Cancer', 'Pisces'],
+    'Gemini': ['Libra', 'Aquarius', 'Aries', 'Leo'],
+    'Cancer': ['Scorpio', 'Pisces', 'Taurus', 'Virgo'],
+    'Leo': ['Aries', 'Sagittarius', 'Gemini', 'Libra'],
+    'Virgo': ['Taurus', 'Capricorn', 'Cancer', 'Scorpio'],
+    'Libra': ['Gemini', 'Aquarius', 'Leo', 'Sagittarius'],
+    'Scorpio': ['Cancer', 'Pisces', 'Virgo', 'Capricorn'],
+    'Sagittarius': ['Aries', 'Leo', 'Libra', 'Aquarius'],
+    'Capricorn': ['Taurus', 'Virgo', 'Scorpio', 'Pisces'],
+    'Aquarius': ['Gemini', 'Libra', 'Aries', 'Sagittarius'],
+    'Pisces': ['Cancer', 'Scorpio', 'Taurus', 'Capricorn']
+  }
+
+  if (sign1 === sign2) return 0.9
+  if (signAffinities[sign1]?.includes(sign2)) return 0.7
+  return 0.4
 }

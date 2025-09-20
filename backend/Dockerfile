@@ -1,71 +1,88 @@
-# Multi-stage build for optimal image size
+# =====================================
+# Dependencies Stage
+# =====================================
+FROM node:18-alpine AS deps
+
+# Install dependencies for native modules
+RUN apk add --no-cache libc6-compat python3 make g++
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json yarn.lock ./
+
+# Install dependencies only
+RUN yarn install --frozen-lockfile --production=false
+
+# =====================================
+# Builder Stage
+# =====================================
 FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json yarn.lock ./
-
-# Install dependencies
-RUN yarn install --frozen-lockfile
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
 
 # Copy source code
 COPY . .
 
+# Set build environment
+ENV NODE_ENV=production
+
 # Build the application
 RUN yarn build
 
-# Production stage
+# Remove dev dependencies after build
+RUN yarn install --production --frozen-lockfile && yarn cache clean
+
+# =====================================
+# Production Stage
+# =====================================
 FROM node:18-alpine AS production
 
 WORKDIR /app
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install required packages for production
+RUN apk add --no-cache \
+    dumb-init \
+    curl \
+    ca-certificates \
+    && update-ca-certificates
 
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S backend -u 1001
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S backend -u 1001
 
-# Copy package files
+# Copy package files and install production dependencies
 COPY package.json yarn.lock ./
-
-# Install only production dependencies
-RUN yarn install --production --frozen-lockfile && yarn cache clean
+RUN yarn install --production --frozen-lockfile && \
+    yarn cache clean && \
+    rm -rf /tmp/* /var/cache/apk/*
 
 # Copy built application from builder stage
 COPY --from=builder --chown=backend:nodejs /app/dist ./dist
 
-# Create logs directory
-RUN mkdir -p logs && chown backend:nodejs logs
+# Create necessary directories with proper permissions
+RUN mkdir -p logs temp && \
+    chown -R backend:nodejs logs temp
+
+# Copy health check script
+COPY --chown=backend:nodejs scripts/health-check.js ./scripts/
 
 # Switch to non-root user
 USER backend
 
-# Expose port
-EXPOSE 8000
+# Set production environment variables
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=512"
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "
-    const http = require('http');
-    const options = {
-      host: 'localhost',
-      port: 8000,
-      path: '/api/health',
-      timeout: 2000
-    };
-    const request = http.request(options, (res) => {
-      if (res.statusCode === 200) {
-        process.exit(0);
-      } else {
-        process.exit(1);
-      }
-    });
-    request.on('error', () => process.exit(1));
-    request.on('timeout', () => process.exit(1));
-    request.end();
-  "
+# Expose ports
+EXPOSE 8000 8001
+
+# Health check using dedicated script
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+  CMD node scripts/health-check.js
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]

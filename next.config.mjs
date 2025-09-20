@@ -9,8 +9,11 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Docker optimization - standalone output
+  output: 'standalone',
+
   // Fix workspace root detection
-  outputFileTracingRoot: '/Users/GregCastro/Desktop/planetary-agents',
+  outputFileTracingRoot: process.env.DOCKER_BUILD ? undefined : '/Users/GregCastro/Desktop/planetary-agents',
 
   // Transpile packages that need special handling
   transpilePackages: [

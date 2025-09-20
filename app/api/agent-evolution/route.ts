@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ConsciousnessMemorySystem } from '@/lib/agents/consciousness-memory'
 import { routeTask } from '@/lib/agents/router'
-import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
+import { agentKineticProfiles } from '@/lib/agents/kinetic-profiles'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
 
@@ -227,9 +227,9 @@ export async function PUT(request: NextRequest) {
           const freshState = await consciousnessPersistence.resetAgentEvolution(userId, agentId)
 
           // Get fresh baseline metrics
-          const kineticProfile = getAgentKineticProfile(agentId)
+          const kineticProfile = agentKineticProfiles[agentId]
           const resetMetrics = {
-            consciousnessVelocity: kineticProfile?.consciousness_rate || 0.5,
+            consciousnessVelocity: kineticProfile?.evolutionRate || 0.5,
             interactionMomentum: 0,
             lastInteraction: freshState.lastInteraction.toISOString(),
             totalInteractions: 0,
@@ -257,7 +257,7 @@ export async function PUT(request: NextRequest) {
 
       case 'update_profile':
         // Update agent's kinetic profile (admin functionality)
-        const profile = getAgentKineticProfile(agentId)
+        const profile = agentKineticProfiles[agentId]
         if (!profile) {
           return NextResponse.json({ error: 'Agent profile not found' }, { status: 404 })
         }
@@ -333,7 +333,7 @@ export async function PATCH(request: NextRequest) {
             metrics,
             timing,
             kinetics: kinetics.output,
-            profile: getAgentKineticProfile(agentId)
+            profile: agentKineticProfiles[agentId]
           })
         } else {
           analysis.push({

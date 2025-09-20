@@ -7,11 +7,11 @@
  */
 
 import { sampleHourlyAlchm, sampleDateRange, HourlyAlchemicalSample } from './alchemical-kinetics-sampler'
-import { getAgentKineticProfile } from './agents/kinetic-profiles'
+import { agentKineticProfiles } from './agents/kinetic-profiles'
 import { ConsciousnessMemorySystem } from './agents/consciousness-memory'
 import { calculateReturnPattern, identifyPlanetaryThemes, findHistoricalPatterns } from './transit-patterns'
 import { detectGrandTrines, detectTSquares, type PatternConfiguration } from './astrological-pattern-recognition'
-import type { AgentKineticProfile } from './agents/kinetic-profiles'
+import type { KineticProfile } from './agents/kinetic-profiles'
 
 export interface TemporalQuery {
   type: 'natural_language' | 'structured'
@@ -159,7 +159,7 @@ export class TemporalAnalysisEngine {
     dateRange?: { start: Date; end: Date },
     location = this.DEFAULT_LOCATION
   ): Promise<AgentTransitEvent[]> {
-    const profile = getAgentKineticProfile(agentId)
+    const profile = agentKineticProfiles[agentId]
     if (!profile) {
       throw new Error(`Agent profile not found: ${agentId}`)
     }
@@ -213,7 +213,7 @@ export class TemporalAnalysisEngine {
           depth: Math.min(consciousnessImpact * 1.2, 1),
           clarity: Math.min(sample.Energy * 0.8, 1),
           resonance: this.calculateResonance(profile, sample),
-          temporalAlignment: profile.peak_hours.includes(sample.planetaryHour || 'Sun') ? 0.9 : 0.5
+          temporalAlignment: profile.alignment.includes(sample.planetaryHour || 'Sun') ? 0.9 : 0.5
         }
       }
 
@@ -381,8 +381,8 @@ export class TemporalAnalysisEngine {
   }
 
   private static calculateConsciousnessImpact(profile: AgentKineticProfile, sample: HourlyAlchemicalSample): number {
-    const baseRate = profile.consciousness_rate
-    const hourBonus = profile.peak_hours.includes(sample.planetaryHour || 'Sun') ? 0.3 : 0
+    const baseRate = profile.evolutionRate
+    const hourBonus = profile.alignment.includes(sample.planetaryHour || 'Sun') ? 0.3 : 0
     const energyBonus = sample.Energy * 0.2
     const elementalBonus = this.calculateElementalBonus(profile, sample.totals)
 
@@ -414,7 +414,7 @@ export class TemporalAnalysisEngine {
   }
 
   private static calculateResonance(profile: AgentKineticProfile, sample: HourlyAlchemicalSample): number {
-    const hourMatch = profile.peak_hours.includes(sample.planetaryHour || 'Sun') ? 0.4 : 0.2
+    const hourMatch = profile.alignment.includes(sample.planetaryHour || 'Sun') ? 0.4 : 0.2
     const seasonalMatch = sample.seasonalPhase === 'Spring' ? 0.3 : 0.2 // Simplified
     const energyMatch = Math.min(sample.Energy, 0.3)
 

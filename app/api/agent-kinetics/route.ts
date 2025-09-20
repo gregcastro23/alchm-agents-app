@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
+import { agentKineticProfiles } from '@/lib/agents/kinetic-profiles'
 import { sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
 import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 
@@ -35,7 +35,7 @@ function calculateAgentKinetics(
   const agent = DEMO_AGENTS.find(a => a.id === agentId)
   if (!agent) return null
 
-  const kineticProfile = getAgentKineticProfile(agentId)
+  const kineticProfile = agentKineticProfiles[agentId]
   if (!kineticProfile) {
     // Return default metrics for agents without kinetic profiles
     return {

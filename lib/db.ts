@@ -1,31 +1,16 @@
 import { PrismaClient } from './generated/prisma'
+import Redis from 'ioredis'
 
 declare global {
   // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined
+  var __prisma: PrismaClient | undefined
 }
 
-const prisma = global.prisma || new PrismaClient()
-if (process.env.NODE_ENV !== 'production') global.prisma = prisma
-
-export default prisma
-
-// Database connection utilities
-
-import { PrismaClient } from './generated/prisma'
-import Redis from 'ioredis'
-
 // Prisma client singleton
-let prisma: PrismaClient
+export const prisma = globalThis.__prisma || new PrismaClient()
 
-if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient()
-} else {
-  // In development, use a global variable to prevent multiple instances
-  if (!(global as any).prisma) {
-    ;(global as any).prisma = new PrismaClient()
-  }
-  prisma = (global as any).prisma
+if (process.env.NODE_ENV !== 'production') {
+  globalThis.__prisma = prisma
 }
 
 // Redis client singleton - optional (only when REDIS_URL is provided)
@@ -278,4 +263,4 @@ export class StreakTracker {
   }
 }
 
-export { prisma, redis }
+export { redis }

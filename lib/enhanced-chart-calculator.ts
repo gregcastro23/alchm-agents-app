@@ -3,7 +3,8 @@
 
 import { fetchAstrologizeWheel, fetchAlchmAlchemize } from './astrologize'
 import { alchemize, type BirthInfo } from './alchemizer'
-import { detectPatterns, type PlanetPosition } from './astrological-pattern-recognition'
+import { generateAccurateHoroscope } from './monica/horoscope-generator'
+import { detectPatternsStatic, type PlanetPosition } from './astrological-pattern-recognition'
 
 export interface EnhancedChartData {
   birthInfo: BirthInfo
@@ -193,7 +194,8 @@ export async function calculateEnhancedChart(
 
     // Generate local alchemical data as fallback or supplement
     console.log('Generating local alchemical calculations...')
-    const localAlchemicalData = alchemize(birthInfo, null) // null horoscope for calculation
+    const horoscope = await generateAccurateHoroscope(birthInfo)
+    const localAlchemicalData = alchemize(birthInfo, horoscope)
 
     // Create planet positions from available data
     const planets: PlanetPosition[] = [
@@ -222,7 +224,7 @@ export async function calculateEnhancedChart(
     })
 
     // Detect patterns and aspects
-    const { aspects, patterns } = detectPatterns(planets)
+    const { aspects, patterns } = detectPatternsStatic(planets)
 
     // Combine alchemical data from API and local calculations
     const combinedAlchemical: AlchemicalData = {
