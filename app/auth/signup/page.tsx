@@ -70,28 +70,8 @@ export default function SignUpPage() {
       const authData = await authResponse.json()
 
       if (authData.success) {
-        // Store JWT token
-        localStorage.setItem('consciousness_token', authData.token)
-        localStorage.setItem('user_data', JSON.stringify(authData.user))
-        
-        // Calculate birth chart if birth data provided
-        if (formData.birthYear && formData.latitude) {
-          const birthInfo = {
-            year: parseInt(formData.birthYear),
-            month: parseInt(formData.birthMonth),
-            day: parseInt(formData.birthDay),
-            hour: parseInt(formData.birthHour) || 12,
-            minute: parseInt(formData.birthMinute) || 0,
-            latitude: parseFloat(formData.latitude),
-            longitude: parseFloat(formData.longitude)
-          }
-
-          // Calculate initial chart (this would integrate with alchemizer)
-          console.log('Birth chart calculation:', birthInfo)
-        }
-        
-        // Redirect to onboarding
-        router.push('/onboarding')
+        // Registration successful - redirect to signin
+        router.push('/auth/signin?message=Registration successful! Please sign in.')
       } else {
         setError(authData.error || 'Registration failed')
       }

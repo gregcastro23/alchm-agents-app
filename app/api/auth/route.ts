@@ -1,24 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'consciousness-evolution-secret-key'
+// This endpoint handles user registration only
+// Login is handled by NextAuth at /api/auth/[...nextauth]
 
 export async function POST(req: NextRequest) {
   try {
     const { action, email, password, name } = await req.json()
 
-    switch (action) {
-      case 'register':
-        return await handleRegister(email, password, name)
-      case 'login':
-        return await handleLogin(email, password)
-      case 'verify':
-        return await handleVerifyToken(req)
-      default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    if (action === 'register') {
+      return await handleRegister(email, password, name)
     }
+    
+    return NextResponse.json({ error: 'Use NextAuth for login' }, { status: 400 })
   } catch (error) {
     console.error('Auth API error:', error)
     return NextResponse.json({ error: 'Authentication failed' }, { status: 500 })
@@ -68,12 +63,55 @@ async function handleRegister(email: string, password: string, name?: string) {
       }
     })
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    )
+    // Create Monica user settings with default configuration
+    const monicaSettings = await prisma.monicaUserSettings.create({
+      data: {
+        userId: user.id,
+        personality: 'friendly',
+        assistanceLevel: 2,
+        proactiveTips: true,
+        explanationDepth: 'detailed',
+        position: 'bottom-right',
+        autoHide: 'never',
+        preferredTime: 'evening',
+        soundEnabled: true,
+        volume: 50,
+        aiModel: 'claude-sonnet',
+        contextDepth: 10,
+        learningSpeed: 1.0
+      }
+    })
+
+    // Create Monica user progress tracking
+    await prisma.monicaUserProgress.create({
+      data: {
+        userId: user.id,
+        settingsId: monicaSettings.id,
+        level: 1,
+        totalXP: 0,
+        xpToNextLevel: 100,
+        completedTutorials: JSON.stringify([]),
+        suggestedNext: JSON.stringify(['getting-started', 'understanding-agents']),
+        lastLevelUp: new Date()
+      }
+    })
+
+    // Create initial agent evolution states for starter agents
+    const starterAgents = ['leonardo-da-vinci', 'shakespeare', 'einstein']
+    for (const agentId of starterAgents) {
+      await prisma.agentEvolutionState.create({
+        data: {
+          agentId,
+          userId: user.id,
+          currentLevel: 'bronze',
+          totalPower: 0,
+          interactionCount: 0,
+          specialAbilitiesUnlocked: JSON.stringify([]),
+          evolutionHistory: JSON.stringify([]),
+          affinityScores: JSON.stringify({})
+        }
+      })
+    }
 
     return NextResponse.json({
       success: true,
@@ -84,100 +122,10 @@ async function handleRegister(email: string, password: string, name?: string) {
         verified: user.verified,
         tier: 'free'
       },
-      token
+      message: 'Registration successful. Please sign in.'
     })
   } catch (error) {
     console.error('Registration error:', error)
     return NextResponse.json({ error: 'Registration failed' }, { status: 500 })
-  }
-}
-
-async function handleLogin(email: string, password: string) {
-  try {
-    // Find user
-    const user = await prisma.user.findUnique({
-      where: { email },
-      include: {
-        subscription: true
-      }
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
-    }
-
-    // Check password
-    const passwordValid = await bcrypt.compare(password, user.passwordHash || '')
-    if (!passwordValid) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
-    }
-
-    // Update last login
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLogin: new Date() }
-    })
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    )
-
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        verified: user.verified,
-        tier: user.subscription?.tier || 'free',
-        features: user.subscription?.features ? JSON.parse(user.subscription.features as string) : {}
-      },
-      token
-    })
-  } catch (error) {
-    console.error('Login error:', error)
-    return NextResponse.json({ error: 'Login failed' }, { status: 500 })
-  }
-}
-
-async function handleVerifyToken(req: NextRequest) {
-  try {
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 })
-    }
-
-    const token = authHeader.substring(7)
-    const decoded = jwt.verify(token, JWT_SECRET) as any
-
-    // Get user with subscription
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      include: {
-        subscription: true
-      }
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        verified: user.verified,
-        tier: user.subscription?.tier || 'free',
-        features: user.subscription?.features ? JSON.parse(user.subscription.features as string) : {}
-      }
-    })
-  } catch (error) {
-    console.error('Token verification error:', error)
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
   }
 }

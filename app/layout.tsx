@@ -1,34 +1,26 @@
-import type React from 'react'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import './cosmic-theme.css'
-import { ThemeProvider } from '@/components/theme-provider'
-import { Header } from '@/components/header'
-import { MonicaOmnipresent } from '@/components/monica/monica-omnipresent'
+import { Providers } from './providers'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Alchm © - Astrological Agents',
-  description: 'Advanced astrological agents powered by AI',
-  generator: 'v0.dev',
+  title: 'Planetary Agents - Consciousness Evolution Platform',
+  description: 'Revolutionary consciousness evolution through AI-powered planetary agents and real-time cosmic integration',
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <Header />
-          <main>{children}</main>
-          {/* Monica's Omnipresent Guide - appears on all pages */}
-          <MonicaOmnipresent />
-        </ThemeProvider>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   )

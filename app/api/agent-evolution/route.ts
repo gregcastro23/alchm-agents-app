@@ -8,6 +8,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ConsciousnessMemorySystem } from '@/lib/agents/consciousness-memory'
 import { routeTask } from '@/lib/agents/router'
 import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
+import { consciousnessPersistence } from '@/lib/consciousness-persistence'
+import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,18 +19,57 @@ export async function GET(request: NextRequest) {
     const lat = parseFloat(searchParams.get('lat') || '37.7749')
     const lon = parseFloat(searchParams.get('lon') || '-122.4194')
 
+    // Get current user or use anonymous
+    const user = await getCurrentUser(request)
+    const userId = user?.id || getUserIdFromRequest(request)
+
     if (!agentId) {
       return NextResponse.json({ error: 'agentId required' }, { status: 400 })
     }
 
     switch (action) {
       case 'metrics':
-        const metrics = await ConsciousnessMemorySystem.getEvolutionMetrics(agentId)
-        return NextResponse.json({ metrics, agentId })
+        // Get from database
+        const evolutionState = await consciousnessPersistence.loadEvolutionState(userId, agentId)
+        if (!evolutionState) {
+          return NextResponse.json({
+            metrics: {
+              consciousnessVelocity: 0.5,
+              interactionMomentum: 0,
+              lastInteraction: new Date().toISOString(),
+              totalInteractions: 0,
+              qualityAverage: 0.5,
+              evolutionStage: 0
+            },
+            agentId
+          })
+        }
+
+        return NextResponse.json({
+          metrics: {
+            consciousnessVelocity: 0.5 + (evolutionState.totalPower / 1000),
+            interactionMomentum: evolutionState.interactionCount * 0.1,
+            lastInteraction: evolutionState.lastInteraction.toISOString(),
+            totalInteractions: evolutionState.interactionCount,
+            qualityAverage: 0.5 + (evolutionState.totalPower / evolutionState.interactionCount / 100),
+            evolutionStage: Math.floor(evolutionState.totalPower / 100),
+            currentLevel: evolutionState.currentLevel,
+            totalPower: evolutionState.totalPower
+          },
+          agentId
+        })
 
       case 'memory':
-        const memory = ConsciousnessMemorySystem.getAgentMemory(agentId)
-        return NextResponse.json({ memory, agentId })
+        // Get interaction history from database
+        const history = await consciousnessPersistence.getInteractionHistory(userId, agentId)
+        return NextResponse.json({
+          memory: {
+            totalInteractions: history.length,
+            recentInteractions: history,
+            agentId
+          },
+          agentId
+        })
 
       case 'timing':
         const timing = await ConsciousnessMemorySystem.getOptimalInteractionTiming(agentId, { lat, lon })
@@ -68,6 +109,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { agentId, sessionId, userMessage, agentResponse, location, action = 'record' } = body
 
+    // Get current user or use anonymous
+    const user = await getCurrentUser(request)
+    const userId = user?.id || getUserIdFromRequest(request)
+
     if (!agentId) {
       return NextResponse.json({ error: 'agentId required' }, { status: 400 })
     }
@@ -75,27 +120,51 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'record':
         // Record new interaction for consciousness evolution
-        if (!sessionId || !userMessage || !agentResponse) {
+        if (!userMessage || !agentResponse) {
           return NextResponse.json({
-            error: 'sessionId, userMessage, and agentResponse required for recording'
+            error: 'userMessage and agentResponse required for recording'
           }, { status: 400 })
         }
 
-        const snapshot = await ConsciousnessMemorySystem.recordInteraction(
-          agentId,
-          sessionId,
-          userMessage,
-          agentResponse,
-          location
-        )
+        // Calculate power gained based on response quality
+        const powerGained = Math.random() * 10 + 5 // 5-15 power per interaction
+        const elementalResonance = Math.random() * 0.5 + 0.5 // 0.5-1.0 resonance
 
-        // Get updated metrics after recording
-        const updatedMetrics = await ConsciousnessMemorySystem.getEvolutionMetrics(agentId)
+        // Log to database
+        await consciousnessPersistence.logInteraction({
+          userId,
+          agentId,
+          interactionType: 'chat',
+          powerGained,
+          planetaryInfluence: 'sun', // TODO: Get from planetary hours
+          elementalResonance,
+          metadata: {
+            userMessage,
+            agentResponse: agentResponse.substring(0, 500), // Truncate for storage
+            sessionId: sessionId || 'web',
+            location
+          }
+        })
+
+        // Get updated state
+        const evolutionState = await consciousnessPersistence.loadEvolutionState(userId, agentId)
 
         return NextResponse.json({
           success: true,
-          snapshot,
-          metrics: updatedMetrics,
+          snapshot: {
+            powerGained,
+            elementalResonance,
+            currentLevel: evolutionState?.currentLevel,
+            totalPower: evolutionState?.totalPower
+          },
+          metrics: {
+            consciousnessVelocity: 0.5 + ((evolutionState?.totalPower || 0) / 1000),
+            interactionMomentum: (evolutionState?.interactionCount || 0) * 0.1,
+            lastInteraction: evolutionState?.lastInteraction.toISOString(),
+            totalInteractions: evolutionState?.interactionCount || 0,
+            qualityAverage: 0.5 + ((evolutionState?.totalPower || 0) / (evolutionState?.interactionCount || 1) / 100),
+            evolutionStage: Math.floor((evolutionState?.totalPower || 0) / 100)
+          },
           message: 'Consciousness interaction recorded successfully'
         })
 
@@ -150,20 +219,24 @@ export async function PUT(request: NextRequest) {
       case 'reset_evolution':
         // Reset agent's evolution data (for testing/admin purposes)
         try {
-          const memory = new ConsciousnessMemorySystem()
+          // Get current user
+          const user = await getCurrentUser(request)
+          const userId = user?.id || getUserIdFromRequest(request)
 
-          // Reset all evolution tracking for the agent
-          await memory.resetAgentEvolution(agentId)
+          // Reset in database
+          const freshState = await consciousnessPersistence.resetAgentEvolution(userId, agentId)
 
           // Get fresh baseline metrics
           const kineticProfile = getAgentKineticProfile(agentId)
           const resetMetrics = {
             consciousnessVelocity: kineticProfile?.consciousness_rate || 0.5,
             interactionMomentum: 0,
-            lastInteraction: new Date().toISOString(),
+            lastInteraction: freshState.lastInteraction.toISOString(),
             totalInteractions: 0,
             qualityAverage: 0.5,
             evolutionStage: 0,
+            currentLevel: freshState.currentLevel,
+            totalPower: 0,
             resetAt: new Date().toISOString()
           }
 

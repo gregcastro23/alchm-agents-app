@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,27 +24,17 @@ export default function SignInPage() {
     setError('')
 
     try {
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'login',
-          email,
-          password
-        })
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false
       })
 
-      const data = await response.json()
-
-      if (data.success) {
-        // Store JWT token
-        localStorage.setItem('consciousness_token', data.token)
-        localStorage.setItem('user_data', JSON.stringify(data.user))
-        
+      if (result?.error) {
+        setError('Invalid email or password')
+      } else if (result?.ok) {
         // Redirect to dashboard
         router.push('/dashboard')
-      } else {
-        setError(data.error || 'Login failed')
       }
     } catch (err) {
       setError('Network error - please try again')

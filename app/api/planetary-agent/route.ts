@@ -14,6 +14,8 @@ import {
   getPlanetaryElement,
   calculateElementalAffinity,
 } from '@/lib/astrological-data'
+import { consciousnessPersistence } from '@/lib/consciousness-persistence'
+import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
 import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
 import { ANumberCalculator } from '@/lib/core-energy-rules'
 import {
@@ -210,6 +212,37 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
       logAgentConversation(interactionData, conversationContext).catch(error => {
         console.error('Failed to log conversation to Galileo:', error)
       })
+
+      // Log to database for consciousness evolution tracking
+      try {
+        const user = await getCurrentUser(req)
+        const userId = user?.id || getUserIdFromRequest(req)
+        const agentId = `${planet.toLowerCase()}-${sign.toLowerCase()}`
+
+        // Calculate power based on response quality and planetary conditions
+        const powerGained = (elementalAffinity * 10) + (dignity.score * 2) + 5
+
+        await consciousnessPersistence.logInteraction({
+          userId,
+          agentId,
+          interactionType: 'planetary-chat',
+          powerGained,
+          planetaryInfluence: planet,
+          elementalResonance: elementalAffinity,
+          metadata: {
+            question,
+            responseLength: text.length,
+            sign,
+            degree,
+            dignity: dignity.type,
+            aNumber: aNumberInfo?.aNumber,
+            sessionId: conversationContext.sessionId
+          }
+        })
+      } catch (dbError) {
+        console.error('Failed to log interaction to database:', dbError)
+        // Don't fail the request if database logging fails
+      }
 
       return NextResponse.json({
         response: text,

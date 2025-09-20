@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession, signOut } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -29,37 +30,42 @@ interface UserData {
 }
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<UserData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: session, status } = useSession()
   const [selectedAgent, setSelectedAgent] = useState('leonardo-da-vinci')
   const router = useRouter()
 
   useEffect(() => {
-    // Check authentication
-    const token = localStorage.getItem('consciousness_token')
-    const userData = localStorage.getItem('user_data')
-    
-    if (!token || !userData) {
+    if (status === 'loading') return // Still loading
+    if (status === 'unauthenticated') {
       router.push('/auth/signin')
       return
     }
-
-    try {
-      const parsedUser = JSON.parse(userData)
-      setUser(parsedUser)
-    } catch (error) {
-      console.error('Error parsing user data:', error)
-      router.push('/auth/signin')
-      return
-    }
-
-    setLoading(false)
-  }, [router])
+  }, [status, router])
 
   const handleSignOut = () => {
-    localStorage.removeItem('consciousness_token')
-    localStorage.removeItem('user_data')
-    router.push('/')
+    signOut({ callbackUrl: '/' })
+  }
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+          <span>Loading consciousness dashboard...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (!session) {
+    return null // Will redirect to signin
+  }
+
+  const user = {
+    id: session.user.id,
+    email: session.user.email!,
+    name: session.user.name!,
+    tier: (session.user as any).tier || 'free'
   }
 
   const getTierColor = (tier: string) => {

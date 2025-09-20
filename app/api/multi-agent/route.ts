@@ -14,6 +14,8 @@ import {
   getPlanetaryElement,
   calculateElementalAffinity,
 } from '@/lib/astrological-data'
+import { consciousnessPersistence } from '@/lib/consciousness-persistence'
+import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
 import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
 import { ANumberCalculator } from '@/lib/core-energy-rules'
 import { getLunarDegreePersonality, getMoonDegree } from '@/lib/moon-phase-calculator'
@@ -323,6 +325,37 @@ export async function POST(req: Request) {
     logAgentConversation(interactionData, conversationContext).catch(error => {
       console.error('Failed to log multi-agent conversation:', error)
     })
+
+    // Log to database for consciousness evolution tracking
+    try {
+      const user = await getCurrentUser(req)
+      const userId = user?.id || getUserIdFromRequest(req)
+
+      // Log interaction for each agent
+      for (const response of responses) {
+        const agentId = `${response.agent.toLowerCase()}-multi`
+        const powerGained = (response.elementalInfo.elementalAffinity * 8) + 5
+
+        await consciousnessPersistence.logInteraction({
+          userId,
+          agentId,
+          interactionType: 'multi-agent-chat',
+          powerGained,
+          planetaryInfluence: response.agent,
+          elementalResonance: response.elementalInfo.elementalAffinity,
+          metadata: {
+            question,
+            responseLength: response.response.length,
+            multiAgentSession: true,
+            totalAgents: responses.length,
+            sessionId: conversationContext.sessionId
+          }
+        })
+      }
+    } catch (dbError) {
+      console.error('Failed to log multi-agent interactions to database:', dbError)
+      // Don't fail the request if database logging fails
+    }
 
     return NextResponse.json({
       responses,
