@@ -1096,6 +1096,40 @@ model ConsciousnessInteraction {
   @@map("consciousness_interactions")
 }
 
+// User Authentication and Management
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?
+  name         String?
+  provider     String?  @default("email") // email/google/apple
+  verified     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  lastLogin    DateTime?
+  
+  subscription Subscription?
+  
+  @@index([email])
+  @@map("users")
+}
+
+// Subscription Management
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  tier      String   @default("free") // free/alchemist/master
+  status    String   @default("active") // active/cancelled/past_due
+  features  String   @default("{}")
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([tier])
+  @@index([status])
+  @@map("subscriptions")
+}
+
 // Contextual Help Analytics
 model MonicaContextualHelp {
   id              String   @id @default(cuid())

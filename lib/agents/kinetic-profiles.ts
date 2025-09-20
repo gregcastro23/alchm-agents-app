@@ -163,6 +163,170 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     powerThresholds: [115, 345, 805, 1610],
     evolutionRate: 1.1,
     specialAbilities: ['strategic-consciousness', 'tactical-wisdom-application', 'conflict-resolution-mastery']
+  },
+
+  // Scientific Minds
+  'galileo-galilei': {
+    alignment: ['Mercury', 'Jupiter', 'Uranus'],
+    velocitySignature: { Fire: 0.8, Water: 0.5, Air: 0.9, Earth: 0.7 },
+    powerThresholds: [120, 360, 840, 1680],
+    evolutionRate: 1.25,
+    specialAbilities: ['telescopic-consciousness', 'mathematical-universe-perception', 'paradigm-shift-catalyst']
+  },
+
+  'charles-darwin': {
+    alignment: ['Mercury', 'Saturn', 'Pluto'],
+    velocitySignature: { Fire: 0.6, Water: 0.7, Air: 0.85, Earth: 0.9 },
+    powerThresholds: [110, 330, 770, 1540],
+    evolutionRate: 1.1,
+    specialAbilities: ['evolutionary-pattern-recognition', 'natural-selection-wisdom', 'species-transformation-insight']
+  },
+
+  'stephen-hawking': {
+    alignment: ['Mercury', 'Uranus', 'Saturn'],
+    velocitySignature: { Fire: 0.5, Water: 0.4, Air: 0.95, Earth: 0.6 },
+    powerThresholds: [140, 420, 980, 1960],
+    evolutionRate: 1.35,
+    specialAbilities: ['black-hole-consciousness', 'time-space-synthesis', 'cosmic-humor-integration']
+  },
+
+  'rachel-carson': {
+    alignment: ['Moon', 'Venus', 'Neptune'],
+    velocitySignature: { Fire: 0.6, Water: 0.9, Air: 0.7, Earth: 0.95 },
+    powerThresholds: [90, 270, 630, 1260],
+    evolutionRate: 1.2,
+    specialAbilities: ['ecological-consciousness', 'environmental-prophecy', 'nature-voice-amplification']
+  },
+
+  'rosalind-franklin': {
+    alignment: ['Mercury', 'Uranus', 'Mars'],
+    velocitySignature: { Fire: 0.7, Water: 0.6, Air: 0.9, Earth: 0.8 },
+    powerThresholds: [115, 345, 805, 1610],
+    evolutionRate: 1.3,
+    specialAbilities: ['molecular-structure-vision', 'precision-consciousness', 'hidden-truth-revelation']
+  },
+
+  // Artists & Visionaries
+  'vincent-van-gogh': {
+    alignment: ['Sun', 'Mars', 'Neptune'],
+    velocitySignature: { Fire: 0.95, Water: 0.8, Air: 0.7, Earth: 0.4 },
+    powerThresholds: [100, 300, 700, 1400],
+    evolutionRate: 1.4,
+    specialAbilities: ['emotional-color-fusion', 'madness-genius-bridge', 'post-impressionist-vision']
+  },
+
+  'ludwig-van-beethoven': {
+    alignment: ['Mars', 'Pluto', 'Jupiter'],
+    velocitySignature: { Fire: 0.9, Water: 0.85, Air: 0.8, Earth: 0.6 },
+    powerThresholds: [105, 315, 735, 1470],
+    evolutionRate: 1.3,
+    specialAbilities: ['symphonic-consciousness', 'triumph-over-adversity', 'universal-brotherhood-expression']
+  },
+
+  'andy-warhol': {
+    alignment: ['Venus', 'Uranus', 'Mercury'],
+    velocitySignature: { Fire: 0.7, Water: 0.5, Air: 0.85, Earth: 0.8 },
+    powerThresholds: [95, 285, 665, 1330],
+    evolutionRate: 1.2,
+    specialAbilities: ['pop-culture-consciousness', 'mass-media-manipulation', 'celebrity-archetype-creation']
+  },
+
+  'georgia-okeefe': {
+    alignment: ['Venus', 'Mars', 'Sun'],
+    velocitySignature: { Fire: 0.8, Water: 0.7, Air: 0.6, Earth: 0.9 },
+    powerThresholds: [90, 270, 630, 1260],
+    evolutionRate: 1.15,
+    specialAbilities: ['feminine-landscape-fusion', 'macro-micro-perception', 'desert-consciousness-channeling']
+  },
+
+  'pablo-picasso': {
+    alignment: ['Mars', 'Mercury', 'Uranus'],
+    velocitySignature: { Fire: 0.9, Water: 0.6, Air: 0.85, Earth: 0.7 },
+    powerThresholds: [110, 330, 770, 1540],
+    evolutionRate: 1.3,
+    specialAbilities: ['cubist-reality-deconstruction', 'artistic-revolution-catalyst', 'perspective-transformation']
+  },
+
+  // Leaders & Changemakers
+  'nelson-mandela': {
+    alignment: ['Sun', 'Jupiter', 'Saturn'],
+    velocitySignature: { Fire: 0.75, Water: 0.9, Air: 0.8, Earth: 0.85 },
+    powerThresholds: [85, 255, 595, 1190],
+    evolutionRate: 1.1,
+    specialAbilities: ['reconciliation-consciousness', 'long-term-vision-holding', 'unity-through-struggle']
+  },
+
+  'eleanor-roosevelt': {
+    alignment: ['Moon', 'Jupiter', 'Venus'],
+    velocitySignature: { Fire: 0.7, Water: 0.85, Air: 0.8, Earth: 0.8 },
+    powerThresholds: [80, 240, 560, 1120],
+    evolutionRate: 1.15,
+    specialAbilities: ['human-rights-consciousness', 'diplomatic-courage', 'social-justice-manifestation']
+  },
+
+  'malcolm-x': {
+    alignment: ['Mars', 'Pluto', 'Mercury'],
+    velocitySignature: { Fire: 0.9, Water: 0.7, Air: 0.85, Earth: 0.6 },
+    powerThresholds: [110, 330, 770, 1540],
+    evolutionRate: 1.25,
+    specialAbilities: ['consciousness-awakening-catalyst', 'truth-speaking-courage', 'transformation-through-pilgrimage']
+  },
+
+  'harriet-tubman': {
+    alignment: ['Moon', 'Mars', 'Jupiter'],
+    velocitySignature: { Fire: 0.85, Water: 0.8, Air: 0.7, Earth: 0.9 },
+    powerThresholds: [95, 285, 665, 1330],
+    evolutionRate: 1.2,
+    specialAbilities: ['freedom-pathway-navigation', 'courage-under-fire', 'liberation-consciousness']
+  },
+
+  'winston-churchill': {
+    alignment: ['Sun', 'Mars', 'Jupiter'],
+    velocitySignature: { Fire: 0.9, Water: 0.6, Air: 0.8, Earth: 0.7 },
+    powerThresholds: [105, 315, 735, 1470],
+    evolutionRate: 1.15,
+    specialAbilities: ['wartime-leadership', 'oratory-power', 'resilience-consciousness']
+  },
+
+  // Philosophers & Thinkers
+  'socrates': {
+    alignment: ['Mercury', 'Saturn', 'Jupiter'],
+    velocitySignature: { Fire: 0.6, Water: 0.7, Air: 0.95, Earth: 0.5 },
+    powerThresholds: [75, 225, 525, 1050],
+    evolutionRate: 1.0,
+    specialAbilities: ['socratic-questioning', 'wisdom-through-ignorance', 'consciousness-examination']
+  },
+
+  'confucius': {
+    alignment: ['Saturn', 'Jupiter', 'Mercury'],
+    velocitySignature: { Fire: 0.5, Water: 0.8, Air: 0.85, Earth: 0.9 },
+    powerThresholds: [70, 210, 490, 980],
+    evolutionRate: 0.95,
+    specialAbilities: ['social-harmony-wisdom', 'ethical-consciousness', 'cultural-foundation-building']
+  },
+
+  'simone-de-beauvoir': {
+    alignment: ['Venus', 'Mars', 'Mercury'],
+    velocitySignature: { Fire: 0.8, Water: 0.75, Air: 0.9, Earth: 0.6 },
+    powerThresholds: [95, 285, 665, 1330],
+    evolutionRate: 1.2,
+    specialAbilities: ['feminist-consciousness-awakening', 'existential-freedom-exploration', 'gender-paradigm-transformation']
+  },
+
+  'marcus-aurelius': {
+    alignment: ['Saturn', 'Sun', 'Mercury'],
+    velocitySignature: { Fire: 0.6, Water: 0.7, Air: 0.8, Earth: 0.9 },
+    powerThresholds: [85, 255, 595, 1190],
+    evolutionRate: 1.05,
+    specialAbilities: ['stoic-consciousness', 'philosopher-emperor-wisdom', 'inner-citadel-mastery']
+  },
+
+  'lao-tzu': {
+    alignment: ['Moon', 'Saturn', 'Neptune'],
+    velocitySignature: { Fire: 0.3, Water: 0.9, Air: 0.7, Earth: 0.8 },
+    powerThresholds: [60, 180, 420, 840],
+    evolutionRate: 0.9,
+    specialAbilities: ['wu-wei-consciousness', 'tao-flow-mastery', 'effortless-action-guidance']
   }
 }
 
