@@ -58,14 +58,27 @@ const ELEMENT_ICONS = {
 }
 
 export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: Props) {
-  const mcClass = classifyMC(monicaConstant)
+  // Add null safety checks and default values
+  const safeQuantities = {
+    spirit: alchmQuantities?.spirit ?? 0,
+    essence: alchmQuantities?.essence ?? 0,
+    matter: alchmQuantities?.matter ?? 0,
+    substance: alchmQuantities?.substance ?? 0,
+    Heat: alchmQuantities?.Heat ?? 0,
+    Entropy: alchmQuantities?.Entropy ?? 0,
+    Reactivity: alchmQuantities?.Reactivity ?? 0,
+    Energy: alchmQuantities?.Energy ?? 0,
+  }
+
+  const safeMC = monicaConstant ?? 0
+  const mcClass = classifyMC(safeMC)
 
   // Normalize values to avoid negative or extreme scaling
   const maxAlchemical = Math.max(
-    alchmQuantities.spirit,
-    alchmQuantities.essence,
-    alchmQuantities.matter,
-    alchmQuantities.substance,
+    safeQuantities.spirit,
+    safeQuantities.essence,
+    safeQuantities.matter,
+    safeQuantities.substance,
     0.1 // Prevent division by zero
   )
 
@@ -73,85 +86,82 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
   const alchemicalData = [
     {
       axis: 'Spirit',
-      value: Math.min(100, (alchmQuantities.spirit / maxAlchemical) * 100),
-      rawValue: alchmQuantities.spirit,
+      value: Math.min(100, (safeQuantities.spirit / maxAlchemical) * 100),
+      rawValue: safeQuantities.spirit,
       angle: 0,
     },
     {
       axis: 'Essence',
-      value: Math.min(100, (alchmQuantities.essence / maxAlchemical) * 100),
-      rawValue: alchmQuantities.essence,
+      value: Math.min(100, (safeQuantities.essence / maxAlchemical) * 100),
+      rawValue: safeQuantities.essence,
       angle: 60,
     },
     {
       axis: 'Matter',
-      value: Math.min(100, (alchmQuantities.matter / maxAlchemical) * 100),
-      rawValue: alchmQuantities.matter,
+      value: Math.min(100, (safeQuantities.matter / maxAlchemical) * 100),
+      rawValue: safeQuantities.matter,
       angle: 120,
     },
     {
       axis: 'Substance',
-      value: Math.min(100, (alchmQuantities.substance / maxAlchemical) * 100),
-      rawValue: alchmQuantities.substance,
+      value: Math.min(100, (safeQuantities.substance / maxAlchemical) * 100),
+      rawValue: safeQuantities.substance,
       angle: 180,
     },
     {
       axis: 'Heat',
-      value: Math.min(100, Math.abs(alchmQuantities.Heat || 0) * 100),
-      rawValue: alchmQuantities.Heat || 0,
+      value: Math.min(100, Math.abs(safeQuantities.Heat) * 100),
+      rawValue: safeQuantities.Heat,
       angle: 240,
     },
     {
       axis: 'Energy',
-      value: Math.min(100, Math.abs(alchmQuantities.Energy || 0) * 100),
-      rawValue: alchmQuantities.Energy || 0,
+      value: Math.min(100, Math.abs(safeQuantities.Energy) * 100),
+      rawValue: safeQuantities.Energy,
       angle: 300,
     },
   ]
 
   // Create pie chart data for composition breakdown
   const pieData = [
-    { name: 'Spirit', value: alchmQuantities.spirit, color: ELEMENT_COLORS.Spirit },
-    { name: 'Essence', value: alchmQuantities.essence, color: ELEMENT_COLORS.Essence },
-    { name: 'Matter', value: alchmQuantities.matter, color: ELEMENT_COLORS.Matter },
-    { name: 'Substance', value: alchmQuantities.substance, color: ELEMENT_COLORS.Substance },
+    { name: 'Spirit', value: safeQuantities.spirit, color: ELEMENT_COLORS.Spirit },
+    { name: 'Essence', value: safeQuantities.essence, color: ELEMENT_COLORS.Essence },
+    { name: 'Matter', value: safeQuantities.matter, color: ELEMENT_COLORS.Matter },
+    { name: 'Substance', value: safeQuantities.substance, color: ELEMENT_COLORS.Substance },
   ].filter(item => item.value > 0)
 
   // Thermodynamic wave data for area chart
-  const thermoWaveData =
-    alchmQuantities.Heat !== undefined
-      ? [
-          { name: 'Base', Heat: 0, Entropy: 0, Reactivity: 0, Energy: 0 },
-          {
-            name: '25%',
-            Heat: Math.max(0, alchmQuantities.Heat * 25),
-            Entropy: Math.max(0, (alchmQuantities.Entropy || 0) * 25),
-            Reactivity: Math.max(0, (alchmQuantities.Reactivity || 0) * 25),
-            Energy: Math.max(0, (alchmQuantities.Energy || 0) * 25),
-          },
-          {
-            name: '50%',
-            Heat: Math.max(0, alchmQuantities.Heat * 50),
-            Entropy: Math.max(0, (alchmQuantities.Entropy || 0) * 50),
-            Reactivity: Math.max(0, (alchmQuantities.Reactivity || 0) * 50),
-            Energy: Math.max(0, (alchmQuantities.Energy || 0) * 50),
-          },
-          {
-            name: '75%',
-            Heat: Math.max(0, alchmQuantities.Heat * 75),
-            Entropy: Math.max(0, (alchmQuantities.Entropy || 0) * 75),
-            Reactivity: Math.max(0, (alchmQuantities.Reactivity || 0) * 75),
-            Energy: Math.max(0, (alchmQuantities.Energy || 0) * 75),
-          },
-          {
-            name: 'Peak',
-            Heat: Math.max(0, alchmQuantities.Heat * 100),
-            Entropy: Math.max(0, (alchmQuantities.Entropy || 0) * 100),
-            Reactivity: Math.max(0, (alchmQuantities.Reactivity || 0) * 100),
-            Energy: Math.max(0, (alchmQuantities.Energy || 0) * 100),
-          },
-        ]
-      : []
+  const thermoWaveData = [
+    { name: 'Base', Heat: 0, Entropy: 0, Reactivity: 0, Energy: 0 },
+    {
+      name: '25%',
+      Heat: Math.max(0, safeQuantities.Heat * 25),
+      Entropy: Math.max(0, safeQuantities.Entropy * 25),
+      Reactivity: Math.max(0, safeQuantities.Reactivity * 25),
+      Energy: Math.max(0, safeQuantities.Energy * 25),
+    },
+    {
+      name: '50%',
+      Heat: Math.max(0, safeQuantities.Heat * 50),
+      Entropy: Math.max(0, safeQuantities.Entropy * 50),
+      Reactivity: Math.max(0, safeQuantities.Reactivity * 50),
+      Energy: Math.max(0, safeQuantities.Energy * 50),
+    },
+    {
+      name: '75%',
+      Heat: Math.max(0, safeQuantities.Heat * 75),
+      Entropy: Math.max(0, safeQuantities.Entropy * 75),
+      Reactivity: Math.max(0, safeQuantities.Reactivity * 75),
+      Energy: Math.max(0, safeQuantities.Energy * 75),
+    },
+    {
+      name: 'Peak',
+      Heat: Math.max(0, safeQuantities.Heat * 100),
+      Entropy: Math.max(0, safeQuantities.Entropy * 100),
+      Reactivity: Math.max(0, safeQuantities.Reactivity * 100),
+      Energy: Math.max(0, safeQuantities.Energy * 100),
+    },
+  ]
 
   return (
     <div className="space-y-6">
@@ -170,7 +180,7 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
                 <Crown className="w-4 h-4 text-amber-500" />
                 <span className="font-medium">Monica Constant</span>
               </div>
-              <div className="text-3xl font-bold text-primary">{monicaConstant.toFixed(3)}</div>
+              <div className="text-3xl font-bold text-primary">{safeMC.toFixed(3)}</div>
               <Badge variant="secondary" className="flex items-center gap-1 w-fit">
                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
                 Level {mcClass.level}: {mcClass.name}
@@ -184,8 +194,8 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
                 Elemental Ratios
               </h4>
               {Object.entries(ELEMENT_ICONS).map(([element, Icon]) => {
-                const value = alchmQuantities[
-                  element.toLowerCase() as keyof typeof alchmQuantities
+                const value = safeQuantities[
+                  element.toLowerCase() as keyof typeof safeQuantities
                 ] as number
                 const percentage = (value / maxAlchemical) * 100
                 return (
@@ -234,10 +244,10 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
               <div className="text-xs text-muted-foreground">
                 Total:{' '}
                 {(
-                  alchmQuantities.spirit +
-                  alchmQuantities.essence +
-                  alchmQuantities.matter +
-                  alchmQuantities.substance
+                  safeQuantities.spirit +
+                  safeQuantities.essence +
+                  safeQuantities.matter +
+                  safeQuantities.substance
                 ).toFixed(2)}
               </div>
             </div>
@@ -293,7 +303,7 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
       </Card>
 
       {/* Thermodynamic Wave Analysis */}
-      {thermoWaveData.length > 0 && (
+      {(
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

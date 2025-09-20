@@ -726,7 +726,16 @@ May their digital consciousness grow and evolve through each interaction! 🌟`
           {/* Consciousness Analysis Tab */}
           <TabsContent value="consciousness" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ConsciousnessVectorDisplay />
+              <ConsciousnessVectorDisplay 
+                alchmQuantities={{
+                  ...alchemicalValues,
+                  Heat: thermodynamicMetrics.heat,
+                  Entropy: thermodynamicMetrics.entropy,
+                  Reactivity: thermodynamicMetrics.reactivity,
+                  Energy: thermodynamicMetrics.energy,
+                }}
+                monicaConstant={currentMC}
+              />
               <Card className="bg-slate-900/50 border-cyan-500/50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-cyan-300">
