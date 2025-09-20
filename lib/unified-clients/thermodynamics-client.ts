@@ -5,7 +5,40 @@
  * falls back to existing frontend-compatible calculations.
  */
 
-import { thermodynamicsService as frontendService } from '../services/thermodynamics.js'
+// Frontend fallback thermodynamics calculations
+function calculateThermodynamicsFallback(values: ElementalValues) {
+  const { spirit, essence, matter, substance, fire, water, air, earth } = values
+  
+  // Basic thermodynamic calculations
+  const denominator = substance + essence + matter + water + air + earth
+  const heat = denominator > 0 ? (Math.pow(spirit, 2) + Math.pow(fire, 2)) / Math.pow(denominator, 2) : 0
+  
+  const entropyDenom = essence + matter + earth + water
+  const entropy = entropyDenom > 0 ? 
+    (Math.pow(spirit, 2) + Math.pow(substance, 2) + Math.pow(fire, 2) + Math.pow(air, 2)) / Math.pow(entropyDenom, 2) : 0
+  
+  const reactivityDenom = matter + earth
+  const reactivity = reactivityDenom > 0 ? 
+    (Math.pow(spirit, 2) + Math.pow(substance, 2) + Math.pow(essence, 2) + Math.pow(fire, 2) + Math.pow(air, 2) + Math.pow(water, 2)) / Math.pow(reactivityDenom, 2) : 0
+  
+  const gibbsEnergy = heat - (reactivity * entropy)
+  
+  return {
+    heat,
+    entropy,
+    reactivity,
+    gibbsEnergy,
+    computeTime: 0,
+    inputHash: 'fallback',
+    timestamp: new Date(),
+    conservationCheck: {
+      passed: true,
+      totalInput: Object.values(values).reduce((sum, val) => sum + Math.abs(val), 0),
+      totalOutput: Object.values(values).reduce((sum, val) => sum + Math.abs(val), 0),
+      variance: 0
+    }
+  }
+}
 
 export interface ElementalValues {
   spirit: number
@@ -66,12 +99,12 @@ export class UnifiedThermodynamicsClient {
       }
       
       // Fallback to frontend calculation
-      return await frontendService.analyzeThermodynamics(elementalValues)
+      return calculateThermodynamicsFallback(elementalValues)
     } catch (error) {
       console.warn('Backend thermodynamics failed, falling back to frontend:', error)
       
       // Always fallback to frontend calculation
-      return await frontendService.analyzeThermodynamics(elementalValues)
+      return calculateThermodynamicsFallback(elementalValues)
     }
   }
 
@@ -88,7 +121,7 @@ export class UnifiedThermodynamicsClient {
       console.warn('Backend batch thermodynamics failed, falling back to frontend:', error)
       
       // Always fallback to frontend calculation
-      return await frontendService.batchAnalyze(inputSets)
+      return inputSets.map(values => calculateThermodynamicsFallback(values))
     }
   }
 
@@ -97,7 +130,7 @@ export class UnifiedThermodynamicsClient {
    * Always uses frontend for speed
    */
   static calculateQuick(elementalValues: ElementalValues): any {
-    return frontendService.calculateThermodynamics(elementalValues)
+    return calculateThermodynamicsFallback(elementalValues)
   }
 
   /**

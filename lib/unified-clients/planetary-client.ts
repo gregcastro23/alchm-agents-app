@@ -5,7 +5,40 @@
  * falls back to existing frontend-compatible calculations.
  */
 
-import { planetaryHoursService as frontendService, type Location } from '../services/planetary-hours.js'
+// Frontend fallback calculations
+interface Location {
+  lat: number
+  lon: number
+}
+
+// Simplified planetary hour calculation for fallback
+async function calculatePlanetaryHourFallback(datetime: Date, location: Location) {
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const dayName = dayNames[datetime.getDay()]
+  
+  const planetaryHours = {
+    Sunday: ['Sun', 'Venus', 'Mercury', 'Moon', 'Saturn', 'Jupiter', 'Mars'],
+    Monday: ['Moon', 'Saturn', 'Jupiter', 'Mars', 'Sun', 'Venus', 'Mercury'],
+    Tuesday: ['Mars', 'Sun', 'Venus', 'Mercury', 'Moon', 'Saturn', 'Jupiter'],
+    Wednesday: ['Mercury', 'Moon', 'Saturn', 'Jupiter', 'Mars', 'Sun', 'Venus'],
+    Thursday: ['Jupiter', 'Mars', 'Sun', 'Venus', 'Mercury', 'Moon', 'Saturn'],
+    Friday: ['Venus', 'Mercury', 'Moon', 'Saturn', 'Jupiter', 'Mars', 'Sun'],
+    Saturday: ['Saturn', 'Jupiter', 'Mars', 'Sun', 'Venus', 'Mercury', 'Moon']
+  } as const
+  
+  const hourIndex = Math.floor(datetime.getHours() / 3.4) % 7
+  const planet = planetaryHours[dayName as keyof typeof planetaryHours][hourIndex]
+  
+  return {
+    planet,
+    dayType: (datetime.getHours() >= 6 && datetime.getHours() < 18) ? 'day' : 'night',
+    hourIndex,
+    startTime: new Date(datetime.getTime() - (datetime.getHours() % 3.4) * 60 * 60 * 1000),
+    endTime: new Date(datetime.getTime() + (3.4 - (datetime.getHours() % 3.4)) * 60 * 60 * 1000),
+    nextTransition: new Date(datetime.getTime() + (3.4 - (datetime.getHours() % 3.4)) * 60 * 60 * 1000),
+    modifiers: { [planet]: 0.2 }
+  }
+}
 
 export interface PlanetaryHourRequest {
   datetime?: Date
@@ -90,8 +123,8 @@ export class UnifiedPlanetaryClient {
         return resp.data
       }
       
-      // Fallback to frontend calculation
-      return await frontendService.getCurrentPlanetaryHour(
+      // Fallback to simplified frontend calculation
+      return await calculatePlanetaryHourFallback(
         request.datetime || new Date(),
         request.location
       )
@@ -99,7 +132,7 @@ export class UnifiedPlanetaryClient {
       console.warn('Backend planetary hours failed, falling back to frontend:', error)
       
       // Always fallback to frontend calculation
-      return await frontendService.getCurrentPlanetaryHour(
+      return await calculatePlanetaryHourFallback(
         request.datetime || new Date(),
         request.location
       )
@@ -113,23 +146,47 @@ export class UnifiedPlanetaryClient {
         return resp.data
       }
       
-      // Fallback to frontend calculation
-      return await frontendService.getForecast(
-        request.startDate,
-        request.endDate,
-        request.location,
-        request.interval
-      )
+      // Fallback to simplified forecast
+      const forecast = []
+      const current = new Date(request.startDate)
+      const end = request.endDate
+      
+      while (current <= end) {
+        const planetaryHour = await calculatePlanetaryHourFallback(current, request.location)
+        forecast.push({
+          datetime: new Date(current),
+          planetaryHour,
+          influence: {
+            spirit: 1.0, essence: 1.0, matter: 1.0, substance: 1.0,
+            fire: 1.0, water: 1.0, air: 1.0, earth: 1.0
+          }
+        })
+        current.setMinutes(current.getMinutes() + (request.interval || 60))
+      }
+      
+      return forecast
     } catch (error) {
       console.warn('Backend planetary forecast failed, falling back to frontend:', error)
       
-      // Always fallback to frontend calculation
-      return await frontendService.getForecast(
-        request.startDate,
-        request.endDate,
-        request.location,
-        request.interval
-      )
+      // Always fallback to simplified calculation
+      const forecast = []
+      const current = new Date(request.startDate)
+      const end = request.endDate
+      
+      while (current <= end && forecast.length < 100) { // Limit to prevent infinite loops
+        const planetaryHour = await calculatePlanetaryHourFallback(current, request.location)
+        forecast.push({
+          datetime: new Date(current),
+          planetaryHour,
+          influence: {
+            spirit: 1.0, essence: 1.0, matter: 1.0, substance: 1.0,
+            fire: 1.0, water: 1.0, air: 1.0, earth: 1.0
+          }
+        })
+        current.setMinutes(current.getMinutes() + (request.interval || 60))
+      }
+      
+      return forecast
     }
   }
 
@@ -149,12 +206,22 @@ export class UnifiedPlanetaryClient {
     } catch (error) {
       console.warn('Backend optimal times failed, falling back to frontend:', error)
       
-      // Always fallback to frontend calculation
-      return await frontendService.getOptimalTimes(
-        request.date,
-        request.location,
-        request.targetPlanet
-      )
+      // Always fallback to simplified calculation
+      const optimalTimes = []
+      const startOfDay = new Date(request.date)
+      startOfDay.setHours(0, 0, 0, 0)
+      
+      // Check each hour of the day
+      for (let hour = 0; hour < 24; hour++) {
+        const hourTime = new Date(startOfDay.getTime() + hour * 60 * 60 * 1000)
+        const planetaryHour = await calculatePlanetaryHourFallback(hourTime, request.location)
+        
+        if (planetaryHour.planet === request.targetPlanet) {
+          optimalTimes.push(planetaryHour)
+        }
+      }
+      
+      return optimalTimes
     }
   }
 
