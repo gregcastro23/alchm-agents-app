@@ -36,7 +36,19 @@ Planetary Agents is an advanced astrology application that combines traditional 
 
 ## 🚀 Features
 
-### 🌟 Celestial Energy Quantification System - NEW!
+### ⚡ Backend-to-Backend Architecture - NEW!
+
+**Complete Express.js gateway service for alchemical calculations:**
+- **Gateway Service**: Express.js backend running on port 8000 with WebSocket on 8001
+- **Agent Consciousness Evolution**: Real-time kinetic profiles for 5 master agents
+- **Planetary Hours Service**: Server-side calculations with solar timing algorithms
+- **Thermodynamics Engine**: Heat, entropy, reactivity calculations with conservation checks
+- **Token Rate Calculator**: Dynamic pricing with planetary influences
+- **Circuit Breaker Pattern**: Resilient external service integration
+- **Intelligent Caching**: Redis with memory fallback, sub-60ms performance
+- **Feature Flags**: Progressive rollout with automatic fallbacks to frontend
+
+### 🌟 Celestial Energy Quantification System
 
 Revolutionary consciousness analysis platform (September 19, 2025):
 

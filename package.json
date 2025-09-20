@@ -13,7 +13,15 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "check": "yarn lint && yarn format:check && yarn typecheck",
-    "test:claude": "node test-claude-upgrade.js"
+    "test:claude": "node test-claude-upgrade.js",
+    "backend:install": "cd backend && yarn install",
+    "backend:dev": "cd backend && ./scripts/start-dev.sh",
+    "backend:build": "cd backend && yarn build",
+    "backend:start": "cd backend && yarn start",
+    "backend:test": "cd backend && yarn test",
+    "backend:status": "curl -s http://localhost:8000/api/health | jq '.'",
+    "full-stack:dev": "concurrently \"yarn dev\" \"yarn backend:dev\"",
+    "full-stack:test": "yarn test:claude && yarn backend:test"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.22",

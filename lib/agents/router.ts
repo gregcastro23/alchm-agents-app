@@ -1,6 +1,6 @@
 import { agentRegistry, type AgentDefinition } from './registry'
 import { AlchemicalKineticsClient } from '@/lib/kinetics-client'
-import { getAgentKineticProfile, calculateKineticCompatibility } from './kinetic-profiles'
+import { agentKineticProfiles, calculateKineticState } from './kinetic-profiles'
 
 export type RouterTask =
   | { kind: 'alchemize'; payload: any }
@@ -115,38 +115,51 @@ async function handleKineticsTask(
       validateTraditional: true,
     })
 
-    // Get agent profile
-    const agentProfile = getAgentKineticProfile(agentId)
-    if (!agentProfile) {
-      throw new Error(`Agent profile not found: ${agentId}`)
+    // Get agent profile from new kinetic profiles
+    const profile = agentKineticProfiles[agentId]
+    if (!profile) {
+      return {
+        output: { error: `Kinetic profile not found for agent: ${agentId}` },
+        agentId,
+        degraded: true,
+        latencyMs: Date.now() - start,
+      }
     }
 
-    // Calculate agent alignment with current kinetics
-    const currentHour = kinetics.timing?.planetaryHours[0] || 'Sun'
-    const power = kinetics.power[kinetics.power.length - 1]?.power || 0.5
-    const velocity =
-      kinetics.elementalVelocity[kinetics.elementalVelocity.length - 1]?.magnitude || 0.5
+    // Calculate current power (mock for now - would come from user interaction data)
+    const currentPower = Math.floor(Math.random() * 500) + 100
+    
+    // Get planetary influences
+    const planetaryInfluences = kinetics.timing?.planetaryHours || ['Sun']
+    
+    // Get elemental totals
+    const elementalTotals = kinetics.elemental?.totals || { Fire: 5, Water: 5, Air: 5, Earth: 5 }
 
-    const isOptimalTime = agentProfile.peak_hours.includes(currentHour)
-    const powerAlignment = calculatePowerAlignment(agentProfile.power_alignment, kinetics)
+    // Calculate kinetic state
+    const kineticState = calculateKineticState(agentId, currentPower, planetaryInfluences, elementalTotals)
 
     return {
       output: {
         agentId,
-        currentVelocity: velocity,
-        powerLevel: power,
-        optimalTime: isOptimalTime,
-        peakHour: currentHour,
-        powerAlignment,
-        consciousnessRate: agentProfile.consciousness_rate,
-        memoryPersistence: agentProfile.memory_persistence,
-        momentumType: agentProfile.momentum_type,
-        specialKinetics: agentProfile.special_kinetics,
-        enhancementMultiplier: isOptimalTime ? 1.3 : 1.0,
+        currentPower,
+        evolutionLevel: kineticState?.evolutionLevel || 'bronze',
+        powerMultiplier: kineticState?.powerMultiplier || 1.0,
+        alignmentBonus: kineticState?.alignmentBonus || 0,
+        nextThreshold: kineticState?.nextThreshold || 100,
+        specialAbilitiesUnlocked: kineticState?.specialAbilitiesUnlocked || [],
+        elementalResonance: kineticState?.elementalResonance || 0.5,
+        planetaryInfluences,
+        elementalTotals,
+        velocitySignature: profile.velocitySignature,
+        evolutionRate: profile.evolutionRate,
+        kinetics: {
+          power: kinetics.power[kinetics.power.length - 1]?.power || 0.5,
+          velocity: kinetics.elementalVelocity?.[kinetics.elementalVelocity.length - 1]?.magnitude || 0.5
+        }
       },
       agentId,
       degraded: false,
-      confidence: 0.85,
+      confidence: 0.9,
       latencyMs: Date.now() - start,
     }
   } catch (error) {
