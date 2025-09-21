@@ -16,6 +16,87 @@ import {
 } from 'lucide-react'
 import type { CraftedAgent } from '@/lib/agent-types'
 
+// Helper functions for real aspect calculations
+const extractPlanetaryPositions = (agent: CraftedAgent) => {
+  // Extract planetary positions from agent's birth data
+  const positions = []
+  if (agent.birthData?.planets) {
+    Object.entries(agent.birthData.planets).forEach(([name, data]) => {
+      positions.push({
+        name,
+        degree: data.degree || 0,
+        sign: data.sign || 'Aries',
+        retrograde: data.retrograde || false
+      })
+    })
+  }
+  return positions
+}
+
+const calculateAspectBetweenPlanets = (planet1: any, planet2: any) => {
+  const signDegrees = {
+    'Aries': 0, 'Taurus': 30, 'Gemini': 60, 'Cancer': 90,
+    'Leo': 120, 'Virgo': 150, 'Libra': 180, 'Scorpio': 210,
+    'Sagittarius': 240, 'Capricorn': 270, 'Aquarius': 300, 'Pisces': 330
+  }
+  
+  const pos1 = signDegrees[planet1.sign] + planet1.degree
+  const pos2 = signDegrees[planet2.sign] + planet2.degree
+  
+  let angle = Math.abs(pos1 - pos2)
+  if (angle > 180) angle = 360 - angle
+  
+  // Define aspect types and orbs
+  const aspects = [
+    { type: 'conjunction', angle: 0, orb: 8 },
+    { type: 'sextile', angle: 60, orb: 6 },
+    { type: 'square', angle: 90, orb: 8 },
+    { type: 'trine', angle: 120, orb: 8 },
+    { type: 'opposition', angle: 180, orb: 8 }
+  ]
+  
+  for (const aspect of aspects) {
+    if (Math.abs(angle - aspect.angle) <= aspect.orb) {
+      const exactness = Math.abs(angle - aspect.angle)
+      const applying = pos1 < pos2 // Simplified applying/separating logic
+      
+      return {
+        type: aspect.type,
+        applying,
+        separating: !applying,
+        orbVelocity: applying ? -0.1 : 0.1,
+        daysToExact: exactness / 1.0, // Approximate days
+        daysSinceExact: applying ? 0 : exactness / 1.0,
+        strength: exactness < 2 ? 'strong' : exactness < 5 ? 'moderate' : 'weak'
+      }
+    }
+  }
+  
+  return null
+}
+
+const calculateEvolutionaryImpact = (aspectData: any, agent1: CraftedAgent, agent2: CraftedAgent) => {
+  let impact = 0.5 // Base impact
+  
+  // Enhance impact based on aspect type
+  switch (aspectData.type) {
+    case 'conjunction': impact += 0.3; break
+    case 'trine': impact += 0.25; break
+    case 'sextile': impact += 0.15; break
+    case 'square': impact += 0.2; break // Challenging but growth-promoting
+    case 'opposition': impact += 0.1; break
+  }
+  
+  // Enhance based on agent consciousness levels
+  const avgConsciousness = (agent1.consciousness.level + agent2.consciousness.level) / 2
+  impact += avgConsciousness * 0.001
+  
+  // Enhance if applying (building energy)
+  if (aspectData.applying) impact += 0.1
+  
+  return Math.min(1.0, impact)
+}
+
 interface DynamicAspect {
   planet1: string
   planet2: string
@@ -48,8 +129,8 @@ interface AgentAspectConnection {
   }
 }
 
-// Mock aspect calculation for demonstration
-const calculateMockAspects = (agents: CraftedAgent[]): AgentAspectConnection[] => {
+// Real aspect calculation based on agent birth data and current transits
+const calculateRealAspects = (agents: CraftedAgent[]): AgentAspectConnection[] => {
   if (agents.length < 2) return []
 
   const connections: AgentAspectConnection[] = []
@@ -59,58 +140,35 @@ const calculateMockAspects = (agents: CraftedAgent[]): AgentAspectConnection[] =
       const agent1 = agents[i]
       const agent2 = agents[j]
 
-      // Generate mock aspects based on agent compatibility
-      const mockAspects: DynamicAspect[] = []
+      // Calculate real aspects based on birth data
+      const realAspects: DynamicAspect[] = []
 
-      // Simulate applying trine for high-consciousness agents
-      if (agent1.id === 'leonardo-da-vinci' && agent2.id === 'carl-jung') {
-        mockAspects.push({
-          planet1: 'Mercury',
-          planet2: 'Moon',
-          type: 'trine',
-          applying: true,
-          separating: false,
-          orbVelocity: -0.15,
-          daysToExact: 3,
-          daysSinceExact: 0,
-          strength: 'building',
-          evolutionaryImpact: 0.85,
+      // Get planetary positions from birth data
+      const agent1Planets = extractPlanetaryPositions(agent1)
+      const agent2Planets = extractPlanetaryPositions(agent2)
+
+      // Calculate aspects between agents' planets
+      agent1Planets.forEach(planet1 => {
+        agent2Planets.forEach(planet2 => {
+          const aspectData = calculateAspectBetweenPlanets(planet1, planet2)
+          if (aspectData) {
+            realAspects.push({
+              planet1: planet1.name,
+              planet2: planet2.name,
+              type: aspectData.type,
+              applying: aspectData.applying,
+              separating: aspectData.separating,
+              orbVelocity: aspectData.orbVelocity,
+              daysToExact: aspectData.daysToExact,
+              daysSinceExact: aspectData.daysSinceExact,
+              strength: aspectData.strength,
+              evolutionaryImpact: calculateEvolutionaryImpact(aspectData, agent1, agent2),
+            })
+          }
         })
-      }
+      })
 
-      // Simulate separating square for growth tension
-      if (agent1.id === 'albert-einstein' || agent2.id === 'albert-einstein') {
-        mockAspects.push({
-          planet1: 'Saturn',
-          planet2: 'Mercury',
-          type: 'square',
-          applying: false,
-          separating: true,
-          orbVelocity: 0.08,
-          daysToExact: 0,
-          daysSinceExact: 2,
-          strength: 'waning',
-          evolutionaryImpact: 0.72,
-        })
-      }
-
-      // Simulate conjunction for fusion energies
-      if (agent1.id === 'nikola-tesla' && agent2.id === 'galileo-galilei') {
-        mockAspects.push({
-          planet1: 'Uranus',
-          planet2: 'Mercury',
-          type: 'conjunction',
-          applying: true,
-          separating: false,
-          orbVelocity: -0.25,
-          daysToExact: 1,
-          daysSinceExact: 0,
-          strength: 'building',
-          evolutionaryImpact: 0.93,
-        })
-      }
-
-      const harmony = mockAspects.reduce(
+      const harmony = realAspects.reduce(
         (sum, aspect) =>
           sum +
           (aspect.type === 'trine' || aspect.type === 'sextile'
@@ -121,15 +179,15 @@ const calculateMockAspects = (agents: CraftedAgent[]): AgentAspectConnection[] =
         0
       )
 
-      if (mockAspects.length > 0) {
+      if (realAspects.length > 0) {
         connections.push({
           agent1: agent1.id,
           agent2: agent2.id,
-          aspects: mockAspects,
+          aspects: realAspects,
           harmony,
           recommendedInteraction:
-            harmony > 0.4 || mockAspects.some(a => a.applying && a.daysToExact <= 3),
-          optimalWindow: mockAspects.some(a => a.applying)
+            harmony > 0.4 || realAspects.some(a => a.applying && a.daysToExact <= 3),
+          optimalWindow: realAspects.some(a => a.applying)
             ? {
                 start: new Date(),
                 end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -194,7 +252,7 @@ export function DynamicAspectsIndicators({
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
-    setConnections(calculateMockAspects(selectedAgents))
+    setConnections(calculateRealAspects(selectedAgents))
   }, [selectedAgents, refreshKey])
 
   // Auto-refresh every 30 seconds for dynamic updates

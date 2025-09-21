@@ -40,6 +40,40 @@ async function calculatePlanetaryHourFallback(datetime: Date, location: Location
   }
 }
 
+// Helper function to calculate planetary influences based on time and planetary hour
+function calculatePlanetaryInfluence(datetime: Date, planetaryHour: string) {
+  const hour = datetime.getHours()
+  const dayOfYear = Math.floor((datetime.getTime() - new Date(datetime.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24))
+  
+  // Base influences with seasonal and time-of-day variations
+  const seasonal = Math.sin(dayOfYear / 365 * 2 * Math.PI) * 0.3
+  const diurnal = Math.cos(hour / 24 * 2 * Math.PI) * 0.2
+  
+  // Planetary hour modifiers
+  const planetaryModifiers = {
+    Sun: { spirit: 1.3, fire: 1.2, air: 1.1, essence: 1.0, matter: 0.9, substance: 0.8, water: 0.9, earth: 0.8 },
+    Moon: { essence: 1.3, water: 1.2, spirit: 1.1, matter: 1.0, substance: 0.9, fire: 0.8, air: 0.9, earth: 0.8 },
+    Mercury: { air: 1.3, spirit: 1.2, essence: 1.1, matter: 1.0, substance: 0.9, fire: 0.9, water: 0.8, earth: 0.8 },
+    Venus: { water: 1.3, essence: 1.2, earth: 1.1, spirit: 1.0, matter: 0.9, substance: 0.8, fire: 0.9, air: 0.8 },
+    Mars: { fire: 1.3, spirit: 1.2, matter: 1.1, essence: 1.0, substance: 0.9, water: 0.8, air: 0.9, earth: 0.8 },
+    Jupiter: { air: 1.3, spirit: 1.2, fire: 1.1, essence: 1.0, matter: 0.9, substance: 0.8, water: 0.9, earth: 0.8 },
+    Saturn: { earth: 1.3, matter: 1.2, substance: 1.1, essence: 1.0, spirit: 0.9, fire: 0.8, water: 0.9, air: 0.8 }
+  }
+  
+  const modifiers = planetaryModifiers[planetaryHour] || planetaryModifiers.Sun
+  
+  return {
+    spirit: Math.round((1.0 + seasonal + diurnal) * modifiers.spirit * 100) / 100,
+    essence: Math.round((1.0 + seasonal * 0.8 + diurnal * 0.6) * modifiers.essence * 100) / 100,
+    matter: Math.round((1.0 + seasonal * 0.6 + diurnal * 0.4) * modifiers.matter * 100) / 100,
+    substance: Math.round((1.0 + seasonal * 0.4 + diurnal * 0.8) * modifiers.substance * 100) / 100,
+    fire: Math.round((1.0 + seasonal + diurnal * 0.7) * modifiers.fire * 100) / 100,
+    water: Math.round((1.0 + seasonal * 0.7 + diurnal) * modifiers.water * 100) / 100,
+    air: Math.round((1.0 + seasonal * 0.5 + diurnal * 0.9) * modifiers.air * 100) / 100,
+    earth: Math.round((1.0 + seasonal * 0.9 + diurnal * 0.5) * modifiers.earth * 100) / 100
+  }
+}
+
 export interface PlanetaryHourRequest {
   datetime?: Date
   location: Location
@@ -156,10 +190,7 @@ export class UnifiedPlanetaryClient {
         forecast.push({
           datetime: new Date(current),
           planetaryHour,
-          influence: {
-            spirit: 1.0, essence: 1.0, matter: 1.0, substance: 1.0,
-            fire: 1.0, water: 1.0, air: 1.0, earth: 1.0
-          }
+          influence: calculatePlanetaryInfluence(current, planetaryHour)
         })
         current.setMinutes(current.getMinutes() + (request.interval || 60))
       }
@@ -178,10 +209,7 @@ export class UnifiedPlanetaryClient {
         forecast.push({
           datetime: new Date(current),
           planetaryHour,
-          influence: {
-            spirit: 1.0, essence: 1.0, matter: 1.0, substance: 1.0,
-            fire: 1.0, water: 1.0, air: 1.0, earth: 1.0
-          }
+          influence: calculatePlanetaryInfluence(current, planetaryHour)
         })
         current.setMinutes(current.getMinutes() + (request.interval || 60))
       }
