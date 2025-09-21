@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Progress } from '@/components/ui/progress'
 import { RefreshCw, Zap, Clock, Globe, Sparkles } from 'lucide-react'
+import { errorToast, successToast } from '@/hooks/use-toast'
 
 interface RealtimeRune {
   id: string
@@ -65,11 +66,26 @@ export default function RealtimeRuneDisplay({
     setError(null)
 
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+
       const response = await fetch(
-        `/api/realtime-runes?includeAlchemical=${includeAlchemical}&runeType=${runeType}`
+        `/api/realtime-runes?includeAlchemical=${includeAlchemical}&runeType=${runeType}`,
+        {
+          signal: controller.signal,
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        }
       )
 
+      clearTimeout(timeoutId)
+
       if (!response.ok) {
+        // Handle specific error codes
+        if (response.status === 503 || response.status === 502) {
+          throw new Error('Service temporarily unavailable - rune patterns preserved')
+        }
         throw new Error(`API returned status ${response.status}`)
       }
 
@@ -78,12 +94,24 @@ export default function RealtimeRuneDisplay({
       if (data.success && data.rune) {
         setRune(data.rune)
         setLastUpdated(new Date())
+        successToast('Cosmic rune generated successfully')
       } else {
         throw new Error(data.error || 'Failed to generate rune')
       }
     } catch (err) {
       console.error('Error fetching realtime rune:', err)
-      setError(err instanceof Error ? err.message : 'Unknown error')
+
+      let errorMessage = 'Unknown error'
+      if (err.name === 'AbortError') {
+        errorMessage = 'Request timeout - please try again'
+      } else if (err instanceof TypeError && err.message.includes('fetch')) {
+        errorMessage = 'Network connection unavailable'
+      } else {
+        errorMessage = err instanceof Error ? err.message : 'Unknown error'
+      }
+
+      setError(errorMessage)
+      errorToast(errorMessage, 'Rune Generation Failed')
     } finally {
       setLoading(false)
     }
