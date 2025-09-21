@@ -54,6 +54,7 @@ backend_test:
   stage: test
   image: node:18-alpine
   before_script:
+    - apk add --no-cache curl
     - cd $BACKEND_DIR
     - corepack enable
     - corepack prepare yarn@4.0.0 --activate
@@ -80,6 +81,7 @@ backend_production_validation:
   stage: test
   image: node:18-alpine
   before_script:
+    - apk add --no-cache curl
     - cd $BACKEND_DIR
     - corepack enable
     - corepack prepare yarn@4.0.0 --activate
@@ -115,6 +117,7 @@ backend_build:
   stage: build
   image: node:18-alpine
   before_script:
+    - apk add --no-cache curl
     - cd $BACKEND_DIR
     - corepack enable
     - corepack prepare yarn@4.0.0 --activate
