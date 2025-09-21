@@ -37,6 +37,27 @@ type Props = {
     Energy?: number
   }
   monicaConstant: number
+  // Optional live consciousness data for real-time display
+  liveData?: {
+    birthMC: number
+    liveMC: number
+    mcChange: number
+    mcPercentChange: number
+    liveKalchm: {
+      spirit: number
+      essence: number
+      matter: number
+      substance: number
+      aNumber: number
+    }
+    dominantTransitEffect?: string
+    interpretations?: {
+      mcChange: string
+      transitInfluence: string
+      cosmicWeather: string
+    }
+  }
+  showLiveComparison?: boolean
 }
 
 const ELEMENT_COLORS = {
@@ -69,20 +90,38 @@ function safeConsciousnessValue(value: any, fallback: number = 0): number {
   return fallback
 }
 
-export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: Props) {
+export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant, liveData, showLiveComparison = true }: Props) {
+  // Use live data if available, otherwise fall back to provided quantities
+  const displayQuantities = liveData?.liveKalchm ? {
+    spirit: liveData.liveKalchm.spirit,
+    essence: liveData.liveKalchm.essence,
+    matter: liveData.liveKalchm.matter,
+    substance: liveData.liveKalchm.substance,
+    ...alchmQuantities // Include thermodynamic properties
+  } : alchmQuantities
+
   // Enhanced validation with comprehensive NaN protection
   const safeQuantities = {
+    spirit: safeConsciousnessValue(displayQuantities?.spirit, 0),
+    essence: safeConsciousnessValue(displayQuantities?.essence, 0),
+    matter: safeConsciousnessValue(displayQuantities?.matter, 0),
+    substance: safeConsciousnessValue(displayQuantities?.substance, 0),
+    Heat: safeConsciousnessValue(displayQuantities?.Heat, 0),
+    Entropy: safeConsciousnessValue(displayQuantities?.Entropy, 0),
+    Reactivity: safeConsciousnessValue(displayQuantities?.Reactivity, 0),
+    Energy: safeConsciousnessValue(displayQuantities?.Energy, 0),
+  }
+
+  // Birth quantities for comparison (if live data is provided)
+  const birthQuantities = liveData ? {
     spirit: safeConsciousnessValue(alchmQuantities?.spirit, 0),
     essence: safeConsciousnessValue(alchmQuantities?.essence, 0),
     matter: safeConsciousnessValue(alchmQuantities?.matter, 0),
     substance: safeConsciousnessValue(alchmQuantities?.substance, 0),
-    Heat: safeConsciousnessValue(alchmQuantities?.Heat, 0),
-    Entropy: safeConsciousnessValue(alchmQuantities?.Entropy, 0),
-    Reactivity: safeConsciousnessValue(alchmQuantities?.Reactivity, 0),
-    Energy: safeConsciousnessValue(alchmQuantities?.Energy, 0),
-  }
+  } : null
 
-  const safeMC = safeConsciousnessValue(monicaConstant, 0)
+  const safeMC = safeConsciousnessValue(liveData?.liveMC || monicaConstant, 0)
+  const birthMC = liveData ? safeConsciousnessValue(liveData.birthMC, 0) : null
 
   // Validate MC classification to prevent errors
   let mcClass
@@ -210,24 +249,55 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
                 <Crown className="w-4 h-4 text-amber-500" />
                 <span className="font-medium">Monica Constant</span>
               </div>
-              <div className="text-3xl font-bold text-primary">{safeMC.toFixed(3)}</div>
+              
+              {/* Live MC with birth comparison */}
+              {liveData ? (
+                <>
+                  <div className="text-3xl font-bold text-primary">
+                    {safeMC.toFixed(3)}
+                    {liveData.mcChange !== 0 && (
+                      <span className={`text-sm ml-2 ${liveData.mcChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {liveData.mcChange > 0 ? '↗' : '↘'} {Math.abs(liveData.mcPercentChange).toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Birth: {birthMC?.toFixed(3)} → Live: {safeMC.toFixed(3)}
+                  </div>
+                </>
+              ) : (
+                <div className="text-3xl font-bold text-primary">{safeMC.toFixed(3)}</div>
+              )}
+              
               <Badge variant="secondary" className="flex items-center gap-1 w-fit">
                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
                 Level {mcClass.level}: {mcClass.name}
               </Badge>
               <p className="text-sm text-muted-foreground">{mcClass.description}</p>
+              
+              {/* Live consciousness interpretation */}
+              {liveData?.interpretations?.transitInfluence && (
+                <div className="mt-2 p-2 bg-purple-50 dark:bg-purple-950/30 rounded text-xs">
+                  {liveData.interpretations.transitInfluence}
+                </div>
+              )}
             </div>
 
             <div className="space-y-3">
               <h4 className="font-medium flex items-center gap-2">
                 <Activity className="w-4 h-4" />
-                Elemental Ratios
+                Elemental Ratios {liveData && <span className="text-xs text-muted-foreground">(Live)</span>}
               </h4>
               {Object.entries(ELEMENT_ICONS).map(([element, Icon]) => {
                 const value = safeQuantities[
                   element.toLowerCase() as keyof typeof safeQuantities
                 ] as number
+                const birthValue = birthQuantities ? birthQuantities[
+                  element.toLowerCase() as keyof typeof birthQuantities
+                ] : null
                 const percentage = (value / maxAlchemical) * 100
+                const change = birthValue !== null ? value - birthValue : null
+                
                 return (
                   <div key={element} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
@@ -238,9 +308,21 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant }: 
                         />
                         <span>{element}</span>
                       </div>
-                      <span className="font-mono">{value.toFixed(2)}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono">{value.toFixed(2)}</span>
+                        {change !== null && Math.abs(change) > 0.1 && (
+                          <span className={`text-xs ${change > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            {change > 0 ? '↗' : '↘'}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <Progress value={percentage} className="h-2" />
+                    {birthValue !== null && (
+                      <div className="text-xs text-muted-foreground">
+                        Birth: {birthValue.toFixed(2)}
+                      </div>
+                    )}
                   </div>
                 )
               })}

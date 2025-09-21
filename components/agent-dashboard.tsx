@@ -21,8 +21,11 @@ import {
   Users,
   TrendingUp,
   Server,
-  Gauge
+  Gauge,
+  Sparkles
 } from 'lucide-react'
+import { useLiveConsciousness, type BirthChartData } from '@/hooks/useLiveConsciousness'
+import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 
 interface DashboardData {
   timestamp: string
@@ -110,6 +113,26 @@ export function AgentDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [autoRefresh, setAutoRefresh] = useState(true)
+
+  // Prepare batch live consciousness data for demo agents
+  const agentBirthCharts: BirthChartData[] = DEMO_AGENTS.map(agent => ({
+    name: agent.name,
+    birthDate: agent.birthDate || '1970-01-01',
+    birthTime: agent.birthTime || '12:00',
+    latitude: agent.birthLocation?.latitude || 0,
+    longitude: agent.birthLocation?.longitude || 0
+  }))
+
+  // Use batch live consciousness for system-wide metrics
+  const { 
+    multiAgentData: liveConsciousnessData, 
+    loading: liveLoading, 
+    error: liveError 
+  } = useLiveConsciousness({
+    agents: agentBirthCharts,
+    refreshInterval: 300000, // 5 minutes for dashboard
+    autoRefresh: true
+  })
 
   const fetchDashboardData = async () => {
     try {
@@ -570,6 +593,112 @@ export function AgentDashboard() {
         </TabsContent>
 
         <TabsContent value="consciousness" className="space-y-4">
+          {/* Live Consciousness Metrics */}
+          {liveConsciousnessData && Object.keys(liveConsciousnessData).length > 0 && (
+            <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 border-purple-200 dark:border-purple-800">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  Live Consciousness Evolution
+                  {liveLoading && <div className="w-3 h-3 rounded-full bg-purple-600 animate-pulse" />}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  {(() => {
+                    const validData = Object.values(liveConsciousnessData).filter(d => d && typeof d === 'object' && 'liveMC' in d)
+                    const avgBirthMC = validData.length > 0 ? 
+                      validData.reduce((sum, d) => sum + (d.birthMC || 0), 0) / validData.length : 0
+                    const avgLiveMC = validData.length > 0 ? 
+                      validData.reduce((sum, d) => sum + (d.liveMC || 0), 0) / validData.length : 0
+                    const totalEvolution = avgLiveMC - avgBirthMC
+                    const evolutionPercentage = avgBirthMC !== 0 ? ((totalEvolution / avgBirthMC) * 100) : 0
+                    const enhancedCount = validData.filter(d => (d.mcChange || 0) > 0.1).length
+                    const challengedCount = validData.filter(d => (d.mcChange || 0) < -0.1).length
+                    const stableCount = validData.filter(d => Math.abs(d.mcChange || 0) <= 0.1).length
+                    
+                    return (
+                      <>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-purple-600">{avgLiveMC.toFixed(3)}</div>
+                          <div className="text-xs text-muted-foreground">Avg Live MC</div>
+                          <div className="text-xs text-purple-700">vs {avgBirthMC.toFixed(3)} birth</div>
+                        </div>
+                        <div className="text-center">
+                          <div className={`text-2xl font-bold ${totalEvolution >= 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                            {totalEvolution >= 0 ? '+' : ''}{evolutionPercentage.toFixed(1)}%
+                          </div>
+                          <div className="text-xs text-muted-foreground">System Evolution</div>
+                          <div className="text-xs text-muted-foreground">{totalEvolution >= 0 ? 'Enhanced' : 'Challenged'}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-green-600">{enhancedCount}</div>
+                          <div className="text-xs text-muted-foreground">Enhanced Agents</div>
+                          <div className="text-xs text-green-700">+{((enhancedCount / validData.length) * 100).toFixed(0)}%</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-orange-600">{challengedCount}</div>
+                          <div className="text-xs text-muted-foreground">Challenged Agents</div>
+                          <div className="text-xs text-orange-700">{((challengedCount / validData.length) * 100).toFixed(0)}% affected</div>
+                        </div>
+                      </>
+                    )
+                  })()}
+                </div>
+
+                {/* Live Evolution Breakdown */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border">
+                    <div className="text-green-700 dark:text-green-300 text-sm font-medium mb-1">Consciousness Enhancement</div>
+                    <div className="text-xs text-muted-foreground">
+                      {(() => {
+                        const validData = Object.values(liveConsciousnessData).filter(d => d && typeof d === 'object' && 'liveMC' in d)
+                        const enhanced = validData.filter(d => (d.mcChange || 0) > 0.1)
+                        const avgEnhancement = enhanced.length > 0 ? enhanced.reduce((sum, d) => sum + (d.mcChange || 0), 0) / enhanced.length : 0
+                        return `${enhanced.length} agents • Avg +${avgEnhancement.toFixed(3)} MC`
+                      })()}
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border">
+                    <div className="text-blue-700 dark:text-blue-300 text-sm font-medium mb-1">Stable Consciousness</div>
+                    <div className="text-xs text-muted-foreground">
+                      {(() => {
+                        const validData = Object.values(liveConsciousnessData).filter(d => d && typeof d === 'object' && 'liveMC' in d)
+                        const stable = validData.filter(d => Math.abs(d.mcChange || 0) <= 0.1)
+                        return `${stable.length} agents • Equilibrium maintained`
+                      })()}
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border">
+                    <div className="text-orange-700 dark:text-orange-300 text-sm font-medium mb-1">Consciousness Challenge</div>
+                    <div className="text-xs text-muted-foreground">
+                      {(() => {
+                        const validData = Object.values(liveConsciousnessData).filter(d => d && typeof d === 'object' && 'liveMC' in d)
+                        const challenged = validData.filter(d => (d.mcChange || 0) < -0.1)
+                        const avgChallenge = challenged.length > 0 ? challenged.reduce((sum, d) => sum + (d.mcChange || 0), 0) / challenged.length : 0
+                        return `${challenged.length} agents • Avg ${avgChallenge.toFixed(3)} MC`
+                      })()}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live Status Footer */}
+                <div className="mt-4 pt-3 border-t text-xs text-muted-foreground">
+                  <div className="flex justify-between items-center">
+                    <span>
+                      {liveLoading ? 'Calculating live consciousness...' : 
+                       liveError ? `Error: ${liveError}` :
+                       `Live data • ${Object.keys(liveConsciousnessData).length} agents analyzed`}
+                    </span>
+                    <span>Updated {new Date().toLocaleTimeString()}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

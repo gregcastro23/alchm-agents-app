@@ -48,6 +48,7 @@ import type {
   ConsciousnessLevel,
 } from '@/lib/agent-types'
 import { GalleryGroupChat } from '@/components/gallery-group-chat'
+import { useLiveConsciousness, type BirthChartData } from '@/hooks/useLiveConsciousness'
 import SignVectorGraphic, {
   calculateSignVectorFromChart,
   SignVectorRune,
@@ -83,6 +84,26 @@ export default function GalleryPage() {
   })
 
   const collections = getAgentCollections()
+
+  // Prepare birth chart data for batch live consciousness calculation
+  const agentBirthCharts: BirthChartData[] = agents.map(agent => ({
+    name: agent.name,
+    birthDate: agent.birthDate || '1970-01-01', // Fallback date
+    birthTime: agent.birthTime || '12:00',      // Fallback time  
+    latitude: agent.birthLocation?.latitude || 0,
+    longitude: agent.birthLocation?.longitude || 0
+  }))
+
+  // Use batch live consciousness hook for all agents
+  const { 
+    multiAgentData: liveConsciousnessData, 
+    loading: liveLoading, 
+    error: liveError 
+  } = useLiveConsciousness({
+    agents: agentBirthCharts,
+    refreshInterval: 300000, // 5 minutes for gallery page
+    autoRefresh: true
+  })
 
   // Fetch all agents (database + demo)
   const fetchAgents = async () => {
@@ -503,6 +524,63 @@ export default function GalleryPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Live Consciousness Statistics */}
+      {liveConsciousnessData && Object.keys(liveConsciousnessData).length > 0 && (
+        <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 border-purple-200 dark:border-purple-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Activity className="w-5 h-5 text-purple-600" />
+              Live Consciousness Metrics
+              {liveLoading && <div className="w-3 h-3 rounded-full bg-purple-600 animate-pulse" />}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              {(() => {
+                const validData = Object.values(liveConsciousnessData).filter(d => d && typeof d === 'object' && 'liveMC' in d)
+                const avgLiveMC = validData.length > 0 ? 
+                  validData.reduce((sum, d) => sum + (d.liveMC || 0), 0) / validData.length : 0
+                const evolutionCount = validData.filter(d => Math.abs(d.mcChange || 0) > 0.1).length
+                const enhancementCount = validData.filter(d => (d.mcChange || 0) > 0.1).length
+                const challengeCount = validData.filter(d => (d.mcChange || 0) < -0.1).length
+                
+                return (
+                  <>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-600">{avgLiveMC.toFixed(2)}</div>
+                      <div className="text-xs text-muted-foreground">Avg Live MC</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-indigo-600">{evolutionCount}</div>
+                      <div className="text-xs text-muted-foreground">In Evolution</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">{enhancementCount}</div>
+                      <div className="text-xs text-muted-foreground">Enhanced</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-600">{challengeCount}</div>
+                      <div className="text-xs text-muted-foreground">Challenged</div>
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+            
+            {liveError && (
+              <div className="mt-3 text-xs text-red-600 bg-red-50 dark:bg-red-950/20 p-2 rounded">
+                Live consciousness data unavailable: {liveError}
+              </div>
+            )}
+            
+            <div className="mt-3 text-xs text-muted-foreground">
+              {liveLoading ? 'Calculating live consciousness...' : 
+               `Updated ${new Date().toLocaleTimeString()} • ${Object.keys(liveConsciousnessData).length} agents analyzed`}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Historical Agents Display */}
       <div className="space-y-4">

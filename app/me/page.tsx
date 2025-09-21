@@ -5,6 +5,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import CircularNatalHoroscope from '@/components/circular-natal-horoscope'
 import ProfileOnboardingForm from '@/components/profile/onboarding-form'
+import { LiveConsciousnessDisplay } from '@/components/profile/live-consciousness-display'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -395,6 +396,23 @@ export default async function MePage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Live Consciousness Tracking */}
+        <LiveConsciousnessDisplay
+          birthInfo={birthInfo}
+          userName={session.user.name || 'You'}
+          birthAlchm={{
+            spirit: safeAlchm.spirit,
+            essence: safeAlchm.essence,
+            matter: safeAlchm.matter,
+            substance: safeAlchm.substance,
+            Heat: safeAlchm.Heat,
+            Energy: safeAlchm.EnergyValue,
+            Entropy: safeAlchm.Entropy,
+            Reactivity: safeAlchm.Reactivity
+          }}
+          birthMC={monicaConstant}
+        />
 
         {/* Chart Comparison */}
         <Card>

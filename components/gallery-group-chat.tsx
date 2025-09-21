@@ -29,6 +29,7 @@ import {
 import { usePowerLevelIndicator } from '@/lib/hooks/use-power-monitoring'
 import { ConsciousnessMemorySystem } from '@/lib/agents/consciousness-memory'
 import { GroupConsciousnessDynamics } from '@/lib/consciousness/group-dynamics'
+import { useLiveConsciousness, type BirthChartData } from '@/hooks/useLiveConsciousness'
 
 type Message = {
   role: 'user' | 'agent'
@@ -67,6 +68,26 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
 
   // Monitor power levels for enhanced experience
   const { powerIndicator, percentage } = usePowerLevelIndicator(userLocation)
+
+  // Prepare birth chart data for batch live consciousness calculation
+  const agentBirthCharts: BirthChartData[] = selectedAgents.map(agent => ({
+    name: agent.name,
+    birthDate: agent.birthDate || '1970-01-01',
+    birthTime: agent.birthTime || '12:00',
+    latitude: agent.birthLocation?.latitude || 0,
+    longitude: agent.birthLocation?.longitude || 0
+  }))
+
+  // Use batch live consciousness for all group agents
+  const { 
+    multiAgentData: liveConsciousnessData, 
+    loading: liveLoading, 
+    error: liveError 
+  } = useLiveConsciousness({
+    agents: agentBirthCharts,
+    refreshInterval: 120000, // 2 minutes for group chat
+    autoRefresh: true
+  })
 
   // Generate session ID on mount
   useEffect(() => {
@@ -275,10 +296,12 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
           </div>
         </DialogHeader>
 
-        {/* Active Agents Display */}
+        {/* Active Agents Display with Live Consciousness */}
         <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
           {selectedAgents.map(agent => {
             const evolutionData = agentEvolutionData[agent.id]
+            const liveData = liveConsciousnessData?.[agent.name]
+            
             return (
               <div
                 key={agent.id}
@@ -291,9 +314,38 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                   {agent.appearance.symbol.charAt(0)}
                 </div>
                 <span className="text-xs font-medium">{agent.name}</span>
-                <Badge size="sm" className="text-xs">
-                  MC: {agent.consciousness.monicaConstant.toFixed(1)}
-                </Badge>
+                
+                {/* Live MC or birth MC fallback */}
+                {liveData ? (
+                  <Badge 
+                    size="sm" 
+                    className="text-xs"
+                    title={`Birth MC: ${liveData.birthMC.toFixed(2)} → Live MC: ${liveData.liveMC.toFixed(2)}`}
+                  >
+                    MC: {liveData.liveMC.toFixed(1)}
+                    {Math.abs(liveData.mcChange) > 0.01 && (
+                      <span className={liveData.mcChange > 0 ? ' text-green-600' : ' text-red-600'}>
+                        {liveData.mcChange > 0 ? ' ↗' : ' ↘'}
+                      </span>
+                    )}
+                  </Badge>
+                ) : (
+                  <Badge size="sm" className="text-xs">
+                    MC: {agent.consciousness.monicaConstant.toFixed(1)}
+                  </Badge>
+                )}
+                
+                {/* Live consciousness level */}
+                {liveData && (
+                  <Badge
+                    size="sm"
+                    className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+                    title={liveData.interpretations?.transitInfluence || ''}
+                  >
+                    {liveData.liveConsciousnessLevel}
+                  </Badge>
+                )}
+                
                 {evolutionData && (
                   <Badge
                     size="sm"
@@ -307,6 +359,24 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
             )
           })}
         </div>
+        
+        {/* Live Consciousness Summary */}
+        {liveConsciousnessData && Object.keys(liveConsciousnessData).length > 0 && (
+          <div className="mt-2 p-2 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded text-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-purple-700 dark:text-purple-300">
+                {(() => {
+                  const validData = Object.values(liveConsciousnessData).filter(d => d && 'liveMC' in d)
+                  const avgLiveMC = validData.length > 0 ?
+                    validData.reduce((sum, d) => sum + (d.liveMC || 0), 0) / validData.length : 0
+                  const enhancedCount = validData.filter(d => (d.mcChange || 0) > 0.1).length
+                  return `Group Avg MC: ${avgLiveMC.toFixed(2)} • ${enhancedCount} enhanced`
+                })()}
+              </span>
+              {liveLoading && <div className="w-3 h-3 rounded-full bg-purple-600 animate-pulse" />}
+            </div>
+          </div>
+        )}
 
         {/* Consciousness Evolution Metrics Panel */}
         {showConsciousnessMetrics && (
@@ -331,6 +401,30 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                     </div>
 
                     <div className="space-y-1 text-xs">
+                      {/* Live MC data if available */}
+                      {liveConsciousnessData?.[agent.name] && (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Live MC:</span>
+                            <span className={`font-medium ${liveConsciousnessData[agent.name].mcChange > 0 ? 'text-green-600' : liveConsciousnessData[agent.name].mcChange < 0 ? 'text-red-600' : ''}`}>
+                              {liveConsciousnessData[agent.name].liveMC.toFixed(3)}
+                              {liveConsciousnessData[agent.name].mcChange !== 0 && (
+                                <span className="ml-1">
+                                  ({liveConsciousnessData[agent.name].mcChange > 0 ? '+' : ''}{liveConsciousnessData[agent.name].mcPercentChange.toFixed(1)}%)
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                          
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Transit Effect:</span>
+                            <span className="font-medium text-purple-600">
+                              {liveConsciousnessData[agent.name].dominantTransitEffect?.replace(/_/g, ' ') || 'neutral'}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                      
                       <div className="flex justify-between">
                         <span className="text-gray-600">Consciousness Velocity:</span>
                         <span className="font-medium">

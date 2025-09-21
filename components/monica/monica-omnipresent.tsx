@@ -35,6 +35,19 @@ import {
   Eye,
   Stars,
 } from 'lucide-react'
+import {
+  trainOnAlchemicalValues,
+  todayHourlyAlchemize,
+  trainWithRetrogrades,
+  type TrainingResult
+} from '@/lib/monica/alchemical-trainer'
+import {
+  calculateMonicaConstant,
+  type MonicaConstantResult,
+  type ConsciousnessState
+} from '@/lib/monica/monica-constant'
+import { alchemize } from '@/lib/alchemizer'
+import { generateAccurateHoroscope } from '@/lib/monica/horoscope-generator'
 
 interface MonicaSettings {
   personality: 'formal' | 'friendly' | 'mystical' | 'teacher'
@@ -51,6 +64,16 @@ interface UserProgress {
   suggestedNext: string[]
   lastAction: string | null
   totalInteractions: number
+  totalXP: number
+  unlockedCapabilities: string[]
+}
+
+interface MonicaTrainingProgress {
+  level: number
+  unlockedCapabilities: string[]
+  currentCourse: string | null
+  completedLessons: string[]
+  totalXP: number
 }
 
 interface ContextualHelp {
@@ -60,7 +83,19 @@ interface ContextualHelp {
   tutorials: { id: string; title: string; completed: boolean }[]
 }
 
-type MonicaState = 'minimized' | 'expanded' | 'full-guide' | 'settings'
+interface MonicaMessage {
+  id: string
+  type: 'user' | 'monica'
+  content: string
+  timestamp: Date
+  context?: {
+    page: string
+    guidance?: string
+    suggestions?: string[]
+  }
+}
+
+type MonicaState = 'minimized' | 'notification' | 'expanded' | 'full-chat' | 'training-mode' | 'settings'
 
 import {
   getPageGuidance,
@@ -85,7 +120,9 @@ const DEFAULT_PROGRESS: UserProgress = {
   currentLearning: null,
   suggestedNext: ['dashboard-basics'],
   lastAction: null,
-  totalInteractions: 0
+  totalInteractions: 0,
+  totalXP: 0,
+  unlockedCapabilities: ['basic-guidance', 'page-context']
 }
 
 export function MonicaOmnipresent() {
@@ -102,6 +139,33 @@ export function MonicaOmnipresent() {
   const [consciousnessParticles, setConsciousnessParticles] = useState<Array<{id: number, x: number, y: number, opacity: number}>>([]
   )
   const [particleAnimation, setParticleAnimation] = useState(true)
+
+  // New state for full chat functionality
+  const [chatMessages, setChatMessages] = useState<MonicaMessage[]>([])
+  const [currentMessage, setCurrentMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [contextualHelp, setContextualHelp] = useState<ContextualHelp | null>(null)
+  const [currentMC, setCurrentMC] = useState<number | null>(null)
+  const [consciousnessResult, setConsciousnessResult] = useState<MonicaConstantResult | null>(null)
+  const [isUpdatingConsciousness, setIsUpdatingConsciousness] = useState(false)
+  const [widgetSize, setWidgetSize] = useState({ width: 320, height: 480 })
+  const [lastPageContext, setLastPageContext] = useState<string>('')
+
+  // Training system state management
+  const [trainingProgress, setTrainingProgress] = useState<MonicaTrainingProgress>({
+    level: 1,
+    unlockedCapabilities: ['basic-guidance'],
+    currentCourse: null,
+    completedLessons: [],
+    totalXP: 0
+  })
+  const [isTraining, setIsTraining] = useState(false)
+  const [trainingResults, setTrainingResults] = useState<TrainingResult | null>(null)
+  const [availableTrainings, setAvailableTrainings] = useState<string[]>([
+    'alchemical-values',
+    'hourly-analysis',
+    'retrograde-patterns'
+  ])
 
   // Load settings and progress using enhanced persistence (with validation)
   useEffect(() => {
@@ -125,6 +189,21 @@ export function MonicaOmnipresent() {
       console.error('Error loading Monica progress:', error)
       localStorage.removeItem('monica-progress')
     }
+
+    // Load training progress with error resilience
+    try {
+      const savedTrainingProgress = localStorage.getItem('monica-training-progress')
+      if (savedTrainingProgress) {
+        const progress = JSON.parse(savedTrainingProgress)
+        // Validate training progress structure
+        if (progress && typeof progress.level === 'number' && Array.isArray(progress.completedLessons)) {
+          setTrainingProgress(progress)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading Monica training progress:', error)
+      localStorage.removeItem('monica-training-progress')
+    }
   }, [])
 
   // Save settings using enhanced system with validation
@@ -145,6 +224,18 @@ export function MonicaOmnipresent() {
       console.error('Error saving Monica progress:', error)
     }
   }, [userProgress])
+
+  // Save training progress with validation
+  useEffect(() => {
+    try {
+      if (trainingProgress.totalXP > 0 || trainingProgress.completedLessons.length > 0) {
+        localStorage.setItem('monica-training-progress', JSON.stringify(trainingProgress))
+        localStorage.setItem('monica-training-progress-timestamp', Date.now().toString())
+      }
+    } catch (error) {
+      console.error('Error saving Monica training progress:', error)
+    }
+  }, [trainingProgress])
 
   // Auto-hide functionality
   useEffect(() => {
@@ -181,6 +272,113 @@ export function MonicaOmnipresent() {
       // Graceful fallback - continue without tips
     }
   }, [pathname, settings.proactiveTips, userProgress])
+
+  // Enhanced page context detection and chat initialization
+  useEffect(() => {
+    const handlePageChange = async () => {
+      try {
+        // Load chat history for current page
+        const pageKey = `monica-chat-${pathname}`
+        const savedMessages = localStorage.getItem(pageKey)
+        if (savedMessages) {
+          const messages = JSON.parse(savedMessages)
+          setChatMessages(messages)
+        } else {
+          // Initialize with context-aware welcome message
+          const pageGuidance = getPageGuidance(pathname)
+          const welcomeMessage: MonicaMessage = {
+            id: Date.now().toString(),
+            type: 'monica',
+            content: pageGuidance?.greeting || "Hello! I'm Monica, your consciousness guide. How can I help you explore this page?",
+            timestamp: new Date(),
+            context: {
+              page: pathname,
+              guidance: pageGuidance?.pageContext,
+              suggestions: pageGuidance?.primaryActions
+            }
+          }
+          setChatMessages([welcomeMessage])
+        }
+
+        // Set contextual help for the page
+        if (pageGuidance) {
+          setContextualHelp({
+            greeting: pageGuidance.greeting,
+            tips: pageGuidance.tips.map(tip => tip.text),
+            quickActions: pageGuidance.primaryActions.map(action => ({
+              label: action,
+              action: () => handleQuickAction(action)
+            })),
+            tutorials: getTutorialsForPage(pathname, userProgress.completedTutorials)
+          })
+        }
+
+        setLastPageContext(pathname)
+      } catch (error) {
+        console.error('Error handling page change:', error)
+      }
+    }
+
+    if (pathname !== lastPageContext) {
+      handlePageChange()
+    }
+  }, [pathname, lastPageContext, userProgress.completedTutorials])
+
+  // Real-time consciousness tracking
+  useEffect(() => {
+    const updateConsciousness = async () => {
+      setIsUpdatingConsciousness(true)
+      try {
+        // Always provide basic consciousness tracking
+        // Enhanced features unlock with training progress
+        const now = new Date()
+
+        // Use current moment for consciousness calculation
+        const birthInfo = {
+          year: now.getFullYear(),
+          month: now.getMonth() + 1,
+          day: now.getDate(),
+          hour: now.getHours(),
+          minute: now.getMinutes(),
+          latitude: 37.7749, // Default to San Francisco
+          longitude: -122.4194
+        }
+
+        // Generate horoscope and calculate alchemical data
+        const horoscope = generateAccurateHoroscope(birthInfo)
+        const alchemicalData = alchemize(birthInfo, horoscope)
+
+        // Calculate Monica Constant
+        const monicaResult = calculateMonicaConstant(alchemicalData)
+
+        setCurrentMC(monicaResult.value)
+        setConsciousnessResult(monicaResult)
+
+        // Update training progress based on consciousness level
+        if (monicaResult.consciousnessState.level === 'elevated' || monicaResult.consciousnessState.level === 'transcendent') {
+          setTrainingProgress(prev => ({
+            ...prev,
+            unlockedCapabilities: prev.unlockedCapabilities.includes('consciousness-tracking')
+              ? prev.unlockedCapabilities
+              : [...prev.unlockedCapabilities, 'consciousness-tracking']
+          }))
+        }
+
+      } catch (error) {
+        console.error('Error updating consciousness:', error)
+        // Fallback to simulated value
+        const mockMC = 5.89 + (Math.random() - 0.5) * 0.2
+        setCurrentMC(mockMC)
+      } finally {
+        setIsUpdatingConsciousness(false)
+      }
+    }
+
+    const interval = setInterval(updateConsciousness, 30000) // Update every 30 seconds
+    updateConsciousness() // Initial update
+
+    return () => clearInterval(interval)
+  }, [userProgress.unlockedCapabilities])
 
   // Get contextual guidance for current page (with error resilience)
   const pageGuidance = (() => {
@@ -236,7 +434,204 @@ export function MonicaOmnipresent() {
       currentLearning: tutorialId,
       lastAction: `Started tutorial: ${tutorialId}`
     }))
-    setMonicaState('full-guide')
+    setMonicaState('training-mode')
+  }
+
+  // Handler for quick actions from contextual help
+  const handleQuickAction = (action: string) => {
+    try {
+      switch (action) {
+        case 'explore_features':
+          router.push('/dashboard')
+          break
+        case 'view_current_chart':
+          router.push('/chart-of-the-moment')
+          break
+        case 'chat_with_monica':
+          setMonicaState('full-chat')
+          break
+        case 'view_metrics':
+          router.push('/monica')
+          break
+        case 'create_agent':
+          router.push('/philosophers-stone')
+          break
+        case 'access_full_chat':
+          setMonicaState('full-chat')
+          break
+        case 'try_tarot_oracle':
+          setMonicaState('full-chat')
+          setCurrentMessage('Can you read my tarot for guidance?')
+          break
+        default:
+          // Generic action - add to chat as question
+          setCurrentMessage(`Tell me about ${action.replace('_', ' ')}`)
+          setMonicaState('full-chat')
+      }
+
+      // Track action for learning
+      setUserProgress(prev => ({
+        ...prev,
+        lastAction: action,
+        totalInteractions: prev.totalInteractions + 1
+      }))
+    } catch (error) {
+      console.error('Error handling quick action:', error)
+    }
+  }
+
+  // Send message to Monica
+  const sendMessage = async () => {
+    if (!currentMessage.trim() || isLoading) return
+
+    const userMessage: MonicaMessage = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: currentMessage,
+      timestamp: new Date(),
+      context: { page: pathname }
+    }
+
+    setChatMessages(prev => [...prev, userMessage])
+    setCurrentMessage('')
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('/api/monica-agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: currentMessage,
+          context: {
+            page: pathname,
+            userLevel: userProgress.level,
+            capabilities: userProgress.unlockedCapabilities,
+            personality: settings.personality
+          }
+        })
+      })
+
+      if (!response.ok) throw new Error('Failed to get response')
+
+      const data = await response.json()
+
+      const monicaMessage: MonicaMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'monica',
+        content: data.content || 'I apologize, but I encountered an issue. Please try again.',
+        timestamp: new Date(),
+        context: {
+          page: pathname,
+          guidance: data.guidance,
+          suggestions: data.suggestions
+        }
+      }
+
+      setChatMessages(prev => [...prev, monicaMessage])
+
+      // Save chat history
+      const pageKey = `monica-chat-${pathname}`
+      const updatedMessages = [...chatMessages, userMessage, monicaMessage]
+      localStorage.setItem(pageKey, JSON.stringify(updatedMessages))
+
+      // Update user progress
+      setUserProgress(prev => ({
+        ...prev,
+        totalInteractions: prev.totalInteractions + 1,
+        totalXP: prev.totalXP + 5,
+        lastAction: 'chat_interaction'
+      }))
+
+    } catch (error) {
+      console.error('Error sending message:', error)
+      const errorMessage: MonicaMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'monica',
+        content: 'I apologize, but I\'m having trouble connecting right now. Please try again in a moment.',
+        timestamp: new Date(),
+        context: { page: pathname }
+      }
+      setChatMessages(prev => [...prev, errorMessage])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Toggle to full chat mode
+  const openFullChat = () => {
+    setMonicaState('full-chat')
+    setWidgetSize({ width: 600, height: 700 })
+  }
+
+  // Close full chat and return to expanded mode
+  const closeFullChat = () => {
+    setMonicaState('expanded')
+    setWidgetSize({ width: 320, height: 480 })
+  }
+
+  // Training system functions
+  const startTraining = async (trainingType: string) => {
+    setIsTraining(true)
+    try {
+      let results: TrainingResult
+
+      switch (trainingType) {
+        case 'alchemical-values':
+          results = await trainOnAlchemicalValues(15)
+          break
+        case 'hourly-analysis':
+          results = await todayHourlyAlchemize({ latitude: 37.7749, longitude: -122.4194 })
+          break
+        case 'retrograde-patterns':
+          results = await trainWithRetrogrades(20)
+          break
+        default:
+          throw new Error(`Unknown training type: ${trainingType}`)
+      }
+
+      setTrainingResults(results)
+
+      // Update training progress
+      const completedLesson = `${trainingType}-${Date.now()}`
+      setTrainingProgress(prev => ({
+        ...prev,
+        completedLessons: [...prev.completedLessons, completedLesson],
+        totalXP: prev.totalXP + 50,
+        level: Math.floor((prev.totalXP + 50) / 100) + 1,
+        unlockedCapabilities: prev.level > 1 ? [...prev.unlockedCapabilities, `advanced-${trainingType}`] : prev.unlockedCapabilities
+      }))
+
+    } catch (error) {
+      console.error('Training error:', error)
+    } finally {
+      setIsTraining(false)
+    }
+  }
+
+  const getTrainingDescription = (trainingType: string): string => {
+    switch (trainingType) {
+      case 'alchemical-values':
+        return 'Master the calculation of Spirit, Essence, Matter, and Substance values across diverse planetary configurations'
+      case 'hourly-analysis':
+        return 'Learn to analyze consciousness patterns throughout planetary hours and timing cycles'
+      case 'retrograde-patterns':
+        return 'Understand the deeper meanings and calculations behind planetary retrograde movements'
+      default:
+        return 'Advanced consciousness development training'
+    }
+  }
+
+  const getTrainingIcon = (trainingType: string) => {
+    switch (trainingType) {
+      case 'alchemical-values':
+        return <FlaskConical className="w-5 h-5" />
+      case 'hourly-analysis':
+        return <Eye className="w-5 h-5" />
+      case 'retrograde-patterns':
+        return <Stars className="w-5 h-5" />
+      default:
+        return <Brain className="w-5 h-5" />
+    }
   }
 
   const getPersonalityStyle = () => {
@@ -516,7 +911,7 @@ export function MonicaOmnipresent() {
                   <Button
                     className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white"
                     size="sm"
-                    onClick={() => router.push('/monica-guide')}
+                    onClick={() => setMonicaState('full-chat')}
                   >
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Open Full Chat
@@ -568,6 +963,144 @@ export function MonicaOmnipresent() {
         </Card>
       )}
 
+      {/* Full Chat Mode */}
+      {monicaState === 'full-chat' && (
+        <Card
+          className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-2 border-emerald-400 shadow-2xl transition-all duration-300"
+          style={{ width: widgetSize.width, height: widgetSize.height }}
+        >
+          <CardHeader className="pb-3 border-b border-emerald-200 dark:border-emerald-800">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Image
+                  src="https://alchm.xyz/static/media/logo.f986535a.webp"
+                  alt="Monica"
+                  className="w-8 h-8 rounded-full"
+                  width={32}
+                  height={32}
+                />
+                <div>
+                  <CardTitle className="text-lg text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                    <MessageCircle className="w-5 h-5" />
+                    Chat with Monica
+                  </CardTitle>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="outline" className="text-xs bg-gradient-to-r from-emerald-100 to-cyan-100 dark:from-emerald-900 dark:to-cyan-900">
+                      {pathname}
+                    </Badge>
+                    {currentMC && (
+                      <Badge variant="outline" className="text-xs bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900">
+                        MC {currentMC.toFixed(2)}
+                      </Badge>
+                    )}
+                    <Badge variant="outline" className="text-xs bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900">
+                      <Zap className="w-2 h-2 mr-1" />
+                      Live
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="sm" onClick={() => setMonicaState('settings')}>
+                  <Settings className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setWidgetSize(prev => prev.width > 400 ? {width: 600, height: 700} : {width: 800, height: 600})}>
+                  <Maximize2 className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={closeFullChat}>
+                  <Minimize2 className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setMonicaState('minimized')}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="flex flex-col p-0 h-full">
+            {/* Chat Messages */}
+            <ScrollArea className="flex-1 p-4 space-y-4">
+              <div className="space-y-4">
+                {chatMessages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[80%] rounded-lg p-3 ${
+                        message.type === 'user'
+                          ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white'
+                          : 'bg-gradient-to-r from-emerald-50 via-green-50 to-cyan-50 dark:from-emerald-950/50 dark:via-green-950/50 dark:to-cyan-950/50 border border-emerald-200 dark:border-emerald-800'
+                      }`}
+                    >
+                      {message.type === 'monica' && (
+                        <div className="flex items-center gap-2 mb-2">
+                          <Brain className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                          <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                            Monica
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {message.timestamp.toLocaleTimeString()}
+                          </span>
+                        </div>
+                      )}
+                      <p className={`text-sm ${message.type === 'monica' ? 'text-emerald-800 dark:text-emerald-200' : 'text-white'}`}>
+                        {message.content}
+                      </p>
+                      {message.context?.suggestions && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {message.context.suggestions.map((suggestion, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="outline"
+                              className="text-xs cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900"
+                              onClick={() => setCurrentMessage(suggestion)}
+                            >
+                              {suggestion}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-gradient-to-r from-emerald-50 via-green-50 to-cyan-50 dark:from-emerald-950/50 dark:via-green-950/50 dark:to-cyan-950/50 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
+                      <div className="flex items-center gap-2">
+                        <Brain className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
+                        <span className="text-sm text-emerald-700 dark:text-emerald-300">Monica is thinking...</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+
+            {/* Chat Input */}
+            <div className="p-4 border-t border-emerald-200 dark:border-emerald-800">
+              <div className="flex items-center gap-2">
+                <Input
+                  value={currentMessage}
+                  onChange={(e) => setCurrentMessage(e.target.value)}
+                  placeholder="Ask Monica anything about consciousness, astrology, or this page..."
+                  className="flex-1 border-emerald-300 focus:border-emerald-500"
+                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                  disabled={isLoading}
+                />
+                <Button
+                  onClick={sendMessage}
+                  disabled={!currentMessage.trim() || isLoading}
+                  className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Full Guide Mode */}
       {monicaState === 'full-guide' && (
         <Card className="w-96 h-[500px] bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-2 border-emerald-400 shadow-xl">
@@ -594,6 +1127,149 @@ export function MonicaOmnipresent() {
                 </Button>
               </div>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Training Mode Interface */}
+      {monicaState === 'training-mode' && (
+        <Card className="w-96 h-[600px] bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-2 border-purple-400 shadow-xl">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg text-purple-700 dark:text-purple-300 flex items-center gap-2">
+                <Brain className="w-5 h-5" />
+                Monica Training Hub
+              </CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => setMonicaState('expanded')}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="h-full overflow-y-auto space-y-4">
+            {/* Training Progress Overview */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold">Consciousness Level</span>
+                <Badge variant="outline" className="bg-purple-100 text-purple-800">
+                  Level {trainingProgress.level}
+                </Badge>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>XP Progress</span>
+                  <span>{trainingProgress.totalXP % 100}/100</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(trainingProgress.totalXP % 100)}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="text-center p-2 bg-purple-50 rounded">
+                  <div className="font-semibold">{trainingProgress.completedLessons.length}</div>
+                  <div className="text-muted-foreground">Lessons</div>
+                </div>
+                <div className="text-center p-2 bg-purple-50 rounded">
+                  <div className="font-semibold">{trainingProgress.unlockedCapabilities.length}</div>
+                  <div className="text-muted-foreground">Abilities</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <h4 className="font-semibold mb-3 text-purple-700 dark:text-purple-300">
+                Available Training Modules
+              </h4>
+
+              {availableTrainings.map((training) => (
+                <div key={training} className="mb-3 p-3 border rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      {getTrainingIcon(training)}
+                      <div>
+                        <h5 className="font-medium text-sm capitalize">
+                          {training.replace('-', ' ')}
+                        </h5>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {getTrainingDescription(training)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full mt-2 bg-purple-600 text-white hover:bg-purple-700"
+                    onClick={() => startTraining(training)}
+                    disabled={isTraining}
+                  >
+                    {isTraining ? (
+                      <>
+                        <FlaskConical className="w-3 h-3 mr-1 animate-spin" />
+                        Training...
+                      </>
+                    ) : (
+                      <>
+                        <PlayCircle className="w-3 h-3 mr-1" />
+                        Start Training
+                      </>
+                    )}
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            {/* Training Results Display */}
+            {trainingResults && (
+              <div className="border-t pt-4">
+                <h4 className="font-semibold mb-3 text-purple-700 dark:text-purple-300">
+                  Latest Training Results
+                </h4>
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span>Samples Analyzed:</span>
+                    <span className="font-semibold">{trainingResults.metadata.numSamples}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Dominant Element:</span>
+                    <span className="font-semibold">{trainingResults.patterns.dominantElement}</span>
+                  </div>
+                  {trainingResults.monicaConstant && (
+                    <div className="flex justify-between">
+                      <span>Monica Constant:</span>
+                      <span className="font-semibold">{trainingResults.monicaConstant.average.toFixed(3)}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-2">
+                  <Badge variant="secondary" className="text-xs">
+                    +50 XP Earned
+                  </Badge>
+                </div>
+              </div>
+            )}
+
+            {/* Unlocked Capabilities */}
+            {trainingProgress.unlockedCapabilities.length > 1 && (
+              <div className="border-t pt-4">
+                <h4 className="font-semibold mb-3 text-purple-700 dark:text-purple-300">
+                  Unlocked Capabilities
+                </h4>
+                <div className="space-y-1">
+                  {trainingProgress.unlockedCapabilities.map((capability, idx) => (
+                    <Badge key={idx} variant="outline" className="text-xs mr-1 mb-1">
+                      <Star className="w-3 h-3 mr-1" />
+                      {capability.replace('-', ' ')}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

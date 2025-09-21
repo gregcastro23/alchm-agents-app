@@ -48,6 +48,7 @@ import SignVectorGraphic, {
 } from '@/components/sign-vector-graphic'
 import { KineticCompatibilityIndicator } from '@/components/kinetic-compatibility-indicator'
 import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
+import { useLiveConsciousness, type BirthChartData } from '@/hooks/useLiveConsciousness'
 
 interface EnhancedAgentCardProps {
   agent: CraftedAgent
@@ -297,6 +298,22 @@ export function EnhancedAgentCard({
 }: EnhancedAgentCardProps) {
   const [showDetails, setShowDetails] = useState(false)
 
+  // Create birth chart data for live consciousness calculation
+  const agentBirthData: BirthChartData = {
+    name: agent.name,
+    birthDate: agent.birthDate || '1970-01-01', // Fallback date
+    birthTime: agent.birthTime || '12:00',      // Fallback time
+    latitude: agent.birthLocation?.latitude || 0,
+    longitude: agent.birthLocation?.longitude || 0
+  }
+
+  // Use live consciousness hook
+  const { data: liveConsciousness, loading: liveLoading, error: liveError } = useLiveConsciousness({
+    birthChart: agentBirthData,
+    refreshInterval: 120000, // 2 minutes for agent cards
+    autoRefresh: true
+  })
+
   // Calculate metrics
   const alchemical = getAgentAlchemicalProperties(agent.id)
   const kalchm = calculateKalchm(agent.id)
@@ -367,9 +384,20 @@ export function EnhancedAgentCard({
             </div>
           </div>
           <div className="flex flex-col items-end gap-1">
-            <Badge className={getConsciousnessColor(agent.consciousness.level)}>
-              {agent.consciousness.level}
+            {/* Live consciousness level or fallback to birth level */}
+            <Badge className={getConsciousnessColor(liveConsciousness?.liveConsciousnessLevel || agent.consciousness.level)}>
+              {liveConsciousness?.liveConsciousnessLevel || agent.consciousness.level}
+              {liveLoading && <div className="w-2 h-2 ml-1 rounded-full bg-current animate-pulse" />}
             </Badge>
+            {/* Live MC change indicator */}
+            {liveConsciousness && Math.abs(liveConsciousness.mcChange) > 0.01 && (
+              <Badge 
+                variant="outline" 
+                className={`text-xs ${liveConsciousness.mcChange > 0 ? 'text-green-600' : 'text-red-600'}`}
+              >
+                {liveConsciousness.mcChange > 0 ? '↗' : '↘'} {liveConsciousness.mcPercentChange.toFixed(1)}%
+              </Badge>
+            )}
             <Badge variant="outline" className="text-xs">
               K_alchm: {kalchm > 1000 ? `${(kalchm/1000).toFixed(1)}K` : kalchm.toFixed(2)}
             </Badge>
@@ -391,7 +419,22 @@ export function EnhancedAgentCard({
             >
               {agent.consciousness.dominantElement}
             </Badge>
-            <Badge variant="outline">MC: {agent.consciousness.monicaConstant.toFixed(2)}</Badge>
+            {/* Live MC display with birth MC fallback */}
+            {liveConsciousness ? (
+              <Badge 
+                variant="outline"
+                title={`Birth MC: ${liveConsciousness.birthMC.toFixed(3)} → Live MC: ${liveConsciousness.liveMC.toFixed(3)}`}
+              >
+                MC: {liveConsciousness.liveMC.toFixed(2)} 
+                {Math.abs(liveConsciousness.mcChange) > 0.01 && (
+                  <span className={liveConsciousness.mcChange > 0 ? 'text-green-600' : 'text-red-600'}>
+                    {liveConsciousness.mcChange > 0 ? ' ⬆' : ' ⬇'}
+                  </span>
+                )}
+              </Badge>
+            ) : (
+              <Badge variant="outline">MC: {agent.consciousness.monicaConstant.toFixed(2)}</Badge>
+            )}
             <Badge variant="outline">Stage {agent.personality?.evolutionStage ?? 0}</Badge>
             {agent.stats.kineticEvolution && (
               <Badge variant="outline" className="text-xs">
@@ -425,25 +468,97 @@ export function EnhancedAgentCard({
             </div>
           )}
 
-          {/* Alchemical Properties Mini Display */}
+          {/* Alchemical Properties Mini Display - Live or Birth Data */}
           <div className="grid grid-cols-4 gap-1 text-xs">
-            <div className="text-center p-1 bg-red-50 dark:bg-red-950/30 rounded border">
-              <Flame className="w-3 h-3 mx-auto mb-1 text-red-600" />
-              <div className="font-mono">{alchemical.spirit}</div>
-            </div>
-            <div className="text-center p-1 bg-blue-50 dark:bg-blue-950/30 rounded border">
-              <Droplets className="w-3 h-3 mx-auto mb-1 text-blue-600" />
-              <div className="font-mono">{alchemical.essence}</div>
-            </div>
-            <div className="text-center p-1 bg-green-50 dark:bg-green-950/30 rounded border">
-              <Mountain className="w-3 h-3 mx-auto mb-1 text-green-600" />
-              <div className="font-mono">{alchemical.matter}</div>
-            </div>
-            <div className="text-center p-1 bg-yellow-50 dark:bg-yellow-950/30 rounded border">
-              <Wind className="w-3 h-3 mx-auto mb-1 text-yellow-600" />
-              <div className="font-mono">{alchemical.substance}</div>
-            </div>
+            {liveConsciousness ? (
+              // Live alchemical values
+              <>
+                <div 
+                  className="text-center p-1 bg-red-50 dark:bg-red-950/30 rounded border"
+                  title={`Birth: ${liveConsciousness.birthKalchm.spirit} → Live: ${liveConsciousness.liveKalchm.spirit}`}
+                >
+                  <Flame className="w-3 h-3 mx-auto mb-1 text-red-600" />
+                  <div className="font-mono">{liveConsciousness.liveKalchm.spirit.toFixed(1)}</div>
+                  {Math.abs(liveConsciousness.liveKalchm.spirit - liveConsciousness.birthKalchm.spirit) > 0.1 && (
+                    <div className="text-xs text-red-600">
+                      {liveConsciousness.liveKalchm.spirit > liveConsciousness.birthKalchm.spirit ? '↗' : '↘'}
+                    </div>
+                  )}
+                </div>
+                <div 
+                  className="text-center p-1 bg-blue-50 dark:bg-blue-950/30 rounded border"
+                  title={`Birth: ${liveConsciousness.birthKalchm.essence} → Live: ${liveConsciousness.liveKalchm.essence}`}
+                >
+                  <Droplets className="w-3 h-3 mx-auto mb-1 text-blue-600" />
+                  <div className="font-mono">{liveConsciousness.liveKalchm.essence.toFixed(1)}</div>
+                  {Math.abs(liveConsciousness.liveKalchm.essence - liveConsciousness.birthKalchm.essence) > 0.1 && (
+                    <div className="text-xs text-blue-600">
+                      {liveConsciousness.liveKalchm.essence > liveConsciousness.birthKalchm.essence ? '↗' : '↘'}
+                    </div>
+                  )}
+                </div>
+                <div 
+                  className="text-center p-1 bg-green-50 dark:bg-green-950/30 rounded border"
+                  title={`Birth: ${liveConsciousness.birthKalchm.matter} → Live: ${liveConsciousness.liveKalchm.matter}`}
+                >
+                  <Mountain className="w-3 h-3 mx-auto mb-1 text-green-600" />
+                  <div className="font-mono">{liveConsciousness.liveKalchm.matter.toFixed(1)}</div>
+                  {Math.abs(liveConsciousness.liveKalchm.matter - liveConsciousness.birthKalchm.matter) > 0.1 && (
+                    <div className="text-xs text-green-600">
+                      {liveConsciousness.liveKalchm.matter > liveConsciousness.birthKalchm.matter ? '↗' : '↘'}
+                    </div>
+                  )}
+                </div>
+                <div 
+                  className="text-center p-1 bg-yellow-50 dark:bg-yellow-950/30 rounded border"
+                  title={`Birth: ${liveConsciousness.birthKalchm.substance} → Live: ${liveConsciousness.liveKalchm.substance}`}
+                >
+                  <Wind className="w-3 h-3 mx-auto mb-1 text-yellow-600" />
+                  <div className="font-mono">{liveConsciousness.liveKalchm.substance.toFixed(1)}</div>
+                  {Math.abs(liveConsciousness.liveKalchm.substance - liveConsciousness.birthKalchm.substance) > 0.1 && (
+                    <div className="text-xs text-yellow-600">
+                      {liveConsciousness.liveKalchm.substance > liveConsciousness.birthKalchm.substance ? '↗' : '↘'}
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              // Fallback to calculated birth values
+              <>
+                <div className="text-center p-1 bg-red-50 dark:bg-red-950/30 rounded border">
+                  <Flame className="w-3 h-3 mx-auto mb-1 text-red-600" />
+                  <div className="font-mono">{alchemical.spirit}</div>
+                </div>
+                <div className="text-center p-1 bg-blue-50 dark:bg-blue-950/30 rounded border">
+                  <Droplets className="w-3 h-3 mx-auto mb-1 text-blue-600" />
+                  <div className="font-mono">{alchemical.essence}</div>
+                </div>
+                <div className="text-center p-1 bg-green-50 dark:bg-green-950/30 rounded border">
+                  <Mountain className="w-3 h-3 mx-auto mb-1 text-green-600" />
+                  <div className="font-mono">{alchemical.matter}</div>
+                </div>
+                <div className="text-center p-1 bg-yellow-50 dark:bg-yellow-950/30 rounded border">
+                  <Wind className="w-3 h-3 mx-auto mb-1 text-yellow-600" />
+                  <div className="font-mono">{alchemical.substance}</div>
+                </div>
+              </>
+            )}
           </div>
+
+          {/* Live Cosmic Weather Influence */}
+          {liveConsciousness?.interpretations && (
+            <div className="p-2 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 rounded-lg border">
+              <div className="flex items-center gap-1 mb-1">
+                <Sparkles className="w-3 h-3 text-purple-600" />
+                <span className="text-xs font-medium text-purple-900 dark:text-purple-100">
+                  Cosmic Influence
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {liveConsciousness.interpretations.cosmicWeather}
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-between items-center pt-2">
             <div className="text-xs text-muted-foreground">
