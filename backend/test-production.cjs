@@ -93,7 +93,14 @@ async function testHealthCheck() {
     const response = await makeRequest('/api/health')
 
     if (response.statusCode === 200) {
-      log('✅ Health check passed', colors.green)
+      const status = response.body.status
+      if (status === 'healthy') {
+        log('✅ Health check passed - system is healthy', colors.green)
+      } else if (status === 'degraded') {
+        log('✅ Health check passed - system is degraded but operational', colors.yellow)
+      } else {
+        log(`✅ Health check passed - status: ${status}`, colors.green)
+      }
       log(`   Status: ${response.body.status}`)
       log(`   Uptime: ${response.body.uptime}s`)
       return true

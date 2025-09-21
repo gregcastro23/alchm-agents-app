@@ -205,14 +205,15 @@ function calculateElementalDistribution(planetaryHours) {
     };
     planetaryHours.forEach(planet => {
         const element = elementalMap[planet];
-        if (element) {
+        if (element && element in counts) {
             counts[element]++;
         }
     });
     // Normalize to 0-10 scale
-    Object.keys(counts).forEach(element => {
-        counts[element] = Math.round((counts[element] / planetaryHours.length) * 10 * 100) / 100;
-    });
+    counts.Fire = Math.round((counts.Fire / planetaryHours.length) * 10 * 100) / 100;
+    counts.Water = Math.round((counts.Water / planetaryHours.length) * 10 * 100) / 100;
+    counts.Air = Math.round((counts.Air / planetaryHours.length) * 10 * 100) / 100;
+    counts.Earth = Math.round((counts.Earth / planetaryHours.length) * 10 * 100) / 100;
     return counts;
 }
 function calculateAgentOptimization(elementalTotals, planetaryHours) {

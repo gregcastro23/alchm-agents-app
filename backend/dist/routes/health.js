@@ -43,11 +43,21 @@ router.get('/', asyncHandler(async (req, res) => {
         }
     };
     // Determine overall health status
-    const isHealthy = alchmBackendHealth.healthy && cacheStats.connected;
-    const statusCode = isHealthy ? 200 : 503;
-    if (!isHealthy) {
-        health.status = 'degraded';
+    // Backend is healthy as long as core services (cache) are working
+    // External service failures don't make the backend unhealthy, just degraded
+    const coreServicesHealthy = cacheStats.connected;
+    const externalServicesHealthy = alchmBackendHealth.healthy;
+    let status = 'healthy';
+    let statusCode = 200;
+    if (!coreServicesHealthy) {
+        status = 'unhealthy';
+        statusCode = 503;
     }
+    else if (!externalServicesHealthy) {
+        status = 'degraded';
+        statusCode = 200; // Still return 200 for degraded state
+    }
+    health.status = status;
     res.status(statusCode).json(health);
 }));
 /**

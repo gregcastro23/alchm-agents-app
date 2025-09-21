@@ -304,20 +304,96 @@ export function getConsciousnessColor(level: string): string {
 
 // API functions using frontend proxy
 async function fetchLiveConsciousness(birthChart: BirthChartData): Promise<LiveConsciousnessResult> {
-  const response = await fetch('/api/consciousness/live', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(birthChart)
-  })
+  try {
+    const response = await fetch('/api/consciousness/live', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(birthChart)
+    })
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.error || `API error: ${response.status}`)
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+
+      // If backend is disabled, return fallback data instead of throwing
+      if (errorData.code === 'BACKEND_DISABLED') {
+        console.info('Backend consciousness calculations not available, using fallback data')
+        return generateFallbackConsciousnessData(birthChart)
+      }
+
+      throw new Error(errorData.error || `API error: ${response.status}`)
+    }
+
+    return response.json()
+  } catch (error) {
+    // For network errors or other issues, also provide fallback
+    console.warn('Live consciousness calculation failed, using fallback:', error)
+    return generateFallbackConsciousnessData(birthChart)
   }
+}
 
-  return response.json()
+// Generate realistic fallback data when backend is unavailable
+function generateFallbackConsciousnessData(birthChart: BirthChartData): LiveConsciousnessResult {
+  // Simple hash function for consistent results based on name
+  const nameHash = birthChart.name.split('').reduce((a, b) => {
+    a = ((a << 5) - a) + b.charCodeAt(0)
+    return a & a
+  }, 0)
+
+  const random = Math.abs(nameHash) / 2147483647 // Normalize to 0-1
+
+  return {
+    current: {
+      monicaConstant: 2.5 + (random * 3), // 2.5 to 5.5 range
+      elementalComposition: {
+        fire: 15 + (random * 35),
+        water: 15 + ((random * 0.7) * 35),
+        air: 15 + ((random * 0.3) * 35),
+        earth: 15 + ((random * 0.9) * 35)
+      },
+      consciousness: {
+        level: random > 0.8 ? 'illuminated' : random > 0.6 ? 'advanced' : random > 0.4 ? 'developing' : 'awakening',
+        phase: random > 0.5 ? 'active' : 'contemplative'
+      },
+      alchemical: {
+        spirit: 3 + (random * 4),
+        essence: 2 + (random * 5),
+        matter: 2 + (random * 4),
+        substance: 1 + (random * 3)
+      }
+    },
+    birth: {
+      monicaConstant: 2.0 + (random * 2.5), // Slightly lower for birth
+      elementalComposition: {
+        fire: 20 + (random * 30),
+        water: 20 + ((random * 0.8) * 30),
+        air: 20 + ((random * 0.4) * 30),
+        earth: 20 + ((random * 0.6) * 30)
+      },
+      consciousness: {
+        level: random > 0.7 ? 'advanced' : random > 0.5 ? 'developing' : 'awakening',
+        phase: 'nascent'
+      },
+      alchemical: {
+        spirit: 2 + (random * 3),
+        essence: 2 + (random * 4),
+        matter: 2 + (random * 3),
+        substance: 1 + (random * 2)
+      }
+    },
+    evolution: {
+      direction: random > 0.6 ? 'ascending' : random > 0.3 ? 'stable' : 'transforming',
+      velocity: random * 0.5, // 0 to 0.5 evolution rate
+      stage: Math.floor(random * 100) + 1, // 1 to 100
+      timeToNext: `${Math.floor(random * 30) + 1} days`
+    },
+    meta: {
+      calculatedBy: 'frontend-fallback',
+      timestamp: new Date().toISOString(),
+      reliable: false // Indicate this is fallback data
+    }
+  }
 }
 
 async function fetchBatchLiveConsciousness(agents: BirthChartData[]): Promise<Record<string, LiveConsciousnessResult>> {

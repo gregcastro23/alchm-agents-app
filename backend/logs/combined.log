@@ -66,3 +66,28 @@
 {"contentLength":"355","level":"info","message":"Request completed:","method":"POST","responseTime":"1ms","service":"planetary-agents-backend","statusCode":200,"timestamp":"2025-09-21T18:56:32.024Z","url":"/current-hour"}
 {"contentLength":"109","contentType":"application/json","ip":"::1","level":"info","message":"Incoming request:","method":"POST","service":"planetary-agents-backend","timestamp":"2025-09-21T18:56:36.771Z","url":"/api/tokens/calculate","userAgent":"curl/8.7.1"}
 {"contentLength":"5152","level":"info","message":"Request completed:","method":"POST","responseTime":"2ms","service":"planetary-agents-backend","statusCode":200,"timestamp":"2025-09-21T18:56:36.773Z","url":"/calculate"}
+{"ip":"::1","level":"info","message":"Incoming request:","method":"GET","service":"planetary-agents-backend","timestamp":"2025-09-21T19:47:43.966Z","url":"/favicon.ico","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"error","message":"API Error: Route /favicon.ico not found","method":"GET","service":"planetary-agents-backend","statusCode":404,"timestamp":"2025-09-21T19:47:43.967Z","url":"/favicon.ico","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"}
+{"contentLength":"146","level":"info","message":"Request completed:","method":"GET","responseTime":"2ms","service":"planetary-agents-backend","statusCode":404,"timestamp":"2025-09-21T19:47:43.968Z","url":"/favicon.ico"}
+{"level":"info","message":"SIGTERM received, starting graceful shutdown","service":"planetary-agents-backend","timestamp":"2025-09-21T19:53:08.970Z"}
+{"level":"info","message":"Starting production validation...","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.693Z"}
+{"level":"warn","message":"Configuration warnings:","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.695Z"}
+{"level":"warn","message":"  ⚠️  Production environment should not include localhost in CORS_ORIGINS","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.696Z"}
+{"level":"warn","message":"  ⚠️  No REDIS_URL configured in production. Memory cache will be used, which may not be optimal for scaling.","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.696Z"}
+{"level":"warn","message":"  ⚠️  No backend features are enabled. At least one feature should be enabled for the service to be useful.","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.696Z"}
+{"level":"info","message":"✅ Production validation passed","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.696Z"}
+{"level":"info","message":"Cache service initialized with memory fallback","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.696Z"}
+{"level":"info","message":"Cache service initialized","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.696Z"}
+{"level":"info","message":"WebSocket handlers set up successfully","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.698Z"}
+{"level":"info","message":"WebSocket server started on port 8001","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.698Z"}
+{"level":"info","message":"🚀 Planetary Agents Backend started","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.705Z"}
+{"level":"info","message":"📍 Server: http://localhost:8000","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.706Z"}
+{"level":"info","message":"🌍 Environment: production","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.706Z"}
+{"level":"info","message":"💾 Cache: Memory","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.706Z"}
+{"level":"info","message":"🔧 Feature Flags: PLANETARY_HOURS_BACKEND, THERMODYNAMICS_BACKEND, TOKEN_CALCULATIONS_BACKEND, KINETICS_BACKEND","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:12.706Z"}
+{"ip":"::1","level":"info","message":"Incoming request:","method":"GET","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:23.356Z","url":"/api/health","userAgent":"curl/8.7.1"}
+{"level":"error","message":"AlchmClient response error: timeout of 5000ms exceeded","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:28.394Z","url":"/health"}
+{"contentLength":"486","level":"info","message":"Request completed:","method":"GET","responseTime":"5042ms","service":"planetary-agents-backend","statusCode":503,"timestamp":"2025-09-21T20:09:28.398Z","url":"/"}
+{"ip":"::1","level":"info","message":"Incoming request:","method":"HEAD","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:32.905Z","url":"/api/health","userAgent":"curl/8.7.1"}
+{"level":"error","message":"AlchmClient response error: timeout of 5000ms exceeded","service":"planetary-agents-backend","timestamp":"2025-09-21T20:09:37.909Z","url":"/health"}
+{"contentLength":"486","level":"info","message":"Request completed:","method":"HEAD","responseTime":"5005ms","service":"planetary-agents-backend","statusCode":503,"timestamp":"2025-09-21T20:09:37.910Z","url":"/"}

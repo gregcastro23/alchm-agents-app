@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -47,7 +47,7 @@ import type {
   Element,
   ConsciousnessLevel,
 } from '@/lib/agent-types'
-import { GalleryGroupChat } from '@/components/gallery-group-chat'
+import HistoricalCouncilChat from '@/components/historical-council-chat'
 import { useLiveConsciousness, type BirthChartData } from '@/hooks/useLiveConsciousness'
 import SignVectorGraphic, {
   calculateSignVectorFromChart,
@@ -82,6 +82,15 @@ export default function GalleryPage() {
     totalRequests: 0,
     averageResponseTime: 0
   })
+
+  // Stable callback functions to prevent infinite re-renders
+  const handleElementFilterChange = useCallback((value: string) => {
+    setFilters(prev => ({ ...prev, element: value as any }))
+  }, [])
+
+  const handleConsciousnessLevelFilterChange = useCallback((value: string) => {
+    setFilters(prev => ({ ...prev, consciousnessLevel: value as any }))
+  }, [])
 
   const collections = getAgentCollections()
 
@@ -438,7 +447,7 @@ export default function GalleryPage() {
             <div className="flex gap-2">
               <Select
                 value={filters.element || ''}
-                onValueChange={value => setFilters(prev => ({ ...prev, element: value as any }))}
+                onValueChange={handleElementFilterChange}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Element" />
@@ -454,9 +463,7 @@ export default function GalleryPage() {
 
               <Select
                 value={filters.consciousnessLevel || ''}
-                onValueChange={value =>
-                  setFilters(prev => ({ ...prev, consciousnessLevel: value as any }))
-                }
+                onValueChange={handleConsciousnessLevelFilterChange}
               >
                 <SelectTrigger className="w-36">
                   <SelectValue placeholder="Level" />
@@ -735,11 +742,19 @@ export default function GalleryPage() {
         </div>
       )}
 
-      {/* Gallery Group Chat */}
-      <GalleryGroupChat
-        selectedAgents={agents.filter(agent => selectedAgents.includes(agent.id))}
+      {/* Historical Council Chat */}
+      <HistoricalCouncilChat
         isOpen={showGroupChat}
         onClose={() => setShowGroupChat(false)}
+        historicalAgents={agents}
+        filterBySelectedAgents={selectedAgents}
+        title="Gallery Consciousness Council"
+        maxAgents={5}
+        allowMonica={true}
+        showAgentBiographies={true}
+        enableTimelineView={true}
+        enableEraFilters={true}
+        enableSpecializationGroups={true}
       />
     </div>
   )

@@ -1,11 +1,12 @@
-import MultiAgentChat from '@/components/multi-agent-chat'
+'use client'
 
-export const metadata = {
-  title: 'Planetary Council - Multi-Agent Chat',
-  description: 'Consult with multiple planetary agents simultaneously for collective wisdom',
-}
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { MessageSquare } from 'lucide-react'
+import PlanetaryWisdomChat from '@/components/planetary-wisdom-chat'
 
 export default function PlanetaryCouncilPage() {
+  const [isOpen, setIsOpen] = useState(true)
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8 text-center">
@@ -23,9 +24,30 @@ export default function PlanetaryCouncilPage() {
         <div className="mt-3 text-xs text-muted-foreground">
           Tip: The council auto-syncs to the current sky by default. You can toggle sync in the panel.
         </div>
+
+        {!isOpen && (
+          <div className="mt-4">
+            <Button onClick={() => setIsOpen(true)} size="lg">
+              <MessageSquare className="w-5 h-5 mr-2" />
+              Open Planetary Council
+            </Button>
+          </div>
+        )}
       </div>
 
-      <MultiAgentChat defaultActivePlanets={["Sun", "Moon", "Mercury"]} defaultAutoSyncSky={true} />
+      <PlanetaryWisdomChat
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        defaultActivePlanets={["Sun", "Moon", "Mercury"]}
+        enableAutoSync={true}
+        syncInterval={60000}
+        showCurrentSkyChart={true}
+        enableTransitAlerts={true}
+        planetaryHourNotifications={true}
+        title="Planetary Council Chamber"
+        maxAgents={7}
+        allowMonica={true}
+      />
 
       <div className="mt-12 max-w-3xl mx-auto">
         <div className="bg-muted/50 rounded-lg p-6">
