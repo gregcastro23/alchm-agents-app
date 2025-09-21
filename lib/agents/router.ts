@@ -1,3 +1,4 @@
+import 'server-only'
 import { agentRegistry, type AgentDefinition } from './registry'
 import { AlchemicalKineticsClient } from '@/lib/kinetics-client'
 import { agentKineticProfiles, calculateKineticState } from './kinetic-profiles'

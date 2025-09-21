@@ -1,3 +1,4 @@
+import 'server-only'
 import { PrismaClient } from './generated/prisma'
 import Redis from 'ioredis'
 

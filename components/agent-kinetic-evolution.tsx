@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Sparkles, Zap, Target, TrendingUp } from 'lucide-react'
-import { routeTask } from '@/lib/agents/router'
+// Remove direct import of server-side router
+// import { routeTask } from '@/lib/agents/router'
 
 interface KineticEvolutionData {
   agentId: string
@@ -42,13 +43,18 @@ export function AgentKineticEvolution({ agentId, location, className = '' }: Age
       setError(null)
       
       try {
-        const result = await routeTask({
-          kind: 'kinetics',
-          payload: { 
+        const response = await fetch('/api/kinetic-evolution', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
             agentId, 
             location: location || { lat: 37.7749, lon: -122.4194 }
-          }
+          })
         })
+        
+        const result = await response.json()
 
         if (result.output && !result.degraded) {
           setKineticData(result.output as KineticEvolutionData)

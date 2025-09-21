@@ -6574,6 +6574,7 @@ __metadata:
     react-style-singleton: "npm:^2.2.1"
     recharts: "npm:2.9.0"
     redis: "npm:^5.6.1"
+    server-only: "npm:^0.0.1"
     sonner: "npm:^2.0.6"
     suncalc: "npm:^1.9.0"
     tailwind-merge: "npm:^3.3.0"
@@ -7283,6 +7284,13 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: aca305edfbf2383c22571cb7714f48cadc7ac95371b4b52362fb8eeffdfbc0de0669368b82b2b15978f8848f01d7114da65697e56cd8c37b0dab8c58e543f9ea
+  languageName: node
+  linkType: hard
+
+"server-only@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "server-only@npm:0.0.1"
+  checksum: 4704f0ef85da0be981af6d4ed8e739d39bcfd265b9c246a684060acda5642d0fdc6daffc2308e71e2682c5f508090978802eae0a77623c9b90a49f9ae68048d6
   languageName: node
   linkType: hard
 

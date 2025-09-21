@@ -3,6 +3,7 @@
  * Handles all database operations for agent evolution and user consciousness tracking
  */
 
+import 'server-only'
 import { prisma } from '@/lib/db'
 
 export interface EvolutionState {
