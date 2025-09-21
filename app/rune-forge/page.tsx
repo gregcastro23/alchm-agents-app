@@ -28,6 +28,7 @@ import {
 import NatalSigilGenerator from '@/components/natal-sigil-generator'
 import { MeditationGuidance } from '@/components/sigil/meditation-guidance'
 import { BatchSigilGenerator } from '@/components/sigil/batch-sigil-generator'
+import { useIsMobile } from '@/hooks/use-mobile'
 import QuickChartInput from '@/components/quick-chart-input'
 import { ChartGeometryExtractor } from '@/lib/chart-geometry-extractor'
 import { detectPatternsStatic, PlanetPosition } from '@/lib/astrological-pattern-recognition'
@@ -43,6 +44,7 @@ interface GeneratedSigil extends NatalSigilRune {
 }
 
 export default function RuneForgePage() {
+  const isMobile = useIsMobile()
   const [activeTab, setActiveTab] = useState('quick')
   const [birthInfo, setBirthInfo] = useState<BirthInfo | null>(null)
   const [geometry, setGeometry] = useState<RuneGeometry | null>(null)
@@ -268,21 +270,60 @@ export default function RuneForgePage() {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-6 w-full mb-6">
-          <TabsTrigger value="quick">Quick Input</TabsTrigger>
-          <TabsTrigger value="manual">Manual Entry</TabsTrigger>
-          <TabsTrigger value="generate" disabled={!geometry}>
-            Generate
-          </TabsTrigger>
-          <TabsTrigger value="batch" disabled={!geometry}>
-            Batch
-          </TabsTrigger>
-          <TabsTrigger value="meditation" disabled={generatedSigils.length === 0}>
-            Meditation
-          </TabsTrigger>
-          <TabsTrigger value="gallery" disabled={generatedSigils.length === 0}>
-            Gallery ({generatedSigils.length})
-          </TabsTrigger>
+        <TabsList className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-6'} w-full mb-6`}>
+          {isMobile ? (
+            <>
+              <TabsTrigger value="quick" className="text-xs">
+                <Upload className="w-4 h-4 mr-1" />
+                Input
+              </TabsTrigger>
+              <TabsTrigger value="manual" className="text-xs">
+                <User className="w-4 h-4 mr-1" />
+                Manual
+              </TabsTrigger>
+              {geometry && (
+                <>
+                  <TabsTrigger value="generate" className="text-xs">
+                    <Sparkles className="w-4 h-4 mr-1" />
+                    Generate
+                  </TabsTrigger>
+                  <TabsTrigger value="batch" className="text-xs">
+                    <Grid className="w-4 h-4 mr-1" />
+                    Batch
+                  </TabsTrigger>
+                </>
+              )}
+              {generatedSigils.length > 0 && (
+                <>
+                  <TabsTrigger value="meditation" className="text-xs">
+                    <Sparkles className="w-4 h-4 mr-1" />
+                    Meditate
+                  </TabsTrigger>
+                  <TabsTrigger value="gallery" className="text-xs">
+                    <Grid className="w-4 h-4 mr-1" />
+                    Gallery
+                  </TabsTrigger>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <TabsTrigger value="quick">Quick Input</TabsTrigger>
+              <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+              <TabsTrigger value="generate" disabled={!geometry}>
+                Generate
+              </TabsTrigger>
+              <TabsTrigger value="batch" disabled={!geometry}>
+                Batch
+              </TabsTrigger>
+              <TabsTrigger value="meditation" disabled={generatedSigils.length === 0}>
+                Meditation
+              </TabsTrigger>
+              <TabsTrigger value="gallery" disabled={generatedSigils.length === 0}>
+                Gallery ({generatedSigils.length})
+              </TabsTrigger>
+            </>
+          )}
         </TabsList>
 
         {/* Quick Input Tab */}
@@ -330,7 +371,7 @@ export default function RuneForgePage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                 <div>
                   <Label htmlFor="name">
                     <User className="w-4 h-4 inline mr-1" />
@@ -414,7 +455,7 @@ export default function RuneForgePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-4 gap-4 text-center">
+                  <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-4 text-center`}>
                     <div className="p-3 bg-muted rounded">
                       <div className="text-2xl font-bold">{geometry.aspectLines.length}</div>
                       <div className="text-xs text-muted-foreground">Aspects</div>
@@ -560,7 +601,7 @@ export default function RuneForgePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'} gap-4`}>
                     {generatedSigils.map((sigil, index) => (
                       <div
                         key={sigil.id}

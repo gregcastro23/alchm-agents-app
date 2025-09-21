@@ -247,6 +247,12 @@ export default function GalleryPage() {
               {selectedAgents.length} Selected
             </Badge>
           )}
+          <Button asChild variant="outline">
+            <Link href="/rune-forge" className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Rune Forge
+            </Link>
+          </Button>
           <Button asChild>
             <Link href="/philosophers-stone" className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
@@ -331,6 +337,40 @@ export default function GalleryPage() {
               <div className="text-sm font-mono">
                 K_alchm = (|Spirit|^|Spirit| × |Essence|^|Essence|) / (|Matter|^|Matter| × |Substance|^|Substance|)
               </div>
+            </div>
+          </div>
+
+          {/* Enhanced Consciousness Features */}
+          <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg border">
+            <div className="text-center mb-3">
+              <div className="text-xs text-muted-foreground mb-1">Enhanced Consciousness Features</div>
+              <div className="text-sm">Mobile-Optimized Consciousness Crafting Technology</div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <Button asChild variant="outline" size="sm" className="text-xs">
+                <Link href="/philosophers-stone">
+                  <Plus className="w-3 h-3 mr-1" />
+                  Personality Tuner
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="text-xs">
+                <Link href="/rune-forge">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Sigil Generator
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="text-xs">
+                <Link href="/rune-forge?tab=meditation">
+                  <Activity className="w-3 h-3 mr-1" />
+                  Meditation Guide
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="text-xs">
+                <Link href="/rune-forge?tab=batch">
+                  <Grid3X3 className="w-3 h-3 mr-1" />
+                  Batch Creation
+                </Link>
+              </Button>
             </div>
           </div>
 

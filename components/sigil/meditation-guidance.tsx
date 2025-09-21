@@ -32,6 +32,8 @@ import {
   Infinity,
   CheckCircle
 } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { MobileMeditationGuidance } from './mobile-meditation-guidance'
 import type { NatalSigilRune, SigilStyle } from '@/lib/runes/natal-sigil-runes'
 
 interface MeditationGuidanceProps {
@@ -221,6 +223,19 @@ const MEDITATION_STYLES: Record<SigilStyle, StyleMeditation> = {
 }
 
 export function MeditationGuidance({ sigil, isVisible, onComplete, className = "" }: MeditationGuidanceProps) {
+  const isMobile = useIsMobile()
+
+  // Render mobile version on mobile devices
+  if (isMobile) {
+    return (
+      <MobileMeditationGuidance
+        sigil={sigil}
+        isVisible={isVisible}
+        onComplete={onComplete}
+        className={className}
+      />
+    )
+  }
   const [currentPhase, setCurrentPhase] = useState(0)
   const [timeElapsed, setTimeElapsed] = useState(0)
   const [isActive, setIsActive] = useState(false)

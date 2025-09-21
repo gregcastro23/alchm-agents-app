@@ -32,6 +32,7 @@ import {
   X,
   RotateCcw
 } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import type { NatalSigilRune, SigilStyle, RuneGeometry } from '@/lib/runes/natal-sigil-runes'
 import type { BirthInfo } from '@/lib/schemas'
 
@@ -128,6 +129,7 @@ const ELEMENTAL_FOCUS_DESCRIPTIONS = {
 }
 
 export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, className = "" }: BatchSigilGeneratorProps) {
+  const isMobile = useIsMobile()
   const [batchOptions, setBatchOptions] = useState<BatchOptions>({
     styles: ['nordic', 'celtic'],
     includeVariations: true,
@@ -364,7 +366,7 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
         ) : (
           // Configuration Interface
           <Tabs defaultValue="styles" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4 bg-slate-900/50">
+            <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} bg-slate-900/50`}>
               <TabsTrigger value="styles">Styles</TabsTrigger>
               <TabsTrigger value="variations">Variations</TabsTrigger>
               <TabsTrigger value="power">Power</TabsTrigger>
@@ -373,7 +375,7 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
 
             <TabsContent value="styles" className="space-y-4">
               <h3 className="text-lg font-semibold text-purple-300">Select Sigil Styles</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-4`}>
                 {Object.entries(STYLE_DESCRIPTIONS).map(([style, info]) => (
                   <div
                     key={style}

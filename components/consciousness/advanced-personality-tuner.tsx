@@ -32,6 +32,8 @@ import {
   Shield,
   Star
 } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { MobilePersonalityTuner } from './mobile-personality-tuner'
 
 export interface PersonalityParameters {
   // Core Consciousness Traits (0-100)
@@ -148,6 +150,20 @@ export function AdvancedPersonalityTuner({
   onParametersChange,
   className = ""
 }: PersonalityTunerProps) {
+  const isMobile = useIsMobile()
+
+  // Render mobile version on mobile devices
+  if (isMobile) {
+    return (
+      <MobilePersonalityTuner
+        initialParameters={initialParameters}
+        monicaConstant={monicaConstant}
+        alchemicalValues={alchemicalValues}
+        onParametersChange={onParametersChange}
+        className={className}
+      />
+    )
+  }
   const [parameters, setParameters] = useState<PersonalityParameters>({
     ...DEFAULT_PARAMETERS,
     ...initialParameters
