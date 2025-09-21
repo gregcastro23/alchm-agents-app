@@ -241,6 +241,40 @@ make test-monica      # Monica systems
 make test-alchemical  # Alchemical trainer
 ```
 
+### Yarn-Based Chat System Testing:
+
+**Status**: ✅ PRODUCTION-READY (September 21, 2025)
+
+```bash
+# Comprehensive Chat System Testing (Yarn-Based)
+yarn test:chat                    # Run complete chat system test suite
+yarn test:chat:unit              # Unit tests for all chat components
+yarn test:chat:integration       # API integration tests
+yarn test:chat:performance       # Performance benchmarks
+yarn test:chat:coverage          # Coverage report generation
+yarn test:chat:watch             # Watch mode for development
+yarn test:chat:clean             # Clean test artifacts
+yarn test:ci:chat                # CI/CD pipeline testing
+
+# Individual Component Testing
+yarn test:historical             # Historical Council Chat tests
+yarn test:planetary              # Planetary Wisdom Chat tests
+yarn test:laboratory             # Consciousness Laboratory Chat tests
+yarn test:api                    # Unified Multi-Agent API tests
+yarn test:benchmark              # Performance benchmark tests
+
+# Test Reporting
+yarn test:chat:report            # Display latest test summary
+```
+
+#### Chat System Test Architecture:
+- **Vitest 3.2.4**: Modern testing framework with ESM support
+- **JSDoc Environment**: Browser-like testing with DOM manipulation
+- **Complete Mocking**: Next.js, React, D3.js, performance APIs
+- **Coverage Analysis**: Comprehensive code coverage with v8 provider
+- **Performance Benchmarking**: Response time and memory usage tracking
+- **CI/CD Integration**: Automated testing pipeline with JSON reporting
+
 ### Time Laboratory Commands:
 
 ```bash

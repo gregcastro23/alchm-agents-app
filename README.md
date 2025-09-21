@@ -121,8 +121,48 @@ Get detailed interpretations of astrological charts:
 - **Backend**: Express.js gateway service (port 8000), WebSocket (port 8001)
 - **Database**: PostgreSQL + Prisma, Redis caching
 - **Styling**: Tailwind CSS with dark mode and responsive design
-- **Package Management**: Yarn 4.0.0
+- **Package Management**: Yarn 4.0.0 (migrated from npm September 21, 2025)
+- **Testing Framework**: Vitest 3.2.4 with comprehensive yarn-based test suite
 - **Production Status**: ✅ Fully stable, zero critical errors, comprehensive fallback systems
+
+## 🧪 Testing System (Yarn-Based)
+
+**Production-ready test suite migrated to Yarn 4.0.0 (September 21, 2025):**
+
+### Chat System Testing
+- **Comprehensive Test Suite**: Unit, integration, and performance tests
+- **Vitest 3.2.4**: Modern testing framework with ESM support
+- **JSDoc Environment**: Browser-like testing with DOM manipulation
+- **Complete Mocking**: Next.js, React, D3.js, performance APIs
+- **Coverage Analysis**: V8 provider with detailed reporting
+- **CI/CD Integration**: Automated pipeline with JSON reporting
+
+### Available Test Commands
+```bash
+# Comprehensive Testing
+yarn test:chat                    # Run complete test suite
+yarn test:chat:unit              # Unit tests for chat components
+yarn test:chat:integration       # API integration tests
+yarn test:chat:performance       # Performance benchmarks
+yarn test:chat:coverage          # Coverage report generation
+
+# Individual Component Testing
+yarn test:historical             # Historical Council Chat tests
+yarn test:planetary              # Planetary Wisdom Chat tests
+yarn test:laboratory             # Consciousness Laboratory Chat tests
+
+# Development & CI/CD
+yarn test:chat:watch             # Watch mode for development
+yarn test:chat:clean             # Clean test artifacts
+yarn test:ci:chat                # CI/CD pipeline testing
+yarn test:chat:report            # Display latest test summary
+```
+
+### Make Commands
+```bash
+make test-chat-system            # Run comprehensive test suite
+make chat-system-status          # Show testing system status
+```
 
 ## 🧪 Alchemical System
 

@@ -29,7 +29,7 @@ GALILEO_QUANTITIES_STREAM=alchm-quantities
 After setting the environment variables, restart your development server:
 
 ```bash
-npm run dev
+yarn dev
 ```
 
 ### 3. Test the Integration
@@ -43,7 +43,7 @@ npm run dev
 
 ### Official Galileo SDK Integration
 
-The system uses the official Galileo SDK (`galileo` npm package) with proper hierarchical logging:
+The system uses the official Galileo SDK (`galileo` yarn package) with proper hierarchical logging:
 
 #### Traces
 
