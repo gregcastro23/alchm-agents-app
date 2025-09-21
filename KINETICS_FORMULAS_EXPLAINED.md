@@ -91,6 +91,51 @@ function validateKineticResults(results: KineticResults): boolean {
 }
 ```
 
+## ⚖️ Calculus Relationship Validation
+
+Our kinetic system ensures mathematical consistency by validating that all quantities follow proper calculus relationships:
+
+### 1. **Velocity-Position Relationship**
+```typescript
+// Velocity is the derivative of position with respect to time
+velocity[element] = d(element)/dt = (current[element] - previous[element]) / timeInterval
+
+// With planetary modulation (up to 30% variance allowed):
+modifiedVelocity = baseVelocity × planetaryModifier
+```
+
+### 2. **Momentum-Velocity Relationship** 
+```typescript
+// Momentum equals mass times velocity (classical physics)
+momentum[element] = inertia × velocity[element]
+
+// This relationship is strictly enforced (1% tolerance)
+```
+
+### 3. **Power-Energy Relationship**
+```typescript
+// Power is the derivative of energy with respect to time
+power = dE/dt = (currentEnergy - previousEnergy) / timeInterval
+
+// With solar amplification (up to 30% variance allowed):
+amplifiedPower = basePower × solarAmplification
+```
+
+### 4. **Mathematical Consistency Checks**
+- **No NaN or Infinite Values**: All calculations must produce finite numbers
+- **Time Interval Validation**: Ensures dt > 0 for all derivative calculations
+- **Tolerance Ranges**: Allows for planetary modifiers while maintaining core relationships
+- **Error vs Warning Classification**: Critical errors vs acceptable variances
+
+### 5. **Validation Output**
+```typescript
+{
+  isValid: boolean,           // True if no critical errors
+  errors: string[],          // Critical mathematical violations
+  warnings: string[]         // Acceptable variances due to planetary effects
+}
+```
+
 ## 🔄 Time Series Analysis
 
 ### Moving Average Smoothing

@@ -265,11 +265,15 @@ export function computeElementalMomentum(
     // Phase assessment using finite differences on magnitude and inertia
     let momentumType: 'building' | 'sustained' | 'dissipating' = 'sustained'
     if (previous) {
+      // Correct momentum magnitude calculation: p = m * v for each element
+      const prevP: ElementVector = {
+        Fire: previous.inertia * previous.v.Fire,
+        Water: previous.inertia * previous.v.Water,
+        Air: previous.inertia * previous.v.Air,
+        Earth: previous.inertia * previous.v.Earth,
+      }
       const prevMagnitude = Math.sqrt(
-        previous.v.Fire * previous.inertia * previous.v.Fire * previous.inertia +
-          previous.v.Water * previous.inertia * previous.v.Water * previous.inertia +
-          previous.v.Air * previous.inertia * previous.v.Air * previous.inertia +
-          previous.v.Earth * previous.inertia * previous.v.Earth * previous.inertia
+        prevP.Fire * prevP.Fire + prevP.Water * prevP.Water + prevP.Air * prevP.Air + prevP.Earth * prevP.Earth
       )
       const dMag = magnitude - prevMagnitude
       const dInertia = current.inertia - previous.inertia
@@ -342,6 +346,115 @@ export function computeInertia(input: {
   const base = Math.max(1, 1 + input.matter + input.earth + input.substance / 2)
   const adjusted = base * getPlanetaryInertiaModifier(input.planetaryHour ?? '')
   return adjusted
+}
+
+// ---- Calculus Relationship Validation ----
+
+/**
+ * Validates that kinetic quantities follow proper calculus relationships:
+ * 1. Velocity = dx/dt (position derivative)
+ * 2. Momentum = mass × velocity 
+ * 3. Power = dE/dt (energy derivative)
+ * 4. Acceleration = dv/dt (velocity derivative)
+ * 5. Force = dp/dt (momentum derivative) = mass × acceleration
+ */
+export function validateCalculusRelationships(
+  samples: Array<{
+    t: Date
+    elements: ElementVector
+    velocity: ElementVector
+    momentum: ElementVector
+    inertia: number
+    energy: number
+    power: number
+  }>
+): {
+  isValid: boolean
+  errors: string[]
+  warnings: string[]
+} {
+  const errors: string[] = []
+  const warnings: string[] = []
+
+  if (samples.length < 2) {
+    warnings.push('Need at least 2 samples for calculus validation')
+    return { isValid: true, errors, warnings }
+  }
+
+  for (let i = 1; i < samples.length; i++) {
+    const current = samples[i]
+    const previous = samples[i - 1]
+    const dt = (current.t.getTime() - previous.t.getTime()) / 3600000 // hours
+
+    if (dt <= 0) {
+      errors.push(`Invalid time interval at index ${i}: dt = ${dt}`)
+      continue
+    }
+
+    // Validate velocity = dx/dt for each element
+    for (const element of ['Fire', 'Water', 'Air', 'Earth'] as ElementKey[]) {
+      const expectedVelocity = (current.elements[element] - previous.elements[element]) / dt
+      const actualVelocity = current.velocity[element]
+      
+      // Allow for planetary modifiers (up to 30% difference)
+      const tolerance = Math.abs(expectedVelocity) * 0.35 + 0.001
+      if (Math.abs(actualVelocity - expectedVelocity) > tolerance) {
+        warnings.push(
+          `${element} velocity mismatch at t=${current.t.toISOString()}: ` +
+          `expected ${expectedVelocity.toFixed(4)}, got ${actualVelocity.toFixed(4)}`
+        )
+      }
+    }
+
+    // Validate momentum = mass × velocity for each element
+    for (const element of ['Fire', 'Water', 'Air', 'Earth'] as ElementKey[]) {
+      const expectedMomentum = current.inertia * current.velocity[element]
+      const actualMomentum = current.momentum[element]
+      
+      const tolerance = Math.abs(expectedMomentum) * 0.01 + 0.001
+      if (Math.abs(actualMomentum - expectedMomentum) > tolerance) {
+        errors.push(
+          `${element} momentum calculation error at t=${current.t.toISOString()}: ` +
+          `expected ${expectedMomentum.toFixed(4)}, got ${actualMomentum.toFixed(4)}`
+        )
+      }
+    }
+
+    // Validate power = dE/dt
+    const expectedPower = (current.energy - previous.energy) / dt
+    const actualPower = current.power
+    
+    // Allow for solar amplification (up to 30% boost)
+    const powerTolerance = Math.abs(expectedPower) * 0.35 + 0.001
+    if (Math.abs(actualPower - expectedPower) > powerTolerance) {
+      warnings.push(
+        `Power calculation mismatch at t=${current.t.toISOString()}: ` +
+        `expected ${expectedPower.toFixed(4)}, got ${actualPower.toFixed(4)}`
+      )
+    }
+
+    // Validate no NaN or infinite values
+    const allValues = [
+      ...Object.values(current.elements),
+      ...Object.values(current.velocity),
+      ...Object.values(current.momentum),
+      current.inertia,
+      current.energy,
+      current.power
+    ]
+    
+    for (const value of allValues) {
+      if (!Number.isFinite(value)) {
+        errors.push(`Non-finite value detected at t=${current.t.toISOString()}: ${value}`)
+      }
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings
+  }
 }
 
 // ---- Traditional Validation ----

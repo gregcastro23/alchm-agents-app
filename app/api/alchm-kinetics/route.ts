@@ -7,6 +7,7 @@ import {
   computePower,
   computeInertia,
   validateKineticResults,
+  validateCalculusRelationships,
   type ElementKey,
   type ElementVector,
 } from '@/lib/alchemical-kinetics'
@@ -211,6 +212,36 @@ export async function GET(req: Request) {
           Air: qualitativeBalance(avg.Air, maxAvg),
           Earth: qualitativeBalance(avg.Earth, maxAvg),
         },
+      }
+
+      // Calculus relationship validation
+      try {
+        if (samples.length >= 2 && elementalVelocity.length >= 2 && elementalMomentum.length >= 2 && power.length >= 2) {
+          const calculusSamples = samples.slice(0, Math.min(samples.length, elementalVelocity.length, elementalMomentum.length, power.length)).map((sample, i) => {
+            // Calculate inertia from sample data if not provided
+            const inertia = sample.inertia || Math.max(1, 1 + (sample.Matter || 0) + (sample.totals?.Earth || 0) + (sample.Substance || 0) / 2)
+            
+            return {
+              t: new Date(sample.timestamp),
+              elements: sample.totals,
+              velocity: elementalVelocity[i]?.v || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
+              momentum: elementalMomentum[i]?.p || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
+              inertia,
+              energy: sample.Energy,
+              power: power[i]?.power || 0
+            }
+          })
+
+          const calculusValidation = validateCalculusRelationships(calculusSamples)
+          traditionalValidation.calculusValidation = calculusValidation
+        }
+      } catch (error) {
+        console.error('Calculus validation error:', error)
+        traditionalValidation.calculusValidation = {
+          isValid: false,
+          errors: [`Calculus validation failed: ${error.message}`],
+          warnings: []
+        }
       }
     }
 
