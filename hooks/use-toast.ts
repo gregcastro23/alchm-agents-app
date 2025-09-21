@@ -186,4 +186,37 @@ function useToast() {
   }
 }
 
+// Helper functions for common toast types
+export const successToast = (message: string, title?: string) => {
+  return toast({
+    title,
+    description: message,
+    variant: 'default',
+  })
+}
+
+export const errorToast = (message: string, title?: string) => {
+  return toast({
+    title: title || 'Error',
+    description: message,
+    variant: 'destructive',
+  })
+}
+
+export const warningToast = (message: string, title?: string) => {
+  return toast({
+    title: title || 'Warning',
+    description: message,
+    variant: 'default',
+  })
+}
+
+export const infoToast = (message: string, title?: string) => {
+  return toast({
+    title: title || 'Info',
+    description: message,
+    variant: 'default',
+  })
+}
+
 export { useToast, toast }

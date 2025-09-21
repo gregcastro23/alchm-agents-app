@@ -170,7 +170,7 @@ export class PatternToRuneConverter {
 
       console.log('Generating sigil with prompt:', fullPrompt)
 
-      // Call imaginize API
+      // Call imaginize API with improved error handling
       const imageData = await fetchImaginize(fullPrompt, {
         style_preset: `mystical-${style}`,
         width: 1024,
@@ -186,6 +186,11 @@ export class PatternToRuneConverter {
           elementalSignature: geometry.dominantElement
         }
       })
+
+      // Handle fallback responses
+      if (imageData.fallback) {
+        console.warn('Image generation fallback:', imageData.error)
+      }
 
       // Create the natal sigil rune
       const sigilRune = createNatalSigilRune(

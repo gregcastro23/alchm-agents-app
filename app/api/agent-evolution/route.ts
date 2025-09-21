@@ -112,7 +112,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    let body: any
+    try {
+      body = await request.json()
+    } catch (jsonError) {
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body', details: 'Request body must be valid JSON' },
+        { status: 400 }
+      )
+    }
+
     const { agentId, sessionId, userMessage, agentResponse, location, action = 'record' } = body
 
     // Get current user or use anonymous

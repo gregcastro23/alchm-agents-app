@@ -196,16 +196,44 @@ export async function fetchImaginize(
   options: Record<string, any> = {}
 ): Promise<any> {
   const url = `${getBase()}/imaginize`
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, ...options }),
-  })
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(`Alchm /imaginize error: ${res.status} ${res.statusText} - ${text}`)
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, ...options }),
+      timeout: 10000 // 10 second timeout
+    })
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+
+      // Return placeholder for service unavailable errors
+      if (res.status === 503 || res.status === 502) {
+        return {
+          imageUrl: null,
+          fallback: true,
+          placeholder: 'Service temporarily unavailable - sigil patterns recorded',
+          error: `External image service unavailable (${res.status})`
+        }
+      }
+
+      throw new Error(`Alchm /imaginize error: ${res.status} ${res.statusText} - ${text}`)
+    }
+
+    return res.json().catch(() => ({}))
+  } catch (error) {
+    // Network or timeout errors
+    if (error instanceof TypeError || error.message.includes('timeout')) {
+      return {
+        imageUrl: null,
+        fallback: true,
+        placeholder: 'Image generation timeout - sigil pattern preserved',
+        error: 'Network timeout or connection error'
+      }
+    }
+    throw error
   }
-  return res.json().catch(() => ({}))
 }
 
 export type AlchmizeResponse = {
