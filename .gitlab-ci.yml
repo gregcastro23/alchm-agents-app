@@ -47,6 +47,7 @@ secret_detection:
     paths:
       - .yarn-cache/
       - backend/node_modules/
+      - backend/.yarn/
 
 backend_test:
   <<: *node_cache
@@ -54,6 +55,8 @@ backend_test:
   image: node:18-alpine
   before_script:
     - cd $BACKEND_DIR
+    - corepack enable
+    - corepack prepare yarn@4.0.0 --activate
     - yarn config set cache-folder $YARN_CACHE_FOLDER
     - yarn install --frozen-lockfile
   script:
@@ -78,6 +81,8 @@ backend_production_validation:
   image: node:18-alpine
   before_script:
     - cd $BACKEND_DIR
+    - corepack enable
+    - corepack prepare yarn@4.0.0 --activate
     - yarn config set cache-folder $YARN_CACHE_FOLDER
     - yarn install --frozen-lockfile
   script:
@@ -111,6 +116,8 @@ backend_build:
   image: node:18-alpine
   before_script:
     - cd $BACKEND_DIR
+    - corepack enable
+    - corepack prepare yarn@4.0.0 --activate
     - yarn config set cache-folder $YARN_CACHE_FOLDER
     - yarn install --frozen-lockfile
   script:
