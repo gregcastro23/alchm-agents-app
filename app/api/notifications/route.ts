@@ -269,22 +269,30 @@ Your Evolution Tracker
   }
 }
 
-// Helper function for future email service integration
+// Email service integration - uses SendGrid if configured, otherwise logs
 async function sendEmail(to: string, subject: string, content: string) {
-  // TODO: Integrate with email service
-  // Example with SendGrid:
-  // const sgMail = require('@sendgrid/mail')
-  // sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-  //
-  // const msg = {
-  //   to,
-  //   from: 'noreply@planetaryagents.com',
-  //   subject,
-  //   text: content,
-  //   html: convertToHtml(content)
-  // }
-  //
-  // await sgMail.send(msg)
+  // Check if SendGrid is configured
+  if (process.env.SENDGRID_API_KEY && process.env.FEEDBACK_FROM_EMAIL) {
+    try {
+      const sgMail = require('@sendgrid/mail')
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
-  console.log(`📧 Email would be sent to ${to}: ${subject}`)
+      const msg = {
+        to,
+        from: process.env.FEEDBACK_FROM_EMAIL,
+        subject,
+        text: content,
+        html: content.replace(/\n/g, '<br>')
+      }
+
+      await sgMail.send(msg)
+      console.log(`📧 Email sent successfully to ${to}: ${subject}`)
+    } catch (error) {
+      console.error('Failed to send email:', error)
+      console.log(`📧 Email fallback - would be sent to ${to}: ${subject}`)
+    }
+  } else {
+    console.log(`📧 Email would be sent to ${to}: ${subject}`)
+    console.log('Configure SENDGRID_API_KEY and FEEDBACK_FROM_EMAIL to enable email delivery')
+  }
 }
