@@ -146,6 +146,8 @@ curl "http://localhost:3000/api/realtime-runes?includeAlchemical=true"
 ## 🐛 Known Issues to Watch For
 - ✅ Lazy loading errors (fixed)
 - ✅ ErrorBoundary fallback props (fixed)
+- ✅ Server-side imports in client components (fixed)
+- ✅ ioredis/DNS module resolution errors (fixed)
 - ⚠️ Galileo API warnings (non-blocking)
 - ⚠️ Lockfile warnings (non-blocking)
 
