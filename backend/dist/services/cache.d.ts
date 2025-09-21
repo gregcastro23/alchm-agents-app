@@ -2,7 +2,7 @@ declare class CacheService {
     private redisClient;
     private memoryCache;
     private cleanupInterval;
-    private isConnected;
+    private isRedisConnected;
     connect(): Promise<void>;
     private setupMemoryCache;
     private cleanupMemoryCache;
@@ -12,6 +12,7 @@ declare class CacheService {
     exists(key: string): Promise<boolean>;
     flush(): Promise<boolean>;
     keys(pattern: string): Promise<string[]>;
+    isConnected(): boolean;
     getStats(): {
         type: 'redis' | 'memory';
         connected: boolean;

@@ -10,7 +10,7 @@ class CacheService {
   private redisClient: RedisClientType | null = null
   private memoryCache: Map<string, CacheItem> = new Map()
   private cleanupInterval: NodeJS.Timeout | null = null
-  private isConnected: boolean = false
+  private isRedisConnected: boolean = false
 
   async connect(): Promise<void> {
     const redisUrl = process.env.REDIS_URL
@@ -21,17 +21,17 @@ class CacheService {
         
         this.redisClient.on('error', (err) => {
           logger.error('Redis client error:', err)
-          this.isConnected = false
+          this.isRedisConnected = false
         })
 
         this.redisClient.on('connect', () => {
           logger.info('Redis client connected')
-          this.isConnected = true
+          this.isRedisConnected = true
         })
 
         this.redisClient.on('disconnect', () => {
           logger.warn('Redis client disconnected')
-          this.isConnected = false
+          this.isRedisConnected = false
         })
 
         await this.redisClient.connect()
@@ -74,7 +74,7 @@ class CacheService {
   async get<T = any>(key: string): Promise<T | null> {
     try {
       // Try Redis first if available
-      if (this.redisClient && this.isConnected) {
+      if (this.redisClient && this.isRedisConnected) {
         const value = await this.redisClient.get(key)
         if (value) {
           return JSON.parse(value) as T
@@ -103,7 +103,7 @@ class CacheService {
   async set(key: string, value: any, ttlSeconds: number = 3600): Promise<boolean> {
     try {
       // Try Redis first if available
-      if (this.redisClient && this.isConnected) {
+      if (this.redisClient && this.isRedisConnected) {
         await this.redisClient.setEx(key, ttlSeconds, JSON.stringify(value))
         return true
       }
@@ -122,7 +122,7 @@ class CacheService {
   async del(key: string): Promise<boolean> {
     try {
       // Try Redis first if available
-      if (this.redisClient && this.isConnected) {
+      if (this.redisClient && this.isRedisConnected) {
         await this.redisClient.del(key)
       }
 
@@ -139,7 +139,7 @@ class CacheService {
   async exists(key: string): Promise<boolean> {
     try {
       // Try Redis first if available
-      if (this.redisClient && this.isConnected) {
+      if (this.redisClient && this.isRedisConnected) {
         const exists = await this.redisClient.exists(key)
         return exists === 1
       }
@@ -160,7 +160,7 @@ class CacheService {
   async flush(): Promise<boolean> {
     try {
       // Try Redis first if available
-      if (this.redisClient && this.isConnected) {
+      if (this.redisClient && this.isRedisConnected) {
         await this.redisClient.flushDb()
       }
 
@@ -177,7 +177,7 @@ class CacheService {
   async keys(pattern: string): Promise<string[]> {
     try {
       // Try Redis first if available
-      if (this.redisClient && this.isConnected) {
+      if (this.redisClient && this.isRedisConnected) {
         return await this.redisClient.keys(pattern)
       }
 
@@ -198,6 +198,10 @@ class CacheService {
     }
   }
 
+  isConnected(): boolean {
+    return this.isRedisConnected || this.memoryCache.size >= 0
+  }
+
   getStats(): {
     type: 'redis' | 'memory'
     connected: boolean
@@ -206,9 +210,9 @@ class CacheService {
   } {
     return {
       type: this.redisClient ? 'redis' : 'memory',
-      connected: this.isConnected,
+      connected: this.isRedisConnected || true,
       memoryItems: this.memoryCache.size,
-      redisConnected: this.redisClient !== null && this.isConnected
+      redisConnected: this.redisClient !== null && this.isRedisConnected
     }
   }
 

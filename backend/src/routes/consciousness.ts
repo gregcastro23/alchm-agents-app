@@ -3,12 +3,11 @@ import { logger } from '../utils/logger.js'
 import { cacheService } from '../services/cache.js'
 import { rateLimit } from 'express-rate-limit'
 
-// Import consciousness calculation functions from main lib
-// Note: In production, these would be separate backend modules
-import { generateAlchmForCurrentMoment, alchemize } from '../../../lib/alchemizer.js'
-import { generateAccurateHoroscope } from '../../../lib/monica/horoscope-generator.js'
-import { getCurrentPlanetaryPositions } from '../../../lib/calculate-transits.js'
-import { calculateMC } from '../../../lib/monica/monica-constant-validator.js'
+// Import backend service implementations
+import { generateAlchmForCurrentMoment, alchemize } from '../services/alchemizer-service.js'
+import { generateAccurateHoroscope } from '../services/horoscope-service.js'
+import { getCurrentPlanetaryPositions } from '../services/planetary-service.js'
+import { calculateMC } from '../services/monica-constant-service.js'
 
 const router = Router()
 

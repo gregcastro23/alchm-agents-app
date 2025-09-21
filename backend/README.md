@@ -304,16 +304,105 @@ yarn build
 yarn start
 ```
 
-### Docker Deployment
+### Render Deployment (Recommended)
 
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN yarn install --production
-COPY dist ./dist
-EXPOSE 8000
-CMD ["node", "dist/index.js"]
+This backend is optimized for deployment on [Render](https://render.com). Follow these steps:
+
+#### 1. Quick Deploy with render.yaml
+
+```bash
+# Push your code to GitHub/GitLab
+git add .
+git commit -m "Prepare for Render deployment"
+git push origin main
+
+# In Render dashboard:
+# 1. Create new Web Service
+# 2. Connect your repository
+# 3. Use the included render.yaml for automatic configuration
+```
+
+#### 2. Manual Configuration
+
+If not using render.yaml, configure these settings in Render dashboard:
+
+**Build & Deploy:**
+- Build Command: `yarn install && yarn build`
+- Start Command: `yarn start`
+- Environment: `Node.js`
+
+**Required Environment Variables:**
+```bash
+NODE_ENV=production
+ENABLE_KINETICS_BACKEND=true
+ENABLE_CONSCIOUSNESS_BACKEND=true
+ENABLE_PLANETARY_BACKEND=true
+ENABLE_TOKEN_BACKEND=true
+CORS_ORIGINS=https://your-frontend-domain.vercel.app
+```
+
+**Optional Environment Variables:**
+```bash
+REDIS_URL=redis://username:password@host:port  # For Redis addon
+LOG_LEVEL=info
+RATE_LIMIT_REQUESTS_PER_MINUTE=100
+MAX_REQUEST_SIZE_MB=2
+```
+
+#### 3. Post-Deployment Checklist
+
+```bash
+# ✅ Health check
+curl https://your-service.onrender.com/api/health
+
+# ✅ Test core endpoints
+curl -X POST https://your-service.onrender.com/api/planetary/current-hour \
+  -H "Content-Type: application/json" \
+  -d '{"location":{"lat":37.7749,"lon":-122.4194}}'
+
+# ✅ Update frontend environment variables
+NEXT_PUBLIC_BACKEND_URL=https://your-service.onrender.com
+```
+
+### Alternative Deployment Options
+
+#### Docker Deployment
+
+Use the included production Dockerfile:
+
+```bash
+# Build image
+docker build -f Dockerfile.production -t planetary-agents-backend .
+
+# Run container
+docker run -p 8000:8000 -p 8001:8001 \
+  -e NODE_ENV=production \
+  -e ENABLE_KINETICS_BACKEND=true \
+  planetary-agents-backend
+```
+
+#### Traditional VPS Deployment
+
+```bash
+# On your server
+git clone https://github.com/your-repo/planetary-agents.git
+cd planetary-agents/backend
+
+# Install dependencies
+yarn install --production
+
+# Build application
+yarn build
+
+# Set up environment
+cp .env.example .env
+# Edit .env with your production values
+
+# Start with PM2 (recommended)
+npm install -g pm2
+pm2 start dist/index.js --name "planetary-backend"
+pm2 startup
+pm2 save
 ```
 
 ### Environment Considerations
@@ -321,6 +410,83 @@ CMD ["node", "dist/index.js"]
 - **Development**: Full logging, hot reload, debug features
 - **Production**: Optimized logging, file rotation, metrics collection
 - **Testing**: Minimal logging, mock external services
+
+### Production Validation
+
+The backend includes automatic production validation that checks:
+
+- ✅ Required environment variables
+- ✅ Security configuration
+- ✅ Resource limits
+- ✅ External service connectivity
+- ✅ Cache configuration
+
+Failed validation will prevent startup to ensure production readiness.
+
+### Performance Tuning
+
+For production workloads:
+
+```bash
+# Environment variables for optimization
+PLANETARY_CACHE_TTL=120        # 2 minutes for planetary data
+CONSCIOUSNESS_CACHE_TTL=300    # 5 minutes for consciousness calculations
+KINETICS_CACHE_TTL=120         # 2 minutes for kinetics
+TOKEN_CACHE_TTL=60            # 1 minute for token rates
+
+# Rate limiting for your traffic
+RATE_LIMIT_REQUESTS_PER_MINUTE=200  # Adjust based on expected load
+
+# Redis for scaling (recommended for production)
+REDIS_URL=redis://your-redis-instance
+```
+
+### Monitoring & Alerting
+
+Set up monitoring for these metrics:
+
+- Health check endpoint: `/api/health`
+- Response times < 500ms
+- Error rate < 1%
+- Cache hit ratio > 80%
+- Memory usage < 80%
+
+### Troubleshooting
+
+**Common Issues:**
+
+1. **503 Service Unavailable**
+   - Check feature flags are enabled
+   - Verify environment variables
+   - Check health endpoint for details
+
+2. **External Service Errors**
+   - alchm-backend connectivity issues are expected and handled gracefully
+   - Check circuit breaker status in health endpoint
+
+3. **Memory Issues**
+   - Enable Redis for better caching
+   - Monitor cache cleanup intervals
+   - Check for memory leaks in logs
+
+4. **Performance Issues**
+   - Verify Redis connectivity
+   - Check cache hit ratios
+   - Monitor rate limiting thresholds
+
+**Debug Commands:**
+```bash
+# Check service health
+curl https://your-service.onrender.com/api/health | jq
+
+# Verify environment
+curl https://your-service.onrender.com/ | jq '.environment'
+
+# Test specific endpoints
+curl -X POST https://your-service.onrender.com/api/planetary/current-hour \
+  -H "Content-Type: application/json" \
+  -d '{"location":{"lat":40.7128,"lon":-74.0060}}'
+```
 
 ## 🔒 Security
 

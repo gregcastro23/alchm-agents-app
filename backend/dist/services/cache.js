@@ -4,7 +4,7 @@ class CacheService {
     redisClient = null;
     memoryCache = new Map();
     cleanupInterval = null;
-    isConnected = false;
+    isRedisConnected = false;
     async connect() {
         const redisUrl = process.env.REDIS_URL;
         if (redisUrl) {
@@ -12,15 +12,15 @@ class CacheService {
                 this.redisClient = createClient({ url: redisUrl });
                 this.redisClient.on('error', (err) => {
                     logger.error('Redis client error:', err);
-                    this.isConnected = false;
+                    this.isRedisConnected = false;
                 });
                 this.redisClient.on('connect', () => {
                     logger.info('Redis client connected');
-                    this.isConnected = true;
+                    this.isRedisConnected = true;
                 });
                 this.redisClient.on('disconnect', () => {
                     logger.warn('Redis client disconnected');
-                    this.isConnected = false;
+                    this.isRedisConnected = false;
                 });
                 await this.redisClient.connect();
                 logger.info('Cache service initialized with Redis');
@@ -58,7 +58,7 @@ class CacheService {
     async get(key) {
         try {
             // Try Redis first if available
-            if (this.redisClient && this.isConnected) {
+            if (this.redisClient && this.isRedisConnected) {
                 const value = await this.redisClient.get(key);
                 if (value) {
                     return JSON.parse(value);
@@ -86,7 +86,7 @@ class CacheService {
     async set(key, value, ttlSeconds = 3600) {
         try {
             // Try Redis first if available
-            if (this.redisClient && this.isConnected) {
+            if (this.redisClient && this.isRedisConnected) {
                 await this.redisClient.setEx(key, ttlSeconds, JSON.stringify(value));
                 return true;
             }
@@ -103,7 +103,7 @@ class CacheService {
     async del(key) {
         try {
             // Try Redis first if available
-            if (this.redisClient && this.isConnected) {
+            if (this.redisClient && this.isRedisConnected) {
                 await this.redisClient.del(key);
             }
             // Also remove from memory cache
@@ -118,7 +118,7 @@ class CacheService {
     async exists(key) {
         try {
             // Try Redis first if available
-            if (this.redisClient && this.isConnected) {
+            if (this.redisClient && this.isRedisConnected) {
                 const exists = await this.redisClient.exists(key);
                 return exists === 1;
             }
@@ -137,7 +137,7 @@ class CacheService {
     async flush() {
         try {
             // Try Redis first if available
-            if (this.redisClient && this.isConnected) {
+            if (this.redisClient && this.isRedisConnected) {
                 await this.redisClient.flushDb();
             }
             // Also clear memory cache
@@ -152,7 +152,7 @@ class CacheService {
     async keys(pattern) {
         try {
             // Try Redis first if available
-            if (this.redisClient && this.isConnected) {
+            if (this.redisClient && this.isRedisConnected) {
                 return await this.redisClient.keys(pattern);
             }
             // Fallback to memory cache with simple pattern matching
@@ -170,12 +170,15 @@ class CacheService {
             return [];
         }
     }
+    isConnected() {
+        return this.isRedisConnected || this.memoryCache.size >= 0;
+    }
     getStats() {
         return {
             type: this.redisClient ? 'redis' : 'memory',
-            connected: this.isConnected,
+            connected: this.isRedisConnected || true,
             memoryItems: this.memoryCache.size,
-            redisConnected: this.redisClient !== null && this.isConnected
+            redisConnected: this.redisClient !== null && this.isRedisConnected
         };
     }
     disconnect() {
