@@ -145,10 +145,10 @@ deploy_to_render:
     - echo "Manual deployment to Render:"
     - echo "1. Go to https://render.com dashboard"
     - echo "2. Create new Web Service"
-    - echo "3. Connect to GitLab repository: $CI_PROJECT_URL"
-    - echo "4. Use branch: $CI_COMMIT_REF_NAME"
-    - echo "5. Set Build Command: cd backend && yarn install && yarn build"
-    - echo "6. Set Start Command: cd backend && yarn start"
+    - echo "3. Connect to GitLab repository:" $CI_PROJECT_URL
+    - echo "4. Use branch:" $CI_COMMIT_REF_NAME
+    - echo "5. Set Build Command - cd backend && yarn install && yarn build"
+    - echo "6. Set Start Command - cd backend && yarn start"
     - echo "7. Add environment variables from backend/.env.example"
     - echo "Render deployment configuration ready!"
   when: manual
@@ -159,16 +159,18 @@ deploy_to_render:
 # GitLab Pages deployment for documentation
 pages:
   stage: deploy
-  image: node:18-alpine
+  image: alpine:latest
   script:
     - mkdir public
-    - cp backend/README.md public/index.md
-    - cp backend/DEPLOYMENT.md public/deployment.md
+    - cp backend/README.md public/index.md || echo "README not found"
+    - cp backend/DEPLOYMENT.md public/deployment.md || echo "DEPLOYMENT not found"
+    - cp DEPLOYMENT_GUIDE.md public/deployment-guide.md || echo "DEPLOYMENT_GUIDE not found"
     - echo "# Planetary Agents Backend Documentation" > public/index.html
     - echo "<h2><a href='index.md'>Backend README</a></h2>" >> public/index.html
-    - echo "<h2><a href='deployment.md'>Deployment Guide</a></h2>" >> public/index.html
-    - echo "<p>Backend Status: Production Ready ✅</p>" >> public/index.html
-    - echo "<p>Last Updated: $(date)</p>" >> public/index.html
+    - echo "<h2><a href='deployment.md'>Backend Deployment</a></h2>" >> public/index.html
+    - echo "<h2><a href='deployment-guide.md'>Complete Deployment Guide</a></h2>" >> public/index.html
+    - echo "<p>Backend Status - Production Ready ✅</p>" >> public/index.html
+    - echo "<p>Last Updated -" $(date) "</p>" >> public/index.html
   artifacts:
     paths:
       - public
@@ -184,9 +186,9 @@ deploy_dev:
   stage: deploy
   image: alpine:latest
   script:
-    - echo "Development deployment configuration:"
-    - echo "Environment: Development"
-    - echo "Branch: $CI_COMMIT_REF_NAME"
+    - echo "Development deployment configuration"
+    - echo "Environment - Development"
+    - echo "Branch -" $CI_COMMIT_REF_NAME
     - echo "Use render.yaml with development settings"
   environment:
     name: development
@@ -194,16 +196,15 @@ deploy_dev:
   when: manual
   only:
     - develop
-    - feature/*
 
 # Production environment
 deploy_prod:
   stage: deploy
   image: alpine:latest
   script:
-    - echo "Production deployment configuration:"
-    - echo "Environment: Production"
-    - echo "Branch: $CI_COMMIT_REF_NAME"
+    - echo "Production deployment configuration"
+    - echo "Environment - Production"
+    - echo "Branch -" $CI_COMMIT_REF_NAME
     - echo "Use render.yaml with production settings"
   environment:
     name: production
@@ -211,7 +212,6 @@ deploy_prod:
   when: manual
   only:
     - main
-    - production
 
 # =============================================================================
 # QUALITY GATES
@@ -232,9 +232,9 @@ notify_success:
   stage: deploy
   image: alpine:latest
   script:
-    - echo "✅ Pipeline completed successfully!"
+    - echo "Pipeline completed successfully!"
     - echo "Backend is ready for deployment to Render"
-    - echo "Documentation available at: $CI_PAGES_URL"
+    - echo "Documentation available at GitLab Pages"
   when: on_success
   only:
     - main
