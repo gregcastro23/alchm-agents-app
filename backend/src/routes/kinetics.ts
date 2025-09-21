@@ -1,4 +1,5 @@
-import { Router, Request, Response } from 'express'
+import { Router as createRouter, type Request, type Response } from 'express'
+import type { Router as ExpressRouter } from 'express'
 import { body, validationResult } from 'express-validator'
 import { asyncHandler, AppError } from '../middleware/error-handler.js'
 import { cacheService } from '../services/cache.js'
@@ -8,7 +9,7 @@ import {
   calculateTokenKinetics
 } from '../services/kinetics-service.js'
 
-const router = Router()
+const router: ExpressRouter = createRouter()
 
 /**
  * POST /api/kinetics/enhanced
@@ -22,7 +23,7 @@ router.post('/enhanced', [
   body('options.includePowerPrediction').optional().isBoolean(),
   body('options.includeResonanceMap').optional().isBoolean(),
   body('options.agentIds').optional().isArray()
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     throw new AppError('Validation failed', 400)
@@ -82,7 +83,7 @@ router.post('/group', [
   body('agentIds').isArray({ min: 2, max: 10 }).withMessage('agentIds must be array with 2-10 items'),
   body('location.lat').isFloat({ min: -90, max: 90 }).withMessage('latitude must be between -90 and 90'),
   body('location.lon').isFloat({ min: -180, max: 180 }).withMessage('longitude must be between -180 and 180')
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     throw new AppError('Validation failed', 400)
@@ -126,7 +127,7 @@ router.post('/group', [
     data,
     computeTimeMs: computeTime,
     metadata: {
-      agentCount: groupSize,
+      agentCount: agentIds.length,
       location,
       timestamp: new Date().toISOString()
     }
@@ -142,7 +143,7 @@ router.post('/token', [
   body('baseNFTRarity').isNumeric().withMessage('baseNFTRarity must be numeric'),
   body('location.lat').isFloat({ min: -90, max: 90 }).withMessage('latitude must be between -90 and 90'),
   body('location.lon').isFloat({ min: -180, max: 180 }).withMessage('longitude must be between -180 and 180')
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     throw new AppError('Validation failed', 400)
@@ -190,7 +191,7 @@ router.post('/token', [
       baseInputs: { baseTokenRate, baseNFTRarity },
       location,
       timestamp: new Date().toISOString(),
-      powerLevel: `${Math.round(powerLevel * 100)}%`
+      powerLevel: `${Math.round((data?.powerLevel ?? 0) * 100)}%`
     }
   })
 }))

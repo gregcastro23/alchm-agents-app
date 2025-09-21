@@ -1,10 +1,11 @@
-import { Router, Request, Response } from 'express'
+import { Router as createRouter, type Request, type Response } from 'express'
+import type { Router as ExpressRouter } from 'express'
 import { body, validationResult } from 'express-validator'
 import { alchmClient } from '../services/alchm-client.js'
 import { thermodynamicsService } from '../services/thermodynamics.js'
 import { asyncHandler, AppError } from '../middleware/error-handler.js'
 
-const router = Router()
+const router: ExpressRouter = createRouter()
 
 /**
  * POST /api/alchemy/calculate
@@ -21,7 +22,7 @@ router.post('/calculate', [
   body('options.includeAspects').optional().isBoolean(),
   body('options.includeTransits').optional().isBoolean(),
   body('options.includePlanetary').optional().isBoolean()
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     throw new AppError('Validation failed', 400)
@@ -67,7 +68,7 @@ router.post('/thermodynamics', [
   body('elementalValues.water').isNumeric().withMessage('water must be numeric'),
   body('elementalValues.air').isNumeric().withMessage('air must be numeric'),
   body('elementalValues.earth').isNumeric().withMessage('earth must be numeric')
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     throw new AppError('Validation failed', 400)
@@ -117,7 +118,7 @@ router.post('/batch-thermodynamics', [
   body('inputSets.*.water').isNumeric().withMessage('water must be numeric'),
   body('inputSets.*.air').isNumeric().withMessage('air must be numeric'),
   body('inputSets.*.earth').isNumeric().withMessage('earth must be numeric')
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     throw new AppError('Validation failed', 400)

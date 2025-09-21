@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { type Request, type Response } from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import compression from 'compression'
@@ -36,7 +36,7 @@ import { setupWebSocketHandlers } from './websocket/handlers.js'
 dotenv.config()
 
 const app = express()
-const PORT = process.env.PORT || 8000
+const PORT: number = parseInt(process.env.PORT || '8000', 10)
 const HOST = process.env.HOST || 'localhost'
 const ENABLE_WEBSOCKET = process.env.ENABLE_WEBSOCKET === 'true'
 
@@ -57,11 +57,11 @@ const corsOptions = {
 app.use(cors(corsOptions))
 
 // Compression and parsing with production limits
-app.use(compression())
+app.use(compression() as any)
 const maxRequestSize = process.env.MAX_REQUEST_SIZE_MB || '2'
 app.use(express.json({
   limit: `${maxRequestSize}mb`,
-  verify: (req, res, buf) => {
+  verify: (req: Request, res: Response, buf: Buffer, _encoding: string) => {
     // Validate JSON payload size in production
     if (buf.length > parseInt(maxRequestSize) * 1024 * 1024) {
       const error: any = new Error('Request payload too large')
@@ -129,7 +129,7 @@ app.use('/api/kinetics', kineticsRoutes)
 app.use('/api/consciousness', consciousnessRoutes)
 
 // Root endpoint
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
   res.json({
     name: 'Planetary Agents Backend',
     version: '1.0.0',

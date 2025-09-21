@@ -1,9 +1,10 @@
-import { Router, Request, Response } from 'express'
+import { Router as createRouter, type Request, type Response } from 'express'
+import type { Router as ExpressRouter } from 'express'
 import { body, validationResult } from 'express-validator'
 import { tokenCalculatorService } from '../services/token-calculator.js'
 import { asyncHandler, AppError } from '../middleware/error-handler.js'
 
-const router = Router()
+const router: ExpressRouter = createRouter()
 
 /**
  * POST /api/tokens/calculate
@@ -18,7 +19,7 @@ router.post('/calculate', [
   body('location.lat').isFloat({ min: -90, max: 90 }).withMessage('latitude must be between -90 and 90'),
   body('location.lon').isFloat({ min: -180, max: 180 }).withMessage('longitude must be between -180 and 180'),
   body('timestamp').optional().isISO8601().withMessage('timestamp must be valid ISO8601 string')
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     throw new AppError('Validation failed', 400)
@@ -68,7 +69,7 @@ router.post('/historical', [
   body('location.lat').isFloat({ min: -90, max: 90 }).withMessage('latitude must be between -90 and 90'),
   body('location.lon').isFloat({ min: -180, max: 180 }).withMessage('longitude must be between -180 and 180'),
   body('interval').optional().isInt({ min: 1, max: 1440 }).withMessage('interval must be between 1 and 1440 minutes')
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     throw new AppError('Validation failed', 400)
@@ -147,7 +148,7 @@ router.post('/projections', [
   body('location.lon').isFloat({ min: -180, max: 180 }).withMessage('longitude must be between -180 and 180'),
   body('timestamp').optional().isISO8601().withMessage('timestamp must be valid ISO8601 string'),
   body('timeframe').optional().isIn(['nearTerm', 'seasonal', 'both']).withMessage('timeframe must be nearTerm, seasonal, or both')
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     throw new AppError('Validation failed', 400)

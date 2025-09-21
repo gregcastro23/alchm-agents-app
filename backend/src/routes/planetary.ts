@@ -1,9 +1,10 @@
-import { Router, Request, Response } from 'express'
+import { Router as createRouter, type Request, type Response } from 'express'
+import type { Router as ExpressRouter } from 'express'
 import { body, validationResult } from 'express-validator'
 import { planetaryHoursService } from '../services/planetary-hours.js'
 import { asyncHandler, AppError } from '../middleware/error-handler.js'
 
-const router = Router()
+const router: ExpressRouter = createRouter()
 
 /**
  * POST /api/planetary/current-hour
@@ -14,7 +15,7 @@ router.post('/current-hour', [
   body('timezone').optional().isString().withMessage('timezone must be string'),
   body('location.lat').isFloat({ min: -90, max: 90 }).withMessage('latitude must be between -90 and 90'),
   body('location.lon').isFloat({ min: -180, max: 180 }).withMessage('longitude must be between -180 and 180')
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: Request, res: Response) => {
   // Check for validation errors
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
@@ -53,7 +54,7 @@ router.post('/forecast', [
   body('location.lat').isFloat({ min: -90, max: 90 }).withMessage('latitude must be between -90 and 90'),
   body('location.lon').isFloat({ min: -180, max: 180 }).withMessage('longitude must be between -180 and 180'),
   body('interval').optional().isInt({ min: 1, max: 1440 }).withMessage('interval must be between 1 and 1440 minutes')
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     throw new AppError('Validation failed', 400)
@@ -107,7 +108,7 @@ router.post('/optimal-times', [
   body('location.lat').isFloat({ min: -90, max: 90 }).withMessage('latitude must be between -90 and 90'),
   body('location.lon').isFloat({ min: -180, max: 180 }).withMessage('longitude must be between -180 and 180'),
   body('targetPlanet').isIn(['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']).withMessage('targetPlanet must be a valid planet')
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     throw new AppError('Validation failed', 400)
