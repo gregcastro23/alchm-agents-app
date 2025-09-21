@@ -36,10 +36,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (status === 'loading') return // Still loading
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin')
-      return
-    }
+    // Allow unauthenticated access - no redirect needed
   }, [status, router])
 
   const handleSignOut = () => {
@@ -57,15 +54,17 @@ export default function DashboardPage() {
     )
   }
 
-  if (!session) {
-    return null // Will redirect to signin
-  }
-
-  const user = {
+  // Allow anonymous access with guest user data
+  const user = session ? {
     id: session.user.id,
     email: session.user.email!,
     name: session.user.name!,
     tier: (session.user as any).tier || 'free'
+  } : {
+    id: 'guest',
+    email: 'guest@example.com',
+    name: 'Guest Explorer',
+    tier: 'free' as const
   }
 
   const getTierColor = (tier: string) => {

@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
@@ -15,8 +16,44 @@ export const dynamic = 'force-dynamic'
 
 export default async function MePage() {
   const session = await auth()
+  
+  // Allow anonymous access with guest experience
   if (!session?.user?.id) {
-    redirect('/login')
+    return (
+      <div className="container mx-auto py-8 space-y-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+            👤
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Welcome, Guest Explorer</h1>
+            <p className="text-muted-foreground">Create an account to save your personalized astrological profile.</p>
+          </div>
+        </div>
+        
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Guest Experience</h2>
+          <p className="text-muted-foreground mb-4">
+            You're exploring as a guest! All features are available, but your data won't be saved.
+            Sign up to unlock personalized features like:
+          </p>
+          <ul className="list-disc list-inside space-y-2 text-sm">
+            <li>Personalized natal chart analysis</li>
+            <li>Saved conversation history with agents</li>
+            <li>Custom agent creation progress</li>
+            <li>Consciousness evolution tracking</li>
+          </ul>
+          <div className="mt-6 flex gap-4">
+            <Button asChild>
+              <Link href="/auth/signup">Create Account</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/auth/signin">Sign In</Link>
+            </Button>
+          </div>
+        </Card>
+      </div>
+    )
   }
 
   const userId = session.user.id
