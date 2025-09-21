@@ -405,8 +405,26 @@ export class DynamicAspectsEngine {
 
   private getAffectedAgents(aspectType: AspectType, planet1: string, planet2: string): string[] {
     // Return agents most sensitive to these planetary combinations
-    // This would integrate with the agent profiles system
-    return ['leonardo-da-vinci', 'carl-jung', 'nikola-tesla'] // Placeholder
+    // Based on agent planetary rulerships and elemental affinities
+    const planetaryAgents: Record<string, string[]> = {
+      'sun': ['leonardo-da-vinci', 'shakespeare', 'cleopatra'],
+      'moon': ['carl-jung', 'marie-curie', 'frida-kahlo'],
+      'mercury': ['nikola-tesla', 'albert-einstein', 'galileo-galilei'],
+      'venus': ['shakespeare', 'marie-curie', 'cleopatra'],
+      'mars': ['leonardo-da-vinci', 'nikola-tesla', 'benjamin-franklin'],
+      'jupiter': ['carl-jung', 'albert-einstein', 'aristotle'],
+      'saturn': ['marie-curie', 'aristotle', 'benjamin-franklin']
+    }
+
+    const agents = new Set<string>()
+    if (planetaryAgents[planet1]) {
+      planetaryAgents[planet1].forEach(agent => agents.add(agent))
+    }
+    if (planetaryAgents[planet2]) {
+      planetaryAgents[planet2].forEach(agent => agents.add(agent))
+    }
+
+    return Array.from(agents).slice(0, 3) // Return top 3 most relevant
   }
 
   private calculateEvolutionBoost(

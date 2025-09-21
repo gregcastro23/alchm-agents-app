@@ -11,6 +11,12 @@ import { agentKineticProfiles } from '@/lib/agents/kinetic-profiles'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
 
+function getCurrentPlanetaryHour(): string {
+  const hours = ['sun', 'venus', 'mercury', 'moon', 'saturn', 'jupiter', 'mars']
+  const currentHour = new Date().getHours()
+  return hours[currentHour % 7]
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -127,8 +133,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Calculate power gained based on actual response quality
-        const messageLength = interactionData?.userMessage?.length || 50
-        const responseLength = interactionData?.agentResponse?.length || 100
+        const messageLength = userMessage?.length || 50
+        const responseLength = agentResponse?.length || 100
         const qualityFactor = Math.min(responseLength / 200, 1.0) // Response quality based on depth
         const engagementFactor = Math.min(messageLength / 100, 1.0) // User engagement factor
 
@@ -141,7 +147,7 @@ export async function POST(request: NextRequest) {
           agentId,
           interactionType: 'chat',
           powerGained,
-          planetaryInfluence: 'sun', // TODO: Get from planetary hours
+          planetaryInfluence: getCurrentPlanetaryHour(), // Current planetary hour
           elementalResonance,
           metadata: {
             userMessage,
