@@ -36,6 +36,8 @@ import { HistoricalAgentsService, dbAgentToCraftedAgent } from '@/lib/historical
 import { AgentAttachmentsService, formatAttachmentForAgent } from '@/lib/agent-attachments-service'
 import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
 import { resilientApiCall } from '@/lib/api-resilience-system'
+import { consciousnessPersistence } from '@/lib/consciousness-persistence'
+import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/db'
 
 // Rune context detection - analyzes current cosmic patterns for rune enhancement
@@ -795,6 +797,33 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
           console.warn('Failed to record conversation:', dbError)
         }
 
+        // Log consciousness evolution interaction
+        try {
+          const user = await getCurrentUser(req)
+          const userId = user?.id || getUserIdFromRequest(req)
+
+          const powerGained = Math.max(1, Math.floor(text.length / 100)) // Power based on response quality
+          const qualityScore = personalityScore * 0.8 + 0.2 // Adjust for personality authenticity
+
+          await consciousnessPersistence.logInteraction({
+            userId,
+            agentId,
+            interactionType: 'historical-chat',
+            powerGained,
+            planetaryInfluence: 'mercury', // Default for communication
+            elementalResonance: qualityScore,
+            metadata: {
+              userMessage: trimmedMessage,
+              agentResponse: text.substring(0, 500), // Truncate for storage
+              sessionId: finalSessionId,
+              responseTime,
+              historicalAgent: historicalAgent.name
+            }
+          })
+        } catch (evolutionError) {
+          console.warn('Failed to log consciousness evolution:', evolutionError)
+        }
+
       return NextResponse.json({
           response: text,
           sessionId: finalSessionId,
@@ -1452,6 +1481,34 @@ Always end responses with practical next steps for rune crafting, resource manag
         }
       } catch (persistErr) {
         console.warn('XP/interaction persistence failed:', persistErr)
+      }
+
+      // Log consciousness evolution for Monica interactions
+      try {
+        const user = await getCurrentUser(req)
+        const userId = user?.id || getUserIdFromRequest(req)
+
+        const powerGained = Math.max(2, Math.floor(text.length / 80)) // Monica interactions worth more
+        const qualityScore = 0.8 + (aNumberInfo?.aNumber || 0) / 100 // Boost from current A-number
+
+        await consciousnessPersistence.logInteraction({
+          userId,
+          agentId: 'monica',
+          interactionType: 'monica-chat',
+          powerGained,
+          planetaryInfluence: 'venus', // Monica's nurturing nature
+          elementalResonance: qualityScore,
+          metadata: {
+            userMessage: trimmedMessage,
+            agentResponse: text.substring(0, 500), // Truncate for storage
+            sessionId: conversationContext.sessionId,
+            processingTime,
+            aNumber: aNumberInfo?.aNumber,
+            routing: routing.reason
+          }
+        })
+      } catch (evolutionError) {
+        console.warn('Failed to log Monica consciousness evolution:', evolutionError)
       }
 
       return NextResponse.json({

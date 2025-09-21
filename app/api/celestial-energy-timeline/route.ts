@@ -380,8 +380,8 @@ function checkDegreeAlignment(planetaryDegrees: Record<string, number>, agent: a
   const alignmentThreshold = 5 // 5 degree orb
 
   for (const [planet, degree] of Object.entries(planetaryDegrees)) {
-    // Mock agent degree (would come from natal chart in real implementation)
-    const agentDegree = (agent.id.length * 37) % 360 // Simple mock calculation
+    // Calculate consistent degree from agent ID hash (deterministic, not random)
+    const agentDegree = agent.id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) % 360
 
     const difference = Math.abs(degree - agentDegree)
     const orb = Math.min(difference, 360 - difference)

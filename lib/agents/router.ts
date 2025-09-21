@@ -1,6 +1,7 @@
 import { agentRegistry, type AgentDefinition } from './registry'
 import { AlchemicalKineticsClient } from '@/lib/kinetics-client'
 import { agentKineticProfiles, calculateKineticState } from './kinetic-profiles'
+import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 
 export type RouterTask =
   | { kind: 'alchemize'; payload: any }
@@ -126,8 +127,15 @@ async function handleKineticsTask(
       }
     }
 
-    // Calculate current power (mock for now - would come from user interaction data)
-    const currentPower = Math.floor(Math.random() * 500) + 100
+    // Calculate current power from actual consciousness evolution data
+    let currentPower = 100 // Default starting power
+    try {
+      // Try to get evolution state for the agent
+      const evolutionState = await consciousnessPersistence.loadEvolutionState('anonymous', agentId)
+      currentPower = evolutionState?.totalPower || 100
+    } catch (error) {
+      console.warn('Failed to load evolution state for power calculation, using default:', error)
+    }
     
     // Get planetary influences
     const planetaryInfluences = kinetics.timing?.planetaryHours || ['Sun']

@@ -126,9 +126,14 @@ export async function POST(request: NextRequest) {
           }, { status: 400 })
         }
 
-        // Calculate power gained based on response quality
-        const powerGained = Math.random() * 10 + 5 // 5-15 power per interaction
-        const elementalResonance = Math.random() * 0.5 + 0.5 // 0.5-1.0 resonance
+        // Calculate power gained based on actual response quality
+        const messageLength = interactionData?.userMessage?.length || 50
+        const responseLength = interactionData?.agentResponse?.length || 100
+        const qualityFactor = Math.min(responseLength / 200, 1.0) // Response quality based on depth
+        const engagementFactor = Math.min(messageLength / 100, 1.0) // User engagement factor
+
+        const powerGained = Math.floor(5 + (qualityFactor * engagementFactor * 10)) // 5-15 power based on real metrics
+        const elementalResonance = 0.5 + (qualityFactor * 0.5) // 0.5-1.0 based on response quality
 
         // Log to database
         await consciousnessPersistence.logInteraction({
