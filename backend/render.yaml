@@ -11,7 +11,7 @@ services:
     region: oregon  # or 'frankfurt' for EU
 
     # Build configuration
-    buildCommand: yarn install && yarn build
+    buildCommand: corepack enable && corepack prepare yarn@4.0.0 --activate && yarn install && yarn build
     startCommand: yarn start
 
     # Environment configuration
