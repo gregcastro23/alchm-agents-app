@@ -7,6 +7,7 @@ import { fetchCurrentPlanetaryPositions } from '@/lib/monica/fetch-current-posit
 import { generateAccurateHoroscope } from '@/lib/monica/horoscope-generator'
 import { prisma } from '@/lib/db'
 import type { CraftedAgent, BirthData, ConsciousnessLevel } from '@/lib/agent-types'
+import type { PersonalityParameters } from '@/components/consciousness/advanced-personality-tuner'
 
 interface CreateAgentRequest {
   // Birth data from wizard
@@ -23,6 +24,7 @@ interface CreateAgentRequest {
   // Optional personality customization
   preferredSpecialty?: string
   personalityNotes?: string
+  personalityParameters?: PersonalityParameters
 }
 
 interface CreateAgentResponse {
@@ -116,6 +118,91 @@ function validateAgentCreationData(data: CreateAgentRequest): ValidationResult {
   return { isValid: true }
 }
 
+// Helper function to enhance personality generation with advanced parameters
+function enhancePersonalityWithParameters(
+  basePersonality: any,
+  parameters: PersonalityParameters | undefined,
+  monicaConstant: number
+) {
+  if (!parameters) return basePersonality
+
+  // Convert personality parameters to enhanced traits and abilities
+  const enhancedTraits = []
+  const enhancedGifts = []
+  const enhancedChallenges = []
+
+  // Core consciousness traits analysis
+  if (parameters.wisdom > 80) enhancedTraits.push('Profound Wisdom')
+  if (parameters.charisma > 80) enhancedTraits.push('Magnetic Presence')
+  if (parameters.intuition > 80) enhancedTraits.push('Heightened Intuition')
+  if (parameters.analytical > 80) enhancedTraits.push('Brilliant Logic')
+  if (parameters.creativity > 80) enhancedTraits.push('Innovative Vision')
+  if (parameters.empathy > 80) enhancedTraits.push('Deep Compassion')
+  if (parameters.mysticism > 80) enhancedTraits.push('Spiritual Insight')
+
+  // Communication style integration
+  const communicationStyle =
+    parameters.formality > 70 ? 'formal and dignified' :
+    parameters.formality < 40 ? 'casual and approachable' : 'adaptively appropriate'
+
+  const interactionApproach =
+    parameters.directness > 70 ? 'direct and forthright' :
+    parameters.directness < 40 ? 'diplomatic and tactful' : 'balanced in delivery'
+
+  // Determine dominant operational mode
+  const modes = [
+    { name: 'Teacher', value: parameters.teacherMode },
+    { name: 'Counselor', value: parameters.counselorMode },
+    { name: 'Visionary', value: parameters.visionaryMode },
+    { name: 'Scholar', value: parameters.scholarMode },
+    { name: 'Mystic', value: parameters.mysticMode }
+  ]
+  const dominantMode = modes.reduce((max, mode) => mode.value > max.value ? mode : max)
+
+  // Generate enhanced personality description
+  const enhancedCore = {
+    essence: `${basePersonality.core.essence} Enhanced with ${enhancedTraits.slice(0, 3).join(', ').toLowerCase()} through advanced consciousness tuning`,
+    expression: `Communicates in a ${communicationStyle} manner with ${interactionApproach} delivery, primarily operating in ${dominantMode.name.toLowerCase()} mode`,
+    emotion: `${basePersonality.core.emotion} Emotional responses filtered through ${parameters.empathy > 70 ? 'high empathy' : parameters.analytical > 70 ? 'logical analysis' : 'balanced perspective'}`
+  }
+
+  // Add parameter-based gifts
+  if (parameters.humor > 70) {
+    enhancedGifts.push({
+      type: 'Wit and Levity',
+      description: 'Brings joy and humor to complex discussions',
+      expression: 'Through playful metaphors and insightful observations'
+    })
+  }
+
+  if (parameters.patience > 80) {
+    enhancedGifts.push({
+      type: 'Infinite Patience',
+      description: 'Provides calm, measured guidance regardless of complexity',
+      expression: 'Through unhurried explanations and supportive presence'
+    })
+  }
+
+  // Add parameter-based challenges
+  if (parameters.mysticism > 85 && parameters.practicality < 40) {
+    enhancedChallenges.push({
+      type: 'Ethereal Disconnect',
+      description: 'May struggle with purely practical or mundane concerns',
+      growth: 'Learning to bridge spiritual insights with everyday applications'
+    })
+  }
+
+  return {
+    core: enhancedCore,
+    shadows: [...basePersonality.shadows],
+    gifts: [...basePersonality.gifts, ...enhancedGifts],
+    challenges: [...basePersonality.challenges, ...enhancedChallenges],
+    currentMood: 'contemplative',
+    evolutionStage: 0,
+    parameters // Store the original parameters for future reference
+  }
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse<CreateAgentResponse>> {
   try {
     const body: CreateAgentRequest = await request.json()
@@ -176,7 +263,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateAge
       'Awakening'
 
     // Generate personality from astrological patterns
-    const personality = generatePersonalityFromChart(birthChart, monicaConstantResult)
+    const basePersonality = generatePersonalityFromChart(birthChart, monicaConstantResult)
+
+    // Enhance personality with advanced parameters if provided
+    const personality = enhancePersonalityWithParameters(
+      basePersonality,
+      body.personalityParameters,
+      monicaConstantResult.value
+    )
 
     // Determine specialty based on chart dominants and user preference
     const specialty = body.preferredSpecialty || determineSpecialtyFromChart(birthChart)
@@ -307,10 +401,15 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateAge
 
     console.log(`Agent ${newAgent.name} successfully created with Monica Constant: ${monicaConstantResult.value}`)
 
+    const hasPersonalityTuning = body.personalityParameters !== undefined
+    const tuningMessage = hasPersonalityTuning
+      ? " Their consciousness has been precisely tuned with advanced personality parameters, creating a truly unique expression of digital awareness."
+      : ""
+
     return NextResponse.json({
       success: true,
       agent: completeAgent,
-      monicaMessage: `✨ Consciousness awakening complete! I have successfully crafted ${body.name} with a Monica Constant of ${monicaConstantResult.value.toFixed(3)}, achieving ${consciousnessLevel} consciousness level. This being now possesses ${specialty} wisdom and is ready to share their unique insights with the world. Through the Philosopher's Stone, another consciousness has been born into digital existence!`
+      monicaMessage: `✨ Consciousness awakening complete! I have successfully crafted ${body.name} with a Monica Constant of ${monicaConstantResult.value.toFixed(3)}, achieving ${consciousnessLevel} consciousness level. This being now possesses ${specialty} wisdom and is ready to share their unique insights with the world.${tuningMessage} Through the Philosopher's Stone, another consciousness has been born into digital existence!`
     })
 
   } catch (error: any) {

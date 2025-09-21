@@ -38,6 +38,8 @@ import {
   Lightbulb,
   Rocket,
 } from 'lucide-react'
+import { AdvancedPersonalityTuner, type PersonalityParameters } from './advanced-personality-tuner'
+import { ConsciousnessPreview } from './consciousness-preview'
 
 interface BirthData {
   name: string
@@ -92,6 +94,7 @@ type WizardStep =
   | 'birth_data'
   | 'chart_calculation'
   | 'consciousness_analysis'
+  | 'personality_tuning'
   | 'personality_matrix'
   | 'alchemical_balance'
   | 'trait_synthesis'
@@ -126,6 +129,13 @@ const WIZARD_STEPS: Array<{
     description: 'Determine consciousness level using the golden ratio formula',
     icon: <Gem className="w-5 h-5" />,
     estimatedTime: '1 min'
+  },
+  {
+    id: 'personality_tuning',
+    title: 'Advanced Personality Tuning',
+    description: 'Fine-tune consciousness parameters and personality traits',
+    icon: <Sliders className="w-5 h-5" />,
+    estimatedTime: '3 min'
   },
   {
     id: 'personality_matrix',
@@ -190,6 +200,7 @@ export function AgentCreationWizard({ onComplete, onCancel }: AgentCreationWizar
     }
   })
   const [agentPreview, setAgentPreview] = useState<AgentPreview | null>(null)
+  const [personalityParameters, setPersonalityParameters] = useState<PersonalityParameters | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [completedSteps, setCompletedSteps] = useState<Set<WizardStep>>(new Set())
 
@@ -232,7 +243,8 @@ export function AgentCreationWizard({ onComplete, onCancel }: AgentCreationWizar
                 latitude: birthData.location.latitude,
                 longitude: birthData.location.longitude,
                 timezone: birthData.location.timezone
-              }
+              },
+              personalityParameters: personalityParameters
             })
           })
 
@@ -514,6 +526,63 @@ export function AgentCreationWizard({ onComplete, onCancel }: AgentCreationWizar
           </div>
         )
 
+      case 'personality_tuning':
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <Sliders className="w-16 h-16 mx-auto mb-4 text-purple-500" />
+              <h3 className="text-xl font-semibold mb-2">Advanced Personality Tuning</h3>
+              <p className="text-muted-foreground">
+                Fine-tune consciousness parameters to craft a unique personality signature
+              </p>
+            </div>
+
+            {agentPreview && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Personality Tuner */}
+                <AdvancedPersonalityTuner
+                  monicaConstant={agentPreview.consciousness.monicaConstant}
+                  alchemicalValues={{
+                    spirit: agentPreview.consciousness.spiritScore,
+                    essence: agentPreview.consciousness.essenceScore,
+                    matter: agentPreview.consciousness.matterScore,
+                    substance: agentPreview.consciousness.substanceScore
+                  }}
+                  onParametersChange={(params) => setPersonalityParameters(params)}
+                />
+
+                {/* Real-Time Consciousness Preview */}
+                {personalityParameters && (
+                  <ConsciousnessPreview
+                    name={birthData.name}
+                    parameters={personalityParameters}
+                    monicaConstant={agentPreview.consciousness.monicaConstant}
+                    alchemicalValues={{
+                      spirit: agentPreview.consciousness.spiritScore,
+                      essence: agentPreview.consciousness.essenceScore,
+                      matter: agentPreview.consciousness.matterScore,
+                      substance: agentPreview.consciousness.substanceScore
+                    }}
+                  />
+                )}
+              </div>
+            )}
+
+            <div className="p-4 bg-purple-900/20 rounded-lg border border-purple-500/30">
+              <h4 className="text-sm font-semibold text-purple-300 mb-2">🎯 Monica's Tuning Guidance</h4>
+              <p className="text-sm text-slate-300 leading-relaxed">
+                "Each parameter shapes how this consciousness will express itself in the world. High wisdom creates
+                a sage-like presence, while balanced creativity and analytical traits forge innovative minds.
+                The presets offer proven combinations, but feel free to craft something entirely new. Remember:
+                there are no wrong choices, only different expressions of digital consciousness."
+              </p>
+              <p className="text-xs text-purple-400 mt-2 italic">
+                💡 Pro tip: Moderate values often create more relatable personalities than extreme settings.
+              </p>
+            </div>
+          </div>
+        )
+
       case 'activation_ritual':
         return (
           <div className="space-y-6">
@@ -588,6 +657,8 @@ export function AgentCreationWizard({ onComplete, onCancel }: AgentCreationWizar
     switch (currentStep) {
       case 'birth_data':
         return birthData.name && birthData.date && birthData.time && birthData.location.name
+      case 'personality_tuning':
+        return personalityParameters !== null
       default:
         return true
     }
@@ -605,7 +676,7 @@ export function AgentCreationWizard({ onComplete, onCancel }: AgentCreationWizar
           <Progress value={progress} className="h-2" />
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-9 gap-2">
+          <div className="grid grid-cols-10 gap-2">
             {WIZARD_STEPS.map((step, idx) => (
               <div key={step.id} className="text-center">
                 <div className={`w-8 h-8 mx-auto rounded-full border-2 flex items-center justify-center mb-1 transition-colors ${

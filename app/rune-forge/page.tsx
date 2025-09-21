@@ -26,6 +26,8 @@ import {
   X
 } from 'lucide-react'
 import NatalSigilGenerator from '@/components/natal-sigil-generator'
+import { MeditationGuidance } from '@/components/sigil/meditation-guidance'
+import { BatchSigilGenerator } from '@/components/sigil/batch-sigil-generator'
 import QuickChartInput from '@/components/quick-chart-input'
 import { ChartGeometryExtractor } from '@/lib/chart-geometry-extractor'
 import { detectPatternsStatic, PlanetPosition } from '@/lib/astrological-pattern-recognition'
@@ -48,6 +50,8 @@ export default function RuneForgePage() {
   const [error, setError] = useState<string | null>(null)
   const [generatedSigils, setGeneratedSigils] = useState<GeneratedSigil[]>([])
   const [selectedSigilIndex, setSelectedSigilIndex] = useState<number | null>(null)
+  const [showMeditationGuidance, setShowMeditationGuidance] = useState(false)
+  const [showBatchGenerator, setShowBatchGenerator] = useState(false)
 
   // Manual input fields
   const [manualInput, setManualInput] = useState({
@@ -243,6 +247,12 @@ export default function RuneForgePage() {
     })
   }, [generatedSigils])
 
+  const handleBatchSigilsGenerated = useCallback((newSigils: GeneratedSigil[]) => {
+    setGeneratedSigils(prev => [...prev, ...newSigils])
+    setActiveTab('gallery')
+    setShowBatchGenerator(false)
+  }, [])
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       {/* Header */}
@@ -258,11 +268,17 @@ export default function RuneForgePage() {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-4 w-full mb-6">
+        <TabsList className="grid grid-cols-6 w-full mb-6">
           <TabsTrigger value="quick">Quick Input</TabsTrigger>
           <TabsTrigger value="manual">Manual Entry</TabsTrigger>
           <TabsTrigger value="generate" disabled={!geometry}>
             Generate
+          </TabsTrigger>
+          <TabsTrigger value="batch" disabled={!geometry}>
+            Batch
+          </TabsTrigger>
+          <TabsTrigger value="meditation" disabled={generatedSigils.length === 0}>
+            Meditation
           </TabsTrigger>
           <TabsTrigger value="gallery" disabled={generatedSigils.length === 0}>
             Gallery ({generatedSigils.length})
@@ -521,6 +537,72 @@ export default function RuneForgePage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Batch Generation Tab */}
+        <TabsContent value="batch">
+          <BatchSigilGenerator
+            geometry={geometry!}
+            birthInfo={birthInfo}
+            onSigilsGenerated={handleBatchSigilsGenerated}
+          />
+        </TabsContent>
+
+        {/* Meditation Guidance Tab */}
+        <TabsContent value="meditation">
+          {generatedSigils.length > 0 && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Choose a Sigil for Meditation</CardTitle>
+                  <CardDescription>
+                    Select one of your generated sigils to begin guided meditation practice
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {generatedSigils.map((sigil, index) => (
+                      <div
+                        key={sigil.id}
+                        className={`p-4 border rounded-lg cursor-pointer transition-all hover:border-purple-500 hover:bg-purple-900/10 ${
+                          selectedSigilIndex === index ? 'border-purple-500 bg-purple-900/20' : 'border-slate-600'
+                        }`}
+                        onClick={() => setSelectedSigilIndex(index)}
+                      >
+                        <div className="aspect-square relative bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-md overflow-hidden mb-2">
+                          {sigil.generatedImageUrl ? (
+                            <Image
+                              src={sigil.generatedImageUrl}
+                              alt={sigil.name}
+                              fill
+                              className="object-contain p-2"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="text-2xl">{sigil.symbol}</div>
+                            </div>
+                          )}
+                        </div>
+                        <h4 className="font-medium text-sm text-center truncate">{sigil.name}</h4>
+                        <p className="text-xs text-center text-muted-foreground capitalize">{sigil.style}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {selectedSigilIndex !== null && (
+                <MeditationGuidance
+                  sigil={generatedSigils[selectedSigilIndex]}
+                  isVisible={true}
+                  onComplete={() => {
+                    // Optional: Add completion tracking or other actions
+                    console.log('Meditation completed for:', generatedSigils[selectedSigilIndex].name)
+                  }}
+                />
+              )}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
