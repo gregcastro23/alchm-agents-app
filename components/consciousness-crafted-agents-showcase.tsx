@@ -342,3 +342,6 @@ export function ConsciousnessCraftedAgentsShowcase() {
     </section>
   )
 }
+
+// Default export for lazy loading
+export default ConsciousnessCraftedAgentsShowcase
