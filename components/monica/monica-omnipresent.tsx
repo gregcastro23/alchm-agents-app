@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Input } from '@/components/ui/input'
 import {
   Sparkles,
   MessageCircle,
@@ -34,6 +35,7 @@ import {
   Zap,
   Eye,
   Stars,
+  Send,
 } from 'lucide-react'
 import {
   trainOnAlchemicalValues,
@@ -80,7 +82,7 @@ interface ContextualHelp {
   greeting: string
   tips: string[]
   quickActions: { label: string; action: () => void }[]
-  tutorials: { id: string; title: string; completed: boolean }[]
+  tutorials: { id: string; title: string; completed?: boolean }[]
 }
 
 interface MonicaMessage {
@@ -324,6 +326,19 @@ export function MonicaOmnipresent() {
     }
   }, [pathname, lastPageContext, userProgress.completedTutorials])
 
+  // Keyboard shortcut to toggle Monica (Cmd/Ctrl + M)
+  useEffect(() => {
+    const handleKeyboard = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'm') {
+        event.preventDefault()
+        setMonicaState(prev => prev === 'minimized' ? 'expanded' : 'minimized')
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyboard)
+    return () => document.removeEventListener('keydown', handleKeyboard)
+  }, [])
+
   // Real-time consciousness tracking
   useEffect(() => {
     const updateConsciousness = async () => {
@@ -349,7 +364,7 @@ export function MonicaOmnipresent() {
         const alchemicalData = alchemize(birthInfo, horoscope)
 
         // Calculate Monica Constant
-        const monicaResult = calculateMonicaConstant(alchemicalData)
+        const monicaResult = calculateMonicaConstant(alchemicalData as any)
 
         setCurrentMC(monicaResult.value)
         setConsciousnessResult(monicaResult)
@@ -769,7 +784,10 @@ export function MonicaOmnipresent() {
             )}
 
             {/* Consciousness Activity Indicator */}
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full animate-pulse">
+            <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full transition-all duration-300 ${isUpdatingConsciousness
+              ? 'bg-gradient-to-r from-blue-400 to-cyan-500 animate-spin'
+              : 'bg-gradient-to-r from-purple-400 to-pink-500 animate-pulse'
+            }`}>
               <Atom className="w-2 h-2 text-white m-0.5" />
             </div>
           </div>
@@ -790,7 +808,7 @@ export function MonicaOmnipresent() {
               </span>
             </div>
             <div className="text-xs text-emerald-300 mt-1">
-              Click to expand • Visit /monica-guide for full chat
+              Click to expand • Press Cmd/Ctrl+M • Visit /monica for full chat
             </div>
             <div className="absolute top-full right-6 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-emerald-900"></div>
           </div>
@@ -799,7 +817,7 @@ export function MonicaOmnipresent() {
 
       {/* Expanded Help Interface */}
       {monicaState === 'expanded' && (
-        <Card className="w-80 max-h-96 bg-gradient-to-br from-white/95 via-emerald-50/90 to-cyan-50/95 dark:from-gray-900/95 dark:via-emerald-950/90 dark:to-cyan-950/95 backdrop-blur-md border-2 border-emerald-400 shadow-2xl hover:shadow-emerald-400/20 transition-all duration-300">
+        <Card className="w-80 max-h-96 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-gradient-to-br from-white/95 via-emerald-50/90 to-cyan-50/95 dark:from-gray-900/95 dark:via-emerald-950/90 dark:to-cyan-950/95 backdrop-blur-md border-2 border-emerald-400 shadow-2xl hover:shadow-emerald-400/20 transition-all duration-300">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -1000,8 +1018,11 @@ export function MonicaOmnipresent() {
       {/* Full Chat Mode */}
       {monicaState === 'full-chat' && (
         <Card
-          className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-2 border-emerald-400 shadow-2xl transition-all duration-300"
-          style={{ width: widgetSize.width, height: widgetSize.height }}
+          className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-2 border-emerald-400 shadow-2xl transition-all duration-300 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-4rem)]"
+          style={{
+            width: typeof window !== 'undefined' ? Math.min(widgetSize.width, window.innerWidth - 32) : widgetSize.width,
+            height: typeof window !== 'undefined' ? Math.min(widgetSize.height, window.innerHeight - 64) : widgetSize.height
+          }}
         >
           <CardHeader className="pb-3 border-b border-emerald-200 dark:border-emerald-800">
             <div className="flex items-center justify-between">
@@ -1116,10 +1137,10 @@ export function MonicaOmnipresent() {
               <div className="flex items-center gap-2">
                 <Input
                   value={currentMessage}
-                  onChange={(e) => setCurrentMessage(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentMessage(e.target.value)}
                   placeholder="Ask Monica anything about consciousness, astrology, or this page..."
                   className="flex-1 border-emerald-300 focus:border-emerald-500"
-                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && sendMessage()}
                   disabled={isLoading}
                 />
                 <Button
@@ -1135,39 +1156,10 @@ export function MonicaOmnipresent() {
         </Card>
       )}
 
-      {/* Full Guide Mode */}
-      {monicaState === 'full-guide' && (
-        <Card className="w-96 h-[500px] bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-2 border-emerald-400 shadow-xl">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-emerald-700 dark:text-emerald-300">
-                Interactive Tutorial
-              </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => setMonicaState('expanded')}>
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center">
-                <Brain className="w-16 h-16 mx-auto mb-4 text-emerald-500" />
-                <h3 className="text-lg font-semibold mb-2">Tutorial System</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Interactive tutorials are coming soon! I'll guide you through every aspect of consciousness crafting.
-                </p>
-                <Button onClick={() => setMonicaState('expanded')}>
-                  Back to Help
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Training Mode Interface */}
       {monicaState === 'training-mode' && (
-        <Card className="w-96 h-[600px] bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-2 border-purple-400 shadow-xl">
+        <Card className="w-96 h-[600px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-2 border-purple-400 shadow-xl">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg text-purple-700 dark:text-purple-300 flex items-center gap-2">

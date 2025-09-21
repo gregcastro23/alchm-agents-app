@@ -11,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Slider } from '@/components/ui/slider'
+import { usePlanetaryPositions } from '@/hooks/usePlanetaryPositions'
 import {
   getPlanetaryDignity,
   getSignElement,
@@ -87,6 +88,7 @@ export default function MultiAgentChat() {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [currentMoonPhase, setCurrentMoonPhase] = useState<MoonPhase>('New Moon')
   const [currentMoonDegree, setCurrentMoonDegree] = useState<number>(0)
+  const [autoSyncSky, setAutoSyncSky] = useState<boolean>(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Calculate current moon phase on component mount
@@ -184,6 +186,39 @@ export default function MultiAgentChat() {
     },
   ])
 
+  // Live planetary positions (current sky)
+  const {
+    planetaryPositions,
+    lastUpdated,
+    loading: positionsLoading,
+    error: positionsError,
+    refresh: refreshPositions,
+  } = usePlanetaryPositions({ refreshInterval: 60000 })
+
+  // Sync agent sign/degree to current sky positions
+  useEffect(() => {
+    if (!autoSyncSky) return
+    if (!planetaryPositions || planetaryPositions.length === 0) return
+
+    setAgents(prev =>
+      prev.map(agent => {
+        const match = planetaryPositions.find(p => p.planet === agent.planet)
+        if (!match) return agent
+        // Degree 0-29; ensure string form
+        const degreeStr = String(Math.floor(match.degree))
+        return {
+          ...agent,
+          sign: match.sign,
+          degree: degreeStr,
+          // update moon extras if applicable
+          ...(agent.planet === 'Moon'
+            ? { moonDegree: currentMoonDegree, moonPhase: currentMoonPhase }
+            : {}),
+        }
+      })
+    )
+  }, [planetaryPositions, autoSyncSky, currentMoonDegree, currentMoonPhase])
+
   const signs = [
     'Aries',
     'Taurus',
@@ -247,6 +282,10 @@ export default function MultiAgentChat() {
           })),
           question: input,
           sessionId,
+          planetaryContext: {
+            timestamp: new Date().toISOString(),
+            positions: planetaryPositions || [],
+          },
         }),
       })
 
@@ -306,6 +345,25 @@ export default function MultiAgentChat() {
           <p className="text-center text-muted-foreground">
             Select multiple planetary agents to consult together
           </p>
+          {/* Current sky sync banner */}
+          <div className="mt-3 flex flex-col md:flex-row items-center justify-between gap-2 p-2 bg-blue-50 dark:bg-blue-950/20 rounded">
+            <div className="text-xs md:text-sm text-blue-800 dark:text-blue-200">
+              {positionsLoading ? 'Syncing with current sky…' : positionsError ? 'Unable to load current positions' : `Synced to current sky${lastUpdated ? ` as of ${lastUpdated.toLocaleTimeString()}` : ''}`}
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2 text-xs md:text-sm">
+                <input
+                  type="checkbox"
+                  checked={autoSyncSky}
+                  onChange={e => setAutoSyncSky(e.target.checked)}
+                />
+                Auto-sync to current sky
+              </label>
+              <Button variant="outline" size="sm" onClick={() => refreshPositions()} disabled={positionsLoading}>
+                Refresh
+              </Button>
+            </div>
+          </div>
         </CardHeader>
 
         <CardContent>
@@ -331,7 +389,12 @@ export default function MultiAgentChat() {
                           </Avatar>
                           <span className="font-semibold">{agent.planet}</span>
                         </div>
-                        {agent.active && <Badge variant="default">Active</Badge>}
+                        <div className="flex items-center gap-2">
+                          {autoSyncSky && (
+                            <Badge variant="secondary" className="text-xxs md:text-xs">Synced</Badge>
+                          )}
+                          {agent.active && <Badge variant="default">Active</Badge>}
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-2">
@@ -411,7 +474,7 @@ export default function MultiAgentChat() {
                   <span className="text-sm text-muted-foreground">Active Agents:</span>
                   {activeAgents.map(agent => (
                     <Badge key={agent.planet} className={agent.color}>
-                      {agent.symbol} {agent.planet} in {agent.sign}
+                      {agent.symbol} {agent.planet} in {agent.sign} {Number.isFinite(Number(agent.degree)) ? `${agent.degree}°` : ''}
                       {agent.planet === 'Moon' && agent.moonPhase && (
                         <span className="ml-1">{getMoonPhaseEmoji(agent.moonPhase)}</span>
                       )}
