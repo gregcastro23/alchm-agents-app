@@ -89,20 +89,8 @@ export default function DashboardPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
-          <span>Loading consciousness dashboard...</span>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null // Will redirect to signin
-  }
+  // Loading check already handled above with status === 'loading'
+  // User is always defined (either from session or as guest)
 
   const mockAgents = [
     {
