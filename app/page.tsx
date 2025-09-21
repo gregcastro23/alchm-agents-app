@@ -14,7 +14,7 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 // Lazy load heavy components
 const TarotCosmicWidget = lazy(() => import('@/components/tarot-cosmic-widget'))
-const ConsciousnessCraftedAgentsShowcase = lazy(() => import('@/components/consciousness-crafted-agents-showcase').then(module => ({ default: module.default || module.ConsciousnessCraftedAgentsShowcase })))
+const ConsciousnessCraftedAgentsShowcase = lazy(() => import('@/components/consciousness-crafted-agents-showcase'))
 const RealtimeRuneDisplay = lazy(() => import('@/components/realtime-rune-display'))
 
 export default function HomePage() {

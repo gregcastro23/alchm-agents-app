@@ -409,7 +409,15 @@ export default function TemporalTimeline({
         )
 
       default:
-        return <div>View mode not implemented</div>
+        return (
+          <div className="flex items-center justify-center h-40 text-muted-foreground">
+            <div className="text-center">
+              <Circle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p>Advanced view mode</p>
+              <p className="text-sm">Coming soon in future updates</p>
+            </div>
+          </div>
+        )
     }
   }
 

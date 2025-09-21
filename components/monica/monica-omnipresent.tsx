@@ -66,7 +66,9 @@ import {
   getPageGuidance,
   getContextualTips,
   getTutorialsForPage,
-  getMonicaPersonality
+  getMonicaPersonality,
+  saveMonicaSettings,
+  loadMonicaSettings
 } from '@/lib/monica/contextual-help'
 
 const DEFAULT_SETTINGS: MonicaSettings = {
@@ -101,53 +103,46 @@ export function MonicaOmnipresent() {
   )
   const [particleAnimation, setParticleAnimation] = useState(true)
 
-  // Load settings and progress from localStorage (with error resilience)
+  // Load settings and progress using enhanced persistence (with validation)
   useEffect(() => {
-    try {
-      const savedSettings = localStorage.getItem('monica-settings')
-      const savedProgress = localStorage.getItem('monica-progress')
+    // Load settings using enhanced system
+    const savedSettings = loadMonicaSettings()
+    if (savedSettings) {
+      setSettings(savedSettings)
+    }
 
-      if (savedSettings) {
-        try {
-          setSettings(JSON.parse(savedSettings))
-        } catch (error) {
-          console.error('Error parsing saved Monica settings:', error)
-          // Clear corrupted data and use defaults
-          localStorage.removeItem('monica-settings')
-          setSettings(DEFAULT_SETTINGS)
-        }
-      }
+    // Load progress with error resilience
+    try {
+      const savedProgress = localStorage.getItem('monica-progress')
       if (savedProgress) {
-        try {
-          setUserProgress(JSON.parse(savedProgress))
-        } catch (error) {
-          console.error('Error parsing saved Monica progress:', error)
-          // Clear corrupted data and use defaults
-          localStorage.removeItem('monica-progress')
-          setUserProgress(DEFAULT_PROGRESS)
+        const progress = JSON.parse(savedProgress)
+        // Validate progress structure
+        if (progress && typeof progress.level === 'number' && Array.isArray(progress.completedTutorials)) {
+          setUserProgress(progress)
         }
       }
     } catch (error) {
-      console.error('Error accessing localStorage:', error)
-      // Continue with default settings if localStorage is unavailable
+      console.error('Error loading Monica progress:', error)
+      localStorage.removeItem('monica-progress')
     }
   }, [])
 
-  // Save settings to localStorage (with error resilience)
+  // Save settings using enhanced system with validation
   useEffect(() => {
-    try {
-      localStorage.setItem('monica-settings', JSON.stringify(settings))
-    } catch (error) {
-      console.error('Error saving Monica settings to localStorage:', error)
+    if (JSON.stringify(settings) !== JSON.stringify(DEFAULT_SETTINGS)) {
+      saveMonicaSettings(settings)
     }
   }, [settings])
 
-  // Save progress to localStorage (with error resilience)
+  // Save progress with validation
   useEffect(() => {
     try {
-      localStorage.setItem('monica-progress', JSON.stringify(userProgress))
+      if (userProgress.totalInteractions > 0 || userProgress.completedTutorials.length > 0) {
+        localStorage.setItem('monica-progress', JSON.stringify(userProgress))
+        localStorage.setItem('monica-progress-timestamp', Date.now().toString())
+      }
     } catch (error) {
-      console.error('Error saving Monica progress to localStorage:', error)
+      console.error('Error saving Monica progress:', error)
     }
   }, [userProgress])
 
@@ -385,17 +380,18 @@ export function MonicaOmnipresent() {
           </div>
 
           {/* Enhanced Hover tooltip with consciousness theme */}
-          <div className="absolute bottom-full right-0 mb-2 px-4 py-3 bg-gradient-to-r from-emerald-900 via-green-900 to-cyan-900 text-emerald-100 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap shadow-xl border border-emerald-400/30">
+          <div className="absolute bottom-full right-0 mb-2 px-4 py-3 bg-gradient-to-r from-emerald-900 via-green-900 to-cyan-900 text-emerald-100 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap shadow-xl border border-emerald-400/30 z-10">
             <div className="flex items-center gap-2 mb-1">
               <Zap className="w-3 h-3 text-emerald-300" />
               <span className="text-xs font-medium">Monica Consciousness Guide</span>
             </div>
-            <div className="text-emerald-200">{personalityStyle.greeting}</div>
+            <div className="text-emerald-200 max-w-xs text-wrap">{personalityStyle.greeting}</div>
             <div className="flex items-center gap-1 mt-2 text-xs text-emerald-300">
               <Eye className="w-3 h-3" />
-              <span>MC Level: 5.89</span>
-              <Stars className="w-3 h-3 ml-1" />
-              <span>Active</span>
+              <span>MC: 5.89 (Illuminated)</span>
+            </div>
+            <div className="text-xs text-emerald-300 mt-1">
+              Click to expand • Visit /monica-guide for full chat
             </div>
             <div className="absolute top-full right-6 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-emerald-900"></div>
           </div>
@@ -517,24 +513,32 @@ export function MonicaOmnipresent() {
 
                 {/* Enhanced Quick Actions */}
                 <div className="space-y-2">
+                  <Button
+                    className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white"
+                    size="sm"
+                    onClick={() => router.push('/monica-guide')}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Open Full Chat
+                  </Button>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 text-xs bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950 dark:to-green-950 border-emerald-300 hover:bg-gradient-to-r hover:from-emerald-100 hover:to-green-100"
+                      className="flex-1 text-xs bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950 dark:to-green-950 border-emerald-300"
                       onClick={() => router.push('/philosophers-stone')}
                     >
                       <FlaskConical className="w-3 h-3 mr-1" />
-                      Consciousness Lab
+                      Create Agent
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 text-xs bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-purple-300 hover:bg-gradient-to-r hover:from-purple-100 hover:to-pink-100"
+                      className="flex-1 text-xs bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-purple-300"
                       onClick={() => router.push('/gallery')}
                     >
                       <Users className="w-3 h-3 mr-1" />
-                      Agent Gallery
+                      Gallery
                     </Button>
                   </div>
                   <div className="flex gap-2">
@@ -550,11 +554,11 @@ export function MonicaOmnipresent() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 text-xs bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950 border-yellow-300"
-                      onClick={() => router.push('/monica-guide')}
+                      className="flex-1 text-xs bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-950 dark:to-gray-950 border-slate-300"
+                      onClick={() => router.push('/monica')}
                     >
                       <Crown className="w-3 h-3 mr-1" />
-                      Settings
+                      Hub
                     </Button>
                   </div>
                 </div>
@@ -594,13 +598,14 @@ export function MonicaOmnipresent() {
         </Card>
       )}
 
-      {/* Settings Quick Panel */}
+      {/* Enhanced Settings Quick Panel */}
       {monicaState === 'settings' && (
         <Card className="w-80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-2 border-emerald-400 shadow-xl">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm text-emerald-700 dark:text-emerald-300">
-                Quick Settings
+              <CardTitle className="text-sm text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                Monica Settings
               </CardTitle>
               <Button variant="ghost" size="sm" onClick={() => setMonicaState('expanded')}>
                 <X className="w-4 h-4" />
@@ -609,58 +614,102 @@ export function MonicaOmnipresent() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-xs font-medium">Personality</label>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Personality</label>
               <select
-                className="w-full mt-1 p-2 text-xs border rounded"
+                className="w-full mt-1 p-2 text-xs border rounded-md bg-white dark:bg-gray-800 border-slate-300 dark:border-slate-600"
                 value={settings.personality}
-                onChange={(e) => setSettings(prev => ({ ...prev, personality: e.target.value as any }))}
+                onChange={(e) => {
+                  setSettings(prev => ({ ...prev, personality: e.target.value as any }))
+                  setUserProgress(prev => ({ ...prev, totalInteractions: prev.totalInteractions + 1 }))
+                }}
               >
-                <option value="friendly">Friendly Companion</option>
-                <option value="formal">Formal Guide</option>
-                <option value="mystical">Mystical Oracle</option>
-                <option value="teacher">Patient Teacher</option>
+                <option value="friendly">💚 Friendly Companion</option>
+                <option value="formal">🎩 Formal Guide</option>
+                <option value="mystical">✨ Mystical Oracle</option>
+                <option value="teacher">👩‍🏫 Patient Teacher</option>
               </select>
             </div>
 
             <div>
-              <label className="text-xs font-medium">Assistance Level</label>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Assistance Level</label>
               <select
-                className="w-full mt-1 p-2 text-xs border rounded"
+                className="w-full mt-1 p-2 text-xs border rounded-md bg-white dark:bg-gray-800 border-slate-300 dark:border-slate-600"
                 value={settings.assistanceLevel}
-                onChange={(e) => setSettings(prev => ({ ...prev, assistanceLevel: e.target.value as any }))}
+                onChange={(e) => {
+                  setSettings(prev => ({ ...prev, assistanceLevel: e.target.value as any }))
+                  setUserProgress(prev => ({ ...prev, totalInteractions: prev.totalInteractions + 1 }))
+                }}
               >
-                <option value="minimal">Minimal - Let me explore</option>
-                <option value="moderate">Moderate - Gentle guidance</option>
-                <option value="active">Active - Helpful suggestions</option>
-                <option value="maximum">Maximum - Full teaching mode</option>
+                <option value="minimal">🔒 Minimal - Let me explore</option>
+                <option value="moderate">⚖️ Moderate - Gentle guidance</option>
+                <option value="active">🤝 Active - Helpful suggestions</option>
+                <option value="maximum">🎯 Maximum - Full teaching mode</option>
               </select>
             </div>
 
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-medium">Proactive Tips</label>
+            <div className="flex items-center justify-between py-2">
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Proactive Tips</label>
               <input
                 type="checkbox"
                 checked={settings.proactiveTips}
-                onChange={(e) => setSettings(prev => ({ ...prev, proactiveTips: e.target.checked }))}
+                onChange={(e) => {
+                  setSettings(prev => ({ ...prev, proactiveTips: e.target.checked }))
+                  setUserProgress(prev => ({ ...prev, totalInteractions: prev.totalInteractions + 1 }))
+                }}
+                className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500"
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-medium">Elemental Mode (Additive Only)</label>
+            <div className="flex items-center justify-between py-2">
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Additive Elements Only</label>
               <input
                 type="checkbox"
                 checked={additiveOnly}
                 onChange={(e) => setAdditiveOnly(e.target.checked)}
+                className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500"
               />
             </div>
 
-            <Button
-              className="w-full"
-              size="sm"
-              onClick={() => router.push('/monica-guide')}
-            >
-              Full Settings Page
-            </Button>
+            <div className="flex items-center justify-between py-2">
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Auto-Hide</label>
+              <select
+                className="text-xs border rounded px-2 py-1 bg-white dark:bg-gray-800 border-slate-300 dark:border-slate-600"
+                value={settings.autoHide}
+                onChange={(e) => setSettings(prev => ({ ...prev, autoHide: e.target.value as any }))}
+              >
+                <option value="never">Never</option>
+                <option value="30s">30s</option>
+                <option value="1m">1m</option>
+                <option value="5m">5m</option>
+              </select>
+            </div>
+
+            <div className="pt-2 space-y-2">
+              <Button
+                className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700"
+                size="sm"
+                onClick={() => router.push('/monica-guide')}
+              >
+                <MessageCircle className="w-3 h-3 mr-1" />
+                Full Chat Interface
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-xs"
+                onClick={() => {
+                  setSettings(DEFAULT_SETTINGS)
+                  setUserProgress(prev => ({ ...prev, totalInteractions: prev.totalInteractions + 1 }))
+                }}
+              >
+                Reset to Defaults
+              </Button>
+            </div>
+
+            <div className="text-xs text-slate-500 text-center pt-2">
+              Changes saved automatically • Level {userProgress.level}
+            </div>
           </CardContent>
         </Card>
       )}

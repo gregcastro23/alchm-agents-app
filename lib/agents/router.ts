@@ -1,7 +1,12 @@
 import 'server-only'
 import { agentRegistry, type AgentDefinition } from './registry'
 import { AlchemicalKineticsClient } from '@/lib/kinetics-client'
-import { agentKineticProfiles, calculateKineticState } from './kinetic-profiles'
+import {
+  agentKineticProfiles,
+  calculateKineticState,
+  getAgentKineticProfile,
+  calculateKineticCompatibility
+} from './kinetic-profiles'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 
 export type RouterTask =

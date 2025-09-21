@@ -27,6 +27,12 @@ export interface HourlyAlchemicalSample {
   seasonalPhase: string
 }
 
+export class AlchemicalKineticsSampler {
+  static async sampleRange(options: SamplerOptions): Promise<HourlyAlchemicalSample[]> {
+    return sampleHourlyAlchm(options)
+  }
+}
+
 export interface SamplerOptions {
   includePlanetaryHours?: boolean // Default true
   validateTiming?: boolean // Check against traditional expectations

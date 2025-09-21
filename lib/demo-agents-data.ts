@@ -4586,6 +4586,7 @@ export function getTopRelevantAgents(count: number = 12): CraftedAgent[] {
 
 // All agents including Monica
 export const ALL_AGENTS = [MONICA_AS_CRAFTED_AGENT, ...DEMO_AGENTS]
+export const demoCraftedAgents = DEMO_AGENTS
 
 // Gallery collections
 export function getAgentCollections() {

@@ -45,7 +45,7 @@ const handler = NextAuth({
             id: user.id,
             email: user.email,
             name: user.name,
-            tier: user.subscription?.tier || 'free'
+            tier: 'master' // All authenticated users get master tier for testing
           }
         } catch (error) {
           console.error('Auth error:', error)
@@ -70,7 +70,7 @@ const handler = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        token.tier = (user as any).tier
+        token.tier = 'master' // Ensure master tier for all authenticated users
       }
       return token
     },

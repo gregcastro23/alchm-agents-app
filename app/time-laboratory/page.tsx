@@ -17,6 +17,7 @@ import {
   Clock, Sparkles, Users, Zap, Download, Share, ArrowLeft, Settings, BookOpen, Play, Pause,
   Atom, BarChart3, MapPin, Calendar, Layers, Activity, Target, TrendingUp, Eye
 } from 'lucide-react'
+import { AspectPhaseWidget } from '@/components/aspect-phase-indicator'
 import type {
   TemporalQuery,
   TemporalAnalysisResult,
@@ -950,6 +951,26 @@ export default function TimeLaboratoryPage() {
                   onExport={handleCelestialExport}
                 />
               )}
+
+              {/* Aspect Dynamics Indicator */}
+              <Card className="cosmic-glass mt-4">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg cosmic-text-gradient flex items-center gap-2">
+                    <Activity className="w-5 h-5 cosmic-icon-animate" />
+                    Applying & Separating Aspects
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <AspectPhaseWidget
+                    location={location}
+                    planets={['Sun', 'Moon', 'Mercury', 'Venus', 'Mars']}
+                    className="mt-2"
+                  />
+                  <p className="text-xs text-purple-400 mt-3">
+                    Real-time aspect phase analysis: Blue=Applying, Green=Exact, Orange=Separating
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         )}

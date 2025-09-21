@@ -1,5 +1,5 @@
-// Fetch current planetary positions from Alchemize API
-// Using proper January-0 indexing
+// Fetch current planetary positions using our working API endpoint
+// Simplified implementation that uses the proven /api/philosophers-stone/positions endpoint
 
 export interface AlchemizeApiResponse {
   'Planet Positions'?: {
@@ -84,118 +84,67 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
       throw new Error('Request aborted')
     }
 
-    // Use our local API instead of external alchm.xyz API
-    console.log('Fetching current planetary positions from local API...')
+    // Use our proven working philosophers-stone/positions API
+    console.log('Fetching current planetary positions from philosophers-stone API...')
 
-    // Call our local elemental-info API which has the current planetary positions
-    const response = await fetch('/api/elemental-info', {
-      method: 'POST',
+    const response = await fetch('/api/philosophers-stone/positions', {
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        birthInfo: {
-          date: new Date().toISOString().split('T')[0],
-          time: new Date().toTimeString().slice(0, 5),
-          location: 'New York', // Default location
-        },
-        planets: {}, // Use current planetary positions
-      }),
       signal,
     })
 
     if (!response.ok) {
-      console.error('Local API error:', response.status, response.statusText)
+      console.error('Philosophers Stone API error:', response.status, response.statusText)
       return null
     }
 
     const data = await response.json()
 
-    // Transform our local API response to match the expected AlchemizeApiResponse format
+    // Transform the response to match the expected AlchemizeApiResponse format
     const transformedData: AlchemizeApiResponse = {
       'Planet Positions': {},
       'Alchemy Effects': {
-        'Total Spirit': data.alchemicalInfo?.alchemicalProperties?.spirit || 0,
-        'Total Essence': data.alchemicalInfo?.alchemicalProperties?.essence || 0,
-        'Total Matter': data.alchemicalInfo?.alchemicalProperties?.matter || 0,
-        'Total Substance': data.alchemicalInfo?.alchemicalProperties?.substance || 0,
+        'Total Spirit': data.alchmQuantities?.spirit || 0,
+        'Total Essence': data.alchmQuantities?.essence || 0,
+        'Total Matter': data.alchmQuantities?.matter || 0,
+        'Total Substance': data.alchmQuantities?.substance || 0,
       },
       'Major Arcana': [],
       'Minor Arcana': [],
       'Decan Effects': {},
     }
 
-    // Transform planetary elements to planetary positions
-    if (data.planetaryElements) {
-      data.planetaryElements.forEach((planet: any) => {
+    // Transform planetary positions array to the expected object format
+    if (data.planetaryPositions && Array.isArray(data.planetaryPositions)) {
+      data.planetaryPositions.forEach((planet: any) => {
         if (transformedData['Planet Positions']) {
           transformedData['Planet Positions'][planet.planet] = {
             sign: planet.sign,
-            degree: 15, // Default degree since we don't have exact degrees in our API
+            degree: planet.degree || 15,
           }
         }
       })
     }
 
-    console.log('Local API response transformed:', {
+    console.log('Philosophers Stone API response transformed:', {
       hasPlanetPositions: !!transformedData['Planet Positions'],
       hasAlchemyEffects: !!transformedData['Alchemy Effects'],
       planetCount: Object.keys(transformedData['Planet Positions'] || {}).length,
+      monicaConstant: data.monicaConstant,
     })
 
     return transformedData
   } catch (error) {
     // Handle AbortError specifically - don't fallback if request was aborted
     if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
-      console.log('Fetch request was aborted, not attempting fallback')
-      throw error // Re-throw AbortError so it can be caught by the calling function
+      console.log('Fetch request was aborted')
+      throw error
     }
 
-    console.error('Error fetching planetary positions from local API:', error)
-
-    // Fallback: return a minimal response with current positions from our calculate-transits
-    try {
-      // Check again if aborted during error handling
-      if (signal?.aborted) {
-        throw new Error('Request aborted')
-      }
-
-      const { getCurrentPlanetaryPositions } = await import('../calculate-transits')
-      const positions = getCurrentPlanetaryPositions()
-
-      const fallbackData: AlchemizeApiResponse = {
-        'Planet Positions': {},
-        'Alchemy Effects': {
-          'Total Spirit': 5,
-          'Total Essence': 7,
-          'Total Matter': 6,
-          'Total Substance': 2,
-        },
-        'Major Arcana': [],
-        'Minor Arcana': [],
-        'Decan Effects': {},
-      }
-
-      // Convert positions to the expected format
-      if (fallbackData['Planet Positions']) {
-        Object.entries(positions).forEach(([planet, pos]) => {
-          fallbackData['Planet Positions']![planet] = {
-            sign: pos.sign,
-            degree: parseFloat(pos.degree) || 15,
-          }
-        })
-      }
-
-      console.log('Using fallback planetary positions')
-      return fallbackData
-    } catch (fallbackError) {
-      // If fallback fails due to abort, re-throw abort error
-      if (fallbackError instanceof Error && (fallbackError.name === 'AbortError' || fallbackError.message.includes('aborted'))) {
-        throw fallbackError
-      }
-      console.error('Fallback also failed:', fallbackError)
-      return null
-    }
+    console.error('Error fetching planetary positions from philosophers-stone API:', error)
+    return null
   }
 }
 

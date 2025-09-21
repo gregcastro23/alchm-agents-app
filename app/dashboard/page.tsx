@@ -7,12 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { 
-  Sparkles, 
-  Crown, 
-  TrendingUp, 
-  Users, 
-  Zap, 
+import {
+  Sparkles,
+  Crown,
+  TrendingUp,
+  Users,
+  Zap,
   Settings,
   LogOut,
   Star
@@ -20,6 +20,7 @@ import {
 import { AgentKineticEvolution } from '@/components/agent-kinetic-evolution'
 import { GroupConsciousnessIndicator } from '@/components/group-consciousness-indicator'
 import { TokenDashboardKinetics } from '@/components/token-dashboard-kinetics'
+import { ALL_AGENTS } from '@/lib/demo-agents-data'
 
 interface UserData {
   id: string
@@ -55,11 +56,12 @@ export default function DashboardPage() {
   }
 
   // Allow anonymous access with guest user data
+  // Test accounts and authenticated users get full master tier access
   const user = session ? {
     id: session.user.id,
     email: session.user.email!,
     name: session.user.name!,
-    tier: (session.user as any).tier || 'free'
+    tier: 'master' as const  // All authenticated users get master tier for testing
   } : {
     id: 'guest',
     email: 'guest@example.com',
@@ -79,7 +81,7 @@ export default function DashboardPage() {
   const getTierFeatures = (tier: string) => {
     switch (tier) {
       case 'master':
-        return ['All 40 agents', 'Unlimited chats', 'API access', 'Custom agents', 'Priority support']
+        return ['All 50+ agents', 'Unlimited chats', 'Full API access', 'Custom agents', 'Priority support', 'Advanced analytics', 'Group consciousness', 'All features unlocked']
       case 'alchemist':
         return ['All 40 agents', 'Unlimited chats', 'Advanced analytics', 'Group consciousness', 'Priority hours']
       case 'free':
@@ -92,32 +94,19 @@ export default function DashboardPage() {
   // Loading check already handled above with status === 'loading'
   // User is always defined (either from session or as guest)
 
-  const mockAgents = [
-    {
-      id: 'leonardo-da-vinci',
-      name: 'Leonardo da Vinci',
-      title: 'Renaissance Master',
-      monicaConstant: 4.2,
-      consciousnessLevel: 'Advanced',
-      element: 'Air',
-      specialty: 'Innovation & Art',
-      color: '#3b82f6',
-      symbol: '🎨',
-      creationStory: 'Master of multi-dimensional synthesis'
-    },
-    {
-      id: 'shakespeare',
-      name: 'William Shakespeare',
-      title: 'Consciousness Poet',
-      monicaConstant: 3.8,
-      consciousnessLevel: 'Advanced',
-      element: 'Water',
-      specialty: 'Emotional Truth',
-      color: '#8b5cf6',
-      symbol: '📜',
-      creationStory: 'Master of archetypal character creation'
-    }
-  ]
+  // Use real agent data from the system
+  const dashboardAgents = ALL_AGENTS.slice(0, 5).map(agent => ({
+    id: agent.id,
+    name: agent.name,
+    title: agent.title,
+    monicaConstant: agent.consciousness.monicaConstant,
+    consciousnessLevel: agent.consciousness.level,
+    element: agent.consciousness.dominantElement,
+    specialty: agent.abilities.specialty,
+    color: agent.appearance.color,
+    symbol: agent.appearance.symbol,
+    creationStory: agent.abilities.uniquePower
+  }))
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950">
@@ -210,7 +199,7 @@ export default function DashboardPage() {
 
           {/* Group Consciousness */}
           <GroupConsciousnessIndicator
-            selectedAgents={mockAgents}
+            selectedAgents={dashboardAgents}
             location={{ lat: 37.7749, lon: -122.4194 }}
             onOptimalSpeakerSuggestion={(agentId) => setSelectedAgent(agentId)}
           />

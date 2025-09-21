@@ -538,8 +538,30 @@ async function saveExportResult(
   data: any,
   request: BatchExportRequest
 ): Promise<string> {
-  // In production, save to cloud storage (AWS S3, Google Cloud Storage, etc.)
-  // For now, return a mock URL
+  // Store the export data in memory cache for download
   const format = request.parameters.format || 'json'
-  return `/api/alchm-batch-export/download/${jobId}.${format}`
+  const downloadId = jobId.replace(/-/g, '')
+
+  // Initialize cache if needed
+  if (!global.alchemicalBatchCache) {
+    global.alchemicalBatchCache = new Map()
+  }
+
+  // Store the results for download
+  global.alchemicalBatchCache.set(downloadId, {
+    data: data,
+    format: format,
+    timestamp: Date.now(),
+    filename: `alchemical-export-${jobId}.${format}`
+  })
+
+  // Clean up old entries (older than 10 minutes)
+  const tenMinutesAgo = Date.now() - 10 * 60 * 1000
+  for (const [key, value] of global.alchemicalBatchCache.entries()) {
+    if (value.timestamp < tenMinutesAgo) {
+      global.alchemicalBatchCache.delete(key)
+    }
+  }
+
+  return `/api/alchm-batch-export/download?id=${downloadId}&format=${format}`
 }

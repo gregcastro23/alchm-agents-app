@@ -145,15 +145,34 @@ export async function POST(request: NextRequest) {
 
     const filename = `temporal-grimoire-${querySlug}-${timestamp}.${exportOptions.format}`
 
-    // In production, you would save to cloud storage and return download URL
-    // For now, we'll return the data directly with a mock URL
-    const mockDownloadUrl = `/api/temporal-grimoire/download/${Buffer.from(filename).toString('base64')}`
+    // Store the file data in a temporary cache for download (expires after 5 minutes)
+    const downloadId = Buffer.from(filename).toString('base64').replace(/[\/\+=]/g, '')
+    const downloadUrl = `/api/temporal-grimoire/download?id=${downloadId}&filename=${encodeURIComponent(filename)}`
+
+    // Store in memory cache for immediate download (in production, use Redis or cloud storage)
+    if (!global.temporalGrimoireCache) {
+      global.temporalGrimoireCache = new Map()
+    }
+    global.temporalGrimoireCache.set(downloadId, {
+      data: grimoireBuffer,
+      format: exportOptions.format,
+      filename,
+      timestamp: Date.now()
+    })
+
+    // Clean up old entries (older than 5 minutes)
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000
+    for (const [key, value] of global.temporalGrimoireCache.entries()) {
+      if (value.timestamp < fiveMinutesAgo) {
+        global.temporalGrimoireCache.delete(key)
+      }
+    }
 
     const processingTime = Date.now() - startTime
 
     return NextResponse.json({
       success: true,
-      downloadUrl: mockDownloadUrl,
+      downloadUrl,
       filename,
       size: grimoireBuffer.length,
       format: exportOptions.format,

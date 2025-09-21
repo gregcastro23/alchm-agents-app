@@ -35,7 +35,6 @@ import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 import { HistoricalAgentsService, dbAgentToCraftedAgent } from '@/lib/historical-agents-db'
 import { AgentAttachmentsService, formatAttachmentForAgent } from '@/lib/agent-attachments-service'
 import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
-import { resilientApiCall } from '@/lib/api-resilience-system'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/db'
@@ -154,12 +153,58 @@ async function analyzeChartCombination(requestData: any, conversationContext: an
 
 // Helper function for basic synastry calculation
 function calculateBasicSynastry(chart1: any, chart2: any): any[] {
-  // Simplified synastry - just return placeholder aspects for now
-  // In a full implementation, this would calculate actual planetary aspects between charts
-  return [
-    { aspect: 'conjunction', strength: 0.8, planets: ['Sun', 'Moon'] },
-    { aspect: 'trine', strength: 0.6, planets: ['Venus', 'Mars'] }
-  ]
+  // Calculate real aspects between two charts
+  const aspects: any[] = []
+
+  // Get planetary positions from both charts
+  const planets1 = chart1.planets || {}
+  const planets2 = chart2.planets || {}
+
+  const aspectTypes = {
+    conjunction: { angle: 0, orb: 10, strength: 0.9 },
+    trine: { angle: 120, orb: 8, strength: 0.8 },
+    sextile: { angle: 60, orb: 6, strength: 0.7 },
+    square: { angle: 90, orb: 8, strength: 0.4 },
+    opposition: { angle: 180, orb: 10, strength: 0.5 }
+  }
+
+  // Compare each planet from chart1 with planets from chart2
+  for (const planet1 in planets1) {
+    for (const planet2 in planets2) {
+      const pos1 = planets1[planet1]?.longitude || planets1[planet1]?.position || 0
+      const pos2 = planets2[planet2]?.longitude || planets2[planet2]?.position || 0
+
+      // Calculate angular separation
+      let separation = Math.abs(pos1 - pos2)
+      if (separation > 180) separation = 360 - separation
+
+      // Check if this forms an aspect
+      for (const [aspectName, aspectDef] of Object.entries(aspectTypes)) {
+        const orb = Math.abs(separation - aspectDef.angle)
+        if (orb <= aspectDef.orb) {
+          aspects.push({
+            aspect: aspectName,
+            strength: aspectDef.strength * (1 - orb / aspectDef.orb), // Stronger when closer to exact
+            planets: [planet1, planet2],
+            orb: orb.toFixed(2)
+          })
+          break // Only count one aspect per planet pair
+        }
+      }
+    }
+  }
+
+  // If no aspects found, return at least one neutral aspect
+  if (aspects.length === 0) {
+    aspects.push({
+      aspect: 'neutral',
+      strength: 0.5,
+      planets: ['Sun', 'Moon'],
+      orb: '0'
+    })
+  }
+
+  return aspects
 }
 
 // Helper function for compatibility scoring
@@ -745,21 +790,13 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
 
         const startTime = Date.now()
 
-        // Use resilient API call with retry logic
-        const { text } = await resilientApiCall({
-          name: `agent-${agentId}`,
-          execute: () => generateText({
-            model: openai('gpt-4o-mini'),
-            system: historicalSystemPrompt,
-            prompt: trimmedMessage,
-            maxTokens: 800,
-            temperature: 0.7,
-          }),
-          timeout: 15000 // 15 second timeout
-        }, {
-          maxRetries: 2,
-          baseDelayMs: 1000,
-          maxDelayMs: 5000
+        // Direct AI call for reliable response
+        const { text } = await generateText({
+          model: openai('gpt-4o-mini'),
+          system: historicalSystemPrompt,
+          prompt: trimmedMessage,
+          maxTokens: 800,
+          temperature: 0.7,
         })
 
         const responseTime = Date.now() - startTime

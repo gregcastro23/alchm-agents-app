@@ -227,8 +227,8 @@ export function AgentKineticEvolution({ agentId, location, className = '' }: Age
           <div className="space-y-2">
             <div className="text-sm font-medium">Current Planetary Influences</div>
             <div className="flex flex-wrap gap-1">
-              {kineticData.planetaryInfluences.map((planet) => (
-                <Badge key={planet} variant="secondary" className="text-xs">
+              {kineticData.planetaryInfluences.map((planet, index) => (
+                <Badge key={`${planet}-${index}`} variant="secondary" className="text-xs">
                   {planet}
                 </Badge>
               ))}

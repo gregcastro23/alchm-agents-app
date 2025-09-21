@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClaudeMessage } from '@/lib/anthropic-client'
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
 import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
-import { resilientApiCall } from '@/lib/api-resilience-system'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
 
@@ -56,7 +56,7 @@ CONSCIOUSNESS PROFILE:
 GALLERY GROUP CONTEXT:
 - You are participating in a Gallery of Perpetuity group council
 - ${galleryContext.totalAgents} total consciousness agents are present
-- Average group Monica Constant: ${galleryContext.averageMC.toFixed(2)}
+- Average group Monica Constant: ${galleryContext.averageMC ? galleryContext.averageMC.toFixed(2) : 'calculating...'}
 - Group consciousness types: ${galleryContext.consciousnessTypes.join(', ')}
 - Elemental balance: ${galleryContext.elementalBalance.join(', ')}
 
@@ -73,27 +73,18 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
 
           const startTime = Date.now()
 
-          // Use resilient API call for group chat
-          const response = await resilientApiCall({
-            name: `group-chat-${agent.id}`,
-            execute: () => createClaudeMessage(
-              [{ role: 'user', content: message }],
-              systemPrompt,
-              'default',
-              1000
-            ),
-            timeout: 10000 // 10 second timeout for group chat
-          }, {
-            maxRetries: 1, // Fewer retries for group chat to maintain responsiveness
-            baseDelayMs: 500,
-            maxDelayMs: 2000
+          // Direct AI call using OpenAI for more reliable response
+          const response = await generateText({
+            model: openai('gpt-4o-mini'),
+            system: systemPrompt,
+            prompt: message,
+            maxTokens: 1000,
+            temperature: 0.7,
           })
 
           const responseTime = Date.now() - startTime
 
-          const content =
-            (response.content[0] as any)?.text ||
-            "I apologize, but I'm unable to provide a response at this moment."
+          const content = response.text || "I apologize, but I'm unable to provide a response at this moment."
 
           // Cache the group chat response for future similar conversations
           const personalityScore = agent.monicaConstant ? Math.min(agent.monicaConstant / 6, 1.0) : 0.7

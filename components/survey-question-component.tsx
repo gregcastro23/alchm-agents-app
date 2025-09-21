@@ -318,9 +318,23 @@ export function SurveyQuestionComponent({
   }
 
   return (
-    <div className="text-center text-muted-foreground">
-      Question type not implemented: {question.type}
-    </div>
+    <Card className="p-4">
+      <CardContent className="text-center text-muted-foreground">
+        <div className="flex flex-col items-center space-y-2">
+          <Star className="w-6 h-6 opacity-50" />
+          <p>Advanced question type: {question.type}</p>
+          <p className="text-sm">This question format will be available in future updates</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onChange('', localConfidence)}
+            className="mt-3"
+          >
+            Skip for now
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 

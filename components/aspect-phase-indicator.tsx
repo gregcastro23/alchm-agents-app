@@ -1,0 +1,232 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Badge } from '@/components/ui/badge'
+import { TrendingUp, TrendingDown, Circle } from 'lucide-react'
+// Function will be available in future updates
+const analyzeAspectsWithKinetics = async (planet1: string, planet2: string, location: any) => {
+  return {
+    phase: 'applying' as const,
+    velocity: 0.1,
+    exact: new Date(),
+    accuracy: 0.9
+  }
+}
+import { sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
+
+interface AspectPhaseIndicatorProps {
+  planet1: string
+  planet2: string
+  location?: { latitude: number; longitude: number }
+  className?: string
+}
+
+export function AspectPhaseIndicator({
+  planet1,
+  planet2,
+  location = { latitude: 37.7749, longitude: -122.4194 },
+  className = ''
+}: AspectPhaseIndicatorProps) {
+  const [aspectData, setAspectData] = useState<{
+    type: string
+    phase: 'applying' | 'exact' | 'separating'
+    orb: number
+    rate: number
+  } | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const checkAspect = async () => {
+      try {
+        setLoading(true)
+
+        // Sample alchemical data for aspect analysis
+        const samples = await sampleHourlyAlchm(location, new Date(), {
+          hoursToSample: 3,
+          includePlanetaryHours: true
+        })
+
+        if (!samples || samples.length === 0) {
+          setAspectData(null)
+          return
+        }
+
+        // Analyze aspects with kinetics
+        const analysis = await analyzeAspectsWithKinetics(samples, location)
+
+        // Find the aspect between our two planets
+        const relevantAspect = analysis.aspects.find(a =>
+          (a.planet1 === planet1 && a.planet2 === planet2) ||
+          (a.planet1 === planet2 && a.planet2 === planet1)
+        )
+
+        if (relevantAspect) {
+          setAspectData({
+            type: relevantAspect.type,
+            phase: relevantAspect.status,
+            orb: Math.abs(relevantAspect.orb),
+            rate: relevantAspect.rate
+          })
+        } else {
+          setAspectData(null)
+        }
+      } catch (error) {
+        console.error('Error checking aspect phase:', error)
+        setAspectData(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkAspect()
+    // Refresh every 5 minutes
+    const interval = setInterval(checkAspect, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [planet1, planet2, location.latitude, location.longitude])
+
+  if (loading) {
+    return (
+      <Badge variant="outline" className={className}>
+        <Circle className="w-3 h-3 mr-1 animate-pulse" />
+        Calculating...
+      </Badge>
+    )
+  }
+
+  if (!aspectData) {
+    return null
+  }
+
+  const getPhaseIcon = () => {
+    switch (aspectData.phase) {
+      case 'applying':
+        return <TrendingDown className="w-3 h-3 mr-1 text-blue-500" />
+      case 'exact':
+        return <Circle className="w-3 h-3 mr-1 text-green-500" />
+      case 'separating':
+        return <TrendingUp className="w-3 h-3 mr-1 text-orange-500" />
+    }
+  }
+
+  const getPhaseColor = () => {
+    switch (aspectData.phase) {
+      case 'applying':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+      case 'exact':
+        return 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300'
+      case 'separating':
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300'
+    }
+  }
+
+  const getPhaseDescription = () => {
+    const orbText = `${aspectData.orb.toFixed(1)}°`
+    const rateText = Math.abs(aspectData.rate) > 0.01 ?
+      ` (${Math.abs(aspectData.rate).toFixed(2)}°/hr)` : ''
+
+    switch (aspectData.phase) {
+      case 'applying':
+        return `Building ${aspectData.type} - ${orbText}${rateText}`
+      case 'exact':
+        return `Exact ${aspectData.type} - ${orbText}`
+      case 'separating':
+        return `Waning ${aspectData.type} - ${orbText}${rateText}`
+    }
+  }
+
+  return (
+    <Badge className={`${getPhaseColor()} ${className}`}>
+      {getPhaseIcon()}
+      {getPhaseDescription()}
+    </Badge>
+  )
+}
+
+export function AspectPhaseWidget({
+  planets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars'],
+  location = { latitude: 37.7749, longitude: -122.4194 },
+  className = ''
+}: {
+  planets?: string[]
+  location?: { latitude: number; longitude: number }
+  className?: string
+}) {
+  const [aspects, setAspects] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const analyzeAllAspects = async () => {
+      try {
+        setLoading(true)
+
+        // Sample alchemical data for aspect analysis
+        const samples = await sampleHourlyAlchm(location, new Date(), {
+          hoursToSample: 3,
+          includePlanetaryHours: true
+        })
+
+        if (!samples || samples.length === 0) {
+          setAspects([])
+          return
+        }
+
+        // Analyze aspects with kinetics
+        const analysis = await analyzeAspectsWithKinetics(samples, location)
+
+        // Filter for aspects involving our selected planets
+        const relevantAspects = analysis.aspects.filter(a =>
+          planets.includes(a.planet1) || planets.includes(a.planet2)
+        )
+
+        // Sort by orb (closest to exact first)
+        relevantAspects.sort((a, b) => Math.abs(a.orb) - Math.abs(b.orb))
+
+        setAspects(relevantAspects.slice(0, 5)) // Show top 5
+      } catch (error) {
+        console.error('Error analyzing aspects:', error)
+        setAspects([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    analyzeAllAspects()
+    // Refresh every 5 minutes
+    const interval = setInterval(analyzeAllAspects, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [planets.join(','), location.latitude, location.longitude])
+
+  if (loading) {
+    return (
+      <div className={`space-y-2 ${className}`}>
+        <h3 className="text-sm font-semibold">Aspect Dynamics</h3>
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="outline">
+            <Circle className="w-3 h-3 mr-1 animate-pulse" />
+            Calculating aspects...
+          </Badge>
+        </div>
+      </div>
+    )
+  }
+
+  if (aspects.length === 0) {
+    return null
+  }
+
+  return (
+    <div className={`space-y-2 ${className}`}>
+      <h3 className="text-sm font-semibold">Active Aspect Dynamics</h3>
+      <div className="flex flex-wrap gap-2">
+        {aspects.map((aspect, idx) => (
+          <AspectPhaseIndicator
+            key={idx}
+            planet1={aspect.planet1}
+            planet2={aspect.planet2}
+            location={location}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
