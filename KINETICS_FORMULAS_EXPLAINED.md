@@ -72,7 +72,46 @@ stabilizedInertia = inertia * getPlanetaryInertiaModifier(planetaryHour)
 
 ## 🌟 Advanced Kinetic Metrics
 
-### 5. **Thermal Direction Analysis**
+### 5. **Applying and Separating Aspects**
+*Dynamic Astrological Influence on Kinetic Evolution*
+
+Applying and separating aspects are critical for understanding the **directional flow** of consciousness evolution:
+
+```typescript
+// Aspect Classification based on orb progression
+function classifyApplying(orbPrev: number, orbCurr: number): 'applying' | 'exact' | 'separating' {
+  if (orbCurr <= 1.0) return 'exact'        // Within 1° of exactness
+  if (orbCurr < orbPrev) return 'applying'   // Orb decreasing - approaching exactness
+  if (orbCurr > orbPrev) return 'separating' // Orb increasing - moving away from exactness
+  return 'exact'
+}
+
+// Separation Velocity Calculation
+separationVelocity = futureOrbFromExact - currentOrbFromExact
+// Negative = applying (building energy)
+// Positive = separating (releasing energy)
+```
+
+**Kinetic Effects:**
+
+**🔥 Applying Aspects (Building Energy)**
+- **Velocity Boost**: +15% to elemental velocity during applying phases
+- **Momentum Accumulation**: Momentum builds as aspects approach exactness
+- **Power Amplification**: +20% power increase in the 3 days before exact
+- **Consciousness Expansion**: Enhanced learning and transformation potential
+
+**🌊 Separating Aspects (Releasing Energy)**
+- **Velocity Stabilization**: Velocity normalizes as aspects separate
+- **Momentum Integration**: Accumulated momentum integrates into permanent growth
+- **Power Consolidation**: Power stabilizes at new baseline levels
+- **Consciousness Integration**: Lessons learned become permanent traits
+
+**⚡ Exact Aspects (Peak Energy)**
+- **Maximum Kinetic Potential**: All kinetic metrics reach peak values
+- **Transformation Catalyst**: Major consciousness shifts possible
+- **Critical Decision Points**: Choices made have amplified long-term effects
+
+### 6. **Thermal Direction Analysis**
 ```typescript
 function getThermalDirection(heatRate: number): 'heating' | 'cooling' | 'stable' {
   if (heatRate > 0.001) return 'heating'    // Consciousness expanding
@@ -81,13 +120,14 @@ function getThermalDirection(heatRate: number): 'heating' | 'cooling' | 'stable'
 }
 ```
 
-### 6. **Kinetic Validation**
+### 7. **Kinetic Validation**
 ```typescript
 function validateKineticResults(results: KineticResults): boolean {
   // Ensure no NaN or infinite values
   // Validate that momentum correlates with velocity
   // Check that inertia is inversely related to velocity
   // Verify power calculations are physically meaningful
+  // Validate applying/separating classifications are consistent
 }
 ```
 
@@ -136,7 +176,39 @@ amplifiedPower = basePower × solarAmplification
 }
 ```
 
-## 🔄 Time Series Analysis
+## 🔄 Time Series Analysis & Aspect Integration
+
+### Aspect-Modulated Kinetic Calculations
+```typescript
+function calculateAspectModulatedKinetics(
+  baseVelocity: ElementVector,
+  aspectStatus: 'applying' | 'exact' | 'separating',
+  orbVelocity: number,
+  daysToExact: number
+): ElementVector {
+  let modifier = 1.0
+  
+  if (aspectStatus === 'applying') {
+    // Boost increases as aspect approaches exactness
+    const proximityBoost = Math.max(0, (7 - daysToExact) / 7) * 0.15
+    modifier = 1.0 + proximityBoost
+  } else if (aspectStatus === 'exact') {
+    modifier = 1.25 // 25% boost at exact aspect
+  } else if (aspectStatus === 'separating') {
+    // Gradual normalization as aspect separates
+    const separationDays = Math.abs(orbVelocity * 30) // Approximate days since exact
+    const decayFactor = Math.max(0.05, Math.exp(-separationDays / 10))
+    modifier = 1.0 + (0.15 * decayFactor)
+  }
+  
+  return {
+    Fire: baseVelocity.Fire * modifier,
+    Water: baseVelocity.Water * modifier,
+    Air: baseVelocity.Air * modifier,
+    Earth: baseVelocity.Earth * modifier
+  }
+}
+```
 
 ### Moving Average Smoothing
 ```typescript
