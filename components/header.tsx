@@ -9,11 +9,19 @@ import { useTheme } from 'next-themes'
 // Define navigation groups outside component to prevent hydration issues
 const navigationGroups = Object.freeze([
   {
-    title: '🧠 Core AI',
+    title: '🧠 Consciousness',
     items: [
       { href: '/monica-guide', label: 'Meet Monica' },
-      { href: '/philosophers-stone', label: "The Philosopher's Stone" },
+      { href: '/philosophers-stone', label: "Craft Consciousness" },
       { href: '/gallery', label: 'Gallery of Perpetuity' },
+    ],
+  },
+  {
+    title: '🔮 Mystical Arts',
+    items: [
+      { href: '/rune-forge', label: 'Rune Forge' },
+      { href: '/tarot-dashboard', label: 'Tarot Dashboard' },
+      { href: '/time-laboratory', label: 'Time Laboratory' },
     ],
   },
   {
@@ -21,21 +29,16 @@ const navigationGroups = Object.freeze([
     items: [
       { href: '/alchm-quantities', label: 'Alchm Quantities' },
       { href: '/elemental-chart', label: 'Elemental Chart' },
-    ],
-  },
-  {
-    title: '🔮 Divination',
-    items: [
-      { href: '/tarot-dashboard', label: 'Tarot Dashboard' },
       { href: '/chart-interpreter', label: 'Chart Interpreter' },
-      { href: '/moon-phases', label: 'Moon Phases' },
     ],
   },
   {
     title: '🌟 Analysis',
     items: [
       { href: '/planetary-agents', label: 'Planetary Wisdom' },
+      { href: '/planetary-council', label: 'Planetary Council' },
       { href: '/', label: 'Current Chart' },
+      { href: '/moon-phases', label: 'Moon Phases' },
     ],
   },
   {
