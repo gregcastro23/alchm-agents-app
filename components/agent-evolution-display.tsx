@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { routeTask } from '@/lib/agents/router'
+// Removed server-only routeTask import - using API calls instead
 import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
 
 interface AgentEvolutionData {
@@ -41,20 +41,16 @@ export function AgentEvolutionDisplay({
         setLoading(true)
         setError(null)
 
-        const result = await routeTask({
-          kind: 'kinetics',
-          payload: {
-            agentId,
-            location: userLocation,
-          },
-        })
+        const location = userLocation || { lat: 37.7749, lon: -122.4194 }
+        const response = await fetch(`/api/agent-evolution?agentId=${agentId}&action=kinetics&lat=${location.lat}&lon=${location.lon}`)
 
-        if (result.degraded || !result.output) {
+        if (!response.ok) {
           setError('Failed to fetch kinetic data')
           return
         }
 
-        setEvolution(result.output as AgentEvolutionData)
+        const result = await response.json()
+        setEvolution(result as AgentEvolutionData)
       } catch (err) {
         console.error('Evolution fetch error:', err)
         setError('Unable to load consciousness data')
@@ -283,20 +279,16 @@ export function useAgentEvolution(agentId: string, userLocation?: { lat: number;
         setLoading(true)
         setError(null)
 
-        const result = await routeTask({
-          kind: 'kinetics',
-          payload: {
-            agentId,
-            location: userLocation || { lat: 37.7749, lon: -122.4194 },
-          },
-        })
+        const location = userLocation || { lat: 37.7749, lon: -122.4194 }
+        const response = await fetch(`/api/agent-evolution?agentId=${agentId}&action=kinetics&lat=${location.lat}&lon=${location.lon}`)
 
-        if (result.degraded || !result.output) {
+        if (!response.ok) {
           setError('Failed to fetch kinetic data')
           return
         }
 
-        setEvolution(result.output as AgentEvolutionData)
+        const result = await response.json()
+        setEvolution(result as AgentEvolutionData)
       } catch (err) {
         setError('Unable to load consciousness data')
       } finally {

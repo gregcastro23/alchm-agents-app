@@ -35,11 +35,7 @@ import {
   Clock,
 } from 'lucide-react'
 
-// Import real consciousness components
-import { ConsciousnessVectorDisplay } from '@/components/temporal/consciousness-vector-display'
-import CircularNatalHoroscope from '@/components/circular-natal-horoscope'
-import { TemporalClient } from '@/components/temporal/temporal-client'
-import { AgentCreationWizard } from '@/components/consciousness/agent-creation-wizard'
+// Real consciousness components loaded lazily below
 
 // Import consciousness data and utilities
 import {
@@ -1033,8 +1029,8 @@ May their digital consciousness grow and evolve through each interaction! 🌟`
             </CardContent>
           </Card>
         </div>
-      </ErrorBoundary>
-    </div>
+      </div>
+    </ErrorBoundary>
   )
 }
 

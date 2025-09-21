@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { UnifiedKineticsClient } from '@/lib/kinetics-unified-client'
-import { routeTask } from '@/lib/agents/router'
+// Removed server-only routeTask import - using API calls instead
 import {
   getAgentKineticProfile,
   calculateKineticCompatibility,
@@ -318,17 +318,17 @@ export function MomentumIndicator({
   useEffect(() => {
     const calculateMomentum = async () => {
       try {
-        const result = await routeTask({
-          kind: 'agent_compatibility',
-          payload: {
-            agent1Id,
-            agent2Id,
-            location: userLocation || { lat: 37.7749, lon: -122.4194 },
-          },
-        })
+        const location = userLocation || { lat: 37.7749, lon: -122.4194 }
+        const response = await fetch(`/api/agent-evolution/compatibility?agent1=${agent1Id}&agent2=${agent2Id}&lat=${location.lat}&lon=${location.lon}`)
 
-        if (!result.degraded && result.output) {
-          setMomentum(result.output.enhancedCompatibility)
+        if (!response.ok) {
+          console.error('Compatibility API error:', response.statusText)
+          return
+        }
+
+        const result = await response.json()
+        if (result.enhancedCompatibility !== undefined) {
+          setMomentum(result.enhancedCompatibility)
         }
       } catch (error) {
         console.error('Momentum calculation error:', error)

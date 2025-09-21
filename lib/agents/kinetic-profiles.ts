@@ -377,3 +377,118 @@ export function calculateKineticState(
     elementalResonance
   }
 }
+
+/**
+ * Get agent kinetic profile by ID
+ */
+export function getAgentKineticProfile(agentId: string) {
+  const profile = agentKineticProfiles[agentId]
+  if (!profile) return null
+
+  // Return enhanced profile with name and additional computed properties
+  return {
+    name: getAgentDisplayName(agentId),
+    id: agentId,
+    alignment: profile.alignment,
+    velocitySignature: profile.velocitySignature,
+    powerThresholds: profile.powerThresholds,
+    evolutionRate: profile.evolutionRate,
+    specialAbilities: profile.specialAbilities,
+    // Add legacy compatibility fields
+    peak_hours: profile.alignment, // Map alignment to peak hours
+    consciousness_rate: profile.evolutionRate,
+    memory_persistence: profile.evolutionRate * 0.8,
+    momentum_type: getMomentumType(profile),
+  }
+}
+
+/**
+ * Calculate compatibility between two agents
+ */
+export function calculateKineticCompatibility(agent1Id: string, agent2Id: string): number {
+  const profile1 = agentKineticProfiles[agent1Id]
+  const profile2 = agentKineticProfiles[agent2Id]
+
+  if (!profile1 || !profile2) return 0
+
+  // Calculate elemental compatibility
+  const elementalCompatibility =
+    (profile1.velocitySignature.Fire * profile2.velocitySignature.Fire +
+     profile1.velocitySignature.Water * profile2.velocitySignature.Water +
+     profile1.velocitySignature.Air * profile2.velocitySignature.Air +
+     profile1.velocitySignature.Earth * profile2.velocitySignature.Earth) / 4
+
+  // Calculate alignment overlap
+  const alignmentOverlap = profile1.alignment.filter(planet =>
+    profile2.alignment.includes(planet)
+  ).length / Math.max(profile1.alignment.length, profile2.alignment.length)
+
+  // Calculate evolution rate compatibility (closer rates = better compatibility)
+  const evolutionRateDiff = Math.abs(profile1.evolutionRate - profile2.evolutionRate)
+  const evolutionCompatibility = Math.max(0, 1 - evolutionRateDiff / 2)
+
+  // Weighted average
+  return (elementalCompatibility * 0.5 + alignmentOverlap * 0.3 + evolutionCompatibility * 0.2)
+}
+
+/**
+ * Helper function to get display name for agent
+ */
+function getAgentDisplayName(agentId: string): string {
+  const nameMap: Record<string, string> = {
+    'leonardo-da-vinci': 'Leonardo da Vinci',
+    'shakespeare': 'William Shakespeare',
+    'marie-curie': 'Marie Curie',
+    'einstein': 'Albert Einstein',
+    'mozart': 'Wolfgang Amadeus Mozart',
+    'carl-jung': 'Carl Jung',
+    'nikola-tesla': 'Nikola Tesla',
+    'cleopatra-vii': 'Cleopatra VII',
+    'benjamin-franklin': 'Benjamin Franklin',
+    'maya-angelou': 'Maya Angelou',
+    'steve-jobs': 'Steve Jobs',
+    'gandhi': 'Mahatma Gandhi',
+    'frida-kahlo': 'Frida Kahlo',
+    'alan-turing': 'Alan Turing',
+    'da-vinci-leonardo': 'Leonardo da Vinci',
+    'william-shakespeare': 'William Shakespeare',
+    'virginia-woolf': 'Virginia Woolf',
+    'rumi': 'Rumi',
+    'sun-tzu': 'Sun Tzu',
+    'galileo-galilei': 'Galileo Galilei',
+    'charles-darwin': 'Charles Darwin',
+    'stephen-hawking': 'Stephen Hawking',
+    'rachel-carson': 'Rachel Carson',
+    'rosalind-franklin': 'Rosalind Franklin',
+    'vincent-van-gogh': 'Vincent van Gogh',
+    'ludwig-van-beethoven': 'Ludwig van Beethoven',
+    'andy-warhol': 'Andy Warhol',
+    'georgia-okeefe': 'Georgia O\'Keeffe',
+    'pablo-picasso': 'Pablo Picasso',
+    'nelson-mandela': 'Nelson Mandela',
+    'eleanor-roosevelt': 'Eleanor Roosevelt',
+    'malcolm-x': 'Malcolm X',
+    'harriet-tubman': 'Harriet Tubman',
+    'winston-churchill': 'Winston Churchill',
+    'socrates': 'Socrates',
+    'confucius': 'Confucius',
+    'simone-de-beauvoir': 'Simone de Beauvoir',
+    'marcus-aurelius': 'Marcus Aurelius',
+    'lao-tzu': 'Lao Tzu'
+  }
+
+  return nameMap[agentId] || agentId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+}
+
+/**
+ * Helper function to determine momentum type
+ */
+function getMomentumType(profile: KineticProfile): string {
+  const avgVelocity = Object.values(profile.velocitySignature).reduce((sum, val) => sum + val, 0) / 4
+
+  if (avgVelocity > 0.9) return 'explosive'
+  if (avgVelocity > 0.8) return 'building'
+  if (avgVelocity > 0.7) return 'sustained'
+  if (avgVelocity > 0.6) return 'gradual'
+  return 'oscillating'
+}
