@@ -173,7 +173,7 @@ pages:
   stage: deploy
   image: alpine:latest
   script:
-    - mkdir public
+    - mkdir -p public
     - cp backend/README.md public/index.md || echo "README not found"
     - cp backend/DEPLOYMENT.md public/deployment.md || echo "DEPLOYMENT not found"
     - cp DEPLOYMENT_GUIDE.md public/deployment-guide.md || echo "DEPLOYMENT_GUIDE not found"
