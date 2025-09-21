@@ -63,7 +63,16 @@ export default function SignUpPage() {
           action: 'register',
           email: formData.email,
           password: formData.password,
-          name: formData.name
+          name: formData.name,
+          birthChart: {
+            year: parseInt(formData.birthYear),
+            month: parseInt(formData.birthMonth),
+            day: parseInt(formData.birthDay),
+            hour: formData.birthHour ? parseInt(formData.birthHour) : null,
+            minute: formData.birthMinute ? parseInt(formData.birthMinute) : null,
+            latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+            longitude: formData.longitude ? parseFloat(formData.longitude) : null
+          }
         })
       })
 

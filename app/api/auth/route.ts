@@ -7,10 +7,10 @@ import bcrypt from 'bcryptjs'
 
 export async function POST(req: NextRequest) {
   try {
-    const { action, email, password, name } = await req.json()
+    const { action, email, password, name, birthChart } = await req.json()
 
     if (action === 'register') {
-      return await handleRegister(email, password, name)
+      return await handleRegister(email, password, name, birthChart)
     }
     
     return NextResponse.json({ error: 'Use NextAuth for login' }, { status: 400 })
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function handleRegister(email: string, password: string, name?: string) {
+async function handleRegister(email: string, password: string, name?: string, birthChart?: any) {
   try {
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -44,6 +44,27 @@ async function handleRegister(email: string, password: string, name?: string) {
         provider: 'email'
       }
     })
+
+    // Create user profile with birth chart data if provided
+    if (birthChart && birthChart.year && birthChart.month && birthChart.day) {
+      await prisma.profile.create({
+        data: {
+          userId: user.id,
+          name: user.name,
+          birthInfo: JSON.stringify({
+            year: birthChart.year,
+            month: birthChart.month,
+            day: birthChart.day,
+            hour: birthChart.hour || 12,
+            minute: birthChart.minute || 0,
+            latitude: birthChart.latitude || 0,
+            longitude: birthChart.longitude || 0,
+            timezone: 'UTC', // Default timezone
+            location: `${birthChart.latitude || 0}, ${birthChart.longitude || 0}`
+          })
+        }
+      })
+    }
 
     // Create default subscription (free tier)
     await prisma.subscription.create({
