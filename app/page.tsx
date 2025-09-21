@@ -14,7 +14,11 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 // Lazy load heavy components
 const TarotCosmicWidget = lazy(() => import('@/components/tarot-cosmic-widget'))
-const ConsciousnessCraftedAgentsShowcase = lazy(() => import('@/components/consciousness-crafted-agents-showcase'))
+const ConsciousnessCraftedAgentsShowcase = lazy(() => 
+  import('@/components/consciousness-crafted-agents-showcase').then(module => ({ 
+    default: module.ConsciousnessCraftedAgentsShowcase 
+  }))
+)
 const RealtimeRuneDisplay = lazy(() => import('@/components/realtime-rune-display'))
 
 export default function HomePage() {
@@ -109,7 +113,20 @@ export default function HomePage() {
   }
 
   return (
-    <ErrorBoundary fallback={<div>Something went wrong on the home page. Please refresh.</div>}>
+    <ErrorBoundary fallback={({ error, retry }) => (
+      <div className="container py-6 md:py-12 px-4 mx-auto max-w-7xl">
+        <div className="text-center p-8">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h2>
+          <p className="text-gray-600 mb-4">Error: {error?.message}</p>
+          <button 
+            onClick={retry}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    )}>
       <div className="container py-6 md:py-12 px-4 mx-auto max-w-7xl">
         <section className="flex flex-col items-center text-center mb-12 md:mb-16">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 md:mb-6 px-4">

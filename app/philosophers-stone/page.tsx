@@ -62,10 +62,22 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 // At the top, add lazy imports
 const AlchmQuantitiesDisplay = lazy(() => import('@/components/alchm-quantities-display'));
-const ConsciousnessVectorDisplay = lazy(() => import('@/components/temporal/consciousness-vector-display'));
+const ConsciousnessVectorDisplay = lazy(() => 
+  import('@/components/temporal/consciousness-vector-display').then(module => ({ 
+    default: module.ConsciousnessVectorDisplay 
+  }))
+);
 const CircularNatalHoroscope = lazy(() => import('@/components/circular-natal-horoscope'));
-const TemporalClient = lazy(() => import('@/components/temporal/temporal-client'));
-const AgentCreationWizard = lazy(() => import('@/components/consciousness/agent-creation-wizard'));
+const TemporalClient = lazy(() => 
+  import('@/components/temporal/temporal-client').then(module => ({ 
+    default: module.TemporalClient 
+  }))
+);
+const AgentCreationWizard = lazy(() => 
+  import('@/components/consciousness/agent-creation-wizard').then(module => ({ 
+    default: module.AgentCreationWizard 
+  }))
+);
 
 function PhilosophersStoneInner() {
   const searchParams = useSearchParams()
@@ -258,7 +270,20 @@ function PhilosophersStoneInner() {
   }
 
   return (
-    <ErrorBoundary fallback={<div>Error in Philosopher's Stone. Please refresh.</div>}>
+    <ErrorBoundary fallback={({ error, retry }) => (
+      <div className="container py-6 md:py-12 px-4 mx-auto max-w-7xl">
+        <div className="text-center p-8">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Error in Philosopher's Stone</h2>
+          <p className="text-gray-600 mb-4">Error: {error?.message}</p>
+          <button 
+            onClick={retry}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    )}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
         <div className="container mx-auto px-4 py-8">
           {/* Header - Monica's Laboratory */}
