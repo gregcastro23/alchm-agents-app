@@ -274,109 +274,111 @@ export default function MonicaChatInterface({
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4">
       {/* Chat Messages */}
-      <Card className="min-h-[350px] max-h-[80vh]">
-        <CardContent className="p-0 h-[50vh] md:h-[60vh] lg:h-[70vh]">
-          <ScrollArea className="h-full p-4" ref={scrollAreaRef}>
-            <div className="space-y-4">
-              {messages.map(message => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
+      <ErrorBoundary fallback={<div>Error in chat interface. Please refresh.</div>}>
+        <Card className="min-h-[350px] max-h-[80vh]">
+          <CardContent className="p-0 h-[50vh] md:h-[60vh] lg:h-[70vh]">
+            <ScrollArea className="h-full p-4" ref={scrollAreaRef}>
+              <div className="space-y-4">
+                {messages.map(message => (
                   <div
-                    className={`max-w-[80%] ${
-                      message.type === 'user'
-                        ? 'bg-primary text-primary-foreground rounded-l-lg rounded-tr-lg'
-                        : 'bg-green-50 border border-green-200 rounded-r-lg rounded-tl-lg'
-                    } p-4`}
+                    key={message.id}
+                    className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    {message.type === 'monica' && (
+                    <div
+                      className={`max-w-[80%] ${
+                        message.type === 'user'
+                          ? 'bg-primary text-primary-foreground rounded-l-lg rounded-tr-lg'
+                          : 'bg-green-50 border border-green-200 rounded-r-lg rounded-tl-lg'
+                      } p-4`}
+                    >
+                      {message.type === 'monica' && (
+                        <div className="flex items-center gap-2 mb-2">
+                          <Heart className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-medium text-green-700">Monica</span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatTimestamp(message.timestamp)}
+                          </span>
+                        </div>
+                      )}
+
+                      <div
+                        className={`${message.type === 'user' ? 'text-primary-foreground' : 'text-gray-800'}`}
+                      >
+                        {message.content}
+                      </div>
+
+                      {message.type === 'monica' && message.envelope && (
+                        <div className="mt-3 space-y-2">
+                          <div>
+                            <div className="text-xs font-semibold text-green-700">
+                              Suggested Practices
+                            </div>
+                            <ul className="list-disc pl-4 text-xs text-green-800">
+                              {message.envelope.suggestedPractices.map((p, i) => (
+                                <li key={i}>{p}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className="text-xs">
+                            <span className="font-semibold text-green-700">Next Step:</span>
+                            <span className="ml-1 text-green-800">{message.envelope.nextStep}</span>
+                          </div>
+                          {message.envelope.followUps?.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-1">
+                              {message.envelope.followUps.map((q, i) => (
+                                <Button
+                                  key={i}
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs"
+                                  onClick={() => setInputValue(q)}
+                                >
+                                  {q}
+                                </Button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {message.type === 'user' && (
+                        <div className="text-xs text-primary-foreground/70 mt-2">
+                          {formatTimestamp(message.timestamp)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-green-50 border border-green-200 rounded-r-lg rounded-tl-lg p-3 max-w-[80%]">
                       <div className="flex items-center gap-2 mb-2">
                         <Heart className="h-4 w-4 text-green-600" />
-                        <span className="text-sm font-medium text-green-700">Monica</span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatTimestamp(message.timestamp)}
-                        </span>
+                        <span className="text-xs font-medium text-green-700">Monica</span>
                       </div>
-                    )}
-
-                    <div
-                      className={`${message.type === 'user' ? 'text-primary-foreground' : 'text-gray-800'}`}
-                    >
-                      {message.content}
-                    </div>
-
-                    {message.type === 'monica' && message.envelope && (
-                      <div className="mt-3 space-y-2">
-                        <div>
-                          <div className="text-xs font-semibold text-green-700">
-                            Suggested Practices
-                          </div>
-                          <ul className="list-disc pl-4 text-xs text-green-800">
-                            {message.envelope.suggestedPractices.map((p, i) => (
-                              <li key={i}>{p}</li>
-                            ))}
-                          </ul>
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce"></div>
+                          <div
+                            className="w-2 h-2 bg-green-400 rounded-full animate-bounce"
+                            style={{ animationDelay: '0.1s' }}
+                          ></div>
+                          <div
+                            className="w-2 h-2 bg-green-400 rounded-full animate-bounce"
+                            style={{ animationDelay: '0.2s' }}
+                          ></div>
                         </div>
-                        <div className="text-xs">
-                          <span className="font-semibold text-green-700">Next Step:</span>
-                          <span className="ml-1 text-green-800">{message.envelope.nextStep}</span>
-                        </div>
-                        {message.envelope.followUps?.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {message.envelope.followUps.map((q, i) => (
-                              <Button
-                                key={i}
-                                size="sm"
-                                variant="outline"
-                                className="text-xs"
-                                onClick={() => setInputValue(q)}
-                              >
-                                {q}
-                              </Button>
-                            ))}
-                          </div>
-                        )}
+                        <span>Consulting the cosmic wisdom...</span>
                       </div>
-                    )}
-
-                    {message.type === 'user' && (
-                      <div className="text-xs text-primary-foreground/70 mt-2">
-                        {formatTimestamp(message.timestamp)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-green-50 border border-green-200 rounded-r-lg rounded-tl-lg p-3 max-w-[80%]">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Heart className="h-4 w-4 text-green-600" />
-                      <span className="text-xs font-medium text-green-700">Monica</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-green-700">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce"></div>
-                        <div
-                          className="w-2 h-2 bg-green-400 rounded-full animate-bounce"
-                          style={{ animationDelay: '0.1s' }}
-                        ></div>
-                        <div
-                          className="w-2 h-2 bg-green-400 rounded-full animate-bounce"
-                          style={{ animationDelay: '0.2s' }}
-                        ></div>
-                      </div>
-                      <span>Consulting the cosmic wisdom...</span>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        </CardContent>
-      </Card>
+                )}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </ErrorBoundary>
 
       {/* Quick Starter Prompts */}
       {messages.length <= 1 && (
