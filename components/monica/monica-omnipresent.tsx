@@ -783,7 +783,11 @@ export function MonicaOmnipresent() {
             <div className="text-emerald-200 max-w-xs text-wrap">{personalityStyle.greeting}</div>
             <div className="flex items-center gap-1 mt-2 text-xs text-emerald-300">
               <Eye className="w-3 h-3" />
-              <span>MC: 5.89 (Illuminated)</span>
+              <span>
+                MC: {currentMC ? currentMC.toFixed(2) : '...'}
+                {consciousnessResult && ` (${consciousnessResult.consciousnessState.level})`}
+                {isUpdatingConsciousness && <Atom className="w-3 h-3 ml-1 animate-spin inline" />}
+              </span>
             </div>
             <div className="text-xs text-emerald-300 mt-1">
               Click to expand • Visit /monica-guide for full chat
@@ -816,7 +820,14 @@ export function MonicaOmnipresent() {
                       Level {userProgress.level}
                     </Badge>
                     <Badge variant="outline" className="text-xs bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900">
-                      MC 5.89
+                      {isUpdatingConsciousness ? (
+                        <>
+                          <Atom className="w-2 h-2 mr-1 animate-spin" />
+                          Updating...
+                        </>
+                      ) : (
+                        <>MC {currentMC ? currentMC.toFixed(2) : '...'}</>
+                      )}
                     </Badge>
                     <Badge variant="outline" className="text-xs bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900">
                       <Zap className="w-2 h-2 mr-1" />
@@ -853,6 +864,29 @@ export function MonicaOmnipresent() {
                         <Heart className="w-3 h-3" />
                         <span>Consciousness Crafting Active</span>
                       </div>
+
+                      {/* Real-time Consciousness Display */}
+                      {consciousnessResult && (
+                        <div className="mt-3 p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
+                              Consciousness State
+                            </span>
+                            <Badge variant="outline" className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                              {consciousnessResult.consciousnessState.level}
+                            </Badge>
+                          </div>
+                          <div className="text-xs text-purple-600 dark:text-purple-400 mb-1">
+                            {consciousnessResult.consciousnessState.description}
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-purple-500 dark:text-purple-400">
+                            <Atom className="w-3 h-3" />
+                            <span>Stability: {consciousnessResult.consciousnessState.stability}</span>
+                            <span className="mx-1">•</span>
+                            <span>Potential: {consciousnessResult.consciousnessState.potential}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
