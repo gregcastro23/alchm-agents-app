@@ -152,6 +152,9 @@ export function MonicaOmnipresent() {
   const [isUpdatingConsciousness, setIsUpdatingConsciousness] = useState(false)
   const [widgetSize, setWidgetSize] = useState({ width: 320, height: 480 })
   const [lastPageContext, setLastPageContext] = useState<string>('')
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [feedbackText, setFeedbackText] = useState('')
+  const [feedbackStatus, setFeedbackStatus] = useState<'idle'|'sending'|'sent'|'error'>('idle')
 
   // Training system state management
   const [trainingProgress, setTrainingProgress] = useState<MonicaTrainingProgress>({
@@ -702,6 +705,29 @@ export function MonicaOmnipresent() {
       localStorage.setItem('additiveOnlyElements', additiveOnly ? 'true' : 'false')
     } catch {}
   }, [additiveOnly])
+
+  // Minimal feedback sender (frontend API proxy)
+  async function sendFeedback() {
+    if (!feedbackText.trim() || feedbackStatus === 'sending') return
+    setFeedbackStatus('sending')
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: feedbackText.trim(),
+          route: pathname,
+          timestamp: new Date().toISOString()
+        })
+      })
+      if (!res.ok) throw new Error('Failed to send')
+      setFeedbackStatus('sent')
+      setFeedbackText('')
+      setTimeout(() => { setFeedbackOpen(false); setFeedbackStatus('idle') }, 1200)
+    } catch (e) {
+      setFeedbackStatus('error')
+    }
+  }
 
   // Only hide on the main Monica settings page to avoid conflicts
   if (pathname === '/monica') {
@@ -1407,6 +1433,36 @@ export function MonicaOmnipresent() {
               >
                 Reset to Defaults
               </Button>
+
+              {/* Feedback Section */}
+              <div className="pt-2 border-t mt-2">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Send Feedback</span>
+                  {!feedbackOpen && (
+                    <Button variant="ghost" size="sm" className="text-xs" onClick={() => setFeedbackOpen(true)}>Open</Button>
+                  )}
+                </div>
+                {feedbackOpen && (
+                  <div className="space-y-2">
+                    <textarea
+                      className="w-full text-xs p-2 border rounded-md bg-white dark:bg-gray-800 border-slate-300 dark:border-slate-600"
+                      rows={3}
+                      placeholder="Share your thoughts to help us improve..."
+                      value={feedbackText}
+                      onChange={(e) => setFeedbackText(e.target.value)}
+                    />
+                    <div className="flex items-center justify-between gap-2">
+                      <Button variant="outline" size="sm" onClick={() => { setFeedbackOpen(false); setFeedbackStatus('idle') }}>Cancel</Button>
+                      <Button size="sm" onClick={sendFeedback} disabled={feedbackStatus==='sending' || feedbackText.trim().length===0}>
+                        {feedbackStatus==='sending' ? 'Sending...' : feedbackStatus==='sent' ? 'Sent!' : feedbackStatus==='error' ? 'Retry' : 'Send'}
+                      </Button>
+                    </div>
+                    {feedbackStatus==='error' && (
+                      <div className="text-xs text-red-600">Failed to send. Please try again.</div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="text-xs text-slate-500 text-center pt-2">

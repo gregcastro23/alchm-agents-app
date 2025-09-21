@@ -20,9 +20,12 @@ export default function PlanetaryCouncilPage() {
             personality traits based on current lunar phase and position for more nuanced guidance.
           </p>
         </div>
+        <div className="mt-3 text-xs text-muted-foreground">
+          Tip: The council auto-syncs to the current sky by default. You can toggle sync in the panel.
+        </div>
       </div>
 
-      <MultiAgentChat />
+      <MultiAgentChat defaultActivePlanets={["Sun", "Moon", "Mercury"]} defaultAutoSyncSky={true} />
 
       <div className="mt-12 max-w-3xl mx-auto">
         <div className="bg-muted/50 rounded-lg p-6">

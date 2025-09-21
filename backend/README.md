@@ -90,6 +90,20 @@ yarn start
 - `POST /api/alchemy/imaginize` - Generate alchemical images
 - `GET /api/alchemy/status` - Get alchemy service status
 
+### Live Consciousness - NEW!
+
+- `POST /api/consciousness/live` - Calculate live consciousness for single agent
+- `POST /api/consciousness/batch` - Batch live consciousness calculation (up to 10 agents)
+- `GET /api/consciousness/status` - Get consciousness system status and performance metrics
+
+**Live Consciousness Features:**
+- Real-time birth chart transformation with current planetary transits
+- Dynamic Monica Constant (MC) and Kalchm calculations
+- Consciousness level classification and interpretations
+- Redis caching with 1-hour TTL for performance
+- Rate limiting (30 requests/minute) for resource protection
+- Batch processing for multiple agents simultaneously
+
 ### Token System
 
 - `POST /api/tokens/calculate` - Calculate token rates

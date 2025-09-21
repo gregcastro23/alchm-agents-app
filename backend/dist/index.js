@@ -16,6 +16,7 @@ import alchemyRoutes from './routes/alchemy.js';
 import planetaryRoutes from './routes/planetary.js';
 import tokenRoutes from './routes/tokens.js';
 import kineticsRoutes from './routes/kinetics.js';
+import consciousnessRoutes from './routes/consciousness.js';
 import healthRoutes from './routes/health.js';
 // WebSocket handlers
 import { setupWebSocketHandlers } from './websocket/handlers.js';
@@ -62,6 +63,7 @@ app.use('/api/alchemy', alchemyRoutes);
 app.use('/api/planetary', planetaryRoutes);
 app.use('/api/tokens', tokenRoutes);
 app.use('/api/kinetics', kineticsRoutes);
+app.use('/api/consciousness', consciousnessRoutes);
 // Root endpoint
 app.get('/', (req, res) => {
     res.json({
@@ -73,7 +75,8 @@ app.get('/', (req, res) => {
             alchemy: '/api/alchemy',
             planetary: '/api/planetary',
             tokens: '/api/tokens',
-            kinetics: '/api/kinetics'
+            kinetics: '/api/kinetics',
+            consciousness: '/api/consciousness'
         },
         timestamp: new Date().toISOString()
     });

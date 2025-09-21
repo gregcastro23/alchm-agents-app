@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     
     // Check if backend is enabled
     const backendEnabled = process.env.NEXT_PUBLIC_KINETICS_BACKEND === 'true'
-    const backendUrl = process.env.KINETICS_BACKEND_URL || 'http://localhost:8000'
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
     
     if (!backendEnabled) {
       return NextResponse.json(

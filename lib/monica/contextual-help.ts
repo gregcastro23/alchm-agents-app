@@ -19,7 +19,7 @@ export interface Tutorial {
 }
 
 export interface PageGuidance {
-  greeting: string
+    greeting: string
   pageContext: string
   primaryActions: string[]
   tips: ContextualTip[]
@@ -268,7 +268,7 @@ export function getMonicaPersonality(pathname: string): MonicaPersonality | null
 export function getContextualTips(pathname: string, userLevel: number): ContextualTip[] {
   const guidance = getPageGuidance(pathname)
   if (!guidance) return []
-  
+
   // Filter tips based on user level and priority
   return guidance.tips.filter(tip => {
     if (userLevel <= 2) return tip.priority === 'high'

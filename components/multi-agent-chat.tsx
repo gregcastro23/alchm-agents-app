@@ -81,14 +81,22 @@ const PLANET_COLORS: Record<string, string> = {
   Pluto: 'bg-gray-800',
 }
 
-export default function MultiAgentChat() {
+interface MultiAgentChatProps {
+  defaultActivePlanets?: string[]
+  defaultAutoSyncSky?: boolean
+}
+
+export default function MultiAgentChat({
+  defaultActivePlanets = ['Sun', 'Moon', 'Mercury'],
+  defaultAutoSyncSky = true,
+}: MultiAgentChatProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [currentMoonPhase, setCurrentMoonPhase] = useState<MoonPhase>('New Moon')
   const [currentMoonDegree, setCurrentMoonDegree] = useState<number>(0)
-  const [autoSyncSky, setAutoSyncSky] = useState<boolean>(true)
+  const [autoSyncSky, setAutoSyncSky] = useState<boolean>(defaultAutoSyncSky)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Calculate current moon phase on component mount
@@ -218,6 +226,17 @@ export default function MultiAgentChat() {
       })
     )
   }, [planetaryPositions, autoSyncSky, currentMoonDegree, currentMoonPhase])
+
+  // Preselect default active planets on mount
+  useEffect(() => {
+    if (!defaultActivePlanets || defaultActivePlanets.length === 0) return
+    setAgents(prev =>
+      prev.map(a => ({
+        ...a,
+        active: defaultActivePlanets.includes(a.planet) ? true : a.active,
+      }))
+    )
+  }, [defaultActivePlanets])
 
   const signs = [
     'Aries',

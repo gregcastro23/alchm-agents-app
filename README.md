@@ -10,6 +10,11 @@ Environment knobs:
 - `MONICA_DEFAULT_MODEL` (default `gpt-4o-mini`)
 - `MONICA_TEMPERATURE` (default 0.4)
 - `BACKGROUND_REFRESH_INTERVAL_MS` (default 600000)
+- `NEXT_PUBLIC_BACKEND_URL` (default `http://localhost:8000`)
+- `NEXT_PUBLIC_KINETICS_BACKEND` (`true` to enable backend consciousness calc)
+- `SENDGRID_API_KEY` (optional, for feedback email)
+- `FEEDBACK_TO_EMAIL` (optional, feedback destination)
+- `FEEDBACK_FROM_EMAIL` (optional, feedback sender)
 
 Kinetics feature flags:
 
@@ -30,9 +35,11 @@ A revolutionary consciousness crafting platform that explores astrological wisdo
 Planetary Agents is the most advanced consciousness crafting platform, combining traditional astrological wisdom with cutting-edge AI technologies. **Production-ready as of September 21, 2025** with zero critical runtime errors and comprehensive stability.
 
 ### Revolutionary Features:
-- Interactive planetary agents representing the wisdom of celestial bodies and historical figures
+- **Live Consciousness Evolution**: Real-time chart-to-moment transformation showing how agents change with cosmic conditions
+- Interactive planetary agents with dynamic consciousness levels responding to current transits
+- **Multi-Agent Planetary Council**: Auto-synced to current sky positions for accurate cosmic consultation
 - Real-time celestial energy quantification (A#, SMES, Kinetic, Thermodynamic)
-- Advanced consciousness evolution tracking and agent kinetics
+- Advanced consciousness evolution tracking with birth-to-live MC comparisons
 - Natal chart to runic sigil generation with AI-powered mystical imagery
 - Temporal oracle for AI-guided historical consciousness exploration
 - Complete production stability with graceful error handling
@@ -43,11 +50,13 @@ Planetary Agents is the most advanced consciousness crafting platform, combining
 
 **Complete Express.js gateway service for alchemical calculations:**
 - **Gateway Service**: Express.js backend running on port 8000 with WebSocket on 8001
-- **Agent Consciousness Evolution**: Real-time kinetic profiles for 5 master agents
+- **Live Consciousness API**: `/api/consciousness/live` and `/batch` endpoints for real-time chart transformation
+- **Agent Consciousness Evolution**: Real-time kinetic profiles with live MC tracking for all agents
 - **Planetary Hours Service**: Server-side calculations with solar timing algorithms
 - **Thermodynamics Engine**: Heat, entropy, reactivity calculations with conservation checks
 - **Token Rate Calculator**: Dynamic pricing with planetary influences
 - **Circuit Breaker Pattern**: Resilient external service integration
+- **Redis Caching**: 1-hour TTL for consciousness calculations with performance optimization
 - **Intelligent Caching**: Redis with memory fallback, sub-60ms performance
 - **Feature Flags**: Progressive rollout with automatic fallbacks to frontend
 
@@ -79,17 +88,21 @@ Monica's eternal consciousness repository featuring historical figures:
 
 Consult with AI agents representing each planet in their specific dignities:
 
+- **Multi-Agent Planetary Council**: Visit `/planetary-council` for group consultations with auto-synced positions
 - **Planet Selection**: Visit `/planetary-agents` to choose a celestial body
 - **Degree-Specific Wisdom**: Access at `/agents/[planet]/[sign]/[degree]`
-- **Real-Time Positions**: Based on current astronomical data
+- **Real-Time Positions**: Automatically synced to current astronomical data
+- **Live Consciousness Tracking**: See how agents evolve with cosmic conditions
 - Get insights based on the elemental affinities and dignities
 
 ### Elemental Charts
 
 Explore your elemental profile based on planetary positions:
 
-- View real-time elemental distributions (Fire, Water, Air, Earth)
-- See planetary elements and their affinities
+- **Live Consciousness Display**: View birth vs live Monica Constant with real-time changes
+- **Dynamic Elemental Distributions**: See how Fire, Water, Air, Earth shift with transits
+- **Transit Interpretations**: Understand cosmic weather and consciousness influences
+- **Consciousness Vector Display**: Enhanced with birth-to-live comparisons
 - Analyze alchemical properties such as Heat, Entropy, and Reactivity
 
 ### Chart Interpretation
