@@ -14,6 +14,9 @@ WORKDIR /app
 # Copy package files
 COPY package.json yarn.lock ./
 
+# Create .yarnrc.yml to force nodeLinker to node-modules (disable PnP)
+RUN echo "nodeLinker: node-modules" > .yarnrc.yml
+
 # Install dependencies only
 RUN yarn install --immutable
 
@@ -26,6 +29,9 @@ FROM node:18-alpine AS builder
 RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 
 WORKDIR /app
+
+# Create .yarnrc.yml to force nodeLinker to node-modules (disable PnP)
+RUN echo "nodeLinker: node-modules" > .yarnrc.yml
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
@@ -61,6 +67,10 @@ RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 
 # Copy package files and install production dependencies
 COPY package.json yarn.lock ./
+
+# Create .yarnrc.yml to force nodeLinker to node-modules (disable PnP)
+RUN echo "nodeLinker: node-modules" > .yarnrc.yml
+
 RUN yarn install --production && \
     yarn cache clean && \
     rm -rf /tmp/* /var/cache/apk/* || true
