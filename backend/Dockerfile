@@ -30,23 +30,20 @@ RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 
 WORKDIR /app
 
+# Copy package files first for Yarn metadata
+COPY package.json yarn.lock ./
+
 # Create .yarnrc.yml to force nodeLinker to node-modules (disable PnP)
 RUN echo "nodeLinker: node-modules" > .yarnrc.yml
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 
-# Copy package files first for better caching
-COPY package.json ./
-
-# Set build environment
-ENV NODE_ENV=production
-
 # Copy source code
 COPY . .
 
-# Install dependencies in this stage too (workaround for Yarn 4.0)
-RUN yarn install --immutable
+# Set build environment
+ENV NODE_ENV=production
 
 # Build the application
 RUN yarn build
