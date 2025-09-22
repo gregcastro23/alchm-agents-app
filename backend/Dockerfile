@@ -12,7 +12,7 @@ RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 WORKDIR /app
 
 # Copy package files
-COPY package.json yarn.lock .yarnrc.yml ./
+COPY package.json yarn.lock ./
 
 # Install dependencies only
 RUN yarn install --frozen-lockfile --production=false
@@ -56,18 +56,18 @@ RUN apk add --no-cache \
     ca-certificates \
     && update-ca-certificates
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S backend -u 1001
-
 # Enable Corepack for Yarn 4.0 support
 RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 
 # Copy package files and install production dependencies
-COPY package.json yarn.lock .yarnrc.yml ./
+COPY package.json yarn.lock ./
 RUN yarn install --production --frozen-lockfile && \
     yarn cache clean && \
-    rm -rf /tmp/* /var/cache/apk/*
+    rm -rf /tmp/* /var/cache/apk/* || true
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S backend -u 1001
 
 # Copy built application from builder stage
 COPY --from=builder --chown=backend:nodejs /app/dist ./dist
