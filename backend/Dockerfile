@@ -15,7 +15,7 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 
 # Install dependencies only
-RUN yarn install --frozen-lockfile --production=false
+RUN yarn install --immutable
 
 # =====================================
 # Builder Stage
@@ -39,8 +39,8 @@ ENV NODE_ENV=production
 # Build the application
 RUN yarn build
 
-# Remove dev dependencies after build
-RUN yarn install --production --frozen-lockfile && yarn cache clean
+# Remove dev dependencies after build  
+RUN yarn workspaces focus --production && yarn cache clean
 
 # =====================================
 # Production Stage
@@ -61,7 +61,7 @@ RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 
 # Copy package files and install production dependencies
 COPY package.json yarn.lock ./
-RUN yarn install --production --frozen-lockfile && \
+RUN yarn install --production && \
     yarn cache clean && \
     rm -rf /tmp/* /var/cache/apk/* || true
 
