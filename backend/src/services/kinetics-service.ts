@@ -166,9 +166,12 @@ export function calculateGroupDynamics(
     // Calculate individual resonances
     const resonances: Record<string, any> = {}
     agentIds.forEach((agentId, index) => {
+      // Use agent position in group for deterministic synergy variation
+      const synergyModifier = 0.9 + (index / Math.max(groupSize - 1, 1)) * 0.1
+
       resonances[agentId] = {
         individualContribution: 0.4 + (planetaryPowers[index] * 0.3),
-        groupSynergy: harmony * (0.9 + Math.random() * 0.1)
+        groupSynergy: harmony * synergyModifier
       }
     })
 
@@ -416,7 +419,12 @@ function calculateResonanceMap(
     const elementalPower = elementalTotals[agentElement] || 5
 
     const resonance = 0.5 + (elementalPower / 10) * 0.5
-    const compatibility = 0.6 + Math.random() * 0.3
+
+    // Calculate compatibility based on elemental balance
+    // Higher elemental power = higher compatibility
+    // Max elemental power is around 10, normalize to 0.6-0.9 range
+    const normalizedPower = Math.min(elementalPower / 10, 1)
+    const compatibility = 0.6 + normalizedPower * 0.3
 
     resonanceMap[agentId] = {
       resonance: Math.round(resonance * 100) / 100,
