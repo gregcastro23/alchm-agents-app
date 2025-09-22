@@ -24,10 +24,12 @@ const productionFormat = winston.format.combine(
 export const logger = winston.createLogger({
   level: logLevel,
   format: winston.format.combine(
-    winston.format((info) => {
-      if (info.req?.user?.id) {
-        info.userId = info.req.user.id;
-      }
+    winston.format((info: any) => {
+      try {
+        if (info?.req && (info.req as any).user?.id) {
+          info.userId = (info.req as any).user.id;
+        }
+      } catch {}
       return info;
     })(),
     logFormat === 'json' ? productionFormat : developmentFormat

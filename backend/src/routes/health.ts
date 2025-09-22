@@ -1,9 +1,10 @@
-import { Router, Request, Response } from 'express'
+import { Router as createRouter, type Request, type Response } from 'express'
+import type { Router as ExpressRouter } from 'express'
 import { alchmClient } from '../services/alchm-client.js'
 import { cacheService } from '../services/cache.js'
 import { asyncHandler } from '../middleware/error-handler.js'
 
-const router = Router()
+const router: ExpressRouter = createRouter()
 
 /**
  * GET /api/health

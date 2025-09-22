@@ -209,7 +209,7 @@ router.post('/live', async (req: Request, res: Response) => {
     
     await prisma.evolutionState.create({
       data: {
-        userId: req.user?.id || 'anonymous',
+        userId: (req as any).user?.id || 'anonymous',
         agentId: birthChart.name,
         mcValue: response.liveMC,
         spirit: response.liveKalchm.spirit,
@@ -268,7 +268,7 @@ router.post('/batch', async (req: Request, res: Response) => {
         results[agent.name] = agentResult
         await prisma.evolutionState.create({
           data: {
-            userId: req.user?.id || 'anonymous',
+            userId: (req as any).user?.id || 'anonymous',
             agentId: agent.name,
             mcValue: agentResult.liveMC,
             spirit: agentResult.liveKalchm.spirit,

@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { Router as createRouter } from 'express';
 import { alchmClient } from '../services/alchm-client.js';
 import { cacheService } from '../services/cache.js';
 import { asyncHandler } from '../middleware/error-handler.js';
-const router = Router();
+const router = createRouter();
 /**
  * GET /api/health
  * Basic health check endpoint

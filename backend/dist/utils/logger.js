@@ -12,9 +12,12 @@ const productionFormat = winston.format.combine(winston.format.timestamp(), wins
 export const logger = winston.createLogger({
     level: logLevel,
     format: winston.format.combine(winston.format((info) => {
-        if (info.req?.user?.id) {
-            info.userId = info.req.user.id;
+        try {
+            if (info?.req && info.req.user?.id) {
+                info.userId = info.req.user.id;
+            }
         }
+        catch { }
         return info;
     })(), logFormat === 'json' ? productionFormat : developmentFormat),
     defaultMeta: { service: 'planetary-agents-backend' },

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { logger } from '../utils/logger.js';
-import { circuitBreaker } from '../utils/circuit-breaker.js';
+import CircuitBreaker from '../utils/circuit-breaker.js';
+const breaker = new CircuitBreaker({ failureThreshold: 3, recoveryTimeout: 5000, monitoringPeriod: 60000 });
 
 const ALCHM_BACKEND_URL = process.env.ALCHM_BACKEND_URL || 'https://alchm-backend.onrender.com';
 
@@ -11,7 +12,7 @@ const apiClient = axios.create({
 });
 
 // Circuit breaker wrapped POST
-const protectedPost = circuitBreaker(async (endpoint: string, data: any) => {
+const protectedPost = async (endpoint: string, data: any) => breaker.execute(async () => {
   const response = await apiClient.post(endpoint, data);
   return response.data;
 });
