@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../lib/generated/prisma"
 }
 
 datasource db {
@@ -1227,11 +1226,4 @@ model EvolutionState {
   updatedAt   DateTime @updatedAt
 }
 
-model ConsciousnessInteraction {
-  id          String   @id @default(uuid())
-  userId      String
-  agentId     String
-  mcChange    Float
-  interpretation String?
-  timestamp   DateTime @default(now())
-}
+// Duplicate model removed. Use the primary definition at line ~1082.
