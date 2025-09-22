@@ -1,87 +1,59 @@
-# =============================================================================
-# PLANETARY AGENTS BACKEND - PRODUCTION DOCKERFILE
-# =============================================================================
-
-# Use official Node.js runtime as base image
+# =====================================
+# Simplified Production Dockerfile for Render
+# =====================================
 FROM node:18-alpine
 
-# Set working directory in container
+# Install dependencies for native modules
+RUN apk add --no-cache \
+    libc6-compat \
+    python3 \
+    make \
+    g++ \
+    dumb-init \
+    curl \
+    ca-certificates \
+    && update-ca-certificates
+
+# Enable Corepack for Yarn support
+RUN corepack enable
+
 WORKDIR /app
 
-# Enable Corepack for Yarn 4.0 support
-RUN corepack enable && corepack prepare yarn@4.0.0 --activate
+# Copy all files
+COPY . .
+
+# Ensure we use node-modules (not PnP)
+RUN echo "nodeLinker: node-modules" > .yarnrc.yml
+
+# Install dependencies and build
+RUN yarn install --immutable && \
+    yarn build && \
+    yarn cache clean
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S backend -u 1001
 
-# Copy package files
-COPY package.json yarn.lock .yarnrc.yml ./
-
-# Install dependencies with Yarn 4.0
-RUN yarn install --frozen-lockfile
-
-# Copy source code
-COPY . .
-
-# Build the application
-RUN yarn build
-
-# Remove dev dependencies for smaller image
-RUN yarn install --frozen-lockfile --production=true && \
-    yarn cache clean
-
-# Change ownership of app directory to nodejs user
-RUN chown -R nodejs:nodejs /app
+# Create necessary directories with proper permissions
+RUN mkdir -p logs temp && \
+    chown -R backend:nodejs logs temp dist
 
 # Switch to non-root user
-USER nodejs
+USER backend
 
-# Expose the port the app runs on
-EXPOSE 8000
-EXPOSE 8001
+# Set production environment variables
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=512"
+
+# Expose ports
+EXPOSE 8000 8001
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "const http = require('http'); \
-    const options = { hostname: 'localhost', port: process.env.PORT || 8000, path: '/api/health', timeout: 2000 }; \
-    const req = http.request(options, (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); \
-    req.on('error', () => process.exit(1)); \
-    req.end();"
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+  CMD curl -f http://localhost:8000/api/health || exit 1
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
 
 # Start the application
-CMD ["yarn", "start"]
-
-# =============================================================================
-# BUILD INSTRUCTIONS
-# =============================================================================
-
-# To build and run locally:
-# docker build -f Dockerfile.production -t planetary-agents-backend .
-# docker run -p 8000:8000 -p 8001:8001 planetary-agents-backend
-
-# For production deployment:
-# 1. Push to container registry (Docker Hub, GitHub Container Registry, etc.)
-# 2. Configure Render to use the container image
-# 3. Set environment variables in Render dashboard
-
-# =============================================================================
-# SECURITY FEATURES
-# =============================================================================
-
-# ✅ Non-root user for enhanced security
-# ✅ Alpine Linux base image (smaller attack surface)
-# ✅ Production-only dependencies
-# ✅ Health check for container monitoring
-# ✅ Proper port exposure
-# ✅ Clean yarn cache to reduce image size
-
-# =============================================================================
-# PERFORMANCE OPTIMIZATIONS
-# =============================================================================
-
-# ✅ Multi-stage build process (dev deps removed)
-# ✅ Frozen lockfile for consistent installs
-# ✅ Clean caches for smaller final image
-# ✅ Alpine Linux for minimal size
-# ✅ Health check for proper container lifecycle
+CMD ["node", "dist/index.js"]
