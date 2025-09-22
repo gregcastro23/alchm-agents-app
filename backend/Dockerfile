@@ -14,7 +14,6 @@ WORKDIR /app
 # Copy package files and Yarn configuration
 COPY package.json yarn.lock ./
 COPY .yarnrc.yml* ./
-COPY .yarn ./.yarn
 
 # Ensure nodeLinker is set to node-modules
 RUN echo "nodeLinker: node-modules" >> .yarnrc.yml
@@ -35,14 +34,12 @@ WORKDIR /app
 # Copy package files and Yarn configuration
 COPY package.json yarn.lock ./
 COPY .yarnrc.yml* ./
-COPY .yarn ./.yarn
 
 # Ensure nodeLinker is set to node-modules
 RUN echo "nodeLinker: node-modules" >> .yarnrc.yml
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/.yarn ./.yarn
 
 # Copy source code
 COPY . .
@@ -77,7 +74,6 @@ RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 # Copy package files and Yarn configuration
 COPY package.json yarn.lock ./
 COPY .yarnrc.yml* ./
-COPY .yarn ./.yarn
 
 # Ensure nodeLinker is set to node-modules
 RUN echo "nodeLinker: node-modules" >> .yarnrc.yml
