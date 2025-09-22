@@ -3,6 +3,9 @@
 import { AlchemicalKineticsClient } from './kinetics-client'
 import { getAgentKineticProfile, calculateKineticCompatibility } from './agents/kinetic-profiles'
 import { routeTask } from './agents/router'
+import { getCurrentPlanetaryPositions } from './calculate-transits'
+import { dynamicAspectsEngine, type DynamicAspectsAnalysis } from './dynamic-aspects-engine'
+import type { PlanetPosition } from './astrological-pattern-recognition'
 
 // Central utilities for kinetics integration across the platform
 export class KineticsIntegration {
@@ -44,7 +47,7 @@ export class KineticsIntegration {
         window: 3,
       })
 
-      const enhanced: EnhancedKineticData = {
+      let enhanced: EnhancedKineticData = {
         base: kinetics,
         currentPower: kinetics.power[kinetics.power.length - 1]?.power || 0.5,
         currentHour: kinetics.timing?.planetaryHours[0] || 'Sun',
@@ -60,6 +63,34 @@ export class KineticsIntegration {
           ? await this.buildResonanceMap(kinetics)
           : undefined,
         timestamp: Date.now(),
+      }
+
+      // Aspect-modulated kinetics: applying/separating integration
+      try {
+        const aspectAnalysis = await this.getCurrentDynamicAspects()
+        if (aspectAnalysis) {
+          const { velocityModifier, powerModifier } = this.computeAspectKineticModifiers(
+            aspectAnalysis
+          )
+
+          // Apply velocity modifier (cap to 1.0 to preserve scale)
+          enhanced = {
+            ...enhanced,
+            velocity: Math.min(1.0, enhanced.velocity * velocityModifier),
+            currentPower: Math.max(0, Math.min(1.0, enhanced.currentPower * powerModifier)),
+            powerPrediction: enhanced.powerPrediction
+              ? {
+                  ...enhanced.powerPrediction,
+                  nextHourPower: Math.max(
+                    0.1,
+                    Math.min(1.0, enhanced.powerPrediction.nextHourPower * powerModifier)
+                  ),
+                }
+              : undefined,
+          }
+        }
+      } catch (err) {
+        console.warn('Aspect-modulated kinetics integration skipped:', err)
       }
 
       // Cache the result
@@ -95,6 +126,92 @@ export class KineticsIntegration {
     // Mercury principle: velocity of change
     // Mars principle: force behind change
     return Math.min(1.0, mercury * 0.7 + mars * 0.3)
+  }
+
+  /**
+   * Build PlanetPosition[] for dynamic aspects using current calculated positions
+   */
+  private buildCurrentPlanetPositions(): PlanetPosition[] {
+    const positions = getCurrentPlanetaryPositions()
+    const entries = Object.entries(positions)
+    const planets: PlanetPosition[] = []
+
+    entries.forEach(([planet, data]) => {
+      if (!data?.sign || typeof data.degree !== 'number') return
+      planets.push({
+        planet,
+        sign: data.sign,
+        degree: Math.max(0, Math.min(29.9999, data.degree)),
+        house: 0,
+        date: new Date(),
+      })
+    })
+
+    return planets
+  }
+
+  /**
+   * Get current dynamic aspects analysis (cached by engine)
+   */
+  private async getCurrentDynamicAspects(): Promise<DynamicAspectsAnalysis | null> {
+    try {
+      const planets = this.buildCurrentPlanetPositions()
+      if (planets.length < 2) return null
+      return await dynamicAspectsEngine.calculateDynamicAspects(planets, 7)
+    } catch (e) {
+      return null
+    }
+  }
+
+  /**
+   * Compute kinetic modifiers based on applying/exact/separating aspects
+   * - Velocity: +up to 15% for applying (proximity-weighted), +25% at exact, gentle decay when separating
+   * - Power: +20% within 3 days before exact, +25% at exact
+   */
+  private computeAspectKineticModifiers(
+    analysis: DynamicAspectsAnalysis
+  ): { velocityModifier: number; powerModifier: number } {
+    const aspects = analysis.currentAspects || []
+
+    const exactAspects = aspects.filter(a => (a as any).orb !== undefined && a.orb <= 1.0)
+    const applyingAspects = aspects.filter(a => (a as any).applying)
+    const separatingAspects = aspects.filter(a => (a as any).separating)
+
+    // Defaults
+    let velocityModifier = 1.0
+    let powerModifier = 1.0
+
+    if (exactAspects.length > 0) {
+      velocityModifier = 1.25
+      powerModifier = 1.25
+      return { velocityModifier, powerModifier }
+    }
+
+    if (applyingAspects.length > 0) {
+      // Proximity-weighted boost up to +15%
+      const days = applyingAspects
+        .map(a => Math.max(0, (a as any).daysToExact ?? Number.POSITIVE_INFINITY))
+        .filter(v => Number.isFinite(v))
+      const minDays = days.length > 0 ? Math.min(...days) : 7
+      const proximityBoost = Math.max(0, (7 - minDays) / 7) * 0.15
+      velocityModifier = 1.0 + proximityBoost
+
+      // Power +20% if within 3 days of exact
+      if (minDays <= 3) {
+        powerModifier = 1.2
+      }
+    } else if (separatingAspects.length > 0) {
+      // Gentle normalization with small residual boost up to +15% decaying with time
+      const avgAbsOrbVel =
+        separatingAspects.reduce((sum, a) => sum + Math.abs((a as any).orbVelocity || 0), 0) /
+        separatingAspects.length
+      const sepDays = Math.abs(avgAbsOrbVel * 30)
+      const decayFactor = Math.max(0.05, Math.exp(-sepDays / 10))
+      velocityModifier = 1.0 + 0.15 * decayFactor
+      powerModifier = 1.0 // stabilized
+    }
+
+    return { velocityModifier, powerModifier }
   }
 
   // Find optimal agents for current kinetic conditions
