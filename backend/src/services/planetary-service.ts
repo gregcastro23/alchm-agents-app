@@ -1,4 +1,5 @@
 import { logger } from '../utils/logger.js'
+import { getRealPlanetaryPositions } from './alchm-client.js';
 
 export interface PlanetPosition {
   name: string
@@ -92,7 +93,7 @@ function getDefaultPositions(): PlanetaryPositions {
  * Calculate planetary hour for a given time and location
  * Returns the ruling planet for the current planetary hour
  */
-export function getPlanetaryHour(date: Date = new Date(), latitude: number = 0): string {
+export function getPlanetaryHour(date: Date, latitude: number): string {
   try {
     // Planetary hours in Chaldean order
     const dayPlanets = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn']

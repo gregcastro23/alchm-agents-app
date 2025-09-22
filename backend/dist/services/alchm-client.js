@@ -1,199 +1,38 @@
 import axios from 'axios';
 import { logger } from '../utils/logger.js';
-import { cacheService } from './cache.js';
-import CircuitBreaker from '../utils/circuit-breaker.js';
-class AlchmClientService {
-    client;
-    config;
-    circuitBreaker;
-    constructor() {
-        this.config = {
-            baseURL: process.env.ALCHM_BACKEND_URL || 'https://alchm-backend.onrender.com',
-            timeout: parseInt(process.env.ALCHM_BACKEND_TIMEOUT || '30000'),
-            maxRetries: parseInt(process.env.ALCHM_BACKEND_MAX_RETRIES || '3'),
-            retryDelay: 1000
-        };
-        this.client = axios.create({
-            baseURL: this.config.baseURL,
-            timeout: this.config.timeout,
-            headers: {
-                'Content-Type': 'application/json',
-                'User-Agent': 'Planetary-Agents-Backend/1.0.0'
-            }
-        });
-        // Circuit breaker for resilience
-        this.circuitBreaker = new CircuitBreaker({
-            failureThreshold: 5,
-            recoveryTimeout: 30000,
-            monitoringPeriod: 60000
-        });
-        this.setupInterceptors();
+import { circuitBreaker } from '../utils/circuit-breaker.js';
+const ALCHM_BACKEND_URL = process.env.ALCHM_BACKEND_URL || 'https://alchm-backend.onrender.com';
+const apiClient = axios.create({
+    baseURL: ALCHM_BACKEND_URL,
+    timeout: 5000,
+    headers: {
+        'Content-Type': 'application/json',
     }
-    setupInterceptors() {
-        // Request interceptor for logging
-        this.client.interceptors.request.use((config) => {
-            logger.debug('AlchmClient request:', {
-                method: config.method?.toUpperCase(),
-                url: config.url,
-                timeout: config.timeout
-            });
-            return config;
-        }, (error) => {
-            logger.error('AlchmClient request error:', error);
-            return Promise.reject(error);
-        });
-        // Response interceptor for logging and error handling
-        this.client.interceptors.response.use((response) => {
-            logger.debug('AlchmClient response:', {
-                status: response.status,
-                url: response.config.url,
-                responseTime: Date.now() - response.config.requestStartTime
-            });
-            return response;
-        }, (error) => {
-            logger.error('AlchmClient response error:', {
-                status: error.response?.status,
-                url: error.config?.url,
-                message: error.message
-            });
-            return Promise.reject(error);
-        });
+});
+// Circuit breaker wrapped request
+const protectedRequest = circuitBreaker(async (endpoint, data) => {
+    const response = await apiClient.post(endpoint, data);
+    return response.data;
+});
+// Get real horoscope data
+export async function getRealHoroscope(birthData) {
+    try {
+        return await protectedRequest('/horoscope', birthData);
     }
-    async retryRequest(requestFn, retries = this.config.maxRetries) {
-        try {
-            return await requestFn();
-        }
-        catch (error) {
-            if (retries > 0) {
-                logger.warn(`Request failed, retrying... (${retries} attempts left)`);
-                await this.delay(this.config.retryDelay);
-                return this.retryRequest(requestFn, retries - 1);
-            }
-            throw error;
-        }
-    }
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-    getCacheKey(endpoint, params) {
-        const paramString = JSON.stringify(params);
-        return `alchm-client:${endpoint}:${Buffer.from(paramString).toString('base64')}`;
-    }
-    /**
-     * Generate an alchemical image using the /imaginize endpoint
-     */
-    async imaginize(request) {
-        const cacheKey = this.getCacheKey('imaginize', request);
-        // Check cache first (images can be cached for longer periods)
-        try {
-            const cached = await cacheService.get(cacheKey);
-            if (cached) {
-                logger.debug('Returning cached imaginize result');
-                return cached;
-            }
-        }
-        catch (error) {
-            logger.warn('Cache check failed for imaginize:', error);
-        }
-        return this.circuitBreaker.execute(async () => {
-            const startTime = Date.now();
-            const response = await this.retryRequest(async () => {
-                return this.client.post('/imaginize', request, {
-                    timeout: 45000 // Longer timeout for image generation
-                });
-            });
-            const result = {
-                ...response.data,
-                metadata: {
-                    alchmData: response.data.metadata?.alchmData || null,
-                    generationTime: Date.now() - startTime,
-                    style: response.data.metadata?.style || 'default'
-                }
-            };
-            // Cache successful results for 1 hour
-            if (result.success && result.imageUrl) {
-                try {
-                    await cacheService.set(cacheKey, result, 3600);
-                }
-                catch (error) {
-                    logger.warn('Failed to cache imaginize result:', error);
-                }
-            }
-            return result;
-        });
-    }
-    /**
-     * Perform alchemical calculations
-     */
-    async calculateAlchemy(request) {
-        const cacheKey = this.getCacheKey('calculate', request);
-        // Check cache first
-        try {
-            const cached = await cacheService.get(cacheKey);
-            if (cached) {
-                logger.debug('Returning cached alchemy calculation');
-                return cached;
-            }
-        }
-        catch (error) {
-            logger.warn('Cache check failed for alchemy calculation:', error);
-        }
-        return this.circuitBreaker.execute(async () => {
-            const startTime = Date.now();
-            const response = await this.retryRequest(async () => {
-                return this.client.post('/calculate', request);
-            });
-            const result = {
-                ...response.data,
-                data: response.data.data ? {
-                    ...response.data.data,
-                    computeTime: Date.now() - startTime
-                } : undefined
-            };
-            // Cache successful results for 5 minutes (calculations can change with time)
-            if (result.success) {
-                try {
-                    await cacheService.set(cacheKey, result, 300);
-                }
-                catch (error) {
-                    logger.warn('Failed to cache alchemy calculation:', error);
-                }
-            }
-            return result;
-        });
-    }
-    /**
-     * Check if the alchm-backend is healthy
-     */
-    async healthCheck() {
-        try {
-            const startTime = Date.now();
-            const response = await this.client.get('/health', { timeout: 5000 });
-            const responseTime = Date.now() - startTime;
-            return {
-                healthy: response.status === 200,
-                responseTime
-            };
-        }
-        catch (error) {
-            return {
-                healthy: false,
-                error: error instanceof Error ? error.message : 'Unknown error'
-            };
-        }
-    }
-    /**
-     * Get circuit breaker status
-     */
-    getStatus() {
-        return {
-            circuitBreakerState: this.circuitBreaker.getState(),
-            failureCount: this.circuitBreaker.getFailureCount(),
-            lastFailureTime: this.circuitBreaker.getLastFailureTime()
-        };
+    catch (error) {
+        logger.error('Horoscope API error:', error);
+        throw error;
     }
 }
-// Singleton instance
-export const alchmClient = new AlchmClientService();
-export default alchmClient;
+// Get real planetary positions
+export async function getRealPlanetaryPositions(location) {
+    try {
+        return await protectedRequest('/planetary', { location });
+    }
+    catch (error) {
+        logger.error('Planetary API error:', error);
+        throw error;
+    }
+}
+// ... add other endpoints as needed
 //# sourceMappingURL=alchm-client.js.map

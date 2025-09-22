@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { Router as createRouter } from 'express';
 import { body, validationResult } from 'express-validator';
 import { asyncHandler, AppError } from '../middleware/error-handler.js';
 import { cacheService } from '../services/cache.js';
 import { calculateEnhancedKinetics, calculateGroupDynamics, calculateTokenKinetics } from '../services/kinetics-service.js';
-const router = Router();
+const router = createRouter();
 /**
  * POST /api/kinetics/enhanced
  * Enhanced kinetics calculation with backend optimizations

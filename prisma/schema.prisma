@@ -1212,3 +1212,26 @@ model MonicaKnowledge {
   @@index([isActive])
   @@map("monica_knowledge")
 }
+
+model EvolutionState {
+  id          String   @id @default(uuid())
+  userId      String
+  agentId     String
+  mcValue     Float
+  spirit      Float
+  essence     Float
+  matter      Float
+  substance   Float
+  aNumber     Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ConsciousnessInteraction {
+  id          String   @id @default(uuid())
+  userId      String
+  agentId     String
+  mcChange    Float
+  interpretation String?
+  timestamp   DateTime @default(now())
+}

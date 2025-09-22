@@ -20,6 +20,7 @@ import {
   blockAttacks
 } from './middleware/security.js'
 import { cacheService } from './services/cache.js'
+import { authMiddleware } from './middleware/auth.js';
 
 // Routes
 import alchemyRoutes from './routes/alchemy.js'
@@ -127,6 +128,8 @@ app.use('/api/planetary', planetaryRoutes)
 app.use('/api/tokens', tokenRoutes)
 app.use('/api/kinetics', kineticsRoutes)
 app.use('/api/consciousness', consciousnessRoutes)
+app.use('/api/consciousness', authMiddleware);
+app.use('/api/kinetics', authMiddleware);
 
 // Root endpoint
 app.get('/', (req: Request, res: Response) => {

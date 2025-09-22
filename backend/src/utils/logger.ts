@@ -23,7 +23,15 @@ const productionFormat = winston.format.combine(
 // Create logger
 export const logger = winston.createLogger({
   level: logLevel,
-  format: logFormat === 'json' ? productionFormat : developmentFormat,
+  format: winston.format.combine(
+    winston.format((info) => {
+      if (info.req?.user?.id) {
+        info.userId = info.req.user.id;
+      }
+      return info;
+    })(),
+    logFormat === 'json' ? productionFormat : developmentFormat
+  ),
   defaultMeta: { service: 'planetary-agents-backend' },
   transports: [
     // Console transport

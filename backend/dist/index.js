@@ -13,6 +13,7 @@ import { requestLogger } from './middleware/request-logger.js';
 import { featureFlagMiddleware } from './middleware/feature-flags.js';
 import { securityHeaders, validateContentType, sanitizeInput, requestTimeout, suspiciousActivityLogger, blockAttacks } from './middleware/security.js';
 import { cacheService } from './services/cache.js';
+import { authMiddleware } from './middleware/auth.js';
 // Routes
 import alchemyRoutes from './routes/alchemy.js';
 import planetaryRoutes from './routes/planetary.js';
@@ -25,7 +26,7 @@ import { setupWebSocketHandlers } from './websocket/handlers.js';
 // Load environment variables
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = parseInt(process.env.PORT || '8000', 10);
 const HOST = process.env.HOST || 'localhost';
 const ENABLE_WEBSOCKET = process.env.ENABLE_WEBSOCKET === 'true';
 // Security middleware
@@ -47,7 +48,7 @@ app.use(compression());
 const maxRequestSize = process.env.MAX_REQUEST_SIZE_MB || '2';
 app.use(express.json({
     limit: `${maxRequestSize}mb`,
-    verify: (req, res, buf) => {
+    verify: (req, res, buf, _encoding) => {
         // Validate JSON payload size in production
         if (buf.length > parseInt(maxRequestSize) * 1024 * 1024) {
             const error = new Error('Request payload too large');
@@ -107,6 +108,8 @@ app.use('/api/planetary', planetaryRoutes);
 app.use('/api/tokens', tokenRoutes);
 app.use('/api/kinetics', kineticsRoutes);
 app.use('/api/consciousness', consciousnessRoutes);
+app.use('/api/consciousness', authMiddleware);
+app.use('/api/kinetics', authMiddleware);
 // Root endpoint
 app.get('/', (req, res) => {
     res.json({

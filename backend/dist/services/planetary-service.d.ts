@@ -26,4 +26,4 @@ export declare function getCurrentPlanetaryPositions(date?: Date): PlanetaryPosi
  * Calculate planetary hour for a given time and location
  * Returns the ruling planet for the current planetary hour
  */
-export declare function getPlanetaryHour(date?: Date, latitude?: number): string;
+export declare function getPlanetaryHour(date: Date, latitude: number): string;

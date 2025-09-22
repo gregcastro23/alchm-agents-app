@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { Router as createRouter } from 'express';
 import { body, validationResult } from 'express-validator';
 import { alchmClient } from '../services/alchm-client.js';
 import { thermodynamicsService } from '../services/thermodynamics.js';
 import { asyncHandler, AppError } from '../middleware/error-handler.js';
-const router = Router();
+const router = createRouter();
 /**
  * POST /api/alchemy/calculate
  * Calculate alchemical properties for birth information

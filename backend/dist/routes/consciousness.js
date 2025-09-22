@@ -1,12 +1,14 @@
-import { Router } from 'express';
+import { Router as createRouter } from 'express';
 import { logger } from '../utils/logger.js';
 import { cacheService } from '../services/cache.js';
-import { rateLimit } from 'express-rate-limit';
+import rateLimit from 'express-rate-limit';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 // Import backend service implementations
 import { generateAlchmForCurrentMoment, alchemize } from '../services/alchemizer-service.js';
 import { generateAccurateHoroscope } from '../services/horoscope-service.js';
 import { calculateMC } from '../services/monica-constant-service.js';
-const router = Router();
+const router = createRouter();
 // Rate limiting for consciousness calculations
 const consciousnessLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 minute
@@ -45,28 +47,28 @@ router.post('/live', async (req, res) => {
         // Parse birth info
         const [year, month, day] = birthChart.birthDate.split('-').map(Number);
         const [hour, minute] = birthChart.birthTime.split(':').map(Number);
-        const birthInfo = {
-            year,
-            month, // JavaScript months are 0-based, but our system expects 1-based
-            day,
-            hour: hour || 12,
-            minute: minute || 0,
-            latitude: birthChart.latitude || 0,
-            longitude: birthChart.longitude || 0
-        };
+        const birthDateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const birthTimeStr = `${String(hour || 12).padStart(2, '0')}:${String(minute || 0).padStart(2, '0')}`;
+        const birthData = { birthDate: birthDateStr, birthTime: birthTimeStr };
         // Calculate birth consciousness
         logger.info(`Calculating birth consciousness for ${birthChart.name}`);
-        const birthHoroscope = generateAccurateHoroscope(birthInfo);
-        const birthAlchmData = alchemize(birthInfo, birthHoroscope);
+        const birthHoroscope = generateAccurateHoroscope(birthData);
+        const birthAlchmData = alchemize(birthData);
         // Extract birth alchemical values
-        const birthSpirit = birthAlchmData['Alchemy Effects']['Total Spirit'] || 0;
-        const birthEssence = birthAlchmData['Alchemy Effects']['Total Essence'] || 0;
-        const birthMatter = birthAlchmData['Alchemy Effects']['Total Matter'] || 0;
-        const birthSubstance = birthAlchmData['Alchemy Effects']['Total Substance'] || 0;
-        const birthMC = calculateMC(birthSpirit, birthEssence, birthMatter, birthSubstance);
+        const birthSpirit = birthAlchmData.spirit || 0;
+        const birthEssence = birthAlchmData.essence || 0;
+        const birthMatter = birthAlchmData.matter || 0;
+        const birthSubstance = birthAlchmData.substance || 0;
+        const birthMC = calculateMC({
+            spirit: birthSpirit,
+            essence: birthEssence,
+            matter: birthMatter,
+            substance: birthSubstance,
+            aNumber: (birthSpirit + birthEssence + birthMatter + birthSubstance) / 7
+        }).value;
         // Get current moment alchemical data
         logger.info('Fetching current cosmic conditions');
-        const currentMomentData = await generateAlchmForCurrentMoment();
+        const currentMomentData = generateAlchmForCurrentMoment();
         // Calculate transit effects
         const transitEffects = await calculateTransitEffects(birthAlchmData, currentMomentData, birthChart.name);
         // Apply transit modifications to birth values
@@ -75,7 +77,13 @@ router.post('/live', async (req, res) => {
         const liveMatter = Math.max(0.1, birthMatter + transitEffects.matterModifier);
         const liveSubstance = Math.max(0.1, birthSubstance + transitEffects.substanceModifier);
         // Calculate live MC
-        const liveMC = calculateMC(liveSpirit, liveEssence, liveMatter, liveSubstance);
+        const liveMC = calculateMC({
+            spirit: liveSpirit,
+            essence: liveEssence,
+            matter: liveMatter,
+            substance: liveSubstance,
+            aNumber: (liveSpirit + liveEssence + liveMatter + liveSubstance) / 7
+        }).value;
         // Calculate change metrics
         const mcChange = liveMC - birthMC;
         const mcPercentChange = birthMC !== 0 ? (mcChange / birthMC) * 100 : 0;
@@ -114,13 +122,25 @@ router.post('/live', async (req, res) => {
         await cacheService.set(cacheKey, response, 3600);
         logger.info(`Live consciousness calculated for ${birthChart.name} in ${Date.now() - startTime}ms`);
         res.json(response);
+        await prisma.evolutionState.create({
+            data: {
+                userId: req.user?.id || 'anonymous',
+                agentId: birthChart.name,
+                mcValue: response.liveMC,
+                spirit: response.liveKalchm.spirit,
+                essence: response.liveKalchm.essence,
+                matter: response.liveKalchm.matter,
+                substance: response.liveKalchm.substance,
+                aNumber: response.liveKalchm.aNumber
+            }
+        });
     }
     catch (error) {
         logger.error('Live consciousness calculation error:', error);
         res.status(500).json({
             error: 'Failed to calculate live consciousness',
             code: 'CALCULATION_ERROR',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            details: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined
         });
     }
 });
@@ -154,11 +174,23 @@ router.post('/batch', async (req, res) => {
                 // Create individual request for this agent
                 const agentResult = await calculateSingleLiveConsciousness(agent, currentMomentData);
                 results[agent.name] = agentResult;
+                await prisma.evolutionState.create({
+                    data: {
+                        userId: req.user?.id || 'anonymous',
+                        agentId: agent.name,
+                        mcValue: agentResult.liveMC,
+                        spirit: agentResult.liveKalchm.spirit,
+                        essence: agentResult.liveKalchm.essence,
+                        matter: agentResult.liveKalchm.matter,
+                        substance: agentResult.liveKalchm.substance,
+                        aNumber: agentResult.liveKalchm.aNumber
+                    }
+                });
             }
             catch (error) {
                 logger.error(`Error calculating consciousness for ${agent.name}:`, error);
                 results[agent.name] = {
-                    error: `Failed to calculate consciousness: ${error.message}`
+                    error: `Failed to calculate consciousness: ${error instanceof Error ? error.message : 'Unknown error'}`
                 };
             }
         }
@@ -174,7 +206,7 @@ router.post('/batch', async (req, res) => {
         res.status(500).json({
             error: 'Failed to calculate batch consciousness',
             code: 'BATCH_CALCULATION_ERROR',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
         });
     }
 });
@@ -185,7 +217,7 @@ router.post('/batch', async (req, res) => {
 router.get('/status', async (req, res) => {
     try {
         // Get cache statistics
-        const cacheStats = await cacheService.getStats?.() || {};
+        const cacheStats = cacheService.getStats();
         // Test calculation performance
         const testStartTime = Date.now();
         try {
@@ -201,7 +233,7 @@ router.get('/status', async (req, res) => {
                 },
                 performance: {
                     averageCalculationTime: `${testTime}ms`,
-                    cacheHitRate: cacheStats.hitRate || 'unknown'
+                    cacheHitRate: 'unknown'
                 },
                 capabilities: [
                     'live_consciousness_calculation',
@@ -222,7 +254,7 @@ router.get('/status', async (req, res) => {
             res.status(503).json({
                 status: 'degraded',
                 error: 'Calculation test failed',
-                details: testError.message
+                details: testError instanceof Error ? testError.message : undefined
             });
         }
     }
@@ -230,7 +262,7 @@ router.get('/status', async (req, res) => {
         logger.error('Status check error:', error);
         res.status(500).json({
             status: 'error',
-            error: error.message
+            error: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 });
@@ -239,23 +271,23 @@ async function calculateSingleLiveConsciousness(birthChart, currentMomentData) {
     // Parse birth info
     const [year, month, day] = birthChart.birthDate.split('-').map(Number);
     const [hour, minute] = birthChart.birthTime.split(':').map(Number);
-    const birthInfo = {
-        year,
-        month,
-        day,
-        hour: hour || 12,
-        minute: minute || 0,
-        latitude: birthChart.latitude || 0,
-        longitude: birthChart.longitude || 0
-    };
+    const birthDateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const birthTimeStr = `${String(hour || 12).padStart(2, '0')}:${String(minute || 0).padStart(2, '0')}`;
+    const birthData = { birthDate: birthDateStr, birthTime: birthTimeStr };
     // Calculate birth consciousness
-    const birthHoroscope = generateAccurateHoroscope(birthInfo);
-    const birthAlchmData = alchemize(birthInfo, birthHoroscope);
-    const birthSpirit = birthAlchmData['Alchemy Effects']['Total Spirit'] || 0;
-    const birthEssence = birthAlchmData['Alchemy Effects']['Total Essence'] || 0;
-    const birthMatter = birthAlchmData['Alchemy Effects']['Total Matter'] || 0;
-    const birthSubstance = birthAlchmData['Alchemy Effects']['Total Substance'] || 0;
-    const birthMC = calculateMC(birthSpirit, birthEssence, birthMatter, birthSubstance);
+    const birthHoroscope = generateAccurateHoroscope(birthData);
+    const birthAlchmData = alchemize(birthData);
+    const birthSpirit = birthAlchmData.spirit || 0;
+    const birthEssence = birthAlchmData.essence || 0;
+    const birthMatter = birthAlchmData.matter || 0;
+    const birthSubstance = birthAlchmData.substance || 0;
+    const birthMC = calculateMC({
+        spirit: birthSpirit,
+        essence: birthEssence,
+        matter: birthMatter,
+        substance: birthSubstance,
+        aNumber: (birthSpirit + birthEssence + birthMatter + birthSubstance) / 7
+    }).value;
     // Calculate transit effects
     const transitEffects = await calculateTransitEffects(birthAlchmData, currentMomentData, birthChart.name);
     // Apply modifications
@@ -263,7 +295,13 @@ async function calculateSingleLiveConsciousness(birthChart, currentMomentData) {
     const liveEssence = Math.max(0.1, birthEssence + transitEffects.essenceModifier);
     const liveMatter = Math.max(0.1, birthMatter + transitEffects.matterModifier);
     const liveSubstance = Math.max(0.1, birthSubstance + transitEffects.substanceModifier);
-    const liveMC = calculateMC(liveSpirit, liveEssence, liveMatter, liveSubstance);
+    const liveMC = calculateMC({
+        spirit: liveSpirit,
+        essence: liveEssence,
+        matter: liveMatter,
+        substance: liveSubstance,
+        aNumber: (liveSpirit + liveEssence + liveMatter + liveSubstance) / 7
+    }).value;
     const mcChange = liveMC - birthMC;
     const mcPercentChange = birthMC !== 0 ? (mcChange / birthMC) * 100 : 0;
     return {
@@ -454,4 +492,7 @@ function generateConsciousnessInterpretations(birthMC, liveMC, mcChange, transit
     };
 }
 export default router;
+process.on('exit', async () => {
+    await prisma.$disconnect();
+});
 //# sourceMappingURL=consciousness.js.map

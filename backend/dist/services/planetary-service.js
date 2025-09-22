@@ -63,7 +63,7 @@ function getDefaultPositions() {
  * Calculate planetary hour for a given time and location
  * Returns the ruling planet for the current planetary hour
  */
-export function getPlanetaryHour(date = new Date(), latitude = 0) {
+export function getPlanetaryHour(date, latitude) {
     try {
         // Planetary hours in Chaldean order
         const dayPlanets = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];

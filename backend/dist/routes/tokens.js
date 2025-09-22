@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { Router as createRouter } from 'express';
 import { body, validationResult } from 'express-validator';
 import { tokenCalculatorService } from '../services/token-calculator.js';
 import { asyncHandler, AppError } from '../middleware/error-handler.js';
-const router = Router();
+const router = createRouter();
 /**
  * POST /api/tokens/calculate
  * Calculate token rates with planetary and temporal influences

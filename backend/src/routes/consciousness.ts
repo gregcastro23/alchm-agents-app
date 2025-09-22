@@ -3,6 +3,9 @@ import type { Router as ExpressRouter } from 'express'
 import { logger } from '../utils/logger.js'
 import { cacheService } from '../services/cache.js'
 import rateLimit from 'express-rate-limit'
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 // Import backend service implementations
 import { generateAlchmForCurrentMoment, alchemize } from '../services/alchemizer-service.js'
@@ -204,6 +207,19 @@ router.post('/live', async (req: Request, res: Response) => {
     logger.info(`Live consciousness calculated for ${birthChart.name} in ${Date.now() - startTime}ms`)
     res.json(response)
     
+    await prisma.evolutionState.create({
+      data: {
+        userId: req.user?.id || 'anonymous',
+        agentId: birthChart.name,
+        mcValue: response.liveMC,
+        spirit: response.liveKalchm.spirit,
+        essence: response.liveKalchm.essence,
+        matter: response.liveKalchm.matter,
+        substance: response.liveKalchm.substance,
+        aNumber: response.liveKalchm.aNumber
+      }
+    });
+    
   } catch (error: unknown) {
     logger.error('Live consciousness calculation error:', error)
     res.status(500).json({
@@ -250,6 +266,18 @@ router.post('/batch', async (req: Request, res: Response) => {
         // Create individual request for this agent
         const agentResult = await calculateSingleLiveConsciousness(agent, currentMomentData)
         results[agent.name] = agentResult
+        await prisma.evolutionState.create({
+          data: {
+            userId: req.user?.id || 'anonymous',
+            agentId: agent.name,
+            mcValue: agentResult.liveMC,
+            spirit: agentResult.liveKalchm.spirit,
+            essence: agentResult.liveKalchm.essence,
+            matter: agentResult.liveKalchm.matter,
+            substance: agentResult.liveKalchm.substance,
+            aNumber: agentResult.liveKalchm.aNumber
+          }
+        });
       } catch (error: unknown) {
         logger.error(`Error calculating consciousness for ${agent.name}:`, error)
         results[agent.name] = {
@@ -598,3 +626,7 @@ function generateConsciousnessInterpretations(
 }
 
 export default router
+
+process.on('exit', async () => {
+  await prisma.$disconnect();
+});

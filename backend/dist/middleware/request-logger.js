@@ -11,7 +11,7 @@ export const requestLogger = (req, res, next) => {
         contentLength: req.get('Content-Length')
     });
     // Override res.end to capture response details
-    const originalEnd = res.end;
+    const originalEnd = res.end.bind(res);
     res.end = function (chunk, encoding, cb) {
         const responseTime = Date.now() - startTime;
         logger.info('Request completed:', {
@@ -22,7 +22,10 @@ export const requestLogger = (req, res, next) => {
             contentLength: res.get('Content-Length')
         });
         // Call the original end method
-        originalEnd.call(this, chunk, encoding, cb);
+        if (typeof encoding === 'function') {
+            return originalEnd(chunk, encoding);
+        }
+        return originalEnd(chunk, encoding, cb);
     };
     next();
 };

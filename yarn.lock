@@ -1144,7 +1144,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@prisma/client@npm:^6.12.0":
+"@prisma/client@npm:^6.16.2":
   version: 6.16.2
   resolution: "@prisma/client@npm:6.16.2"
   peerDependencies:
@@ -8076,7 +8076,7 @@ __metadata:
     "@auth/prisma-adapter": "npm:^2.10.0"
     "@eslint/js": "npm:^9.35.0"
     "@next/eslint-plugin-next": "npm:^15.4.2"
-    "@prisma/client": "npm:^6.12.0"
+    "@prisma/client": "npm:^6.16.2"
     "@radix-ui/react-accordion": "npm:^1.2.11"
     "@radix-ui/react-alert-dialog": "npm:^1.1.14"
     "@radix-ui/react-aspect-ratio": "npm:^1.1.7"
@@ -8152,7 +8152,7 @@ __metadata:
     openai: "npm:4.11.0"
     postcss: "npm:8.4.31"
     prettier: "npm:^3.6.2"
-    prisma: "npm:^6.12.0"
+    prisma: "npm:^6.16.2"
     prop-types: "npm:^15.8.1"
     react: "npm:^18.3.1"
     react-day-picker: "npm:^9.8.0"
@@ -8355,7 +8355,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prisma@npm:^6.12.0":
+"prisma@npm:^6.16.2":
   version: 6.16.2
   resolution: "prisma@npm:6.16.2"
   dependencies:
