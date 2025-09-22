@@ -46,7 +46,7 @@ COPY . .
 ENV NODE_ENV=production
 
 # Build the application
-RUN yarn build
+RUN yarn install && yarn build
 
 # Remove dev dependencies after build  
 RUN yarn workspaces focus --production && yarn cache clean
