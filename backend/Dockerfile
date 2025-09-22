@@ -71,7 +71,9 @@ COPY package.json yarn.lock ./
 # Create .yarnrc.yml to force nodeLinker to node-modules (disable PnP)
 RUN echo "nodeLinker: node-modules" > .yarnrc.yml
 
-RUN yarn install --production && \
+# Install ALL dependencies first, then use workspaces focus for production-only
+RUN yarn install --immutable && \
+    yarn workspaces focus --production && \
     yarn cache clean && \
     rm -rf /tmp/* /var/cache/apk/* || true
 
