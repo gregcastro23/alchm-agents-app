@@ -116,7 +116,7 @@ router.post('/live', async (req: Request, res: Response) => {
     // Calculate birth consciousness
     logger.info(`Calculating birth consciousness for ${birthChart.name}`)
     const birthHoroscope = generateAccurateHoroscope(birthData)
-    const birthAlchmData = alchemize(birthData)
+    const birthAlchmData = await alchemize(birthData)
     
     // Extract birth alchemical values
     const birthSpirit = birthAlchmData.spirit || 0
@@ -134,7 +134,7 @@ router.post('/live', async (req: Request, res: Response) => {
     
     // Get current moment alchemical data
     logger.info('Fetching current cosmic conditions')
-    const currentMomentData = generateAlchmForCurrentMoment()
+    const currentMomentData = await generateAlchmForCurrentMoment()
     
     // Calculate transit effects
     const transitEffects = await calculateTransitEffects(
@@ -376,7 +376,7 @@ async function calculateSingleLiveConsciousness(
   
   // Calculate birth consciousness
   const birthHoroscope = generateAccurateHoroscope(birthData)
-  const birthAlchmData = alchemize(birthData)
+  const birthAlchmData = await alchemize(birthData)
   
   const birthSpirit = birthAlchmData.spirit || 0
   const birthEssence = birthAlchmData.essence || 0

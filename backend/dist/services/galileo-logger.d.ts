@@ -1,14 +1,13 @@
-export declare function logEvent(eventType: string, data: any): Promise<boolean>;
-export declare function logInfo(message: string, metadata?: Record<string, any>): Promise<boolean>;
-export declare function logError(message: string, metadata?: Record<string, any>): Promise<boolean>;
-export declare function logWarn(message: string, metadata?: Record<string, any>): Promise<boolean>;
-export declare function logDebug(message: string, metadata?: Record<string, any>): Promise<boolean>;
-export declare function logQuantities(quantities: Record<string, number>, metadata?: Record<string, any>): Promise<boolean>;
-export declare function logAgentInteraction(agentId: string, input: any, output: any, metadata?: Record<string, any>): Promise<boolean>;
 export declare const galileoConfig: {
-    apiKey: string;
+    url: string;
+    apiKeyConfigured: boolean;
     project: string;
     stream: string;
-    baseUrl: string;
     failSilently: boolean;
 };
+export declare function logInfo(message: string, metadata?: any): Promise<void>;
+export declare function logError(message: string, metadata?: any): Promise<void>;
+export declare function logWarn(message: string, metadata?: any): Promise<void>;
+export declare function logDebug(message: string, metadata?: any): Promise<void>;
+export declare function logQuantities(quantities: any): Promise<void>;
+export declare function logAgentInteraction(interaction: any): Promise<void>;

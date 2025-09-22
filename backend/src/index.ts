@@ -126,10 +126,13 @@ app.use('/api/health', healthRoutes)
 app.use('/api/alchemy', alchemyRoutes)
 app.use('/api/planetary', planetaryRoutes)
 app.use('/api/tokens', tokenRoutes)
+
+// Apply auth before protected routes
+app.use('/api/kinetics', authMiddleware)
+app.use('/api/consciousness', authMiddleware)
+
 app.use('/api/kinetics', kineticsRoutes)
 app.use('/api/consciousness', consciousnessRoutes)
-app.use('/api/consciousness', authMiddleware);
-app.use('/api/kinetics', authMiddleware);
 
 // Root endpoint
 app.get('/', (req: Request, res: Response) => {

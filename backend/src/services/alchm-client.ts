@@ -6,36 +6,63 @@ const ALCHM_BACKEND_URL = process.env.ALCHM_BACKEND_URL || 'https://alchm-backen
 
 const apiClient = axios.create({
   baseURL: ALCHM_BACKEND_URL,
-  timeout: 5000,
-  headers: {
-    'Content-Type': 'application/json',
-  }
+  timeout: 7000,
+  headers: { 'Content-Type': 'application/json' }
 });
 
-// Circuit breaker wrapped request
-const protectedRequest = circuitBreaker(async (endpoint: string, data: any) => {
+// Circuit breaker wrapped POST
+const protectedPost = circuitBreaker(async (endpoint: string, data: any) => {
   const response = await apiClient.post(endpoint, data);
   return response.data;
 });
 
-// Get real horoscope data
 export async function getRealHoroscope(birthData: any): Promise<any> {
   try {
-    return await protectedRequest('/horoscope', birthData);
+    return await protectedPost('/horoscope', birthData);
   } catch (error) {
     logger.error('Horoscope API error:', error);
     throw error;
   }
 }
 
-// Get real planetary positions
 export async function getRealPlanetaryPositions(location: { lat: number; lon: number }): Promise<any> {
   try {
-    return await protectedRequest('/planetary', { location });
+    return await protectedPost('/planetary', { location });
   } catch (error) {
     logger.error('Planetary API error:', error);
     throw error;
   }
 }
 
-// ... add other endpoints as needed
+// Named client used by routes
+export const alchmClient = {
+  async calculateAlchemy(payload: { birthInfo: any; options?: any }): Promise<any> {
+    try {
+      return await protectedPost('/alchemy/calculate', payload);
+    } catch (error) {
+      logger.error('calculateAlchemy error:', error);
+      return { success: false, error: 'calculateAlchemy_failed' };
+    }
+  },
+  async imaginize(payload: { birthInfo: any; horoscope?: any; options?: any }): Promise<any> {
+    try {
+      return await protectedPost('/alchemy/imaginize', payload);
+    } catch (error) {
+      logger.error('imaginize error:', error);
+      return { success: false, error: 'imaginize_failed' };
+    }
+  },
+  async healthCheck(): Promise<{ healthy: boolean; responseTime?: number; error?: string }> {
+    const start = Date.now();
+    try {
+      const resp = await apiClient.get('/health');
+      return { healthy: resp.status === 200, responseTime: Date.now() - start };
+    } catch (error: any) {
+      return { healthy: false, responseTime: Date.now() - start, error: error?.message };
+    }
+  },
+  getStatus(): any {
+    // Minimal status; circuit breaker wrapper may expose state in your implementation
+    return { open: false };
+  }
+};

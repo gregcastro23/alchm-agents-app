@@ -17,13 +17,5 @@ export interface PlanetaryPositions {
     neptune?: PlanetPosition;
     pluto?: PlanetPosition;
 }
-/**
- * Gets current planetary positions
- * Simplified calculation for backend service
- */
-export declare function getCurrentPlanetaryPositions(date?: Date): PlanetaryPositions;
-/**
- * Calculate planetary hour for a given time and location
- * Returns the ruling planet for the current planetary hour
- */
+export declare function getCurrentPlanetaryPositions(date?: Date): Promise<PlanetaryPositions>;
 export declare function getPlanetaryHour(date: Date, latitude: number): string;

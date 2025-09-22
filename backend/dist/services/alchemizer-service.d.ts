@@ -11,3 +11,9 @@ export interface PlanetaryPosition {
     degree: number;
     retrograde: boolean;
 }
+export declare function generateAlchmForCurrentMoment(): Promise<AlchemicalElements>;
+/**
+ * Alchemizes values based on birth chart data
+ * Simplified implementation for backend
+ */
+export declare function alchemize(birthData: any): Promise<AlchemicalElements>;

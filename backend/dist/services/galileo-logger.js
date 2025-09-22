@@ -1,136 +1,90 @@
-import dotenv from 'dotenv';
-// Load environment variables
-dotenv.config();
-// Simple retry utility function
-async function withRetries(fn, maxRetries = 3, baseDelayMs = 1000) {
-    let attempt = 0;
-    let lastError;
-    while (attempt <= maxRetries) {
+// Updated with fixed configuration
+import axios from 'axios';
+import { logger } from '../utils/logger.js';
+const GALILEO_URL = 'https://console.rungalileo.io/api/logs';
+const API_KEY = process.env.GALILEO_API_KEY;
+const PROJECT = process.env.GALILEO_PROJECT || 'AlchmPlanetaryAgents';
+const LOG_STREAM = process.env.GALILEO_LOG_STREAM || 'test';
+const FAIL_SILENTLY = process.env.GALILEO_FAIL_SILENTLY === 'true';
+export const galileoConfig = {
+    url: GALILEO_URL,
+    apiKeyConfigured: !!API_KEY,
+    project: PROJECT,
+    stream: LOG_STREAM,
+    failSilently: FAIL_SILENTLY
+};
+async function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+async function sendLogWithRetry(level, message, metadata = {}) {
+    if (!API_KEY) {
+        if (!FAIL_SILENTLY)
+            logger.warn('Galileo API key not configured - falling back to console');
+        return fallbackToConsole(level, message, metadata);
+    }
+    const logData = {
+        project: PROJECT,
+        stream: LOG_STREAM,
+        level,
+        message,
+        metadata: {
+            ...metadata,
+            timestamp: new Date().toISOString()
+        }
+    };
+    const retries = 3;
+    const backoffDelays = [1000, 2000, 4000];
+    let lastError = null;
+    for (let attempt = 0; attempt < retries; attempt++) {
         try {
-            return await fn();
+            await axios.post(GALILEO_URL, logData, {
+                headers: {
+                    'Authorization': `Bearer ${API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                timeout: 5000
+            });
+            return;
         }
         catch (error) {
             lastError = error;
-            if (attempt === maxRetries)
+            if (lastError.response?.status === 422) {
+                logger.error('Galileo 422 error: Check project type/configuration');
                 break;
-            const backoff = baseDelayMs * Math.pow(2, attempt);
-            await new Promise(resolve => setTimeout(resolve, backoff));
-            attempt += 1;
-        }
-    }
-    throw lastError;
-}
-// Galileo configuration from environment variables
-const GALILEO_API_KEY = process.env.GALILEO_API_KEY;
-const GALILEO_PROJECT = process.env.GALILEO_PROJECT || 'AlchmPlanetaryAgents';
-const GALILEO_LOG_STREAM = process.env.GALILEO_LOG_STREAM || 'test';
-const GALILEO_BASE_URL = 'https://console.rungalileo.io/api';
-const GALILEO_FAIL_SILENTLY = process.env.GALILEO_FAIL_SILENTLY === 'true';
-// Helper function to check if Galileo is configured
-function isGalileoConfigured() {
-    return !!GALILEO_API_KEY;
-}
-// Main logging function with proper error handling and retry logic
-export async function logEvent(eventType, data) {
-    if (!isGalileoConfigured()) {
-        if (!GALILEO_FAIL_SILENTLY) {
-            console.warn('Galileo API key not configured, cannot log to stream');
-        }
-        return false;
-    }
-    const logEntry = {
-        message: `Event: ${eventType}`,
-        level: 'info',
-        metadata: {
-            eventType,
-            data: typeof data === 'object' ? JSON.stringify(data) : data,
-            source: 'planetary-agents-backend',
-        },
-        timestamp: new Date().toISOString(),
-    };
-    try {
-        // Use retry logic with exponential backoff
-        const result = await withRetries(async () => {
-            const payload = {
-                timestamp: logEntry.timestamp,
-                project: GALILEO_PROJECT,
-                stream: GALILEO_LOG_STREAM,
-                message: logEntry.message,
-                level: logEntry.level,
-                metadata: logEntry.metadata,
-            };
-            const response = await fetch(`${GALILEO_BASE_URL}/logs`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${GALILEO_API_KEY}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
-            });
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => 'Unknown error');
-                // Handle specific 422 error for project type
-                if (response.status === 422 && errorText.includes('not of type Observe')) {
-                    const message = `Galileo API error: 422 unknown - ${errorText}`;
-                    if (GALILEO_FAIL_SILENTLY) {
-                        return false;
-                    }
-                    throw new Error(`${message}\nHint: Configure GALILEO_PROJECT as an Observe project or set GALILEO_FAIL_SILENTLY=true`);
-                }
-                throw new Error(`Galileo API error: ${response.status} ${response.statusText} - ${errorText}`);
             }
-            return true;
-        }, 3, // max retries
-        1000 // base delay in ms
-        );
-        return result;
-    }
-    catch (error) {
-        if (GALILEO_FAIL_SILENTLY) {
-            console.warn('Galileo logging failed after retries, falling back to console:', error instanceof Error ? error.message : error);
-            console.log('====== GALILEO LOG (FALLBACK) ======');
-            console.log(JSON.stringify(logEntry, null, 2));
-            console.log('=====================================');
-            return false;
-        }
-        else {
-            console.error('Galileo log error after retries:', error);
-            throw error;
+            if (attempt < retries - 1) {
+                await delay(backoffDelays[attempt]);
+            }
         }
     }
+    logger.error(`Galileo logging failed after ${retries} attempts: ${lastError?.message}`);
+    if (!FAIL_SILENTLY) {
+        fallbackToConsole(level, message, metadata);
+    }
 }
-// Convenience functions for different log levels
-export async function logInfo(message, metadata) {
-    return logEvent('info', { message, metadata });
+function fallbackToConsole(level, message, metadata) {
+    const logMessage = `[Galileo Fallback - ${level.toUpperCase()}] ${message}`;
+    const metaStr = Object.keys(metadata).length ? `\nMetadata: ${JSON.stringify(metadata, null, 2)}` : '';
+    logger[level](`${logMessage}${metaStr}`);
 }
-export async function logError(message, metadata) {
-    return logEvent('error', { message, metadata });
+// Log levels
+export async function logInfo(message, metadata = {}) {
+    await sendLogWithRetry('info', message, metadata);
 }
-export async function logWarn(message, metadata) {
-    return logEvent('warn', { message, metadata });
+export async function logError(message, metadata = {}) {
+    await sendLogWithRetry('error', message, metadata);
 }
-export async function logDebug(message, metadata) {
-    return logEvent('debug', { message, metadata });
+export async function logWarn(message, metadata = {}) {
+    await sendLogWithRetry('warn', message, metadata);
 }
-// Quantities-specific logging
-export async function logQuantities(quantities, metadata) {
-    return logEvent('quantities', { quantities, metadata });
+export async function logDebug(message, metadata = {}) {
+    await sendLogWithRetry('debug', message, metadata);
 }
-// Agent interaction logging
-export async function logAgentInteraction(agentId, input, output, metadata) {
-    return logEvent('agent-interaction', {
-        agentId,
-        input: typeof input === 'object' ? JSON.stringify(input) : input,
-        output: typeof output === 'object' ? JSON.stringify(output) : output,
-        metadata,
-    });
+// Specialized functions
+export async function logQuantities(quantities) {
+    await logInfo('Quantities Log', { quantities });
 }
-// Export configuration for debugging
-export const galileoConfig = {
-    apiKey: GALILEO_API_KEY ? '***configured***' : 'not configured',
-    project: GALILEO_PROJECT,
-    stream: GALILEO_LOG_STREAM,
-    baseUrl: GALILEO_BASE_URL,
-    failSilently: GALILEO_FAIL_SILENTLY,
-};
+export async function logAgentInteraction(interaction) {
+    await logInfo('Agent Interaction', { interaction });
+}
 //# sourceMappingURL=galileo-logger.js.map
