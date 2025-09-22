@@ -70,9 +70,9 @@ services:
       - key: TOKEN_CACHE_TTL
         value: 60
 
-      # CORS origins - UPDATE THIS with your frontend domain
+      # CORS origins - UPDATE THIS with your actual frontend domain
       - key: CORS_ORIGINS
-        value: http://localhost:3000,https://your-frontend-domain.vercel.app
+        value: http://localhost:3000,https://planetary-agents.vercel.app
 
     # Health check configuration
     healthCheckPath: /api/health
