@@ -8,15 +8,18 @@ FROM node:18-alpine
 # Set working directory in container
 WORKDIR /app
 
+# Enable Corepack for Yarn 4.0 support
+RUN corepack enable && corepack prepare yarn@4.0.0 --activate
+
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S backend -u 1001
 
 # Copy package files
-COPY package.json yarn.lock ./
+COPY package.json yarn.lock .yarnrc.yml ./
 
-# Install dependencies
-RUN yarn install --frozen-lockfile --production=false
+# Install dependencies with Yarn 4.0
+RUN yarn install --frozen-lockfile
 
 # Copy source code
 COPY . .

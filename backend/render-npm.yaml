@@ -1,0 +1,81 @@
+# =============================================================================
+# PLANETARY AGENTS BACKEND - RENDER DEPLOYMENT (NPM VERSION)
+# =============================================================================
+
+services:
+  # Main backend service using npm instead of yarn
+  - type: web
+    name: planetary-agents-backend
+    runtime: node
+    plan: starter  # Change to 'standard' or 'pro' for production
+    region: oregon  # or 'frankfurt' for EU
+
+    # Build configuration using npm
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+
+    # Environment configuration
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      - key: LOG_LEVEL
+        value: info
+
+      - key: LOG_FORMAT
+        value: json
+
+      - key: ENABLE_KINETICS_BACKEND
+        value: true
+
+      - key: ENABLE_CONSCIOUSNESS_BACKEND
+        value: true
+
+      - key: ENABLE_PLANETARY_BACKEND
+        value: true
+
+      - key: ENABLE_TOKEN_BACKEND
+        value: true
+
+      - key: PLANETARY_HOURS_BACKEND
+        value: true
+
+      - key: THERMODYNAMICS_BACKEND
+        value: true
+
+      - key: TOKEN_CALCULATIONS_BACKEND
+        value: true
+
+      # Optional performance settings
+      - key: MAX_REQUEST_SIZE_MB
+        value: 2
+
+      - key: RATE_LIMIT_REQUESTS_PER_MINUTE
+        value: 100
+
+      # Optional CORS configuration (update with your frontend domain)
+      - key: CORS_ORIGINS
+        value: "*"
+
+    # Health check configuration
+    healthCheckPath: /api/health
+
+    # Auto-scaling configuration
+    autoscaling:
+      enabled: true
+      minInstances: 1
+      maxInstances: 3
+      targetCPUPercent: 70
+      targetMemoryPercent: 80
+
+# =============================================================================
+# DEPLOYMENT NOTES
+# =============================================================================
+#
+# 1. This configuration uses npm instead of yarn for better Render compatibility
+# 2. Enable "Auto-deploy from render.yaml" in Render dashboard
+# 3. Set root directory to "backend"
+# 4. Update CORS_ORIGINS with your actual frontend domain
+# 5. Consider upgrading to 'standard' plan for production workloads
+#
+# =============================================================================
