@@ -6,20 +6,32 @@ FROM node:18-alpine AS deps
 # Install dependencies for native modules
 RUN apk add --no-cache libc6-compat python3 make g++
 
+# Enable Corepack for Yarn 4.0 support
+RUN corepack enable && corepack prepare yarn@4.0.0 --activate
+
 WORKDIR /app
 
 # Copy package files
 COPY package.json yarn.lock ./
 
+# Create .yarnrc.yml to force nodeLinker to node-modules (disable PnP)
+RUN echo "nodeLinker: node-modules" > .yarnrc.yml
+
 # Install dependencies only
-RUN yarn install --frozen-lockfile --production=false
+RUN yarn install --immutable
 
 # =====================================
 # Builder Stage
 # =====================================
 FROM node:18-alpine AS builder
 
+# Enable Corepack for Yarn 4.0 support
+RUN corepack enable && corepack prepare yarn@4.0.0 --activate
+
 WORKDIR /app
+
+# Create .yarnrc.yml to force nodeLinker to node-modules (disable PnP)
+RUN echo "nodeLinker: node-modules" > .yarnrc.yml
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
@@ -33,8 +45,8 @@ ENV NODE_ENV=production
 # Build the application
 RUN yarn build
 
-# Remove dev dependencies after build
-RUN yarn install --production --frozen-lockfile && yarn cache clean
+# Remove dev dependencies after build  
+RUN yarn workspaces focus --production && yarn cache clean
 
 # =====================================
 # Production Stage
@@ -50,15 +62,24 @@ RUN apk add --no-cache \
     ca-certificates \
     && update-ca-certificates
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S backend -u 1001
+# Enable Corepack for Yarn 4.0 support
+RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 
 # Copy package files and install production dependencies
 COPY package.json yarn.lock ./
-RUN yarn install --production --frozen-lockfile && \
+
+# Create .yarnrc.yml to force nodeLinker to node-modules (disable PnP)
+RUN echo "nodeLinker: node-modules" > .yarnrc.yml
+
+# Install ALL dependencies first, then use workspaces focus for production-only
+RUN yarn install --immutable && \
+    yarn workspaces focus --production && \
     yarn cache clean && \
-    rm -rf /tmp/* /var/cache/apk/*
+    rm -rf /tmp/* /var/cache/apk/* || true
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S backend -u 1001
 
 # Copy built application from builder stage
 COPY --from=builder --chown=backend:nodejs /app/dist ./dist
