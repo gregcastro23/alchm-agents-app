@@ -103,7 +103,7 @@ router.post('/group', [
         data,
         computeTimeMs: computeTime,
         metadata: {
-            agentCount: groupSize,
+            agentCount: agentIds.length,
             location,
             timestamp: new Date().toISOString()
         }
@@ -158,7 +158,7 @@ router.post('/token', [
             baseInputs: { baseTokenRate, baseNFTRarity },
             location,
             timestamp: new Date().toISOString(),
-            powerLevel: `${Math.round(powerLevel * 100)}%`
+            powerLevel: `${Math.round((data?.powerLevel ?? 0) * 100)}%`
         }
     });
 }));

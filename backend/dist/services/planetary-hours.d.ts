@@ -37,7 +37,7 @@ declare class PlanetaryHoursService {
     /**
      * Get the current planetary hour for a given time and location
      */
-    getCurrentPlanetaryHour(datetime: Date | undefined, location: Location): Promise<PlanetaryHourInfo>;
+    getCurrentPlanetaryHour(datetime: Date, location: Location): Promise<PlanetaryHourInfo>;
     /**
      * Get planetary hour forecast for a date range
      */
