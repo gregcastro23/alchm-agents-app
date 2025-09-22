@@ -9,24 +9,30 @@ import prettierConfig from 'eslint-config-prettier'
 import prettierPlugin from 'eslint-plugin-prettier'
 
 const config = [
-  // Global ignores
   {
     ignores: [
       'node_modules/**',
       '.next/**',
       'out/**',
       'dist/**',
+      'build/**',
+      'coverage/**',
       '.git/**',
       '.yarn/**',
-      'coverage/**',
-      'build/**',
+      // ignore common tooling and scripts
+      '*.config.js',
+      '*.config.mjs',
+      '*.config.ts',
+      'test-*.js',
+      'test-*.mjs',
+      'test-*.ts',
+      'migrate-*.js',
+      'verify-*.js',
+      'update-*.js',
+      'update-*.mjs',
     ],
   },
-
-  // Base JavaScript configuration
   js.configs.recommended,
-
-  // Global settings for all files
   {
     languageOptions: {
       ecmaVersion: 2024,
@@ -41,25 +47,13 @@ const config = [
         globalThis: 'readonly',
       },
     },
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
+    settings: { react: { version: 'detect' } },
   },
-
-  // TypeScript files configuration
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parser: typescriptParser,
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-        ecmaVersion: 2024,
-        sourceType: 'module',
-      },
+      parserOptions: { ecmaFeatures: { jsx: true }, ecmaVersion: 2024, sourceType: 'module' },
     },
     plugins: {
       '@typescript-eslint': typescriptPlugin,
@@ -70,132 +64,66 @@ const config = [
       prettier: prettierPlugin,
     },
     rules: {
-      // TypeScript rules
       ...typescriptPlugin.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-var-requires': 'error',
-
-      // React rules
       ...reactPlugin.configs.recommended.rules,
-      'react/react-in-jsx-scope': 'off', // Not needed in Next.js 13+
-      'react/prop-types': 'off', // TypeScript handles this
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
       'react/jsx-uses-react': 'off',
       'react/jsx-uses-vars': 'error',
       'react/jsx-no-duplicate-props': 'error',
       'react/jsx-no-undef': 'error',
       'react/no-unescaped-entities': 'warn',
-
-      // React Hooks rules
       ...reactHooksPlugin.configs.recommended.rules,
-
-      // Accessibility rules
       ...jsxA11yPlugin.configs.recommended.rules,
-      'jsx-a11y/anchor-is-valid': 'off', // Next.js Link component
-
-      // Next.js rules
+      'jsx-a11y/anchor-is-valid': 'off',
       ...nextPlugin.configs.recommended.rules,
       ...nextPlugin.configs['core-web-vitals'].rules,
-
-      // Code quality rules
       'no-console': 'warn',
       'no-debugger': 'error',
       'no-duplicate-imports': 'error',
-      'no-unused-vars': 'off', // Handled by TypeScript
+      'no-unused-vars': 'off',
       'prefer-const': 'error',
       'no-var': 'error',
       'object-shorthand': 'error',
       'prefer-template': 'error',
-
-      // Prettier integration
       'prettier/prettier': [
         'error',
-        {
-          semi: false,
-          singleQuote: true,
-          trailingComma: 'es5',
-          tabWidth: 2,
-          useTabs: false,
-          printWidth: 100,
-          endOfLine: 'lf',
-        },
+        { semi: false, singleQuote: true, trailingComma: 'es5', tabWidth: 2, useTabs: false, printWidth: 100, endOfLine: 'lf' },
       ],
     },
   },
-
-  // JavaScript files configuration
   {
     files: ['**/*.{js,jsx}'],
-    plugins: {
-      react: reactPlugin,
-      'react-hooks': reactHooksPlugin,
-      'jsx-a11y': jsxA11yPlugin,
-      '@next/next': nextPlugin,
-      prettier: prettierPlugin,
-    },
+    plugins: { react: reactPlugin, 'react-hooks': reactHooksPlugin, 'jsx-a11y': jsxA11yPlugin, '@next/next': nextPlugin, prettier: prettierPlugin },
     rules: {
-      // React rules for JS files
       ...reactPlugin.configs.recommended.rules,
       'react/react-in-jsx-scope': 'off',
       'react/jsx-uses-react': 'off',
       'react/jsx-uses-vars': 'error',
-
-      // React Hooks rules
       ...reactHooksPlugin.configs.recommended.rules,
-
-      // Accessibility rules
       ...jsxA11yPlugin.configs.recommended.rules,
       'jsx-a11y/anchor-is-valid': 'off',
-
-      // Next.js rules
       ...nextPlugin.configs.recommended.rules,
       ...nextPlugin.configs['core-web-vitals'].rules,
-
-      // Code quality rules
       'no-console': 'warn',
       'no-debugger': 'error',
       'no-duplicate-imports': 'error',
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       'prefer-const': 'error',
       'no-var': 'error',
-
-      // Prettier integration
       'prettier/prettier': [
         'error',
-        {
-          semi: false,
-          singleQuote: true,
-          trailingComma: 'es5',
-          tabWidth: 2,
-          useTabs: false,
-          printWidth: 100,
-          endOfLine: 'lf',
-        },
+        { semi: false, singleQuote: true, trailingComma: 'es5', tabWidth: 2, useTabs: false, printWidth: 100, endOfLine: 'lf' },
       ],
     },
   },
-
-  // Configuration files
-  {
-    files: ['*.config.{js,ts}', '*.config.*.{js,ts}'],
-    rules: {
-      'no-console': 'off',
-      '@typescript-eslint/no-var-requires': 'off',
-    },
-  },
-
-  // Test files
-  {
-    files: ['**/__tests__/**/*', '**/*.{test,spec}.{js,ts,tsx}'],
-    rules: {
-      'no-console': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-    },
-  },
-
-  // Prettier config override (must be last)
+  { files: ['*.config.{js,ts}', '*.config.*.{js,ts}'], rules: { 'no-console': 'off', '@typescript-eslint/no-var-requires': 'off' } },
+  { files: ['**/__tests__/**/*', '**/*.{test,spec}.{js,ts,tsx}'], rules: { 'no-console': 'off', '@typescript-eslint/no-explicit-any': 'off' } },
   prettierConfig,
 ]
 
