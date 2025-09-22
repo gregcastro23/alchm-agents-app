@@ -11,11 +11,13 @@ RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files and Yarn configuration
 COPY package.json yarn.lock ./
+COPY .yarnrc.yml* ./
+COPY .yarn ./.yarn
 
-# Create .yarnrc.yml to force nodeLinker to node-modules (disable PnP)
-RUN echo "nodeLinker: node-modules" > .yarnrc.yml
+# Ensure nodeLinker is set to node-modules
+RUN echo "nodeLinker: node-modules" >> .yarnrc.yml
 
 # Install dependencies only
 RUN yarn install --immutable
@@ -30,11 +32,17 @@ RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 
 WORKDIR /app
 
-# Create .yarnrc.yml to force nodeLinker to node-modules (disable PnP)
-RUN echo "nodeLinker: node-modules" > .yarnrc.yml
+# Copy package files and Yarn configuration
+COPY package.json yarn.lock ./
+COPY .yarnrc.yml* ./
+COPY .yarn ./.yarn
+
+# Ensure nodeLinker is set to node-modules
+RUN echo "nodeLinker: node-modules" >> .yarnrc.yml
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/.yarn ./.yarn
 
 # Copy source code
 COPY . .
@@ -45,8 +53,9 @@ ENV NODE_ENV=production
 # Build the application
 RUN yarn build
 
-# Remove dev dependencies after build  
-RUN yarn workspaces focus --production && yarn cache clean
+# Clean up unnecessary files
+RUN yarn cache clean && \
+    rm -rf src tests .git .gitignore README.md || true
 
 # =====================================
 # Production Stage
@@ -65,15 +74,16 @@ RUN apk add --no-cache \
 # Enable Corepack for Yarn 4.0 support
 RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 
-# Copy package files and install production dependencies
+# Copy package files and Yarn configuration
 COPY package.json yarn.lock ./
+COPY .yarnrc.yml* ./
+COPY .yarn ./.yarn
 
-# Create .yarnrc.yml to force nodeLinker to node-modules (disable PnP)
-RUN echo "nodeLinker: node-modules" > .yarnrc.yml
+# Ensure nodeLinker is set to node-modules
+RUN echo "nodeLinker: node-modules" >> .yarnrc.yml
 
-# Install ALL dependencies first, then use workspaces focus for production-only
-RUN yarn install --immutable && \
-    yarn workspaces focus --production && \
+# Install production dependencies only
+RUN yarn install --immutable --production && \
     yarn cache clean && \
     rm -rf /tmp/* /var/cache/apk/* || true
 

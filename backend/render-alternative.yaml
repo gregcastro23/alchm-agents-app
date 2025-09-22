@@ -1,0 +1,252 @@
+# =============================================================================
+# PLANETARY AGENTS - ALTERNATIVE RENDER DEPLOYMENT CONFIGURATIONS
+# =============================================================================
+# Multiple deployment options for different scenarios and requirements
+
+# =============================================================================
+# OPTION 1: HIGH-PERFORMANCE PRODUCTION SETUP
+# =============================================================================
+services:
+  # Main production backend
+  - type: web
+    name: planetary-agents-backend-prod
+    runtime: node
+    plan: standard  # Higher performance plan
+    region: oregon
+    numInstances: 2  # Load balancing
+
+    # Optimized build commands
+    buildCommand: |
+      yarn install --frozen-lockfile --network-timeout 300000
+      NODE_OPTIONS="--max-old-space-size=2048" yarn build
+    startCommand: yarn start
+
+    # Health check configuration
+    healthCheckPath: /api/health
+
+    # Auto-deploy settings
+    autoDeploy: true
+    branch: main  # Deploy from main branch
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: LOG_LEVEL
+        value: info
+      - key: LOG_FORMAT
+        value: json
+      - key: RATE_LIMIT_REQUESTS_PER_MINUTE
+        value: 200  # Higher limits for production
+      - key: MAX_REQUEST_SIZE_MB
+        value: 20
+      - key: ENABLE_PERFORMANCE_MONITORING
+        value: true
+      - key: ENABLE_REQUEST_LOGGING
+        value: true
+      - key: ENABLE_ERROR_TRACKING
+        value: true
+      - key: PLANETARY_HOURS_BACKEND
+        value: true
+      - key: THERMODYNAMICS_BACKEND
+        value: true
+      - key: TOKEN_CALCULATIONS_BACKEND
+        value: true
+      - key: KINETICS_BACKEND
+        value: true
+      - key: ENABLE_WEBSOCKET
+        value: true
+      - key: ALCHM_BACKEND_URL
+        value: https://alchm-backend.onrender.com
+
+  # PostgreSQL database for production
+  - type: pserv
+    name: planetary-agents-db-prod
+    plan: starter  # Upgrade to 'standard' for higher traffic
+    region: oregon
+    databaseName: planetary_agents_prod
+    databaseUser: planetary_admin
+
+---
+
+# =============================================================================
+# OPTION 2: DOCKER-BASED DEPLOYMENT
+# =============================================================================
+services:
+  # Docker-based backend deployment
+  - type: web
+    name: planetary-agents-backend-docker
+    runtime: docker
+    plan: starter
+    region: oregon
+
+    # Docker configuration
+    dockerfilePath: ./Dockerfile.production
+    dockerContext: .
+
+    # Environment variables for Docker
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: HOST
+        value: 0.0.0.0
+
+---
+
+# =============================================================================
+# OPTION 3: STAGING + PRODUCTION SETUP
+# =============================================================================
+services:
+  # Staging environment
+  - type: web
+    name: planetary-agents-backend-staging
+    runtime: node
+    plan: starter
+    region: oregon
+
+    buildCommand: yarn install && yarn build
+    startCommand: yarn start
+    healthCheckPath: /api/health
+
+    autoDeploy: true
+    branch: My_alchm  # Deploy from development branch
+
+    envVars:
+      - key: NODE_ENV
+        value: staging
+      - key: LOG_LEVEL
+        value: debug  # More verbose logging for staging
+      - key: RATE_LIMIT_REQUESTS_PER_MINUTE
+        value: 50  # Lower limits for staging
+      - key: ENABLE_PERFORMANCE_MONITORING
+        value: true
+      - key: PLANETARY_HOURS_BACKEND
+        value: true
+      - key: THERMODYNAMICS_BACKEND
+        value: true
+      - key: TOKEN_CALCULATIONS_BACKEND
+        value: true
+      - key: KINETICS_BACKEND
+        value: true
+
+  # Production environment
+  - type: web
+    name: planetary-agents-backend-production
+    runtime: node
+    plan: standard
+    region: oregon
+    numInstances: 2
+
+    buildCommand: yarn install --frozen-lockfile && yarn build
+    startCommand: yarn start
+    healthCheckPath: /api/health
+
+    autoDeploy: false  # Manual deployment for production
+    branch: main
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: warn  # Less verbose for production
+      - key: RATE_LIMIT_REQUESTS_PER_MINUTE
+        value: 200
+      - key: ENABLE_PERFORMANCE_MONITORING
+        value: true
+      - key: PLANETARY_HOURS_BACKEND
+        value: true
+      - key: THERMODYNAMICS_BACKEND
+        value: true
+      - key: TOKEN_CALCULATIONS_BACKEND
+        value: true
+      - key: KINETICS_BACKEND
+        value: true
+
+  # Shared production database
+  - type: pserv
+    name: planetary-agents-shared-db
+    plan: standard
+    region: oregon
+    databaseName: planetary_agents_shared
+    databaseUser: planetary_user
+
+---
+
+# =============================================================================
+# OPTION 4: MINIMAL QUICK DEPLOYMENT
+# =============================================================================
+services:
+  # Minimal configuration for quick testing
+  - type: web
+    name: planetary-agents-backend-minimal
+    runtime: node
+    plan: starter
+    region: oregon
+
+    # Simple build commands
+    buildCommand: yarn install && yarn build
+    startCommand: node dist/index.js
+
+    # Basic environment
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PLANETARY_HOURS_BACKEND
+        value: true
+      - key: KINETICS_BACKEND
+        value: true
+      - key: ALCHM_BACKEND_URL
+        value: https://alchm-backend.onrender.com
+
+---
+
+# =============================================================================
+# OPTION 5: REDIS + ADVANCED CACHING
+# =============================================================================
+services:
+  # Backend with Redis caching
+  - type: web
+    name: planetary-agents-backend-cached
+    runtime: node
+    plan: standard
+    region: oregon
+
+    buildCommand: yarn install --frozen-lockfile && yarn build
+    startCommand: yarn start
+    healthCheckPath: /api/health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ENABLE_REDIS_CACHE
+        value: true
+      - key: CACHE_TTL_PLANETARY_HOURS
+        value: 3600
+      - key: CACHE_TTL_KINETICS
+        value: 300
+      - key: PLANETARY_HOURS_BACKEND
+        value: true
+      - key: THERMODYNAMICS_BACKEND
+        value: true
+      - key: TOKEN_CALCULATIONS_BACKEND
+        value: true
+      - key: KINETICS_BACKEND
+        value: true
+
+  # Redis cache service
+  - type: redis
+    name: planetary-agents-cache
+    plan: starter
+    region: oregon
+    ipAllowList: []  # Allow all IPs
+
+  # PostgreSQL with optimized settings
+  - type: pserv
+    name: planetary-agents-db-optimized
+    plan: standard
+    region: oregon
+    databaseName: planetary_agents
+    databaseUser: planetary_user

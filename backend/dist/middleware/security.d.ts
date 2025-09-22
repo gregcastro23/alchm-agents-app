@@ -9,7 +9,7 @@ export declare function securityHeaders(req: Request, res: Response, next: NextF
 /**
  * Validate request content type for POST/PUT requests
  */
-export declare function validateContentType(req: Request, res: Response, next: NextFunction): Response<any, Record<string, any>> | undefined;
+export declare function validateContentType(req: Request, res: Response, next: NextFunction): Response<any, Record<string, any>>;
 /**
  * Sanitize request parameters to prevent injection attacks
  */
@@ -25,4 +25,4 @@ export declare function suspiciousActivityLogger(req: Request, res: Response, ne
 /**
  * Block common attack patterns
  */
-export declare function blockAttacks(req: Request, res: Response, next: NextFunction): Response<any, Record<string, any>> | undefined;
+export declare function blockAttacks(req: Request, res: Response, next: NextFunction): Response<any, Record<string, any>>;
