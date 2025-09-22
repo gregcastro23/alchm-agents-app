@@ -6,12 +6,13 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc || echo 'TypeScript build completed with errors, continuing...'",
+    "build": "prisma generate && tsc || echo 'TypeScript build completed with errors, continuing...'",
     "start": "node dist/index.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "postinstall": "prisma generate"
   },
   "keywords": [
     "alchemy",

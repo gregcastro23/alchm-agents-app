@@ -70,6 +70,10 @@ services:
       - key: TOKEN_CACHE_TTL
         value: 60
 
+      # Database configuration
+      - key: DATABASE_URL
+        value: file:./planetary_agents.db
+
       # CORS origins - UPDATE THIS with your actual frontend domain
       - key: CORS_ORIGINS
         value: http://localhost:3000,https://planetary-agents.vercel.app
