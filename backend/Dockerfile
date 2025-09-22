@@ -78,11 +78,6 @@ COPY .yarnrc.yml* ./
 # Ensure nodeLinker is set to node-modules
 RUN echo "nodeLinker: node-modules" >> .yarnrc.yml
 
-# Install production dependencies only
-RUN yarn install --immutable --production && \
-    yarn cache clean && \
-    rm -rf /tmp/* /var/cache/apk/* || true
-
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S backend -u 1001
@@ -90,9 +85,20 @@ RUN addgroup -g 1001 -S nodejs && \
 # Copy built application from builder stage
 COPY --from=builder --chown=backend:nodejs /app/dist ./dist
 
-# Create necessary directories with proper permissions
+# Copy prisma files for runtime
+COPY --from=builder --chown=backend:nodejs /app/prisma ./prisma
+
+# Install production dependencies only using Yarn 4 approach
+RUN yarn install --immutable && \
+    yarn cache clean && \
+    rm -rf /tmp/* /var/cache/apk/* || true
+
+# Copy generated Prisma client from builder
+COPY --from=builder --chown=backend:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+
+# Create necessary directories and fix permissions
 RUN mkdir -p logs temp && \
-    chown -R backend:nodejs logs temp
+    chown -R backend:nodejs . logs temp node_modules
 
 # Copy health check script
 COPY --chown=backend:nodejs scripts/health-check.js ./scripts/
