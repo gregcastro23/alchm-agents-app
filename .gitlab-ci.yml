@@ -58,7 +58,6 @@ backend_test:
     - cd $BACKEND_DIR
     - corepack enable
     - corepack prepare yarn@4.0.0 --activate
-    - yarn config set cacheFolder $YARN_CACHE_FOLDER
     - yarn install --frozen-lockfile
   script:
     - echo "Running backend tests..."
@@ -85,7 +84,6 @@ backend_production_validation:
     - cd $BACKEND_DIR
     - corepack enable
     - corepack prepare yarn@4.0.0 --activate
-    - yarn config set cacheFolder $YARN_CACHE_FOLDER
     - yarn install --frozen-lockfile
   script:
     - echo "Running production validation..."
@@ -121,7 +119,6 @@ backend_build:
     - cd $BACKEND_DIR
     - corepack enable
     - corepack prepare yarn@4.0.0 --activate
-    - yarn config set cacheFolder $YARN_CACHE_FOLDER
     - yarn install --frozen-lockfile
   script:
     - echo "Building backend for production..."
