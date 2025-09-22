@@ -6,10 +6,13 @@ FROM node:18-alpine AS deps
 # Install dependencies for native modules
 RUN apk add --no-cache libc6-compat python3 make g++
 
+# Enable Corepack for Yarn 4.0 support
+RUN corepack enable && corepack prepare yarn@4.0.0 --activate
+
 WORKDIR /app
 
 # Copy package files
-COPY package.json yarn.lock ./
+COPY package.json yarn.lock .yarnrc.yml ./
 
 # Install dependencies only
 RUN yarn install --frozen-lockfile --production=false
@@ -18,6 +21,9 @@ RUN yarn install --frozen-lockfile --production=false
 # Builder Stage
 # =====================================
 FROM node:18-alpine AS builder
+
+# Enable Corepack for Yarn 4.0 support
+RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 
 WORKDIR /app
 
@@ -54,8 +60,11 @@ RUN apk add --no-cache \
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S backend -u 1001
 
+# Enable Corepack for Yarn 4.0 support
+RUN corepack enable && corepack prepare yarn@4.0.0 --activate
+
 # Copy package files and install production dependencies
-COPY package.json yarn.lock ./
+COPY package.json yarn.lock .yarnrc.yml ./
 RUN yarn install --production --frozen-lockfile && \
     yarn cache clean && \
     rm -rf /tmp/* /var/cache/apk/*
