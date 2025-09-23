@@ -18,6 +18,7 @@ export async function GET() {
         planet,
         sign: positions[planet]?.sign || 'Aries',
         degree: parseFloat(String(positions[planet]?.degree || '0')),
+        retrograde: Boolean(positions[planet]?.retrograde || false),
       })
     )
 
