@@ -98,11 +98,11 @@ export function requestTimeout(timeoutMs = 30000) {
  */
 export function suspiciousActivityLogger(req, res, next) {
     const suspiciousPatterns = [
-        /\.\.\//, // Path traversal
-        /<script/i, // XSS attempts
-        /union\s+select/i, // SQL injection
-        /javascript:/i, // JavaScript injection
-        /eval\(/i, // Code execution attempts
+        /\.\.\//,
+        /<script/i,
+        /union\s+select/i,
+        /javascript:/i,
+        /eval\(/i,
         /proc\/self\/environ/i, // Environment access attempts
     ];
     const userAgent = req.get('User-Agent') || '';
@@ -130,9 +130,9 @@ export function suspiciousActivityLogger(req, res, next) {
  */
 export function blockAttacks(req, res, next) {
     const attackPatterns = [
-        /\.\.\/.*etc\/passwd/i, // File system access
-        /\.\.\/.*proc\/version/i, // System information
-        /union.*select.*from/i, // SQL injection
+        /\.\.\/.*etc\/passwd/i,
+        /\.\.\/.*proc\/version/i,
+        /union.*select.*from/i,
         /<script.*src.*>/i, // External script injection
     ];
     const requestData = `${req.path} ${JSON.stringify(req.query)} ${JSON.stringify(req.body || {})}`;

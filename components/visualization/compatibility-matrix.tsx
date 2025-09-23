@@ -284,7 +284,7 @@ export function CompatibilityMatrix({
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded" style={{ backgroundColor: getCompatibilityColor(0.1) }}></div>
-          <span>Poor (<20%)</span>
+          <span>Poor (&lt;20%)</span>
         </div>
       </div>
     </div>

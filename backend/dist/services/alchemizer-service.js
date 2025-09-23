@@ -369,7 +369,7 @@ async function generateAlchmForCurrentMomentFull() {
         day: now.getDate(),
         hour: now.getHours(),
         minute: now.getMinutes(),
-        latitude: 0, // Default or from location
+        latitude: 0,
         longitude: 0
     };
     const alchmInfo = calculateCurrentMomentSimple();

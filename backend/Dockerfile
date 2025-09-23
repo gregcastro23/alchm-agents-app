@@ -9,11 +9,11 @@ RUN apk add --no-cache libc6-compat python3 make g++
 # Enable Corepack for Yarn 4.0 support
 RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 
-WORKDIR /app
+WORKDIR /app/backend
 
-# Copy package files and Yarn configuration
-COPY package.json yarn.lock ./
-COPY .yarnrc.yml* ./
+# Copy package files and Yarn configuration (from backend directory when context is repo root)
+COPY backend/package.json backend/yarn.lock ./
+COPY backend/.yarnrc.yml* ./
 
 # Ensure nodeLinker is set to node-modules
 RUN echo "nodeLinker: node-modules" >> .yarnrc.yml
@@ -29,25 +29,28 @@ FROM node:18-alpine AS builder
 # Enable Corepack for Yarn 4.0 support
 RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 
-WORKDIR /app
+WORKDIR /app/backend
 
-# Copy package files and Yarn configuration
-COPY package.json yarn.lock ./
-COPY .yarnrc.yml* ./
+# Copy package files and Yarn configuration (from backend)
+COPY backend/package.json backend/yarn.lock ./
+COPY backend/.yarnrc.yml* ./
 
 # Ensure nodeLinker is set to node-modules
 RUN echo "nodeLinker: node-modules" >> .yarnrc.yml
 
 # Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/backend/node_modules ./node_modules
 
-# Copy source code
-COPY . .
+# Copy backend source code
+COPY backend/ .
+
+# Copy Prisma schema into backend working directory (expected by prisma generate)
+COPY prisma ./prisma
 
 # Set build environment
 ENV NODE_ENV=production
 
-# Build the application
+# Build the application (runs prisma generate + tsc)
 RUN yarn build
 
 # Clean up unnecessary files
@@ -59,7 +62,7 @@ RUN yarn cache clean && \
 # =====================================
 FROM node:18-alpine AS production
 
-WORKDIR /app
+WORKDIR /app/backend
 
 # Install required packages for production
 RUN apk add --no-cache \
@@ -71,9 +74,9 @@ RUN apk add --no-cache \
 # Enable Corepack for Yarn 4.0 support
 RUN corepack enable && corepack prepare yarn@4.0.0 --activate
 
-# Copy package files and Yarn configuration
-COPY package.json yarn.lock ./
-COPY .yarnrc.yml* ./
+# Copy package files and Yarn configuration (from backend)
+COPY backend/package.json backend/yarn.lock ./
+COPY backend/.yarnrc.yml* ./
 
 # Ensure nodeLinker is set to node-modules
 RUN echo "nodeLinker: node-modules" >> .yarnrc.yml
@@ -83,10 +86,10 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S backend -u 1001
 
 # Copy built application from builder stage
-COPY --from=builder --chown=backend:nodejs /app/dist ./dist
+COPY --from=builder --chown=backend:nodejs /app/backend/dist ./dist
 
 # Copy prisma files for runtime
-COPY --from=builder --chown=backend:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=backend:nodejs /app/backend/prisma ./prisma
 
 # Install production dependencies only using Yarn 4 approach
 RUN yarn install --immutable && \
@@ -94,14 +97,14 @@ RUN yarn install --immutable && \
     rm -rf /tmp/* /var/cache/apk/* || true
 
 # Copy generated Prisma client from builder
-COPY --from=builder --chown=backend:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=backend:nodejs /app/backend/node_modules/.prisma ./node_modules/.prisma
 
 # Create necessary directories and fix permissions
 RUN mkdir -p logs temp && \
     chown -R backend:nodejs . logs temp node_modules
 
 # Copy health check script
-COPY --chown=backend:nodejs scripts/health-check.js ./scripts/
+COPY --chown=backend:nodejs backend/scripts/health-check.js ./scripts/
 
 # Switch to non-root user
 USER backend

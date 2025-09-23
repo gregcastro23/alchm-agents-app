@@ -336,7 +336,8 @@ async function fetchLiveConsciousness(birthChart: BirthChartData): Promise<LiveC
 // Generate realistic fallback data when backend is unavailable
 function generateFallbackConsciousnessData(birthChart: BirthChartData): LiveConsciousnessResult {
   // Simple hash function for consistent results based on name
-  const nameHash = birthChart.name.split('').reduce((a, b) => {
+  const name = birthChart.name || 'Unknown Agent'
+  const nameHash = name.split('').reduce((a, b) => {
     a = ((a << 5) - a) + b.charCodeAt(0)
     return a & a
   }, 0)

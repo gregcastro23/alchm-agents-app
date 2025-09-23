@@ -5,13 +5,15 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "prisma generate && tsx watch src/index.ts",
     "build": "prisma generate && tsc || echo 'TypeScript build completed with errors, continuing...'",
     "start": "node dist/index.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "generate": "prisma generate",
+    "postinstall": "prisma generate"
   },
   "keywords": [
     "alchemy",
@@ -23,7 +25,7 @@
   "author": "Planetary Agents",
   "license": "MIT",
   "dependencies": {
-    "@prisma/client": "^5.19.0",
+    "@prisma/client": "^6.16.2",
     "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
@@ -35,7 +37,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "node-cron": "^3.0.3",
-    "redis": "^4.6.10",
+    "redis": "^5.6.1",
     "uuid": "^9.0.1",
     "winston": "^3.11.0",
     "ws": "^8.14.2"
@@ -45,19 +47,19 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.8",
-    "@types/node": "^20.8.0",
+    "@types/node": "^22.12.0",
     "@types/node-cron": "^3.0.11",
     "@types/uuid": "^9.0.7",
     "@types/ws": "^8.5.10",
-    "@typescript-eslint/eslint-plugin": "^6.9.0",
-    "@typescript-eslint/parser": "^6.9.0",
-    "eslint": "^8.52.0",
+    "@typescript-eslint/eslint-plugin": "^8.43.0",
+    "@typescript-eslint/parser": "^8.43.0",
+    "eslint": "^9.0.0",
     "jest": "^29.7.0",
     "nodemon": "^3.0.1",
-    "prisma": "^5.19.0",
+    "prisma": "^6.16.2",
     "ts-jest": "^29.1.1",
     "tsx": "^4.1.0",
-    "typescript": "^5.2.2"
+    "typescript": "5.2.2"
   },
   "engines": {
     "node": ">=18.0.0"

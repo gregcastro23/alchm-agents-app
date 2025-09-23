@@ -76,7 +76,7 @@ class CacheService {
       // Try Redis first if available
       if (this.redisClient && this.isRedisConnected) {
         const value = await this.redisClient.get(key)
-        if (value) {
+        if (value && typeof value === 'string') {
           return JSON.parse(value) as T
         }
         return null

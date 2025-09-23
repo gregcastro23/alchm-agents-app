@@ -117,7 +117,7 @@ router.get('/detailed', asyncHandler(async (req, res) => {
     const memoryUsage = process.memoryUsage();
     checks.push({
         name: 'Memory Usage',
-        status: memoryUsage.heapUsed < 500 * 1024 * 1024 ? 'pass' : 'warn', // 500MB threshold
+        status: memoryUsage.heapUsed < 500 * 1024 * 1024 ? 'pass' : 'warn',
         details: {
             heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
             heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)}MB`,

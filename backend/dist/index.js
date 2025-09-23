@@ -31,7 +31,7 @@ const HOST = process.env.HOST || 'localhost';
 const ENABLE_WEBSOCKET = process.env.ENABLE_WEBSOCKET === 'true';
 // Security middleware
 app.use(helmet({
-    contentSecurityPolicy: false, // Allow for development
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false
 }));
 // CORS configuration
@@ -64,8 +64,8 @@ app.use(express.urlencoded({
 }));
 // Rate limiting with different tiers
 const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: parseInt(process.env.RATE_LIMIT_REQUESTS_PER_MINUTE || '100') * 15, // Scale to window
+    windowMs: 15 * 60 * 1000,
+    max: parseInt(process.env.RATE_LIMIT_REQUESTS_PER_MINUTE || '100') * 15,
     message: {
         error: 'Too many requests from this IP, please try again later',
         retryAfter: '15 minutes'
@@ -79,8 +79,8 @@ const globalLimiter = rateLimit({
 });
 // Stricter rate limiting for expensive operations
 const computeLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 10, // 10 requests per minute for heavy computations
+    windowMs: 60 * 1000,
+    max: 10,
     message: {
         error: 'Computation rate limit exceeded, please wait before making more requests',
         retryAfter: '1 minute'

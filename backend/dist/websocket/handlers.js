@@ -310,7 +310,7 @@ class WebSocketManager {
                 channel: 'kinetics-power',
                 data: {
                     timestamp: new Date().toISOString(),
-                    powerLevel: Math.random() * 0.4 + 0.3, // 0.3 to 0.7
+                    powerLevel: Math.random() * 0.4 + 0.3,
                     trend: Math.random() > 0.5 ? 'ascending' : 'descending',
                     nextUpdate: new Date(Date.now() + 10 * 60 * 1000).toISOString()
                 }

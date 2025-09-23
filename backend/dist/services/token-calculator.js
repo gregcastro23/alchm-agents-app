@@ -98,7 +98,7 @@ class TokenCalculatorService {
         const weeklyMultiplier = 1 + 0.05 * Math.sin((timestamp.getDay() * 2 * Math.PI) / 7);
         const totalMultiplier = timeMultiplier * seasonalMultiplier * weeklyMultiplier;
         return {
-            Spirit: rates.Spirit * totalMultiplier * (1 + 0.1 * Math.sin(hour * Math.PI / 6)), // Extra variation for Spirit
+            Spirit: rates.Spirit * totalMultiplier * (1 + 0.1 * Math.sin(hour * Math.PI / 6)),
             Essence: rates.Essence * totalMultiplier * (1 + 0.1 * Math.cos(hour * Math.PI / 8)),
             Matter: rates.Matter * totalMultiplier * (1 + 0.05 * Math.sin(dayOfYear * Math.PI / 180)),
             Substance: rates.Substance * totalMultiplier * (1 + 0.08 * Math.cos(dayOfYear * Math.PI / 365))
@@ -112,9 +112,9 @@ class TokenCalculatorService {
         const minute = timestamp.getMinutes();
         const timeValue = hour + minute / 60;
         return {
-            Spirit: this.analyzeHarmonic(rates.Spirit, timeValue, 1.2), // Fast frequency
-            Essence: this.analyzeHarmonic(rates.Essence, timeValue, 0.8), // Medium frequency
-            Matter: this.analyzeHarmonic(rates.Matter, timeValue, 0.6), // Slow frequency
+            Spirit: this.analyzeHarmonic(rates.Spirit, timeValue, 1.2),
+            Essence: this.analyzeHarmonic(rates.Essence, timeValue, 0.8),
+            Matter: this.analyzeHarmonic(rates.Matter, timeValue, 0.6),
             Substance: this.analyzeHarmonic(rates.Substance, timeValue, 0.4) // Very slow frequency
         };
     }
@@ -153,7 +153,7 @@ class TokenCalculatorService {
             nearTerm.push({
                 timeframe: `+${hours}h`,
                 expectedRate: avgRate,
-                confidence: Math.max(0.5, 1 - hours * 0.02), // Decreasing confidence
+                confidence: Math.max(0.5, 1 - hours * 0.02),
                 factors: [`Planetary: ${planetaryHour.planet}`, 'Temporal cycles']
             });
         }
@@ -165,7 +165,7 @@ class TokenCalculatorService {
             seasonal.push({
                 timeframe: seasons[i],
                 expectedRate: avgRate * seasonalMultiplier,
-                confidence: 0.7 - i * 0.1, // Decreasing confidence over time
+                confidence: 0.7 - i * 0.1,
                 factors: [`Seasonal: ${seasons[i]}`, 'Long-term cycles']
             });
         }
@@ -199,7 +199,7 @@ class TokenCalculatorService {
         if (highRates.length >= 2) {
             events.push({
                 type: 'confluence',
-                timestamp: new Date(timestamp.getTime() + 60 * 60 * 1000), // 1 hour from now
+                timestamp: new Date(timestamp.getTime() + 60 * 60 * 1000),
                 description: `Multiple tokens showing elevated activity: ${highRates.join(', ')}`,
                 impact: 'high',
                 tokens: highRates

@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { getCurrentPlanetaryPositions } from '../../../backend/src/services/planetary-service'; // Adjust path
 
 const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
   const { userId, agentId, interactionData } = await request.json();
-  
-  const planetary = await getCurrentPlanetaryPositions({ lat: 0, lon: 0 }); // Get real data
-  const powerGained = calculatePower(interactionData, planetary); // Implement calc
+
+  // Use backend API call instead of direct import
+  const planetary = { status: 'placeholder' }; // TODO: Call backend API
+  const powerGained = 1; // TODO: Implement calculation via backend API
   
   await prisma.consciousnessInteraction.create({
     data: {

@@ -11,8 +11,8 @@ import { calculateMC } from '../services/monica-constant-service.js';
 const router = createRouter();
 // Rate limiting for consciousness calculations
 const consciousnessLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 30, // Limit each IP to 30 requests per minute
+    windowMs: 60 * 1000,
+    max: 30,
     message: 'Too many consciousness calculation requests',
     standardHeaders: true,
     legacyHeaders: false

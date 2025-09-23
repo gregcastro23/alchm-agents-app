@@ -97,16 +97,30 @@ export default function GalleryPage() {
     setFilters(prev => ({ ...prev, consciousnessLevel: value as ConsciousnessLevel | 'all' }))
   }, [])
 
+  const handleSortCriteriaChange = useCallback((value: string) => {
+    setSortCriteria(value as AgentSortCriteria)
+  }, [])
+
+  // Memoize sorting options to prevent infinite re-renders
+  const sortingOptions = useMemo(() => getSortingOptions(), [])
+
   const collections = getAgentCollections()
 
-  // Prepare birth chart data for batch live consciousness calculation
-  const agentBirthCharts: BirthChartData[] = agents.map(agent => ({
-    name: agent.name,
-    birthDate: agent.birthDate || '1970-01-01', // Fallback date
-    birthTime: agent.birthTime || '12:00',      // Fallback time  
-    latitude: agent.birthLocation?.latitude || 0,
-    longitude: agent.birthLocation?.longitude || 0
-  }))
+  // Prepare birth chart data for batch live consciousness calculation (memoized to prevent update loops)
+  const agentBirthCharts: BirthChartData[] = useMemo(() => (
+    agents.map(agent => ({
+      name: agent.name,
+      birthDate: agent.birthDate || '1970-01-01', // Fallback date
+      birthTime: agent.birthTime || '12:00',      // Fallback time  
+      latitude: agent.birthLocation?.latitude || 0,
+      longitude: agent.birthLocation?.longitude || 0
+    }))
+  ), [agents])
+
+  // Stable selected agent objects for child components
+  const selectedAgentObjects = useMemo(() => (
+    agents.filter(a => selectedAgents.includes(a.id))
+  ), [agents, selectedAgents])
 
   // Use batch live consciousness hook for all agents
   const {
@@ -429,10 +443,13 @@ export default function GalleryPage() {
 
         {/* Moment-Based Recommendations */}
         <div className="lg:col-span-4">
-          <MomentBasedRecommendations
-            selectedAgents={selectedAgents}
-            onToggleSelection={toggleAgentSelection}
-          />
+          {agents.length > 0 && (
+            <MomentBasedRecommendations
+              allAgents={agents}
+              selectedAgents={selectedAgentObjects}
+              onAgentSelect={(agent) => toggleAgentSelection(agent.id)}
+            />
+          )}
         </div>
       </div>
 
@@ -455,6 +472,7 @@ export default function GalleryPage() {
             <div className="flex gap-2">
               <Select
                 value={filters.element}
+                defaultValue={filters.element}
                 onValueChange={handleElementFilterChange}
               >
                 <SelectTrigger className="w-32">
@@ -471,6 +489,7 @@ export default function GalleryPage() {
 
               <Select
                 value={filters.consciousnessLevel}
+                defaultValue={filters.consciousnessLevel}
                 onValueChange={handleConsciousnessLevelFilterChange}
               >
                 <SelectTrigger className="w-36">
@@ -490,13 +509,14 @@ export default function GalleryPage() {
               {/* Sorting Controls */}
               <Select
                 value={sortCriteria}
-                onValueChange={value => setSortCriteria(value as AgentSortCriteria)}
+                defaultValue={sortCriteria}
+                onValueChange={handleSortCriteriaChange}
               >
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="Sort By" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getSortingOptions().map(option => (
+                  {sortingOptions.map(option => (
                     <SelectItem key={option.value} value={option.value}>
                       <div className="text-left">
                         <div className="font-medium">{option.label}</div>

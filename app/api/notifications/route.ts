@@ -274,7 +274,8 @@ async function sendEmail(to: string, subject: string, content: string) {
   // Check if SendGrid is configured
   if (process.env.SENDGRID_API_KEY && process.env.FEEDBACK_FROM_EMAIL) {
     try {
-      const sgMail = require('@sendgrid/mail')
+      // Dynamically import sendgrid only if configured to avoid build errors
+      const sgMail = eval('require')('@sendgrid/mail')
       sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
       const msg = {

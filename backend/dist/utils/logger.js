@@ -33,12 +33,12 @@ if (process.env.NODE_ENV === 'production') {
     logger.add(new winston.transports.File({
         filename: 'logs/error.log',
         level: 'error',
-        maxsize: 10485760, // 10MB
+        maxsize: 10485760,
         maxFiles: 5
     }));
     logger.add(new winston.transports.File({
         filename: 'logs/combined.log',
-        maxsize: 10485760, // 10MB
+        maxsize: 10485760,
         maxFiles: 10
     }));
 }

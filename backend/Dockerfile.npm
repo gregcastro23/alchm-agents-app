@@ -6,7 +6,7 @@
 FROM node:18-alpine
 
 # Set working directory in container
-WORKDIR /app
+WORKDIR /app/backend
 
 # Install curl for health checks
 RUN apk add --no-cache curl dumb-init libc6-compat python3 make g++
@@ -15,18 +15,19 @@ RUN apk add --no-cache curl dumb-init libc6-compat python3 make g++
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S backend -u 1001
 
-# Copy package files
-COPY package.json ./
+# Copy package files from backend directory
+COPY backend/package.json ./
 # Copy package-lock.json if it exists
-COPY package-lock.json* ./
+COPY backend/package-lock.json* ./
 
 # Install dependencies using npm
 RUN npm ci --only=production && \
     npm cache clean --force && \
     rm -rf /tmp/* /var/cache/apk/*
 
-# Copy source code
-COPY . .
+# Copy backend source code
+COPY backend/ .
+COPY prisma ../prisma
 
 # Build the application
 RUN npm run build

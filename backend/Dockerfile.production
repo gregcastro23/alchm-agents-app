@@ -17,10 +17,11 @@ RUN apk add --no-cache \
 # Enable Corepack for Yarn support
 RUN corepack enable
 
-WORKDIR /app
+WORKDIR /app/backend
 
-# Copy all files
-COPY . .
+# Copy backend source and necessary root files when context is repo root
+COPY backend/ .
+COPY prisma ../prisma
 
 # Ensure we use node-modules (not PnP)
 RUN echo "nodeLinker: node-modules" > .yarnrc.yml
