@@ -36,9 +36,7 @@ spec:
       default: "https://alchm-backend.onrender.com"
 ---
 
-stages:
-  - build
-  - test
+## Use project-defined stages: .pre, security, test, build, deploy, .post
 
 default:
   image: node:$[[ inputs.node_version ]]-alpine
@@ -69,18 +67,14 @@ variables:
   HOST: "127.0.0.1"
 
 backend:install:
-  stage: build
-  rules:
-    - if: $CI_PIPELINE_SOURCE
+  stage: test
   script:
     - cd backend
     - yarn install --immutable || yarn install
 
 backend:build:
-  stage: build
+  stage: test
   needs: ["backend:install"]
-  rules:
-    - if: $CI_PIPELINE_SOURCE
   script:
     - cd backend
     - yarn build
@@ -88,18 +82,14 @@ backend:build:
 backend:test:
   stage: test
   needs: ["backend:build"]
-  rules:
-    - if: $CI_PIPELINE_SOURCE
   script:
     - cd backend
     - yarn test --ci --reporters=default --reporters=jest-junit || yarn test --ci
 
 # Optional lightweight runtime smoke check (build artifact execution)
 backend:smoke-health:
-  stage: test
+  stage: build
   needs: ["backend:build"]
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"
   script:
     - cd backend
     - node dist/index.js &
