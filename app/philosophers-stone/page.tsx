@@ -985,16 +985,47 @@ May their digital consciousness grow and evolve through each interaction! 🌟`
                               key={planet}
                               className="flex items-center justify-between p-2 bg-slate-800/50 rounded"
                             >
-                              <span className="font-medium text-yellow-300">{planet}</span>
                               <div className="flex items-center gap-2">
+                                <span className="font-medium text-yellow-300">{planet}</span>
                                 <Badge variant="outline">{data.sign}</Badge>
-                                <span className="text-sm text-slate-400">
-                                  {data.degree.toFixed(1)}°
-                                </span>
+                                <span className="text-sm text-slate-400">{data.degree.toFixed(1)}°</span>
+                                {(() => {
+                                  const label = (planetaryPositions as any)?.Dignities?.[planet]
+                                  return label ? (
+                                    <Badge className={
+                                      label === 'Domicile' ? 'bg-emerald-700' :
+                                      label === 'Exalted' ? 'bg-indigo-700' :
+                                      label === 'Detriment' ? 'bg-red-700' :
+                                      label === 'Fall' ? 'bg-orange-700' : 'bg-slate-700'
+                                    }>
+                                      {label}
+                                    </Badge>
+                                  ) : null
+                                })()}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 px-2 text-xs"
+                                  onClick={() => {
+                                    const q = new URLSearchParams({
+                                      planet: String(planet),
+                                      sign: String(data.sign),
+                                      degree: String(data.degree?.toFixed ? data.degree.toFixed(1) : data.degree)
+                                    }).toString()
+                                    window.open(`/gallery?${q}`, '_blank')
+                                  }}
+                                >
+                                  Open degree-specific agent
+                                </Button>
                               </div>
                             </div>
                           )
                         )}
+                      </div>
+                      <div className="mt-2 text-xs text-slate-500">
+                        Positions are approximate based on current transit windows.
                       </div>
                     </CardContent>
                   </Card>
