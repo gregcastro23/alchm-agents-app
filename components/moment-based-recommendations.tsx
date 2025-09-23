@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -296,15 +296,22 @@ export function MomentBasedRecommendations({
   }
 
   // Fetch current moment data and calculate recommendations
+  const stableAgents = useMemo(() => allAgents, [allAgents])
+  const stableSelected = useMemo(() => selectedAgents, [selectedAgents])
+  const stableLocation = useMemo(() => userLocation, [userLocation.lat, userLocation.lon])
+  const isFetchingRef = useRef(false)
+
   const fetchRecommendations = async () => {
+    if (isFetchingRef.current) return
+    isFetchingRef.current = true
     try {
       setLoading(true)
       setError(null)
 
       // Get current kinetic data
       const momentData = await AlchemicalKineticsClient.get({
-        lat: userLocation.lat,
-        lon: userLocation.lon,
+        lat: stableLocation.lat,
+        lon: stableLocation.lon,
         date: new Date().toISOString().split('T')[0],
         includeElemental: true,
         includePlanetary: true,
@@ -313,13 +320,13 @@ export function MomentBasedRecommendations({
       setCurrentMomentData(momentData)
 
       // Calculate recommendations for all agents (with null safety)
-      if (!allAgents || !Array.isArray(allAgents)) {
+      if (!stableAgents || !Array.isArray(stableAgents)) {
         console.warn('allAgents is undefined or not an array, skipping recommendations')
         setLoading(false)
         return
       }
 
-      const agentRecommendations = allAgents
+      const agentRecommendations = stableAgents
         .map(agent => calculateMomentScore(agent, momentData))
         .sort((a, b) => b.score - a.score)
         .slice(0, maxRecommendations)
@@ -380,19 +387,18 @@ export function MomentBasedRecommendations({
       setError('Failed to load moment-based recommendations')
     } finally {
       setLoading(false)
+      isFetchingRef.current = false
     }
   }
 
   useEffect(() => {
-    // Only fetch recommendations if allAgents is available
-    if (allAgents && Array.isArray(allAgents) && allAgents.length > 0) {
+    if (stableAgents && Array.isArray(stableAgents) && stableAgents.length > 0) {
       fetchRecommendations()
 
-      // Update every 5 minutes
       const interval = setInterval(fetchRecommendations, 300000)
       return () => clearInterval(interval)
     }
-  }, [allAgents, selectedAgents, userLocation])
+  }, [stableAgents, stableSelected, stableLocation.lat, stableLocation.lon, maxRecommendations])
 
   const getElementIcon = (element: string) => {
     switch (element) {

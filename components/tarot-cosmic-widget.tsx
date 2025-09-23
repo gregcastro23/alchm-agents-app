@@ -102,7 +102,11 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
     loadCurrentCard()
 
     return () => {
-      abortController.abort()
+      // Provide an explicit reason to avoid noisy "signal is aborted without reason" console messages
+      // and make downstream handling clearer.
+      try {
+        abortController.abort('component-unmount')
+      } catch {}
     }
   }, [])
 

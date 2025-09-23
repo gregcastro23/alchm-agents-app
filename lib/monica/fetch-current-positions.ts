@@ -97,7 +97,7 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
 
     if (!response.ok) {
       console.error('Philosophers Stone API error:', response.status, response.statusText)
-      return null
+      return await enhancedPositionsNow() // prefer enhanced fallback if API returns error
     }
 
     const data = await response.json()
@@ -120,12 +120,27 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
     if (data.planetaryPositions && Array.isArray(data.planetaryPositions)) {
       data.planetaryPositions.forEach((planet: any) => {
         if (transformedData['Planet Positions']) {
+          const rawDegree = typeof planet.degree === 'number' ? planet.degree : undefined
+          const signDegree = typeof rawDegree === 'number'
+            ? ((rawDegree % 30) + 30) % 30 // normalize within 0-30
+            : undefined
           transformedData['Planet Positions'][planet.planet] = {
             sign: planet.sign,
-            degree: planet.degree || 15,
+            degree: typeof signDegree === 'number' ? signDegree : undefined as any,
           }
         }
       })
+    }
+
+    // If API data is incomplete or missing degrees, compute enhanced fallback for correctness
+    const planetCount = Object.keys(transformedData['Planet Positions'] || {}).length
+    const needsEnhanced = planetCount === 0 || Object.values(transformedData['Planet Positions'] || {}).some((p: any) => typeof p.degree !== 'number')
+
+    if (needsEnhanced) {
+      const enhanced = await enhancedPositionsNow()
+      if (enhanced) {
+        transformedData['Planet Positions'] = enhanced['Planet Positions']
+      }
     }
 
     console.log('Philosophers Stone API response transformed:', {
@@ -136,14 +151,62 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
     })
 
     return transformedData
-  } catch (error) {
-    // Handle AbortError specifically - don't fallback if request was aborted
-    if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
-      console.log('Fetch request was aborted')
-      throw error
+  } catch (error: any) {
+    // Silence expected component-unmount aborts and prefer enhanced fallback
+    if (error?.name === 'AbortError' || /aborted|component-unmount/i.test(String(error?.message))) {
+      // Return enhanced fallback rather than logging a console error
+      return await enhancedPositionsNow()
     }
 
     console.error('Error fetching planetary positions from philosophers-stone API:', error)
+    // As a robust fallback, compute enhanced positions locally
+    try {
+      const enhanced = await enhancedPositionsNow()
+      return enhanced
+    } catch (e) {
+      console.error('Enhanced fallback failed:', e)
+      return null
+    }
+  }
+}
+
+// --- Enhanced local fallback using our professional calculator ---
+import { calculateAllPlanets, type EnhancedBirthInfo } from '../enhanced-astronomical-calculator'
+
+async function enhancedPositionsNow(): Promise<AlchemizeApiResponse | null> {
+  try {
+    const now = new Date()
+    // Use a reasonable default location; planetary longitudes are time-dependent (not location)
+    const birthInfo: EnhancedBirthInfo = {
+      year: now.getUTCFullYear(),
+      month: now.getUTCMonth() + 1,
+      day: now.getUTCDate(),
+      hour: now.getUTCHours(),
+      minute: now.getUTCMinutes(),
+      second: now.getUTCSeconds(),
+      latitude: 0,
+      longitude: 0
+    }
+
+    const results = calculateAllPlanets(birthInfo)
+
+    const planetPositions: Record<string, { sign: string; degree: number }> = {}
+    Object.entries(results.planets).forEach(([name, pos]) => {
+      planetPositions[name] = {
+        sign: pos.sign,
+        degree: pos.signDegree
+      }
+    })
+
+    return {
+      'Planet Positions': planetPositions,
+      'Alchemy Effects': undefined as any,
+      'Major Arcana': [],
+      'Minor Arcana': [],
+      'Decan Effects': {}
+    }
+  } catch (error) {
+    console.error('enhancedPositionsNow() failed:', error)
     return null
   }
 }

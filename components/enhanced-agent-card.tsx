@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -298,14 +298,14 @@ export function EnhancedAgentCard({
 }: EnhancedAgentCardProps) {
   const [showDetails, setShowDetails] = useState(false)
 
-  // Create birth chart data for live consciousness calculation
-  const agentBirthData: BirthChartData = {
+  // Create birth chart data for live consciousness calculation (memoized to prevent effect loops)
+  const agentBirthData: BirthChartData = useMemo(() => ({
     name: agent.name,
-    birthDate: agent.birthDate || '1970-01-01', // Fallback date
-    birthTime: agent.birthTime || '12:00',      // Fallback time
+    birthDate: agent.birthDate || '1970-01-01',
+    birthTime: agent.birthTime || '12:00',
     latitude: agent.birthLocation?.latitude || 0,
     longitude: agent.birthLocation?.longitude || 0
-  }
+  }), [agent.name, agent.birthDate, agent.birthTime, agent.birthLocation?.latitude, agent.birthLocation?.longitude])
 
   // Use live consciousness hook
   const { data: liveConsciousness, loading: liveLoading, error: liveError } = useLiveConsciousness(
@@ -421,7 +421,7 @@ export function EnhancedAgentCard({
               {agent.consciousness.dominantElement}
             </Badge>
             {/* Live MC display with birth MC fallback */}
-            {liveConsciousness ? (
+            {liveConsciousness && typeof liveConsciousness.liveMC === 'number' && typeof liveConsciousness.birthMC === 'number' ? (
               <Badge 
                 variant="outline"
                 title={`Birth MC: ${liveConsciousness.birthMC.toFixed(3)} → Live MC: ${liveConsciousness.liveMC.toFixed(3)}`}

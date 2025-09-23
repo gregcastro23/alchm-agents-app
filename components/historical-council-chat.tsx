@@ -145,7 +145,15 @@ export function HistoricalCouncilChat({
   const erasRepresented = useMemo(() => {
     const eras = new Set<string>()
     selectedAgentData.forEach(agent => {
-      const year = agent.birthData.date.getFullYear()
+      let year: number | null = null
+      const d = agent.birthData?.date as any
+      if (d instanceof Date) {
+        year = d.getFullYear()
+      } else if (typeof d === 'string') {
+        const parsed = new Date(d)
+        if (!isNaN(parsed.getTime())) year = parsed.getFullYear()
+      }
+      if (year == null) return
       if (year < 500) eras.add('Ancient')
       else if (year < 1000) eras.add('Classical')
       else if (year < 1500) eras.add('Medieval')

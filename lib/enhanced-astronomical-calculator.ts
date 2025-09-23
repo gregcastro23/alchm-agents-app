@@ -159,6 +159,49 @@ const ENHANCED_ORBITAL_ELEMENTS = {
     omega1: 1222.49362201,
     w: 92.59887831,
     w1: -0.41897216,
+  },
+  // Approximate elements for outer planets (reduced precision, sufficient for sign/degree)
+  Uranus: {
+    L0: 314.05500511,
+    L1: 428.466998313,
+    L2: 0.00000486,
+    a: 19.21844606,
+    e: 0.04638122,
+    e1: -0.00002737,
+    I: 0.77263783,
+    I1: -0.00242939,
+    omega: 73.926961,
+    omega1: 0.000000,
+    w: 96.937351,
+    w1: 0.000000,
+  },
+  Neptune: {
+    L0: 304.34866548,
+    L1: 218.486200208,
+    L2: 0.00000059,
+    a: 30.11038687,
+    e: 0.00945575,
+    e1: 0.00000633,
+    I: 1.76995259,
+    I1: 0.00022574,
+    omega: 131.784057,
+    omega1: 0.000000,
+    w: 273.187275,
+    w1: 0.000000,
+  },
+  Pluto: {
+    L0: 238.92903833,
+    L1: 145.20780515,
+    L2: 0.00000000,
+    a: 39.48211675,
+    e: 0.24882730,
+    e1: 0.00005170,
+    I: 17.14001206,
+    I1: 0.00004818,
+    omega: 110.30393684,
+    omega1: 0.00000000,
+    w: 113.763283,
+    w1: 0.000000,
   }
 }
 
@@ -484,7 +527,7 @@ export function calculateAllPlanets(birthInfo: EnhancedBirthInfo): {
 
   const jd = toJulianDay(birthDate)
 
-  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']
+  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']
   const planets: Record<string, EnhancedPlanetPosition> = {}
 
   for (const planetName of planetNames) {

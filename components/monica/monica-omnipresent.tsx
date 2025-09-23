@@ -736,38 +736,50 @@ export function MonicaOmnipresent() {
 
   if (!isVisible) return null
 
-  // Consciousness particle animation effect
+  // Consciousness particle animation effect (throttled & raf-based to avoid update depth issues)
   useEffect(() => {
     if (!particleAnimation) return
 
-    const interval = setInterval(() => {
-      setConsciousnessParticles(prev => {
-        // Remove old particles and add new ones
-        const filtered = prev.filter(p => p.opacity > 0.1)
-        const newParticles = []
+    let rafId: number | null = null
+    let lastTick = 0
 
-        // Create new particles occasionally
-        if (Math.random() > 0.7) {
-          newParticles.push({
-            id: Date.now() + Math.random(),
-            x: Math.random() * 100,
-            y: Math.random() * 100,
-            opacity: 1
-          })
-        }
+    const tick = (ts: number) => {
+      // Throttle to ~8 fps
+      if (ts - lastTick >= 125) {
+        lastTick = ts
+        setConsciousnessParticles(prev => {
+          // Remove old particles and add new ones
+          const filtered = prev.filter(p => p.opacity > 0.1)
+          const newParticles: typeof prev = []
 
-        // Update existing particles
-        const updated = filtered.map(p => ({
-          ...p,
-          opacity: p.opacity - 0.02,
-          y: p.y - 1
-        }))
+          // Create new particles occasionally
+          if (Math.random() > 0.7) {
+            newParticles.push({
+              id: Date.now() + Math.random(),
+              x: Math.random() * 100,
+              y: Math.random() * 100,
+              opacity: 1
+            } as any)
+          }
 
-        return [...updated, ...newParticles]
-      })
-    }, 100)
+          // Update existing particles
+          const updated = filtered.map(p => ({
+            ...p,
+            opacity: p.opacity - 0.02,
+            y: p.y - 1
+          }))
 
-    return () => clearInterval(interval)
+          const next = [...updated, ...newParticles]
+          return next
+        })
+      }
+      rafId = requestAnimationFrame(tick)
+    }
+
+    rafId = requestAnimationFrame(tick)
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId)
+    }
   }, [particleAnimation])
 
   return (

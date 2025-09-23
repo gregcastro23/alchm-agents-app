@@ -58,6 +58,12 @@ const PLANET_SYMBOLS: Record<string, string> = {
   pluto: '♇',
 }
 
+// Ensure we always iterate over an actual array to avoid runtime errors
+function getPlanetOrderArray(): string[] {
+  const order = Array.isArray(PLANET_ORDER) ? PLANET_ORDER : Object.keys(PLANET_SYMBOLS)
+  return Array.isArray(order) ? order.slice() : []
+}
+
 const PATTERN_ICONS: Record<string, React.ReactNode> = {
   'grand-trine': <Triangle className="w-4 h-4" />,
   't-square': <Square className="w-4 h-4" />,
@@ -85,9 +91,13 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
   const [selectedPattern, setSelectedPattern] = useState<PatternConfiguration | null>(null)
   const [activeTab, setActiveTab] = useState<'grid' | 'patterns' | 'analysis'>('grid')
 
+  // Defensive copies to avoid runtime issues when detectors return undefined
+  const safeAspects: Aspect[] = Array.isArray(aspects) ? aspects : []
+  const safePatterns: PatternConfiguration[] = Array.isArray(patterns) ? patterns : []
+
   // Convert planets to the format needed for pattern detection
-  const planetPositions: PlanetPosition[] = Object.entries(planets)
-    .filter(([planet]) => PLANET_ORDER.includes(planet))
+  const planetPositions: PlanetPosition[] = Object.entries(planets || {})
+    .filter(([planet]) => getPlanetOrderArray().includes(planet))
     .map(([planet, data]) => ({
       planet,
       sign: data.sign,
@@ -97,22 +107,23 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
 
   useEffect(() => {
     const { aspects: detectedAspects, patterns: detectedPatterns } = detectPatterns(planetPositions)
-    setAspects(detectedAspects)
-    setPatterns(detectedPatterns)
+    setAspects(Array.isArray(detectedAspects) ? detectedAspects : [])
+    setPatterns(Array.isArray(detectedPatterns) ? detectedPatterns : [])
   }, [planets])
 
   // Create aspect matrix for grid display
   const createAspectMatrix = () => {
     const matrix: Record<string, Record<string, Aspect | null>> = {}
 
-    PLANET_ORDER.forEach(p1 => {
+    const order = getPlanetOrderArray()
+    for (const p1 of order) {
       matrix[p1] = {}
-      PLANET_ORDER.forEach(p2 => {
+      for (const p2 of order) {
         matrix[p1][p2] = null
-      })
-    })
+      }
+    }
 
-    aspects.forEach(aspect => {
+    (aspects || []).forEach(aspect => {
       if (matrix[aspect.planet1]?.[aspect.planet2] !== undefined) {
         matrix[aspect.planet1][aspect.planet2] = aspect
       }
@@ -127,7 +138,7 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
   const aspectMatrix = createAspectMatrix()
 
   // Group aspects by type for analysis
-  const aspectsByType = aspects.reduce(
+  const aspectsByType = safeAspects.reduce(
     (acc, aspect) => {
       if (!acc[aspect.type]) acc[aspect.type] = []
       acc[aspect.type].push(aspect)
@@ -157,7 +168,7 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
           Aspects & Patterns Analysis
         </CardTitle>
         <CardDescription>
-          {aspects.length} aspects • {patterns.length} patterns detected
+          {safeAspects.length} aspects • {safePatterns.length} patterns detected
         </CardDescription>
       </CardHeader>
 
@@ -176,7 +187,7 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
                 <thead>
                   <tr>
                     <th className="p-1"></th>
-                    {PLANET_ORDER.filter(p => planets[p]).map(planet => (
+                    {getPlanetOrderArray().filter(p => planets[p]).map(planet => (
                       <th key={planet} className="p-1 text-center">
                         <span className="text-lg">{PLANET_SYMBOLS[planet]}</span>
                       </th>
@@ -184,12 +195,12 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
                   </tr>
                 </thead>
                 <tbody>
-                  {PLANET_ORDER.filter(p => planets[p]).map((planet1, i) => (
+                  {getPlanetOrderArray().filter(p => planets[p]).map((planet1, i) => (
                     <tr key={planet1}>
                       <td className="p-1 font-medium text-right">
                         <span className="text-lg">{PLANET_SYMBOLS[planet1]}</span>
                       </td>
-                      {PLANET_ORDER.filter(p => planets[p]).map((planet2, j) => {
+                      {getPlanetOrderArray().filter(p => planets[p]).map((planet2, j) => {
                         const aspect = aspectMatrix[planet1]?.[planet2]
 
                         if (i === j) {
@@ -275,7 +286,7 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
 
           {/* Patterns Tab */}
           <TabsContent value="patterns" className="space-y-4">
-            {patterns.length === 0 ? (
+            {safePatterns.length === 0 ? (
               <Alert>
                 <Info className="w-4 h-4" />
                 <AlertDescription>
@@ -284,7 +295,7 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
               </Alert>
             ) : (
               <div className="space-y-3">
-                {patterns.map((pattern, index) => (
+                {safePatterns.map((pattern, index) => (
                   <Card
                     key={index}
                     className="cursor-pointer hover:bg-muted/50"
@@ -347,7 +358,7 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
                         <div
                           className="h-full bg-primary transition-all"
                           style={{
-                            width: `${(typeAspects.length / aspects.length) * 100}%`,
+                            width: `${(typeAspects.length / Math.max(1, safeAspects.length)) * 100}%`,
                             backgroundColor: getAspectColor(type as AspectType),
                           }}
                         />
@@ -364,13 +375,13 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
               <div className="grid grid-cols-2 gap-3">
                 <div className="text-center p-3 bg-muted rounded">
                   <div className="text-2xl font-bold text-red-600">
-                    {aspects.filter(a => a.strength === 'exact').length}
+                    {safeAspects.filter(a => a.strength === 'exact').length}
                   </div>
                   <div className="text-xs text-muted-foreground">Exact Aspects</div>
                 </div>
                 <div className="text-center p-3 bg-muted rounded">
                   <div className="text-2xl font-bold text-orange-600">
-                    {aspects.filter(a => a.strength === 'tight').length}
+                    {safeAspects.filter(a => a.strength === 'tight').length}
                   </div>
                   <div className="text-xs text-muted-foreground">Tight Aspects</div>
                 </div>
@@ -386,14 +397,14 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
                     <TrendingUp className="w-4 h-4 text-green-600" />
                     <span className="text-sm">Applying</span>
                   </div>
-                  <Badge variant="secondary">{aspects.filter(a => a.applying).length}</Badge>
+                  <Badge variant="secondary">{safeAspects.filter(a => a.applying).length}</Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-muted rounded">
                   <div className="flex items-center gap-2">
                     <TrendingDown className="w-4 h-4 text-blue-600" />
                     <span className="text-sm">Separating</span>
                   </div>
-                  <Badge variant="secondary">{aspects.filter(a => !a.applying).length}</Badge>
+                  <Badge variant="secondary">{safeAspects.filter(a => !a.applying).length}</Badge>
                 </div>
               </div>
             </div>
@@ -402,9 +413,9 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
             <div>
               <h4 className="text-sm font-medium mb-3">Most Aspected Planets</h4>
               <div className="space-y-2">
-                {PLANET_ORDER.filter(p => planets[p])
+                {getPlanetOrderArray().filter(p => planets[p])
                   .map(planet => {
-                    const planetAspects = aspects.filter(
+                    const planetAspects = safeAspects.filter(
                       a => a.planet1 === planet || a.planet2 === planet
                     )
                     return { planet, count: planetAspects.length }

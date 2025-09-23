@@ -37,15 +37,18 @@ export default function CircularNatalHoroscope({ className, showKinetics = false
         let input = birthInfo
         if (!input) {
           const now = new Date()
+          // Use UTC clock for consistency with enhanced planetary calculators and API
           input = {
-            name: 'Current Moment',
-            year: now.getFullYear(),
-            month: now.getMonth(),
-            day: now.getDate(),
-            hour: now.getHours(),
-            minute: now.getMinutes(),
-            latitude: 40.7128,
-            longitude: -74.006,
+            name: 'Current Moment (UTC)',
+            year: now.getUTCFullYear(),
+            month: now.getUTCMonth(), // zero-based
+            day: now.getUTCDate(),
+            hour: now.getUTCHours(),
+            minute: now.getUTCMinutes(),
+            // Location does not affect planetary longitudes; houses differ by location.
+            // Keep a neutral default location.
+            latitude: 0,
+            longitude: 0,
           }
         }
 

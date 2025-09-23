@@ -172,14 +172,15 @@ export function useLiveConsciousness(
         error: error instanceof Error ? error.message : 'Backend calculation error'
       }))
     }
-  }, [birthChart, agents])
+  }, [birthChart ? JSON.stringify(birthChart) : '', agents.map(a => a.name).join('|')])
 
   // Initial calculation
   useEffect(() => {
     if (birthChart || agents.length > 0) {
       calculateLive()
     }
-  }, [calculateLive])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [birthChart ? JSON.stringify(birthChart) : '', agents.map(a => a.name).join('|')])
 
   // Auto-refresh functionality
   useEffect(() => {
@@ -392,58 +393,54 @@ function generateFallbackConsciousnessData(birthChart: BirthChartData): LiveCons
     return a & a
   }, 0)
 
-  const random = Math.abs(nameHash) / 2147483647 // Normalize to 0-1
+  const r = Math.abs(nameHash) / 2147483647 // Normalize to 0-1
+
+  // Generate deterministic but realistic numbers matching LiveConsciousnessResult
+  const birthMC = 2.0 + (r * 3.0) // 2.0 - 5.0
+  const liveDelta = (r - 0.5) * 0.6 // -0.3 to +0.3
+  const liveMC = Math.max(0.5, birthMC + liveDelta)
+  const mcChange = liveMC - birthMC
+  const mcPercentChange = birthMC !== 0 ? (mcChange / birthMC) * 100 : 0
+
+  const birthKalchm = {
+    spirit: 2 + (r * 4),
+    essence: 2 + (r * 4),
+    matter: 2 + (r * 4),
+    substance: 1 + (r * 3),
+    aNumber: 20 + Math.floor(r * 40)
+  }
+
+  const liveKalchm = {
+    spirit: birthKalchm.spirit + (liveDelta * 5),
+    essence: birthKalchm.essence + (liveDelta * 4),
+    matter: birthKalchm.matter + (liveDelta * 3),
+    substance: birthKalchm.substance + (liveDelta * 2),
+    aNumber: birthKalchm.aNumber + Math.floor(liveDelta * 10)
+  }
+
+  const levels = ['Awakening', 'Active', 'Elevated', 'Advanced', 'Illuminated'] as const
+  const idx = Math.min(levels.length - 1, Math.floor(r * levels.length))
+  const consciousnessLevel = levels[idx]
+  const liveConsciousnessLevel = levels[Math.min(levels.length - 1, idx + (liveDelta > 0 ? 1 : 0))]
 
   return {
-    current: {
-      monicaConstant: 2.5 + (random * 3), // 2.5 to 5.5 range
-      elementalComposition: {
-        fire: 15 + (random * 35),
-        water: 15 + ((random * 0.7) * 35),
-        air: 15 + ((random * 0.3) * 35),
-        earth: 15 + ((random * 0.9) * 35)
-      },
-      consciousness: {
-        level: random > 0.8 ? 'illuminated' : random > 0.6 ? 'advanced' : random > 0.4 ? 'developing' : 'awakening',
-        phase: random > 0.5 ? 'active' : 'contemplative'
-      },
-      alchemical: {
-        spirit: 3 + (random * 4),
-        essence: 2 + (random * 5),
-        matter: 2 + (random * 4),
-        substance: 1 + (random * 3)
-      }
+    birthMC,
+    birthKalchm,
+    liveMC,
+    liveKalchm,
+    mcChange,
+    mcPercentChange,
+    dominantTransitEffect: 'fallback',
+    consciousnessLevel,
+    liveConsciousnessLevel,
+    interpretations: {
+      mcChange: mcChange > 0 ? 'Consciousness rising in fallback context' : mcChange < 0 ? 'Minor contraction observed' : 'Stable consciousness',
+      transitInfluence: 'Transit influence approximated (fallback)',
+      cosmicWeather: 'Calm cosmic conditions (fallback)'
     },
-    birth: {
-      monicaConstant: 2.0 + (random * 2.5), // Slightly lower for birth
-      elementalComposition: {
-        fire: 20 + (random * 30),
-        water: 20 + ((random * 0.8) * 30),
-        air: 20 + ((random * 0.4) * 30),
-        earth: 20 + ((random * 0.6) * 30)
-      },
-      consciousness: {
-        level: random > 0.7 ? 'advanced' : random > 0.5 ? 'developing' : 'awakening',
-        phase: 'nascent'
-      },
-      alchemical: {
-        spirit: 2 + (random * 3),
-        essence: 2 + (random * 4),
-        matter: 2 + (random * 3),
-        substance: 1 + (random * 2)
-      }
-    },
-    evolution: {
-      direction: random > 0.6 ? 'ascending' : random > 0.3 ? 'stable' : 'transforming',
-      velocity: random * 0.5, // 0 to 0.5 evolution rate
-      stage: Math.floor(random * 100) + 1, // 1 to 100
-      timeToNext: `${Math.floor(random * 30) + 1} days`
-    },
-    meta: {
-      calculatedBy: 'frontend-fallback',
-      timestamp: new Date().toISOString(),
-      reliable: false // Indicate this is fallback data
-    }
+    timestamp: new Date().toISOString(),
+    calculationTime: 0,
+    fromCache: false
   }
 }
 

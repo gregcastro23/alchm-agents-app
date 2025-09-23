@@ -13,6 +13,7 @@ import {
   plutoData,
 } from './planets'
 import type { PlanetData, TransitData } from './planets/types'
+import { calculateAllPlanets, type EnhancedBirthInfo } from './enhanced-astronomical-calculator'
 
 // Define orbital periods for planets in days
 const orbitalPeriods = {
@@ -310,48 +311,41 @@ export function getCurrentPlanetaryPositions(
     }
   }
 
-  // If a timestamp is provided, log it to verify fresh data is being used
   if (timestamp) {
     console.log(`Using current positions with timestamp: ${timestamp}`)
   }
 
-  // Create a new date object for calculations
-  const calculationDate = new Date()
+  // Use enhanced professional calculator for current UTC time to unify sources
+  const now = new Date()
+  const birthInfo: EnhancedBirthInfo = {
+    year: now.getUTCFullYear(),
+    month: now.getUTCMonth() + 1,
+    day: now.getUTCDate(),
+    hour: now.getUTCHours(),
+    minute: now.getUTCMinutes(),
+    second: now.getUTCSeconds(),
+    // Longitudes/latitudes do not affect planetary longitudes; use neutral defaults
+    latitude: 0,
+    longitude: 0,
+  }
 
-  // Initialize with empty positions that will be populated from calculations
-  let calculatedPositions: Record<string, { sign: string; degree: number; retrograde: boolean }> =
-    {}
+  const enhanced = calculateAllPlanets(birthInfo)
 
-  // Calculate all planetary positions using transit data
-  const planets = [
-    'Sun',
-    'Moon',
-    'Mercury',
-    'Venus',
-    'Mars',
-    'Jupiter',
-    'Saturn',
-    'Uranus',
-    'Neptune',
-    'Pluto',
-  ]
-  planets.forEach(planet => {
-    const transitPosition = getTransitPositionFromDates(planet, calculationDate)
-    if (transitPosition) {
-      // Validate and convert transit position to ensure numeric degree
-      calculatedPositions[planet] = validatePlanetaryPosition(transitPosition)
-    } else {
-      // Fallback to hardcoded positions if transit calculation fails
-      const fallbackPosition = CURRENT_PLANETARY_POSITIONS[planet as keyof typeof CURRENT_PLANETARY_POSITIONS]
-      calculatedPositions[planet] = validatePlanetaryPosition(fallbackPosition)
-      console.log(
-        `Using fallback position for ${planet}:`,
-        calculatedPositions[planet]
-      )
+  const calculatedPositions: Record<string, { sign: string; degree: number; retrograde: boolean }> = {}
+
+  // Map enhanced planets (Sun..Pluto)
+  ;['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'].forEach(planet => {
+    const pos = enhanced.planets[planet]
+    if (pos) {
+      calculatedPositions[planet] = {
+        sign: pos.sign,
+        degree: Math.max(0, Math.min(29.9999, pos.signDegree)),
+        retrograde: !!pos.retrograde,
+      }
     }
   })
 
-  // For North Node and Ascendant, use hardcoded values as they require specialized calculations
+  // For North Node and Ascendant, keep previous placeholders
   calculatedPositions['North Node'] = validatePlanetaryPosition({
     ...CURRENT_PLANETARY_POSITIONS['North Node'],
     retrograde: false,
@@ -361,13 +355,8 @@ export function getCurrentPlanetaryPositions(
     retrograde: false,
   })
 
-  // Cache the calculated positions
   performanceCache.setPlanetaryPositions(calculatedPositions)
-
-  // Update last updated timestamp
-  const lastUpdated = new Date().toISOString()
-  console.log(`[Planetary Positions] Calculated current positions at: ${lastUpdated}`)
-
+  console.log(`[Planetary Positions] Enhanced calculation complete at: ${new Date().toISOString()}`)
   return calculatedPositions
 }
 
