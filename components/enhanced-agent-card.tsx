@@ -308,10 +308,11 @@ export function EnhancedAgentCard({
   }
 
   // Use live consciousness hook
-  const { data: liveConsciousness, loading: liveLoading, error: liveError } = useLiveConsciousness({
-    birthChart: agentBirthData,
-    refreshInterval: 120000, // 2 minutes for agent cards
-    autoRefresh: true
+  const { data: liveConsciousness, loading: liveLoading, error: liveError } = useLiveConsciousness(
+    agentBirthData,
+    {
+      refreshInterval: 120000, // 2 minutes for agent cards
+      autoRefresh: true
   })
 
   // Calculate metrics

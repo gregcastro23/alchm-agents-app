@@ -14,7 +14,8 @@ import {
   Activity,
   Clock,
   Star,
-  BookOpen
+  BookOpen,
+  Crown
 } from 'lucide-react'
 
 import ConsciousnessLaboratoryChat from '@/components/consciousness-laboratory-chat'

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -66,9 +66,14 @@ export default function GalleryPage() {
   const [viewMode, setViewMode] = useState<GalleryViewMode>('grid')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedAgents, setSelectedAgents] = useState<string[]>([])
-  const [filters, setFilters] = useState<
-    AgentFilterBy & { element?: Element | 'all'; consciousnessLevel?: ConsciousnessLevel | 'all' }
-  >({})
+  const [filters, setFilters] = useState<{
+    element: Element | 'all'
+    consciousnessLevel: ConsciousnessLevel | 'all'
+    specialty?: string
+  }>({
+    element: 'all',
+    consciousnessLevel: 'all'
+  })
   const [agents, setAgents] = useState<CraftedAgent[]>([])
   const [filteredAgents, setFilteredAgents] = useState<CraftedAgent[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -85,11 +90,11 @@ export default function GalleryPage() {
 
   // Stable callback functions to prevent infinite re-renders
   const handleElementFilterChange = useCallback((value: string) => {
-    setFilters(prev => ({ ...prev, element: value as any }))
+    setFilters(prev => ({ ...prev, element: value as Element | 'all' }))
   }, [])
 
   const handleConsciousnessLevelFilterChange = useCallback((value: string) => {
-    setFilters(prev => ({ ...prev, consciousnessLevel: value as any }))
+    setFilters(prev => ({ ...prev, consciousnessLevel: value as ConsciousnessLevel | 'all' }))
   }, [])
 
   const collections = getAgentCollections()
@@ -104,15 +109,18 @@ export default function GalleryPage() {
   }))
 
   // Use batch live consciousness hook for all agents
-  const { 
-    multiAgentData: liveConsciousnessData, 
-    loading: liveLoading, 
-    error: liveError 
-  } = useLiveConsciousness({
-    agents: agentBirthCharts,
-    refreshInterval: 300000, // 5 minutes for gallery page
-    autoRefresh: true
-  })
+  const {
+    multiAgentData: liveConsciousnessData,
+    loading: liveLoading,
+    error: liveError
+  } = useLiveConsciousness(
+    undefined, // No single birth chart
+    {
+      agents: agentBirthCharts,
+      refreshInterval: 300000, // 5 minutes for gallery page
+      autoRefresh: true
+    }
+  )
 
   // Fetch all agents (database + demo)
   const fetchAgents = async () => {
@@ -185,16 +193,16 @@ export default function GalleryPage() {
     }
 
     // Element filter
-    if (filters.element && (filters.element as string) !== 'all') {
+    if (filters.element && filters.element !== 'all') {
       filtered = filtered.filter(
-        agent => agent.consciousness.dominantElement === (filters.element as Element)
+        agent => agent.consciousness.dominantElement === filters.element
       )
     }
 
     // Consciousness level filter
-    if (filters.consciousnessLevel && (filters.consciousnessLevel as string) !== 'all') {
+    if (filters.consciousnessLevel && filters.consciousnessLevel !== 'all') {
       filtered = filtered.filter(
-        agent => agent.consciousness.level === (filters.consciousnessLevel as ConsciousnessLevel)
+        agent => agent.consciousness.level === filters.consciousnessLevel
       )
     }
 
@@ -446,7 +454,7 @@ export default function GalleryPage() {
 
             <div className="flex gap-2">
               <Select
-                value={filters.element || ''}
+                value={filters.element}
                 onValueChange={handleElementFilterChange}
               >
                 <SelectTrigger className="w-32">
@@ -462,7 +470,7 @@ export default function GalleryPage() {
               </Select>
 
               <Select
-                value={filters.consciousnessLevel || ''}
+                value={filters.consciousnessLevel}
                 onValueChange={handleConsciousnessLevelFilterChange}
               >
                 <SelectTrigger className="w-36">

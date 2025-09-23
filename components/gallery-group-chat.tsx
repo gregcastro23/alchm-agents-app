@@ -79,15 +79,18 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
   }))
 
   // Use batch live consciousness for all group agents
-  const { 
-    multiAgentData: liveConsciousnessData, 
-    loading: liveLoading, 
-    error: liveError 
-  } = useLiveConsciousness({
-    agents: agentBirthCharts,
-    refreshInterval: 120000, // 2 minutes for group chat
-    autoRefresh: true
-  })
+  const {
+    multiAgentData: liveConsciousnessData,
+    loading: liveLoading,
+    error: liveError
+  } = useLiveConsciousness(
+    undefined, // No single birth chart
+    {
+      agents: agentBirthCharts,
+      refreshInterval: 120000, // 2 minutes for group chat
+      autoRefresh: true
+    }
+  )
 
   // Generate session ID on mount
   useEffect(() => {

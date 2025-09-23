@@ -6,7 +6,16 @@ import { NextResponse } from 'next/server'
  */
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
+    // Safely parse JSON body
+    let body = {}
+    try {
+      const text = await request.text()
+      if (text && text.trim()) {
+        body = JSON.parse(text)
+      }
+    } catch (parseError) {
+      console.warn('Invalid JSON in consciousness request, using empty body')
+    }
     
     // Check if backend is enabled
     const backendEnabled = process.env.NEXT_PUBLIC_KINETICS_BACKEND === 'true'

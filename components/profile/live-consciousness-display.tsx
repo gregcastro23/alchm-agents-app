@@ -52,11 +52,13 @@ export function LiveConsciousnessDisplay({
   }
   
   // Use live consciousness hook
-  const { data: liveConsciousness, loading, error } = useLiveConsciousness({
-    birthChart: birthChartData,
-    refreshInterval: 60000, // 1 minute for user profile
-    autoRefresh: true
-  })
+  const { data: liveConsciousness, loading, error } = useLiveConsciousness(
+    birthChartData,
+    {
+      refreshInterval: 60000, // 1 minute for user profile
+      autoRefresh: true
+    }
+  )
   
   // Update sparkline data when live consciousness changes
   useEffect(() => {
