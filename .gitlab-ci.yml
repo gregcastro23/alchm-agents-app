@@ -37,7 +37,6 @@ spec:
 ---
 
 stages:
-  - install
   - build
   - test
 
@@ -70,7 +69,7 @@ variables:
   HOST: "127.0.0.1"
 
 backend:install:
-  stage: install
+  stage: build
   rules:
     - if: $CI_PIPELINE_SOURCE
   script:
