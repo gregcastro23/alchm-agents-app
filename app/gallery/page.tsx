@@ -61,6 +61,8 @@ import { EnhancedAgentCard } from '@/components/enhanced-agent-card'
 import { RealTimeKineticsWidget } from '@/components/real-time-kinetics-widget'
 import { ChartTransformVisualization } from '@/components/chart-transform-visualization'
 import { MomentBasedRecommendations } from '@/components/moment-based-recommendations'
+import { useSearchParams } from 'next/navigation'
+import { degreeAgentMatcher } from '@/lib/degree-agent-matcher'
 
 export default function GalleryPage() {
   const [viewMode, setViewMode] = useState<GalleryViewMode>('grid')
@@ -87,6 +89,9 @@ export default function GalleryPage() {
     totalRequests: 0,
     averageResponseTime: 0
   })
+  const searchParams = useSearchParams()
+  const [degreeFilter, setDegreeFilter] = useState<{ planet: string; sign: string; degree: number } | null>(null)
+  const [activatedByDegree, setActivatedByDegree] = useState<string[]>([])
 
   // Stable callback functions to prevent infinite re-renders
   const handleElementFilterChange = useCallback((value: string) => {
@@ -230,8 +235,61 @@ export default function GalleryPage() {
     // Apply sorting
     const sorted = sortAgents(filtered, sortCriteria, sortDirection)
 
-    setFilteredAgents(sorted)
-  }, [agents, searchQuery, filters, sortCriteria, sortDirection])
+    if (activatedByDegree.length > 0) {
+      const idToIndex: Record<string, number> = {}
+      activatedByDegree.forEach((id, idx) => { idToIndex[id] = idx })
+      const prioritized = [...sorted].sort((a, b) => {
+        const ai = idToIndex[a.id]
+        const bi = idToIndex[b.id]
+        const aIn = ai !== undefined
+        const bIn = bi !== undefined
+        if (aIn && bIn) return ai - bi
+        if (aIn) return -1
+        if (bIn) return 1
+        return 0
+      })
+      setFilteredAgents(prioritized)
+    } else {
+      setFilteredAgents(sorted)
+    }
+  }, [agents, searchQuery, filters, sortCriteria, sortDirection, activatedByDegree])
+
+  // Parse degree-specific params and compute activations
+  useEffect(() => {
+    const planet = searchParams.get('planet')
+    const sign = searchParams.get('sign')
+    const degreeStr = searchParams.get('degree')
+    if (!planet || !sign || !degreeStr) return
+
+    const degree = parseFloat(degreeStr)
+    if (!Number.isFinite(degree)) return
+
+    setDegreeFilter({ planet, sign, degree })
+
+    const signs = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces']
+    const signIndex = Math.max(0, signs.indexOf(sign))
+    const absoluteDegree = (signIndex * 30) + Math.max(0, Math.min(29.9999, degree))
+
+    const now = new Date()
+    const moment: any = {
+      timestamp: now,
+      planetaryDegrees: { [planet]: absoluteDegree },
+      alchemical: { A_number: 2.0, spirit: 0.25, matter: 0.25, essence: 0.25, substance: 0.25 },
+      kinetic: { velocity: { Fire: 0, Water: 0, Air: 0, Earth: 0 }, momentum: { Fire: 0, Water: 0, Air: 0, Earth: 0 }, power: 0, inertia: 0, metricVelocity: { Heat: 0, Entropy: 0, Reactivity: 0, Energy: 0 } },
+      thermodynamic: { heat: 0, entropy: 0, reactivity: 0, energy: 0 },
+      elemental: { Fire: 0.25, Water: 0.25, Air: 0.25, Earth: 0.25 },
+      planetary: { dominantPlanet: 'Sun', dominantSign: 'Aries', moonPhase: 0, retrogradeCount: 0 },
+      consciousness: { resonanceLevel: 0.1, evolutionPhase: 'Integration', spiritualAmplitude: 0.1 }
+    }
+
+    degreeAgentMatcher.findActivations(moment).then(activations => {
+      const act = activations.find(a => a.planet === planet)
+      if (act) {
+        setActivatedByDegree(act.activatedAgents.map(a => a.agentId))
+        setSelectedAgents(act.activatedAgents.slice(0, 2).map(a => a.agentId))
+      }
+    }).catch(() => {})
+  }, [searchParams])
 
   const toggleAgentSelection = (agentId: string) => {
     setSelectedAgents(prev =>
