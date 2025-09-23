@@ -10,10 +10,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Brain, Sparkles, Calendar, Clock, MapPin, User, ArrowRight } from 'lucide-react'
-import { ConsciousnessSurvey } from '@/components/consciousness-survey'
+import { ConsciousnessSurvey } from '@/components/agents/consciousness-survey'
 import type { SurveyResponse } from '@/lib/types/consciousness-survey'
 import { useToast } from '@/hooks/use-toast'
-import { AlchemicalConsciousnessDashboard } from '@/components/alchemical-consciousness-dashboard'
+import { AlchemicalConsciousnessDashboard } from '@/components/dashboards/alchemical-consciousness-dashboard'
 
 type Step = 'welcome' | 'birth-info' | 'survey' | 'processing' | 'complete'
 

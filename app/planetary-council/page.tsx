@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { MessageSquare } from 'lucide-react'
-import PlanetaryWisdomChat from '@/components/planetary-wisdom-chat'
+import PlanetaryWisdomChat from '@/components/misc/planetary-wisdom-chat'
 
 export default function PlanetaryCouncilPage() {
   const [isOpen, setIsOpen] = useState(true)

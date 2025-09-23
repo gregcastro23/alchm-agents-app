@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Sparkles, RefreshCw, TrendingUp, TrendingDown, Minus, Info } from 'lucide-react'
-import RunesPreview from '@/components/runes-preview'
+import RunesPreview from '@/components/misc/runes-preview'
 
 interface AstrologicalCondition {
   condition: string

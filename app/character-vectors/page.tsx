@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { CharacterVectorDashboard } from '@/components/character-vector-dashboard'
+import { CharacterVectorDashboard } from '@/components/dashboards/character-vector-dashboard'
 import type {
   UserLearningPreferences,
   ChartCharacterProfile,

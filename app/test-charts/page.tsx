@@ -1,5 +1,5 @@
 // Test page for chart visualization
-import CircularNatalHoroscope from '@/components/circular-natal-horoscope'
+import CircularNatalHoroscope from '@/components/charts/circular-natal-horoscope'
 
 export default function TestChartsPage() {
   const testBirthInfo = {

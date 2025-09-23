@@ -47,20 +47,20 @@ import type {
   Element,
   ConsciousnessLevel,
 } from '@/lib/agent-types'
-import HistoricalCouncilChat from '@/components/historical-council-chat'
+import HistoricalCouncilChat from '@/components/misc/historical-council-chat'
 import { useLiveConsciousness, type BirthChartData } from '@/hooks/useLiveConsciousness'
 import SignVectorGraphic, {
   calculateSignVectorFromChart,
   SignVectorRune,
-} from '@/components/sign-vector-graphic'
+} from '@/components/charts/sign-vector-graphic'
 import {
   KineticCompatibilityIndicator,
   MultiAgentCompatibility,
-} from '@/components/kinetic-compatibility-indicator'
-import { EnhancedAgentCard } from '@/components/enhanced-agent-card'
-import { RealTimeKineticsWidget } from '@/components/real-time-kinetics-widget'
-import { ChartTransformVisualization } from '@/components/chart-transform-visualization'
-import { MomentBasedRecommendations } from '@/components/moment-based-recommendations'
+} from '@/components/charts/kinetic-compatibility-indicator'
+import { EnhancedAgentCard } from '@/components/misc/enhanced-agent-card'
+import { RealTimeKineticsWidget } from '@/components/charts/real-time-kinetics-widget'
+import { ChartTransformVisualization } from '@/components/charts/chart-transform-visualization'
+import { MomentBasedRecommendations } from '@/components/misc/moment-based-recommendations'
 import { useSearchParams } from 'next/navigation'
 import { degreeAgentMatcher } from '@/lib/degree-agent-matcher'
 

@@ -21,11 +21,11 @@ import {
   Activity,
 } from 'lucide-react'
 import type { CraftedAgent } from '@/lib/agent-types'
-import { KineticIndicators, MomentumIndicator } from '@/components/kinetic-indicators'
+import { KineticIndicators, MomentumIndicator } from '@/components/charts/kinetic-indicators'
 import {
   DynamicAspectsIndicators,
   CompactAspectsIndicator,
-} from '@/components/dynamic-aspects-indicators'
+} from '@/components/charts/dynamic-aspects-indicators'
 import { usePowerLevelIndicator } from '@/lib/hooks/use-power-monitoring'
 import { ConsciousnessMemorySystem } from '@/lib/agents/consciousness-memory'
 import { GroupConsciousnessDynamics } from '@/lib/consciousness/group-dynamics'

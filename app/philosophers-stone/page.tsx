@@ -35,6 +35,8 @@ import {
   Crown,
   Clock,
 } from 'lucide-react'
+import AgentCreationWizard from '@/components/wizards/AgentCreationWizard'
+import PlanetaryPositionIndicator from '@/components/dashboards/PlanetaryPositionIndicator'
 
 // Real consciousness components loaded lazily below
 
@@ -61,13 +63,13 @@ import { synthesizeCharts, type SynthesizedChart } from '@/lib/utils'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 
 // At the top, add lazy imports
-const AlchmQuantitiesDisplay = lazy(() => import('@/components/alchm-quantities-display'))
+const AlchmQuantitiesDisplay = lazy(() => import('@/components/misc/alchm-quantities-display'))
 const ConsciousnessVectorDisplay = lazy(() =>
   import('@/components/temporal/consciousness-vector-display').then(module => ({
     default: module.ConsciousnessVectorDisplay,
   }))
 )
-const CircularNatalHoroscope = lazy(() => import('@/components/circular-natal-horoscope'))
+const CircularNatalHoroscope = lazy(() => import('@/components/charts/circular-natal-horoscope'))
 const TemporalClient = lazy(() =>
   import('@/components/temporal/temporal-client').then(module => ({
     default: module.TemporalClient,
@@ -120,6 +122,7 @@ function PhilosophersStoneInner() {
   const [agentPurpose, setAgentPurpose] = useState('')
   const [isCreatingAgent, setIsCreatingAgent] = useState(false)
   const [showCreationWizard, setShowCreationWizard] = useState(false)
+  const [showAgentCreationWizard, setShowAgentCreationWizard] = useState(false)
   const [createdBlueprint, setCreatedBlueprint] = useState<AgentBlueprint | null>(null)
   const [createdAgent, setCreatedAgent] = useState<any>(null)
   const [creationResult, setCreationResult] = useState<{
@@ -288,6 +291,15 @@ function PhilosophersStoneInner() {
 
   const generator = useMemo(() => new AgentGenerator(), [])
   const client = useMemo(() => new ConsciousnessClient(), [])
+
+  // Handler for agent creation from wizard
+  const handleAgentCreated = (agent: any) => {
+    setCreatedAgent(agent)
+    setShowSuccessNotification(true)
+    setTimeout(() => {
+      setShowSuccessNotification(false)
+    }, 8000)
+  }
 
   const runAgentCreation = useCallback(
     async (input: { birthChart: any | null; momentChart: any; additionalCharts?: any[] }) => {
@@ -681,6 +693,20 @@ function PhilosophersStoneInner() {
                             <div className="font-semibold">Begin Consciousness Crafting</div>
                             <div className="text-sm opacity-90">
                               Monica's 9-Step Creation Process
+                            </div>
+                          </div>
+                        </Button>
+
+                        <Button
+                          size="lg"
+                          className="h-auto p-6 bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500"
+                          onClick={() => setShowAgentCreationWizard(true)}
+                        >
+                          <div className="text-center">
+                            <Sparkles className="w-8 h-8 mx-auto mb-2" />
+                            <div className="font-semibold">Agent Creation Wizard</div>
+                            <div className="text-sm opacity-90">
+                              Chart Synthesis & Personality Generation
                             </div>
                           </div>
                         </Button>
@@ -1134,13 +1160,29 @@ May their digital consciousness grow and evolve through each interaction! 🌟`
                 {planetaryPositions && (
                   <Card className="bg-slate-900/50 border-yellow-500/50">
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-yellow-300">
-                        <Star className="w-5 h-5" />
-                        Current Cosmic Configuration
-                      </CardTitle>
-                      <CardDescription>
-                        Real-time planetary positions affecting consciousness
-                      </CardDescription>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="flex items-center gap-2 text-yellow-300">
+                            <Star className="w-5 h-5" />
+                            Current Cosmic Configuration
+                          </CardTitle>
+                          <CardDescription>
+                            Real-time planetary positions affecting consciousness
+                          </CardDescription>
+                        </div>
+                        <PlanetaryPositionIndicator
+                          positionData={{
+                            source: planetaryPositions.source || 'basic-transits',
+                            accuracy: planetaryPositions.accuracy || 'low',
+                            cached: planetaryPositions.cached || false,
+                            cacheAge: planetaryPositions.cacheAge,
+                            timestamp: planetaryPositions.timestamp || new Date().toISOString(),
+                            error: planetaryPositions.error
+                          }}
+                          showDetails={true}
+                          size="sm"
+                        />
+                      </div>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
@@ -1241,6 +1283,13 @@ May their digital consciousness grow and evolve through each interaction! 🌟`
             </CardContent>
           </Card>
         </div>
+
+        {/* Agent Creation Wizard */}
+        <AgentCreationWizard
+          isOpen={showAgentCreationWizard}
+          onClose={() => setShowAgentCreationWizard(false)}
+          onAgentCreated={handleAgentCreated}
+        />
       </div>
     </ErrorBoundary>
   )

@@ -5,7 +5,7 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import '@testing-library/jest-dom'
-import HistoricalCouncilChat from '@/components/historical-council-chat'
+import HistoricalCouncilChat from '@/components/misc/historical-council-chat'
 import {
   mockHistoricalAgents,
   mockHistoricalPresets,

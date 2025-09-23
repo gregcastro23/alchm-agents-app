@@ -1,4 +1,4 @@
-import { MoonPhaseAgentChat } from '@/components/moon-phase-agent-chat'
+import { MoonPhaseAgentChat } from '@/components/misc/moon-phase-agent-chat'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { MOON_PHASES, ZODIAC_SIGNS } from '@/lib/moon-phase-system'

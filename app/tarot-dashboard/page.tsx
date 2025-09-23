@@ -26,7 +26,7 @@ import {
   Wind,
   Compass,
 } from 'lucide-react'
-import TarotCosmicWidget from '@/components/tarot-cosmic-widget'
+import TarotCosmicWidget from '@/components/misc/tarot-cosmic-widget'
 import {
   getCurrentDecan,
   getPlanetaryRulerCard,

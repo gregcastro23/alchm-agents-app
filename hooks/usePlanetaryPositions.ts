@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
 import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
 import { calculateMC } from '@/lib/monica/monica-constant-validator'
+import { logPerformance } from '@/lib/structured-logger'
 
 export interface PlanetaryPosition {
   planet: string
@@ -81,11 +82,16 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
 
   const fetchPlanetaryData = useCallback(
     async (force: boolean = false): Promise<void> => {
+      const fetchStartTime = Date.now()
       const now = Date.now()
 
       // Use shared cache if data is fresh (within 30 seconds) and not forced
       if (!force && sharedCache.data && now - sharedCache.lastFetch < 30000) {
         setData(prev => ({ ...sharedCache.data!, loading: false }))
+        logPerformance('planetary_positions_cache_hit', Date.now() - fetchStartTime, {
+          system: 'hook',
+          operation: 'cache_hit'
+        })
         return
       }
 
@@ -229,6 +235,17 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
 
         setData(result)
         retryCountRef.current = 0 // Reset retry count on success
+
+        // Log successful fetch performance
+        logPerformance('planetary_positions_fetch_success', Date.now() - fetchStartTime, {
+          system: 'hook',
+          operation: 'fetch_success',
+          metadata: {
+            useApi: opts.useApi,
+            cached: false,
+            planetsCount: result.planetaryPositions.length
+          }
+        })
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
           return // Ignore aborted requests

@@ -26,7 +26,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import type { CraftedAgent, AgentCardVariant, Coordinates } from '@/lib/agent-types'
-import { AgentDetailedStats } from '@/components/agent-detailed-stats'
+import { AgentDetailedStats } from '@/components/agents/agent-detailed-stats'
 
 const getElementColor = (element: string) => {
   switch (element) {

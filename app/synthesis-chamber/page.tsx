@@ -18,7 +18,7 @@ import {
   Crown,
 } from 'lucide-react'
 
-import ConsciousnessLaboratoryChat from '@/components/consciousness-laboratory-chat'
+import ConsciousnessLaboratoryChat from '@/components/agents/consciousness-laboratory-chat'
 import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 import type { ChatSession } from '@/lib/unified-agent-types'
 

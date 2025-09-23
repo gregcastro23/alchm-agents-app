@@ -25,7 +25,7 @@ import {
   CheckCircle,
 } from 'lucide-react'
 
-import MultiChartInput, { type ChartInput } from '@/components/multi-chart-input'
+import MultiChartInput, { type ChartInput } from '@/components/charts/multi-chart-input'
 import {
   MULTI_CHART_RUNE_CATALOG,
   type ChartCombination,

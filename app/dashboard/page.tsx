@@ -8,9 +8,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Sparkles, Crown, TrendingUp, Users, Zap, Settings, LogOut, Star } from 'lucide-react'
-import { AgentKineticEvolution } from '@/components/agent-kinetic-evolution'
-import { GroupConsciousnessIndicator } from '@/components/group-consciousness-indicator'
-import { TokenDashboardKinetics } from '@/components/token-dashboard-kinetics'
+import { AgentKineticEvolution } from '@/components/agents/agent-kinetic-evolution'
+import { GroupConsciousnessIndicator } from '@/components/misc/group-consciousness-indicator'
+import { TokenDashboardKinetics } from '@/components/dashboards/token-dashboard-kinetics'
+import { PlanetaryPositionsMonitor } from '@/components/dashboards/PlanetaryPositionsMonitor'
+import { DashboardSkeleton } from '@/components/SkeletonLoader'
+import { FeedbackModal } from '@/components/FeedbackModal'
+import { OnboardingWizard } from '@/components/OnboardingWizard'
 import { ALL_AGENTS } from '@/lib/demo-agents-data'
 
 interface UserData {
@@ -24,6 +28,7 @@ interface UserData {
 export default function DashboardPage() {
   const { data: session, status } = useSession()
   const [selectedAgent, setSelectedAgent] = useState('leonardo-da-vinci')
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -31,17 +36,29 @@ export default function DashboardPage() {
     // Allow unauthenticated access - no redirect needed
   }, [status, router])
 
+  // Check if onboarding should be shown
+  useEffect(() => {
+    if (status !== 'loading') {
+      const onboardingData = localStorage.getItem('planetary-agents-onboarding')
+      if (!onboardingData) {
+        // Show onboarding for new users
+        setTimeout(() => setShowOnboarding(true), 1000)
+      }
+    }
+  }, [status])
+
   const handleSignOut = () => {
     signOut({ callbackUrl: '/' })
   }
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
-          <span>Loading consciousness dashboard...</span>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Consciousness Dashboard</h1>
+          <p className="text-muted-foreground">Loading your personalized astrological insights...</p>
         </div>
+        <DashboardSkeleton />
       </div>
     )
   }
@@ -197,6 +214,9 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
+        {/* Planetary Positions Monitor */}
+        <PlanetaryPositionsMonitor />
+
         {/* Consciousness Evolution Dashboard */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
           {/* Agent Evolution */}
@@ -225,7 +245,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Button
                 variant="outline"
                 className="h-20 flex-col gap-2"
@@ -261,9 +281,28 @@ export default function DashboardPage() {
                 <Crown className="h-6 w-6" />
                 <span className="text-sm">Monica Hub</span>
               </Button>
+
+              <FeedbackModal
+                trigger={
+                  <Button
+                    variant="outline"
+                    className="h-20 flex-col gap-2"
+                  >
+                    <Star className="h-6 w-6" />
+                    <span className="text-sm">Feedback</span>
+                  </Button>
+                }
+              />
             </div>
           </CardContent>
         </Card>
+
+        {/* Beta Features */}
+        <OnboardingWizard
+          open={showOnboarding}
+          onComplete={() => setShowOnboarding(false)}
+          onSkip={() => setShowOnboarding(false)}
+        />
       </div>
     </div>
   )

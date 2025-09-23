@@ -1,78 +1,177 @@
-'use server'
+/**
+ * Feedback API Endpoint
+ * Collects user feedback for beta testing and improvement
+ */
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { withErrorHandling } from '@/lib/error-handling'
+import { logger } from '@/lib/structured-logger'
 
-interface FeedbackBody {
+interface FeedbackData {
+  rating: number
+  category: string
   message: string
-  route?: string
+  userId?: string
+  userAgent?: string
+  url?: string
   timestamp?: string
-  email?: string
 }
 
-export async function POST(request: Request) {
-  try {
-    const body = (await request.json()) as FeedbackBody
-    const { message, route, timestamp, email } = body || {}
+export async function POST(request: NextRequest) {
+  return withErrorHandling(
+    async () => {
+      const feedback: FeedbackData = await request.json()
 
-    if (!message || typeof message !== 'string' || message.trim().length === 0) {
-      return NextResponse.json({ error: 'Invalid feedback message' }, { status: 400 })
-    }
-
-    const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY
-    const FEEDBACK_TO_EMAIL =
-      process.env.FEEDBACK_TO_EMAIL || process.env.NEXT_PUBLIC_FEEDBACK_TO_EMAIL
-    const FEEDBACK_FROM_EMAIL = process.env.FEEDBACK_FROM_EMAIL || 'no-reply@planetary-agents.local'
-
-    const payload = {
-      subject: 'Planetary Agents - New User Feedback',
-      text: `Feedback: ${message}\nFrom: ${email || 'anonymous'}\nRoute: ${route || 'unknown'}\nAt: ${timestamp || new Date().toISOString()}`,
-      html: `<p><strong>Feedback:</strong> ${escapeHtml(message)}</p>
-             <p><strong>From:</strong> ${escapeHtml(email || 'anonymous')}</p>
-             <p><strong>Route:</strong> ${escapeHtml(route || 'unknown')}</p>
-             <p><strong>At:</strong> ${escapeHtml(timestamp || new Date().toISOString())}</p>`,
-    }
-
-    if (SENDGRID_API_KEY && FEEDBACK_TO_EMAIL) {
-      const sgPayload = {
-        personalizations: [{ to: [{ email: FEEDBACK_TO_EMAIL }] }],
-        from: { email: FEEDBACK_FROM_EMAIL },
-        subject: payload.subject,
-        content: [
-          { type: 'text/plain', value: payload.text },
-          { type: 'text/html', value: payload.html },
-        ],
+      // Validate required fields
+      if (!feedback.category || !feedback.message?.trim()) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Missing required fields: category and message are required'
+          },
+          { status: 400 }
+        )
       }
 
-      const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${SENDGRID_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(sgPayload),
+      // Validate category
+      const validCategories = ['bug', 'feature', 'ui', 'performance', 'general']
+      if (!validCategories.includes(feedback.category)) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Invalid category. Must be one of: ' + validCategories.join(', ')
+          },
+          { status: 400 }
+        )
+      }
+
+      // Validate rating (optional)
+      if (feedback.rating !== undefined && (feedback.rating < 1 || feedback.rating > 5)) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Rating must be between 1 and 5'
+          },
+          { status: 400 }
+        )
+      }
+
+      // Add timestamp and additional metadata
+      const feedbackEntry = {
+        ...feedback,
+        timestamp: feedback.timestamp || new Date().toISOString(),
+        ip: request.headers.get('x-forwarded-for') ||
+            request.headers.get('x-real-ip') ||
+            'unknown',
+        userAgent: feedback.userAgent || request.headers.get('user-agent') || 'unknown',
+      }
+
+      // In a real implementation, you would save to database
+      // For now, we'll just log it and return success
+
+      logger.info('User feedback received', {
+        system: 'feedback',
+        operation: 'collect',
+        metadata: {
+          category: feedback.category,
+          rating: feedback.rating,
+          messageLength: feedback.message.length,
+          hasUserId: !!feedback.userId,
+          url: feedback.url
+        }
       })
 
-      if (!res.ok) {
-        const errText = await res.text().catch(() => '')
-        console.error('SendGrid error:', res.status, errText)
-        // Fall-through to log-only success for non-blocking UX
-      }
-    } else {
-      console.warn('Feedback email not configured, logging only:', payload)
-    }
+      // TODO: Save to database
+      console.log('Feedback received:', feedbackEntry)
 
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Feedback error:', error)
-    return NextResponse.json({ error: 'Failed to send feedback' }, { status: 500 })
-  }
+      return NextResponse.json({
+        success: true,
+        message: 'Thank you for your feedback!',
+        feedbackId: `feedback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      })
+    },
+    {
+      system: 'api',
+      operation: 'feedback_submit',
+      severity: 'low',
+    }
+  ).then(result => {
+    if (result.success === false) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: result.userMessage,
+          context: result.context
+        },
+        { status: 500 }
+      );
+    }
+    return result;
+  });
 }
 
-function escapeHtml(input: string) {
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
+// Optional: GET endpoint to retrieve feedback statistics (admin only)
+export async function GET(request: NextRequest) {
+  return withErrorHandling(
+    async () => {
+      // In a real implementation, check for admin authentication
+      // For now, return mock statistics
+
+      const mockStats = {
+        totalFeedback: 42,
+        averageRating: 4.2,
+        categories: {
+          bug: 8,
+          feature: 15,
+          ui: 12,
+          performance: 5,
+          general: 2
+        },
+        recentFeedback: [
+          {
+            id: 'feedback_001',
+            category: 'feature',
+            rating: 5,
+            message: 'Love the new planetary positions feature!',
+            timestamp: new Date(Date.now() - 86400000).toISOString() // 1 day ago
+          },
+          {
+            id: 'feedback_002',
+            category: 'bug',
+            rating: 2,
+            message: 'Having trouble with the chart loading on mobile',
+            timestamp: new Date(Date.now() - 43200000).toISOString() // 12 hours ago
+          }
+        ]
+      }
+
+      logger.info('Feedback statistics requested', {
+        system: 'feedback',
+        operation: 'stats',
+        metadata: { totalFeedback: mockStats.totalFeedback }
+      })
+
+      return NextResponse.json({
+        success: true,
+        data: mockStats
+      })
+    },
+    {
+      system: 'api',
+      operation: 'feedback_stats',
+      severity: 'low',
+    }
+  ).then(result => {
+    if (result.success === false) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: result.userMessage,
+          context: result.context
+        },
+        { status: 500 }
+      );
+    }
+    return result;
+  });
 }

@@ -23,7 +23,7 @@ import {
   MONICA_AS_CRAFTED_AGENT,
   ALL_AGENTS,
 } from '@/lib/demo-agents-data'
-import { AgentCard } from '@/components/agent-card'
+import { AgentCard } from '@/components/agents/agent-card'
 import type { CraftedAgent } from '@/lib/agent-types'
 
 export function ConsciousnessCraftedAgentsShowcase() {

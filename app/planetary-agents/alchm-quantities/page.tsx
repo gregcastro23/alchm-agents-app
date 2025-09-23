@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Flame, Droplets, Wind, Mountain, AlertTriangle } from 'lucide-react'
-import AlchmQuantitiesDisplay from '@/components/alchm-quantities-display'
-import AlchmQuantitiesTrends from '@/components/alchm-quantities-trends'
+import AlchmQuantitiesDisplay from '@/components/misc/alchm-quantities-display'
+import AlchmQuantitiesTrends from '@/components/misc/alchm-quantities-trends'
 import { Suspense } from 'react'
 
 // Error banner for API connectivity issues

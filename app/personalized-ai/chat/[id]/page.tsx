@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Brain, ArrowLeft, Settings, TrendingUp } from 'lucide-react'
-import { PersonalizedAIChat } from '@/components/personalized-ai-chat'
+import { PersonalizedAIChat } from '@/components/misc/personalized-ai-chat'
 import type { PersonalizedAIConfig } from '@/lib/types/personalized-ai'
 import { useToast } from '@/hooks/use-toast'
 

@@ -20,8 +20,8 @@ import {
   Wind,
   Send,
 } from 'lucide-react'
-import MonicaTarotOracle from '@/components/monica-tarot-oracle'
-import MonicaTarotSpreads from '@/components/monica-tarot-spreads'
+import MonicaTarotOracle from '@/components/tarot/monica-tarot-oracle'
+import MonicaTarotSpreads from '@/components/tarot/monica-tarot-spreads'
 import { type ConsciousnessCraftingInsight } from '@/lib/monica/tarot-oracle'
 import { type SpreadReading } from '@/lib/monica/tarot-spreads'
 // Temporarily use hardcoded values to avoid import issues

@@ -1,16 +1,15 @@
 'use client'
 
 import React, { useState, useCallback, useEffect } from 'react'
-import CosmicTimeLaboratory from '@/components/cosmic-time-laboratory'
-import TemporalOracle from '@/components/temporal-oracle'
-import TemporalTimeline from '@/components/temporal-timeline'
-import AlchemicalMetricsChart from '@/components/alchemical-metrics-chart'
+import CosmicTimeLaboratory from '@/components/misc/cosmic-time-laboratory'
+import TemporalOracle from '@/components/misc/temporal-oracle'
+import TemporalTimeline from '@/components/misc/temporal-timeline'
+import AlchemicalMetricsChart from '@/components/charts/alchemical-metrics-chart'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
-import { DatePickerWithRange } from '@/components/ui/date-picker'
 import {
   Select,
   SelectContent,
@@ -41,7 +40,7 @@ import {
   TrendingUp,
   Eye,
 } from 'lucide-react'
-import { AspectPhaseWidget } from '@/components/aspect-phase-indicator'
+import { AspectPhaseWidget } from '@/components/charts/aspect-phase-indicator'
 import type {
   TemporalQuery,
   TemporalAnalysisResult,

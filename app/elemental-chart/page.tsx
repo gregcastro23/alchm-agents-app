@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import ElementalChart from '@/components/elemental-chart'
+import ElementalChart from '@/components/charts/elemental-chart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'

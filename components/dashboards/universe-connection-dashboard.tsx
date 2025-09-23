@@ -23,8 +23,8 @@ import {
   Compass,
   Infinity,
 } from 'lucide-react'
-import { InteractiveChartTeacher } from '@/components/interactive-chart-teacher'
-import { RelationalAstrologyTrainer } from '@/components/relational-astrology-trainer'
+import { InteractiveChartTeacher } from '@/components/charts/interactive-chart-teacher'
+import { RelationalAstrologyTrainer } from '@/components/misc/relational-astrology-trainer'
 import type {
   BirthChartFeature,
   AstrologicalLearningModule,

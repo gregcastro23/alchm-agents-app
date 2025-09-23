@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { UniverseConnectionDashboard } from '@/components/universe-connection-dashboard'
+import { UniverseConnectionDashboard } from '@/components/dashboards/universe-connection-dashboard'
 import {
   BIRTH_CHART_FEATURE_TEMPLATES,
   RELATIONAL_PATTERNS,

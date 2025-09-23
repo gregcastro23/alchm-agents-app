@@ -5,7 +5,7 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import '@testing-library/jest-dom'
-import ConsciousnessLaboratoryChat from '@/components/consciousness-laboratory-chat'
+import ConsciousnessLaboratoryChat from '@/components/agents/consciousness-laboratory-chat'
 import {
   mockHistoricalAgents,
   mockPlanetaryConfigs,

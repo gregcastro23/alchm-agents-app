@@ -18,7 +18,7 @@ import {
   DegreeSpecificHistoryService,
   type DegreeHistoricalData,
 } from '@/lib/degree-specific-history'
-import { HistoricalTransitCard } from '@/components/historical-transit-card'
+import { HistoricalTransitCard } from '@/components/misc/historical-transit-card'
 import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
 import {
   getPlanetaryDignity,

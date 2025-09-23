@@ -25,11 +25,11 @@ import {
   Plus,
   X,
 } from 'lucide-react'
-import NatalSigilGenerator from '@/components/natal-sigil-generator'
+import NatalSigilGenerator from '@/components/misc/natal-sigil-generator'
 import { MeditationGuidance } from '@/components/sigil/meditation-guidance'
 import { BatchSigilGenerator } from '@/components/sigil/batch-sigil-generator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import QuickChartInput from '@/components/quick-chart-input'
+import QuickChartInput from '@/components/charts/quick-chart-input'
 import { ChartGeometryExtractor } from '@/lib/chart-geometry-extractor'
 import { detectPatternsStatic, PlanetPosition } from '@/lib/astrological-pattern-recognition'
 import {

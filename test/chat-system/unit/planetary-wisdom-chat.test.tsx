@@ -5,7 +5,7 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import '@testing-library/jest-dom'
-import PlanetaryWisdomChat from '@/components/planetary-wisdom-chat'
+import PlanetaryWisdomChat from '@/components/misc/planetary-wisdom-chat'
 import {
   mockPlanetaryConfigs,
   mockPlanetaryPresets,

@@ -31,7 +31,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { DEMO_AGENTS, getAgentCollections } from '@/lib/demo-agents-data'
-import { AgentCard } from '@/components/agent-card'
+import { AgentCard } from '@/components/agents/agent-card'
 import type {
   CraftedAgent,
   GalleryViewMode,

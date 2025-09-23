@@ -13,7 +13,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Star, Sun, Moon, Zap, Eye, Info } from 'lucide-react'
-import CircularNatalHoroscope from '@/components/circular-natal-horoscope'
+import CircularNatalHoroscope from '@/components/charts/circular-natal-horoscope'
 import { getPlanetaryDignity, getSignElement } from '@/lib/astrological-data'
 
 interface Planet {

@@ -45,8 +45,8 @@ import type { CraftedAgent } from '@/lib/agent-types'
 import SignVectorGraphic, {
   calculateSignVectorFromChart,
   SignVectorRune,
-} from '@/components/sign-vector-graphic'
-import { KineticCompatibilityIndicator } from '@/components/kinetic-compatibility-indicator'
+} from '@/components/charts/sign-vector-graphic'
+import { KineticCompatibilityIndicator } from '@/components/charts/kinetic-compatibility-indicator'
 import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
 import { useLiveConsciousness, type BirthChartData } from '@/hooks/useLiveConsciousness'
 

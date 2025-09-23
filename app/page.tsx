@@ -13,11 +13,11 @@ import { LoadingState } from '@/components/ui/loading'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 
 // Lazy load heavy components
-const TarotCosmicWidget = lazy(() => import('@/components/tarot-cosmic-widget'))
+const TarotCosmicWidget = lazy(() => import('@/components/misc/tarot-cosmic-widget'))
 const ConsciousnessCraftedAgentsShowcase = lazy(
-  () => import('@/components/consciousness-crafted-agents-showcase')
+  () => import('@/components/agents/consciousness-crafted-agents-showcase')
 )
-const RealtimeRuneDisplay = lazy(() => import('@/components/realtime-rune-display'))
+const RealtimeRuneDisplay = lazy(() => import('@/components/misc/realtime-rune-display'))
 
 export default function HomePage() {
   const [currentTime, setCurrentTime] = useState('')

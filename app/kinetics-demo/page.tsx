@@ -10,13 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { AgentKineticEvolution } from '@/components/agent-kinetic-evolution'
-import { PowerHourNotification } from '@/components/power-hour-notification'
+import { AgentKineticEvolution } from '@/components/agents/agent-kinetic-evolution'
+import { PowerHourNotification } from '@/components/misc/power-hour-notification'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, Zap, Users, TrendingUp } from 'lucide-react'
 import { agentKineticProfiles } from '@/lib/agents/kinetic-profiles'
-import { GroupConsciousnessIndicator } from '@/components/group-consciousness-indicator'
-import { TokenDashboardKinetics } from '@/components/token-dashboard-kinetics'
+import { GroupConsciousnessIndicator } from '@/components/misc/group-consciousness-indicator'
+import { TokenDashboardKinetics } from '@/components/dashboards/token-dashboard-kinetics'
 
 export default function KineticsDemoPage() {
   const [selectedAgent, setSelectedAgent] = useState('leonardo-da-vinci')
