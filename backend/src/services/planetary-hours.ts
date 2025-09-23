@@ -34,7 +34,7 @@ export interface PlanetaryForecast {
 }
 
 // Traditional planetary hour sequence
-const PLANETARY_HOURS = {
+export const PLANETARY_HOURS = {
   Sunday: ['Sun', 'Venus', 'Mercury', 'Moon', 'Saturn', 'Jupiter', 'Mars'],
   Monday: ['Moon', 'Saturn', 'Jupiter', 'Mars', 'Sun', 'Venus', 'Mercury'],
   Tuesday: ['Mars', 'Sun', 'Venus', 'Mercury', 'Moon', 'Saturn', 'Jupiter'],
@@ -45,7 +45,7 @@ const PLANETARY_HOURS = {
 } as const
 
 // Planetary modifiers for alchemical calculations
-const PLANETARY_MODIFIERS = {
+export const PLANETARY_MODIFIERS = {
   Sun: { Spirit: 0.3, Fire: 0.2, essence: 0.1 },
   Moon: { Essence: 0.3, Water: 0.2, matter: 0.1 },
   Mercury: { Spirit: 0.2, Air: 0.3, substance: 0.1 },
@@ -54,6 +54,9 @@ const PLANETARY_MODIFIERS = {
   Jupiter: { Spirit: 0.2, Air: 0.2, essence: 0.2 },
   Saturn: { Matter: 0.3, Earth: 0.2, substance: 0.1 }
 } as const
+
+// Simple repeating sequence helper for legacy/simple paths
+export const PLANETARY_HOUR_SEQUENCE = ['Sun', 'Venus', 'Mercury', 'Moon', 'Saturn', 'Jupiter', 'Mars'] as const
 
 class PlanetaryHoursService {
   

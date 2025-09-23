@@ -25,7 +25,8 @@
       "@/services/*": ["src/services/*"],
       "@/routes/*": ["src/routes/*"],
       "@/utils/*": ["src/utils/*"],
-      "@/middleware/*": ["src/middleware/*"]
+      "@/middleware/*": ["src/middleware/*"],
+      "@/lib/*": ["src/lib/*"]
     },
     "types": [
       "node"

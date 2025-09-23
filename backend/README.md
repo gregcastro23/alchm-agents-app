@@ -1,4 +1,4 @@
-# Planetary Agents Backend Service
+# Planetary Agents Backend
 
 A comprehensive backend gateway service for alchemical calculations and data orchestration, built with Express.js and TypeScript.
 
@@ -523,3 +523,16 @@ MIT License - see LICENSE file for details
 - **Issues**: GitHub Issues
 - **Documentation**: This README and inline code documentation
 - **Health Check**: `/api/health/detailed` endpoint for system status
+
+## Package Manager
+
+- Use Yarn 4 only. This repo is configured for Yarn (`packageManager: yarn@4.0.0`).
+- NPM Docker/render configs are deprecated: `Dockerfile.npm`, `render-npm.yaml`.
+
+## Build & Run
+
+```bash
+yarn install --frozen-lockfile
+yarn build
+yarn start
+```

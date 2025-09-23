@@ -1,4 +1,6 @@
 import { logger } from '../utils/logger.js'
+import { PLANETARY_HOUR_SEQUENCE } from './planetary-hours.js'
+import { alchemize as alchemizeCore } from '../lib/alchemizer-core.js'
 
 export interface AlchemicalElements {
   spirit: number
@@ -18,8 +20,7 @@ export interface PlanetaryPosition {
 function calculateCurrentMomentSimple(): AlchemicalElements {
   const hour = new Date().getHours()
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24))
-  const planetaryHours = ['Sun', 'Venus', 'Mercury', 'Moon', 'Saturn', 'Jupiter', 'Mars']
-  const currentPlanet = planetaryHours[hour % 7]
+  const currentPlanet = PLANETARY_HOUR_SEQUENCE[hour % 7]
   const planetaryAlchemy: Record<string, AlchemicalElements> = {
     Sun: { spirit: 1.0, essence: 0.0, matter: 0.0, substance: 0.0, aNumber: 0 },
     Moon: { spirit: 0.0, essence: 0.5, matter: 0.5, substance: 0.0, aNumber: 0 },
@@ -39,12 +40,27 @@ function calculateCurrentMomentSimple(): AlchemicalElements {
   return { spirit, essence, matter, substance, aNumber }
 }
 
-export async function generateAlchmForCurrentMoment(): Promise<AlchemicalElements> {
+export async function generateAlchmForCurrentMoment(): Promise<any> {
   try {
-    return calculateCurrentMomentSimple()
+    const simple = calculateCurrentMomentSimple()
+    return {
+      'Alchemy Effects': {
+        'Total Spirit': simple.spirit,
+        'Total Essence': simple.essence,
+        'Total Matter': simple.matter,
+        'Total Substance': simple.substance
+      }
+    }
   } catch (error) {
     logger.error('Error generating alchemical values:', error)
-    return { spirit: 0.25, essence: 0.25, matter: 0.25, substance: 0.25, aNumber: 0.143 }
+    return {
+      'Alchemy Effects': {
+        'Total Spirit': 0.25,
+        'Total Essence': 0.25,
+        'Total Matter': 0.25,
+        'Total Substance': 0.25
+      }
+    }
   }
 }
 
@@ -52,15 +68,27 @@ export async function generateAlchmForCurrentMoment(): Promise<AlchemicalElement
  * Alchemizes values based on birth chart data
  * Simplified implementation for backend
  */
-export async function alchemize(birthData: any): Promise<AlchemicalElements> {
+export interface SimpleBirthData { birthDate?: string; birthTime?: string }
+export interface FullBirthInfo {
+  year: number; month: number; day: number; hour: number; minute: number; latitude: number; longitude: number
+}
+
+export async function alchemize(birthData: SimpleBirthData | FullBirthInfo, horoscopeDict?: any): Promise<any> {
   try {
+    // If full horoscope is provided, use shared core engine and return full object
+    if (horoscopeDict) {
+      return alchemizeCore(birthData, horoscopeDict)
+    }
     // Extract birth hour for planetary calculation
-    const birthHour = birthData.birthTime ? parseInt(birthData.birthTime.split(':')[0]) : 12
-    const birthMonth = birthData.birthDate ? new Date(birthData.birthDate).getMonth() : 0
+    const birthHour = (typeof (birthData as any).birthTime === 'string')
+      ? parseInt(((birthData as any).birthTime as string).split(':')[0])
+      : (typeof (birthData as any).hour === 'number' ? (birthData as any).hour : 12)
+    const birthMonth = (typeof (birthData as any).birthDate === 'string')
+      ? new Date((birthData as any).birthDate as string).getMonth()
+      : (typeof (birthData as any).month === 'number' ? ((birthData as any).month as number) - 1 : 0)
 
     // Calculate based on birth planetary hour
-    const planetaryHours = ['Sun', 'Venus', 'Mercury', 'Moon', 'Saturn', 'Jupiter', 'Mars']
-    const birthPlanet = planetaryHours[birthHour % 7]
+    const birthPlanet = PLANETARY_HOUR_SEQUENCE[birthHour % 7]
 
     // Base values by birth planet
     const planetaryBase: Record<string, AlchemicalElements> = {
@@ -87,23 +115,11 @@ export async function alchemize(birthData: any): Promise<AlchemicalElements> {
     // Calculate A# (Alchemical Number)
     const aNumber = (spirit + essence + matter + substance) / 7
 
-    return {
-      spirit,
-      essence,
-      matter,
-      substance,
-      aNumber
-    }
+    return { spirit, essence, matter, substance, aNumber }
   } catch (error) {
     logger.error('Error alchemizing birth data:', error)
     // Return balanced default values
-    return {
-      spirit: 0.25,
-      essence: 0.25,
-      matter: 0.25,
-      substance: 0.25,
-      aNumber: 0.143
-    }
+    return { spirit: 0.25, essence: 0.25, matter: 0.25, substance: 0.25, aNumber: 0.143 }
   }
 }
 

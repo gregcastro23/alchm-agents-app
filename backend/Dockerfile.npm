@@ -1,5 +1,5 @@
 # =============================================================================
-# PLANETARY AGENTS BACKEND - NPM PRODUCTION DOCKERFILE
+# DEPRECATED: NPM PRODUCTION DOCKERFILE (use Yarn-based Dockerfile instead)
 # =============================================================================
 
 # Use official Node.js runtime as base image
@@ -21,7 +21,8 @@ COPY backend/package.json ./
 COPY backend/package-lock.json* ./
 
 # Install dependencies using npm
-RUN npm ci --only=production && \
+RUN echo "Deprecated: switch to Yarn. See backend/Dockerfile and deploy/render.yaml" && \
+    npm ci --only=production || true && \
     npm cache clean --force && \
     rm -rf /tmp/* /var/cache/apk/*
 
@@ -30,7 +31,7 @@ COPY backend/ .
 COPY prisma ../prisma
 
 # Build the application
-RUN npm run build
+RUN echo "Deprecated build: use Yarn build in Dockerfile" && npm run build || true
 
 # Change ownership to non-root user
 RUN chown -R backend:nodejs /app
@@ -47,7 +48,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start the application
-CMD ["npm", "start"]
+CMD ["node", "dist/index.js"]
 
 # =============================================================================
 # BUILD INSTRUCTIONS

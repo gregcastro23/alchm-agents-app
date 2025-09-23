@@ -1,5 +1,5 @@
 # =============================================================================
-# PLANETARY AGENTS BACKEND - RENDER DEPLOYMENT (NPM VERSION)
+# DEPRECATED: RENDER DEPLOYMENT (NPM VERSION) - use render.yaml with Yarn
 # =============================================================================
 
 services:
@@ -11,8 +11,8 @@ services:
     region: oregon  # or 'frankfurt' for EU
 
     # Build configuration using npm
-    buildCommand: npm ci && npm run build
-    startCommand: npm start
+    buildCommand: echo "Deprecated. Use Yarn: see render.yaml" && npm ci && npm run build || true
+    startCommand: node dist/index.js
 
     # Environment configuration
     envVars:
