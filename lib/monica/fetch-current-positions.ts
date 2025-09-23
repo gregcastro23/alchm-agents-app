@@ -124,22 +124,37 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
           const signDegree = typeof rawDegree === 'number'
             ? ((rawDegree % 30) + 30) % 30 // normalize within 0-30
             : undefined
+          const sign = planet.sign
           transformedData['Planet Positions'][planet.planet] = {
-            sign: planet.sign,
+            sign,
             degree: typeof signDegree === 'number' ? signDegree : undefined as any,
           }
+          // Attach dignity label for UI if needed
+          try {
+            const label = getEssentialDignityLabel(planet.planet, sign)
+            ;(transformedData as any)['Dignities'] = (transformedData as any)['Dignities'] || {}
+            ;(transformedData as any)['Dignities'][planet.planet] = label
+          } catch {}
         }
       })
     }
 
     // If API data is incomplete or missing degrees, compute enhanced fallback for correctness
     const planetCount = Object.keys(transformedData['Planet Positions'] || {}).length
-    const needsEnhanced = planetCount === 0 || Object.values(transformedData['Planet Positions'] || {}).some((p: any) => typeof p.degree !== 'number')
+    const needsEnhanced = planetCount < 7 || Object.values(transformedData['Planet Positions'] || {}).some((p: any) => typeof p.degree !== 'number')
 
     if (needsEnhanced) {
       const enhanced = await enhancedPositionsNow()
       if (enhanced) {
         transformedData['Planet Positions'] = enhanced['Planet Positions']
+        // Recompute dignities with enhanced positions as well
+        try {
+          const dignities: Record<string, string> = {}
+          Object.entries(enhanced['Planet Positions'] || {}).forEach(([planet, pos]: any) => {
+            if (pos?.sign) dignities[planet] = getEssentialDignityLabel(planet, pos.sign)
+          })
+          ;(transformedData as any)['Dignities'] = dignities
+        } catch {}
       }
     }
 
@@ -177,6 +192,18 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
 
 // --- Enhanced local fallback using our professional calculator ---
 import { calculateAllPlanets, type EnhancedBirthInfo } from '../enhanced-astronomical-calculator'
+import { ESSENTIAL_DIGNITIES } from '../astrological-dignities-engine'
+
+function getEssentialDignityLabel(planet: string, sign: string): 'Domicile' | 'Exalted' | 'Detriment' | 'Fall' | 'Peregrine' {
+  const d = (ESSENTIAL_DIGNITIES as any)[planet]
+  if (!d) return 'Peregrine'
+  const inList = (val: any, s: string) => Array.isArray(val) ? val.includes(s) : val === s
+  if (inList(d.domicile, sign)) return 'Domicile'
+  if (inList(d.exaltation, sign)) return 'Exalted'
+  if (inList(d.detriment, sign)) return 'Detriment'
+  if (inList(d.fall, sign)) return 'Fall'
+  return 'Peregrine'
+}
 
 async function enhancedPositionsNow(): Promise<AlchemizeApiResponse | null> {
   try {
