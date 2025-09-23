@@ -13,7 +13,7 @@ export async function GET() {
     const positions = getCurrentPlanetaryPositions(Date.now())
     const alchm = await generateAlchmForCurrentMoment()
 
-    const planetaryPositions = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'].map(
+    const planetaryPositions = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'North Node', 'Chiron', 'Ascendant', 'MC'].map(
       planet => ({
         planet,
         sign: positions[planet]?.sign || 'Aries',

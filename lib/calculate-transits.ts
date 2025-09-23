@@ -33,18 +33,20 @@ const orbitalPeriods = {
 // These were verified from reliable astronomical sources
 // All degrees converted to numbers with proper validation
 const CURRENT_PLANETARY_POSITIONS = {
-  Sun: { sign: 'Virgo', degree: 13.0, retrograde: false },
-  Moon: { sign: 'Aquarius', degree: 17.0, retrograde: false },
-  Mercury: { sign: 'Virgo', degree: 6.0, retrograde: false },
-  Venus: { sign: 'Leo', degree: 13.0, retrograde: false },
-  Mars: { sign: 'Libra', degree: 19.0, retrograde: false },
-  Jupiter: { sign: 'Cancer', degree: 18.0, retrograde: false },
-  Saturn: { sign: 'Pisces', degree: 29.0, retrograde: true },
-  Uranus: { sign: 'Gemini', degree: 1.0, retrograde: false },
-  Neptune: { sign: 'Aries', degree: 1.0, retrograde: true },
-  Pluto: { sign: 'Aquarius', degree: 1.0, retrograde: true },
-  'North Node': { sign: 'Pisces', degree: 24.33, retrograde: false }, // Retained from previous
-  Ascendant: { sign: 'Capricorn', degree: 28.85, retrograde: false }, // Retained from previous
+  Sun: { sign: 'Libra', degree: 0.6666667, retrograde: false },
+  Moon: { sign: 'Libra', degree: 18.8333333, retrograde: false },
+  Mercury: { sign: 'Libra', degree: 8.7666667, retrograde: false },
+  Venus: { sign: 'Virgo', degree: 4.7833333, retrograde: false },
+  Mars: { sign: 'Scorpio', degree: 0.75, retrograde: false },
+  Jupiter: { sign: 'Cancer', degree: 21.4666667, retrograde: false },
+  Saturn: { sign: 'Pisces', degree: 28.3333333, retrograde: true },
+  Uranus: { sign: 'Gemini', degree: 1.3333333, retrograde: true },
+  Neptune: { sign: 'Aries', degree: 0.75, retrograde: true },
+  Pluto: { sign: 'Aquarius', degree: 1.45, retrograde: true },
+  'North Node': { sign: 'Pisces', degree: 17.4333333, retrograde: true },
+  Chiron: { sign: 'Aries', degree: 25.9333333, retrograde: true },
+  Ascendant: { sign: 'Virgo', degree: 29.8166667, retrograde: false },
+  MC: { sign: 'Gemini', degree: 29.8, retrograde: false },
 }
 
 // Add last updated timestamp
@@ -345,15 +347,21 @@ export function getCurrentPlanetaryPositions(
     }
   })
 
-  // For North Node and Ascendant, keep previous placeholders
+  // For points not produced by enhanced calc (Node, Chiron, angles), use CURRENT_PLANETARY_POSITIONS
   calculatedPositions['North Node'] = validatePlanetaryPosition({
     ...CURRENT_PLANETARY_POSITIONS['North Node'],
-    retrograde: false,
+    retrograde: !!CURRENT_PLANETARY_POSITIONS['North Node'].retrograde,
   })
-  calculatedPositions['Ascendant'] = validatePlanetaryPosition({
-    ...CURRENT_PLANETARY_POSITIONS['Ascendant'],
-    retrograde: false,
-  })
+  if ((CURRENT_PLANETARY_POSITIONS as any)['Chiron']) {
+    calculatedPositions['Chiron'] = validatePlanetaryPosition({
+      ...(CURRENT_PLANETARY_POSITIONS as any)['Chiron'],
+      retrograde: !!(CURRENT_PLANETARY_POSITIONS as any)['Chiron'].retrograde,
+    })
+  }
+  calculatedPositions['Ascendant'] = validatePlanetaryPosition(CURRENT_PLANETARY_POSITIONS['Ascendant'])
+  if ((CURRENT_PLANETARY_POSITIONS as any)['MC']) {
+    calculatedPositions['MC'] = validatePlanetaryPosition((CURRENT_PLANETARY_POSITIONS as any)['MC'])
+  }
 
   performanceCache.setPlanetaryPositions(calculatedPositions)
   console.log(`[Planetary Positions] Enhanced calculation complete at: ${new Date().toISOString()}`)
