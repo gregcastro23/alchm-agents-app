@@ -4,6 +4,27 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
+// Global cooldown to avoid hammering backend when unavailable
+let backendDownUntilTs: number = 0
+let lastBackendWarnTs: number = 0
+
+function isBackendDown(): boolean {
+  return Date.now() < backendDownUntilTs
+}
+
+function setBackendDownCooldown(minutes: number = 5) {
+  backendDownUntilTs = Date.now() + minutes * 60 * 1000
+}
+
+function logBackendUnavailableOnce() {
+  const now = Date.now()
+  if (now - lastBackendWarnTs > 30000) {
+    // Log at most once every 30s
+    console.info('Backend consciousness calculations not available, using fallback data')
+    lastBackendWarnTs = now
+  }
+}
+
 export interface BirthChartData {
   name: string
   birthDate: string
@@ -110,14 +131,27 @@ export function useLiveConsciousness(
       let data: LiveConsciousnessResult | null = null
       let multiAgentData: Record<string, LiveConsciousnessResult> | null = null
 
-      if (birthChart) {
-        // Calculate for single agent using backend API
-        data = await fetchLiveConsciousness(birthChart)
-      }
+      // Short-circuit when backend is down: serve fallback without network calls
+      if (isBackendDown()) {
+        logBackendUnavailableOnce()
+        if (birthChart) {
+          data = generateFallbackConsciousnessData(birthChart)
+        }
+        if (agents.length > 0) {
+          multiAgentData = Object.fromEntries(
+            agents.map(a => [a.name, generateFallbackConsciousnessData(a)])
+          )
+        }
+      } else {
+        if (birthChart) {
+          // Calculate for single agent using backend API
+          data = await fetchLiveConsciousness(birthChart)
+        }
 
-      if (agents.length > 0) {
-        // Calculate for multiple agents using backend API
-        multiAgentData = await fetchBatchLiveConsciousness(agents)
+        if (agents.length > 0) {
+          // Calculate for multiple agents using backend API
+          multiAgentData = await fetchBatchLiveConsciousness(agents)
+        }
       }
 
       setState({
@@ -129,7 +163,9 @@ export function useLiveConsciousness(
       })
 
     } catch (error) {
-      console.error('Error calculating live consciousness:', error)
+      // Enter cooldown and serve fallback on error
+      setBackendDownCooldown(5)
+      logBackendUnavailableOnce()
       setState(prev => ({
         ...prev,
         loading: false,
@@ -149,7 +185,15 @@ export function useLiveConsciousness(
   useEffect(() => {
     if (!autoRefresh || (!birthChart && agents.length === 0)) return
 
-    const interval = setInterval(calculateLive, refreshInterval)
+    const interval = setInterval(() => {
+      if (isBackendDown()) {
+        // Skip network refresh during cooldown
+        logBackendUnavailableOnce()
+        calculateLive()
+      } else {
+        calculateLive()
+      }
+    }, refreshInterval)
     return () => clearInterval(interval)
   }, [calculateLive, autoRefresh, refreshInterval])
 
@@ -305,6 +349,10 @@ export function getConsciousnessColor(level: string): string {
 // API functions using frontend proxy
 async function fetchLiveConsciousness(birthChart: BirthChartData): Promise<LiveConsciousnessResult> {
   try {
+    if (isBackendDown()) {
+      logBackendUnavailableOnce()
+      return generateFallbackConsciousnessData(birthChart)
+    }
     const response = await fetch('/api/consciousness/live', {
       method: 'POST',
       headers: {
@@ -317,8 +365,9 @@ async function fetchLiveConsciousness(birthChart: BirthChartData): Promise<LiveC
       const errorData = await response.json().catch(() => ({}))
 
       // If backend is disabled, return fallback data instead of throwing
-      if (errorData.code === 'BACKEND_DISABLED') {
-        console.info('Backend consciousness calculations not available, using fallback data')
+      if (response.status === 503 || errorData.code === 'BACKEND_DISABLED') {
+        setBackendDownCooldown(5)
+        logBackendUnavailableOnce()
         return generateFallbackConsciousnessData(birthChart)
       }
 
@@ -328,7 +377,8 @@ async function fetchLiveConsciousness(birthChart: BirthChartData): Promise<LiveC
     return response.json()
   } catch (error) {
     // For network errors or other issues, also provide fallback
-    console.warn('Live consciousness calculation failed, using fallback:', error)
+    setBackendDownCooldown(5)
+    logBackendUnavailableOnce()
     return generateFallbackConsciousnessData(birthChart)
   }
 }
@@ -406,26 +456,10 @@ async function fetchBatchLiveConsciousness(agents: BirthChartData[]): Promise<Re
     try {
       results[agent.name] = await fetchLiveConsciousness(agent)
     } catch (error) {
-      console.error(`Error fetching consciousness for ${agent.name}:`, error)
-      // Provide fallback data
-      results[agent.name] = {
-        birthMC: 2.5,
-        birthKalchm: { spirit: 5, essence: 5, matter: 5, substance: 5, aNumber: 20 },
-        liveMC: 2.5,
-        liveKalchm: { spirit: 5, essence: 5, matter: 5, substance: 5, aNumber: 20 },
-        mcChange: 0,
-        mcPercentChange: 0,
-        dominantTransitEffect: 'calculation_error',
-        consciousnessLevel: 'Active',
-        liveConsciousnessLevel: 'Active',
-        interpretations: {
-          mcChange: 'Consciousness calculation temporarily unavailable',
-          transitInfluence: 'Transit analysis in progress',
-          cosmicWeather: 'Cosmic conditions being assessed'
-        },
-        timestamp: new Date().toISOString(),
-        calculationTime: 0
-      } as LiveConsciousnessResult
+      // Provide fallback data without spamming errors
+      setBackendDownCooldown(5)
+      logBackendUnavailableOnce()
+      results[agent.name] = generateFallbackConsciousnessData(agent)
     }
   }
   
