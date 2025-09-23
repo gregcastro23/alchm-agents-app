@@ -13,7 +13,7 @@ import {
   plutoData,
 } from './planets'
 import type { PlanetData, TransitData } from './planets/types'
-import { calculateAllPlanets, type EnhancedBirthInfo } from './enhanced-astronomical-calculator'
+import { calculateAllPlanets, calculateProfessionalHouses, type EnhancedBirthInfo, toJulianDay, longitudeToSignDegree } from './enhanced-astronomical-calculator'
 
 // Define orbital periods for planets in days
 const orbitalPeriods = {
@@ -29,28 +29,7 @@ const orbitalPeriods = {
   Pluto: 90560,
 }
 
-// Define the fixed, accurate current planetary positions
-// These were verified from reliable astronomical sources
-// All degrees converted to numbers with proper validation
-const CURRENT_PLANETARY_POSITIONS = {
-  Sun: { sign: 'Libra', degree: 0.6666667, retrograde: false },
-  Moon: { sign: 'Libra', degree: 18.8333333, retrograde: false },
-  Mercury: { sign: 'Libra', degree: 8.7666667, retrograde: false },
-  Venus: { sign: 'Virgo', degree: 4.7833333, retrograde: false },
-  Mars: { sign: 'Scorpio', degree: 0.75, retrograde: false },
-  Jupiter: { sign: 'Cancer', degree: 21.4666667, retrograde: false },
-  Saturn: { sign: 'Pisces', degree: 28.3333333, retrograde: true },
-  Uranus: { sign: 'Gemini', degree: 1.3333333, retrograde: true },
-  Neptune: { sign: 'Aries', degree: 0.75, retrograde: true },
-  Pluto: { sign: 'Aquarius', degree: 1.45, retrograde: true },
-  'North Node': { sign: 'Pisces', degree: 17.4333333, retrograde: true },
-  Chiron: { sign: 'Aries', degree: 25.9333333, retrograde: true },
-  Ascendant: { sign: 'Virgo', degree: 29.8166667, retrograde: false },
-  MC: { sign: 'Gemini', degree: 29.8, retrograde: false },
-}
-
-// Add last updated timestamp
-const POSITIONS_LAST_UPDATED = new Date().toISOString() // Updated with latest positions
+// Removed static positions in favor of algorithmic/transit-derived calculations
 
 // Define approximate degrees per day for each planet
 const degreesPerDay = Object.entries(orbitalPeriods).reduce(
@@ -62,6 +41,19 @@ const degreesPerDay = Object.entries(orbitalPeriods).reduce(
 )
 
 import { performanceCache } from './performance-cache'
+
+// Compute mean North Node longitude (ascending) and convert to sign/degree
+function getMeanNorthNode(date: Date): { sign: string; degree: number; retrograde: boolean } {
+  const jd = toJulianDay(date)
+  const T = (jd - 2451545.0) / 36525
+  // Meeus formula for mean longitude of ascending node of the Moon (degrees)
+  let omega = 125.04452 - 1934.136261 * T + 0.0020708 * T * T + (T * T * T) / 450000
+  // Normalize to 0-360
+  omega = ((omega % 360) + 360) % 360
+  // Convert to sign and degree
+  const { sign, degree } = longitudeToSignDegree(omega)
+  return { sign, degree: Math.max(0, Math.min(29.9999, degree)), retrograde: true }
+}
 
 // Utility function to safely convert and validate degrees with comprehensive NaN protection
 function safeDegreeValue(degree: any): number {
@@ -357,21 +349,27 @@ export function getCurrentPlanetaryPositions(
     }
   })
 
-  // For points not produced by enhanced calc (Node, Chiron, angles), use CURRENT_PLANETARY_POSITIONS
-  calculatedPositions['North Node'] = validatePlanetaryPosition({
-    ...CURRENT_PLANETARY_POSITIONS['North Node'],
-    retrograde: !!CURRENT_PLANETARY_POSITIONS['North Node'].retrograde,
-  })
-  if ((CURRENT_PLANETARY_POSITIONS as any)['Chiron']) {
-    calculatedPositions['Chiron'] = validatePlanetaryPosition({
-      ...(CURRENT_PLANETARY_POSITIONS as any)['Chiron'],
-      retrograde: !!(CURRENT_PLANETARY_POSITIONS as any)['Chiron'].retrograde,
-    })
-  }
-  calculatedPositions['Ascendant'] = validatePlanetaryPosition(CURRENT_PLANETARY_POSITIONS['Ascendant'])
-  if ((CURRENT_PLANETARY_POSITIONS as any)['MC']) {
-    calculatedPositions['MC'] = validatePlanetaryPosition((CURRENT_PLANETARY_POSITIONS as any)['MC'])
-  }
+  // For points not produced by enhanced calc: compute Node mean; approximate Chiron and angles
+  const node = getMeanNorthNode(now)
+  calculatedPositions['North Node'] = validatePlanetaryPosition(node)
+
+  // Approximate Chiron via transit dates if available (fallback to Aries 0°)
+  const chironTransit = getTransitPositionFromDates('Chiron' as any, now)
+  calculatedPositions['Chiron'] = chironTransit
+    ? validatePlanetaryPosition({ sign: chironTransit.sign, degree: chironTransit.degree, retrograde: true })
+    : validatePlanetaryPosition({ sign: 'Aries', degree: 0, retrograde: true })
+
+  // Derive Ascendant and MC from enhanced calculator when possible
+  // Asc already available via enhanced, compute MC as Ascendant + 90° on ecliptic
+  const ascSign = enhanced.ascendant.sign
+  const ascDeg = enhanced.ascendant.signDegree
+  const signs = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces']
+  const ascIndex = signs.indexOf(ascSign)
+  const ascAbs = ascIndex * 30 + ascDeg
+  const mcAbs = (ascAbs + 90) % 360
+  const mcSD = longitudeToSignDegree(mcAbs)
+  calculatedPositions['Ascendant'] = validatePlanetaryPosition({ sign: ascSign, degree: ascDeg, retrograde: false })
+  calculatedPositions['MC'] = validatePlanetaryPosition({ sign: mcSD.sign, degree: mcSD.degree, retrograde: false })
 
   performanceCache.setPlanetaryPositions(calculatedPositions)
   console.log(`[Planetary Positions] Enhanced calculation complete at: ${new Date().toISOString()}`)
