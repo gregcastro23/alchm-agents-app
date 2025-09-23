@@ -152,8 +152,13 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
 
     return transformedData
   } catch (error: any) {
-    // Silence expected component-unmount aborts and prefer enhanced fallback
-    if (error?.name === 'AbortError' || /aborted|component-unmount/i.test(String(error?.message))) {
+    // Silence expected aborts and component unmount cases and prefer enhanced fallback
+    const errorName = (error && typeof error === 'object') ? (error as any).name : ''
+    const errorMessage = typeof error === 'string' ? error : String((error as any)?.message || '')
+    if (
+      /AbortError/i.test(errorName) ||
+      /aborted|abort|component-unmount|unmount/i.test(errorMessage)
+    ) {
       // Return enhanced fallback rather than logging a console error
       return await enhancedPositionsNow()
     }

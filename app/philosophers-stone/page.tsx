@@ -120,10 +120,12 @@ function PhilosophersStoneInner() {
 
   // Fetch real-time data
   useEffect(() => {
+    const controller = new AbortController()
+    const { signal } = controller
     const fetchData = async () => {
       try {
         // Fetch current planetary positions
-        const positions = await fetchCurrentPlanetaryPositions()
+        const positions = await fetchCurrentPlanetaryPositions(signal)
         if (positions) {
           setPlanetaryPositions(positions)
 
@@ -155,7 +157,10 @@ function PhilosophersStoneInner() {
 
     fetchData()
     const interval = setInterval(fetchData, 60000) // Update every minute
-    return () => clearInterval(interval)
+    return () => {
+      controller.abort()
+      clearInterval(interval)
+    }
   }, [])
 
   // Load template agent if specified
