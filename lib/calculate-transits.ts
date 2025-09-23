@@ -347,6 +347,16 @@ export function getCurrentPlanetaryPositions(
     }
   })
 
+  // Override with date-correlated transit data from planet files when available
+  const nowDate = new Date()
+  ;['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'].forEach(planet => {
+    const transit = getTransitPositionFromDates(planet, nowDate)
+    if (transit && calculatedPositions[planet]) {
+      calculatedPositions[planet].sign = transit.sign
+      calculatedPositions[planet].degree = safeDegreeValue(transit.degree)
+    }
+  })
+
   // For points not produced by enhanced calc (Node, Chiron, angles), use CURRENT_PLANETARY_POSITIONS
   calculatedPositions['North Node'] = validatePlanetaryPosition({
     ...CURRENT_PLANETARY_POSITIONS['North Node'],
