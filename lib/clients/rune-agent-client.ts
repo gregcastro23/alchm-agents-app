@@ -81,7 +81,7 @@ export class RuneAgentClient {
    */
   static async generateComplete(request: RuneGenerationRequest): Promise<RuneAgentResult> {
     const startTime = Date.now()
-    
+
     if (this.useBackend) {
       try {
         const backendResult = await this.callBackend(request)
@@ -91,8 +91,8 @@ export class RuneAgentClient {
             metadata: {
               ...backendResult.metadata,
               generationTime: Date.now() - startTime,
-              source: 'backend'
-            }
+              source: 'backend',
+            },
           }
         }
       } catch (error) {
@@ -115,7 +115,9 @@ export class RuneAgentClient {
   /**
    * Get just agent recommendations
    */
-  static async getAgentRecommendation(request: RuneGenerationRequest): Promise<AgentRecommendation> {
+  static async getAgentRecommendation(
+    request: RuneGenerationRequest
+  ): Promise<AgentRecommendation> {
     const complete = await this.generateComplete(request)
     return complete.agent
   }
@@ -123,7 +125,9 @@ export class RuneAgentClient {
   /**
    * Call backend for rune and agent generation
    */
-  private static async callBackend(request: RuneGenerationRequest): Promise<RuneAgentResult | null> {
+  private static async callBackend(
+    request: RuneGenerationRequest
+  ): Promise<RuneAgentResult | null> {
     try {
       // Try backend rune generation
       const runeResponse = await fetch(`${this.backendUrl}/api/alchemy/imaginize`, {
@@ -132,8 +136,8 @@ export class RuneAgentClient {
         body: JSON.stringify({
           location: request.location,
           datetime: request.datetime.toISOString(),
-          context: request.context || 'cuisine'
-        })
+          context: request.context || 'cuisine',
+        }),
       })
 
       // Try backend agent recommendation
@@ -143,8 +147,8 @@ export class RuneAgentClient {
         body: JSON.stringify({
           location: request.location,
           datetime: request.datetime.toISOString(),
-          preferences: request.preferences
-        })
+          preferences: request.preferences,
+        }),
       })
 
       let rune: RuneOfTheMoment | null = null
@@ -158,7 +162,7 @@ export class RuneAgentClient {
         }
       }
 
-      // Process agent response  
+      // Process agent response
       if (agentResponse.ok) {
         const agentData = await agentResponse.json()
         if (agentData.success && agentData.recommendation) {
@@ -176,8 +180,8 @@ export class RuneAgentClient {
             source: 'backend',
             generationTime: 0,
             datetime: request.datetime.toISOString(),
-            location: `${request.location.latitude},${request.location.longitude}`
-          }
+            location: `${request.location.latitude},${request.location.longitude}`,
+          },
         }
       }
 
@@ -199,13 +203,14 @@ export class RuneAgentClient {
       description: backendRune.description || 'A rune of the current moment',
       element: backendRune.element || 'spirit',
       powerLevel: backendRune.powerLevel || 75,
-      guidance: backendRune.guidance || 'Trust the moment\'s wisdom',
-      culinaryInfluence: backendRune.culinaryInfluence || this.getDefaultCulinaryInfluence('spirit'),
+      guidance: backendRune.guidance || "Trust the moment's wisdom",
+      culinaryInfluence:
+        backendRune.culinaryInfluence || this.getDefaultCulinaryInfluence('spirit'),
       activationWindow: {
         start: new Date(),
         end: new Date(Date.now() + 3600000), // 1 hour
-        optimalMoment: new Date(Date.now() + 1800000) // 30 minutes
-      }
+        optimalMoment: new Date(Date.now() + 1800000), // 30 minutes
+      },
     }
   }
 
@@ -221,20 +226,29 @@ export class RuneAgentClient {
       personalityMatch: backendAgent.personalityMatch || 80,
       temporalAlignment: backendAgent.temporalAlignment || 90,
       overallScore: backendAgent.overallScore || 85,
-      reasoning: backendAgent.reasoning || ['Strong temporal alignment', 'High consciousness resonance'],
-      culinarySpecialty: backendAgent.culinarySpecialty || ['Intuitive cooking', 'Elemental balance'],
-      recommendedInteractionStyle: backendAgent.recommendedInteractionStyle || 'collaborative'
+      reasoning: backendAgent.reasoning || [
+        'Strong temporal alignment',
+        'High consciousness resonance',
+      ],
+      culinarySpecialty: backendAgent.culinarySpecialty || [
+        'Intuitive cooking',
+        'Elemental balance',
+      ],
+      recommendedInteractionStyle: backendAgent.recommendedInteractionStyle || 'collaborative',
     }
   }
 
   /**
    * Local fallback generation
    */
-  private static async generateLocal(request: RuneGenerationRequest, startTime: number): Promise<RuneAgentResult> {
+  private static async generateLocal(
+    request: RuneGenerationRequest,
+    startTime: number
+  ): Promise<RuneAgentResult> {
     try {
       // Generate local rune
       const rune = await this.generateLocalRune(request)
-      
+
       // Get local agent recommendation
       const agent = await this.generateLocalAgent(request)
 
@@ -249,8 +263,8 @@ export class RuneAgentClient {
           source: 'local_fallback',
           generationTime: Date.now() - startTime,
           datetime: request.datetime.toISOString(),
-          location: `${request.location.latitude},${request.location.longitude}`
-        }
+          location: `${request.location.latitude},${request.location.longitude}`,
+        },
       }
     } catch (error) {
       console.error('Local rune/agent generation failed:', error)
@@ -264,7 +278,7 @@ export class RuneAgentClient {
   private static async generateLocalRune(request: RuneGenerationRequest): Promise<RuneOfTheMoment> {
     const hour = request.datetime.getHours()
     const minute = request.datetime.getMinutes()
-    
+
     // Create a simple chart profile for rune generation
     const chartProfile = {
       dominantElement: this.getDominantElementForTime(hour),
@@ -273,11 +287,11 @@ export class RuneAgentClient {
         conscientiousness: 60 + (minute % 20) * 2,
         extraversion: 50 + ((hour + minute) % 30),
         agreeableness: 80 - (hour % 15) * 2,
-        neuroticism: 30 + (minute % 10) * 4
+        neuroticism: 30 + (minute % 10) * 4,
       },
       elementalBalance: this.calculateElementalBalance(request.datetime, request.location),
       aspectPatterns: [],
-      planetaryInfluences: this.getPlanetaryInfluences(hour)
+      planetaryInfluences: this.getPlanetaryInfluences(hour),
     }
 
     // Use existing rune generation system
@@ -288,7 +302,9 @@ export class RuneAgentClient {
       id: signVectorRune.id,
       name: signVectorRune.name,
       symbol: signVectorRune.symbol,
-      description: signVectorRune.description || `A ${signVectorRune.element} rune channeling the energy of this moment`,
+      description:
+        signVectorRune.description ||
+        `A ${signVectorRune.element} rune channeling the energy of this moment`,
       element: signVectorRune.element,
       powerLevel: signVectorRune.powerLevel || 75,
       guidance: this.generateRuneGuidance(signVectorRune, request.context),
@@ -296,18 +312,20 @@ export class RuneAgentClient {
       activationWindow: {
         start: request.datetime,
         end: new Date(request.datetime.getTime() + 3600000), // 1 hour
-        optimalMoment: new Date(request.datetime.getTime() + 1800000) // 30 minutes
-      }
+        optimalMoment: new Date(request.datetime.getTime() + 1800000), // 30 minutes
+      },
     }
   }
 
   /**
    * Generate local agent recommendation
    */
-  private static async generateLocalAgent(request: RuneGenerationRequest): Promise<AgentRecommendation> {
+  private static async generateLocalAgent(
+    request: RuneGenerationRequest
+  ): Promise<AgentRecommendation> {
     const hour = request.datetime.getHours()
     const currentPlanetaryHour = this.getPlanetaryHour(hour)
-    
+
     // Score all available agents for current moment
     const scoredAgents = demoCraftedAgents.map(agent => {
       let score = 0
@@ -318,8 +336,12 @@ export class RuneAgentClient {
       score += temporalScore * 0.4
       if (temporalScore > 0.7) reasoning.push('Strong temporal alignment')
 
-      // Context relevance (30% weight) 
-      const contextScore = this.calculateContextRelevance(agent, request.context, request.preferences)
+      // Context relevance (30% weight)
+      const contextScore = this.calculateContextRelevance(
+        agent,
+        request.context,
+        request.preferences
+      )
       score += contextScore * 0.3
       if (contextScore > 0.8) reasoning.push('Excellent context match')
 
@@ -339,13 +361,13 @@ export class RuneAgentClient {
         reasoning,
         temporalAlignment: temporalScore,
         contextRelevance: contextScore,
-        culinaryExpertise: culinaryScore
+        culinaryExpertise: culinaryScore,
       }
     })
 
     // Get top agent
     const topAgent = scoredAgents.sort((a, b) => b.score - a.score)[0]
-    
+
     if (!topAgent) {
       throw new Error('No suitable agent found')
     }
@@ -360,28 +382,35 @@ export class RuneAgentClient {
       overallScore: Math.round(topAgent.score * 100),
       reasoning: topAgent.reasoning.length > 0 ? topAgent.reasoning : ['Good overall alignment'],
       culinarySpecialty: this.getCulinarySpecialties(topAgent.agent, request.preferences),
-      recommendedInteractionStyle: topAgent.score > 0.8 ? 'collaborative' : 
-                                  topAgent.score > 0.6 ? 'conversational' : 'instructional'
+      recommendedInteractionStyle:
+        topAgent.score > 0.8
+          ? 'collaborative'
+          : topAgent.score > 0.6
+            ? 'conversational'
+            : 'instructional',
     }
   }
 
   /**
    * Calculate synergy between rune and agent
    */
-  private static calculateSynergy(rune: RuneOfTheMoment, agent: AgentRecommendation): {
+  private static calculateSynergy(
+    rune: RuneOfTheMoment,
+    agent: AgentRecommendation
+  ): {
     score: number
     description: string
     enhancedCapabilities: string[]
   } {
     // Calculate elemental compatibility
     const elementalCompatibility = this.getElementalCompatibility(rune.element)
-    
+
     // Calculate power alignment
     const powerAlignment = (rune.powerLevel / 100) * (agent.overallScore / 100)
-    
+
     // Overall synergy score
-    const score = (elementalCompatibility * 0.6) + (powerAlignment * 0.4)
-    
+    const score = elementalCompatibility * 0.6 + powerAlignment * 0.4
+
     const enhancedCapabilities = []
     if (score > 0.8) {
       enhancedCapabilities.push('Amplified intuition', 'Enhanced manifestation power')
@@ -392,11 +421,11 @@ export class RuneAgentClient {
     if (rune.element === 'water' && agent.personalityMatch > 80) {
       enhancedCapabilities.push('Emotional harmony')
     }
-    
+
     return {
       score: Math.round(score * 100),
       description: this.getSynergyDescription(score, rune.element),
-      enhancedCapabilities
+      enhancedCapabilities,
     }
   }
 
@@ -411,7 +440,7 @@ export class RuneAgentClient {
       fire: 0.3 + (datetime.getHours() / 24) * 0.4,
       earth: 0.4 + (Math.abs(location.latitude) / 90) * 0.3,
       air: 0.25 + (datetime.getMinutes() / 60) * 0.3,
-      water: 0.35 + (Math.abs(location.longitude) / 180) * 0.3
+      water: 0.35 + (Math.abs(location.longitude) / 180) * 0.3,
     }
   }
 
@@ -425,7 +454,11 @@ export class RuneAgentClient {
     return planets[hour % 7]
   }
 
-  private static calculateTemporalAlignment(agent: any, hour: number, planetaryHour: string): number {
+  private static calculateTemporalAlignment(
+    agent: any,
+    hour: number,
+    planetaryHour: string
+  ): number {
     // Base alignment
     let score = 0.5
 
@@ -447,17 +480,23 @@ export class RuneAgentClient {
     return Math.min(1, score)
   }
 
-  private static calculateContextRelevance(agent: any, context?: string, preferences?: any): number {
+  private static calculateContextRelevance(
+    agent: any,
+    context?: string,
+    preferences?: any
+  ): number {
     let score = 0.6 // Base score
 
     if (context === 'cuisine') {
       // Check if agent has culinary-related abilities
-      if (agent.title.toLowerCase().includes('chef') || 
-          agent.title.toLowerCase().includes('food') ||
-          agent.name.toLowerCase().includes('culinary')) {
+      if (
+        agent.title.toLowerCase().includes('chef') ||
+        agent.title.toLowerCase().includes('food') ||
+        agent.name.toLowerCase().includes('culinary')
+      ) {
         score += 0.3
       }
-      
+
       // Check consciousness level for food wisdom
       if (agent.consciousness?.monicaConstant > 1.2) {
         score += 0.1
@@ -471,9 +510,11 @@ export class RuneAgentClient {
     let score = 0.5 // Base culinary ability
 
     // Check agent specialties
-    if (agent.specialties?.includes('nutrition') || 
-        agent.specialties?.includes('cooking') ||
-        agent.title.toLowerCase().includes('wellness')) {
+    if (
+      agent.specialties?.includes('nutrition') ||
+      agent.specialties?.includes('cooking') ||
+      agent.title.toLowerCase().includes('wellness')
+    ) {
       score += 0.3
     }
 
@@ -486,11 +527,11 @@ export class RuneAgentClient {
 
   private static getCulinarySpecialties(agent: any, preferences?: any): string[] {
     const specialties = ['Intuitive cooking', 'Seasonal alignment']
-    
+
     if (agent.consciousness?.monicaConstant > 1.5) {
       specialties.push('Consciousness-based nutrition')
     }
-    
+
     if (preferences?.cuisineTypes?.length) {
       specialties.push(`${preferences.cuisineTypes[0]} cuisine expertise`)
     }
@@ -501,14 +542,17 @@ export class RuneAgentClient {
   private static generateRuneGuidance(rune: any, context?: string): string {
     const element = rune.element
     const baseGuidance = {
-      fire: "Embrace transformation and bold action in your culinary journey",
-      water: "Flow with intuition and emotional nourishment in your choices", 
-      earth: "Ground yourself with wholesome, nurturing ingredients",
-      air: "Seek lightness, clarity, and inspiration in your meals",
-      spirit: "Trust the divine wisdom that guides your sustenance"
+      fire: 'Embrace transformation and bold action in your culinary journey',
+      water: 'Flow with intuition and emotional nourishment in your choices',
+      earth: 'Ground yourself with wholesome, nurturing ingredients',
+      air: 'Seek lightness, clarity, and inspiration in your meals',
+      spirit: 'Trust the divine wisdom that guides your sustenance',
     }
 
-    return baseGuidance[element as keyof typeof baseGuidance] || "Follow the path that nourishes your soul"
+    return (
+      baseGuidance[element as keyof typeof baseGuidance] ||
+      'Follow the path that nourishes your soul'
+    )
   }
 
   private static generateCulinaryInfluence(rune: any, preferences?: any) {
@@ -519,29 +563,29 @@ export class RuneAgentClient {
         suggestions: ['Spicy dishes', 'Grilled foods', 'Energizing spices', 'Red foods'],
         avoid: ['Cold foods', 'Raw dishes in excess', 'Heavy dairy'],
         cookingMethods: ['Grilling', 'Sautéing', 'Roasting', 'Flambéing'],
-        seasonalAlignment: 'Summer foods, warming spices'
+        seasonalAlignment: 'Summer foods, warming spices',
       },
       water: {
-        element: 'Water', 
+        element: 'Water',
         suggestions: ['Soups', 'Stews', 'Hydrating foods', 'Ocean-based proteins'],
         avoid: ['Excessive salt', 'Dehydrating foods', 'Over-spiced dishes'],
         cookingMethods: ['Steaming', 'Poaching', 'Braising', 'Simmering'],
-        seasonalAlignment: 'Fresh seasonal produce, cooling foods'
+        seasonalAlignment: 'Fresh seasonal produce, cooling foods',
       },
       earth: {
         element: 'Earth',
         suggestions: ['Root vegetables', 'Grains', 'Legumes', 'Hearty meals'],
         avoid: ['Processed foods', 'Artificial ingredients', 'Light meals when grounding needed'],
         cookingMethods: ['Slow cooking', 'Baking', 'Roasting', 'Pressure cooking'],
-        seasonalAlignment: 'Seasonal local produce, comfort foods'
+        seasonalAlignment: 'Seasonal local produce, comfort foods',
       },
       air: {
         element: 'Air',
         suggestions: ['Light meals', 'Fresh herbs', 'Salads', 'Fermented foods'],
         avoid: ['Heavy foods', 'Excessive meat', 'Overly rich dishes'],
         cookingMethods: ['Raw preparation', 'Light sautéing', 'Quick cooking', 'Fermentation'],
-        seasonalAlignment: 'Spring foods, light and airy preparations'
-      }
+        seasonalAlignment: 'Spring foods, light and airy preparations',
+      },
     }
 
     return influences[element as keyof typeof influences] || influences.fire
@@ -569,7 +613,10 @@ export class RuneAgentClient {
   /**
    * Emergency fallback with minimal functionality
    */
-  private static getEmergencyFallback(request: RuneGenerationRequest, startTime: number): RuneAgentResult {
+  private static getEmergencyFallback(
+    request: RuneGenerationRequest,
+    startTime: number
+  ): RuneAgentResult {
     return {
       rune: {
         id: `emergency-rune-${Date.now()}`,
@@ -583,8 +630,8 @@ export class RuneAgentClient {
         activationWindow: {
           start: request.datetime,
           end: new Date(request.datetime.getTime() + 3600000),
-          optimalMoment: new Date(request.datetime.getTime() + 1800000)
-        }
+          optimalMoment: new Date(request.datetime.getTime() + 1800000),
+        },
       },
       agent: {
         agentId: 'universal-guide',
@@ -596,19 +643,19 @@ export class RuneAgentClient {
         overallScore: 75,
         reasoning: ['Available as universal guidance'],
         culinarySpecialty: ['Balanced nutrition', 'Mindful eating'],
-        recommendedInteractionStyle: 'conversational'
+        recommendedInteractionStyle: 'conversational',
       },
       synergy: {
         score: 70,
         description: 'Balanced universal guidance available',
-        enhancedCapabilities: ['Basic culinary wisdom']
+        enhancedCapabilities: ['Basic culinary wisdom'],
       },
       metadata: {
         source: 'local_fallback',
         generationTime: Date.now() - startTime,
         datetime: request.datetime.toISOString(),
-        location: `${request.location.latitude},${request.location.longitude}`
-      }
+        location: `${request.location.latitude},${request.location.longitude}`,
+      },
     }
   }
 }

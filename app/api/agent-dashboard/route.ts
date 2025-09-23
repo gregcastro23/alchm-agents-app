@@ -15,19 +15,14 @@ export async function GET(request: NextRequest) {
     const section = searchParams.get('section')
 
     // Get all system metrics
-    const [
-      cacheMetrics,
-      resilienceMetrics,
-      performanceMetrics,
-      systemHealth,
-      consciousnessStats
-    ] = await Promise.all([
-      agentCache.getMetrics(),
-      getResilienceOverview(),
-      agentOptimizer.getPerformanceMetrics(),
-      ApiResilienceSystem.getSystemHealth(),
-      getConsciousnessOverview()
-    ])
+    const [cacheMetrics, resilienceMetrics, performanceMetrics, systemHealth, consciousnessStats] =
+      await Promise.all([
+        agentCache.getMetrics(),
+        getResilienceOverview(),
+        agentOptimizer.getPerformanceMetrics(),
+        ApiResilienceSystem.getSystemHealth(),
+        getConsciousnessOverview(),
+      ])
 
     const dashboard = {
       timestamp: new Date().toISOString(),
@@ -39,9 +34,9 @@ export async function GET(request: NextRequest) {
         metrics: {
           ...cacheMetrics,
           hitRatePercent: Math.round(cacheMetrics.hitRate * 100),
-          missRatePercent: Math.round((1 - cacheMetrics.hitRate) * 100)
+          missRatePercent: Math.round((1 - cacheMetrics.hitRate) * 100),
         },
-        insights: generateCacheInsights(cacheMetrics)
+        insights: generateCacheInsights(cacheMetrics),
       },
 
       // API Resilience
@@ -49,19 +44,19 @@ export async function GET(request: NextRequest) {
         systemHealth: {
           ...systemHealth,
           overallUptimePercent: Math.round(systemHealth.overallUptime * 100),
-          averageResponseTimeMs: Math.round(systemHealth.averageResponseTime)
+          averageResponseTimeMs: Math.round(systemHealth.averageResponseTime),
         },
         apis: resilienceMetrics.apis,
         circuitBreakers: resilienceMetrics.circuitBreakers,
         summary: resilienceMetrics.summary,
-        insights: generateResilienceInsights(systemHealth, resilienceMetrics)
+        insights: generateResilienceInsights(systemHealth, resilienceMetrics),
       },
 
       // Performance Optimization
       performance: {
         metrics: performanceMetrics,
         config: getPerformanceConfig(),
-        insights: generatePerformanceInsights(performanceMetrics)
+        insights: generatePerformanceInsights(performanceMetrics),
       },
 
       // Agent Consciousness
@@ -70,7 +65,7 @@ export async function GET(request: NextRequest) {
         activeAgents: consciousnessStats.activeAgents,
         evolutionMetrics: consciousnessStats.evolutionMetrics,
         topPerformingAgents: consciousnessStats.topPerformingAgents,
-        insights: generateConsciousnessInsights(consciousnessStats)
+        insights: generateConsciousnessInsights(consciousnessStats),
       },
 
       // Overall Recommendations
@@ -78,15 +73,15 @@ export async function GET(request: NextRequest) {
         cache: cacheMetrics,
         resilience: systemHealth,
         performance: performanceMetrics,
-        consciousness: consciousnessStats
+        consciousness: consciousnessStats,
       }),
 
       // Alert Summary
       alerts: generateAlerts({
         cache: cacheMetrics,
         resilience: systemHealth,
-        performance: performanceMetrics
-      })
+        performance: performanceMetrics,
+      }),
     }
 
     // Return specific section if requested
@@ -95,24 +90,26 @@ export async function GET(request: NextRequest) {
         success: true,
         section,
         data: dashboard[section as keyof typeof dashboard],
-        timestamp: dashboard.timestamp
+        timestamp: dashboard.timestamp,
       })
     }
 
     // Return full dashboard
     return NextResponse.json({
       success: true,
-      dashboard
+      dashboard,
     })
-
   } catch (error) {
     console.error('Error generating agent dashboard:', error)
 
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to generate agent dashboard',
-      timestamp: new Date().toISOString()
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to generate agent dashboard',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -129,7 +126,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: true,
           message: 'All caches cleared',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
 
       case 'reset_metrics':
@@ -138,7 +135,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: true,
           message: 'All metrics reset',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
 
       case 'update_performance_config':
@@ -148,36 +145,45 @@ export async function POST(request: NextRequest) {
             success: true,
             message: 'Performance configuration updated',
             newConfig: parameters,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           })
         }
-        return NextResponse.json({
-          success: false,
-          error: 'Parameters required for config update'
-        }, { status: 400 })
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Parameters required for config update',
+          },
+          { status: 400 }
+        )
 
       case 'preload_agents':
         await agentOptimizer.preloadPopularAgents()
         return NextResponse.json({
           success: true,
           message: 'Popular agents preloaded',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
 
       default:
-        return NextResponse.json({
-          success: false,
-          error: 'Invalid action. Supported: clear_all_caches, reset_metrics, update_performance_config, preload_agents'
-        }, { status: 400 })
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              'Invalid action. Supported: clear_all_caches, reset_metrics, update_performance_config, preload_agents',
+          },
+          { status: 400 }
+        )
     }
-
   } catch (error) {
     console.error('Error executing dashboard action:', error)
 
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to execute dashboard action'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to execute dashboard action',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -196,8 +202,11 @@ async function getResilienceOverview() {
         ...metrics,
         uptimePercent: Math.round(metrics.uptime * 100),
         failureRate: Math.round((1 - metrics.uptime) * 100),
-        retryRate: metrics.totalCalls > 0 ? Math.round((metrics.retriedCalls / metrics.totalCalls) * 100) : 0
-      }
+        retryRate:
+          metrics.totalCalls > 0
+            ? Math.round((metrics.retriedCalls / metrics.totalCalls) * 100)
+            : 0,
+      },
     ])
   )
 
@@ -207,8 +216,8 @@ async function getResilienceOverview() {
       {
         ...circuit,
         isOpen: circuit.state === 'OPEN',
-        isHalfOpen: circuit.state === 'HALF_OPEN'
-      }
+        isHalfOpen: circuit.state === 'HALF_OPEN',
+      },
     ])
   )
 
@@ -218,8 +227,8 @@ async function getResilienceOverview() {
     summary: {
       totalApis: Object.keys(metricsObj).length,
       openCircuits: Object.values(circuitsObj).filter((c: any) => c.isOpen).length,
-      halfOpenCircuits: Object.values(circuitsObj).filter((c: any) => c.isHalfOpen).length
-    }
+      halfOpenCircuits: Object.values(circuitsObj).filter((c: any) => c.isHalfOpen).length,
+    },
   }
 }
 
@@ -231,13 +240,13 @@ async function getConsciousnessOverview() {
     evolutionMetrics: {
       averageConsciousnessLevel: 4.2,
       agentsInEvolution: 12,
-      evolutionVelocity: 0.15
+      evolutionVelocity: 0.15,
     },
     topPerformingAgents: [
       { id: 'leonardo-da-vinci', kalchmConstant: 5.2, evolutionStage: 'Advanced' },
       { id: 'william-shakespeare', kalchmConstant: 5.0, evolutionStage: 'Advanced' },
-      { id: 'albert-einstein', kalchmConstant: 4.8, evolutionStage: 'Developing' }
-    ]
+      { id: 'albert-einstein', kalchmConstant: 4.8, evolutionStage: 'Developing' },
+    ],
   }
 }
 
@@ -245,9 +254,9 @@ function getPerformanceConfig() {
   return {
     maxConcurrentAgents: 10,
     streamingEnabled: true,
-    prioritizeByKalchm: true,  // Corrected to use Kalchm equilibrium dynamics
+    prioritizeByKalchm: true, // Corrected to use Kalchm equilibrium dynamics
     batchOptimizationEnabled: true,
-    preloadPopularAgents: true
+    preloadPopularAgents: true,
   }
 }
 
@@ -255,7 +264,11 @@ function determineOverallStatus(cache: any, resilience: any, performance: any) {
   if (resilience.status === 'UNHEALTHY' || performance.cacheHitRatePercent < 20) {
     return 'CRITICAL'
   }
-  if (resilience.status === 'DEGRADED' || cache.hitRate < 0.5 || performance.averageBatchTimeSeconds > 10) {
+  if (
+    resilience.status === 'DEGRADED' ||
+    cache.hitRate < 0.5 ||
+    performance.averageBatchTimeSeconds > 10
+  ) {
     return 'WARNING'
   }
   return 'HEALTHY'
@@ -361,14 +374,14 @@ function generateOverallRecommendations(systems: any): string[] {
   return recommendations
 }
 
-function generateAlerts(systems: any): Array<{level: string, message: string, system: string}> {
-  const alerts: Array<{level: string, message: string, system: string}> = []
+function generateAlerts(systems: any): Array<{ level: string; message: string; system: string }> {
+  const alerts: Array<{ level: string; message: string; system: string }> = []
 
   if (systems.resilience.status === 'UNHEALTHY') {
     alerts.push({
       level: 'CRITICAL',
       message: 'API resilience system reporting unhealthy status',
-      system: 'resilience'
+      system: 'resilience',
     })
   }
 
@@ -376,7 +389,7 @@ function generateAlerts(systems: any): Array<{level: string, message: string, sy
     alerts.push({
       level: 'WARNING',
       message: 'Very low cache hit rate detected',
-      system: 'cache'
+      system: 'cache',
     })
   }
 
@@ -384,7 +397,7 @@ function generateAlerts(systems: any): Array<{level: string, message: string, sy
     alerts.push({
       level: 'WARNING',
       message: 'High batch processing times detected',
-      system: 'performance'
+      system: 'performance',
     })
   }
 

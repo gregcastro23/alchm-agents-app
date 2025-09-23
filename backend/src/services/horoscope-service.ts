@@ -39,16 +39,40 @@ export function generateAccurateHoroscope(birthData: any): HoroscopeData {
     let ascendant = sign
     if (birthData.birthTime) {
       const birthHour = parseInt(birthData.birthTime.split(':')[0])
-      const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-                    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+      const signs = [
+        'Aries',
+        'Taurus',
+        'Gemini',
+        'Cancer',
+        'Leo',
+        'Virgo',
+        'Libra',
+        'Scorpio',
+        'Sagittarius',
+        'Capricorn',
+        'Aquarius',
+        'Pisces',
+      ]
       const ascIndex = (signs.indexOf(sign) + Math.floor(birthHour / 2)) % 12
       ascendant = signs[ascIndex]
     }
 
     // Generate simplified house positions
     const houses: Record<number, string> = {}
-    const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-                  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+    const signs = [
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
+    ]
     const startIndex = signs.indexOf(ascendant)
 
     for (let i = 1; i <= 12; i++) {
@@ -66,13 +90,13 @@ export function generateAccurateHoroscope(birthData: any): HoroscopeData {
       ascendant,
       houses,
       aspects,
-      summary
+      summary,
     }
   } catch (error) {
     logger.error('Error generating horoscope:', error)
     return {
       sign: 'Aries',
-      summary: 'Unable to calculate precise horoscope at this time.'
+      summary: 'Unable to calculate precise horoscope at this time.',
     }
   }
 }
@@ -80,10 +104,18 @@ export function generateAccurateHoroscope(birthData: any): HoroscopeData {
 function generateAspects(sign: string): string[] {
   const aspects = []
   const signElements: Record<string, string> = {
-    'Aries': 'Fire', 'Leo': 'Fire', 'Sagittarius': 'Fire',
-    'Taurus': 'Earth', 'Virgo': 'Earth', 'Capricorn': 'Earth',
-    'Gemini': 'Air', 'Libra': 'Air', 'Aquarius': 'Air',
-    'Cancer': 'Water', 'Scorpio': 'Water', 'Pisces': 'Water'
+    Aries: 'Fire',
+    Leo: 'Fire',
+    Sagittarius: 'Fire',
+    Taurus: 'Earth',
+    Virgo: 'Earth',
+    Capricorn: 'Earth',
+    Gemini: 'Air',
+    Libra: 'Air',
+    Aquarius: 'Air',
+    Cancer: 'Water',
+    Scorpio: 'Water',
+    Pisces: 'Water',
   }
 
   const element = signElements[sign] || 'Fire'
@@ -106,18 +138,18 @@ function generateAspects(sign: string): string[] {
 
 function getSignDescription(sign: string): string {
   const descriptions: Record<string, string> = {
-    'Aries': 'Pioneer spirit with natural leadership qualities.',
-    'Taurus': 'Grounded and practical with appreciation for beauty.',
-    'Gemini': 'Curious and communicative with versatile talents.',
-    'Cancer': 'Intuitive and nurturing with deep emotional wisdom.',
-    'Leo': 'Creative and confident with natural charisma.',
-    'Virgo': 'Analytical and detail-oriented with healing abilities.',
-    'Libra': 'Diplomatic and artistic with strong sense of justice.',
-    'Scorpio': 'Intense and transformative with penetrating insight.',
-    'Sagittarius': 'Adventurous and philosophical with expansive vision.',
-    'Capricorn': 'Ambitious and disciplined with mastery orientation.',
-    'Aquarius': 'Innovative and humanitarian with unique perspective.',
-    'Pisces': 'Compassionate and mystical with artistic sensitivity.'
+    Aries: 'Pioneer spirit with natural leadership qualities.',
+    Taurus: 'Grounded and practical with appreciation for beauty.',
+    Gemini: 'Curious and communicative with versatile talents.',
+    Cancer: 'Intuitive and nurturing with deep emotional wisdom.',
+    Leo: 'Creative and confident with natural charisma.',
+    Virgo: 'Analytical and detail-oriented with healing abilities.',
+    Libra: 'Diplomatic and artistic with strong sense of justice.',
+    Scorpio: 'Intense and transformative with penetrating insight.',
+    Sagittarius: 'Adventurous and philosophical with expansive vision.',
+    Capricorn: 'Ambitious and disciplined with mastery orientation.',
+    Aquarius: 'Innovative and humanitarian with unique perspective.',
+    Pisces: 'Compassionate and mystical with artistic sensitivity.',
   }
 
   return descriptions[sign] || 'A unique individual on a consciousness journey.'

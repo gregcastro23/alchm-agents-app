@@ -273,7 +273,10 @@ export function computeElementalMomentum(
         Earth: previous.inertia * previous.v.Earth,
       }
       const prevMagnitude = Math.sqrt(
-        prevP.Fire * prevP.Fire + prevP.Water * prevP.Water + prevP.Air * prevP.Air + prevP.Earth * prevP.Earth
+        prevP.Fire * prevP.Fire +
+          prevP.Water * prevP.Water +
+          prevP.Air * prevP.Air +
+          prevP.Earth * prevP.Earth
       )
       const dMag = magnitude - prevMagnitude
       const dInertia = current.inertia - previous.inertia
@@ -353,7 +356,7 @@ export function computeInertia(input: {
 /**
  * Validates that kinetic quantities follow proper calculus relationships:
  * 1. Velocity = dx/dt (position derivative)
- * 2. Momentum = mass × velocity 
+ * 2. Momentum = mass × velocity
  * 3. Power = dE/dt (energy derivative)
  * 4. Acceleration = dv/dt (velocity derivative)
  * 5. Force = dp/dt (momentum derivative) = mass × acceleration
@@ -395,13 +398,13 @@ export function validateCalculusRelationships(
     for (const element of ['Fire', 'Water', 'Air', 'Earth'] as ElementKey[]) {
       const expectedVelocity = (current.elements[element] - previous.elements[element]) / dt
       const actualVelocity = current.velocity[element]
-      
+
       // Allow for planetary modifiers (up to 30% difference)
       const tolerance = Math.abs(expectedVelocity) * 0.35 + 0.001
       if (Math.abs(actualVelocity - expectedVelocity) > tolerance) {
         warnings.push(
           `${element} velocity mismatch at t=${current.t.toISOString()}: ` +
-          `expected ${expectedVelocity.toFixed(4)}, got ${actualVelocity.toFixed(4)}`
+            `expected ${expectedVelocity.toFixed(4)}, got ${actualVelocity.toFixed(4)}`
         )
       }
     }
@@ -410,12 +413,12 @@ export function validateCalculusRelationships(
     for (const element of ['Fire', 'Water', 'Air', 'Earth'] as ElementKey[]) {
       const expectedMomentum = current.inertia * current.velocity[element]
       const actualMomentum = current.momentum[element]
-      
+
       const tolerance = Math.abs(expectedMomentum) * 0.01 + 0.001
       if (Math.abs(actualMomentum - expectedMomentum) > tolerance) {
         errors.push(
           `${element} momentum calculation error at t=${current.t.toISOString()}: ` +
-          `expected ${expectedMomentum.toFixed(4)}, got ${actualMomentum.toFixed(4)}`
+            `expected ${expectedMomentum.toFixed(4)}, got ${actualMomentum.toFixed(4)}`
         )
       }
     }
@@ -423,13 +426,13 @@ export function validateCalculusRelationships(
     // Validate power = dE/dt
     const expectedPower = (current.energy - previous.energy) / dt
     const actualPower = current.power
-    
+
     // Allow for solar amplification (up to 30% boost)
     const powerTolerance = Math.abs(expectedPower) * 0.35 + 0.001
     if (Math.abs(actualPower - expectedPower) > powerTolerance) {
       warnings.push(
         `Power calculation mismatch at t=${current.t.toISOString()}: ` +
-        `expected ${expectedPower.toFixed(4)}, got ${actualPower.toFixed(4)}`
+          `expected ${expectedPower.toFixed(4)}, got ${actualPower.toFixed(4)}`
       )
     }
 
@@ -440,9 +443,9 @@ export function validateCalculusRelationships(
       ...Object.values(current.momentum),
       current.inertia,
       current.energy,
-      current.power
+      current.power,
     ]
-    
+
     for (const value of allValues) {
       if (!Number.isFinite(value)) {
         errors.push(`Non-finite value detected at t=${current.t.toISOString()}: ${value}`)
@@ -453,7 +456,7 @@ export function validateCalculusRelationships(
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   }
 }
 
@@ -519,7 +522,6 @@ export function validateKineticResults(
     if (maxEl === 'Fire') countByHour[hour].fireLead += 1
     countByHour[hour].total += 1
   })
-
   ;(kinetics.power ?? []).forEach((s: any) => {
     const hour = s.planetaryHour ?? s.hour ?? 'unknown'
     if (!countByHour[hour])

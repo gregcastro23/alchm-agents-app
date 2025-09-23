@@ -64,7 +64,9 @@ export async function calculateEnhancedKinetics(
 }> {
   try {
     const now = new Date()
-    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24))
+    const dayOfYear = Math.floor(
+      (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24)
+    )
 
     // Calculate power for each hour of the day
     const powerData = []
@@ -89,7 +91,7 @@ export async function calculateEnhancedKinetics(
       powerData.push({
         hour,
         power: Math.round(power * 1000) / 1000,
-        planetary: planetaryHour
+        planetary: planetaryHour,
       })
     }
 
@@ -103,11 +105,11 @@ export async function calculateEnhancedKinetics(
       power: powerData,
       timing: {
         planetaryHours: [...new Set(planetaryHours)],
-        seasonalInfluence: season
+        seasonalInfluence: season,
       },
       elemental: {
-        totals: elementalTotals
-      }
+        totals: elementalTotals,
+      },
     }
 
     const result: any = { base: baseKinetics }
@@ -170,18 +172,15 @@ export function calculateGroupDynamics(
       const synergyModifier = 0.9 + (index / Math.max(groupSize - 1, 1)) * 0.1
 
       resonances[agentId] = {
-        individualContribution: 0.4 + (planetaryPowers[index] * 0.3),
-        groupSynergy: harmony * synergyModifier
+        individualContribution: 0.4 + planetaryPowers[index] * 0.3,
+        groupSynergy: harmony * synergyModifier,
       }
     })
 
     // Generate optimal configuration
     const optimalConfiguration = {
       recommended: agentIds.slice(0, Math.ceil(groupSize * 0.7)),
-      alternativeArrangements: [
-        [...agentIds].reverse(),
-        [...agentIds].sort()
-      ]
+      alternativeArrangements: [[...agentIds].reverse(), [...agentIds].sort()],
     }
 
     return {
@@ -189,7 +188,7 @@ export function calculateGroupDynamics(
       powerAmplification: Math.round(powerAmplification * 1000) / 1000,
       momentumFlow,
       resonances,
-      optimalConfiguration
+      optimalConfiguration,
     }
   } catch (error) {
     logger.error('Error calculating group dynamics:', error)
@@ -208,14 +207,16 @@ export function calculateTokenKinetics(
   try {
     const now = new Date()
     const timeOfDay = now.getHours()
-    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24))
+    const dayOfYear = Math.floor(
+      (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24)
+    )
 
     // Get current planetary hour for kinetic calculation
     const currentPlanet = getPlanetaryHour(now, location.lat)
     const planetaryPower = getPlanetaryPower(currentPlanet)
 
     // Calculate kinetic multiplier based on planetary power
-    const kineticMultiplier = 0.8 + (planetaryPower * 0.6)
+    const kineticMultiplier = 0.8 + planetaryPower * 0.6
 
     // Apply time-based variations
     const timeMultiplier = 1 + 0.3 * Math.sin((timeOfDay * Math.PI) / 12)
@@ -229,12 +230,15 @@ export function calculateTokenKinetics(
     const powerLevel = Math.min(1.0, (currentRate / baseTokenRate) * 0.7 + planetaryPower * 0.3)
 
     // Determine velocity and momentum
-    const velocityIndicator = powerLevel > 0.7 ? 'accelerating' : powerLevel > 0.4 ? 'stable' : 'decelerating'
+    const velocityIndicator =
+      powerLevel > 0.7 ? 'accelerating' : powerLevel > 0.4 ? 'stable' : 'decelerating'
     const momentumPhase = powerLevel > 0.8 ? 'peak' : powerLevel > 0.6 ? 'building' : 'sustained'
 
     // Predict next optimal window
     const nextOptimalHours = Math.floor(3 + planetaryPower * 5)
-    const nextOptimalWindow = new Date(now.getTime() + nextOptimalHours * 60 * 60 * 1000).toISOString()
+    const nextOptimalWindow = new Date(
+      now.getTime() + nextOptimalHours * 60 * 60 * 1000
+    ).toISOString()
 
     // Accumulation forecast
     let accumulationForecast = 'Stable'
@@ -252,7 +256,7 @@ export function calculateTokenKinetics(
       accumulationForecast,
       solarAmplification: Math.round(solarAmplification * 1000) / 1000,
       seasonalModifier: Math.round(seasonalModifier * 1000) / 1000,
-      rarityBonus: baseNFTRarity * (1 + powerLevel * 0.3)
+      rarityBonus: baseNFTRarity * (1 + powerLevel * 0.3),
     }
   } catch (error) {
     logger.error('Error calculating token kinetics:', error)
@@ -264,13 +268,13 @@ export function calculateTokenKinetics(
 
 function getPlanetaryPower(planet: string): number {
   const powers: Record<string, number> = {
-    'Sun': 1.0,
-    'Moon': 0.7,
-    'Mars': 0.8,
-    'Mercury': 0.6,
-    'Jupiter': 0.9,
-    'Venus': 0.75,
-    'Saturn': 0.5
+    Sun: 1.0,
+    Moon: 0.7,
+    Mars: 0.8,
+    Mercury: 0.6,
+    Jupiter: 0.9,
+    Venus: 0.75,
+    Saturn: 0.5,
   }
   return powers[planet] || 0.5
 }
@@ -289,20 +293,20 @@ function calculateElementalDistribution(planetaryHours: string[]): {
   Earth: number
 } {
   const elementalMap: Record<string, string> = {
-    'Sun': 'Fire',
-    'Moon': 'Water',
-    'Mars': 'Fire',
-    'Mercury': 'Air',
-    'Jupiter': 'Fire',
-    'Venus': 'Earth',
-    'Saturn': 'Earth'
+    Sun: 'Fire',
+    Moon: 'Water',
+    Mars: 'Fire',
+    Mercury: 'Air',
+    Jupiter: 'Fire',
+    Venus: 'Earth',
+    Saturn: 'Earth',
   }
 
   const counts = {
     Fire: 0,
     Water: 0,
     Air: 0,
-    Earth: 0
+    Earth: 0,
   }
 
   planetaryHours.forEach(planet => {
@@ -328,8 +332,7 @@ function calculateAgentOptimization(
   // Determine recommended agents based on elemental balance
   const recommendedAgents = []
 
-  const dominantElement = Object.entries(elementalTotals)
-    .sort(([, a], [, b]) => b - a)[0][0]
+  const dominantElement = Object.entries(elementalTotals).sort(([, a], [, b]) => b - a)[0][0]
 
   if (dominantElement === 'Fire') {
     recommendedAgents.push('mars', 'sun')
@@ -353,7 +356,7 @@ function calculateAgentOptimization(
   return {
     recommendedAgents,
     powerAmplification: Math.round(powerAmplification * 100) / 100,
-    harmonyScore: Math.round(harmonyScore * 100) / 100
+    harmonyScore: Math.round(harmonyScore * 100) / 100,
   }
 }
 
@@ -369,7 +372,10 @@ function calculatePowerPrediction(
   }
 
   // Find next peak
-  const peakPower = futurePowers.reduce((max, p) => p.power > max.power ? p : max, futurePowers[0])
+  const peakPower = futurePowers.reduce(
+    (max, p) => (p.power > max.power ? p : max),
+    futurePowers[0]
+  )
   const nextPeak = new Date(currentTime)
   nextPeak.setHours(peakPower.hour, 0, 0, 0)
   if (peakPower.hour <= currentHour) {
@@ -386,13 +392,14 @@ function calculatePowerPrediction(
   else trend = 'stable'
 
   // Calculate confidence based on planetary consistency
-  const planetaryConsistency = powerData.filter(p => p.planetary === powerData[currentHour].planetary).length / 24
+  const planetaryConsistency =
+    powerData.filter(p => p.planetary === powerData[currentHour].planetary).length / 24
   const confidence = 0.5 + planetaryConsistency * 0.5
 
   return {
     nextPeak: nextPeak.toISOString(),
     trend,
-    confidence: Math.round(confidence * 100) / 100
+    confidence: Math.round(confidence * 100) / 100,
   }
 }
 
@@ -405,13 +412,13 @@ function calculateResonanceMap(
   // Agent elemental affinities
   const agentElements: Record<string, string> = {
     'leonardo-da-vinci': 'Air',
-    'cleopatra': 'Water',
-    'einstein': 'Air',
+    cleopatra: 'Water',
+    einstein: 'Air',
     'marie-curie': 'Earth',
-    'shakespeare': 'Fire',
+    shakespeare: 'Fire',
     'joan-of-arc': 'Fire',
-    'tesla': 'Air',
-    'maya-angelou': 'Water'
+    tesla: 'Air',
+    'maya-angelou': 'Water',
   }
 
   agentIds.forEach(agentId => {
@@ -428,7 +435,7 @@ function calculateResonanceMap(
 
     resonanceMap[agentId] = {
       resonance: Math.round(resonance * 100) / 100,
-      compatibility: Math.round(compatibility * 100) / 100
+      compatibility: Math.round(compatibility * 100) / 100,
     }
   })
 

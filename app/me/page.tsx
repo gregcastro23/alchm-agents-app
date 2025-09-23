@@ -17,21 +17,21 @@ export const dynamic = 'force-dynamic'
 
 export default async function MePage() {
   const session = await auth()
-  
+
   // Allow anonymous access with guest experience
   if (!session?.user?.id) {
     return (
       <div className="container mx-auto py-8 space-y-6">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-            👤
-          </div>
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">👤</div>
           <div>
             <h1 className="text-2xl font-bold">Welcome, Guest Explorer</h1>
-            <p className="text-muted-foreground">Create an account to save your personalized astrological profile.</p>
+            <p className="text-muted-foreground">
+              Create an account to save your personalized astrological profile.
+            </p>
           </div>
         </div>
-        
+
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Guest Experience</h2>
           <p className="text-muted-foreground mb-4">
@@ -66,13 +66,21 @@ export default async function MePage() {
       <div className="container mx-auto py-8 space-y-6">
         <div className="flex items-center gap-4">
           {session.user.image ? (
-            <Image src={session.user.image} alt={session.user.name || 'You'} width={48} height={48} className="rounded-full" />
+            <Image
+              src={session.user.image}
+              alt={session.user.name || 'You'}
+              width={48}
+              height={48}
+              className="rounded-full"
+            />
           ) : (
             <div className="w-12 h-12 rounded-full bg-muted" />
           )}
           <div>
             <h1 className="text-2xl font-bold">Welcome, {session.user.name || 'Explorer'}</h1>
-            <p className="text-muted-foreground">Let's personalize your Alchm with your birth details.</p>
+            <p className="text-muted-foreground">
+              Let's personalize your Alchm with your birth details.
+            </p>
           </div>
         </div>
         <ProfileOnboardingForm />
@@ -83,13 +91,13 @@ export default async function MePage() {
   // Compute natal/alchemical summary using existing utilities
   let alchm: any = {}
   let computationError: string | null = null
-  
+
   try {
     const birth = profile.birthInfo as any
     if (!birth || typeof birth !== 'object') {
       throw new Error('Invalid birth info format')
     }
-    
+
     // Validate required birth data
     const requiredFields = ['year', 'month', 'day', 'hour', 'minute']
     for (const field of requiredFields) {
@@ -97,7 +105,7 @@ export default async function MePage() {
         throw new Error(`Missing or invalid ${field} in birth info`)
       }
     }
-    
+
     // birth.month expected 0-based in codebase; horoscope expects 1-12
     const horoscope = generateAccurateHoroscope({
       year: birth.year,
@@ -108,7 +116,7 @@ export default async function MePage() {
       latitude: birth.latitude ?? 0,
       longitude: birth.longitude ?? 0,
     })
-    
+
     alchm = alchemize(birth, horoscope)
   } catch (error: any) {
     console.error('Alchemical computation error:', error)
@@ -162,7 +170,13 @@ export default async function MePage() {
     <div className="container mx-auto py-8 space-y-6">
       <div className="flex items-center gap-4">
         {session.user.image ? (
-          <Image src={session.user.image} alt={session.user.name || 'You'} width={56} height={56} className="rounded-full" />
+          <Image
+            src={session.user.image}
+            alt={session.user.name || 'You'}
+            width={56}
+            height={56}
+            className="rounded-full"
+          />
         ) : (
           <div className="w-14 h-14 rounded-full bg-muted" />
         )}
@@ -191,7 +205,8 @@ export default async function MePage() {
         <Badge>Monica Constant: {monicaConstant.toFixed(3)}</Badge>
         {profile.birthInfo && (
           <Badge variant="outline">
-            Born: {new Date(
+            Born:{' '}
+            {new Date(
               (profile.birthInfo as any).year,
               (profile.birthInfo as any).month,
               (profile.birthInfo as any).day
@@ -223,9 +238,7 @@ export default async function MePage() {
         <Card>
           <CardHeader>
             <CardTitle>Alchemical Profile</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Your consciousness signature
-            </p>
+            <p className="text-sm text-muted-foreground">Your consciousness signature</p>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Core Alchemical Values */}
@@ -326,9 +339,11 @@ export default async function MePage() {
                 <div className="text-lg font-bold text-red-600">{spirit.toFixed(1)}</div>
                 <div className="text-xs text-muted-foreground">Spirit</div>
                 <div className="w-full bg-red-100 rounded-full h-2 mt-1">
-                  <div 
-                    className="bg-red-500 h-2 rounded-full" 
-                    style={{ width: `${Math.min(100, (spirit / Math.max(spirit, essence, matter, substance)) * 100)}%` }}
+                  <div
+                    className="bg-red-500 h-2 rounded-full"
+                    style={{
+                      width: `${Math.min(100, (spirit / Math.max(spirit, essence, matter, substance)) * 100)}%`,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -336,9 +351,11 @@ export default async function MePage() {
                 <div className="text-lg font-bold text-blue-600">{essence.toFixed(1)}</div>
                 <div className="text-xs text-muted-foreground">Essence</div>
                 <div className="w-full bg-blue-100 rounded-full h-2 mt-1">
-                  <div 
-                    className="bg-blue-500 h-2 rounded-full" 
-                    style={{ width: `${Math.min(100, (essence / Math.max(spirit, essence, matter, substance)) * 100)}%` }}
+                  <div
+                    className="bg-blue-500 h-2 rounded-full"
+                    style={{
+                      width: `${Math.min(100, (essence / Math.max(spirit, essence, matter, substance)) * 100)}%`,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -346,9 +363,11 @@ export default async function MePage() {
                 <div className="text-lg font-bold text-green-600">{matter.toFixed(1)}</div>
                 <div className="text-xs text-muted-foreground">Matter</div>
                 <div className="w-full bg-green-100 rounded-full h-2 mt-1">
-                  <div 
-                    className="bg-green-500 h-2 rounded-full" 
-                    style={{ width: `${Math.min(100, (matter / Math.max(spirit, essence, matter, substance)) * 100)}%` }}
+                  <div
+                    className="bg-green-500 h-2 rounded-full"
+                    style={{
+                      width: `${Math.min(100, (matter / Math.max(spirit, essence, matter, substance)) * 100)}%`,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -356,9 +375,11 @@ export default async function MePage() {
                 <div className="text-lg font-bold text-yellow-600">{substance.toFixed(1)}</div>
                 <div className="text-xs text-muted-foreground">Substance</div>
                 <div className="w-full bg-yellow-100 rounded-full h-2 mt-1">
-                  <div 
-                    className="bg-yellow-500 h-2 rounded-full" 
-                    style={{ width: `${Math.min(100, (substance / Math.max(spirit, essence, matter, substance)) * 100)}%` }}
+                  <div
+                    className="bg-yellow-500 h-2 rounded-full"
+                    style={{
+                      width: `${Math.min(100, (substance / Math.max(spirit, essence, matter, substance)) * 100)}%`,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -369,9 +390,14 @@ export default async function MePage() {
               <div className="text-2xl font-bold">{monicaConstant.toFixed(3)}</div>
               <div className="text-sm text-muted-foreground">Monica Constant</div>
               <div className="text-xs mt-1">
-                {monicaConstant < 1 ? 'Foundational' : 
-                 monicaConstant < 2 ? 'Developing' : 
-                 monicaConstant < 3 ? 'Advanced' : 'Transcendent'} Level
+                {monicaConstant < 1
+                  ? 'Foundational'
+                  : monicaConstant < 2
+                    ? 'Developing'
+                    : monicaConstant < 3
+                      ? 'Advanced'
+                      : 'Transcendent'}{' '}
+                Level
               </div>
             </div>
 
@@ -409,7 +435,7 @@ export default async function MePage() {
             Heat: safeAlchm.Heat,
             Energy: safeAlchm.EnergyValue,
             Entropy: safeAlchm.Entropy,
-            Reactivity: safeAlchm.Reactivity
+            Reactivity: safeAlchm.Reactivity,
           }}
           birthMC={monicaConstant}
         />
@@ -418,43 +444,48 @@ export default async function MePage() {
         <Card>
           <CardHeader>
             <CardTitle>Chart Insights</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Key patterns and recommendations
-            </p>
+            <p className="text-sm text-muted-foreground">Key patterns and recommendations</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
               <div>
                 <h4 className="font-medium text-sm mb-1">Dominant Patterns</h4>
                 <div className="text-sm text-muted-foreground">
-                  Your {dominantElement.toLowerCase()} dominance suggests a natural affinity for {
-                    dominantElement === 'Fire' ? 'creativity and leadership' :
-                    dominantElement === 'Water' ? 'intuition and emotional depth' :
-                    dominantElement === 'Air' ? 'communication and ideas' :
-                    'stability and practical manifestation'
-                  }.
+                  Your {dominantElement.toLowerCase()} dominance suggests a natural affinity for{' '}
+                  {dominantElement === 'Fire'
+                    ? 'creativity and leadership'
+                    : dominantElement === 'Water'
+                      ? 'intuition and emotional depth'
+                      : dominantElement === 'Air'
+                        ? 'communication and ideas'
+                        : 'stability and practical manifestation'}
+                  .
                 </div>
               </div>
-              
+
               <div>
                 <h4 className="font-medium text-sm mb-1">Monica Constant Analysis</h4>
                 <div className="text-sm text-muted-foreground">
-                  At {monicaConstant.toFixed(3)}, your consciousness operates at a {
-                    monicaConstant < 1 ? 'foundational' :
-                    monicaConstant < 2 ? 'developing' :
-                    monicaConstant < 3 ? 'advanced' : 'transcendent'
-                  } level with strong potential for growth.
+                  At {monicaConstant.toFixed(3)}, your consciousness operates at a{' '}
+                  {monicaConstant < 1
+                    ? 'foundational'
+                    : monicaConstant < 2
+                      ? 'developing'
+                      : monicaConstant < 3
+                        ? 'advanced'
+                        : 'transcendent'}{' '}
+                  level with strong potential for growth.
                 </div>
               </div>
 
               <div>
                 <h4 className="font-medium text-sm mb-1">Alchemical Balance</h4>
                 <div className="text-sm text-muted-foreground">
-                  Your Spirit/Essence ratio of {(spirit/Math.max(essence, 0.1)).toFixed(2)} indicates {
-                    spirit > essence ? 'active initiation energy' : 'receptive integration capacity'
-                  }, while your Matter/Substance foundation provides {
-                    matter > substance ? 'structural stability' : 'connective flexibility'
-                  }.
+                  Your Spirit/Essence ratio of {(spirit / Math.max(essence, 0.1)).toFixed(2)}{' '}
+                  indicates{' '}
+                  {spirit > essence ? 'active initiation energy' : 'receptive integration capacity'}
+                  , while your Matter/Substance foundation provides{' '}
+                  {matter > substance ? 'structural stability' : 'connective flexibility'}.
                 </div>
               </div>
 
@@ -470,5 +501,3 @@ export default async function MePage() {
     </div>
   )
 }
-
-

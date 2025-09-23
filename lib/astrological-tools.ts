@@ -249,7 +249,7 @@ export const calculateElementalInfo = {
     // Call the alchemizer with birth info and mock horoscope
     const birthInfoForAlchemizer = {
       ...birthInfo,
-      hour: hour,
+      hour,
     }
 
     const alchemicalInfo = alchemize(birthInfoForAlchemizer, mockHoroscope)

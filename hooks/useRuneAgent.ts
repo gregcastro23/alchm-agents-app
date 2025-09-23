@@ -4,7 +4,13 @@
  */
 
 import { useState, useCallback, useEffect } from 'react'
-import { RuneAgentClient, RuneGenerationRequest, RuneOfTheMoment, AgentRecommendation, RuneAgentResult } from '@/lib/clients/rune-agent-client'
+import {
+  RuneAgentClient,
+  RuneGenerationRequest,
+  RuneOfTheMoment,
+  AgentRecommendation,
+  RuneAgentResult,
+} from '@/lib/clients/rune-agent-client'
 
 interface UseRuneAgentOptions {
   autoGenerate?: boolean
@@ -26,10 +32,10 @@ interface UseRuneAgentReturn {
 }
 
 export function useRuneAgent(options: UseRuneAgentOptions = {}): UseRuneAgentReturn {
-  const { 
-    autoGenerate = false, 
+  const {
+    autoGenerate = false,
     defaultLocation = { latitude: 37.7749, longitude: -122.4194 },
-    refreshInterval 
+    refreshInterval,
   } = options
 
   const [rune, setRune] = useState<RuneOfTheMoment | null>(null)
@@ -40,92 +46,100 @@ export function useRuneAgent(options: UseRuneAgentOptions = {}): UseRuneAgentRet
   const [error, setError] = useState<string | null>(null)
   const [lastRequest, setLastRequest] = useState<RuneGenerationRequest | null>(null)
 
-  const generateComplete = useCallback(async (partialRequest?: Partial<RuneGenerationRequest>) => {
-    setLoading(true)
-    setError(null)
+  const generateComplete = useCallback(
+    async (partialRequest?: Partial<RuneGenerationRequest>) => {
+      setLoading(true)
+      setError(null)
 
-    try {
-      const request: RuneGenerationRequest = {
-        datetime: new Date(),
-        location: defaultLocation,
-        context: 'cuisine',
-        preferences: {
-          intensity: 'moderate'
-        },
-        ...partialRequest
+      try {
+        const request: RuneGenerationRequest = {
+          datetime: new Date(),
+          location: defaultLocation,
+          context: 'cuisine',
+          preferences: {
+            intensity: 'moderate',
+          },
+          ...partialRequest,
+        }
+
+        setLastRequest(request)
+
+        const result = await RuneAgentClient.generateComplete(request)
+
+        setRune(result.rune)
+        setAgent(result.agent)
+        setSynergy(result.synergy)
+        setMetadata(result.metadata)
+
+        console.log(
+          `Rune/Agent generation completed via ${result.metadata.source} in ${result.metadata.generationTime}ms`
+        )
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Rune/Agent generation failed'
+        setError(errorMessage)
+        console.error('Rune/Agent generation error:', err)
+      } finally {
+        setLoading(false)
       }
+    },
+    [defaultLocation]
+  )
 
-      setLastRequest(request)
+  const generateRune = useCallback(
+    async (partialRequest?: Partial<RuneGenerationRequest>) => {
+      setLoading(true)
+      setError(null)
 
-      const result = await RuneAgentClient.generateComplete(request)
-      
-      setRune(result.rune)
-      setAgent(result.agent)
-      setSynergy(result.synergy)
-      setMetadata(result.metadata)
-      
-      console.log(`Rune/Agent generation completed via ${result.metadata.source} in ${result.metadata.generationTime}ms`)
-      
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Rune/Agent generation failed'
-      setError(errorMessage)
-      console.error('Rune/Agent generation error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [defaultLocation])
+      try {
+        const request: RuneGenerationRequest = {
+          datetime: new Date(),
+          location: defaultLocation,
+          context: 'cuisine',
+          ...partialRequest,
+        }
 
-  const generateRune = useCallback(async (partialRequest?: Partial<RuneGenerationRequest>) => {
-    setLoading(true)
-    setError(null)
+        const runeResult = await RuneAgentClient.generateRune(request)
+        setRune(runeResult)
 
-    try {
-      const request: RuneGenerationRequest = {
-        datetime: new Date(),
-        location: defaultLocation,
-        context: 'cuisine',
-        ...partialRequest
+        console.log(`Rune generation completed`)
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Rune generation failed'
+        setError(errorMessage)
+        console.error('Rune generation error:', err)
+      } finally {
+        setLoading(false)
       }
+    },
+    [defaultLocation]
+  )
 
-      const runeResult = await RuneAgentClient.generateRune(request)
-      setRune(runeResult)
-      
-      console.log(`Rune generation completed`)
-      
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Rune generation failed'
-      setError(errorMessage)
-      console.error('Rune generation error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [defaultLocation])
+  const generateAgent = useCallback(
+    async (partialRequest?: Partial<RuneGenerationRequest>) => {
+      setLoading(true)
+      setError(null)
 
-  const generateAgent = useCallback(async (partialRequest?: Partial<RuneGenerationRequest>) => {
-    setLoading(true)
-    setError(null)
+      try {
+        const request: RuneGenerationRequest = {
+          datetime: new Date(),
+          location: defaultLocation,
+          context: 'cuisine',
+          ...partialRequest,
+        }
 
-    try {
-      const request: RuneGenerationRequest = {
-        datetime: new Date(),
-        location: defaultLocation,
-        context: 'cuisine',
-        ...partialRequest
+        const agentResult = await RuneAgentClient.getAgentRecommendation(request)
+        setAgent(agentResult)
+
+        console.log(`Agent recommendation completed`)
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Agent recommendation failed'
+        setError(errorMessage)
+        console.error('Agent recommendation error:', err)
+      } finally {
+        setLoading(false)
       }
-
-      const agentResult = await RuneAgentClient.getAgentRecommendation(request)
-      setAgent(agentResult)
-      
-      console.log(`Agent recommendation completed`)
-      
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Agent recommendation failed'
-      setError(errorMessage)
-      console.error('Agent recommendation error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [defaultLocation])
+    },
+    [defaultLocation]
+  )
 
   const refresh = useCallback(async () => {
     if (lastRequest) {
@@ -163,6 +177,6 @@ export function useRuneAgent(options: UseRuneAgentOptions = {}): UseRuneAgentRet
     generateComplete,
     generateRune,
     generateAgent,
-    refresh
+    refresh,
   }
 }

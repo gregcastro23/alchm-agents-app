@@ -14,12 +14,12 @@ class CacheService {
 
   async connect(): Promise<void> {
     const redisUrl = process.env.REDIS_URL
-    
+
     if (redisUrl) {
       try {
         this.redisClient = createClient({ url: redisUrl })
-        
-        this.redisClient.on('error', (err) => {
+
+        this.redisClient.on('error', err => {
           logger.error('Redis client error:', err)
           this.isRedisConnected = false
         })
@@ -48,24 +48,27 @@ class CacheService {
 
   private setupMemoryCache(): void {
     logger.info('Cache service initialized with memory fallback')
-    
+
     // Cleanup expired items every 5 minutes
-    this.cleanupInterval = setInterval(() => {
-      this.cleanupMemoryCache()
-    }, 5 * 60 * 1000)
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanupMemoryCache()
+      },
+      5 * 60 * 1000
+    )
   }
 
   private cleanupMemoryCache(): void {
     const now = Date.now()
     let cleaned = 0
-    
+
     for (const [key, item] of this.memoryCache.entries()) {
       if (item.expiresAt <= now) {
         this.memoryCache.delete(key)
         cleaned++
       }
     }
-    
+
     if (cleaned > 0) {
       logger.debug(`Cleaned ${cleaned} expired items from memory cache`)
     }
@@ -92,7 +95,7 @@ class CacheService {
           this.memoryCache.delete(key)
         }
       }
-      
+
       return null
     } catch (error) {
       logger.error('Cache get error:', error)
@@ -109,9 +112,9 @@ class CacheService {
       }
 
       // Fallback to memory cache
-      const expiresAt = Date.now() + (ttlSeconds * 1000)
+      const expiresAt = Date.now() + ttlSeconds * 1000
       this.memoryCache.set(key, { value, expiresAt })
-      
+
       return true
     } catch (error) {
       logger.error('Cache set error:', error)
@@ -128,7 +131,7 @@ class CacheService {
 
       // Also remove from memory cache
       this.memoryCache.delete(key)
-      
+
       return true
     } catch (error) {
       logger.error('Cache delete error:', error)
@@ -149,7 +152,7 @@ class CacheService {
       if (item && item.expiresAt > Date.now()) {
         return true
       }
-      
+
       return false
     } catch (error) {
       logger.error('Cache exists error:', error)
@@ -166,7 +169,7 @@ class CacheService {
 
       // Also clear memory cache
       this.memoryCache.clear()
-      
+
       return true
     } catch (error) {
       logger.error('Cache flush error:', error)
@@ -184,13 +187,13 @@ class CacheService {
       // Fallback to memory cache with simple pattern matching
       const keys: string[] = []
       const regex = new RegExp(pattern.replace(/\*/g, '.*'))
-      
+
       for (const key of this.memoryCache.keys()) {
         if (regex.test(key)) {
           keys.push(key)
         }
       }
-      
+
       return keys
     } catch (error) {
       logger.error('Cache keys error:', error)
@@ -212,7 +215,7 @@ class CacheService {
       type: this.redisClient ? 'redis' : 'memory',
       connected: this.isRedisConnected || true,
       memoryItems: this.memoryCache.size,
-      redisConnected: this.redisClient !== null && this.isRedisConnected
+      redisConnected: this.redisClient !== null && this.isRedisConnected,
     }
   }
 
@@ -220,11 +223,11 @@ class CacheService {
     if (this.redisClient) {
       this.redisClient.disconnect()
     }
-    
+
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval)
     }
-    
+
     this.memoryCache.clear()
     logger.info('Cache service disconnected')
   }

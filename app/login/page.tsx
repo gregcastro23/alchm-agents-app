@@ -39,19 +39,23 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={signIn} className="space-y-4">
             <div>
-              <label htmlFor="name" className="text-sm font-medium">Name</label>
+              <label htmlFor="name" className="text-sm font-medium">
+                Name
+              </label>
               <Input id="name" value={name} onChange={e => setName(e.target.value)} />
             </div>
             <div>
-              <label htmlFor="avatar" className="text-sm font-medium">Avatar URL (optional)</label>
+              <label htmlFor="avatar" className="text-sm font-medium">
+                Avatar URL (optional)
+              </label>
               <Input id="avatar" value={avatar} onChange={e => setAvatar(e.target.value)} />
             </div>
-            <Button type="submit" disabled={loading}>{loading ? 'Signing in…' : 'Sign in'}</Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Signing in…' : 'Sign in'}
+            </Button>
           </form>
         </CardContent>
       </Card>
     </div>
   )
 }
-
-

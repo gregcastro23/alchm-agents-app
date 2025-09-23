@@ -8,7 +8,10 @@ import {
   AstrologizeWheelSchema,
 } from './schemas'
 import { CircuitBreaker, withRetries } from './resilience'
-import { generateNatalChartSVG, type LocalChartResponse } from './chart-generators/natal-chart-generator'
+import {
+  generateNatalChartSVG,
+  type LocalChartResponse,
+} from './chart-generators/natal-chart-generator'
 import { generateProfessionalHoroscope } from './monica/horoscope-generator'
 import { chartCache } from './chart-generators/chart-cache'
 
@@ -39,7 +42,7 @@ export async function fetchAstrologizeWheel(birth: BirthInfo): Promise<Astrologi
     console.log('Returning cached chart result')
     return {
       ...cachedResult,
-      meta: { ...cachedResult.meta, cached: true }
+      meta: { ...cachedResult.meta, cached: true },
     }
   }
 
@@ -97,7 +100,9 @@ export async function fetchAstrologizeWheel(birth: BirthInfo): Promise<Astrologi
   }
 
   // External API failed or returned empty result, try local generation with enhanced calculations
-  console.log('External chart API unavailable, generating local chart with enhanced calculations...')
+  console.log(
+    'External chart API unavailable, generating local chart with enhanced calculations...'
+  )
   try {
     const localChart = generateNatalChartSVG(birth, { useEnhancedCalculations: true })
     const result = {
@@ -106,8 +111,8 @@ export async function fetchAstrologizeWheel(birth: BirthInfo): Promise<Astrologi
         ...localChart.meta,
         fallback: true,
         externalApiDegraded: !execResult.result,
-        enhancedLocalGeneration: true
-      }
+        enhancedLocalGeneration: true,
+      },
     }
 
     // Cache the local result as well
@@ -123,8 +128,8 @@ export async function fetchAstrologizeWheel(birth: BirthInfo): Promise<Astrologi
         degraded: true,
         fallback: true,
         localGenerationFailed: true,
-        error: localError instanceof Error ? localError.message : 'Unknown error'
-      }
+        error: localError instanceof Error ? localError.message : 'Unknown error',
+      },
     }
   }
 }
@@ -202,7 +207,7 @@ export async function fetchImaginize(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt, ...options }),
-      timeout: 10000 // 10 second timeout
+      timeout: 10000, // 10 second timeout
     })
 
     if (!res.ok) {
@@ -214,7 +219,7 @@ export async function fetchImaginize(
           imageUrl: null,
           fallback: true,
           placeholder: 'Service temporarily unavailable - sigil patterns recorded',
-          error: `External image service unavailable (${res.status})`
+          error: `External image service unavailable (${res.status})`,
         }
       }
 
@@ -229,7 +234,7 @@ export async function fetchImaginize(
         imageUrl: null,
         fallback: true,
         placeholder: 'Image generation timeout - sigil pattern preserved',
-        error: 'Network timeout or connection error'
+        error: 'Network timeout or connection error',
       }
     }
     throw error
@@ -257,7 +262,9 @@ export async function fetchAlchmize(input: {
   const tasks = {
     astrologize: fetchAstrologizeWheel(input.birth),
     alchemize: fetchAlchmAlchemize(input.birth),
-    imaginize: input.prompt ? fetchImaginize(input.prompt, input.imaginizeOptions || {}) : Promise.resolve(null),
+    imaginize: input.prompt
+      ? fetchImaginize(input.prompt, input.imaginizeOptions || {})
+      : Promise.resolve(null),
   }
 
   const [astrologizeRes, alchemizeRes, imaginizeRes] = await Promise.allSettled([
@@ -269,13 +276,16 @@ export async function fetchAlchmize(input: {
   const errors: string[] = []
 
   const astrologize = astrologizeRes.status === 'fulfilled' ? astrologizeRes.value : null
-  if (astrologizeRes.status === 'rejected') errors.push(`astrologize: ${astrologizeRes.reason?.message || String(astrologizeRes.reason)}`)
+  if (astrologizeRes.status === 'rejected')
+    errors.push(`astrologize: ${astrologizeRes.reason?.message || String(astrologizeRes.reason)}`)
 
   const alchemize = alchemizeRes.status === 'fulfilled' ? alchemizeRes.value : null
-  if (alchemizeRes.status === 'rejected') errors.push(`alchemize: ${alchemizeRes.reason?.message || String(alchemizeRes.reason)}`)
+  if (alchemizeRes.status === 'rejected')
+    errors.push(`alchemize: ${alchemizeRes.reason?.message || String(alchemizeRes.reason)}`)
 
   const imaginize = imaginizeRes.status === 'fulfilled' ? imaginizeRes.value : null
-  if (imaginizeRes.status === 'rejected') errors.push(`imaginize: ${imaginizeRes.reason?.message || String(imaginizeRes.reason)}`)
+  if (imaginizeRes.status === 'rejected')
+    errors.push(`imaginize: ${imaginizeRes.reason?.message || String(imaginizeRes.reason)}`)
 
   return {
     astrologize,

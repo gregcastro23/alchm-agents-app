@@ -992,7 +992,7 @@ function analyzeWritingStyle(responses: Map<string, SurveyResponse>): {
     complexity: Math.min(100, complexityLevel + (hasComplexWords ? 20 : 0)),
     creativity_level: Math.min(100, creativityLevel),
     sentence_structure: sentenceStructure,
-    voice: voice,
+    voice,
     sample_text: writingSample.slice(0, 200), // Store first 200 chars for reference
   }
 }

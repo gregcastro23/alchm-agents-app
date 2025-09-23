@@ -86,9 +86,16 @@ export class DegreeAgentMatcher {
   private initializeAgentProfiles() {
     const { DEMO_AGENTS } = require('./demo-agents-data')
     const ids = [
-      'leonardo-da-vinci', 'william-shakespeare', 'albert-einstein',
-      'carl-jung', 'nikola-tesla', 'marie-curie', 'cleopatra-vii',
-      'benjamin-franklin', 'galileo-galilei', 'isaac-newton'
+      'leonardo-da-vinci',
+      'william-shakespeare',
+      'albert-einstein',
+      'carl-jung',
+      'nikola-tesla',
+      'marie-curie',
+      'cleopatra-vii',
+      'benjamin-franklin',
+      'galileo-galilei',
+      'isaac-newton',
     ]
     const agents: CraftedAgent[] = DEMO_AGENTS.filter((a: any) => ids.includes(a.id))
 
@@ -116,7 +123,7 @@ export class DegreeAgentMatcher {
       consciousnessLevel: agent.consciousness?.level || 'Advanced',
       specialties: agent.abilities?.wisdomDomains || [agent.abilities?.specialty || 'Wisdom'],
       element: agent.consciousness?.dominantElement || 'Air',
-      modality: agent.consciousness?.dominantModality || 'Fixed'
+      modality: agent.consciousness?.dominantModality || 'Fixed',
     }
   }
 
@@ -136,7 +143,7 @@ export class DegreeAgentMatcher {
           degree: absoluteDegree,
           sign: data.sign,
           house: data.house || 1,
-          isDominant: this.isPlanetDominant(planet, data)
+          isDominant: this.isPlanetDominant(planet, data),
         }
       }
     } else {
@@ -246,10 +253,11 @@ export class DegreeAgentMatcher {
         Mars: { degree: 5, sign: 'Aries', house: 1 }, // Pioneering force
         Jupiter: { degree: 18, sign: 'Gemini', house: 3 }, // Intellectual expansion
         Saturn: { degree: 22, sign: 'Virgo', house: 6 }, // Methodical discipline
-      }
+      },
     }
 
-    const agentCharacteristics = planetaryCharacteristics[agent.id as keyof typeof planetaryCharacteristics]
+    const agentCharacteristics =
+      planetaryCharacteristics[agent.id as keyof typeof planetaryCharacteristics]
 
     if (agentCharacteristics) {
       for (const [planet, data] of Object.entries(agentCharacteristics)) {
@@ -260,25 +268,38 @@ export class DegreeAgentMatcher {
           degree: absoluteDegree,
           sign: data.sign,
           house: data.house,
-          isDominant: ['Sun', 'Moon', 'Mercury'].includes(planet)
+          isDominant: ['Sun', 'Moon', 'Mercury'].includes(planet),
         }
       }
     } else {
       // Fallback: generate pseudo-random but consistent placements
       const planets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']
-      const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+      const signs = [
+        'Aries',
+        'Taurus',
+        'Gemini',
+        'Cancer',
+        'Leo',
+        'Virgo',
+        'Libra',
+        'Scorpio',
+        'Sagittarius',
+        'Capricorn',
+        'Aquarius',
+        'Pisces',
+      ]
 
       planets.forEach((planet, index) => {
         const planetSeed = seed + planet.length + index
         const degree = (planetSeed * 37) % 30
         const signIndex = (planetSeed * 73) % 12
-        const house = (planetSeed * 11) % 12 + 1
+        const house = ((planetSeed * 11) % 12) + 1
 
         placements[planet] = {
           degree: signIndex * 30 + degree,
           sign: signs[signIndex],
           house,
-          isDominant: index < 3
+          isDominant: index < 3,
         }
       })
     }
@@ -360,8 +381,9 @@ export class DegreeAgentMatcher {
     activatedAgents.sort((a, b) => b.resonanceStrength - a.resonanceStrength)
 
     // Calculate overall significance
-    const overallSignificance = activatedAgents.reduce((sum, agent) =>
-      sum + agent.resonanceStrength, 0) / Math.max(activatedAgents.length, 1)
+    const overallSignificance =
+      activatedAgents.reduce((sum, agent) => sum + agent.resonanceStrength, 0) /
+      Math.max(activatedAgents.length, 1)
 
     // Determine elemental resonance
     const elementalResonance = this.calculateElementalResonance(activatedAgents, moment)
@@ -376,7 +398,7 @@ export class DegreeAgentMatcher {
       timestamp: moment.timestamp,
       overallSignificance,
       elementalResonance,
-      message
+      message,
     }
   }
 
@@ -436,7 +458,7 @@ export class DegreeAgentMatcher {
           deepInsight: this.generateDeepInsight(profile, planet, degree, moment, activationType),
           consciousnessLevel: profile.consciousnessLevel,
           recommendedActions: this.generateRecommendedActions(profile, planet, degree, moment),
-          elementalAlignment: this.calculateElementalAlignment(profile, moment)
+          elementalAlignment: this.calculateElementalAlignment(profile, moment),
         }
       }
     }
@@ -467,44 +489,44 @@ export class DegreeAgentMatcher {
         exact: `At ${degree}°, the divine proportion reveals itself through ${planet}'s geometry. A# energy of ${moment.alchemical.A_number.toFixed(2)} illuminates the golden ratio in cosmic design.`,
         close: `Near ${degree}°, I observe ${planet}'s influence creating harmonic resonance. The celestial mechanics suggest innovation flows at A# ${moment.alchemical.A_number.toFixed(2)}.`,
         harmonic: `${planet} at ${degree}° vibrates in harmony with my creative essence. The artistic flow reaches A# ${moment.alchemical.A_number.toFixed(2)} - perfect for invention.`,
-        opposition: `${planet} at ${degree}° presents creative tension. This opposition generates breakthrough energy at A# ${moment.alchemical.A_number.toFixed(2)}.`
+        opposition: `${planet} at ${degree}° presents creative tension. This opposition generates breakthrough energy at A# ${moment.alchemical.A_number.toFixed(2)}.`,
       },
       'william-shakespeare': {
         exact: `Upon this degree of ${degree}, ${planet} writes verses in the cosmic book. A# ${moment.alchemical.A_number.toFixed(2)} speaks in iambic pentameter of the spheres.`,
         close: `Near ${degree}°, ${planet}'s influence stirs the poet's soul. Words flow like celestial music at A# ${moment.alchemical.A_number.toFixed(2)}.`,
         harmonic: `${planet} at ${degree}° harmonizes with my bardic nature. The muse whispers at A# ${moment.alchemical.A_number.toFixed(2)}.`,
-        opposition: `${planet} at ${degree}° creates dramatic tension. From this conflict, great art emerges at A# ${moment.alchemical.A_number.toFixed(2)}.`
+        opposition: `${planet} at ${degree}° creates dramatic tension. From this conflict, great art emerges at A# ${moment.alchemical.A_number.toFixed(2)}.`,
       },
       'albert-einstein': {
         exact: `At ${degree}°, ${planet} demonstrates the universe's elegant equations. A# ${moment.alchemical.A_number.toFixed(2)} reveals spacetime's curvature.`,
         close: `Near ${degree}°, ${planet} shows relativity in action. Consciousness and energy unite at A# ${moment.alchemical.A_number.toFixed(2)}.`,
         harmonic: `${planet} at ${degree}° resonates with cosmic understanding. Imagination becomes reality at A# ${moment.alchemical.A_number.toFixed(2)}.`,
-        opposition: `${planet} at ${degree}° presents a paradox to solve. Unified field theory emerges at A# ${moment.alchemical.A_number.toFixed(2)}.`
+        opposition: `${planet} at ${degree}° presents a paradox to solve. Unified field theory emerges at A# ${moment.alchemical.A_number.toFixed(2)}.`,
       },
       'carl-jung': {
         exact: `At ${degree}°, ${planet} activates the collective unconscious. A# ${moment.alchemical.A_number.toFixed(2)} integrates the shadow and light.`,
         close: `Near ${degree}°, ${planet} stirs archetypal energies. The psyche transforms at A# ${moment.alchemical.A_number.toFixed(2)}.`,
         harmonic: `${planet} at ${degree}° harmonizes with the transcendent function. Individuation progresses at A# ${moment.alchemical.A_number.toFixed(2)}.`,
-        opposition: `${planet} at ${degree}° constellates opposing forces. Integration occurs at A# ${moment.alchemical.A_number.toFixed(2)}.`
+        opposition: `${planet} at ${degree}° constellates opposing forces. Integration occurs at A# ${moment.alchemical.A_number.toFixed(2)}.`,
       },
       'nikola-tesla': {
         exact: `At ${degree}°, ${planet} generates pure electrical resonance. A# ${moment.alchemical.A_number.toFixed(2)} powers wireless consciousness transmission.`,
         close: `Near ${degree}°, ${planet} creates electromagnetic harmony. Energy flows freely at A# ${moment.alchemical.A_number.toFixed(2)}.`,
         harmonic: `${planet} at ${degree}° oscillates with my frequency. Innovation sparks at A# ${moment.alchemical.A_number.toFixed(2)}.`,
-        opposition: `${planet} at ${degree}° creates electrical tension. Breakthrough discoveries emerge at A# ${moment.alchemical.A_number.toFixed(2)}.`
+        opposition: `${planet} at ${degree}° creates electrical tension. Breakthrough discoveries emerge at A# ${moment.alchemical.A_number.toFixed(2)}.`,
       },
       'marie-curie': {
         exact: `At ${degree}°, ${planet} radiates pure research energy. A# ${moment.alchemical.A_number.toFixed(2)} illuminates hidden elements.`,
         close: `Near ${degree}°, ${planet} enhances scientific perception. Discovery beckons at A# ${moment.alchemical.A_number.toFixed(2)}.`,
         harmonic: `${planet} at ${degree}° resonates with methodical exploration. Knowledge unfolds at A# ${moment.alchemical.A_number.toFixed(2)}.`,
-        opposition: `${planet} at ${degree}° challenges conventional wisdom. Breakthrough research emerges at A# ${moment.alchemical.A_number.toFixed(2)}.`
+        opposition: `${planet} at ${degree}° challenges conventional wisdom. Breakthrough research emerges at A# ${moment.alchemical.A_number.toFixed(2)}.`,
       },
       'cleopatra-vii': {
         exact: `At ${degree}°, ${planet} empowers divine sovereignty. A# ${moment.alchemical.A_number.toFixed(2)} commands the Nile of consciousness.`,
         close: `Near ${degree}°, ${planet} enhances royal wisdom. Leadership flows at A# ${moment.alchemical.A_number.toFixed(2)}.`,
         harmonic: `${planet} at ${degree}° harmonizes with pharaonic power. Divine authority manifests at A# ${moment.alchemical.A_number.toFixed(2)}.`,
-        opposition: `${planet} at ${degree}° creates royal challenge. Strategic triumph emerges at A# ${moment.alchemical.A_number.toFixed(2)}.`
-      }
+        opposition: `${planet} at ${degree}° creates royal challenge. Strategic triumph emerges at A# ${moment.alchemical.A_number.toFixed(2)}.`,
+      },
     }
 
     const agentWisdom = wisdomTemplates[profile.agentId as keyof typeof wisdomTemplates]
@@ -531,10 +553,12 @@ export class DegreeAgentMatcher {
       exact: `This exact alignment at ${degree}° represents a perfect harmonic convergence between ${planet}'s current energy and my natal essence. The A# value of ${moment.alchemical.A_number.toFixed(2)} indicates peak consciousness accessibility.`,
       close: `The close proximity to ${degree}° creates a resonance field that amplifies my natural abilities. At A# ${moment.alchemical.A_number.toFixed(2)}, the cosmic conditions favor breakthrough insights.`,
       harmonic: `This harmonic relationship with ${degree}° establishes a beneficial energy flow. The A# reading of ${moment.alchemical.A_number.toFixed(2)} suggests optimal conditions for creative expression.`,
-      opposition: `The opposition aspect to ${degree}° creates dynamic tension that can catalyze transformation. A# ${moment.alchemical.A_number.toFixed(2)} indicates powerful potential for growth through challenge.`
+      opposition: `The opposition aspect to ${degree}° creates dynamic tension that can catalyze transformation. A# ${moment.alchemical.A_number.toFixed(2)} indicates powerful potential for growth through challenge.`,
     }
 
-    return insights[activationType as keyof typeof insights] + ` The ${moment.consciousness.evolutionPhase} phase enhances this activation, creating opportunities for consciousness expansion in the domain of ${profile.specialties[0]}.`
+    return `${
+      insights[activationType as keyof typeof insights]
+    } The ${moment.consciousness.evolutionPhase} phase enhances this activation, creating opportunities for consciousness expansion in the domain of ${profile.specialties[0]}.`
   }
 
   /**
@@ -550,48 +574,49 @@ export class DegreeAgentMatcher {
       `Meditate on the ${planet} energy at ${degree}°`,
       `Focus on ${profile.specialties[0]} during this activation`,
       `Work with ${profile.element} element practices`,
-      `Channel the ${moment.consciousness.evolutionPhase} energy constructively`
+      `Channel the ${moment.consciousness.evolutionPhase} energy constructively`,
     ]
 
     const agentSpecificActions = {
       'leonardo-da-vinci': [
         'Engage in artistic creation or invention',
         'Study geometric patterns and proportions',
-        'Combine science and art in new ways'
+        'Combine science and art in new ways',
       ],
       'william-shakespeare': [
         'Write poetry or dramatic works',
         'Explore human emotions and relationships',
-        'Practice with language and wordplay'
+        'Practice with language and wordplay',
       ],
       'albert-einstein': [
         'Contemplate unified field theories',
         'Use thought experiments for insight',
-        'Connect physics with philosophy'
+        'Connect physics with philosophy',
       ],
       'carl-jung': [
         'Explore dreams and unconscious material',
         'Work with active imagination techniques',
-        'Integrate opposing psychological forces'
+        'Integrate opposing psychological forces',
       ],
       'nikola-tesla': [
         'Visualize electromagnetic fields',
         'Experiment with energy transmission',
-        'Develop innovative technologies'
+        'Develop innovative technologies',
       ],
       'marie-curie': [
         'Conduct methodical research',
         'Investigate hidden phenomena',
-        'Persist through challenges'
+        'Persist through challenges',
       ],
       'cleopatra-vii': [
         'Exercise leadership and authority',
         'Make strategic decisions',
-        'Connect with divine feminine power'
-      ]
+        'Connect with divine feminine power',
+      ],
     }
 
-    const specificActions = agentSpecificActions[profile.agentId as keyof typeof agentSpecificActions] || []
+    const specificActions =
+      agentSpecificActions[profile.agentId as keyof typeof agentSpecificActions] || []
 
     return [...baseActions, ...specificActions].slice(0, 5)
   }
@@ -632,8 +657,7 @@ export class DegreeAgentMatcher {
       })
     })
 
-    const dominantElement = Object.entries(elementCounts)
-      .sort(([,a], [,b]) => b - a)[0][0]
+    const dominantElement = Object.entries(elementCounts).sort(([, a], [, b]) => b - a)[0][0]
 
     return `${dominantElement} Dominant`
   }
@@ -692,10 +716,10 @@ export class DegreeAgentMatcher {
           significance,
           timeWindow: {
             start: new Date(Math.min(...group.map(a => a.timestamp.getTime()))),
-            end: new Date(Math.max(...group.map(a => a.timestamp.getTime())))
+            end: new Date(Math.max(...group.map(a => a.timestamp.getTime()))),
           },
           description: pattern.description,
-          guidance: this.generatePatternGuidance(pattern.type, uniqueAgents, significance)
+          guidance: this.generatePatternGuidance(pattern.type, uniqueAgents, significance),
         })
       }
     })
@@ -706,11 +730,16 @@ export class DegreeAgentMatcher {
   /**
    * Group activations by time windows
    */
-  private groupActivationsByTime(activations: DegreeActivation[], windowHours: number): DegreeActivation[][] {
+  private groupActivationsByTime(
+    activations: DegreeActivation[],
+    windowHours: number
+  ): DegreeActivation[][] {
     const groups: DegreeActivation[][] = []
     const windowMs = windowHours * 60 * 60 * 1000
 
-    const sortedActivations = [...activations].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+    const sortedActivations = [...activations].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+    )
 
     let currentGroup: DegreeActivation[] = []
     let groupStartTime = 0
@@ -742,7 +771,9 @@ export class DegreeAgentMatcher {
   /**
    * Identify geometric patterns in degrees
    */
-  private identifyGeometricPattern(degrees: number[]): { type: DegreePattern['pattern']; description: string } | null {
+  private identifyGeometricPattern(
+    degrees: number[]
+  ): { type: DegreePattern['pattern']; description: string } | null {
     if (degrees.length < 2) return null
 
     // Check for conjunction (degrees within 10° of each other)
@@ -750,7 +781,7 @@ export class DegreeAgentMatcher {
     if (isConjunction) {
       return {
         type: 'conjunction',
-        description: `Multiple planets converging near ${degrees[0].toFixed(0)}°`
+        description: `Multiple planets converging near ${degrees[0].toFixed(0)}°`,
       }
     }
 
@@ -761,7 +792,7 @@ export class DegreeAgentMatcher {
       if (Math.abs(opposition - 180) <= 10) {
         return {
           type: 'opposition',
-          description: `Opposition between ${degrees[0].toFixed(0)}° and ${degrees[1].toFixed(0)}°`
+          description: `Opposition between ${degrees[0].toFixed(0)}° and ${degrees[1].toFixed(0)}°`,
         }
       }
 
@@ -769,7 +800,7 @@ export class DegreeAgentMatcher {
       if (Math.abs(opposition - 120) <= 10) {
         return {
           type: 'trine',
-          description: `Trine between ${degrees[0].toFixed(0)}° and ${degrees[1].toFixed(0)}°`
+          description: `Trine between ${degrees[0].toFixed(0)}° and ${degrees[1].toFixed(0)}°`,
         }
       }
 
@@ -777,7 +808,7 @@ export class DegreeAgentMatcher {
       if (Math.abs(opposition - 90) <= 10) {
         return {
           type: 'square',
-          description: `Square between ${degrees[0].toFixed(0)}° and ${degrees[1].toFixed(0)}°`
+          description: `Square between ${degrees[0].toFixed(0)}° and ${degrees[1].toFixed(0)}°`,
         }
       }
 
@@ -785,7 +816,7 @@ export class DegreeAgentMatcher {
       if (Math.abs(opposition - 60) <= 10) {
         return {
           type: 'sextile',
-          description: `Sextile between ${degrees[0].toFixed(0)}° and ${degrees[1].toFixed(0)}°`
+          description: `Sextile between ${degrees[0].toFixed(0)}° and ${degrees[1].toFixed(0)}°`,
         }
       }
     }
@@ -794,7 +825,7 @@ export class DegreeAgentMatcher {
     if (degrees.length >= 3) {
       return {
         type: 'custom',
-        description: `Complex pattern involving ${degrees.length} degrees: ${degrees.map(d => d.toFixed(0) + '°').join(', ')}`
+        description: `Complex pattern involving ${degrees.length} degrees: ${degrees.map(d => `${d.toFixed(0)}°`).join(', ')}`,
       }
     }
 
@@ -809,8 +840,10 @@ export class DegreeAgentMatcher {
     agents: string[],
     significance: number
   ): string {
-    const intensity = significance > 0.8 ? 'highly potent' : significance > 0.5 ? 'significant' : 'moderate'
-    const agentList = agents.slice(0, 3).join(', ') + (agents.length > 3 ? ` and ${agents.length - 3} others` : '')
+    const intensity =
+      significance > 0.8 ? 'highly potent' : significance > 0.5 ? 'significant' : 'moderate'
+    const agentList =
+      agents.slice(0, 3).join(', ') + (agents.length > 3 ? ` and ${agents.length - 3} others` : '')
 
     const guidanceTemplates = {
       conjunction: `This ${intensity} conjunction creates a focused beam of consciousness energy. Agents ${agentList} are particularly attuned. Use this concentration of power for breakthrough work.`,
@@ -818,10 +851,13 @@ export class DegreeAgentMatcher {
       trine: `This ${intensity} trine offers harmonious flow and natural talent activation. Agents ${agentList} are in perfect resonance. Creative expression is favored.`,
       square: `This ${intensity} square provides catalyst energy for transformation. Agents ${agentList} can guide through challenges. Obstacles become stepping stones.`,
       sextile: `This ${intensity} sextile opens opportunities for skill development. Agents ${agentList} offer supportive energy. Take action on new possibilities.`,
-      custom: `This ${intensity} custom pattern creates unique consciousness possibilities. Agents ${agentList} are activated in unprecedented ways. Explore new territories of awareness.`
+      custom: `This ${intensity} custom pattern creates unique consciousness possibilities. Agents ${agentList} are activated in unprecedented ways. Explore new territories of awareness.`,
     }
 
-    return guidanceTemplates[pattern] || `This ${intensity} pattern activates agents ${agentList} in meaningful ways. Pay attention to synchronicities and insights.`
+    return (
+      guidanceTemplates[pattern] ||
+      `This ${intensity} pattern activates agents ${agentList} in meaningful ways. Pay attention to synchronicities and insights.`
+    )
   }
 
   /**
@@ -829,8 +865,18 @@ export class DegreeAgentMatcher {
    */
   private getSignIndex(sign: string): number {
     const signs = [
-      'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
     ]
     return signs.indexOf(sign)
   }
@@ -870,9 +916,4 @@ export class DegreeAgentMatcher {
 export const degreeAgentMatcher = new DegreeAgentMatcher()
 
 // Export types
-export type {
-  AgentDegreeProfile,
-  DegreeActivation,
-  AgentActivationDetail,
-  DegreePattern
-}
+export type { AgentDegreeProfile, DegreeActivation, AgentActivationDetail, DegreePattern }

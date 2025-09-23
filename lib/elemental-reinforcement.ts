@@ -52,7 +52,7 @@ export function calculateElementalReinforcementScore(
       Fire: acc.Fire + element.Fire,
       Water: acc.Water + element.Water,
       Air: acc.Air + element.Air,
-      Earth: acc.Earth + element.Earth
+      Earth: acc.Earth + element.Earth,
     }),
     { Fire: 0, Water: 0, Air: 0, Earth: 0 }
   )
@@ -60,7 +60,7 @@ export function calculateElementalReinforcementScore(
   // Find the strongest element
   const elementStrengths = Object.entries(totalElements)
   const [dominantElement, maxStrength] = elementStrengths.reduce(
-    (max, [element, strength]) => strength > max[1] ? [element, strength] : max,
+    (max, [element, strength]) => (strength > max[1] ? [element, strength] : max),
     ['Fire', -1]
   )
 
@@ -82,7 +82,10 @@ export function calculateElementalReinforcementScore(
 /**
  * Get elemental compatibility between two elements (no opposition mechanics)
  */
-export function getElementalCompatibility(element1: string, element2: string): ElementalCompatibility {
+export function getElementalCompatibility(
+  element1: string,
+  element2: string
+): ElementalCompatibility {
   // Same element has highest compatibility (perfect reinforcement)
   if (element1 === element2) {
     return {
@@ -90,32 +93,83 @@ export function getElementalCompatibility(element1: string, element2: string): E
       element2,
       compatibility: 0.95, // Nearly perfect
       synergy: 'Perfect Reinforcement',
-      combinedEffect: `Enhanced ${element1.toLowerCase()} manifestation with doubled intensity`
+      combinedEffect: `Enhanced ${element1.toLowerCase()} manifestation with doubled intensity`,
     }
   }
 
   // Define complementary relationships (all positive)
-  const compatibilityMap: Record<string, Record<string, { compatibility: number; synergy: string; effect: string }>> = {
+  const compatibilityMap: Record<
+    string,
+    Record<string, { compatibility: number; synergy: string; effect: string }>
+  > = {
     Fire: {
-      Water: { compatibility: 0.85, synergy: 'Creative Flow', effect: 'Passionate intuition and inspired emotion' },
-      Air: { compatibility: 0.90, synergy: 'Brilliant Innovation', effect: 'Intellectual fire and communicative inspiration' },
-      Earth: { compatibility: 0.80, synergy: 'Practical Creativity', effect: 'Grounded manifestation of creative vision' }
+      Water: {
+        compatibility: 0.85,
+        synergy: 'Creative Flow',
+        effect: 'Passionate intuition and inspired emotion',
+      },
+      Air: {
+        compatibility: 0.9,
+        synergy: 'Brilliant Innovation',
+        effect: 'Intellectual fire and communicative inspiration',
+      },
+      Earth: {
+        compatibility: 0.8,
+        synergy: 'Practical Creativity',
+        effect: 'Grounded manifestation of creative vision',
+      },
     },
     Water: {
-      Fire: { compatibility: 0.85, synergy: 'Creative Flow', effect: 'Passionate intuition and inspired emotion' },
-      Air: { compatibility: 0.75, synergy: 'Flowing Communication', effect: 'Emotional intelligence and empathetic expression' },
-      Earth: { compatibility: 0.88, synergy: 'Fertile Growth', effect: 'Nurturing wisdom and practical compassion' }
+      Fire: {
+        compatibility: 0.85,
+        synergy: 'Creative Flow',
+        effect: 'Passionate intuition and inspired emotion',
+      },
+      Air: {
+        compatibility: 0.75,
+        synergy: 'Flowing Communication',
+        effect: 'Emotional intelligence and empathetic expression',
+      },
+      Earth: {
+        compatibility: 0.88,
+        synergy: 'Fertile Growth',
+        effect: 'Nurturing wisdom and practical compassion',
+      },
     },
     Air: {
-      Fire: { compatibility: 0.90, synergy: 'Brilliant Innovation', effect: 'Intellectual fire and communicative inspiration' },
-      Water: { compatibility: 0.75, synergy: 'Flowing Communication', effect: 'Emotional intelligence and empathetic expression' },
-      Earth: { compatibility: 0.82, synergy: 'Methodical Thinking', effect: 'Structured analysis and practical reasoning' }
+      Fire: {
+        compatibility: 0.9,
+        synergy: 'Brilliant Innovation',
+        effect: 'Intellectual fire and communicative inspiration',
+      },
+      Water: {
+        compatibility: 0.75,
+        synergy: 'Flowing Communication',
+        effect: 'Emotional intelligence and empathetic expression',
+      },
+      Earth: {
+        compatibility: 0.82,
+        synergy: 'Methodical Thinking',
+        effect: 'Structured analysis and practical reasoning',
+      },
     },
     Earth: {
-      Fire: { compatibility: 0.80, synergy: 'Practical Creativity', effect: 'Grounded manifestation of creative vision' },
-      Water: { compatibility: 0.88, synergy: 'Fertile Growth', effect: 'Nurturing wisdom and practical compassion' },
-      Air: { compatibility: 0.82, synergy: 'Methodical Thinking', effect: 'Structured analysis and practical reasoning' }
-    }
+      Fire: {
+        compatibility: 0.8,
+        synergy: 'Practical Creativity',
+        effect: 'Grounded manifestation of creative vision',
+      },
+      Water: {
+        compatibility: 0.88,
+        synergy: 'Fertile Growth',
+        effect: 'Nurturing wisdom and practical compassion',
+      },
+      Air: {
+        compatibility: 0.82,
+        synergy: 'Methodical Thinking',
+        effect: 'Structured analysis and practical reasoning',
+      },
+    },
   }
 
   const combination = compatibilityMap[element1]?.[element2]
@@ -125,7 +179,7 @@ export function getElementalCompatibility(element1: string, element2: string): E
       element2,
       compatibility: combination.compatibility,
       synergy: combination.synergy,
-      combinedEffect: combination.effect
+      combinedEffect: combination.effect,
     }
   }
 
@@ -133,9 +187,9 @@ export function getElementalCompatibility(element1: string, element2: string): E
   return {
     element1,
     element2,
-    compatibility: 0.70,
+    compatibility: 0.7,
     synergy: 'Harmonic Balance',
-    combinedEffect: 'Balanced elemental cooperation'
+    combinedEffect: 'Balanced elemental cooperation',
   }
 }
 
@@ -149,7 +203,7 @@ export function analyzeElementalReinforcement(elements: ElementVector[]): Reinfo
       reinforcementMultiplier: 1.0,
       elementalHarmony: 0,
       combinationEffects: [],
-      resonancePatterns: []
+      resonancePatterns: [],
     }
   }
 
@@ -159,14 +213,14 @@ export function analyzeElementalReinforcement(elements: ElementVector[]): Reinfo
       Fire: acc.Fire + element.Fire / elements.length,
       Water: acc.Water + element.Water / elements.length,
       Air: acc.Air + element.Air / elements.length,
-      Earth: acc.Earth + element.Earth / elements.length
+      Earth: acc.Earth + element.Earth / elements.length,
     }),
     { Fire: 0, Water: 0, Air: 0, Earth: 0 }
   )
 
   // Find dominant element
   const [dominantElement, dominantStrength] = Object.entries(avgElements).reduce(
-    (max, [element, strength]) => strength > max[1] ? [element, strength] : max,
+    (max, [element, strength]) => (strength > max[1] ? [element, strength] : max),
     ['Fire', -1]
   )
 
@@ -175,12 +229,13 @@ export function analyzeElementalReinforcement(elements: ElementVector[]): Reinfo
 
   // Calculate elemental harmony (how well balanced the elements are)
   const totalStrength = Object.values(avgElements).reduce((sum, val) => sum + val, 0)
-  const elementalVariance = Object.values(avgElements).reduce(
-    (variance, val) => variance + Math.pow(val - totalStrength / 4, 2),
-    0
-  ) / 4
+  const elementalVariance =
+    Object.values(avgElements).reduce(
+      (variance, val) => variance + Math.pow(val - totalStrength / 4, 2),
+      0
+    ) / 4
 
-  const elementalHarmony = Math.max(0, 1 - (elementalVariance * 2)) // Lower variance = higher harmony
+  const elementalHarmony = Math.max(0, 1 - elementalVariance * 2) // Lower variance = higher harmony
 
   // Identify combination effects
   const combinationEffects = []
@@ -192,7 +247,7 @@ export function analyzeElementalReinforcement(elements: ElementVector[]): Reinfo
     combinationEffects.push({
       element,
       strength,
-      description: getElementalEffect(element, strength)
+      description: getElementalEffect(element, strength),
     })
   }
 
@@ -204,15 +259,21 @@ export function analyzeElementalReinforcement(elements: ElementVector[]): Reinfo
     reinforcementMultiplier,
     elementalHarmony,
     combinationEffects,
-    resonancePatterns
+    resonancePatterns,
   }
 }
 
 /**
  * Calculate reinforcement boost for UI visualization
  */
-export function calculateReinforcementBoost(elements: ElementVector[], targetElement: string): number {
-  const totalElemental = elements.reduce((sum, element) => sum + element[targetElement as keyof ElementVector], 0)
+export function calculateReinforcementBoost(
+  elements: ElementVector[],
+  targetElement: string
+): number {
+  const totalElemental = elements.reduce(
+    (sum, element) => sum + element[targetElement as keyof ElementVector],
+    0
+  )
   const avgElemental = totalElemental / elements.length
 
   // Calculate boost based on concentration of target element
@@ -227,7 +288,9 @@ export function calculateReinforcementBoost(elements: ElementVector[], targetEle
 /**
  * Get visual emphasis level for UI components
  */
-export function getVisualEmphasis(reinforcementScore: number): 'subtle' | 'moderate' | 'strong' | 'intense' {
+export function getVisualEmphasis(
+  reinforcementScore: number
+): 'subtle' | 'moderate' | 'strong' | 'intense' {
   if (reinforcementScore >= 1.4) return 'intense'
   if (reinforcementScore >= 1.25) return 'strong'
   if (reinforcementScore >= 1.1) return 'moderate'
@@ -237,7 +300,10 @@ export function getVisualEmphasis(reinforcementScore: number): 'subtle' | 'moder
 /**
  * Generate elemental color scheme based on reinforcement
  */
-export function getElementalColorScheme(element: string, intensity: number): {
+export function getElementalColorScheme(
+  element: string,
+  intensity: number
+): {
   primary: string
   secondary: string
   accent: string
@@ -247,7 +313,7 @@ export function getElementalColorScheme(element: string, intensity: number): {
     Fire: { primary: '#FF6B35', secondary: '#F7931E', accent: '#FFD700', background: '#FFF8DC' },
     Water: { primary: '#0077BE', secondary: '#00A9D4', accent: '#87CEEB', background: '#F0F8FF' },
     Air: { primary: '#FFD700', secondary: '#FFA500', accent: '#FFFF99', background: '#FFFACD' },
-    Earth: { primary: '#8B4513', secondary: '#A0522D', accent: '#DEB887', background: '#F5F5DC' }
+    Earth: { primary: '#8B4513', secondary: '#A0522D', accent: '#DEB887', background: '#F5F5DC' },
   }
 
   const colors = baseColors[element as keyof typeof baseColors] || baseColors.Fire
@@ -259,7 +325,7 @@ export function getElementalColorScheme(element: string, intensity: number): {
     primary: colors.primary,
     secondary: colors.secondary,
     accent: colors.accent,
-    background: colors.background
+    background: colors.background,
   }
 }
 
@@ -272,29 +338,29 @@ function getElementalEffect(element: string, strength: number): string {
       'Growing inspiration',
       'Strong creative drive',
       'Intense passionate expression',
-      'Overwhelming creative fire'
+      'Overwhelming creative fire',
     ],
     Water: [
       'Gentle emotional awareness',
       'Deepening intuition',
       'Strong emotional wisdom',
       'Intense psychic sensitivity',
-      'Overwhelming spiritual depth'
+      'Overwhelming spiritual depth',
     ],
     Air: [
       'Clear mental focus',
       'Enhanced communication',
       'Strong intellectual clarity',
       'Intense analytical power',
-      'Overwhelming mental brilliance'
+      'Overwhelming mental brilliance',
     ],
     Earth: [
       'Practical grounding',
       'Steady manifestation',
       'Strong material focus',
       'Intense structural building',
-      'Overwhelming material mastery'
-    ]
+      'Overwhelming material mastery',
+    ],
   }
 
   const elementEffects = effects[element as keyof typeof effects] || effects.Fire
@@ -315,7 +381,7 @@ function identifyResonancePatterns(
     patterns.push({
       pattern: `${dominantElement} Dominance`,
       intensity: maxElement,
-      meaning: `Strong ${dominantElement?.toLowerCase()} energy creates focused manifestation`
+      meaning: `Strong ${dominantElement?.toLowerCase()} energy creates focused manifestation`,
     })
   }
 
@@ -326,7 +392,7 @@ function identifyResonancePatterns(
     patterns.push({
       pattern: 'Elemental Harmony',
       intensity: 1 - variance,
-      meaning: 'Balanced elemental forces create stable, integrated energy'
+      meaning: 'Balanced elemental forces create stable, integrated energy',
     })
   }
 
@@ -338,7 +404,7 @@ function identifyResonancePatterns(
     patterns.push({
       pattern: `${elem1}-${elem2} Synthesis`,
       intensity: compatibility.compatibility,
-      meaning: compatibility.combinedEffect
+      meaning: compatibility.combinedEffect,
     })
   }
 
@@ -349,7 +415,7 @@ function identifyResonancePatterns(
       patterns.push({
         pattern: 'Elemental Reinforcement',
         intensity: Math.min(reinforcementRatio / 3, 1),
-        meaning: 'Multiple sources amplify elemental expression'
+        meaning: 'Multiple sources amplify elemental expression',
       })
     }
   }
@@ -360,5 +426,5 @@ function identifyResonancePatterns(
 // Export utility functions for component use
 export {
   getElementalEffect as getElementDescription,
-  identifyResonancePatterns as findResonancePatterns
+  identifyResonancePatterns as findResonancePatterns,
 }

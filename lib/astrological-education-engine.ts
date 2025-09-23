@@ -608,26 +608,39 @@ function extractElementalEmphasis(chartFeatures: BirthChartFeature[]): string[] 
     fire: 0,
     earth: 0,
     air: 0,
-    water: 0
+    water: 0,
   }
 
   // Sign to element mapping
   const signElements = {
-    'Aries': 'fire', 'Leo': 'fire', 'Sagittarius': 'fire',
-    'Taurus': 'earth', 'Virgo': 'earth', 'Capricorn': 'earth',
-    'Gemini': 'air', 'Libra': 'air', 'Aquarius': 'air',
-    'Cancer': 'water', 'Scorpio': 'water', 'Pisces': 'water'
+    Aries: 'fire',
+    Leo: 'fire',
+    Sagittarius: 'fire',
+    Taurus: 'earth',
+    Virgo: 'earth',
+    Capricorn: 'earth',
+    Gemini: 'air',
+    Libra: 'air',
+    Aquarius: 'air',
+    Cancer: 'water',
+    Scorpio: 'water',
+    Pisces: 'water',
   }
 
   // Weight different chart points differently
   const planetWeights = {
-    'Sun': 4,     // Most important
-    'Moon': 4,    // Equally important
-    'Mercury': 2, 'Venus': 2, 'Mars': 2,
-    'Jupiter': 1.5, 'Saturn': 1.5,
-    'Uranus': 1, 'Neptune': 1, 'Pluto': 1,
-    'Ascendant': 3,   // Very important
-    'Midheaven': 2    // Important
+    Sun: 4, // Most important
+    Moon: 4, // Equally important
+    Mercury: 2,
+    Venus: 2,
+    Mars: 2,
+    Jupiter: 1.5,
+    Saturn: 1.5,
+    Uranus: 1,
+    Neptune: 1,
+    Pluto: 1,
+    Ascendant: 3, // Very important
+    Midheaven: 2, // Important
   }
 
   // Count elements with weights

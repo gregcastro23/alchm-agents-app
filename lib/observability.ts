@@ -10,5 +10,3 @@ export function recordElementalLogicMode(mode: ElementalLogicMode): void {
     // no-op
   }
 }
-
-

@@ -80,7 +80,7 @@ export default function ChartOfTheMomentPage() {
         sign: data.sign,
         degree: parseFloat(data.degree),
         house: Math.floor(Math.random() * 12) + 1, // Mock house data
-        date: new Date()
+        date: new Date(),
       })
     )
 
@@ -88,18 +88,15 @@ export default function ChartOfTheMomentPage() {
     const { aspects, patterns } = detectPatternsStatic(planetPositions)
 
     // Extract geometry
-    const geometry = ChartGeometryExtractor.extractFromChartData(
-      planetPositions,
-      aspects,
-      800,
-      800
-    )
+    const geometry = ChartGeometryExtractor.extractFromChartData(planetPositions, aspects, 800, 800)
 
     // Add patterns
     geometry.sacredPatterns = patterns
 
     // Calculate elemental balance from current positions
-    const signElements = Object.values(currentPlanetaryPositions).map(data => getSignElement(data.sign))
+    const signElements = Object.values(currentPlanetaryPositions).map(data =>
+      getSignElement(data.sign)
+    )
     const elementCounts = { Fire: 0, Water: 0, Air: 0, Earth: 0 }
     signElements.forEach(element => {
       elementCounts[element as keyof typeof elementCounts]++
@@ -110,12 +107,15 @@ export default function ChartOfTheMomentPage() {
       fire: Math.round((elementCounts.Fire / total) * 100),
       water: Math.round((elementCounts.Water / total) * 100),
       air: Math.round((elementCounts.Air / total) * 100),
-      earth: Math.round((elementCounts.Earth / total) * 100)
+      earth: Math.round((elementCounts.Earth / total) * 100),
     }
 
     // Determine dominant element
     const maxElement = Object.entries(elementCounts).reduce((a, b) =>
-      elementCounts[a[0] as keyof typeof elementCounts] > elementCounts[b[0] as keyof typeof elementCounts] ? a : b
+      elementCounts[a[0] as keyof typeof elementCounts] >
+      elementCounts[b[0] as keyof typeof elementCounts]
+        ? a
+        : b
     )
     geometry.dominantElement = maxElement[0]
 
@@ -270,11 +270,7 @@ export default function ChartOfTheMomentPage() {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowSigilGenerator(false)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => setShowSigilGenerator(false)}>
                     Hide Generator
                   </Button>
                   <div className="text-sm text-muted-foreground">
@@ -286,7 +282,7 @@ export default function ChartOfTheMomentPage() {
                   geometry={chartGeometry}
                   chartData={{
                     currentPositions: currentPlanetaryPositions,
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
                   }}
                 />
               </div>

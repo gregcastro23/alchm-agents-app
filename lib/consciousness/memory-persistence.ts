@@ -1,7 +1,7 @@
 /**
  * Consciousness Memory Persistence
  * ===============================
- * 
+ *
  * Database persistence layer for agent evolution, user interactions,
  * and consciousness journey tracking.
  */
@@ -44,7 +44,6 @@ export interface ConsciousnessInteraction {
 }
 
 export class ConsciousnessMemoryPersistence {
-  
   /**
    * Get or create agent evolution state for a user
    */
@@ -54,8 +53,8 @@ export class ConsciousnessMemoryPersistence {
       const existing = await prisma.agentEvolutionState.findFirst({
         where: {
           agentId,
-          userId: userId || null
-        }
+          userId: userId || null,
+        },
       })
 
       if (existing) {
@@ -68,7 +67,7 @@ export class ConsciousnessMemoryPersistence {
           lastInteraction: existing.lastInteraction,
           specialAbilitiesUnlocked: existing.specialAbilitiesUnlocked as string[],
           evolutionHistory: existing.evolutionHistory as any[],
-          affinityScores: existing.affinityScores as any
+          affinityScores: existing.affinityScores as any,
         }
       }
 
@@ -82,7 +81,7 @@ export class ConsciousnessMemoryPersistence {
         lastInteraction: new Date(),
         specialAbilitiesUnlocked: [],
         evolutionHistory: [],
-        affinityScores: {}
+        affinityScores: {},
       }
 
       // Save to database
@@ -90,7 +89,7 @@ export class ConsciousnessMemoryPersistence {
       return newState
     } catch (error) {
       console.error('Error getting agent evolution:', error)
-      
+
       // Return default state on error
       return {
         agentId,
@@ -101,7 +100,7 @@ export class ConsciousnessMemoryPersistence {
         lastInteraction: new Date(),
         specialAbilitiesUnlocked: [],
         evolutionHistory: [],
-        affinityScores: {}
+        affinityScores: {},
       }
     }
   }
@@ -115,8 +114,8 @@ export class ConsciousnessMemoryPersistence {
         where: {
           agentId_userId: {
             agentId: state.agentId,
-            userId: state.userId || 'anonymous'
-          }
+            userId: state.userId || 'anonymous',
+          },
         },
         update: {
           currentLevel: state.currentLevel,
@@ -125,7 +124,7 @@ export class ConsciousnessMemoryPersistence {
           lastInteraction: state.lastInteraction,
           specialAbilitiesUnlocked: state.specialAbilitiesUnlocked,
           evolutionHistory: state.evolutionHistory as any,
-          affinityScores: state.affinityScores as any
+          affinityScores: state.affinityScores as any,
         },
         create: {
           agentId: state.agentId,
@@ -136,8 +135,8 @@ export class ConsciousnessMemoryPersistence {
           lastInteraction: state.lastInteraction,
           specialAbilitiesUnlocked: state.specialAbilitiesUnlocked,
           evolutionHistory: state.evolutionHistory as any,
-          affinityScores: state.affinityScores as any
-        }
+          affinityScores: state.affinityScores as any,
+        },
       })
     } catch (error) {
       console.error('Error saving agent evolution:', error)
@@ -159,18 +158,18 @@ export class ConsciousnessMemoryPersistence {
           planetaryInfluence: interaction.planetaryInfluence,
           elementalResonance: interaction.elementalResonance,
           timestamp: interaction.timestamp,
-          metadata: interaction.metadata as any
-        }
+          metadata: interaction.metadata as any,
+        },
       })
 
       // Update agent evolution state
       const currentState = await this.getAgentEvolution(interaction.agentId, interaction.userId)
-      
+
       const updatedState: AgentEvolutionState = {
         ...currentState,
         totalPower: currentState.totalPower + interaction.powerGained,
         interactionCount: currentState.interactionCount + 1,
-        lastInteraction: interaction.timestamp
+        lastInteraction: interaction.timestamp,
       }
 
       // Check for evolution level up
@@ -180,7 +179,7 @@ export class ConsciousnessMemoryPersistence {
         updatedState.evolutionHistory.push({
           level: newLevel,
           unlockedAt: interaction.timestamp,
-          powerAtUnlock: updatedState.totalPower
+          powerAtUnlock: updatedState.totalPower,
         })
 
         // Check for new abilities
@@ -198,20 +197,20 @@ export class ConsciousnessMemoryPersistence {
    * Get interaction history for an agent
    */
   static async getInteractionHistory(
-    agentId: string, 
-    userId?: string, 
+    agentId: string,
+    userId?: string,
     limit: number = 50
   ): Promise<ConsciousnessInteraction[]> {
     try {
       const interactions = await prisma.consciousnessInteraction.findMany({
         where: {
           agentId,
-          userId: userId || 'anonymous'
+          userId: userId || 'anonymous',
         },
         orderBy: {
-          timestamp: 'desc'
+          timestamp: 'desc',
         },
-        take: limit
+        take: limit,
       })
 
       return interactions.map(interaction => ({
@@ -223,7 +222,7 @@ export class ConsciousnessMemoryPersistence {
         planetaryInfluence: interaction.planetaryInfluence,
         elementalResonance: interaction.elementalResonance,
         timestamp: interaction.timestamp,
-        metadata: interaction.metadata as any
+        metadata: interaction.metadata as any,
       }))
     } catch (error) {
       console.error('Error getting interaction history:', error)
@@ -251,25 +250,31 @@ export class ConsciousnessMemoryPersistence {
       // Get all interactions for user
       const interactions = await prisma.consciousnessInteraction.findMany({
         where: { userId },
-        orderBy: { timestamp: 'asc' }
+        orderBy: { timestamp: 'asc' },
       })
 
       // Get all evolution states for user
       const evolutionStates = await prisma.agentEvolutionState.findMany({
-        where: { userId }
+        where: { userId },
       })
 
       const totalInteractions = interactions.length
-      const totalPowerGained = interactions.reduce((sum, interaction) => sum + interaction.powerGained, 0)
+      const totalPowerGained = interactions.reduce(
+        (sum, interaction) => sum + interaction.powerGained,
+        0
+      )
       const agentsEvolved = evolutionStates.filter(state => state.currentLevel !== 'bronze').length
-      
+
       // Find favorite agent (most interactions)
-      const agentCounts = interactions.reduce((counts, interaction) => {
-        counts[interaction.agentId] = (counts[interaction.agentId] || 0) + 1
-        return counts
-      }, {} as Record<string, number>)
-      const favoriteAgent = Object.entries(agentCounts).reduce((favorite, [agentId, count]) => 
-        count > favorite.count ? { agentId, count } : favorite, 
+      const agentCounts = interactions.reduce(
+        (counts, interaction) => {
+          counts[interaction.agentId] = (counts[interaction.agentId] || 0) + 1
+          return counts
+        },
+        {} as Record<string, number>
+      )
+      const favoriteAgent = Object.entries(agentCounts).reduce(
+        (favorite, [agentId, count]) => (count > favorite.count ? { agentId, count } : favorite),
         { agentId: null as string | null, count: 0 }
       ).agentId
 
@@ -277,15 +282,15 @@ export class ConsciousnessMemoryPersistence {
 
       // Generate milestones
       const milestones = []
-      
+
       // Evolution milestones
       evolutionStates.forEach(state => {
-        (state.evolutionHistory as any[]).forEach(evolution => {
+        ;(state.evolutionHistory as any[]).forEach(evolution => {
           milestones.push({
             type: 'evolution' as const,
             description: `${state.agentId.replace(/-/g, ' ')} evolved to ${evolution.level}`,
             timestamp: new Date(evolution.unlockedAt),
-            agentId: state.agentId
+            agentId: state.agentId,
           })
         })
       })
@@ -299,7 +304,7 @@ export class ConsciousnessMemoryPersistence {
         agentsEvolved,
         favoriteAgent,
         journeyStarted,
-        milestones: milestones.slice(-10) // Last 10 milestones
+        milestones: milestones.slice(-10), // Last 10 milestones
       }
     } catch (error) {
       console.error('Error getting consciousness journey:', error)
@@ -309,7 +314,7 @@ export class ConsciousnessMemoryPersistence {
         agentsEvolved: 0,
         favoriteAgent: null,
         journeyStarted: null,
-        milestones: []
+        milestones: [],
       }
     }
   }
@@ -317,7 +322,9 @@ export class ConsciousnessMemoryPersistence {
   /**
    * Calculate evolution level based on total power
    */
-  private static calculateEvolutionLevel(totalPower: number): 'bronze' | 'silver' | 'gold' | 'platinum' | 'transcendent' {
+  private static calculateEvolutionLevel(
+    totalPower: number
+  ): 'bronze' | 'silver' | 'gold' | 'platinum' | 'transcendent' {
     if (totalPower >= 2000) return 'transcendent'
     if (totalPower >= 1000) return 'platinum'
     if (totalPower >= 500) return 'gold'
@@ -330,9 +337,14 @@ export class ConsciousnessMemoryPersistence {
    */
   private static getUnlockedAbilities(level: string, agentId: string): string[] {
     const levelIndex = ['bronze', 'silver', 'gold', 'platinum', 'transcendent'].indexOf(level)
-    
+
     // This would integrate with the agent kinetic profiles
-    const baseAbilities = ['basic-consciousness', 'enhanced-wisdom', 'advanced-insight', 'transcendent-awareness']
+    const baseAbilities = [
+      'basic-consciousness',
+      'enhanced-wisdom',
+      'advanced-insight',
+      'transcendent-awareness',
+    ]
     return baseAbilities.slice(0, levelIndex + 1)
   }
 
@@ -342,13 +354,13 @@ export class ConsciousnessMemoryPersistence {
   static async cleanupOldData(daysToKeep: number = 90): Promise<void> {
     try {
       const cutoffDate = new Date(Date.now() - daysToKeep * 24 * 60 * 60 * 1000)
-      
+
       await prisma.consciousnessInteraction.deleteMany({
         where: {
           timestamp: {
-            lt: cutoffDate
-          }
-        }
+            lt: cutoffDate,
+          },
+        },
       })
     } catch (error) {
       console.error('Error cleaning up old data:', error)

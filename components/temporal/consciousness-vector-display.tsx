@@ -90,15 +90,22 @@ function safeConsciousnessValue(value: any, fallback: number = 0): number {
   return fallback
 }
 
-export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant, liveData, showLiveComparison = true }: Props) {
+export function ConsciousnessVectorDisplay({
+  alchmQuantities,
+  monicaConstant,
+  liveData,
+  showLiveComparison = true,
+}: Props) {
   // Use live data if available, otherwise fall back to provided quantities
-  const displayQuantities = liveData?.liveKalchm ? {
-    spirit: liveData.liveKalchm.spirit,
-    essence: liveData.liveKalchm.essence,
-    matter: liveData.liveKalchm.matter,
-    substance: liveData.liveKalchm.substance,
-    ...alchmQuantities // Include thermodynamic properties
-  } : alchmQuantities
+  const displayQuantities = liveData?.liveKalchm
+    ? {
+        spirit: liveData.liveKalchm.spirit,
+        essence: liveData.liveKalchm.essence,
+        matter: liveData.liveKalchm.matter,
+        substance: liveData.liveKalchm.substance,
+        ...alchmQuantities, // Include thermodynamic properties
+      }
+    : alchmQuantities
 
   // Enhanced validation with comprehensive NaN protection
   const safeQuantities = {
@@ -113,12 +120,14 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant, li
   }
 
   // Birth quantities for comparison (if live data is provided)
-  const birthQuantities = liveData ? {
-    spirit: safeConsciousnessValue(alchmQuantities?.spirit, 0),
-    essence: safeConsciousnessValue(alchmQuantities?.essence, 0),
-    matter: safeConsciousnessValue(alchmQuantities?.matter, 0),
-    substance: safeConsciousnessValue(alchmQuantities?.substance, 0),
-  } : null
+  const birthQuantities = liveData
+    ? {
+        spirit: safeConsciousnessValue(alchmQuantities?.spirit, 0),
+        essence: safeConsciousnessValue(alchmQuantities?.essence, 0),
+        matter: safeConsciousnessValue(alchmQuantities?.matter, 0),
+        substance: safeConsciousnessValue(alchmQuantities?.substance, 0),
+      }
+    : null
 
   const safeMC = safeConsciousnessValue(liveData?.liveMC || monicaConstant, 0)
   const birthMC = liveData ? safeConsciousnessValue(liveData.birthMC, 0) : null
@@ -145,43 +154,64 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant, li
   const alchemicalData = [
     {
       axis: 'Spirit',
-      value: Math.min(100, Math.max(0, safeConsciousnessValue((safeQuantities.spirit / maxAlchemical) * 100, 0))),
+      value: Math.min(
+        100,
+        Math.max(0, safeConsciousnessValue((safeQuantities.spirit / maxAlchemical) * 100, 0))
+      ),
       rawValue: safeQuantities.spirit,
       angle: 0,
     },
     {
       axis: 'Essence',
-      value: Math.min(100, Math.max(0, safeConsciousnessValue((safeQuantities.essence / maxAlchemical) * 100, 0))),
+      value: Math.min(
+        100,
+        Math.max(0, safeConsciousnessValue((safeQuantities.essence / maxAlchemical) * 100, 0))
+      ),
       rawValue: safeQuantities.essence,
       angle: 60,
     },
     {
       axis: 'Matter',
-      value: Math.min(100, Math.max(0, safeConsciousnessValue((safeQuantities.matter / maxAlchemical) * 100, 0))),
+      value: Math.min(
+        100,
+        Math.max(0, safeConsciousnessValue((safeQuantities.matter / maxAlchemical) * 100, 0))
+      ),
       rawValue: safeQuantities.matter,
       angle: 120,
     },
     {
       axis: 'Substance',
-      value: Math.min(100, Math.max(0, safeConsciousnessValue((safeQuantities.substance / maxAlchemical) * 100, 0))),
+      value: Math.min(
+        100,
+        Math.max(0, safeConsciousnessValue((safeQuantities.substance / maxAlchemical) * 100, 0))
+      ),
       rawValue: safeQuantities.substance,
       angle: 180,
     },
     {
       axis: 'Heat',
-      value: Math.min(100, Math.max(0, safeConsciousnessValue(Math.abs(safeQuantities.Heat) * 100, 0))),
+      value: Math.min(
+        100,
+        Math.max(0, safeConsciousnessValue(Math.abs(safeQuantities.Heat) * 100, 0))
+      ),
       rawValue: safeQuantities.Heat,
       angle: 240,
     },
     {
       axis: 'Energy',
-      value: Math.min(100, Math.max(0, safeConsciousnessValue(Math.abs(safeQuantities.Energy) * 100, 0))),
+      value: Math.min(
+        100,
+        Math.max(0, safeConsciousnessValue(Math.abs(safeQuantities.Energy) * 100, 0))
+      ),
       rawValue: safeQuantities.Energy,
       angle: 300,
     },
   ].filter(item => {
     // Filter out any items with invalid values
-    return safeConsciousnessValue(item.value, -1) >= 0 && safeConsciousnessValue(item.rawValue, NaN) !== NaN
+    return (
+      safeConsciousnessValue(item.value, -1) >= 0 &&
+      safeConsciousnessValue(item.rawValue, NaN) !== NaN
+    )
   })
 
   // Create pie chart data for composition breakdown
@@ -249,15 +279,18 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant, li
                 <Crown className="w-4 h-4 text-amber-500" />
                 <span className="font-medium">Monica Constant</span>
               </div>
-              
+
               {/* Live MC with birth comparison */}
               {liveData ? (
                 <>
                   <div className="text-3xl font-bold text-primary">
                     {safeMC.toFixed(3)}
                     {liveData.mcChange !== 0 && (
-                      <span className={`text-sm ml-2 ${liveData.mcChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {liveData.mcChange > 0 ? '↗' : '↘'} {Math.abs(liveData.mcPercentChange).toFixed(1)}%
+                      <span
+                        className={`text-sm ml-2 ${liveData.mcChange > 0 ? 'text-green-500' : 'text-red-500'}`}
+                      >
+                        {liveData.mcChange > 0 ? '↗' : '↘'}{' '}
+                        {Math.abs(liveData.mcPercentChange).toFixed(1)}%
                       </span>
                     )}
                   </div>
@@ -268,13 +301,13 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant, li
               ) : (
                 <div className="text-3xl font-bold text-primary">{safeMC.toFixed(3)}</div>
               )}
-              
+
               <Badge variant="secondary" className="flex items-center gap-1 w-fit">
                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
                 Level {mcClass.level}: {mcClass.name}
               </Badge>
               <p className="text-sm text-muted-foreground">{mcClass.description}</p>
-              
+
               {/* Live consciousness interpretation */}
               {liveData?.interpretations?.transitInfluence && (
                 <div className="mt-2 p-2 bg-purple-50 dark:bg-purple-950/30 rounded text-xs">
@@ -286,18 +319,19 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant, li
             <div className="space-y-3">
               <h4 className="font-medium flex items-center gap-2">
                 <Activity className="w-4 h-4" />
-                Elemental Ratios {liveData && <span className="text-xs text-muted-foreground">(Live)</span>}
+                Elemental Ratios{' '}
+                {liveData && <span className="text-xs text-muted-foreground">(Live)</span>}
               </h4>
               {Object.entries(ELEMENT_ICONS).map(([element, Icon]) => {
                 const value = safeQuantities[
                   element.toLowerCase() as keyof typeof safeQuantities
                 ] as number
-                const birthValue = birthQuantities ? birthQuantities[
-                  element.toLowerCase() as keyof typeof birthQuantities
-                ] : null
+                const birthValue = birthQuantities
+                  ? birthQuantities[element.toLowerCase() as keyof typeof birthQuantities]
+                  : null
                 const percentage = (value / maxAlchemical) * 100
                 const change = birthValue !== null ? value - birthValue : null
-                
+
                 return (
                   <div key={element} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
@@ -311,7 +345,9 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant, li
                       <div className="flex items-center gap-2">
                         <span className="font-mono">{value.toFixed(2)}</span>
                         {change !== null && Math.abs(change) > 0.1 && (
-                          <span className={`text-xs ${change > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          <span
+                            className={`text-xs ${change > 0 ? 'text-green-500' : 'text-red-500'}`}
+                          >
                             {change > 0 ? '↗' : '↘'}
                           </span>
                         )}
@@ -380,7 +416,10 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant, li
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <RadarChart data={alchemicalData.slice(0, 4)} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+            <RadarChart
+              data={alchemicalData.slice(0, 4)}
+              margin={{ top: 20, right: 30, bottom: 20, left: 30 }}
+            >
               <PolarGrid gridType="polygon" />
               <PolarAngleAxis dataKey="axis" fontSize={12} />
               <PolarRadiusAxis
@@ -415,7 +454,7 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant, li
       </Card>
 
       {/* Thermodynamic Wave Analysis */}
-      {(
+      {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -470,7 +509,7 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant, li
             </ResponsiveContainer>
           </CardContent>
         </Card>
-      )}
+      }
 
       {/* Practical Insights */}
       <Card>
@@ -485,30 +524,46 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant, li
                 <div className="flex justify-between">
                   <span>Creative Work:</span>
                   <span className="text-muted-foreground">
-                    {safeQuantities.spirit > 2 ? 'Excellent' : safeQuantities.spirit > 1 ? 'Good' : 'Moderate'}
+                    {safeQuantities.spirit > 2
+                      ? 'Excellent'
+                      : safeQuantities.spirit > 1
+                        ? 'Good'
+                        : 'Moderate'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Emotional Processing:</span>
                   <span className="text-muted-foreground">
-                    {safeQuantities.essence > 2 ? 'Excellent' : safeQuantities.essence > 1 ? 'Good' : 'Moderate'}
+                    {safeQuantities.essence > 2
+                      ? 'Excellent'
+                      : safeQuantities.essence > 1
+                        ? 'Good'
+                        : 'Moderate'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Practical Tasks:</span>
                   <span className="text-muted-foreground">
-                    {safeQuantities.matter > 2 ? 'Excellent' : safeQuantities.matter > 1 ? 'Good' : 'Moderate'}
+                    {safeQuantities.matter > 2
+                      ? 'Excellent'
+                      : safeQuantities.matter > 1
+                        ? 'Good'
+                        : 'Moderate'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Communication:</span>
                   <span className="text-muted-foreground">
-                    {safeQuantities.substance > 2 ? 'Excellent' : safeQuantities.substance > 1 ? 'Good' : 'Moderate'}
+                    {safeQuantities.substance > 2
+                      ? 'Excellent'
+                      : safeQuantities.substance > 1
+                        ? 'Good'
+                        : 'Moderate'}
                   </span>
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-3">
               <h4 className="font-medium">Development Recommendations</h4>
               <div className="text-sm space-y-2 text-muted-foreground">
@@ -524,19 +579,26 @@ export function ConsciousnessVectorDisplay({ alchmQuantities, monicaConstant, li
                 {safeQuantities.substance < 1 && (
                   <div>• Improve communication and networking abilities</div>
                 )}
-                {Math.min(safeQuantities.spirit, safeQuantities.essence, safeQuantities.matter, safeQuantities.substance) >= 1 && (
+                {Math.min(
+                  safeQuantities.spirit,
+                  safeQuantities.essence,
+                  safeQuantities.matter,
+                  safeQuantities.substance
+                ) >= 1 && (
                   <div>• Your alchemical profile shows good balance across all dimensions</div>
                 )}
               </div>
             </div>
           </div>
-          
+
           <div className="p-3 bg-muted rounded-lg">
             <p className="text-sm">
-              <strong>Monica Constant Formula:</strong> MC = (Spirit × 1.618 + Essence) / (Matter + Substance + 1)
+              <strong>Monica Constant Formula:</strong> MC = (Spirit × 1.618 + Essence) / (Matter +
+              Substance + 1)
               <br />
               <span className="text-muted-foreground">
-                Your current MC of {safeMC.toFixed(3)} indicates {mcClass.name.toLowerCase()} consciousness level.
+                Your current MC of {safeMC.toFixed(3)} indicates {mcClass.name.toLowerCase()}{' '}
+                consciousness level.
               </span>
             </p>
           </div>

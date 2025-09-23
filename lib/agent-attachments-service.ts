@@ -57,7 +57,7 @@ export class AgentAttachmentsService {
         birthDate: chartData.date,
         birthTime: chartData.time || 'unknown',
         birthLocation: chartData.location,
-        alchmData: alchmData,
+        alchmData,
         natalChart: alchmData, // For now, use alchm data as natal chart
         isActive: true,
         priority: 0,
@@ -94,7 +94,7 @@ export class AgentAttachmentsService {
         birthTime: chartData.time || 'unknown',
         birthLocation: chartData.location,
         momentName,
-        alchmData: alchmData,
+        alchmData,
         planetaryPositions: alchmData, // Current positions for the moment
         isActive: true,
         priority: 0,

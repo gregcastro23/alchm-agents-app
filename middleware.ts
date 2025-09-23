@@ -7,6 +7,6 @@ export const config = {
     '/gallery/:path*',
     '/rune-forge/:path*',
     '/philosophers-stone/:path*',
-    '/time-laboratory/:path*'
-  ]
+    '/time-laboratory/:path*',
+  ],
 }

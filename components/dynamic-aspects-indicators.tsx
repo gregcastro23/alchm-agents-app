@@ -26,7 +26,7 @@ const extractPlanetaryPositions = (agent: CraftedAgent) => {
         name,
         degree: data.degree || 0,
         sign: data.sign || 'Aries',
-        retrograde: data.retrograde || false
+        retrograde: data.retrograde || false,
       })
     })
   }
@@ -35,31 +35,40 @@ const extractPlanetaryPositions = (agent: CraftedAgent) => {
 
 const calculateAspectBetweenPlanets = (planet1: any, planet2: any) => {
   const signDegrees = {
-    'Aries': 0, 'Taurus': 30, 'Gemini': 60, 'Cancer': 90,
-    'Leo': 120, 'Virgo': 150, 'Libra': 180, 'Scorpio': 210,
-    'Sagittarius': 240, 'Capricorn': 270, 'Aquarius': 300, 'Pisces': 330
+    Aries: 0,
+    Taurus: 30,
+    Gemini: 60,
+    Cancer: 90,
+    Leo: 120,
+    Virgo: 150,
+    Libra: 180,
+    Scorpio: 210,
+    Sagittarius: 240,
+    Capricorn: 270,
+    Aquarius: 300,
+    Pisces: 330,
   }
-  
+
   const pos1 = signDegrees[planet1.sign] + planet1.degree
   const pos2 = signDegrees[planet2.sign] + planet2.degree
-  
+
   let angle = Math.abs(pos1 - pos2)
   if (angle > 180) angle = 360 - angle
-  
+
   // Define aspect types and orbs
   const aspects = [
     { type: 'conjunction', angle: 0, orb: 8 },
     { type: 'sextile', angle: 60, orb: 6 },
     { type: 'square', angle: 90, orb: 8 },
     { type: 'trine', angle: 120, orb: 8 },
-    { type: 'opposition', angle: 180, orb: 8 }
+    { type: 'opposition', angle: 180, orb: 8 },
   ]
-  
+
   for (const aspect of aspects) {
     if (Math.abs(angle - aspect.angle) <= aspect.orb) {
       const exactness = Math.abs(angle - aspect.angle)
       const applying = pos1 < pos2 // Simplified applying/separating logic
-      
+
       return {
         type: aspect.type,
         applying,
@@ -67,33 +76,47 @@ const calculateAspectBetweenPlanets = (planet1: any, planet2: any) => {
         orbVelocity: applying ? -0.1 : 0.1,
         daysToExact: exactness / 1.0, // Approximate days
         daysSinceExact: applying ? 0 : exactness / 1.0,
-        strength: exactness < 2 ? 'strong' : exactness < 5 ? 'moderate' : 'weak'
+        strength: exactness < 2 ? 'strong' : exactness < 5 ? 'moderate' : 'weak',
       }
     }
   }
-  
+
   return null
 }
 
-const calculateEvolutionaryImpact = (aspectData: any, agent1: CraftedAgent, agent2: CraftedAgent) => {
+const calculateEvolutionaryImpact = (
+  aspectData: any,
+  agent1: CraftedAgent,
+  agent2: CraftedAgent
+) => {
   let impact = 0.5 // Base impact
-  
+
   // Enhance impact based on aspect type
   switch (aspectData.type) {
-    case 'conjunction': impact += 0.3; break
-    case 'trine': impact += 0.25; break
-    case 'sextile': impact += 0.15; break
-    case 'square': impact += 0.2; break // Challenging but growth-promoting
-    case 'opposition': impact += 0.1; break
+    case 'conjunction':
+      impact += 0.3
+      break
+    case 'trine':
+      impact += 0.25
+      break
+    case 'sextile':
+      impact += 0.15
+      break
+    case 'square':
+      impact += 0.2
+      break // Challenging but growth-promoting
+    case 'opposition':
+      impact += 0.1
+      break
   }
-  
+
   // Enhance based on agent consciousness levels
   const avgConsciousness = (agent1.consciousness.level + agent2.consciousness.level) / 2
   impact += avgConsciousness * 0.001
-  
+
   // Enhance if applying (building energy)
   if (aspectData.applying) impact += 0.1
-  
+
   return Math.min(1.0, impact)
 }
 

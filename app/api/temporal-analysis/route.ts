@@ -5,7 +5,7 @@ import {
   globalCache,
   globalQueryOptimizer,
   globalPerformanceMonitor,
-  measureOperation
+  measureOperation,
 } from '@/lib/time-laboratory-performance'
 import crypto from 'crypto'
 
@@ -39,11 +39,14 @@ interface TemporalAnalysisResponse {
 }
 
 // Simple in-memory cache (in production, use Redis)
-const analysisCache = new Map<string, {
-  result: TemporalAnalysisResult
-  expiry: number
-  hitCount: number
-}>()
+const analysisCache = new Map<
+  string,
+  {
+    result: TemporalAnalysisResult
+    expiry: number
+    hitCount: number
+  }
+>()
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
@@ -53,16 +56,19 @@ export async function POST(request: NextRequest) {
 
     // Validate request
     if (!requestData.query) {
-      return NextResponse.json({
-        success: false,
-        error: 'Query is required',
-        metadata: {
-          executionTime: Date.now() - startTime,
-          fromCache: false,
-          resultCount: 0,
-          patternCount: 0
-        }
-      } as TemporalAnalysisResponse, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Query is required',
+          metadata: {
+            executionTime: Date.now() - startTime,
+            fromCache: false,
+            resultCount: 0,
+            patternCount: 0,
+          },
+        } as TemporalAnalysisResponse,
+        { status: 400 }
+      )
     }
 
     // Generate cache key and optimization hints
@@ -86,8 +92,8 @@ export async function POST(request: NextRequest) {
           resultCount: cachedResult.transitEvents.length,
           patternCount: cachedResult.patterns.length,
           cacheHitRate: globalCache.getMetrics().hitRate,
-          optimizationHints
-        }
+          optimizationHints,
+        },
       } as TemporalAnalysisResponse)
     }
 
@@ -119,27 +125,29 @@ export async function POST(request: NextRequest) {
         patternCount: result.patterns.length,
         cacheHitRate: globalCache.getMetrics().hitRate,
         optimizationHints,
-        performanceMetrics: globalPerformanceMonitor.getMetrics()
-      }
+        performanceMetrics: globalPerformanceMonitor.getMetrics(),
+      },
     } as TemporalAnalysisResponse)
-
   } catch (error) {
     console.error('Error in temporal analysis:', error)
 
     const executionTime = Date.now() - startTime
     globalPerformanceMonitor.recordQueryTime(executionTime)
 
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-      metadata: {
-        executionTime,
-        fromCache: false,
-        resultCount: 0,
-        patternCount: 0,
-        cacheHitRate: globalCache.getMetrics().hitRate
-      }
-    } as TemporalAnalysisResponse, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        metadata: {
+          executionTime,
+          fromCache: false,
+          resultCount: 0,
+          patternCount: 0,
+          cacheHitRate: globalCache.getMetrics().hitRate,
+        },
+      } as TemporalAnalysisResponse,
+      { status: 500 }
+    )
   }
 }
 
@@ -168,17 +176,24 @@ export async function GET(request: NextRequest) {
         return handlePerformanceReport()
 
       default:
-        return NextResponse.json({
-          success: false,
-          error: 'Invalid action. Supported actions: suggestions, cache-stats, agent-list, quick-patterns, performance, performance-report'
-        }, { status: 400 })
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              'Invalid action. Supported actions: suggestions, cache-stats, agent-list, quick-patterns, performance, performance-report',
+          },
+          { status: 400 }
+        )
     }
   } catch (error) {
     console.error('Error in temporal analysis GET:', error)
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -193,7 +208,7 @@ function generateQueryHash(query: TemporalQuery): string {
     degrees: query.degrees,
     elements: query.elements?.sort(),
     granularity: query.granularity,
-    reinforcementMode: query.reinforcementMode
+    reinforcementMode: query.reinforcementMode,
   })
 
   return crypto.createHash('md5').update(queryString).digest('hex')
@@ -210,8 +225,8 @@ async function handleQuerySuggestions(searchParams: URLSearchParams) {
     data: {
       suggestions,
       agentCount: agentIds.length,
-      elementCount: elements.length
-    }
+      elementCount: elements.length,
+    },
   })
 }
 
@@ -220,7 +235,7 @@ async function handleCacheStats() {
     totalEntries: analysisCache.size,
     activeEntries: 0,
     totalHits: 0,
-    averageHits: 0
+    averageHits: 0,
   }
 
   const now = Date.now()
@@ -235,23 +250,43 @@ async function handleCacheStats() {
 
   return NextResponse.json({
     success: true,
-    data: stats
+    data: stats,
   })
 }
 
 async function handleAgentList() {
   // Return list of available agents for temporal analysis
   const availableAgents = [
-    { id: 'leonardo-da-vinci', name: 'Leonardo da Vinci', era: 'Renaissance', elements: ['Fire', 'Air'] },
-    { id: 'william-shakespeare', name: 'William Shakespeare', era: 'Renaissance', elements: ['Water', 'Air'] },
+    {
+      id: 'leonardo-da-vinci',
+      name: 'Leonardo da Vinci',
+      era: 'Renaissance',
+      elements: ['Fire', 'Air'],
+    },
+    {
+      id: 'william-shakespeare',
+      name: 'William Shakespeare',
+      era: 'Renaissance',
+      elements: ['Water', 'Air'],
+    },
     { id: 'albert-einstein', name: 'Albert Einstein', era: 'Modern', elements: ['Air', 'Fire'] },
     { id: 'nikola-tesla', name: 'Nikola Tesla', era: 'Modern', elements: ['Air', 'Fire'] },
     { id: 'carl-jung', name: 'Carl Jung', era: 'Modern', elements: ['Water', 'Earth'] },
     { id: 'marie-curie', name: 'Marie Curie', era: 'Modern', elements: ['Fire', 'Earth'] },
     { id: 'cleopatra-vii', name: 'Cleopatra VII', era: 'Ancient', elements: ['Fire', 'Water'] },
-    { id: 'benjamin-franklin', name: 'Benjamin Franklin', era: 'Enlightenment', elements: ['Air', 'Fire'] },
-    { id: 'galileo-galilei', name: 'Galileo Galilei', era: 'Renaissance', elements: ['Fire', 'Air'] },
-    { id: 'isaac-newton', name: 'Isaac Newton', era: 'Enlightenment', elements: ['Earth', 'Air'] }
+    {
+      id: 'benjamin-franklin',
+      name: 'Benjamin Franklin',
+      era: 'Enlightenment',
+      elements: ['Air', 'Fire'],
+    },
+    {
+      id: 'galileo-galilei',
+      name: 'Galileo Galilei',
+      era: 'Renaissance',
+      elements: ['Fire', 'Air'],
+    },
+    { id: 'isaac-newton', name: 'Isaac Newton', era: 'Enlightenment', elements: ['Earth', 'Air'] },
   ]
 
   return NextResponse.json({
@@ -260,8 +295,8 @@ async function handleAgentList() {
       agents: availableAgents,
       totalCount: availableAgents.length,
       eras: [...new Set(availableAgents.map(a => a.era))],
-      elements: ['Fire', 'Water', 'Air', 'Earth']
-    }
+      elements: ['Fire', 'Water', 'Air', 'Earth'],
+    },
   })
 }
 
@@ -278,7 +313,7 @@ async function handleQuickPatterns(searchParams: URLSearchParams) {
       quickPatterns.push({
         type: 'degree_focus',
         description: `${degreeNum}° is associated with ${getDegreeMeaning(degreeNum)}`,
-        significance: 'medium'
+        significance: 'medium',
       })
     }
   }
@@ -287,7 +322,7 @@ async function handleQuickPatterns(searchParams: URLSearchParams) {
     quickPatterns.push({
       type: 'elemental_focus',
       description: `${element} element emphasizes ${getElementalMeaning(element)}`,
-      significance: 'medium'
+      significance: 'medium',
     })
   }
 
@@ -296,8 +331,8 @@ async function handleQuickPatterns(searchParams: URLSearchParams) {
     data: {
       patterns: quickPatterns,
       requestedDegree: degree,
-      requestedElement: element
-    }
+      requestedElement: element,
+    },
   })
 }
 
@@ -322,31 +357,31 @@ function generateQuerySuggestions(agentIds: string[], elements: string[]): strin
 
   // Element-specific suggestions
   if (elements.includes('Fire')) {
-    suggestions.push("Show Fire reinforcement patterns across all selected agents")
-    suggestions.push("Find Fire element peaks during creative periods")
+    suggestions.push('Show Fire reinforcement patterns across all selected agents')
+    suggestions.push('Find Fire element peaks during creative periods')
   }
 
   if (elements.includes('Water')) {
-    suggestions.push("Explore Water element resonance for emotional breakthroughs")
-    suggestions.push("Analyze Water-dominant consciousness evolution")
+    suggestions.push('Explore Water element resonance for emotional breakthroughs')
+    suggestions.push('Analyze Water-dominant consciousness evolution')
   }
 
   if (elements.includes('Air')) {
-    suggestions.push("Track Air element patterns during intellectual discoveries")
-    suggestions.push("Find Air-Fire reinforcement for innovation spikes")
+    suggestions.push('Track Air element patterns during intellectual discoveries')
+    suggestions.push('Find Air-Fire reinforcement for innovation spikes')
   }
 
   if (elements.includes('Earth')) {
-    suggestions.push("Examine Earth element grounding during practical achievements")
-    suggestions.push("Show Earth-Water combinations for manifestation")
+    suggestions.push('Examine Earth element grounding during practical achievements')
+    suggestions.push('Show Earth-Water combinations for manifestation')
   }
 
   // General suggestions
-  suggestions.push("Show recent elemental reinforcement patterns")
-  suggestions.push("Find degree hotspots with multiple agent activations")
-  suggestions.push("Explore consciousness evolution velocity trends")
-  suggestions.push("Analyze seasonal patterns in agent activity")
-  suggestions.push("Compare agent resonance during planetary hours")
+  suggestions.push('Show recent elemental reinforcement patterns')
+  suggestions.push('Find degree hotspots with multiple agent activations')
+  suggestions.push('Explore consciousness evolution velocity trends')
+  suggestions.push('Analyze seasonal patterns in agent activity')
+  suggestions.push('Compare agent resonance during planetary hours')
 
   // Shuffle and return up to 8 suggestions
   return suggestions.sort(() => Math.random() - 0.5).slice(0, 8)
@@ -367,7 +402,7 @@ function getDegreeMeaning(degree: number): string {
     'philosophical expansion and wisdom', // Sagittarius
     'structured achievement and mastery', // Capricorn
     'innovative collaboration and humanity', // Aquarius
-    'spiritual transcendence and intuition' // Pisces
+    'spiritual transcendence and intuition', // Pisces
   ]
 
   return sectorNames[sector] || 'cosmic significance'
@@ -378,7 +413,7 @@ function getElementalMeaning(element: string): string {
     Fire: 'creative inspiration, passionate action, and innovative breakthroughs',
     Water: 'emotional wisdom, intuitive insights, and deep understanding',
     Air: 'intellectual clarity, communication mastery, and mental agility',
-    Earth: 'practical manifestation, grounded wisdom, and material success'
+    Earth: 'practical manifestation, grounded wisdom, and material success',
   }
 
   return meanings[element as keyof typeof meanings] || 'balanced consciousness'
@@ -394,8 +429,8 @@ async function handlePerformanceMetrics() {
       performance: metrics,
       cache: cacheMetrics,
       timestamp: new Date().toISOString(),
-      status: 'operational'
-    }
+      status: 'operational',
+    },
   })
 }
 
@@ -406,10 +441,10 @@ async function handlePerformanceReport() {
     success: true,
     data: {
       report,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     },
     headers: {
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   })
 }

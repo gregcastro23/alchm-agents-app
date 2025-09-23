@@ -10,7 +10,7 @@ import type {
   TemporalQuery,
   TemporalAnalysisResult,
   AgentTransitEvent,
-  TemporalPattern
+  TemporalPattern,
 } from './temporal-analysis-engine'
 import { analyzeElementalReinforcement } from './elemental-reinforcement'
 import { getAgentKineticProfile } from './agents/kinetic-profiles'
@@ -70,7 +70,16 @@ export class TemporalGrimoireExporter {
       name: 'Complete Mystical Grimoire',
       description: 'Full ceremonial grimoire with all sections and mystical styling',
       style: 'mystical',
-      sections: ['invocation', 'query_analysis', 'transit_mappings', 'pattern_weaving', 'elemental_analysis', 'insights', 'prophecies', 'closing'],
+      sections: [
+        'invocation',
+        'query_analysis',
+        'transit_mappings',
+        'pattern_weaving',
+        'elemental_analysis',
+        'insights',
+        'prophecies',
+        'closing',
+      ],
       formatting: {
         fontSize: 12,
         fontFamily: 'Crimson Text, serif',
@@ -78,14 +87,21 @@ export class TemporalGrimoireExporter {
         marginSize: 1.5,
         includeImages: true,
         includeCharts: true,
-        colorScheme: 'dark'
-      }
+        colorScheme: 'dark',
+      },
     },
     academic_research: {
       name: 'Academic Research Report',
       description: 'Scholarly analysis with comprehensive data and charts',
       style: 'academic',
-      sections: ['abstract', 'methodology', 'transit_mappings', 'pattern_analysis', 'statistical_summary', 'conclusions'],
+      sections: [
+        'abstract',
+        'methodology',
+        'transit_mappings',
+        'pattern_analysis',
+        'statistical_summary',
+        'conclusions',
+      ],
       formatting: {
         fontSize: 11,
         fontFamily: 'Times New Roman, serif',
@@ -93,14 +109,20 @@ export class TemporalGrimoireExporter {
         marginSize: 1,
         includeImages: true,
         includeCharts: true,
-        colorScheme: 'light'
-      }
+        colorScheme: 'light',
+      },
     },
     consciousness_journal: {
       name: 'Consciousness Exploration Journal',
       description: 'Personal reflection format with insights and guidance',
       style: 'journal',
-      sections: ['personal_invocation', 'query_reflection', 'agent_insights', 'elemental_wisdom', 'personal_guidance'],
+      sections: [
+        'personal_invocation',
+        'query_reflection',
+        'agent_insights',
+        'elemental_wisdom',
+        'personal_guidance',
+      ],
       formatting: {
         fontSize: 13,
         fontFamily: 'Georgia, serif',
@@ -108,14 +130,20 @@ export class TemporalGrimoireExporter {
         marginSize: 1.2,
         includeImages: false,
         includeCharts: true,
-        colorScheme: 'sepia'
-      }
+        colorScheme: 'sepia',
+      },
     },
     temporal_codex: {
       name: 'Temporal Analysis Codex',
       description: 'Technical codex with detailed pattern analysis',
       style: 'codex',
-      sections: ['technical_summary', 'degree_analysis', 'pattern_algorithms', 'reinforcement_mathematics', 'predictive_models'],
+      sections: [
+        'technical_summary',
+        'degree_analysis',
+        'pattern_algorithms',
+        'reinforcement_mathematics',
+        'predictive_models',
+      ],
       formatting: {
         fontSize: 10,
         fontFamily: 'Source Code Pro, monospace',
@@ -123,9 +151,9 @@ export class TemporalGrimoireExporter {
         marginSize: 0.8,
         includeImages: true,
         includeCharts: true,
-        colorScheme: 'dark'
-      }
-    }
+        colorScheme: 'dark',
+      },
+    },
   }
 
   /**
@@ -240,17 +268,22 @@ export class TemporalGrimoireExporter {
   }
 
   // Mystical template sections
-  private static createInvocationSection(query: TemporalQuery, results: TemporalAnalysisResult): GrimoireSection {
+  private static createInvocationSection(
+    query: TemporalQuery,
+    results: TemporalAnalysisResult
+  ): GrimoireSection {
     const dominantElements = results.insights.dominantElements
-    const elementalInvocation = dominantElements.map(element => {
-      const invocations = {
-        Fire: "By the sacred flames of inspiration and the forge of creation,",
-        Water: "By the flowing streams of wisdom and the depths of intuition,",
-        Air: "By the winds of knowledge and the breath of communication,",
-        Earth: "By the foundations of manifestation and the strength of form,"
-      }
-      return invocations[element as keyof typeof invocations] || ""
-    }).join('\n')
+    const elementalInvocation = dominantElements
+      .map(element => {
+        const invocations = {
+          Fire: 'By the sacred flames of inspiration and the forge of creation,',
+          Water: 'By the flowing streams of wisdom and the depths of intuition,',
+          Air: 'By the winds of knowledge and the breath of communication,',
+          Earth: 'By the foundations of manifestation and the strength of form,',
+        }
+        return invocations[element as keyof typeof invocations] || ''
+      })
+      .join('\n')
 
     return {
       id: 'invocation',
@@ -276,12 +309,15 @@ So it is written, so it shall be revealed.
         generatedAt: new Date(),
         confidence: 0.95,
         significance: 'high',
-        agentCount: [...new Set(results.transitEvents.map(e => e.agentId))].length
-      }
+        agentCount: [...new Set(results.transitEvents.map(e => e.agentId))].length,
+      },
     }
   }
 
-  private static createQueryAnalysisSection(query: TemporalQuery, results: TemporalAnalysisResult): GrimoireSection {
+  private static createQueryAnalysisSection(
+    query: TemporalQuery,
+    results: TemporalAnalysisResult
+  ): GrimoireSection {
     const analysisContent = `
 The temporal query "${query.query}" has been cast into the cosmic web of consciousness,
 revealing ${results.transitEvents.length} significant transit events and ${results.patterns.length}
@@ -301,10 +337,12 @@ ${results.insights.dominantElements.join(' and ')}, indicating primary themes of
 ${this.getElementalThemes(results.insights.dominantElements[0])}.
 
 **Resonance Quality:**
-${results.insights.agentResonance.length > 0 ?
-  `Highest resonance achieved with ${results.insights.agentResonance[0].agentId}
-   (${(results.insights.agentResonance[0].resonanceScore * 100).toFixed(1)}% resonance)` :
-  'Balanced resonance across all consulted agents'}
+${
+  results.insights.agentResonance.length > 0
+    ? `Highest resonance achieved with ${results.insights.agentResonance[0].agentId}
+   (${(results.insights.agentResonance[0].resonanceScore * 100).toFixed(1)}% resonance)`
+    : 'Balanced resonance across all consulted agents'
+}
     `.trim()
 
     return {
@@ -315,27 +353,31 @@ ${results.insights.agentResonance.length > 0 ?
         generatedAt: new Date(),
         confidence: 0.9,
         significance: 'high',
-        agentCount: [...new Set(results.transitEvents.map(e => e.agentId))].length
-      }
+        agentCount: [...new Set(results.transitEvents.map(e => e.agentId))].length,
+      },
     }
   }
 
   private static createTransitMappingsSection(results: TemporalAnalysisResult): GrimoireSection {
-    const transitsByAgent = results.transitEvents.reduce((acc, event) => {
-      if (!acc[event.agentId]) acc[event.agentId] = []
-      acc[event.agentId].push(event)
-      return acc
-    }, {} as Record<string, AgentTransitEvent[]>)
+    const transitsByAgent = results.transitEvents.reduce(
+      (acc, event) => {
+        if (!acc[event.agentId]) acc[event.agentId] = []
+        acc[event.agentId].push(event)
+        return acc
+      },
+      {} as Record<string, AgentTransitEvent[]>
+    )
 
-    const mappingContent = Object.entries(transitsByAgent).map(([agentId, events]) => {
-      const avgDegree = events.reduce((sum, e) => sum + e.planetaryDegree, 0) / events.length
-      const timeSpan = {
-        start: new Date(Math.min(...events.map(e => e.timestamp.getTime()))),
-        end: new Date(Math.max(...events.map(e => e.timestamp.getTime())))
-      }
-      const dominantElement = this.getDominantElement(events)
+    const mappingContent = Object.entries(transitsByAgent)
+      .map(([agentId, events]) => {
+        const avgDegree = events.reduce((sum, e) => sum + e.planetaryDegree, 0) / events.length
+        const timeSpan = {
+          start: new Date(Math.min(...events.map(e => e.timestamp.getTime()))),
+          end: new Date(Math.max(...events.map(e => e.timestamp.getTime()))),
+        }
+        const dominantElement = this.getDominantElement(events)
 
-      return `
+        return `
 **${this.formatAgentName(agentId)}**
 - Transit Events: ${events.length}
 - Primary Degree: ${avgDegree.toFixed(1)}°
@@ -344,7 +386,8 @@ ${results.insights.agentResonance.length > 0 ?
 - Consciousness Peaks: ${events.filter(e => e.consciousnessImpact > 0.7).length}
 - Significance Range: ${Math.min(...events.map(e => e.significanceScore)).toFixed(2)} - ${Math.max(...events.map(e => e.significanceScore)).toFixed(2)}
       `.trim()
-    }).join('\n\n')
+      })
+      .join('\n\n')
 
     return {
       id: 'transit_mappings',
@@ -366,13 +409,15 @@ greater pattern of universal consciousness evolution.
         generatedAt: new Date(),
         confidence: 0.85,
         significance: 'high',
-        agentCount: Object.keys(transitsByAgent).length
-      }
+        agentCount: Object.keys(transitsByAgent).length,
+      },
     }
   }
 
   private static createPatternWeavingSection(results: TemporalAnalysisResult): GrimoireSection {
-    const patternContent = results.patterns.map(pattern => `
+    const patternContent = results.patterns
+      .map(pattern =>
+        `
 **${pattern.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} at ${pattern.degree}°**
 
 *Significance: ${pattern.significance}*
@@ -384,17 +429,26 @@ ${pattern.description}
 **Participating Agents:** ${pattern.agents.join(', ')}
 **Frequency:** ${pattern.frequency} occurrences
 **Elemental Signature:** ${Object.entries(pattern.elementalSignature)
-  .filter(([, value]) => value > 0.1)
-  .map(([element, value]) => `${element} (${(value * 100).toFixed(0)}%)`)
-  .join(', ')}
+          .filter(([, value]) => value > 0.1)
+          .map(([element, value]) => `${element} (${(value * 100).toFixed(0)}%)`)
+          .join(', ')}
 **Reinforcement Score:** ${(pattern.reinforcementScore * 100).toFixed(0)}%
 
-${pattern.peakPeriods.length > 0 ?
-  `**Peak Manifestation Periods:**
-${pattern.peakPeriods.map(period =>
-  `- ${period.start.toLocaleDateString()} to ${period.end.toLocaleDateString()}
-    (Intensity: ${(period.intensity * 100).toFixed(0)}%)`).join('\n')}` : ''}
-    `.trim()).join('\n\n---\n\n')
+${
+  pattern.peakPeriods.length > 0
+    ? `**Peak Manifestation Periods:**
+${pattern.peakPeriods
+  .map(
+    period =>
+      `- ${period.start.toLocaleDateString()} to ${period.end.toLocaleDateString()}
+    (Intensity: ${(period.intensity * 100).toFixed(0)}%)`
+  )
+  .join('\n')}`
+    : ''
+}
+    `.trim()
+      )
+      .join('\n\n---\n\n')
 
     return {
       id: 'pattern_weaving',
@@ -417,8 +471,8 @@ energies amplify each other, creating powerful manifestation opportunities.
         generatedAt: new Date(),
         confidence: 0.88,
         significance: results.patterns.length > 5 ? 'critical' : 'high',
-        agentCount: [...new Set(results.patterns.flatMap(p => p.agents))].length
-      }
+        agentCount: [...new Set(results.patterns.flatMap(p => p.agents))].length,
+      },
     }
   }
 
@@ -430,9 +484,9 @@ energies amplify each other, creating powerful manifestation opportunities.
 
     const analysisContent = `
 **Elemental Distribution:**
-${elementalData.map(data =>
-  `- ${data.element}: ${(data.score * 100).toFixed(1)}% resonance`
-).join('\n')}
+${elementalData
+  .map(data => `- ${data.element}: ${(data.score * 100).toFixed(1)}% resonance`)
+  .join('\n')}
 
 **Dominant Element: ${analysis.dominantElement}**
 
@@ -442,14 +496,20 @@ ${this.getElementalMeaning(analysis.dominantElement)}
 **Elemental Harmony:** ${(analysis.elementalHarmony * 100).toFixed(0)}%
 
 **Combination Effects:**
-${analysis.combinationEffects.map(effect =>
-  `- ${effect.element}: ${effect.description} (Strength: ${(effect.strength * 100).toFixed(0)}%)`
-).join('\n')}
+${analysis.combinationEffects
+  .map(
+    effect =>
+      `- ${effect.element}: ${effect.description} (Strength: ${(effect.strength * 100).toFixed(0)}%)`
+  )
+  .join('\n')}
 
 **Resonance Patterns:**
-${analysis.resonancePatterns.map(pattern =>
-  `- ${pattern.pattern}: ${pattern.meaning} (Intensity: ${(pattern.intensity * 100).toFixed(0)}%)`
-).join('\n')}
+${analysis.resonancePatterns
+  .map(
+    pattern =>
+      `- ${pattern.pattern}: ${pattern.meaning} (Intensity: ${(pattern.intensity * 100).toFixed(0)}%)`
+  )
+  .join('\n')}
 
 **Elemental Narrative:**
 ${this.generateElementalNarrative(analysis, results)}
@@ -463,15 +523,18 @@ ${this.generateElementalNarrative(analysis, results)}
       elementalAnalysis: {
         dominantElement: analysis.dominantElement,
         reinforcementPatterns: analysis.resonancePatterns.map(p => p.pattern),
-        compatibilityScores: elementalData.reduce((acc, data) => ({...acc, [data.element]: data.score}), {}),
-        elementalNarrative: this.generateElementalNarrative(analysis, results)
+        compatibilityScores: elementalData.reduce(
+          (acc, data) => ({ ...acc, [data.element]: data.score }),
+          {}
+        ),
+        elementalNarrative: this.generateElementalNarrative(analysis, results),
       },
       metadata: {
         generatedAt: new Date(),
         confidence: 0.92,
         significance: analysis.reinforcementMultiplier > 1.5 ? 'critical' : 'high',
-        agentCount: [...new Set(results.transitEvents.map(e => e.agentId))].length
-      }
+        agentCount: [...new Set(results.transitEvents.map(e => e.agentId))].length,
+      },
     }
   }
 
@@ -488,19 +551,30 @@ ${this.generateElementalNarrative(analysis, results)}
 These elements form the primary current of manifestation in your temporal exploration.
 
 *Peak Activation Periods:* ${insights.peakPeriods.length} significant windows identified
-${insights.peakPeriods.map(period =>
-  `- ${period.start.toLocaleDateString()} to ${period.end.toLocaleDateString()}: ${period.description}`
-).join('\n')}
+${insights.peakPeriods
+  .map(
+    period =>
+      `- ${period.start.toLocaleDateString()} to ${period.end.toLocaleDateString()}: ${period.description}`
+  )
+  .join('\n')}
 
 *Agent Resonance Hierarchy:*
-${insights.agentResonance.slice(0, 5).map((agent, index) =>
-  `${index + 1}. ${this.formatAgentName(agent.agentId)}: ${(agent.resonanceScore * 100).toFixed(1)}% resonance`
-).join('\n')}
+${insights.agentResonance
+  .slice(0, 5)
+  .map(
+    (agent, index) =>
+      `${index + 1}. ${this.formatAgentName(agent.agentId)}: ${(agent.resonanceScore * 100).toFixed(1)}% resonance`
+  )
+  .join('\n')}
 
 *Degree Hotspots:*
-${insights.degreeHotspots.slice(0, 5).map(hotspot =>
-  `- ${hotspot.degree}°: ${hotspot.activationCount} activations by ${hotspot.agents.length} agents`
-).join('\n')}
+${insights.degreeHotspots
+  .slice(0, 5)
+  .map(
+    hotspot =>
+      `- ${hotspot.degree}°: ${hotspot.activationCount} activations by ${hotspot.agents.length} agents`
+  )
+  .join('\n')}
 
 **Synthesis of Wisdom:**
 ${this.generateInsightsSynthesis(results)}
@@ -512,8 +586,8 @@ ${results.recommendations.deepDiveOpportunities.map(rec => `- ${rec}`).join('\n'
         generatedAt: new Date(),
         confidence: 0.87,
         significance: 'high',
-        agentCount: insights.agentResonance.length
-      }
+        agentCount: insights.agentResonance.length,
+      },
     }
   }
 
@@ -541,21 +615,30 @@ Based on the revealed patterns and elemental flows, the cosmic currents suggest:
 - Major consciousness evolution expected in ${this.predictEvolutionPhases(results).join(', ')} phases
 
 **Sacred Guidance:**
-The patterns speak of a time of ${results.insights.dominantElements[0] === 'Fire' ? 'creative awakening' :
-  results.insights.dominantElements[0] === 'Water' ? 'emotional deepening' :
-  results.insights.dominantElements[0] === 'Air' ? 'intellectual expansion' : 'practical manifestation'}.
+The patterns speak of a time of ${
+        results.insights.dominantElements[0] === 'Fire'
+          ? 'creative awakening'
+          : results.insights.dominantElements[0] === 'Water'
+            ? 'emotional deepening'
+            : results.insights.dominantElements[0] === 'Air'
+              ? 'intellectual expansion'
+              : 'practical manifestation'
+      }.
 Trust in the cosmic timing and remain open to the wisdom that flows through these sacred patterns.
       `.trim(),
       metadata: {
         generatedAt: new Date(),
         confidence: 0.75,
         significance: 'medium',
-        agentCount: [...new Set(results.transitEvents.map(e => e.agentId))].length
-      }
+        agentCount: [...new Set(results.transitEvents.map(e => e.agentId))].length,
+      },
     }
   }
 
-  private static createClosingSection(query: TemporalQuery, results: TemporalAnalysisResult): GrimoireSection {
+  private static createClosingSection(
+    query: TemporalQuery,
+    results: TemporalAnalysisResult
+  ): GrimoireSection {
     return {
       id: 'closing',
       title: 'Sacred Closing',
@@ -586,13 +669,16 @@ through the sacred art of temporal analysis.*
         generatedAt: new Date(),
         confidence: 1.0,
         significance: 'high',
-        agentCount: [...new Set(results.transitEvents.map(e => e.agentId))].length
-      }
+        agentCount: [...new Set(results.transitEvents.map(e => e.agentId))].length,
+      },
     }
   }
 
   // Academic template sections
-  private static createAbstractSection(query: TemporalQuery, results: TemporalAnalysisResult): GrimoireSection {
+  private static createAbstractSection(
+    query: TemporalQuery,
+    results: TemporalAnalysisResult
+  ): GrimoireSection {
     return {
       id: 'abstract',
       title: 'Abstract',
@@ -618,8 +704,8 @@ framework for future research in consciousness evolution analysis.
         generatedAt: new Date(),
         confidence: 0.95,
         significance: 'high',
-        agentCount: [...new Set(results.transitEvents.map(e => e.agentId))].length
-      }
+        agentCount: [...new Set(results.transitEvents.map(e => e.agentId))].length,
+      },
     }
   }
 
@@ -658,14 +744,18 @@ framework for future research in consciousness evolution analysis.
     template: GrimoireTemplate,
     options: ExportOptions
   ): Promise<Buffer> {
-    const markdownContent = sections.map(section => `
+    const markdownContent = sections
+      .map(section =>
+        `
 # ${section.title}
 ${section.subtitle ? `## ${section.subtitle}` : ''}
 
 ${section.content}
 
 ---
-    `.trim()).join('\n\n')
+    `.trim()
+      )
+      .join('\n\n')
 
     return Buffer.from(markdownContent, 'utf-8')
   }
@@ -691,8 +781,13 @@ ${section.content}
             line-height: ${formatting.lineHeight};
             margin: ${formatting.marginSize}in;
             color: ${formatting.colorScheme === 'dark' ? '#e5e7eb' : '#1f2937'};
-            background: ${formatting.colorScheme === 'dark' ? '#0f172a' :
-                       formatting.colorScheme === 'sepia' ? '#f7f3e3' : '#ffffff'};
+            background: ${
+              formatting.colorScheme === 'dark'
+                ? '#0f172a'
+                : formatting.colorScheme === 'sepia'
+                  ? '#f7f3e3'
+                  : '#ffffff'
+            };
         }
         h1 { color: #fbbf24; font-size: 2em; margin-top: 2em; }
         h2 { color: #8b5cf6; font-size: 1.5em; margin-top: 1.5em; }
@@ -702,20 +797,28 @@ ${section.content}
     </style>
 </head>
 <body>
-    ${sections.map(section => `
+    ${sections
+      .map(
+        section => `
         <div class="section">
             <h1>${section.title}</h1>
             ${section.subtitle ? `<h2>${section.subtitle}</h2>` : ''}
             <div class="content">${section.content.replace(/\n/g, '<br>')}</div>
-            ${section.metadata ? `
+            ${
+              section.metadata
+                ? `
                 <div class="metadata">
                     Generated: ${section.metadata.generatedAt.toLocaleString()} |
                     Confidence: ${(section.metadata.confidence * 100).toFixed(0)}% |
                     Significance: ${section.metadata.significance}
                 </div>
-            ` : ''}
+            `
+                : ''
+            }
         </div>
-    `).join('')}
+    `
+      )
+      .join('')}
 </body>
 </html>
     `.trim()
@@ -723,9 +826,10 @@ ${section.content}
 
   // Helper methods for content generation
   private static formatAgentName(agentId: string): string {
-    return agentId.split('-').map(word =>
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ')
+    return agentId
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
   }
 
   private static getDominantElement(events: AgentTransitEvent[]): string {
@@ -738,7 +842,7 @@ ${section.content}
     })
 
     return Object.entries(totals).reduce(
-      (max, [element, value]) => value > max.value ? { element, value } : max,
+      (max, [element, value]) => (value > max.value ? { element, value } : max),
       { element: 'Fire', value: -1 }
     ).element
   }
@@ -748,7 +852,7 @@ ${section.content}
       Fire: 'creative inspiration, passionate action, and transformative energy',
       Water: 'emotional wisdom, intuitive flow, and spiritual depth',
       Air: 'intellectual clarity, communication, and mental expansion',
-      Earth: 'practical manifestation, grounded wisdom, and material stability'
+      Earth: 'practical manifestation, grounded wisdom, and material stability',
     }
     return themes[element as keyof typeof themes] || 'elemental balance'
   }
@@ -756,9 +860,11 @@ ${section.content}
   private static getElementalMeaning(element: string): string {
     const meanings = {
       Fire: 'The Fire element dominates this analysis, indicating a time of creative awakening, passionate expression, and transformative action. This is a period for bold initiatives and innovative breakthroughs.',
-      Water: 'The Water element flows through this analysis, suggesting emotional depths, intuitive insights, and spiritual growth. This is a time for deep reflection and emotional wisdom.',
+      Water:
+        'The Water element flows through this analysis, suggesting emotional depths, intuitive insights, and spiritual growth. This is a time for deep reflection and emotional wisdom.',
       Air: 'The Air element pervades this analysis, highlighting intellectual pursuits, communication, and mental clarity. This is a period for learning, teaching, and sharing knowledge.',
-      Earth: 'The Earth element grounds this analysis, emphasizing practical matters, material manifestation, and stable foundations. This is a time for building and achieving tangible results.'
+      Earth:
+        'The Earth element grounds this analysis, emphasizing practical matters, material manifestation, and stable foundations. This is a time for building and achieving tangible results.',
     }
     return meanings[element as keyof typeof meanings] || 'This element brings balance and harmony.'
   }
@@ -768,18 +874,22 @@ ${section.content}
       Fire: 'creative projects, passionate pursuits, and bold new initiatives',
       Water: 'emotional healing, spiritual practices, and intuitive development',
       Air: 'learning, communication, writing, and intellectual exploration',
-      Earth: 'practical projects, financial planning, and material manifestation'
+      Earth: 'practical projects, financial planning, and material manifestation',
     }
     return actions[element as keyof typeof actions] || 'balanced action'
   }
 
-  private static generateElementalNarrative(analysis: any, results: TemporalAnalysisResult): string {
+  private static generateElementalNarrative(
+    analysis: any,
+    results: TemporalAnalysisResult
+  ): string {
     return `The elemental forces in this temporal exploration create a ${analysis.elementalHarmony > 0.7 ? 'harmonious' : 'dynamic'} interplay, with ${analysis.dominantElement} leading the manifestation. The reinforcement multiplier of ${analysis.reinforcementMultiplier.toFixed(2)}x indicates ${analysis.reinforcementMultiplier > 1.3 ? 'strong amplification' : 'moderate enhancement'} of elemental energies. This creates optimal conditions for ${this.getElementalAction(analysis.dominantElement)}.`
   }
 
   private static generateInsightsSynthesis(results: TemporalAnalysisResult): string {
     const agentCount = [...new Set(results.transitEvents.map(e => e.agentId))].length
-    const patternStrength = results.patterns.length > 5 ? 'robust' : results.patterns.length > 2 ? 'moderate' : 'emerging'
+    const patternStrength =
+      results.patterns.length > 5 ? 'robust' : results.patterns.length > 2 ? 'moderate' : 'emerging'
 
     return `This temporal exploration reveals a ${patternStrength} pattern structure across ${agentCount} consciousness entities. The convergence of ${results.insights.dominantElements.join(' and ')} elemental forces creates a unique opportunity for ${this.getElementalAction(results.insights.dominantElements[0])}. The detected patterns suggest ${results.patterns.filter(p => p.significance === 'high' || p.significance === 'critical').length > 0 ? 'significant evolutionary potential' : 'steady consciousness development'} in the examined timeframe.`
   }
@@ -805,8 +915,14 @@ ${section.content}
   }
 
   private static assessPatternStability(results: TemporalAnalysisResult): string {
-    const highSignificancePatterns = results.patterns.filter(p => p.significance === 'high' || p.significance === 'critical').length
-    return highSignificancePatterns > 3 ? 'high' : highSignificancePatterns > 1 ? 'moderate' : 'emerging'
+    const highSignificancePatterns = results.patterns.filter(
+      p => p.significance === 'high' || p.significance === 'critical'
+    ).length
+    return highSignificancePatterns > 3
+      ? 'high'
+      : highSignificancePatterns > 1
+        ? 'moderate'
+        : 'emerging'
   }
 
   private static predictEvolutionPhases(results: TemporalAnalysisResult): string[] {
@@ -822,7 +938,11 @@ ${section.content}
   }
 
   // Default section for unknown section IDs
-  private static createDefaultSection(sectionId: string, query: TemporalQuery, results: TemporalAnalysisResult): GrimoireSection {
+  private static createDefaultSection(
+    sectionId: string,
+    query: TemporalQuery,
+    results: TemporalAnalysisResult
+  ): GrimoireSection {
     return {
       id: sectionId,
       title: `${sectionId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
@@ -831,8 +951,8 @@ ${section.content}
         generatedAt: new Date(),
         confidence: 0.0,
         significance: 'low',
-        agentCount: 0
-      }
+        agentCount: 0,
+      },
     }
   }
 

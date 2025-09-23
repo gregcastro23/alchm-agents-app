@@ -492,11 +492,11 @@ export function DynamicAspectsVisualizer({
                 <span>Avg Impact:</span>
                 <span className="font-medium">
                   {aspects.length > 0
-                    ? (
+                    ? `${(
                         (aspects.reduce((sum, a) => sum + a.evolutionaryImpact, 0) /
                           aspects.length) *
                         100
-                      ).toFixed(0) + '%'
+                      ).toFixed(0)}%`
                     : '0%'}
                 </span>
               </div>

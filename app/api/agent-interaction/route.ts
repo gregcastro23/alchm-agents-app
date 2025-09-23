@@ -1,24 +1,75 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextResponse } from 'next/server'
+import { z } from 'zod'
+import { prisma } from '@/lib/db'
+import { ConsciousnessClient } from '@/lib/api-client/consciousness-client'
+import { generateAlchmForBirthInfo, generateAlchmForCurrentMoment } from '@/lib/alchemizer'
+import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
 
-const prisma = new PrismaClient();
+const InteractionSchema = z.object({
+  userId: z.string().optional(),
+  agentId: z.string(),
+  interactionData: z.record(z.any()).optional(),
+})
+
+const consciousnessClient = new ConsciousnessClient()
 
 export async function POST(request: Request) {
-  const { userId, agentId, interactionData } = await request.json();
+  try {
+    const payload = InteractionSchema.parse(await request.json())
+    const userId = payload.userId || 'anonymous'
+    const agentId = payload.agentId
 
-  // Use backend API call instead of direct import
-  const planetary = { status: 'placeholder' }; // TODO: Call backend API
-  const powerGained = 1; // TODO: Implement calculation via backend API
-  
-  await prisma.consciousnessInteraction.create({
-    data: {
-      userId,
-      agentId,
-      interactionData: JSON.stringify(interactionData),
-      planetaryInfluences: JSON.stringify(planetary),
-      powerGained
+    const agent = await prisma.historicalAgent.findUnique({
+      where: { agentId },
+    })
+
+    if (!agent) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
     }
-  });
-  
-  return NextResponse.json({ success: true });
+
+    const birthChart = agent.natalChart
+    const currentMoment = await generateAlchmForCurrentMoment()
+
+    const blueprint = await consciousnessClient.createAgentOfMoment(birthChart, currentMoment)
+
+    const spirit = currentMoment?.['Alchemy Effects']?.['Total Spirit'] || 0
+    const essence = currentMoment?.['Alchemy Effects']?.['Total Essence'] || 0
+    const matter = currentMoment?.['Alchemy Effects']?.['Total Matter'] || 0
+    const substance = currentMoment?.['Alchemy Effects']?.['Total Substance'] || 0
+
+    const monica = calculateMonicaConstant({
+      spirit,
+      essence,
+      matter,
+      substance,
+      Heat: currentMoment?.Heat || 0,
+      Entropy: currentMoment?.Entropy || 0,
+      Reactivity: currentMoment?.Reactivity || 0,
+      Energy: currentMoment?.Energy || 0,
+    })
+
+    await prisma.consciousnessInteraction.create({
+      data: {
+        userId,
+        agentId,
+        interactionType: 'crafting',
+        powerGained: monica.value,
+        planetaryInfluence: agent.name ?? agentId,
+        elementalResonance: blueprint.consciousness.resonance,
+        metadata: JSON.stringify({
+          blueprint,
+          interactionData: payload.interactionData,
+        }),
+      },
+    })
+
+    return NextResponse.json({
+      success: true,
+      blueprint,
+      monicaConstant: monica,
+    })
+  } catch (error) {
+    console.error('Agent interaction error:', error)
+    return NextResponse.json({ error: 'Failed to record interaction' }, { status: 500 })
+  }
 }

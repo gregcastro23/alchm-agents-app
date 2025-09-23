@@ -2,10 +2,31 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import {
-  Clock, Sparkles, Search, Users, Calendar, TrendingUp,
-  Moon, Sun, Star, Compass, Zap, Eye, BookOpen, Share,
-  Filter, Download, Settings, RefreshCw, ArrowRight,
-  ChevronDown, ChevronUp, Play, Pause, BarChart3, Plus
+  Clock,
+  Sparkles,
+  Search,
+  Users,
+  Calendar,
+  TrendingUp,
+  Moon,
+  Sun,
+  Star,
+  Compass,
+  Zap,
+  Eye,
+  BookOpen,
+  Share,
+  Filter,
+  Download,
+  Settings,
+  RefreshCw,
+  ArrowRight,
+  ChevronDown,
+  ChevronUp,
+  Play,
+  Pause,
+  BarChart3,
+  Plus,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -51,13 +72,22 @@ interface CosmicMetrics {
 }
 
 export default function CosmicTimeLaboratory() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'portals' | 'patterns' | 'insights'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'portals' | 'patterns' | 'insights'>(
+    'overview'
+  )
   const [metrics, setMetrics] = useState<CosmicMetrics | null>(null)
   const [timePortals, setTimePortals] = useState<TimePortal[]>([])
   const [isExploring, setIsExploring] = useState(false)
   const [autoResonance, setAutoResonance] = useState(true)
-  const [selectedElements, setSelectedElements] = useState<string[]>(['Fire', 'Water', 'Air', 'Earth'])
-  const [temporalRange, setTemporalRange] = useState<'day' | 'week' | 'month' | 'year' | 'decade'>('month')
+  const [selectedElements, setSelectedElements] = useState<string[]>([
+    'Fire',
+    'Water',
+    'Air',
+    'Earth',
+  ])
+  const [temporalRange, setTemporalRange] = useState<'day' | 'week' | 'month' | 'year' | 'decade'>(
+    'month'
+  )
 
   // Initialize mystical data
   const initializeMysticalData = useCallback(() => {
@@ -68,30 +98,30 @@ export default function CosmicTimeLaboratory() {
       temporalHarmony: 0.85 + Math.random() * 0.1,
       elementalBalance: {
         Fire: 0.25 + Math.random() * 0.3,
-        Water: 0.20 + Math.random() * 0.25,
-        Air: 0.30 + Math.random() * 0.2,
-        Earth: 0.25 + Math.random() * 0.2
+        Water: 0.2 + Math.random() * 0.25,
+        Air: 0.3 + Math.random() * 0.2,
+        Earth: 0.25 + Math.random() * 0.2,
       },
       recentInsights: [
         {
           id: '1',
           title: 'Fire-Air resonance spike detected at 240°',
           timestamp: new Date(Date.now() - 300000),
-          significance: 'high'
+          significance: 'high',
         },
         {
           id: '2',
           title: 'Leonardo-Tesla consciousness convergence',
           timestamp: new Date(Date.now() - 600000),
-          significance: 'critical'
+          significance: 'critical',
         },
         {
           id: '3',
           title: 'Elemental harmony achieved in exploration',
           timestamp: new Date(Date.now() - 900000),
-          significance: 'medium'
-        }
-      ]
+          significance: 'medium',
+        },
+      ],
     }
 
     const mysticalPortals: TimePortal[] = [
@@ -104,7 +134,7 @@ export default function CosmicTimeLaboratory() {
         elementalSignature: { Fire: 0.8, Water: 0.2, Air: 0.6, Earth: 0.1 },
         degreeRange: [210, 250],
         timeRange: { start: new Date('1450-01-01'), end: new Date('1550-01-01') },
-        significance: 'high'
+        significance: 'high',
       },
       {
         id: 'portal_modern_air',
@@ -115,7 +145,7 @@ export default function CosmicTimeLaboratory() {
         elementalSignature: { Fire: 0.3, Water: 0.1, Air: 0.9, Earth: 0.4 },
         degreeRange: [60, 90],
         timeRange: { start: new Date('1900-01-01'), end: new Date('1950-01-01') },
-        significance: 'critical'
+        significance: 'critical',
       },
       {
         id: 'portal_ancient_water',
@@ -126,8 +156,8 @@ export default function CosmicTimeLaboratory() {
         elementalSignature: { Fire: 0.2, Water: 0.7, Air: 0.3, Earth: 0.8 },
         degreeRange: [300, 330],
         timeRange: { start: new Date('-500-01-01'), end: new Date('100-01-01') },
-        significance: 'medium'
-      }
+        significance: 'medium',
+      },
     ]
 
     setMetrics(mysticalMetrics)
@@ -157,25 +187,34 @@ export default function CosmicTimeLaboratory() {
 
   const getPortalStatusIcon = (status: TimePortal['status']) => {
     switch (status) {
-      case 'exploring': return <Search className="w-4 h-4 text-blue-400 animate-pulse" />
-      case 'resonating': return <Zap className="w-4 h-4 text-yellow-400 animate-bounce" />
-      case 'manifesting': return <Sparkles className="w-4 h-4 text-purple-400 animate-spin" />
-      case 'completed': return <Star className="w-4 h-4 text-green-400" />
+      case 'exploring':
+        return <Search className="w-4 h-4 text-blue-400 animate-pulse" />
+      case 'resonating':
+        return <Zap className="w-4 h-4 text-yellow-400 animate-bounce" />
+      case 'manifesting':
+        return <Sparkles className="w-4 h-4 text-purple-400 animate-spin" />
+      case 'completed':
+        return <Star className="w-4 h-4 text-green-400" />
     }
   }
 
   const getSignificanceColor = (significance: TimePortal['significance']) => {
     switch (significance) {
-      case 'critical': return 'border-red-400 bg-red-500/10'
-      case 'high': return 'border-orange-400 bg-orange-500/10'
-      case 'medium': return 'border-yellow-400 bg-yellow-500/10'
-      case 'low': return 'border-gray-400 bg-gray-500/10'
+      case 'critical':
+        return 'border-red-400 bg-red-500/10'
+      case 'high':
+        return 'border-orange-400 bg-orange-500/10'
+      case 'medium':
+        return 'border-yellow-400 bg-yellow-500/10'
+      case 'low':
+        return 'border-gray-400 bg-gray-500/10'
     }
   }
 
   const getDominantElement = (elementalSignature: TimePortal['elementalSignature']) => {
-    return Object.entries(elementalSignature).reduce((max, [element, value]) =>
-      value > max.value ? { element, value } : max, { element: 'Fire', value: -1 }
+    return Object.entries(elementalSignature).reduce(
+      (max, [element, value]) => (value > max.value ? { element, value } : max),
+      { element: 'Fire', value: -1 }
     ).element
   }
 
@@ -202,7 +241,8 @@ export default function CosmicTimeLaboratory() {
                   Cosmic Time Laboratory
                 </h1>
                 <p className="text-purple-300 mt-1">
-                  Explore consciousness evolution through temporal analysis and agent transit patterns
+                  Explore consciousness evolution through temporal analysis and agent transit
+                  patterns
                 </p>
               </div>
             </div>
@@ -213,7 +253,7 @@ export default function CosmicTimeLaboratory() {
                 <input
                   type="checkbox"
                   checked={autoResonance}
-                  onChange={(e) => setAutoResonance(e.target.checked)}
+                  onChange={e => setAutoResonance(e.target.checked)}
                   className="rounded border-purple-500 bg-purple-900/50"
                 />
               </div>
@@ -237,8 +277,8 @@ export default function CosmicTimeLaboratory() {
                 { id: 'overview', label: 'Cosmic Overview', icon: Eye },
                 { id: 'portals', label: 'Time Portals', icon: Compass },
                 { id: 'patterns', label: 'Pattern Weaving', icon: BarChart3 },
-                { id: 'insights', label: 'Consciousness Insights', icon: BookOpen }
-              ].map((tab) => (
+                { id: 'insights', label: 'Consciousness Insights', icon: BookOpen },
+              ].map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
@@ -343,10 +383,7 @@ export default function CosmicTimeLaboratory() {
                           </span>
                           <span>{(value * 100).toFixed(0)}%</span>
                         </div>
-                        <Progress
-                          value={value * 100}
-                          className="h-2 bg-purple-900/50"
-                        />
+                        <Progress value={value * 100} className="h-2 bg-purple-900/50" />
                       </div>
                     )
                   })}
@@ -361,13 +398,18 @@ export default function CosmicTimeLaboratory() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {metrics.recentInsights.map((insight) => (
+                  {metrics.recentInsights.map(insight => (
                     <div key={insight.id} className="border border-purple-500/20 rounded-lg p-3">
                       <div className="flex items-start gap-3">
-                        <div className={`w-2 h-2 rounded-full mt-2 ${
-                          insight.significance === 'critical' ? 'bg-red-400' :
-                          insight.significance === 'high' ? 'bg-orange-400' : 'bg-yellow-400'
-                        }`} />
+                        <div
+                          className={`w-2 h-2 rounded-full mt-2 ${
+                            insight.significance === 'critical'
+                              ? 'bg-red-400'
+                              : insight.significance === 'high'
+                                ? 'bg-orange-400'
+                                : 'bg-yellow-400'
+                          }`}
+                        />
                         <div className="flex-1">
                           <h4 className="text-sm font-medium text-purple-100">{insight.title}</h4>
                           <p className="text-xs text-purple-400 mt-1">
@@ -391,7 +433,7 @@ export default function CosmicTimeLaboratory() {
               <div className="flex items-center gap-3">
                 <select
                   value={temporalRange}
-                  onChange={(e) => setTemporalRange(e.target.value as any)}
+                  onChange={e => setTemporalRange(e.target.value as any)}
                   className="bg-purple-900/50 border border-purple-500/30 rounded px-3 py-1 text-sm"
                 >
                   <option value="day">Daily Resonance</option>
@@ -408,12 +450,20 @@ export default function CosmicTimeLaboratory() {
             </div>
 
             <div className="grid gap-4">
-              {timePortals.map((portal) => {
+              {timePortals.map(portal => {
                 const dominantElement = getDominantElement(portal.elementalSignature)
-                const colorScheme = getElementalColorScheme(dominantElement, portal.elementalSignature[dominantElement as keyof typeof portal.elementalSignature])
+                const colorScheme = getElementalColorScheme(
+                  dominantElement,
+                  portal.elementalSignature[
+                    dominantElement as keyof typeof portal.elementalSignature
+                  ]
+                )
 
                 return (
-                  <Card key={portal.id} className={`bg-black/30 backdrop-blur border ${getSignificanceColor(portal.significance)}`}>
+                  <Card
+                    key={portal.id}
+                    className={`bg-black/30 backdrop-blur border ${getSignificanceColor(portal.significance)}`}
+                  >
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -426,12 +476,17 @@ export default function CosmicTimeLaboratory() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge className={`${
-                            portal.significance === 'critical' ? 'bg-red-500/20 text-red-300' :
-                            portal.significance === 'high' ? 'bg-orange-500/20 text-orange-300' :
-                            portal.significance === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
-                            'bg-gray-500/20 text-gray-300'
-                          }`}>
+                          <Badge
+                            className={`${
+                              portal.significance === 'critical'
+                                ? 'bg-red-500/20 text-red-300'
+                                : portal.significance === 'high'
+                                  ? 'bg-orange-500/20 text-orange-300'
+                                  : portal.significance === 'medium'
+                                    ? 'bg-yellow-500/20 text-yellow-300'
+                                    : 'bg-gray-500/20 text-gray-300'
+                            }`}
+                          >
                             {portal.significance}
                           </Badge>
                           <span className="text-sm text-purple-300">{portal.progress}%</span>
@@ -444,10 +499,7 @@ export default function CosmicTimeLaboratory() {
                             <span className="text-purple-300">Exploration Progress</span>
                             <span className="text-purple-100">{portal.progress}%</span>
                           </div>
-                          <Progress
-                            value={portal.progress}
-                            className="h-2 bg-purple-900/50"
-                          />
+                          <Progress value={portal.progress} className="h-2 bg-purple-900/50" />
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -459,7 +511,10 @@ export default function CosmicTimeLaboratory() {
                           </div>
                           <div className="text-center">
                             <p className="text-xs text-purple-400">Dominant Element</p>
-                            <p className="text-sm font-medium" style={{ color: colorScheme.primary }}>
+                            <p
+                              className="text-sm font-medium"
+                              style={{ color: colorScheme.primary }}
+                            >
                               {dominantElement}
                             </p>
                           </div>
@@ -505,8 +560,8 @@ export default function CosmicTimeLaboratory() {
               </CardHeader>
               <CardContent>
                 <p className="text-purple-300">
-                  Advanced pattern detection and analysis tools will be displayed here.
-                  Integrating with existing astrological pattern recognition systems.
+                  Advanced pattern detection and analysis tools will be displayed here. Integrating
+                  with existing astrological pattern recognition systems.
                 </p>
               </CardContent>
             </Card>
@@ -522,8 +577,8 @@ export default function CosmicTimeLaboratory() {
               </CardHeader>
               <CardContent>
                 <p className="text-purple-300">
-                  Deep insights into agent consciousness evolution patterns and temporal correlations.
-                  Integration with existing consciousness memory systems.
+                  Deep insights into agent consciousness evolution patterns and temporal
+                  correlations. Integration with existing consciousness memory systems.
                 </p>
               </CardContent>
             </Card>

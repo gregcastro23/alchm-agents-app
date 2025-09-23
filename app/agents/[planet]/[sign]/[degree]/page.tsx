@@ -119,9 +119,9 @@ export default function DegreeSpecificAgentPage() {
 
       setCurrentTransitData({
         currentSign: currentPlanetPosition.sign,
-        currentDegree: currentDegree,
+        currentDegree,
         isAtRequestedPosition: isCurrentlyAtDegree,
-        degreeDifference: degreeDifference,
+        degreeDifference,
         daysUntilReturn: calculateDaysUntilReturn(planet, sign, degree, currentPlanetPosition),
       })
     }
@@ -454,15 +454,31 @@ export default function DegreeSpecificAgentPage() {
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-sm text-muted-foreground">Time of Day:</span>
-                  <Badge variant="outline">{(new Date().getHours() >= 6 && new Date().getHours() < 18) ? 'Day' : 'Night'}</Badge>
+                  <Badge variant="outline">
+                    {new Date().getHours() >= 6 && new Date().getHours() < 18 ? 'Day' : 'Night'}
+                  </Badge>
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-sm text-muted-foreground">Planet Element:</span>
-                  <Badge variant="outline">{getPlanetaryElement(planet, (new Date().getHours() >= 6 && new Date().getHours() < 18))}</Badge>
+                  <Badge variant="outline">
+                    {getPlanetaryElement(
+                      planet,
+                      new Date().getHours() >= 6 && new Date().getHours() < 18
+                    )}
+                  </Badge>
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-sm text-muted-foreground">Affinity:</span>
-                  <Badge variant="outline">{Math.round(calculateElementalAffinity(planet, sign, (new Date().getHours() >= 6 && new Date().getHours() < 18)) * 100)}%</Badge>
+                  <Badge variant="outline">
+                    {Math.round(
+                      calculateElementalAffinity(
+                        planet,
+                        sign,
+                        new Date().getHours() >= 6 && new Date().getHours() < 18
+                      ) * 100
+                    )}
+                    %
+                  </Badge>
                 </div>
               </div>
               {historicalData && (

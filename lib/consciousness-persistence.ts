@@ -4,16 +4,16 @@
  */
 
 import 'server-only'
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 export async function saveEvolutionState(userId: string, agentId: string, state: any) {
   await prisma.agentEvolutionState.upsert({
     where: { userId_agentId: { userId, agentId } },
     update: { state: JSON.stringify(state) },
-    create: { userId, agentId, state: JSON.stringify(state) }
-  });
+    create: { userId, agentId, state: JSON.stringify(state) },
+  })
 }
 
 // Add load function if needed
@@ -50,8 +50,8 @@ class ConsciousnessPersistence {
         where: {
           agentId_userId: {
             agentId,
-            userId
-          }
+            userId,
+          },
         },
         update: {
           currentLevel: state.currentLevel,
@@ -64,9 +64,7 @@ class ConsciousnessPersistence {
           evolutionHistory: state.evolutionHistory
             ? JSON.stringify(state.evolutionHistory)
             : undefined,
-          affinityScores: state.affinityScores
-            ? JSON.stringify(state.affinityScores)
-            : undefined
+          affinityScores: state.affinityScores ? JSON.stringify(state.affinityScores) : undefined,
         },
         create: {
           agentId,
@@ -77,8 +75,8 @@ class ConsciousnessPersistence {
           lastInteraction: state.lastInteraction || new Date(),
           specialAbilitiesUnlocked: JSON.stringify(state.specialAbilitiesUnlocked || []),
           evolutionHistory: JSON.stringify(state.evolutionHistory || []),
-          affinityScores: JSON.stringify(state.affinityScores || {})
-        }
+          affinityScores: JSON.stringify(state.affinityScores || {}),
+        },
       })
 
       return this.parseEvolutionState(evolutionState)
@@ -97,9 +95,9 @@ class ConsciousnessPersistence {
         where: {
           agentId_userId: {
             agentId,
-            userId
-          }
-        }
+            userId,
+          },
+        },
       })
 
       if (!state) {
@@ -110,7 +108,7 @@ class ConsciousnessPersistence {
           interactionCount: 0,
           specialAbilitiesUnlocked: [],
           evolutionHistory: [],
-          affinityScores: {}
+          affinityScores: {},
         })
       }
 
@@ -128,7 +126,7 @@ class ConsciousnessPersistence {
     try {
       const states = await prisma.agentEvolutionState.findMany({
         where: { userId },
-        orderBy: { lastInteraction: 'desc' }
+        orderBy: { lastInteraction: 'desc' },
       })
 
       return states.map(state => this.parseEvolutionState(state))
@@ -151,8 +149,8 @@ class ConsciousnessPersistence {
           powerGained: data.powerGained,
           planetaryInfluence: data.planetaryInfluence,
           elementalResonance: data.elementalResonance,
-          metadata: JSON.stringify(data.metadata || {})
-        }
+          metadata: JSON.stringify(data.metadata || {}),
+        },
       })
 
       // Update evolution state
@@ -165,7 +163,7 @@ class ConsciousnessPersistence {
           totalPower: newPower,
           currentLevel: newLevel,
           interactionCount: currentState.interactionCount + 1,
-          lastInteraction: new Date()
+          lastInteraction: new Date(),
         })
       }
 
@@ -184,15 +182,15 @@ class ConsciousnessPersistence {
       const interactions = await prisma.consciousnessInteraction.findMany({
         where: {
           userId,
-          agentId
+          agentId,
         },
         orderBy: { timestamp: 'desc' },
-        take: limit
+        take: limit,
       })
 
       return interactions.map(interaction => ({
         ...interaction,
-        metadata: interaction.metadata ? JSON.parse(interaction.metadata as string) : {}
+        metadata: interaction.metadata ? JSON.parse(interaction.metadata as string) : {},
       }))
     } catch (error) {
       console.error('Failed to get interaction history:', error)
@@ -210,15 +208,18 @@ class ConsciousnessPersistence {
         prisma.consciousnessInteraction.findMany({
           where: { userId },
           orderBy: { timestamp: 'desc' },
-          take: 20
+          take: 20,
         }),
         prisma.monicaUserProgress.findUnique({
-          where: { userId }
-        })
+          where: { userId },
+        }),
       ])
 
       const totalPower = evolutionStates.reduce((sum, state) => sum + state.totalPower, 0)
-      const totalInteractions = evolutionStates.reduce((sum, state) => sum + state.interactionCount, 0)
+      const totalInteractions = evolutionStates.reduce(
+        (sum, state) => sum + state.interactionCount,
+        0
+      )
       const activeAgents = evolutionStates.filter(state => state.interactionCount > 0).length
 
       return {
@@ -231,9 +232,9 @@ class ConsciousnessPersistence {
         evolutionStates,
         recentInteractions: recentInteractions.map(i => ({
           ...i,
-          metadata: i.metadata ? JSON.parse(i.metadata as string) : {}
+          metadata: i.metadata ? JSON.parse(i.metadata as string) : {},
         })),
-        journeyStarted: evolutionStates[0]?.lastInteraction || new Date()
+        journeyStarted: evolutionStates[0]?.lastInteraction || new Date(),
       }
     } catch (error) {
       console.error('Failed to get consciousness journey:', error)
@@ -268,12 +269,8 @@ class ConsciousnessPersistence {
       specialAbilitiesUnlocked: state.specialAbilitiesUnlocked
         ? JSON.parse(state.specialAbilitiesUnlocked)
         : [],
-      evolutionHistory: state.evolutionHistory
-        ? JSON.parse(state.evolutionHistory)
-        : [],
-      affinityScores: state.affinityScores
-        ? JSON.parse(state.affinityScores)
-        : {}
+      evolutionHistory: state.evolutionHistory ? JSON.parse(state.evolutionHistory) : [],
+      affinityScores: state.affinityScores ? JSON.parse(state.affinityScores) : {},
     }
   }
 
@@ -286,9 +283,9 @@ class ConsciousnessPersistence {
         where: {
           agentId_userId: {
             agentId,
-            userId
-          }
-        }
+            userId,
+          },
+        },
       })
 
       // Create fresh state
@@ -298,7 +295,7 @@ class ConsciousnessPersistence {
         interactionCount: 0,
         specialAbilitiesUnlocked: [],
         evolutionHistory: [],
-        affinityScores: {}
+        affinityScores: {},
       })
     } catch (error) {
       console.error('Failed to reset agent evolution:', error)

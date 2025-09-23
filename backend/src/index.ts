@@ -17,10 +17,10 @@ import {
   sanitizeInput,
   requestTimeout,
   suspiciousActivityLogger,
-  blockAttacks
+  blockAttacks,
 } from './middleware/security.js'
 import { cacheService } from './services/cache.js'
-import { authMiddleware } from './middleware/auth.js';
+import { authMiddleware } from './middleware/auth.js'
 
 // Routes
 import alchemyRoutes from './routes/alchemy.js'
@@ -42,10 +42,12 @@ const HOST = process.env.HOST || 'localhost'
 const ENABLE_WEBSOCKET = process.env.ENABLE_WEBSOCKET === 'true'
 
 // Security middleware
-app.use(helmet({
-  contentSecurityPolicy: false, // Allow for development
-  crossOriginEmbedderPolicy: false
-}))
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Allow for development
+    crossOriginEmbedderPolicy: false,
+  })
+)
 
 // CORS configuration
 const corsOptions = {
@@ -53,29 +55,33 @@ const corsOptions = {
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }
 app.use(cors(corsOptions))
 
 // Compression and parsing with production limits
 app.use(compression() as any)
 const maxRequestSize = process.env.MAX_REQUEST_SIZE_MB || '2'
-app.use(express.json({
-  limit: `${maxRequestSize}mb`,
-  verify: (req: Request, res: Response, buf: Buffer, _encoding: string) => {
-    // Validate JSON payload size in production
-    if (buf.length > parseInt(maxRequestSize) * 1024 * 1024) {
-      const error: any = new Error('Request payload too large')
-      error.status = 413
-      throw error
-    }
-  }
-}))
-app.use(express.urlencoded({
-  extended: true,
-  limit: `${maxRequestSize}mb`,
-  parameterLimit: 1000 // Prevent parameter pollution attacks
-}))
+app.use(
+  express.json({
+    limit: `${maxRequestSize}mb`,
+    verify: (req: Request, res: Response, buf: Buffer, _encoding: string) => {
+      // Validate JSON payload size in production
+      if (buf.length > parseInt(maxRequestSize) * 1024 * 1024) {
+        const error: any = new Error('Request payload too large')
+        error.status = 413
+        throw error
+      }
+    },
+  })
+)
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: `${maxRequestSize}mb`,
+    parameterLimit: 1000, // Prevent parameter pollution attacks
+  })
+)
 
 // Rate limiting with different tiers
 const globalLimiter = rateLimit({
@@ -83,14 +89,14 @@ const globalLimiter = rateLimit({
   max: parseInt(process.env.RATE_LIMIT_REQUESTS_PER_MINUTE || '100') * 15, // Scale to window
   message: {
     error: 'Too many requests from this IP, please try again later',
-    retryAfter: '15 minutes'
+    retryAfter: '15 minutes',
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => {
+  skip: req => {
     // Skip rate limiting for health checks
     return req.path === '/api/health'
-  }
+  },
 })
 
 // Stricter rate limiting for expensive operations
@@ -99,7 +105,7 @@ const computeLimiter = rateLimit({
   max: 10, // 10 requests per minute for heavy computations
   message: {
     error: 'Computation rate limit exceeded, please wait before making more requests',
-    retryAfter: '1 minute'
+    retryAfter: '1 minute',
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -146,9 +152,9 @@ app.get('/', (req: Request, res: Response) => {
       planetary: '/api/planetary',
       tokens: '/api/tokens',
       kinetics: '/api/kinetics',
-      consciousness: '/api/consciousness'
+      consciousness: '/api/consciousness',
     },
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   })
 })
 
@@ -178,9 +184,9 @@ async function startServer() {
   }
 
   await initializeServices()
-  
+
   const server = createServer(app)
-  
+
   // Setup WebSocket if enabled
   if (ENABLE_WEBSOCKET) {
     const wsPort = parseInt(process.env.WEBSOCKET_PORT || '8001')
@@ -188,15 +194,19 @@ async function startServer() {
     setupWebSocketHandlers(wss)
     logger.info(`WebSocket server started on port ${wsPort}`)
   }
-  
+
   server.listen(PORT, HOST, () => {
     logger.info(`🚀 Planetary Agents Backend started`)
     logger.info(`📍 Server: http://${HOST}:${PORT}`)
     logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
     logger.info(`💾 Cache: ${process.env.REDIS_URL ? 'Redis' : 'Memory'}`)
-    logger.info(`🔧 Feature Flags: ${Object.keys(process.env).filter(k => k.endsWith('_BACKEND')).join(', ')}`)
+    logger.info(
+      `🔧 Feature Flags: ${Object.keys(process.env)
+        .filter(k => k.endsWith('_BACKEND'))
+        .join(', ')}`
+    )
   })
-  
+
   // Graceful shutdown handling
   let isShuttingDown = false
 
@@ -215,7 +225,7 @@ async function startServer() {
       process.exit(1)
     }, 30000) // 30 seconds timeout
 
-    server.close((err) => {
+    server.close(err => {
       if (err) {
         logger.error('Error during server shutdown:', err)
         clearTimeout(shutdownTimeout)
@@ -247,7 +257,7 @@ async function startServer() {
   process.on('SIGINT', () => gracefulShutdown('SIGINT'))
 
   // Handle uncaught exceptions
-  process.on('uncaughtException', (error) => {
+  process.on('uncaughtException', error => {
     logger.error('Uncaught Exception:', error)
     gracefulShutdown('UNCAUGHT_EXCEPTION')
   })
@@ -259,7 +269,7 @@ async function startServer() {
   })
 }
 
-startServer().catch((error) => {
+startServer().catch(error => {
   logger.error('Failed to start server:', error)
   process.exit(1)
 })

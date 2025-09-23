@@ -48,13 +48,16 @@ class PerformanceMonitor {
     }
 
     // Log slow requests for debugging
-    if (metric.responseTime > 5000) { // 5 seconds
+    if (metric.responseTime > 5000) {
+      // 5 seconds
       console.warn(`🐌 Slow request detected: ${metric.endpoint} took ${metric.responseTime}ms`)
     }
 
     // Log errors
     if (metric.statusCode >= 400) {
-      console.error(`❌ Error request: ${metric.method} ${metric.endpoint} - ${metric.statusCode}${metric.error ? ': ' + metric.error : ''}`)
+      console.error(
+        `❌ Error request: ${metric.method} ${metric.endpoint} - ${metric.statusCode}${metric.error ? `: ${metric.error}` : ''}`
+      )
     }
   }
 
@@ -72,22 +75,34 @@ class PerformanceMonitor {
 
     return {
       apiResponseTime: {
-        average: responseTimes.length > 0 ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length : 0,
-        p95: responseTimes.length > 0 ? responseTimes[Math.floor(responseTimes.length * 0.95)] || 0 : 0,
-        p99: responseTimes.length > 0 ? responseTimes[Math.floor(responseTimes.length * 0.99)] || 0 : 0
+        average:
+          responseTimes.length > 0
+            ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
+            : 0,
+        p95:
+          responseTimes.length > 0
+            ? responseTimes[Math.floor(responseTimes.length * 0.95)] || 0
+            : 0,
+        p99:
+          responseTimes.length > 0
+            ? responseTimes[Math.floor(responseTimes.length * 0.99)] || 0
+            : 0,
       },
       errorRate: recentMetrics.length > 0 ? (errorCount / recentMetrics.length) * 100 : 0,
       activeUsers: this.getActiveUserCount(),
       memoryUsage: this.getMemoryUsage(),
       uptime: process.uptime(),
-      lastChecked: now
+      lastChecked: now,
     }
   }
 
   /**
    * Get performance metrics for a specific endpoint
    */
-  getEndpointMetrics(endpoint: string, timeRange: number = 60): {
+  getEndpointMetrics(
+    endpoint: string,
+    timeRange: number = 60
+  ): {
     averageResponseTime: number
     requestCount: number
     errorRate: number
@@ -95,19 +110,19 @@ class PerformanceMonitor {
   } {
     const now = new Date()
     const endpointMetrics = this.metrics.filter(
-      m => m.endpoint === endpoint &&
-           now.getTime() - m.timestamp.getTime() < timeRange * 60 * 1000
+      m => m.endpoint === endpoint && now.getTime() - m.timestamp.getTime() < timeRange * 60 * 1000
     )
 
     const errors = endpointMetrics.filter(m => m.statusCode >= 400)
 
     return {
-      averageResponseTime: endpointMetrics.length > 0
-        ? endpointMetrics.reduce((sum, m) => sum + m.responseTime, 0) / endpointMetrics.length
-        : 0,
+      averageResponseTime:
+        endpointMetrics.length > 0
+          ? endpointMetrics.reduce((sum, m) => sum + m.responseTime, 0) / endpointMetrics.length
+          : 0,
       requestCount: endpointMetrics.length,
       errorRate: endpointMetrics.length > 0 ? (errors.length / endpointMetrics.length) * 100 : 0,
-      recentErrors: errors.slice(-5) // Last 5 errors
+      recentErrors: errors.slice(-5), // Last 5 errors
     }
   }
 
@@ -134,7 +149,7 @@ class PerformanceMonitor {
       .map(([endpoint, metrics]) => ({
         endpoint,
         averageResponseTime: metrics.reduce((sum, m) => sum + m.responseTime, 0) / metrics.length,
-        requestCount: metrics.length
+        requestCount: metrics.length,
       }))
       .sort((a, b) => b.averageResponseTime - a.averageResponseTime)
 
@@ -155,7 +170,9 @@ class PerformanceMonitor {
 
       // Alert on slow average response time
       if (health.apiResponseTime.average > 2000) {
-        console.warn(`⚠️  Slow API performance: ${health.apiResponseTime.average.toFixed(0)}ms average`)
+        console.warn(
+          `⚠️  Slow API performance: ${health.apiResponseTime.average.toFixed(0)}ms average`
+        )
       }
 
       // Alert on high memory usage
@@ -172,9 +189,8 @@ class PerformanceMonitor {
     const now = new Date()
     const recentUsers = new Set(
       this.metrics
-        .filter(m =>
-          m.userId &&
-          now.getTime() - m.timestamp.getTime() < 15 * 60 * 1000 // Last 15 minutes
+        .filter(
+          m => m.userId && now.getTime() - m.timestamp.getTime() < 15 * 60 * 1000 // Last 15 minutes
         )
         .map(m => m.userId)
     )
@@ -225,7 +241,7 @@ export function trackPerformance(req: any, res: any, next: any) {
   const startTime = Date.now()
   const originalSend = res.send
 
-  res.send = function(body: any) {
+  res.send = function (body: any) {
     const responseTime = Date.now() - startTime
 
     performanceMonitor.recordMetric({
@@ -235,7 +251,7 @@ export function trackPerformance(req: any, res: any, next: any) {
       statusCode: res.statusCode,
       timestamp: new Date(),
       userId: req.user?.id || req.headers['x-user-id'],
-      error: res.statusCode >= 400 ? body : undefined
+      error: res.statusCode >= 400 ? body : undefined,
     })
 
     return originalSend.call(this, body)
@@ -263,7 +279,7 @@ export function withErrorHandling<T extends any[], R>(
         method: 'API',
         responseTime: Date.now() - startTime,
         statusCode: 200,
-        timestamp: new Date()
+        timestamp: new Date(),
       })
 
       return result
@@ -275,7 +291,7 @@ export function withErrorHandling<T extends any[], R>(
         responseTime: Date.now() - startTime,
         statusCode: 500,
         timestamp: new Date(),
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
 
       // Log error for debugging
@@ -293,6 +309,6 @@ export function usePerformanceData() {
   return {
     getSystemHealth: () => performanceMonitor.getSystemHealth(),
     getEndpointMetrics: (endpoint: string) => performanceMonitor.getEndpointMetrics(endpoint),
-    getSlowEndpoints: () => performanceMonitor.getSlowEndpoints()
+    getSlowEndpoints: () => performanceMonitor.getSlowEndpoints(),
   }
 }

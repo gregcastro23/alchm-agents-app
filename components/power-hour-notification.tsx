@@ -15,11 +15,11 @@ interface PowerHourNotificationProps {
   className?: string
 }
 
-export function PowerHourNotification({ 
-  agentId, 
-  location, 
+export function PowerHourNotification({
+  agentId,
+  location,
   onDismiss,
-  className = '' 
+  className = '',
 }: PowerHourNotificationProps) {
   const { planetaryHour, loading } = usePlanetaryHours({ location, refreshInterval: 60000 })
   const [isVisible, setIsVisible] = useState(false)
@@ -33,21 +33,21 @@ export function PowerHourNotification({
 
     // Check if current planetary hour aligns with agent
     const isOptimalHour = profile.alignment.includes(planetaryHour.planet)
-    
+
     // Show notification if it's an optimal hour and we haven't shown it yet for this hour
     const hourKey = `${agentId}-${planetaryHour.planet}-${planetaryHour.hourIndex}`
     const lastShownKey = localStorage.getItem('lastPowerHourNotification')
-    
+
     if (isOptimalHour && lastShownKey !== hourKey && !hasShown) {
       setIsVisible(true)
       setHasShown(true)
       localStorage.setItem('lastPowerHourNotification', hourKey)
-      
+
       // Auto-dismiss after 30 seconds
       const timer = setTimeout(() => {
         setIsVisible(false)
       }, 30000)
-      
+
       return () => clearTimeout(timer)
     }
   }, [planetaryHour, agentId, loading, hasShown])
@@ -67,7 +67,9 @@ export function PowerHourNotification({
   const minutesLeft = Math.max(0, Math.floor((timeUntilEnd % (1000 * 60 * 60)) / (1000 * 60)))
 
   return (
-    <Card className={`border-2 border-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 shadow-lg ${className}`}>
+    <Card
+      className={`border-2 border-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 shadow-lg ${className}`}
+    >
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3 flex-1">
@@ -78,40 +80,43 @@ export function PowerHourNotification({
               </div>
               <Bell className="h-4 w-4 text-orange-600 animate-bounce" />
             </div>
-            
+
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-semibold text-yellow-900 dark:text-yellow-100">
                   Power Hour Active!
                 </h3>
-                <Badge className="bg-yellow-600 text-white">
-                  {planetaryHour.planet}
-                </Badge>
+                <Badge className="bg-yellow-600 text-white">{planetaryHour.planet}</Badge>
               </div>
-              
+
               <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-2">
-                <strong>{agentId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</strong> is 
-                in optimal alignment with {planetaryHour.planet} energy. 
-                Perfect time for enhanced consciousness evolution!
+                <strong>{agentId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</strong>{' '}
+                is in optimal alignment with {planetaryHour.planet} energy. Perfect time for
+                enhanced consciousness evolution!
               </p>
-              
+
               <div className="flex items-center gap-4 text-xs text-yellow-700 dark:text-yellow-300">
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   <span>
-                    {hoursLeft > 0 ? `${hoursLeft}h ` : ''}{minutesLeft}m remaining
+                    {hoursLeft > 0 ? `${hoursLeft}h ` : ''}
+                    {minutesLeft}m remaining
                   </span>
                 </div>
-                
+
                 <div className="flex items-center gap-1">
                   <Sparkles className="h-3 w-3" />
-                  <span>+{profile.evolutionRate > 1 ? Math.round((profile.evolutionRate - 1) * 100) : 20}% power boost</span>
+                  <span>
+                    +
+                    {profile.evolutionRate > 1 ? Math.round((profile.evolutionRate - 1) * 100) : 20}
+                    % power boost
+                  </span>
                 </div>
               </div>
-              
+
               <div className="mt-3 flex gap-2">
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   className="bg-yellow-600 hover:bg-yellow-700 text-white"
                   onClick={() => {
                     // Navigate to agent or trigger interaction
@@ -120,9 +125,9 @@ export function PowerHourNotification({
                 >
                   Engage Now
                 </Button>
-                
-                <Button 
-                  size="sm" 
+
+                <Button
+                  size="sm"
                   variant="outline"
                   className="border-yellow-600 text-yellow-700 hover:bg-yellow-100 dark:hover:bg-yellow-900/20"
                   onClick={handleDismiss}
@@ -132,7 +137,7 @@ export function PowerHourNotification({
               </div>
             </div>
           </div>
-          
+
           <Button
             size="sm"
             variant="ghost"
@@ -148,12 +153,12 @@ export function PowerHourNotification({
 }
 
 // Global notification system component
-export function GlobalPowerHourNotifications({ 
-  watchedAgents, 
-  location 
-}: { 
+export function GlobalPowerHourNotifications({
+  watchedAgents,
+  location,
+}: {
   watchedAgents: string[]
-  location: { lat: number; lon: number } 
+  location: { lat: number; lon: number }
 }) {
   const [activeNotifications, setActiveNotifications] = useState<string[]>([])
 

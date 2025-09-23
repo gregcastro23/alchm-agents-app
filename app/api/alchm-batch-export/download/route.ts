@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 declare global {
-  var alchemicalBatchCache: Map<string, {
-    data: any
-    format: string
-    filename: string
-    timestamp: number
-  }> | undefined
+  var alchemicalBatchCache:
+    | Map<
+        string,
+        {
+          data: any
+          format: string
+          filename: string
+          timestamp: number
+        }
+      >
+    | undefined
 }
 
 export async function GET(request: NextRequest) {
@@ -16,10 +21,7 @@ export async function GET(request: NextRequest) {
     const format = searchParams.get('format') || 'json'
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Download ID is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Download ID is required' }, { status: 400 })
     }
 
     // Check if cache exists and has the data
@@ -68,13 +70,9 @@ export async function GET(request: NextRequest) {
         'Content-Length': Buffer.byteLength(responseData).toString(),
       },
     })
-
   } catch (error) {
     console.error('Error serving alchemical export download:', error)
-    return NextResponse.json(
-      { error: 'Failed to serve download' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to serve download' }, { status: 500 })
   }
 }
 

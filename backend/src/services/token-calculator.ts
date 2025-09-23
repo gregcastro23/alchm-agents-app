@@ -62,7 +62,7 @@ class TokenCalculatorService {
     Spirit: 1.0,
     Essence: 0.8,
     Matter: 0.6,
-    Substance: 0.4
+    Substance: 0.4,
   }
 
   /**
@@ -71,9 +71,9 @@ class TokenCalculatorService {
   async calculateTokens(request: TokenCalculationRequest): Promise<TokenCalculationResult> {
     const startTime = Date.now()
     const timestamp = request.timestamp || new Date()
-    
+
     const cacheKey = `tokens:${timestamp.getTime()}:${request.location.lat}:${request.location.lon}`
-    
+
     try {
       const cached = await cacheService.get(cacheKey)
       if (cached) {
@@ -85,28 +85,31 @@ class TokenCalculatorService {
     }
 
     // Get current planetary influence
-    const planetaryHour = await planetaryHoursService.getCurrentPlanetaryHour(timestamp, request.location)
-    
+    const planetaryHour = await planetaryHoursService.getCurrentPlanetaryHour(
+      timestamp,
+      request.location
+    )
+
     // Apply planetary modifiers to base rates
     const planetaryRates = this.applyPlanetaryInfluence(request.tokens, planetaryHour.planet)
-    
+
     // Apply temporal modifiers (time of day, season, etc.)
     const temporalRates = this.applyTemporalInfluence(planetaryRates, timestamp)
-    
+
     // Calculate harmonic patterns
     const harmonics = this.calculateHarmonics(temporalRates, timestamp)
-    
+
     // Generate projections
     const projections = await this.generateProjections(temporalRates, request.location, timestamp)
-    
+
     // Identify significant events
     const events = await this.identifyEvents(temporalRates, request.location, timestamp)
-    
+
     // Calculate metadata
     const marketPhase = this.determineMarketPhase(temporalRates, harmonics)
     const volatilityIndex = this.calculateVolatilityIndex(harmonics)
     const totalValue = Object.values(temporalRates).reduce((sum, rate) => sum + rate, 0)
-    
+
     const result: TokenCalculationResult = {
       rates: temporalRates,
       projections,
@@ -117,8 +120,8 @@ class TokenCalculatorService {
         planetaryInfluence: planetaryHour.planet,
         marketPhase,
         volatilityIndex,
-        totalValue
-      }
+        totalValue,
+      },
     }
 
     // Cache for 5 minutes (market-like behavior)
@@ -142,16 +145,16 @@ class TokenCalculatorService {
       Venus: { Spirit: 0.8, Essence: 1.3, Matter: 1.2, Substance: 1.0 },
       Mars: { Spirit: 1.4, Essence: 0.8, Matter: 1.3, Substance: 0.7 },
       Jupiter: { Spirit: 1.2, Essence: 1.2, Matter: 0.9, Substance: 1.1 },
-      Saturn: { Spirit: 0.7, Essence: 0.9, Matter: 1.4, Substance: 1.2 }
+      Saturn: { Spirit: 0.7, Essence: 0.9, Matter: 1.4, Substance: 1.2 },
     }
 
     const multipliers = planetaryMultipliers[planet] || {}
-    
+
     return {
       Spirit: baseRates.Spirit * (multipliers.Spirit || 1.0),
       Essence: baseRates.Essence * (multipliers.Essence || 1.0),
       Matter: baseRates.Matter * (multipliers.Matter || 1.0),
-      Substance: baseRates.Substance * (multipliers.Substance || 1.0)
+      Substance: baseRates.Substance * (multipliers.Substance || 1.0),
     }
   }
 
@@ -161,30 +164,34 @@ class TokenCalculatorService {
   private applyTemporalInfluence(rates: TokenRates, timestamp: Date): TokenRates {
     const hour = timestamp.getHours()
     const dayOfYear = this.getDayOfYear(timestamp)
-    
+
     // Time of day influence (dawn/dusk peaks)
     const timeMultiplier = 1 + 0.2 * Math.sin((hour * Math.PI) / 12)
-    
+
     // Seasonal influence
     const seasonalMultiplier = 1 + 0.15 * Math.sin((dayOfYear * 2 * Math.PI) / 365)
-    
+
     // Weekly cycle (subtle)
     const weeklyMultiplier = 1 + 0.05 * Math.sin((timestamp.getDay() * 2 * Math.PI) / 7)
-    
+
     const totalMultiplier = timeMultiplier * seasonalMultiplier * weeklyMultiplier
-    
+
     return {
-      Spirit: rates.Spirit * totalMultiplier * (1 + 0.1 * Math.sin(hour * Math.PI / 6)), // Extra variation for Spirit
-      Essence: rates.Essence * totalMultiplier * (1 + 0.1 * Math.cos(hour * Math.PI / 8)),
-      Matter: rates.Matter * totalMultiplier * (1 + 0.05 * Math.sin(dayOfYear * Math.PI / 180)),
-      Substance: rates.Substance * totalMultiplier * (1 + 0.08 * Math.cos(dayOfYear * Math.PI / 365))
+      Spirit: rates.Spirit * totalMultiplier * (1 + 0.1 * Math.sin((hour * Math.PI) / 6)), // Extra variation for Spirit
+      Essence: rates.Essence * totalMultiplier * (1 + 0.1 * Math.cos((hour * Math.PI) / 8)),
+      Matter: rates.Matter * totalMultiplier * (1 + 0.05 * Math.sin((dayOfYear * Math.PI) / 180)),
+      Substance:
+        rates.Substance * totalMultiplier * (1 + 0.08 * Math.cos((dayOfYear * Math.PI) / 365)),
     }
   }
 
   /**
    * Calculate harmonic wave patterns for each token
    */
-  private calculateHarmonics(rates: TokenRates, timestamp: Date): { [K in keyof TokenRates]: HarmonicAnalysis } {
+  private calculateHarmonics(
+    rates: TokenRates,
+    timestamp: Date
+  ): { [K in keyof TokenRates]: HarmonicAnalysis } {
     const hour = timestamp.getHours()
     const minute = timestamp.getMinutes()
     const timeValue = hour + minute / 60
@@ -193,7 +200,7 @@ class TokenCalculatorService {
       Spirit: this.analyzeHarmonic(rates.Spirit, timeValue, 1.2), // Fast frequency
       Essence: this.analyzeHarmonic(rates.Essence, timeValue, 0.8), // Medium frequency
       Matter: this.analyzeHarmonic(rates.Matter, timeValue, 0.6), // Slow frequency
-      Substance: this.analyzeHarmonic(rates.Substance, timeValue, 0.4) // Very slow frequency
+      Substance: this.analyzeHarmonic(rates.Substance, timeValue, 0.4), // Very slow frequency
     }
   }
 
@@ -204,7 +211,7 @@ class TokenCalculatorService {
     const frequency = baseFreq * (1 + 0.1 * Math.sin(timeValue))
     const amplitude = rate * 0.2 // 20% of current rate
     const phase = (timeValue * frequency) % (2 * Math.PI)
-    
+
     // Determine resonance based on phase alignment
     let resonance: 'constructive' | 'destructive' | 'neutral'
     if (Math.abs(Math.sin(phase)) > 0.8) {
@@ -232,16 +239,19 @@ class TokenCalculatorService {
     // Near-term projections (next 24 hours)
     for (let hours = 1; hours <= 24; hours += 6) {
       const futureTime = new Date(timestamp.getTime() + hours * 60 * 60 * 1000)
-      const planetaryHour = await planetaryHoursService.getCurrentPlanetaryHour(futureTime, location)
-      
+      const planetaryHour = await planetaryHoursService.getCurrentPlanetaryHour(
+        futureTime,
+        location
+      )
+
       const projectedRates = this.applyPlanetaryInfluence(rates, planetaryHour.planet)
       const avgRate = Object.values(projectedRates).reduce((sum, rate) => sum + rate, 0) / 4
-      
+
       nearTerm.push({
         timeframe: `+${hours}h`,
         expectedRate: avgRate,
         confidence: Math.max(0.5, 1 - hours * 0.02), // Decreasing confidence
-        factors: [`Planetary: ${planetaryHour.planet}`, 'Temporal cycles']
+        factors: [`Planetary: ${planetaryHour.planet}`, 'Temporal cycles'],
       })
     }
 
@@ -250,12 +260,12 @@ class TokenCalculatorService {
     for (let i = 0; i < 4; i++) {
       const seasonalMultiplier = 1 + 0.15 * Math.sin((i * Math.PI) / 2)
       const avgRate = Object.values(rates).reduce((sum, rate) => sum + rate, 0) / 4
-      
+
       seasonal.push({
         timeframe: seasons[i],
         expectedRate: avgRate * seasonalMultiplier,
         confidence: 0.7 - i * 0.1, // Decreasing confidence over time
-        factors: [`Seasonal: ${seasons[i]}`, 'Long-term cycles']
+        factors: [`Seasonal: ${seasons[i]}`, 'Long-term cycles'],
       })
     }
 
@@ -271,12 +281,15 @@ class TokenCalculatorService {
     timestamp: Date
   ): Promise<TokenEvent[]> {
     const events: TokenEvent[] = []
-    
+
     // Look for planetary transitions in next 48 hours
     for (let hours = 1; hours <= 48; hours++) {
       const futureTime = new Date(timestamp.getTime() + hours * 60 * 60 * 1000)
-      const planetaryHour = await planetaryHoursService.getCurrentPlanetaryHour(futureTime, location)
-      
+      const planetaryHour = await planetaryHoursService.getCurrentPlanetaryHour(
+        futureTime,
+        location
+      )
+
       // Check for high-impact planetary hours
       if (['Sun', 'Jupiter', 'Mars'].includes(planetaryHour.planet)) {
         events.push({
@@ -284,8 +297,12 @@ class TokenCalculatorService {
           timestamp: futureTime,
           description: `${planetaryHour.planet} hour - increased activity expected`,
           impact: 'high',
-          tokens: planetaryHour.planet === 'Sun' ? ['Spirit'] : 
-                  planetaryHour.planet === 'Jupiter' ? ['Spirit', 'Essence'] : ['Matter', 'Spirit']
+          tokens:
+            planetaryHour.planet === 'Sun'
+              ? ['Spirit']
+              : planetaryHour.planet === 'Jupiter'
+                ? ['Spirit', 'Essence']
+                : ['Matter', 'Spirit'],
         })
       }
     }
@@ -294,14 +311,14 @@ class TokenCalculatorService {
     const highRates = Object.entries(rates)
       .filter(([, rate]) => rate > 1.2)
       .map(([token]) => token as keyof TokenRates)
-    
+
     if (highRates.length >= 2) {
       events.push({
         type: 'confluence',
         timestamp: new Date(timestamp.getTime() + 60 * 60 * 1000), // 1 hour from now
         description: `Multiple tokens showing elevated activity: ${highRates.join(', ')}`,
         impact: 'high',
-        tokens: highRates
+        tokens: highRates,
       })
     }
 
@@ -311,10 +328,15 @@ class TokenCalculatorService {
   /**
    * Determine current market phase
    */
-  private determineMarketPhase(rates: TokenRates, harmonics: { [K in keyof TokenRates]: HarmonicAnalysis }): string {
+  private determineMarketPhase(
+    rates: TokenRates,
+    harmonics: { [K in keyof TokenRates]: HarmonicAnalysis }
+  ): string {
     const avgRate = Object.values(rates).reduce((sum, rate) => sum + rate, 0) / 4
-    const constructiveCount = Object.values(harmonics).filter(h => h.resonance === 'constructive').length
-    
+    const constructiveCount = Object.values(harmonics).filter(
+      h => h.resonance === 'constructive'
+    ).length
+
     if (avgRate > 1.2 && constructiveCount >= 3) return 'Bull Market'
     if (avgRate < 0.8 && constructiveCount <= 1) return 'Bear Market'
     if (constructiveCount >= 2) return 'Accumulation'
@@ -324,11 +346,14 @@ class TokenCalculatorService {
   /**
    * Calculate volatility index
    */
-  private calculateVolatilityIndex(harmonics: { [K in keyof TokenRates]: HarmonicAnalysis }): number {
+  private calculateVolatilityIndex(harmonics: {
+    [K in keyof TokenRates]: HarmonicAnalysis
+  }): number {
     const amplitudes = Object.values(harmonics).map(h => h.amplitude)
     const avgAmplitude = amplitudes.reduce((sum, amp) => sum + amp, 0) / amplitudes.length
-    const variance = amplitudes.reduce((sum, amp) => sum + Math.pow(amp - avgAmplitude, 2), 0) / amplitudes.length
-    
+    const variance =
+      amplitudes.reduce((sum, amp) => sum + Math.pow(amp - avgAmplitude, 2), 0) / amplitudes.length
+
     return Math.sqrt(variance) / avgAmplitude
   }
 
@@ -352,23 +377,23 @@ class TokenCalculatorService {
   ): Promise<Array<{ timestamp: Date; rates: TokenRates }>> {
     const data: Array<{ timestamp: Date; rates: TokenRates }> = []
     const current = new Date(startDate)
-    
+
     while (current <= endDate) {
       const request: TokenCalculationRequest = {
         tokens: this.baseRates,
         location,
-        timestamp: new Date(current)
+        timestamp: new Date(current),
       }
-      
+
       const result = await this.calculateTokens(request)
       data.push({
         timestamp: new Date(current),
-        rates: result.rates
+        rates: result.rates,
       })
-      
+
       current.setMinutes(current.getMinutes() + interval)
     }
-    
+
     return data
   }
 }

@@ -6,7 +6,7 @@ import {
   calculateAllPlanets,
   type EnhancedBirthInfo,
   type EnhancedPlanetPosition,
-  type EnhancedAscendant
+  type EnhancedAscendant,
 } from '../enhanced-astronomical-calculator'
 
 // Accurate zodiac date ranges (tropical zodiac)
@@ -141,7 +141,7 @@ function calculatePlanetPosition(
 
   // Add sinusoidal variation for more realistic orbital motion
   if (orbitalPeriod) {
-    const orbitalPhase = (daysDiff % orbitalPeriod) / orbitalPeriod * 2 * Math.PI
+    const orbitalPhase = ((daysDiff % orbitalPeriod) / orbitalPeriod) * 2 * Math.PI
     const eccentricity = planet === 'Mercury' ? 0.205 : planet === 'Mars' ? 0.093 : 0.05
     const variation = eccentricity * Math.sin(orbitalPhase) * 30 // Max 30° variation for Mercury
     totalDegrees += variation
@@ -155,15 +155,22 @@ function calculatePlanetPosition(
     const cyclePosition = (daysDiff % synodicPeriod) / synodicPeriod
 
     // Retrograde occurs near inferior/superior conjunction
-    const retrogradePhase = planet === 'Mercury' ? 0.20 : planet === 'Venus' ? 0.07 : 0.10
+    const retrogradePhase = planet === 'Mercury' ? 0.2 : planet === 'Venus' ? 0.07 : 0.1
     const retrogradeStart = 0.5 - retrogradePhase
     const retrogradeEnd = 0.5 + retrogradePhase
 
     if (cyclePosition > retrogradeStart && cyclePosition < retrogradeEnd) {
       retrograde = true
       // More accurate retrograde velocity
-      const retrogradeIntensity = Math.sin((cyclePosition - retrogradeStart) / (2 * retrogradePhase) * Math.PI)
-      totalDegrees -= dailyMotion * retrogradeIntensity * (planet === 'Mercury' ? 1.5 : 0.7) * daysDiff * retrogradePhase
+      const retrogradeIntensity = Math.sin(
+        ((cyclePosition - retrogradeStart) / (2 * retrogradePhase)) * Math.PI
+      )
+      totalDegrees -=
+        dailyMotion *
+        retrogradeIntensity *
+        (planet === 'Mercury' ? 1.5 : 0.7) *
+        daysDiff *
+        retrogradePhase
     }
   }
 
@@ -217,7 +224,7 @@ function calculateAscendant(birthInfo: BirthInfo): { sign: string; degree: numbe
 
   // Calculate Greenwich Mean Sidereal Time (GMST) at 0h UT
   const T = daysSinceJ2000 / 36525
-  let GMST0 = 280.46061837 + 360.98564736629 * daysSinceJ2000 + 0.000387933 * T * T
+  const GMST0 = 280.46061837 + 360.98564736629 * daysSinceJ2000 + 0.000387933 * T * T
 
   // Convert local time to UTC (simplified - assumes no DST)
   const timezoneOffset = Math.round(longitude / 15) // Approximate timezone from longitude
@@ -231,29 +238,39 @@ function calculateAscendant(birthInfo: BirthInfo): { sign: string; degree: numbe
 
   // Calculate the ecliptic longitude of the Ascendant
   // Using simplified formula for obliquity of ecliptic (23.44°)
-  const obliquity = 23.44 * Math.PI / 180
-  const latRad = latitude * Math.PI / 180
+  const obliquity = (23.44 * Math.PI) / 180
+  const latRad = (latitude * Math.PI) / 180
 
   // Calculate RAMC (Right Ascension of Medium Coeli)
-  const RAMC = LST * Math.PI / 180
+  const RAMC = (LST * Math.PI) / 180
 
   // Simplified ascendant calculation using house cusps
   const tanLat = Math.tan(latRad)
   const cosObliquity = Math.cos(obliquity)
 
   // Calculate ascendant longitude
-  let ascendantLongitude = Math.atan2(
-    -Math.cos(RAMC),
-    Math.sin(RAMC) * cosObliquity + tanLat * Math.sin(obliquity)
-  ) * 180 / Math.PI
+  let ascendantLongitude =
+    (Math.atan2(-Math.cos(RAMC), Math.sin(RAMC) * cosObliquity + tanLat * Math.sin(obliquity)) *
+      180) /
+    Math.PI
 
   // Normalize to 0-360 degrees
   ascendantLongitude = (ascendantLongitude + 360) % 360
 
   // Convert to sign and degree
   const signs = [
-    'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
   ]
   const signIndex = Math.floor(ascendantLongitude / 30)
   const degreeInSign = ascendantLongitude % 30
@@ -314,7 +331,7 @@ export function generateAccurateHoroscope(birthInfo: BirthInfo): GeneratedHorosc
 
   // Check cache first for planetary positions
   const cached = planetaryCache.get(cacheKey)
-  if (cached && (Date.now() - cached.timestamp) < PLANETARY_CACHE_TTL) {
+  if (cached && Date.now() - cached.timestamp < PLANETARY_CACHE_TTL) {
     return cached.data
   }
   const birthDate = new Date(
@@ -394,7 +411,7 @@ export function generateAccurateHoroscope(birthInfo: BirthInfo): GeneratedHorosc
   // Cache the result
   planetaryCache.set(cacheKey, {
     data: result,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   })
 
   // Clean up old cache entries (keep only last 20)
@@ -461,7 +478,7 @@ export function validateBirthInfo(birthInfo: BirthInfo): { valid: boolean; error
 export function generateProfessionalHoroscope(
   birthInfo: BirthInfo,
   options: {
-    useLegacyFallback?: boolean,
+    useLegacyFallback?: boolean
     includeAccuracyMetadata?: boolean
   } = {}
 ): GeneratedHoroscope {
@@ -475,7 +492,7 @@ export function generateProfessionalHoroscope(
       minute: birthInfo.minute,
       second: 0,
       latitude: birthInfo.latitude || 40.7128, // Default to NYC if not provided
-      longitude: birthInfo.longitude || -74.0060
+      longitude: birthInfo.longitude || -74.006,
     }
 
     // Calculate enhanced positions
@@ -489,7 +506,7 @@ export function generateProfessionalHoroscope(
         label: planetName,
         Sign: { label: position.sign },
         degrees: position.signDegree,
-        retrograde: position.retrograde
+        retrograde: position.retrograde,
       })
     })
 
@@ -497,17 +514,17 @@ export function generateProfessionalHoroscope(
       tropical: {
         Ascendant: {
           Sign: { label: enhancedResults.ascendant.sign },
-          degrees: enhancedResults.ascendant.signDegree
+          degrees: enhancedResults.ascendant.signDegree,
         },
         CelestialBodies: {
-          all: celestialBodies
-        }
+          all: celestialBodies,
+        },
       },
       metadata: {
         generatedAt: new Date(),
         method: 'Enhanced VSOP87-like calculations',
-        accuracy: 'Professional grade ±0.1° precision'
-      }
+        accuracy: 'Professional grade ±0.1° precision',
+      },
     }
 
     if (options.includeAccuracyMetadata) {
@@ -519,13 +536,12 @@ export function generateProfessionalHoroscope(
           'VSOP87-like planetary positions',
           'IAU 2000A sidereal time',
           'Proper equation of center',
-          'Enhanced lunar theory (ELP2000 approximation)'
-        ]
+          'Enhanced lunar theory (ELP2000 approximation)',
+        ],
       }
     }
 
     return result
-
   } catch (error) {
     console.warn('Enhanced calculations failed, falling back to legacy system:', error)
 
@@ -559,20 +575,20 @@ export function testAstronomicalAccuracy(birthInfo: BirthInfo): {
   const legacy = generateAccurateHoroscope(birthInfo)
   const enhanced = generateProfessionalHoroscope(birthInfo, {
     useLegacyFallback: false,
-    includeAccuracyMetadata: true
+    includeAccuracyMetadata: true,
   })
 
   // Calculate improvements (simplified for demo)
   const improvements: Record<string, number> = {}
   const expectedImprovements = {
-    'Sun': 0.1,
-    'Moon': 0.5,
-    'Mercury': 2.0,
-    'Venus': 1.0,
-    'Mars': 1.5,
-    'Jupiter': 0.5,
-    'Saturn': 0.3,
-    'Ascendant': 1.0
+    Sun: 0.1,
+    Moon: 0.5,
+    Mercury: 2.0,
+    Venus: 1.0,
+    Mars: 1.5,
+    Jupiter: 0.5,
+    Saturn: 0.3,
+    Ascendant: 1.0,
   }
 
   Object.assign(improvements, expectedImprovements)
@@ -586,7 +602,7 @@ export function testAstronomicalAccuracy(birthInfo: BirthInfo): {
     summary: {
       averageImprovement: values.reduce((a, b) => a + b, 0) / values.length,
       maxImprovement: Math.max(...values),
-      method: 'VSOP87-like vs simplified linear motion'
-    }
+      method: 'VSOP87-like vs simplified linear motion',
+    },
   }
 }

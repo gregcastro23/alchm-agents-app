@@ -245,9 +245,9 @@ export async function findNearestApplyingAspect(
       timeToExact = nearestAspect.orb / Math.abs(nearestAspect.rate)
     }
 
-    const aspectsHint =
-      `${nearestAspect.planet1}-${nearestAspect.planet2} ${nearestAspect.type} applying` +
-      (timeToExact ? ` (${timeToExact.toFixed(1)}h to exact)` : '')
+    const aspectsHint = `${nearestAspect.planet1}-${nearestAspect.planet2} ${nearestAspect.type} applying${
+      timeToExact ? ` (${timeToExact.toFixed(1)}h to exact)` : ''
+    }`
 
     return {
       aspectsHint,

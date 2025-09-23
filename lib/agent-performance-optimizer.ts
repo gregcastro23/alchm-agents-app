@@ -10,7 +10,7 @@ import { resilientApiCall } from './api-resilience-system'
 export interface PerformanceConfig {
   maxConcurrentAgents: number
   streamingEnabled: boolean
-  prioritizeByKalchm: boolean  // Prioritize by Kalchm equilibrium dynamics, not Monica Constant
+  prioritizeByKalchm: boolean // Prioritize by Kalchm equilibrium dynamics, not Monica Constant
   batchOptimizationEnabled: boolean
   preloadPopularAgents: boolean
 }
@@ -46,9 +46,9 @@ export class AgentPerformanceOptimizer {
   private static config: PerformanceConfig = {
     maxConcurrentAgents: 10, // Increased from 5 for better performance
     streamingEnabled: true,
-    prioritizeByKalchm: true,  // Prioritize by alchemical equilibrium dynamics
+    prioritizeByKalchm: true, // Prioritize by alchemical equilibrium dynamics
     batchOptimizationEnabled: true,
-    preloadPopularAgents: true
+    preloadPopularAgents: true,
   }
 
   private static metrics: PerformanceMetrics = {
@@ -57,21 +57,24 @@ export class AgentPerformanceOptimizer {
     cacheHitRate: 0,
     concurrencyUtilization: 0,
     streamingBytesServed: 0,
-    optimizationsSaved: 0
+    optimizationsSaved: 0,
   }
 
   private static readonly kalchmCache = new Map<string, number>()
   private static readonly popularAgents = new Set([
-    'leonardo-da-vinci', 'william-shakespeare', 'albert-einstein',
-    'nikola-tesla', 'marie-curie', 'cleopatra', 'socrates'
+    'leonardo-da-vinci',
+    'william-shakespeare',
+    'albert-einstein',
+    'nikola-tesla',
+    'marie-curie',
+    'cleopatra',
+    'socrates',
   ])
 
   /**
    * Process multiple agent requests concurrently with optimization
    */
-  static async processConcurrentAgentRequests(
-    requests: AgentRequest[]
-  ): Promise<BatchResponse[]> {
+  static async processConcurrentAgentRequests(requests: AgentRequest[]): Promise<BatchResponse[]> {
     const startTime = Date.now()
 
     // Sort by priority if Kalchm prioritization is enabled
@@ -129,7 +132,7 @@ export class AgentPerformanceOptimizer {
           messageLength: request.message.length,
           messageTopics: [],
           timeOfDay: this.getTimeOfDay(),
-          weekday: this.isWeekday()
+          weekday: this.isWeekday(),
         }
 
         const cachedResponse = await agentCache.getCachedResponse(
@@ -145,7 +148,7 @@ export class AgentPerformanceOptimizer {
             response: cachedResponse.agentResponse,
             responseTime: cachedResponse.responseTime,
             fromCache: true,
-            priority: request.priority
+            priority: request.priority,
           }
         }
 
@@ -171,7 +174,7 @@ export class AgentPerformanceOptimizer {
           response: apiResponse,
           responseTime,
           fromCache: false,
-          priority: request.priority
+          priority: request.priority,
         }
       } catch (error) {
         console.error(`❌ Error processing ${request.agentId}:`, error)
@@ -181,7 +184,7 @@ export class AgentPerformanceOptimizer {
           responseTime: 0,
           fromCache: false,
           priority: request.priority,
-          error: (error as Error).message
+          error: (error as Error).message,
         }
       }
     })
@@ -198,7 +201,7 @@ export class AgentPerformanceOptimizer {
           responseTime: 0,
           fromCache: false,
           priority: 0,
-          error: result.reason?.message || 'Unknown error'
+          error: result.reason?.message || 'Unknown error',
         }
       }
     })
@@ -211,19 +214,22 @@ export class AgentPerformanceOptimizer {
     // This would integrate with the actual API call logic
     // For now, return a simulated response to demonstrate the optimization framework
 
-    return await resilientApiCall({
-      name: `optimized-agent-${request.agentId}`,
-      execute: async () => {
-        // Simulate API call - in real implementation, this would call the actual agent API
-        await this.sleep(Math.random() * 2000 + 1000) // 1-3 second simulation
-        return `Optimized response from ${request.agentId}: ${request.message.substring(0, 50)}...`
+    return await resilientApiCall(
+      {
+        name: `optimized-agent-${request.agentId}`,
+        execute: async () => {
+          // Simulate API call - in real implementation, this would call the actual agent API
+          await this.sleep(Math.random() * 2000 + 1000) // 1-3 second simulation
+          return `Optimized response from ${request.agentId}: ${request.message.substring(0, 50)}...`
+        },
+        timeout: 15000,
       },
-      timeout: 15000
-    }, {
-      maxRetries: 2,
-      baseDelayMs: 1000,
-      maxDelayMs: 5000
-    })
+      {
+        maxRetries: 2,
+        baseDelayMs: 1000,
+        maxDelayMs: 5000,
+      }
+    )
   }
 
   /**
@@ -265,7 +271,9 @@ export class AgentPerformanceOptimizer {
       }
 
       this.kalchmCache.set(agentId, kalchm)
-      console.log(`📊 Calculated Kalchm for ${agentId}: ${kalchm.toFixed(4)} (Spirit:${spirit}, Essence:${essence}, Matter:${matter}, Substance:${substance})`)
+      console.log(
+        `📊 Calculated Kalchm for ${agentId}: ${kalchm.toFixed(4)} (Spirit:${spirit}, Essence:${essence}, Matter:${matter}, Substance:${substance})`
+      )
     }
 
     return this.kalchmCache.get(agentId)!
@@ -276,7 +284,10 @@ export class AgentPerformanceOptimizer {
    * In real implementation, this would fetch from the agent's consciousness data
    */
   private static getAgentAlchemicalProperties(agentId: string): {
-    spirit: number, essence: number, matter: number, substance: number
+    spirit: number
+    essence: number
+    matter: number
+    substance: number
   } {
     // Assign realistic alchemical properties based on agent personality
     // These values should be fetched from the actual agent data in production
@@ -287,8 +298,8 @@ export class AgentPerformanceOptimizer {
       'albert-einstein': { spirit: 8, essence: 7, matter: 6, substance: 5 }, // Strong theoretical spirit
       'nikola-tesla': { spirit: 9, essence: 6, matter: 8, substance: 4 }, // Innovative spirit, strong matter manipulation
       'marie-curie': { spirit: 7, essence: 8, matter: 9, substance: 6 }, // Scientific matter expertise
-      'cleopatra': { spirit: 5, essence: 7, matter: 6, substance: 8 }, // Strong substance/power foundation
-      'socrates': { spirit: 6, essence: 9, matter: 4, substance: 5 }, // High wisdom essence
+      cleopatra: { spirit: 5, essence: 7, matter: 6, substance: 8 }, // Strong substance/power foundation
+      socrates: { spirit: 6, essence: 9, matter: 4, substance: 5 }, // High wisdom essence
       'carl-jung': { spirit: 7, essence: 8, matter: 5, substance: 6 }, // Psychological depth
     }
 
@@ -357,9 +368,12 @@ export class AgentPerformanceOptimizer {
   /**
    * Stream response data for real-time display
    */
-  static async* streamBatchResponses(
-    requests: AgentRequest[]
-  ): AsyncGenerator<{ agentId: string; partialResponse: string; complete: boolean; responseTime?: number }> {
+  static async *streamBatchResponses(requests: AgentRequest[]): AsyncGenerator<{
+    agentId: string
+    partialResponse: string
+    complete: boolean
+    responseTime?: number
+  }> {
     if (!this.config.streamingEnabled) {
       // If streaming disabled, yield all at once
       const responses = await this.processConcurrentAgentRequests(requests)
@@ -368,7 +382,7 @@ export class AgentPerformanceOptimizer {
           agentId: response.agentId,
           partialResponse: response.response,
           complete: true,
-          responseTime: response.responseTime
+          responseTime: response.responseTime,
         }
       }
       return
@@ -382,7 +396,7 @@ export class AgentPerformanceOptimizer {
     })
 
     // Start all processing concurrently
-    const processingPromises = sortedRequests.map(async (request) => {
+    const processingPromises = sortedRequests.map(async request => {
       const startTime = Date.now()
       try {
         // First yield starting indicator
@@ -395,14 +409,14 @@ export class AgentPerformanceOptimizer {
           agentId: request.agentId,
           partialResponse: response.response,
           complete: true,
-          responseTime
+          responseTime,
         }
       } catch (error) {
         return {
           agentId: request.agentId,
           partialResponse: `Error: ${(error as Error).message}`,
           complete: true,
-          responseTime: Date.now() - startTime
+          responseTime: Date.now() - startTime,
         }
       }
     })
@@ -421,7 +435,7 @@ export class AgentPerformanceOptimizer {
         try {
           const result = await Promise.race([
             processingPromises[i],
-            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 100))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 100)),
           ])
 
           completed.add(request.agentId)
@@ -459,7 +473,7 @@ export class AgentPerformanceOptimizer {
       ...this.metrics,
       cacheHitRatePercent: Math.round(this.metrics.cacheHitRate * 100),
       concurrencyUtilizationPercent: Math.round(this.metrics.concurrencyUtilization * 100),
-      averageBatchTimeSeconds: this.metrics.averageBatchTime / 1000
+      averageBatchTimeSeconds: this.metrics.averageBatchTime / 1000,
     }
   }
 
@@ -481,7 +495,7 @@ export class AgentPerformanceOptimizer {
       cacheHitRate: 0,
       concurrencyUtilization: 0,
       streamingBytesServed: 0,
-      optimizationsSaved: 0
+      optimizationsSaved: 0,
     }
     console.log('📊 Performance metrics reset')
   }

@@ -41,8 +41,8 @@ class BetaOnboardingMonitor {
 
     const users = await prisma.user.findMany({
       where: {
-        createdAt: { gte: thirtyDaysAgo }
-      }
+        createdAt: { gte: thirtyDaysAgo },
+      },
     })
 
     const totalRegistrations = users.length
@@ -50,8 +50,8 @@ class BetaOnboardingMonitor {
     // Get profiles for these users
     const profiles = await prisma.profile.findMany({
       where: {
-        userId: { in: users.map(u => u.id) }
-      }
+        userId: { in: users.map(u => u.id) },
+      },
     })
 
     const completedProfiles = profiles.length
@@ -60,11 +60,11 @@ class BetaOnboardingMonitor {
     const firstInteractions = await prisma.consciousnessInteraction.groupBy({
       by: ['userId'],
       where: {
-        userId: { in: users.map(u => u.id) }
+        userId: { in: users.map(u => u.id) },
       },
       _min: {
-        timestamp: true
-      }
+        timestamp: true,
+      },
     })
 
     const usersWithInteractions = firstInteractions.length
@@ -76,9 +76,9 @@ class BetaOnboardingMonitor {
     const activeUsers = await prisma.consciousnessInteraction.findMany({
       where: {
         timestamp: { gte: sevenDaysAgo },
-        userId: { in: users.map(u => u.id) }
+        userId: { in: users.map(u => u.id) },
       },
-      distinct: ['userId']
+      distinct: ['userId'],
     })
 
     // Calculate average time to first interaction
@@ -94,9 +94,8 @@ class BetaOnboardingMonitor {
       }
     }
 
-    const averageTimeToFirstInteraction = validTimeCalculations > 0
-      ? totalTimeToFirst / validTimeCalculations
-      : 0
+    const averageTimeToFirstInteraction =
+      validTimeCalculations > 0 ? totalTimeToFirst / validTimeCalculations : 0
 
     return {
       totalRegistrations,
@@ -105,17 +104,20 @@ class BetaOnboardingMonitor {
       activeUsers: activeUsers.length,
       averageTimeToFirstInteraction: averageTimeToFirstInteraction / (1000 * 60), // Convert to minutes
       conversionRates: {
-        registrationToProfile: totalRegistrations > 0 ? (completedProfiles / totalRegistrations) * 100 : 0,
-        profileToFirstInteraction: completedProfiles > 0 ? (usersWithInteractions / completedProfiles) * 100 : 0,
-        registrationToActive: totalRegistrations > 0 ? (activeUsers.length / totalRegistrations) * 100 : 0
-      }
+        registrationToProfile:
+          totalRegistrations > 0 ? (completedProfiles / totalRegistrations) * 100 : 0,
+        profileToFirstInteraction:
+          completedProfiles > 0 ? (usersWithInteractions / completedProfiles) * 100 : 0,
+        registrationToActive:
+          totalRegistrations > 0 ? (activeUsers.length / totalRegistrations) * 100 : 0,
+      },
     }
   }
 
   async getUserJourneys(limit: number = 10): Promise<UserJourney[]> {
     const users = await prisma.user.findMany({
       take: limit,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     })
 
     const journeys: UserJourney[] = []
@@ -123,24 +125,25 @@ class BetaOnboardingMonitor {
     for (const user of users) {
       // Get profile completion
       const profile = await prisma.profile.findUnique({
-        where: { userId: user.id }
+        where: { userId: user.id },
       })
 
       // Get first interaction
       const firstInteraction = await prisma.consciousnessInteraction.findFirst({
         where: { userId: user.id },
-        orderBy: { timestamp: 'asc' }
+        orderBy: { timestamp: 'asc' },
       })
 
       // Get total interactions
       const totalInteractions = await prisma.consciousnessInteraction.count({
-        where: { userId: user.id }
+        where: { userId: user.id },
       })
 
       // Calculate time to first interaction
       let timeToFirstInteraction: number | undefined
       if (firstInteraction) {
-        timeToFirstInteraction = (firstInteraction.timestamp.getTime() - user.createdAt.getTime()) / (1000 * 60) // minutes
+        timeToFirstInteraction =
+          (firstInteraction.timestamp.getTime() - user.createdAt.getTime()) / (1000 * 60) // minutes
       }
 
       // Determine status
@@ -152,11 +155,12 @@ class BetaOnboardingMonitor {
       if (totalInteractions > 0) {
         const lastInteraction = await prisma.consciousnessInteraction.findFirst({
           where: { userId: user.id },
-          orderBy: { timestamp: 'desc' }
+          orderBy: { timestamp: 'desc' },
         })
 
         if (lastInteraction) {
-          const daysSinceLastInteraction = (Date.now() - lastInteraction.timestamp.getTime()) / (1000 * 60 * 60 * 24)
+          const daysSinceLastInteraction =
+            (Date.now() - lastInteraction.timestamp.getTime()) / (1000 * 60 * 60 * 24)
           if (daysSinceLastInteraction > 7) {
             currentStatus = 'inactive'
           }
@@ -172,7 +176,7 @@ class BetaOnboardingMonitor {
         firstInteractionDate: firstInteraction?.timestamp,
         totalInteractions,
         timeToFirstInteraction,
-        currentStatus
+        currentStatus,
       })
     }
 
@@ -186,22 +190,30 @@ class BetaOnboardingMonitor {
     console.log('📈 CONVERSION FUNNEL')
     console.log('-------------------')
     console.log(`Registrations: ${metrics.totalRegistrations}`)
-    console.log(`↓ Profile Completion: ${metrics.completedProfiles} (${metrics.conversionRates.registrationToProfile.toFixed(1)}%)`)
-    console.log(`↓ First Interaction: ${metrics.firstInteractions} (${metrics.conversionRates.profileToFirstInteraction.toFixed(1)}%)`)
-    console.log(`↓ Active Users: ${metrics.activeUsers} (${metrics.conversionRates.registrationToActive.toFixed(1)}%)`)
+    console.log(
+      `↓ Profile Completion: ${metrics.completedProfiles} (${metrics.conversionRates.registrationToProfile.toFixed(1)}%)`
+    )
+    console.log(
+      `↓ First Interaction: ${metrics.firstInteractions} (${metrics.conversionRates.profileToFirstInteraction.toFixed(1)}%)`
+    )
+    console.log(
+      `↓ Active Users: ${metrics.activeUsers} (${metrics.conversionRates.registrationToActive.toFixed(1)}%)`
+    )
 
     console.log('\n⏱️ TIMING METRICS')
     console.log('----------------')
-    console.log(`Average time to first interaction: ${metrics.averageTimeToFirstInteraction.toFixed(1)} minutes`)
+    console.log(
+      `Average time to first interaction: ${metrics.averageTimeToFirstInteraction.toFixed(1)} minutes`
+    )
 
     console.log('\n👥 RECENT USER JOURNEYS')
     console.log('----------------------')
     journeys.forEach((journey, i) => {
       const status = {
-        'registered': '🟡 Registered',
-        'profile_complete': '🟠 Profile Complete',
-        'active': '🟢 Active',
-        'inactive': '🔴 Inactive'
+        registered: '🟡 Registered',
+        profile_complete: '🟠 Profile Complete',
+        active: '🟢 Active',
+        inactive: '🔴 Inactive',
       }[journey.currentStatus]
 
       console.log(`${i + 1}. ${journey.email} - ${status}`)
@@ -212,7 +224,9 @@ class BetaOnboardingMonitor {
         console.log(`   Profile: ❌`)
       }
       if (journey.firstInteractionDate) {
-        console.log(`   First interaction: ${journey.firstInteractionDate.toLocaleDateString()} (${journey.timeToFirstInteraction?.toFixed(1)}min later)`)
+        console.log(
+          `   First interaction: ${journey.firstInteractionDate.toLocaleDateString()} (${journey.timeToFirstInteraction?.toFixed(1)}min later)`
+        )
         console.log(`   Total interactions: ${journey.totalInteractions}`)
       } else {
         console.log(`   No interactions yet`)
@@ -261,7 +275,9 @@ class BetaOnboardingMonitor {
     }
 
     if (profileToInteraction < 80) {
-      console.log(`❌ Major dropoff: Profile → First Interaction (${profileToInteraction.toFixed(1)}%)`)
+      console.log(
+        `❌ Major dropoff: Profile → First Interaction (${profileToInteraction.toFixed(1)}%)`
+      )
       console.log('   Recommendations:')
       console.log('   - Improve agent recommendations')
       console.log('   - Add guided first conversation')

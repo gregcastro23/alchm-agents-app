@@ -9,7 +9,7 @@ import PlanetaryWisdomChat from '@/components/planetary-wisdom-chat'
 import {
   mockPlanetaryConfigs,
   mockPlanetaryPresets,
-  performanceTestData
+  performanceTestData,
 } from '../fixtures/mock-data'
 
 // Mock the unified multi-agent chat component
@@ -20,7 +20,7 @@ vi.mock('@/components/unified-multi-agent-chat', () => ({
       <div data-testid="planetary-configs-count">{planetaryConfigs.length}</div>
       {customHeader}
     </div>
-  )
+  ),
 }))
 
 // Mock planetary positions hook
@@ -29,21 +29,21 @@ const mockPlanetaryData = {
   moon: { longitude: 112.3, retrograde: false, phase: 'Waxing Gibbous' },
   mercury: { longitude: 265.8, retrograde: true },
   venus: { longitude: 315.2, retrograde: false },
-  mars: { longitude: 45.7, retrograde: false }
+  mars: { longitude: 45.7, retrograde: false },
 }
 
 vi.mock('@/hooks/usePlanetaryPositions', () => ({
   usePlanetaryPositions: vi.fn(() => ({
     data: mockPlanetaryData,
     isLoading: false,
-    error: null
-  }))
+    error: null,
+  })),
 }))
 
 // Mock council presets
 vi.mock('@/lib/council-presets', () => ({
   PLANETARY_COUNCIL_PRESETS: mockPlanetaryPresets,
-  getOptimalMonicaRole: vi.fn(() => 'guide')
+  getOptimalMonicaRole: vi.fn(() => 'guide'),
 }))
 
 // Mock planetary config helper
@@ -52,8 +52,8 @@ vi.mock('@/lib/planetary-config-helper', () => ({
   updatePlanetaryConfigWithLiveSky: vi.fn((config, positions) => ({
     ...config,
     liveSkySync: true,
-    lastUpdate: new Date()
-  }))
+    lastUpdate: new Date(),
+  })),
 }))
 
 describe('PlanetaryWisdomChat Component', () => {
@@ -63,7 +63,7 @@ describe('PlanetaryWisdomChat Component', () => {
     defaultActivePlanets: ['Sun', 'Moon', 'Mercury'],
     enableAutoSync: true,
     maxAgents: 7,
-    allowMonica: true
+    allowMonica: true,
   }
 
   beforeEach(() => {
@@ -84,12 +84,7 @@ describe('PlanetaryWisdomChat Component', () => {
     })
 
     it('renders with initial preset', () => {
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          initialPreset="test-inner-planets"
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} initialPreset="test-inner-planets" />)
 
       expect(screen.getByTestId('unified-chat')).toHaveAttribute('data-open', 'true')
       expect(screen.getByTestId('chat-title')).toHaveTextContent('Celestial Council')
@@ -105,24 +100,14 @@ describe('PlanetaryWisdomChat Component', () => {
 
   describe('Live Sky Integration', () => {
     it('displays live sky status panel', () => {
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          initialPreset="test-inner-planets"
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} initialPreset="test-inner-planets" />)
 
       expect(screen.getByText('Live Sky Connection')).toBeInTheDocument()
       expect(screen.getByText('Sync Status')).toBeInTheDocument()
     })
 
     it('shows auto-sync toggle enabled by default', () => {
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          initialPreset="test-inner-planets"
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} initialPreset="test-inner-planets" />)
 
       const autoSyncToggle = screen.getByRole('switch')
       expect(autoSyncToggle).toBeChecked()
@@ -146,12 +131,7 @@ describe('PlanetaryWisdomChat Component', () => {
     })
 
     it('updates last sync time', async () => {
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          initialPreset="test-inner-planets"
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} initialPreset="test-inner-planets" />)
 
       // Check that last sync time is displayed
       expect(screen.getByText(/Last:/)).toBeInTheDocument()
@@ -226,12 +206,7 @@ describe('PlanetaryWisdomChat Component', () => {
 
   describe('Current Astrological Information', () => {
     it('displays current planetary information', () => {
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          initialPreset="test-inner-planets"
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} initialPreset="test-inner-planets" />)
 
       expect(screen.getByText('Dominant Element')).toBeInTheDocument()
       expect(screen.getByText('Lunar Phase')).toBeInTheDocument()
@@ -239,24 +214,14 @@ describe('PlanetaryWisdomChat Component', () => {
     })
 
     it('shows retrograde count correctly', () => {
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          initialPreset="test-inner-planets"
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} initialPreset="test-inner-planets" />)
 
       // mockPlanetaryData has Mercury in retrograde
       expect(screen.getByText('1 active')).toBeInTheDocument()
     })
 
     it('displays lunar phase information', () => {
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          initialPreset="test-inner-planets"
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} initialPreset="test-inner-planets" />)
 
       expect(screen.getByText('Waxing Gibbous')).toBeInTheDocument()
     })
@@ -294,17 +259,14 @@ describe('PlanetaryWisdomChat Component', () => {
       const presetWithMonica = {
         ...mockPlanetaryPresets[0],
         includeMonica: true,
-        monicaRole: 'guide' as const
+        monicaRole: 'guide' as const,
       }
 
-      vi.mocked(require('@/lib/council-presets').PLANETARY_COUNCIL_PRESETS).mockReturnValue([presetWithMonica])
+      vi.mocked(require('@/lib/council-presets').PLANETARY_COUNCIL_PRESETS).mockReturnValue([
+        presetWithMonica,
+      ])
 
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          initialPreset="test-inner-planets"
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} initialPreset="test-inner-planets" />)
 
       expect(screen.getByText('Monica (guide)')).toBeInTheDocument()
     })
@@ -312,12 +274,7 @@ describe('PlanetaryWisdomChat Component', () => {
 
   describe('Live Sync Controls', () => {
     it('toggles auto-sync correctly', async () => {
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          initialPreset="test-inner-planets"
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} initialPreset="test-inner-planets" />)
 
       const autoSyncToggle = screen.getByRole('switch')
       expect(autoSyncToggle).toBeChecked()
@@ -410,15 +367,10 @@ describe('PlanetaryWisdomChat Component', () => {
       vi.mocked(require('@/hooks/usePlanetaryPositions').usePlanetaryPositions).mockReturnValue({
         data: null,
         isLoading: true,
-        error: null
+        error: null,
       })
 
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          initialPreset="test-inner-planets"
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} initialPreset="test-inner-planets" />)
 
       // Should still render but handle loading state gracefully
       expect(screen.getByTestId('unified-chat')).toBeInTheDocument()
@@ -441,12 +393,7 @@ describe('PlanetaryWisdomChat Component', () => {
     it('optimizes for fast response times', () => {
       const startTime = performance.now()
 
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          initialPreset="test-inner-planets"
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} initialPreset="test-inner-planets" />)
 
       const endTime = performance.now()
       const renderTime = endTime - startTime
@@ -461,41 +408,28 @@ describe('PlanetaryWisdomChat Component', () => {
       vi.mocked(require('@/hooks/usePlanetaryPositions').usePlanetaryPositions).mockReturnValue({
         data: null,
         isLoading: false,
-        error: new Error('API Error')
+        error: new Error('API Error'),
       })
 
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          initialPreset="test-inner-planets"
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} initialPreset="test-inner-planets" />)
 
       // Should render without crashing
       expect(screen.getByTestId('unified-chat')).toBeInTheDocument()
     })
 
     it('handles missing preset gracefully', () => {
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          initialPreset="non-existent-preset"
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} initialPreset="non-existent-preset" />)
 
       // Should fall back to preset selection
       expect(screen.getByText('Choose Your Celestial Council')).toBeInTheDocument()
     })
 
     it('handles empty planetary configs', () => {
-      vi.mocked(require('@/lib/planetary-config-helper').createDefaultPlanetaryConfigs).mockReturnValue([])
+      vi.mocked(
+        require('@/lib/planetary-config-helper').createDefaultPlanetaryConfigs
+      ).mockReturnValue([])
 
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          initialPreset="test-inner-planets"
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} initialPreset="test-inner-planets" />)
 
       expect(screen.getByTestId('planetary-configs-count')).toHaveTextContent('0')
     })
@@ -505,13 +439,7 @@ describe('PlanetaryWisdomChat Component', () => {
     it('calls onClose when chat is closed', () => {
       const mockOnClose = vi.fn()
 
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          onClose={mockOnClose}
-          isOpen={false}
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} onClose={mockOnClose} isOpen={false} />)
 
       expect(screen.getByTestId('unified-chat')).toHaveAttribute('data-open', 'false')
     })
@@ -519,12 +447,7 @@ describe('PlanetaryWisdomChat Component', () => {
     it('handles session updates', () => {
       const mockOnSessionUpdate = vi.fn()
 
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          onSessionUpdate={mockOnSessionUpdate}
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} onSessionUpdate={mockOnSessionUpdate} />)
 
       expect(screen.getByTestId('unified-chat')).toBeInTheDocument()
     })
@@ -532,12 +455,7 @@ describe('PlanetaryWisdomChat Component', () => {
     it('handles agent evolution', () => {
       const mockOnAgentEvolution = vi.fn()
 
-      render(
-        <PlanetaryWisdomChat
-          {...defaultProps}
-          onAgentEvolution={mockOnAgentEvolution}
-        />
-      )
+      render(<PlanetaryWisdomChat {...defaultProps} onAgentEvolution={mockOnAgentEvolution} />)
 
       expect(screen.getByTestId('unified-chat')).toBeInTheDocument()
     })

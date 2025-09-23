@@ -35,5 +35,3 @@ export function requireAuthOrRedirect(): SessionUser | null {
   const image = c.get('userAvatar')?.value || null
   return { id: userId, name, image }
 }
-
-

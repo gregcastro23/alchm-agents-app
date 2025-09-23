@@ -27,7 +27,7 @@ export default function SignInPage() {
       const result = await signIn('credentials', {
         email,
         password,
-        redirect: false
+        redirect: false,
       })
 
       if (result?.error) {
@@ -55,9 +55,7 @@ export default function SignInPage() {
           <CardTitle className="text-2xl bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
             Welcome Back
           </CardTitle>
-          <CardDescription>
-            Continue your consciousness evolution journey
-          </CardDescription>
+          <CardDescription>Continue your consciousness evolution journey</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignIn} className="space-y-4">
@@ -66,7 +64,7 @@ export default function SignInPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -76,13 +74,13 @@ export default function SignInPage() {
                   type="email"
                   placeholder="Enter your email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   className="pl-10"
                   required
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -92,15 +90,15 @@ export default function SignInPage() {
                   type="password"
                   placeholder="Enter your password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   className="pl-10"
                   required
                 />
               </div>
             </div>
-            
-            <Button 
-              type="submit" 
+
+            <Button
+              type="submit"
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
               disabled={loading}
             >
@@ -117,19 +115,19 @@ export default function SignInPage() {
               )}
             </Button>
           </form>
-          
+
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{' '}
-              <Link 
-                href="/auth/signup" 
+              <Link
+                href="/auth/signup"
                 className="text-purple-600 hover:text-purple-700 font-medium"
               >
                 Start your consciousness journey
               </Link>
             </p>
           </div>
-          
+
           <div className="mt-4 pt-4 border-t text-center">
             <p className="text-xs text-muted-foreground">
               Secure authentication powered by consciousness evolution technology

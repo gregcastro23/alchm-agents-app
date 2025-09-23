@@ -45,35 +45,35 @@ const defaultSettings: UserSettings = {
     evolutionMilestones: true,
     weeklyProgress: true,
     agentRecommendations: true,
-    emailFrequency: 'weekly'
+    emailFrequency: 'weekly',
   },
   interface: {
     theme: 'auto',
     language: 'en',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     dateFormat: 'MM/DD/YYYY',
-    elementalDisplay: 'both'
+    elementalDisplay: 'both',
   },
   privacy: {
     profileVisibility: 'private',
     shareEvolutionData: false,
     allowDataExport: true,
-    analyticsOptOut: false
+    analyticsOptOut: false,
   },
   agents: {
     preferredInteractionStyle: 'mixed',
     maxDailyInteractions: 50,
     autoRecommendations: true,
     saveConversationHistory: true,
-    allowGroupChats: true
+    allowGroupChats: true,
   },
   consciousness: {
     trackEvolution: true,
     showPowerLevels: true,
     displayDetailedMetrics: true,
     evolutionGoals: [],
-    preferredGrowthAreas: []
-  }
+    preferredGrowthAreas: [],
+  },
 }
 
 export async function GET(req: NextRequest) {
@@ -82,15 +82,18 @@ export async function GET(req: NextRequest) {
     const userId = session?.user?.id
 
     if (!userId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Authentication required'
-      }, { status: 401 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Authentication required',
+        },
+        { status: 401 }
+      )
     }
 
     // Get Monica user settings (our current settings table)
     const monicaSettings = await prisma.monicaUserSettings.findUnique({
-      where: { userId }
+      where: { userId },
     })
 
     if (!monicaSettings) {
@@ -104,9 +107,9 @@ export async function GET(req: NextRequest) {
           // Store additional settings as JSON
           interests: JSON.stringify({
             notifications: defaultSettings.notifications,
-            privacy: defaultSettings.privacy
-          })
-        }
+            privacy: defaultSettings.privacy,
+          }),
+        },
       })
 
       return NextResponse.json({
@@ -114,8 +117,8 @@ export async function GET(req: NextRequest) {
         settings: {
           ...defaultSettings,
           id: newSettings.id,
-          lastUpdated: newSettings.updatedAt
-        }
+          lastUpdated: newSettings.updatedAt,
+        },
       })
     }
 
@@ -131,23 +134,27 @@ export async function GET(req: NextRequest) {
         language: defaultSettings.interface.language,
         timezone: defaultSettings.interface.timezone,
         dateFormat: defaultSettings.interface.dateFormat,
-        elementalDisplay: defaultSettings.interface.elementalDisplay
+        elementalDisplay: defaultSettings.interface.elementalDisplay,
       },
       privacy: storedExtras.privacy || defaultSettings.privacy,
       agents: {
-        preferredInteractionStyle: monicaSettings.personality as any || defaultSettings.agents.preferredInteractionStyle,
+        preferredInteractionStyle:
+          (monicaSettings.personality as any) || defaultSettings.agents.preferredInteractionStyle,
         maxDailyInteractions: defaultSettings.agents.maxDailyInteractions,
-        autoRecommendations: monicaSettings.proactiveTips || defaultSettings.agents.autoRecommendations,
-        saveConversationHistory: monicaSettings.memoryRetention || defaultSettings.agents.saveConversationHistory,
-        allowGroupChats: defaultSettings.agents.allowGroupChats
+        autoRecommendations:
+          monicaSettings.proactiveTips || defaultSettings.agents.autoRecommendations,
+        saveConversationHistory:
+          monicaSettings.memoryRetention || defaultSettings.agents.saveConversationHistory,
+        allowGroupChats: defaultSettings.agents.allowGroupChats,
       },
       consciousness: {
         trackEvolution: true, // Always enabled for now
         showPowerLevels: true,
         displayDetailedMetrics: monicaSettings.explanationDepth === 'detailed',
         evolutionGoals: storedExtras.evolutionGoals || defaultSettings.consciousness.evolutionGoals,
-        preferredGrowthAreas: storedExtras.preferredGrowthAreas || defaultSettings.consciousness.preferredGrowthAreas
-      }
+        preferredGrowthAreas:
+          storedExtras.preferredGrowthAreas || defaultSettings.consciousness.preferredGrowthAreas,
+      },
     }
 
     return NextResponse.json({
@@ -155,16 +162,18 @@ export async function GET(req: NextRequest) {
       settings: {
         ...userSettings,
         id: monicaSettings.id,
-        lastUpdated: monicaSettings.updatedAt
-      }
+        lastUpdated: monicaSettings.updatedAt,
+      },
     })
-
   } catch (error) {
     console.error('Get user settings error:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to get user settings'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to get user settings',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -174,19 +183,25 @@ export async function PUT(req: NextRequest) {
     const userId = session?.user?.id
 
     if (!userId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Authentication required'
-      }, { status: 401 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Authentication required',
+        },
+        { status: 401 }
+      )
     }
 
     const { settings } = await req.json()
 
     if (!settings) {
-      return NextResponse.json({
-        success: false,
-        error: 'Settings data required'
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Settings data required',
+        },
+        { status: 400 }
+      )
     }
 
     // Update Monica settings table with mappable fields
@@ -205,7 +220,9 @@ export async function PUT(req: NextRequest) {
     }
 
     if (settings.consciousness?.displayDetailedMetrics !== undefined) {
-      updateData.explanationDepth = settings.consciousness.displayDetailedMetrics ? 'detailed' : 'concise'
+      updateData.explanationDepth = settings.consciousness.displayDetailedMetrics
+        ? 'detailed'
+        : 'concise'
     }
 
     // Store complex settings as JSON
@@ -214,7 +231,7 @@ export async function PUT(req: NextRequest) {
       privacy: settings.privacy,
       evolutionGoals: settings.consciousness?.evolutionGoals,
       preferredGrowthAreas: settings.consciousness?.preferredGrowthAreas,
-      interface: settings.interface
+      interface: settings.interface,
     }
 
     updateData.interests = JSON.stringify(extraSettings)
@@ -237,8 +254,8 @@ export async function PUT(req: NextRequest) {
         learningStyle: 'hands-on',
         contextualAwareness: true,
         adaptivePersonality: true,
-        memoryRetention: settings.agents?.saveConversationHistory !== false
-      }
+        memoryRetention: settings.agents?.saveConversationHistory !== false,
+      },
     })
 
     // Send notification preferences update
@@ -251,9 +268,9 @@ export async function PUT(req: NextRequest) {
             type: 'settings_updated',
             metadata: {
               notificationPrefs: settings.notifications,
-              updatedAt: new Date().toISOString()
-            }
-          })
+              updatedAt: new Date().toISOString(),
+            },
+          }),
         })
       } catch (notifError) {
         console.warn('Failed to send settings update notification:', notifError)
@@ -264,17 +281,19 @@ export async function PUT(req: NextRequest) {
       success: true,
       settings: {
         id: updatedSettings.id,
-        lastUpdated: updatedSettings.updatedAt
+        lastUpdated: updatedSettings.updatedAt,
       },
-      message: 'Settings updated successfully'
+      message: 'Settings updated successfully',
     })
-
   } catch (error) {
     console.error('Update user settings error:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to update user settings'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to update user settings',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -284,10 +303,13 @@ export async function DELETE(req: NextRequest) {
     const userId = session?.user?.id
 
     if (!userId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Authentication required'
-      }, { status: 401 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Authentication required',
+        },
+        { status: 401 }
+      )
     }
 
     // Reset to default settings
@@ -298,8 +320,8 @@ export async function DELETE(req: NextRequest) {
         ...defaultSettings.agents,
         interests: JSON.stringify({
           notifications: defaultSettings.notifications,
-          privacy: defaultSettings.privacy
-        })
+          privacy: defaultSettings.privacy,
+        }),
       },
       create: {
         userId,
@@ -319,21 +341,23 @@ export async function DELETE(req: NextRequest) {
         memoryRetention: defaultSettings.agents.saveConversationHistory,
         interests: JSON.stringify({
           notifications: defaultSettings.notifications,
-          privacy: defaultSettings.privacy
-        })
-      }
+          privacy: defaultSettings.privacy,
+        }),
+      },
     })
 
     return NextResponse.json({
       success: true,
-      message: 'Settings reset to defaults'
+      message: 'Settings reset to defaults',
     })
-
   } catch (error) {
     console.error('Reset user settings error:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to reset user settings'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to reset user settings',
+      },
+      { status: 500 }
+    )
   }
 }

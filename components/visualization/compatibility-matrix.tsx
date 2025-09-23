@@ -17,7 +17,7 @@ import {
   AlertTriangle,
   TrendingUp,
   Eye,
-  EyeOff
+  EyeOff,
 } from 'lucide-react'
 import type { UnifiedAgent, GroupDynamics } from '@/lib/unified-agent-types'
 
@@ -49,7 +49,7 @@ export function CompatibilityMatrix({
   showRecommendations = true,
   enableRealTimeUpdates = true,
   onPairClick,
-  className
+  className,
 }: CompatibilityMatrixProps) {
   const [viewMode, setViewMode] = useState<'matrix' | 'list' | 'insights'>('matrix')
   const [filterThreshold, setFilterThreshold] = useState(0.0)
@@ -68,13 +68,16 @@ export function CompatibilityMatrix({
 
         // Find existing connection in group dynamics
         const existingConnection = groupDynamics?.consciousnessNetwork.connections.find(
-          conn => (conn.agent1 === agent1.id && conn.agent2 === agent2.id) ||
-                 (conn.agent1 === agent2.id && conn.agent2 === agent1.id)
+          conn =>
+            (conn.agent1 === agent1.id && conn.agent2 === agent2.id) ||
+            (conn.agent1 === agent2.id && conn.agent2 === agent1.id)
         )
 
         // Calculate base compatibility
-        const levelDiff = Math.abs(agent1.consciousness.monicaConstant - agent2.consciousness.monicaConstant)
-        const levelCompatibility = Math.max(0, 1 - (levelDiff / 5))
+        const levelDiff = Math.abs(
+          agent1.consciousness.monicaConstant - agent2.consciousness.monicaConstant
+        )
+        const levelCompatibility = Math.max(0, 1 - levelDiff / 5)
 
         const elementCompatibility = calculateElementalCompatibility(
           agent1.consciousness.dominantElement,
@@ -83,7 +86,8 @@ export function CompatibilityMatrix({
 
         const typeCompatibility = calculateTypeCompatibility(agent1.type, agent2.type)
 
-        const baseCompatibility = (levelCompatibility + elementCompatibility + typeCompatibility) / 3
+        const baseCompatibility =
+          (levelCompatibility + elementCompatibility + typeCompatibility) / 3
         const finalCompatibility = existingConnection?.compatibility || baseCompatibility
 
         // Determine resonance type
@@ -105,7 +109,7 @@ export function CompatibilityMatrix({
           strengths,
           tensions,
           recommendations,
-          lastUpdated: new Date()
+          lastUpdated: new Date(),
         })
       }
     }
@@ -132,9 +136,10 @@ export function CompatibilityMatrix({
         if (agent1.id === agent2.id) {
           matrix[agent1.id][agent2.id] = null
         } else {
-          const score = compatibilityScores.find(s =>
-            (s.agent1 === agent1.id && s.agent2 === agent2.id) ||
-            (s.agent1 === agent2.id && s.agent2 === agent1.id)
+          const score = compatibilityScores.find(
+            s =>
+              (s.agent1 === agent1.id && s.agent2 === agent2.id) ||
+              (s.agent1 === agent2.id && s.agent2 === agent1.id)
           )
           matrix[agent1.id][agent2.id] = score || null
         }
@@ -172,7 +177,15 @@ export function CompatibilityMatrix({
 
   const downloadMatrix = () => {
     const csvContent = [
-      ['Agent 1', 'Agent 2', 'Compatibility', 'Resonance Type', 'Strengths', 'Tensions', 'Recommendations'],
+      [
+        'Agent 1',
+        'Agent 2',
+        'Compatibility',
+        'Resonance Type',
+        'Strengths',
+        'Tensions',
+        'Recommendations',
+      ],
       ...compatibilityScores.map(score => [
         agents.find(a => a.id === score.agent1)?.name || score.agent1,
         agents.find(a => a.id === score.agent2)?.name || score.agent2,
@@ -180,9 +193,11 @@ export function CompatibilityMatrix({
         score.resonanceType,
         score.strengths.join('; '),
         score.tensions.join('; '),
-        score.recommendations.join('; ')
-      ])
-    ].map(row => row.join(',')).join('\n')
+        score.recommendations.join('; '),
+      ]),
+    ]
+      .map(row => row.join(','))
+      .join('\n')
 
     const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
@@ -195,10 +210,13 @@ export function CompatibilityMatrix({
 
   const renderMatrix = () => (
     <div className="relative">
-      <div className="grid gap-1 p-4" style={{
-        gridTemplateColumns: `80px repeat(${agents.length}, 1fr)`,
-        gridTemplateRows: `40px repeat(${agents.length}, 1fr)`
-      }}>
+      <div
+        className="grid gap-1 p-4"
+        style={{
+          gridTemplateColumns: `80px repeat(${agents.length}, 1fr)`,
+          gridTemplateRows: `40px repeat(${agents.length}, 1fr)`,
+        }}
+      >
         {/* Empty top-left corner */}
         <div></div>
 
@@ -242,14 +260,17 @@ export function CompatibilityMatrix({
                   `}
                   style={{
                     backgroundColor: score ? getCompatibilityColor(score.compatibility) : '#f3f4f6',
-                    opacity: agent1.id === agent2.id ? 0.3 : (score ? 0.8 : 0.3)
+                    opacity: agent1.id === agent2.id ? 0.3 : score ? 0.8 : 0.3,
                   }}
                   onClick={() => score && handlePairClick(score)}
-                  title={score ?
-                    `${agents.find(a => a.id === score.agent1)?.name} ↔ ${agents.find(a => a.id === score.agent2)?.name}\n` +
-                    `Compatibility: ${(score.compatibility * 100).toFixed(1)}%\n` +
-                    `Type: ${score.resonanceType}`
-                    : agent1.id === agent2.id ? 'Self' : 'No data'
+                  title={
+                    score
+                      ? `${agents.find(a => a.id === score.agent1)?.name} ↔ ${agents.find(a => a.id === score.agent2)?.name}\n` +
+                        `Compatibility: ${(score.compatibility * 100).toFixed(1)}%\n` +
+                        `Type: ${score.resonanceType}`
+                      : agent1.id === agent2.id
+                        ? 'Self'
+                        : 'No data'
                   }
                 >
                   {score && (
@@ -267,23 +288,38 @@ export function CompatibilityMatrix({
       {/* Legend */}
       <div className="mt-4 flex flex-wrap gap-4 justify-center text-xs">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: getCompatibilityColor(0.9) }}></div>
+          <div
+            className="w-4 h-4 rounded"
+            style={{ backgroundColor: getCompatibilityColor(0.9) }}
+          ></div>
           <span>Excellent (80%+)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: getCompatibilityColor(0.7) }}></div>
+          <div
+            className="w-4 h-4 rounded"
+            style={{ backgroundColor: getCompatibilityColor(0.7) }}
+          ></div>
           <span>Good (60-80%)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: getCompatibilityColor(0.5) }}></div>
+          <div
+            className="w-4 h-4 rounded"
+            style={{ backgroundColor: getCompatibilityColor(0.5) }}
+          ></div>
           <span>Moderate (40-60%)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: getCompatibilityColor(0.3) }}></div>
+          <div
+            className="w-4 h-4 rounded"
+            style={{ backgroundColor: getCompatibilityColor(0.3) }}
+          ></div>
           <span>Low (20-40%)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: getCompatibilityColor(0.1) }}></div>
+          <div
+            className="w-4 h-4 rounded"
+            style={{ backgroundColor: getCompatibilityColor(0.1) }}
+          ></div>
           <span>Poor (&lt;20%)</span>
         </div>
       </div>
@@ -312,16 +348,12 @@ export function CompatibilityMatrix({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <span style={{ color: agent1.appearance.color }}>
-                    {agent1.appearance.symbol}
-                  </span>
+                  <span style={{ color: agent1.appearance.color }}>{agent1.appearance.symbol}</span>
                   <span className="font-medium">{agent1.name}</span>
                 </div>
                 <span className="text-gray-400">↔</span>
                 <div className="flex items-center gap-2">
-                  <span style={{ color: agent2.appearance.color }}>
-                    {agent2.appearance.symbol}
-                  </span>
+                  <span style={{ color: agent2.appearance.color }}>{agent2.appearance.symbol}</span>
                   <span className="font-medium">{agent2.name}</span>
                 </div>
               </div>
@@ -331,7 +363,7 @@ export function CompatibilityMatrix({
                   style={{
                     backgroundColor: getCompatibilityColor(score.compatibility),
                     color: 'white',
-                    borderColor: getCompatibilityColor(score.compatibility)
+                    borderColor: getCompatibilityColor(score.compatibility),
                   }}
                 >
                   {(score.compatibility * 100).toFixed(1)}%
@@ -347,7 +379,9 @@ export function CompatibilityMatrix({
                 <h4 className="font-medium text-green-700 mb-1">Strengths</h4>
                 <ul className="space-y-1">
                   {score.strengths.map((strength, idx) => (
-                    <li key={idx} className="text-green-600">• {strength}</li>
+                    <li key={idx} className="text-green-600">
+                      • {strength}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -356,7 +390,9 @@ export function CompatibilityMatrix({
                   <h4 className="font-medium text-red-700 mb-1">Tensions</h4>
                   <ul className="space-y-1">
                     {score.tensions.map((tension, idx) => (
-                      <li key={idx} className="text-red-600">• {tension}</li>
+                      <li key={idx} className="text-red-600">
+                        • {tension}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -366,7 +402,9 @@ export function CompatibilityMatrix({
                   <h4 className="font-medium text-blue-700 mb-1">Recommendations</h4>
                   <ul className="space-y-1">
                     {score.recommendations.map((rec, idx) => (
-                      <li key={idx} className="text-blue-600">• {rec}</li>
+                      <li key={idx} className="text-blue-600">
+                        • {rec}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -394,8 +432,13 @@ export function CompatibilityMatrix({
                 const agent1 = agents.find(a => a.id === score.agent1)!
                 const agent2 = agents.find(a => a.id === score.agent2)!
                 return (
-                  <div key={`optimal-${score.agent1}-${score.agent2}`} className="flex items-center justify-between text-sm">
-                    <span>{agent1.name.split(' ')[0]} ↔ {agent2.name.split(' ')[0]}</span>
+                  <div
+                    key={`optimal-${score.agent1}-${score.agent2}`}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span>
+                      {agent1.name.split(' ')[0]} ↔ {agent2.name.split(' ')[0]}
+                    </span>
                     <Badge variant="outline" className="bg-green-50 text-green-700">
                       {(score.compatibility * 100).toFixed(0)}%
                     </Badge>
@@ -415,17 +458,15 @@ export function CompatibilityMatrix({
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {Array.from(new Set(compatibilityScores.map(s => s.resonanceType)))
-                .map(type => {
-                  const count = compatibilityScores.filter(s => s.resonanceType === type).length
-                  return (
-                    <div key={type} className="flex items-center justify-between text-sm">
-                      <span>{type}</span>
-                      <Badge variant="outline">{count}</Badge>
-                    </div>
-                  )
-                })
-              }
+              {Array.from(new Set(compatibilityScores.map(s => s.resonanceType))).map(type => {
+                const count = compatibilityScores.filter(s => s.resonanceType === type).length
+                return (
+                  <div key={type} className="flex items-center justify-between text-sm">
+                    <span>{type}</span>
+                    <Badge variant="outline">{count}</Badge>
+                  </div>
+                )
+              })}
             </div>
           </CardContent>
         </Card>
@@ -440,12 +481,19 @@ export function CompatibilityMatrix({
           <CardContent>
             <div className="space-y-2 text-sm">
               <div>
-                Avg Compatibility: <span className="font-medium">
-                  {(compatibilityScores.reduce((sum, s) => sum + s.compatibility, 0) / compatibilityScores.length * 100).toFixed(1)}%
+                Avg Compatibility:{' '}
+                <span className="font-medium">
+                  {(
+                    (compatibilityScores.reduce((sum, s) => sum + s.compatibility, 0) /
+                      compatibilityScores.length) *
+                    100
+                  ).toFixed(1)}
+                  %
                 </span>
               </div>
               <div>
-                Highest: <span className="font-medium">
+                Highest:{' '}
+                <span className="font-medium">
                   {(Math.max(...compatibilityScores.map(s => s.compatibility)) * 100).toFixed(1)}%
                 </span>
               </div>
@@ -453,7 +501,8 @@ export function CompatibilityMatrix({
                 Total Pairs: <span className="font-medium">{compatibilityScores.length}</span>
               </div>
               <div>
-                Excellent Pairs: <span className="font-medium">
+                Excellent Pairs:{' '}
+                <span className="font-medium">
                   {compatibilityScores.filter(s => s.compatibility >= 0.8).length}
                 </span>
               </div>
@@ -491,24 +540,23 @@ export function CompatibilityMatrix({
               <Badge variant="outline">{agents.length} agents</Badge>
               <Badge variant="outline">{compatibilityScores.length} pairs</Badge>
               <Badge variant="outline">
-                {(compatibilityScores.reduce((sum, s) => sum + s.compatibility, 0) / compatibilityScores.length * 100).toFixed(0)}% avg
+                {(
+                  (compatibilityScores.reduce((sum, s) => sum + s.compatibility, 0) /
+                    compatibilityScores.length) *
+                  100
+                ).toFixed(0)}
+                % avg
               </Badge>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
-              <Switch
-                checked={showLabels}
-                onCheckedChange={setShowLabels}
-              />
+              <Switch checked={showLabels} onCheckedChange={setShowLabels} />
               <Eye className="w-4 h-4" />
             </div>
             <div className="flex items-center gap-2">
-              <Switch
-                checked={highlightOptimal}
-                onCheckedChange={setHighlightOptimal}
-              />
+              <Switch checked={highlightOptimal} onCheckedChange={setHighlightOptimal} />
               <Sparkles className="w-4 h-4" />
             </div>
             <Button variant="outline" size="sm" onClick={() => setFilterThreshold(0)}>
@@ -522,36 +570,34 @@ export function CompatibilityMatrix({
       </CardHeader>
 
       <CardContent>
-        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
+        <Tabs value={viewMode} onValueChange={v => setViewMode(v as any)}>
           <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="matrix">Matrix</TabsTrigger>
             <TabsTrigger value="list">List</TabsTrigger>
             <TabsTrigger value="insights">Insights</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="matrix">
-            {renderMatrix()}
-          </TabsContent>
+          <TabsContent value="matrix">{renderMatrix()}</TabsContent>
 
           <TabsContent value="list">
             <div className="mb-4">
-              <label className="text-sm font-medium">Compatibility Threshold: {(filterThreshold * 100).toFixed(0)}%</label>
+              <label className="text-sm font-medium">
+                Compatibility Threshold: {(filterThreshold * 100).toFixed(0)}%
+              </label>
               <input
                 type="range"
                 min="0"
                 max="1"
                 step="0.1"
                 value={filterThreshold}
-                onChange={(e) => setFilterThreshold(parseFloat(e.target.value))}
+                onChange={e => setFilterThreshold(parseFloat(e.target.value))}
                 className="w-full mt-1"
               />
             </div>
             {renderList()}
           </TabsContent>
 
-          <TabsContent value="insights">
-            {renderInsights()}
-          </TabsContent>
+          <TabsContent value="insights">{renderInsights()}</TabsContent>
         </Tabs>
       </CardContent>
     </Card>
@@ -561,10 +607,10 @@ export function CompatibilityMatrix({
 // Helper functions
 function calculateElementalCompatibility(element1: string, element2: string): number {
   const compatibilityMatrix: { [key: string]: { [key: string]: number } } = {
-    'Fire': { 'Fire': 0.9, 'Air': 0.8, 'Earth': 0.4, 'Water': 0.2 },
-    'Air': { 'Air': 0.9, 'Fire': 0.8, 'Water': 0.4, 'Earth': 0.2 },
-    'Water': { 'Water': 0.9, 'Earth': 0.8, 'Fire': 0.2, 'Air': 0.4 },
-    'Earth': { 'Earth': 0.9, 'Water': 0.8, 'Air': 0.2, 'Fire': 0.4 }
+    Fire: { Fire: 0.9, Air: 0.8, Earth: 0.4, Water: 0.2 },
+    Air: { Air: 0.9, Fire: 0.8, Water: 0.4, Earth: 0.2 },
+    Water: { Water: 0.9, Earth: 0.8, Fire: 0.2, Air: 0.4 },
+    Earth: { Earth: 0.9, Water: 0.8, Air: 0.2, Fire: 0.4 },
   }
   return compatibilityMatrix[element1]?.[element2] || 0.5
 }
@@ -572,11 +618,19 @@ function calculateElementalCompatibility(element1: string, element2: string): nu
 function calculateTypeCompatibility(type1: string, type2: string): number {
   if (type1 === type2) return 0.8
   if (type1 === 'monica' || type2 === 'monica') return 0.9
-  if ((type1 === 'historical' && type2 === 'planetary') || (type1 === 'planetary' && type2 === 'historical')) return 0.7
+  if (
+    (type1 === 'historical' && type2 === 'planetary') ||
+    (type1 === 'planetary' && type2 === 'historical')
+  )
+    return 0.7
   return 0.6
 }
 
-function determineResonanceType(agent1: UnifiedAgent, agent2: UnifiedAgent, compatibility: number): string {
+function determineResonanceType(
+  agent1: UnifiedAgent,
+  agent2: UnifiedAgent,
+  compatibility: number
+): string {
   if (agent1.type === 'monica' || agent2.type === 'monica') return 'Guided'
   if (agent1.type === agent2.type) {
     if (compatibility > 0.8) return 'Harmonic'
@@ -593,18 +647,22 @@ function generatePairInsights(
   agent2: UnifiedAgent,
   compatibility: number,
   resonanceType: string
-): { strengths: string[], tensions: string[], recommendations: string[] } {
+): { strengths: string[]; tensions: string[]; recommendations: string[] } {
   const strengths: string[] = []
   const tensions: string[] = []
   const recommendations: string[] = []
 
   // Element-based insights
   if (agent1.consciousness.dominantElement === agent2.consciousness.dominantElement) {
-    strengths.push(`Shared ${agent1.consciousness.dominantElement} element creates natural understanding`)
+    strengths.push(
+      `Shared ${agent1.consciousness.dominantElement} element creates natural understanding`
+    )
   } else {
     const elements = [agent1.consciousness.dominantElement, agent2.consciousness.dominantElement]
-    if ((elements.includes('Fire') && elements.includes('Air')) ||
-        (elements.includes('Earth') && elements.includes('Water'))) {
+    if (
+      (elements.includes('Fire') && elements.includes('Air')) ||
+      (elements.includes('Earth') && elements.includes('Water'))
+    ) {
       strengths.push('Complementary elemental balance enhances collaboration')
     } else {
       tensions.push('Elemental tension may create initial friction')
@@ -613,7 +671,9 @@ function generatePairInsights(
   }
 
   // Consciousness level insights
-  const levelDiff = Math.abs(agent1.consciousness.monicaConstant - agent2.consciousness.monicaConstant)
+  const levelDiff = Math.abs(
+    agent1.consciousness.monicaConstant - agent2.consciousness.monicaConstant
+  )
   if (levelDiff < 1) {
     strengths.push('Similar consciousness levels enable deep mutual understanding')
   } else if (levelDiff > 2) {

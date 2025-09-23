@@ -334,7 +334,7 @@ export async function POST(req: Request) {
       // Log interaction for each agent
       for (const response of responses) {
         const agentId = `${response.agent.toLowerCase()}-multi`
-        const powerGained = (response.elementalInfo.elementalAffinity * 8) + 5
+        const powerGained = response.elementalInfo.elementalAffinity * 8 + 5
 
         await consciousnessPersistence.logInteraction({
           userId,
@@ -348,8 +348,8 @@ export async function POST(req: Request) {
             responseLength: response.response.length,
             multiAgentSession: true,
             totalAgents: responses.length,
-            sessionId: conversationContext.sessionId
-          }
+            sessionId: conversationContext.sessionId,
+          },
         })
       }
     } catch (dbError) {

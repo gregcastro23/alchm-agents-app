@@ -404,7 +404,7 @@ function generateVisualPattern(
   const intensityMap = ringSegments.map(seg => seg.percentage)
 
   // Determine center symbol based on pattern
-  let centerSymbol = pattern.specialPattern
+  const centerSymbol = pattern.specialPattern
     ? RUNE_TEMPLATES[pattern.type as keyof typeof RUNE_TEMPLATES]?.baseSymbol
     : dominantSigns
         .slice(0, 3)
@@ -572,9 +572,9 @@ export function generateCollectiveAgentRune(agents: any[]): SignVectorRune {
   rune.effects = rune.effects.map(effect => ({
     ...effect,
     power: Math.min(100, Math.round(effect.power * collectiveMultiplier)),
-    description:
-      effect.description +
-      ` Enhanced by the collective wisdom of ${agents.length} consciousness signatures.`,
+    description: `${
+      effect.description
+    } Enhanced by the collective wisdom of ${agents.length} consciousness signatures.`,
   }))
 
   return rune

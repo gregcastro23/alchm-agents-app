@@ -5,17 +5,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  DollarSign, 
-  Zap, 
-  Clock, 
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Zap,
+  Clock,
   Target,
   Activity,
-  Sparkles
+  Sparkles,
 } from 'lucide-react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from 'recharts'
 
 interface TokenRate {
   Spirit: number
@@ -40,9 +49,9 @@ interface TokenDashboardKineticsProps {
   className?: string
 }
 
-export function TokenDashboardKinetics({ 
+export function TokenDashboardKinetics({
   location = { lat: 37.7749, lon: -122.4194 },
-  className = '' 
+  className = '',
 }: TokenDashboardKineticsProps) {
   const [currentRates, setCurrentRates] = useState<TokenRate | null>(null)
   const [forecast, setForecast] = useState<TokenForecastPoint[]>([])
@@ -69,8 +78,8 @@ export function TokenDashboardKinetics({
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               tokens: { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 },
-              location
-            })
+              location,
+            }),
           })
 
           if (ratesResponse.ok) {
@@ -88,8 +97,8 @@ export function TokenDashboardKinetics({
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               location,
-              timeframe: 'nearTerm'
-            })
+              timeframe: 'nearTerm',
+            }),
           })
 
           if (forecastResponse.ok) {
@@ -98,32 +107,49 @@ export function TokenDashboardKinetics({
               // Generate 24-hour forecast data points
               const forecastPoints: TokenForecastPoint[] = []
               const now = new Date()
-              
+
               for (let hour = 0; hour < 24; hour++) {
                 const time = new Date(now.getTime() + hour * 60 * 60 * 1000)
-                const timeString = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                
+                const timeString = time.toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+
                 // Apply hourly variations to current rates
                 const hourlyMultiplier = 1 + 0.2 * Math.sin((hour * Math.PI) / 12)
-                const planetaryHours = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn']
+                const planetaryHours = [
+                  'Sun',
+                  'Moon',
+                  'Mars',
+                  'Mercury',
+                  'Jupiter',
+                  'Venus',
+                  'Saturn',
+                ]
                 const planetaryHour = planetaryHours[hour % 7]
-                
+
                 forecastPoints.push({
                   time: timeString,
                   hour,
-                  Spirit: (currentRates?.Spirit || 1.0) * hourlyMultiplier * (1 + Math.random() * 0.1),
-                  Essence: (currentRates?.Essence || 0.8) * hourlyMultiplier * (1 + Math.random() * 0.08),
-                  Matter: (currentRates?.Matter || 0.6) * hourlyMultiplier * (1 + Math.random() * 0.06),
-                  Substance: (currentRates?.Substance || 0.4) * hourlyMultiplier * (1 + Math.random() * 0.05),
+                  Spirit:
+                    (currentRates?.Spirit || 1.0) * hourlyMultiplier * (1 + Math.random() * 0.1),
+                  Essence:
+                    (currentRates?.Essence || 0.8) * hourlyMultiplier * (1 + Math.random() * 0.08),
+                  Matter:
+                    (currentRates?.Matter || 0.6) * hourlyMultiplier * (1 + Math.random() * 0.06),
+                  Substance:
+                    (currentRates?.Substance || 0.4) *
+                    hourlyMultiplier *
+                    (1 + Math.random() * 0.05),
                   planetaryHour,
-                  powerLevel: Math.random() * 0.4 + 0.3
+                  powerLevel: Math.random() * 0.4 + 0.3,
                 })
               }
-              
+
               setForecast(forecastPoints)
-              
+
               // Find next optimal window (highest power level)
-              const optimalPoint = forecastPoints.reduce((best, point) => 
+              const optimalPoint = forecastPoints.reduce((best, point) =>
                 point.powerLevel > best.powerLevel ? point : best
               )
               setNextOptimalWindow(new Date(now.getTime() + optimalPoint.hour * 60 * 60 * 1000))
@@ -143,7 +169,7 @@ export function TokenDashboardKinetics({
     }
 
     fetchTokenData()
-    
+
     // Refresh every 5 minutes
     const interval = setInterval(fetchTokenData, 5 * 60 * 1000)
     return () => clearInterval(interval)
@@ -187,11 +213,16 @@ export function TokenDashboardKinetics({
 
   const getMarketPhaseColor = (phase: string) => {
     switch (phase) {
-      case 'Bull Market': return 'bg-green-600'
-      case 'Bear Market': return 'bg-red-600'
-      case 'Accumulation': return 'bg-blue-600'
-      case 'Consolidation': return 'bg-yellow-600'
-      default: return 'bg-gray-600'
+      case 'Bull Market':
+        return 'bg-green-600'
+      case 'Bear Market':
+        return 'bg-red-600'
+      case 'Accumulation':
+        return 'bg-blue-600'
+      case 'Consolidation':
+        return 'bg-yellow-600'
+      default:
+        return 'bg-gray-600'
     }
   }
 
@@ -227,7 +258,8 @@ export function TokenDashboardKinetics({
                     <TrendingDown className="h-3 w-3 text-red-500" />
                   )}
                   <span className="text-xs text-muted-foreground">
-                    {rate > 1.0 ? '+' : ''}{((rate - 1.0) * 100).toFixed(1)}%
+                    {rate > 1.0 ? '+' : ''}
+                    {((rate - 1.0) * 100).toFixed(1)}%
                   </span>
                 </div>
               </div>
@@ -241,12 +273,10 @@ export function TokenDashboardKinetics({
             <Activity className="h-4 w-4" />
             <div>
               <div className="text-sm font-medium">Market Phase</div>
-              <Badge className={getMarketPhaseColor(marketPhase)}>
-                {marketPhase}
-              </Badge>
+              <Badge className={getMarketPhaseColor(marketPhase)}>{marketPhase}</Badge>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Zap className="h-4 w-4" />
             <div>
@@ -266,30 +296,51 @@ export function TokenDashboardKinetics({
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={forecast}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="time" 
-                    fontSize={10}
-                    interval="preserveStartEnd"
-                  />
+                  <XAxis dataKey="time" fontSize={10} interval="preserveStartEnd" />
                   <YAxis fontSize={10} />
-                  <Tooltip 
-                    labelFormatter={(label) => `Time: ${label}`}
-                    formatter={(value: number, name: string) => [
-                      value.toFixed(3), 
-                      name
-                    ]}
+                  <Tooltip
+                    labelFormatter={label => `Time: ${label}`}
+                    formatter={(value: number, name: string) => [value.toFixed(3), name]}
                   />
-                  <Line type="monotone" dataKey="Spirit" stroke="#ef4444" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="Essence" stroke="#3b82f6" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="Matter" stroke="#10b981" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="Substance" stroke="#f59e0b" strokeWidth={2} dot={false} />
-                  
+                  <Line
+                    type="monotone"
+                    dataKey="Spirit"
+                    stroke="#ef4444"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="Essence"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="Matter"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="Substance"
+                    stroke="#f59e0b"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+
                   {/* Mark current time */}
-                  <ReferenceLine x={new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} stroke="#666" strokeDasharray="2 2" />
+                  <ReferenceLine
+                    x={new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    stroke="#666"
+                    strokeDasharray="2 2"
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            
+
             {/* Chart Legend */}
             <div className="flex justify-center gap-4 text-xs">
               <div className="flex items-center gap-1">
@@ -323,11 +374,12 @@ export function TokenDashboardKinetics({
             </div>
             <div className="text-sm text-green-700 dark:text-green-300">
               <Clock className="h-3 w-3 inline mr-1" />
-              {nextOptimalWindow.toLocaleTimeString([], { 
-                hour: '2-digit', 
+              {nextOptimalWindow.toLocaleTimeString([], {
+                hour: '2-digit',
                 minute: '2-digit',
-                hour12: true 
-              })} - Peak generation rates expected
+                hour12: true,
+              })}{' '}
+              - Peak generation rates expected
             </div>
             <div className="mt-2">
               <Button size="sm" className="bg-green-600 hover:bg-green-700">
@@ -342,20 +394,18 @@ export function TokenDashboardKinetics({
           <div className="space-y-2">
             <div className="text-sm font-medium">Generation Efficiency</div>
             <div className="space-y-1">
-              {currentRates && Object.entries(currentRates).map(([token, rate]) => (
-                <div key={token} className="flex items-center justify-between text-sm">
-                  <span>{token}:</span>
-                  <div className="flex items-center gap-2">
-                    <Progress 
-                      value={Math.min(100, rate * 50)} 
-                      className="w-16 h-2" 
-                    />
-                    <span className="text-xs font-mono w-12 text-right">
-                      {(rate * 100).toFixed(0)}%
-                    </span>
+              {currentRates &&
+                Object.entries(currentRates).map(([token, rate]) => (
+                  <div key={token} className="flex items-center justify-between text-sm">
+                    <span>{token}:</span>
+                    <div className="flex items-center gap-2">
+                      <Progress value={Math.min(100, rate * 50)} className="w-16 h-2" />
+                      <span className="text-xs font-mono w-12 text-right">
+                        {(rate * 100).toFixed(0)}%
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
 
@@ -372,8 +422,8 @@ export function TokenDashboardKinetics({
 
         {/* Quick Actions */}
         <div className="flex gap-2">
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant="outline"
             onClick={() => {
               // Refresh data
@@ -383,9 +433,9 @@ export function TokenDashboardKinetics({
             <Activity className="h-3 w-3 mr-1" />
             Refresh
           </Button>
-          
-          <Button 
-            size="sm" 
+
+          <Button
+            size="sm"
             variant="outline"
             onClick={() => {
               // Export forecast data

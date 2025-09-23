@@ -75,7 +75,8 @@ export default function HistoricalAgentChatPage() {
     } catch (error) {
       const errorMessage: Message = {
         role: 'agent',
-        content: 'I apologize, but I encountered an error while channeling the consciousness. Please try again.',
+        content:
+          'I apologize, but I encountered an error while channeling the consciousness. Please try again.',
         timestamp: new Date(),
       }
       setMessages(prev => [...prev, errorMessage])

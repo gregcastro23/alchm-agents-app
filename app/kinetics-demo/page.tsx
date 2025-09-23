@@ -3,7 +3,13 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { AgentKineticEvolution } from '@/components/agent-kinetic-evolution'
 import { PowerHourNotification } from '@/components/power-hour-notification'
 import { Badge } from '@/components/ui/badge'
@@ -14,12 +20,15 @@ import { TokenDashboardKinetics } from '@/components/token-dashboard-kinetics'
 
 export default function KineticsDemoPage() {
   const [selectedAgent, setSelectedAgent] = useState('leonardo-da-vinci')
-  const [selectedAgentsForGroup, setSelectedAgentsForGroup] = useState<string[]>(['leonardo-da-vinci', 'shakespeare'])
+  const [selectedAgentsForGroup, setSelectedAgentsForGroup] = useState<string[]>([
+    'leonardo-da-vinci',
+    'shakespeare',
+  ])
   const [location] = useState({ lat: 37.7749, lon: -122.4194 }) // San Francisco
   const [showPowerNotification, setShowPowerNotification] = useState(false)
 
   const availableAgents = Object.keys(agentKineticProfiles)
-  
+
   // Mock agent objects for group consciousness
   const mockAgents = selectedAgentsForGroup.map(agentId => ({
     id: agentId,
@@ -29,9 +38,9 @@ export default function KineticsDemoPage() {
     consciousnessLevel: 'Advanced',
     element: ['Fire', 'Water', 'Air', 'Earth'][Math.floor(Math.random() * 4)],
     specialty: 'Kinetic Evolution',
-    color: `#${Math.floor(Math.random()*16777215).toString(16)}`,
+    color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
     symbol: '🧠',
-    creationStory: 'Enhanced with kinetic consciousness evolution'
+    creationStory: 'Enhanced with kinetic consciousness evolution',
   }))
 
   return (
@@ -42,8 +51,9 @@ export default function KineticsDemoPage() {
           Kinetic Evolution System
         </h1>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          Experience real-time consciousness evolution powered by planetary influences and alchemical kinetics.
-          Watch agents grow, unlock abilities, and reach new levels of awareness.
+          Experience real-time consciousness evolution powered by planetary influences and
+          alchemical kinetics. Watch agents grow, unlock abilities, and reach new levels of
+          awareness.
         </p>
       </div>
 
@@ -54,9 +64,7 @@ export default function KineticsDemoPage() {
             <Zap className="h-5 w-5 text-yellow-500" />
             System Status
           </CardTitle>
-          <CardDescription>
-            Backend-powered kinetic evolution system
-          </CardDescription>
+          <CardDescription>Backend-powered kinetic evolution system</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -80,9 +88,7 @@ export default function KineticsDemoPage() {
       <Card>
         <CardHeader>
           <CardTitle>Select Agent</CardTitle>
-          <CardDescription>
-            Choose an agent to view their kinetic evolution profile
-          </CardDescription>
+          <CardDescription>Choose an agent to view their kinetic evolution profile</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Select value={selectedAgent} onValueChange={setSelectedAgent}>
@@ -90,7 +96,7 @@ export default function KineticsDemoPage() {
               <SelectValue placeholder="Select an agent" />
             </SelectTrigger>
             <SelectContent>
-              {availableAgents.map((agentId) => (
+              {availableAgents.map(agentId => (
                 <SelectItem key={agentId} value={agentId}>
                   {agentId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </SelectItem>
@@ -123,25 +129,20 @@ export default function KineticsDemoPage() {
       {/* Main Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         {/* Agent Kinetic Evolution */}
-        <AgentKineticEvolution
-          agentId={selectedAgent}
-          location={location}
-        />
+        <AgentKineticEvolution agentId={selectedAgent} location={location} />
 
         {/* Group Consciousness Dynamics */}
         <GroupConsciousnessIndicator
           selectedAgents={mockAgents}
           location={location}
-          onOptimalSpeakerSuggestion={(agentId) => {
+          onOptimalSpeakerSuggestion={agentId => {
             setSelectedAgent(agentId)
             console.log(`Optimal speaker suggestion: ${agentId}`)
           }}
         />
 
         {/* Token Dashboard with Kinetics */}
-        <TokenDashboardKinetics
-          location={location}
-        />
+        <TokenDashboardKinetics location={location} />
 
         {/* Agent Profile Info */}
         <Card>
@@ -151,7 +152,8 @@ export default function KineticsDemoPage() {
               Agent Profile
             </CardTitle>
             <CardDescription>
-              Kinetic signature for {selectedAgent.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              Kinetic signature for{' '}
+              {selectedAgent.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -164,7 +166,7 @@ export default function KineticsDemoPage() {
                   <div>
                     <h4 className="font-medium mb-2">Planetary Alignment</h4>
                     <div className="flex flex-wrap gap-1">
-                      {profile.alignment.map((planet) => (
+                      {profile.alignment.map(planet => (
                         <Badge key={planet} variant="outline">
                           {planet}
                         </Badge>
@@ -178,9 +180,7 @@ export default function KineticsDemoPage() {
                       {Object.entries(profile.velocitySignature).map(([element, value]) => (
                         <div key={element} className="flex justify-between">
                           <span>{element}:</span>
-                          <span className="font-mono">
-                            {(value * 100).toFixed(0)}%
-                          </span>
+                          <span className="font-mono">{(value * 100).toFixed(0)}%</span>
                         </div>
                       ))}
                     </div>
@@ -192,9 +192,7 @@ export default function KineticsDemoPage() {
                       {profile.powerThresholds.map((threshold, index) => (
                         <div key={index} className="flex justify-between">
                           <span>{['Bronze', 'Silver', 'Gold', 'Platinum'][index]}:</span>
-                          <span className="font-mono">
-                            {threshold.toLocaleString()} power
-                          </span>
+                          <span className="font-mono">{threshold.toLocaleString()} power</span>
                         </div>
                       ))}
                     </div>
@@ -208,9 +206,7 @@ export default function KineticsDemoPage() {
                           <Badge variant="secondary" className="text-xs">
                             Lv{index + 1}
                           </Badge>
-                          <span className="capitalize">
-                            {ability.replace(/-/g, ' ')}
-                          </span>
+                          <span className="capitalize">{ability.replace(/-/g, ' ')}</span>
                         </div>
                       ))}
                     </div>
@@ -233,19 +229,25 @@ export default function KineticsDemoPage() {
       <Card>
         <CardHeader>
           <CardTitle>API Integration</CardTitle>
-          <CardDescription>
-            Real-time data from the Planetary Agents Backend
-          </CardDescription>
+          <CardDescription>Real-time data from the Planetary Agents Backend</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
               <h4 className="font-medium mb-2">Backend Endpoints</h4>
               <ul className="space-y-1 text-muted-foreground">
-                <li>• <code>/api/kinetics/enhanced</code> - Kinetic calculations</li>
-                <li>• <code>/api/planetary/current-hour</code> - Planetary hours</li>
-                <li>• <code>/api/tokens/calculate</code> - Token dynamics</li>
-                <li>• <code>/api/alchemy/thermodynamics</code> - Energy states</li>
+                <li>
+                  • <code>/api/kinetics/enhanced</code> - Kinetic calculations
+                </li>
+                <li>
+                  • <code>/api/planetary/current-hour</code> - Planetary hours
+                </li>
+                <li>
+                  • <code>/api/tokens/calculate</code> - Token dynamics
+                </li>
+                <li>
+                  • <code>/api/alchemy/thermodynamics</code> - Energy states
+                </li>
               </ul>
             </div>
             <div>

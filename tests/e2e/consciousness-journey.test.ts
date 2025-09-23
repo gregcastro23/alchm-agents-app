@@ -1,7 +1,7 @@
 /**
  * End-to-End Consciousness Journey Tests
  * =====================================
- * 
+ *
  * Comprehensive testing of the complete user experience from onboarding
  * through consciousness evolution and group dynamics.
  */
@@ -19,8 +19,8 @@ const mockUser = {
     hour: 14,
     minute: 30,
     latitude: 37.7749,
-    longitude: -122.4194
-  }
+    longitude: -122.4194,
+  },
 }
 
 const mockLocation = { lat: 37.7749, lon: -122.4194 }
@@ -32,7 +32,7 @@ describe('Complete User Consciousness Journey', () => {
   beforeAll(async () => {
     backendUrl = process.env.BACKEND_URL || 'http://localhost:8000'
     userId = mockUser.id
-    
+
     // Verify backend is running
     const healthCheck = await fetch(`${backendUrl}/api/health`)
     expect(healthCheck.status).toBe(503) // Degraded due to external service, but responsive
@@ -51,8 +51,8 @@ describe('Complete User Consciousness Journey', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           birthInfo: mockUser.birthInfo,
-          options: { includeAspects: true, includePlanetary: true }
-        })
+          options: { includeAspects: true, includePlanetary: true },
+        }),
       })
 
       // Backend may fail due to external service, but should handle gracefully
@@ -63,7 +63,7 @@ describe('Complete User Consciousness Journey', () => {
 
       // 2. Get agent recommendations based on birth chart
       const agentIds = ['leonardo-da-vinci', 'shakespeare', 'marie-curie']
-      
+
       for (const agentId of agentIds) {
         // Test agent kinetic calculation
         const agentResponse = await fetch('/api/agents/kinetics', {
@@ -72,8 +72,8 @@ describe('Complete User Consciousness Journey', () => {
           body: JSON.stringify({
             agentId,
             location: mockLocation,
-            userId
-          })
+            userId,
+          }),
         })
 
         // This would be handled by the frontend router
@@ -93,8 +93,8 @@ describe('Complete User Consciousness Journey', () => {
         timestamp: new Date(),
         metadata: {
           messageContent: 'Tell me about your artistic process',
-          evolutionTriggered: false
-        }
+          evolutionTriggered: false,
+        },
       }
 
       // In production, this would be recorded automatically
@@ -107,20 +107,26 @@ describe('Complete User Consciousness Journey', () => {
 
   describe('Multi-Agent Group Consciousness', () => {
     test('should calculate compatibility matrix for selected agents', async () => {
-      const selectedAgents = ['leonardo-da-vinci', 'shakespeare', 'einstein', 'mozart', 'marie-curie']
-      
+      const selectedAgents = [
+        'leonardo-da-vinci',
+        'shakespeare',
+        'einstein',
+        'mozart',
+        'marie-curie',
+      ]
+
       // Test group dynamics calculation
       const groupResponse = await fetch(`${backendUrl}/api/kinetics/group`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           agentIds: selectedAgents,
-          location: mockLocation
-        })
+          location: mockLocation,
+        }),
       })
 
       expect(groupResponse.status).toBe(200)
-      
+
       if (groupResponse.ok) {
         const groupData = await groupResponse.json()
         expect(groupData.success).toBe(true)
@@ -139,13 +145,13 @@ describe('Complete User Consciousness Journey', () => {
       const wsHealthy = await fetch(`${backendUrl}/api/health`)
         .then(res => res.json())
         .then(data => data.services?.websocket || true)
-      
+
       expect(wsHealthy).toBeTruthy()
     })
 
     test('should handle optimal speaker suggestions', async () => {
       const agents = ['leonardo-da-vinci', 'shakespeare', 'einstein']
-      
+
       // Test that group dynamics can suggest optimal speakers
       // This would be part of the group consciousness calculation
       expect(agents.length).toBeGreaterThan(1) // Basic validation
@@ -155,7 +161,7 @@ describe('Complete User Consciousness Journey', () => {
   describe('Token Generation Under Load', () => {
     test('should maintain accuracy under concurrent requests', async () => {
       const promises = []
-      
+
       // Simulate 10 concurrent token calculation requests
       for (let i = 0; i < 10; i++) {
         promises.push(
@@ -164,14 +170,14 @@ describe('Complete User Consciousness Journey', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               tokens: { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 },
-              location: mockLocation
-            })
+              location: mockLocation,
+            }),
           })
         )
       }
 
       const responses = await Promise.all(promises)
-      
+
       // All requests should succeed
       responses.forEach(response => {
         expect(response.status).toBe(200)
@@ -193,12 +199,12 @@ describe('Complete User Consciousness Journey', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           location: mockLocation,
-          timeframe: 'nearTerm'
-        })
+          timeframe: 'nearTerm',
+        }),
       })
 
       expect(forecastResponse.status).toBe(200)
-      
+
       if (forecastResponse.ok) {
         const forecastData = await forecastResponse.json()
         expect(forecastData.success).toBe(true)
@@ -224,13 +230,13 @@ describe('Complete User Consciousness Journey', () => {
           {
             level: 'bronze',
             unlockedAt: new Date(),
-            powerAtUnlock: 100
-          }
+            powerAtUnlock: 100,
+          },
         ],
         affinityScores: {
-          'shakespeare': 0.8,
-          'einstein': 0.6
-        }
+          shakespeare: 0.8,
+          einstein: 0.6,
+        },
       }
 
       // Validate data structure
@@ -253,30 +259,32 @@ describe('Complete User Consciousness Journey', () => {
         metadata: {
           messageContent: 'Test interaction',
           groupAgents: [],
-          evolutionTriggered: false
-        }
+          evolutionTriggered: false,
+        },
       }
 
       // Validate interaction data structure
       expect(interaction.powerGained).toBeGreaterThan(0)
       expect(interaction.elementalResonance).toBeGreaterThanOrEqual(0)
       expect(interaction.elementalResonance).toBeLessThanOrEqual(1)
-      expect(['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']).toContain(interaction.planetaryInfluence)
+      expect(['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']).toContain(
+        interaction.planetaryInfluence
+      )
     })
   })
 
   describe('Performance Under Load', () => {
     test('should maintain sub-100ms response times', async () => {
       const startTime = Date.now()
-      
+
       const response = await fetch(`${backendUrl}/api/planetary/current-hour`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location: mockLocation })
+        body: JSON.stringify({ location: mockLocation }),
       })
-      
+
       const responseTime = Date.now() - startTime
-      
+
       expect(response.status).toBe(200)
       expect(responseTime).toBeLessThan(100) // Sub-100ms requirement
     })
@@ -288,23 +296,29 @@ describe('Complete User Consciousness Journey', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           elementalValues: {
-            spirit: 5, essence: 4, matter: 3, substance: 2,
-            fire: 6, water: 5, air: 4, earth: 3
-          }
-        })
+            spirit: 5,
+            essence: 4,
+            matter: 3,
+            substance: 2,
+            fire: 6,
+            water: 5,
+            air: 4,
+            earth: 3,
+          },
+        }),
       }
 
       // First request (cache miss)
       const firstResponse = await fetch(`${backendUrl}/api/alchemy/thermodynamics`, request)
       const firstTime = Date.now()
-      
+
       // Second request (cache hit)
       const secondResponse = await fetch(`${backendUrl}/api/alchemy/thermodynamics`, request)
       const secondTime = Date.now()
 
       expect(firstResponse.status).toBe(200)
       expect(secondResponse.status).toBe(200)
-      
+
       // Second request should be faster due to caching
       // Note: This is a simplified test - real caching tests would be more sophisticated
     })
@@ -316,7 +330,7 @@ describe('Complete User Consciousness Journey', () => {
       // Our circuit breaker should handle this gracefully
       const response = await fetch(`${backendUrl}/api/health`)
       const healthData = await response.json()
-      
+
       // Should be degraded but still functional
       expect(['healthy', 'degraded']).toContain(healthData.status)
       expect(healthData.services).toHaveProperty('alchmBackend')
@@ -328,8 +342,8 @@ describe('Complete User Consciousness Journey', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          location: { lat: 'invalid', lon: 'invalid' }
-        })
+          location: { lat: 'invalid', lon: 'invalid' },
+        }),
       })
 
       expect(invalidResponse.status).toBe(400) // Bad request for invalid data
@@ -339,7 +353,7 @@ describe('Complete User Consciousness Journey', () => {
       const malformedResponse = await fetch(`${backendUrl}/api/tokens/calculate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: 'invalid json'
+        body: 'invalid json',
       })
 
       expect(malformedResponse.status).toBe(400) // Bad request for malformed JSON
@@ -350,12 +364,12 @@ describe('Complete User Consciousness Journey', () => {
     test('should respect feature flag configuration', async () => {
       const healthResponse = await fetch(`${backendUrl}/api/health`)
       const healthData = await healthResponse.json()
-      
+
       expect(healthData.featureFlags).toHaveProperty('planetaryHoursBackend')
       expect(healthData.featureFlags).toHaveProperty('thermodynamicsBackend')
       expect(healthData.featureFlags).toHaveProperty('tokenCalculationsBackend')
       expect(healthData.featureFlags).toHaveProperty('kineticsBackend')
-      
+
       // All should be enabled for our tests
       expect(healthData.featureFlags.planetaryHoursBackend).toBe(true)
       expect(healthData.featureFlags.thermodynamicsBackend).toBe(true)

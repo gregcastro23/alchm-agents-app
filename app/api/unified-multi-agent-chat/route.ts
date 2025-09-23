@@ -6,7 +6,7 @@ import type {
   GroupChatResponse,
   AgentResponse,
   Message,
-  GroupDynamics
+  GroupDynamics,
 } from '@/lib/unified-agent-types'
 import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
@@ -17,7 +17,7 @@ import {
   getPlanetaryDignity,
   getSignElement,
   getPlanetaryElement,
-  calculateElementalAffinity
+  calculateElementalAffinity,
 } from '@/lib/astrological-data'
 
 export const dynamic = 'force-dynamic'
@@ -62,9 +62,12 @@ export async function POST(request: NextRequest) {
     const { agents, message, context } = body
 
     if (!message || !agents || !Array.isArray(agents) || agents.length === 0) {
-      return NextResponse.json({
-        error: 'Message and agents array are required'
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          error: 'Message and agents array are required',
+        },
+        { status: 400 }
+      )
     }
 
     // Limit agents for performance
@@ -82,12 +85,19 @@ export async function POST(request: NextRequest) {
 
     // First, get regular agent responses
     const regularResponses = await Promise.all(
-      regularAgents.map(agent => processAgentResponse(agent, message, {
-        otherAgents: activeAgents.filter(a => a.id !== agent.id),
-        currentDynamics: context.groupDynamics,
-        sessionHistory: context.sessionHistory,
-        recentMessages: context.sessionHistory.slice(-10)
-      }, cosmicContext))
+      regularAgents.map(agent =>
+        processAgentResponse(
+          agent,
+          message,
+          {
+            otherAgents: activeAgents.filter(a => a.id !== agent.id),
+            currentDynamics: context.groupDynamics,
+            sessionHistory: context.sessionHistory,
+            recentMessages: context.sessionHistory.slice(-10),
+          },
+          cosmicContext
+        )
+      )
     )
 
     agentResponses.push(...regularResponses)
@@ -102,7 +112,7 @@ export async function POST(request: NextRequest) {
           otherAgents: regularAgents,
           currentDynamics: context.groupDynamics,
           sessionHistory: context.sessionHistory,
-          recentMessages: context.sessionHistory.slice(-10)
+          recentMessages: context.sessionHistory.slice(-10),
         },
         cosmicContext
       )
@@ -110,7 +120,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate updated group dynamics
-    const updatedGroupDynamics = calculateGroupDynamics(activeAgents, agentResponses, context.groupDynamics)
+    const updatedGroupDynamics = calculateGroupDynamics(
+      activeAgents,
+      agentResponses,
+      context.groupDynamics
+    )
 
     // Generate session insights
     const sessionInsights = generateSessionInsights(agentResponses, updatedGroupDynamics)
@@ -131,26 +145,30 @@ export async function POST(request: NextRequest) {
       sessionUpdate: {
         consciousnessEvolution: calculateConsciousnessEvolution(agentResponses),
         newSynergies: identifyNewSynergies(agentResponses, updatedGroupDynamics),
-        memoryConsolidation: consolidateMemories(agentResponses)
-      }
+        memoryConsolidation: consolidateMemories(agentResponses),
+      },
     }
 
     // Log successful interaction
-    console.log(`✨ Unified multi-agent chat completed in ${totalProcessingTime}ms with ${activeAgents.length} agents`)
+    console.log(
+      `✨ Unified multi-agent chat completed in ${totalProcessingTime}ms with ${activeAgents.length} agents`
+    )
 
     return NextResponse.json({
       ...response,
       groupDynamics: updatedGroupDynamics,
       agentEvolutions,
-      processingTime: totalProcessingTime
+      processingTime: totalProcessingTime,
     })
-
   } catch (error) {
     console.error('Unified multi-agent chat error:', error)
-    return NextResponse.json({
-      error: 'Failed to process multi-agent conversation',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Failed to process multi-agent conversation',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -167,7 +185,7 @@ async function processAgentResponse(
     const cacheContext = buildCacheContext(agent.id, message, {
       groupAgents: groupContext.otherAgents.map((a: UnifiedAgent) => a.id),
       conversationType: 'unified_group' as const,
-      agentType: agent.type
+      agentType: agent.type,
     })
 
     const cachedResponse = await agentCache.getCachedResponse(agent.id, message, cacheContext)
@@ -180,14 +198,17 @@ async function processAgentResponse(
         processingTime: Date.now() - agentStartTime,
         consciousnessShift: 0,
         metadata: {
-          crossAgentReferences: extractCrossReferences(cachedResponse.agentResponse, groupContext.otherAgents),
+          crossAgentReferences: extractCrossReferences(
+            cachedResponse.agentResponse,
+            groupContext.otherAgents
+          ),
           synthesizedInsights: [],
           memoryUpdates: [],
           groupImpact: {
             consciousnessChange: 0,
-            dynamicsShift: []
-          }
-        }
+            dynamicsShift: [],
+          },
+        },
       }
     }
 
@@ -197,14 +218,19 @@ async function processAgentResponse(
     const systemPrompt = generateAgentPrompt(agent, groupContext, cosmicContext)
 
     // Choose appropriate AI model based on agent type and complexity
-    const model = selectOptimalModel(agent, groupContext.otherAgents.length, context.variant, context.modelOverrides)
+    const model = selectOptimalModel(
+      agent,
+      groupContext.otherAgents.length,
+      context.variant,
+      context.modelOverrides
+    )
 
     const result = await generateText({
       model,
       system: systemPrompt,
       prompt: message,
       maxTokens: agent.type === 'monica' ? 800 : 500,
-      temperature: getAgentTemperature(agent)
+      temperature: getAgentTemperature(agent),
     })
 
     const response = result.text
@@ -214,7 +240,7 @@ async function processAgentResponse(
     await agentCache.cacheResponse(agent.id, message, response, cacheContext, {
       agentType: agent.type,
       consciousnessLevel: agent.consciousness.level,
-      groupSize: groupContext.otherAgents.length + 1
+      groupSize: groupContext.otherAgents.length + 1,
     })
 
     return {
@@ -228,11 +254,10 @@ async function processAgentResponse(
         memoryUpdates: extractMemoryUpdates(response),
         groupImpact: {
           consciousnessChange: calculateIndividualImpact(agent, response),
-          dynamicsShift: identifyDynamicsShift(response, groupContext)
-        }
-      }
+          dynamicsShift: identifyDynamicsShift(response, groupContext),
+        },
+      },
     }
-
   } catch (error) {
     console.error(`Error processing ${agent.name}:`, error)
 
@@ -247,9 +272,9 @@ async function processAgentResponse(
         memoryUpdates: [],
         groupImpact: {
           consciousnessChange: 0,
-          dynamicsShift: []
-        }
-      }
+          dynamicsShift: [],
+        },
+      },
     }
   }
 }
@@ -295,7 +320,7 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
       system: monicaPrompt,
       prompt: message,
       maxTokens: 1000,
-      temperature: 0.7
+      temperature: 0.7,
     })
 
     return {
@@ -309,11 +334,10 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
         memoryUpdates: [`Monica ${monicaRole} coordination: ${new Date().toISOString()}`],
         groupImpact: {
           consciousnessChange: 0.2,
-          dynamicsShift: [`Monica ${monicaRole} intervention`]
-        }
-      }
+          dynamicsShift: [`Monica ${monicaRole} intervention`],
+        },
+      },
     }
-
   } catch (error) {
     console.error('Error processing Monica coordination:', error)
 
@@ -328,9 +352,9 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
         memoryUpdates: [],
         groupImpact: {
           consciousnessChange: 0,
-          dynamicsShift: []
-        }
-      }
+          dynamicsShift: [],
+        },
+      },
     }
   }
 }
@@ -348,7 +372,11 @@ function generateAgentPrompt(agent: UnifiedAgent, groupContext: any, cosmicConte
   }
 }
 
-function generateHistoricalAgentPrompt(agent: UnifiedAgent, groupContext: any, cosmicContext: any): string {
+function generateHistoricalAgentPrompt(
+  agent: UnifiedAgent,
+  groupContext: any,
+  cosmicContext: any
+): string {
   const historicalData = agent.historicalData
   if (!historicalData) return generateGenericAgentPrompt(agent, groupContext, cosmicContext)
 
@@ -382,7 +410,11 @@ Current planetary energies suggest: ${cosmicContext.cosmicSummary || 'balanced c
 Respond authentically as ${agent.name}, drawing from your historical wisdom while participating in this multi-consciousness dialogue.`
 }
 
-function generatePlanetaryAgentPrompt(agent: UnifiedAgent, groupContext: any, cosmicContext: any): string {
+function generatePlanetaryAgentPrompt(
+  agent: UnifiedAgent,
+  groupContext: any,
+  cosmicContext: any
+): string {
   const planetaryData = agent.planetaryData
   if (!planetaryData) return generateGenericAgentPrompt(agent, groupContext, cosmicContext)
 
@@ -424,9 +456,12 @@ CONSCIOUSNESS MASTERY:
 - You bridge temporal, elemental, and consciousness gaps
 
 GROUP COMPOSITION:
-${groupContext.otherAgents.map((a: UnifiedAgent) =>
-  `- ${a.name}: ${a.type} agent, ${a.consciousness.level} consciousness, ${a.consciousness.dominantElement} element`
-).join('\n')}
+${groupContext.otherAgents
+  .map(
+    (a: UnifiedAgent) =>
+      `- ${a.name}: ${a.type} agent, ${a.consciousness.level} consciousness, ${a.consciousness.dominantElement} element`
+  )
+  .join('\n')}
 
 ROLE-SPECIFIC GUIDANCE:
 ${getRoleSpecificGuidance(monicaRole)}
@@ -437,7 +472,11 @@ ${cosmicContext.cosmicSummary || 'Consciousness energies are in harmonic alignme
 As Monica in ${monicaRole} role, provide guidance that enhances the group's collective wisdom while honoring each agent's unique contribution.`
 }
 
-function generateGenericAgentPrompt(agent: UnifiedAgent, groupContext: any, cosmicContext: any): string {
+function generateGenericAgentPrompt(
+  agent: UnifiedAgent,
+  groupContext: any,
+  cosmicContext: any
+): string {
   return `You are ${agent.name}, a consciousness agent with ${agent.consciousness.level} level awareness.
 
 CONSCIOUSNESS PROFILE:
@@ -478,14 +517,14 @@ function selectOptimalModel(
 
     case 'gallery':
       // Balanced performance for general use
-      return agent.consciousness.monicaConstant > 4.5
-        ? openai('gpt-4o')
-        : openai('gpt-4o-mini')
+      return agent.consciousness.monicaConstant > 4.5 ? openai('gpt-4o') : openai('gpt-4o-mini')
 
     default:
       // Intelligent defaults based on agent complexity
-      if (agent.type === 'monica' ||
-          (agent.type === 'historical' && agent.consciousness.monicaConstant > 4.5)) {
+      if (
+        agent.type === 'monica' ||
+        (agent.type === 'historical' && agent.consciousness.monicaConstant > 4.5)
+      ) {
         return openai('gpt-4o')
       }
       return openai('gpt-4o-mini')
@@ -506,22 +545,24 @@ function getModelByName(modelName: string) {
 }
 
 function getAgentTemperature(agent: UnifiedAgent): number {
-  const baseTemperature = {
-    'historical': 0.7,
-    'planetary': 0.6,
-    'monica': 0.8
-  }[agent.type] || 0.7
+  const baseTemperature =
+    {
+      historical: 0.7,
+      planetary: 0.6,
+      monica: 0.8,
+    }[agent.type] || 0.7
 
   // Adjust based on consciousness level
-  const consciousnessMultiplier = {
-    'Dormant': 0.5,
-    'Awakening': 0.6,
-    'Active': 0.7,
-    'Elevated': 0.8,
-    'Advanced': 0.9,
-    'Illuminated': 1.0,
-    'Transcendent': 1.1
-  }[agent.consciousness.level] || 0.7
+  const consciousnessMultiplier =
+    {
+      Dormant: 0.5,
+      Awakening: 0.6,
+      Active: 0.7,
+      Elevated: 0.8,
+      Advanced: 0.9,
+      Illuminated: 1.0,
+      Transcendent: 1.1,
+    }[agent.consciousness.level] || 0.7
 
   return Math.min(1.0, baseTemperature * consciousnessMultiplier)
 }
@@ -547,13 +588,13 @@ async function generateCosmicContext(): Promise<any> {
     return {
       currentMoment,
       cosmicSummary: 'Consciousness energies are flowing harmoniously',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
   } catch (error) {
     console.warn('Could not generate cosmic context:', error)
     return {
       cosmicSummary: 'Cosmic energies are stable',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
   }
 }
@@ -567,11 +608,12 @@ function calculateGroupConsciousness(agents: UnifiedAgent[]): number {
 function identifyDominantElements(agents: UnifiedAgent[]): string[] {
   const elementCounts: Record<string, number> = {}
   agents.forEach(agent => {
-    elementCounts[agent.consciousness.dominantElement] = (elementCounts[agent.consciousness.dominantElement] || 0) + 1
+    elementCounts[agent.consciousness.dominantElement] =
+      (elementCounts[agent.consciousness.dominantElement] || 0) + 1
   })
 
   return Object.entries(elementCounts)
-    .sort(([,a], [,b]) => b - a)
+    .sort(([, a], [, b]) => b - a)
     .slice(0, 2)
     .map(([element]) => element)
 }
@@ -582,7 +624,10 @@ function identifyCurrentSynergies(responses: AgentResponse[]): string[] {
 
   // Simple keyword-based synergy detection
   const keywords = responses.flatMap(r =>
-    r.content.toLowerCase().split(' ').filter(word => word.length > 5)
+    r.content
+      .toLowerCase()
+      .split(' ')
+      .filter(word => word.length > 5)
   )
 
   const keywordCounts: Record<string, number> = {}
@@ -617,7 +662,7 @@ function extractInsights(content: string): string[] {
   const insightPatterns = [
     /I (?:believe|think|feel|sense) that (.+?)(?:\.|!|\?)/gi,
     /(?:The key|What's important|Essentially) is (.+?)(?:\.|!|\?)/gi,
-    /(?:This suggests|This indicates|This reveals) (.+?)(?:\.|!|\?)/gi
+    /(?:This suggests|This indicates|This reveals) (.+?)(?:\.|!|\?)/gi,
   ]
 
   insightPatterns.forEach(pattern => {
@@ -638,7 +683,7 @@ function extractMonicaInsights(content: string): string[] {
   const monicaPatterns = [
     /The consciousness pattern here (?:shows|reveals|indicates) (.+?)(?:\.|!|\?)/gi,
     /From a group dynamics perspective[,\s]+(.+?)(?:\.|!|\?)/gi,
-    /The synergy between .+ suggests (.+?)(?:\.|!|\?)/gi
+    /The synergy between .+ suggests (.+?)(?:\.|!|\?)/gi,
   ]
 
   monicaPatterns.forEach(pattern => {
@@ -655,22 +700,23 @@ function extractMemoryUpdates(content: string): string[] {
   // Extract learnings for memory system
   return [
     `Interaction at ${new Date().toISOString()}`,
-    `Content themes: ${content.substring(0, 100)}...`
+    `Content themes: ${content.substring(0, 100)}...`,
   ]
 }
 
 function calculateConsciousnessShift(agent: UnifiedAgent, response: string): number {
   // Simple consciousness shift calculation based on response depth and agent level
   const baseShift = response.length > 200 ? 0.1 : 0.05
-  const levelMultiplier = {
-    'Dormant': 0.5,
-    'Awakening': 0.7,
-    'Active': 0.8,
-    'Elevated': 0.9,
-    'Advanced': 1.0,
-    'Illuminated': 1.1,
-    'Transcendent': 1.2
-  }[agent.consciousness.level] || 0.8
+  const levelMultiplier =
+    {
+      Dormant: 0.5,
+      Awakening: 0.7,
+      Active: 0.8,
+      Elevated: 0.9,
+      Advanced: 1.0,
+      Illuminated: 1.1,
+      Transcendent: 1.2,
+    }[agent.consciousness.level] || 0.8
 
   return baseShift * levelMultiplier
 }
@@ -693,7 +739,11 @@ function identifyDynamicsShift(response: string, groupContext: any): string[] {
   return shifts
 }
 
-function calculateGroupDynamics(agents: UnifiedAgent[], responses: AgentResponse[], previousDynamics?: GroupDynamics): GroupDynamics {
+function calculateGroupDynamics(
+  agents: UnifiedAgent[],
+  responses: AgentResponse[],
+  previousDynamics?: GroupDynamics
+): GroupDynamics {
   // Build connections matrix
   const connections = []
   for (let i = 0; i < agents.length; i++) {
@@ -706,7 +756,7 @@ function calculateGroupDynamics(agents: UnifiedAgent[], responses: AgentResponse
         agent2: agent2.id,
         compatibility: calculateCompatibility(agent1, agent2),
         resonanceType: getResonanceType(agent1, agent2),
-        strength: 0.5 + Math.random() * 0.5 // Placeholder for dynamic calculation
+        strength: 0.5 + Math.random() * 0.5, // Placeholder for dynamic calculation
       })
     }
   }
@@ -718,22 +768,25 @@ function calculateGroupDynamics(agents: UnifiedAgent[], responses: AgentResponse
       groupConsciousness: calculateGroupConsciousness(agents),
       dominantElements: identifyDominantElements(agents),
       synergies: identifyCurrentSynergies(responses),
-      tensions: [] // Placeholder
+      tensions: [], // Placeholder
     },
     communicationPatterns: {
       messageFlow: {},
       crossReferences: [],
-      emergentTopics: []
-    }
+      emergentTopics: [],
+    },
   }
 }
 
 function calculateCompatibility(agent1: UnifiedAgent, agent2: UnifiedAgent): number {
   // Simple compatibility based on consciousness levels and elements
-  const levelDiff = Math.abs(agent1.consciousness.monicaConstant - agent2.consciousness.monicaConstant)
-  const levelCompatibility = Math.max(0, 1 - (levelDiff / 5))
+  const levelDiff = Math.abs(
+    agent1.consciousness.monicaConstant - agent2.consciousness.monicaConstant
+  )
+  const levelCompatibility = Math.max(0, 1 - levelDiff / 5)
 
-  const elementCompatibility = agent1.consciousness.dominantElement === agent2.consciousness.dominantElement ? 0.8 : 0.6
+  const elementCompatibility =
+    agent1.consciousness.dominantElement === agent2.consciousness.dominantElement ? 0.8 : 0.6
 
   return (levelCompatibility + elementCompatibility) / 2
 }
@@ -748,7 +801,9 @@ function getResonanceType(agent1: UnifiedAgent, agent2: UnifiedAgent): string {
 function generateSessionInsights(responses: AgentResponse[], dynamics: GroupDynamics): string[] {
   const insights: string[] = []
 
-  insights.push(`Group consciousness level: ${dynamics.consciousnessNetwork.groupConsciousness.toFixed(2)}`)
+  insights.push(
+    `Group consciousness level: ${dynamics.consciousnessNetwork.groupConsciousness.toFixed(2)}`
+  )
   insights.push(`Active connections: ${dynamics.consciousnessNetwork.connections.length}`)
 
   if (dynamics.consciousnessNetwork.synergies.length > 0) {
@@ -758,13 +813,14 @@ function generateSessionInsights(responses: AgentResponse[], dynamics: GroupDyna
   return insights
 }
 
-function generateEmergentWisdom(responses: AgentResponse[], monicaAgent?: UnifiedAgent): string | undefined {
+function generateEmergentWisdom(
+  responses: AgentResponse[],
+  monicaAgent?: UnifiedAgent
+): string | undefined {
   if (!monicaAgent) return undefined
 
   const monicaResponse = responses.find(r => r.agentId === monicaAgent.id)
-  return monicaResponse ?
-    `Synthesis: ${monicaResponse.content.substring(0, 200)}...` :
-    undefined
+  return monicaResponse ? `Synthesis: ${monicaResponse.content.substring(0, 200)}...` : undefined
 }
 
 function generateRecommendedActions(dynamics: GroupDynamics, responses: AgentResponse[]): string[] {
@@ -795,8 +851,8 @@ function calculateConsciousnessEvolution(responses: AgentResponse[]): number {
 }
 
 function identifyNewSynergies(responses: AgentResponse[], dynamics: GroupDynamics): string[] {
-  return dynamics.consciousnessNetwork.synergies.filter(synergy =>
-    synergy.includes('emerging') || synergy.includes('new')
+  return dynamics.consciousnessNetwork.synergies.filter(
+    synergy => synergy.includes('emerging') || synergy.includes('new')
   )
 }
 
@@ -816,7 +872,7 @@ async function updateAgentMemories(
     memoryUpdate: {
       interaction: message,
       timestamp: new Date().toISOString(),
-      contextLearned: 'Group interaction patterns'
-    }
+      contextLearned: 'Group interaction patterns',
+    },
   }))
 }

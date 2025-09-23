@@ -407,13 +407,13 @@ export class DynamicAspectsEngine {
     // Return agents most sensitive to these planetary combinations
     // Based on agent planetary rulerships and elemental affinities
     const planetaryAgents: Record<string, string[]> = {
-      'sun': ['leonardo-da-vinci', 'shakespeare', 'cleopatra'],
-      'moon': ['carl-jung', 'marie-curie', 'frida-kahlo'],
-      'mercury': ['nikola-tesla', 'albert-einstein', 'galileo-galilei'],
-      'venus': ['shakespeare', 'marie-curie', 'cleopatra'],
-      'mars': ['leonardo-da-vinci', 'nikola-tesla', 'benjamin-franklin'],
-      'jupiter': ['carl-jung', 'albert-einstein', 'aristotle'],
-      'saturn': ['marie-curie', 'aristotle', 'benjamin-franklin']
+      sun: ['leonardo-da-vinci', 'shakespeare', 'cleopatra'],
+      moon: ['carl-jung', 'marie-curie', 'frida-kahlo'],
+      mercury: ['nikola-tesla', 'albert-einstein', 'galileo-galilei'],
+      venus: ['shakespeare', 'marie-curie', 'cleopatra'],
+      mars: ['leonardo-da-vinci', 'nikola-tesla', 'benjamin-franklin'],
+      jupiter: ['carl-jung', 'albert-einstein', 'aristotle'],
+      saturn: ['marie-curie', 'aristotle', 'benjamin-franklin'],
     }
 
     const agents = new Set<string>()

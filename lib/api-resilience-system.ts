@@ -53,14 +53,14 @@ export class ApiResilienceSystem {
     baseDelayMs: 1000,
     maxDelayMs: 10000,
     backoffMultiplier: 2,
-    jitterMs: 500
+    jitterMs: 500,
   }
 
   private static readonly DEFAULT_CIRCUIT_CONFIG: CircuitBreakerConfig = {
     failureThreshold: 5,
     recoveryTimeoutMs: 30000, // 30 seconds
     successThreshold: 2,
-    timeWindowMs: 60000 // 1 minute
+    timeWindowMs: 60000, // 1 minute
   }
 
   /**
@@ -80,7 +80,9 @@ export class ApiResilienceSystem {
     if (circuitState.state === 'OPEN') {
       const timeSinceFailure = Date.now() - circuitState.lastFailureTime
       if (timeSinceFailure < circuitConf.recoveryTimeoutMs) {
-        throw new Error(`Circuit breaker OPEN for ${apiCall.name}. Try again in ${Math.round((circuitConf.recoveryTimeoutMs - timeSinceFailure) / 1000)}s`)
+        throw new Error(
+          `Circuit breaker OPEN for ${apiCall.name}. Try again in ${Math.round((circuitConf.recoveryTimeoutMs - timeSinceFailure) / 1000)}s`
+        )
       } else {
         // Move to HALF_OPEN state
         circuitState.state = 'HALF_OPEN'
@@ -109,7 +111,7 @@ export class ApiResilienceSystem {
         const result = apiCall.timeout
           ? await Promise.race([
               executePromise,
-              this.createTimeoutPromise(apiCall.timeout, apiCall.name)
+              this.createTimeoutPromise(apiCall.timeout, apiCall.name),
             ])
           : await executePromise
 
@@ -120,7 +122,10 @@ export class ApiResilienceSystem {
         return result
       } catch (error) {
         lastError = error as Error
-        console.warn(`API call ${apiCall.name} failed (attempt ${attempt + 1}/${config.maxRetries + 1}):`, error)
+        console.warn(
+          `API call ${apiCall.name} failed (attempt ${attempt + 1}/${config.maxRetries + 1}):`,
+          error
+        )
 
         // Update circuit breaker and metrics for failure
         this.handleFailure(apiCall.name, circuitConfig)
@@ -176,7 +181,7 @@ export class ApiResilienceSystem {
         failures: 0,
         lastFailureTime: 0,
         successCount: 0,
-        timeWindow: []
+        timeWindow: [],
       })
     }
 
@@ -184,9 +189,7 @@ export class ApiResilienceSystem {
 
     // Clean old time window entries
     const now = Date.now()
-    state.timeWindow = state.timeWindow.filter(
-      entry => now - entry.start < config.timeWindowMs
-    )
+    state.timeWindow = state.timeWindow.filter(entry => now - entry.start < config.timeWindowMs)
 
     return state
   }
@@ -261,7 +264,7 @@ export class ApiResilienceSystem {
         circuitBreakerTrips: 0,
         averageResponseTime: 0,
         lastCallTime: 0,
-        uptime: 0
+        uptime: 0,
       })
     }
 
@@ -311,7 +314,9 @@ export class ApiResilienceSystem {
   /**
    * Get circuit breaker status
    */
-  static getCircuitBreakerStatus(apiName?: string): Map<string, CircuitBreakerState> | CircuitBreakerState | null {
+  static getCircuitBreakerStatus(
+    apiName?: string
+  ): Map<string, CircuitBreakerState> | CircuitBreakerState | null {
     if (apiName) {
       return this.circuitBreakers.get(apiName) || null
     }
@@ -356,11 +361,12 @@ export class ApiResilienceSystem {
     apiFunction: () => Promise<T>,
     timeout?: number
   ): () => Promise<T> {
-    return () => this.executeWithResilience({
-      name,
-      execute: apiFunction,
-      timeout
-    })
+    return () =>
+      this.executeWithResilience({
+        name,
+        execute: apiFunction,
+        timeout,
+      })
   }
 
   /**
@@ -383,7 +389,7 @@ export class ApiResilienceSystem {
         healthyApis: 0,
         circuitBreakerTrips: 0,
         averageResponseTime: 0,
-        status: 'HEALTHY'
+        status: 'HEALTHY',
       }
     }
 
@@ -391,7 +397,8 @@ export class ApiResilienceSystem {
     const overallUptime = totalUptime / allMetrics.length
     const healthyApis = allMetrics.filter(m => m.uptime > 0.8).length
     const totalTrips = allMetrics.reduce((sum, m) => sum + m.circuitBreakerTrips, 0)
-    const avgResponseTime = allMetrics.reduce((sum, m) => sum + m.averageResponseTime, 0) / allMetrics.length
+    const avgResponseTime =
+      allMetrics.reduce((sum, m) => sum + m.averageResponseTime, 0) / allMetrics.length
 
     let status: 'HEALTHY' | 'DEGRADED' | 'UNHEALTHY' = 'HEALTHY'
     if (overallUptime < 0.5 || totalTrips > 10) status = 'UNHEALTHY'
@@ -403,7 +410,7 @@ export class ApiResilienceSystem {
       healthyApis,
       circuitBreakerTrips: totalTrips,
       averageResponseTime: avgResponseTime,
-      status
+      status,
     }
   }
 }

@@ -38,13 +38,19 @@ export const HISTORICAL_COUNCIL_PRESETS: HistoricalCouncilPreset[] = [
     includeMonica: true,
     monicaRole: 'guide',
     tags: ['wisdom', 'philosophy', 'ancient', 'ethics'],
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
   {
     id: 'renaissance-masters',
     name: 'Renaissance Masters Council',
     description: 'Innovation and artistry from the golden age of human creativity',
-    historicalAgentIds: ['leonardo-da-vinci', 'michelangelo', 'galileo-galilei', 'shakespeare', 'dante-alighieri'],
+    historicalAgentIds: [
+      'leonardo-da-vinci',
+      'michelangelo',
+      'galileo-galilei',
+      'shakespeare',
+      'dante-alighieri',
+    ],
     era: 'Renaissance',
     theme: 'Innovation, artistic vision, and scientific breakthrough',
     specialization: 'Creative projects, innovative thinking, artistic expression',
@@ -52,13 +58,19 @@ export const HISTORICAL_COUNCIL_PRESETS: HistoricalCouncilPreset[] = [
     includeMonica: true,
     monicaRole: 'synthesizer',
     tags: ['creativity', 'innovation', 'art', 'science'],
-    difficulty: 'advanced'
+    difficulty: 'advanced',
   },
   {
     id: 'modern-visionaries',
     name: 'Modern Visionaries Assembly',
     description: 'Revolutionary thinkers who shaped our contemporary understanding',
-    historicalAgentIds: ['albert-einstein', 'nikola-tesla', 'marie-curie', 'carl-jung', 'steve-jobs'],
+    historicalAgentIds: [
+      'albert-einstein',
+      'nikola-tesla',
+      'marie-curie',
+      'carl-jung',
+      'steve-jobs',
+    ],
     era: 'Modern',
     theme: 'Scientific revolution and psychological insight',
     specialization: 'Innovation, technology, consciousness exploration',
@@ -66,12 +78,12 @@ export const HISTORICAL_COUNCIL_PRESETS: HistoricalCouncilPreset[] = [
     includeMonica: true,
     monicaRole: 'coordinator',
     tags: ['science', 'technology', 'psychology', 'innovation'],
-    difficulty: 'expert'
+    difficulty: 'expert',
   },
   {
     id: 'warrior-leaders',
     name: 'Strategic Leaders Council',
-    description: 'Command wisdom from history\'s greatest leaders and strategists',
+    description: "Command wisdom from history's greatest leaders and strategists",
     historicalAgentIds: ['napoleon-bonaparte', 'cleopatra', 'sun-tzu', 'joan-of-arc', 'hannibal'],
     era: 'Mixed',
     theme: 'Leadership, strategy, and decisive action',
@@ -80,13 +92,19 @@ export const HISTORICAL_COUNCIL_PRESETS: HistoricalCouncilPreset[] = [
     includeMonica: true,
     monicaRole: 'moderator',
     tags: ['leadership', 'strategy', 'warfare', 'politics'],
-    difficulty: 'advanced'
+    difficulty: 'advanced',
   },
   {
     id: 'spiritual-mystics',
     name: 'Mystics & Spiritual Guides',
     description: 'Divine wisdom from enlightened souls across traditions',
-    historicalAgentIds: ['rumi', 'buddha', 'jesus-christ', 'hildegard-of-bingen', 'ramana-maharshi'],
+    historicalAgentIds: [
+      'rumi',
+      'buddha',
+      'jesus-christ',
+      'hildegard-of-bingen',
+      'ramana-maharshi',
+    ],
     era: 'Timeless',
     theme: 'Spiritual awakening and divine connection',
     specialization: 'Spiritual guidance, mystical insight, transcendent wisdom',
@@ -94,7 +112,7 @@ export const HISTORICAL_COUNCIL_PRESETS: HistoricalCouncilPreset[] = [
     includeMonica: true,
     monicaRole: 'guide',
     tags: ['spirituality', 'mysticism', 'enlightenment', 'divine'],
-    difficulty: 'expert'
+    difficulty: 'expert',
   },
   {
     id: 'rapid-consultation',
@@ -107,8 +125,8 @@ export const HISTORICAL_COUNCIL_PRESETS: HistoricalCouncilPreset[] = [
     recommended_for: ['Quick decisions', 'Practical advice', 'Daily guidance'],
     includeMonica: false,
     tags: ['practical', 'quick', 'wisdom', 'daily'],
-    difficulty: 'beginner'
-  }
+    difficulty: 'beginner',
+  },
 ]
 
 // Planetary Council Presets
@@ -124,7 +142,7 @@ export const PLANETARY_COUNCIL_PRESETS: PlanetaryCouncilPreset[] = [
     includeMonica: false,
     monicaRole: 'guide',
     tags: ['personal', 'fast', 'individual', 'expression'],
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: 'classical-seven',
@@ -137,7 +155,7 @@ export const PLANETARY_COUNCIL_PRESETS: PlanetaryCouncilPreset[] = [
     includeMonica: true,
     monicaRole: 'guide',
     tags: ['traditional', 'complete', 'classical', 'balanced'],
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
   {
     id: 'outer-mysteries',
@@ -150,7 +168,7 @@ export const PLANETARY_COUNCIL_PRESETS: PlanetaryCouncilPreset[] = [
     includeMonica: true,
     monicaRole: 'synthesizer',
     tags: ['transformation', 'transcendent', 'generational', 'deep'],
-    difficulty: 'expert'
+    difficulty: 'expert',
   },
   {
     id: 'elemental-balance',
@@ -163,7 +181,7 @@ export const PLANETARY_COUNCIL_PRESETS: PlanetaryCouncilPreset[] = [
     includeMonica: false,
     monicaRole: 'moderator',
     tags: ['elements', 'balance', 'holistic', 'energy'],
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
   {
     id: 'love-and-war',
@@ -176,7 +194,7 @@ export const PLANETARY_COUNCIL_PRESETS: PlanetaryCouncilPreset[] = [
     includeMonica: true,
     monicaRole: 'moderator',
     tags: ['relationships', 'passion', 'harmony', 'creative'],
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: 'solar-lunar',
@@ -189,8 +207,8 @@ export const PLANETARY_COUNCIL_PRESETS: PlanetaryCouncilPreset[] = [
     includeMonica: false,
     monicaRole: 'guide',
     tags: ['fundamental', 'polarity', 'intuition', 'will'],
-    difficulty: 'beginner'
-  }
+    difficulty: 'beginner',
+  },
 ]
 
 // Mixed Council Presets (Historical + Planetary + Monica)
@@ -206,7 +224,7 @@ export const MIXED_COUNCIL_PRESETS: MixedCouncilPreset[] = [
     includeMonica: true,
     monicaRole: 'coordinator',
     tags: ['consciousness', 'acceleration', 'expansion', 'multi-dimensional'],
-    difficulty: 'expert'
+    difficulty: 'expert',
   },
   {
     id: 'creative-innovation-lab',
@@ -219,7 +237,7 @@ export const MIXED_COUNCIL_PRESETS: MixedCouncilPreset[] = [
     includeMonica: true,
     monicaRole: 'synthesizer',
     tags: ['creativity', 'innovation', 'artistic', 'breakthrough'],
-    difficulty: 'advanced'
+    difficulty: 'advanced',
   },
   {
     id: 'wisdom-integration-council',
@@ -232,7 +250,7 @@ export const MIXED_COUNCIL_PRESETS: MixedCouncilPreset[] = [
     includeMonica: true,
     monicaRole: 'guide',
     tags: ['wisdom', 'integration', 'harmony', 'ancient'],
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
   {
     id: 'leadership-mastery',
@@ -245,8 +263,8 @@ export const MIXED_COUNCIL_PRESETS: MixedCouncilPreset[] = [
     includeMonica: true,
     monicaRole: 'moderator',
     tags: ['leadership', 'strategy', 'authority', 'mastery'],
-    difficulty: 'advanced'
-  }
+    difficulty: 'advanced',
+  },
 ]
 
 // Utility functions for preset management
@@ -263,11 +281,13 @@ export function getPresetsByType(type: 'historical' | 'planetary' | 'mixed') {
   }
 }
 
-export function getPresetsByDifficulty(difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert') {
+export function getPresetsByDifficulty(
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert'
+) {
   return [
     ...HISTORICAL_COUNCIL_PRESETS,
     ...PLANETARY_COUNCIL_PRESETS,
-    ...MIXED_COUNCIL_PRESETS
+    ...MIXED_COUNCIL_PRESETS,
   ].filter(preset => preset.difficulty === difficulty)
 }
 
@@ -275,7 +295,7 @@ export function getPresetsByTag(tag: string) {
   return [
     ...HISTORICAL_COUNCIL_PRESETS,
     ...PLANETARY_COUNCIL_PRESETS,
-    ...MIXED_COUNCIL_PRESETS
+    ...MIXED_COUNCIL_PRESETS,
   ].filter(preset => preset.tags.includes(tag))
 }
 
@@ -283,7 +303,7 @@ export function getPresetById(id: string) {
   return [
     ...HISTORICAL_COUNCIL_PRESETS,
     ...PLANETARY_COUNCIL_PRESETS,
-    ...MIXED_COUNCIL_PRESETS
+    ...MIXED_COUNCIL_PRESETS,
   ].find(preset => preset.id === id)
 }
 
@@ -294,7 +314,7 @@ export function getRecommendedPresets(userLevel: number, userInterests: string[]
     2: 'intermediate',
     3: 'intermediate',
     4: 'advanced',
-    5: 'expert'
+    5: 'expert',
   }
 
   const targetDifficulty = difficultyMap[Math.min(5, userLevel)] || 'beginner'
@@ -302,16 +322,17 @@ export function getRecommendedPresets(userLevel: number, userInterests: string[]
 
   // Filter by user interests if provided
   if (userInterests.length > 0) {
-    return levelPresets.filter(preset =>
-      preset.tags.some(tag => userInterests.includes(tag))
-    )
+    return levelPresets.filter(preset => preset.tags.some(tag => userInterests.includes(tag)))
   }
 
   return levelPresets
 }
 
 // Monica role recommendations for different preset types
-export function getOptimalMonicaRole(presetType: string, agentCount: number): 'guide' | 'moderator' | 'synthesizer' | 'coordinator' {
+export function getOptimalMonicaRole(
+  presetType: string,
+  agentCount: number
+): 'guide' | 'moderator' | 'synthesizer' | 'coordinator' {
   if (agentCount <= 2) return 'guide'
   if (agentCount >= 5) return 'coordinator'
 

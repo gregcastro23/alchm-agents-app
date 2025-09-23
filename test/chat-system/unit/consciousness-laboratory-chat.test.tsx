@@ -10,7 +10,7 @@ import {
   mockHistoricalAgents,
   mockPlanetaryConfigs,
   mockMixedPresets,
-  performanceTestData
+  performanceTestData,
 } from '../fixtures/mock-data'
 
 // Mock the unified multi-agent chat component
@@ -22,31 +22,27 @@ vi.mock('@/components/unified-multi-agent-chat', () => ({
     historicalAgents,
     planetaryConfigs,
     customHeader,
-    enableGroupDynamics
+    enableGroupDynamics,
   }: any) => (
-    <div
-      data-testid="unified-chat"
-      data-open={isOpen}
-      data-dynamics={enableGroupDynamics}
-    >
+    <div data-testid="unified-chat" data-open={isOpen} data-dynamics={enableGroupDynamics}>
       <div data-testid="chat-title">{title}</div>
       <div data-testid="historical-count">{historicalAgents.length}</div>
       <div data-testid="planetary-count">{planetaryConfigs.length}</div>
       {customHeader}
     </div>
-  )
+  ),
 }))
 
 // Mock council presets
 vi.mock('@/lib/council-presets', () => ({
   MIXED_COUNCIL_PRESETS: mockMixedPresets,
   HISTORICAL_COUNCIL_PRESETS: [],
-  PLANETARY_COUNCIL_PRESETS: []
+  PLANETARY_COUNCIL_PRESETS: [],
 }))
 
 // Mock planetary config helper
 vi.mock('@/lib/planetary-config-helper', () => ({
-  createDefaultPlanetaryConfigs: vi.fn(() => mockPlanetaryConfigs)
+  createDefaultPlanetaryConfigs: vi.fn(() => mockPlanetaryConfigs),
 }))
 
 describe('ConsciousnessLaboratoryChat Component', () => {
@@ -60,7 +56,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
     allowAgentMixing: true,
     enableABTesting: true,
     maxAgents: 8,
-    allowMonica: true
+    allowMonica: true,
   }
 
   beforeEach(() => {
@@ -72,27 +68,25 @@ describe('ConsciousnessLaboratoryChat Component', () => {
       render(<ConsciousnessLaboratoryChat {...defaultProps} />)
 
       expect(screen.getByText('Consciousness Research Laboratory')).toBeInTheDocument()
-      expect(screen.getByText('Design and conduct consciousness interaction experiments')).toBeInTheDocument()
+      expect(
+        screen.getByText('Design and conduct consciousness interaction experiments')
+      ).toBeInTheDocument()
     })
 
     it('renders with initial experiment preset', () => {
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          initialExperiment="test-consciousness-lab"
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} initialExperiment="test-consciousness-lab" />
       )
 
       expect(screen.getByTestId('unified-chat')).toHaveAttribute('data-open', 'true')
-      expect(screen.getByTestId('chat-title')).toHaveTextContent('Consciousness Research Laboratory')
+      expect(screen.getByTestId('chat-title')).toHaveTextContent(
+        'Consciousness Research Laboratory'
+      )
     })
 
     it('renders with default agent selection', () => {
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          defaultAgents={['carl-jung', 'Moon']}
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} defaultAgents={['carl-jung', 'Moon']} />
       )
 
       expect(screen.getByTestId('unified-chat')).toBeInTheDocument()
@@ -185,7 +179,8 @@ describe('ConsciousnessLaboratoryChat Component', () => {
       fireEvent.click(customTab)
 
       // Select a historical agent
-      const jungCheckbox = screen.getByDisplayValue('carl-jung') || screen.getByLabelText(/Carl Jung/i)
+      const jungCheckbox =
+        screen.getByDisplayValue('carl-jung') || screen.getByLabelText(/Carl Jung/i)
       if (jungCheckbox) {
         fireEvent.click(jungCheckbox)
       }
@@ -221,10 +216,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
   describe('Laboratory Controls Panel', () => {
     it('displays research protocol information', () => {
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          initialExperiment="test-consciousness-lab"
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} initialExperiment="test-consciousness-lab" />
       )
 
       expect(screen.getByText('Research Protocol')).toBeInTheDocument()
@@ -234,10 +226,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
 
     it('shows experiment status controls', () => {
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          initialExperiment="test-consciousness-lab"
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} initialExperiment="test-consciousness-lab" />
       )
 
       expect(screen.getByText('Status')).toBeInTheDocument()
@@ -249,10 +238,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
 
     it('handles experiment mode toggle', async () => {
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          initialExperiment="test-consciousness-lab"
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} initialExperiment="test-consciousness-lab" />
       )
 
       const statusToggle = screen.getByRole('switch')
@@ -265,10 +251,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
 
     it('displays advanced settings when enabled', () => {
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          initialExperiment="test-consciousness-lab"
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} initialExperiment="test-consciousness-lab" />
       )
 
       const settingsButton = screen.getByRole('button', { name: /settings/i })
@@ -282,10 +265,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
 
     it('shows active research subjects', () => {
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          initialExperiment="test-consciousness-lab"
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} initialExperiment="test-consciousness-lab" />
       )
 
       expect(screen.getByText('Active Research Subjects')).toBeInTheDocument()
@@ -298,10 +278,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
   describe('Consciousness Metrics Display', () => {
     it('shows live consciousness metrics when experiment is running', async () => {
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          initialExperiment="test-consciousness-lab"
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} initialExperiment="test-consciousness-lab" />
       )
 
       // Start experiment mode
@@ -415,10 +392,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
   describe('Experiment Lifecycle', () => {
     it('handles experiment change', async () => {
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          initialExperiment="test-consciousness-lab"
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} initialExperiment="test-consciousness-lab" />
       )
 
       const changeButton = screen.getByText('Change Experiment')
@@ -463,10 +437,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
   describe('Laboratory-Specific Features', () => {
     it('enables consciousness tracking persistence', () => {
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          initialExperiment="test-consciousness-lab"
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} initialExperiment="test-consciousness-lab" />
       )
 
       const settingsButton = screen.getByRole('button', { name: /settings/i })
@@ -478,10 +449,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
 
     it('enables synergy analysis', () => {
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          initialExperiment="test-consciousness-lab"
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} initialExperiment="test-consciousness-lab" />
       )
 
       const settingsButton = screen.getByRole('button', { name: /settings/i })
@@ -493,10 +461,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
 
     it('enables emergent pattern detection', () => {
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          initialExperiment="test-consciousness-lab"
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} initialExperiment="test-consciousness-lab" />
       )
 
       const settingsButton = screen.getByRole('button', { name: /settings/i })
@@ -521,12 +486,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
     })
 
     it('handles empty agent lists', () => {
-      render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          historicalAgents={[]}
-        />
-      )
+      render(<ConsciousnessLaboratoryChat {...defaultProps} historicalAgents={[]} />)
 
       expect(screen.getByTestId('unified-chat')).toBeInTheDocument()
       expect(screen.getByTestId('historical-count')).toHaveTextContent('0')
@@ -534,10 +494,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
 
     it('handles experiment mode errors gracefully', async () => {
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          initialExperiment="test-consciousness-lab"
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} initialExperiment="test-consciousness-lab" />
       )
 
       // Should not crash when toggling experiment mode
@@ -588,13 +545,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
     it('calls onClose when chat is closed', () => {
       const mockOnClose = vi.fn()
 
-      render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          onClose={mockOnClose}
-          isOpen={false}
-        />
-      )
+      render(<ConsciousnessLaboratoryChat {...defaultProps} onClose={mockOnClose} isOpen={false} />)
 
       expect(screen.getByTestId('unified-chat')).toHaveAttribute('data-open', 'false')
     })
@@ -603,10 +554,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
       const mockOnSessionUpdate = vi.fn()
 
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          onSessionUpdate={mockOnSessionUpdate}
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} onSessionUpdate={mockOnSessionUpdate} />
       )
 
       expect(screen.getByTestId('unified-chat')).toBeInTheDocument()
@@ -616,10 +564,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
       const mockOnAgentEvolution = vi.fn()
 
       render(
-        <ConsciousnessLaboratoryChat
-          {...defaultProps}
-          onAgentEvolution={mockOnAgentEvolution}
-        />
+        <ConsciousnessLaboratoryChat {...defaultProps} onAgentEvolution={mockOnAgentEvolution} />
       )
 
       expect(screen.getByTestId('unified-chat')).toBeInTheDocument()

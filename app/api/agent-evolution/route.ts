@@ -45,24 +45,24 @@ export async function GET(request: NextRequest) {
               lastInteraction: new Date().toISOString(),
               totalInteractions: 0,
               qualityAverage: 0.5,
-              evolutionStage: 0
+              evolutionStage: 0,
             },
-            agentId
+            agentId,
           })
         }
 
         return NextResponse.json({
           metrics: {
-            consciousnessVelocity: 0.5 + (evolutionState.totalPower / 1000),
+            consciousnessVelocity: 0.5 + evolutionState.totalPower / 1000,
             interactionMomentum: evolutionState.interactionCount * 0.1,
             lastInteraction: evolutionState.lastInteraction.toISOString(),
             totalInteractions: evolutionState.interactionCount,
-            qualityAverage: 0.5 + (evolutionState.totalPower / evolutionState.interactionCount / 100),
+            qualityAverage: 0.5 + evolutionState.totalPower / evolutionState.interactionCount / 100,
             evolutionStage: Math.floor(evolutionState.totalPower / 100),
             currentLevel: evolutionState.currentLevel,
-            totalPower: evolutionState.totalPower
+            totalPower: evolutionState.totalPower,
           },
-          agentId
+          agentId,
         })
 
       case 'memory':
@@ -72,37 +72,46 @@ export async function GET(request: NextRequest) {
           memory: {
             totalInteractions: history.length,
             recentInteractions: history,
-            agentId
+            agentId,
           },
-          agentId
+          agentId,
         })
 
       case 'timing':
-        const timing = await ConsciousnessMemorySystem.getOptimalInteractionTiming(agentId, { lat, lon })
+        const timing = await ConsciousnessMemorySystem.getOptimalInteractionTiming(agentId, {
+          lat,
+          lon,
+        })
         return NextResponse.json({ timing, agentId })
 
       case 'kinetics':
         // Use existing router for kinetic analysis
         const kineticResult = await routeTask({
           kind: 'kinetics',
-          payload: { agentId, location: { lat, lon } }
+          payload: { agentId, location: { lat, lon } },
         })
         return NextResponse.json({ kinetics: kineticResult.output, agentId })
 
       case 'compatibility':
         const compareWith = searchParams.get('compareWith')
         if (!compareWith) {
-          return NextResponse.json({ error: 'compareWith agentId required for compatibility check' }, { status: 400 })
+          return NextResponse.json(
+            { error: 'compareWith agentId required for compatibility check' },
+            { status: 400 }
+          )
         }
 
         const compatibilityResult = await routeTask({
           kind: 'agent_compatibility',
-          payload: { agent1Id: agentId, agent2Id: compareWith, location: { lat, lon } }
+          payload: { agent1Id: agentId, agent2Id: compareWith, location: { lat, lon } },
         })
         return NextResponse.json({ compatibility: compatibilityResult.output })
 
       default:
-        return NextResponse.json({ error: 'Invalid action. Use: metrics, memory, timing, kinetics, compatibility' }, { status: 400 })
+        return NextResponse.json(
+          { error: 'Invalid action. Use: metrics, memory, timing, kinetics, compatibility' },
+          { status: 400 }
+        )
     }
   } catch (error) {
     console.error('Agent evolution GET error:', error)
@@ -136,9 +145,12 @@ export async function POST(request: NextRequest) {
       case 'record':
         // Record new interaction for consciousness evolution
         if (!userMessage || !agentResponse) {
-          return NextResponse.json({
-            error: 'userMessage and agentResponse required for recording'
-          }, { status: 400 })
+          return NextResponse.json(
+            {
+              error: 'userMessage and agentResponse required for recording',
+            },
+            { status: 400 }
+          )
         }
 
         // Calculate power gained based on actual response quality
@@ -147,8 +159,8 @@ export async function POST(request: NextRequest) {
         const qualityFactor = Math.min(responseLength / 200, 1.0) // Response quality based on depth
         const engagementFactor = Math.min(messageLength / 100, 1.0) // User engagement factor
 
-        const powerGained = Math.floor(5 + (qualityFactor * engagementFactor * 10)) // 5-15 power based on real metrics
-        const elementalResonance = 0.5 + (qualityFactor * 0.5) // 0.5-1.0 based on response quality
+        const powerGained = Math.floor(5 + qualityFactor * engagementFactor * 10) // 5-15 power based on real metrics
+        const elementalResonance = 0.5 + qualityFactor * 0.5 // 0.5-1.0 based on response quality
 
         // Log to database
         await consciousnessPersistence.logInteraction({
@@ -162,8 +174,8 @@ export async function POST(request: NextRequest) {
             userMessage,
             agentResponse: agentResponse.substring(0, 500), // Truncate for storage
             sessionId: sessionId || 'web',
-            location
-          }
+            location,
+          },
         })
 
         // Get updated state
@@ -175,54 +187,66 @@ export async function POST(request: NextRequest) {
             powerGained,
             elementalResonance,
             currentLevel: evolutionState?.currentLevel,
-            totalPower: evolutionState?.totalPower
+            totalPower: evolutionState?.totalPower,
           },
           metrics: {
-            consciousnessVelocity: 0.5 + ((evolutionState?.totalPower || 0) / 1000),
+            consciousnessVelocity: 0.5 + (evolutionState?.totalPower || 0) / 1000,
             interactionMomentum: (evolutionState?.interactionCount || 0) * 0.1,
             lastInteraction: evolutionState?.lastInteraction.toISOString(),
             totalInteractions: evolutionState?.interactionCount || 0,
-            qualityAverage: 0.5 + ((evolutionState?.totalPower || 0) / (evolutionState?.interactionCount || 1) / 100),
-            evolutionStage: Math.floor((evolutionState?.totalPower || 0) / 100)
+            qualityAverage:
+              0.5 +
+              (evolutionState?.totalPower || 0) / (evolutionState?.interactionCount || 1) / 100,
+            evolutionStage: Math.floor((evolutionState?.totalPower || 0) / 100),
           },
-          message: 'Consciousness interaction recorded successfully'
+          message: 'Consciousness interaction recorded successfully',
         })
 
       case 'evolution_rate':
         // Calculate evolution rate for agent
-        const interactions = await ConsciousnessMemorySystem.getAgentMemory(agentId)?.totalInteractions || 0
+        const interactions =
+          (await ConsciousnessMemorySystem.getAgentMemory(agentId)?.totalInteractions) || 0
         const evolutionResult = await routeTask({
           kind: 'evolution_rate',
-          payload: { agentId, interactions, location }
+          payload: { agentId, interactions, location },
         })
 
         return NextResponse.json({
           evolution: evolutionResult.output,
-          agentId
+          agentId,
         })
 
       case 'consciousness_velocity':
         // Get consciousness velocity for multiple agents
         const { agentIds } = body
         if (!agentIds || !Array.isArray(agentIds)) {
-          return NextResponse.json({ error: 'agentIds array required for consciousness velocity' }, { status: 400 })
+          return NextResponse.json(
+            { error: 'agentIds array required for consciousness velocity' },
+            { status: 400 }
+          )
         }
 
         const velocityResult = await routeTask({
           kind: 'consciousness_velocity',
-          payload: { agentIds, location }
+          payload: { agentIds, location },
         })
 
         return NextResponse.json({
-          consciousnessVelocity: velocityResult.output
+          consciousnessVelocity: velocityResult.output,
         })
 
       default:
-        return NextResponse.json({ error: 'Invalid action. Use: record, evolution_rate, consciousness_velocity' }, { status: 400 })
+        return NextResponse.json(
+          { error: 'Invalid action. Use: record, evolution_rate, consciousness_velocity' },
+          { status: 400 }
+        )
     }
   } catch (error) {
     console.error('Agent evolution POST error:', error)
-    return NextResponse.json({ error: 'Failed to process agent evolution request' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to process agent evolution request' },
+      { status: 500 }
+    )
   }
 }
 
@@ -257,22 +281,25 @@ export async function PUT(request: NextRequest) {
             evolutionStage: 0,
             currentLevel: freshState.currentLevel,
             totalPower: 0,
-            resetAt: new Date().toISOString()
+            resetAt: new Date().toISOString(),
           }
 
           return NextResponse.json({
             success: true,
             message: `Evolution data reset for agent ${agentId}`,
             agentId,
-            resetMetrics
+            resetMetrics,
           })
         } catch (error) {
           console.error('Failed to reset evolution data:', error)
-          return NextResponse.json({
-            success: false,
-            error: 'Failed to reset evolution data',
-            agentId
-          }, { status: 500 })
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'Failed to reset evolution data',
+              agentId,
+            },
+            { status: 500 }
+          )
         }
 
       case 'update_profile':
@@ -286,14 +313,17 @@ export async function PUT(request: NextRequest) {
           success: true,
           message: 'Profile update requested (would require profile update implementation)',
           agentId,
-          currentProfile: profile
+          currentProfile: profile,
         })
 
       case 'batch_update':
         // Batch update multiple agents (for system-wide consciousness updates)
         const { agentIds, updateData } = data
         if (!agentIds || !Array.isArray(agentIds)) {
-          return NextResponse.json({ error: 'agentIds array required for batch update' }, { status: 400 })
+          return NextResponse.json(
+            { error: 'agentIds array required for batch update' },
+            { status: 400 }
+          )
         }
 
         const results = []
@@ -302,18 +332,21 @@ export async function PUT(request: NextRequest) {
           results.push({
             agentId: id,
             hasMemory: !!memory,
-            totalInteractions: memory?.totalInteractions || 0
+            totalInteractions: memory?.totalInteractions || 0,
           })
         }
 
         return NextResponse.json({
           success: true,
           message: `Batch update processed for ${agentIds.length} agents`,
-          results
+          results,
         })
 
       default:
-        return NextResponse.json({ error: 'Invalid action. Use: reset_evolution, update_profile, batch_update' }, { status: 400 })
+        return NextResponse.json(
+          { error: 'Invalid action. Use: reset_evolution, update_profile, batch_update' },
+          { status: 400 }
+        )
     }
   } catch (error) {
     console.error('Agent evolution PUT error:', error)
@@ -340,12 +373,15 @@ export async function PATCH(request: NextRequest) {
       try {
         // Get comprehensive analysis for each agent
         const metrics = await ConsciousnessMemorySystem.getEvolutionMetrics(agentId)
-        const timing = await ConsciousnessMemorySystem.getOptimalInteractionTiming(agentId, targetLocation)
+        const timing = await ConsciousnessMemorySystem.getOptimalInteractionTiming(
+          agentId,
+          targetLocation
+        )
 
         if (analysisType === 'full') {
           const kinetics = await routeTask({
             kind: 'kinetics',
-            payload: { agentId, location: targetLocation }
+            payload: { agentId, location: targetLocation },
           })
 
           analysis.push({
@@ -353,13 +389,13 @@ export async function PATCH(request: NextRequest) {
             metrics,
             timing,
             kinetics: kinetics.output,
-            profile: agentKineticProfiles[agentId]
+            profile: agentKineticProfiles[agentId],
           })
         } else {
           analysis.push({
             agentId,
             metrics,
-            timing
+            timing,
           })
         }
       } catch (error) {
@@ -368,7 +404,7 @@ export async function PATCH(request: NextRequest) {
           agentId,
           error: 'Failed to analyze agent',
           metrics: null,
-          timing: null
+          timing: null,
         })
       }
     }
@@ -378,7 +414,7 @@ export async function PATCH(request: NextRequest) {
       analysis,
       totalAgents: agentIds.length,
       analysisType,
-      location: targetLocation
+      location: targetLocation,
     })
   } catch (error) {
     console.error('Bulk consciousness analysis error:', error)

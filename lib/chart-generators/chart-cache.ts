@@ -60,7 +60,7 @@ class ChartCache {
     const entry: CacheEntry = {
       data,
       timestamp: Date.now(),
-      expiresAt: Date.now() + ttl
+      expiresAt: Date.now() + ttl,
     }
 
     this.cache.set(key, entry)
@@ -87,8 +87,9 @@ class ChartCache {
 
     // If still too large, remove oldest entries
     if (this.cache.size > 50) {
-      const sortedEntries = Array.from(this.cache.entries())
-        .sort(([, a], [, b]) => a.timestamp - b.timestamp)
+      const sortedEntries = Array.from(this.cache.entries()).sort(
+        ([, a], [, b]) => a.timestamp - b.timestamp
+      )
 
       // Remove oldest 25 entries
       sortedEntries.slice(0, 25).forEach(([key]) => {
@@ -110,7 +111,7 @@ class ChartCache {
   getStats(): { size: number; keys: string[] } {
     return {
       size: this.cache.size,
-      keys: Array.from(this.cache.keys())
+      keys: Array.from(this.cache.keys()),
     }
   }
 }

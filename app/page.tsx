@@ -10,11 +10,13 @@ import { RefreshCw } from 'lucide-react'
 import { getPlanetaryDignity, getSignElement, getPlanetaryElement } from '@/lib/astrological-data'
 import { usePlanetaryPositionsOnly } from '@/hooks/usePlanetaryPositions'
 import { LoadingState } from '@/components/ui/loading'
-import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { ErrorBoundary } from '@/components/ui/error-boundary'
 
 // Lazy load heavy components
 const TarotCosmicWidget = lazy(() => import('@/components/tarot-cosmic-widget'))
-const ConsciousnessCraftedAgentsShowcase = lazy(() => import('@/components/consciousness-crafted-agents-showcase'))
+const ConsciousnessCraftedAgentsShowcase = lazy(
+  () => import('@/components/consciousness-crafted-agents-showcase')
+)
 const RealtimeRuneDisplay = lazy(() => import('@/components/realtime-rune-display'))
 
 export default function HomePage() {
@@ -109,20 +111,22 @@ export default function HomePage() {
   }
 
   return (
-    <ErrorBoundary fallback={({ error, retry }) => (
-      <div className="container py-6 md:py-12 px-4 mx-auto max-w-7xl">
-        <div className="text-center p-8">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h2>
-          <p className="text-gray-600 mb-4">Error: {error?.message}</p>
-          <button 
-            onClick={retry}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Try Again
-          </button>
+    <ErrorBoundary
+      fallback={({ error, retry }) => (
+        <div className="container py-6 md:py-12 px-4 mx-auto max-w-7xl">
+          <div className="text-center p-8">
+            <h2 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h2>
+            <p className="text-gray-600 mb-4">Error: {error?.message}</p>
+            <button
+              onClick={retry}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
-      </div>
-    )}>
+      )}
+    >
       <div className="container py-6 md:py-12 px-4 mx-auto max-w-7xl">
         <section className="flex flex-col items-center text-center mb-12 md:mb-16">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 md:mb-6 px-4">
@@ -189,7 +193,10 @@ export default function HomePage() {
               Meet Monica, your personal consciousness mentor operating from Illuminated level with
               mastery in agent creation.
             </p>
-            <Link href="/monica-guide" className="text-green-600 dark:text-green-400 font-medium hover:underline text-sm md:text-base">
+            <Link
+              href="/monica-guide"
+              className="text-green-600 dark:text-green-400 font-medium hover:underline text-sm md:text-base"
+            >
               Chat with Monica →
             </Link>
           </div>
@@ -198,7 +205,10 @@ export default function HomePage() {
             <p className="mb-4 text-sm md:text-base">
               Access the ancient wisdom of planetary energies through our specialized AI agents.
             </p>
-            <Link href="/planetary-agents" className="text-blue-600 dark:text-blue-400 font-medium hover:underline text-sm md:text-base">
+            <Link
+              href="/planetary-agents"
+              className="text-blue-600 dark:text-blue-400 font-medium hover:underline text-sm md:text-base"
+            >
               Learn more →
             </Link>
           </div>
@@ -207,7 +217,10 @@ export default function HomePage() {
             <p className="mb-4 text-sm md:text-base">
               Get detailed insights into your astrological chart with our AI-powered interpreter.
             </p>
-            <Link href="/chart-interpreter" className="text-blue-600 dark:text-blue-400 font-medium hover:underline text-sm md:text-base">
+            <Link
+              href="/chart-interpreter"
+              className="text-blue-600 dark:text-blue-400 font-medium hover:underline text-sm md:text-base"
+            >
               Try it now →
             </Link>
           </div>
@@ -226,14 +239,20 @@ export default function HomePage() {
         </section>
 
         {/* Consciousness Crafted Agents Showcase */}
-        <Suspense fallback={<LoadingState variant="consciousness" message="Loading consciousness showcase..." />}>
+        <Suspense
+          fallback={
+            <LoadingState variant="consciousness" message="Loading consciousness showcase..." />
+          }
+        >
           <ConsciousnessCraftedAgentsShowcase />
         </Suspense>
 
         {/* Current Chart of the Moment */}
         <section className="mb-12 md:mb-16">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-xl md:text-2xl font-bold text-center mb-4 md:mb-6">Chart of the Moment</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-center mb-4 md:mb-6">
+              Chart of the Moment
+            </h2>
 
             <div className="flex justify-center mb-4">
               <Button
@@ -285,7 +304,9 @@ export default function HomePage() {
                           </div>
                           <div className="flex gap-2">
                             <Badge className={getElementColor(signElement)}>{signElement}</Badge>
-                            <Badge className={getElementColor(planetElement)}>{planetElement}</Badge>
+                            <Badge className={getElementColor(planetElement)}>
+                              {planetElement}
+                            </Badge>
                             <Badge className={getDignityBadge(dignity)}>{dignity}</Badge>
                           </div>
                         </Link>
@@ -300,14 +321,18 @@ export default function HomePage() {
             <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
               {/* Tarot Widget */}
               <div className="max-w-md mx-auto lg:mx-0">
-                <Suspense fallback={<LoadingState variant="alchemical" message="Loading cosmic tarot..." />}>
+                <Suspense
+                  fallback={<LoadingState variant="alchemical" message="Loading cosmic tarot..." />}
+                >
                   <TarotCosmicWidget variant="card" showExpanded={false} />
                 </Suspense>
               </div>
 
               {/* Real-time Sign Vector Runes */}
               <div className="max-w-md mx-auto lg:mx-0">
-                <Suspense fallback={<LoadingState variant="kinetic" message="Loading rune display..." />}>
+                <Suspense
+                  fallback={<LoadingState variant="kinetic" message="Loading rune display..." />}
+                >
                   <RealtimeRuneDisplay
                     variant="card"
                     autoRefresh={true}
@@ -325,10 +350,10 @@ export default function HomePage() {
           <h2 className="text-xl md:text-2xl font-bold text-center mb-6 md:mb-8">What is Alchm?</h2>
           <div className="max-w-4xl mx-auto space-y-6">
             <p className="text-base md:text-lg text-center px-4">
-              Alchm is a revolutionary platform that transforms astrology from passive reading into an
-              interactive, AI-enhanced personal development experience. By blending ancient wisdom
-              with cutting-edge technology, we provide personalized cosmic insights unlike anything
-              else available.
+              Alchm is a revolutionary platform that transforms astrology from passive reading into
+              an interactive, AI-enhanced personal development experience. By blending ancient
+              wisdom with cutting-edge technology, we provide personalized cosmic insights unlike
+              anything else available.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-6 md:mt-8">
@@ -338,9 +363,9 @@ export default function HomePage() {
                 </h3>
                 <p className="text-sm md:text-base">
                   Our proprietary technology calculates your unique alchemical signature using 11
-                  planetary influences, converting cosmic energies into measurable quantities: Spirit,
-                  Essence, Matter, and Substance. This creates your personal A-Number - a quantifiable
-                  measure of consciousness.
+                  planetary influences, converting cosmic energies into measurable quantities:
+                  Spirit, Essence, Matter, and Substance. This creates your personal A-Number - a
+                  quantifiable measure of consciousness.
                 </p>
               </div>
 
@@ -351,7 +376,8 @@ export default function HomePage() {
                 <p className="text-sm md:text-base">
                   Unlike traditional astrology, Alchm integrates planetary transits, elemental
                   energies, and alchemical transformations in real-time. Our AI agents provide
-                  dynamic, personalized guidance based on the exact cosmic conditions of each moment.
+                  dynamic, personalized guidance based on the exact cosmic conditions of each
+                  moment.
                 </p>
               </div>
 
@@ -361,8 +387,9 @@ export default function HomePage() {
                 </h3>
                 <p className="text-sm md:text-base">
                   Each planetary agent embodies the unique consciousness of its celestial body. From
-                  Monica&apos;s Earth wisdom to the Planetary Council&apos;s collective insights, our
-                  agents provide multi-dimensional perspectives on your questions and challenges.
+                  Monica&apos;s Earth wisdom to the Planetary Council&apos;s collective insights,
+                  our agents provide multi-dimensional perspectives on your questions and
+                  challenges.
                 </p>
               </div>
 

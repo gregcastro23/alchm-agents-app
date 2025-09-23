@@ -19,7 +19,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Minus,
-  BarChart
+  BarChart,
 } from 'lucide-react'
 import type { CraftedAgent } from '@/lib/agent-types'
 
@@ -77,7 +77,7 @@ export function AgentDetailedStats({
   variant = 'modal',
   showEvolutionMetrics = true,
   showKineticMetrics = true,
-  showQualityMetrics = true
+  showQualityMetrics = true,
 }: AgentDetailedStatsProps) {
   const stats = agent.stats
   const consciousness = agent.consciousness
@@ -102,23 +102,20 @@ export function AgentDetailedStats({
           <div>
             <h3 className="text-xl font-bold flex items-center gap-2">
               {agent.name}
-              {consciousness.monicaConstant > 5.0 && (
-                <Crown className="w-5 h-5 text-yellow-500" />
-              )}
+              {consciousness.monicaConstant > 5.0 && <Crown className="w-5 h-5 text-yellow-500" />}
             </h3>
             <p className="text-muted-foreground">{agent.title}</p>
             <div className="flex items-center gap-2 mt-1">
               <Badge className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300">
                 {consciousness.level}
               </Badge>
-              <Badge variant="outline">
-                Kalchm: {consciousness.monicaConstant.toFixed(2)}
-              </Badge>
+              <Badge variant="outline">Kalchm: {consciousness.monicaConstant.toFixed(2)}</Badge>
               <Badge className="text-xs bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                Born: {agent.birthData.date.toLocaleDateString('en-US', {
+                Born:{' '}
+                {agent.birthData.date.toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'short',
-                  day: 'numeric'
+                  day: 'numeric',
                 })}
               </Badge>
             </div>
@@ -178,7 +175,8 @@ export function AgentDetailedStats({
                 <span className="font-medium">Evolution Trajectory</span>
               </div>
               <Badge className={getTrajectoryColor(evolution.evolutionTrajectory)}>
-                {evolution.evolutionTrajectory.charAt(0).toUpperCase() + evolution.evolutionTrajectory.slice(1)}
+                {evolution.evolutionTrajectory.charAt(0).toUpperCase() +
+                  evolution.evolutionTrajectory.slice(1)}
               </Badge>
             </div>
 
@@ -189,7 +187,9 @@ export function AgentDetailedStats({
                   <Gauge className="w-4 h-4" />
                   Consciousness Velocity
                 </span>
-                <span className="font-medium">{Math.round(evolution.consciousnessVelocity * 100)}%</span>
+                <span className="font-medium">
+                  {Math.round(evolution.consciousnessVelocity * 100)}%
+                </span>
               </div>
               <Progress value={evolution.consciousnessVelocity * 100} className="h-2" />
             </div>
@@ -201,7 +201,9 @@ export function AgentDetailedStats({
                   <Activity className="w-4 h-4" />
                   Interaction Momentum
                 </span>
-                <span className="font-medium">{Math.round(evolution.interactionMomentum * 100)}%</span>
+                <span className="font-medium">
+                  {Math.round(evolution.interactionMomentum * 100)}%
+                </span>
               </div>
               <Progress value={evolution.interactionMomentum * 100} className="h-2" />
             </div>
@@ -213,7 +215,9 @@ export function AgentDetailedStats({
                   <Lightbulb className="w-4 h-4" />
                   Memory Persistence
                 </span>
-                <span className="font-medium">{Math.round(evolution.memoryPersistence * 100)}%</span>
+                <span className="font-medium">
+                  {Math.round(evolution.memoryPersistence * 100)}%
+                </span>
               </div>
               <Progress value={evolution.memoryPersistence * 100} className="h-2" />
             </div>
@@ -257,7 +261,9 @@ export function AgentDetailedStats({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Response Depth</span>
-                  <span className="font-medium">{Math.round(quality.averageResponseDepth * 100)}%</span>
+                  <span className="font-medium">
+                    {Math.round(quality.averageResponseDepth * 100)}%
+                  </span>
                 </div>
                 <Progress value={quality.averageResponseDepth * 100} className="h-2" />
               </div>
@@ -265,7 +271,9 @@ export function AgentDetailedStats({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Aspect Influence</span>
-                  <span className="font-medium">{Math.round(quality.aspectInfluenceStrength * 100)}%</span>
+                  <span className="font-medium">
+                    {Math.round(quality.aspectInfluenceStrength * 100)}%
+                  </span>
                 </div>
                 <Progress value={quality.aspectInfluenceStrength * 100} className="h-2" />
               </div>
@@ -273,7 +281,9 @@ export function AgentDetailedStats({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Temporal Alignment</span>
-                  <span className="font-medium">{Math.round(quality.temporalAlignment * 100)}%</span>
+                  <span className="font-medium">
+                    {Math.round(quality.temporalAlignment * 100)}%
+                  </span>
                 </div>
                 <Progress value={quality.temporalAlignment * 100} className="h-2" />
               </div>

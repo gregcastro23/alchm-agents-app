@@ -58,7 +58,6 @@ class ChatSystemTestRunner {
       this.displaySummary(report)
 
       return report
-
     } catch (error) {
       console.error('❌ Test suite failed:', error)
       throw error
@@ -91,7 +90,6 @@ class ChatSystemTestRunner {
       this.results.push(labResult)
 
       console.log('✅ Unit tests completed\n')
-
     } catch (error) {
       console.error('❌ Unit tests failed:', error)
       throw error
@@ -110,7 +108,6 @@ class ChatSystemTestRunner {
       this.results.push(apiResult)
 
       console.log('✅ Integration tests completed\n')
-
     } catch (error) {
       console.error('❌ Integration tests failed:', error)
       throw error
@@ -129,7 +126,6 @@ class ChatSystemTestRunner {
       this.results.push(perfResult)
 
       console.log('✅ Performance benchmarks completed\n')
-
     } catch (error) {
       console.error('❌ Performance benchmarks failed:', error)
       throw error
@@ -158,13 +154,14 @@ class ChatSystemTestRunner {
         skipped: testResults.skipped,
         duration,
         coverage: testResults.coverage,
-        performance: testResults.performance
+        performance: testResults.performance,
       }
 
-      console.log(`    ✅ ${result.passed} passed, ❌ ${result.failed} failed, ⏭️ ${result.skipped} skipped (${duration}ms)`)
+      console.log(
+        `    ✅ ${result.passed} passed, ❌ ${result.failed} failed, ⏭️ ${result.skipped} skipped (${duration}ms)`
+      )
 
       return result
-
     } catch (error) {
       console.error(`    ❌ ${suiteName} failed:`, error)
 
@@ -173,7 +170,7 @@ class ChatSystemTestRunner {
         passed: 0,
         failed: 1,
         skipped: 0,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       }
     }
   }
@@ -196,7 +193,7 @@ class ChatSystemTestRunner {
           passed: results.testResults?.numPassedTests || 0,
           failed: results.testResults?.numFailedTests || 0,
           skipped: results.testResults?.numPendingTests || 0,
-          coverage: results.coverageMap ? this.calculateCoverage(results.coverageMap) : undefined
+          coverage: results.coverageMap ? this.calculateCoverage(results.coverageMap) : undefined,
         }
       }
 
@@ -208,9 +205,8 @@ class ChatSystemTestRunner {
       return {
         passed: passedMatch ? parseInt(passedMatch[1]) : 0,
         failed: failedMatch ? parseInt(failedMatch[1]) : 0,
-        skipped: skippedMatch ? parseInt(skippedMatch[1]) : 0
+        skipped: skippedMatch ? parseInt(skippedMatch[1]) : 0,
       }
-
     } catch (error) {
       console.warn('Could not parse test output:', error)
       return { passed: 0, failed: 1, skipped: 0 }
@@ -226,7 +222,8 @@ class ChatSystemTestRunner {
 
     for (const file in coverageMap) {
       const fileCoverage = coverageMap[file]
-      if (fileCoverage.s) { // Statement coverage
+      if (fileCoverage.s) {
+        // Statement coverage
         const statements = Object.values(fileCoverage.s) as number[]
         totalLines += statements.length
         coveredLines += statements.filter(count => count > 0).length
@@ -254,7 +251,7 @@ class ChatSystemTestRunner {
       totalSkipped,
       overallDuration: totalDuration,
       results: this.results,
-      recommendations
+      recommendations,
     }
   }
 
@@ -284,7 +281,9 @@ class ChatSystemTestRunner {
 
     const integrationResult = this.results.find(r => r.suite === 'Unified Multi-Agent API')
     if (integrationResult && integrationResult.failed > 0) {
-      recommendations.push('🔗 API integration issues detected - review error handling and model selection')
+      recommendations.push(
+        '🔗 API integration issues detected - review error handling and model selection'
+      )
     }
 
     if (recommendations.length === 0) {
@@ -295,7 +294,11 @@ class ChatSystemTestRunner {
   }
 
   private saveReport(report: TestReport): void {
-    const reportPath = path.join(process.cwd(), 'test-results', `chat-system-report-${Date.now()}.json`)
+    const reportPath = path.join(
+      process.cwd(),
+      'test-results',
+      `chat-system-report-${Date.now()}.json`
+    )
 
     try {
       // Ensure directory exists
@@ -310,7 +313,7 @@ class ChatSystemTestRunner {
         failed: report.totalFailed,
         passRate: ((report.totalPassed / report.totalTests) * 100).toFixed(1),
         duration: report.overallDuration,
-        timestamp: report.timestamp
+        timestamp: report.timestamp,
       }
 
       writeFileSync(
@@ -319,7 +322,6 @@ class ChatSystemTestRunner {
       )
 
       console.log(`📊 Report saved to ${reportPath}`)
-
     } catch (error) {
       console.warn('Could not save report:', error)
     }
@@ -343,7 +345,9 @@ class ChatSystemTestRunner {
     console.log('\n🔍 Test Suite Results:')
     report.results.forEach(result => {
       const status = result.failed === 0 ? '✅' : '❌'
-      console.log(`  ${status} ${result.suite}: ${result.passed}/${result.passed + result.failed + result.skipped} (${(result.duration / 1000).toFixed(1)}s)`)
+      console.log(
+        `  ${status} ${result.suite}: ${result.passed}/${result.passed + result.failed + result.skipped} (${(result.duration / 1000).toFixed(1)}s)`
+      )
     })
 
     if (report.totalFailed === 0) {
@@ -358,11 +362,12 @@ class ChatSystemTestRunner {
 if (require.main === module) {
   const runner = new ChatSystemTestRunner()
 
-  runner.runAllTests()
-    .then((report) => {
+  runner
+    .runAllTests()
+    .then(report => {
       process.exit(report.totalFailed === 0 ? 0 : 1)
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Test runner failed:', error)
       process.exit(1)
     })

@@ -37,7 +37,16 @@ const AVAILABLE_TEMPLATES: Record<string, GrimoireTemplate> = {
     name: 'mystical_complete',
     description: 'Complete mystical grimoire with all sections and ceremonial styling',
     style: 'mystical',
-    sections: ['invocation', 'query_analysis', 'transit_mappings', 'pattern_weaving', 'elemental_analysis', 'insights', 'prophecies', 'closing'],
+    sections: [
+      'invocation',
+      'query_analysis',
+      'transit_mappings',
+      'pattern_weaving',
+      'elemental_analysis',
+      'insights',
+      'prophecies',
+      'closing',
+    ],
     formatting: {
       fontSize: 12,
       fontFamily: 'Crimson Text, serif',
@@ -45,14 +54,21 @@ const AVAILABLE_TEMPLATES: Record<string, GrimoireTemplate> = {
       marginSize: 1.5,
       includeImages: true,
       includeCharts: true,
-      colorScheme: 'dark'
-    }
+      colorScheme: 'dark',
+    },
   },
   academic_research: {
     name: 'academic_research',
     description: 'Scholarly analysis with comprehensive data and charts',
     style: 'academic',
-    sections: ['abstract', 'methodology', 'transit_mappings', 'pattern_analysis', 'statistical_summary', 'conclusions'],
+    sections: [
+      'abstract',
+      'methodology',
+      'transit_mappings',
+      'pattern_analysis',
+      'statistical_summary',
+      'conclusions',
+    ],
     formatting: {
       fontSize: 11,
       fontFamily: 'Times New Roman, serif',
@@ -60,14 +76,20 @@ const AVAILABLE_TEMPLATES: Record<string, GrimoireTemplate> = {
       marginSize: 1,
       includeImages: true,
       includeCharts: true,
-      colorScheme: 'light'
-    }
+      colorScheme: 'light',
+    },
   },
   consciousness_journal: {
     name: 'consciousness_journal',
     description: 'Personal reflection format with insights and guidance',
     style: 'journal',
-    sections: ['personal_invocation', 'query_reflection', 'agent_insights', 'elemental_wisdom', 'personal_guidance'],
+    sections: [
+      'personal_invocation',
+      'query_reflection',
+      'agent_insights',
+      'elemental_wisdom',
+      'personal_guidance',
+    ],
     formatting: {
       fontSize: 13,
       fontFamily: 'Georgia, serif',
@@ -75,14 +97,20 @@ const AVAILABLE_TEMPLATES: Record<string, GrimoireTemplate> = {
       marginSize: 1.2,
       includeImages: false,
       includeCharts: true,
-      colorScheme: 'sepia'
-    }
+      colorScheme: 'sepia',
+    },
   },
   temporal_codex: {
     name: 'temporal_codex',
     description: 'Technical codex with detailed pattern analysis',
     style: 'codex',
-    sections: ['technical_summary', 'degree_analysis', 'pattern_algorithms', 'reinforcement_mathematics', 'predictive_models'],
+    sections: [
+      'technical_summary',
+      'degree_analysis',
+      'pattern_algorithms',
+      'reinforcement_mathematics',
+      'predictive_models',
+    ],
     formatting: {
       fontSize: 10,
       fontFamily: 'Source Code Pro, monospace',
@@ -90,9 +118,9 @@ const AVAILABLE_TEMPLATES: Record<string, GrimoireTemplate> = {
       marginSize: 0.8,
       includeImages: true,
       includeCharts: true,
-      colorScheme: 'dark'
-    }
-  }
+      colorScheme: 'dark',
+    },
+  },
 }
 
 export async function POST(request: NextRequest) {
@@ -103,10 +131,13 @@ export async function POST(request: NextRequest) {
 
     // Validate request
     if (!requestData.query || !requestData.results || !requestData.options) {
-      return NextResponse.json({
-        success: false,
-        error: 'Missing required fields: query, results, and options are required'
-      } as GrimoireExportResponse, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Missing required fields: query, results, and options are required',
+        } as GrimoireExportResponse,
+        { status: 400 }
+      )
     }
 
     // Validate template
@@ -114,16 +145,19 @@ export async function POST(request: NextRequest) {
     const template = AVAILABLE_TEMPLATES[templateName]
 
     if (!template) {
-      return NextResponse.json({
-        success: false,
-        error: `Invalid template: ${templateName}. Available templates: ${Object.keys(AVAILABLE_TEMPLATES).join(', ')}`
-      } as GrimoireExportResponse, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Invalid template: ${templateName}. Available templates: ${Object.keys(AVAILABLE_TEMPLATES).join(', ')}`,
+        } as GrimoireExportResponse,
+        { status: 400 }
+      )
     }
 
     // Use provided template or default
     const exportOptions: ExportOptions = {
       ...requestData.options,
-      template: template
+      template,
     }
 
     // Generate grimoire
@@ -146,7 +180,9 @@ export async function POST(request: NextRequest) {
     const filename = `temporal-grimoire-${querySlug}-${timestamp}.${exportOptions.format}`
 
     // Store the file data in a temporary cache for download (expires after 5 minutes)
-    const downloadId = Buffer.from(filename).toString('base64').replace(/[\/\+=]/g, '')
+    const downloadId = Buffer.from(filename)
+      .toString('base64')
+      .replace(/[\/\+=]/g, '')
     const downloadUrl = `/api/temporal-grimoire/download?id=${downloadId}&filename=${encodeURIComponent(filename)}`
 
     // Store in memory cache for immediate download (in production, use Redis or cloud storage)
@@ -157,7 +193,7 @@ export async function POST(request: NextRequest) {
       data: grimoireBuffer,
       format: exportOptions.format,
       filename,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     // Clean up old entries (older than 5 minutes)
@@ -180,17 +216,22 @@ export async function POST(request: NextRequest) {
         generatedAt: new Date(),
         sections: template.sections.length,
         processingTime,
-        templateUsed: template.name
-      }
+        templateUsed: template.name,
+      },
     } as GrimoireExportResponse)
-
   } catch (error) {
     console.error('Error generating grimoire:', error)
 
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred during grimoire generation'
-    } as GrimoireExportResponse, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown error occurred during grimoire generation',
+      } as GrimoireExportResponse,
+      { status: 500 }
+    )
   }
 }
 
@@ -210,17 +251,23 @@ export async function GET(request: NextRequest) {
         return handlePreviewGrimoire(searchParams)
 
       default:
-        return NextResponse.json({
-          success: false,
-          error: 'Invalid action. Supported actions: templates, formats, preview'
-        }, { status: 400 })
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Invalid action. Supported actions: templates, formats, preview',
+          },
+          { status: 400 }
+        )
     }
   } catch (error) {
     console.error('Error in grimoire GET endpoint:', error)
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -236,8 +283,8 @@ async function handleGetTemplates() {
     formatting: {
       colorScheme: template.formatting.colorScheme,
       fontSize: template.formatting.fontSize,
-      fontFamily: template.formatting.fontFamily.split(',')[0].trim()
-    }
+      fontFamily: template.formatting.fontFamily.split(',')[0].trim(),
+    },
   }))
 
   return NextResponse.json({
@@ -245,8 +292,8 @@ async function handleGetTemplates() {
     data: {
       templates,
       totalCount: templates.length,
-      styles: [...new Set(templates.map(t => t.style))]
-    }
+      styles: [...new Set(templates.map(t => t.style))],
+    },
   })
 }
 
@@ -257,29 +304,29 @@ async function handleGetFormats() {
       name: 'PDF Document',
       description: 'Portable Document Format, perfect for printing and sharing',
       extensions: ['.pdf'],
-      features: ['Paginated', 'Print-ready', 'Universal compatibility']
+      features: ['Paginated', 'Print-ready', 'Universal compatibility'],
     },
     {
       format: 'epub',
       name: 'EPUB eBook',
       description: 'Electronic Publication format for e-readers',
       extensions: ['.epub'],
-      features: ['Reflowable text', 'E-reader compatible', 'Adjustable fonts']
+      features: ['Reflowable text', 'E-reader compatible', 'Adjustable fonts'],
     },
     {
       format: 'html',
       name: 'HTML Web Page',
       description: 'HyperText Markup Language for web viewing',
       extensions: ['.html'],
-      features: ['Interactive', 'Responsive design', 'Embeddable']
+      features: ['Interactive', 'Responsive design', 'Embeddable'],
     },
     {
       format: 'markdown',
       name: 'Markdown Document',
       description: 'Plain text format with simple formatting',
       extensions: ['.md', '.markdown'],
-      features: ['Lightweight', 'Version-controllable', 'Widely supported']
-    }
+      features: ['Lightweight', 'Version-controllable', 'Widely supported'],
+    },
   ]
 
   return NextResponse.json({
@@ -287,8 +334,8 @@ async function handleGetFormats() {
     data: {
       formats,
       totalCount: formats.length,
-      defaultFormat: 'html'
-    }
+      defaultFormat: 'html',
+    },
   })
 }
 
@@ -297,10 +344,13 @@ async function handlePreviewGrimoire(searchParams: URLSearchParams) {
   const template = AVAILABLE_TEMPLATES[templateName]
 
   if (!template) {
-    return NextResponse.json({
-      success: false,
-      error: `Template not found: ${templateName}`
-    }, { status: 404 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: `Template not found: ${templateName}`,
+      },
+      { status: 404 }
+    )
   }
 
   // Generate a preview of the first section
@@ -311,9 +361,12 @@ async function handlePreviewGrimoire(searchParams: URLSearchParams) {
 **Sections:** ${template.sections.length}
 
 ## Included Sections:
-${template.sections.map((section, index) =>
-  `${index + 1}. ${section.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`
-).join('\n')}
+${template.sections
+  .map(
+    (section, index) =>
+      `${index + 1}. ${section.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`
+  )
+  .join('\n')}
 
 ## Formatting Options:
 - **Font:** ${template.formatting.fontFamily}
@@ -324,7 +377,9 @@ ${template.sections.map((section, index) =>
 
 ## Sample Section (${template.style === 'mystical' ? 'Sacred Invocation' : 'Introduction'}):
 
-${template.style === 'mystical' ? `
+${
+  template.style === 'mystical'
+    ? `
 In the name of temporal wisdom and consciousness evolution,
 We invoke the ancient powers that guide the celestial dance.
 
@@ -333,7 +388,8 @@ Let this grimoire serve as a bridge between the seen and unseen,
 Between the patterns of time and the mysteries of consciousness.
 
 So it is written, so it shall be revealed.
-` : `
+`
+    : `
 This document presents a comprehensive analysis of temporal patterns
 in consciousness evolution through degree-specific planetary transits
 and elemental reinforcement theory.
@@ -341,7 +397,8 @@ and elemental reinforcement theory.
 The analysis examines transit events across multiple consciousness
 entities to identify significant pattern configurations and
 evolutionary trends.
-`}
+`
+}
 
 ---
 
@@ -356,8 +413,8 @@ visualizations, and mystical formatting.*
       template: template.name,
       preview: previewContent,
       estimatedLength: `${Math.round(template.sections.length * 2.5)}–${Math.round(template.sections.length * 4)} pages`,
-      generationTime: `${Math.round(template.sections.length * 0.5)}–${Math.round(template.sections.length * 1)} seconds`
-    }
+      generationTime: `${Math.round(template.sections.length * 0.5)}–${Math.round(template.sections.length * 1)} seconds`,
+    },
   })
 }
 
@@ -368,7 +425,7 @@ export async function handleDownload(filename: string) {
   return new Response('File download functionality not implemented in demo', {
     status: 501,
     headers: {
-      'Content-Type': 'text/plain'
-    }
+      'Content-Type': 'text/plain',
+    },
   })
 }

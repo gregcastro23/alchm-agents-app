@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'fs'
 
 // Batch update script for remaining agents' kinetic evolution data
 const updates = [
@@ -44,23 +44,23 @@ const updates = [
         personalityEvolution: 0.85, // Evolves through observation
         kineticResonance: 0.91 // Revolutionary energy transfer
       }
-    },`
-  }
-];
+    },`,
+  },
+]
 
 // Read file
-let content = fs.readFileSync('./lib/demo-agents-data.ts', 'utf8');
+let content = fs.readFileSync('./lib/demo-agents-data.ts', 'utf8')
 
 // Apply updates
 updates.forEach(update => {
   if (content.includes(update.find)) {
-    content = content.replace(update.find, update.replace);
-    console.log(`✅ Updated ${update.id}`);
+    content = content.replace(update.find, update.replace)
+    console.log(`✅ Updated ${update.id}`)
   } else {
-    console.log(`❌ Could not find stats for ${update.id}`);
+    console.log(`❌ Could not find stats for ${update.id}`)
   }
-});
+})
 
 // Write back
-fs.writeFileSync('./lib/demo-agents-data.ts', content);
-console.log('\n✨ Batch update complete!');
+fs.writeFileSync('./lib/demo-agents-data.ts', content)
+console.log('\n✨ Batch update complete!')

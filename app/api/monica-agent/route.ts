@@ -55,14 +55,16 @@ async function detectRuneContext(requestData: any, alchmData: any): Promise<any>
 
     // Determine dominant element for rune context
     const elements = { spirit, essence, matter, substance }
-    const dominant = Object.entries(elements).reduce((a, b) => elements[a[0]] > elements[b[0]] ? a : b)
+    const dominant = Object.entries(elements).reduce((a, b) =>
+      elements[a[0]] > elements[b[0]] ? a : b
+    )
 
     // Rune context based on alchemical dominance
     const runeMapping = {
       spirit: { rune: 'Fehu', meaning: 'wealth_creation', power: 'manifestation' },
       essence: { rune: 'Laguz', meaning: 'flow_intuition', power: 'emotional_healing' },
       matter: { rune: 'Uruz', meaning: 'strength_grounding', power: 'physical_manifestation' },
-      substance: { rune: 'Dagaz', meaning: 'transformation', power: 'breakthrough_catalyst' }
+      substance: { rune: 'Dagaz', meaning: 'transformation', power: 'breakthrough_catalyst' },
     }
 
     const activeRune = runeMapping[dominant[0] as keyof typeof runeMapping]
@@ -73,7 +75,7 @@ async function detectRuneContext(requestData: any, alchmData: any): Promise<any>
       elementalValue: dominant[1],
       activeRune,
       runeStrength: Math.min(dominant[1] / 10, 1), // Normalize 0-1
-      cosmicAlignment: requestData.includeAlchm ? 'enhanced' : 'natural'
+      cosmicAlignment: requestData.includeAlchm ? 'enhanced' : 'natural',
     }
   } catch (error) {
     console.warn('Rune context detection failed:', error)
@@ -92,7 +94,7 @@ async function analyzeChartCombination(requestData: any, conversationContext: an
       charts.push({
         type: 'natal',
         data: requestData.birthData,
-        source: 'user_provided'
+        source: 'user_provided',
       })
     }
 
@@ -101,12 +103,14 @@ async function analyzeChartCombination(requestData: any, conversationContext: an
       const chartAttachments = conversationContext.agentAttachments.filter(
         (attachment: any) => attachment.type === 'birth_chart'
       )
-      charts.push(...chartAttachments.map((attachment: any) => ({
-        type: 'historical',
-        data: attachment.data,
-        source: 'agent_attachment',
-        name: attachment.name
-      })))
+      charts.push(
+        ...chartAttachments.map((attachment: any) => ({
+          type: 'historical',
+          data: attachment.data,
+          source: 'agent_attachment',
+          name: attachment.name,
+        }))
+      )
     }
 
     // Single chart - no combination analysis needed
@@ -114,7 +118,7 @@ async function analyzeChartCombination(requestData: any, conversationContext: an
       return {
         active: false,
         chartCount: charts.length,
-        reason: charts.length === 0 ? 'no_charts' : 'single_chart'
+        reason: charts.length === 0 ? 'no_charts' : 'single_chart',
       }
     }
 
@@ -133,7 +137,7 @@ async function analyzeChartCombination(requestData: any, conversationContext: an
           aspectCount: synastryAspects.length,
           dominantAspect: synastryAspects[0] || null,
           compatibility: calculateCompatibilityScore(synastryAspects),
-          type: `${chart1.type}_${chart2.type}`
+          type: `${chart1.type}_${chart2.type}`,
         })
       }
     }
@@ -143,7 +147,7 @@ async function analyzeChartCombination(requestData: any, conversationContext: an
       chartCount: charts.length,
       combinations,
       primaryCombination: combinations[0] || null,
-      analysisDepth: combinations.length > 3 ? 'complex' : 'standard'
+      analysisDepth: combinations.length > 3 ? 'complex' : 'standard',
     }
   } catch (error) {
     console.warn('Chart combination analysis failed:', error)
@@ -165,7 +169,7 @@ function calculateBasicSynastry(chart1: any, chart2: any): any[] {
     trine: { angle: 120, orb: 8, strength: 0.8 },
     sextile: { angle: 60, orb: 6, strength: 0.7 },
     square: { angle: 90, orb: 8, strength: 0.4 },
-    opposition: { angle: 180, orb: 10, strength: 0.5 }
+    opposition: { angle: 180, orb: 10, strength: 0.5 },
   }
 
   // Compare each planet from chart1 with planets from chart2
@@ -186,7 +190,7 @@ function calculateBasicSynastry(chart1: any, chart2: any): any[] {
             aspect: aspectName,
             strength: aspectDef.strength * (1 - orb / aspectDef.orb), // Stronger when closer to exact
             planets: [planet1, planet2],
-            orb: orb.toFixed(2)
+            orb: orb.toFixed(2),
           })
           break // Only count one aspect per planet pair
         }
@@ -200,7 +204,7 @@ function calculateBasicSynastry(chart1: any, chart2: any): any[] {
       aspect: 'neutral',
       strength: 0.5,
       planets: ['Sun', 'Moon'],
-      orb: '0'
+      orb: '0',
     })
   }
 
@@ -217,7 +221,7 @@ function calculateCompatibilityScore(aspects: any[]): number {
       trine: 0.8,
       sextile: 0.7,
       square: 0.4,
-      opposition: 0.3
+      opposition: 0.3,
     }
     return aspectScores[aspect.aspect as keyof typeof aspectScores] || 0.5
   })
@@ -232,7 +236,7 @@ function calculateDynamicXP(
   runeContext: any,
   chartCombination: any
 ): number {
-  let baseXP = conversationContext.conversationCount * 50 // Base 50 XP per interaction
+  const baseXP = conversationContext.conversationCount * 50 // Base 50 XP per interaction
 
   // Quality multipliers
   let qualityMultiplier = 1.0
@@ -240,10 +244,11 @@ function calculateDynamicXP(
   // Alchemical enhancement (up to 50% bonus)
   if (alchmData && alchmData['Alchemy Effects']) {
     const effects = alchmData['Alchemy Effects']
-    const totalAlchemical = (effects['Total Spirit'] || 0) +
-                           (effects['Total Essence'] || 0) +
-                           (effects['Total Matter'] || 0) +
-                           (effects['Total Substance'] || 0)
+    const totalAlchemical =
+      (effects['Total Spirit'] || 0) +
+      (effects['Total Essence'] || 0) +
+      (effects['Total Matter'] || 0) +
+      (effects['Total Substance'] || 0)
     qualityMultiplier += Math.min(totalAlchemical / 100, 0.5)
   }
 
@@ -269,7 +274,8 @@ function calculateDynamicXP(
   const enhancedXP = baseXP * qualityMultiplier
 
   // Progressive scaling for higher levels (diminishing returns)
-  const scaledXP = enhancedXP * (1 - Math.log10(Math.max(conversationContext.conversationCount, 1)) / 10)
+  const scaledXP =
+    enhancedXP * (1 - Math.log10(Math.max(conversationContext.conversationCount, 1)) / 10)
 
   return Math.round(Math.max(scaledXP, baseXP * 0.5)) // Minimum 50% of base XP
 }
@@ -283,7 +289,7 @@ function computeCustomizationProgress(ctx: {
   spreadContext: any
 }): number {
   let score = 0
-  let max = 5
+  const max = 5
   if (ctx.quickProfile) score += 1
   if (ctx.birthData) score += 1
   if (ctx.userPreferences) score += 1
@@ -405,7 +411,7 @@ export async function POST(req: Request) {
       userPreferences,
       chartData,
       userId,
-      sessionId
+      sessionId,
     }
 
     // Check if this is a historical agent request - try database first, then fallback to static data
@@ -764,11 +770,20 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
 
         // Check cache first for faster responses
         console.log(`🗄️ Checking cache for agent: ${historicalAgent.name}`)
-        const cacheContext = buildCacheContext(agentId, trimmedMessage, { userId, sessionId: finalSessionId })
-        const cachedResponse = await agentCache.getCachedResponse(agentId, trimmedMessage, cacheContext)
+        const cacheContext = buildCacheContext(agentId, trimmedMessage, {
+          userId,
+          sessionId: finalSessionId,
+        })
+        const cachedResponse = await agentCache.getCachedResponse(
+          agentId,
+          trimmedMessage,
+          cacheContext
+        )
 
         if (cachedResponse) {
-          console.log(`⚡ Cache hit for ${historicalAgent.name} - serving cached response (${cachedResponse.responseTime}ms original)`)
+          console.log(
+            `⚡ Cache hit for ${historicalAgent.name} - serving cached response (${cachedResponse.responseTime}ms original)`
+          )
 
           return NextResponse.json({
             response: cachedResponse.agentResponse,
@@ -780,7 +795,7 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
               monicaConstant: historicalAgent.consciousness.monicaConstant,
             },
             cached: true,
-            originalResponseTime: cachedResponse.responseTime
+            originalResponseTime: cachedResponse.responseTime,
           })
         }
 
@@ -854,14 +869,14 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
               agentResponse: text.substring(0, 500), // Truncate for storage
               sessionId: finalSessionId,
               responseTime,
-              historicalAgent: historicalAgent.name
-            }
+              historicalAgent: historicalAgent.name,
+            },
           })
         } catch (evolutionError) {
           console.warn('Failed to log consciousness evolution:', evolutionError)
         }
 
-      return NextResponse.json({
+        return NextResponse.json({
           response: text,
           sessionId: finalSessionId,
           agentInfo: {
@@ -1412,7 +1427,9 @@ Always end responses with practical next steps for rune crafting, resource manag
         console.error('Failed to log Monica conversation to Galileo:', error)
       })
 
-      const xpForThisMessage = aNumberInfo ? calculateDynamicXP(conversationContext, alchmData, runeContext, chartCombination) : 50
+      const xpForThisMessage = aNumberInfo
+        ? calculateDynamicXP(conversationContext, alchmData, runeContext, chartCombination)
+        : 50
       const structured = MonicaResponseHandler.formatResponse(text, {
         userMessage: trimmedMessage,
         currentAlchmQuantities: aNumberInfo
@@ -1452,7 +1469,12 @@ Always end responses with practical next steps for rune crafting, resource manag
       // Conscious parameters from alchemical/thermodynamic data (if available)
       let consciousParameters: any = undefined
       if (aNumberInfo) {
-        const proxyXP = calculateDynamicXP(conversationContext, alchmData, runeContext, chartCombination)
+        const proxyXP = calculateDynamicXP(
+          conversationContext,
+          alchmData,
+          runeContext,
+          chartCombination
+        )
         const trainingProgress = computeTrainingProgress(proxyXP)
         consciousParameters = computeConsciousParameters(
           {
@@ -1541,8 +1563,8 @@ Always end responses with practical next steps for rune crafting, resource manag
             sessionId: conversationContext.sessionId,
             processingTime,
             aNumber: aNumberInfo?.aNumber,
-            routing: routing.reason
-          }
+            routing: routing.reason,
+          },
         })
       } catch (evolutionError) {
         console.warn('Failed to log Monica consciousness evolution:', evolutionError)

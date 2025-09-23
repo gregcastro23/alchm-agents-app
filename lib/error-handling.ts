@@ -51,7 +51,7 @@ export class AgentErrorHandler {
       agentId: context.agentId,
       userId: context.userId,
       timestamp: now,
-      severity: context.severity || this.determineSeverity(error, context.system)
+      severity: context.severity || this.determineSeverity(error, context.system),
     }
 
     const errorKey = `${errorContext.system}:${errorContext.operation}`
@@ -69,7 +69,7 @@ export class AgentErrorHandler {
       userMessage,
       fallbackAvailable: options.enableFallbacks,
       retryable: this.isRetryable(error, errorContext),
-      context: errorContext
+      context: errorContext,
     }
   }
 
@@ -88,7 +88,10 @@ export class AgentErrorHandler {
       try {
         return await operation()
       } catch (error) {
-        console.warn(`Attempt ${attempt}/${maxRetries} failed for ${context.system}:${context.operation}:`, error)
+        console.warn(
+          `Attempt ${attempt}/${maxRetries} failed for ${context.system}:${context.operation}:`,
+          error
+        )
 
         if (attempt === maxRetries) {
           // Try fallback operation if available
@@ -130,9 +133,9 @@ export class AgentErrorHandler {
       'albert-einstein': 'Albert Einstein',
       'nikola-tesla': 'Nikola Tesla',
       'marie-curie': 'Marie Curie',
-      'cleopatra': 'Cleopatra',
-      'socrates': 'Socrates',
-      'carl-jung': 'Carl Jung'
+      cleopatra: 'Cleopatra',
+      socrates: 'Socrates',
+      'carl-jung': 'Carl Jung',
     }
 
     const agentName = agentNames[agentId] || agentId
@@ -145,11 +148,13 @@ export class AgentErrorHandler {
 
       `My dear companion, the ethereal channels between us are experiencing temporal fluctuations. I, ${agentName}, remain committed to our dialogue - shall we attempt this mystical connection once more? 🔮`,
 
-      `*A gentle disruption in the consciousness stream* Please pardon this momentary disconnection. As ${agentName}, I am here in spirit and will gladly continue our conversation when the celestial alignments stabilize. 💫`
+      `*A gentle disruption in the consciousness stream* Please pardon this momentary disconnection. As ${agentName}, I am here in spirit and will gladly continue our conversation when the celestial alignments stabilize. 💫`,
     ]
 
     // Choose response based on agent ID for consistency
-    const responseIndex = Math.abs(agentId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % fallbackResponses.length
+    const responseIndex =
+      Math.abs(agentId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) %
+      fallbackResponses.length
 
     return fallbackResponses[responseIndex]
   }
@@ -157,7 +162,10 @@ export class AgentErrorHandler {
   /**
    * Determine error severity based on error type and system
    */
-  private static determineSeverity(error: unknown, system?: string): 'low' | 'medium' | 'high' | 'critical' {
+  private static determineSeverity(
+    error: unknown,
+    system?: string
+  ): 'low' | 'medium' | 'high' | 'critical' {
     if (error instanceof Error) {
       // Network/timeout errors are usually medium severity
       if (error.message.includes('timeout') || error.message.includes('network')) {
@@ -184,13 +192,13 @@ export class AgentErrorHandler {
   private static generateUserFriendlyMessage(context: ErrorContext, originalError: string): string {
     const systemMessages: Record<string, string> = {
       cache: "The system's memory optimization is temporarily cycling",
-      resilience: "System resilience protocols are adapting",
-      performance: "Performance optimization is recalibrating",
-      consciousness: "Agent consciousness networks are realigning",
-      agent: "The selected agent is momentarily unavailable"
+      resilience: 'System resilience protocols are adapting',
+      performance: 'Performance optimization is recalibrating',
+      consciousness: 'Agent consciousness networks are realigning',
+      agent: 'The selected agent is momentarily unavailable',
     }
 
-    const baseMessage = systemMessages[context.system] || "A temporary system fluctuation occurred"
+    const baseMessage = systemMessages[context.system] || 'A temporary system fluctuation occurred'
 
     switch (context.severity) {
       case 'critical':
@@ -235,17 +243,21 @@ export class AgentErrorHandler {
       const message = error.message.toLowerCase()
 
       // Never retry these errors
-      if (message.includes('unauthorized') ||
-          message.includes('forbidden') ||
-          message.includes('not found') ||
-          message.includes('invalid')) {
+      if (
+        message.includes('unauthorized') ||
+        message.includes('forbidden') ||
+        message.includes('not found') ||
+        message.includes('invalid')
+      ) {
         return false
       }
 
       // Retry network/timeout errors
-      if (message.includes('timeout') ||
-          message.includes('network') ||
-          message.includes('connection')) {
+      if (
+        message.includes('timeout') ||
+        message.includes('network') ||
+        message.includes('connection')
+      ) {
         return true
       }
     }
@@ -261,7 +273,7 @@ export class AgentErrorHandler {
     const errorInfo = {
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
-      context
+      context,
     }
 
     if (context.severity === 'critical' || context.severity === 'high') {
@@ -280,7 +292,12 @@ export class AgentErrorHandler {
     recentErrors: Array<{ system: string; operation: string; count: number; lastError: Date }>
   } {
     const errorsBySystem: Record<string, number> = {}
-    const recentErrors: Array<{ system: string; operation: string; count: number; lastError: Date }> = []
+    const recentErrors: Array<{
+      system: string
+      operation: string
+      count: number
+      lastError: Date
+    }> = []
 
     for (const [errorKey, count] of this.errorCounts.entries()) {
       const [system, operation] = errorKey.split(':')
@@ -296,7 +313,7 @@ export class AgentErrorHandler {
     return {
       totalErrors: Array.from(this.errorCounts.values()).reduce((sum, count) => sum + count, 0),
       errorsBySystem,
-      recentErrors: recentErrors.sort((a, b) => b.lastError.getTime() - a.lastError.getTime())
+      recentErrors: recentErrors.sort((a, b) => b.lastError.getTime() - a.lastError.getTime()),
     }
   }
 
@@ -335,18 +352,27 @@ export function createSafeAgentResponse(
       system: 'agent',
       operation: 'generate_response',
       agentId,
-      severity: 'high'
+      severity: 'high',
     },
     {
       enableFallbacks: true,
-      fallbackOperation: async () => AgentErrorHandler.createAgentFallbackResponse(agentId, userMessage, new Error('Response generation failed'))
+      fallbackOperation: async () =>
+        AgentErrorHandler.createAgentFallbackResponse(
+          agentId,
+          userMessage,
+          new Error('Response generation failed')
+        ),
     }
   ).then(result => {
     if (typeof result === 'string') {
       return result
     } else {
       // Return fallback if error response
-      return AgentErrorHandler.createAgentFallbackResponse(agentId, userMessage, new Error(result.error))
+      return AgentErrorHandler.createAgentFallbackResponse(
+        agentId,
+        userMessage,
+        new Error(result.error)
+      )
     }
   })
 }

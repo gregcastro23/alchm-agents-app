@@ -1,4 +1,4 @@
-import { alchemize, generateAlchmForCurrentMoment } from '../../src/services/alchemizer-service';
+import { alchemize, generateAlchmForCurrentMoment } from '../../src/services/alchemizer-service'
 
 describe('Alchemizer Service', () => {
   const mockBirthInfo = {
@@ -8,27 +8,31 @@ describe('Alchemizer Service', () => {
     hour: 12,
     minute: 0,
     latitude: 0,
-    longitude: 0
-  };
+    longitude: 0,
+  }
 
   const mockHoroscope = {
     tropical: {
-      CelestialBodies: { /* mock data */ },
+      CelestialBodies: {
+        /* mock data */
+      },
       Ascendant: { Sign: { label: 'Aries' } },
-      Aspects: { /* mock aspects */ }
-    }
-  };
+      Aspects: {
+        /* mock aspects */
+      },
+    },
+  }
 
   test('alchemize calculates correct elements', async () => {
-    const result = await alchemize(mockBirthInfo, mockHoroscope);
-    expect(result.DominantElement).toBeDefined();
-    expect(result.Heat).toBeGreaterThan(0);
-  });
+    const result = await alchemize(mockBirthInfo, mockHoroscope)
+    expect(result.DominantElement).toBeDefined()
+    expect(result.Heat).toBeGreaterThan(0)
+  })
 
   test('generateAlchmForCurrentMoment returns valid data', async () => {
-    const result = await generateAlchmForCurrentMoment();
-    expect(result.AlchemyEffects.TotalSpirit).toBeDefined();
-  });
+    const result = await generateAlchmForCurrentMoment()
+    expect(result.AlchemyEffects.TotalSpirit).toBeDefined()
+  })
 
   // Add more tests for effects, aspects, etc.
-});
+})

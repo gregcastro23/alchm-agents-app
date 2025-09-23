@@ -11,13 +11,13 @@ import {
   AspectType,
   PatternConfiguration,
   detectPatternsStatic,
-  getAspectColor
+  getAspectColor,
 } from './astrological-pattern-recognition'
 import {
   RuneGeometry,
   EnhancedAspectLine,
   PowerNode,
-  ASPECT_RUNE_MAPPINGS
+  ASPECT_RUNE_MAPPINGS,
 } from './runes/natal-sigil-runes'
 
 export interface ChartCoordinate {
@@ -56,10 +56,10 @@ export class ChartGeometryExtractor {
       sacredPatterns: [], // Will be populated by pattern detection
       chartBounds: {
         width: bounds.width,
-        height: bounds.height
+        height: bounds.height,
       },
       dominantElement: this.determineDominantElement(elementalBalance),
-      elementalBalance
+      elementalBalance,
     }
   }
 
@@ -77,7 +77,7 @@ export class ChartGeometryExtractor {
       height: canvasElement.height,
       centerX: canvasElement.width / 2,
       centerY: canvasElement.height / 2,
-      radius: Math.min(canvasElement.width, canvasElement.height) / 2 - 20
+      radius: Math.min(canvasElement.width, canvasElement.height) / 2 - 20,
     }
 
     // For canvas, we would need to analyze pixel data or maintain a drawing state
@@ -93,10 +93,10 @@ export class ChartGeometryExtractor {
       sacredPatterns: [],
       chartBounds: {
         width: bounds.width,
-        height: bounds.height
+        height: bounds.height,
       },
       dominantElement: this.determineDominantElement(elementalBalance),
-      elementalBalance
+      elementalBalance,
     }
   }
 
@@ -114,7 +114,7 @@ export class ChartGeometryExtractor {
       height,
       centerX: width / 2,
       centerY: height / 2,
-      radius: Math.min(width, height) / 2 - 40
+      radius: Math.min(width, height) / 2 - 40,
     }
 
     // Calculate planet coordinates on a circle
@@ -139,10 +139,10 @@ export class ChartGeometryExtractor {
       sacredPatterns: patterns,
       chartBounds: {
         width: bounds.width,
-        height: bounds.height
+        height: bounds.height,
       },
       dominantElement: this.determineDominantElement(elementalBalance),
-      elementalBalance
+      elementalBalance,
     }
   }
 
@@ -175,12 +175,14 @@ export class ChartGeometryExtractor {
     )
 
     planetElements.forEach(element => {
-      const planet = element.getAttribute('data-planet') ||
-                     element.getAttribute('id')?.replace('planet-', '') ||
-                     element.textContent?.toLowerCase()
+      const planet =
+        element.getAttribute('data-planet') ||
+        element.getAttribute('id')?.replace('planet-', '') ||
+        element.textContent?.toLowerCase()
 
       if (planet) {
-        let x = 0, y = 0
+        let x = 0,
+          y = 0
 
         if (element instanceof SVGCircleElement) {
           x = parseFloat(element.getAttribute('cx') || '0')
@@ -202,7 +204,7 @@ export class ChartGeometryExtractor {
           x,
           y,
           planet,
-          degree: parseFloat(element.getAttribute('data-degree') || '0')
+          degree: parseFloat(element.getAttribute('data-degree') || '0'),
         })
       }
     })
@@ -249,12 +251,12 @@ export class ChartGeometryExtractor {
               x1: coord1.x,
               y1: coord1.y,
               x2: coord2.x,
-              y2: coord2.y
+              y2: coord2.y,
             },
             visualWeight: aspectMapping?.weight || 1,
             color: aspectMapping?.color || getAspectColor(aspectType),
             runicStroke: aspectMapping?.stroke || 'default-stroke',
-            energyFlow: aspectMapping?.energy || 'neutral'
+            energyFlow: aspectMapping?.energy || 'neutral',
           })
         }
       } else if (element instanceof SVGLineElement) {
@@ -287,7 +289,7 @@ export class ChartGeometryExtractor {
           visualWeight: aspectMapping?.weight || 1,
           color: element.getAttribute('stroke') || aspectMapping?.color || '#808080',
           runicStroke: aspectMapping?.stroke || 'default-stroke',
-          energyFlow: aspectMapping?.energy || 'neutral'
+          energyFlow: aspectMapping?.energy || 'neutral',
         })
       }
     })
@@ -316,8 +318,18 @@ export class ChartGeometryExtractor {
   ): Map<string, ChartCoordinate> {
     const coordinates = new Map<string, ChartCoordinate>()
     const signOrder = [
-      'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
     ]
 
     planets.forEach(planet => {
@@ -336,7 +348,7 @@ export class ChartGeometryExtractor {
         x,
         y,
         planet: planet.planet,
-        degree: absoluteDegree
+        degree: absoluteDegree,
       })
     })
 
@@ -352,10 +364,14 @@ export class ChartGeometryExtractor {
     bounds: ChartBounds
   ): EnhancedAspectLine[] {
     return aspects.map(aspect => {
-      const coord1 = planetCoordinates.get(aspect.planet1) ||
-                     { x: bounds.centerX, y: bounds.centerY }
-      const coord2 = planetCoordinates.get(aspect.planet2) ||
-                     { x: bounds.centerX, y: bounds.centerY }
+      const coord1 = planetCoordinates.get(aspect.planet1) || {
+        x: bounds.centerX,
+        y: bounds.centerY,
+      }
+      const coord2 = planetCoordinates.get(aspect.planet2) || {
+        x: bounds.centerX,
+        y: bounds.centerY,
+      }
 
       const aspectMapping = ASPECT_RUNE_MAPPINGS[aspect.type]
 
@@ -365,12 +381,12 @@ export class ChartGeometryExtractor {
           x1: coord1.x,
           y1: coord1.y,
           x2: coord2.x,
-          y2: coord2.y
+          y2: coord2.y,
         },
         visualWeight: aspectMapping?.weight || 1,
         color: aspectMapping?.color || getAspectColor(aspect.type),
         runicStroke: aspectMapping?.stroke || 'default-stroke',
-        energyFlow: aspectMapping?.energy || 'neutral'
+        energyFlow: aspectMapping?.energy || 'neutral',
       }
     })
   }
@@ -378,19 +394,19 @@ export class ChartGeometryExtractor {
   /**
    * Detect power nodes where multiple aspects converge
    */
-  static detectPowerNodes(
-    aspectLines: EnhancedAspectLine[],
-    bounds: ChartBounds
-  ): PowerNode[] {
+  static detectPowerNodes(aspectLines: EnhancedAspectLine[], bounds: ChartBounds): PowerNode[] {
     const nodes: PowerNode[] = []
     const convergenceThreshold = 20 // pixels
 
     // Group lines by proximity
-    const intersectionPoints = new Map<string, {
-      x: number
-      y: number
-      lines: EnhancedAspectLine[]
-    }>()
+    const intersectionPoints = new Map<
+      string,
+      {
+        x: number
+        y: number
+        lines: EnhancedAspectLine[]
+      }
+    >()
 
     // Find line intersections
     for (let i = 0; i < aspectLines.length; i++) {
@@ -404,7 +420,7 @@ export class ChartGeometryExtractor {
             intersectionPoints.set(key, {
               x: intersection.x,
               y: intersection.y,
-              lines: []
+              lines: [],
             })
           }
 
@@ -422,8 +438,8 @@ export class ChartGeometryExtractor {
     // Convert intersection points to power nodes
     intersectionPoints.forEach(point => {
       if (point.lines.length >= 2) {
-        const energy = point.lines.length * 10 +
-                      point.lines.filter(l => l.energyFlow === 'positive').length * 5
+        const energy =
+          point.lines.length * 10 + point.lines.filter(l => l.energyFlow === 'positive').length * 5
 
         const convergingAspects = [...new Set(point.lines.map(l => l.type))]
         const planetaryInfluences = [...new Set(point.lines.flatMap(l => [l.planet1, l.planet2]))]
@@ -433,7 +449,7 @@ export class ChartGeometryExtractor {
           y: point.y,
           energy,
           convergingAspects,
-          planetaryInfluences
+          planetaryInfluences,
         })
       }
     })
@@ -471,7 +487,7 @@ export class ChartGeometryExtractor {
     if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
       return {
         x: x1 + t * (x2 - x1),
-        y: y1 + t * (y2 - y1)
+        y: y1 + t * (y2 - y1),
       }
     }
 
@@ -481,9 +497,12 @@ export class ChartGeometryExtractor {
   /**
    * Calculate elemental balance from aspect lines
    */
-  private static calculateElementalBalance(
-    aspectLines: EnhancedAspectLine[]
-  ): { fire: number; water: number; air: number; earth: number } {
+  private static calculateElementalBalance(aspectLines: EnhancedAspectLine[]): {
+    fire: number
+    water: number
+    air: number
+    earth: number
+  } {
     const elementCounts = { fire: 0, water: 0, air: 0, earth: 0 }
 
     // Map aspect types to elements
@@ -493,7 +512,7 @@ export class ChartGeometryExtractor {
       sextile: 'air',
       opposition: 'water',
       square: 'fire',
-      quincunx: 'water'
+      quincunx: 'water',
     }
 
     aspectLines.forEach(line => {
@@ -507,21 +526,35 @@ export class ChartGeometryExtractor {
       fire: Math.round((elementCounts.fire / total) * 100),
       water: Math.round((elementCounts.water / total) * 100),
       air: Math.round((elementCounts.air / total) * 100),
-      earth: Math.round((elementCounts.earth / total) * 100)
+      earth: Math.round((elementCounts.earth / total) * 100),
     }
   }
 
   /**
    * Calculate elemental balance from planet positions
    */
-  private static calculateElementalBalanceFromPlanets(
-    planets: PlanetPosition[]
-  ): { fire: number; water: number; air: number; earth: number } {
-    const signElements: Record<string, keyof { fire: number; water: number; air: number; earth: number }> = {
-      'Aries': 'fire', 'Leo': 'fire', 'Sagittarius': 'fire',
-      'Taurus': 'earth', 'Virgo': 'earth', 'Capricorn': 'earth',
-      'Gemini': 'air', 'Libra': 'air', 'Aquarius': 'air',
-      'Cancer': 'water', 'Scorpio': 'water', 'Pisces': 'water'
+  private static calculateElementalBalanceFromPlanets(planets: PlanetPosition[]): {
+    fire: number
+    water: number
+    air: number
+    earth: number
+  } {
+    const signElements: Record<
+      string,
+      keyof { fire: number; water: number; air: number; earth: number }
+    > = {
+      Aries: 'fire',
+      Leo: 'fire',
+      Sagittarius: 'fire',
+      Taurus: 'earth',
+      Virgo: 'earth',
+      Capricorn: 'earth',
+      Gemini: 'air',
+      Libra: 'air',
+      Aquarius: 'air',
+      Cancer: 'water',
+      Scorpio: 'water',
+      Pisces: 'water',
     }
 
     const elementCounts = { fire: 0, water: 0, air: 0, earth: 0 }
@@ -539,18 +572,21 @@ export class ChartGeometryExtractor {
       fire: Math.round((elementCounts.fire / total) * 100),
       water: Math.round((elementCounts.water / total) * 100),
       air: Math.round((elementCounts.air / total) * 100),
-      earth: Math.round((elementCounts.earth / total) * 100)
+      earth: Math.round((elementCounts.earth / total) * 100),
     }
   }
 
   /**
    * Determine dominant element
    */
-  private static determineDominantElement(
-    balance: { fire: number; water: number; air: number; earth: number }
-  ): string {
+  private static determineDominantElement(balance: {
+    fire: number
+    water: number
+    air: number
+    earth: number
+  }): string {
     const entries = Object.entries(balance)
-    const max = entries.reduce((a, b) => a[1] > b[1] ? a : b)
+    const max = entries.reduce((a, b) => (a[1] > b[1] ? a : b))
     return max[0].charAt(0).toUpperCase() + max[0].slice(1)
   }
 }

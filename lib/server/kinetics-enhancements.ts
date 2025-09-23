@@ -61,7 +61,9 @@ export function getCurrentPower(kinetics: BaseKinetics): number {
   return kinetics.power?.[kinetics.power.length - 1]?.power || 0.5
 }
 
-export function classifyMomentum(powerSeries: Array<{ power: number }>): 'building' | 'sustained' | 'peak' | 'waning' {
+export function classifyMomentum(
+  powerSeries: Array<{ power: number }>
+): 'building' | 'sustained' | 'peak' | 'waning' {
   if (!powerSeries || powerSeries.length === 0) return 'building'
   const current = powerSeries[powerSeries.length - 1]?.power || 0.5
   const prev = powerSeries.length > 1 ? powerSeries[powerSeries.length - 2]?.power || 0.5 : current
@@ -75,7 +77,12 @@ export function classifyMomentum(powerSeries: Array<{ power: number }>): 'buildi
 export function predictPowerTrends(kinetics: BaseKinetics): PowerPrediction {
   const data = kinetics.power || []
   if (data.length < 3) {
-    return { trend: 'stable', confidence: 0.3, nextHourPower: getCurrentPower(kinetics), peakWindow: null }
+    return {
+      trend: 'stable',
+      confidence: 0.3,
+      nextHourPower: getCurrentPower(kinetics),
+      peakWindow: null,
+    }
   }
   const recent = data.slice(-3).map(p => p.power || 0.5)
   const trendVal = (recent[2] - recent[0]) / 2
@@ -88,7 +95,8 @@ export function predictPowerTrends(kinetics: BaseKinetics): PowerPrediction {
   let peakWindow: string | null = null
   if (trend === 'rising' && nextHourPower > 0.7) {
     const hoursAhead = Math.round((0.85 - current) / Math.max(0.01, trendVal))
-    if (hoursAhead <= 3) peakWindow = `Peak expected in ${hoursAhead} hour${hoursAhead !== 1 ? 's' : ''}`
+    if (hoursAhead <= 3)
+      peakWindow = `Peak expected in ${hoursAhead} hour${hoursAhead !== 1 ? 's' : ''}`
   }
 
   return {
@@ -116,11 +124,12 @@ export function calculateAgentOptimization(kinetics: BaseKinetics): AgentOptimiz
         agentId,
         name: profile.name,
         score,
-        reason: score > 0.7
-          ? `Peak alignment with ${currentHour} hour and high consciousness rate`
-          : score > 0.5
-            ? 'Strong performance during current conditions'
-            : 'Good compatibility with current kinetic flow',
+        reason:
+          score > 0.7
+            ? `Peak alignment with ${currentHour} hour and high consciousness rate`
+            : score > 0.5
+              ? 'Strong performance during current conditions'
+              : 'Good compatibility with current kinetic flow',
       })
     }
   })
@@ -160,7 +169,9 @@ export function buildResonanceMap(agentIds?: string[]): ResonanceMap {
 }
 
 export function findResonanceGroups(
-  map: Record<string, Record<string, number>>, threshold: number, minSize: number
+  map: Record<string, Record<string, number>>,
+  threshold: number,
+  minSize: number
 ): ResonanceGroup[] {
   const groups: ResonanceGroup[] = []
   const agents = Object.keys(map)
@@ -188,7 +199,10 @@ export function findResonanceGroups(
   return groups.sort((a, b) => b.averageResonance - a.averageResonance)
 }
 
-export function calculateGroupResonance(agents: string[], map: Record<string, Record<string, number>>): number {
+export function calculateGroupResonance(
+  agents: string[],
+  map: Record<string, Record<string, number>>
+): number {
   let total = 0
   let pairs = 0
   for (let i = 0; i < agents.length; i++) {
@@ -199,5 +213,3 @@ export function calculateGroupResonance(agents: string[], map: Record<string, Re
   }
   return pairs > 0 ? total / pairs : 0
 }
-
-

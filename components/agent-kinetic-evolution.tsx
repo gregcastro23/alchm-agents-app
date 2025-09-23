@@ -32,7 +32,11 @@ interface AgentKineticEvolutionProps {
   className?: string
 }
 
-export function AgentKineticEvolution({ agentId, location, className = '' }: AgentKineticEvolutionProps) {
+export function AgentKineticEvolution({
+  agentId,
+  location,
+  className = '',
+}: AgentKineticEvolutionProps) {
   const [kineticData, setKineticData] = useState<KineticEvolutionData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -41,7 +45,7 @@ export function AgentKineticEvolution({ agentId, location, className = '' }: Age
     const fetchKineticEvolution = async () => {
       setLoading(true)
       setError(null)
-      
+
       try {
         const response = await fetch('/api/kinetic-evolution', {
           method: 'POST',
@@ -49,11 +53,11 @@ export function AgentKineticEvolution({ agentId, location, className = '' }: Age
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            agentId, 
-            location: location || { lat: 37.7749, lon: -122.4194 }
-          })
+            agentId,
+            location: location || { lat: 37.7749, lon: -122.4194 },
+          }),
         })
-        
+
         const result = await response.json()
 
         if (result.output && !result.degraded) {
@@ -69,7 +73,7 @@ export function AgentKineticEvolution({ agentId, location, className = '' }: Age
     }
 
     fetchKineticEvolution()
-    
+
     // Refresh every 2 minutes to show evolution
     const interval = setInterval(fetchKineticEvolution, 2 * 60 * 1000)
     return () => clearInterval(interval)
@@ -105,9 +109,7 @@ export function AgentKineticEvolution({ agentId, location, className = '' }: Age
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            {error || 'No kinetic evolution data available'}
-          </p>
+          <p className="text-muted-foreground">{error || 'No kinetic evolution data available'}</p>
         </CardContent>
       </Card>
     )
@@ -115,27 +117,42 @@ export function AgentKineticEvolution({ agentId, location, className = '' }: Age
 
   const getEvolutionColor = (level: string) => {
     switch (level) {
-      case 'bronze': return 'bg-amber-600'
-      case 'silver': return 'bg-gray-400'
-      case 'gold': return 'bg-yellow-500'
-      case 'platinum': return 'bg-purple-600'
-      case 'transcendent': return 'bg-gradient-to-r from-purple-500 to-pink-500'
-      default: return 'bg-gray-400'
+      case 'bronze':
+        return 'bg-amber-600'
+      case 'silver':
+        return 'bg-gray-400'
+      case 'gold':
+        return 'bg-yellow-500'
+      case 'platinum':
+        return 'bg-purple-600'
+      case 'transcendent':
+        return 'bg-gradient-to-r from-purple-500 to-pink-500'
+      default:
+        return 'bg-gray-400'
     }
   }
 
   const getEvolutionEmoji = (level: string) => {
     switch (level) {
-      case 'bronze': return '🥉'
-      case 'silver': return '🥈'
-      case 'gold': return '🥇'
-      case 'platinum': return '💎'
-      case 'transcendent': return '✨'
-      default: return '🔮'
+      case 'bronze':
+        return '🥉'
+      case 'silver':
+        return '🥈'
+      case 'gold':
+        return '🥇'
+      case 'platinum':
+        return '💎'
+      case 'transcendent':
+        return '✨'
+      default:
+        return '🔮'
     }
   }
 
-  const progressPercentage = Math.min(100, (kineticData.currentPower / kineticData.nextThreshold) * 100)
+  const progressPercentage = Math.min(
+    100,
+    (kineticData.currentPower / kineticData.nextThreshold) * 100
+  )
 
   return (
     <Card className={className}>
@@ -145,7 +162,8 @@ export function AgentKineticEvolution({ agentId, location, className = '' }: Age
           Consciousness Evolution
         </CardTitle>
         <CardDescription>
-          Real-time kinetic evolution for {agentId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          Real-time kinetic evolution for{' '}
+          {agentId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -186,7 +204,7 @@ export function AgentKineticEvolution({ agentId, location, className = '' }: Age
               <div className="text-lg font-bold">×{kineticData.powerMultiplier.toFixed(2)}</div>
             </div>
           </div>
-          
+
           {kineticData.alignmentBonus > 0 && (
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-blue-500" />
@@ -205,18 +223,14 @@ export function AgentKineticEvolution({ agentId, location, className = '' }: Age
           <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
             <span className="text-sm font-medium">Elemental Resonance</span>
-            <Badge variant="outline">
-              {(kineticData.elementalResonance * 100).toFixed(0)}%
-            </Badge>
+            <Badge variant="outline">{(kineticData.elementalResonance * 100).toFixed(0)}%</Badge>
           </div>
-          
+
           <div className="grid grid-cols-4 gap-2 text-xs">
             {Object.entries(kineticData.velocitySignature).map(([element, value]) => (
               <div key={element} className="text-center">
                 <div className="font-medium">{element}</div>
-                <div className="text-muted-foreground">
-                  {(value * 100).toFixed(0)}%
-                </div>
+                <div className="text-muted-foreground">{(value * 100).toFixed(0)}%</div>
               </div>
             ))}
           </div>
@@ -241,12 +255,10 @@ export function AgentKineticEvolution({ agentId, location, className = '' }: Age
           <div className="space-y-2">
             <div className="text-sm font-medium">Special Abilities Unlocked</div>
             <div className="space-y-1">
-              {kineticData.specialAbilitiesUnlocked.map((ability) => (
+              {kineticData.specialAbilitiesUnlocked.map(ability => (
                 <div key={ability} className="flex items-center gap-2 text-sm">
                   <Sparkles className="h-3 w-3 text-purple-500" />
-                  <span className="capitalize">
-                    {ability.replace(/-/g, ' ')}
-                  </span>
+                  <span className="capitalize">{ability.replace(/-/g, ' ')}</span>
                 </div>
               ))}
             </div>

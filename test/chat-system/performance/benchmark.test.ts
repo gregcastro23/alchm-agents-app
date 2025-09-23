@@ -9,34 +9,38 @@ import {
   mockUnifiedAgents,
   mockMonicaAgent,
   mockMessages,
-  performanceTestData
+  performanceTestData,
 } from '../fixtures/mock-data'
 
 // Mock external dependencies for consistent performance testing
 vi.mock('ai', () => ({
-  generateText: vi.fn(() => Promise.resolve({
-    text: 'Consistent test response for performance measurement.'
-  }))
+  generateText: vi.fn(() =>
+    Promise.resolve({
+      text: 'Consistent test response for performance measurement.',
+    })
+  ),
 }))
 
 vi.mock('@ai-sdk/openai', () => ({
-  openai: vi.fn((model: string) => `mocked-${model}`)
+  openai: vi.fn((model: string) => `mocked-${model}`),
 }))
 
 vi.mock('@/lib/agent-cache-system', () => ({
   agentCache: {
     getCachedResponse: vi.fn(() => Promise.resolve(null)),
-    cacheResponse: vi.fn(() => Promise.resolve())
+    cacheResponse: vi.fn(() => Promise.resolve()),
   },
-  buildCacheContext: vi.fn(() => ({}))
+  buildCacheContext: vi.fn(() => ({})),
 }))
 
 vi.mock('@/lib/alchemizer', () => ({
-  generateAlchmForCurrentMoment: vi.fn(() => Promise.resolve({
-    A: 3.5,
-    dominantElement: 'Air',
-    timestamp: new Date()
-  }))
+  generateAlchmForCurrentMoment: vi.fn(() =>
+    Promise.resolve({
+      A: 3.5,
+      dominantElement: 'Air',
+      timestamp: new Date(),
+    })
+  ),
 }))
 
 interface PerformanceMetrics {
@@ -57,7 +61,7 @@ interface BenchmarkResult {
 }
 
 describe('Chat System Performance Benchmarks', () => {
-  let benchmarkResults: BenchmarkResult[] = []
+  const benchmarkResults: BenchmarkResult[] = []
 
   beforeAll(() => {
     // Setup performance monitoring
@@ -76,8 +80,9 @@ describe('Chat System Performance Benchmarks', () => {
         totalTests: benchmarkResults.length,
         passed: benchmarkResults.filter(r => r.passed).length,
         failed: benchmarkResults.filter(r => !r.passed).length,
-        averageResponseTime: benchmarkResults.reduce((sum, r) => sum + r.actual, 0) / benchmarkResults.length
-      }
+        averageResponseTime:
+          benchmarkResults.reduce((sum, r) => sum + r.actual, 0) / benchmarkResults.length,
+      },
     }
 
     // In a real environment, this would write to a file or send to monitoring service
@@ -96,9 +101,9 @@ describe('Chat System Performance Benchmarks', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -117,11 +122,11 @@ describe('Chat System Performance Benchmarks', () => {
           agentCount: performanceTestData.smallGroup.length,
           messageComplexity: 'simple',
           cacheHitRate: 0,
-          throughput: 1000 / responseTime // requests per second
+          throughput: 1000 / responseTime, // requests per second
         },
         passed,
         target,
-        actual: responseTime
+        actual: responseTime,
       })
 
       expect(response.status).toBe(200)
@@ -139,9 +144,9 @@ describe('Chat System Performance Benchmarks', () => {
           context: {
             sessionHistory: mockMessages,
             enableMemoryPersistence: true,
-            realtimeUpdates: true
-          }
-        })
+            realtimeUpdates: true,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -160,11 +165,11 @@ describe('Chat System Performance Benchmarks', () => {
           agentCount: performanceTestData.mediumGroup.length,
           messageComplexity: 'complex',
           cacheHitRate: 0,
-          throughput: 1000 / responseTime
+          throughput: 1000 / responseTime,
         },
         passed,
         target,
-        actual: responseTime
+        actual: responseTime,
       })
 
       expect(response.status).toBe(200)
@@ -183,9 +188,9 @@ describe('Chat System Performance Benchmarks', () => {
             sessionHistory: mockMessages,
             enableMemoryPersistence: true,
             realtimeUpdates: true,
-            variant: 'laboratory'
-          }
-        })
+            variant: 'laboratory',
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -204,11 +209,11 @@ describe('Chat System Performance Benchmarks', () => {
           agentCount: 6,
           messageComplexity: 'complex',
           cacheHitRate: 0,
-          throughput: 1000 / responseTime
+          throughput: 1000 / responseTime,
         },
         passed,
         target,
-        actual: responseTime
+        actual: responseTime,
       })
 
       expect(response.status).toBe(200)
@@ -230,9 +235,9 @@ describe('Chat System Performance Benchmarks', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       await POST(request1)
@@ -242,7 +247,7 @@ describe('Chat System Performance Benchmarks', () => {
       mockAgentCache.getCachedResponse.mockResolvedValueOnce({
         agentResponse: 'Cached response for performance test',
         timestamp: new Date(),
-        metadata: {}
+        metadata: {},
       })
 
       const startTime2 = performance.now()
@@ -254,9 +259,9 @@ describe('Chat System Performance Benchmarks', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       await POST(request2)
@@ -274,11 +279,11 @@ describe('Chat System Performance Benchmarks', () => {
           agentCount: 1,
           messageComplexity: 'simple',
           cacheHitRate: 100,
-          throughput: 1000 / hitTime
+          throughput: 1000 / hitTime,
         },
         passed,
         target,
-        actual: speedImprovement
+        actual: speedImprovement,
       })
 
       expect(speedImprovement).toBeGreaterThanOrEqual(target)
@@ -290,20 +295,23 @@ describe('Chat System Performance Benchmarks', () => {
       const initialMemory = process.memoryUsage().heapUsed
 
       // Simulate multiple concurrent requests
-      const requests = Array(5).fill(null).map(() =>
-        new NextRequest('http://localhost/api/unified-multi-agent-chat', {
-          method: 'POST',
-          body: JSON.stringify({
-            message: performanceTestData.complexMessage,
-            agents: performanceTestData.mediumGroup,
-            context: {
-              sessionHistory: mockMessages,
-              enableMemoryPersistence: true,
-              realtimeUpdates: false
-            }
-          })
-        })
-      )
+      const requests = Array(5)
+        .fill(null)
+        .map(
+          () =>
+            new NextRequest('http://localhost/api/unified-multi-agent-chat', {
+              method: 'POST',
+              body: JSON.stringify({
+                message: performanceTestData.complexMessage,
+                agents: performanceTestData.mediumGroup,
+                context: {
+                  sessionHistory: mockMessages,
+                  enableMemoryPersistence: true,
+                  realtimeUpdates: false,
+                },
+              }),
+            })
+        )
 
       await Promise.all(requests.map(request => POST(request)))
 
@@ -320,11 +328,11 @@ describe('Chat System Performance Benchmarks', () => {
           agentCount: performanceTestData.mediumGroup.length * 5,
           messageComplexity: 'complex',
           cacheHitRate: 0,
-          throughput: 0
+          throughput: 0,
         },
         passed,
         target,
-        actual: memoryIncrease
+        actual: memoryIncrease,
       })
 
       expect(memoryIncrease).toBeLessThan(target)
@@ -336,20 +344,23 @@ describe('Chat System Performance Benchmarks', () => {
       const concurrentRequests = 10
       const startTime = performance.now()
 
-      const requests = Array(concurrentRequests).fill(null).map((_, i) =>
-        new NextRequest('http://localhost/api/unified-multi-agent-chat', {
-          method: 'POST',
-          body: JSON.stringify({
-            message: `Test message ${i}`,
-            agents: [mockUnifiedAgents[i % mockUnifiedAgents.length]],
-            context: {
-              sessionHistory: [],
-              enableMemoryPersistence: false,
-              realtimeUpdates: false
-            }
-          })
-        })
-      )
+      const requests = Array(concurrentRequests)
+        .fill(null)
+        .map(
+          (_, i) =>
+            new NextRequest('http://localhost/api/unified-multi-agent-chat', {
+              method: 'POST',
+              body: JSON.stringify({
+                message: `Test message ${i}`,
+                agents: [mockUnifiedAgents[i % mockUnifiedAgents.length]],
+                context: {
+                  sessionHistory: [],
+                  enableMemoryPersistence: false,
+                  realtimeUpdates: false,
+                },
+              }),
+            })
+        )
 
       const responses = await Promise.allSettled(requests.map(request => POST(request)))
       const endTime = performance.now()
@@ -369,11 +380,11 @@ describe('Chat System Performance Benchmarks', () => {
           agentCount: concurrentRequests,
           messageComplexity: 'simple',
           cacheHitRate: 0,
-          throughput
+          throughput,
         },
         passed,
         target,
-        actual: throughput
+        actual: throughput,
       })
 
       expect(throughput).toBeGreaterThanOrEqual(target)
@@ -391,9 +402,9 @@ describe('Chat System Performance Benchmarks', () => {
             consciousnessVelocity: 0.8,
             interactionMomentum: 0.7,
             evolutionTrajectory: 'ascending' as const,
-            aspectSensitivity: 0.6
-          }
-        }
+            aspectSensitivity: 0.6,
+          },
+        },
       }
 
       const startTime = performance.now()
@@ -407,9 +418,9 @@ describe('Chat System Performance Benchmarks', () => {
             sessionHistory: [],
             enableMemoryPersistence: false,
             realtimeUpdates: true,
-            variant: 'planetary'
-          }
-        })
+            variant: 'planetary',
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -423,7 +434,7 @@ describe('Chat System Performance Benchmarks', () => {
       const mockGenerateText = vi.mocked(require('ai').generateText)
       expect(mockGenerateText).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gpt-3.5-turbo'
+          model: 'mocked-gpt-3.5-turbo',
         })
       )
 
@@ -435,11 +446,11 @@ describe('Chat System Performance Benchmarks', () => {
           agentCount: 1,
           messageComplexity: 'simple',
           cacheHitRate: 0,
-          throughput: 1000 / responseTime
+          throughput: 1000 / responseTime,
         },
         passed,
         target,
-        actual: responseTime
+        actual: responseTime,
       })
 
       expect(response.status).toBe(200)
@@ -459,9 +470,9 @@ describe('Chat System Performance Benchmarks', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       await POST(request1)
@@ -477,9 +488,9 @@ describe('Chat System Performance Benchmarks', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       await POST(request2)
@@ -497,11 +508,11 @@ describe('Chat System Performance Benchmarks', () => {
           agentCount: 3,
           messageComplexity: 'simple',
           cacheHitRate: 0,
-          throughput: 1000 / timeWithMonica
+          throughput: 1000 / timeWithMonica,
         },
         passed,
         target,
-        actual: overhead
+        actual: overhead,
       })
 
       expect(overhead).toBeLessThan(target)
@@ -526,9 +537,9 @@ describe('Chat System Performance Benchmarks', () => {
             context: {
               sessionHistory: [],
               enableMemoryPersistence: false,
-              realtimeUpdates: false
-            }
-          })
+              realtimeUpdates: false,
+            },
+          }),
         })
 
         try {
@@ -556,11 +567,11 @@ describe('Chat System Performance Benchmarks', () => {
           agentCount: 1,
           messageComplexity: 'simple',
           cacheHitRate: 0,
-          throughput: results.length / (testDuration / 1000)
+          throughput: results.length / (testDuration / 1000),
         },
         passed,
         target,
-        actual: responseTimeStability
+        actual: responseTimeStability,
       })
 
       expect(responseTimeStability).toBeLessThan(target)

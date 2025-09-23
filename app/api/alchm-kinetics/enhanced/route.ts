@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server'
 import { sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
 import { computePower } from '@/lib/alchemical-kinetics'
-import { calculateAgentOptimization, predictPowerTrends, buildResonanceMap } from '@/lib/server/kinetics-enhancements'
+import {
+  calculateAgentOptimization,
+  predictPowerTrends,
+  buildResonanceMap,
+} from '@/lib/server/kinetics-enhancements'
 
 type RequestBody = {
   location: { lat: number; lon: number }
@@ -33,7 +37,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'No samples generated' }, { status: 500 })
     }
 
-    const powerInput = samples.map(s => ({ t: s.t, Energy: s.Energy, planetaryHour: s.planetaryHour }))
+    const powerInput = samples.map(s => ({
+      t: s.t,
+      Energy: s.Energy,
+      planetaryHour: s.planetaryHour,
+    }))
     const power = computePower(powerInput, { window: 3 })
     const base = {
       power,
@@ -60,8 +68,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, data, computeTimeMs, cacheHit: false })
   } catch (error) {
     console.error('enhanced kinetics error:', error)
-    return NextResponse.json({ success: false, error: 'Failed to compute enhanced kinetics' }, { status: 500 })
+    return NextResponse.json(
+      { success: false, error: 'Failed to compute enhanced kinetics' },
+      { status: 500 }
+    )
   }
 }
-
-

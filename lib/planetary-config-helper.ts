@@ -44,7 +44,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       element: getSignElement('Leo'),
       color: PLANET_COLORS.Sun,
       symbol: PLANET_SYMBOLS.Sun,
-      liveSkySync: true
+      liveSkySync: true,
     },
     {
       planet: 'Moon',
@@ -56,7 +56,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       symbol: PLANET_SYMBOLS.Moon,
       moonPhase: currentMoonPhase,
       moonDegree: currentMoonDegree,
-      liveSkySync: true
+      liveSkySync: true,
     },
     {
       planet: 'Mercury',
@@ -66,7 +66,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       element: getSignElement('Gemini'),
       color: PLANET_COLORS.Mercury,
       symbol: PLANET_SYMBOLS.Mercury,
-      liveSkySync: true
+      liveSkySync: true,
     },
     {
       planet: 'Venus',
@@ -76,7 +76,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       element: getSignElement('Taurus'),
       color: PLANET_COLORS.Venus,
       symbol: PLANET_SYMBOLS.Venus,
-      liveSkySync: true
+      liveSkySync: true,
     },
     {
       planet: 'Mars',
@@ -86,7 +86,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       element: getSignElement('Aries'),
       color: PLANET_COLORS.Mars,
       symbol: PLANET_SYMBOLS.Mars,
-      liveSkySync: true
+      liveSkySync: true,
     },
     {
       planet: 'Jupiter',
@@ -96,7 +96,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       element: getSignElement('Sagittarius'),
       color: PLANET_COLORS.Jupiter,
       symbol: PLANET_SYMBOLS.Jupiter,
-      liveSkySync: true
+      liveSkySync: true,
     },
     {
       planet: 'Saturn',
@@ -106,7 +106,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       element: getSignElement('Capricorn'),
       color: PLANET_COLORS.Saturn,
       symbol: PLANET_SYMBOLS.Saturn,
-      liveSkySync: true
+      liveSkySync: true,
     },
     {
       planet: 'Uranus',
@@ -116,7 +116,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       element: getSignElement('Aquarius'),
       color: PLANET_COLORS.Uranus,
       symbol: PLANET_SYMBOLS.Uranus,
-      liveSkySync: true
+      liveSkySync: true,
     },
     {
       planet: 'Neptune',
@@ -126,7 +126,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       element: getSignElement('Pisces'),
       color: PLANET_COLORS.Neptune,
       symbol: PLANET_SYMBOLS.Neptune,
-      liveSkySync: true
+      liveSkySync: true,
     },
     {
       planet: 'Pluto',
@@ -136,8 +136,8 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       element: getSignElement('Capricorn'),
       color: PLANET_COLORS.Pluto,
       symbol: PLANET_SYMBOLS.Pluto,
-      liveSkySync: true
-    }
+      liveSkySync: true,
+    },
   ]
 }
 
@@ -159,7 +159,7 @@ export function updatePlanetaryConfigWithLiveSky(
     sign: planetData.sign || config.sign,
     degree: planetData.degree?.toString() || config.degree,
     dignity: getPlanetaryDignity(config.planet, planetData.sign || config.sign),
-    element: getSignElement(planetData.sign || config.sign)
+    element: getSignElement(planetData.sign || config.sign),
   }
 }
 
@@ -178,7 +178,7 @@ export function convertLegacyAgentConfig(legacyConfig: any): PlanetaryConfig {
     symbol: legacyConfig.symbol || PLANET_SYMBOLS[legacyConfig.planet] || '●',
     moonPhase: legacyConfig.moonPhase,
     moonDegree: legacyConfig.moonDegree,
-    liveSkySync: false
+    liveSkySync: false,
   }
 }
 
@@ -195,35 +195,35 @@ export function getPlanetaryCouncilPresets(): Array<{
       name: 'Inner Planets Council',
       description: 'Quick, responsive guidance from personal planets',
       planets: ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars'],
-      includeMonica: false
+      includeMonica: false,
     },
     {
       id: 'classical-seven',
       name: 'Classical Seven',
       description: 'Traditional planetary wisdom with Monica as guide',
       planets: ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'],
-      includeMonica: true
+      includeMonica: true,
     },
     {
       id: 'outer-mysteries',
       name: 'Outer Mysteries',
       description: 'Transform through generational and transcendent energies',
       planets: ['Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'],
-      includeMonica: true
+      includeMonica: true,
     },
     {
       id: 'elemental-balance',
       name: 'Elemental Balance',
       description: 'Fire, Earth, Air, Water - complete elemental perspective',
       planets: ['Mars', 'Saturn', 'Mercury', 'Moon'],
-      includeMonica: false
+      includeMonica: false,
     },
     {
       id: 'consciousness-accelerator',
       name: 'Consciousness Accelerator',
       description: 'Maximum awareness expansion with Monica coordination',
       planets: ['Sun', 'Jupiter', 'Uranus', 'Neptune'],
-      includeMonica: true
-    }
+      includeMonica: true,
+    },
   ]
 }

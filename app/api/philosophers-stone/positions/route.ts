@@ -3,6 +3,8 @@ import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
 import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
 import { calculateMC } from '@/lib/monica/monica-constant-validator'
 import { logQuantitiesToGalileo, type AlchemicalMetrics } from '@/lib/galileo-logger'
+import { ChartSynthesizer } from '@/lib/consciousness/chart-synthesizer'
+import { synthesizeCharts } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -13,14 +15,27 @@ export async function GET() {
     const positions = getCurrentPlanetaryPositions(Date.now())
     const alchm = await generateAlchmForCurrentMoment()
 
-    const planetaryPositions = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'North Node', 'Chiron', 'Ascendant', 'MC'].map(
-      planet => ({
-        planet,
-        sign: positions[planet]?.sign || 'Aries',
-        degree: parseFloat(String(positions[planet]?.degree || '0')),
-        retrograde: Boolean(positions[planet]?.retrograde || false),
-      })
-    )
+    const planetaryPositions = [
+      'Sun',
+      'Moon',
+      'Mercury',
+      'Venus',
+      'Mars',
+      'Jupiter',
+      'Saturn',
+      'Uranus',
+      'Neptune',
+      'Pluto',
+      'North Node',
+      'Chiron',
+      'Ascendant',
+      'MC',
+    ].map(planet => ({
+      planet,
+      sign: positions[planet]?.sign || 'Aries',
+      degree: parseFloat(String(positions[planet]?.degree || '0')),
+      retrograde: Boolean(positions[planet]?.retrograde || false),
+    }))
 
     const spirit = alchm?.['Alchemy Effects']?.['Total Spirit'] || 0
     const essence = alchm?.['Alchemy Effects']?.['Total Essence'] || 0
@@ -35,6 +50,11 @@ export async function GET() {
     const monicaConstant = calculateMC(spirit, essence, matter, substance, fire, water, air, earth)
 
     // Build response payload
+    const synthesis = synthesizeCharts({
+      birthChart: null,
+      momentChart: alchm,
+    })
+
     const payload = {
       timestamp,
       planetaryPositions,
@@ -49,6 +69,7 @@ export async function GET() {
         Energy: alchm?.['Energy'] || 0,
       },
       monicaConstant,
+      synthesis,
     }
 
     // Log to Galileo for observability

@@ -82,7 +82,7 @@ function shortestAngularDistance(from: number, to: number): number {
   const safeFrom = safeNumber(from, 0)
   const safeTo = safeNumber(to, 0)
   const diff = normalizeDegree(safeTo - safeFrom)
-  return Number.isFinite(diff) && diff <= 180 ? diff : (Number.isFinite(diff) ? 360 - diff : 0)
+  return Number.isFinite(diff) && diff <= 180 ? diff : Number.isFinite(diff) ? 360 - diff : 0
 }
 
 export function computePlanetaryMovement(
@@ -122,11 +122,11 @@ export function computePlanetaryMovement(
       movedDegrees: roundedMovement,
       from: {
         sign: typeof prev.sign === 'string' ? prev.sign : 'Aries',
-        degree: safeNumber(prev.degree, 0)
+        degree: safeNumber(prev.degree, 0),
       },
       to: {
         sign: typeof now.sign === 'string' ? now.sign : 'Aries',
-        degree: safeNumber(now.degree, 0)
+        degree: safeNumber(now.degree, 0),
       },
     })
   }
@@ -149,7 +149,7 @@ export function computeTemporalDelta(
     return {
       daysSinceLast: 0,
       planetaryMovement: [],
-      consciousnessDelta: undefined
+      consciousnessDelta: undefined,
     }
   }
 

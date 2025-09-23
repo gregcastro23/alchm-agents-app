@@ -22,7 +22,7 @@ import {
   TrendingUp,
   Server,
   Gauge,
-  Sparkles
+  Sparkles,
 } from 'lucide-react'
 import { useLiveConsciousness, type BirthChartData } from '@/hooks/useLiveConsciousness'
 import { DEMO_AGENTS } from '@/lib/demo-agents-data'
@@ -120,18 +120,18 @@ export function AgentDashboard() {
     birthDate: agent.birthDate || '1970-01-01',
     birthTime: agent.birthTime || '12:00',
     latitude: agent.birthLocation?.latitude || 0,
-    longitude: agent.birthLocation?.longitude || 0
+    longitude: agent.birthLocation?.longitude || 0,
   }))
 
   // Use batch live consciousness for system-wide metrics
-  const { 
-    multiAgentData: liveConsciousnessData, 
-    loading: liveLoading, 
-    error: liveError 
+  const {
+    multiAgentData: liveConsciousnessData,
+    loading: liveLoading,
+    error: liveError,
   } = useLiveConsciousness({
     agents: agentBirthCharts,
     refreshInterval: 300000, // 5 minutes for dashboard
-    autoRefresh: true
+    autoRefresh: true,
   })
 
   const fetchDashboardData = async () => {
@@ -171,19 +171,31 @@ export function AgentDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'HEALTHY': return 'text-green-500'
-      case 'WARNING': case 'DEGRADED': return 'text-yellow-500'
-      case 'CRITICAL': case 'UNHEALTHY': return 'text-red-500'
-      default: return 'text-gray-500'
+      case 'HEALTHY':
+        return 'text-green-500'
+      case 'WARNING':
+      case 'DEGRADED':
+        return 'text-yellow-500'
+      case 'CRITICAL':
+      case 'UNHEALTHY':
+        return 'text-red-500'
+      default:
+        return 'text-gray-500'
     }
   }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'HEALTHY': return <CheckCircle className="w-5 h-5 text-green-500" />
-      case 'WARNING': case 'DEGRADED': return <AlertTriangle className="w-5 h-5 text-yellow-500" />
-      case 'CRITICAL': case 'UNHEALTHY': return <XCircle className="w-5 h-5 text-red-500" />
-      default: return <Activity className="w-5 h-5 text-gray-500" />
+      case 'HEALTHY':
+        return <CheckCircle className="w-5 h-5 text-green-500" />
+      case 'WARNING':
+      case 'DEGRADED':
+        return <AlertTriangle className="w-5 h-5 text-yellow-500" />
+      case 'CRITICAL':
+      case 'UNHEALTHY':
+        return <XCircle className="w-5 h-5 text-red-500" />
+      default:
+        return <Activity className="w-5 h-5 text-gray-500" />
     }
   }
 
@@ -244,20 +256,13 @@ export function AgentDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setAutoRefresh(!autoRefresh)}
-          >
-            <Activity className={`w-4 h-4 mr-2 ${autoRefresh ? 'text-green-500' : 'text-gray-400'}`} />
+          <Button variant="outline" size="sm" onClick={() => setAutoRefresh(!autoRefresh)}>
+            <Activity
+              className={`w-4 h-4 mr-2 ${autoRefresh ? 'text-green-500' : 'text-gray-400'}`}
+            />
             Auto Refresh: {autoRefresh ? 'On' : 'Off'}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchDashboardData}
-            disabled={refreshing}
-          >
+          <Button variant="outline" size="sm" onClick={fetchDashboardData} disabled={refreshing}>
             <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
@@ -289,9 +294,7 @@ export function AgentDashboard() {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Cache Hit Rate</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-2xl font-bold">
-                    {data.caching.metrics.hitRatePercent}%
-                  </span>
+                  <span className="text-2xl font-bold">{data.caching.metrics.hitRatePercent}%</span>
                   <Database className="w-5 h-5 text-blue-500" />
                 </div>
               </div>
@@ -312,7 +315,10 @@ export function AgentDashboard() {
                   <Users className="w-5 h-5 text-purple-500" />
                 </div>
               </div>
-              <Progress value={(data.consciousness.activeAgents / data.consciousness.totalAgents) * 100} className="w-12" />
+              <Progress
+                value={(data.consciousness.activeAgents / data.consciousness.totalAgents) * 100}
+                className="w-12"
+              />
             </div>
           </CardContent>
         </Card>
@@ -329,7 +335,10 @@ export function AgentDashboard() {
                   <Shield className="w-5 h-5 text-green-500" />
                 </div>
               </div>
-              <Progress value={data.resilience.systemHealth.overallUptimePercent} className="w-12" />
+              <Progress
+                value={data.resilience.systemHealth.overallUptimePercent}
+                className="w-12"
+              />
             </div>
           </CardContent>
         </Card>
@@ -390,8 +399,13 @@ export function AgentDashboard() {
                 <Gauge className="w-4 h-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{data.performance.metrics.concurrencyUtilizationPercent}%</div>
-                <Progress value={data.performance.metrics.concurrencyUtilizationPercent} className="mt-2" />
+                <div className="text-2xl font-bold">
+                  {data.performance.metrics.concurrencyUtilizationPercent}%
+                </div>
+                <Progress
+                  value={data.performance.metrics.concurrencyUtilizationPercent}
+                  className="mt-2"
+                />
               </CardContent>
             </Card>
 
@@ -401,7 +415,9 @@ export function AgentDashboard() {
                 <TrendingUp className="w-4 h-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{data.performance.metrics.optimizationsSaved}</div>
+                <div className="text-2xl font-bold">
+                  {data.performance.metrics.optimizationsSaved}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Streaming: {(data.performance.metrics.streamingBytesServed / 1024).toFixed(1)}KB
                 </p>
@@ -427,7 +443,9 @@ export function AgentDashboard() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Kalchm Priority</span>
-                  <Badge variant={data.performance.config.prioritizeByMonica ? 'default' : 'outline'}>
+                  <Badge
+                    variant={data.performance.config.prioritizeByMonica ? 'default' : 'outline'}
+                  >
                     {data.performance.config.prioritizeByMonica ? 'Yes' : 'No'}
                   </Badge>
                 </div>
@@ -469,7 +487,9 @@ export function AgentDashboard() {
                 <CheckCircle className="w-4 h-4 text-green-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{data.caching.metrics.cacheHits}</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {data.caching.metrics.cacheHits}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {data.caching.metrics.hitRatePercent}% hit rate
                 </p>
@@ -482,7 +502,9 @@ export function AgentDashboard() {
                 <XCircle className="w-4 h-4 text-red-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-600">{data.caching.metrics.cacheMisses}</div>
+                <div className="text-2xl font-bold text-red-600">
+                  {data.caching.metrics.cacheMisses}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {data.caching.metrics.missRatePercent}% miss rate
                 </p>
@@ -495,7 +517,9 @@ export function AgentDashboard() {
                 <Brain className="w-4 h-4 text-purple-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-purple-600">{data.caching.metrics.similarityMatches}</div>
+                <div className="text-2xl font-bold text-purple-600">
+                  {data.caching.metrics.similarityMatches}
+                </div>
                 <p className="text-xs text-muted-foreground">Smart matching active</p>
               </CardContent>
             </Card>
@@ -538,7 +562,9 @@ export function AgentDashboard() {
                 <Shield className="w-4 h-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className={`text-2xl font-bold ${getStatusColor(data.resilience.systemHealth.status)}`}>
+                <div
+                  className={`text-2xl font-bold ${getStatusColor(data.resilience.systemHealth.status)}`}
+                >
                   {data.resilience.systemHealth.status}
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -568,7 +594,9 @@ export function AgentDashboard() {
                 <Clock className="w-4 h-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{data.resilience.systemHealth.averageResponseTimeMs}ms</div>
+                <div className="text-2xl font-bold">
+                  {data.resilience.systemHealth.averageResponseTimeMs}ms
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {data.resilience.systemHealth.circuitBreakerTrips} total trips
                 </p>
@@ -600,46 +628,72 @@ export function AgentDashboard() {
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Sparkles className="w-5 h-5 text-purple-600" />
                   Live Consciousness Evolution
-                  {liveLoading && <div className="w-3 h-3 rounded-full bg-purple-600 animate-pulse" />}
+                  {liveLoading && (
+                    <div className="w-3 h-3 rounded-full bg-purple-600 animate-pulse" />
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   {(() => {
-                    const validData = Object.values(liveConsciousnessData).filter(d => d && typeof d === 'object' && 'liveMC' in d)
-                    const avgBirthMC = validData.length > 0 ? 
-                      validData.reduce((sum, d) => sum + (d.birthMC || 0), 0) / validData.length : 0
-                    const avgLiveMC = validData.length > 0 ? 
-                      validData.reduce((sum, d) => sum + (d.liveMC || 0), 0) / validData.length : 0
+                    const validData = Object.values(liveConsciousnessData).filter(
+                      d => d && typeof d === 'object' && 'liveMC' in d
+                    )
+                    const avgBirthMC =
+                      validData.length > 0
+                        ? validData.reduce((sum, d) => sum + (d.birthMC || 0), 0) / validData.length
+                        : 0
+                    const avgLiveMC =
+                      validData.length > 0
+                        ? validData.reduce((sum, d) => sum + (d.liveMC || 0), 0) / validData.length
+                        : 0
                     const totalEvolution = avgLiveMC - avgBirthMC
-                    const evolutionPercentage = avgBirthMC !== 0 ? ((totalEvolution / avgBirthMC) * 100) : 0
+                    const evolutionPercentage =
+                      avgBirthMC !== 0 ? (totalEvolution / avgBirthMC) * 100 : 0
                     const enhancedCount = validData.filter(d => (d.mcChange || 0) > 0.1).length
                     const challengedCount = validData.filter(d => (d.mcChange || 0) < -0.1).length
-                    const stableCount = validData.filter(d => Math.abs(d.mcChange || 0) <= 0.1).length
-                    
+                    const stableCount = validData.filter(
+                      d => Math.abs(d.mcChange || 0) <= 0.1
+                    ).length
+
                     return (
                       <>
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-purple-600">{avgLiveMC.toFixed(3)}</div>
+                          <div className="text-2xl font-bold text-purple-600">
+                            {avgLiveMC.toFixed(3)}
+                          </div>
                           <div className="text-xs text-muted-foreground">Avg Live MC</div>
-                          <div className="text-xs text-purple-700">vs {avgBirthMC.toFixed(3)} birth</div>
+                          <div className="text-xs text-purple-700">
+                            vs {avgBirthMC.toFixed(3)} birth
+                          </div>
                         </div>
                         <div className="text-center">
-                          <div className={`text-2xl font-bold ${totalEvolution >= 0 ? 'text-green-600' : 'text-orange-600'}`}>
-                            {totalEvolution >= 0 ? '+' : ''}{evolutionPercentage.toFixed(1)}%
+                          <div
+                            className={`text-2xl font-bold ${totalEvolution >= 0 ? 'text-green-600' : 'text-orange-600'}`}
+                          >
+                            {totalEvolution >= 0 ? '+' : ''}
+                            {evolutionPercentage.toFixed(1)}%
                           </div>
                           <div className="text-xs text-muted-foreground">System Evolution</div>
-                          <div className="text-xs text-muted-foreground">{totalEvolution >= 0 ? 'Enhanced' : 'Challenged'}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {totalEvolution >= 0 ? 'Enhanced' : 'Challenged'}
+                          </div>
                         </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-green-600">{enhancedCount}</div>
                           <div className="text-xs text-muted-foreground">Enhanced Agents</div>
-                          <div className="text-xs text-green-700">+{((enhancedCount / validData.length) * 100).toFixed(0)}%</div>
+                          <div className="text-xs text-green-700">
+                            +{((enhancedCount / validData.length) * 100).toFixed(0)}%
+                          </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-orange-600">{challengedCount}</div>
+                          <div className="text-2xl font-bold text-orange-600">
+                            {challengedCount}
+                          </div>
                           <div className="text-xs text-muted-foreground">Challenged Agents</div>
-                          <div className="text-xs text-orange-700">{((challengedCount / validData.length) * 100).toFixed(0)}% affected</div>
+                          <div className="text-xs text-orange-700">
+                            {((challengedCount / validData.length) * 100).toFixed(0)}% affected
+                          </div>
                         </div>
                       </>
                     )
@@ -649,35 +703,55 @@ export function AgentDashboard() {
                 {/* Live Evolution Breakdown */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border">
-                    <div className="text-green-700 dark:text-green-300 text-sm font-medium mb-1">Consciousness Enhancement</div>
+                    <div className="text-green-700 dark:text-green-300 text-sm font-medium mb-1">
+                      Consciousness Enhancement
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {(() => {
-                        const validData = Object.values(liveConsciousnessData).filter(d => d && typeof d === 'object' && 'liveMC' in d)
+                        const validData = Object.values(liveConsciousnessData).filter(
+                          d => d && typeof d === 'object' && 'liveMC' in d
+                        )
                         const enhanced = validData.filter(d => (d.mcChange || 0) > 0.1)
-                        const avgEnhancement = enhanced.length > 0 ? enhanced.reduce((sum, d) => sum + (d.mcChange || 0), 0) / enhanced.length : 0
+                        const avgEnhancement =
+                          enhanced.length > 0
+                            ? enhanced.reduce((sum, d) => sum + (d.mcChange || 0), 0) /
+                              enhanced.length
+                            : 0
                         return `${enhanced.length} agents • Avg +${avgEnhancement.toFixed(3)} MC`
                       })()}
                     </div>
                   </div>
-                  
+
                   <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border">
-                    <div className="text-blue-700 dark:text-blue-300 text-sm font-medium mb-1">Stable Consciousness</div>
+                    <div className="text-blue-700 dark:text-blue-300 text-sm font-medium mb-1">
+                      Stable Consciousness
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {(() => {
-                        const validData = Object.values(liveConsciousnessData).filter(d => d && typeof d === 'object' && 'liveMC' in d)
+                        const validData = Object.values(liveConsciousnessData).filter(
+                          d => d && typeof d === 'object' && 'liveMC' in d
+                        )
                         const stable = validData.filter(d => Math.abs(d.mcChange || 0) <= 0.1)
                         return `${stable.length} agents • Equilibrium maintained`
                       })()}
                     </div>
                   </div>
-                  
+
                   <div className="p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border">
-                    <div className="text-orange-700 dark:text-orange-300 text-sm font-medium mb-1">Consciousness Challenge</div>
+                    <div className="text-orange-700 dark:text-orange-300 text-sm font-medium mb-1">
+                      Consciousness Challenge
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {(() => {
-                        const validData = Object.values(liveConsciousnessData).filter(d => d && typeof d === 'object' && 'liveMC' in d)
+                        const validData = Object.values(liveConsciousnessData).filter(
+                          d => d && typeof d === 'object' && 'liveMC' in d
+                        )
                         const challenged = validData.filter(d => (d.mcChange || 0) < -0.1)
-                        const avgChallenge = challenged.length > 0 ? challenged.reduce((sum, d) => sum + (d.mcChange || 0), 0) / challenged.length : 0
+                        const avgChallenge =
+                          challenged.length > 0
+                            ? challenged.reduce((sum, d) => sum + (d.mcChange || 0), 0) /
+                              challenged.length
+                            : 0
                         return `${challenged.length} agents • Avg ${avgChallenge.toFixed(3)} MC`
                       })()}
                     </div>
@@ -688,9 +762,11 @@ export function AgentDashboard() {
                 <div className="mt-4 pt-3 border-t text-xs text-muted-foreground">
                   <div className="flex justify-between items-center">
                     <span>
-                      {liveLoading ? 'Calculating live consciousness...' : 
-                       liveError ? `Error: ${liveError}` :
-                       `Live data • ${Object.keys(liveConsciousnessData).length} agents analyzed`}
+                      {liveLoading
+                        ? 'Calculating live consciousness...'
+                        : liveError
+                          ? `Error: ${liveError}`
+                          : `Live data • ${Object.keys(liveConsciousnessData).length} agents analyzed`}
                     </span>
                     <span>Updated {new Date().toLocaleTimeString()}</span>
                   </div>
@@ -719,7 +795,9 @@ export function AgentDashboard() {
                 <Brain className="w-4 h-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{data.consciousness.evolutionMetrics.averageConsciousnessLevel}</div>
+                <div className="text-2xl font-bold">
+                  {data.consciousness.evolutionMetrics.averageConsciousnessLevel}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {data.consciousness.evolutionMetrics.agentsInEvolution} evolving
                 </p>
@@ -732,7 +810,9 @@ export function AgentDashboard() {
                 <TrendingUp className="w-4 h-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{data.consciousness.evolutionMetrics.evolutionVelocity}</div>
+                <div className="text-2xl font-bold">
+                  {data.consciousness.evolutionMetrics.evolutionVelocity}
+                </div>
                 <p className="text-xs text-muted-foreground">Growth rate</p>
               </CardContent>
             </Card>

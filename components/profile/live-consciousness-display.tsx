@@ -32,15 +32,15 @@ interface LiveConsciousnessDisplayProps {
   birthMC?: number
 }
 
-export function LiveConsciousnessDisplay({ 
-  birthInfo, 
-  userName = 'You', 
+export function LiveConsciousnessDisplay({
+  birthInfo,
+  userName = 'You',
   birthAlchm,
-  birthMC = 0
+  birthMC = 0,
 }: LiveConsciousnessDisplayProps) {
   const [sparklineData, setSparklineData] = useState<number[]>([])
   const [sparklineLabels, setSparklineLabels] = useState<string[]>([])
-  
+
   // Prepare birth chart data for live consciousness calculation
   const birthChartData: BirthChartData = {
     name: userName,
@@ -48,41 +48,47 @@ export function LiveConsciousnessDisplay({
     birthDate: `${birthInfo.year}-${String(birthInfo.month).padStart(2, '0')}-${String(birthInfo.day).padStart(2, '0')}`,
     birthTime: `${String(birthInfo.hour).padStart(2, '0')}:${String(birthInfo.minute).padStart(2, '0')}`,
     latitude: birthInfo.latitude || 0,
-    longitude: birthInfo.longitude || 0
+    longitude: birthInfo.longitude || 0,
   }
-  
+
   // Use live consciousness hook
-  const { data: liveConsciousness, loading, error } = useLiveConsciousness(
-    birthChartData,
-    {
-      refreshInterval: 60000, // 1 minute for user profile
-      autoRefresh: true
-    }
-  )
-  
+  const {
+    data: liveConsciousness,
+    loading,
+    error,
+  } = useLiveConsciousness(birthChartData, {
+    refreshInterval: 60000, // 1 minute for user profile
+    autoRefresh: true,
+  })
+
   // Update sparkline data when live consciousness changes
   useEffect(() => {
     if (liveConsciousness && !loading) {
       setSparklineData(prev => [...prev.slice(-19), liveConsciousness.liveMC])
-      setSparklineLabels(prev => [...prev.slice(-19), new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })])
+      setSparklineLabels(prev => [
+        ...prev.slice(-19),
+        new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      ])
     }
   }, [liveConsciousness, loading])
-  
+
   // Format change display
   const formatChange = (change: number, percent: number) => {
-    if (Math.abs(change) < 0.01) return { icon: <Minus className="w-4 h-4" />, text: 'Stable', color: 'text-slate-500' }
-    if (change > 0) return { 
-      icon: <TrendingUp className="w-4 h-4" />, 
-      text: `+${change.toFixed(3)} (${percent.toFixed(1)}%)`,
-      color: 'text-green-500'
-    }
-    return { 
-      icon: <TrendingDown className="w-4 h-4" />, 
+    if (Math.abs(change) < 0.01)
+      return { icon: <Minus className="w-4 h-4" />, text: 'Stable', color: 'text-slate-500' }
+    if (change > 0)
+      return {
+        icon: <TrendingUp className="w-4 h-4" />,
+        text: `+${change.toFixed(3)} (${percent.toFixed(1)}%)`,
+        color: 'text-green-500',
+      }
+    return {
+      icon: <TrendingDown className="w-4 h-4" />,
       text: `${change.toFixed(3)} (${percent.toFixed(1)}%)`,
-      color: 'text-red-500'
+      color: 'text-red-500',
     }
   }
-  
+
   if (error) {
     return (
       <Card>
@@ -100,7 +106,7 @@ export function LiveConsciousnessDisplay({
       </Card>
     )
   }
-  
+
   return (
     <div className="space-y-6">
       {/* Live Consciousness Overview */}
@@ -118,67 +124,87 @@ export function LiveConsciousnessDisplay({
               {/* Monica Constant Display */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600">{liveConsciousness.liveMC.toFixed(3)}</div>
+                  <div className="text-3xl font-bold text-purple-600">
+                    {liveConsciousness.liveMC.toFixed(3)}
+                  </div>
                   <div className="text-sm text-muted-foreground">Live Monica Constant</div>
                   <Badge className="mt-2" variant="secondary">
                     {liveConsciousness.liveConsciousnessLevel}
                   </Badge>
                 </div>
-                
+
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-indigo-600">{liveConsciousness.birthMC.toFixed(3)}</div>
+                  <div className="text-3xl font-bold text-indigo-600">
+                    {liveConsciousness.birthMC.toFixed(3)}
+                  </div>
                   <div className="text-sm text-muted-foreground">Birth Monica Constant</div>
                   <Badge className="mt-2" variant="outline">
                     {liveConsciousness.consciousnessLevel}
                   </Badge>
                 </div>
-                
+
                 <div className="text-center">
-                  <div className={`text-2xl font-bold ${formatChange(liveConsciousness.mcChange, liveConsciousness.mcPercentChange).color}`}>
+                  <div
+                    className={`text-2xl font-bold ${formatChange(liveConsciousness.mcChange, liveConsciousness.mcPercentChange).color}`}
+                  >
                     <div className="flex items-center justify-center gap-2">
-                      {formatChange(liveConsciousness.mcChange, liveConsciousness.mcPercentChange).icon}
-                      {formatChange(liveConsciousness.mcChange, liveConsciousness.mcPercentChange).text}
+                      {
+                        formatChange(liveConsciousness.mcChange, liveConsciousness.mcPercentChange)
+                          .icon
+                      }
+                      {
+                        formatChange(liveConsciousness.mcChange, liveConsciousness.mcPercentChange)
+                          .text
+                      }
                     </div>
                   </div>
                   <div className="text-sm text-muted-foreground">Current Change</div>
                 </div>
               </div>
-              
+
               {/* Live Alchemical Values */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-3 bg-red-50 dark:bg-red-950/30 rounded-lg">
                   <div className="text-red-600 text-sm font-medium">Spirit</div>
-                  <div className="text-xl font-bold">{liveConsciousness.liveKalchm.spirit.toFixed(2)}</div>
+                  <div className="text-xl font-bold">
+                    {liveConsciousness.liveKalchm.spirit.toFixed(2)}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     from {liveConsciousness.birthKalchm.spirit.toFixed(2)}
                   </div>
                 </div>
-                
+
                 <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
                   <div className="text-blue-600 text-sm font-medium">Essence</div>
-                  <div className="text-xl font-bold">{liveConsciousness.liveKalchm.essence.toFixed(2)}</div>
+                  <div className="text-xl font-bold">
+                    {liveConsciousness.liveKalchm.essence.toFixed(2)}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     from {liveConsciousness.birthKalchm.essence.toFixed(2)}
                   </div>
                 </div>
-                
+
                 <div className="text-center p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
                   <div className="text-green-600 text-sm font-medium">Matter</div>
-                  <div className="text-xl font-bold">{liveConsciousness.liveKalchm.matter.toFixed(2)}</div>
+                  <div className="text-xl font-bold">
+                    {liveConsciousness.liveKalchm.matter.toFixed(2)}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     from {liveConsciousness.birthKalchm.matter.toFixed(2)}
                   </div>
                 </div>
-                
+
                 <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg">
                   <div className="text-yellow-600 text-sm font-medium">Substance</div>
-                  <div className="text-xl font-bold">{liveConsciousness.liveKalchm.substance.toFixed(2)}</div>
+                  <div className="text-xl font-bold">
+                    {liveConsciousness.liveKalchm.substance.toFixed(2)}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     from {liveConsciousness.birthKalchm.substance.toFixed(2)}
                   </div>
                 </div>
               </div>
-              
+
               {/* Transit Interpretations */}
               <div className="space-y-3">
                 <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
@@ -190,7 +216,7 @@ export function LiveConsciousnessDisplay({
                     {liveConsciousness.interpretations.transitInfluence}
                   </p>
                 </div>
-                
+
                 <div className="p-3 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <Activity className="w-4 h-4 text-indigo-600" />
@@ -200,7 +226,7 @@ export function LiveConsciousnessDisplay({
                     {liveConsciousness.interpretations.mcChange}
                   </p>
                 </div>
-                
+
                 <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <Crown className="w-4 h-4 text-blue-600" />
@@ -211,7 +237,7 @@ export function LiveConsciousnessDisplay({
                   </p>
                 </div>
               </div>
-              
+
               {/* MC Evolution Sparkline */}
               {sparklineData.length > 1 && (
                 <div className="mt-4">
@@ -231,15 +257,17 @@ export function LiveConsciousnessDisplay({
                         const min = Math.min(...sparklineData)
                         const max = Math.max(...sparklineData)
                         const range = max - min || 1
-                        
+
                         const points = sparklineData
                           .map((v, i) => {
-                            const x = padding + (i / (sparklineData.length - 1)) * (width - 2 * padding)
-                            const y = height - (padding + ((v - min) / range) * (height - 2 * padding))
+                            const x =
+                              padding + (i / (sparklineData.length - 1)) * (width - 2 * padding)
+                            const y =
+                              height - (padding + ((v - min) / range) * (height - 2 * padding))
                             return `${x},${y}`
                           })
                           .join(' ')
-                        
+
                         return (
                           <>
                             <polygon
@@ -256,8 +284,18 @@ export function LiveConsciousnessDisplay({
                             <line
                               x1={padding}
                               x2={width - padding}
-                              y1={height - (padding + ((liveConsciousness.birthMC - min) / range) * (height - 2 * padding))}
-                              y2={height - (padding + ((liveConsciousness.birthMC - min) / range) * (height - 2 * padding))}
+                              y1={
+                                height -
+                                (padding +
+                                  ((liveConsciousness.birthMC - min) / range) *
+                                    (height - 2 * padding))
+                              }
+                              y2={
+                                height -
+                                (padding +
+                                  ((liveConsciousness.birthMC - min) / range) *
+                                    (height - 2 * padding))
+                              }
                               stroke="rgba(99, 102, 241, 0.5)"
                               strokeWidth="1"
                               strokeDasharray="5,5"
@@ -283,7 +321,7 @@ export function LiveConsciousnessDisplay({
           )}
         </CardContent>
       </Card>
-      
+
       {/* Enhanced Consciousness Vector Display */}
       {birthAlchm && liveConsciousness && (
         <ConsciousnessVectorDisplay

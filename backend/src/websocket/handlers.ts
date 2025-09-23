@@ -43,13 +43,13 @@ class WebSocketManager {
       id: clientId,
       ws,
       subscriptions: new Set(),
-      lastPing: Date.now()
+      lastPing: Date.now(),
     }
 
     this.clients.set(clientId, client)
     logger.info(`WebSocket client connected: ${clientId}`)
 
-    ws.on('message', (data) => {
+    ws.on('message', data => {
       try {
         const message: WebSocketMessage = JSON.parse(data.toString())
         this.handleMessage(clientId, message)
@@ -63,7 +63,7 @@ class WebSocketManager {
       this.handleDisconnection(clientId)
     })
 
-    ws.on('error', (error) => {
+    ws.on('error', error => {
       logger.error(`WebSocket error for client ${clientId}:`, error)
       this.handleDisconnection(clientId)
     })
@@ -73,14 +73,9 @@ class WebSocketManager {
       type: 'response',
       data: {
         clientId,
-        availableChannels: [
-          'planetary-hours',
-          'token-rates',
-          'thermodynamics',
-          'kinetics-power'
-        ],
-        message: 'Connected to Planetary Agents WebSocket server'
-      }
+        availableChannels: ['planetary-hours', 'token-rates', 'thermodynamics', 'kinetics-power'],
+        message: 'Connected to Planetary Agents WebSocket server',
+      },
     })
   }
 
@@ -94,19 +89,19 @@ class WebSocketManager {
       case 'subscribe':
         this.handleSubscription(clientId, message.channel!, message.data)
         break
-      
+
       case 'unsubscribe':
         this.handleUnsubscription(clientId, message.channel!)
         break
-      
+
       case 'ping':
         this.sendMessage(clientId, { type: 'pong' })
         break
-      
+
       case 'request':
         this.handleRequest(clientId, message)
         break
-      
+
       default:
         this.sendError(clientId, `Unknown message type: ${message.type}`)
     }
@@ -136,13 +131,13 @@ class WebSocketManager {
     this.channels.get(channel)!.add(clientId)
 
     logger.info(`Client ${clientId} subscribed to ${channel}`)
-    
+
     this.sendMessage(clientId, {
       type: 'response',
-      data: { 
+      data: {
         subscribed: channel,
-        message: `Subscribed to ${channel}` 
-      }
+        message: `Subscribed to ${channel}`,
+      },
     })
 
     // Send initial data
@@ -157,13 +152,13 @@ class WebSocketManager {
     this.channels.get(channel)?.delete(clientId)
 
     logger.info(`Client ${clientId} unsubscribed from ${channel}`)
-    
+
     this.sendMessage(clientId, {
       type: 'response',
-      data: { 
+      data: {
         unsubscribed: channel,
-        message: `Unsubscribed from ${channel}` 
-      }
+        message: `Unsubscribed from ${channel}`,
+      },
     })
   }
 
@@ -193,7 +188,7 @@ class WebSocketManager {
             responseData = await tokenCalculatorService.calculateTokens({
               tokens,
               location: client.location,
-              timestamp: data.timestamp ? new Date(data.timestamp) : undefined
+              timestamp: data.timestamp ? new Date(data.timestamp) : undefined,
             })
           } else {
             throw new Error('Location required for token rate requests')
@@ -207,13 +202,13 @@ class WebSocketManager {
       this.sendMessage(clientId, {
         type: 'response',
         requestId,
-        data: responseData
+        data: responseData,
       })
     } catch (error) {
       this.sendMessage(clientId, {
         type: 'error',
         requestId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
     }
   }
@@ -234,7 +229,7 @@ class WebSocketManager {
           const tokens = { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 }
           data = await tokenCalculatorService.calculateTokens({
             tokens,
-            location: client.location
+            location: client.location,
           })
           break
 
@@ -251,7 +246,7 @@ class WebSocketManager {
         this.sendMessage(clientId, {
           type: 'update',
           channel,
-          data
+          data,
         })
       }
     } catch (error) {
@@ -317,66 +312,87 @@ class WebSocketManager {
 
   private startChannelUpdates(): void {
     // Planetary hours update every hour
-    this.updateIntervals.set('planetary-hours', setInterval(async () => {
-      const clientIds = this.channels.get('planetary-hours')
-      if (!clientIds || clientIds.size === 0) return
+    this.updateIntervals.set(
+      'planetary-hours',
+      setInterval(
+        async () => {
+          const clientIds = this.channels.get('planetary-hours')
+          if (!clientIds || clientIds.size === 0) return
 
-      for (const clientId of clientIds) {
-        const client = this.clients.get(clientId)
-        if (client?.location) {
-          try {
-            const data = await planetaryHoursService.getCurrentPlanetaryHour(new Date(), client.location)
-            this.sendMessage(clientId, {
-              type: 'update',
-              channel: 'planetary-hours',
-              data
-            })
-          } catch (error) {
-            logger.error(`Error updating planetary hours for client ${clientId}:`, error)
+          for (const clientId of clientIds) {
+            const client = this.clients.get(clientId)
+            if (client?.location) {
+              try {
+                const data = await planetaryHoursService.getCurrentPlanetaryHour(
+                  new Date(),
+                  client.location
+                )
+                this.sendMessage(clientId, {
+                  type: 'update',
+                  channel: 'planetary-hours',
+                  data,
+                })
+              } catch (error) {
+                logger.error(`Error updating planetary hours for client ${clientId}:`, error)
+              }
+            }
           }
-        }
-      }
-    }, 60 * 60 * 1000)) // Every hour
+        },
+        60 * 60 * 1000
+      )
+    ) // Every hour
 
     // Token rates update every 5 minutes
-    this.updateIntervals.set('token-rates', setInterval(async () => {
-      const clientIds = this.channels.get('token-rates')
-      if (!clientIds || clientIds.size === 0) return
+    this.updateIntervals.set(
+      'token-rates',
+      setInterval(
+        async () => {
+          const clientIds = this.channels.get('token-rates')
+          if (!clientIds || clientIds.size === 0) return
 
-      for (const clientId of clientIds) {
-        const client = this.clients.get(clientId)
-        if (client?.location) {
-          try {
-            const tokens = { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 }
-            const data = await tokenCalculatorService.calculateTokens({
-              tokens,
-              location: client.location
-            })
-            this.sendMessage(clientId, {
-              type: 'update',
-              channel: 'token-rates',
-              data
-            })
-          } catch (error) {
-            logger.error(`Error updating token rates for client ${clientId}:`, error)
+          for (const clientId of clientIds) {
+            const client = this.clients.get(clientId)
+            if (client?.location) {
+              try {
+                const tokens = { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 }
+                const data = await tokenCalculatorService.calculateTokens({
+                  tokens,
+                  location: client.location,
+                })
+                this.sendMessage(clientId, {
+                  type: 'update',
+                  channel: 'token-rates',
+                  data,
+                })
+              } catch (error) {
+                logger.error(`Error updating token rates for client ${clientId}:`, error)
+              }
+            }
           }
-        }
-      }
-    }, 5 * 60 * 1000)) // Every 5 minutes
+        },
+        5 * 60 * 1000
+      )
+    ) // Every 5 minutes
 
     // Kinetics power update every 10 minutes
-    this.updateIntervals.set('kinetics-power', setInterval(() => {
-      this.broadcastToChannel('kinetics-power', {
-        type: 'update',
-        channel: 'kinetics-power',
-        data: {
-          timestamp: new Date().toISOString(),
-          powerLevel: Math.random() * 0.4 + 0.3, // 0.3 to 0.7
-          trend: Math.random() > 0.5 ? 'ascending' : 'descending',
-          nextUpdate: new Date(Date.now() + 10 * 60 * 1000).toISOString()
-        }
-      })
-    }, 10 * 60 * 1000)) // Every 10 minutes
+    this.updateIntervals.set(
+      'kinetics-power',
+      setInterval(
+        () => {
+          this.broadcastToChannel('kinetics-power', {
+            type: 'update',
+            channel: 'kinetics-power',
+            data: {
+              timestamp: new Date().toISOString(),
+              powerLevel: Math.random() * 0.4 + 0.3, // 0.3 to 0.7
+              trend: Math.random() > 0.5 ? 'ascending' : 'descending',
+              nextUpdate: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+            },
+          })
+        },
+        10 * 60 * 1000
+      )
+    ) // Every 10 minutes
   }
 
   getStats(): {
@@ -392,7 +408,7 @@ class WebSocketManager {
     return {
       totalClients: this.clients.size,
       activeChannels: this.channels.size,
-      channelSubscriptions
+      channelSubscriptions,
     }
   }
 
@@ -417,7 +433,7 @@ let wsManager: WebSocketManager | null = null
 export function setupWebSocketHandlers(wss: WebSocketServer): void {
   wsManager = new WebSocketManager(wss)
 
-  wss.on('connection', (ws) => {
+  wss.on('connection', ws => {
     wsManager!.setupConnection(ws)
   })
 

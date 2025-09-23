@@ -208,11 +208,10 @@ const MonicaTarotOracle: React.FC<MonicaTarotOracleProps> = ({ onInsightGenerate
         // Check if the error is due to abortion - handle this gracefully
         if (
           abortController.signal.aborted ||
-          (error instanceof Error && (
-            error.name === 'AbortError' ||
-            error.message.includes('aborted') ||
-            error.message.includes('Request aborted')
-          ))
+          (error instanceof Error &&
+            (error.name === 'AbortError' ||
+              error.message.includes('aborted') ||
+              error.message.includes('Request aborted')))
         ) {
           console.log('Tarot configuration request was aborted - component likely unmounted')
           return

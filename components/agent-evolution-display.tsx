@@ -42,7 +42,9 @@ export function AgentEvolutionDisplay({
         setError(null)
 
         const location = userLocation || { lat: 37.7749, lon: -122.4194 }
-        const response = await fetch(`/api/agent-evolution?agentId=${agentId}&action=kinetics&lat=${location.lat}&lon=${location.lon}`)
+        const response = await fetch(
+          `/api/agent-evolution?agentId=${agentId}&action=kinetics&lat=${location.lat}&lon=${location.lon}`
+        )
 
         if (!response.ok) {
           setError('Failed to fetch kinetic data')
@@ -280,7 +282,9 @@ export function useAgentEvolution(agentId: string, userLocation?: { lat: number;
         setError(null)
 
         const location = userLocation || { lat: 37.7749, lon: -122.4194 }
-        const response = await fetch(`/api/agent-evolution?agentId=${agentId}&action=kinetics&lat=${location.lat}&lon=${location.lon}`)
+        const response = await fetch(
+          `/api/agent-evolution?agentId=${agentId}&action=kinetics&lat=${location.lat}&lon=${location.lon}`
+        )
 
         if (!response.ok) {
           setError('Failed to fetch kinetic data')

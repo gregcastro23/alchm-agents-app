@@ -42,7 +42,10 @@ export async function fetchCurrentPlanetaryPositions(
       return await currentRequest
     } catch (error) {
       // If cached request failed with AbortError, re-throw it
-      if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
+      if (
+        error instanceof Error &&
+        (error.name === 'AbortError' || error.message.includes('aborted'))
+      ) {
         throw error
       }
       // For other errors, continue to create new request
@@ -59,7 +62,10 @@ export async function fetchCurrentPlanetaryPositions(
     return result
   } catch (error) {
     // Handle AbortError specifically - don't clear cache, just re-throw
-    if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
+    if (
+      error instanceof Error &&
+      (error.name === 'AbortError' || error.message.includes('aborted'))
+    ) {
       throw error
     }
     // For other errors, log and re-throw
@@ -121,13 +127,14 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
       data.planetaryPositions.forEach((planet: any) => {
         if (transformedData['Planet Positions']) {
           const rawDegree = typeof planet.degree === 'number' ? planet.degree : undefined
-          const signDegree = typeof rawDegree === 'number'
-            ? ((rawDegree % 30) + 30) % 30 // normalize within 0-30
-            : undefined
+          const signDegree =
+            typeof rawDegree === 'number'
+              ? ((rawDegree % 30) + 30) % 30 // normalize within 0-30
+              : undefined
           const sign = planet.sign
           transformedData['Planet Positions'][planet.planet] = {
             sign,
-            degree: typeof signDegree === 'number' ? signDegree : undefined as any,
+            degree: typeof signDegree === 'number' ? signDegree : (undefined as any),
           }
           // Attach dignity label for UI if needed
           try {
@@ -141,7 +148,11 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
 
     // If API data is incomplete or missing degrees, compute enhanced fallback for correctness
     const planetCount = Object.keys(transformedData['Planet Positions'] || {}).length
-    const needsEnhanced = planetCount < 7 || Object.values(transformedData['Planet Positions'] || {}).some((p: any) => typeof p.degree !== 'number')
+    const needsEnhanced =
+      planetCount < 7 ||
+      Object.values(transformedData['Planet Positions'] || {}).some(
+        (p: any) => typeof p.degree !== 'number'
+      )
 
     if (needsEnhanced) {
       const enhanced = await enhancedPositionsNow()
@@ -168,7 +179,7 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
     return transformedData
   } catch (error: any) {
     // Silence expected aborts and component unmount cases and prefer enhanced fallback
-    const errorName = (error && typeof error === 'object') ? (error as any).name : ''
+    const errorName = error && typeof error === 'object' ? (error as any).name : ''
     const errorMessage = typeof error === 'string' ? error : String((error as any)?.message || '')
     if (
       /AbortError/i.test(errorName) ||
@@ -194,10 +205,13 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
 import { calculateAllPlanets, type EnhancedBirthInfo } from '../enhanced-astronomical-calculator'
 import { ESSENTIAL_DIGNITIES } from '../astrological-dignities-engine'
 
-function getEssentialDignityLabel(planet: string, sign: string): 'Domicile' | 'Exalted' | 'Detriment' | 'Fall' | 'Peregrine' {
+function getEssentialDignityLabel(
+  planet: string,
+  sign: string
+): 'Domicile' | 'Exalted' | 'Detriment' | 'Fall' | 'Peregrine' {
   const d = (ESSENTIAL_DIGNITIES as any)[planet]
   if (!d) return 'Peregrine'
-  const inList = (val: any, s: string) => Array.isArray(val) ? val.includes(s) : val === s
+  const inList = (val: any, s: string) => (Array.isArray(val) ? val.includes(s) : val === s)
   if (inList(d.domicile, sign)) return 'Domicile'
   if (inList(d.exaltation, sign)) return 'Exalted'
   if (inList(d.detriment, sign)) return 'Detriment'
@@ -217,7 +231,7 @@ async function enhancedPositionsNow(): Promise<AlchemizeApiResponse | null> {
       minute: now.getUTCMinutes(),
       second: now.getUTCSeconds(),
       latitude: 0,
-      longitude: 0
+      longitude: 0,
     }
 
     const results = calculateAllPlanets(birthInfo)
@@ -226,7 +240,7 @@ async function enhancedPositionsNow(): Promise<AlchemizeApiResponse | null> {
     Object.entries(results.planets).forEach(([name, pos]) => {
       planetPositions[name] = {
         sign: pos.sign,
-        degree: pos.signDegree
+        degree: pos.signDegree,
       }
     })
 
@@ -235,7 +249,7 @@ async function enhancedPositionsNow(): Promise<AlchemizeApiResponse | null> {
       'Alchemy Effects': undefined as any,
       'Major Arcana': [],
       'Minor Arcana': [],
-      'Decan Effects': {}
+      'Decan Effects': {},
     }
   } catch (error) {
     console.error('enhancedPositionsNow() failed:', error)

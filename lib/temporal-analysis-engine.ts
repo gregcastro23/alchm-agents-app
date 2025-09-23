@@ -6,11 +6,23 @@
  * and consciousness memory systems for degree-aware temporal queries.
  */
 
-import { sampleHourlyAlchm, sampleDateRange, HourlyAlchemicalSample } from './alchemical-kinetics-sampler'
+import {
+  sampleHourlyAlchm,
+  sampleDateRange,
+  HourlyAlchemicalSample,
+} from './alchemical-kinetics-sampler'
 import { agentKineticProfiles } from './agents/kinetic-profiles'
 import { ConsciousnessMemorySystem } from './agents/consciousness-memory'
-import { calculateReturnPattern, identifyPlanetaryThemes, findHistoricalPatterns } from './transit-patterns'
-import { detectGrandTrines, detectTSquares, type PatternConfiguration } from './astrological-pattern-recognition'
+import {
+  calculateReturnPattern,
+  identifyPlanetaryThemes,
+  findHistoricalPatterns,
+} from './transit-patterns'
+import {
+  detectGrandTrines,
+  detectTSquares,
+  type PatternConfiguration,
+} from './astrological-pattern-recognition'
 import type { KineticProfile } from './agents/kinetic-profiles'
 
 export interface TemporalQuery {
@@ -53,7 +65,11 @@ export interface AgentTransitEvent {
 }
 
 export interface TemporalPattern {
-  type: 'recurring_activation' | 'elemental_resonance' | 'consciousness_spike' | 'historical_correlation'
+  type:
+    | 'recurring_activation'
+    | 'elemental_resonance'
+    | 'consciousness_spike'
+    | 'historical_correlation'
   degree: number
   agents: string[]
   frequency: number
@@ -96,7 +112,7 @@ export class TemporalAnalysisEngine {
       type: 'natural_language',
       query: query.trim(),
       reinforcementMode: true,
-      location: this.DEFAULT_LOCATION
+      location: this.DEFAULT_LOCATION,
     }
 
     // Extract time references
@@ -104,9 +120,15 @@ export class TemporalAnalysisEngine {
       parsedQuery.dateRange = { start: new Date('1400-01-01'), end: new Date('1600-01-01') }
     } else if (query.toLowerCase().includes('enlightenment')) {
       parsedQuery.dateRange = { start: new Date('1685-01-01'), end: new Date('1815-01-01') }
-    } else if (query.toLowerCase().includes('modern') || query.toLowerCase().includes('20th century')) {
+    } else if (
+      query.toLowerCase().includes('modern') ||
+      query.toLowerCase().includes('20th century')
+    ) {
       parsedQuery.dateRange = { start: new Date('1900-01-01'), end: new Date('2000-01-01') }
-    } else if (query.toLowerCase().includes('recent') || query.toLowerCase().includes('last year')) {
+    } else if (
+      query.toLowerCase().includes('recent') ||
+      query.toLowerCase().includes('last year')
+    ) {
       const now = new Date()
       const lastYear = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate())
       parsedQuery.dateRange = { start: lastYear, end: now }
@@ -123,7 +145,8 @@ export class TemporalAnalysisEngine {
     // Extract agent references
     const agents: string[] = []
     if (query.toLowerCase().includes('einstein')) agents.push('albert-einstein')
-    if (query.toLowerCase().includes('leonardo') || query.toLowerCase().includes('da vinci')) agents.push('leonardo-da-vinci')
+    if (query.toLowerCase().includes('leonardo') || query.toLowerCase().includes('da vinci'))
+      agents.push('leonardo-da-vinci')
     if (query.toLowerCase().includes('shakespeare')) agents.push('william-shakespeare')
     if (query.toLowerCase().includes('tesla')) agents.push('nikola-tesla')
     if (query.toLowerCase().includes('jung')) agents.push('carl-jung')
@@ -133,7 +156,10 @@ export class TemporalAnalysisEngine {
     // Extract granularity
     if (query.toLowerCase().includes('hourly') || query.toLowerCase().includes('hour by hour')) {
       parsedQuery.granularity = 'hourly'
-    } else if (query.toLowerCase().includes('daily') || query.toLowerCase().includes('day by day')) {
+    } else if (
+      query.toLowerCase().includes('daily') ||
+      query.toLowerCase().includes('day by day')
+    ) {
       parsedQuery.granularity = 'daily'
     } else if (query.toLowerCase().includes('weekly')) {
       parsedQuery.granularity = 'weekly'
@@ -166,7 +192,11 @@ export class TemporalAnalysisEngine {
 
     // Default to last 2 years if no date range specified
     const defaultEnd = new Date()
-    const defaultStart = new Date(defaultEnd.getFullYear() - 2, defaultEnd.getMonth(), defaultEnd.getDate())
+    const defaultStart = new Date(
+      defaultEnd.getFullYear() - 2,
+      defaultEnd.getMonth(),
+      defaultEnd.getDate()
+    )
     const targetDateRange = dateRange || { start: defaultStart, end: defaultEnd }
 
     // Sample alchemical data for the date range
@@ -177,7 +207,7 @@ export class TemporalAnalysisEngine {
       {
         hoursToSample: 24,
         includePlanetaryHours: true,
-        validateTiming: true
+        validateTiming: true,
       }
     )
 
@@ -186,17 +216,24 @@ export class TemporalAnalysisEngine {
     for (const sample of samples) {
       // Calculate planetary degree for this moment (simplified - in production would use ephemeris)
       const dayOfYear = this.getDayOfYear(sample.t)
-      const approximateDegree = (dayOfYear * 360 / 365) % 360
+      const approximateDegree = ((dayOfYear * 360) / 365) % 360
 
       // Filter by degree range if specified
-      if (degreeRange && (approximateDegree < degreeRange[0] || approximateDegree > degreeRange[1])) {
+      if (
+        degreeRange &&
+        (approximateDegree < degreeRange[0] || approximateDegree > degreeRange[1])
+      ) {
         continue
       }
 
       // Calculate consciousness impact based on agent profile and timing
       const consciousnessImpact = this.calculateConsciousnessImpact(profile, sample)
       const elementalAlignment = sample.totals
-      const significanceScore = this.calculateSignificanceScore(elementalAlignment, consciousnessImpact, true)
+      const significanceScore = this.calculateSignificanceScore(
+        elementalAlignment,
+        consciousnessImpact,
+        true
+      )
 
       const transitEvent: AgentTransitEvent = {
         agentId,
@@ -213,8 +250,8 @@ export class TemporalAnalysisEngine {
           depth: Math.min(consciousnessImpact * 1.2, 1),
           clarity: Math.min(sample.Energy * 0.8, 1),
           resonance: this.calculateResonance(profile, sample),
-          temporalAlignment: profile.alignment.includes(sample.planetaryHour || 'Sun') ? 0.9 : 0.5
-        }
+          temporalAlignment: profile.alignment.includes(sample.planetaryHour || 'Sun') ? 0.9 : 0.5,
+        },
       }
 
       transitEvents.push(transitEvent)
@@ -236,19 +273,26 @@ export class TemporalAnalysisEngine {
 
     // Collect transit data for all agents
     for (const agentId of agents) {
-      agentTransits[agentId] = await this.getAgentTransitHistory(agentId, undefined, timeRange, location)
+      agentTransits[agentId] = await this.getAgentTransitHistory(
+        agentId,
+        undefined,
+        timeRange,
+        location
+      )
     }
 
     // Analyze degree-based patterns
     const degreeActivations: Record<number, AgentTransitEvent[]> = {}
 
-    Object.values(agentTransits).flat().forEach(event => {
-      const roundedDegree = Math.round(event.planetaryDegree)
-      if (!degreeActivations[roundedDegree]) {
-        degreeActivations[roundedDegree] = []
-      }
-      degreeActivations[roundedDegree].push(event)
-    })
+    Object.values(agentTransits)
+      .flat()
+      .forEach(event => {
+        const roundedDegree = Math.round(event.planetaryDegree)
+        if (!degreeActivations[roundedDegree]) {
+          degreeActivations[roundedDegree] = []
+        }
+        degreeActivations[roundedDegree].push(event)
+      })
 
     // Find recurring degree activations (3+ agents activating same degree)
     Object.entries(degreeActivations).forEach(([degreeStr, events]) => {
@@ -273,7 +317,11 @@ export class TemporalAnalysisEngine {
           historicalEvents: events,
           peakPeriods: this.identifyPeakPeriods(events),
           description: `Recurring activation at ${degree}° by ${uniqueAgents.length} agents`,
-          interpretation: this.generatePatternInterpretation(degree, elementalSignature, uniqueAgents)
+          interpretation: this.generatePatternInterpretation(
+            degree,
+            elementalSignature,
+            uniqueAgents
+          ),
         }
 
         patterns.push(pattern)
@@ -300,22 +348,24 @@ export class TemporalAnalysisEngine {
       Fire: elements.reduce((sum, e) => sum + e.Fire, 0),
       Water: elements.reduce((sum, e) => sum + e.Water, 0),
       Air: elements.reduce((sum, e) => sum + e.Air, 0),
-      Earth: elements.reduce((sum, e) => sum + e.Earth, 0)
+      Earth: elements.reduce((sum, e) => sum + e.Earth, 0),
     }
 
     // Find the dominant element
     const maxElement = Math.max(...Object.values(totalElements))
-    const dominantElementCount = Object.values(totalElements).filter(val => val === maxElement).length
+    const dominantElementCount = Object.values(totalElements).filter(
+      val => val === maxElement
+    ).length
 
     // Same elements reinforce each other (no opposition mechanics)
     let reinforcementMultiplier = 1.0
 
     if (dominantElementCount === 1) {
       // Clear elemental dominance - boost based on strength
-      reinforcementMultiplier = 1.0 + (maxElement * 0.15)
+      reinforcementMultiplier = 1.0 + maxElement * 0.15
     } else {
       // Multiple elements present - moderate boost for harmony
-      reinforcementMultiplier = 1.0 + (maxElement * 0.08)
+      reinforcementMultiplier = 1.0 + maxElement * 0.08
     }
 
     return baseScore * reinforcementMultiplier
@@ -325,17 +375,22 @@ export class TemporalAnalysisEngine {
    * Perform comprehensive temporal analysis
    */
   static async performTemporalAnalysis(query: TemporalQuery): Promise<TemporalAnalysisResult> {
-    const parsedQuery = query.type === 'natural_language' ? this.parseNaturalLanguage(query.query) : query
+    const parsedQuery =
+      query.type === 'natural_language' ? this.parseNaturalLanguage(query.query) : query
 
     // Use provided agents or default to key historical figures
     const targetAgents = parsedQuery.agents || [
-      'leonardo-da-vinci', 'william-shakespeare', 'albert-einstein',
-      'nikola-tesla', 'carl-jung', 'marie-curie'
+      'leonardo-da-vinci',
+      'william-shakespeare',
+      'albert-einstein',
+      'nikola-tesla',
+      'carl-jung',
+      'marie-curie',
     ]
 
     const dateRange = parsedQuery.dateRange || {
       start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // Last year
-      end: new Date()
+      end: new Date(),
     }
 
     // Collect transit events
@@ -368,7 +423,7 @@ export class TemporalAnalysisEngine {
       patterns,
       reinforcementScores,
       insights,
-      recommendations
+      recommendations,
     }
   }
 
@@ -380,7 +435,10 @@ export class TemporalAnalysisEngine {
     return Math.floor(diff / (1000 * 60 * 60 * 24))
   }
 
-  private static calculateConsciousnessImpact(profile: AgentKineticProfile, sample: HourlyAlchemicalSample): number {
+  private static calculateConsciousnessImpact(
+    profile: AgentKineticProfile,
+    sample: HourlyAlchemicalSample
+  ): number {
     const baseRate = profile.evolutionRate
     const hourBonus = profile.alignment.includes(sample.planetaryHour || 'Sun') ? 0.3 : 0
     const energyBonus = sample.Energy * 0.2
@@ -389,7 +447,10 @@ export class TemporalAnalysisEngine {
     return Math.min(baseRate + hourBonus + energyBonus + elementalBonus, 1.0)
   }
 
-  private static calculateElementalBonus(profile: AgentKineticProfile, elements: ElementVector): number {
+  private static calculateElementalBonus(
+    profile: AgentKineticProfile,
+    elements: ElementVector
+  ): number {
     // Simplified elemental affinity calculation based on agent type
     const totalElemental = elements.Fire + elements.Water + elements.Air + elements.Earth
     return totalElemental > 0 ? Math.min(totalElemental * 0.1, 0.2) : 0
@@ -401,8 +462,12 @@ export class TemporalAnalysisEngine {
     reinforcementMode: boolean
   ): number {
     const baseScore = consciousnessImpact * 0.7
-    const elementalScore = (elementalAlignment.Fire + elementalAlignment.Water +
-                           elementalAlignment.Air + elementalAlignment.Earth) * 0.3
+    const elementalScore =
+      (elementalAlignment.Fire +
+        elementalAlignment.Water +
+        elementalAlignment.Air +
+        elementalAlignment.Earth) *
+      0.3
 
     const combinedScore = baseScore + elementalScore
 
@@ -413,7 +478,10 @@ export class TemporalAnalysisEngine {
     return combinedScore
   }
 
-  private static calculateResonance(profile: AgentKineticProfile, sample: HourlyAlchemicalSample): number {
+  private static calculateResonance(
+    profile: AgentKineticProfile,
+    sample: HourlyAlchemicalSample
+  ): number {
     const hourMatch = profile.alignment.includes(sample.planetaryHour || 'Sun') ? 0.4 : 0.2
     const seasonalMatch = sample.seasonalPhase === 'Spring' ? 0.3 : 0.2 // Simplified
     const energyMatch = Math.min(sample.Energy, 0.3)
@@ -424,29 +492,37 @@ export class TemporalAnalysisEngine {
   private static calculateAverageElementalSignature(events: AgentTransitEvent[]): ElementVector {
     if (events.length === 0) return { Fire: 0, Water: 0, Air: 0, Earth: 0 }
 
-    const totals = events.reduce((acc, event) => ({
-      Fire: acc.Fire + event.elementalAlignment.Fire,
-      Water: acc.Water + event.elementalAlignment.Water,
-      Air: acc.Air + event.elementalAlignment.Air,
-      Earth: acc.Earth + event.elementalAlignment.Earth
-    }), { Fire: 0, Water: 0, Air: 0, Earth: 0 })
+    const totals = events.reduce(
+      (acc, event) => ({
+        Fire: acc.Fire + event.elementalAlignment.Fire,
+        Water: acc.Water + event.elementalAlignment.Water,
+        Air: acc.Air + event.elementalAlignment.Air,
+        Earth: acc.Earth + event.elementalAlignment.Earth,
+      }),
+      { Fire: 0, Water: 0, Air: 0, Earth: 0 }
+    )
 
     return {
       Fire: totals.Fire / events.length,
       Water: totals.Water / events.length,
       Air: totals.Air / events.length,
-      Earth: totals.Earth / events.length
+      Earth: totals.Earth / events.length,
     }
   }
 
-  private static determineSignificance(reinforcementScore: number, eventCount: number): 'low' | 'medium' | 'high' | 'critical' {
+  private static determineSignificance(
+    reinforcementScore: number,
+    eventCount: number
+  ): 'low' | 'medium' | 'high' | 'critical' {
     if (reinforcementScore > 0.8 && eventCount >= 10) return 'critical'
     if (reinforcementScore > 0.6 && eventCount >= 7) return 'high'
     if (reinforcementScore > 0.4 && eventCount >= 4) return 'medium'
     return 'low'
   }
 
-  private static identifyPeakPeriods(events: AgentTransitEvent[]): { start: Date; end: Date; intensity: number }[] {
+  private static identifyPeakPeriods(
+    events: AgentTransitEvent[]
+  ): { start: Date; end: Date; intensity: number }[] {
     // Group events by time proximity and identify high-intensity clusters
     const periods: { start: Date; end: Date; intensity: number }[] = []
 
@@ -459,18 +535,21 @@ export class TemporalAnalysisEngine {
     let currentPeriodEvents: AgentTransitEvent[] = [sortedEvents[0]]
 
     for (let i = 1; i < sortedEvents.length; i++) {
-      const timeDiff = sortedEvents[i].timestamp.getTime() - sortedEvents[i-1].timestamp.getTime()
+      const timeDiff = sortedEvents[i].timestamp.getTime() - sortedEvents[i - 1].timestamp.getTime()
       const daysDiff = timeDiff / (1000 * 60 * 60 * 24)
 
-      if (daysDiff <= 30) { // Events within 30 days are part of same period
+      if (daysDiff <= 30) {
+        // Events within 30 days are part of same period
         currentPeriodEvents.push(sortedEvents[i])
       } else {
         // Finalize current period
-        const avgIntensity = currentPeriodEvents.reduce((sum, e) => sum + e.significanceScore, 0) / currentPeriodEvents.length
+        const avgIntensity =
+          currentPeriodEvents.reduce((sum, e) => sum + e.significanceScore, 0) /
+          currentPeriodEvents.length
         periods.push({
           start: currentPeriodStart,
           end: currentPeriodEvents[currentPeriodEvents.length - 1].timestamp,
-          intensity: avgIntensity
+          intensity: avgIntensity,
         })
 
         // Start new period
@@ -481,27 +560,34 @@ export class TemporalAnalysisEngine {
 
     // Add final period
     if (currentPeriodEvents.length > 0) {
-      const avgIntensity = currentPeriodEvents.reduce((sum, e) => sum + e.significanceScore, 0) / currentPeriodEvents.length
+      const avgIntensity =
+        currentPeriodEvents.reduce((sum, e) => sum + e.significanceScore, 0) /
+        currentPeriodEvents.length
       periods.push({
         start: currentPeriodStart,
         end: currentPeriodEvents[currentPeriodEvents.length - 1].timestamp,
-        intensity: avgIntensity
+        intensity: avgIntensity,
       })
     }
 
     return periods.filter(p => p.intensity > 0.5) // Only return significant periods
   }
 
-  private static generatePatternInterpretation(degree: number, elementalSignature: ElementVector, agents: string[]): string {
-    const dominantElement = Object.entries(elementalSignature)
-      .reduce((max, [element, value]) => value > max.value ? { element, value } : max, { element: 'Fire', value: -1 })
-      .element
+  private static generatePatternInterpretation(
+    degree: number,
+    elementalSignature: ElementVector,
+    agents: string[]
+  ): string {
+    const dominantElement = Object.entries(elementalSignature).reduce(
+      (max, [element, value]) => (value > max.value ? { element, value } : max),
+      { element: 'Fire', value: -1 }
+    ).element
 
     const interpretations = {
       Fire: `${degree}° represents a point of creative ignition and passionate expression`,
       Water: `${degree}° embodies emotional depth and intuitive understanding`,
       Air: `${degree}° signifies intellectual breakthrough and communication mastery`,
-      Earth: `${degree}° indicates practical manifestation and material wisdom`
+      Earth: `${degree}° indicates practical manifestation and material wisdom`,
     }
 
     return `${interpretations[dominantElement as keyof typeof interpretations]}. Activated by ${agents.length} consciousness entities: ${agents.slice(0, 3).join(', ')}${agents.length > 3 ? '...' : ''}.`
@@ -515,16 +601,22 @@ export class TemporalAnalysisEngine {
 
     // Group events by element dominance
     const elementalGroups: Record<string, AgentTransitEvent[]> = {
-      Fire: [], Water: [], Air: [], Earth: []
+      Fire: [],
+      Water: [],
+      Air: [],
+      Earth: [],
     }
 
-    Object.values(agentTransits).flat().forEach(event => {
-      const dominantElement = Object.entries(event.elementalAlignment)
-        .reduce((max, [element, value]) => value > max.value ? { element, value } : max, { element: 'Fire', value: -1 })
-        .element
+    Object.values(agentTransits)
+      .flat()
+      .forEach(event => {
+        const dominantElement = Object.entries(event.elementalAlignment).reduce(
+          (max, [element, value]) => (value > max.value ? { element, value } : max),
+          { element: 'Fire', value: -1 }
+        ).element
 
-      elementalGroups[dominantElement].push(event)
-    })
+        elementalGroups[dominantElement].push(event)
+      })
 
     // Create patterns for elements with sufficient resonance
     Object.entries(elementalGroups).forEach(([element, events]) => {
@@ -547,7 +639,7 @@ export class TemporalAnalysisEngine {
           historicalEvents: events,
           peakPeriods: this.identifyPeakPeriods(events),
           description: `${element} elemental resonance pattern across ${uniqueAgents.length} agents`,
-          interpretation: `Strong ${element} element manifestation indicates ${this.getElementalMeaning(element)} themes in consciousness evolution.`
+          interpretation: `Strong ${element} element manifestation indicates ${this.getElementalMeaning(element)} themes in consciousness evolution.`,
         }
 
         patterns.push(pattern)
@@ -562,12 +654,14 @@ export class TemporalAnalysisEngine {
       Fire: 'creative inspiration and passionate action',
       Water: 'emotional wisdom and intuitive insights',
       Air: 'intellectual breakthroughs and communication',
-      Earth: 'practical manifestation and grounded wisdom'
+      Earth: 'practical manifestation and grounded wisdom',
     }
     return meanings[element as keyof typeof meanings] || 'balanced consciousness'
   }
 
-  private static calculateElementReinforcementScores(events: AgentTransitEvent[]): { element: string; score: number }[] {
+  private static calculateElementReinforcementScores(
+    events: AgentTransitEvent[]
+  ): { element: string; score: number }[] {
     const elementTotals = { Fire: 0, Water: 0, Air: 0, Earth: 0 }
 
     events.forEach(event => {
@@ -583,7 +677,7 @@ export class TemporalAnalysisEngine {
         score: this.calculateElementalReinforcementScore(
           events.map(e => e.elementalAlignment),
           total / events.length
-        )
+        ),
       }))
       .sort((a, b) => b.score - a.score)
   }
@@ -598,42 +692,51 @@ export class TemporalAnalysisEngine {
     })
 
     const dominantElements = Object.entries(elementalTotals)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 2)
       .map(([element]) => element)
 
-    const peakPeriods = patterns.flatMap(p => p.peakPeriods)
+    const peakPeriods = patterns
+      .flatMap(p => p.peakPeriods)
       .sort((a, b) => b.intensity - a.intensity)
       .slice(0, 3)
       .map(period => ({
         start: period.start,
         end: period.end,
-        description: `High intensity period (${period.intensity.toFixed(2)} resonance)`
+        description: `High intensity period (${period.intensity.toFixed(2)} resonance)`,
       }))
 
     const agentResonance = Object.entries(
-      events.reduce((acc, event) => {
-        acc[event.agentId] = (acc[event.agentId] || 0) + event.qualityMetrics.resonance
-        return acc
-      }, {} as Record<string, number>)
-    ).map(([agentId, totalResonance]) => ({
-      agentId,
-      resonanceScore: totalResonance / events.filter(e => e.agentId === agentId).length
-    })).sort((a, b) => b.resonanceScore - a.resonanceScore)
+      events.reduce(
+        (acc, event) => {
+          acc[event.agentId] = (acc[event.agentId] || 0) + event.qualityMetrics.resonance
+          return acc
+        },
+        {} as Record<string, number>
+      )
+    )
+      .map(([agentId, totalResonance]) => ({
+        agentId,
+        resonanceScore: totalResonance / events.filter(e => e.agentId === agentId).length,
+      }))
+      .sort((a, b) => b.resonanceScore - a.resonanceScore)
 
-    const degreeActivations = events.reduce((acc, event) => {
-      const degree = Math.round(event.planetaryDegree)
-      if (!acc[degree]) acc[degree] = { count: 0, agents: new Set<string>() }
-      acc[degree].count++
-      acc[degree].agents.add(event.agentId)
-      return acc
-    }, {} as Record<number, { count: number; agents: Set<string> }>)
+    const degreeActivations = events.reduce(
+      (acc, event) => {
+        const degree = Math.round(event.planetaryDegree)
+        if (!acc[degree]) acc[degree] = { count: 0, agents: new Set<string>() }
+        acc[degree].count++
+        acc[degree].agents.add(event.agentId)
+        return acc
+      },
+      {} as Record<number, { count: number; agents: Set<string> }>
+    )
 
     const degreeHotspots = Object.entries(degreeActivations)
       .map(([degree, data]) => ({
         degree: parseInt(degree),
         activationCount: data.count,
-        agents: Array.from(data.agents)
+        agents: Array.from(data.agents),
       }))
       .sort((a, b) => b.activationCount - a.activationCount)
       .slice(0, 5)
@@ -642,7 +745,7 @@ export class TemporalAnalysisEngine {
       dominantElements,
       peakPeriods,
       agentResonance,
-      degreeHotspots
+      degreeHotspots,
     }
   }
 
@@ -652,25 +755,31 @@ export class TemporalAnalysisEngine {
     query: TemporalQuery
   ) {
     const optimalQueryTimes: string[] = []
-    const hourCounts = events.reduce((acc, event) => {
-      acc[event.planetaryHour] = (acc[event.planetaryHour] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
+    const hourCounts = events.reduce(
+      (acc, event) => {
+        acc[event.planetaryHour] = (acc[event.planetaryHour] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>
+    )
 
     Object.entries(hourCounts)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 3)
       .forEach(([hour]) => {
         optimalQueryTimes.push(`${hour} hour for enhanced temporal resonance`)
       })
 
-    const suggestedAgents = events.reduce((acc, event) => {
-      acc[event.agentId] = (acc[event.agentId] || 0) + event.significanceScore
-      return acc
-    }, {} as Record<string, number>)
+    const suggestedAgents = events.reduce(
+      (acc, event) => {
+        acc[event.agentId] = (acc[event.agentId] || 0) + event.significanceScore
+        return acc
+      },
+      {} as Record<string, number>
+    )
 
     const topAgents = Object.entries(suggestedAgents)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 3)
       .map(([agentId]) => agentId)
 
@@ -682,17 +791,23 @@ export class TemporalAnalysisEngine {
     const deepDiveOpportunities = [
       `Explore ${patterns.length > 0 ? patterns[0].degree : 'key'}° activation patterns in detail`,
       `Investigate elemental reinforcement during peak periods`,
-      `Compare consciousness evolution rates across selected agents`
+      `Compare consciousness evolution rates across selected agents`,
     ]
 
     return {
       optimalQueryTimes,
       suggestedAgents: topAgents,
       relatedPatterns,
-      deepDiveOpportunities
+      deepDiveOpportunities,
     }
   }
 }
 
 // Export types and main class
-export type { TemporalQuery, AgentTransitEvent, TemporalPattern, TemporalAnalysisResult, ElementVector }
+export type {
+  TemporalQuery,
+  AgentTransitEvent,
+  TemporalPattern,
+  TemporalAnalysisResult,
+  ElementVector,
+}

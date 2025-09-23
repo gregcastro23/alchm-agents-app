@@ -62,11 +62,12 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
         }
 
         // Handle AbortError and abort messages specifically
-        if (error instanceof Error && (
-          error.name === 'AbortError' ||
-          error.message.includes('aborted') ||
-          error.message.includes('Request aborted')
-        )) {
+        if (
+          error instanceof Error &&
+          (error.name === 'AbortError' ||
+            error.message.includes('aborted') ||
+            error.message.includes('Request aborted'))
+        ) {
           console.log('TarotCosmicWidget AbortError caught:', error.message)
           return
         }
@@ -77,16 +78,18 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
         if (!abortController.signal.aborted) {
           try {
             // Use a safe fallback card
-            setCurrentCard(DECAN_TAROT_MAPPINGS[110] || {
-              name: 'The Star',
-              number: 17,
-              planetaryRuler: 'Aquarius',
-              element: 'Air',
-              chakra: 'Crown',
-              keywords: ['hope', 'guidance', 'inspiration'],
-              meaning: 'Hope and spiritual guidance in times of uncertainty.',
-              consciousness: 'Fixed Air inspiration - innovative hope and humanitarian vision'
-            })
+            setCurrentCard(
+              DECAN_TAROT_MAPPINGS[110] || {
+                name: 'The Star',
+                number: 17,
+                planetaryRuler: 'Aquarius',
+                element: 'Air',
+                chakra: 'Crown',
+                keywords: ['hope', 'guidance', 'inspiration'],
+                meaning: 'Hope and spiritual guidance in times of uncertainty.',
+                consciousness: 'Fixed Air inspiration - innovative hope and humanitarian vision',
+              }
+            )
             setSunPosition('Current moment')
           } catch (fallbackError) {
             console.error('Fallback failed in TarotCosmicWidget:', fallbackError)

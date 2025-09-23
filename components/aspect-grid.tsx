@@ -123,7 +123,7 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
       }
     }
 
-    (aspects || []).forEach(aspect => {
+    ;(aspects || []).forEach(aspect => {
       if (matrix[aspect.planet1]?.[aspect.planet2] !== undefined) {
         matrix[aspect.planet1][aspect.planet2] = aspect
       }
@@ -187,74 +187,82 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
                 <thead>
                   <tr>
                     <th className="p-1"></th>
-                    {getPlanetOrderArray().filter(p => planets[p]).map(planet => (
-                      <th key={planet} className="p-1 text-center">
-                        <span className="text-lg">{PLANET_SYMBOLS[planet]}</span>
-                      </th>
-                    ))}
+                    {getPlanetOrderArray()
+                      .filter(p => planets[p])
+                      .map(planet => (
+                        <th key={planet} className="p-1 text-center">
+                          <span className="text-lg">{PLANET_SYMBOLS[planet]}</span>
+                        </th>
+                      ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {getPlanetOrderArray().filter(p => planets[p]).map((planet1, i) => (
-                    <tr key={planet1}>
-                      <td className="p-1 font-medium text-right">
-                        <span className="text-lg">{PLANET_SYMBOLS[planet1]}</span>
-                      </td>
-                      {getPlanetOrderArray().filter(p => planets[p]).map((planet2, j) => {
-                        const aspect = aspectMatrix[planet1]?.[planet2]
+                  {getPlanetOrderArray()
+                    .filter(p => planets[p])
+                    .map((planet1, i) => (
+                      <tr key={planet1}>
+                        <td className="p-1 font-medium text-right">
+                          <span className="text-lg">{PLANET_SYMBOLS[planet1]}</span>
+                        </td>
+                        {getPlanetOrderArray()
+                          .filter(p => planets[p])
+                          .map((planet2, j) => {
+                            const aspect = aspectMatrix[planet1]?.[planet2]
 
-                        if (i === j) {
-                          // Diagonal - show planet name
-                          return (
-                            <td key={planet2} className="p-1 text-center bg-muted">
-                              <span className="text-[10px] capitalize">{planet1.slice(0, 3)}</span>
-                            </td>
-                          )
-                        }
-
-                        if (!aspect) {
-                          return (
-                            <td key={planet2} className="p-1 text-center">
-                              -
-                            </td>
-                          )
-                        }
-
-                        return (
-                          <TooltipProvider key={planet2}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <td
-                                  className="p-1 text-center cursor-pointer hover:bg-muted"
-                                  onClick={() => setSelectedAspect(aspect)}
-                                >
-                                  <span
-                                    className={`text-lg ${getAspectStrengthColor(aspect.strength)}`}
-                                    style={{ color: getAspectColor(aspect.type) }}
-                                  >
-                                    {getAspectSymbol(aspect.type)}
+                            if (i === j) {
+                              // Diagonal - show planet name
+                              return (
+                                <td key={planet2} className="p-1 text-center bg-muted">
+                                  <span className="text-[10px] capitalize">
+                                    {planet1.slice(0, 3)}
                                   </span>
                                 </td>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <div className="text-xs space-y-1">
-                                  <div className="font-medium">
-                                    {planet1} {getAspectSymbol(aspect.type)} {planet2}
-                                  </div>
-                                  <div>
-                                    {aspect.type} ({aspect.angle}°)
-                                  </div>
-                                  <div>Orb: {aspect.orb.toFixed(2)}°</div>
-                                  <div>Strength: {aspect.strength}</div>
-                                  <div>{aspect.applying ? 'Applying' : 'Separating'}</div>
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )
-                      })}
-                    </tr>
-                  ))}
+                              )
+                            }
+
+                            if (!aspect) {
+                              return (
+                                <td key={planet2} className="p-1 text-center">
+                                  -
+                                </td>
+                              )
+                            }
+
+                            return (
+                              <TooltipProvider key={planet2}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <td
+                                      className="p-1 text-center cursor-pointer hover:bg-muted"
+                                      onClick={() => setSelectedAspect(aspect)}
+                                    >
+                                      <span
+                                        className={`text-lg ${getAspectStrengthColor(aspect.strength)}`}
+                                        style={{ color: getAspectColor(aspect.type) }}
+                                      >
+                                        {getAspectSymbol(aspect.type)}
+                                      </span>
+                                    </td>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <div className="text-xs space-y-1">
+                                      <div className="font-medium">
+                                        {planet1} {getAspectSymbol(aspect.type)} {planet2}
+                                      </div>
+                                      <div>
+                                        {aspect.type} ({aspect.angle}°)
+                                      </div>
+                                      <div>Orb: {aspect.orb.toFixed(2)}°</div>
+                                      <div>Strength: {aspect.strength}</div>
+                                      <div>{aspect.applying ? 'Applying' : 'Separating'}</div>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )
+                          })}
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -413,7 +421,8 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
             <div>
               <h4 className="text-sm font-medium mb-3">Most Aspected Planets</h4>
               <div className="space-y-2">
-                {getPlanetOrderArray().filter(p => planets[p])
+                {getPlanetOrderArray()
+                  .filter(p => planets[p])
                   .map(planet => {
                     const planetAspects = safeAspects.filter(
                       a => a.planet1 === planet || a.planet2 === planet

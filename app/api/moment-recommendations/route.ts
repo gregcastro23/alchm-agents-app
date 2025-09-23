@@ -34,29 +34,38 @@ function calculateMomentScore(
 
   // Calculate base alignment score
   const peakHours = kineticProfile.peak_hours || []
-  const powerAlignment = peakHours.includes(currentPlanetaryHour) ? 0.9 :
-                        kineticProfile.power_alignment?.includes(currentPlanetaryHour) ? 0.7 : 0.5
+  const powerAlignment = peakHours.includes(currentPlanetaryHour)
+    ? 0.9
+    : kineticProfile.power_alignment?.includes(currentPlanetaryHour)
+      ? 0.7
+      : 0.5
 
   // Calculate aspect sensitivity based on current aspects
-  const aspectSensitivity = kineticProfile.aspect_sensitivity ?
-    Object.values(kineticProfile.aspect_sensitivity).reduce((a: number, b: any) => a + b, 0) / 6 : 0.5
+  const aspectSensitivity = kineticProfile.aspect_sensitivity
+    ? Object.values(kineticProfile.aspect_sensitivity).reduce((a: number, b: any) => a + b, 0) / 6
+    : 0.5
 
   // Momentum compatibility - higher for unique momentum types not in selected agents
-  const selectedMomentumTypes = selectedAgents.map(id => {
-    const profile = getAgentKineticProfile(id)
-    return profile?.momentum_type
-  }).filter(Boolean)
+  const selectedMomentumTypes = selectedAgents
+    .map(id => {
+      const profile = getAgentKineticProfile(id)
+      return profile?.momentum_type
+    })
+    .filter(Boolean)
 
   const isUniqueMomentum = !selectedMomentumTypes.includes(kineticProfile.momentum_type)
   const momentumCompatibility = isUniqueMomentum ? 0.8 : 0.4
 
   // Factor in alchemical resonance
   const alchemicalBonus = alchemicalData?.Energy > 500 ? 0.1 : 0
-  const elementalBonus = alchemicalData?.totals ?
-    Math.max(...Object.values(alchemicalData.totals)) > 50 ? 0.1 : 0 : 0
+  const elementalBonus = alchemicalData?.totals
+    ? Math.max(...Object.values(alchemicalData.totals)) > 50
+      ? 0.1
+      : 0
+    : 0
 
   // Calculate final score
-  const baseScore = (powerAlignment * 0.4) + (aspectSensitivity * 0.3) + (momentumCompatibility * 0.3)
+  const baseScore = powerAlignment * 0.4 + aspectSensitivity * 0.3 + momentumCompatibility * 0.3
   const bonusScore = alchemicalBonus + elementalBonus
   const finalScore = Math.min(1, baseScore + bonusScore)
 
@@ -97,7 +106,7 @@ function calculateMomentScore(
     aspectSensitivity,
     momentumCompatibility,
     optimalTopics,
-    nextOptimalWindow
+    nextOptimalWindow,
   }
 }
 
@@ -153,7 +162,12 @@ export async function GET(req: Request) {
     const recommendations: RecommendationScore[] = []
 
     for (const agent of demoCraftedAgents) {
-      const recommendation = calculateMomentScore(agent.id, currentMoment, alchemicalData, selectedAgents)
+      const recommendation = calculateMomentScore(
+        agent.id,
+        currentMoment,
+        alchemicalData,
+        selectedAgents
+      )
       if (recommendation) {
         recommendations.push(recommendation)
       }
@@ -161,7 +175,10 @@ export async function GET(req: Request) {
 
     // Filter by category if specified
     let filteredRecommendations = recommendations
-    if (categoryFilter && ['optimal', 'enhanced', 'compatible', 'challenging', 'neutral'].includes(categoryFilter)) {
+    if (
+      categoryFilter &&
+      ['optimal', 'enhanced', 'compatible', 'challenging', 'neutral'].includes(categoryFilter)
+    ) {
       filteredRecommendations = recommendations.filter(r => r.category === categoryFilter)
     }
 
@@ -179,30 +196,32 @@ export async function GET(req: Request) {
       timestamp: currentMoment.toISOString(),
       planetaryHour: currentPlanetaryHour,
       location: { latitude: lat, longitude: lon },
-      alchemicalConditions: alchemicalData ? {
-        energy: alchemicalData.Energy,
-        heat: alchemicalData.Heat,
-        entropy: alchemicalData.Entropy,
-        reactivity: alchemicalData.Reactivity,
-        dominantElement: Object.entries(alchemicalData.totals)
-          .reduce((a, b) => (alchemicalData.totals[a[0]] > alchemicalData.totals[b[0]]) ? a : b)[0]
-      } : null,
+      alchemicalConditions: alchemicalData
+        ? {
+            energy: alchemicalData.Energy,
+            heat: alchemicalData.Heat,
+            entropy: alchemicalData.Entropy,
+            reactivity: alchemicalData.Reactivity,
+            dominantElement: Object.entries(alchemicalData.totals).reduce((a, b) =>
+              alchemicalData.totals[a[0]] > alchemicalData.totals[b[0]] ? a : b
+            )[0],
+          }
+        : null,
       recommendationCounts: {
         optimal: recommendations.filter(r => r.category === 'optimal').length,
         enhanced: recommendations.filter(r => r.category === 'enhanced').length,
         compatible: recommendations.filter(r => r.category === 'compatible').length,
         challenging: recommendations.filter(r => r.category === 'challenging').length,
         neutral: recommendations.filter(r => r.category === 'neutral').length,
-      }
+      },
     }
 
     return NextResponse.json({
       momentSummary,
       recommendations: sortedRecommendations,
       totalAgents: demoCraftedAgents.length,
-      selectedAgents
+      selectedAgents,
     })
-
   } catch (error) {
     console.error('moment-recommendations API error:', error)
     return NextResponse.json({ error: 'Failed to compute moment recommendations' }, { status: 500 })
@@ -214,7 +233,7 @@ export async function POST(req: Request) {
     const body = await req.json()
     const lat = parseFloat(String(body.lat ?? '37.7749'))
     const lon = parseFloat(String(body.lon ?? '-122.4194'))
-    const agentIds = body.agentIds as string[] || []
+    const agentIds = (body.agentIds as string[]) || []
     const moment = body.moment ? new Date(body.moment) : new Date()
 
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
@@ -260,9 +279,9 @@ export async function POST(req: Request) {
               social: kineticProfile?.v_social || 0,
               psychological: kineticProfile?.v_psychological || 0,
               mystical: kineticProfile?.v_mystical || 0,
-              philosophical: kineticProfile?.v_philosophical || 0
-            }
-          }
+              philosophical: kineticProfile?.v_philosophical || 0,
+            },
+          },
         })
       }
     }
@@ -271,11 +290,13 @@ export async function POST(req: Request) {
       moment: moment.toISOString(),
       location: { latitude: lat, longitude: lon },
       alchemicalConditions: alchemicalData,
-      recommendations: detailedRecommendations.sort((a, b) => b.score - a.score)
+      recommendations: detailedRecommendations.sort((a, b) => b.score - a.score),
     })
-
   } catch (error) {
     console.error('moment-recommendations POST error:', error)
-    return NextResponse.json({ error: 'Failed to compute detailed recommendations' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to compute detailed recommendations' },
+      { status: 500 }
+    )
   }
 }

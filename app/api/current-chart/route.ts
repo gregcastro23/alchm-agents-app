@@ -41,11 +41,14 @@ export async function GET(req: NextRequest) {
       statusCode = 400
     }
 
-    return NextResponse.json({
-      error: userMessage,
-      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
-      timestamp: new Date().toISOString(),
-      endpoint: 'current-chart'
-    }, { status: statusCode })
+    return NextResponse.json(
+      {
+        error: userMessage,
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+        timestamp: new Date().toISOString(),
+        endpoint: 'current-chart',
+      },
+      { status: statusCode }
+    )
   }
 }

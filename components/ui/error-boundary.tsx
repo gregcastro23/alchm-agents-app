@@ -27,14 +27,14 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return {
       hasError: true,
-      error
+      error,
     }
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.setState({
       error,
-      errorInfo
+      errorInfo,
     })
 
     // Log error to console and optional callback
@@ -114,16 +114,12 @@ function DefaultErrorFallback({ error, errorInfo, retry }: DefaultErrorFallbackP
           )}
 
           <div className="flex flex-col sm:flex-row gap-2 pt-4">
-            <Button
-              onClick={retry}
-              className="flex-1 flex items-center gap-2"
-              variant="default"
-            >
+            <Button onClick={retry} className="flex-1 flex items-center gap-2" variant="default">
               <RefreshCw className="w-4 h-4" />
               Try Again
             </Button>
             <Button
-              onClick={() => window.location.href = '/'}
+              onClick={() => (window.location.href = '/')}
               variant="outline"
               className="flex-1 flex items-center gap-2"
             >

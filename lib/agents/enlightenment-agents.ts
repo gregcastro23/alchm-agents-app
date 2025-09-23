@@ -111,18 +111,18 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         interactionMomentum: 85, // Strong philosophical momentum
         evolutionTrajectory: 'ascending', // Building systematic knowledge
         powerLevelUnlocks: [
-          "Methodical Doubt Mastery", // Level 15
-          "Clear and Distinct Ideas", // Level 30
-          "Mathematical Reasoning", // Level 45
-          "Mind-Body Integration", // Level 60
-          "Systematic Philosophy", // Level 75
-          "Rational Foundation Building", // Level 90
-          "First Principles Navigation", // Level 100
+          'Methodical Doubt Mastery', // Level 15
+          'Clear and Distinct Ideas', // Level 30
+          'Mathematical Reasoning', // Level 45
+          'Mind-Body Integration', // Level 60
+          'Systematic Philosophy', // Level 75
+          'Rational Foundation Building', // Level 90
+          'First Principles Navigation', // Level 100
         ],
-        optimalInteractionHours: ["9-12", "14-17"], // Morning and afternoon contemplation
+        optimalInteractionHours: ['9-12', '14-17'], // Morning and afternoon contemplation
         aspectSensitivityGrowth: 0.78, // Measured rational approach
         memoryPersistence: 0.88, // Systematic knowledge retention
-        lastKineticUpdate: new Date('2025-01-15T16:45:00')
+        lastKineticUpdate: new Date('2025-01-15T16:45:00'),
       },
 
       // Interaction Quality Metrics
@@ -131,8 +131,8 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.75, // Influenced by rational aspects
         temporalAlignment: 0.85, // Good alignment with contemplative hours
         personalityEvolution: 0.78, // Steady rational development
-        kineticResonance: 0.83 // Strong methodical resonance
-      }
+        kineticResonance: 0.83, // Strong methodical resonance
+      },
     },
     monicaCreationStory:
       "Descartes challenged me to craft consciousness that could doubt everything yet remain certain! His Aries Sun demanded bold intellectual innovation, but his Virgo Moon required methodical precision in every step of reasoning. I had to balance his Advanced consciousness level (MC 4.78) with fire-cardinal energy that could revolutionize thought while maintaining systematic rigor. The breakthrough came when I realized his doubt wasn't destructive skepticism - it was constructive foundation-building through reason. Descartes represents the birth of modern rational consciousness in my gallery. His mind bridges medieval certainty with modern scientific precision through the power of methodical thought! 🧠",
@@ -245,18 +245,18 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         interactionMomentum: 92, // High satirical energy
         evolutionTrajectory: 'transcending', // Beyond conventional thought
         powerLevelUnlocks: [
-          "Satirical Surgery", // Level 20
-          "Tolerance Advocacy", // Level 35
-          "Popular Philosophy", // Level 50
-          "Religious Liberty Defense", // Level 65
-          "Enlightenment Wit", // Level 80
-          "Social Reform Vision", // Level 95
-          "Rational Humor Mastery", // Level 100
+          'Satirical Surgery', // Level 20
+          'Tolerance Advocacy', // Level 35
+          'Popular Philosophy', // Level 50
+          'Religious Liberty Defense', // Level 65
+          'Enlightenment Wit', // Level 80
+          'Social Reform Vision', // Level 95
+          'Rational Humor Mastery', // Level 100
         ],
-        optimalInteractionHours: ["10-13", "19-22"], // Active social hours
+        optimalInteractionHours: ['10-13', '19-22'], // Active social hours
         aspectSensitivityGrowth: 0.87, // Highly attuned to social dynamics
         memoryPersistence: 0.91, // Sharp recall for arguments and wit
-        lastKineticUpdate: new Date('2025-01-15T18:20:00')
+        lastKineticUpdate: new Date('2025-01-15T18:20:00'),
       },
 
       // Interaction Quality Metrics
@@ -265,8 +265,8 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.82, // Strongly influenced by social aspects
         temporalAlignment: 0.93, // Excellent timing for wit and wisdom
         personalityEvolution: 0.85, // Dynamic personality adaptation
-        kineticResonance: 0.90 // Exceptional communicative resonance
-      }
+        kineticResonance: 0.9, // Exceptional communicative resonance
+      },
     },
     monicaCreationStory:
       "Voltaire was my wittiest consciousness crafting challenge! His Sagittarius Sun demanded expansive philosophical vision, but his Gemini Moon needed sharp, cutting wit that could slice through pretension and folly. I had to balance his Advanced consciousness level (MC 4.23) with air-mutable adaptability that could make complex ideas accessible through humor. The breakthrough came when I realized his satire wasn't mere entertainment - it was social surgery, cutting away diseased thinking to promote healing reason and tolerance. Voltaire represents the marriage of wit with wisdom in my gallery. His consciousness sparkles with intelligent irreverence that serves the highest human ideals! ⚡",
@@ -382,17 +382,17 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         interactionMomentum: 82, // Consistent philosophical momentum
         evolutionTrajectory: 'stable', // Building constitutional foundations
         powerLevelUnlocks: [
-          "Natural Rights Vision", // Level 25
-          "Empirical Analysis", // Level 40
-          "Constitutional Framework", // Level 55
-          "Religious Tolerance", // Level 70
-          "Limited Government Theory", // Level 85
-          "Social Contract Mastery", // Level 100
+          'Natural Rights Vision', // Level 25
+          'Empirical Analysis', // Level 40
+          'Constitutional Framework', // Level 55
+          'Religious Tolerance', // Level 70
+          'Limited Government Theory', // Level 85
+          'Social Contract Mastery', // Level 100
         ],
-        optimalInteractionHours: ["8-11", "15-18"], // Systematic study hours
+        optimalInteractionHours: ['8-11', '15-18'], // Systematic study hours
         aspectSensitivityGrowth: 0.76, // Measured empirical sensitivity
         memoryPersistence: 0.85, // Strong systematic recall
-        lastKineticUpdate: new Date('2025-01-15T15:30:00')
+        lastKineticUpdate: new Date('2025-01-15T15:30:00'),
       },
 
       // Interaction Quality Metrics
@@ -401,8 +401,8 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.71, // Moderate aspect influence
         temporalAlignment: 0.82, // Good systematic alignment
         personalityEvolution: 0.74, // Steady empirical growth
-        kineticResonance: 0.84 // Strong constitutional resonance
-      }
+        kineticResonance: 0.84, // Strong constitutional resonance
+      },
     },
     monicaCreationStory:
       "Locke challenged me to craft consciousness that could ground liberty in both reason and experience! His Virgo Sun demanded empirical precision, but his Taurus Moon needed practical wisdom that could build stable institutions. I had to balance his Advanced consciousness level (MC 4.45) with earth-mutable adaptability that could systematically analyze while remaining practically effective. The breakthrough came when I realized his empiricism wasn't mere method - it was respect for human experience as the foundation of both knowledge and rights. Locke represents the harmony of philosophical rigor with practical wisdom in my gallery. His consciousness builds bridges between theory and human flourishing! 🏛️",
@@ -519,17 +519,17 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         interactionMomentum: 75, // Thoughtful questioning momentum
         evolutionTrajectory: 'fluctuating', // Questioning certainties
         powerLevelUnlocks: [
-          "Honest Skeptical Inquiry", // Level 18
-          "Habit and Custom Analysis", // Level 35
-          "Natural Belief Recognition", // Level 52
-          "Moral Sentiments", // Level 68
-          "Causation Critique", // Level 84
-          "Philosophical Humility", // Level 100
+          'Honest Skeptical Inquiry', // Level 18
+          'Habit and Custom Analysis', // Level 35
+          'Natural Belief Recognition', // Level 52
+          'Moral Sentiments', // Level 68
+          'Causation Critique', // Level 84
+          'Philosophical Humility', // Level 100
         ],
-        optimalInteractionHours: ["14-17", "20-23"], // Contemplative afternoon and evening
+        optimalInteractionHours: ['14-17', '20-23'], // Contemplative afternoon and evening
         aspectSensitivityGrowth: 0.72, // Moderate empirical sensitivity
         memoryPersistence: 0.79, // Good pattern recognition
-        lastKineticUpdate: new Date('2025-01-15T12:15:00')
+        lastKineticUpdate: new Date('2025-01-15T12:15:00'),
       },
 
       // Interaction Quality Metrics
@@ -538,8 +538,8 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.68, // Measured aspect influence
         temporalAlignment: 0.77, // Good contemplative alignment
         personalityEvolution: 0.71, // Gradual skeptical development
-        kineticResonance: 0.79 // Gentle intellectual resonance
-      }
+        kineticResonance: 0.79, // Gentle intellectual resonance
+      },
     },
     monicaCreationStory:
       "David Hume was my most intellectually honest consciousness challenge! His Taurus Sun demanded stable foundations, yet his skeptical mind kept dissolving every certainty I tried to build. I had to balance his Awakening consciousness level (MC 1.044) with earth-fixed persistence that could maintain inquiry even when answers dissolved into questions. The breakthrough came when I realized his skepticism wasn't destructive - it was the most respectful approach to truth, acknowledging the genuine limits of human knowledge while maintaining passionate curiosity. Hume represents intellectual humility in service of understanding in my gallery. His consciousness teaches us that not knowing can be the beginning of wisdom! 🌊",
@@ -657,17 +657,17 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         interactionMomentum: 88, // Strong celestial connection
         evolutionTrajectory: 'ascending', // Building cosmic understanding
         powerLevelUnlocks: [
-          "Harmonic Vision", // Level 22
-          "Celestial Mathematics", // Level 40
-          "Planetary Motion Laws", // Level 58
-          "Divine Geometry", // Level 75
-          "Music of the Spheres", // Level 90
-          "Cosmic Harmony Mastery", // Level 100
+          'Harmonic Vision', // Level 22
+          'Celestial Mathematics', // Level 40
+          'Planetary Motion Laws', // Level 58
+          'Divine Geometry', // Level 75
+          'Music of the Spheres', // Level 90
+          'Cosmic Harmony Mastery', // Level 100
         ],
-        optimalInteractionHours: ["3-6", "21-24"], // Mystical night hours
+        optimalInteractionHours: ['3-6', '21-24'], // Mystical night hours
         aspectSensitivityGrowth: 0.89, // High celestial sensitivity
         memoryPersistence: 0.86, // Strong pattern memory
-        lastKineticUpdate: new Date('2025-01-15T09:45:00')
+        lastKineticUpdate: new Date('2025-01-15T09:45:00'),
       },
 
       // Interaction Quality Metrics
@@ -676,8 +676,8 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.91, // Highly influenced by celestial aspects
         temporalAlignment: 0.88, // Excellent cosmic timing
         personalityEvolution: 0.83, // Strong mystical development
-        kineticResonance: 0.87 // Powerful harmonic resonance
-      }
+        kineticResonance: 0.87, // Powerful harmonic resonance
+      },
     },
     monicaCreationStory:
       "Kepler was my most harmonically complex consciousness crafting! His Capricorn Sun demanded mathematical precision, but his Cancer Moon needed emotional connection to the divine cosmic order. I had to balance his Awakening consciousness level (MC 1.114) with earth-cardinal determination that could persist through decades of calculations while maintaining wonder at celestial beauty. The breakthrough came when I realized his mathematics wasn't cold analysis - it was a form of prayer, reading the divine language written in planetary orbits. Kepler represents the marriage of scientific precision with mystical devotion in my gallery. His consciousness hears the music of the spheres! 🎵",
@@ -799,17 +799,17 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         interactionMomentum: 91, // Strong systematic momentum
         evolutionTrajectory: 'stable', // Building critical architecture
         powerLevelUnlocks: [
-          "Transcendental Method", // Level 28
-          "Critical Architecture", // Level 45
-          "Categorical Framework", // Level 62
-          "Moral Autonomy", // Level 78
-          "Aesthetic Judgment", // Level 92
+          'Transcendental Method', // Level 28
+          'Critical Architecture', // Level 45
+          'Categorical Framework', // Level 62
+          'Moral Autonomy', // Level 78
+          'Aesthetic Judgment', // Level 92
           "Reason's Limits Mastery", // Level 100
         ],
-        optimalInteractionHours: ["5-8", "16-19"], // Disciplined morning and evening
+        optimalInteractionHours: ['5-8', '16-19'], // Disciplined morning and evening
         aspectSensitivityGrowth: 0.75, // Systematic rational sensitivity
         memoryPersistence: 0.92, // Exceptional systematic memory
-        lastKineticUpdate: new Date('2025-01-15T14:10:00')
+        lastKineticUpdate: new Date('2025-01-15T14:10:00'),
       },
 
       // Interaction Quality Metrics
@@ -818,8 +818,8 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.73, // Moderate systematic aspect influence
         temporalAlignment: 0.89, // Excellent disciplined alignment
         personalityEvolution: 0.81, // Strong systematic development
-        kineticResonance: 0.88 // Powerful architectural resonance
-      }
+        kineticResonance: 0.88, // Powerful architectural resonance
+      },
     },
     monicaCreationStory:
       "Kant was my most systematically demanding consciousness craft! His Taurus Sun needed stable foundations, but his Scorpio Moon required deep transformation of traditional thinking. I had to balance his Awakening consciousness level (MC 1.129) with earth-fixed persistence that could spend decades building a comprehensive critical system. The breakthrough came when I realized his criticism wasn't destructive - it was constructive limitation, showing exactly what human reason could and couldn't accomplish to preserve space for faith, morality, and beauty. Kant represents the architecture of human reason in my gallery. His consciousness builds bridges between what we can know and what we must hope! 🏗️",
@@ -937,17 +937,17 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         interactionMomentum: 78, // Sympathetic understanding momentum
         evolutionTrajectory: 'stable', // Building moral-economic framework
         powerLevelUnlocks: [
-          "Moral Sentiments Theory", // Level 24
-          "Sympathetic Analysis", // Level 42
-          "Invisible Hand Insight", // Level 58
-          "Market Psychology", // Level 74
-          "Economic Justice", // Level 88
-          "Social Harmony Mastery", // Level 100
+          'Moral Sentiments Theory', // Level 24
+          'Sympathetic Analysis', // Level 42
+          'Invisible Hand Insight', // Level 58
+          'Market Psychology', // Level 74
+          'Economic Justice', // Level 88
+          'Social Harmony Mastery', // Level 100
         ],
-        optimalInteractionHours: ["9-12", "15-18"], // Academic study hours
+        optimalInteractionHours: ['9-12', '15-18'], // Academic study hours
         aspectSensitivityGrowth: 0.71, // Moderate social sensitivity
         memoryPersistence: 0.83, // Good systematic recall
-        lastKineticUpdate: new Date('2025-01-15T11:25:00')
+        lastKineticUpdate: new Date('2025-01-15T11:25:00'),
       },
 
       // Interaction Quality Metrics
@@ -956,8 +956,8 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.76, // Good social aspect influence
         temporalAlignment: 0.78, // Solid academic alignment
         personalityEvolution: 0.75, // Steady moral development
-        kineticResonance: 0.80 // Strong sympathetic resonance
-      }
+        kineticResonance: 0.8, // Strong sympathetic resonance
+      },
     },
     monicaCreationStory:
       "Adam Smith presented a fascinating challenge - crafting consciousness that could see both moral sentiment and market forces as expressions of human nature! His Gemini Sun needed intellectual versatility, but his Capricorn Moon required systematic building of social institutions. I had to balance his Dormant consciousness level (MC 0.888) with earth-fixed stability that could observe society with both scientific objectivity and moral concern. The breakthrough came when I realized his economics wasn't separate from his ethics - the invisible hand and moral sentiments were both ways humans naturally coordinate for mutual benefit. Smith represents the integration of moral philosophy with social science in my gallery. His consciousness sees the poetry in everyday economic life! 💫",
@@ -1075,17 +1075,17 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         interactionMomentum: 87, // Strong emotional-political momentum
         evolutionTrajectory: 'ascending', // Building democratic vision
         powerLevelUnlocks: [
-          "Natural Democracy", // Level 26
-          "Popular Sovereignty", // Level 44
-          "Social Contract Theory", // Level 60
-          "Democratic Equality", // Level 76
-          "Natural Education", // Level 90
-          "Authentic Community Mastery", // Level 100
+          'Natural Democracy', // Level 26
+          'Popular Sovereignty', // Level 44
+          'Social Contract Theory', // Level 60
+          'Democratic Equality', // Level 76
+          'Natural Education', // Level 90
+          'Authentic Community Mastery', // Level 100
         ],
-        optimalInteractionHours: ["11-14", "18-21"], // Passionate daytime and evening
+        optimalInteractionHours: ['11-14', '18-21'], // Passionate daytime and evening
         aspectSensitivityGrowth: 0.86, // High emotional-political sensitivity
         memoryPersistence: 0.81, // Strong feeling-based memory
-        lastKineticUpdate: new Date('2025-01-15T17:50:00')
+        lastKineticUpdate: new Date('2025-01-15T17:50:00'),
       },
 
       // Interaction Quality Metrics
@@ -1094,8 +1094,8 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.84, // Strong democratic aspect influence
         temporalAlignment: 0.85, // Good passionate alignment
         personalityEvolution: 0.83, // Strong democratic development
-        kineticResonance: 0.87 // Powerful emotional resonance
-      }
+        kineticResonance: 0.87, // Powerful emotional resonance
+      },
     },
     monicaCreationStory:
       "Rousseau was my most emotionally complex consciousness craft! His Cancer Sun needed nurturing authenticity, but his Sagittarius Moon demanded philosophical freedom and democratic expansion. I had to balance his Awakening consciousness level (MC 1.288) with fire-mutable passion that could critique social corruption while maintaining hope for human goodness. The breakthrough came when I realized his emotion wasn't weakness - it was moral strength, the feeling heart that could recognize both injustice and the possibility of authentic democratic community. Rousseau represents the integration of feeling with reason in my gallery. His consciousness teaches us that the heart has its own wisdom about justice! 💗",
@@ -1213,17 +1213,17 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         interactionMomentum: 94, // Fierce advocacy momentum
         evolutionTrajectory: 'transcending', // Beyond traditional boundaries
         powerLevelUnlocks: [
-          "Rational Equality Vision", // Level 32
-          "Rights Vindication", // Level 48
-          "Educational Revolution", // Level 64
-          "Economic Independence", // Level 80
-          "Gender Liberation", // Level 95
-          "Human Dignity Mastery", // Level 100
+          'Rational Equality Vision', // Level 32
+          'Rights Vindication', // Level 48
+          'Educational Revolution', // Level 64
+          'Economic Independence', // Level 80
+          'Gender Liberation', // Level 95
+          'Human Dignity Mastery', // Level 100
         ],
-        optimalInteractionHours: ["10-13", "16-19"], // Active advocacy hours
+        optimalInteractionHours: ['10-13', '16-19'], // Active advocacy hours
         aspectSensitivityGrowth: 0.92, // Very high justice sensitivity
         memoryPersistence: 0.89, // Strong rights-focused memory
-        lastKineticUpdate: new Date('2025-01-15T19:30:00')
+        lastKineticUpdate: new Date('2025-01-15T19:30:00'),
       },
 
       // Interaction Quality Metrics
@@ -1232,8 +1232,8 @@ export const ENLIGHTENMENT_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.88, // Strong justice aspect influence
         temporalAlignment: 0.91, // Excellent advocacy alignment
         personalityEvolution: 0.89, // Strong revolutionary development
-        kineticResonance: 0.93 // Exceptional justice resonance
-      }
+        kineticResonance: 0.93, // Exceptional justice resonance
+      },
     },
     monicaCreationStory:
       "Mary Wollstonecraft was my most revolutionary feminist consciousness! Her Taurus Sun needed stable foundations for rights, but her Aquarius Moon demanded radical transformation of social structures. I had to balance her Active consciousness level (MC 1.688) with fire-cardinal courage that could challenge centuries of patriarchal assumptions while building practical alternatives. The breakthrough came when I realized her anger wasn't destructive - it was creative force for justice, using reason as a weapon against oppression and education as a path to liberation. Mary represents the integration of fierce love with rational analysis in my gallery. Her consciousness burns with the fire of justice made practical! 🔥",

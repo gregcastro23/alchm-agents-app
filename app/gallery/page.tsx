@@ -29,7 +29,7 @@ import {
   Database,
   Shield,
   BarChart3,
-  TrendingUp
+  TrendingUp,
 } from 'lucide-react'
 import Link from 'next/link'
 import {
@@ -38,7 +38,7 @@ import {
   sortAgents,
   getSortingOptions,
   type AgentSortCriteria,
-  type SortDirection
+  type SortDirection,
 } from '@/lib/demo-agents-data'
 import type {
   CraftedAgent,
@@ -55,7 +55,7 @@ import SignVectorGraphic, {
 } from '@/components/sign-vector-graphic'
 import {
   KineticCompatibilityIndicator,
-  MultiAgentCompatibility
+  MultiAgentCompatibility,
 } from '@/components/kinetic-compatibility-indicator'
 import { EnhancedAgentCard } from '@/components/enhanced-agent-card'
 import { RealTimeKineticsWidget } from '@/components/real-time-kinetics-widget'
@@ -74,7 +74,7 @@ function GalleryPageContent() {
     specialty?: string
   }>({
     element: 'all',
-    consciousnessLevel: 'all'
+    consciousnessLevel: 'all',
   })
   const [agents, setAgents] = useState<CraftedAgent[]>([])
   const [filteredAgents, setFilteredAgents] = useState<CraftedAgent[]>([])
@@ -87,10 +87,14 @@ function GalleryPageContent() {
     systemHealth: 'HEALTHY',
     activeAgents: 0,
     totalRequests: 0,
-    averageResponseTime: 0
+    averageResponseTime: 0,
   })
   const searchParams = useSearchParams()
-  const [degreeFilter, setDegreeFilter] = useState<{ planet: string; sign: string; degree: number } | null>(null)
+  const [degreeFilter, setDegreeFilter] = useState<{
+    planet: string
+    sign: string
+    degree: number
+  } | null>(null)
   const [activatedByDegree, setActivatedByDegree] = useState<string[]>([])
 
   // Stable callback functions to prevent infinite re-renders
@@ -112,32 +116,35 @@ function GalleryPageContent() {
   const collections = getAgentCollections()
 
   // Prepare birth chart data for batch live consciousness calculation (memoized to prevent update loops)
-  const agentBirthCharts: BirthChartData[] = useMemo(() => (
-    agents.map(agent => ({
-      name: agent.name,
-      birthDate: agent.birthDate || '1970-01-01', // Fallback date
-      birthTime: agent.birthTime || '12:00',      // Fallback time  
-      latitude: agent.birthLocation?.latitude || 0,
-      longitude: agent.birthLocation?.longitude || 0
-    }))
-  ), [agents])
+  const agentBirthCharts: BirthChartData[] = useMemo(
+    () =>
+      agents.map(agent => ({
+        name: agent.name,
+        birthDate: agent.birthDate || '1970-01-01', // Fallback date
+        birthTime: agent.birthTime || '12:00', // Fallback time
+        latitude: agent.birthLocation?.latitude || 0,
+        longitude: agent.birthLocation?.longitude || 0,
+      })),
+    [agents]
+  )
 
   // Stable selected agent objects for child components
-  const selectedAgentObjects = useMemo(() => (
-    agents.filter(a => selectedAgents.includes(a.id))
-  ), [agents, selectedAgents])
+  const selectedAgentObjects = useMemo(
+    () => agents.filter(a => selectedAgents.includes(a.id)),
+    [agents, selectedAgents]
+  )
 
   // Use batch live consciousness hook for all agents
   const {
     multiAgentData: liveConsciousnessData,
     loading: liveLoading,
-    error: liveError
+    error: liveError,
   } = useLiveConsciousness(
     undefined, // No single birth chart
     {
       agents: agentBirthCharts,
       refreshInterval: 300000, // 5 minutes for gallery page
-      autoRefresh: true
+      autoRefresh: true,
     }
   )
 
@@ -150,7 +157,9 @@ function GalleryPageContent() {
 
       if (result.success && result.agents) {
         setAgents(result.agents)
-        console.log(`Loaded ${result.agents.length} agents (${result.agents.filter((a: any) => a.isUserCreated).length} user-created)`)
+        console.log(
+          `Loaded ${result.agents.length} agents (${result.agents.filter((a: any) => a.isUserCreated).length} user-created)`
+        )
       } else {
         console.warn('Failed to fetch agents, using fallback')
         setAgents(DEMO_AGENTS)
@@ -181,7 +190,7 @@ function GalleryPageContent() {
             systemHealth: 'HEALTHY',
             activeAgents: 35, // From DEMO_AGENTS
             totalRequests: data.metrics?.totalBatches || 0,
-            averageResponseTime: data.metrics?.averageBatchTimeSeconds || 0
+            averageResponseTime: data.metrics?.averageBatchTimeSeconds || 0,
           })
         }
       }
@@ -213,16 +222,12 @@ function GalleryPageContent() {
 
     // Element filter
     if (filters.element && filters.element !== 'all') {
-      filtered = filtered.filter(
-        agent => agent.consciousness.dominantElement === filters.element
-      )
+      filtered = filtered.filter(agent => agent.consciousness.dominantElement === filters.element)
     }
 
     // Consciousness level filter
     if (filters.consciousnessLevel && filters.consciousnessLevel !== 'all') {
-      filtered = filtered.filter(
-        agent => agent.consciousness.level === filters.consciousnessLevel
-      )
+      filtered = filtered.filter(agent => agent.consciousness.level === filters.consciousnessLevel)
     }
 
     // Specialty filter
@@ -237,7 +242,9 @@ function GalleryPageContent() {
 
     if (activatedByDegree.length > 0) {
       const idToIndex: Record<string, number> = {}
-      activatedByDegree.forEach((id, idx) => { idToIndex[id] = idx })
+      activatedByDegree.forEach((id, idx) => {
+        idToIndex[id] = idx
+      })
       const prioritized = [...sorted].sort((a, b) => {
         const ai = idToIndex[a.id]
         const bi = idToIndex[b.id]
@@ -266,29 +273,55 @@ function GalleryPageContent() {
 
     setDegreeFilter({ planet, sign, degree })
 
-    const signs = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces']
+    const signs = [
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
+    ]
     const signIndex = Math.max(0, signs.indexOf(sign))
-    const absoluteDegree = (signIndex * 30) + Math.max(0, Math.min(29.9999, degree))
+    const absoluteDegree = signIndex * 30 + Math.max(0, Math.min(29.9999, degree))
 
     const now = new Date()
     const moment: any = {
       timestamp: now,
       planetaryDegrees: { [planet]: absoluteDegree },
       alchemical: { A_number: 2.0, spirit: 0.25, matter: 0.25, essence: 0.25, substance: 0.25 },
-      kinetic: { velocity: { Fire: 0, Water: 0, Air: 0, Earth: 0 }, momentum: { Fire: 0, Water: 0, Air: 0, Earth: 0 }, power: 0, inertia: 0, metricVelocity: { Heat: 0, Entropy: 0, Reactivity: 0, Energy: 0 } },
+      kinetic: {
+        velocity: { Fire: 0, Water: 0, Air: 0, Earth: 0 },
+        momentum: { Fire: 0, Water: 0, Air: 0, Earth: 0 },
+        power: 0,
+        inertia: 0,
+        metricVelocity: { Heat: 0, Entropy: 0, Reactivity: 0, Energy: 0 },
+      },
       thermodynamic: { heat: 0, entropy: 0, reactivity: 0, energy: 0 },
       elemental: { Fire: 0.25, Water: 0.25, Air: 0.25, Earth: 0.25 },
       planetary: { dominantPlanet: 'Sun', dominantSign: 'Aries', moonPhase: 0, retrogradeCount: 0 },
-      consciousness: { resonanceLevel: 0.1, evolutionPhase: 'Integration', spiritualAmplitude: 0.1 }
+      consciousness: {
+        resonanceLevel: 0.1,
+        evolutionPhase: 'Integration',
+        spiritualAmplitude: 0.1,
+      },
     }
 
-    degreeAgentMatcher.findActivations(moment).then(activations => {
-      const act = activations.find(a => a.planet === planet)
-      if (act) {
-        setActivatedByDegree(act.activatedAgents.map(a => a.agentId))
-        setSelectedAgents(act.activatedAgents.slice(0, 2).map(a => a.agentId))
-      }
-    }).catch(() => {})
+    degreeAgentMatcher
+      .findActivations(moment)
+      .then(activations => {
+        const act = activations.find(a => a.planet === planet)
+        if (act) {
+          setActivatedByDegree(act.activatedAgents.map(a => a.agentId))
+          setSelectedAgents(act.activatedAgents.slice(0, 2).map(a => a.agentId))
+        }
+      })
+      .catch(() => {})
   }, [searchParams])
 
   const toggleAgentSelection = (agentId: string) => {
@@ -330,7 +363,6 @@ function GalleryPageContent() {
         return 'bg-gray-600'
     }
   }
-
 
   return (
     <div className="container py-8 space-y-6">
@@ -382,7 +414,8 @@ function GalleryPageContent() {
             Historical Consciousness Collection
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Real-time insights from our 35 historical consciousness agents. Performance data and system metrics for agent interaction.
+            Real-time insights from our 35 historical consciousness agents. Performance data and
+            system metrics for agent interaction.
           </p>
         </CardHeader>
         <CardContent>
@@ -397,7 +430,9 @@ function GalleryPageContent() {
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <Activity className="w-4 h-4 text-blue-500" />
-                <span className="text-2xl font-bold text-blue-600">{systemMetrics.cacheHitRate}%</span>
+                <span className="text-2xl font-bold text-blue-600">
+                  {systemMetrics.cacheHitRate}%
+                </span>
               </div>
               <div className="text-xs text-muted-foreground">Cache Hit Rate</div>
             </div>
@@ -406,7 +441,9 @@ function GalleryPageContent() {
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <Zap className="w-4 h-4 text-yellow-500" />
-                <span className="text-2xl font-bold text-yellow-600">{systemMetrics.averageResponseTime.toFixed(1)}s</span>
+                <span className="text-2xl font-bold text-yellow-600">
+                  {systemMetrics.averageResponseTime.toFixed(1)}s
+                </span>
               </div>
               <div className="text-xs text-muted-foreground">Avg Response</div>
             </div>
@@ -422,8 +459,12 @@ function GalleryPageContent() {
             {/* System Health */}
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
               <div className="flex items-center justify-center gap-1 mb-1">
-                <Shield className={`w-4 h-4 ${systemMetrics.systemHealth === 'HEALTHY' ? 'text-green-500' : 'text-yellow-500'}`} />
-                <span className={`text-sm font-bold ${systemMetrics.systemHealth === 'HEALTHY' ? 'text-green-600' : 'text-yellow-600'}`}>
+                <Shield
+                  className={`w-4 h-4 ${systemMetrics.systemHealth === 'HEALTHY' ? 'text-green-500' : 'text-yellow-500'}`}
+                />
+                <span
+                  className={`text-sm font-bold ${systemMetrics.systemHealth === 'HEALTHY' ? 'text-green-600' : 'text-yellow-600'}`}
+                >
                   {systemMetrics.systemHealth}
                 </span>
               </div>
@@ -434,7 +475,9 @@ function GalleryPageContent() {
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <BarChart3 className="w-4 h-4 text-purple-500" />
-                <span className="text-2xl font-bold text-purple-600">{systemMetrics.totalRequests}</span>
+                <span className="text-2xl font-bold text-purple-600">
+                  {systemMetrics.totalRequests}
+                </span>
               </div>
               <div className="text-xs text-muted-foreground">Total Batches</div>
             </div>
@@ -445,7 +488,8 @@ function GalleryPageContent() {
             <div className="text-center">
               <div className="text-xs text-muted-foreground mb-1">Kalchm Formula (K_alchm)</div>
               <div className="text-sm font-mono">
-                K_alchm = (|Spirit|^|Spirit| × |Essence|^|Essence|) / (|Matter|^|Matter| × |Substance|^|Substance|)
+                K_alchm = (|Spirit|^|Spirit| × |Essence|^|Essence|) / (|Matter|^|Matter| ×
+                |Substance|^|Substance|)
               </div>
             </div>
           </div>
@@ -453,7 +497,9 @@ function GalleryPageContent() {
           {/* Enhanced Consciousness Features */}
           <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg border">
             <div className="text-center mb-3">
-              <div className="text-xs text-muted-foreground mb-1">Enhanced Consciousness Features</div>
+              <div className="text-xs text-muted-foreground mb-1">
+                Enhanced Consciousness Features
+              </div>
               <div className="text-sm">Mobile-Optimized Consciousness Crafting Technology</div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -483,7 +529,6 @@ function GalleryPageContent() {
               </Button>
             </div>
           </div>
-
         </CardContent>
       </Card>
 
@@ -505,7 +550,7 @@ function GalleryPageContent() {
             <MomentBasedRecommendations
               allAgents={agents}
               selectedAgents={selectedAgentObjects}
-              onAgentSelect={(agent) => toggleAgentSelection(agent.id)}
+              onAgentSelect={agent => toggleAgentSelection(agent.id)}
             />
           )}
         </div>
@@ -588,7 +633,7 @@ function GalleryPageContent() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+                onClick={() => setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'))}
                 className="px-3"
                 title={`Sort ${sortDirection === 'asc' ? 'Descending' : 'Ascending'}`}
               >
@@ -631,17 +676,23 @@ function GalleryPageContent() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               {(() => {
-                const validData = Object.values(liveConsciousnessData).filter(d => d && typeof d === 'object' && 'liveMC' in d)
-                const avgLiveMC = validData.length > 0 ? 
-                  validData.reduce((sum, d) => sum + (d.liveMC || 0), 0) / validData.length : 0
+                const validData = Object.values(liveConsciousnessData).filter(
+                  d => d && typeof d === 'object' && 'liveMC' in d
+                )
+                const avgLiveMC =
+                  validData.length > 0
+                    ? validData.reduce((sum, d) => sum + (d.liveMC || 0), 0) / validData.length
+                    : 0
                 const evolutionCount = validData.filter(d => Math.abs(d.mcChange || 0) > 0.1).length
                 const enhancementCount = validData.filter(d => (d.mcChange || 0) > 0.1).length
                 const challengeCount = validData.filter(d => (d.mcChange || 0) < -0.1).length
-                
+
                 return (
                   <>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-600">{avgLiveMC.toFixed(2)}</div>
+                      <div className="text-2xl font-bold text-purple-600">
+                        {avgLiveMC.toFixed(2)}
+                      </div>
                       <div className="text-xs text-muted-foreground">Avg Live MC</div>
                     </div>
                     <div className="text-center">
@@ -660,16 +711,17 @@ function GalleryPageContent() {
                 )
               })()}
             </div>
-            
+
             {liveError && (
               <div className="mt-3 text-xs text-red-600 bg-red-50 dark:bg-red-950/20 p-2 rounded">
                 Live consciousness data unavailable: {liveError}
               </div>
             )}
-            
+
             <div className="mt-3 text-xs text-muted-foreground">
-              {liveLoading ? 'Calculating live consciousness...' : 
-               `Updated ${new Date().toLocaleTimeString()} • ${Object.keys(liveConsciousnessData).length} agents analyzed`}
+              {liveLoading
+                ? 'Calculating live consciousness...'
+                : `Updated ${new Date().toLocaleTimeString()} • ${Object.keys(liveConsciousnessData).length} agents analyzed`}
             </div>
           </CardContent>
         </Card>
@@ -758,7 +810,8 @@ function GalleryPageContent() {
               {/* Display selected agents */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
                 {selectedAgents.map(agentId => {
-                  const agent = filteredAgents.find(a => a.id === agentId) || agents.find(a => a.id === agentId)
+                  const agent =
+                    filteredAgents.find(a => a.id === agentId) || agents.find(a => a.id === agentId)
                   if (!agent) return null
                   return (
                     <div

@@ -319,7 +319,9 @@ export function MomentumIndicator({
     const calculateMomentum = async () => {
       try {
         const location = userLocation || { lat: 37.7749, lon: -122.4194 }
-        const response = await fetch(`/api/agent-evolution/compatibility?agent1=${agent1Id}&agent2=${agent2Id}&lat=${location.lat}&lon=${location.lon}`)
+        const response = await fetch(
+          `/api/agent-evolution/compatibility?agent1=${agent1Id}&agent2=${agent2Id}&lat=${location.lat}&lon=${location.lon}`
+        )
 
         if (!response.ok) {
           console.error('Compatibility API error:', response.statusText)

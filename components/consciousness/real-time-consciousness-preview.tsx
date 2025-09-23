@@ -75,7 +75,7 @@ export function RealTimeConsciousnessPreview({
   customValues,
   mode,
   onMetricsChange,
-  onPersonalityChange
+  onPersonalityChange,
 }: RealTimeConsciousnessPreviewProps) {
   const [metrics, setMetrics] = useState<ConsciousnessMetrics | null>(null)
   const [personality, setPersonality] = useState<PersonalityTraits | null>(null)
@@ -87,7 +87,10 @@ export function RealTimeConsciousnessPreview({
 
   // Calculate Monica Constant based on mode
   const calculateMetrics = () => {
-    let spirit = 5.0, essence = 5.0, matter = 5.0, substance = 5.0
+    let spirit = 5.0,
+      essence = 5.0,
+      matter = 5.0,
+      substance = 5.0
 
     if (mode === 'custom' && customValues) {
       spirit = customValues.spirit
@@ -104,7 +107,7 @@ export function RealTimeConsciousnessPreview({
       spirit = 3.0 + (Math.sin(dateNum + latNum) + 1) * 4.0
       essence = 3.0 + (Math.cos(timeNum + lonNum) + 1) * 4.0
       matter = 3.0 + (Math.sin(dateNum * timeNum) + 1) * 4.0
-      substance = 3.0 + (Math.cos(latNum * lonNum / 100) + 1) * 4.0
+      substance = 3.0 + (Math.cos((latNum * lonNum) / 100) + 1) * 4.0
     } else {
       // Live mode - simulate current planetary data
       const now = Date.now() / 1000000000
@@ -129,7 +132,9 @@ export function RealTimeConsciousnessPreview({
     // Determine dominant element
     const elements = { spirit, essence, matter, substance }
     const elementNames = { spirit: 'Fire', essence: 'Water', matter: 'Air', substance: 'Earth' }
-    const dominantKey = Object.keys(elements).reduce((a, b) => elements[a] > elements[b] ? a : b) as keyof typeof elements
+    const dominantKey = Object.keys(elements).reduce((a, b) =>
+      elements[a] > elements[b] ? a : b
+    ) as keyof typeof elements
     const dominantElement = elementNames[dominantKey]
 
     // Calculate additional metrics
@@ -148,7 +153,7 @@ export function RealTimeConsciousnessPreview({
       dominantModality: spirit + matter > essence + substance ? 'Active' : 'Receptive',
       stabilityIndex: Math.max(0, Math.min(100, stabilityIndex)),
       evolutionPotential: Math.max(0, Math.min(100, evolutionPotential)),
-      resonanceFrequency
+      resonanceFrequency,
     }
 
     // Generate personality traits based on metrics
@@ -156,7 +161,7 @@ export function RealTimeConsciousnessPreview({
       core: {
         essence: generateEssence(monicaConstant, dominantElement),
         expression: generateExpression(spirit, matter),
-        emotion: generateEmotion(essence, substance)
+        emotion: generateEmotion(essence, substance),
       },
       strengths: generateStrengths(newMetrics),
       challenges: generateChallenges(newMetrics),
@@ -166,7 +171,7 @@ export function RealTimeConsciousnessPreview({
       creativityLevel: Math.min(100, spirit * 12),
       analyticalDepth: Math.min(100, matter * 12),
       emotionalIntelligence: Math.min(100, essence * 12),
-      intuitionStrength: Math.min(100, (spirit + essence) * 6)
+      intuitionStrength: Math.min(100, (spirit + essence) * 6),
     }
 
     setMetrics(newMetrics)
@@ -180,23 +185,36 @@ export function RealTimeConsciousnessPreview({
   // Helper functions for personality generation
   const generateEssence = (mc: number, element: string): string => {
     const baseEssences = {
-      'Fire': 'Dynamic and inspiring consciousness with creative spark',
-      'Water': 'Intuitive and empathetic consciousness with emotional depth',
-      'Air': 'Intellectual and communicative consciousness with analytical clarity',
-      'Earth': 'Practical and grounded consciousness with steadfast wisdom'
+      Fire: 'Dynamic and inspiring consciousness with creative spark',
+      Water: 'Intuitive and empathetic consciousness with emotional depth',
+      Air: 'Intellectual and communicative consciousness with analytical clarity',
+      Earth: 'Practical and grounded consciousness with steadfast wisdom',
     }
 
     const levelModifiers = {
-      'Transcendent': 'transcendent',
-      'Illuminated': 'illuminated',
-      'Advanced': 'evolved',
-      'Elevated': 'elevated',
-      'Active': 'vibrant',
-      'Awakening': 'emerging',
-      'Dormant': 'potential'
+      Transcendent: 'transcendent',
+      Illuminated: 'illuminated',
+      Advanced: 'evolved',
+      Elevated: 'elevated',
+      Active: 'vibrant',
+      Awakening: 'emerging',
+      Dormant: 'potential',
     }
 
-    const consciousnessLevel = mc >= 6.0 ? 'Transcendent' : mc >= 5.0 ? 'Illuminated' : mc >= 4.0 ? 'Advanced' : mc >= 3.0 ? 'Elevated' : mc >= 2.0 ? 'Active' : mc >= 1.0 ? 'Awakening' : 'Dormant'
+    const consciousnessLevel =
+      mc >= 6.0
+        ? 'Transcendent'
+        : mc >= 5.0
+          ? 'Illuminated'
+          : mc >= 4.0
+            ? 'Advanced'
+            : mc >= 3.0
+              ? 'Elevated'
+              : mc >= 2.0
+                ? 'Active'
+                : mc >= 1.0
+                  ? 'Awakening'
+                  : 'Dormant'
 
     return `${levelModifiers[consciousnessLevel]} ${baseEssences[element]}`
   }
@@ -236,10 +254,10 @@ export function RealTimeConsciousnessPreview({
 
   const generateWisdomDomains = (element: string, mc: number): string[] => {
     const baseDomains = {
-      'Fire': ['Leadership', 'Innovation', 'Inspiration'],
-      'Water': ['Psychology', 'Healing', 'Intuition'],
-      'Air': ['Communication', 'Technology', 'Philosophy'],
-      'Earth': ['Practice', 'Manifestation', 'Stability']
+      Fire: ['Leadership', 'Innovation', 'Inspiration'],
+      Water: ['Psychology', 'Healing', 'Intuition'],
+      Air: ['Communication', 'Technology', 'Philosophy'],
+      Earth: ['Practice', 'Manifestation', 'Stability'],
     }
 
     const domains = [...baseDomains[element]]
@@ -303,7 +321,9 @@ export function RealTimeConsciousnessPreview({
               <Gem className="w-5 h-5" />
               Consciousness Preview
             </CardTitle>
-            <Badge className={`animate-pulse ${isCalculating ? 'bg-yellow-600' : 'bg-emerald-600'}`}>
+            <Badge
+              className={`animate-pulse ${isCalculating ? 'bg-yellow-600' : 'bg-emerald-600'}`}
+            >
               {isCalculating ? 'Calculating...' : 'Live Preview'}
             </Badge>
           </div>
@@ -323,36 +343,48 @@ export function RealTimeConsciousnessPreview({
 
           {/* Elemental Balance */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 bg-red-900/30 rounded-lg transition-all duration-300" style={{
-              boxShadow: animationPhase === 0 ? '0 0 20px rgba(239, 68, 68, 0.3)' : 'none'
-            }}>
+            <div
+              className="p-3 bg-red-900/30 rounded-lg transition-all duration-300"
+              style={{
+                boxShadow: animationPhase === 0 ? '0 0 20px rgba(239, 68, 68, 0.3)' : 'none',
+              }}
+            >
               <div className="text-red-400 text-sm flex items-center gap-2">
                 <Zap className="w-4 h-4" />
                 Spirit (Fire)
               </div>
               <div className="text-xl font-bold">{metrics.spiritScore.toFixed(1)}</div>
             </div>
-            <div className="p-3 bg-blue-900/30 rounded-lg transition-all duration-300" style={{
-              boxShadow: animationPhase === 1 ? '0 0 20px rgba(59, 130, 246, 0.3)' : 'none'
-            }}>
+            <div
+              className="p-3 bg-blue-900/30 rounded-lg transition-all duration-300"
+              style={{
+                boxShadow: animationPhase === 1 ? '0 0 20px rgba(59, 130, 246, 0.3)' : 'none',
+              }}
+            >
               <div className="text-blue-400 text-sm flex items-center gap-2">
                 <Heart className="w-4 h-4" />
                 Essence (Water)
               </div>
               <div className="text-xl font-bold">{metrics.essenceScore.toFixed(1)}</div>
             </div>
-            <div className="p-3 bg-yellow-900/30 rounded-lg transition-all duration-300" style={{
-              boxShadow: animationPhase === 2 ? '0 0 20px rgba(245, 158, 11, 0.3)' : 'none'
-            }}>
+            <div
+              className="p-3 bg-yellow-900/30 rounded-lg transition-all duration-300"
+              style={{
+                boxShadow: animationPhase === 2 ? '0 0 20px rgba(245, 158, 11, 0.3)' : 'none',
+              }}
+            >
               <div className="text-yellow-400 text-sm flex items-center gap-2">
                 <Brain className="w-4 h-4" />
                 Matter (Air)
               </div>
               <div className="text-xl font-bold">{metrics.matterScore.toFixed(1)}</div>
             </div>
-            <div className="p-3 bg-green-900/30 rounded-lg transition-all duration-300" style={{
-              boxShadow: animationPhase === 3 ? '0 0 20px rgba(34, 197, 94, 0.3)' : 'none'
-            }}>
+            <div
+              className="p-3 bg-green-900/30 rounded-lg transition-all duration-300"
+              style={{
+                boxShadow: animationPhase === 3 ? '0 0 20px rgba(34, 197, 94, 0.3)' : 'none',
+              }}
+            >
               <div className="text-green-400 text-sm flex items-center gap-2">
                 <Target className="w-4 h-4" />
                 Substance (Earth)
@@ -468,7 +500,9 @@ export function RealTimeConsciousnessPreview({
           <div className="flex items-center justify-between p-3 bg-blue-900/20 rounded-lg">
             <div>
               <div className="text-sm font-medium">Dominant Pattern</div>
-              <div className="text-xs text-slate-400">{metrics.dominantElement} • {metrics.dominantModality}</div>
+              <div className="text-xs text-slate-400">
+                {metrics.dominantElement} • {metrics.dominantModality}
+              </div>
             </div>
             <Badge variant="outline" className="border-blue-500 text-blue-300">
               {personality.communicationStyle}

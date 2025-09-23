@@ -37,21 +37,26 @@ export function calculateMC(
     // Calculate elemental balance (E)
     // Balance is higher when elements are more evenly distributed
     const mean = totalWeight / 4
-    const variance = [spirit, essence, matter, substance]
-      .reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / 4
+    const variance =
+      [spirit, essence, matter, substance].reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+      4
     const standardDeviation = Math.sqrt(variance)
 
     // Convert standard deviation to balance score (0-1, where 1 is perfect balance)
     const maxPossibleStd = 0.5 // Maximum std dev is 0.5 when one element is 1 and others are 0
-    const elementalBalance = Math.max(0, 1 - (standardDeviation / maxPossibleStd))
+    const elementalBalance = Math.max(0, 1 - standardDeviation / maxPossibleStd)
 
     // Apply Monica Constant formula
-    const elementalFactor = totalWeight > 0 ? (1 + (elementalBalance / totalWeight)) : 1
-    const consciousnessFactor = 1 + (consciousnessLevel / 10)
+    const elementalFactor = totalWeight > 0 ? 1 + elementalBalance / totalWeight : 1
+    const consciousnessFactor = 1 + consciousnessLevel / 10
     const monicaConstant = GOLDEN_RATIO * elementalFactor * consciousnessFactor
 
     // Generate interpretation
-    const interpretation = generateInterpretation(monicaConstant, elementalBalance, consciousnessLevel)
+    const interpretation = generateInterpretation(
+      monicaConstant,
+      elementalBalance,
+      consciousnessLevel
+    )
 
     return {
       value: Math.round(monicaConstant * 1000) / 1000,
@@ -59,9 +64,9 @@ export function calculateMC(
         baseGoldenRatio: GOLDEN_RATIO,
         elementalBalance: Math.round(elementalBalance * 1000) / 1000,
         totalWeight: Math.round(totalWeight * 1000) / 1000,
-        consciousnessLevel
+        consciousnessLevel,
       },
-      interpretation
+      interpretation,
     }
   } catch (error) {
     logger.error('Error calculating Monica Constant:', error)
@@ -72,9 +77,9 @@ export function calculateMC(
         baseGoldenRatio: GOLDEN_RATIO,
         elementalBalance: 0.5,
         totalWeight: 1.0,
-        consciousnessLevel: 1
+        consciousnessLevel: 1,
       },
-      interpretation: 'Standard consciousness resonance detected.'
+      interpretation: 'Standard consciousness resonance detected.',
     }
   }
 }
@@ -103,7 +108,8 @@ export function calculateMCEvolution(
   // Determine momentum based on components
   let momentum: 'accelerating' | 'steady' | 'decelerating'
   const balanceChange = currentMC.components.elementalBalance - birthMC.components.elementalBalance
-  const consciousnessChange = currentMC.components.consciousnessLevel - birthMC.components.consciousnessLevel
+  const consciousnessChange =
+    currentMC.components.consciousnessLevel - birthMC.components.consciousnessLevel
 
   if (balanceChange > 0.1 || consciousnessChange > 1) momentum = 'accelerating'
   else if (balanceChange < -0.1 || consciousnessChange < -1) momentum = 'decelerating'
@@ -113,7 +119,7 @@ export function calculateMCEvolution(
     change: Math.round(change * 1000) / 1000,
     percentageChange: Math.round(percentageChange * 100) / 100,
     trend,
-    momentum
+    momentum,
   }
 }
 

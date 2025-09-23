@@ -9,15 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Slider } from '@/components/ui/slider'
-import {
-  Download,
-  RotateCcw,
-  ZoomIn,
-  ZoomOut,
-  Play,
-  Pause,
-  Settings
-} from 'lucide-react'
+import { Download, RotateCcw, ZoomIn, ZoomOut, Play, Pause, Settings } from 'lucide-react'
 import type { UnifiedAgent, GroupDynamics } from '@/lib/unified-agent-types'
 
 interface NetworkNode extends d3.SimulationNodeDatum {
@@ -69,7 +61,7 @@ export function ConsciousnessNetworkGraph({
   showMetrics = true,
   onNodeClick,
   onLinkClick,
-  className
+  className,
 }: ConsciousnessNetworkGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const [isPlaying, setIsPlaying] = useState(enableAnimation)
@@ -89,19 +81,20 @@ export function ConsciousnessNetworkGraph({
     color: agent.appearance.color,
     symbol: agent.appearance.symbol || agent.appearance.avatar,
     status: agent.status,
-    radius: nodeRadius[0] + (agent.consciousness.monicaConstant * 5)
+    radius: nodeRadius[0] + agent.consciousness.monicaConstant * 5,
   }))
 
   // Convert group dynamics to network links
-  const links: NetworkLink[] = groupDynamics?.consciousnessNetwork.connections.map(conn => ({
-    source: conn.agent1,
-    target: conn.agent2,
-    compatibility: conn.compatibility,
-    resonanceType: conn.resonanceType,
-    strength: conn.strength,
-    flowIntensity: conn.compatibility * 10,
-    lastActivity: Date.now()
-  })) || []
+  const links: NetworkLink[] =
+    groupDynamics?.consciousnessNetwork.connections.map(conn => ({
+      source: conn.agent1,
+      target: conn.agent2,
+      compatibility: conn.compatibility,
+      resonanceType: conn.resonanceType,
+      strength: conn.strength,
+      flowIntensity: conn.compatibility * 10,
+      lastActivity: Date.now(),
+    })) || []
 
   const setupVisualization = useCallback(() => {
     if (!svgRef.current || nodes.length === 0) return
@@ -113,9 +106,10 @@ export function ConsciousnessNetworkGraph({
     const g = svg.append('g').attr('class', 'network-container')
 
     // Setup zoom behavior
-    const zoom = d3.zoom<SVGSVGElement, unknown>()
+    const zoom = d3
+      .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 3])
-      .on('zoom', (event) => {
+      .on('zoom', event => {
         g.attr('transform', event.transform)
         setZoomLevel(event.transform.k)
       })
@@ -123,41 +117,53 @@ export function ConsciousnessNetworkGraph({
     svg.call(zoom as any)
 
     // Create force simulation
-    const simulation = d3.forceSimulation<NetworkNode>(nodes)
-      .force('link', d3.forceLink<NetworkNode, NetworkLink>(links)
-        .id(d => d.id)
-        .distance(linkDistance[0])
-        .strength(d => d.strength)
+    const simulation = d3
+      .forceSimulation<NetworkNode>(nodes)
+      .force(
+        'link',
+        d3
+          .forceLink<NetworkNode, NetworkLink>(links)
+          .id(d => d.id)
+          .distance(linkDistance[0])
+          .strength(d => d.strength)
       )
       .force('charge', d3.forceManyBody().strength(-300 * forceStrength[0]))
       .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(d => (d as NetworkNode).radius + 5))
+      .force(
+        'collision',
+        d3.forceCollide().radius(d => (d as NetworkNode).radius + 5)
+      )
 
     // Create gradient definitions for flows
     const defs = svg.append('defs')
 
     // Flowing gradient for active connections
-    const flowGradient = defs.append('linearGradient')
+    const flowGradient = defs
+      .append('linearGradient')
       .attr('id', 'flow-gradient')
       .attr('gradientUnits', 'userSpaceOnUse')
 
-    flowGradient.append('stop')
+    flowGradient
+      .append('stop')
       .attr('offset', '0%')
       .attr('stop-color', '#3b82f6')
       .attr('stop-opacity', 0.8)
 
-    flowGradient.append('stop')
+    flowGradient
+      .append('stop')
       .attr('offset', '50%')
       .attr('stop-color', '#8b5cf6')
       .attr('stop-opacity', 1)
 
-    flowGradient.append('stop')
+    flowGradient
+      .append('stop')
       .attr('offset', '100%')
       .attr('stop-color', '#06b6d4')
       .attr('stop-opacity', 0.8)
 
     // Create arrow markers for directional flows
-    defs.append('marker')
+    defs
+      .append('marker')
       .attr('id', 'arrow')
       .attr('viewBox', '0 -5 10 10')
       .attr('refX', 20)
@@ -170,15 +176,16 @@ export function ConsciousnessNetworkGraph({
       .attr('fill', '#666')
 
     // Create links
-    const link = g.append('g')
+    const link = g
+      .append('g')
       .attr('class', 'links')
       .selectAll('line')
       .data(links)
       .join('line')
-      .attr('stroke', d => d.compatibility > 0.7 ? 'url(#flow-gradient)' : '#999')
+      .attr('stroke', d => (d.compatibility > 0.7 ? 'url(#flow-gradient)' : '#999'))
       .attr('stroke-opacity', d => Math.max(0.3, d.compatibility))
       .attr('stroke-width', d => Math.max(1, d.strength * 4))
-      .attr('marker-end', d => d.compatibility > 0.8 ? 'url(#arrow)' : null)
+      .attr('marker-end', d => (d.compatibility > 0.8 ? 'url(#arrow)' : null))
       .style('cursor', 'pointer')
       .on('click', (event, d) => {
         if (onLinkClick) {
@@ -186,13 +193,14 @@ export function ConsciousnessNetworkGraph({
             source: d.source,
             target: d.target,
             compatibility: d.compatibility,
-            resonanceType: d.resonanceType
+            resonanceType: d.resonanceType,
           })
         }
       })
 
     // Add link labels for high compatibility connections
-    const linkLabels = g.append('g')
+    const linkLabels = g
+      .append('g')
       .attr('class', 'link-labels')
       .selectAll('text')
       .data(links.filter(d => d.compatibility > 0.8))
@@ -204,28 +212,31 @@ export function ConsciousnessNetworkGraph({
       .style('pointer-events', 'none')
 
     // Create node groups
-    const node = g.append('g')
+    const node = g
+      .append('g')
       .attr('class', 'nodes')
       .selectAll('g')
       .data(nodes)
       .join('g')
       .attr('class', 'node')
       .style('cursor', 'pointer')
-      .call(d3.drag<SVGGElement, NetworkNode>()
-        .on('start', (event, d) => {
-          if (!event.active) simulation.alphaTarget(0.3).restart()
-          d.fx = d.x
-          d.fy = d.y
-        })
-        .on('drag', (event, d) => {
-          d.fx = event.x
-          d.fy = event.y
-        })
-        .on('end', (event, d) => {
-          if (!event.active) simulation.alphaTarget(0)
-          d.fx = null
-          d.fy = null
-        })
+      .call(
+        d3
+          .drag<SVGGElement, NetworkNode>()
+          .on('start', (event, d) => {
+            if (!event.active) simulation.alphaTarget(0.3).restart()
+            d.fx = d.x
+            d.fy = d.y
+          })
+          .on('drag', (event, d) => {
+            d.fx = event.x
+            d.fy = event.y
+          })
+          .on('end', (event, d) => {
+            if (!event.active) simulation.alphaTarget(0)
+            d.fx = null
+            d.fy = null
+          })
       )
       .on('click', (event, d) => {
         const agent = agents.find(a => a.id === d.id)
@@ -235,7 +246,8 @@ export function ConsciousnessNetworkGraph({
       })
 
     // Add node background circles with glow effect
-    node.append('circle')
+    node
+      .append('circle')
       .attr('class', 'node-glow')
       .attr('r', d => d.radius + 5)
       .attr('fill', 'none')
@@ -245,16 +257,18 @@ export function ConsciousnessNetworkGraph({
       .style('filter', 'blur(2px)')
 
     // Add main node circles
-    node.append('circle')
+    node
+      .append('circle')
       .attr('class', 'node-circle')
       .attr('r', d => d.radius)
       .attr('fill', d => d.color)
       .attr('stroke', '#fff')
       .attr('stroke-width', 2)
-      .style('opacity', d => d.status === 'responding' ? 1 : 0.8)
+      .style('opacity', d => (d.status === 'responding' ? 1 : 0.8))
 
     // Add consciousness level rings
-    node.append('circle')
+    node
+      .append('circle')
       .attr('class', 'consciousness-ring')
       .attr('r', d => d.radius + 8)
       .attr('fill', 'none')
@@ -264,7 +278,8 @@ export function ConsciousnessNetworkGraph({
       .style('opacity', 0.6)
 
     // Add symbols/icons
-    node.append('text')
+    node
+      .append('text')
       .attr('class', 'node-symbol')
       .text(d => d.symbol)
       .attr('text-anchor', 'middle')
@@ -274,23 +289,28 @@ export function ConsciousnessNetworkGraph({
       .style('pointer-events', 'none')
 
     // Add status indicators
-    node.append('circle')
+    node
+      .append('circle')
       .attr('class', 'status-indicator')
       .attr('r', 4)
       .attr('cx', d => d.radius * 0.7)
       .attr('cy', d => -d.radius * 0.7)
       .attr('fill', d => {
         switch (d.status) {
-          case 'thinking': return '#fbbf24'
-          case 'responding': return '#10b981'
-          default: return '#6b7280'
+          case 'thinking':
+            return '#fbbf24'
+          case 'responding':
+            return '#10b981'
+          default:
+            return '#6b7280'
         }
       })
-      .style('opacity', d => d.status === 'idle' ? 0 : 1)
+      .style('opacity', d => (d.status === 'idle' ? 0 : 1))
 
     // Add node labels if enabled
     if (showLabels) {
-      node.append('text')
+      node
+        .append('text')
         .attr('class', 'node-label')
         .text(d => d.name)
         .attr('x', 0)
@@ -312,7 +332,7 @@ export function ConsciousnessNetworkGraph({
           .duration(2000)
           .ease(d3.easeLinear)
           .attr('stroke-dashoffset', -10)
-          .on('end', function() {
+          .on('end', function () {
             if (isPlaying) {
               d3.select(this).transition().duration(0).attr('stroke-dashoffset', 0)
               animateFlows()
@@ -320,7 +340,8 @@ export function ConsciousnessNetworkGraph({
           })
 
         // Pulse consciousness rings
-        node.select('.consciousness-ring')
+        node
+          .select('.consciousness-ring')
           .transition()
           .duration(2000)
           .ease(d3.easeSinInOut)
@@ -329,7 +350,7 @@ export function ConsciousnessNetworkGraph({
           .duration(2000)
           .ease(d3.easeSinInOut)
           .attr('stroke-opacity', 0.8)
-          .on('end', function() {
+          .on('end', function () {
             if (isPlaying) animateFlows()
           })
       }
@@ -356,8 +377,19 @@ export function ConsciousnessNetworkGraph({
     return () => {
       simulation.stop()
     }
-
-  }, [agents, groupDynamics, width, height, isPlaying, forceStrength, nodeRadius, linkDistance, showLabels, onNodeClick, onLinkClick])
+  }, [
+    agents,
+    groupDynamics,
+    width,
+    height,
+    isPlaying,
+    forceStrength,
+    nodeRadius,
+    linkDistance,
+    showLabels,
+    onNodeClick,
+    onLinkClick,
+  ])
 
   useEffect(() => {
     const cleanup = setupVisualization()
@@ -399,7 +431,8 @@ export function ConsciousnessNetworkGraph({
 
     if (svgRef.current) {
       const svg = d3.select(svgRef.current)
-      svg.select('.network-container')
+      svg
+        .select('.network-container')
         .transition()
         .duration(750)
         .attr('transform', 'translate(0,0) scale(1)')
@@ -412,7 +445,8 @@ export function ConsciousnessNetworkGraph({
     const svg = d3.select(svgRef.current)
     const zoom = d3.zoom<SVGSVGElement, unknown>()
 
-    svg.transition()
+    svg
+      .transition()
       .duration(300)
       .call(zoom.scaleBy as any, factor)
   }
@@ -435,46 +469,22 @@ export function ConsciousnessNetworkGraph({
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsPlaying(!isPlaying)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setIsPlaying(!isPlaying)}>
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleZoom(1.2)}
-            >
+            <Button variant="outline" size="sm" onClick={() => handleZoom(1.2)}>
               <ZoomIn className="w-4 h-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleZoom(0.8)}
-            >
+            <Button variant="outline" size="sm" onClick={() => handleZoom(0.8)}>
               <ZoomOut className="w-4 h-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleReset}
-            >
+            <Button variant="outline" size="sm" onClick={handleReset}>
               <RotateCcw className="w-4 h-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSettings(!showSettings)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)}>
               <Settings className="w-4 h-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownload}
-            >
+            <Button variant="outline" size="sm" onClick={handleDownload}>
               <Download className="w-4 h-4" />
             </Button>
           </div>
@@ -537,8 +547,16 @@ export function ConsciousnessNetworkGraph({
                 <div>Links: {links.length}</div>
                 {groupDynamics && (
                   <>
-                    <div>Avg Compatibility: {(links.reduce((sum, l) => sum + l.compatibility, 0) / links.length || 0).toFixed(2)}</div>
-                    <div>Group Consciousness: {groupDynamics.consciousnessNetwork.groupConsciousness.toFixed(2)}</div>
+                    <div>
+                      Avg Compatibility:{' '}
+                      {(
+                        links.reduce((sum, l) => sum + l.compatibility, 0) / links.length || 0
+                      ).toFixed(2)}
+                    </div>
+                    <div>
+                      Group Consciousness:{' '}
+                      {groupDynamics.consciousnessNetwork.groupConsciousness.toFixed(2)}
+                    </div>
                   </>
                 )}
               </div>

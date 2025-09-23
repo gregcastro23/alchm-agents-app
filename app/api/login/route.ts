@@ -16,8 +16,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, userId }, { status: 200 })
   } catch (e: any) {
-    return NextResponse.json({ error: 'Login failed', details: e?.message || String(e) }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Login failed', details: e?.message || String(e) },
+      { status: 500 }
+    )
   }
 }
-
-

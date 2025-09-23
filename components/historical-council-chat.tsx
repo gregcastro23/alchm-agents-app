@@ -16,7 +16,7 @@ import {
   MessageCircle,
   ArrowRight,
   Calendar,
-  Star
+  Star,
 } from 'lucide-react'
 
 import UnifiedMultiAgentChat from './unified-multi-agent-chat'
@@ -27,7 +27,7 @@ import {
   getPresetsByDifficulty,
   getPresetsByTag,
   getOptimalMonicaRole,
-  type HistoricalCouncilPreset
+  type HistoricalCouncilPreset,
 } from '@/lib/council-presets'
 
 interface HistoricalCouncilChatProps {
@@ -66,7 +66,7 @@ export function HistoricalCouncilChat({
   initialCouncil,
   initialAgents = [],
   filterBySelectedAgents = [],
-  title = "Historical Council Chamber",
+  title = 'Historical Council Chamber',
   maxAgents = 5,
   allowMonica = true,
   showAgentBiographies = true,
@@ -74,9 +74,8 @@ export function HistoricalCouncilChat({
   enableEraFilters = true,
   enableSpecializationGroups = true,
   onSessionUpdate,
-  onAgentEvolution
+  onAgentEvolution,
 }: HistoricalCouncilChatProps) {
-
   // State for council selection and customization
   const [selectedPreset, setSelectedPreset] = useState<HistoricalCouncilPreset | null>(
     initialCouncil ? HISTORICAL_COUNCIL_PRESETS.find(p => p.id === initialCouncil) || null : null
@@ -84,7 +83,9 @@ export function HistoricalCouncilChat({
   const [customAgents, setCustomAgents] = useState<string[]>(
     filterBySelectedAgents.length > 0 ? filterBySelectedAgents : initialAgents
   )
-  const [showPresetSelection, setShowPresetSelection] = useState(!selectedPreset && customAgents.length === 0)
+  const [showPresetSelection, setShowPresetSelection] = useState(
+    !selectedPreset && customAgents.length === 0
+  )
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all')
   const [tagFilter, setTagFilter] = useState<string>('all')
 
@@ -106,9 +107,7 @@ export function HistoricalCouncilChat({
   // Get unique tags and difficulties for filters
   const availableTags = useMemo(() => {
     const tags = new Set<string>()
-    HISTORICAL_COUNCIL_PRESETS.forEach(preset =>
-      preset.tags.forEach(tag => tags.add(tag))
-    )
+    HISTORICAL_COUNCIL_PRESETS.forEach(preset => preset.tags.forEach(tag => tags.add(tag)))
     return Array.from(tags)
   }, [])
 
@@ -181,7 +180,7 @@ export function HistoricalCouncilChat({
           <span className="text-sm font-medium">Difficulty:</span>
           <select
             value={difficultyFilter}
-            onChange={(e) => setDifficultyFilter(e.target.value)}
+            onChange={e => setDifficultyFilter(e.target.value)}
             className="px-3 py-1 border rounded text-sm"
           >
             <option value="all">All Levels</option>
@@ -197,7 +196,7 @@ export function HistoricalCouncilChat({
           <span className="text-sm font-medium">Focus:</span>
           <select
             value={tagFilter}
-            onChange={(e) => setTagFilter(e.target.value)}
+            onChange={e => setTagFilter(e.target.value)}
             className="px-3 py-1 border rounded text-sm"
           >
             <option value="all">All Topics</option>
@@ -224,11 +223,17 @@ export function HistoricalCouncilChat({
                   <CardTitle className="text-lg">{preset.name}</CardTitle>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge variant="outline">{preset.era}</Badge>
-                    <Badge variant={
-                      preset.difficulty === 'beginner' ? 'default' :
-                      preset.difficulty === 'intermediate' ? 'secondary' :
-                      preset.difficulty === 'advanced' ? 'destructive' : 'outline'
-                    }>
+                    <Badge
+                      variant={
+                        preset.difficulty === 'beginner'
+                          ? 'default'
+                          : preset.difficulty === 'intermediate'
+                            ? 'secondary'
+                            : preset.difficulty === 'advanced'
+                              ? 'destructive'
+                              : 'outline'
+                      }
+                    >
                       {preset.difficulty}
                     </Badge>
                   </div>
@@ -240,22 +245,20 @@ export function HistoricalCouncilChat({
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-3">
-                {preset.description}
-              </p>
+              <p className="text-sm text-muted-foreground mb-3">{preset.description}</p>
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Lightbulb className="w-4 h-4 text-amber-500" />
                   <span className="text-sm font-medium">Specialization:</span>
                 </div>
-                <p className="text-sm text-muted-foreground ml-6">
-                  {preset.specialization}
-                </p>
+                <p className="text-sm text-muted-foreground ml-6">{preset.specialization}</p>
               </div>
 
               <div className="flex items-center gap-2 mt-4">
-                <Crown className={`w-4 h-4 ${preset.includeMonica ? 'text-purple-500' : 'text-gray-300'}`} />
+                <Crown
+                  className={`w-4 h-4 ${preset.includeMonica ? 'text-purple-500' : 'text-gray-300'}`}
+                />
                 <span className="text-sm">
                   {preset.includeMonica ? `Monica as ${preset.monicaRole}` : 'Independent council'}
                 </span>
@@ -304,16 +307,10 @@ export function HistoricalCouncilChat({
                 {selectedPreset ? selectedPreset.name : 'Custom Council'}
               </CardTitle>
               {selectedPreset && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  {selectedPreset.description}
-                </p>
+                <p className="text-sm text-muted-foreground mt-1">{selectedPreset.description}</p>
               )}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowPresetSelection(true)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setShowPresetSelection(true)}>
               Change Council
             </Button>
           </div>
@@ -329,9 +326,7 @@ export function HistoricalCouncilChat({
               <div className="space-y-1">
                 {selectedAgentData.map(agent => (
                   <div key={agent.id} className="text-sm flex items-center gap-2">
-                    <span style={{ color: agent.appearance.color }}>
-                      {agent.appearance.symbol}
-                    </span>
+                    <span style={{ color: agent.appearance.color }}>{agent.appearance.symbol}</span>
                     {agent.name}
                   </div>
                 ))}
@@ -394,9 +389,7 @@ export function HistoricalCouncilChat({
                   ×
                 </Button>
               </div>
-              <ScrollArea className="max-h-[70vh]">
-                {renderPresetSelection()}
-              </ScrollArea>
+              <ScrollArea className="max-h-[70vh]">{renderPresetSelection()}</ScrollArea>
             </div>
           </div>
         </div>
@@ -409,24 +402,20 @@ export function HistoricalCouncilChat({
         onClose={onClose}
         title={title}
         variant="historical"
-
         // Agent configuration
         historicalAgents={historicalAgents}
         planetaryConfigs={[]}
         initialAgents={finalAgentIds}
         maxAgents={maxAgents}
         allowMonica={selectedPreset?.includeMonica || allowMonica}
-
         // Historical-specific features
         enableGroupDynamics={true}
         enableExport={true}
         enablePresets={true}
         enableMemoryPersistence={true}
-
         // Callbacks
         onSessionUpdate={onSessionUpdate}
         onAgentEvolution={onAgentEvolution}
-
         // Custom header content
         customHeader={renderCouncilInfo()}
       />

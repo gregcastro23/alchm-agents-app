@@ -89,8 +89,10 @@ export class BatchQueueManager extends EventEmitter {
       this.cleanupInterval = setInterval(() => this.cleanupCompletedJobs(), 300000) // 5 minutes
     }
 
-    this.metricsInterval = setInterval(() => this.updateMetrics(),
-      options?.metricsInterval || 30000) // 30 seconds
+    this.metricsInterval = setInterval(
+      () => this.updateMetrics(),
+      options?.metricsInterval || 30000
+    ) // 30 seconds
 
     // Auto-start processing
     if (options?.autoStart !== false) {
@@ -108,7 +110,7 @@ export class BatchQueueManager extends EventEmitter {
       lastHeartbeat: new Date(),
       totalProcessed: 0,
       averageProcessingTime: 0,
-      errorRate: 0
+      errorRate: 0,
     })
   }
 
@@ -116,7 +118,9 @@ export class BatchQueueManager extends EventEmitter {
    * Job Management
    */
 
-  addJob(jobData: Omit<BatchJob, 'id' | 'status' | 'progress' | 'createdAt' | 'retryCount'>): string {
+  addJob(
+    jobData: Omit<BatchJob, 'id' | 'status' | 'progress' | 'createdAt' | 'retryCount'>
+  ): string {
     const jobId = this.generateJobId()
 
     const job: BatchJob = {
@@ -126,7 +130,7 @@ export class BatchQueueManager extends EventEmitter {
       createdAt: new Date(),
       retryCount: 0,
       maxRetries: jobData.maxRetries || 3,
-      ...jobData
+      ...jobData,
     }
 
     this.jobs.set(jobId, job)
@@ -297,7 +301,6 @@ export class BatchQueueManager extends EventEmitter {
 
       this.emit('jobCompleted', job)
       console.log(`✅ Job ${job.id} completed in ${job.actualDuration}ms`)
-
     } catch (error) {
       if (controller.signal.aborted) {
         job.status = 'cancelled'
@@ -409,7 +412,7 @@ export class BatchQueueManager extends EventEmitter {
         .filter(job => job.status === 'completed')
         .sort((a, b) => (b.completedAt?.getTime() || 0) - (a.completedAt?.getTime() || 0))
         .slice(0, 10),
-      failed: allJobs.filter(job => job.status === 'failed')
+      failed: allJobs.filter(job => job.status === 'failed'),
     }
   }
 
@@ -429,7 +432,7 @@ export class BatchQueueManager extends EventEmitter {
   }
 
   private cleanupCompletedJobs(): void {
-    const cutoffTime = Date.now() - (24 * 60 * 60 * 1000) // 24 hours ago
+    const cutoffTime = Date.now() - 24 * 60 * 60 * 1000 // 24 hours ago
     let cleanedCount = 0
 
     this.jobs.forEach((job, id) => {
@@ -464,9 +467,9 @@ export class BatchQueueManager extends EventEmitter {
         cpu: this.calculateCpuUtilization(),
         memory: this.calculateMemoryUtilization(),
         activeWorkers: this.workers.size,
-        maxWorkers: this.maxConcurrentJobs
+        maxWorkers: this.maxConcurrentJobs,
       },
-      queueHealth: this.calculateQueueHealth()
+      queueHealth: this.calculateQueueHealth(),
     }
 
     this.emit('metricsUpdated', this.metrics)
@@ -485,25 +488,25 @@ export class BatchQueueManager extends EventEmitter {
         cpu: 0,
         memory: 0,
         activeWorkers: 0,
-        maxWorkers: this.maxConcurrentJobs
+        maxWorkers: this.maxConcurrentJobs,
       },
-      queueHealth: 'healthy'
+      queueHealth: 'healthy',
     }
   }
 
   private calculateAverageProcessingTime(completedJobs: BatchJob[]): number {
     if (completedJobs.length === 0) return 0
 
-    const totalTime = completedJobs.reduce((sum, job) =>
-      sum + (job.actualDuration || 0), 0)
+    const totalTime = completedJobs.reduce((sum, job) => sum + (job.actualDuration || 0), 0)
 
     return Math.round(totalTime / completedJobs.length)
   }
 
   private calculateThroughput(completedJobs: BatchJob[]): number {
-    const oneHourAgo = Date.now() - (60 * 60 * 1000)
-    const recentJobs = completedJobs.filter(job =>
-      job.completedAt && job.completedAt.getTime() > oneHourAgo)
+    const oneHourAgo = Date.now() - 60 * 60 * 1000
+    const recentJobs = completedJobs.filter(
+      job => job.completedAt && job.completedAt.getTime() > oneHourAgo
+    )
 
     return recentJobs.length
   }
@@ -557,5 +560,5 @@ export const batchQueueManager = new BatchQueueManager({
   maxConcurrentJobs: 5,
   autoStart: true,
   enableCleanup: true,
-  metricsInterval: 30000
+  metricsInterval: 30000,
 })

@@ -25,7 +25,7 @@ import {
   Sparkles,
   Clock,
   Target,
-  Archive
+  Archive,
 } from 'lucide-react'
 
 import UnifiedMultiAgentChat from './unified-multi-agent-chat'
@@ -35,7 +35,7 @@ import {
   MIXED_COUNCIL_PRESETS,
   HISTORICAL_COUNCIL_PRESETS,
   PLANETARY_COUNCIL_PRESETS,
-  type MixedCouncilPreset
+  type MixedCouncilPreset,
 } from '@/lib/council-presets'
 import { createDefaultPlanetaryConfigs } from '@/lib/planetary-config-helper'
 
@@ -103,14 +103,13 @@ export function ConsciousnessLaboratoryChat({
   enableExperimentMode = true,
   allowAgentMixing = true,
   enableABTesting = true,
-  title = "Consciousness Research Laboratory",
+  title = 'Consciousness Research Laboratory',
   maxAgents = 8,
   allowMonica = true,
   onSessionUpdate,
   onAgentEvolution,
-  onExperimentComplete
+  onExperimentComplete,
 }: ConsciousnessLabChatProps) {
-
   // State management
   const [selectedExperiment, setSelectedExperiment] = useState<MixedCouncilPreset | null>(
     initialExperiment ? MIXED_COUNCIL_PRESETS.find(p => p.id === initialExperiment) || null : null
@@ -121,7 +120,7 @@ export function ConsciousnessLaboratoryChat({
     planetary: string[]
   }>({
     historical: [],
-    planetary: []
+    planetary: [],
   })
 
   const [labSettings, setLabSettings] = useState({
@@ -129,33 +128,38 @@ export function ConsciousnessLaboratoryChat({
     enableAdvancedLogging: true,
     consciousnessTracking: true,
     synergyAnalysis: true,
-    emergentPatternDetection: true
+    emergentPatternDetection: true,
   })
 
   const [currentMetrics, setCurrentMetrics] = useState<MetricsData[]>([])
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
-  const [showPresetSelection, setShowPresetSelection] = useState(!selectedExperiment && defaultAgents.length === 0)
+  const [showPresetSelection, setShowPresetSelection] = useState(
+    !selectedExperiment && defaultAgents.length === 0
+  )
 
   // Available planetary configurations
   const planetaryConfigs = useMemo(() => createDefaultPlanetaryConfigs(), [])
 
   // Experiments library
-  const availableExperiments = useMemo(() => [
-    ...MIXED_COUNCIL_PRESETS,
-    {
-      id: 'custom-synthesis',
-      name: 'Custom Synthesis Experiment',
-      description: 'Design your own consciousness interaction experiment',
-      agentIds: [],
-      historicalAgentIds: [],
-      planetaryAgentIds: [],
-      synthesis_type: 'consciousness_acceleration' as const,
-      includeMonica: true,
-      monicaRole: 'coordinator' as const,
-      tags: ['custom', 'experimental', 'synthesis'],
-      difficulty: 'expert' as const
-    }
-  ], [])
+  const availableExperiments = useMemo(
+    () => [
+      ...MIXED_COUNCIL_PRESETS,
+      {
+        id: 'custom-synthesis',
+        name: 'Custom Synthesis Experiment',
+        description: 'Design your own consciousness interaction experiment',
+        agentIds: [],
+        historicalAgentIds: [],
+        planetaryAgentIds: [],
+        synthesis_type: 'consciousness_acceleration' as const,
+        includeMonica: true,
+        monicaRole: 'coordinator' as const,
+        tags: ['custom', 'experimental', 'synthesis'],
+        difficulty: 'expert' as const,
+      },
+    ],
+    []
+  )
 
   // Final agent configuration
   const finalAgentConfiguration = useMemo(() => {
@@ -164,7 +168,7 @@ export function ConsciousnessLaboratoryChat({
         historical: selectedExperiment.historicalAgentIds,
         planetary: selectedExperiment.planetaryAgentIds,
         includeMonica: selectedExperiment.includeMonica,
-        monicaRole: selectedExperiment.monicaRole
+        monicaRole: selectedExperiment.monicaRole,
       }
     }
 
@@ -172,7 +176,7 @@ export function ConsciousnessLaboratoryChat({
       historical: customAgentSelection.historical,
       planetary: customAgentSelection.planetary,
       includeMonica: allowMonica,
-      monicaRole: 'coordinator' as const
+      monicaRole: 'coordinator' as const,
     }
   }, [selectedExperiment, customAgentSelection, allowMonica])
 
@@ -185,9 +189,7 @@ export function ConsciousnessLaboratoryChat({
 
   // Active historical agents
   const activeHistoricalAgents = useMemo(() => {
-    return historicalAgents.filter(agent =>
-      finalAgentConfiguration.historical.includes(agent.id)
-    )
+    return historicalAgents.filter(agent => finalAgentConfiguration.historical.includes(agent.id))
   }, [historicalAgents, finalAgentConfiguration.historical])
 
   // Handle experiment selection
@@ -205,7 +207,7 @@ export function ConsciousnessLaboratoryChat({
       ...prev,
       [type]: prev[type].includes(agentId)
         ? prev[type].filter(id => id !== agentId)
-        : [...prev[type], agentId].slice(0, maxAgents)
+        : [...prev[type], agentId].slice(0, maxAgents),
     }))
   }
 
@@ -224,7 +226,7 @@ export function ConsciousnessLaboratoryChat({
         experiment: selectedExperiment,
         metrics: currentMetrics,
         duration: currentMetrics.length,
-        conclusions: generateExperimentConclusions()
+        conclusions: generateExperimentConclusions(),
       })
     }
   }
@@ -233,15 +235,17 @@ export function ConsciousnessLaboratoryChat({
   const generateExperimentConclusions = () => {
     if (currentMetrics.length === 0) return []
 
-    const avgConsciousness = currentMetrics.reduce((sum, m) => sum + m.groupConsciousness, 0) / currentMetrics.length
-    const avgSynergy = currentMetrics.reduce((sum, m) => sum + m.synergyLevel, 0) / currentMetrics.length
+    const avgConsciousness =
+      currentMetrics.reduce((sum, m) => sum + m.groupConsciousness, 0) / currentMetrics.length
+    const avgSynergy =
+      currentMetrics.reduce((sum, m) => sum + m.synergyLevel, 0) / currentMetrics.length
     const totalInsights = currentMetrics.reduce((sum, m) => sum + m.emergentInsights, 0)
 
     return [
       `Average group consciousness: ${avgConsciousness.toFixed(2)}`,
       `Synergy efficiency: ${avgSynergy.toFixed(2)}`,
       `Emergent insights generated: ${totalInsights}`,
-      `Optimal performance window: ${identifyOptimalWindow()}`
+      `Optimal performance window: ${identifyOptimalWindow()}`,
     ]
   }
 
@@ -286,7 +290,9 @@ export function ConsciousnessLaboratoryChat({
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-lg">{preset.name}</CardTitle>
-                      <Badge variant="outline" className="mt-1">{preset.difficulty}</Badge>
+                      <Badge variant="outline" className="mt-1">
+                        {preset.difficulty}
+                      </Badge>
                     </div>
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <Users className="w-4 h-4" />
@@ -297,9 +303,7 @@ export function ConsciousnessLaboratoryChat({
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    {preset.description}
-                  </p>
+                  <p className="text-sm text-muted-foreground mb-3">{preset.description}</p>
 
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
@@ -307,14 +311,20 @@ export function ConsciousnessLaboratoryChat({
                       <span className="text-sm font-medium">Synthesis Type:</span>
                     </div>
                     <p className="text-sm text-muted-foreground ml-6">
-                      {preset.synthesis_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      {preset.synthesis_type
+                        .replace('_', ' ')
+                        .replace(/\b\w/g, l => l.toUpperCase())}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-2 mt-3">
-                    <Crown className={`w-4 h-4 ${preset.includeMonica ? 'text-purple-500' : 'text-gray-300'}`} />
+                    <Crown
+                      className={`w-4 h-4 ${preset.includeMonica ? 'text-purple-500' : 'text-gray-300'}`}
+                    />
                     <span className="text-sm">
-                      {preset.includeMonica ? `Monica as ${preset.monicaRole}` : 'Independent synthesis'}
+                      {preset.includeMonica
+                        ? `Monica as ${preset.monicaRole}`
+                        : 'Independent synthesis'}
                     </span>
                   </div>
 
@@ -378,20 +388,26 @@ export function ConsciousnessLaboratoryChat({
 
               <div className="pt-4">
                 <Button
-                  onClick={() => handleExperimentSelect({
-                    id: 'custom-synthesis',
-                    name: 'Custom Synthesis Experiment',
-                    description: 'Custom consciousness interaction experiment',
-                    agentIds: [],
-                    historicalAgentIds: customAgentSelection.historical,
-                    planetaryAgentIds: customAgentSelection.planetary,
-                    synthesis_type: 'consciousness_acceleration',
-                    includeMonica: true,
-                    monicaRole: 'coordinator',
-                    tags: ['custom'],
-                    difficulty: 'expert'
-                  })}
-                  disabled={customAgentSelection.historical.length + customAgentSelection.planetary.length === 0}
+                  onClick={() =>
+                    handleExperimentSelect({
+                      id: 'custom-synthesis',
+                      name: 'Custom Synthesis Experiment',
+                      description: 'Custom consciousness interaction experiment',
+                      agentIds: [],
+                      historicalAgentIds: customAgentSelection.historical,
+                      planetaryAgentIds: customAgentSelection.planetary,
+                      synthesis_type: 'consciousness_acceleration',
+                      includeMonica: true,
+                      monicaRole: 'coordinator',
+                      tags: ['custom'],
+                      difficulty: 'expert',
+                    })
+                  }
+                  disabled={
+                    customAgentSelection.historical.length +
+                      customAgentSelection.planetary.length ===
+                    0
+                  }
                   className="w-full"
                 >
                   Start Custom Experiment
@@ -421,11 +437,7 @@ export function ConsciousnessLaboratoryChat({
             >
               <Settings className="w-4 h-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowPresetSelection(true)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setShowPresetSelection(true)}>
               Change Experiment
             </Button>
           </div>
@@ -442,7 +454,9 @@ export function ConsciousnessLaboratoryChat({
             <div className="text-sm">
               <div className="font-medium">{selectedExperiment?.name || 'Custom Protocol'}</div>
               <div className="text-muted-foreground">
-                {finalAgentConfiguration.historical.length + finalAgentConfiguration.planetary.length} agents
+                {finalAgentConfiguration.historical.length +
+                  finalAgentConfiguration.planetary.length}{' '}
+                agents
               </div>
             </div>
           </div>
@@ -458,9 +472,7 @@ export function ConsciousnessLaboratoryChat({
                 checked={experimentMode}
                 onCheckedChange={experimentMode ? handleStopExperiment : handleStartExperiment}
               />
-              <span className="text-sm">
-                {experimentMode ? 'Recording' : 'Standby'}
-              </span>
+              <span className="text-sm">{experimentMode ? 'Recording' : 'Standby'}</span>
             </div>
           </div>
 
@@ -473,7 +485,8 @@ export function ConsciousnessLaboratoryChat({
                   <span className="font-medium">Consciousness</span>
                 </div>
                 <div className="text-lg font-bold">
-                  {currentMetrics[currentMetrics.length - 1]?.groupConsciousness.toFixed(2) || '0.00'}
+                  {currentMetrics[currentMetrics.length - 1]?.groupConsciousness.toFixed(2) ||
+                    '0.00'}
                 </div>
               </div>
 
@@ -499,7 +512,9 @@ export function ConsciousnessLaboratoryChat({
                 <label key={key} className="flex items-center gap-2 cursor-pointer">
                   <Switch
                     checked={value}
-                    onCheckedChange={(checked) => setLabSettings(prev => ({ ...prev, [key]: checked }))}
+                    onCheckedChange={checked =>
+                      setLabSettings(prev => ({ ...prev, [key]: checked }))
+                    }
                   />
                   <span className="text-sm">
                     {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
@@ -555,9 +570,7 @@ export function ConsciousnessLaboratoryChat({
                   ×
                 </Button>
               </div>
-              <ScrollArea className="max-h-[75vh]">
-                {renderExperimentSelection()}
-              </ScrollArea>
+              <ScrollArea className="max-h-[75vh]">{renderExperimentSelection()}</ScrollArea>
             </div>
           </div>
         </div>
@@ -570,27 +583,23 @@ export function ConsciousnessLaboratoryChat({
         onClose={onClose}
         title={title}
         variant="laboratory"
-
         // Agent configuration
         historicalAgents={activeHistoricalAgents}
         planetaryConfigs={activePlanetaryConfigs}
         initialAgents={[
           ...finalAgentConfiguration.historical,
-          ...finalAgentConfiguration.planetary
+          ...finalAgentConfiguration.planetary,
         ]}
         maxAgents={maxAgents}
         allowMonica={finalAgentConfiguration.includeMonica}
-
         // Laboratory-specific features
         enableGroupDynamics={true}
         enableExport={true}
         enablePresets={false} // Using custom preset system
         enableMemoryPersistence={labSettings.consciousnessTracking}
-
         // Callbacks
         onSessionUpdate={onSessionUpdate}
         onAgentEvolution={onAgentEvolution}
-
         // Custom header content
         customHeader={renderLabControls()}
       />

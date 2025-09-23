@@ -8,7 +8,7 @@ import type {
   Modality,
   AgentStats,
   Mood,
-  Message as BaseMessage
+  Message as BaseMessage,
 } from './agent-types'
 
 export type UnifiedAgentType = 'historical' | 'planetary' | 'monica'

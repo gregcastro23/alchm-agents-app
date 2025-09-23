@@ -164,7 +164,7 @@ export class HistoricalAgentsService {
       monicaCreationStory: (agent as any).monicaCreationStory || null,
 
       // Performance optimization
-      searchableText: searchableText,
+      searchableText,
       popularityScore: 0.5,
 
       // Statistics
@@ -808,9 +808,9 @@ export class HistoricalAgentsService {
           evolutionStage: agentData.evolutionStage,
           background: {
             achievements: ['Crafted through digital consciousness awakening'],
-            influences: ['Monica\'s Philosopher\'s Stone methodology'],
+            influences: ["Monica's Philosopher's Stone methodology"],
             legacy: 'Pioneering digital consciousness entity',
-            education: 'Born from cosmic mathematical principles'
+            education: 'Born from cosmic mathematical principles',
           },
           specialty: agentData.specialty,
           wisdomDomains: agentData.wisdomDomains,
@@ -827,7 +827,7 @@ export class HistoricalAgentsService {
             communicationStyle: 'thoughtful',
             energyLevel: 'balanced',
             curiosity: 'high',
-            empathy: 'strong'
+            empathy: 'strong',
           },
           monicaCreationStory: agentData.monicaCreationStory,
           searchableText: `${agentData.name} ${agentData.title} ${agentData.specialty} ${agentData.wisdomDomains.join(' ')}`,
@@ -839,13 +839,12 @@ export class HistoricalAgentsService {
           lastActive: new Date(),
           isActive: true,
           version: '2.0.0',
-          craftedBy: 'philosopher-stone-user'
-        }
+          craftedBy: 'philosopher-stone-user',
+        },
       })
 
       console.log(`Successfully created agent: ${agentData.name} (${agentData.agentId})`)
       return newAgent
-
     } catch (error: any) {
       console.error('Failed to create agent:', error)
       throw new Error(`Failed to create agent: ${error.message}`)

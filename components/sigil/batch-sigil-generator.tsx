@@ -30,7 +30,7 @@ import {
   Package,
   CheckCircle,
   X,
-  RotateCcw
+  RotateCcw,
 } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
 import type { NatalSigilRune, SigilStyle, RuneGeometry } from '@/lib/runes/natal-sigil-runes'
@@ -68,29 +68,29 @@ const STYLE_DESCRIPTIONS = {
     element: 'Ice & Fire',
     description: 'Ancient Norse power with crystalline clarity',
     icon: <Mountain className="w-5 h-5" />,
-    color: 'text-blue-400'
+    color: 'text-blue-400',
   },
   celtic: {
     name: 'Celtic Spiral',
     element: 'Earth & Water',
     description: 'Sacred geometry of the ancient Celts',
     icon: <Target className="w-5 h-5" />,
-    color: 'text-green-400'
+    color: 'text-green-400',
   },
   alchemical: {
     name: 'Alchemical',
     element: 'Fire & Mercury',
     description: 'Hermetic transformation symbols',
     icon: <Flame className="w-5 h-5" />,
-    color: 'text-orange-400'
+    color: 'text-orange-400',
   },
   cosmic: {
     name: 'Cosmic',
     element: 'Ether & Light',
     description: 'Universal consciousness patterns',
     icon: <Star className="w-5 h-5" />,
-    color: 'text-purple-400'
-  }
+    color: 'text-purple-400',
+  },
 }
 
 const POWER_LEVEL_DESCRIPTIONS = {
@@ -98,37 +98,67 @@ const POWER_LEVEL_DESCRIPTIONS = {
     name: 'Minor Activation',
     description: 'Gentle introduction to sigil energy',
     intensity: 25,
-    color: 'text-green-400'
+    color: 'text-green-400',
   },
   standard: {
     name: 'Standard Power',
     description: 'Balanced activation for daily practice',
     intensity: 50,
-    color: 'text-blue-400'
+    color: 'text-blue-400',
   },
   major: {
     name: 'Major Working',
     description: 'Powerful sigil for significant transformation',
     intensity: 75,
-    color: 'text-orange-400'
+    color: 'text-orange-400',
   },
   transcendent: {
     name: 'Transcendent',
     description: 'Ultimate consciousness expansion',
     intensity: 100,
-    color: 'text-purple-400'
-  }
+    color: 'text-purple-400',
+  },
 }
 
 const ELEMENTAL_FOCUS_DESCRIPTIONS = {
-  fire: { name: 'Fire Focus', description: 'Passion, energy, transformation', icon: <Flame className="w-4 h-4" />, color: 'text-red-400' },
-  water: { name: 'Water Focus', description: 'Emotion, intuition, healing', icon: <Waves className="w-4 h-4" />, color: 'text-blue-400' },
-  air: { name: 'Air Focus', description: 'Intellect, communication, clarity', icon: <Wind className="w-4 h-4" />, color: 'text-yellow-400' },
-  earth: { name: 'Earth Focus', description: 'Grounding, manifestation, stability', icon: <Mountain className="w-4 h-4" />, color: 'text-green-400' },
-  spirit: { name: 'Spirit Focus', description: 'Transcendence, unity, enlightenment', icon: <Sparkles className="w-4 h-4" />, color: 'text-purple-400' }
+  fire: {
+    name: 'Fire Focus',
+    description: 'Passion, energy, transformation',
+    icon: <Flame className="w-4 h-4" />,
+    color: 'text-red-400',
+  },
+  water: {
+    name: 'Water Focus',
+    description: 'Emotion, intuition, healing',
+    icon: <Waves className="w-4 h-4" />,
+    color: 'text-blue-400',
+  },
+  air: {
+    name: 'Air Focus',
+    description: 'Intellect, communication, clarity',
+    icon: <Wind className="w-4 h-4" />,
+    color: 'text-yellow-400',
+  },
+  earth: {
+    name: 'Earth Focus',
+    description: 'Grounding, manifestation, stability',
+    icon: <Mountain className="w-4 h-4" />,
+    color: 'text-green-400',
+  },
+  spirit: {
+    name: 'Spirit Focus',
+    description: 'Transcendence, unity, enlightenment',
+    icon: <Sparkles className="w-4 h-4" />,
+    color: 'text-purple-400',
+  },
 }
 
-export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, className = "" }: BatchSigilGeneratorProps) {
+export function BatchSigilGenerator({
+  geometry,
+  birthInfo,
+  onSigilsGenerated,
+  className = '',
+}: BatchSigilGeneratorProps) {
   const isMobile = useIsMobile()
   const [batchOptions, setBatchOptions] = useState<BatchOptions>({
     styles: ['nordic', 'celtic'],
@@ -140,7 +170,7 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
     elementalFoci: ['spirit'],
     includeTimingVariations: false,
     generateMeditations: true,
-    exportFormat: 'both'
+    exportFormat: 'both',
   })
 
   const [isGenerating, setIsGenerating] = useState(false)
@@ -152,7 +182,7 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
     let count = batchOptions.styles.length
 
     if (batchOptions.includeVariations) {
-      count *= (batchOptions.variationCount + 1)
+      count *= batchOptions.variationCount + 1
     }
 
     if (batchOptions.includePowerLevels) {
@@ -180,13 +210,19 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
         setCurrentStep(`Generating ${style} sigils...`)
 
         const baseVariations = batchOptions.includeVariations ? batchOptions.variationCount + 1 : 1
-        const powerLevels = batchOptions.includePowerLevels ? batchOptions.powerLevels : ['standard']
-        const elementalFoci = batchOptions.includeElementalFocus ? batchOptions.elementalFoci : ['spirit']
+        const powerLevels = batchOptions.includePowerLevels
+          ? batchOptions.powerLevels
+          : ['standard']
+        const elementalFoci = batchOptions.includeElementalFocus
+          ? batchOptions.elementalFoci
+          : ['spirit']
 
         for (let variation = 0; variation < baseVariations; variation++) {
           for (const powerLevel of powerLevels) {
             for (const elementalFocus of elementalFoci) {
-              setCurrentStep(`Creating ${style} sigil (${powerLevel} power, ${elementalFocus} focus)...`)
+              setCurrentStep(
+                `Creating ${style} sigil (${powerLevel} power, ${elementalFocus} focus)...`
+              )
 
               // Simulate API call for sigil generation
               await new Promise(resolve => setTimeout(resolve, 800))
@@ -202,7 +238,9 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
                   endX: line.x2,
                   endY: line.y2,
                   strokeType: line.aspectType,
-                  intensity: POWER_LEVEL_DESCRIPTIONS[powerLevel as keyof typeof POWER_LEVEL_DESCRIPTIONS]?.intensity || 50
+                  intensity:
+                    POWER_LEVEL_DESCRIPTIONS[powerLevel as keyof typeof POWER_LEVEL_DESCRIPTIONS]
+                      ?.intensity || 50,
                 })),
                 powerNodes: geometry.powerNodes,
                 sacredPatterns: geometry.sacredPatterns,
@@ -211,20 +249,20 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
                   water: elementalFocus === 'water' ? 1.0 : 0.25,
                   air: elementalFocus === 'air' ? 1.0 : 0.25,
                   earth: elementalFocus === 'earth' ? 1.0 : 0.25,
-                  spirit: elementalFocus === 'spirit' ? 1.0 : 0.5
+                  spirit: elementalFocus === 'spirit' ? 1.0 : 0.5,
                 },
                 alchemicalCost: {
                   spirit: Math.floor(Math.random() * 50) + 25,
                   essence: Math.floor(Math.random() * 50) + 25,
                   matter: Math.floor(Math.random() * 50) + 25,
-                  substance: Math.floor(Math.random() * 50) + 25
+                  substance: Math.floor(Math.random() * 50) + 25,
                 },
                 effects: [`Enhanced ${elementalFocus} energy`, `${powerLevel} power activation`],
                 activationInstructions: `Meditate on this sigil for ${powerLevel === 'minor' ? '5-10' : powerLevel === 'standard' ? '10-15' : powerLevel === 'major' ? '15-25' : '30+'} minutes to activate its ${elementalFocus} properties.`,
                 generatedImageUrl: `/api/sigil-generation?style=${style}&power=${powerLevel}&element=${elementalFocus}`,
                 generationTime: new Date().toISOString(),
                 birthInfo,
-                variation: variation > 0 ? `v${variation}` : undefined
+                variation: variation > 0 ? `v${variation}` : undefined,
               }
 
               sigils.push(sigil)
@@ -239,7 +277,6 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
       setGeneratedSigils(sigils)
       onSigilsGenerated(sigils)
       setCurrentStep('Batch generation complete!')
-
     } catch (error) {
       console.error('Batch generation error:', error)
       setCurrentStep('Error during generation')
@@ -253,7 +290,7 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
       ...prev,
       styles: prev.styles.includes(style)
         ? prev.styles.filter(s => s !== style)
-        : [...prev.styles, style]
+        : [...prev.styles, style],
     }))
   }
 
@@ -262,7 +299,7 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
       ...prev,
       powerLevels: prev.powerLevels.includes(level)
         ? prev.powerLevels.filter(l => l !== level)
-        : [...prev.powerLevels, level]
+        : [...prev.powerLevels, level],
     }))
   }
 
@@ -271,12 +308,14 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
       ...prev,
       elementalFoci: prev.elementalFoci.includes(element)
         ? prev.elementalFoci.filter(e => e !== element)
-        : [...prev.elementalFoci, element]
+        : [...prev.elementalFoci, element],
     }))
   }
 
   return (
-    <Card className={`bg-gradient-to-br from-indigo-900/30 to-purple-900/30 border-purple-500/50 ${className}`}>
+    <Card
+      className={`bg-gradient-to-br from-indigo-900/30 to-purple-900/30 border-purple-500/50 ${className}`}
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -285,12 +324,12 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
             </div>
             <div>
               <CardTitle className="text-purple-300">Batch Sigil Generation</CardTitle>
-              <CardDescription>Create multiple sigil variations with advanced options</CardDescription>
+              <CardDescription>
+                Create multiple sigil variations with advanced options
+              </CardDescription>
             </div>
           </div>
-          <Badge className="bg-purple-600">
-            {estimatedSigilCount()} sigils
-          </Badge>
+          <Badge className="bg-purple-600">{estimatedSigilCount()} sigils</Badge>
         </div>
       </CardHeader>
 
@@ -326,7 +365,9 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
                 <div className="text-xs text-slate-400">Styles</div>
               </div>
               <div className="p-3 bg-green-900/30 rounded-lg text-center">
-                <div className="text-lg font-bold text-green-300">{batchOptions.generateMeditations ? 'Yes' : 'No'}</div>
+                <div className="text-lg font-bold text-green-300">
+                  {batchOptions.generateMeditations ? 'Yes' : 'No'}
+                </div>
                 <div className="text-xs text-slate-400">Meditations</div>
               </div>
             </div>
@@ -337,7 +378,9 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
             <div className="text-center">
               <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
               <h3 className="text-xl font-semibold mb-2 text-green-300">Generation Complete!</h3>
-              <p className="text-green-200">Successfully generated {generatedSigils.length} unique sigils</p>
+              <p className="text-green-200">
+                Successfully generated {generatedSigils.length} unique sigils
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -345,7 +388,11 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
                 <Download className="w-4 h-4 mr-2" />
                 Download Collection
               </Button>
-              <Button variant="outline" onClick={() => setGeneratedSigils([])} className="border-purple-500 text-purple-300">
+              <Button
+                variant="outline"
+                onClick={() => setGeneratedSigils([])}
+                className="border-purple-500 text-purple-300"
+              >
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Generate New Batch
               </Button>
@@ -366,7 +413,9 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
         ) : (
           // Configuration Interface
           <Tabs defaultValue="styles" className="space-y-4">
-            <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} bg-slate-900/50`}>
+            <TabsList
+              className={`grid w-full ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} bg-slate-900/50`}
+            >
               <TabsTrigger value="styles">Styles</TabsTrigger>
               <TabsTrigger value="variations">Variations</TabsTrigger>
               <TabsTrigger value="power">Power</TabsTrigger>
@@ -375,7 +424,9 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
 
             <TabsContent value="styles" className="space-y-4">
               <h3 className="text-lg font-semibold text-purple-300">Select Sigil Styles</h3>
-              <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-4`}>
+              <div
+                className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-4`}
+              >
                 {Object.entries(STYLE_DESCRIPTIONS).map(([style, info]) => (
                   <div
                     key={style}
@@ -387,12 +438,12 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
                     onClick={() => toggleStyle(style as SigilStyle)}
                   >
                     <div className="flex items-center gap-3 mb-2">
-                      <div className={info.color}>
-                        {info.icon}
-                      </div>
+                      <div className={info.color}>{info.icon}</div>
                       <div>
                         <h4 className="font-semibold">{info.name}</h4>
-                        <Badge variant="outline" className="text-xs">{info.element}</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {info.element}
+                        </Badge>
                       </div>
                       {batchOptions.styles.includes(style as SigilStyle) && (
                         <CheckCircle className="w-5 h-5 text-green-500 ml-auto" />
@@ -412,10 +463,12 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
                   <Checkbox
                     id="variations"
                     checked={batchOptions.includeVariations}
-                    onCheckedChange={(checked) => setBatchOptions(prev => ({
-                      ...prev,
-                      includeVariations: !!checked
-                    }))}
+                    onCheckedChange={checked =>
+                      setBatchOptions(prev => ({
+                        ...prev,
+                        includeVariations: !!checked,
+                      }))
+                    }
                   />
                   <Label htmlFor="variations">Include style variations</Label>
                 </div>
@@ -425,10 +478,12 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
                     <Label>Number of variations per style: {batchOptions.variationCount}</Label>
                     <Slider
                       value={[batchOptions.variationCount]}
-                      onValueChange={(value) => setBatchOptions(prev => ({
-                        ...prev,
-                        variationCount: value[0]
-                      }))}
+                      onValueChange={value =>
+                        setBatchOptions(prev => ({
+                          ...prev,
+                          variationCount: value[0],
+                        }))
+                      }
                       min={1}
                       max={5}
                       step={1}
@@ -443,10 +498,12 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
                   <Checkbox
                     id="elementalFocus"
                     checked={batchOptions.includeElementalFocus}
-                    onCheckedChange={(checked) => setBatchOptions(prev => ({
-                      ...prev,
-                      includeElementalFocus: !!checked
-                    }))}
+                    onCheckedChange={checked =>
+                      setBatchOptions(prev => ({
+                        ...prev,
+                        includeElementalFocus: !!checked,
+                      }))
+                    }
                   />
                   <Label htmlFor="elementalFocus">Include elemental focus variations</Label>
                 </div>
@@ -464,9 +521,7 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
                         onClick={() => toggleElementalFocus(element as any)}
                       >
                         <div className="flex items-center gap-2">
-                          <div className={info.color}>
-                            {info.icon}
-                          </div>
+                          <div className={info.color}>{info.icon}</div>
                           <div>
                             <div className="font-medium text-sm">{info.name}</div>
                             <div className="text-xs text-slate-400">{info.description}</div>
@@ -489,10 +544,12 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
                 <Checkbox
                   id="powerLevels"
                   checked={batchOptions.includePowerLevels}
-                  onCheckedChange={(checked) => setBatchOptions(prev => ({
-                    ...prev,
-                    includePowerLevels: !!checked
-                  }))}
+                  onCheckedChange={checked =>
+                    setBatchOptions(prev => ({
+                      ...prev,
+                      includePowerLevels: !!checked,
+                    }))
+                  }
                 />
                 <Label htmlFor="powerLevels">Include multiple power levels</Label>
               </div>
@@ -524,17 +581,21 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
             </TabsContent>
 
             <TabsContent value="export" className="space-y-4">
-              <h3 className="text-lg font-semibold text-purple-300">Export & Enhancement Options</h3>
+              <h3 className="text-lg font-semibold text-purple-300">
+                Export & Enhancement Options
+              </h3>
 
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="meditations"
                     checked={batchOptions.generateMeditations}
-                    onCheckedChange={(checked) => setBatchOptions(prev => ({
-                      ...prev,
-                      generateMeditations: !!checked
-                    }))}
+                    onCheckedChange={checked =>
+                      setBatchOptions(prev => ({
+                        ...prev,
+                        generateMeditations: !!checked,
+                      }))
+                    }
                   />
                   <Label htmlFor="meditations">Generate meditation guides for each sigil</Label>
                 </div>
@@ -548,7 +609,9 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
                     </div>
                     <div>
                       <span className="text-slate-400">Meditation guides:</span>
-                      <span className="ml-2 font-mono">{batchOptions.generateMeditations ? estimatedSigilCount() : 0}</span>
+                      <span className="ml-2 font-mono">
+                        {batchOptions.generateMeditations ? estimatedSigilCount() : 0}
+                      </span>
                     </div>
                     <div>
                       <span className="text-slate-400">Styles:</span>
@@ -556,7 +619,9 @@ export function BatchSigilGenerator({ geometry, birthInfo, onSigilsGenerated, cl
                     </div>
                     <div>
                       <span className="text-slate-400">Total files:</span>
-                      <span className="ml-2 font-mono">{estimatedSigilCount() * (batchOptions.generateMeditations ? 2 : 1)}</span>
+                      <span className="ml-2 font-mono">
+                        {estimatedSigilCount() * (batchOptions.generateMeditations ? 2 : 1)}
+                      </span>
                     </div>
                   </div>
                 </div>

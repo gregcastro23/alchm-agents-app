@@ -42,12 +42,13 @@ export class TemporalAnalysisCache {
     hits: 0,
     misses: 0,
     evictions: 0,
-    totalQueries: 0
+    totalQueries: 0,
   }
   private readonly maxSize: number
   private readonly defaultTTL: number
 
-  constructor(maxSize = 1000, defaultTTL = 300000) { // 5 minutes default
+  constructor(maxSize = 1000, defaultTTL = 300000) {
+    // 5 minutes default
     this.maxSize = maxSize
     this.defaultTTL = defaultTTL
 
@@ -65,7 +66,7 @@ export class TemporalAnalysisCache {
       dateRange: query.dateRange,
       reinforcementMode: query.reinforcementMode,
       granularity: query.granularity,
-      options
+      options,
     }
     return Buffer.from(JSON.stringify(keyData)).toString('base64')
   }
@@ -104,7 +105,7 @@ export class TemporalAnalysisCache {
       timestamp: Date.now(),
       expiresAt,
       hitCount: 0,
-      size
+      size,
     })
   }
 
@@ -149,10 +150,8 @@ export class TemporalAnalysisCache {
   getMetrics(): typeof this.metrics & { hitRate: number; size: number } {
     return {
       ...this.metrics,
-      hitRate: this.metrics.totalQueries > 0
-        ? this.metrics.hits / this.metrics.totalQueries
-        : 0,
-      size: this.cache.size
+      hitRate: this.metrics.totalQueries > 0 ? this.metrics.hits / this.metrics.totalQueries : 0,
+      size: this.cache.size,
     }
   }
 
@@ -166,11 +165,14 @@ export class TemporalAnalysisCache {
  * Query optimization engine for temporal analysis
  */
 export class QueryOptimizer {
-  private queryStats = new Map<string, {
-    executionTimes: number[]
-    lastOptimized: number
-    effectiveHints: QueryOptimizationHint[]
-  }>()
+  private queryStats = new Map<
+    string,
+    {
+      executionTimes: number[]
+      lastOptimized: number
+      effectiveHints: QueryOptimizationHint[]
+    }
+  >()
 
   analyzeQuery(query: any): QueryOptimizationHint {
     const hints: QueryOptimizationHint = {}
@@ -181,7 +183,8 @@ export class QueryOptimizer {
     }
 
     if (query.dateRange) {
-      const range = new Date(query.dateRange.end).getTime() - new Date(query.dateRange.start).getTime()
+      const range =
+        new Date(query.dateRange.end).getTime() - new Date(query.dateRange.start).getTime()
       const days = range / (1000 * 60 * 60 * 24)
 
       if (days > 365) {
@@ -216,7 +219,7 @@ export class QueryOptimizer {
       this.queryStats.set(queryKey, {
         executionTimes: [],
         lastOptimized: Date.now(),
-        effectiveHints: []
+        effectiveHints: [],
       })
     }
 
@@ -276,7 +279,7 @@ export class PerformanceMonitor {
     activeConnections: 0,
     averageResponseTime: 0,
     patternDetectionTime: 0,
-    elementalCalculationTime: 0
+    elementalCalculationTime: 0,
   }
 
   private responseTimes: number[] = []
@@ -345,7 +348,7 @@ export class PerformanceMonitor {
       responseTimePercentiles: this.calculatePercentiles(this.responseTimes),
       patternDetectionPercentiles: this.calculatePercentiles(this.patternDetectionTimes),
       elementalCalculationPercentiles: this.calculatePercentiles(this.elementalCalculationTimes),
-      trendAnalysis: this.analyzeTrends()
+      trendAnalysis: this.analyzeTrends(),
     }
   }
 
@@ -359,7 +362,7 @@ export class PerformanceMonitor {
       p50: sorted[Math.floor(len * 0.5)],
       p90: sorted[Math.floor(len * 0.9)],
       p95: sorted[Math.floor(len * 0.95)],
-      p99: sorted[Math.floor(len * 0.99)]
+      p99: sorted[Math.floor(len * 0.99)],
     }
   }
 
@@ -378,7 +381,7 @@ export class PerformanceMonitor {
 
     return {
       trend: improvement > 5 ? 'improving' : improvement < -5 ? 'degrading' : 'stable',
-      improvement: Math.round(improvement * 100) / 100
+      improvement: Math.round(improvement * 100) / 100,
     }
   }
 
@@ -445,7 +448,11 @@ export const globalPerformanceMonitor = new PerformanceMonitor()
 /**
  * Decorator for automatic performance monitoring
  */
-export function monitorPerformance(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function monitorPerformance(
+  target: any,
+  propertyName: string,
+  descriptor: PropertyDescriptor
+) {
   const method = descriptor.value
 
   descriptor.value = async function (...args: any[]) {

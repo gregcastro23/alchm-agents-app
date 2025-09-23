@@ -15,7 +15,7 @@ import {
   Clock,
   Star,
   BookOpen,
-  Crown
+  Crown,
 } from 'lucide-react'
 
 import ConsciousnessLaboratoryChat from '@/components/consciousness-laboratory-chat'
@@ -36,7 +36,7 @@ export default function SynthesisChamberPage() {
       planets: ['Sun', 'Jupiter', 'Uranus', 'Neptune'],
       difficulty: 'Expert',
       estimatedTime: '15-20 minutes',
-      icon: <Zap className="w-6 h-6 text-amber-500" />
+      icon: <Zap className="w-6 h-6 text-amber-500" />,
     },
     {
       id: 'creative-innovation-lab',
@@ -46,7 +46,7 @@ export default function SynthesisChamberPage() {
       planets: ['Venus', 'Uranus', 'Neptune'],
       difficulty: 'Advanced',
       estimatedTime: '10-15 minutes',
-      icon: <Sparkles className="w-6 h-6 text-purple-500" />
+      icon: <Sparkles className="w-6 h-6 text-purple-500" />,
     },
     {
       id: 'wisdom-integration-council',
@@ -56,7 +56,7 @@ export default function SynthesisChamberPage() {
       planets: ['Jupiter', 'Saturn', 'Moon'],
       difficulty: 'Intermediate',
       estimatedTime: '8-12 minutes',
-      icon: <BookOpen className="w-6 h-6 text-blue-500" />
+      icon: <BookOpen className="w-6 h-6 text-blue-500" />,
     },
     {
       id: 'leadership-mastery',
@@ -66,8 +66,8 @@ export default function SynthesisChamberPage() {
       planets: ['Sun', 'Mars', 'Jupiter'],
       difficulty: 'Advanced',
       estimatedTime: '12-18 minutes',
-      icon: <Crown className="w-6 h-6 text-red-500" />
-    }
+      icon: <Crown className="w-6 h-6 text-red-500" />,
+    },
   ]
 
   const handleStartExperiment = (experimentId: string) => {
@@ -112,9 +112,7 @@ export default function SynthesisChamberPage() {
             <Brain className="w-8 h-8 text-purple-500" />
             <div>
               <h3 className="font-semibold">Multi-Agent Synthesis</h3>
-              <p className="text-sm text-muted-foreground">
-                Combine up to 8 consciousness agents
-              </p>
+              <p className="text-sm text-muted-foreground">Combine up to 8 consciousness agents</p>
             </div>
           </CardContent>
         </Card>
@@ -124,9 +122,7 @@ export default function SynthesisChamberPage() {
             <Activity className="w-8 h-8 text-green-500" />
             <div>
               <h3 className="font-semibold">Live Metrics</h3>
-              <p className="text-sm text-muted-foreground">
-                Real-time consciousness tracking
-              </p>
+              <p className="text-sm text-muted-foreground">Real-time consciousness tracking</p>
             </div>
           </CardContent>
         </Card>
@@ -136,9 +132,7 @@ export default function SynthesisChamberPage() {
             <Beaker className="w-8 h-8 text-blue-500" />
             <div>
               <h3 className="font-semibold">Experiment Mode</h3>
-              <p className="text-sm text-muted-foreground">
-                A/B testing and research protocols
-              </p>
+              <p className="text-sm text-muted-foreground">A/B testing and research protocols</p>
             </div>
           </CardContent>
         </Card>
@@ -148,9 +142,7 @@ export default function SynthesisChamberPage() {
             <Star className="w-8 h-8 text-amber-500" />
             <div>
               <h3 className="font-semibold">Model Optimization</h3>
-              <p className="text-sm text-muted-foreground">
-                Intelligence routing for best results
-              </p>
+              <p className="text-sm text-muted-foreground">Intelligence routing for best results</p>
             </div>
           </CardContent>
         </Card>
@@ -172,11 +164,15 @@ export default function SynthesisChamberPage() {
                     <div>
                       <CardTitle className="text-lg">{experiment.name}</CardTitle>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge variant={
-                          experiment.difficulty === 'Expert' ? 'destructive' :
-                          experiment.difficulty === 'Advanced' ? 'default' :
-                          'secondary'
-                        }>
+                        <Badge
+                          variant={
+                            experiment.difficulty === 'Expert'
+                              ? 'destructive'
+                              : experiment.difficulty === 'Advanced'
+                                ? 'default'
+                                : 'secondary'
+                          }
+                        >
                           {experiment.difficulty}
                         </Badge>
                         <div className="flex items-center gap-1 text-muted-foreground">
@@ -189,9 +185,7 @@ export default function SynthesisChamberPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {experiment.description}
-                </p>
+                <p className="text-sm text-muted-foreground mb-4">{experiment.description}</p>
 
                 <div className="space-y-3">
                   <div>
@@ -249,9 +243,9 @@ export default function SynthesisChamberPage() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              Create your own consciousness synthesis experiment by selecting any combination
-              of historical and planetary agents. Perfect for exploring specific research questions
-              or testing novel agent interactions.
+              Create your own consciousness synthesis experiment by selecting any combination of
+              historical and planetary agents. Perfect for exploring specific research questions or
+              testing novel agent interactions.
             </p>
             <Button
               onClick={() => handleStartExperiment('custom-synthesis')}

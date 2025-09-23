@@ -5,7 +5,10 @@
  * falls back to existing frontend-compatible calculations.
  */
 
-import { tokenCalculatorService as frontendService, type Location } from '../services/token-calculator.js'
+import {
+  tokenCalculatorService as frontendService,
+  type Location,
+} from '../services/token-calculator.js'
 
 export interface TokenRates {
   Spirit: number
@@ -62,7 +65,7 @@ class BackendTokenClient {
         tokens: request.tokens,
         planetaryHour: request.planetaryHour,
         location: request.location,
-        timestamp: request.timestamp?.toISOString()
+        timestamp: request.timestamp?.toISOString(),
       }),
     })
     if (!res.ok) throw new Error(`Token calculation failed: ${res.status}`)
@@ -77,7 +80,7 @@ class BackendTokenClient {
         startDate: request.startDate.toISOString(),
         endDate: request.endDate.toISOString(),
         location: request.location,
-        interval: request.interval
+        interval: request.interval,
       }),
     })
     if (!res.ok) throw new Error(`Historical token data request failed: ${res.status}`)
@@ -91,7 +94,7 @@ class BackendTokenClient {
       body: JSON.stringify({
         location: request.location,
         timestamp: request.timestamp?.toISOString(),
-        timeframe: request.timeframe
+        timeframe: request.timeframe,
       }),
     })
     if (!res.ok) throw new Error(`Token projections request failed: ${res.status}`)
@@ -105,7 +108,7 @@ class BackendTokenClient {
       body: JSON.stringify({
         location: request.location,
         timestamp: request.timestamp?.toISOString(),
-        lookAhead: request.lookAhead
+        lookAhead: request.lookAhead,
       }),
     })
     if (!res.ok) throw new Error(`Token events request failed: ${res.status}`)
@@ -120,9 +123,8 @@ class BackendTokenClient {
 }
 
 export class UnifiedTokenClient {
-  private static useBackend = 
-    typeof process !== 'undefined' && 
-    process.env.NEXT_PUBLIC_TOKEN_CALCULATIONS_BACKEND === 'true'
+  private static useBackend =
+    typeof process !== 'undefined' && process.env.NEXT_PUBLIC_TOKEN_CALCULATIONS_BACKEND === 'true'
 
   static async calculateTokens(request: TokenCalculationRequest): Promise<any> {
     try {
@@ -130,12 +132,12 @@ export class UnifiedTokenClient {
         const resp = await BackendTokenClient.calculateTokens(request)
         return resp.data
       }
-      
+
       // Fallback to frontend calculation
       return await frontendService.calculateTokens(request)
     } catch (error) {
       console.warn('Backend token calculation failed, falling back to frontend:', error)
-      
+
       // Always fallback to frontend calculation
       return await frontendService.calculateTokens(request)
     }
@@ -147,7 +149,7 @@ export class UnifiedTokenClient {
         const resp = await BackendTokenClient.getHistoricalData(request)
         return resp.data
       }
-      
+
       // Fallback to frontend calculation
       return await frontendService.getHistoricalData(
         request.startDate,
@@ -157,7 +159,7 @@ export class UnifiedTokenClient {
       )
     } catch (error) {
       console.warn('Backend historical data failed, falling back to frontend:', error)
-      
+
       // Always fallback to frontend calculation
       return await frontendService.getHistoricalData(
         request.startDate,
@@ -174,37 +176,37 @@ export class UnifiedTokenClient {
         const resp = await BackendTokenClient.getProjections(request)
         return resp.data
       }
-      
+
       // Fallback: calculate tokens and extract projections
       const baseTokens = { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 }
       const result = await frontendService.calculateTokens({
         tokens: baseTokens,
         location: request.location,
-        timestamp: request.timestamp
+        timestamp: request.timestamp,
       })
-      
+
       return {
         projections: result.projections,
         events: result.events,
         harmonics: result.harmonics,
-        metadata: result.metadata
+        metadata: result.metadata,
       }
     } catch (error) {
       console.warn('Backend token projections failed, falling back to frontend:', error)
-      
+
       // Always fallback to frontend calculation
       const baseTokens = { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 }
       const result = await frontendService.calculateTokens({
         tokens: baseTokens,
         location: request.location,
-        timestamp: request.timestamp
+        timestamp: request.timestamp,
       })
-      
+
       return {
         projections: result.projections,
         events: result.events,
         harmonics: result.harmonics,
-        metadata: result.metadata
+        metadata: result.metadata,
       }
     }
   }
@@ -215,15 +217,15 @@ export class UnifiedTokenClient {
         const resp = await BackendTokenClient.getEvents(request)
         return resp.data
       }
-      
+
       // Fallback: calculate tokens and extract events
       const baseTokens = { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 }
       const result = await frontendService.calculateTokens({
         tokens: baseTokens,
         location: request.location,
-        timestamp: request.timestamp
+        timestamp: request.timestamp,
       })
-      
+
       // Filter events by lookAhead if specified
       let events = result.events
       if (request.lookAhead) {
@@ -231,27 +233,27 @@ export class UnifiedTokenClient {
         const cutoffTime = new Date(now.getTime() + request.lookAhead * 60 * 60 * 1000)
         events = events.filter(event => new Date(event.timestamp) <= cutoffTime)
       }
-      
+
       return {
         events,
         marketPhase: result.metadata.marketPhase,
-        volatilityIndex: result.metadata.volatilityIndex
+        volatilityIndex: result.metadata.volatilityIndex,
       }
     } catch (error) {
       console.warn('Backend token events failed, falling back to frontend:', error)
-      
+
       // Always fallback to frontend calculation
       const baseTokens = { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 }
       const result = await frontendService.calculateTokens({
         tokens: baseTokens,
         location: request.location,
-        timestamp: request.timestamp
+        timestamp: request.timestamp,
       })
-      
+
       return {
         events: result.events,
         marketPhase: result.metadata.marketPhase,
-        volatilityIndex: result.metadata.volatilityIndex
+        volatilityIndex: result.metadata.volatilityIndex,
       }
     }
   }
@@ -262,43 +264,43 @@ export class UnifiedTokenClient {
         const resp = await BackendTokenClient.getTokenInfo()
         return resp.data
       }
-      
+
       // Fallback to static token info
       return {
         Spirit: {
           element: 'Fire',
           baseRate: 1.0,
           description: 'Primary alchemical essence, highest volatility',
-          planetaryAffinities: ['Sun', 'Mars', 'Jupiter']
+          planetaryAffinities: ['Sun', 'Mars', 'Jupiter'],
         },
         Essence: {
           element: 'Water',
           baseRate: 0.8,
           description: 'Life force energy, moderate volatility',
-          planetaryAffinities: ['Moon', 'Venus', 'Jupiter']
+          planetaryAffinities: ['Moon', 'Venus', 'Jupiter'],
         },
         Matter: {
           element: 'Earth',
           baseRate: 0.6,
           description: 'Physical manifestation, stable growth',
-          planetaryAffinities: ['Saturn', 'Mars', 'Venus']
+          planetaryAffinities: ['Saturn', 'Mars', 'Venus'],
         },
         Substance: {
           element: 'Air',
           baseRate: 0.4,
           description: 'Transformative catalyst, high reactivity',
-          planetaryAffinities: ['Mercury', 'Saturn', 'Sun']
-        }
+          planetaryAffinities: ['Mercury', 'Saturn', 'Sun'],
+        },
       }
     } catch (error) {
       console.warn('Backend token info failed, using static fallback:', error)
-      
+
       // Static fallback
       return {
         Spirit: { element: 'Fire', baseRate: 1.0 },
         Essence: { element: 'Water', baseRate: 0.8 },
         Matter: { element: 'Earth', baseRate: 0.6 },
-        Substance: { element: 'Air', baseRate: 0.4 }
+        Substance: { element: 'Air', baseRate: 0.4 },
       }
     }
   }
@@ -308,14 +310,14 @@ export class UnifiedTokenClient {
    * Always uses frontend for speed
    */
   static async calculateQuickRates(
-    tokens: TokenRates, 
-    location: Location, 
+    tokens: TokenRates,
+    location: Location,
     timestamp?: Date
   ): Promise<TokenRates> {
     const result = await frontendService.calculateTokens({
       tokens,
       location,
-      timestamp
+      timestamp,
     })
     return result.rates
   }
@@ -326,17 +328,17 @@ export class UnifiedTokenClient {
   static validateTokenRates(rates: TokenRates): { valid: boolean; errors: string[] } {
     const errors: string[] = []
     const requiredTokens = ['Spirit', 'Essence', 'Matter', 'Substance']
-    
+
     for (const token of requiredTokens) {
       const value = rates[token as keyof TokenRates]
       if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
         errors.push(`${token} must be a non-negative finite number`)
       }
     }
-    
+
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     }
   }
 
@@ -346,7 +348,7 @@ export class UnifiedTokenClient {
   } {
     return {
       backendEnabled: this.useBackend,
-      backendUrl: BackendTokenClient['backendUrl']
+      backendUrl: BackendTokenClient['backendUrl'],
     }
   }
 }

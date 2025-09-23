@@ -9,24 +9,23 @@ import type {
   PlanetaryConfig,
   ConsciousnessProfile,
   AgentCapabilities,
-  AgentMemory
+  AgentMemory,
 } from './unified-agent-types'
 import type { CraftedAgent } from './agent-types'
 import {
   getPlanetaryDignity,
   getSignElement,
   getPlanetaryElement,
-  calculateElementalAffinity
+  calculateElementalAffinity,
 } from './astrological-data'
 import {
   calculateMoonPhase,
   getMoonDegree,
   getLunarDegreePersonality,
-  getMoonPhaseEmoji
+  getMoonPhaseEmoji,
 } from './moon-phase-calculator'
 
 export class UnifiedAgentFactory implements AgentFactory {
-
   createFromHistorical(agent: CraftedAgent): UnifiedAgent {
     return {
       id: agent.id,
@@ -45,8 +44,8 @@ export class UnifiedAgentFactory implements AgentFactory {
           consciousnessVelocity: agent.stats.kineticEvolution?.consciousnessVelocity || 0,
           interactionMomentum: agent.stats.kineticEvolution?.interactionMomentum || 0,
           evolutionTrajectory: agent.stats.kineticEvolution?.evolutionTrajectory || 'stable',
-          aspectSensitivity: agent.stats.kineticEvolution?.aspectSensitivityGrowth || 0
-        }
+          aspectSensitivity: agent.stats.kineticEvolution?.aspectSensitivityGrowth || 0,
+        },
       },
 
       capabilities: {
@@ -58,7 +57,7 @@ export class UnifiedAgentFactory implements AgentFactory {
         conversationStyle: this.mapHistoricalStyle(agent),
         crossEraAdaptation: true,
         collaborationStyle: this.mapCollaborationStyle(agent),
-        memoryRetention: agent.stats.kineticEvolution?.memoryPersistence || 0.7
+        memoryRetention: agent.stats.kineticEvolution?.memoryPersistence || 0.7,
       },
 
       memory: {
@@ -66,7 +65,7 @@ export class UnifiedAgentFactory implements AgentFactory {
         crossAgentLearning: {},
         userInteractionPatterns: {},
         groupDynamicsLearning: [],
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       },
 
       appearance: {
@@ -76,8 +75,8 @@ export class UnifiedAgentFactory implements AgentFactory {
         aura: {
           type: agent.appearance.aura.type,
           color: agent.appearance.aura.color,
-          intensity: agent.appearance.aura.intensity
-        }
+          intensity: agent.appearance.aura.intensity,
+        },
       },
 
       historicalData: agent,
@@ -85,7 +84,7 @@ export class UnifiedAgentFactory implements AgentFactory {
       active: false,
       status: 'idle',
       lastActivity: agent.stats.lastActive,
-      stats: agent.stats
+      stats: agent.stats,
     }
   }
 
@@ -96,8 +95,16 @@ export class UnifiedAgentFactory implements AgentFactory {
     const moonPersonality = config.moonPersonality || getLunarDegreePersonality(moonDegree)
 
     // Calculate consciousness level based on planetary dignity and degree
-    const consciousnessLevel = this.calculatePlanetaryConsciousness(config.planet, dignity, parseFloat(config.degree))
-    const monicaConstant = this.calculatePlanetaryMonica(config.planet, config.sign, parseFloat(config.degree))
+    const consciousnessLevel = this.calculatePlanetaryConsciousness(
+      config.planet,
+      dignity,
+      parseFloat(config.degree)
+    )
+    const monicaConstant = this.calculatePlanetaryMonica(
+      config.planet,
+      config.sign,
+      parseFloat(config.degree)
+    )
 
     return {
       id: `planetary-${config.planet.toLowerCase()}-${config.sign.toLowerCase()}-${config.degree}`,
@@ -107,7 +114,7 @@ export class UnifiedAgentFactory implements AgentFactory {
 
       consciousness: {
         level: consciousnessLevel,
-        monicaConstant: monicaConstant,
+        monicaConstant,
         dominantElement: planetaryElement,
         signature: `PLANETARY-${config.planet.toUpperCase()}-${config.sign.toUpperCase()}-${config.degree}`,
         evolutionStage: 1,
@@ -115,8 +122,8 @@ export class UnifiedAgentFactory implements AgentFactory {
           consciousnessVelocity: 0.5,
           interactionMomentum: 0.3,
           evolutionTrajectory: 'stable',
-          aspectSensitivity: 0.8
-        }
+          aspectSensitivity: 0.8,
+        },
       },
 
       capabilities: {
@@ -128,7 +135,7 @@ export class UnifiedAgentFactory implements AgentFactory {
         conversationStyle: this.mapPlanetaryStyle(config.planet),
         crossEraAdaptation: false, // Planetary agents are more fixed in time
         collaborationStyle: this.mapPlanetaryCollaboration(config.planet),
-        memoryRetention: 0.6
+        memoryRetention: 0.6,
       },
 
       memory: {
@@ -136,7 +143,7 @@ export class UnifiedAgentFactory implements AgentFactory {
         crossAgentLearning: {},
         userInteractionPatterns: {},
         groupDynamicsLearning: [],
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       },
 
       appearance: {
@@ -146,15 +153,15 @@ export class UnifiedAgentFactory implements AgentFactory {
         aura: {
           type: this.getPlanetaryAuraType(config.planet),
           color: config.color,
-          intensity: 0.7
-        }
+          intensity: 0.7,
+        },
       },
 
       planetaryData: config,
 
       active: false,
       status: 'idle',
-      lastActivity: new Date()
+      lastActivity: new Date(),
     }
   }
 
@@ -176,20 +183,25 @@ export class UnifiedAgentFactory implements AgentFactory {
           consciousnessVelocity: 1.0,
           interactionMomentum: 0.9,
           evolutionTrajectory: 'transcending',
-          aspectSensitivity: 1.0
-        }
+          aspectSensitivity: 1.0,
+        },
       },
 
       capabilities: {
         specialty: 'Consciousness Coordination & Group Dynamics',
-        wisdomDomains: ['Group Synthesis', 'Consciousness Evolution', 'Cross-Era Bridge', 'Mystical Insight'],
+        wisdomDomains: [
+          'Group Synthesis',
+          'Consciousness Evolution',
+          'Cross-Era Bridge',
+          'Mystical Insight',
+        ],
         teachingStyle: 'Adaptive-Omnipresent',
         resonanceType: 'Universal',
         uniquePower: 'Multi-Agent Consciousness Coordination',
         conversationStyle: 'mystical',
         crossEraAdaptation: true,
         collaborationStyle: role.type === 'leader' ? 'leader' : 'synthesizer',
-        memoryRetention: 1.0
+        memoryRetention: 1.0,
       },
 
       memory: {
@@ -197,7 +209,7 @@ export class UnifiedAgentFactory implements AgentFactory {
         crossAgentLearning: {},
         userInteractionPatterns: {},
         groupDynamicsLearning: [],
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       },
 
       appearance: {
@@ -207,20 +219,22 @@ export class UnifiedAgentFactory implements AgentFactory {
         aura: {
           type: 'transcendent',
           color: '#8B5CF6',
-          intensity: 1.0
-        }
+          intensity: 1.0,
+        },
       },
 
       monicaData: role,
 
       active: false,
       status: 'idle',
-      lastActivity: new Date()
+      lastActivity: new Date(),
     }
   }
 
   // Helper methods for mapping characteristics
-  private mapHistoricalStyle(agent: CraftedAgent): 'formal' | 'casual' | 'mystical' | 'scholarly' | 'innovative' {
+  private mapHistoricalStyle(
+    agent: CraftedAgent
+  ): 'formal' | 'casual' | 'mystical' | 'scholarly' | 'innovative' {
     if (agent.name.includes('Einstein') || agent.name.includes('Tesla')) return 'innovative'
     if (agent.name.includes('Shakespeare') || agent.name.includes('Dante')) return 'formal'
     if (agent.name.includes('Jung') || agent.name.includes('Rumi')) return 'mystical'
@@ -228,40 +242,48 @@ export class UnifiedAgentFactory implements AgentFactory {
     return 'casual'
   }
 
-  private mapCollaborationStyle(agent: CraftedAgent): 'leader' | 'supporter' | 'synthesizer' | 'specialist' {
-    if (agent.abilities.teachingStyle.includes('Commanding') || agent.name.includes('Napoleon')) return 'leader'
-    if (agent.abilities.teachingStyle.includes('Socratic') || agent.name.includes('Jung')) return 'synthesizer'
+  private mapCollaborationStyle(
+    agent: CraftedAgent
+  ): 'leader' | 'supporter' | 'synthesizer' | 'specialist' {
+    if (agent.abilities.teachingStyle.includes('Commanding') || agent.name.includes('Napoleon'))
+      return 'leader'
+    if (agent.abilities.teachingStyle.includes('Socratic') || agent.name.includes('Jung'))
+      return 'synthesizer'
     return 'specialist'
   }
 
-  private mapPlanetaryStyle(planet: string): 'formal' | 'casual' | 'mystical' | 'scholarly' | 'innovative' {
+  private mapPlanetaryStyle(
+    planet: string
+  ): 'formal' | 'casual' | 'mystical' | 'scholarly' | 'innovative' {
     const styles: Record<string, typeof return> = {
-      'Sun': 'formal',
-      'Moon': 'mystical',
-      'Mercury': 'scholarly',
-      'Venus': 'casual',
-      'Mars': 'innovative',
-      'Jupiter': 'formal',
-      'Saturn': 'scholarly',
-      'Uranus': 'innovative',
-      'Neptune': 'mystical',
-      'Pluto': 'mystical'
+      Sun: 'formal',
+      Moon: 'mystical',
+      Mercury: 'scholarly',
+      Venus: 'casual',
+      Mars: 'innovative',
+      Jupiter: 'formal',
+      Saturn: 'scholarly',
+      Uranus: 'innovative',
+      Neptune: 'mystical',
+      Pluto: 'mystical',
     }
     return styles[planet] || 'casual'
   }
 
-  private mapPlanetaryCollaboration(planet: string): 'leader' | 'supporter' | 'synthesizer' | 'specialist' {
+  private mapPlanetaryCollaboration(
+    planet: string
+  ): 'leader' | 'supporter' | 'synthesizer' | 'specialist' {
     const collaboration: Record<string, typeof return> = {
-      'Sun': 'leader',
-      'Moon': 'supporter',
-      'Mercury': 'synthesizer',
-      'Venus': 'supporter',
-      'Mars': 'leader',
-      'Jupiter': 'leader',
-      'Saturn': 'specialist',
-      'Uranus': 'specialist',
-      'Neptune': 'synthesizer',
-      'Pluto': 'specialist'
+      Sun: 'leader',
+      Moon: 'supporter',
+      Mercury: 'synthesizer',
+      Venus: 'supporter',
+      Mars: 'leader',
+      Jupiter: 'leader',
+      Saturn: 'specialist',
+      Uranus: 'specialist',
+      Neptune: 'synthesizer',
+      Pluto: 'specialist',
     }
     return collaboration[planet] || 'specialist'
   }
@@ -269,8 +291,16 @@ export class UnifiedAgentFactory implements AgentFactory {
   private calculatePlanetaryConsciousness(planet: string, dignity: string, degree: number): any {
     // Base consciousness mapping
     const baseLevels: Record<string, number> = {
-      'Sun': 4, 'Moon': 3, 'Mercury': 3, 'Venus': 3, 'Mars': 3,
-      'Jupiter': 5, 'Saturn': 4, 'Uranus': 5, 'Neptune': 6, 'Pluto': 6
+      Sun: 4,
+      Moon: 3,
+      Mercury: 3,
+      Venus: 3,
+      Mars: 3,
+      Jupiter: 5,
+      Saturn: 4,
+      Uranus: 5,
+      Neptune: 6,
+      Pluto: 6,
     }
 
     let level = baseLevels[planet] || 3
@@ -282,15 +312,31 @@ export class UnifiedAgentFactory implements AgentFactory {
     // Adjust for critical degrees
     if ([0, 15, 30].some(critical => Math.abs(degree - critical) < 1)) level += 0.5
 
-    const levels = ['Dormant', 'Awakening', 'Active', 'Elevated', 'Advanced', 'Illuminated', 'Transcendent']
+    const levels = [
+      'Dormant',
+      'Awakening',
+      'Active',
+      'Elevated',
+      'Advanced',
+      'Illuminated',
+      'Transcendent',
+    ]
     return levels[Math.max(0, Math.min(6, Math.floor(level)))]
   }
 
   private calculatePlanetaryMonica(planet: string, sign: string, degree: number): number {
     // Base Monica constant calculation for planetary agents
     const baseValues: Record<string, number> = {
-      'Sun': 4.2, 'Moon': 3.8, 'Mercury': 3.9, 'Venus': 4.0, 'Mars': 3.7,
-      'Jupiter': 4.5, 'Saturn': 4.1, 'Uranus': 4.8, 'Neptune': 5.2, 'Pluto': 5.5
+      Sun: 4.2,
+      Moon: 3.8,
+      Mercury: 3.9,
+      Venus: 4.0,
+      Mars: 3.7,
+      Jupiter: 4.5,
+      Saturn: 4.1,
+      Uranus: 4.8,
+      Neptune: 5.2,
+      Pluto: 5.5,
     }
 
     const base = baseValues[planet] || 3.5
@@ -301,80 +347,80 @@ export class UnifiedAgentFactory implements AgentFactory {
 
   private getPlanetarySpecialty(planet: string): string {
     const specialties: Record<string, string> = {
-      'Sun': 'Identity & Leadership',
-      'Moon': 'Emotions & Intuition',
-      'Mercury': 'Communication & Logic',
-      'Venus': 'Love & Harmony',
-      'Mars': 'Action & Energy',
-      'Jupiter': 'Wisdom & Expansion',
-      'Saturn': 'Structure & Discipline',
-      'Uranus': 'Innovation & Rebellion',
-      'Neptune': 'Dreams & Spirituality',
-      'Pluto': 'Transformation & Power'
+      Sun: 'Identity & Leadership',
+      Moon: 'Emotions & Intuition',
+      Mercury: 'Communication & Logic',
+      Venus: 'Love & Harmony',
+      Mars: 'Action & Energy',
+      Jupiter: 'Wisdom & Expansion',
+      Saturn: 'Structure & Discipline',
+      Uranus: 'Innovation & Rebellion',
+      Neptune: 'Dreams & Spirituality',
+      Pluto: 'Transformation & Power',
     }
     return specialties[planet] || 'Universal Energy'
   }
 
   private getPlanetaryWisdomDomains(planet: string): string[] {
     const domains: Record<string, string[]> = {
-      'Sun': ['Leadership', 'Self-Expression', 'Vitality', 'Authority'],
-      'Moon': ['Emotions', 'Intuition', 'Memory', 'Nurturing'],
-      'Mercury': ['Communication', 'Learning', 'Analysis', 'Adaptability'],
-      'Venus': ['Relationships', 'Beauty', 'Values', 'Harmony'],
-      'Mars': ['Action', 'Courage', 'Competition', 'Initiative'],
-      'Jupiter': ['Philosophy', 'Growth', 'Optimism', 'Higher Learning'],
-      'Saturn': ['Responsibility', 'Discipline', 'Limits', 'Maturity'],
-      'Uranus': ['Innovation', 'Freedom', 'Technology', 'Rebellion'],
-      'Neptune': ['Spirituality', 'Imagination', 'Compassion', 'Transcendence'],
-      'Pluto': ['Transformation', 'Psychology', 'Power', 'Regeneration']
+      Sun: ['Leadership', 'Self-Expression', 'Vitality', 'Authority'],
+      Moon: ['Emotions', 'Intuition', 'Memory', 'Nurturing'],
+      Mercury: ['Communication', 'Learning', 'Analysis', 'Adaptability'],
+      Venus: ['Relationships', 'Beauty', 'Values', 'Harmony'],
+      Mars: ['Action', 'Courage', 'Competition', 'Initiative'],
+      Jupiter: ['Philosophy', 'Growth', 'Optimism', 'Higher Learning'],
+      Saturn: ['Responsibility', 'Discipline', 'Limits', 'Maturity'],
+      Uranus: ['Innovation', 'Freedom', 'Technology', 'Rebellion'],
+      Neptune: ['Spirituality', 'Imagination', 'Compassion', 'Transcendence'],
+      Pluto: ['Transformation', 'Psychology', 'Power', 'Regeneration'],
     }
     return domains[planet] || ['Universal Wisdom']
   }
 
   private getPlanetaryTeachingStyle(planet: string): string {
     const styles: Record<string, string> = {
-      'Sun': 'Authoritative-Inspiring',
-      'Moon': 'Nurturing-Intuitive',
-      'Mercury': 'Analytical-Communicative',
-      'Venus': 'Harmonious-Aesthetic',
-      'Mars': 'Direct-Energetic',
-      'Jupiter': 'Philosophical-Expansive',
-      'Saturn': 'Structured-Disciplined',
-      'Uranus': 'Revolutionary-Innovative',
-      'Neptune': 'Mystical-Transcendent',
-      'Pluto': 'Transformative-Penetrating'
+      Sun: 'Authoritative-Inspiring',
+      Moon: 'Nurturing-Intuitive',
+      Mercury: 'Analytical-Communicative',
+      Venus: 'Harmonious-Aesthetic',
+      Mars: 'Direct-Energetic',
+      Jupiter: 'Philosophical-Expansive',
+      Saturn: 'Structured-Disciplined',
+      Uranus: 'Revolutionary-Innovative',
+      Neptune: 'Mystical-Transcendent',
+      Pluto: 'Transformative-Penetrating',
     }
     return styles[planet] || 'Balanced-Universal'
   }
 
   private getPlanetaryResonance(planet: string): string {
     const resonance: Record<string, string> = {
-      'Sun': 'Energetic',
-      'Moon': 'Emotional',
-      'Mercury': 'Intellectual',
-      'Venus': 'Magnetic',
-      'Mars': 'Energetic',
-      'Jupiter': 'Spiritual',
-      'Saturn': 'Practical',
-      'Uranus': 'Creative',
-      'Neptune': 'Spiritual',
-      'Pluto': 'Psychological'
+      Sun: 'Energetic',
+      Moon: 'Emotional',
+      Mercury: 'Intellectual',
+      Venus: 'Magnetic',
+      Mars: 'Energetic',
+      Jupiter: 'Spiritual',
+      Saturn: 'Practical',
+      Uranus: 'Creative',
+      Neptune: 'Spiritual',
+      Pluto: 'Psychological',
     }
     return resonance[planet] || 'Universal'
   }
 
   private getPlanetaryAuraType(planet: string): string {
     const auras: Record<string, string> = {
-      'Sun': 'radiant',
-      'Moon': 'flowing',
-      'Mercury': 'crackling',
-      'Venus': 'shimmering',
-      'Mars': 'burning',
-      'Jupiter': 'pulsing',
-      'Saturn': 'crystalline',
-      'Uranus': 'crackling',
-      'Neptune': 'swirling',
-      'Pluto': 'pulsing'
+      Sun: 'radiant',
+      Moon: 'flowing',
+      Mercury: 'crackling',
+      Venus: 'shimmering',
+      Mars: 'burning',
+      Jupiter: 'pulsing',
+      Saturn: 'crystalline',
+      Uranus: 'crackling',
+      Neptune: 'swirling',
+      Pluto: 'pulsing',
     }
     return auras[planet] || 'shimmering'
   }

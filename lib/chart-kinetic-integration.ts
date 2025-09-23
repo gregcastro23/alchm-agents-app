@@ -127,7 +127,7 @@ export class ChartKineticIntegration {
       const currentTransits = await this.getCurrentTransits()
 
       // Calculate base evolution velocity
-      let baseVelocity = 0.5
+      const baseVelocity = 0.5
 
       // Calculate velocity modifiers based on transits
       const transitModifiers = this.calculateTransitVelocityModifiers(currentTransits)

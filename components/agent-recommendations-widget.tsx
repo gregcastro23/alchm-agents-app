@@ -13,7 +13,7 @@ import {
   RefreshCw,
   ChevronRight,
   Heart,
-  Zap
+  Zap,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -156,12 +156,7 @@ export function AgentRecommendationsWidget() {
             </CardTitle>
             <CardDescription>Personalized matches based on your birth chart</CardDescription>
           </div>
-          <Button
-            onClick={refreshRecommendations}
-            variant="ghost"
-            size="sm"
-            disabled={refreshing}
-          >
+          <Button onClick={refreshRecommendations} variant="ghost" size="sm" disabled={refreshing}>
             <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
           </Button>
         </div>
@@ -186,8 +181,11 @@ export function AgentRecommendationsWidget() {
                   </div>
 
                   <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${getCompatibilityColor(rec.compatibilityScore)}`}>
-                      {Math.round(rec.compatibilityScore * 100)}% {getCompatibilityText(rec.compatibilityScore)}
+                    <div
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getCompatibilityColor(rec.compatibilityScore)}`}
+                    >
+                      {Math.round(rec.compatibilityScore * 100)}%{' '}
+                      {getCompatibilityText(rec.compatibilityScore)}
                     </div>
 
                     {rec.currentLevel && (
@@ -209,17 +207,11 @@ export function AgentRecommendationsWidget() {
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <span className="text-gray-500">Evolution Potential:</span>
-                      <Progress
-                        value={rec.evolutionPotential * 100}
-                        className="h-1 mt-1"
-                      />
+                      <Progress value={rec.evolutionPotential * 100} className="h-1 mt-1" />
                     </div>
                     <div>
                       <span className="text-gray-500">Elemental Alignment:</span>
-                      <Progress
-                        value={rec.elementalAlignment * 100}
-                        className="h-1 mt-1"
-                      />
+                      <Progress value={rec.elementalAlignment * 100} className="h-1 mt-1" />
                     </div>
                   </div>
                 </div>

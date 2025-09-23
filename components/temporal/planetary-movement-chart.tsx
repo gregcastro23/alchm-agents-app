@@ -217,11 +217,14 @@ export function PlanetaryMovementChart({ delta }: Props) {
     return sum + degrees
   }, 0)
 
-  const fastestPlanet = data.length > 0 ? data.reduce((fastest, current) => {
-    const currentAccel = validateChartNumber(current.acceleration, 0)
-    const fastestAccel = validateChartNumber(fastest.acceleration, 0)
-    return currentAccel > fastestAccel ? current : fastest
-  }) : { planet: 'None', acceleration: 0, color: '#6b7280' }
+  const fastestPlanet =
+    data.length > 0
+      ? data.reduce((fastest, current) => {
+          const currentAccel = validateChartNumber(current.acceleration, 0)
+          const fastestAccel = validateChartNumber(fastest.acceleration, 0)
+          return currentAccel > fastestAccel ? current : fastest
+        })
+      : { planet: 'None', acceleration: 0, color: '#6b7280' }
 
   const daysSince = Math.max(1, validateChartNumber(delta.daysSinceLast, 1))
   const mostActive = data.filter(item => {
@@ -394,8 +397,7 @@ export function PlanetaryMovementChart({ delta }: Props) {
                   />
                   <span>{fastestPlanet?.planet || 'None'}</span>
                   <span className="text-muted-foreground">
-                    (
-                    {validateChartNumber(fastestPlanet?.acceleration, 0).toFixed(3)}
+                    ({validateChartNumber(fastestPlanet?.acceleration, 0).toFixed(3)}
                     °/day)
                   </span>
                 </div>

@@ -4,7 +4,13 @@ import { useState, useCallback, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -22,7 +28,7 @@ import {
   Star,
   Shield,
   Compass,
-  Mountain
+  Mountain,
 } from 'lucide-react'
 import {
   RuneGeometry,
@@ -30,7 +36,7 @@ import {
   NatalSigilRune,
   SIGIL_STYLE_PARAMS,
   calculateSigilPower,
-  calculateSigilCosts
+  calculateSigilCosts,
 } from '@/lib/runes/natal-sigil-runes'
 import { PatternToRuneConverter } from '@/lib/runes/pattern-to-rune-converter'
 import { PatternConfiguration } from '@/lib/astrological-pattern-recognition'
@@ -46,13 +52,13 @@ const styleIcons: Record<SigilStyle, React.ReactNode> = {
   nordic: <Mountain className="w-4 h-4" />,
   celtic: <Compass className="w-4 h-4" />,
   alchemical: <Shield className="w-4 h-4" />,
-  cosmic: <Star className="w-4 h-4" />
+  cosmic: <Star className="w-4 h-4" />,
 }
 
 export default function NatalSigilGenerator({
   geometry,
   chartData,
-  onSigilGenerated
+  onSigilGenerated,
 }: NatalSigilGeneratorProps) {
   const [selectedStyle, setSelectedStyle] = useState<SigilStyle>('nordic')
   const [generatedSigil, setGeneratedSigil] = useState<NatalSigilRune | null>(null)
@@ -69,8 +75,7 @@ export default function NatalSigilGenerator({
   // Determine recommended style based on dominant pattern
   useEffect(() => {
     if (geometry.sacredPatterns.length > 0) {
-      const dominantPattern = geometry.sacredPatterns
-        .sort((a, b) => b.strength - a.strength)[0]
+      const dominantPattern = geometry.sacredPatterns.sort((a, b) => b.strength - a.strength)[0]
       const recommended = PatternToRuneConverter.recommendStyle(dominantPattern)
       setRecommendedStyle(recommended)
     }
@@ -92,8 +97,7 @@ export default function NatalSigilGenerator({
 
       if (geometry.sacredPatterns.length > 0) {
         // Use dominant pattern for sigil generation
-        const dominantPattern = geometry.sacredPatterns
-          .sort((a, b) => b.strength - a.strength)[0]
+        const dominantPattern = geometry.sacredPatterns.sort((a, b) => b.strength - a.strength)[0]
 
         // Generate via API
         const response = await fetch('/api/generate-natal-sigil', {
@@ -103,8 +107,8 @@ export default function NatalSigilGenerator({
             geometry,
             style: selectedStyle,
             patternType: dominantPattern.type,
-            chartData
-          })
+            chartData,
+          }),
         })
 
         if (!response.ok) {
@@ -125,8 +129,8 @@ export default function NatalSigilGenerator({
             style: selectedStyle,
             aspectFocused: true,
             prompt,
-            chartData
-          })
+            chartData,
+          }),
         })
 
         if (!response.ok) {
@@ -154,17 +158,20 @@ export default function NatalSigilGenerator({
     }
   }, [geometry, selectedStyle, chartData, onSigilGenerated])
 
-  const handleDownload = useCallback(async (format: 'png' | 'svg' | 'pdf') => {
-    if (!generatedSigil?.generatedImageUrl) return
+  const handleDownload = useCallback(
+    async (format: 'png' | 'svg' | 'pdf') => {
+      if (!generatedSigil?.generatedImageUrl) return
 
-    try {
-      // For now, just open the image in a new tab
-      // In production, implement proper download functionality
-      window.open(generatedSigil.generatedImageUrl, '_blank')
-    } catch (err) {
-      console.error('Error downloading sigil:', err)
-    }
-  }, [generatedSigil])
+      try {
+        // For now, just open the image in a new tab
+        // In production, implement proper download functionality
+        window.open(generatedSigil.generatedImageUrl, '_blank')
+      } catch (err) {
+        console.error('Error downloading sigil:', err)
+      }
+    },
+    [generatedSigil]
+  )
 
   return (
     <div className="space-y-6">
@@ -194,7 +201,10 @@ export default function NatalSigilGenerator({
               {/* Style Selection */}
               <div className="space-y-3">
                 <Label>Sigil Style</Label>
-                <Select value={selectedStyle} onValueChange={(v) => setSelectedStyle(v as SigilStyle)}>
+                <Select
+                  value={selectedStyle}
+                  onValueChange={v => setSelectedStyle(v as SigilStyle)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -270,9 +280,7 @@ export default function NatalSigilGenerator({
                     <div className="text-xs text-muted-foreground">Power Nodes</div>
                   </div>
                   <div className="text-center p-2 border rounded">
-                    <div className="text-2xl font-bold text-amber-500">
-                      {sigilPower}%
-                    </div>
+                    <div className="text-2xl font-bold text-amber-500">{sigilPower}%</div>
                     <div className="text-xs text-muted-foreground">Sigil Power</div>
                   </div>
                 </div>
@@ -318,12 +326,7 @@ export default function NatalSigilGenerator({
               </div>
 
               {/* Generate Button */}
-              <Button
-                onClick={handleGenerate}
-                disabled={isGenerating}
-                className="w-full"
-                size="lg"
-              >
+              <Button onClick={handleGenerate} disabled={isGenerating} className="w-full" size="lg">
                 {isGenerating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -440,9 +443,7 @@ export default function NatalSigilGenerator({
                     <ol className="space-y-2">
                       {generatedSigil.meditationInstructions.map((instruction, i) => (
                         <li key={i} className="flex gap-2 text-sm">
-                          <span className="font-medium text-muted-foreground">
-                            {i + 1}.
-                          </span>
+                          <span className="font-medium text-muted-foreground">{i + 1}.</span>
                           <span>{instruction}</span>
                         </li>
                       ))}
@@ -495,9 +496,7 @@ export default function NatalSigilGenerator({
                       {generatedSigil.craftingTime && (
                         <div className="flex justify-between p-2 bg-muted rounded">
                           <span className="text-muted-foreground">Crafting Time:</span>
-                          <span className="font-medium">
-                            {generatedSigil.craftingTime} min
-                          </span>
+                          <span className="font-medium">{generatedSigil.craftingTime} min</span>
                         </div>
                       )}
                     </div>

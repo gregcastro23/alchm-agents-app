@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'fs'
 
 // Complete kinetic evolution implementation for all remaining agents
 const remainingAgents = [
@@ -14,11 +14,11 @@ const remainingAgents = [
       '"Electricity Mastery"',
       '"Diplomatic Genius"',
       '"American Renaissance"',
-      '"Universal Wisdom"'
+      '"Universal Wisdom"',
     ],
     hours: '"6-8", "18-20"',
     sensitivity: 0.79,
-    persistence: 0.86
+    persistence: 0.86,
   },
   {
     id: 'carl-sagan',
@@ -31,11 +31,11 @@ const remainingAgents = [
       '"Pale Blue Dot Vision"',
       '"Billions and Billions"',
       '"Contact Protocol"',
-      '"Universal Connection"'
+      '"Universal Connection"',
     ],
     hours: '"20-23", "3-5"',
     sensitivity: 0.91,
-    persistence: 0.89
+    persistence: 0.89,
   },
   {
     id: 'rachel-carson',
@@ -48,11 +48,11 @@ const remainingAgents = [
       '"Marine Biology Mastery"',
       '"Environmental Vision"',
       '"Ecological Balance"',
-      '"Earth Stewardship"'
+      '"Earth Stewardship"',
     ],
     hours: '"5-7", "15-17"',
     sensitivity: 0.83,
-    persistence: 0.88
+    persistence: 0.88,
   },
 
   // Philosophers
@@ -67,11 +67,11 @@ const remainingAgents = [
       '"Social Harmony"',
       '"Filial Piety Mastery"',
       '"Ren (Benevolence)"',
-      '"Junzi (Noble Person)"'
+      '"Junzi (Noble Person)"',
     ],
     hours: '"6-8", "18-20"',
     sensitivity: 0.68,
-    persistence: 0.94
+    persistence: 0.94,
   },
   {
     id: 'lao-tzu',
@@ -84,11 +84,11 @@ const remainingAgents = [
       '"Tao Perception"',
       '"Yin-Yang Balance"',
       '"Empty Mind State"',
-      '"Eternal Flow"'
+      '"Eternal Flow"',
     ],
     hours: '"4-6", "20-22"',
     sensitivity: 0.89,
-    persistence: 0.85
+    persistence: 0.85,
   },
   {
     id: 'siddhartha-gautama-buddha',
@@ -101,11 +101,11 @@ const remainingAgents = [
       '"Eightfold Path"',
       '"Enlightenment Access"',
       '"Nirvana Glimpse"',
-      '"Universal Compassion"'
+      '"Universal Compassion"',
     ],
     hours: '"4-6", "16-18"',
     sensitivity: 0.97,
-    persistence: 0.93
+    persistence: 0.93,
   },
   {
     id: 'ibn-sina-avicenna',
@@ -118,11 +118,11 @@ const remainingAgents = [
       '"Philosophical Synthesis"',
       '"Metaphysical Insight"',
       '"Scientific Method"',
-      '"Universal Knowledge"'
+      '"Universal Knowledge"',
     ],
     hours: '"9-11", "21-23"',
     sensitivity: 0.84,
-    persistence: 0.91
+    persistence: 0.91,
   },
 
   // Leaders
@@ -137,11 +137,11 @@ const remainingAgents = [
       '"Diplomatic Excellence"',
       '"Social Justice Vision"',
       '"Universal Declaration"',
-      '"Global Compassion"'
+      '"Global Compassion"',
     ],
     hours: '"8-10", "16-18"',
     sensitivity: 0.76,
-    persistence: 0.89
+    persistence: 0.89,
   },
   {
     id: 'mahatma-gandhi',
@@ -154,11 +154,11 @@ const remainingAgents = [
       '"Non-Violence Mastery"',
       '"Salt March Spirit"',
       '"Independence Vision"',
-      '"Universal Peace"'
+      '"Universal Peace"',
     ],
     hours: '"4-6", "18-20"',
     sensitivity: 0.82,
-    persistence: 0.96
+    persistence: 0.96,
   },
   {
     id: 'tecumseh',
@@ -171,11 +171,11 @@ const remainingAgents = [
       '"Warrior Spirit"',
       '"Land Protection"',
       '"Vision Quest Power"',
-      '"Eternal Council"'
+      '"Eternal Council"',
     ],
     hours: '"5-7", "19-21"',
     sensitivity: 0.81,
-    persistence: 0.87
+    persistence: 0.87,
   },
   {
     id: 'sitting-bull',
@@ -188,11 +188,11 @@ const remainingAgents = [
       '"Buffalo Medicine"',
       '"Sacred Pipe Keeper"',
       '"Battle Strategy"',
-      '"Spirit World Bridge"'
+      '"Spirit World Bridge"',
     ],
     hours: '"4-6", "20-22"',
     sensitivity: 0.85,
-    persistence: 0.9
+    persistence: 0.9,
   },
   {
     id: 'wangari-maathai',
@@ -205,11 +205,11 @@ const remainingAgents = [
       '"Tree Planting Power"',
       '"Environmental Justice"',
       '"Women Empowerment"',
-      '"Earth Healing"'
+      '"Earth Healing"',
     ],
     hours: '"6-8", "16-18"',
     sensitivity: 0.82,
-    persistence: 0.88
+    persistence: 0.88,
   },
 
   // Mystics & Pioneers
@@ -224,11 +224,11 @@ const remainingAgents = [
       '"Healing Herbalism"',
       '"Sacred Music"',
       '"Living Light Access"',
-      '"Cosmic Harmony"'
+      '"Cosmic Harmony"',
     ],
     hours: '"3-5", "21-23"',
     sensitivity: 0.93,
-    persistence: 0.91
+    persistence: 0.91,
   },
   {
     id: 'murasaki-shikibu',
@@ -241,11 +241,11 @@ const remainingAgents = [
       '"Court Poetry"',
       '"Psychological Depth"',
       '"Heian Beauty"',
-      '"Literary Immortality"'
+      '"Literary Immortality"',
     ],
     hours: '"9-11", "19-21"',
     sensitivity: 0.8,
-    persistence: 0.86
+    persistence: 0.86,
   },
   {
     id: 'mary-wollstonecraft',
@@ -258,11 +258,11 @@ const remainingAgents = [
       '"Educational Reform"',
       '"Rational Feminism"',
       '"Social Revolution"',
-      '"Gender Equality"'
+      '"Gender Equality"',
     ],
     hours: '"10-12", "20-22"',
     sensitivity: 0.78,
-    persistence: 0.84
+    persistence: 0.84,
   },
   {
     id: 'sojourner-truth',
@@ -275,11 +275,11 @@ const remainingAgents = [
       '"Abolitionist Power"',
       '"Truth Speaking"',
       '"Freedom Walking"',
-      '"Divine Justice"'
+      '"Divine Justice"',
     ],
     hours: '"7-9", "17-19"',
     sensitivity: 0.86,
-    persistence: 0.92
+    persistence: 0.92,
   },
   {
     id: 'paulo-freire',
@@ -292,16 +292,16 @@ const remainingAgents = [
       '"Critical Consciousness"',
       '"Dialogue Method"',
       '"Liberation Education"',
-      '"Transformative Praxis"'
+      '"Transformative Praxis"',
     ],
     hours: '"8-10", "18-20"',
     sensitivity: 0.79,
-    persistence: 0.87
-  }
-];
+    persistence: 0.87,
+  },
+]
 
 // Read the file
-let content = fs.readFileSync('./lib/demo-agents-data.ts', 'utf8');
+let content = fs.readFileSync('./lib/demo-agents-data.ts', 'utf8')
 
 // Function to generate quality metrics based on category
 function getQualityMetrics(category) {
@@ -313,32 +313,34 @@ function getQualityMetrics(category) {
     artist: { depth: 0.89, influence: 0.86, temporal: 0.74, evolution: 0.88, resonance: 0.9 },
     inventor: { depth: 0.85, influence: 0.73, temporal: 0.88, evolution: 0.79, resonance: 0.86 },
     pioneer: { depth: 0.82, influence: 0.77, temporal: 0.81, evolution: 0.83, resonance: 0.85 },
-    educator: { depth: 0.86, influence: 0.74, temporal: 0.79, evolution: 0.81, resonance: 0.83 }
-  };
-  return metrics[category] || metrics.philosopher;
+    educator: { depth: 0.86, influence: 0.74, temporal: 0.79, evolution: 0.81, resonance: 0.83 },
+  }
+  return metrics[category] || metrics.philosopher
 }
 
 // Process each agent
-let updatedCount = 0;
+let updatedCount = 0
 remainingAgents.forEach(agent => {
   // Find the agent's stats section
-  const idPattern = new RegExp(`id: '${agent.id}'[\\s\\S]*?stats: \\{[\\s\\S]*?\\},`, 'g');
-  const matches = content.match(idPattern);
+  const idPattern = new RegExp(`id: '${agent.id}'[\\s\\S]*?stats: \\{[\\s\\S]*?\\},`, 'g')
+  const matches = content.match(idPattern)
 
   if (matches && matches.length > 0) {
-    const match = matches[0];
-    const statsPattern = /stats: \{[\s\S]*?\},/;
-    const statsMatch = match.match(statsPattern);
+    const match = matches[0]
+    const statsPattern = /stats: \{[\s\S]*?\},/
+    const statsMatch = match.match(statsPattern)
 
     if (statsMatch) {
-      const oldStats = statsMatch[0];
-      const metrics = getQualityMetrics(agent.category);
+      const oldStats = statsMatch[0]
+      const metrics = getQualityMetrics(agent.category)
 
       // Extract the lastActive date from the original stats
-      const dateMatch = oldStats.match(/lastActive: new Date\([^)]+\)/);
-      const lastActive = dateMatch ? dateMatch[0] : "lastActive: new Date()";
+      const dateMatch = oldStats.match(/lastActive: new Date\([^)]+\)/)
+      const lastActive = dateMatch ? dateMatch[0] : 'lastActive: new Date()'
 
-      const newStats = oldStats.replace(/\},$/,  `,
+      const newStats = oldStats.replace(
+        /\},$/,
+        `,
 
       // Kinetic Evolution Metrics
       kineticEvolution: {
@@ -362,17 +364,18 @@ remainingAgents.forEach(agent => {
         personalityEvolution: ${metrics.evolution},
         kineticResonance: ${metrics.resonance}
       }
-    },`);
+    },`
+      )
 
-      content = content.replace(match, match.replace(oldStats, newStats));
-      updatedCount++;
-      console.log(`✅ Updated ${agent.id}`);
+      content = content.replace(match, match.replace(oldStats, newStats))
+      updatedCount++
+      console.log(`✅ Updated ${agent.id}`)
     }
   } else {
-    console.log(`❌ Could not find ${agent.id}`);
+    console.log(`❌ Could not find ${agent.id}`)
   }
-});
+})
 
 // Write the updated content back
-fs.writeFileSync('./lib/demo-agents-data.ts', content);
-console.log(`\n✨ Successfully updated ${updatedCount}/${remainingAgents.length} agents!`);
+fs.writeFileSync('./lib/demo-agents-data.ts', content)
+console.log(`\n✨ Successfully updated ${updatedCount}/${remainingAgents.length} agents!`)

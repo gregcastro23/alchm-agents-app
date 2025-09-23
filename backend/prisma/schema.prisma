@@ -1,4 +1,3 @@
-
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -13,24 +12,58 @@ datasource db {
 
 // Basic evolution tracking models for backend
 model EvolutionState {
-  id          String   @id @default(uuid())
-  userId      String
-  agentId     String
-  mcValue     Float
-  spirit      Float
-  essence     Float
-  matter      Float
-  substance   Float
-  aNumber     Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  userId    String
+  agentId   String
+  mcValue   Float
+  spirit    Float
+  essence   Float
+  matter    Float
+  substance Float
+  aNumber   Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ConsciousnessInteraction {
-  id          String   @id @default(uuid())
-  userId      String
-  agentId     String
-  mcChange    Float
+  id             String   @id @default(uuid())
+  userId         String
+  agentId        String
+  mcChange       Float
   interpretation String?
-  timestamp   DateTime @default(now())
+  timestamp      DateTime @default(now())
+}
+
+model UserProfile {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  birthDate            DateTime
+  birthTime            String?
+  birthLocation        Json
+  natalChart           Json
+  monicaConstant       Float
+  dominantElement      String
+  allowPublicAgents    Boolean  @default(false)
+  shareChartWithAgents Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  createdAgents CreatedAgent[]
+}
+
+model CreatedAgent {
+  id               String       @id @default(cuid())
+  creatorId        String?
+  sourceType       String
+  birthChart       Json?
+  momentChart      Json
+  additionalCharts Json?
+  blueprint        Json
+  monicaConstant   Float
+  personality      Json
+  isActive         Boolean      @default(true)
+  lastUsed         DateTime?
+  createdAt        DateTime     @default(now())
+  UserProfile      UserProfile? @relation(fields: [userProfileId], references: [id])
+  userProfileId    String?
 }

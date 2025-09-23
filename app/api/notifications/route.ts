@@ -21,25 +21,31 @@ export async function POST(req: NextRequest) {
     const { type, metadata }: NotificationRequest = await req.json()
 
     if (!type) {
-      return NextResponse.json({
-        success: false,
-        error: 'Notification type required'
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Notification type required',
+        },
+        { status: 400 }
+      )
     }
 
     // Get user data for personalization
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        subscription: true
-      }
+        subscription: true,
+      },
     })
 
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        error: 'User not found'
-      }, { status: 404 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'User not found',
+        },
+        { status: 404 }
+      )
     }
 
     // Generate notification content based on type
@@ -56,12 +62,12 @@ export async function POST(req: NextRequest) {
           notificationType: type,
           subject: notification.subject,
           content: notification.content,
-          metadata
+          metadata,
         }),
         userAction: 'system_notification',
         monicaResponse: notification.content,
-        resultedInAction: false
-      }
+        resultedInAction: false,
+      },
     })
 
     // In production, this is where you'd send the actual email
@@ -74,18 +80,20 @@ export async function POST(req: NextRequest) {
       notification: {
         type,
         subject: notification.subject,
-        preview: notification.content.substring(0, 100) + '...',
-        sentAt: new Date().toISOString()
+        preview: `${notification.content.substring(0, 100)}...`,
+        sentAt: new Date().toISOString(),
       },
-      message: 'Notification logged (email service pending)'
+      message: 'Notification logged (email service pending)',
     })
-
   } catch (error) {
     console.error('Notification error:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to send notification'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to send notification',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -103,12 +111,12 @@ export async function GET(req: NextRequest) {
         interactionType: 'notification',
         ...(type && {
           contextData: {
-            contains: `"notificationType":"${type}"`
-          }
-        })
+            contains: `"notificationType":"${type}"`,
+          },
+        }),
       },
       orderBy: { createdAt: 'desc' },
-      take: 20
+      take: 20,
     })
 
     const formattedNotifications = notifications.map(notif => {
@@ -117,24 +125,26 @@ export async function GET(req: NextRequest) {
         id: notif.id,
         type: context.notificationType,
         subject: context.subject,
-        preview: context.content.substring(0, 100) + '...',
+        preview: `${context.content.substring(0, 100)}...`,
         sentAt: notif.createdAt,
-        read: false // TODO: Add read status tracking
+        read: false, // TODO: Add read status tracking
       }
     })
 
     return NextResponse.json({
       success: true,
       notifications: formattedNotifications,
-      totalCount: notifications.length
+      totalCount: notifications.length,
     })
-
   } catch (error) {
     console.error('Get notifications error:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to get notifications'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to get notifications',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -168,7 +178,7 @@ Your transformation starts with a single conversation. Which agent will you meet
 
 With cosmic guidance,
 The Planetary Agents Team
-        `
+        `,
       }
 
     case 'evolution_milestone':
@@ -196,7 +206,7 @@ Continue your evolution: ${process.env.NEXTAUTH_URL}/gallery/chat/${metadata?.ag
 
 Evolving consciousness,
 ${agentName} & The Planetary Agents
-        `
+        `,
       }
 
     case 'power_hour':
@@ -226,7 +236,7 @@ Enter the peak: ${process.env.NEXTAUTH_URL}/planetary-agents
 
 Cosmically aligned,
 The Planetary Agents System
-        `
+        `,
       }
 
     case 'weekly_summary':
@@ -258,13 +268,13 @@ Continue growing: ${process.env.NEXTAUTH_URL}/dashboard
 
 In consciousness,
 Your Evolution Tracker
-        `
+        `,
       }
 
     default:
       return {
         subject: `🔔 Notification from Planetary Agents`,
-        content: `Hello ${userName}, you have a new notification from the consciousness evolution platform.`
+        content: `Hello ${userName}, you have a new notification from the consciousness evolution platform.`,
       }
   }
 }
@@ -283,7 +293,7 @@ async function sendEmail(to: string, subject: string, content: string) {
         from: process.env.FEEDBACK_FROM_EMAIL,
         subject,
         text: content,
-        html: content.replace(/\n/g, '<br>')
+        html: content.replace(/\n/g, '<br>'),
       }
 
       await sgMail.send(msg)

@@ -17,10 +17,13 @@ export async function GET(request: NextRequest) {
       const circuitStatus = ApiResilienceSystem.getCircuitBreakerStatus(apiName)
 
       if (!metrics) {
-        return NextResponse.json({
-          success: false,
-          error: `No metrics found for API: ${apiName}`
-        }, { status: 404 })
+        return NextResponse.json(
+          {
+            success: false,
+            error: `No metrics found for API: ${apiName}`,
+          },
+          { status: 404 }
+        )
       }
 
       return NextResponse.json({
@@ -30,14 +33,19 @@ export async function GET(request: NextRequest) {
           ...metrics,
           uptimePercent: Math.round(metrics.uptime * 100),
           failureRate: Math.round((1 - metrics.uptime) * 100),
-          retryRate: metrics.totalCalls > 0 ? Math.round((metrics.retriedCalls / metrics.totalCalls) * 100) : 0
+          retryRate:
+            metrics.totalCalls > 0
+              ? Math.round((metrics.retriedCalls / metrics.totalCalls) * 100)
+              : 0,
         },
-        circuitBreaker: circuitStatus ? {
-          ...circuitStatus,
-          isOpen: circuitStatus.state === 'OPEN',
-          isHalfOpen: circuitStatus.state === 'HALF_OPEN'
-        } : null,
-        timestamp: new Date().toISOString()
+        circuitBreaker: circuitStatus
+          ? {
+              ...circuitStatus,
+              isOpen: circuitStatus.state === 'OPEN',
+              isHalfOpen: circuitStatus.state === 'HALF_OPEN',
+            }
+          : null,
+        timestamp: new Date().toISOString(),
       })
     } else {
       // Get all system metrics
@@ -53,8 +61,11 @@ export async function GET(request: NextRequest) {
             ...metrics,
             uptimePercent: Math.round(metrics.uptime * 100),
             failureRate: Math.round((1 - metrics.uptime) * 100),
-            retryRate: metrics.totalCalls > 0 ? Math.round((metrics.retriedCalls / metrics.totalCalls) * 100) : 0
-          }
+            retryRate:
+              metrics.totalCalls > 0
+                ? Math.round((metrics.retriedCalls / metrics.totalCalls) * 100)
+                : 0,
+          },
         ])
       )
 
@@ -64,8 +75,8 @@ export async function GET(request: NextRequest) {
           {
             ...circuit,
             isOpen: circuit.state === 'OPEN',
-            isHalfOpen: circuit.state === 'HALF_OPEN'
-          }
+            isHalfOpen: circuit.state === 'HALF_OPEN',
+          },
         ])
       )
 
@@ -74,7 +85,7 @@ export async function GET(request: NextRequest) {
         systemHealth: {
           ...systemHealth,
           overallUptimePercent: Math.round(systemHealth.overallUptime * 100),
-          averageResponseTimeMs: Math.round(systemHealth.averageResponseTime)
+          averageResponseTimeMs: Math.round(systemHealth.averageResponseTime),
         },
         apis: metricsObj,
         circuitBreakers: circuitsObj,
@@ -82,26 +93,29 @@ export async function GET(request: NextRequest) {
           totalApis: Object.keys(metricsObj).length,
           healthyApis: systemHealth.healthyApis,
           openCircuits: Object.values(circuitsObj).filter((c: any) => c.isOpen).length,
-          halfOpenCircuits: Object.values(circuitsObj).filter((c: any) => c.isHalfOpen).length
+          halfOpenCircuits: Object.values(circuitsObj).filter((c: any) => c.isHalfOpen).length,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
     }
   } catch (error) {
     console.error('Error fetching resilience metrics:', error)
 
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to fetch resilience metrics',
-      systemHealth: {
-        status: 'UNKNOWN',
-        overallUptime: 0,
-        totalApis: 0,
-        healthyApis: 0,
-        circuitBreakerTrips: 0,
-        averageResponseTime: 0
-      }
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to fetch resilience metrics',
+        systemHealth: {
+          status: 'UNKNOWN',
+          overallUptime: 0,
+          totalApis: 0,
+          healthyApis: 0,
+          circuitBreakerTrips: 0,
+          averageResponseTime: 0,
+        },
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -113,17 +127,20 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'reset_circuit_breaker':
         if (!apiName) {
-          return NextResponse.json({
-            success: false,
-            error: 'apiName is required for reset_circuit_breaker action'
-          }, { status: 400 })
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'apiName is required for reset_circuit_breaker action',
+            },
+            { status: 400 }
+          )
         }
 
         ApiResilienceSystem.resetCircuitBreaker(apiName)
         return NextResponse.json({
           success: true,
           message: `Circuit breaker reset for ${apiName}`,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
 
       case 'reset_all_metrics':
@@ -131,7 +148,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: true,
           message: 'All metrics and circuit breakers reset',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
 
       case 'get_system_health':
@@ -141,23 +158,30 @@ export async function POST(request: NextRequest) {
           systemHealth: {
             ...health,
             overallUptimePercent: Math.round(health.overallUptime * 100),
-            averageResponseTimeMs: Math.round(health.averageResponseTime)
+            averageResponseTimeMs: Math.round(health.averageResponseTime),
           },
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
 
       default:
-        return NextResponse.json({
-          success: false,
-          error: 'Invalid action. Supported actions: reset_circuit_breaker, reset_all_metrics, get_system_health'
-        }, { status: 400 })
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              'Invalid action. Supported actions: reset_circuit_breaker, reset_all_metrics, get_system_health',
+          },
+          { status: 400 }
+        )
     }
   } catch (error) {
     console.error('Error in resilience management:', error)
 
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to execute resilience management action'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to execute resilience management action',
+      },
+      { status: 500 }
+    )
   }
 }

@@ -117,7 +117,7 @@ export default function MonicaChatInterface({
         body: JSON.stringify({
           message: inputValue,
           userId: null, // Could be passed in as prop
-          sessionId: sessionId || 'monica-session-' + Date.now(),
+          sessionId: sessionId || `monica-session-${Date.now()}`,
           includeCharacterVector: !!userCharacterVector,
           includeConsciousness: !!userConsciousnessProfile,
           includeAlchm: true,
@@ -135,7 +135,7 @@ export default function MonicaChatInterface({
 
       if (data.response) {
         const monicaMessage: MonicaChatMessage = {
-          id: Date.now().toString() + '_monica',
+          id: `${Date.now().toString()}_monica`,
           type: 'monica',
           content: data.response,
           timestamp: new Date(),
@@ -157,7 +157,7 @@ export default function MonicaChatInterface({
       } else {
         // Handle error with Monica's nurturing voice
         const errorMessage: MonicaChatMessage = {
-          id: Date.now().toString() + '_error',
+          id: `${Date.now().toString()}_error`,
           type: 'monica',
           content:
             data.response ||
@@ -169,7 +169,7 @@ export default function MonicaChatInterface({
     } catch (error) {
       console.error('Error sending message to Monica:', error)
       const errorMessage: MonicaChatMessage = {
-        id: Date.now().toString() + '_error',
+        id: `${Date.now().toString()}_error`,
         type: 'monica',
         content:
           "Oh my, I seem to be having connection troubles. My Virgo rising wants everything to work perfectly! Please try again, and I'll be right here waiting to help you explore your cosmic nature. 🌸",
@@ -236,7 +236,7 @@ export default function MonicaChatInterface({
         }
       }
       const monicaMsg: MonicaChatMessage = {
-        id: Date.now().toString() + '_monica',
+        id: `${Date.now().toString()}_monica`,
         type: 'monica',
         content: assembled || '...',
         timestamp: new Date(),
@@ -435,12 +435,15 @@ export default function MonicaChatInterface({
                 Monica: World-renowned tarot master & expert guide to the Planetary Agents system
               </span>
             </div>
-            {messages[messages.length - 1]?.type === 'monica' && (messages[messages.length - 1] as any).envelope && (
-              <div className="ml-auto flex items-center gap-2">
-                <span className="text-green-700">XP Gained:</span>
-                <span className="font-semibold text-green-800">{(messages[messages.length - 1] as any).envelope?.xp ?? ''}</span>
-              </div>
-            )}
+            {messages[messages.length - 1]?.type === 'monica' &&
+              (messages[messages.length - 1] as any).envelope && (
+                <div className="ml-auto flex items-center gap-2">
+                  <span className="text-green-700">XP Gained:</span>
+                  <span className="font-semibold text-green-800">
+                    {(messages[messages.length - 1] as any).envelope?.xp ?? ''}
+                  </span>
+                </div>
+              )}
           </div>
         </CardContent>
       </Card>

@@ -13,11 +13,7 @@ export async function hasFeatureAccess(feature: string): Promise<boolean> {
   }
 
   // Guest users have limited access
-  const guestAllowedFeatures = [
-    'basic_chat',
-    'view_agents',
-    'view_charts'
-  ]
+  const guestAllowedFeatures = ['basic_chat', 'view_agents', 'view_charts']
 
   return guestAllowedFeatures.includes(feature)
 }
@@ -59,7 +55,7 @@ export function getFeatureLimits(tier: string) {
       advancedAnalytics: true,
       prioritySupport: true,
       exportData: true,
-      allFeatures: true
+      allFeatures: true,
     }
   }
 
@@ -73,7 +69,7 @@ export function getFeatureLimits(tier: string) {
       advancedAnalytics: true,
       prioritySupport: false,
       exportData: true,
-      allFeatures: false
+      allFeatures: false,
     }
   }
 
@@ -87,6 +83,6 @@ export function getFeatureLimits(tier: string) {
     advancedAnalytics: false,
     prioritySupport: false,
     exportData: false,
-    allFeatures: false
+    allFeatures: false,
   }
 }

@@ -18,10 +18,7 @@ export async function GET() {
     })
 
     // Generate alchemical data for the current moment with timeout
-    const alchmData = await Promise.race([
-      generateAlchmForCurrentMoment(),
-      timeoutPromise
-    ])
+    const alchmData = await Promise.race([generateAlchmForCurrentMoment(), timeoutPromise])
 
     // Validate the response data
     if (!alchmData || typeof alchmData !== 'object') {
@@ -101,26 +98,31 @@ export async function GET() {
 
     // Calculate basic fallback data using simplified alchemical principles
     const now = new Date()
-    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24))
+    const dayOfYear = Math.floor(
+      (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24)
+    )
     const timeOfDay = now.getHours() + now.getMinutes() / 60
-    
+
     // Basic elemental calculations based on time cycles
-    const spirit = 3.0 + Math.sin(dayOfYear / 365 * 2 * Math.PI) * 2.0
-    const essence = 3.0 + Math.cos(timeOfDay / 24 * 2 * Math.PI) * 2.0
-    const matter = 3.0 + Math.sin((dayOfYear + 91) / 365 * 2 * Math.PI) * 2.0 // 91 days offset for seasons
-    const substance = 3.0 + Math.cos((timeOfDay + 6) / 24 * 2 * Math.PI) * 2.0 // 6 hour offset
-    
+    const spirit = 3.0 + Math.sin((dayOfYear / 365) * 2 * Math.PI) * 2.0
+    const essence = 3.0 + Math.cos((timeOfDay / 24) * 2 * Math.PI) * 2.0
+    const matter = 3.0 + Math.sin(((dayOfYear + 91) / 365) * 2 * Math.PI) * 2.0 // 91 days offset for seasons
+    const substance = 3.0 + Math.cos(((timeOfDay + 6) / 24) * 2 * Math.PI) * 2.0 // 6 hour offset
+
     // Calculate derived metrics
     const aNumber = spirit + essence + matter + substance
     const heat = (spirit * spirit + 1) / (essence + matter + substance + 1)
     const entropy = (spirit * spirit + substance * substance + 1) / (essence + matter + 1)
-    const reactivity = (spirit * spirit + substance * substance + essence * essence + 1) / (matter + 1)
-    const energy = heat - (reactivity * entropy)
-    
+    const reactivity =
+      (spirit * spirit + substance * substance + essence * essence + 1) / (matter + 1)
+    const energy = heat - reactivity * entropy
+
     // Determine dominant element based on calculations
     const elements = { Fire: spirit, Water: essence, Air: matter, Earth: substance }
-    const dominantElement = Object.entries(elements).reduce((a, b) => elements[a[0]] > elements[b[0]] ? a : b)[0]
-    
+    const dominantElement = Object.entries(elements).reduce((a, b) =>
+      elements[a[0]] > elements[b[0]] ? a : b
+    )[0]
+
     const fallbackData = {
       quantities: {
         Spirit: Math.round(spirit * 100) / 100,
@@ -136,7 +138,14 @@ export async function GET() {
       entropy: Math.round(entropy * 1000) / 1000,
       reactivity: Math.round(reactivity * 1000) / 1000,
       energy: Math.round(energy * 1000) / 1000,
-      sunSign: now.getMonth() < 3 ? 'Pisces' : now.getMonth() < 6 ? 'Gemini' : now.getMonth() < 9 ? 'Virgo' : 'Sagittarius',
+      sunSign:
+        now.getMonth() < 3
+          ? 'Pisces'
+          : now.getMonth() < 6
+            ? 'Gemini'
+            : now.getMonth() < 9
+              ? 'Virgo'
+              : 'Sagittarius',
       chartRuler: 'Mercury',
       realtimeRune: {
         runeType: 'enhanced',
@@ -146,7 +155,10 @@ export async function GET() {
       planetaryPositions: 7,
       timestamp: now.toISOString(),
       fallback: true,
-      error: error instanceof Error && error.message === 'Calculation timeout' ? 'timeout' : 'calculation_error'
+      error:
+        error instanceof Error && error.message === 'Calculation timeout'
+          ? 'timeout'
+          : 'calculation_error',
     }
 
     console.log('API: Returning fallback alchm quantities due to error')

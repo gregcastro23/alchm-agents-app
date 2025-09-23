@@ -13,7 +13,17 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Progress } from '@/components/ui/progress'
-import { Crown, MessageCircle, Info, Sparkles, Zap, Brain, Users, Calendar, BarChart3 } from 'lucide-react'
+import {
+  Crown,
+  MessageCircle,
+  Info,
+  Sparkles,
+  Zap,
+  Brain,
+  Users,
+  Calendar,
+  BarChart3,
+} from 'lucide-react'
 import Link from 'next/link'
 import type { CraftedAgent, AgentCardVariant, Coordinates } from '@/lib/agent-types'
 import { AgentDetailedStats } from '@/components/agent-detailed-stats'
@@ -261,11 +271,13 @@ export function AgentCard({
 
         {/* Birth Date */}
         <div className="text-xs text-muted-foreground">
-          Born: {agent.birthData.date.toLocaleDateString('en-US', {
+          Born:{' '}
+          {agent.birthData.date.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
-          })} in {agent.birthData.location.name}
+            day: 'numeric',
+          })}{' '}
+          in {agent.birthData.location.name}
         </div>
 
         {/* Element and Modality */}
@@ -438,9 +450,7 @@ function AgentDetailsModal({ agent }: { agent: CraftedAgent }) {
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
                 Kalchm (K_alchm):{' '}
-                <Badge variant="outline">
-                  {agent.consciousness.monicaConstant.toFixed(2)}
-                </Badge>
+                <Badge variant="outline">{agent.consciousness.monicaConstant.toFixed(2)}</Badge>
               </div>
             </div>
           </div>

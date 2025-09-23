@@ -4,12 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Sparkles,
   Clock,
@@ -23,7 +18,7 @@ import {
   Star,
   Activity,
   RefreshCw,
-  Plus
+  Plus,
 } from 'lucide-react'
 import type { CraftedAgent } from '@/lib/agent-types'
 import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
@@ -38,7 +33,12 @@ interface AgentRecommendation {
     consciousnessVelocity: number
     powerAlignment: number
   }
-  recommendationType: 'optimal_timing' | 'high_compatibility' | 'consciousness_growth' | 'complementary_wisdom' | 'momentum_synergy'
+  recommendationType:
+    | 'optimal_timing'
+    | 'high_compatibility'
+    | 'consciousness_growth'
+    | 'complementary_wisdom'
+    | 'momentum_synergy'
 }
 
 interface AgentRecommendationSystemProps {
@@ -56,7 +56,7 @@ export function AgentRecommendationSystem({
   userLocation,
   onAgentSelect,
   maxRecommendations = 6,
-  showReasonDetails = true
+  showReasonDetails = true,
 }: AgentRecommendationSystemProps) {
   const [recommendations, setRecommendations] = useState<AgentRecommendation[]>([])
   const [loading, setLoading] = useState(false)
@@ -92,8 +92,14 @@ export function AgentRecommendationSystem({
       const agentRecommendations: AgentRecommendation[] = []
 
       for (const agent of availableAgents) {
-        const recommendation = await evaluateAgent(agent, selectedAgents, currentHour, targetLocation)
-        if (recommendation.score > 0.3) { // Only include decent recommendations
+        const recommendation = await evaluateAgent(
+          agent,
+          selectedAgents,
+          currentHour,
+          targetLocation
+        )
+        if (recommendation.score > 0.3) {
+          // Only include decent recommendations
           agentRecommendations.push(recommendation)
         }
       }
@@ -178,17 +184,19 @@ export function AgentRecommendationSystem({
     // 4. Monica Constant evaluation
     if (agent.consciousness.monicaConstant > 5.0) {
       score += 0.15
-      reasons.push(`⚗️ Legendary consciousness (MC: ${agent.consciousness.monicaConstant.toFixed(2)})`)
+      reasons.push(
+        `⚗️ Legendary consciousness (MC: ${agent.consciousness.monicaConstant.toFixed(2)})`
+      )
     } else if (agent.consciousness.monicaConstant > 4.0) {
       score += 0.1
-      reasons.push(`✨ Advanced consciousness (MC: ${agent.consciousness.monicaConstant.toFixed(2)})`)
+      reasons.push(
+        `✨ Advanced consciousness (MC: ${agent.consciousness.monicaConstant.toFixed(2)})`
+      )
     }
 
     // 5. Complementary wisdom domains
     if (selectedAgents.length > 0) {
-      const selectedWisdomDomains = new Set(
-        selectedAgents.flatMap(a => a.abilities.wisdomDomains)
-      )
+      const selectedWisdomDomains = new Set(selectedAgents.flatMap(a => a.abilities.wisdomDomains))
       const uniqueWisdom = agent.abilities.wisdomDomains.filter(
         domain => !selectedWisdomDomains.has(domain)
       )
@@ -228,31 +236,43 @@ export function AgentRecommendationSystem({
         isOptimalTime,
         compatibilityWithSelected: avgCompatibility,
         consciousnessVelocity,
-        powerAlignment: isOptimalTime ? 0.9 : 0.5
+        powerAlignment: isOptimalTime ? 0.9 : 0.5,
       },
-      recommendationType
+      recommendationType,
     }
   }
 
   const getRecommendationTypeIcon = (type: AgentRecommendation['recommendationType']) => {
     switch (type) {
-      case 'optimal_timing': return Timer
-      case 'high_compatibility': return Users
-      case 'consciousness_growth': return TrendingUp
-      case 'complementary_wisdom': return Lightbulb
-      case 'momentum_synergy': return Activity
-      default: return Star
+      case 'optimal_timing':
+        return Timer
+      case 'high_compatibility':
+        return Users
+      case 'consciousness_growth':
+        return TrendingUp
+      case 'complementary_wisdom':
+        return Lightbulb
+      case 'momentum_synergy':
+        return Activity
+      default:
+        return Star
     }
   }
 
   const getRecommendationTypeColor = (type: AgentRecommendation['recommendationType']) => {
     switch (type) {
-      case 'optimal_timing': return 'text-purple-600'
-      case 'high_compatibility': return 'text-blue-600'
-      case 'consciousness_growth': return 'text-green-600'
-      case 'complementary_wisdom': return 'text-orange-600'
-      case 'momentum_synergy': return 'text-pink-600'
-      default: return 'text-gray-600'
+      case 'optimal_timing':
+        return 'text-purple-600'
+      case 'high_compatibility':
+        return 'text-blue-600'
+      case 'consciousness_growth':
+        return 'text-green-600'
+      case 'complementary_wisdom':
+        return 'text-orange-600'
+      case 'momentum_synergy':
+        return 'text-pink-600'
+      default:
+        return 'text-gray-600'
     }
   }
 
@@ -274,7 +294,9 @@ export function AgentRecommendationSystem({
       <Card>
         <CardContent className="p-6 text-center">
           <Brain className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-          <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">No optimal recommendations found</h3>
+          <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
+            No optimal recommendations found
+          </h3>
           <p className="text-sm text-gray-600">
             Try selecting different agents or check back during optimal planetary hours
           </p>
@@ -313,7 +335,9 @@ export function AgentRecommendationSystem({
                     <TypeIcon className={`h-4 w-4 ${typeColor}`} />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100">{rec.agent.name}</h3>
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                      {rec.agent.name}
+                    </h3>
                     <p className="text-sm text-gray-600">{rec.agent.title}</p>
                   </div>
                 </div>
@@ -361,7 +385,9 @@ export function AgentRecommendationSystem({
                     <TooltipTrigger asChild>
                       <div className="flex items-center space-x-1 text-xs">
                         <Users className="h-3 w-3 text-gray-500" />
-                        <span>{Math.round(rec.kineticContext.compatibilityWithSelected * 100)}%</span>
+                        <span>
+                          {Math.round(rec.kineticContext.compatibilityWithSelected * 100)}%
+                        </span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -456,7 +482,7 @@ export function QuickRecommendations({
   allAgents,
   selectedAgents,
   onAgentSelect,
-  maxItems = 3
+  maxItems = 3,
 }: QuickRecommendationsProps) {
   const [topRecommendations, setTopRecommendations] = useState<AgentRecommendation[]>([])
   const [loading, setLoading] = useState(false)
@@ -489,9 +515,9 @@ export function QuickRecommendations({
               isOptimalTime: false,
               compatibilityWithSelected: 0.5,
               consciousnessVelocity: profile?.consciousness_rate || 0.5,
-              powerAlignment: 0.5
+              powerAlignment: 0.5,
             },
-            recommendationType: 'complementary_wisdom' as const
+            recommendationType: 'complementary_wisdom' as const,
           }
         })
         .sort((a, b) => b.score - a.score)

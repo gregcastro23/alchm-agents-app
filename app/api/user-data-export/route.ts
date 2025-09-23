@@ -76,10 +76,13 @@ export async function GET(req: NextRequest) {
     const userId = session?.user?.id
 
     if (!userId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Authentication required'
-      }, { status: 401 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Authentication required',
+        },
+        { status: 401 }
+      )
     }
 
     const { searchParams } = new URL(req.url)
@@ -94,7 +97,7 @@ export async function GET(req: NextRequest) {
       settings,
       interactions,
       agentEvolutions,
-      monicaInteractions
+      monicaInteractions,
     ] = await Promise.all([
       // User basic data
       prisma.user.findUnique({
@@ -106,8 +109,8 @@ export async function GET(req: NextRequest) {
           createdAt: true,
           lastLogin: true,
           verified: true,
-          provider: true
-        }
+          provider: true,
+        },
       }),
 
       // User profile with birth chart
@@ -116,8 +119,8 @@ export async function GET(req: NextRequest) {
         select: {
           birthInfo: true,
           createdAt: true,
-          updatedAt: true
-        }
+          updatedAt: true,
+        },
       }),
 
       // Subscription data
@@ -128,8 +131,8 @@ export async function GET(req: NextRequest) {
           status: true,
           features: true,
           createdAt: true,
-          expiresAt: true
-        }
+          expiresAt: true,
+        },
       }),
 
       // User settings
@@ -149,8 +152,8 @@ export async function GET(req: NextRequest) {
           adaptivePersonality: true,
           memoryRetention: true,
           createdAt: true,
-          updatedAt: true
-        }
+          updatedAt: true,
+        },
       }),
 
       // Consciousness interactions
@@ -165,10 +168,10 @@ export async function GET(req: NextRequest) {
           createdAt: true,
           ...(includeMetadata && {
             planetaryContext: true,
-            sessionMetadata: true
-          })
+            sessionMetadata: true,
+          }),
         },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
       }),
 
       // Agent evolution states
@@ -182,8 +185,8 @@ export async function GET(req: NextRequest) {
           lastInteraction: true,
           specialAbilitiesUnlocked: true,
           evolutionHistory: true,
-          affinityScores: true
-        }
+          affinityScores: true,
+        },
       }),
 
       // Monica interactions (limited to last 100 for privacy)
@@ -197,64 +200,70 @@ export async function GET(req: NextRequest) {
           monicaResponse: includeMetadata,
           createdAt: true,
           ...(includeMetadata && {
-            contextData: true
-          })
+            contextData: true,
+          }),
         },
         take: 100,
-        orderBy: { createdAt: 'desc' }
-      })
+        orderBy: { createdAt: 'desc' },
+      }),
     ])
 
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        error: 'User not found'
-      }, { status: 404 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'User not found',
+        },
+        { status: 404 }
+      )
     }
 
     // Extract notifications from Monica interactions
     const notifications = monicaInteractions
       .filter(interaction => interaction.interactionType === 'notification')
       .map(notif => {
-        const contextData = includeMetadata && notif.contextData
-          ? JSON.parse(notif.contextData as string)
-          : {}
+        const contextData =
+          includeMetadata && notif.contextData ? JSON.parse(notif.contextData as string) : {}
 
         return {
           type: contextData.notificationType || 'unknown',
           subject: contextData.subject || 'Notification',
           content: includeMetadata ? contextData.content : '[Content redacted]',
-          sentAt: notif.createdAt
+          sentAt: notif.createdAt,
         }
       })
 
     // Build comprehensive export data
     const exportData: UserDataExport = {
       user,
-      profile: profile ? {
-        birthInfo: profile.birthInfo ? JSON.parse(profile.birthInfo as string) : null,
-        createdAt: profile.createdAt,
-        updatedAt: profile.updatedAt
-      } : null,
+      profile: profile
+        ? {
+            birthInfo: profile.birthInfo ? JSON.parse(profile.birthInfo as string) : null,
+            createdAt: profile.createdAt,
+            updatedAt: profile.updatedAt,
+          }
+        : null,
       subscription,
-      settings: settings ? {
-        preferences: {
-          personality: settings.personality,
-          assistanceLevel: settings.assistanceLevel,
-          proactiveTips: settings.proactiveTips,
-          explanationDepth: settings.explanationDepth,
-          position: settings.position,
-          autoHide: settings.autoHide,
-          preferredTime: settings.preferredTime,
-          learningStyle: settings.learningStyle,
-          interests: settings.interests ? JSON.parse(settings.interests as string) : null,
-          contextualAwareness: settings.contextualAwareness,
-          adaptivePersonality: settings.adaptivePersonality,
-          memoryRetention: settings.memoryRetention
-        },
-        createdAt: settings.createdAt,
-        updatedAt: settings.updatedAt
-      } : null,
+      settings: settings
+        ? {
+            preferences: {
+              personality: settings.personality,
+              assistanceLevel: settings.assistanceLevel,
+              proactiveTips: settings.proactiveTips,
+              explanationDepth: settings.explanationDepth,
+              position: settings.position,
+              autoHide: settings.autoHide,
+              preferredTime: settings.preferredTime,
+              learningStyle: settings.learningStyle,
+              interests: settings.interests ? JSON.parse(settings.interests as string) : null,
+              contextualAwareness: settings.contextualAwareness,
+              adaptivePersonality: settings.adaptivePersonality,
+              memoryRetention: settings.memoryRetention,
+            },
+            createdAt: settings.createdAt,
+            updatedAt: settings.updatedAt,
+          }
+        : null,
       interactions: interactions.map(interaction => ({
         agentId: interaction.agentId,
         interactionType: interaction.interactionType,
@@ -262,10 +271,16 @@ export async function GET(req: NextRequest) {
         planetaryInfluence: interaction.planetaryInfluence,
         elementalResonance: interaction.elementalResonance,
         createdAt: interaction.createdAt,
-        metadata: includeMetadata ? {
-          planetaryContext: interaction.planetaryContext ? JSON.parse(interaction.planetaryContext as string) : null,
-          sessionMetadata: interaction.sessionMetadata ? JSON.parse(interaction.sessionMetadata as string) : null
-        } : null
+        metadata: includeMetadata
+          ? {
+              planetaryContext: interaction.planetaryContext
+                ? JSON.parse(interaction.planetaryContext as string)
+                : null,
+              sessionMetadata: interaction.sessionMetadata
+                ? JSON.parse(interaction.sessionMetadata as string)
+                : null,
+            }
+          : null,
       })),
       agentEvolutions: agentEvolutions.map(evolution => ({
         agentId: evolution.agentId,
@@ -275,20 +290,23 @@ export async function GET(req: NextRequest) {
         lastInteraction: evolution.lastInteraction,
         specialAbilitiesUnlocked: JSON.parse(evolution.specialAbilitiesUnlocked),
         evolutionHistory: JSON.parse(evolution.evolutionHistory),
-        affinityScores: JSON.parse(evolution.affinityScores)
+        affinityScores: JSON.parse(evolution.affinityScores),
       })),
       monicaInteractions: monicaInteractions.map(interaction => ({
         interactionType: interaction.interactionType,
         pageUrl: interaction.pageUrl,
         sessionId: interaction.sessionId,
         userAction: interaction.userAction,
-        monicaResponse: includeMetadata ? interaction.monicaResponse : '[Response redacted for privacy]',
+        monicaResponse: includeMetadata
+          ? interaction.monicaResponse
+          : '[Response redacted for privacy]',
         createdAt: interaction.createdAt,
-        contextData: includeMetadata && interaction.contextData
-          ? JSON.parse(interaction.contextData as string)
-          : null
+        contextData:
+          includeMetadata && interaction.contextData
+            ? JSON.parse(interaction.contextData as string)
+            : null,
       })),
-      notifications
+      notifications,
     }
 
     // Generate export metadata
@@ -305,17 +323,17 @@ export async function GET(req: NextRequest) {
         'consciousness_interactions',
         'agent_evolution_states',
         'monica_interactions',
-        'notifications'
+        'notifications',
       ],
       recordCounts: {
         interactions: interactions.length,
         agentEvolutions: agentEvolutions.length,
         monicaInteractions: monicaInteractions.length,
-        notifications: notifications.length
+        notifications: notifications.length,
       },
       privacyNote: includeMetadata
         ? 'Full data export including metadata and conversation content'
-        : 'Privacy-focused export with sensitive content redacted'
+        : 'Privacy-focused export with sensitive content redacted',
     }
 
     if (format === 'csv') {
@@ -327,15 +345,15 @@ export async function GET(req: NextRequest) {
           type: i.interactionType,
           power_gained: i.powerGained,
           planetary_influence: i.planetaryInfluence,
-          elemental_resonance: i.elementalResonance
+          elemental_resonance: i.elementalResonance,
         })),
         evolution_states: agentEvolutions.map(e => ({
           agent: e.agentId,
           level: e.currentLevel,
           total_power: e.totalPower,
           interaction_count: e.interactionCount,
-          last_interaction: e.lastInteraction.toISOString()
-        }))
+          last_interaction: e.lastInteraction.toISOString(),
+        })),
       }
 
       return NextResponse.json({
@@ -345,8 +363,8 @@ export async function GET(req: NextRequest) {
         downloadInfo: {
           filename: `planetary-agents-export-${user.id}-${new Date().toISOString().split('T')[0]}.csv`,
           format: 'csv',
-          size: JSON.stringify(csvData).length
-        }
+          size: JSON.stringify(csvData).length,
+        },
       })
     }
 
@@ -358,16 +376,18 @@ export async function GET(req: NextRequest) {
       downloadInfo: {
         filename: `planetary-agents-export-${user.id}-${new Date().toISOString().split('T')[0]}.json`,
         format: 'json',
-        size: JSON.stringify(exportData).length
-      }
+        size: JSON.stringify(exportData).length,
+      },
     })
-
   } catch (error) {
     console.error('User data export error:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to export user data'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to export user data',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -377,10 +397,13 @@ export async function POST(req: NextRequest) {
     const userId = session?.user?.id
 
     if (!userId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Authentication required'
-      }, { status: 401 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Authentication required',
+        },
+        { status: 401 }
+      )
     }
 
     const { action } = await req.json()
@@ -398,31 +421,36 @@ export async function POST(req: NextRequest) {
           sessionId: `deletion-request-${Date.now()}`,
           contextData: JSON.stringify({
             requestDate: new Date().toISOString(),
-            status: 'pending_review'
+            status: 'pending_review',
           }),
           userAction: 'request_account_deletion',
           monicaResponse: 'Account deletion request logged for review',
-          resultedInAction: true
-        }
+          resultedInAction: true,
+        },
       })
 
       return NextResponse.json({
         success: true,
         message: 'Account deletion request submitted',
-        details: 'Your request will be reviewed within 30 days as per GDPR requirements'
+        details: 'Your request will be reviewed within 30 days as per GDPR requirements',
       })
     }
 
-    return NextResponse.json({
-      success: false,
-      error: 'Invalid action'
-    }, { status: 400 })
-
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Invalid action',
+      },
+      { status: 400 }
+    )
   } catch (error) {
     console.error('User data action error:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to process data request'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to process data request',
+      },
+      { status: 500 }
+    )
   }
 }

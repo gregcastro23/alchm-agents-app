@@ -35,7 +35,10 @@ export class BackendKineticsClient {
     return res.json()
   }
 
-  static async getGroupDynamics(body: { agentIds: string[]; location: { lat: number; lon: number } }): Promise<BackendKineticsResponse> {
+  static async getGroupDynamics(body: {
+    agentIds: string[]
+    location: { lat: number; lon: number }
+  }): Promise<BackendKineticsResponse> {
     const res = await fetch('/api/kinetics/group', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -45,7 +48,11 @@ export class BackendKineticsClient {
     return res.json()
   }
 
-  static async getTokenMetrics(body: { baseTokenRate: number; baseNFTRarity: number; location: { lat: number; lon: number } }): Promise<BackendKineticsResponse> {
+  static async getTokenMetrics(body: {
+    baseTokenRate: number
+    baseNFTRarity: number
+    location: { lat: number; lon: number }
+  }): Promise<BackendKineticsResponse> {
     const res = await fetch('/api/kinetics/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -57,7 +64,8 @@ export class BackendKineticsClient {
 }
 
 export class UnifiedKineticsClient {
-  private static useBackend = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_KINETICS_BACKEND === 'true'
+  private static useBackend =
+    typeof process !== 'undefined' && process.env.NEXT_PUBLIC_KINETICS_BACKEND === 'true'
 
   static async getKinetics(params: KineticsGetParams): Promise<any> {
     try {
@@ -65,7 +73,11 @@ export class UnifiedKineticsClient {
         // Map GET params to enhanced call as base-only
         const resp = await BackendKineticsClient.getEnhanced({
           location: { lat: params.lat, lon: params.lon },
-          options: { includeAgentOptimization: false, includePowerPrediction: false, includeResonanceMap: false },
+          options: {
+            includeAgentOptimization: false,
+            includePowerPrediction: false,
+            includeResonanceMap: false,
+          },
         })
         return resp.data.base
       }
@@ -93,23 +105,47 @@ export class UnifiedKineticsClient {
     return BackendKineticsClient.getEnhanced(params)
   }
 
-  static async getGroupDynamics(body: { agentIds: string[]; location: { lat: number; lon: number } }): Promise<BackendKineticsResponse> {
+  static async getGroupDynamics(body: {
+    agentIds: string[]
+    location: { lat: number; lon: number }
+  }): Promise<BackendKineticsResponse> {
     if (!this.useBackend) {
       // Minimal shim response
-      return { success: true, data: { harmony: 0.7, powerAmplification: 1.0, momentumFlow: 'sustained', resonances: {} }, computeTimeMs: 0 }
+      return {
+        success: true,
+        data: { harmony: 0.7, powerAmplification: 1.0, momentumFlow: 'sustained', resonances: {} },
+        computeTimeMs: 0,
+      }
     }
     return BackendKineticsClient.getGroupDynamics(body)
   }
 
-  static async getTokenMetrics(body: { baseTokenRate: number; baseNFTRarity: number; location: { lat: number; lon: number } }): Promise<BackendKineticsResponse> {
+  static async getTokenMetrics(body: {
+    baseTokenRate: number
+    baseNFTRarity: number
+    location: { lat: number; lon: number }
+  }): Promise<BackendKineticsResponse> {
     if (!this.useBackend) {
       // Minimal shim response
-      return { success: true, data: { currentRate: body.baseTokenRate, baseRate: body.baseTokenRate, kineticMultiplier: 1, velocityIndicator: 'stable', momentumPhase: 'sustained', powerLevel: 0.5, nextOptimalWindow: null, accumulationForecast: 'Stable', solarAmplification: 1.0, seasonalModifier: 1.0 }, computeTimeMs: 0 }
+      return {
+        success: true,
+        data: {
+          currentRate: body.baseTokenRate,
+          baseRate: body.baseTokenRate,
+          kineticMultiplier: 1,
+          velocityIndicator: 'stable',
+          momentumPhase: 'sustained',
+          powerLevel: 0.5,
+          nextOptimalWindow: null,
+          accumulationForecast: 'Stable',
+          solarAmplification: 1.0,
+          seasonalModifier: 1.0,
+        },
+        computeTimeMs: 0,
+      }
     }
     return BackendKineticsClient.getTokenMetrics(body)
   }
 }
 
 export default UnifiedKineticsClient
-
-

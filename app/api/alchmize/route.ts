@@ -15,10 +15,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as Partial<RequestBody>
     if (!body || !body.birth) {
-      return NextResponse.json(
-        { error: 'Missing body.birth' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Missing body.birth' }, { status: 400 })
     }
 
     // Validate and normalize birth info (expects zero-based month per codebase rule)
@@ -41,5 +38,3 @@ export async function POST(req: NextRequest) {
     )
   }
 }
-
-

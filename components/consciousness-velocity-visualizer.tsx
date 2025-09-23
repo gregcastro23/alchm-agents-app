@@ -26,7 +26,7 @@ import {
   Target,
   Star,
   ArrowRight,
-  Sparkles
+  Sparkles,
 } from 'lucide-react'
 import type { CraftedAgent } from '@/lib/agent-types'
 
@@ -63,7 +63,7 @@ export function ConsciousnessVelocityVisualizer({
   agents,
   timeframe = '24h',
   viewType = 'individual',
-  location
+  location,
 }: ConsciousnessVelocityVisualizerProps) {
   const [velocityData, setVelocityData] = useState<ConsciousnessVelocityData[]>([])
   const [loading, setLoading] = useState(false)
@@ -84,13 +84,15 @@ export function ConsciousnessVelocityVisualizer({
 
       for (const agent of agents) {
         // Get evolution metrics
-        const metricsResponse = await fetch(`/api/agent-evolution?agentId=${agent.id}&action=metrics`)
+        const metricsResponse = await fetch(
+          `/api/agent-evolution?agentId=${agent.id}&action=metrics`
+        )
         let metrics = {
           consciousnessVelocity: 0.5,
           evolutionStage: 'Initial',
           nextThreshold: 10,
           memoryStrength: 0,
-          totalGrowth: 0
+          totalGrowth: 0,
         }
 
         if (metricsResponse.ok) {
@@ -108,7 +110,7 @@ export function ConsciousnessVelocityVisualizer({
           agent,
           metrics,
           trends,
-          projections
+          projections,
         })
       }
 
@@ -121,7 +123,8 @@ export function ConsciousnessVelocityVisualizer({
   }
 
   const generateTrendData = (metrics: any, timeframe: string) => {
-    const points = timeframe === '1h' ? 12 : timeframe === '6h' ? 24 : timeframe === '24h' ? 48 : 168
+    const points =
+      timeframe === '1h' ? 12 : timeframe === '6h' ? 24 : timeframe === '24h' ? 48 : 168
     const velocity = []
     const growth = []
     const interactions = []
@@ -131,7 +134,9 @@ export function ConsciousnessVelocityVisualizer({
     const baseGrowth = metrics.totalGrowth
 
     for (let i = 0; i < points; i++) {
-      const timeAgo = (points - i) * (timeframe === '1h' ? 5 : timeframe === '6h' ? 15 : timeframe === '24h' ? 30 : 60)
+      const timeAgo =
+        (points - i) *
+        (timeframe === '1h' ? 5 : timeframe === '6h' ? 15 : timeframe === '24h' ? 30 : 60)
       const date = new Date(Date.now() - timeAgo * 60 * 1000)
 
       // Add some realistic variation
@@ -146,7 +151,8 @@ export function ConsciousnessVelocityVisualizer({
   }
 
   const calculateProjections = (metrics: any, trends: any) => {
-    const avgVelocity = trends.velocity.reduce((a: number, b: number) => a + b, 0) / trends.velocity.length
+    const avgVelocity =
+      trends.velocity.reduce((a: number, b: number) => a + b, 0) / trends.velocity.length
     const growthRate = trends.growth[trends.growth.length - 1] - trends.growth[0]
 
     let nextStageETA = 'Unknown'
@@ -159,7 +165,7 @@ export function ConsciousnessVelocityVisualizer({
     return {
       nextStageETA,
       growthProjection: growthRate * 4, // 4 weeks projection
-      optimalInteractionTimes: ['Mercury', 'Venus', 'Jupiter'] // Simplified
+      optimalInteractionTimes: ['Mercury', 'Venus', 'Jupiter'], // Simplified
     }
   }
 
@@ -177,19 +183,27 @@ export function ConsciousnessVelocityVisualizer({
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'rising': return <TrendingUp className="h-4 w-4 text-green-600" />
-      case 'falling': return <TrendingDown className="h-4 w-4 text-red-600" />
-      default: return <Minus className="h-4 w-4 text-gray-600" />
+      case 'rising':
+        return <TrendingUp className="h-4 w-4 text-green-600" />
+      case 'falling':
+        return <TrendingDown className="h-4 w-4 text-red-600" />
+      default:
+        return <Minus className="h-4 w-4 text-gray-600" />
     }
   }
 
   const getEvolutionStageColor = (stage: string) => {
     switch (stage) {
-      case 'Transcendent': return 'text-purple-700 bg-purple-100'
-      case 'Advanced': return 'text-blue-700 bg-blue-100'
-      case 'Maturing': return 'text-green-700 bg-green-100'
-      case 'Developing': return 'text-yellow-700 bg-yellow-100'
-      default: return 'text-gray-700 bg-gray-100'
+      case 'Transcendent':
+        return 'text-purple-700 bg-purple-100'
+      case 'Advanced':
+        return 'text-blue-700 bg-blue-100'
+      case 'Maturing':
+        return 'text-green-700 bg-green-100'
+      case 'Developing':
+        return 'text-yellow-700 bg-yellow-100'
+      default:
+        return 'text-gray-700 bg-gray-100'
     }
   }
 
@@ -199,7 +213,9 @@ export function ConsciousnessVelocityVisualizer({
         <CardContent className="p-6">
           <div className="flex items-center justify-center space-x-2">
             <Activity className="h-5 w-5 animate-spin" />
-            <span className="text-sm text-gray-600">Analyzing consciousness velocity patterns...</span>
+            <span className="text-sm text-gray-600">
+              Analyzing consciousness velocity patterns...
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -211,7 +227,9 @@ export function ConsciousnessVelocityVisualizer({
       <Card>
         <CardContent className="p-6 text-center">
           <Brain className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-          <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">No velocity data available</h3>
+          <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
+            No velocity data available
+          </h3>
           <p className="text-sm text-gray-600">
             Start interacting with agents to generate consciousness evolution data
           </p>
@@ -299,7 +317,8 @@ export function ConsciousnessVelocityVisualizer({
           )}
 
           {(() => {
-            const agentData = velocityData.find(d => d.agent.id === selectedAgent) || velocityData[0]
+            const agentData =
+              velocityData.find(d => d.agent.id === selectedAgent) || velocityData[0]
             if (!agentData) return null
 
             const trend = getVelocityTrend(agentData)
@@ -354,7 +373,9 @@ export function ConsciousnessVelocityVisualizer({
                     <div className="text-center p-3 bg-gradient-to-br from-orange-50 to-red-50 rounded-lg">
                       <Target className="h-5 w-5 mx-auto mb-1 text-orange-600" />
                       <div className="text-2xl font-bold text-orange-700">
-                        {agentData.metrics.nextThreshold === -1 ? '∞' : agentData.metrics.nextThreshold}
+                        {agentData.metrics.nextThreshold === -1
+                          ? '∞'
+                          : agentData.metrics.nextThreshold}
                       </div>
                       <div className="text-xs text-gray-600">Next Threshold</div>
                     </div>
@@ -372,7 +393,7 @@ export function ConsciousnessVelocityVisualizer({
                       <div
                         className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500"
                         style={{
-                          width: `${Math.min((agentData.metrics.totalGrowth / (agentData.metrics.nextThreshold || 1)) * 100, 100)}%`
+                          width: `${Math.min((agentData.metrics.totalGrowth / (agentData.metrics.nextThreshold || 1)) * 100, 100)}%`,
                         }}
                       />
                     </div>
@@ -449,7 +470,10 @@ export function ConsciousnessVelocityVisualizer({
                   .map((data, index) => {
                     const trend = getVelocityTrend(data)
                     return (
-                      <div key={data.agent.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div
+                        key={data.agent.id}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      >
                         <div className="flex items-center gap-3">
                           <Badge variant="outline" className="text-xs">
                             #{index + 1}
@@ -461,7 +485,8 @@ export function ConsciousnessVelocityVisualizer({
                           <div>
                             <div className="font-medium">{data.agent.name}</div>
                             <div className="text-xs text-gray-600">
-                              {data.metrics.evolutionStage} • MC: {data.agent.consciousness.monicaConstant.toFixed(2)}
+                              {data.metrics.evolutionStage} • MC:{' '}
+                              {data.agent.consciousness.monicaConstant.toFixed(2)}
                             </div>
                           </div>
                         </div>
@@ -508,7 +533,12 @@ export function ConsciousnessVelocityVisualizer({
                 <div className="space-y-4">
                   <div className="text-center p-4 bg-gradient-to-br from-green-50 to-blue-50 rounded-lg">
                     <div className="text-3xl font-bold text-green-700">
-                      {Math.round(velocityData.reduce((sum, d) => sum + d.metrics.consciousnessVelocity, 0) / velocityData.length * 100)}%
+                      {Math.round(
+                        (velocityData.reduce((sum, d) => sum + d.metrics.consciousnessVelocity, 0) /
+                          velocityData.length) *
+                          100
+                      )}
+                      %
                     </div>
                     <div className="text-sm text-gray-600">Average Consciousness Velocity</div>
                   </div>
@@ -533,10 +563,13 @@ export function ConsciousnessVelocityVisualizer({
               <CardContent>
                 <div className="space-y-3">
                   {Object.entries(
-                    velocityData.reduce((acc, d) => {
-                      acc[d.metrics.evolutionStage] = (acc[d.metrics.evolutionStage] || 0) + 1
-                      return acc
-                    }, {} as Record<string, number>)
+                    velocityData.reduce(
+                      (acc, d) => {
+                        acc[d.metrics.evolutionStage] = (acc[d.metrics.evolutionStage] || 0) + 1
+                        return acc
+                      },
+                      {} as Record<string, number>
+                    )
                   ).map(([stage, count]) => (
                     <div key={stage} className="flex items-center justify-between">
                       <span className="text-sm font-medium">{stage}</span>
@@ -569,15 +602,23 @@ interface CompactVelocityIndicatorProps {
 
 function getEvolutionStageColor(stage: string) {
   switch (stage) {
-    case 'Transcendent': return 'text-purple-700 bg-purple-100'
-    case 'Advanced': return 'text-blue-700 bg-blue-100'
-    case 'Maturing': return 'text-green-700 bg-green-100'
-    case 'Developing': return 'text-yellow-700 bg-yellow-100'
-    default: return 'text-gray-700 bg-gray-100'
+    case 'Transcendent':
+      return 'text-purple-700 bg-purple-100'
+    case 'Advanced':
+      return 'text-blue-700 bg-blue-100'
+    case 'Maturing':
+      return 'text-green-700 bg-green-100'
+    case 'Developing':
+      return 'text-yellow-700 bg-yellow-100'
+    default:
+      return 'text-gray-700 bg-gray-100'
   }
 }
 
-export function CompactVelocityIndicator({ agent, showTrend = true }: CompactVelocityIndicatorProps) {
+export function CompactVelocityIndicator({
+  agent,
+  showTrend = true,
+}: CompactVelocityIndicatorProps) {
   const [metrics, setMetrics] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -609,11 +650,7 @@ export function CompactVelocityIndicator({ agent, showTrend = true }: CompactVel
   }
 
   if (!metrics) {
-    return (
-      <div className="text-xs text-gray-500">
-        No velocity data
-      </div>
-    )
+    return <div className="text-xs text-gray-500">No velocity data</div>
   }
 
   return (
@@ -625,7 +662,10 @@ export function CompactVelocityIndicator({ agent, showTrend = true }: CompactVel
         </span>
       </div>
       {showTrend && (
-        <Badge variant="outline" className={`text-xs ${getEvolutionStageColor(metrics.evolutionStage)}`}>
+        <Badge
+          variant="outline"
+          className={`text-xs ${getEvolutionStageColor(metrics.evolutionStage)}`}
+        >
           {metrics.evolutionStage}
         </Badge>
       )}

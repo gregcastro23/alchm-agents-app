@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useEffect, useMemo, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -50,7 +50,7 @@ function getDignityLabel(dignity: string) {
 }
 
 function PlanetaryAgentsContent() {
-  const [positions, setPositions] = useState<Record<string, { sign: string; degree: string }>>({})
+  const [positions, setPositions] = useState<Record<string, { sign: string; degree: number }>>({})
   const searchParams = useSearchParams()
   const router = useRouter()
   const agentId = searchParams.get('agent')
@@ -62,17 +62,22 @@ function PlanetaryAgentsContent() {
   }, [agentId, router])
 
   useEffect(() => {
-    // Load current planetary positions (cached by helper internally)
-    const current = getCurrentPlanetaryPositions()
-    setPositions(current)
+    // Load and periodically refresh current planetary positions
+    const load = () => {
+      const current = getCurrentPlanetaryPositions(Date.now()) // bypass cache to avoid stale positions
+      setPositions(current)
+    }
+    load()
+    const interval = setInterval(load, 60_000) // refresh every 60s
+    return () => clearInterval(interval)
   }, [])
 
   const cards = useMemo(() => {
     return ORDERED_PLANETS.map(planet => {
       const pos = positions[planet]
       const sign = pos?.sign || '—'
-      const degreeStr = pos?.degree || '—'
-      const degreeNum = degreeStr && degreeStr !== '—' ? Math.max(1, Math.min(29, Math.floor(parseFloat(degreeStr)))) : null
+      const degreeVal: number | null = typeof pos?.degree === 'number' ? pos.degree : null
+      const degreeNum = degreeVal !== null ? Math.max(0, Math.min(29, Math.round(degreeVal))) : null
       const dignity = sign !== '—' ? getPlanetaryDignity(planet, sign) : 'peregrine'
       const dignityLabel = getDignityLabel(dignity)
       const href = degreeNum
@@ -104,7 +109,9 @@ function PlanetaryAgentsContent() {
               <div>
                 <Badge variant="outline">{dignityLabel}</Badge>
               </div>
-              <div className="text-xs text-muted-foreground">Click to open degree-specific agent</div>
+              <div className="text-xs text-muted-foreground">
+                Click to open degree-specific agent
+              </div>
             </CardContent>
           </Card>
         </Link>

@@ -74,8 +74,8 @@ export default function RealtimeRuneDisplay({
         {
           signal: controller.signal,
           headers: {
-            'Cache-Control': 'no-cache'
-          }
+            'Cache-Control': 'no-cache',
+          },
         }
       )
 

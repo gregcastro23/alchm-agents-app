@@ -22,7 +22,7 @@ export default function SignUpPage() {
     birthHour: '',
     birthMinute: '',
     latitude: '',
-    longitude: ''
+    longitude: '',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -35,17 +35,17 @@ export default function SignUpPage() {
 
   const handleAccountCreation = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
       return
     }
-    
+
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters')
       return
     }
-    
+
     setStep(2) // Move to birth chart step
   }
 
@@ -71,9 +71,9 @@ export default function SignUpPage() {
             hour: formData.birthHour ? parseInt(formData.birthHour) : null,
             minute: formData.birthMinute ? parseInt(formData.birthMinute) : null,
             latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-            longitude: formData.longitude ? parseFloat(formData.longitude) : null
-          }
-        })
+            longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+          },
+        }),
       })
 
       const authData = await authResponse.json()
@@ -104,7 +104,9 @@ export default function SignUpPage() {
             Begin Your Journey
           </CardTitle>
           <CardDescription>
-            {step === 1 ? 'Create your consciousness evolution account' : 'Add your birth chart for personalized agent matching'}
+            {step === 1
+              ? 'Create your consciousness evolution account'
+              : 'Add your birth chart for personalized agent matching'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -125,13 +127,13 @@ export default function SignUpPage() {
                     type="text"
                     placeholder="Your name"
                     value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    onChange={e => handleInputChange('name', e.target.value)}
                     className="pl-10"
                     required
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
@@ -141,13 +143,13 @@ export default function SignUpPage() {
                     type="email"
                     placeholder="your@email.com"
                     value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onChange={e => handleInputChange('email', e.target.value)}
                     className="pl-10"
                     required
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -157,13 +159,13 @@ export default function SignUpPage() {
                     type="password"
                     placeholder="Create a secure password"
                     value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    onChange={e => handleInputChange('password', e.target.value)}
                     className="pl-10"
                     required
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <div className="relative">
@@ -173,15 +175,15 @@ export default function SignUpPage() {
                     type="password"
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                    onChange={e => handleInputChange('confirmPassword', e.target.value)}
                     className="pl-10"
                     required
                   />
                 </div>
               </div>
-              
-              <Button 
-                type="submit" 
+
+              <Button
+                type="submit"
                 className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
               >
                 <div className="flex items-center gap-2">
@@ -207,7 +209,7 @@ export default function SignUpPage() {
                     type="number"
                     placeholder="1990"
                     value={formData.birthYear}
-                    onChange={(e) => handleInputChange('birthYear', e.target.value)}
+                    onChange={e => handleInputChange('birthYear', e.target.value)}
                     min="1900"
                     max="2025"
                     required
@@ -220,7 +222,7 @@ export default function SignUpPage() {
                     type="number"
                     placeholder="6"
                     value={formData.birthMonth}
-                    onChange={(e) => handleInputChange('birthMonth', e.target.value)}
+                    onChange={e => handleInputChange('birthMonth', e.target.value)}
                     min="1"
                     max="12"
                     required
@@ -233,7 +235,7 @@ export default function SignUpPage() {
                     type="number"
                     placeholder="15"
                     value={formData.birthDay}
-                    onChange={(e) => handleInputChange('birthDay', e.target.value)}
+                    onChange={e => handleInputChange('birthDay', e.target.value)}
                     min="1"
                     max="31"
                     required
@@ -249,7 +251,7 @@ export default function SignUpPage() {
                     type="number"
                     placeholder="14"
                     value={formData.birthHour}
-                    onChange={(e) => handleInputChange('birthHour', e.target.value)}
+                    onChange={e => handleInputChange('birthHour', e.target.value)}
                     min="0"
                     max="23"
                   />
@@ -261,7 +263,7 @@ export default function SignUpPage() {
                     type="number"
                     placeholder="30"
                     value={formData.birthMinute}
-                    onChange={(e) => handleInputChange('birthMinute', e.target.value)}
+                    onChange={e => handleInputChange('birthMinute', e.target.value)}
                     min="0"
                     max="59"
                   />
@@ -277,7 +279,7 @@ export default function SignUpPage() {
                     step="any"
                     placeholder="37.7749"
                     value={formData.latitude}
-                    onChange={(e) => handleInputChange('latitude', e.target.value)}
+                    onChange={e => handleInputChange('latitude', e.target.value)}
                     min="-90"
                     max="90"
                     required
@@ -291,7 +293,7 @@ export default function SignUpPage() {
                     step="any"
                     placeholder="-122.4194"
                     value={formData.longitude}
-                    onChange={(e) => handleInputChange('longitude', e.target.value)}
+                    onChange={e => handleInputChange('longitude', e.target.value)}
                     min="-180"
                     max="180"
                     required
@@ -300,7 +302,7 @@ export default function SignUpPage() {
               </div>
 
               <div className="flex gap-2">
-                <Button 
+                <Button
                   type="button"
                   variant="outline"
                   onClick={() => setStep(1)}
@@ -308,8 +310,8 @@ export default function SignUpPage() {
                 >
                   Back
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                   disabled={loading}
                 >
@@ -325,13 +327,13 @@ export default function SignUpPage() {
               </div>
             </form>
           )}
-          
+
           {step === 1 && (
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Already have an account?{' '}
-                <Link 
-                  href="/auth/signin" 
+                <Link
+                  href="/auth/signin"
                   className="text-purple-600 hover:text-purple-700 font-medium"
                 >
                   Sign in here

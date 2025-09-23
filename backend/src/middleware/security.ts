@@ -37,13 +37,17 @@ export function validateContentType(req: Request, res: Response, next: NextFunct
 
     if (!contentType) {
       return res.status(400).json({
-        error: 'Content-Type header is required for this request'
+        error: 'Content-Type header is required for this request',
       })
     }
 
-    if (!contentType.includes('application/json') && !contentType.includes('application/x-www-form-urlencoded')) {
+    if (
+      !contentType.includes('application/json') &&
+      !contentType.includes('application/x-www-form-urlencoded')
+    ) {
       return res.status(415).json({
-        error: 'Unsupported Media Type. Only application/json and application/x-www-form-urlencoded are supported'
+        error:
+          'Unsupported Media Type. Only application/json and application/x-www-form-urlencoded are supported',
       })
     }
   }
@@ -78,7 +82,7 @@ export function sanitizeInput(req: Request, res: Response, next: NextFunction) {
   } catch (error) {
     logger.error('Error in input sanitization:', error)
     res.status(500).json({
-      error: 'Request processing error'
+      error: 'Request processing error',
     })
   }
 }
@@ -93,7 +97,7 @@ export function requestTimeout(timeoutMs: number = 30000) {
         logger.warn(`Request timeout for ${req.method} ${req.path}`)
         res.status(408).json({
           error: 'Request timeout',
-          message: 'The request took too long to process'
+          message: 'The request took too long to process',
         })
       }
     }, timeoutMs)
@@ -115,12 +119,12 @@ export function requestTimeout(timeoutMs: number = 30000) {
  */
 export function suspiciousActivityLogger(req: Request, res: Response, next: NextFunction) {
   const suspiciousPatterns = [
-    /\.\.\//,  // Path traversal
-    /<script/i,  // XSS attempts
-    /union\s+select/i,  // SQL injection
-    /javascript:/i,  // JavaScript injection
-    /eval\(/i,  // Code execution attempts
-    /proc\/self\/environ/i,  // Environment access attempts
+    /\.\.\//, // Path traversal
+    /<script/i, // XSS attempts
+    /union\s+select/i, // SQL injection
+    /javascript:/i, // JavaScript injection
+    /eval\(/i, // Code execution attempts
+    /proc\/self\/environ/i, // Environment access attempts
   ]
 
   const userAgent = req.get('User-Agent') || ''
@@ -138,7 +142,7 @@ export function suspiciousActivityLogger(req: Request, res: Response, next: Next
         path,
         method: req.method,
         pattern: pattern.toString(),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
       break
     }
@@ -152,10 +156,10 @@ export function suspiciousActivityLogger(req: Request, res: Response, next: Next
  */
 export function blockAttacks(req: Request, res: Response, next: NextFunction) {
   const attackPatterns = [
-    /\.\.\/.*etc\/passwd/i,  // File system access
-    /\.\.\/.*proc\/version/i,  // System information
-    /union.*select.*from/i,  // SQL injection
-    /<script.*src.*>/i,  // External script injection
+    /\.\.\/.*etc\/passwd/i, // File system access
+    /\.\.\/.*proc\/version/i, // System information
+    /union.*select.*from/i, // SQL injection
+    /<script.*src.*>/i, // External script injection
   ]
 
   const requestData = `${req.path} ${JSON.stringify(req.query)} ${JSON.stringify(req.body || {})}`
@@ -168,12 +172,12 @@ export function blockAttacks(req: Request, res: Response, next: NextFunction) {
         path: req.path,
         method: req.method,
         pattern: pattern.toString(),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
       return res.status(403).json({
         error: 'Forbidden',
-        message: 'Request blocked due to security policy'
+        message: 'Request blocked due to security policy',
       })
     }
   }

@@ -63,7 +63,7 @@ export class TokensClient {
    */
   static async calculateRates(request: TokenCalculationRequest): Promise<TokenCalculationResult> {
     const startTime = Date.now()
-    
+
     if (this.useBackend) {
       try {
         const backendResult = await this.callBackend(request)
@@ -73,8 +73,8 @@ export class TokensClient {
             metadata: {
               ...backendResult.metadata,
               calculationTime: Date.now() - startTime,
-              source: 'backend'
-            }
+              source: 'backend',
+            },
           }
         }
       } catch (error) {
@@ -89,7 +89,9 @@ export class TokensClient {
   /**
    * Call backend token calculation service
    */
-  private static async callBackend(request: TokenCalculationRequest): Promise<TokenCalculationResult | null> {
+  private static async callBackend(
+    request: TokenCalculationRequest
+  ): Promise<TokenCalculationResult | null> {
     try {
       const response = await fetch(`${this.backendUrl}/api/tokens/calculate`, {
         method: 'POST',
@@ -101,14 +103,14 @@ export class TokensClient {
             Spirit: 1.0,
             Essence: 0.8,
             Matter: 0.6,
-            Substance: 0.4
+            Substance: 0.4,
           },
           location: {
             lat: request.location.latitude,
-            lon: request.location.longitude
+            lon: request.location.longitude,
           },
-          timestamp: request.datetime.toISOString()
-        })
+          timestamp: request.datetime.toISOString(),
+        }),
       })
 
       if (!response.ok) {
@@ -116,7 +118,7 @@ export class TokensClient {
       }
 
       const data = await response.json()
-      
+
       if (data.success && data.data) {
         return this.transformBackendResponse(data.data)
       }
@@ -139,13 +141,13 @@ export class TokensClient {
         Matter: backendData.rates.Matter,
         Substance: backendData.rates.Substance,
         kalchm: backendData.rates.kalchm || 0,
-        monica: backendData.rates.monica || 0
+        monica: backendData.rates.monica || 0,
       },
       projections: backendData.projections || [],
       harmonics: backendData.harmonics || {
         phase: 0,
         amplitude: 1,
-        resonance: 'neutral' as const
+        resonance: 'neutral' as const,
       },
       marketPhase: backendData.marketPhase || 'peak',
       volatilityIndex: backendData.volatilityIndex || 0.5,
@@ -155,15 +157,18 @@ export class TokensClient {
         calculationTime: 0,
         source: 'backend',
         planetaryHour: backendData.metadata?.planetaryHour || 'Sun',
-        location: `${backendData.metadata?.location?.lat || 0},${backendData.metadata?.location?.lon || 0}`
-      }
+        location: `${backendData.metadata?.location?.lat || 0},${backendData.metadata?.location?.lon || 0}`,
+      },
     }
   }
 
   /**
    * Local fallback calculation using existing services
    */
-  private static async calculateLocal(request: TokenCalculationRequest, startTime: number): Promise<TokenCalculationResult> {
+  private static async calculateLocal(
+    request: TokenCalculationRequest,
+    startTime: number
+  ): Promise<TokenCalculationResult> {
     try {
       // Use existing RealAlchemizeService for local calculation
       const horoscope = await RealAlchemizeService.generateHoroscopeAsync({
@@ -173,7 +178,7 @@ export class TokensClient {
         hour: request.datetime.getHours(),
         minute: request.datetime.getMinutes(),
         latitude: request.location.latitude,
-        longitude: request.location.longitude
+        longitude: request.location.longitude,
       })
 
       const alchemicalData = RealAlchemizeService.alchemize(
@@ -182,21 +187,26 @@ export class TokensClient {
           month: request.datetime.getMonth(), // Note: zero-based month indexing maintained
           year: request.datetime.getFullYear(),
           hour: request.datetime.getHours(),
-          minute: request.datetime.getMinutes()
+          minute: request.datetime.getMinutes(),
         },
         horoscope
       )
 
       // Extract token rates from alchemical effects
       const effects = alchemicalData['Alchemy Effects']
-      const baseTokens = request.baseTokens || { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 }
+      const baseTokens = request.baseTokens || {
+        Spirit: 1.0,
+        Essence: 0.8,
+        Matter: 0.6,
+        Substance: 0.4,
+      }
 
       // Calculate enhanced rates based on alchemical influence
       const rates: TokenRates = {
         Spirit: baseTokens.Spirit * (1 + effects['Total Spirit'] / 10),
         Essence: baseTokens.Essence * (1 + effects['Total Essence'] / 10),
         Matter: baseTokens.Matter * (1 + effects['Total Matter'] / 10),
-        Substance: baseTokens.Substance * (1 + effects['Total Substance'] / 10)
+        Substance: baseTokens.Substance * (1 + effects['Total Substance'] / 10),
       }
 
       // Calculate derived tokens
@@ -209,29 +219,37 @@ export class TokensClient {
           timeframe: 'next_hour',
           rates: this.projectRates(rates, 0.05),
           confidence: 0.85,
-          trend: this.determineTrend(rates)
+          trend: this.determineTrend(rates),
         },
         {
           timeframe: 'next_6_hours',
           rates: this.projectRates(rates, 0.15),
-          confidence: 0.70,
-          trend: this.determineTrend(rates)
+          confidence: 0.7,
+          trend: this.determineTrend(rates),
         },
         {
           timeframe: 'next_24_hours',
-          rates: this.projectRates(rates, 0.30),
+          rates: this.projectRates(rates, 0.3),
           confidence: 0.55,
-          trend: this.determineTrend(rates)
-        }
+          trend: this.determineTrend(rates),
+        },
       ]
 
       // Calculate harmonics
-      const totalAlchemical = effects['Total Spirit'] + effects['Total Essence'] + effects['Total Matter'] + effects['Total Substance']
+      const totalAlchemical =
+        effects['Total Spirit'] +
+        effects['Total Essence'] +
+        effects['Total Matter'] +
+        effects['Total Substance']
       const harmonics = {
         phase: (request.datetime.getHours() / 24) * 2 * Math.PI,
         amplitude: Math.abs(totalAlchemical) / 100,
-        resonance: totalAlchemical > 10 ? 'constructive' as const : 
-                   totalAlchemical < -10 ? 'destructive' as const : 'neutral' as const
+        resonance:
+          totalAlchemical > 10
+            ? ('constructive' as const)
+            : totalAlchemical < -10
+              ? ('destructive' as const)
+              : ('neutral' as const),
       }
 
       return {
@@ -246,15 +264,19 @@ export class TokensClient {
           calculationTime: Date.now() - startTime,
           source: 'local_fallback',
           planetaryHour: this.getCurrentPlanetaryHour(request.datetime),
-          location: `${request.location.latitude},${request.location.longitude}`
-        }
+          location: `${request.location.latitude},${request.location.longitude}`,
+        },
       }
-
     } catch (error) {
       console.error('Local token calculation failed:', error)
-      
+
       // Emergency fallback with base rates
-      const baseTokens = request.baseTokens || { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 }
+      const baseTokens = request.baseTokens || {
+        Spirit: 1.0,
+        Essence: 0.8,
+        Matter: 0.6,
+        Substance: 0.4,
+      }
       return {
         rates: { ...baseTokens, kalchm: 1.0, monica: 1.0 },
         projections: [],
@@ -267,8 +289,8 @@ export class TokensClient {
           calculationTime: Date.now() - startTime,
           source: 'local_fallback',
           planetaryHour: 'Sun',
-          location: `${request.location.latitude},${request.location.longitude}`
-        }
+          location: `${request.location.latitude},${request.location.longitude}`,
+        },
       }
     }
   }
@@ -283,7 +305,7 @@ export class TokensClient {
       Matter: Math.max(0.1, currentRates.Matter * (1 + (Math.random() - 0.5) * volatility)),
       Substance: Math.max(0.1, currentRates.Substance * (1 + (Math.random() - 0.5) * volatility)),
       kalchm: currentRates.kalchm,
-      monica: currentRates.monica
+      monica: currentRates.monica,
     }
   }
 
@@ -291,17 +313,22 @@ export class TokensClient {
    * Determine trend direction
    */
   private static determineTrend(rates: TokenRates): 'rising' | 'falling' | 'stable' {
-    const avgRate = Object.values(rates).reduce((sum, rate) => sum + rate, 0) / Object.keys(rates).length
+    const avgRate =
+      Object.values(rates).reduce((sum, rate) => sum + rate, 0) / Object.keys(rates).length
     return avgRate > 1.0 ? 'rising' : avgRate < 0.8 ? 'falling' : 'stable'
   }
 
   /**
    * Determine current market phase
    */
-  private static determineMarketPhase(datetime: Date, rates: TokenRates): 'dawn' | 'rising' | 'peak' | 'dusk' | 'night' {
+  private static determineMarketPhase(
+    datetime: Date,
+    rates: TokenRates
+  ): 'dawn' | 'rising' | 'peak' | 'dusk' | 'night' {
     const hour = datetime.getHours()
-    const avgRate = Object.values(rates).reduce((sum, rate) => sum + rate, 0) / Object.keys(rates).length
-    
+    const avgRate =
+      Object.values(rates).reduce((sum, rate) => sum + rate, 0) / Object.keys(rates).length
+
     if (hour >= 6 && hour < 9) return avgRate > 1.0 ? 'rising' : 'dawn'
     if (hour >= 9 && hour < 15) return avgRate > 1.2 ? 'peak' : 'rising'
     if (hour >= 15 && hour < 20) return avgRate > 1.0 ? 'peak' : 'dusk'
@@ -315,7 +342,8 @@ export class TokensClient {
   private static calculateVolatility(rates: TokenRates, harmonics: any): number {
     const rateValues = Object.values(rates)
     const mean = rateValues.reduce((sum, rate) => sum + rate, 0) / rateValues.length
-    const variance = rateValues.reduce((sum, rate) => sum + Math.pow(rate - mean, 2), 0) / rateValues.length
+    const variance =
+      rateValues.reduce((sum, rate) => sum + Math.pow(rate - mean, 2), 0) / rateValues.length
     return Math.min(1, Math.sqrt(variance) * harmonics.amplitude)
   }
 

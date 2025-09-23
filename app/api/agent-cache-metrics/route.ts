@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       cacheStatus: cacheAvailable ? 'Active' : 'Disabled (Redis not available)',
       performanceLevel: getPerformanceLevel(metrics.hitRate),
       estimatedTimeSaved: formatTimeSaved(metrics.savedTimeMs),
-      recommendations: generateRecommendations(metrics)
+      recommendations: generateRecommendations(metrics),
     }
 
     return NextResponse.json({
@@ -28,30 +28,33 @@ export async function GET(request: NextRequest) {
       metrics: {
         ...metrics,
         hitRatePercent: Math.round(metrics.hitRate * 100),
-        missRatePercent: Math.round((1 - metrics.hitRate) * 100)
+        missRatePercent: Math.round((1 - metrics.hitRate) * 100),
       },
       insights,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
     console.error('Error fetching cache metrics:', error)
 
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to fetch cache metrics',
-      cacheAvailable: false,
-      metrics: {
-        totalRequests: 0,
-        cacheHits: 0,
-        cacheMisses: 0,
-        hitRate: 0,
-        hitRatePercent: 0,
-        missRatePercent: 100,
-        averageResponseTime: 0,
-        savedTimeMs: 0,
-        similarityMatches: 0
-      }
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to fetch cache metrics',
+        cacheAvailable: false,
+        metrics: {
+          totalRequests: 0,
+          cacheHits: 0,
+          cacheMisses: 0,
+          hitRate: 0,
+          hitRatePercent: 0,
+          missRatePercent: 100,
+          averageResponseTime: 0,
+          savedTimeMs: 0,
+          similarityMatches: 0,
+        },
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -66,7 +69,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: `Cache cleared for agent: ${agentId}`,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
     }
 
@@ -76,22 +79,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: 'Cache warm-up initiated',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
     }
 
-    return NextResponse.json({
-      success: false,
-      error: 'Invalid action. Supported actions: clear_agent_cache, warm_up_cache'
-    }, { status: 400 })
-
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Invalid action. Supported actions: clear_agent_cache, warm_up_cache',
+      },
+      { status: 400 }
+    )
   } catch (error) {
     console.error('Error in cache management:', error)
 
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to execute cache management action'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to execute cache management action',
+      },
+      { status: 500 }
+    )
   }
 }
 

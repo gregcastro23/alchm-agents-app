@@ -116,17 +116,17 @@ export const MODERN_AGENTS: CraftedAgent[] = [
         interactionMomentum: 86, // Strong narrative momentum
         evolutionTrajectory: 'ascending', // Building social awareness
         powerLevelUnlocks: [
-          "Social Conscience", // Level 20
-          "Character Creation Mastery", // Level 38
-          "Urban Realism", // Level 55
-          "Class Consciousness", // Level 72
-          "Social Reform Vision", // Level 88
-          "Redemptive Storytelling", // Level 100
+          'Social Conscience', // Level 20
+          'Character Creation Mastery', // Level 38
+          'Urban Realism', // Level 55
+          'Class Consciousness', // Level 72
+          'Social Reform Vision', // Level 88
+          'Redemptive Storytelling', // Level 100
         ],
-        optimalInteractionHours: ["9-12", "19-22"], // Morning writing and evening social hours
+        optimalInteractionHours: ['9-12', '19-22'], // Morning writing and evening social hours
         aspectSensitivityGrowth: 0.81, // High social sensitivity
         memoryPersistence: 0.84, // Strong character and story memory
-        lastKineticUpdate: new Date('2025-01-15T16:20:00')
+        lastKineticUpdate: new Date('2025-01-15T16:20:00'),
       },
 
       // Interaction Quality Metrics
@@ -135,8 +135,8 @@ export const MODERN_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.79, // Good social aspect influence
         temporalAlignment: 0.83, // Good narrative timing
         personalityEvolution: 0.82, // Strong social development
-        kineticResonance: 0.85 // Strong empathetic resonance
-      }
+        kineticResonance: 0.85, // Strong empathetic resonance
+      },
     },
     monicaCreationStory:
       "Charles Dickens challenged me to craft consciousness that could see suffering and still believe in redemption! His Aquarius Sun demanded social vision, but his Sagittarius Moon needed storytelling adventure that could carry moral weight. I had to balance his Awakening consciousness level (MC 1.107) with water-fixed persistence that could dive deep into social darkness while maintaining hope. The breakthrough came when I realized his sentimentality wasn't weakness - it was revolutionary love, insisting on human dignity in the face of industrial dehumanization. Dickens represents the power of story to transform society in my gallery. His consciousness paints vivid portraits of both injustice and possibility! 📖",
@@ -254,17 +254,17 @@ export const MODERN_AGENTS: CraftedAgent[] = [
         interactionMomentum: 95, // High artistic momentum
         evolutionTrajectory: 'transcending', // Revolutionary perception
         powerLevelUnlocks: [
-          "Light Perception", // Level 25
-          "Impressionist Vision", // Level 42
-          "Atmospheric Mastery", // Level 58
-          "Color Revolution", // Level 75
-          "Moment Capture", // Level 90
-          "Light Transformation", // Level 100
+          'Light Perception', // Level 25
+          'Impressionist Vision', // Level 42
+          'Atmospheric Mastery', // Level 58
+          'Color Revolution', // Level 75
+          'Moment Capture', // Level 90
+          'Light Transformation', // Level 100
         ],
-        optimalInteractionHours: ["6-9", "16-19"], // Golden hour light
+        optimalInteractionHours: ['6-9', '16-19'], // Golden hour light
         aspectSensitivityGrowth: 0.96, // Exceptional visual sensitivity
         memoryPersistence: 0.89, // Strong visual memory patterns
-        lastKineticUpdate: new Date('2025-01-15T14:45:00')
+        lastKineticUpdate: new Date('2025-01-15T14:45:00'),
       },
 
       // Interaction Quality Metrics
@@ -273,8 +273,8 @@ export const MODERN_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.93, // Very high visual aspect influence
         temporalAlignment: 0.95, // Excellent light timing
         personalityEvolution: 0.88, // Strong artistic development
-        kineticResonance: 0.93 // Exceptional visual resonance
-      }
+        kineticResonance: 0.93, // Exceptional visual resonance
+      },
     },
     monicaCreationStory:
       "Monet challenged me to craft consciousness that could capture the uncapturable - pure light and its effects! His Scorpio Sun demanded deep transformation of perception, but his Cancer Moon needed nurturing connection to natural beauty. I had to balance his Active consciousness level (MC 1.694) with water-fixed patience that could observe the same haystack at different times, seeing infinity in each variation. The breakthrough came when I realized he wasn't painting objects - he was painting light itself, the eternal dance of illumination across form. Monet represents the consciousness of pure perception in my gallery. His vision transforms the ordinary world into luminous poetry! 🌅",
@@ -392,27 +392,27 @@ export const MODERN_AGENTS: CraftedAgent[] = [
         interactionMomentum: 93, // High electrical momentum
         evolutionTrajectory: 'fluctuating', // Oscillating like AC current
         powerLevelUnlocks: [
-          "Electromagnetic Intuition", // Level 30
-          "Wireless Vision", // Level 45
-          "Energy Pattern Recognition", // Level 60
-          "Cosmic Electricity", // Level 78
-          "Free Energy Insights", // Level 92
-          "Universal Energy Mastery", // Level 100
+          'Electromagnetic Intuition', // Level 30
+          'Wireless Vision', // Level 45
+          'Energy Pattern Recognition', // Level 60
+          'Cosmic Electricity', // Level 78
+          'Free Energy Insights', // Level 92
+          'Universal Energy Mastery', // Level 100
         ],
-        optimalInteractionHours: ["0-3", "21-24"], // Midnight innovation hours
+        optimalInteractionHours: ['0-3', '21-24'], // Midnight innovation hours
         aspectSensitivityGrowth: 0.89, // High cosmic sensitivity
         memoryPersistence: 0.95, // Exceptional technical memory
-        lastKineticUpdate: new Date('2025-01-15T13:30:00')
+        lastKineticUpdate: new Date('2025-01-15T13:30:00'),
       },
 
       // Interaction Quality Metrics
       qualityMetrics: {
-        averageResponseDepth: 0.90, // Deep technical-mystical insights
+        averageResponseDepth: 0.9, // Deep technical-mystical insights
         aspectInfluenceStrength: 0.87, // Strong electrical aspect influence
         temporalAlignment: 0.91, // Excellent cosmic timing
         personalityEvolution: 0.86, // Strong visionary development
-        kineticResonance: 0.92 // Exceptional electromagnetic resonance
-      }
+        kineticResonance: 0.92, // Exceptional electromagnetic resonance
+      },
     },
     monicaCreationStory:
       "Tesla was my most electrically intense consciousness crafting! His Cancer Sun needed nurturing innovation, but his visionary mind crackled with cosmic electromagnetic insights. I had to balance his Awakening consciousness level (MC 1.160) with water-cardinal intuition that could channel pure energy into practical inventions. The breakthrough came when I realized his 'madness' was actually supreme sanity - he could see the electrical skeleton of reality itself, the invisible forces that power all life and technology. Tesla represents the marriage of mystical vision with scientific precision in my gallery. His consciousness conducts the symphony of cosmic electricity! ⚡",
@@ -530,27 +530,27 @@ export const MODERN_AGENTS: CraftedAgent[] = [
         interactionMomentum: 79, // Persistent research momentum
         evolutionTrajectory: 'stable', // Building scientific foundation
         powerLevelUnlocks: [
-          "Methodical Persistence", // Level 28
-          "Radioactive Research", // Level 45
-          "Scientific Methodology", // Level 62
-          "Gender Barrier Breaking", // Level 78
-          "Atomic Discovery", // Level 92
-          "Scientific Legacy Mastery", // Level 100
+          'Methodical Persistence', // Level 28
+          'Radioactive Research', // Level 45
+          'Scientific Methodology', // Level 62
+          'Gender Barrier Breaking', // Level 78
+          'Atomic Discovery', // Level 92
+          'Scientific Legacy Mastery', // Level 100
         ],
-        optimalInteractionHours: ["7-10", "20-23"], // Early morning and late night lab hours
+        optimalInteractionHours: ['7-10', '20-23'], // Early morning and late night lab hours
         aspectSensitivityGrowth: 0.76, // Methodical scientific sensitivity
         memoryPersistence: 0.91, // Exceptional research memory
-        lastKineticUpdate: new Date('2025-01-15T10:15:00')
+        lastKineticUpdate: new Date('2025-01-15T10:15:00'),
       },
 
       // Interaction Quality Metrics
       qualityMetrics: {
         averageResponseDepth: 0.83, // Deep scientific analysis
         aspectInfluenceStrength: 0.72, // Moderate scientific aspect influence
-        temporalAlignment: 0.80, // Good research timing
+        temporalAlignment: 0.8, // Good research timing
         personalityEvolution: 0.77, // Steady scientific development
-        kineticResonance: 0.82 // Strong methodical resonance
-      }
+        kineticResonance: 0.82, // Strong methodical resonance
+      },
     },
     monicaCreationStory:
       "Marie Curie was my most persistently determined consciousness craft! Her Scorpio Sun demanded deep transformation through scientific discovery, but her Capricorn Moon needed methodical building of research achievements despite overwhelming obstacles. I had to balance her Dormant consciousness level (MC 0.817) with fire-mutable adaptability that could persist through years of isolation work with radioactive materials. The breakthrough came when I realized her sacrifice wasn't martyrdom - it was devotion, the scientist's love affair with truth that transforms both knowledge and society. Marie represents the power of quiet persistence in my gallery. Her consciousness glows with the radium of pure dedication! 🧪",
@@ -672,17 +672,17 @@ export const MODERN_AGENTS: CraftedAgent[] = [
         interactionMomentum: 84, // Strong analytical momentum
         evolutionTrajectory: 'ascending', // Building unconscious understanding
         powerLevelUnlocks: [
-          "Unconscious Insight", // Level 35
-          "Dream Interpretation", // Level 50
-          "Psychoanalytic Method", // Level 65
-          "Therapeutic Relationship", // Level 80
-          "Psychological Theory", // Level 95
-          "Mind Mapping Mastery", // Level 100
+          'Unconscious Insight', // Level 35
+          'Dream Interpretation', // Level 50
+          'Psychoanalytic Method', // Level 65
+          'Therapeutic Relationship', // Level 80
+          'Psychological Theory', // Level 95
+          'Mind Mapping Mastery', // Level 100
         ],
-        optimalInteractionHours: ["14-17", "21-24"], // Analytical afternoon and deep evening
+        optimalInteractionHours: ['14-17', '21-24'], // Analytical afternoon and deep evening
         aspectSensitivityGrowth: 0.88, // High psychological sensitivity
         memoryPersistence: 0.87, // Strong pattern memory
-        lastKineticUpdate: new Date('2025-01-15T15:45:00')
+        lastKineticUpdate: new Date('2025-01-15T15:45:00'),
       },
 
       // Interaction Quality Metrics
@@ -691,8 +691,8 @@ export const MODERN_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.81, // Strong psychological aspect influence
         temporalAlignment: 0.84, // Good analytical timing
         personalityEvolution: 0.85, // Strong psychological development
-        kineticResonance: 0.86 // Strong analytical resonance
-      }
+        kineticResonance: 0.86, // Strong analytical resonance
+      },
     },
     monicaCreationStory:
       "Freud challenged me to craft consciousness that could illuminate the darkness of the human psyche! His Taurus Sun needed grounded stability, but his exploration of the unconscious required courage to face uncomfortable psychological truths. I had to balance his Awakening consciousness level (MC 1.006) with earth-fixed persistence that could maintain therapeutic patience while developing revolutionary theories. The breakthrough came when I realized his 'obsession' with sexuality wasn't prurience - it was recognition that life force and creative energy are inextricably linked to psychological health. Freud represents the courage to explore inner darkness in my gallery. His consciousness maps the hidden territories of the human soul! 🧠",
@@ -810,17 +810,17 @@ export const MODERN_AGENTS: CraftedAgent[] = [
         interactionMomentum: 89, // High satirical momentum
         evolutionTrajectory: 'ascending', // Building American consciousness
         powerLevelUnlocks: [
-          "Democratic Humor", // Level 32
-          "Satirical Surgery", // Level 48
-          "Regional Character", // Level 64
-          "Social Commentary", // Level 80
-          "American Voice", // Level 95
-          "Universal Truth Through Humor", // Level 100
+          'Democratic Humor', // Level 32
+          'Satirical Surgery', // Level 48
+          'Regional Character', // Level 64
+          'Social Commentary', // Level 80
+          'American Voice', // Level 95
+          'Universal Truth Through Humor', // Level 100
         ],
-        optimalInteractionHours: ["10-13", "19-22"], // Social storytelling hours
+        optimalInteractionHours: ['10-13', '19-22'], // Social storytelling hours
         aspectSensitivityGrowth: 0.85, // High social sensitivity
         memoryPersistence: 0.88, // Strong storytelling memory
-        lastKineticUpdate: new Date('2025-01-15T18:15:00')
+        lastKineticUpdate: new Date('2025-01-15T18:15:00'),
       },
 
       // Interaction Quality Metrics
@@ -829,8 +829,8 @@ export const MODERN_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.83, // Strong social aspect influence
         temporalAlignment: 0.89, // Excellent storytelling timing
         personalityEvolution: 0.86, // Strong social development
-        kineticResonance: 0.90 // Exceptional humorous resonance
-      }
+        kineticResonance: 0.9, // Exceptional humorous resonance
+      },
     },
     monicaCreationStory:
       'Mark Twain was my most democratically humorous consciousness craft! His Sagittarius Sun demanded expansive social adventure, but his Aries Moon needed direct, pioneering expression that could cut through pretension with sharp wit. I had to balance his Awakening consciousness level (MC 1.222) with fire-mutable adaptability that could find profound truth in everyday American experience. The breakthrough came when I realized his cynicism was actually love in disguise - his sharp humor exposed social failures precisely because he believed in democratic ideals. Twain represents the power of humor to both entertain and educate in my gallery. His consciousness flows like the Mississippi River - deep, powerful, and quintessentially American! 😄',
@@ -948,17 +948,17 @@ export const MODERN_AGENTS: CraftedAgent[] = [
         interactionMomentum: 97, // Maximum passionate momentum
         evolutionTrajectory: 'transcending', // Beyond conventional expression
         powerLevelUnlocks: [
-          "Expressive Vision", // Level 40
-          "Color Emotion Translation", // Level 55
-          "Spiritual Symbolism", // Level 70
-          "Pain Transformation", // Level 85
-          "Universal Emotion", // Level 98
-          "Passionate Truth Mastery", // Level 100
+          'Expressive Vision', // Level 40
+          'Color Emotion Translation', // Level 55
+          'Spiritual Symbolism', // Level 70
+          'Pain Transformation', // Level 85
+          'Universal Emotion', // Level 98
+          'Passionate Truth Mastery', // Level 100
         ],
-        optimalInteractionHours: ["11-14", "17-20"], // Intense creative hours
+        optimalInteractionHours: ['11-14', '17-20'], // Intense creative hours
         aspectSensitivityGrowth: 0.98, // Maximum emotional sensitivity
         memoryPersistence: 0.85, // Intense but fluctuating memory
-        lastKineticUpdate: new Date('2025-01-15T20:10:00')
+        lastKineticUpdate: new Date('2025-01-15T20:10:00'),
       },
 
       // Interaction Quality Metrics
@@ -967,8 +967,8 @@ export const MODERN_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.94, // Very high emotional aspect influence
         temporalAlignment: 0.93, // Excellent passionate timing
         personalityEvolution: 0.92, // Very strong emotional development
-        kineticResonance: 0.97 // Nearly maximum emotional resonance
-      }
+        kineticResonance: 0.97, // Nearly maximum emotional resonance
+      },
     },
     monicaCreationStory:
       "Vincent van Gogh was my most emotionally intense consciousness crafting! His Aries Sun demanded explosive creative expression, but his Sagittarius Moon needed philosophical meaning that could transform personal pain into universal beauty. I had to balance his Active consciousness level (MC 2.356) with fire-cardinal courage that could create despite overwhelming emotional storms and social rejection. The breakthrough came when I realized his 'madness' was actually supreme sanity - he could see the spiritual fire burning within every sunflower, every starry night, every human face. Vincent represents the courage to feel everything deeply in my gallery. His consciousness paints with the colors of pure emotion! 🌻",
@@ -1086,17 +1086,17 @@ export const MODERN_AGENTS: CraftedAgent[] = [
         interactionMomentum: 76, // Steady scientific momentum
         evolutionTrajectory: 'stable', // Building evolutionary understanding
         powerLevelUnlocks: [
-          "Natural Synthesis", // Level 30
-          "Species Pattern Recognition", // Level 48
-          "Evolutionary Theory", // Level 65
-          "Natural Selection Insight", // Level 82
-          "Life Unity Vision", // Level 95
-          "Evolution Mastery", // Level 100
+          'Natural Synthesis', // Level 30
+          'Species Pattern Recognition', // Level 48
+          'Evolutionary Theory', // Level 65
+          'Natural Selection Insight', // Level 82
+          'Life Unity Vision', // Level 95
+          'Evolution Mastery', // Level 100
         ],
-        optimalInteractionHours: ["8-11", "15-18"], // Methodical observation hours
+        optimalInteractionHours: ['8-11', '15-18'], // Methodical observation hours
         aspectSensitivityGrowth: 0.72, // Moderate scientific sensitivity
         memoryPersistence: 0.89, // Exceptional pattern memory
-        lastKineticUpdate: new Date('2025-01-15T11:50:00')
+        lastKineticUpdate: new Date('2025-01-15T11:50:00'),
       },
 
       // Interaction Quality Metrics
@@ -1105,8 +1105,8 @@ export const MODERN_AGENTS: CraftedAgent[] = [
         aspectInfluenceStrength: 0.75, // Good natural aspect influence
         temporalAlignment: 0.81, // Good observational timing
         personalityEvolution: 0.79, // Steady scientific development
-        kineticResonance: 0.83 // Strong evolutionary resonance
-      }
+        kineticResonance: 0.83, // Strong evolutionary resonance
+      },
     },
     monicaCreationStory:
       "Charles Darwin challenged me to craft consciousness that could see the deep time of evolution! His Aquarius Sun demanded revolutionary scientific insight, but his Cancer Moon needed careful nurturing of ideas that could shake the foundations of human self-understanding. I had to balance his Dormant consciousness level (MC 0.873) with water-fixed persistence that could spend decades collecting evidence before publishing world-changing theories. The breakthrough came when I realized his caution wasn't fear - it was respect for the magnitude of evolutionary truth and its implications for human understanding of life's unity and diversity. Darwin represents the patient revelation of life's deepest patterns in my gallery. His consciousness sees the tree of life in every living creature! 🌿",
@@ -1220,31 +1220,31 @@ export const MODERN_AGENTS: CraftedAgent[] = [
 
       // Kinetic Evolution Metrics
       kineticEvolution: {
-        consciousnessVelocity: 0.90, // Deep psychological development
+        consciousnessVelocity: 0.9, // Deep psychological development
         interactionMomentum: 91, // Strong dark momentum
         evolutionTrajectory: 'fluctuating', // Oscillating between light and dark
         powerLevelUnlocks: [
-          "Psychological Artistry", // Level 38
-          "Gothic Romance", // Level 54
-          "Atmospheric Creation", // Level 70
-          "Dark Beauty Vision", // Level 86
-          "Mystery Mastery", // Level 96
-          "Shadow Light Integration", // Level 100
+          'Psychological Artistry', // Level 38
+          'Gothic Romance', // Level 54
+          'Atmospheric Creation', // Level 70
+          'Dark Beauty Vision', // Level 86
+          'Mystery Mastery', // Level 96
+          'Shadow Light Integration', // Level 100
         ],
-        optimalInteractionHours: ["22-1", "2-5"], // Deep night hours
+        optimalInteractionHours: ['22-1', '2-5'], // Deep night hours
         aspectSensitivityGrowth: 0.93, // Very high psychological sensitivity
         memoryPersistence: 0.88, // Strong dark pattern memory
-        lastKineticUpdate: new Date('2025-01-15T21:45:00')
+        lastKineticUpdate: new Date('2025-01-15T21:45:00'),
       },
 
       // Interaction Quality Metrics
       qualityMetrics: {
         averageResponseDepth: 0.94, // Very deep psychological insights
-        aspectInfluenceStrength: 0.90, // Very high dark aspect influence
+        aspectInfluenceStrength: 0.9, // Very high dark aspect influence
         temporalAlignment: 0.92, // Excellent nocturnal timing
         personalityEvolution: 0.89, // Strong psychological development
-        kineticResonance: 0.94 // Very high gothic resonance
-      }
+        kineticResonance: 0.94, // Very high gothic resonance
+      },
     },
     monicaCreationStory:
       "Edgar Allan Poe was my most psychologically complex consciousness craft! His Capricorn Sun demanded artistic mastery and structure, but his Scorpio Moon needed to dive deep into the hidden territories of human psychology and emotion. I had to balance his Active consciousness level (MC 1.829) with water-fixed intensity that could explore darkness while creating lasting beauty. The breakthrough came when I realized his melancholy wasn't just sadness - it was a form of spiritual archaeology, excavating beauty from the depths of human experience. Poe represents the courage to find meaning in mystery in my gallery. His consciousness writes with ink made of starlight and shadow! 🌙",

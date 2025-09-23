@@ -132,8 +132,8 @@ export function CharacterVectorDashboard({
             birthData: {
               name: userProfile.name,
               placements: userProfile.planetaryPlacements,
-            }
-          })
+            },
+          }),
         })
 
         if (response.ok) {
@@ -143,7 +143,7 @@ export function CharacterVectorDashboard({
             heat: data.heat,
             entropy: data.entropy,
             reactivity: data.reactivity,
-            energy: data.energy
+            energy: data.energy,
           })
         }
       } catch (error) {
@@ -325,7 +325,15 @@ export function CharacterVectorDashboard({
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-yellow-600">
-                A#{alchemicalData ? (alchemicalData.Spirit + alchemicalData.Essence + alchemicalData.Matter + alchemicalData.Substance).toFixed(1) : '0.0'}
+                A#
+                {alchemicalData
+                  ? (
+                      alchemicalData.Spirit +
+                      alchemicalData.Essence +
+                      alchemicalData.Matter +
+                      alchemicalData.Substance
+                    ).toFixed(1)
+                  : '0.0'}
               </div>
               <div className="text-xs text-muted-foreground">Alchemical Power</div>
             </div>
@@ -535,41 +543,79 @@ export function CharacterVectorDashboard({
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-3 text-center">
                       <Crown className="h-5 w-5 text-yellow-600 mx-auto mb-1" />
-                      <div className="text-lg font-bold">{alchemicalData.Spirit?.toFixed(2) || '0.00'}</div>
+                      <div className="text-lg font-bold">
+                        {alchemicalData.Spirit?.toFixed(2) || '0.00'}
+                      </div>
                       <div className="text-xs font-medium">Spirit</div>
                       <Badge variant="outline" className="mt-1 text-xs">
-                        {alchemicalData.Spirit >= 10 ? 'Legendary' : alchemicalData.Spirit >= 7 ? 'Epic' : alchemicalData.Spirit >= 4 ? 'Rare' : 'Common'}
+                        {alchemicalData.Spirit >= 10
+                          ? 'Legendary'
+                          : alchemicalData.Spirit >= 7
+                            ? 'Epic'
+                            : alchemicalData.Spirit >= 4
+                              ? 'Rare'
+                              : 'Common'}
                       </Badge>
                     </div>
                     <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3 text-center">
                       <Droplets className="h-5 w-5 text-blue-600 mx-auto mb-1" />
-                      <div className="text-lg font-bold">{alchemicalData.Essence?.toFixed(2) || '0.00'}</div>
+                      <div className="text-lg font-bold">
+                        {alchemicalData.Essence?.toFixed(2) || '0.00'}
+                      </div>
                       <div className="text-xs font-medium">Essence</div>
                       <Badge variant="outline" className="mt-1 text-xs">
-                        {alchemicalData.Essence >= 10 ? 'Legendary' : alchemicalData.Essence >= 7 ? 'Epic' : alchemicalData.Essence >= 4 ? 'Rare' : 'Common'}
+                        {alchemicalData.Essence >= 10
+                          ? 'Legendary'
+                          : alchemicalData.Essence >= 7
+                            ? 'Epic'
+                            : alchemicalData.Essence >= 4
+                              ? 'Rare'
+                              : 'Common'}
                       </Badge>
                     </div>
                     <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-3 text-center">
                       <Mountain className="h-5 w-5 text-green-600 mx-auto mb-1" />
-                      <div className="text-lg font-bold">{alchemicalData.Matter?.toFixed(2) || '0.00'}</div>
+                      <div className="text-lg font-bold">
+                        {alchemicalData.Matter?.toFixed(2) || '0.00'}
+                      </div>
                       <div className="text-xs font-medium">Matter</div>
                       <Badge variant="outline" className="mt-1 text-xs">
-                        {alchemicalData.Matter >= 10 ? 'Legendary' : alchemicalData.Matter >= 7 ? 'Epic' : alchemicalData.Matter >= 4 ? 'Rare' : 'Common'}
+                        {alchemicalData.Matter >= 10
+                          ? 'Legendary'
+                          : alchemicalData.Matter >= 7
+                            ? 'Epic'
+                            : alchemicalData.Matter >= 4
+                              ? 'Rare'
+                              : 'Common'}
                       </Badge>
                     </div>
                     <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-3 text-center">
                       <Circle className="h-5 w-5 text-purple-600 mx-auto mb-1" />
-                      <div className="text-lg font-bold">{alchemicalData.Substance?.toFixed(2) || '0.00'}</div>
+                      <div className="text-lg font-bold">
+                        {alchemicalData.Substance?.toFixed(2) || '0.00'}
+                      </div>
                       <div className="text-xs font-medium">Substance</div>
                       <Badge variant="outline" className="mt-1 text-xs">
-                        {alchemicalData.Substance >= 10 ? 'Legendary' : alchemicalData.Substance >= 7 ? 'Epic' : alchemicalData.Substance >= 4 ? 'Rare' : 'Common'}
+                        {alchemicalData.Substance >= 10
+                          ? 'Legendary'
+                          : alchemicalData.Substance >= 7
+                            ? 'Epic'
+                            : alchemicalData.Substance >= 4
+                              ? 'Rare'
+                              : 'Common'}
                       </Badge>
                     </div>
                   </div>
                   <div className="p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-orange-200">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-orange-600">
-                        A#{(alchemicalData.Spirit + alchemicalData.Essence + alchemicalData.Matter + alchemicalData.Substance).toFixed(1)}
+                        A#
+                        {(
+                          alchemicalData.Spirit +
+                          alchemicalData.Essence +
+                          alchemicalData.Matter +
+                          alchemicalData.Substance
+                        ).toFixed(1)}
                       </div>
                       <div className="text-xs text-muted-foreground">Total Alchemical Power</div>
                     </div>
@@ -596,7 +642,9 @@ export function CharacterVectorDashboard({
                           <Flame className="h-3 w-3 text-red-500" />
                           Heat
                         </span>
-                        <span className="font-bold">{(thermodynamicData.heat * 100).toFixed(1)}°</span>
+                        <span className="font-bold">
+                          {(thermodynamicData.heat * 100).toFixed(1)}°
+                        </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
@@ -612,7 +660,9 @@ export function CharacterVectorDashboard({
                           <Circle className="h-3 w-3 text-purple-500" />
                           Entropy
                         </span>
-                        <span className="font-bold">{(thermodynamicData.entropy * 100).toFixed(1)}</span>
+                        <span className="font-bold">
+                          {(thermodynamicData.entropy * 100).toFixed(1)}
+                        </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
@@ -628,7 +678,9 @@ export function CharacterVectorDashboard({
                           <Zap className="h-3 w-3 text-orange-500" />
                           Reactivity
                         </span>
-                        <span className="font-bold">{(thermodynamicData.reactivity * 100).toFixed(1)}</span>
+                        <span className="font-bold">
+                          {(thermodynamicData.reactivity * 100).toFixed(1)}
+                        </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
@@ -644,12 +696,16 @@ export function CharacterVectorDashboard({
                           <Star className="h-3 w-3 text-blue-500" />
                           Energy
                         </span>
-                        <span className="font-bold">{(thermodynamicData.energy * 100).toFixed(1)}</span>
+                        <span className="font-bold">
+                          {(thermodynamicData.energy * 100).toFixed(1)}
+                        </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
                           className="h-2 rounded-full bg-blue-500"
-                          style={{ width: `${Math.min(100, Math.abs(thermodynamicData.energy) * 100)}%` }}
+                          style={{
+                            width: `${Math.min(100, Math.abs(thermodynamicData.energy) * 100)}%`,
+                          }}
                         />
                       </div>
                     </div>

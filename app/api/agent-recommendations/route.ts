@@ -19,22 +19,32 @@ interface AgentRecommendation {
 function calculateAgentCompatibility(birthChart: any, agent: any): AgentRecommendation {
   const agentProfile = agentKineticProfiles[agent.id] || {}
   let compatibilityScore = 0.5 // Base score
-  let reasons: string[] = []
+  const reasons: string[] = []
 
   // Birth month elemental affinity
   const birthMonth = birthChart.month
   const elementByMonth = {
-    1: 'Earth', 2: 'Air', 3: 'Water', 4: 'Fire',
-    5: 'Earth', 6: 'Air', 7: 'Water', 8: 'Fire',
-    9: 'Earth', 10: 'Air', 11: 'Water', 12: 'Fire'
+    1: 'Earth',
+    2: 'Air',
+    3: 'Water',
+    4: 'Fire',
+    5: 'Earth',
+    6: 'Air',
+    7: 'Water',
+    8: 'Fire',
+    9: 'Earth',
+    10: 'Air',
+    11: 'Water',
+    12: 'Fire',
   }
   const userElement = elementByMonth[birthMonth as keyof typeof elementByMonth] || 'Air'
 
   // Agent elemental alignment
   if (agent.consciousness?.elements) {
     const agentElements = agent.consciousness.elements
-    const dominantElement = Object.entries(agentElements)
-      .sort(([,a], [,b]) => (b as number) - (a as number))[0][0]
+    const dominantElement = Object.entries(agentElements).sort(
+      ([, a], [, b]) => (b as number) - (a as number)
+    )[0][0]
 
     if (dominantElement === userElement) {
       compatibilityScore += 0.3
@@ -49,15 +59,19 @@ function calculateAgentCompatibility(birthChart: any, agent: any): AgentRecommen
   const birthHour = birthChart.hour || 12
   if (birthHour >= 6 && birthHour < 18) {
     // Diurnal birth - prefer solar/active agents
-    if (agent.abilities?.specialty?.includes('wisdom') ||
-        agent.abilities?.specialty?.includes('innovation')) {
+    if (
+      agent.abilities?.specialty?.includes('wisdom') ||
+      agent.abilities?.specialty?.includes('innovation')
+    ) {
       compatibilityScore += 0.15
       reasons.push('Diurnal compatibility with active consciousness')
     }
   } else {
     // Nocturnal birth - prefer lunar/receptive agents
-    if (agent.abilities?.specialty?.includes('intuition') ||
-        agent.abilities?.specialty?.includes('mystical')) {
+    if (
+      agent.abilities?.specialty?.includes('intuition') ||
+      agent.abilities?.specialty?.includes('mystical')
+    ) {
       compatibilityScore += 0.15
       reasons.push('Nocturnal compatibility with receptive consciousness')
     }
@@ -74,8 +88,7 @@ function calculateAgentCompatibility(birthChart: any, agent: any): AgentRecommen
     }
 
     // Tropical regions and mystical agents
-    if (userLatitude < 23.5 &&
-        (agent.id.includes('cleopatra') || agent.id.includes('rumi'))) {
+    if (userLatitude < 23.5 && (agent.id.includes('cleopatra') || agent.id.includes('rumi'))) {
       compatibilityScore += 0.1
       reasons.push('Tropical mystical consciousness alignment')
     }
@@ -97,16 +110,16 @@ function calculateAgentCompatibility(birthChart: any, agent: any): AgentRecommen
     compatibilityScore,
     reasons,
     evolutionPotential,
-    elementalAlignment
+    elementalAlignment,
   }
 }
 
 function isComplementaryElement(element1: string, element2: string): boolean {
   const complementary = {
-    'Fire': ['Air'],
-    'Water': ['Earth'],
-    'Air': ['Fire'],
-    'Earth': ['Water']
+    Fire: ['Air'],
+    Water: ['Earth'],
+    Air: ['Fire'],
+    Earth: ['Water'],
   }
   return complementary[element1 as keyof typeof complementary]?.includes(element2) || false
 }
@@ -135,15 +148,19 @@ export async function GET(req: NextRequest) {
 
     // Get user's birth chart data
     const userProfile = await prisma.profile.findUnique({
-      where: { userId }
+      where: { userId },
     })
 
     if (!userProfile?.birthInfo) {
-      return NextResponse.json({
-        success: false,
-        error: 'Birth chart data required for recommendations',
-        message: 'Please complete your birth chart information to get personalized agent recommendations'
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Birth chart data required for recommendations',
+          message:
+            'Please complete your birth chart information to get personalized agent recommendations',
+        },
+        { status: 400 }
+      )
     }
 
     const birthChart = JSON.parse(userProfile.birthInfo as string)
@@ -166,8 +183,8 @@ export async function GET(req: NextRequest) {
     const evolutionStates = await prisma.agentEvolutionState.findMany({
       where: {
         userId,
-        agentId: { in: topRecommendations.map(r => r.agentId) }
-      }
+        agentId: { in: topRecommendations.map(r => r.agentId) },
+      },
     })
 
     // Enhance recommendations with evolution data
@@ -178,7 +195,7 @@ export async function GET(req: NextRequest) {
         currentLevel: evolutionState?.currentLevel || 'bronze',
         totalPower: evolutionState?.totalPower || 0,
         interactionCount: evolutionState?.interactionCount || 0,
-        lastInteraction: evolutionState?.lastInteraction || null
+        lastInteraction: evolutionState?.lastInteraction || null,
       }
     })
 
@@ -188,16 +205,18 @@ export async function GET(req: NextRequest) {
       userProfile: {
         birthChart,
         totalAgentsAvailable: DEMO_AGENTS.length,
-        recommendationsGenerated: new Date().toISOString()
-      }
+        recommendationsGenerated: new Date().toISOString(),
+      },
     })
-
   } catch (error) {
     console.error('Agent recommendations error:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to generate agent recommendations'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to generate agent recommendations',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -214,7 +233,7 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        message: 'Feedback recorded for recommendation improvement'
+        message: 'Feedback recorded for recommendation improvement',
       })
     }
 
@@ -223,16 +242,21 @@ export async function POST(req: NextRequest) {
       return await GET(req)
     }
 
-    return NextResponse.json({
-      success: false,
-      error: 'Invalid action'
-    }, { status: 400 })
-
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Invalid action',
+      },
+      { status: 400 }
+    )
   } catch (error) {
     console.error('Agent recommendations POST error:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to process recommendation request'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to process recommendation request',
+      },
+      { status: 500 }
+    )
   }
 }

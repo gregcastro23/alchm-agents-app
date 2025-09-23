@@ -6,7 +6,11 @@
  * pattern discovery across multiple users.
  */
 
-import type { TemporalQuery, TemporalAnalysisResult, AgentTransitEvent } from './temporal-analysis-engine'
+import type {
+  TemporalQuery,
+  TemporalAnalysisResult,
+  AgentTransitEvent,
+} from './temporal-analysis-engine'
 
 export interface CollaborativeSession {
   id: string
@@ -199,11 +203,11 @@ export class CollaborativeTimeSessionManager {
         allowGuestUsers: true,
         requireApprovalForQueries: false,
         enableVoiceChat: false,
-        recordSession: true
+        recordSession: true,
       },
       createdAt: new Date(),
       lastActivity: new Date(),
-      expiresAt: new Date(Date.now() + (options.expiresInHours || 24) * 60 * 60 * 1000)
+      expiresAt: new Date(Date.now() + (options.expiresInHours || 24) * 60 * 60 * 1000),
     }
 
     this.sessions.set(sessionId, session)
@@ -253,8 +257,8 @@ export class CollaborativeTimeSessionManager {
       preferences: {
         colorScheme: 'auto',
         notifications: true,
-        shareLocation: false
-      }
+        shareLocation: false,
+      },
     }
 
     existingParticipants.push(participant)
@@ -274,11 +278,11 @@ export class CollaborativeTimeSessionManager {
       data: {
         action: 'user_joined',
         username,
-        userCount: session.currentUserCount
+        userCount: session.currentUserCount,
       },
       shouldBroadcast: true,
       acknowledgments: [],
-      timestamp: new Date()
+      timestamp: new Date(),
     })
 
     return { session, participant }
@@ -310,11 +314,11 @@ export class CollaborativeTimeSessionManager {
           data: {
             action: 'user_left',
             username: participant.username,
-            userCount: session.currentUserCount
+            userCount: session.currentUserCount,
           },
           shouldBroadcast: true,
           acknowledgments: [],
-          timestamp: new Date()
+          timestamp: new Date(),
         })
       }
     }
@@ -345,11 +349,11 @@ export class CollaborativeTimeSessionManager {
         data: {
           action: 'query_pending_approval',
           query,
-          username: participant.username
+          username: participant.username,
         },
         shouldBroadcast: true,
         acknowledgments: [],
-        timestamp: new Date()
+        timestamp: new Date(),
       })
       return
     }
@@ -368,11 +372,11 @@ export class CollaborativeTimeSessionManager {
       data: {
         action: 'query_started',
         query,
-        username: participant.username
+        username: participant.username,
       },
       shouldBroadcast: true,
       acknowledgments: [],
-      timestamp: new Date()
+      timestamp: new Date(),
     })
   }
 
@@ -399,7 +403,7 @@ export class CollaborativeTimeSessionManager {
       degree: position.degree || participant.currentDegree || 0,
       timestamp: position.timestamp || participant.currentTime || new Date(),
       userId,
-      username: participant.username
+      username: participant.username,
     }
 
     session.lastActivity = new Date()
@@ -414,11 +418,11 @@ export class CollaborativeTimeSessionManager {
       data: {
         action: 'cursor_updated',
         position: session.sharedCursor,
-        username: participant.username
+        username: participant.username,
       },
       shouldBroadcast: true,
       acknowledgments: [],
-      timestamp: new Date()
+      timestamp: new Date(),
     })
   }
 
@@ -456,7 +460,7 @@ export class CollaborativeTimeSessionManager {
       sharedWith: [],
       likes: [],
       comments: [],
-      createdAt: new Date()
+      createdAt: new Date(),
     }
 
     // Broadcast bookmark creation
@@ -469,11 +473,11 @@ export class CollaborativeTimeSessionManager {
       data: {
         action: 'bookmark_created',
         bookmark: sessionBookmark,
-        username: participant.username
+        username: participant.username,
       },
       shouldBroadcast: true,
       acknowledgments: [],
-      timestamp: new Date()
+      timestamp: new Date(),
     })
 
     return sessionBookmark
@@ -499,7 +503,7 @@ export class CollaborativeTimeSessionManager {
           .filter(u => u.type === 'cursor_move')
           .map(u => u.data?.position?.degree)
           .filter(d => d !== undefined)
-      )
+      ),
     ]
 
     return {
@@ -517,7 +521,7 @@ export class CollaborativeTimeSessionManager {
       consensusLevel: 0.8, // Would be calculated from user agreements
       sessionDuration: totalDuration,
       activeExplorationTime: totalDuration * 0.7, // Estimate
-      collaborativeInsights: Math.floor(updates.length / 10)
+      collaborativeInsights: Math.floor(updates.length / 10),
     }
   }
 
@@ -556,7 +560,7 @@ export class CollaborativeTimeSessionManager {
     const websockets = this.websockets.get(sessionId) || []
     const message = JSON.stringify({
       type: 'session_update',
-      data: update
+      data: update,
     })
 
     websockets.forEach(ws => {
@@ -633,5 +637,5 @@ export type {
   SessionUpdate,
   SessionBookmark,
   SessionComment,
-  SessionAnalytics
+  SessionAnalytics,
 }

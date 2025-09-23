@@ -41,12 +41,12 @@ import {
   trainOnAlchemicalValues,
   todayHourlyAlchemize,
   trainWithRetrogrades,
-  type TrainingResult
+  type TrainingResult,
 } from '@/lib/monica/alchemical-trainer'
 import {
   calculateMonicaConstant,
   type MonicaConstantResult,
-  type ConsciousnessState
+  type ConsciousnessState,
 } from '@/lib/monica/monica-constant'
 import { alchemize } from '@/lib/alchemizer'
 import { generateAccurateHoroscope } from '@/lib/monica/horoscope-generator'
@@ -97,7 +97,13 @@ interface MonicaMessage {
   }
 }
 
-type MonicaState = 'minimized' | 'notification' | 'expanded' | 'full-chat' | 'training-mode' | 'settings'
+type MonicaState =
+  | 'minimized'
+  | 'notification'
+  | 'expanded'
+  | 'full-chat'
+  | 'training-mode'
+  | 'settings'
 
 import {
   getPageGuidance,
@@ -105,7 +111,7 @@ import {
   getTutorialsForPage,
   getMonicaPersonality,
   saveMonicaSettings,
-  loadMonicaSettings
+  loadMonicaSettings,
 } from '@/lib/monica/contextual-help'
 
 const DEFAULT_SETTINGS: MonicaSettings = {
@@ -113,7 +119,7 @@ const DEFAULT_SETTINGS: MonicaSettings = {
   assistanceLevel: 'moderate',
   proactiveTips: true,
   position: 'bottom-right',
-  autoHide: 'never'
+  autoHide: 'never',
 }
 
 const DEFAULT_PROGRESS: UserProgress = {
@@ -124,7 +130,7 @@ const DEFAULT_PROGRESS: UserProgress = {
   lastAction: null,
   totalInteractions: 0,
   totalXP: 0,
-  unlockedCapabilities: ['basic-guidance', 'page-context']
+  unlockedCapabilities: ['basic-guidance', 'page-context'],
 }
 
 export function MonicaOmnipresent() {
@@ -138,8 +144,9 @@ export function MonicaOmnipresent() {
   const [isVisible, setIsVisible] = useState(true)
   const [isDragging, setIsDragging] = useState(false)
   const [position, setPosition] = useState({ x: 0, y: 0 })
-  const [consciousnessParticles, setConsciousnessParticles] = useState<Array<{id: number, x: number, y: number, opacity: number}>>([]
-  )
+  const [consciousnessParticles, setConsciousnessParticles] = useState<
+    Array<{ id: number; x: number; y: number; opacity: number }>
+  >([])
   const [particleAnimation, setParticleAnimation] = useState(true)
 
   // New state for full chat functionality
@@ -154,7 +161,9 @@ export function MonicaOmnipresent() {
   const [lastPageContext, setLastPageContext] = useState<string>('')
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [feedbackText, setFeedbackText] = useState('')
-  const [feedbackStatus, setFeedbackStatus] = useState<'idle'|'sending'|'sent'|'error'>('idle')
+  const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>(
+    'idle'
+  )
 
   // Training system state management
   const [trainingProgress, setTrainingProgress] = useState<MonicaTrainingProgress>({
@@ -162,14 +171,14 @@ export function MonicaOmnipresent() {
     unlockedCapabilities: ['basic-guidance'],
     currentCourse: null,
     completedLessons: [],
-    totalXP: 0
+    totalXP: 0,
   })
   const [isTraining, setIsTraining] = useState(false)
   const [trainingResults, setTrainingResults] = useState<TrainingResult | null>(null)
   const [availableTrainings, setAvailableTrainings] = useState<string[]>([
     'alchemical-values',
     'hourly-analysis',
-    'retrograde-patterns'
+    'retrograde-patterns',
   ])
 
   // Load settings and progress using enhanced persistence (with validation)
@@ -186,7 +195,11 @@ export function MonicaOmnipresent() {
       if (savedProgress) {
         const progress = JSON.parse(savedProgress)
         // Validate progress structure
-        if (progress && typeof progress.level === 'number' && Array.isArray(progress.completedTutorials)) {
+        if (
+          progress &&
+          typeof progress.level === 'number' &&
+          Array.isArray(progress.completedTutorials)
+        ) {
           setUserProgress(progress)
         }
       }
@@ -201,7 +214,11 @@ export function MonicaOmnipresent() {
       if (savedTrainingProgress) {
         const progress = JSON.parse(savedTrainingProgress)
         // Validate training progress structure
-        if (progress && typeof progress.level === 'number' && Array.isArray(progress.completedLessons)) {
+        if (
+          progress &&
+          typeof progress.level === 'number' &&
+          Array.isArray(progress.completedLessons)
+        ) {
           setTrainingProgress(progress)
         }
       }
@@ -247,8 +264,8 @@ export function MonicaOmnipresent() {
     if (settings.autoHide === 'never' || monicaState === 'minimized') return
 
     let timeout: NodeJS.Timeout
-    const hideTime = settings.autoHide === '30s' ? 30000 :
-                    settings.autoHide === '1m' ? 60000 : 300000
+    const hideTime =
+      settings.autoHide === '30s' ? 30000 : settings.autoHide === '1m' ? 60000 : 300000
 
     timeout = setTimeout(() => {
       setMonicaState('minimized')
@@ -294,13 +311,15 @@ export function MonicaOmnipresent() {
           const welcomeMessage: MonicaMessage = {
             id: Date.now().toString(),
             type: 'monica',
-            content: pageGuidance?.greeting || "Hello! I'm Monica, your consciousness guide. How can I help you explore this page?",
+            content:
+              pageGuidance?.greeting ||
+              "Hello! I'm Monica, your consciousness guide. How can I help you explore this page?",
             timestamp: new Date(),
             context: {
               page: pathname,
               guidance: pageGuidance?.pageContext,
-              suggestions: pageGuidance?.primaryActions
-            }
+              suggestions: pageGuidance?.primaryActions,
+            },
           }
           setChatMessages([welcomeMessage])
         }
@@ -312,9 +331,9 @@ export function MonicaOmnipresent() {
             tips: pageGuidance.tips.map(tip => tip.text),
             quickActions: pageGuidance.primaryActions.map(action => ({
               label: action,
-              action: () => handleQuickAction(action)
+              action: () => handleQuickAction(action),
             })),
-            tutorials: getTutorialsForPage(pathname, userProgress.completedTutorials)
+            tutorials: getTutorialsForPage(pathname, userProgress.completedTutorials),
           })
         }
 
@@ -334,7 +353,7 @@ export function MonicaOmnipresent() {
     const handleKeyboard = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === 'm') {
         event.preventDefault()
-        setMonicaState(prev => prev === 'minimized' ? 'expanded' : 'minimized')
+        setMonicaState(prev => (prev === 'minimized' ? 'expanded' : 'minimized'))
       }
     }
 
@@ -359,7 +378,7 @@ export function MonicaOmnipresent() {
           hour: now.getHours(),
           minute: now.getMinutes(),
           latitude: 37.7749, // Default to San Francisco
-          longitude: -122.4194
+          longitude: -122.4194,
         }
 
         // Generate horoscope and calculate alchemical data
@@ -373,15 +392,17 @@ export function MonicaOmnipresent() {
         setConsciousnessResult(monicaResult)
 
         // Update training progress based on consciousness level
-        if (monicaResult.consciousnessState.level === 'elevated' || monicaResult.consciousnessState.level === 'transcendent') {
+        if (
+          monicaResult.consciousnessState.level === 'elevated' ||
+          monicaResult.consciousnessState.level === 'transcendent'
+        ) {
           setTrainingProgress(prev => ({
             ...prev,
             unlockedCapabilities: prev.unlockedCapabilities.includes('consciousness-tracking')
               ? prev.unlockedCapabilities
-              : [...prev.unlockedCapabilities, 'consciousness-tracking']
+              : [...prev.unlockedCapabilities, 'consciousness-tracking'],
           }))
         }
-
       } catch (error) {
         console.error('Error updating consciousness:', error)
         // Fallback to simulated value
@@ -450,7 +471,7 @@ export function MonicaOmnipresent() {
     setUserProgress(prev => ({
       ...prev,
       currentLearning: tutorialId,
-      lastAction: `Started tutorial: ${tutorialId}`
+      lastAction: `Started tutorial: ${tutorialId}`,
     }))
     setMonicaState('training-mode')
   }
@@ -491,7 +512,7 @@ export function MonicaOmnipresent() {
       setUserProgress(prev => ({
         ...prev,
         lastAction: action,
-        totalInteractions: prev.totalInteractions + 1
+        totalInteractions: prev.totalInteractions + 1,
       }))
     } catch (error) {
       console.error('Error handling quick action:', error)
@@ -507,7 +528,7 @@ export function MonicaOmnipresent() {
       type: 'user',
       content: currentMessage,
       timestamp: new Date(),
-      context: { page: pathname }
+      context: { page: pathname },
     }
 
     setChatMessages(prev => [...prev, userMessage])
@@ -524,9 +545,9 @@ export function MonicaOmnipresent() {
             page: pathname,
             userLevel: userProgress.level,
             capabilities: userProgress.unlockedCapabilities,
-            personality: settings.personality
-          }
-        })
+            personality: settings.personality,
+          },
+        }),
       })
 
       if (!response.ok) throw new Error('Failed to get response')
@@ -541,8 +562,8 @@ export function MonicaOmnipresent() {
         context: {
           page: pathname,
           guidance: data.guidance,
-          suggestions: data.suggestions
-        }
+          suggestions: data.suggestions,
+        },
       }
 
       setChatMessages(prev => [...prev, monicaMessage])
@@ -557,17 +578,17 @@ export function MonicaOmnipresent() {
         ...prev,
         totalInteractions: prev.totalInteractions + 1,
         totalXP: prev.totalXP + 5,
-        lastAction: 'chat_interaction'
+        lastAction: 'chat_interaction',
       }))
-
     } catch (error) {
       console.error('Error sending message:', error)
       const errorMessage: MonicaMessage = {
         id: (Date.now() + 1).toString(),
         type: 'monica',
-        content: 'I apologize, but I\'m having trouble connecting right now. Please try again in a moment.',
+        content:
+          "I apologize, but I'm having trouble connecting right now. Please try again in a moment.",
         timestamp: new Date(),
-        context: { page: pathname }
+        context: { page: pathname },
       }
       setChatMessages(prev => [...prev, errorMessage])
     } finally {
@@ -616,9 +637,11 @@ export function MonicaOmnipresent() {
         completedLessons: [...prev.completedLessons, completedLesson],
         totalXP: prev.totalXP + 50,
         level: Math.floor((prev.totalXP + 50) / 100) + 1,
-        unlockedCapabilities: prev.level > 1 ? [...prev.unlockedCapabilities, `advanced-${trainingType}`] : prev.unlockedCapabilities
+        unlockedCapabilities:
+          prev.level > 1
+            ? [...prev.unlockedCapabilities, `advanced-${trainingType}`]
+            : prev.unlockedCapabilities,
       }))
-
     } catch (error) {
       console.error('Training error:', error)
     } finally {
@@ -658,26 +681,44 @@ export function MonicaOmnipresent() {
       const baseGreeting = monicaPersonality.greeting
       switch (settings.personality) {
         case 'formal':
-          return { greeting: baseGreeting.replace(/!/g, '.').replace(/💚|✨/g, ''), tone: "professional" }
+          return {
+            greeting: baseGreeting.replace(/!/g, '.').replace(/💚|✨/g, ''),
+            tone: 'professional',
+          }
         case 'mystical':
-          return { greeting: `✨ ${baseGreeting}`, tone: "mystical" }
+          return { greeting: `✨ ${baseGreeting}`, tone: 'mystical' }
         case 'teacher':
-          return { greeting: baseGreeting.replace('Welcome', 'Welcome, student'), tone: "educational" }
+          return {
+            greeting: baseGreeting.replace('Welcome', 'Welcome, student'),
+            tone: 'educational',
+          }
         default:
-          return { greeting: baseGreeting, tone: "warm" }
+          return { greeting: baseGreeting, tone: 'warm' }
       }
     }
 
     // Fallback to generic greetings
     switch (settings.personality) {
       case 'formal':
-        return { greeting: "Greetings. I am here to assist with your consciousness development.", tone: "professional" }
+        return {
+          greeting: 'Greetings. I am here to assist with your consciousness development.',
+          tone: 'professional',
+        }
       case 'mystical':
-        return { greeting: "✨ The cosmic currents have brought you here, dear seeker...", tone: "mystical" }
+        return {
+          greeting: '✨ The cosmic currents have brought you here, dear seeker...',
+          tone: 'mystical',
+        }
       case 'teacher':
-        return { greeting: "Welcome, student! Ready to explore the mysteries of consciousness?", tone: "educational" }
+        return {
+          greeting: 'Welcome, student! Ready to explore the mysteries of consciousness?',
+          tone: 'educational',
+        }
       default:
-        return { greeting: "Hello there! 💚 I'm here to help you on your consciousness journey!", tone: "warm" }
+        return {
+          greeting: "Hello there! 💚 I'm here to help you on your consciousness journey!",
+          tone: 'warm',
+        }
     }
   }
 
@@ -694,7 +735,7 @@ export function MonicaOmnipresent() {
   const [additiveOnly, setAdditiveOnly] = useState<boolean>(() => {
     try {
       const v = localStorage.getItem('additiveOnlyElements')
-      return v ? v === 'true' : (process.env.NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS === 'true')
+      return v ? v === 'true' : process.env.NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS === 'true'
     } catch {
       return process.env.NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS === 'true'
     }
@@ -717,13 +758,16 @@ export function MonicaOmnipresent() {
         body: JSON.stringify({
           message: feedbackText.trim(),
           route: pathname,
-          timestamp: new Date().toISOString()
-        })
+          timestamp: new Date().toISOString(),
+        }),
       })
       if (!res.ok) throw new Error('Failed to send')
       setFeedbackStatus('sent')
       setFeedbackText('')
-      setTimeout(() => { setFeedbackOpen(false); setFeedbackStatus('idle') }, 1200)
+      setTimeout(() => {
+        setFeedbackOpen(false)
+        setFeedbackStatus('idle')
+      }, 1200)
     } catch (e) {
       setFeedbackStatus('error')
     }
@@ -758,7 +802,7 @@ export function MonicaOmnipresent() {
               id: Date.now() + Math.random(),
               x: Math.random() * 100,
               y: Math.random() * 100,
-              opacity: 1
+              opacity: 1,
             } as any)
           }
 
@@ -766,7 +810,7 @@ export function MonicaOmnipresent() {
           const updated = filtered.map(p => ({
             ...p,
             opacity: p.opacity - 0.02,
-            y: p.y - 1
+            y: p.y - 1,
           }))
 
           const next = [...updated, ...newParticles]
@@ -795,7 +839,7 @@ export function MonicaOmnipresent() {
                 left: `${particle.x}%`,
                 top: `${particle.y}%`,
                 opacity: particle.opacity,
-                transform: 'translate(-50%, -50%)'
+                transform: 'translate(-50%, -50%)',
               }}
             />
           ))}
@@ -803,11 +847,10 @@ export function MonicaOmnipresent() {
       )}
       {/* Monica Avatar - Always Visible */}
       {monicaState === 'minimized' && (
-        <div
-          className="relative cursor-pointer group"
-          onClick={toggleState}
-        >
-          <div className={`w-16 h-16 rounded-full border-2 border-emerald-400 bg-gradient-to-br from-emerald-50 via-green-50 to-cyan-50 dark:from-emerald-950 dark:via-green-950 dark:to-cyan-950 flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-emerald-400/50 ${hasUnreadTips ? 'animate-pulse border-yellow-400 shadow-yellow-400/50' : ''}`}>
+        <div className="relative cursor-pointer group" onClick={toggleState}>
+          <div
+            className={`w-16 h-16 rounded-full border-2 border-emerald-400 bg-gradient-to-br from-emerald-50 via-green-50 to-cyan-50 dark:from-emerald-950 dark:via-green-950 dark:to-cyan-950 flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-emerald-400/50 ${hasUnreadTips ? 'animate-pulse border-yellow-400 shadow-yellow-400/50' : ''}`}
+          >
             <Image
               src="https://alchm.xyz/static/media/logo.f986535a.webp"
               alt="Monica - Your Consciousness Guide"
@@ -822,10 +865,13 @@ export function MonicaOmnipresent() {
             )}
 
             {/* Consciousness Activity Indicator */}
-            <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full transition-all duration-300 ${isUpdatingConsciousness
-              ? 'bg-gradient-to-r from-blue-400 to-cyan-500 animate-spin'
-              : 'bg-gradient-to-r from-purple-400 to-pink-500 animate-pulse'
-            }`}>
+            <div
+              className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full transition-all duration-300 ${
+                isUpdatingConsciousness
+                  ? 'bg-gradient-to-r from-blue-400 to-cyan-500 animate-spin'
+                  : 'bg-gradient-to-r from-purple-400 to-pink-500 animate-pulse'
+              }`}
+            >
               <Atom className="w-2 h-2 text-white m-0.5" />
             </div>
           </div>
@@ -872,10 +918,16 @@ export function MonicaOmnipresent() {
                     Monica - Consciousness Guide
                   </CardTitle>
                   <div className="flex items-center gap-1 mt-1">
-                    <Badge variant="outline" className="text-xs bg-gradient-to-r from-emerald-100 to-cyan-100 dark:from-emerald-900 dark:to-cyan-900">
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-gradient-to-r from-emerald-100 to-cyan-100 dark:from-emerald-900 dark:to-cyan-900"
+                    >
                       Level {userProgress.level}
                     </Badge>
-                    <Badge variant="outline" className="text-xs bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900">
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900"
+                    >
                       {isUpdatingConsciousness ? (
                         <>
                           <Atom className="w-2 h-2 mr-1 animate-spin" />
@@ -885,7 +937,10 @@ export function MonicaOmnipresent() {
                         <>MC {currentMC ? currentMC.toFixed(2) : '...'}</>
                       )}
                     </Badge>
-                    <Badge variant="outline" className="text-xs bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900">
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900"
+                    >
                       <Zap className="w-2 h-2 mr-1" />
                       Active
                     </Badge>
@@ -928,7 +983,10 @@ export function MonicaOmnipresent() {
                             <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
                               Consciousness State
                             </span>
-                            <Badge variant="outline" className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                            <Badge
+                              variant="outline"
+                              className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                            >
                               {consciousnessResult.consciousnessState.level}
                             </Badge>
                           </div>
@@ -937,9 +995,13 @@ export function MonicaOmnipresent() {
                           </div>
                           <div className="flex items-center gap-1 text-xs text-purple-500 dark:text-purple-400">
                             <Atom className="w-3 h-3" />
-                            <span>Stability: {consciousnessResult.consciousnessState.stability}</span>
+                            <span>
+                              Stability: {consciousnessResult.consciousnessState.stability}
+                            </span>
                             <span className="mx-1">•</span>
-                            <span>Potential: {consciousnessResult.consciousnessState.potential}</span>
+                            <span>
+                              Potential: {consciousnessResult.consciousnessState.potential}
+                            </span>
                           </div>
                         </div>
                       )}
@@ -955,8 +1017,11 @@ export function MonicaOmnipresent() {
                       Quick Tips
                     </h4>
                     <div className="space-y-2">
-                      {contextualTips.map((tip) => (
-                        <div key={tip.id} className="flex items-start gap-2 text-xs text-muted-foreground">
+                      {contextualTips.map(tip => (
+                        <div
+                          key={tip.id}
+                          className="flex items-start gap-2 text-xs text-muted-foreground"
+                        >
                           <Sparkles className="w-3 h-3 text-emerald-500 mt-0.5 flex-shrink-0" />
                           <span>{tip.text}</span>
                         </div>
@@ -973,7 +1038,7 @@ export function MonicaOmnipresent() {
                       Learn More
                     </h4>
                     <div className="space-y-1">
-                      {pageTutorials.map((tutorial) => (
+                      {pageTutorials.map(tutorial => (
                         <Button
                           key={tutorial.id}
                           variant="ghost"
@@ -1058,8 +1123,14 @@ export function MonicaOmnipresent() {
         <Card
           className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-2 border-emerald-400 shadow-2xl transition-all duration-300 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-4rem)]"
           style={{
-            width: typeof window !== 'undefined' ? Math.min(widgetSize.width, window.innerWidth - 32) : widgetSize.width,
-            height: typeof window !== 'undefined' ? Math.min(widgetSize.height, window.innerHeight - 64) : widgetSize.height
+            width:
+              typeof window !== 'undefined'
+                ? Math.min(widgetSize.width, window.innerWidth - 32)
+                : widgetSize.width,
+            height:
+              typeof window !== 'undefined'
+                ? Math.min(widgetSize.height, window.innerHeight - 64)
+                : widgetSize.height,
           }}
         >
           <CardHeader className="pb-3 border-b border-emerald-200 dark:border-emerald-800">
@@ -1078,15 +1149,24 @@ export function MonicaOmnipresent() {
                     Chat with Monica
                   </CardTitle>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="outline" className="text-xs bg-gradient-to-r from-emerald-100 to-cyan-100 dark:from-emerald-900 dark:to-cyan-900">
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-gradient-to-r from-emerald-100 to-cyan-100 dark:from-emerald-900 dark:to-cyan-900"
+                    >
                       {pathname}
                     </Badge>
                     {currentMC && (
-                      <Badge variant="outline" className="text-xs bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900">
+                      <Badge
+                        variant="outline"
+                        className="text-xs bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900"
+                      >
                         MC {currentMC.toFixed(2)}
                       </Badge>
                     )}
-                    <Badge variant="outline" className="text-xs bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900">
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900"
+                    >
                       <Zap className="w-2 h-2 mr-1" />
                       Live
                     </Badge>
@@ -1097,7 +1177,15 @@ export function MonicaOmnipresent() {
                 <Button variant="ghost" size="sm" onClick={() => setMonicaState('settings')}>
                   <Settings className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => setWidgetSize(prev => prev.width > 400 ? {width: 600, height: 700} : {width: 800, height: 600})}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setWidgetSize(prev =>
+                      prev.width > 400 ? { width: 600, height: 700 } : { width: 800, height: 600 }
+                    )
+                  }
+                >
                   <Maximize2 className="w-4 h-4" />
                 </Button>
                 <Button variant="ghost" size="sm" onClick={closeFullChat}>
@@ -1114,7 +1202,7 @@ export function MonicaOmnipresent() {
             {/* Chat Messages */}
             <ScrollArea className="flex-1 p-4 space-y-4">
               <div className="space-y-4">
-                {chatMessages.map((message) => (
+                {chatMessages.map(message => (
                   <div
                     key={message.id}
                     className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -1137,7 +1225,9 @@ export function MonicaOmnipresent() {
                           </span>
                         </div>
                       )}
-                      <p className={`text-sm ${message.type === 'monica' ? 'text-emerald-800 dark:text-emerald-200' : 'text-white'}`}>
+                      <p
+                        className={`text-sm ${message.type === 'monica' ? 'text-emerald-800 dark:text-emerald-200' : 'text-white'}`}
+                      >
                         {message.content}
                       </p>
                       {message.context?.suggestions && (
@@ -1162,7 +1252,9 @@ export function MonicaOmnipresent() {
                     <div className="bg-gradient-to-r from-emerald-50 via-green-50 to-cyan-50 dark:from-emerald-950/50 dark:via-green-950/50 dark:to-cyan-950/50 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
                       <div className="flex items-center gap-2">
                         <Brain className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
-                        <span className="text-sm text-emerald-700 dark:text-emerald-300">Monica is thinking...</span>
+                        <span className="text-sm text-emerald-700 dark:text-emerald-300">
+                          Monica is thinking...
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -1175,10 +1267,14 @@ export function MonicaOmnipresent() {
               <div className="flex items-center gap-2">
                 <Input
                   value={currentMessage}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentMessage(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setCurrentMessage(e.target.value)
+                  }
                   placeholder="Ask Monica anything about consciousness, astrology, or this page..."
                   className="flex-1 border-emerald-300 focus:border-emerald-500"
-                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && sendMessage()}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                    e.key === 'Enter' && sendMessage()
+                  }
                   disabled={isLoading}
                 />
                 <Button
@@ -1193,7 +1289,6 @@ export function MonicaOmnipresent() {
           </CardContent>
         </Card>
       )}
-
 
       {/* Training Mode Interface */}
       {monicaState === 'training-mode' && (
@@ -1227,7 +1322,7 @@ export function MonicaOmnipresent() {
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(trainingProgress.totalXP % 100)}%` }}
+                    style={{ width: `${trainingProgress.totalXP % 100}%` }}
                   />
                 </div>
               </div>
@@ -1238,7 +1333,9 @@ export function MonicaOmnipresent() {
                   <div className="text-muted-foreground">Lessons</div>
                 </div>
                 <div className="text-center p-2 bg-purple-50 rounded">
-                  <div className="font-semibold">{trainingProgress.unlockedCapabilities.length}</div>
+                  <div className="font-semibold">
+                    {trainingProgress.unlockedCapabilities.length}
+                  </div>
                   <div className="text-muted-foreground">Abilities</div>
                 </div>
               </div>
@@ -1249,8 +1346,11 @@ export function MonicaOmnipresent() {
                 Available Training Modules
               </h4>
 
-              {availableTrainings.map((training) => (
-                <div key={training} className="mb-3 p-3 border rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
+              {availableTrainings.map(training => (
+                <div
+                  key={training}
+                  className="mb-3 p-3 border rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20"
+                >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       {getTrainingIcon(training)}
@@ -1301,12 +1401,16 @@ export function MonicaOmnipresent() {
                   </div>
                   <div className="flex justify-between">
                     <span>Dominant Element:</span>
-                    <span className="font-semibold">{trainingResults.patterns.dominantElement}</span>
+                    <span className="font-semibold">
+                      {trainingResults.patterns.dominantElement}
+                    </span>
                   </div>
                   {trainingResults.monicaConstant && (
                     <div className="flex justify-between">
                       <span>Monica Constant:</span>
-                      <span className="font-semibold">{trainingResults.monicaConstant.average.toFixed(3)}</span>
+                      <span className="font-semibold">
+                        {trainingResults.monicaConstant.average.toFixed(3)}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -1354,13 +1458,18 @@ export function MonicaOmnipresent() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Personality</label>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                Personality
+              </label>
               <select
                 className="w-full mt-1 p-2 text-xs border rounded-md bg-white dark:bg-gray-800 border-slate-300 dark:border-slate-600"
                 value={settings.personality}
-                onChange={(e) => {
+                onChange={e => {
                   setSettings(prev => ({ ...prev, personality: e.target.value as any }))
-                  setUserProgress(prev => ({ ...prev, totalInteractions: prev.totalInteractions + 1 }))
+                  setUserProgress(prev => ({
+                    ...prev,
+                    totalInteractions: prev.totalInteractions + 1,
+                  }))
                 }}
               >
                 <option value="friendly">💚 Friendly Companion</option>
@@ -1371,13 +1480,18 @@ export function MonicaOmnipresent() {
             </div>
 
             <div>
-              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Assistance Level</label>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                Assistance Level
+              </label>
               <select
                 className="w-full mt-1 p-2 text-xs border rounded-md bg-white dark:bg-gray-800 border-slate-300 dark:border-slate-600"
                 value={settings.assistanceLevel}
-                onChange={(e) => {
+                onChange={e => {
                   setSettings(prev => ({ ...prev, assistanceLevel: e.target.value as any }))
-                  setUserProgress(prev => ({ ...prev, totalInteractions: prev.totalInteractions + 1 }))
+                  setUserProgress(prev => ({
+                    ...prev,
+                    totalInteractions: prev.totalInteractions + 1,
+                  }))
                 }}
               >
                 <option value="minimal">🔒 Minimal - Let me explore</option>
@@ -1388,34 +1502,43 @@ export function MonicaOmnipresent() {
             </div>
 
             <div className="flex items-center justify-between py-2">
-              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Proactive Tips</label>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                Proactive Tips
+              </label>
               <input
                 type="checkbox"
                 checked={settings.proactiveTips}
-                onChange={(e) => {
+                onChange={e => {
                   setSettings(prev => ({ ...prev, proactiveTips: e.target.checked }))
-                  setUserProgress(prev => ({ ...prev, totalInteractions: prev.totalInteractions + 1 }))
+                  setUserProgress(prev => ({
+                    ...prev,
+                    totalInteractions: prev.totalInteractions + 1,
+                  }))
                 }}
                 className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500"
               />
             </div>
 
             <div className="flex items-center justify-between py-2">
-              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Additive Elements Only</label>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                Additive Elements Only
+              </label>
               <input
                 type="checkbox"
                 checked={additiveOnly}
-                onChange={(e) => setAdditiveOnly(e.target.checked)}
+                onChange={e => setAdditiveOnly(e.target.checked)}
                 className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500"
               />
             </div>
 
             <div className="flex items-center justify-between py-2">
-              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Auto-Hide</label>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                Auto-Hide
+              </label>
               <select
                 className="text-xs border rounded px-2 py-1 bg-white dark:bg-gray-800 border-slate-300 dark:border-slate-600"
                 value={settings.autoHide}
-                onChange={(e) => setSettings(prev => ({ ...prev, autoHide: e.target.value as any }))}
+                onChange={e => setSettings(prev => ({ ...prev, autoHide: e.target.value as any }))}
               >
                 <option value="never">Never</option>
                 <option value="30s">30s</option>
@@ -1433,14 +1556,17 @@ export function MonicaOmnipresent() {
                 <MessageCircle className="w-3 h-3 mr-1" />
                 Full Chat Interface
               </Button>
-              
+
               <Button
                 variant="outline"
                 size="sm"
                 className="w-full text-xs"
                 onClick={() => {
                   setSettings(DEFAULT_SETTINGS)
-                  setUserProgress(prev => ({ ...prev, totalInteractions: prev.totalInteractions + 1 }))
+                  setUserProgress(prev => ({
+                    ...prev,
+                    totalInteractions: prev.totalInteractions + 1,
+                  }))
                 }}
               >
                 Reset to Defaults
@@ -1449,9 +1575,18 @@ export function MonicaOmnipresent() {
               {/* Feedback Section */}
               <div className="pt-2 border-t mt-2">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Send Feedback</span>
+                  <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                    Send Feedback
+                  </span>
                   {!feedbackOpen && (
-                    <Button variant="ghost" size="sm" className="text-xs" onClick={() => setFeedbackOpen(true)}>Open</Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => setFeedbackOpen(true)}
+                    >
+                      Open
+                    </Button>
                   )}
                 </div>
                 {feedbackOpen && (
@@ -1461,15 +1596,34 @@ export function MonicaOmnipresent() {
                       rows={3}
                       placeholder="Share your thoughts to help us improve..."
                       value={feedbackText}
-                      onChange={(e) => setFeedbackText(e.target.value)}
+                      onChange={e => setFeedbackText(e.target.value)}
                     />
                     <div className="flex items-center justify-between gap-2">
-                      <Button variant="outline" size="sm" onClick={() => { setFeedbackOpen(false); setFeedbackStatus('idle') }}>Cancel</Button>
-                      <Button size="sm" onClick={sendFeedback} disabled={feedbackStatus==='sending' || feedbackText.trim().length===0}>
-                        {feedbackStatus==='sending' ? 'Sending...' : feedbackStatus==='sent' ? 'Sent!' : feedbackStatus==='error' ? 'Retry' : 'Send'}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setFeedbackOpen(false)
+                          setFeedbackStatus('idle')
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={sendFeedback}
+                        disabled={feedbackStatus === 'sending' || feedbackText.trim().length === 0}
+                      >
+                        {feedbackStatus === 'sending'
+                          ? 'Sending...'
+                          : feedbackStatus === 'sent'
+                            ? 'Sent!'
+                            : feedbackStatus === 'error'
+                              ? 'Retry'
+                              : 'Send'}
                       </Button>
                     </div>
-                    {feedbackStatus==='error' && (
+                    {feedbackStatus === 'error' && (
                       <div className="text-xs text-red-600">Failed to send. Please try again.</div>
                     )}
                   </div>

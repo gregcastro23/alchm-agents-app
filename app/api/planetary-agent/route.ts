@@ -220,7 +220,7 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
         const agentId = `${planet.toLowerCase()}-${sign.toLowerCase()}`
 
         // Calculate power based on response quality and planetary conditions
-        const powerGained = (elementalAffinity * 10) + (dignity.score * 2) + 5
+        const powerGained = elementalAffinity * 10 + dignity.score * 2 + 5
 
         await consciousnessPersistence.logInteraction({
           userId,
@@ -236,8 +236,8 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
             degree,
             dignity: dignity.type,
             aNumber: aNumberInfo?.aNumber,
-            sessionId: conversationContext.sessionId
-          }
+            sessionId: conversationContext.sessionId,
+          },
         })
       } catch (dbError) {
         console.error('Failed to log interaction to database:', dbError)

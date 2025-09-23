@@ -28,7 +28,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
       culture,
       consciousnessLevel,
       limit,
-      offset
+      offset,
     })
 
     console.log(`Database returned ${dbAgents.length} agents`)
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
       console.log('First DB agent:', {
         name: dbAgents[0].name,
         historicalEra: dbAgents[0].historicalEra,
-        craftedBy: dbAgents[0].craftedBy
+        craftedBy: dbAgents[0].craftedBy,
       })
     }
 
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
       birthData: {
         date: agent.birthDate,
         time: agent.birthTime,
-        location: agent.birthLocation
+        location: agent.birthLocation,
       },
       consciousness: {
         natalChart: agent.natalChart,
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
         level: agent.consciousnessLevel,
         dominantElement: agent.dominantElement,
         dominantModality: agent.dominantModality,
-        signature: agent.signature
+        signature: agent.signature,
       },
       personality: {
         core: agent.personalityCore,
@@ -64,20 +64,20 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
         gifts: agent.personalityGifts,
         challenges: agent.personalityChallenges,
         currentMood: agent.currentMood,
-        evolutionStage: agent.evolutionStage
+        evolutionStage: agent.evolutionStage,
       },
       abilities: {
         specialty: agent.specialty,
         wisdomDomains: agent.wisdomDomains,
         teachingStyle: agent.teachingStyle,
         resonanceType: agent.resonanceType,
-        uniquePower: agent.uniquePower
+        uniquePower: agent.uniquePower,
       },
       appearance: {
         avatar: agent.avatar,
         color: agent.color,
         symbol: agent.symbol,
-        aura: agent.aura
+        aura: agent.aura,
       },
       stats: {
         conversations: agent.conversations,
@@ -93,21 +93,21 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
           optimalInteractionHours: [],
           aspectSensitivityGrowth: 0,
           memoryPersistence: 0.3,
-          lastKineticUpdate: agent.lastActive
+          lastKineticUpdate: agent.lastActive,
         },
         qualityMetrics: {
           averageResponseDepth: 0.5,
           aspectInfluenceStrength: 0.4,
           temporalAlignment: 0.5,
           personalityEvolution: 0,
-          kineticResonance: 0.5
-        }
+          kineticResonance: 0.5,
+        },
       },
       monicaCreationStory: agent.monicaCreationStory || undefined,
       // Add metadata for user-created agents
       isUserCreated: agent.historicalEra === 'user_created',
       craftedBy: agent.craftedBy || 'philosopher-stone',
-      historicalEra: agent.historicalEra
+      historicalEra: agent.historicalEra,
     }))
 
     // Combine with demo agents for full collection
@@ -117,14 +117,15 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
 
     const allAgents = [...formattedDbAgents, ...filteredDemoAgents]
 
-    console.log(`Retrieved ${dbAgents.length} agents from database, ${filteredDemoAgents.length} from demo data`)
+    console.log(
+      `Retrieved ${dbAgents.length} agents from database, ${filteredDemoAgents.length} from demo data`
+    )
 
     return NextResponse.json({
       success: true,
       agents: allAgents,
-      total: allAgents.length
+      total: allAgents.length,
     })
-
   } catch (error: any) {
     console.error('Failed to fetch agents:', error)
 
@@ -133,7 +134,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
       success: true,
       agents: DEMO_AGENTS,
       total: DEMO_AGENTS.length,
-      error: `Database error, falling back to demo data: ${error.message}`
+      error: `Database error, falling back to demo data: ${error.message}`,
     })
   }
 }

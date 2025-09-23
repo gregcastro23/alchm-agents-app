@@ -215,7 +215,7 @@ export async function GET(request: Request) {
       if (includeAlchemical && quantities) {
         // Build metrics payload explicitly to match AlchemicalMetrics interface
         const metricsData: AlchemicalMetrics = {
-          quantities: quantities,
+          quantities,
           dominantElement: alchmData?.['Dominant Element'] || 'unknown',
           heat: alchmData?.['Heat'] || 0,
           entropy: alchmData?.['Entropy'] || 0,

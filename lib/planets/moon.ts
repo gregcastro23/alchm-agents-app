@@ -176,7 +176,7 @@ const moonData: PlanetData = {
       },
     },
     MoonCalculations: {
-      calculateTransits: function (startDate: Date = new Date()) {
+      calculateTransits(startDate: Date = new Date()) {
         const transits: Record<string, { Start: string; End: string }> = {}
         const signs = [
           'Aries',
@@ -212,7 +212,7 @@ const moonData: PlanetData = {
         }
 
         // Convert to proper transits with start/end dates
-        let dates = Object.keys(moonInSign).sort()
+        const dates = Object.keys(moonInSign).sort()
         for (let i = 0; i < dates.length - 1; i++) {
           const sign = moonInSign[dates[i] as keyof typeof moonInSign]
           const start = dates[i]
@@ -227,7 +227,7 @@ const moonData: PlanetData = {
         return transits
       },
     },
-    TransitDateFunction: function () {
+    TransitDateFunction() {
       return {
         requiresDynamicCalculation: true,
         cycleLength: 27.3, // days

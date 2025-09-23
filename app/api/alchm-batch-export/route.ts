@@ -53,10 +53,13 @@ export async function POST(request: NextRequest) {
     // Validate request
     const validation = validateExportRequest(exportRequest)
     if (!validation.valid) {
-      return NextResponse.json({
-        success: false,
-        error: validation.error
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: validation.error,
+        },
+        { status: 400 }
+      )
     }
 
     // Create job ID and initialize job
@@ -69,8 +72,8 @@ export async function POST(request: NextRequest) {
       metadata: {
         totalRecords: 0,
         processedRecords: 0,
-        exportSize: 0
-      }
+        exportSize: 0,
+      },
     }
 
     jobQueue.set(jobId, job)
@@ -83,15 +86,17 @@ export async function POST(request: NextRequest) {
       jobId,
       status: 'queued',
       message: 'Export job created successfully',
-      estimatedDuration: estimateJobDuration(exportRequest)
+      estimatedDuration: estimateJobDuration(exportRequest),
     })
-
   } catch (error) {
     console.error('Error creating batch export job:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to create export job'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to create export job',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -109,30 +114,36 @@ export async function GET(request: NextRequest) {
         progress: job.progress,
         startTime: job.startTime,
         estimatedCompletion: job.estimatedCompletion,
-        metadata: job.metadata
+        metadata: job.metadata,
       }))
 
       return NextResponse.json({
         success: true,
         jobs,
         activeJobsCount: activeJobs.size,
-        totalJobsCount: jobQueue.size
+        totalJobsCount: jobQueue.size,
       })
     }
 
     if (!jobId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Job ID is required'
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Job ID is required',
+        },
+        { status: 400 }
+      )
     }
 
     const job = jobQueue.get(jobId)
     if (!job) {
-      return NextResponse.json({
-        success: false,
-        error: 'Job not found'
-      }, { status: 404 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Job not found',
+        },
+        { status: 404 }
+      )
     }
 
     if (action === 'download' && job.status === 'completed' && job.resultUrl) {
@@ -140,7 +151,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: true,
         downloadUrl: job.resultUrl,
-        metadata: job.metadata
+        metadata: job.metadata,
       })
     }
 
@@ -153,16 +164,18 @@ export async function GET(request: NextRequest) {
         startTime: job.startTime,
         estimatedCompletion: job.estimatedCompletion,
         metadata: job.metadata,
-        error: job.error
-      }
+        error: job.error,
+      },
     })
-
   } catch (error) {
     console.error('Error retrieving job status:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to retrieve job status'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to retrieve job status',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -172,18 +185,24 @@ export async function DELETE(request: NextRequest) {
     const jobId = searchParams.get('jobId')
 
     if (!jobId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Job ID is required'
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Job ID is required',
+        },
+        { status: 400 }
+      )
     }
 
     const job = jobQueue.get(jobId)
     if (!job) {
-      return NextResponse.json({
-        success: false,
-        error: 'Job not found'
-      }, { status: 404 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Job not found',
+        },
+        { status: 404 }
+      )
     }
 
     // Cancel active job if running
@@ -198,15 +217,17 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Job cancelled and removed successfully'
+      message: 'Job cancelled and removed successfully',
     })
-
   } catch (error) {
     console.error('Error cancelling job:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to cancel job'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to cancel job',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -254,7 +275,6 @@ async function processExportJob(jobId: string, exportRequest: BatchExportRequest
     job.progress = 100
     job.resultUrl = resultUrl
     job.metadata.exportSize = JSON.stringify(formatted).length
-
   } catch (error) {
     if (controller.signal.aborted) {
       job.status = 'failed'
@@ -336,8 +356,9 @@ async function processAgentPerformance(
       agentId,
       timestamp: new Date().toISOString(),
       ...agentMetrics,
-      kalchmConstant: agentOptimizer.getAgentKalchmValue ?
-        await agentOptimizer.getAgentKalchmValue(agentId) : null
+      kalchmConstant: agentOptimizer.getAgentKalchmValue
+        ? await agentOptimizer.getAgentKalchmValue(agentId)
+        : null,
     })
 
     job.progress = Math.round(((i + 1) / agents.length) * 100)
@@ -354,8 +375,12 @@ async function processConsciousnessMetrics(
 ): Promise<any[]> {
   // Mock consciousness data - in production, integrate with actual consciousness system
   const agents = [
-    'leonardo-da-vinci', 'william-shakespeare', 'albert-einstein',
-    'nikola-tesla', 'carl-jung', 'marie-curie'
+    'leonardo-da-vinci',
+    'william-shakespeare',
+    'albert-einstein',
+    'nikola-tesla',
+    'carl-jung',
+    'marie-curie',
   ]
 
   job.metadata.totalRecords = agents.length
@@ -371,7 +396,7 @@ async function processConsciousnessMetrics(
       evolutionVelocity: Math.random() * 0.5,
       kalchmConstant: 4 + Math.random() * 2,
       interactionCount: Math.floor(Math.random() * 1000),
-      lastActiveDate: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
+      lastActiveDate: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
     })
 
     job.progress = Math.round(((i + 1) / agents.length) * 100)
@@ -426,14 +451,21 @@ function validateExportRequest(request: BatchExportRequest): { valid: boolean; e
     return { valid: false, error: 'Export type is required' }
   }
 
-  if (!['kinetics_range', 'agent_performance', 'consciousness_metrics', 'custom'].includes(request.type)) {
+  if (
+    !['kinetics_range', 'agent_performance', 'consciousness_metrics', 'custom'].includes(
+      request.type
+    )
+  ) {
     return { valid: false, error: 'Invalid export type' }
   }
 
   if (request.type === 'kinetics_range') {
     const { startDate, endDate, location } = request.parameters
     if (!startDate || !endDate || !location) {
-      return { valid: false, error: 'startDate, endDate, and location are required for kinetics range export' }
+      return {
+        valid: false,
+        error: 'startDate, endDate, and location are required for kinetics range export',
+      }
     }
   }
 
@@ -456,7 +488,9 @@ function estimateJobDuration(request: BatchExportRequest): string {
     case 'kinetics_range':
       const { startDate, endDate } = request.parameters
       if (startDate && endDate) {
-        const days = Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))
+        const days = Math.ceil(
+          (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
+        )
         return `${Math.max(1, Math.ceil(days / 10))} minutes`
       }
       return '2-5 minutes'
@@ -491,9 +525,9 @@ async function formatExportData(data: any[], request: BatchExportRequest): Promi
           exportType: request.type,
           exportDate: new Date().toISOString(),
           recordCount: data.length,
-          parameters: request.parameters
+          parameters: request.parameters,
         },
-        data
+        data,
       }
 
     case 'xlsx':
@@ -501,7 +535,7 @@ async function formatExportData(data: any[], request: BatchExportRequest): Promi
       return {
         type: 'xlsx',
         metadata: { recordCount: data.length },
-        data
+        data,
       }
 
     default:
@@ -549,10 +583,10 @@ async function saveExportResult(
 
   // Store the results for download
   global.alchemicalBatchCache.set(downloadId, {
-    data: data,
-    format: format,
+    data,
+    format,
     timestamp: Date.now(),
-    filename: `alchemical-export-${jobId}.${format}`
+    filename: `alchemical-export-${jobId}.${format}`,
   })
 
   // Clean up old entries (older than 10 minutes)

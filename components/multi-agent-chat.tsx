@@ -367,7 +367,11 @@ export default function MultiAgentChat({
           {/* Current sky sync banner */}
           <div className="mt-3 flex flex-col md:flex-row items-center justify-between gap-2 p-2 bg-blue-50 dark:bg-blue-950/20 rounded">
             <div className="text-xs md:text-sm text-blue-800 dark:text-blue-200">
-              {positionsLoading ? 'Syncing with current sky…' : positionsError ? 'Unable to load current positions' : `Synced to current sky${lastUpdated ? ` as of ${lastUpdated.toLocaleTimeString()}` : ''}`}
+              {positionsLoading
+                ? 'Syncing with current sky…'
+                : positionsError
+                  ? 'Unable to load current positions'
+                  : `Synced to current sky${lastUpdated ? ` as of ${lastUpdated.toLocaleTimeString()}` : ''}`}
             </div>
             <div className="flex items-center gap-2">
               <label className="flex items-center gap-2 text-xs md:text-sm">
@@ -378,7 +382,12 @@ export default function MultiAgentChat({
                 />
                 Auto-sync to current sky
               </label>
-              <Button variant="outline" size="sm" onClick={() => refreshPositions()} disabled={positionsLoading}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refreshPositions()}
+                disabled={positionsLoading}
+              >
                 Refresh
               </Button>
             </div>
@@ -410,7 +419,9 @@ export default function MultiAgentChat({
                         </div>
                         <div className="flex items-center gap-2">
                           {autoSyncSky && (
-                            <Badge variant="secondary" className="text-xxs md:text-xs">Synced</Badge>
+                            <Badge variant="secondary" className="text-xxs md:text-xs">
+                              Synced
+                            </Badge>
                           )}
                           {agent.active && <Badge variant="default">Active</Badge>}
                         </div>
@@ -493,7 +504,8 @@ export default function MultiAgentChat({
                   <span className="text-sm text-muted-foreground">Active Agents:</span>
                   {activeAgents.map(agent => (
                     <Badge key={agent.planet} className={agent.color}>
-                      {agent.symbol} {agent.planet} in {agent.sign} {Number.isFinite(Number(agent.degree)) ? `${agent.degree}°` : ''}
+                      {agent.symbol} {agent.planet} in {agent.sign}{' '}
+                      {Number.isFinite(Number(agent.degree)) ? `${agent.degree}°` : ''}
                       {agent.planet === 'Moon' && agent.moonPhase && (
                         <span className="ml-1">{getMoonPhaseEmoji(agent.moonPhase)}</span>
                       )}

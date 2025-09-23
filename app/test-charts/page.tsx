@@ -10,7 +10,7 @@ export default function TestChartsPage() {
     hour: 12,
     minute: 0,
     latitude: 40.7128,
-    longitude: -74.0060
+    longitude: -74.006,
   }
 
   return (
@@ -21,10 +21,7 @@ export default function TestChartsPage() {
         {/* Birth Chart Test */}
         <div>
           <h2 className="text-xl font-semibold mb-4">Birth Chart Test</h2>
-          <CircularNatalHoroscope
-            birthInfo={testBirthInfo}
-            className="w-full"
-          />
+          <CircularNatalHoroscope birthInfo={testBirthInfo} className="w-full" />
         </div>
 
         {/* Current Moment Chart Test */}
@@ -37,10 +34,9 @@ export default function TestChartsPage() {
       <div className="mt-8 p-4 bg-muted rounded-lg">
         <h3 className="font-semibold mb-2">Test Status</h3>
         <p className="text-sm text-muted-foreground">
-          If you see charts above with zodiac symbols, planets, and aspects,
-          the chart visualization fix is working correctly! The charts should
-          display even when external services are unavailable thanks to our
-          local SVG generation fallback.
+          If you see charts above with zodiac symbols, planets, and aspects, the chart visualization
+          fix is working correctly! The charts should display even when external services are
+          unavailable thanks to our local SVG generation fallback.
         </p>
       </div>
     </div>

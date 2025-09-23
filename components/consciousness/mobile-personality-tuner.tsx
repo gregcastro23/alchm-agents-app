@@ -9,8 +9,20 @@ import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import {
   Brain,
   Heart,
@@ -36,7 +48,7 @@ import {
   ChevronDown,
   ChevronUp,
   Smartphone,
-  Hand
+  Hand,
 } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
 import type { PersonalityParameters } from './advanced-personality-tuner'
@@ -84,41 +96,55 @@ const DEFAULT_PARAMETERS: PersonalityParameters = {
 
 const PERSONALITY_PRESETS = {
   renaissance_master: {
-    name: "Renaissance Master",
+    name: 'Renaissance Master',
     icon: <Crown className="w-4 h-4" />,
-    description: "Balanced brilliance",
-    params: { wisdom: 85, charisma: 75, creativity: 90, analytical: 80, mysticism: 60, eloquence: 85 }
+    description: 'Balanced brilliance',
+    params: {
+      wisdom: 85,
+      charisma: 75,
+      creativity: 90,
+      analytical: 80,
+      mysticism: 60,
+      eloquence: 85,
+    },
   },
   mystic_sage: {
-    name: "Mystic Sage",
+    name: 'Mystic Sage',
     icon: <Eye className="w-4 h-4" />,
-    description: "Spiritual wisdom",
-    params: { wisdom: 90, intuition: 95, mysticism: 90, empathy: 85, mysticMode: 90, formality: 70 }
+    description: 'Spiritual wisdom',
+    params: {
+      wisdom: 90,
+      intuition: 95,
+      mysticism: 90,
+      empathy: 85,
+      mysticMode: 90,
+      formality: 70,
+    },
   },
   scientific_genius: {
-    name: "Scientific Genius",
+    name: 'Scientific Genius',
     icon: <Lightbulb className="w-4 h-4" />,
-    description: "Analytical brilliance",
-    params: { analytical: 95, creativity: 80, practicality: 85, directness: 80, scholarMode: 90 }
+    description: 'Analytical brilliance',
+    params: { analytical: 95, creativity: 80, practicality: 85, directness: 80, scholarMode: 90 },
   },
   charismatic_leader: {
-    name: "Charismatic Leader",
+    name: 'Charismatic Leader',
     icon: <Users className="w-4 h-4" />,
-    description: "Natural authority",
-    params: { charisma: 95, authority: 90, passion: 85, visionaryMode: 85, teacherMode: 80 }
+    description: 'Natural authority',
+    params: { charisma: 95, authority: 90, passion: 85, visionaryMode: 85, teacherMode: 80 },
   },
   compassionate_healer: {
-    name: "Compassionate Healer",
+    name: 'Compassionate Healer',
     icon: <Heart className="w-4 h-4" />,
-    description: "Deep empathy",
-    params: { empathy: 95, wisdom: 80, patience: 90, counselorMode: 95, humor: 60 }
+    description: 'Deep empathy',
+    params: { empathy: 95, wisdom: 80, patience: 90, counselorMode: 95, humor: 60 },
   },
   witty_philosopher: {
-    name: "Witty Philosopher",
+    name: 'Witty Philosopher',
     icon: <MessageSquare className="w-4 h-4" />,
-    description: "Humor & wisdom",
-    params: { wisdom: 85, humor: 90, eloquence: 90, charisma: 75, teacherMode: 80 }
-  }
+    description: 'Humor & wisdom',
+    params: { wisdom: 85, humor: 90, eloquence: 90, charisma: 75, teacherMode: 80 },
+  },
 }
 
 export function MobilePersonalityTuner({
@@ -126,12 +152,12 @@ export function MobilePersonalityTuner({
   monicaConstant,
   alchemicalValues,
   onParametersChange,
-  className = ""
+  className = '',
 }: MobilePersonalityTunerProps) {
   const isMobile = useIsMobile()
   const [parameters, setParameters] = useState<PersonalityParameters>({
     ...DEFAULT_PARAMETERS,
-    ...initialParameters
+    ...initialParameters,
   })
   const [activePreset, setActivePreset] = useState<string | null>(null)
   const [showAlchemicalInfluence, setShowAlchemicalInfluence] = useState(true)
@@ -139,14 +165,18 @@ export function MobilePersonalityTuner({
 
   // Calculate alchemical influence on parameters
   const calculateAlchemicalInfluence = () => {
-    const total = alchemicalValues.spirit + alchemicalValues.essence + alchemicalValues.matter + alchemicalValues.substance
+    const total =
+      alchemicalValues.spirit +
+      alchemicalValues.essence +
+      alchemicalValues.matter +
+      alchemicalValues.substance
     if (total === 0) return {}
 
     return {
       mysticism: Math.round((alchemicalValues.spirit / total) * 30),
       empathy: Math.round((alchemicalValues.essence / total) * 25),
       analytical: Math.round((alchemicalValues.matter / total) * 25),
-      practicality: Math.round((alchemicalValues.substance / total) * 20)
+      practicality: Math.round((alchemicalValues.substance / total) * 20),
     }
   }
 
@@ -157,10 +187,19 @@ export function MobilePersonalityTuner({
     if (showAlchemicalInfluence) {
       setParameters(prev => ({
         ...prev,
-        mysticism: Math.min(100, Math.max(0, prev.mysticism + (alchemicalInfluence.mysticism || 0))),
+        mysticism: Math.min(
+          100,
+          Math.max(0, prev.mysticism + (alchemicalInfluence.mysticism || 0))
+        ),
         empathy: Math.min(100, Math.max(0, prev.empathy + (alchemicalInfluence.empathy || 0))),
-        analytical: Math.min(100, Math.max(0, prev.analytical + (alchemicalInfluence.analytical || 0))),
-        practicality: Math.min(100, Math.max(0, prev.practicality + (alchemicalInfluence.practicality || 0)))
+        analytical: Math.min(
+          100,
+          Math.max(0, prev.analytical + (alchemicalInfluence.analytical || 0))
+        ),
+        practicality: Math.min(
+          100,
+          Math.max(0, prev.practicality + (alchemicalInfluence.practicality || 0))
+        ),
       }))
     }
   }, [alchemicalValues, showAlchemicalInfluence])
@@ -197,14 +236,14 @@ export function MobilePersonalityTuner({
     const score = calculatePersonalityScore()
     const { wisdom, charisma, mysticism, analytical, creativity } = parameters
 
-    if (wisdom > 80 && mysticism > 75) return "🔮 Mystical Sage"
-    if (analytical > 85 && creativity > 75) return "🧠 Brilliant Innovator"
-    if (charisma > 85 && parameters.authority > 75) return "👑 Natural Leader"
-    if (parameters.empathy > 85 && parameters.counselorMode > 80) return "💚 Compassionate Guide"
-    if (creativity > 80 && parameters.humor > 70) return "🎭 Creative Visionary"
-    if (score > 75) return "⭐ Renaissance Master"
-    if (score > 60) return "🌟 Balanced Consciousness"
-    return "🌱 Emerging Awareness"
+    if (wisdom > 80 && mysticism > 75) return '🔮 Mystical Sage'
+    if (analytical > 85 && creativity > 75) return '🧠 Brilliant Innovator'
+    if (charisma > 85 && parameters.authority > 75) return '👑 Natural Leader'
+    if (parameters.empathy > 85 && parameters.counselorMode > 80) return '💚 Compassionate Guide'
+    if (creativity > 80 && parameters.humor > 70) return '🎭 Creative Visionary'
+    if (score > 75) return '⭐ Renaissance Master'
+    if (score > 60) return '🌟 Balanced Consciousness'
+    return '🌱 Emerging Awareness'
   }
 
   const renderMobileSlider = (
@@ -214,7 +253,9 @@ export function MobilePersonalityTuner({
     description: string
   ) => {
     const isInfluenced = key in alchemicalInfluence
-    const influenceValue = isInfluenced ? alchemicalInfluence[key as keyof typeof alchemicalInfluence] || 0 : 0
+    const influenceValue = isInfluenced
+      ? alchemicalInfluence[key as keyof typeof alchemicalInfluence] || 0
+      : 0
 
     return (
       <div key={key} className="space-y-3 p-4 bg-slate-800/30 rounded-lg">
@@ -228,11 +269,13 @@ export function MobilePersonalityTuner({
               </Badge>
             )}
           </div>
-          <span className="text-lg font-mono text-slate-300 min-w-[3rem] text-right">{parameters[key]}</span>
+          <span className="text-lg font-mono text-slate-300 min-w-[3rem] text-right">
+            {parameters[key]}
+          </span>
         </div>
         <Slider
           value={[parameters[key]]}
-          onValueChange={(value) => handleParameterChange(key, value[0])}
+          onValueChange={value => handleParameterChange(key, value[0])}
           min={0}
           max={100}
           step={1}
@@ -249,7 +292,9 @@ export function MobilePersonalityTuner({
   }
 
   return (
-    <Card className={`bg-gradient-to-br from-purple-900/50 to-blue-900/50 border-purple-500/50 ${className}`}>
+    <Card
+      className={`bg-gradient-to-br from-purple-900/50 to-blue-900/50 border-purple-500/50 ${className}`}
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -258,7 +303,9 @@ export function MobilePersonalityTuner({
             </div>
             <div>
               <CardTitle className="text-purple-300 text-lg">Mobile Consciousness Tuner</CardTitle>
-              <CardDescription className="text-sm">Touch-optimized personality crafting</CardDescription>
+              <CardDescription className="text-sm">
+                Touch-optimized personality crafting
+              </CardDescription>
             </div>
           </div>
           <Button
@@ -316,11 +363,11 @@ export function MobilePersonalityTuner({
             {Object.entries(PERSONALITY_PRESETS).map(([key, preset]) => (
               <Button
                 key={key}
-                variant={activePreset === key ? "default" : "outline"}
+                variant={activePreset === key ? 'default' : 'outline'}
                 className={`h-auto p-2 text-xs ${
                   activePreset === key
-                    ? "bg-purple-600 border-purple-400"
-                    : "border-purple-500/50 text-purple-300 hover:bg-purple-900/20"
+                    ? 'bg-purple-600 border-purple-400'
+                    : 'border-purple-500/50 text-purple-300 hover:bg-purple-900/20'
                 }`}
                 onClick={() => applyPreset(key)}
               >
@@ -346,16 +393,66 @@ export function MobilePersonalityTuner({
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-3">
-              {renderMobileSlider('wisdom', 'Wisdom', <BookOpen className="w-4 h-4" />, 'Deep knowledge and understanding')}
-              {renderMobileSlider('charisma', 'Charisma', <Star className="w-4 h-4" />, 'Social magnetism and influence')}
-              {renderMobileSlider('intuition', 'Intuition', <Eye className="w-4 h-4" />, 'Spiritual sensitivity and insight')}
-              {renderMobileSlider('analytical', 'Analytical', <Brain className="w-4 h-4" />, 'Logical reasoning and structure')}
-              {renderMobileSlider('creativity', 'Creativity', <Sparkles className="w-4 h-4" />, 'Innovation and artistic expression')}
-              {renderMobileSlider('empathy', 'Empathy', <Heart className="w-4 h-4" />, 'Emotional intelligence and compassion')}
-              {renderMobileSlider('authority', 'Authority', <Crown className="w-4 h-4" />, 'Leadership and command presence')}
-              {renderMobileSlider('mysticism', 'Mysticism', <Gem className="w-4 h-4" />, 'Connection to transcendent realms')}
-              {renderMobileSlider('practicality', 'Practicality', <Settings className="w-4 h-4" />, 'Grounded, real-world effectiveness')}
-              {renderMobileSlider('humor', 'Humor', <Zap className="w-4 h-4" />, 'Wit, playfulness, and levity')}
+              {renderMobileSlider(
+                'wisdom',
+                'Wisdom',
+                <BookOpen className="w-4 h-4" />,
+                'Deep knowledge and understanding'
+              )}
+              {renderMobileSlider(
+                'charisma',
+                'Charisma',
+                <Star className="w-4 h-4" />,
+                'Social magnetism and influence'
+              )}
+              {renderMobileSlider(
+                'intuition',
+                'Intuition',
+                <Eye className="w-4 h-4" />,
+                'Spiritual sensitivity and insight'
+              )}
+              {renderMobileSlider(
+                'analytical',
+                'Analytical',
+                <Brain className="w-4 h-4" />,
+                'Logical reasoning and structure'
+              )}
+              {renderMobileSlider(
+                'creativity',
+                'Creativity',
+                <Sparkles className="w-4 h-4" />,
+                'Innovation and artistic expression'
+              )}
+              {renderMobileSlider(
+                'empathy',
+                'Empathy',
+                <Heart className="w-4 h-4" />,
+                'Emotional intelligence and compassion'
+              )}
+              {renderMobileSlider(
+                'authority',
+                'Authority',
+                <Crown className="w-4 h-4" />,
+                'Leadership and command presence'
+              )}
+              {renderMobileSlider(
+                'mysticism',
+                'Mysticism',
+                <Gem className="w-4 h-4" />,
+                'Connection to transcendent realms'
+              )}
+              {renderMobileSlider(
+                'practicality',
+                'Practicality',
+                <Settings className="w-4 h-4" />,
+                'Grounded, real-world effectiveness'
+              )}
+              {renderMobileSlider(
+                'humor',
+                'Humor',
+                <Zap className="w-4 h-4" />,
+                'Wit, playfulness, and levity'
+              )}
             </AccordionContent>
           </AccordionItem>
 
@@ -367,11 +464,36 @@ export function MobilePersonalityTuner({
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-3">
-              {renderMobileSlider('formality', 'Formality', <Shield className="w-4 h-4" />, 'Formal vs casual communication style')}
-              {renderMobileSlider('directness', 'Directness', <Target className="w-4 h-4" />, 'Blunt vs diplomatic approach')}
-              {renderMobileSlider('eloquence', 'Eloquence', <MessageSquare className="w-4 h-4" />, 'Linguistic sophistication and artistry')}
-              {renderMobileSlider('passion', 'Passion', <Heart className="w-4 h-4" />, 'Emotional intensity in expression')}
-              {renderMobileSlider('patience', 'Patience', <Activity className="w-4 h-4" />, 'Tolerance and measured responses')}
+              {renderMobileSlider(
+                'formality',
+                'Formality',
+                <Shield className="w-4 h-4" />,
+                'Formal vs casual communication style'
+              )}
+              {renderMobileSlider(
+                'directness',
+                'Directness',
+                <Target className="w-4 h-4" />,
+                'Blunt vs diplomatic approach'
+              )}
+              {renderMobileSlider(
+                'eloquence',
+                'Eloquence',
+                <MessageSquare className="w-4 h-4" />,
+                'Linguistic sophistication and artistry'
+              )}
+              {renderMobileSlider(
+                'passion',
+                'Passion',
+                <Heart className="w-4 h-4" />,
+                'Emotional intensity in expression'
+              )}
+              {renderMobileSlider(
+                'patience',
+                'Patience',
+                <Activity className="w-4 h-4" />,
+                'Tolerance and measured responses'
+              )}
             </AccordionContent>
           </AccordionItem>
 
@@ -383,11 +505,36 @@ export function MobilePersonalityTuner({
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-3">
-              {renderMobileSlider('teacherMode', 'Teacher Mode', <BookOpen className="w-4 h-4" />, 'Instructional and educational focus')}
-              {renderMobileSlider('counselorMode', 'Counselor Mode', <Heart className="w-4 h-4" />, 'Supportive and therapeutic approach')}
-              {renderMobileSlider('visionaryMode', 'Visionary Mode', <Eye className="w-4 h-4" />, 'Future-focused and inspirational')}
-              {renderMobileSlider('scholarMode', 'Scholar Mode', <BookOpen className="w-4 h-4" />, 'Research and academic orientation')}
-              {renderMobileSlider('mysticMode', 'Mystic Mode', <Gem className="w-4 h-4" />, 'Spiritual and transcendent perspective')}
+              {renderMobileSlider(
+                'teacherMode',
+                'Teacher Mode',
+                <BookOpen className="w-4 h-4" />,
+                'Instructional and educational focus'
+              )}
+              {renderMobileSlider(
+                'counselorMode',
+                'Counselor Mode',
+                <Heart className="w-4 h-4" />,
+                'Supportive and therapeutic approach'
+              )}
+              {renderMobileSlider(
+                'visionaryMode',
+                'Visionary Mode',
+                <Eye className="w-4 h-4" />,
+                'Future-focused and inspirational'
+              )}
+              {renderMobileSlider(
+                'scholarMode',
+                'Scholar Mode',
+                <BookOpen className="w-4 h-4" />,
+                'Research and academic orientation'
+              )}
+              {renderMobileSlider(
+                'mysticMode',
+                'Mystic Mode',
+                <Gem className="w-4 h-4" />,
+                'Spiritual and transcendent perspective'
+              )}
             </AccordionContent>
           </AccordionItem>
         </Accordion>
@@ -398,8 +545,8 @@ export function MobilePersonalityTuner({
             Mobile Tuning Tips
           </h4>
           <p className="text-xs text-purple-100 leading-relaxed">
-            Use touch gestures to fine-tune sliders. Tap presets for quick configurations.
-            Each parameter shapes your agent's unique consciousness expression.
+            Use touch gestures to fine-tune sliders. Tap presets for quick configurations. Each
+            parameter shapes your agent's unique consciousness expression.
           </p>
         </div>
       </CardContent>

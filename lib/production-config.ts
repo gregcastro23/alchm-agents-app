@@ -94,7 +94,7 @@ class ProductionConfigManager {
         maxMemoryUsageMB: parseInt(process.env.MAX_MEMORY_MB || '100'),
         responseTimeoutMs: parseInt(process.env.RESPONSE_TIMEOUT_MS || '15000'),
         streamingEnabled: process.env.STREAMING_ENABLED !== 'false',
-        preloadPopularAgents: process.env.PRELOAD_AGENTS !== 'false'
+        preloadPopularAgents: process.env.PRELOAD_AGENTS !== 'false',
       },
 
       cache: {
@@ -103,7 +103,7 @@ class ProductionConfigManager {
         semanticTtlSeconds: parseInt(process.env.SEMANTIC_TTL_SECONDS || '1800'),
         maxInMemoryEntries: parseInt(process.env.MAX_IN_MEMORY_ENTRIES || '100'),
         enableFallback: process.env.CACHE_FALLBACK_ENABLED !== 'false',
-        compressionEnabled: process.env.CACHE_COMPRESSION === 'true'
+        compressionEnabled: process.env.CACHE_COMPRESSION === 'true',
       },
 
       resilience: {
@@ -112,7 +112,7 @@ class ProductionConfigManager {
         maxDelayMs: parseInt(process.env.MAX_DELAY_MS || '10000'),
         circuitBreakerThreshold: parseInt(process.env.CIRCUIT_BREAKER_THRESHOLD || '5'),
         circuitBreakerTimeoutMs: parseInt(process.env.CIRCUIT_BREAKER_TIMEOUT_MS || '30000'),
-        healthCheckIntervalMs: parseInt(process.env.HEALTH_CHECK_INTERVAL_MS || '60000')
+        healthCheckIntervalMs: parseInt(process.env.HEALTH_CHECK_INTERVAL_MS || '60000'),
       },
 
       monitoring: {
@@ -120,7 +120,7 @@ class ProductionConfigManager {
         enableErrorTracking: process.env.ENABLE_ERROR_TRACKING !== 'false',
         metricsRetentionDays: parseInt(process.env.METRICS_RETENTION_DAYS || '7'),
         errorReportingLevel: (process.env.ERROR_REPORTING_LEVEL || 'warn') as any,
-        dashboardRefreshIntervalMs: parseInt(process.env.DASHBOARD_REFRESH_MS || '30000')
+        dashboardRefreshIntervalMs: parseInt(process.env.DASHBOARD_REFRESH_MS || '30000'),
       },
 
       security: {
@@ -128,7 +128,7 @@ class ProductionConfigManager {
         maxRequestsPerMinute: parseInt(process.env.MAX_REQUESTS_PER_MINUTE || '100'),
         enableApiKeyValidation: process.env.ENABLE_API_KEY_VALIDATION === 'true',
         enableCors: process.env.ENABLE_CORS !== 'false',
-        allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || ['*']
+        allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || ['*'],
       },
 
       features: {
@@ -136,8 +136,8 @@ class ProductionConfigManager {
         enableSemanticCache: process.env.ENABLE_SEMANTIC_CACHE !== 'false',
         enableAgentMemorySystem: process.env.ENABLE_AGENT_MEMORY !== 'false',
         enableStreamingResponses: process.env.ENABLE_STREAMING !== 'false',
-        enableAdvancedMetrics: process.env.ENABLE_ADVANCED_METRICS === 'true'
-      }
+        enableAdvancedMetrics: process.env.ENABLE_ADVANCED_METRICS === 'true',
+      },
     }
 
     // Environment-specific overrides
@@ -173,7 +173,7 @@ class ProductionConfigManager {
             ...config.security,
             enableRateLimit: false, // No rate limiting in dev
             enableApiKeyValidation: false,
-          }
+          },
         }
 
       case 'staging':
@@ -192,7 +192,7 @@ class ProductionConfigManager {
             ...config.security,
             enableRateLimit: true,
             maxRequestsPerMinute: 200, // Higher limit for testing
-          }
+          },
         }
 
       case 'production':
@@ -222,7 +222,7 @@ class ProductionConfigManager {
           features: {
             ...config.features,
             enableAdvancedMetrics: true, // Full monitoring in prod
-          }
+          },
         }
 
       default:
@@ -296,7 +296,7 @@ Monitoring: Metrics=${config.monitoring.enableMetrics}, Error Tracking=${config.
       if (!validation.valid) {
         return {
           success: false,
-          message: `Configuration validation failed: ${validation.errors.join(', ')}`
+          message: `Configuration validation failed: ${validation.errors.join(', ')}`,
         }
       }
 
@@ -323,12 +323,12 @@ Monitoring: Metrics=${config.monitoring.enableMetrics}, Error Tracking=${config.
 
       return {
         success: true,
-        message: `System initialized in ${config.environment} mode`
+        message: `System initialized in ${config.environment} mode`,
       }
     } catch (error) {
       return {
         success: false,
-        message: `System initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        message: `System initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       }
     }
   }
@@ -350,7 +350,7 @@ Monitoring: Metrics=${config.monitoring.enableMetrics}, Error Tracking=${config.
       version: process.env.npm_package_version || '1.0.0',
       environment: config.environment,
       uptime: process.uptime(),
-      features: config.features
+      features: config.features,
     }
   }
 

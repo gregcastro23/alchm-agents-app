@@ -59,10 +59,10 @@ export class AgentCacheSystem {
         this.redis = new Redis(process.env.REDIS_URL, {
           lazyConnect: true,
           maxRetriesPerRequest: 3,
-          retryStrategy: (times) => Math.min(times * 50, 2000),
+          retryStrategy: times => Math.min(times * 50, 2000),
         })
 
-        this.redis.on('error', (err) => {
+        this.redis.on('error', err => {
           console.warn('AgentCache Redis error (non-fatal):', err?.message || err)
           this.isRedisAvailable = false
         })
@@ -164,7 +164,7 @@ export class AgentCacheSystem {
       responseTime,
       personalityScore: personalityScore || 0.7,
       interactionCount: 1,
-      ttl: this.calculateTTL(responseTime, personalityScore)
+      ttl: this.calculateTTL(responseTime, personalityScore),
     }
 
     // Try to store in Redis first
@@ -180,7 +180,7 @@ export class AgentCacheSystem {
           ...cacheEntry,
           keywords: this.extractKeywords(userMessage),
           messageLength: userMessage.length,
-          topicClassification: this.classifyMessageTopic(userMessage)
+          topicClassification: this.classifyMessageTopic(userMessage),
         }
         await this.redis.setex(semanticKey, this.SEMANTIC_TTL, JSON.stringify(semanticData))
 
@@ -275,7 +275,7 @@ export class AgentCacheSystem {
     const lengthRatio = Math.min(length1, length2) / Math.max(length1, length2)
     const lengthSimilarity = lengthRatio
 
-    return (keywordSimilarity * 0.4) + (topicSimilarity * 0.3) + (lengthSimilarity * 0.3)
+    return keywordSimilarity * 0.4 + topicSimilarity * 0.3 + lengthSimilarity * 0.3
   }
 
   /**
@@ -283,12 +283,73 @@ export class AgentCacheSystem {
    */
   private extractKeywords(message: string): string[] {
     const stopWords = new Set([
-      'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
-      'from', 'as', 'is', 'was', 'are', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
-      'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'must',
-      'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my',
-      'your', 'his', 'her', 'its', 'our', 'their', 'this', 'that', 'these', 'those', 'what',
-      'which', 'who', 'when', 'where', 'why', 'how'
+      'the',
+      'a',
+      'an',
+      'and',
+      'or',
+      'but',
+      'in',
+      'on',
+      'at',
+      'to',
+      'for',
+      'of',
+      'with',
+      'by',
+      'from',
+      'as',
+      'is',
+      'was',
+      'are',
+      'were',
+      'be',
+      'been',
+      'being',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'could',
+      'should',
+      'may',
+      'might',
+      'can',
+      'must',
+      'i',
+      'you',
+      'he',
+      'she',
+      'it',
+      'we',
+      'they',
+      'me',
+      'him',
+      'her',
+      'us',
+      'them',
+      'my',
+      'your',
+      'his',
+      'her',
+      'its',
+      'our',
+      'their',
+      'this',
+      'that',
+      'these',
+      'those',
+      'what',
+      'which',
+      'who',
+      'when',
+      'where',
+      'why',
+      'how',
     ])
 
     return message
@@ -305,28 +366,60 @@ export class AgentCacheSystem {
   private classifyMessageTopic(message: string): string {
     const lowerMessage = message.toLowerCase()
 
-    if (lowerMessage.includes('astrolog') || lowerMessage.includes('chart') || lowerMessage.includes('planet')) {
+    if (
+      lowerMessage.includes('astrolog') ||
+      lowerMessage.includes('chart') ||
+      lowerMessage.includes('planet')
+    ) {
       return 'astrology'
     }
-    if (lowerMessage.includes('tarot') || lowerMessage.includes('card') || lowerMessage.includes('reading')) {
+    if (
+      lowerMessage.includes('tarot') ||
+      lowerMessage.includes('card') ||
+      lowerMessage.includes('reading')
+    ) {
       return 'tarot'
     }
-    if (lowerMessage.includes('wisdom') || lowerMessage.includes('advice') || lowerMessage.includes('guidance')) {
+    if (
+      lowerMessage.includes('wisdom') ||
+      lowerMessage.includes('advice') ||
+      lowerMessage.includes('guidance')
+    ) {
       return 'wisdom'
     }
-    if (lowerMessage.includes('creative') || lowerMessage.includes('art') || lowerMessage.includes('inspiration')) {
+    if (
+      lowerMessage.includes('creative') ||
+      lowerMessage.includes('art') ||
+      lowerMessage.includes('inspiration')
+    ) {
       return 'creativity'
     }
-    if (lowerMessage.includes('science') || lowerMessage.includes('research') || lowerMessage.includes('discovery')) {
+    if (
+      lowerMessage.includes('science') ||
+      lowerMessage.includes('research') ||
+      lowerMessage.includes('discovery')
+    ) {
       return 'science'
     }
-    if (lowerMessage.includes('relationship') || lowerMessage.includes('love') || lowerMessage.includes('partner')) {
+    if (
+      lowerMessage.includes('relationship') ||
+      lowerMessage.includes('love') ||
+      lowerMessage.includes('partner')
+    ) {
       return 'relationships'
     }
-    if (lowerMessage.includes('career') || lowerMessage.includes('work') || lowerMessage.includes('job')) {
+    if (
+      lowerMessage.includes('career') ||
+      lowerMessage.includes('work') ||
+      lowerMessage.includes('job')
+    ) {
       return 'career'
     }
-    if (lowerMessage.includes('health') || lowerMessage.includes('healing') || lowerMessage.includes('wellness')) {
+    if (
+      lowerMessage.includes('health') ||
+      lowerMessage.includes('healing') ||
+      lowerMessage.includes('wellness')
+    ) {
       return 'health'
     }
 
@@ -348,7 +441,7 @@ export class AgentCacheSystem {
       agentId,
       conversationType: context?.conversationType || 'individual',
       timeOfDay: this.getTimeOfDay(),
-      messageLength: context?.messageLength || 0
+      messageLength: context?.messageLength || 0,
     })
     return crypto.createHash('sha256').update(contextString).digest('hex').substring(0, 8)
   }
@@ -393,15 +486,17 @@ export class AgentCacheSystem {
     try {
       const metricsKey = this.METRICS_KEY
       const metrics = await this.redis.get(metricsKey)
-      const current: CacheMetrics = metrics ? JSON.parse(metrics) : {
-        totalRequests: 0,
-        cacheHits: 0,
-        cacheMisses: 0,
-        hitRate: 0,
-        averageResponseTime: 0,
-        savedTimeMs: 0,
-        similarityMatches: 0
-      }
+      const current: CacheMetrics = metrics
+        ? JSON.parse(metrics)
+        : {
+            totalRequests: 0,
+            cacheHits: 0,
+            cacheMisses: 0,
+            hitRate: 0,
+            averageResponseTime: 0,
+            savedTimeMs: 0,
+            similarityMatches: 0,
+          }
 
       current.totalRequests++
 
@@ -434,21 +529,23 @@ export class AgentCacheSystem {
         hitRate: 0,
         averageResponseTime: 0,
         savedTimeMs: 0,
-        similarityMatches: 0
+        similarityMatches: 0,
       }
     }
 
     try {
       const metrics = await this.redis.get(this.METRICS_KEY)
-      return metrics ? JSON.parse(metrics) : {
-        totalRequests: 0,
-        cacheHits: 0,
-        cacheMisses: 0,
-        hitRate: 0,
-        averageResponseTime: 0,
-        savedTimeMs: 0,
-        similarityMatches: 0
-      }
+      return metrics
+        ? JSON.parse(metrics)
+        : {
+            totalRequests: 0,
+            cacheHits: 0,
+            cacheMisses: 0,
+            hitRate: 0,
+            averageResponseTime: 0,
+            savedTimeMs: 0,
+            similarityMatches: 0,
+          }
     } catch (error) {
       console.warn('Get metrics error:', error)
       return {
@@ -458,7 +555,7 @@ export class AgentCacheSystem {
         hitRate: 0,
         averageResponseTime: 0,
         savedTimeMs: 0,
-        similarityMatches: 0
+        similarityMatches: 0,
       }
     }
   }
@@ -473,7 +570,7 @@ export class AgentCacheSystem {
       const patterns = [
         `${this.CACHE_PREFIX}exact:${agentId}:*`,
         `${this.CACHE_PREFIX}semantic:${agentId}:*`,
-        `${this.CACHE_PREFIX}index:${agentId}`
+        `${this.CACHE_PREFIX}index:${agentId}`,
       ]
 
       for (const pattern of patterns) {
@@ -503,7 +600,7 @@ export class AgentCacheSystem {
       'marie-curie',
       'cleopatra',
       'socrates',
-      'carl-jung'
+      'carl-jung',
     ]
 
     const commonQueries = [
@@ -511,7 +608,7 @@ export class AgentCacheSystem {
       'Tell me about your greatest insights',
       'What is your perspective on creativity?',
       'How do you approach problem-solving?',
-      'What advice would you give?'
+      'What advice would you give?',
     ]
 
     try {
@@ -528,7 +625,7 @@ export class AgentCacheSystem {
             responseTime: 1000,
             personalityScore: 0.8,
             interactionCount: 0,
-            ttl: this.DEFAULT_TTL * 2 // Longer TTL for warmup entries
+            ttl: this.DEFAULT_TTL * 2, // Longer TTL for warmup entries
           }
 
           // Store in memory for instant availability
@@ -536,7 +633,9 @@ export class AgentCacheSystem {
         }
       }
 
-      console.log(`✅ Cache warmup complete: ${popularAgents.length} agents x ${commonQueries.length} queries preloaded`)
+      console.log(
+        `✅ Cache warmup complete: ${popularAgents.length} agents x ${commonQueries.length} queries preloaded`
+      )
     } catch (error) {
       console.warn('Cache warmup error:', error)
     }
@@ -547,7 +646,7 @@ export class AgentCacheSystem {
    */
   private storeInMemoryCache(entry: CacheEntry): void {
     const key = `${this.CACHE_PREFIX}exact:${entry.agentId}:${entry.messageHash}:${entry.contextHash}`
-    const expiry = Date.now() + (entry.ttl * 1000)
+    const expiry = Date.now() + entry.ttl * 1000
 
     // Check cache size limit
     if (this.inMemoryCache.size >= this.MAX_IN_MEMORY_ENTRIES) {
@@ -657,8 +756,8 @@ export function buildCacheContext(
     conversationType: requestData.agents ? 'group' : 'individual',
     messageLength: userMessage.length,
     messageTopics: [], // Could be enhanced with NLP
-    timeOfDay: new Date().getHours() < 12 ? 'morning' :
-               new Date().getHours() < 18 ? 'afternoon' : 'evening',
-    weekday: new Date().getDay() >= 1 && new Date().getDay() <= 5
+    timeOfDay:
+      new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening',
+    weekday: new Date().getDay() >= 1 && new Date().getDay() <= 5,
   }
 }

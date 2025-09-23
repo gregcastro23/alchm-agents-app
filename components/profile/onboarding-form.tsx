@@ -28,42 +28,54 @@ export default function ProfileOnboardingForm() {
     name: '',
   })
 
-  const onChange = (key: keyof BirthInfoForm) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [key]: e.target.value }))
+  const onChange = (key: keyof BirthInfoForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm(f => ({ ...f, [key]: e.target.value }))
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
     setSuccess(false)
-    
+
     try {
       if (!form.date || !form.time) {
         throw new Error('Please provide both date and time')
       }
-      
+
       // Validate date format
       const [y, m, d] = form.date.split('-').map(v => parseInt(v, 10))
-      if (!y || !m || !d || y < 1900 || y > new Date().getFullYear() || m < 1 || m > 12 || d < 1 || d > 31) {
+      if (
+        !y ||
+        !m ||
+        !d ||
+        y < 1900 ||
+        y > new Date().getFullYear() ||
+        m < 1 ||
+        m > 12 ||
+        d < 1 ||
+        d > 31
+      ) {
         throw new Error('Please provide a valid birth date')
       }
-      
+
       // Validate time format
       const [hh, mm] = form.time.split(':').map(v => parseInt(v, 10))
       if (isNaN(hh) || isNaN(mm) || hh < 0 || hh > 23 || mm < 0 || mm > 59) {
         throw new Error('Please provide a valid birth time')
       }
-      
+
       // Validate coordinates
       const lat = parseFloat(form.latitude || '0')
       const lng = parseFloat(form.longitude || '0')
       if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-        throw new Error('Please provide valid coordinates (latitude: -90 to 90, longitude: -180 to 180)')
+        throw new Error(
+          'Please provide valid coordinates (latitude: -90 to 90, longitude: -180 to 180)'
+        )
       }
-      
+
       const birthInfo = {
         year: y,
-        month: (m - 1), // zero-based month [[memory:3826859]]
+        month: m - 1, // zero-based month [[memory:3826859]]
         day: d,
         hour: hh,
         minute: mm,
@@ -77,17 +89,16 @@ export default function ProfileOnboardingForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ birthInfo, name: form.name }),
       })
-      
+
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data?.error || `Server error: ${res.status}`)
       }
-      
+
       setSuccess(true)
       setTimeout(() => {
         router.refresh()
       }, 1000) // Brief success message before refresh
-      
     } catch (err: any) {
       setError(err?.message || 'Failed to save profile')
     } finally {
@@ -100,31 +111,32 @@ export default function ProfileOnboardingForm() {
       <CardHeader>
         <CardTitle>Complete your Alchm profile</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Your birth details help us create your personalized alchemical chart and consciousness vector.
+          Your birth details help us create your personalized alchemical chart and consciousness
+          vector.
         </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <Label htmlFor="name">Display Name</Label>
-            <Input 
-              id="name" 
-              value={form.name} 
-              onChange={onChange('name')} 
-              placeholder="Your name" 
+            <Input
+              id="name"
+              value={form.name}
+              onChange={onChange('name')}
+              placeholder="Your name"
               disabled={loading}
             />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="date">Birth Date *</Label>
-              <Input 
-                id="date" 
-                type="date" 
-                value={form.date} 
-                onChange={onChange('date')} 
-                required 
+              <Input
+                id="date"
+                type="date"
+                value={form.date}
+                onChange={onChange('date')}
+                required
                 disabled={loading}
                 max={new Date().toISOString().split('T')[0]}
                 min="1900-01-01"
@@ -132,12 +144,12 @@ export default function ProfileOnboardingForm() {
             </div>
             <div>
               <Label htmlFor="time">Birth Time *</Label>
-              <Input 
-                id="time" 
-                type="time" 
-                value={form.time} 
-                onChange={onChange('time')} 
-                required 
+              <Input
+                id="time"
+                type="time"
+                value={form.time}
+                onChange={onChange('time')}
+                required
                 disabled={loading}
               />
               <p className="text-xs text-muted-foreground mt-1">
@@ -145,48 +157,44 @@ export default function ProfileOnboardingForm() {
               </p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="latitude">Latitude</Label>
-              <Input 
-                id="latitude" 
-                value={form.latitude} 
-                onChange={onChange('latitude')} 
+              <Input
+                id="latitude"
+                value={form.latitude}
+                onChange={onChange('latitude')}
                 placeholder="40.7128 (NYC)"
                 disabled={loading}
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Range: -90 to 90
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">Range: -90 to 90</p>
             </div>
             <div>
               <Label htmlFor="longitude">Longitude</Label>
-              <Input 
-                id="longitude" 
-                value={form.longitude} 
-                onChange={onChange('longitude')} 
+              <Input
+                id="longitude"
+                value={form.longitude}
+                onChange={onChange('longitude')}
                 placeholder="-74.0060 (NYC)"
                 disabled={loading}
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Range: -180 to 180
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">Range: -180 to 180</p>
             </div>
           </div>
-          
+
           {error && (
             <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
               {error}
             </div>
           )}
-          
+
           {success && (
             <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-md">
               ✓ Profile saved successfully! Redirecting...
             </div>
           )}
-          
+
           <Button type="submit" disabled={loading || success} className="w-full">
             {loading ? 'Saving…' : success ? 'Saved!' : 'Save and Continue'}
           </Button>
@@ -195,5 +203,3 @@ export default function ProfileOnboardingForm() {
     </Card>
   )
 }
-
-

@@ -55,9 +55,9 @@ class BetaTestingSuite {
             hour: 15,
             minute: 45,
             latitude: 40.7128,
-            longitude: -74.0060
-          }
-        })
+            longitude: -74.006,
+          },
+        }),
       })
 
       const data = await response.json()
@@ -85,8 +85,8 @@ class BetaTestingSuite {
           action: 'register',
           email: 'beta-test@planetary.agents', // Existing email
           password: 'testpassword123',
-          name: 'Duplicate User'
-        })
+          name: 'Duplicate User',
+        }),
       })
 
       const data = await response.json()
@@ -110,9 +110,10 @@ class BetaTestingSuite {
           agentId: 'shakespeare',
           sessionId: 'beta-test-chat',
           userMessage: 'Tell me about your greatest works',
-          agentResponse: 'Ah, good friend, mine greatest works doth spring from love and loss! Romeo and Juliet speaks to hearts young and old, whilst Hamlet doth probe the depths of mortal contemplation. Each play a mirror to the human soul, reflecting our deepest truths and fears.',
-          location: { lat: 40.7128, lon: -74.0060 }
-        })
+          agentResponse:
+            'Ah, good friend, mine greatest works doth spring from love and loss! Romeo and Juliet speaks to hearts young and old, whilst Hamlet doth probe the depths of mortal contemplation. Each play a mirror to the human soul, reflecting our deepest truths and fears.',
+          location: { lat: 40.7128, lon: -74.006 },
+        }),
       })
 
       const data = await response.json()
@@ -124,7 +125,9 @@ class BetaTestingSuite {
 
     // Test 4: Agent Evolution Metrics
     await this.runTest('Agent Evolution Metrics', true, async () => {
-      const response = await fetch(`${this.baseUrl}/api/agent-evolution?agentId=shakespeare&action=metrics`)
+      const response = await fetch(
+        `${this.baseUrl}/api/agent-evolution?agentId=shakespeare&action=metrics`
+      )
       const data = await response.json()
 
       if (!data.metrics) throw new Error('No metrics returned')
@@ -140,7 +143,9 @@ class BetaTestingSuite {
       const results = []
 
       for (const agentId of agents) {
-        const response = await fetch(`${this.baseUrl}/api/agent-evolution?agentId=${agentId}&action=metrics`)
+        const response = await fetch(
+          `${this.baseUrl}/api/agent-evolution?agentId=${agentId}&action=metrics`
+        )
         const data = await response.json()
         if (data.metrics) results.push(agentId)
       }
@@ -167,9 +172,10 @@ class BetaTestingSuite {
           agentId: 'einstein',
           sessionId: 'persistence-test-1',
           userMessage: 'Explain relativity',
-          agentResponse: 'Time and space are interwoven fabric, mein friend! When you move through space, you also move through time. The faster you go, the slower time moves relative to stationary observer.',
-          location: { lat: 40.7128, lon: -74.0060 }
-        })
+          agentResponse:
+            'Time and space are interwoven fabric, mein friend! When you move through space, you also move through time. The faster you go, the slower time moves relative to stationary observer.',
+          location: { lat: 40.7128, lon: -74.006 },
+        }),
       })
 
       const data1 = await response1.json()
@@ -184,9 +190,10 @@ class BetaTestingSuite {
           agentId: 'einstein',
           sessionId: 'persistence-test-2',
           userMessage: 'What about E=mc²?',
-          agentResponse: 'Ach, my most famous equation! Energy equals mass times the speed of light squared. It shows that tiny amount of matter can release enormous energy.',
-          location: { lat: 40.7128, lon: -74.0060 }
-        })
+          agentResponse:
+            'Ach, my most famous equation! Energy equals mass times the speed of light squared. It shows that tiny amount of matter can release enormous energy.',
+          location: { lat: 40.7128, lon: -74.006 },
+        }),
       })
 
       const data2 = await response2.json()
@@ -215,10 +222,10 @@ class BetaTestingSuite {
             hour: 14,
             minute: 30,
             latitude: 37.7749,
-            longitude: -122.4194
+            longitude: -122.4194,
           },
-          style: 'cosmic'
-        })
+          style: 'cosmic',
+        }),
       })
 
       const data = await response.json()
@@ -232,7 +239,7 @@ class BetaTestingSuite {
       const response = await fetch(`${this.baseUrl}/api/generate-natal-sigil`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invalid: 'data' })
+        body: JSON.stringify({ invalid: 'data' }),
       })
 
       const data = await response.json()
@@ -251,7 +258,7 @@ class BetaTestingSuite {
       const response = await fetch(`${this.baseUrl}/api/agent-evolution`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: '{ invalid json'
+        body: '{ invalid json',
       })
 
       if (response.status === 200) throw new Error('Should reject malformed JSON')
@@ -264,7 +271,7 @@ class BetaTestingSuite {
       const response = await fetch(`${this.baseUrl}/api/agent-evolution`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'record' }) // Missing agentId
+        body: JSON.stringify({ action: 'record' }), // Missing agentId
       })
 
       const data = await response.json()
@@ -280,7 +287,9 @@ class BetaTestingSuite {
     // Test 11: Response Time
     await this.runTest('API Response Time', false, async () => {
       const startTime = Date.now()
-      const response = await fetch(`${this.baseUrl}/api/agent-evolution?agentId=leonardo-da-vinci&action=metrics`)
+      const response = await fetch(
+        `${this.baseUrl}/api/agent-evolution?agentId=leonardo-da-vinci&action=metrics`
+      )
       const elapsed = Date.now() - startTime
 
       if (elapsed > 2000) throw new Error(`Too slow: ${elapsed}ms`)
@@ -292,8 +301,9 @@ class BetaTestingSuite {
     // Test 12: Concurrent Requests
     await this.runTest('Concurrent Request Handling', false, async () => {
       const requests = Array.from({ length: 5 }, (_, i) =>
-        fetch(`${this.baseUrl}/api/agent-evolution?agentId=shakespeare&action=metrics`)
-          .then(r => r.json())
+        fetch(`${this.baseUrl}/api/agent-evolution?agentId=shakespeare&action=metrics`).then(r =>
+          r.json()
+        )
       )
 
       const results = await Promise.all(requests)
@@ -335,7 +345,11 @@ class BetaTestingSuite {
     })
   }
 
-  private async runTest(name: string, critical: boolean, testFn: () => Promise<string>): Promise<void> {
+  private async runTest(
+    name: string,
+    critical: boolean,
+    testFn: () => Promise<string>
+  ): Promise<void> {
     const startTime = Date.now()
 
     try {
@@ -347,7 +361,7 @@ class BetaTestingSuite {
         status: 'pass',
         duration,
         details,
-        critical
+        critical,
       })
 
       console.log(`  ✅ ${name} (${duration}ms)`)
@@ -359,7 +373,7 @@ class BetaTestingSuite {
         status: 'fail',
         duration,
         details: error.message,
-        critical
+        critical,
       })
 
       console.log(`  ❌ ${name} (${duration}ms): ${error.message}`)
@@ -405,6 +419,7 @@ class BetaTestingSuite {
 
 // Run the test suite
 const suite = new BetaTestingSuite()
-suite.runAllTests()
+suite
+  .runAllTests()
   .catch(console.error)
   .finally(() => prisma.$disconnect())

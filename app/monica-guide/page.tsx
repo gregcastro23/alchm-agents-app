@@ -56,7 +56,7 @@ interface MonicaMessage {
 }
 
 export default function MonicaGuidePage() {
-  const [sessionId] = useState('monica-' + Date.now())
+  const [sessionId] = useState(`monica-${Date.now()}`)
   const [messages, setMessages] = useState<MonicaMessage[]>([
     {
       id: 'welcome',
@@ -104,7 +104,7 @@ export default function MonicaGuidePage() {
         signal: controller.signal,
         body: JSON.stringify({
           message: currentInput,
-          sessionId: sessionId,
+          sessionId,
           includeAlchm: true,
           // Enhanced quick profile for better responses
           quickProfile: {
@@ -188,7 +188,7 @@ export default function MonicaGuidePage() {
       }
 
       const monicaMessage: MonicaMessage = {
-        id: Date.now().toString() + '_monica',
+        id: `${Date.now().toString()}_monica`,
         type: 'monica',
         content:
           monicaResponse ||
@@ -214,7 +214,7 @@ export default function MonicaGuidePage() {
       }
 
       const errorMessage: MonicaMessage = {
-        id: Date.now().toString() + '_error',
+        id: `${Date.now().toString()}_error`,
         type: 'monica',
         content: errorContent,
         timestamp: new Date(),

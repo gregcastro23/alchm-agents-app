@@ -73,7 +73,7 @@ export class AlchemicalKineticsClient {
           lon: body.lon,
           date: body.startTime.split('T')[0],
           includeElemental: body.includeElemental,
-          includePlanetary: body.includePlanetary
+          includePlanetary: body.includePlanetary,
         })
       }
       return res.json()
@@ -84,7 +84,7 @@ export class AlchemicalKineticsClient {
         lon: body.lon,
         date: body.startTime.split('T')[0],
         includeElemental: body.includeElemental,
-        includePlanetary: body.includePlanetary
+        includePlanetary: body.includePlanetary,
       })
     }
   }
@@ -101,7 +101,7 @@ export class AlchemicalKineticsClient {
       // Return a mock Response object for consistency
       return new Response(JSON.stringify({ error: 'Service temporarily unavailable' }), {
         status: 503,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
     }
   }
@@ -116,31 +116,35 @@ export class AlchemicalKineticsClient {
     return {
       timing: {
         planetaryHours: ['Sun', 'Venus', 'Mercury'],
-        currentHour: 'Sun'
+        currentHour: 'Sun',
       },
       elemental: {
-        totals: elementalTotals
+        totals: elementalTotals,
       },
-      power: [{
-        timestamp: now.toISOString(),
-        power: 0.6 + Math.random() * 0.3, // 0.6-0.9 range
-        alchemicalNumbers: {
-          spirit: 4.2 + Math.random() * 2,
-          essence: 3.8 + Math.random() * 2,
-          matter: 4.1 + Math.random() * 2,
-          substance: 3.9 + Math.random() * 2
-        }
-      }],
-      elementalVelocity: [{
-        timestamp: now.toISOString(),
-        magnitude: 0.5 + Math.random() * 0.4,
-        Fire: elementalTotals.Fire / 20,
-        Water: elementalTotals.Water / 20,
-        Air: elementalTotals.Air / 20,
-        Earth: elementalTotals.Earth / 20
-      }],
+      power: [
+        {
+          timestamp: now.toISOString(),
+          power: 0.6 + Math.random() * 0.3, // 0.6-0.9 range
+          alchemicalNumbers: {
+            spirit: 4.2 + Math.random() * 2,
+            essence: 3.8 + Math.random() * 2,
+            matter: 4.1 + Math.random() * 2,
+            substance: 3.9 + Math.random() * 2,
+          },
+        },
+      ],
+      elementalVelocity: [
+        {
+          timestamp: now.toISOString(),
+          magnitude: 0.5 + Math.random() * 0.4,
+          Fire: elementalTotals.Fire / 20,
+          Water: elementalTotals.Water / 20,
+          Air: elementalTotals.Air / 20,
+          Earth: elementalTotals.Earth / 20,
+        },
+      ],
       degraded: true,
-      fallback: true
+      fallback: true,
     }
   }
 }

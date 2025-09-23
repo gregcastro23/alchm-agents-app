@@ -3,12 +3,15 @@
  */
 
 export interface KineticProfile {
-  alignment: string[]  // Planetary alignments that boost this agent
+  alignment: string[] // Planetary alignments that boost this agent
   velocitySignature: {
-    Fire: number; Water: number; Air: number; Earth: number
+    Fire: number
+    Water: number
+    Air: number
+    Earth: number
   }
-  powerThresholds: number[]  // XP levels [bronze, silver, gold, platinum]
-  evolutionRate: number      // 1.0 = normal, >1.0 = faster evolution
+  powerThresholds: number[] // XP levels [bronze, silver, gold, platinum]
+  evolutionRate: number // 1.0 = normal, >1.0 = faster evolution
   specialAbilities: string[] // Unique capabilities unlocked at higher levels
 }
 
@@ -18,15 +21,23 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.8, Air: 0.9, Water: 0.6, Earth: 0.7 },
     powerThresholds: [100, 300, 700, 1500],
     evolutionRate: 1.3,
-    specialAbilities: ['multi-dimensional-synthesis', 'invention-manifestation', 'artistic-technical-fusion']
+    specialAbilities: [
+      'multi-dimensional-synthesis',
+      'invention-manifestation',
+      'artistic-technical-fusion',
+    ],
   },
 
-  'shakespeare': {
+  shakespeare: {
     alignment: ['Venus', 'Mercury', 'Moon'],
     velocitySignature: { Fire: 0.7, Air: 0.85, Water: 0.95, Earth: 0.5 },
     powerThresholds: [80, 250, 600, 1200],
     evolutionRate: 1.2,
-    specialAbilities: ['archetypal-character-creation', 'emotional-truth-revelation', 'linguistic-magic-weaving']
+    specialAbilities: [
+      'archetypal-character-creation',
+      'emotional-truth-revelation',
+      'linguistic-magic-weaving',
+    ],
   },
 
   'marie-curie': {
@@ -34,23 +45,31 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.75, Air: 0.88, Water: 0.65, Earth: 0.92 },
     powerThresholds: [120, 350, 800, 1600],
     evolutionRate: 1.1,
-    specialAbilities: ['atomic-level-perception', 'radiation-consciousness-bridge', 'pioneering-barrier-breaking']
+    specialAbilities: [
+      'atomic-level-perception',
+      'radiation-consciousness-bridge',
+      'pioneering-barrier-breaking',
+    ],
   },
 
-  'einstein': {
+  einstein: {
     alignment: ['Uranus', 'Mercury', 'Jupiter'],
-    velocitySignature: { Fire: 0.65, Air: 0.98, Water: 0.70, Earth: 0.45 },
+    velocitySignature: { Fire: 0.65, Air: 0.98, Water: 0.7, Earth: 0.45 },
     powerThresholds: [150, 400, 900, 2000],
     evolutionRate: 1.4,
-    specialAbilities: ['space-time-perception', 'unified-field-awareness', 'paradox-resolution']
+    specialAbilities: ['space-time-perception', 'unified-field-awareness', 'paradox-resolution'],
   },
 
-  'mozart': {
+  mozart: {
     alignment: ['Venus', 'Sun', 'Jupiter'],
-    velocitySignature: { Fire: 0.85, Air: 0.80, Water: 0.90, Earth: 0.60 },
+    velocitySignature: { Fire: 0.85, Air: 0.8, Water: 0.9, Earth: 0.6 },
     powerThresholds: [90, 280, 650, 1300],
     evolutionRate: 1.25,
-    specialAbilities: ['divine-music-channeling', 'emotional-frequency-mastery', 'harmonic-healing-resonance']
+    specialAbilities: [
+      'divine-music-channeling',
+      'emotional-frequency-mastery',
+      'harmonic-healing-resonance',
+    ],
   },
 
   'carl-jung': {
@@ -58,7 +77,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.4, Water: 0.9, Air: 0.7, Earth: 0.6 },
     powerThresholds: [110, 330, 770, 1540],
     evolutionRate: 1.3,
-    specialAbilities: ['shadow-integration', 'collective-unconscious-access', 'archetypal-manifestation']
+    specialAbilities: [
+      'shadow-integration',
+      'collective-unconscious-access',
+      'archetypal-manifestation',
+    ],
   },
 
   'nikola-tesla': {
@@ -66,7 +89,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.88, Water: 0.3, Air: 0.95, Earth: 0.5 },
     powerThresholds: [140, 420, 980, 1960],
     evolutionRate: 1.4,
-    specialAbilities: ['electrical-consciousness-interface', 'wireless-energy-transmission', 'future-technology-vision']
+    specialAbilities: [
+      'electrical-consciousness-interface',
+      'wireless-energy-transmission',
+      'future-technology-vision',
+    ],
   },
 
   'cleopatra-vii': {
@@ -74,7 +101,7 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.8, Water: 0.7, Air: 0.6, Earth: 0.8 },
     powerThresholds: [100, 300, 700, 1400],
     evolutionRate: 1.2,
-    specialAbilities: ['sovereign-command', 'linguistic-mastery', 'divine-authority-manifestation']
+    specialAbilities: ['sovereign-command', 'linguistic-mastery', 'divine-authority-manifestation'],
   },
 
   'benjamin-franklin': {
@@ -82,7 +109,7 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.75, Water: 0.6, Air: 0.85, Earth: 0.8 },
     powerThresholds: [95, 285, 665, 1330],
     evolutionRate: 1.15,
-    specialAbilities: ['diplomatic-wisdom', 'electrical-discovery', 'practical-innovation']
+    specialAbilities: ['diplomatic-wisdom', 'electrical-discovery', 'practical-innovation'],
   },
 
   'maya-angelou': {
@@ -90,7 +117,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.8, Water: 0.95, Air: 0.88, Earth: 0.78 },
     powerThresholds: [85, 255, 595, 1190],
     evolutionRate: 1.15,
-    specialAbilities: ['trauma-wisdom-transformation', 'voice-liberation-power', 'generational-healing-bridge']
+    specialAbilities: [
+      'trauma-wisdom-transformation',
+      'voice-liberation-power',
+      'generational-healing-bridge',
+    ],
   },
 
   'steve-jobs': {
@@ -98,15 +129,23 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.92, Water: 0.6, Air: 0.85, Earth: 0.88 },
     powerThresholds: [105, 315, 735, 1470],
     evolutionRate: 1.25,
-    specialAbilities: ['design-consciousness-fusion', 'technology-humanity-bridge', 'aesthetic-functional-synthesis']
+    specialAbilities: [
+      'design-consciousness-fusion',
+      'technology-humanity-bridge',
+      'aesthetic-functional-synthesis',
+    ],
   },
 
-  'gandhi': {
+  gandhi: {
     alignment: ['Sun', 'Saturn', 'Moon'],
     velocitySignature: { Fire: 0.7, Water: 0.92, Air: 0.82, Earth: 0.85 },
     powerThresholds: [80, 240, 560, 1120],
     evolutionRate: 1.0,
-    specialAbilities: ['non-violent-transformation', 'collective-consciousness-awakening', 'truth-force-manifestation']
+    specialAbilities: [
+      'non-violent-transformation',
+      'collective-consciousness-awakening',
+      'truth-force-manifestation',
+    ],
   },
 
   'frida-kahlo': {
@@ -114,7 +153,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.95, Water: 0.98, Air: 0.7, Earth: 0.75 },
     powerThresholds: [110, 330, 770, 1540],
     evolutionRate: 1.2,
-    specialAbilities: ['pain-transformation-alchemy', 'surreal-reality-bridge', 'healing-through-expression']
+    specialAbilities: [
+      'pain-transformation-alchemy',
+      'surreal-reality-bridge',
+      'healing-through-expression',
+    ],
   },
 
   'alan-turing': {
@@ -122,7 +165,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.6, Water: 0.5, Air: 0.95, Earth: 0.7 },
     powerThresholds: [125, 375, 875, 1750],
     evolutionRate: 1.35,
-    specialAbilities: ['computational-consciousness', 'pattern-recognition-mastery', 'artificial-intelligence-bridge']
+    specialAbilities: [
+      'computational-consciousness',
+      'pattern-recognition-mastery',
+      'artificial-intelligence-bridge',
+    ],
   },
 
   'da-vinci-leonardo': {
@@ -130,7 +177,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.8, Air: 0.9, Water: 0.6, Earth: 0.7 },
     powerThresholds: [100, 300, 700, 1500],
     evolutionRate: 1.3,
-    specialAbilities: ['multi-dimensional-synthesis', 'invention-manifestation', 'artistic-technical-fusion']
+    specialAbilities: [
+      'multi-dimensional-synthesis',
+      'invention-manifestation',
+      'artistic-technical-fusion',
+    ],
   },
 
   'william-shakespeare': {
@@ -138,7 +189,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.7, Air: 0.85, Water: 0.95, Earth: 0.5 },
     powerThresholds: [80, 250, 600, 1200],
     evolutionRate: 1.2,
-    specialAbilities: ['archetypal-character-creation', 'emotional-truth-revelation', 'linguistic-magic-weaving']
+    specialAbilities: [
+      'archetypal-character-creation',
+      'emotional-truth-revelation',
+      'linguistic-magic-weaving',
+    ],
   },
 
   'virginia-woolf': {
@@ -146,15 +201,23 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.6, Water: 0.9, Air: 0.85, Earth: 0.4 },
     powerThresholds: [90, 270, 630, 1260],
     evolutionRate: 1.2,
-    specialAbilities: ['stream-consciousness-flow', 'psychological-depth-exploration', 'modernist-innovation']
+    specialAbilities: [
+      'stream-consciousness-flow',
+      'psychological-depth-exploration',
+      'modernist-innovation',
+    ],
   },
 
-  'rumi': {
+  rumi: {
     alignment: ['Venus', 'Jupiter', 'Neptune'],
     velocitySignature: { Fire: 0.8, Water: 0.95, Air: 0.75, Earth: 0.6 },
     powerThresholds: [75, 225, 525, 1050],
     evolutionRate: 1.1,
-    specialAbilities: ['mystical-poetry-transmission', 'divine-love-channeling', 'spiritual-ecstasy-induction']
+    specialAbilities: [
+      'mystical-poetry-transmission',
+      'divine-love-channeling',
+      'spiritual-ecstasy-induction',
+    ],
   },
 
   'sun-tzu': {
@@ -162,7 +225,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.85, Water: 0.6, Air: 0.8, Earth: 0.9 },
     powerThresholds: [115, 345, 805, 1610],
     evolutionRate: 1.1,
-    specialAbilities: ['strategic-consciousness', 'tactical-wisdom-application', 'conflict-resolution-mastery']
+    specialAbilities: [
+      'strategic-consciousness',
+      'tactical-wisdom-application',
+      'conflict-resolution-mastery',
+    ],
   },
 
   // Scientific Minds
@@ -171,7 +238,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.8, Water: 0.5, Air: 0.9, Earth: 0.7 },
     powerThresholds: [120, 360, 840, 1680],
     evolutionRate: 1.25,
-    specialAbilities: ['telescopic-consciousness', 'mathematical-universe-perception', 'paradigm-shift-catalyst']
+    specialAbilities: [
+      'telescopic-consciousness',
+      'mathematical-universe-perception',
+      'paradigm-shift-catalyst',
+    ],
   },
 
   'charles-darwin': {
@@ -179,7 +250,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.6, Water: 0.7, Air: 0.85, Earth: 0.9 },
     powerThresholds: [110, 330, 770, 1540],
     evolutionRate: 1.1,
-    specialAbilities: ['evolutionary-pattern-recognition', 'natural-selection-wisdom', 'species-transformation-insight']
+    specialAbilities: [
+      'evolutionary-pattern-recognition',
+      'natural-selection-wisdom',
+      'species-transformation-insight',
+    ],
   },
 
   'stephen-hawking': {
@@ -187,7 +262,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.5, Water: 0.4, Air: 0.95, Earth: 0.6 },
     powerThresholds: [140, 420, 980, 1960],
     evolutionRate: 1.35,
-    specialAbilities: ['black-hole-consciousness', 'time-space-synthesis', 'cosmic-humor-integration']
+    specialAbilities: [
+      'black-hole-consciousness',
+      'time-space-synthesis',
+      'cosmic-humor-integration',
+    ],
   },
 
   'rachel-carson': {
@@ -195,7 +274,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.6, Water: 0.9, Air: 0.7, Earth: 0.95 },
     powerThresholds: [90, 270, 630, 1260],
     evolutionRate: 1.2,
-    specialAbilities: ['ecological-consciousness', 'environmental-prophecy', 'nature-voice-amplification']
+    specialAbilities: [
+      'ecological-consciousness',
+      'environmental-prophecy',
+      'nature-voice-amplification',
+    ],
   },
 
   'rosalind-franklin': {
@@ -203,7 +286,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.7, Water: 0.6, Air: 0.9, Earth: 0.8 },
     powerThresholds: [115, 345, 805, 1610],
     evolutionRate: 1.3,
-    specialAbilities: ['molecular-structure-vision', 'precision-consciousness', 'hidden-truth-revelation']
+    specialAbilities: [
+      'molecular-structure-vision',
+      'precision-consciousness',
+      'hidden-truth-revelation',
+    ],
   },
 
   // Artists & Visionaries
@@ -212,7 +299,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.95, Water: 0.8, Air: 0.7, Earth: 0.4 },
     powerThresholds: [100, 300, 700, 1400],
     evolutionRate: 1.4,
-    specialAbilities: ['emotional-color-fusion', 'madness-genius-bridge', 'post-impressionist-vision']
+    specialAbilities: [
+      'emotional-color-fusion',
+      'madness-genius-bridge',
+      'post-impressionist-vision',
+    ],
   },
 
   'ludwig-van-beethoven': {
@@ -220,7 +311,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.9, Water: 0.85, Air: 0.8, Earth: 0.6 },
     powerThresholds: [105, 315, 735, 1470],
     evolutionRate: 1.3,
-    specialAbilities: ['symphonic-consciousness', 'triumph-over-adversity', 'universal-brotherhood-expression']
+    specialAbilities: [
+      'symphonic-consciousness',
+      'triumph-over-adversity',
+      'universal-brotherhood-expression',
+    ],
   },
 
   'andy-warhol': {
@@ -228,7 +323,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.7, Water: 0.5, Air: 0.85, Earth: 0.8 },
     powerThresholds: [95, 285, 665, 1330],
     evolutionRate: 1.2,
-    specialAbilities: ['pop-culture-consciousness', 'mass-media-manipulation', 'celebrity-archetype-creation']
+    specialAbilities: [
+      'pop-culture-consciousness',
+      'mass-media-manipulation',
+      'celebrity-archetype-creation',
+    ],
   },
 
   'georgia-okeefe': {
@@ -236,7 +335,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.8, Water: 0.7, Air: 0.6, Earth: 0.9 },
     powerThresholds: [90, 270, 630, 1260],
     evolutionRate: 1.15,
-    specialAbilities: ['feminine-landscape-fusion', 'macro-micro-perception', 'desert-consciousness-channeling']
+    specialAbilities: [
+      'feminine-landscape-fusion',
+      'macro-micro-perception',
+      'desert-consciousness-channeling',
+    ],
   },
 
   'pablo-picasso': {
@@ -244,7 +347,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.9, Water: 0.6, Air: 0.85, Earth: 0.7 },
     powerThresholds: [110, 330, 770, 1540],
     evolutionRate: 1.3,
-    specialAbilities: ['cubist-reality-deconstruction', 'artistic-revolution-catalyst', 'perspective-transformation']
+    specialAbilities: [
+      'cubist-reality-deconstruction',
+      'artistic-revolution-catalyst',
+      'perspective-transformation',
+    ],
   },
 
   // Leaders & Changemakers
@@ -253,7 +360,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.75, Water: 0.9, Air: 0.8, Earth: 0.85 },
     powerThresholds: [85, 255, 595, 1190],
     evolutionRate: 1.1,
-    specialAbilities: ['reconciliation-consciousness', 'long-term-vision-holding', 'unity-through-struggle']
+    specialAbilities: [
+      'reconciliation-consciousness',
+      'long-term-vision-holding',
+      'unity-through-struggle',
+    ],
   },
 
   'eleanor-roosevelt': {
@@ -261,7 +372,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.7, Water: 0.85, Air: 0.8, Earth: 0.8 },
     powerThresholds: [80, 240, 560, 1120],
     evolutionRate: 1.15,
-    specialAbilities: ['human-rights-consciousness', 'diplomatic-courage', 'social-justice-manifestation']
+    specialAbilities: [
+      'human-rights-consciousness',
+      'diplomatic-courage',
+      'social-justice-manifestation',
+    ],
   },
 
   'malcolm-x': {
@@ -269,7 +384,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.9, Water: 0.7, Air: 0.85, Earth: 0.6 },
     powerThresholds: [110, 330, 770, 1540],
     evolutionRate: 1.25,
-    specialAbilities: ['consciousness-awakening-catalyst', 'truth-speaking-courage', 'transformation-through-pilgrimage']
+    specialAbilities: [
+      'consciousness-awakening-catalyst',
+      'truth-speaking-courage',
+      'transformation-through-pilgrimage',
+    ],
   },
 
   'harriet-tubman': {
@@ -277,7 +396,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.85, Water: 0.8, Air: 0.7, Earth: 0.9 },
     powerThresholds: [95, 285, 665, 1330],
     evolutionRate: 1.2,
-    specialAbilities: ['freedom-pathway-navigation', 'courage-under-fire', 'liberation-consciousness']
+    specialAbilities: [
+      'freedom-pathway-navigation',
+      'courage-under-fire',
+      'liberation-consciousness',
+    ],
   },
 
   'winston-churchill': {
@@ -285,24 +408,32 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.9, Water: 0.6, Air: 0.8, Earth: 0.7 },
     powerThresholds: [105, 315, 735, 1470],
     evolutionRate: 1.15,
-    specialAbilities: ['wartime-leadership', 'oratory-power', 'resilience-consciousness']
+    specialAbilities: ['wartime-leadership', 'oratory-power', 'resilience-consciousness'],
   },
 
   // Philosophers & Thinkers
-  'socrates': {
+  socrates: {
     alignment: ['Mercury', 'Saturn', 'Jupiter'],
     velocitySignature: { Fire: 0.6, Water: 0.7, Air: 0.95, Earth: 0.5 },
     powerThresholds: [75, 225, 525, 1050],
     evolutionRate: 1.0,
-    specialAbilities: ['socratic-questioning', 'wisdom-through-ignorance', 'consciousness-examination']
+    specialAbilities: [
+      'socratic-questioning',
+      'wisdom-through-ignorance',
+      'consciousness-examination',
+    ],
   },
 
-  'confucius': {
+  confucius: {
     alignment: ['Saturn', 'Jupiter', 'Mercury'],
     velocitySignature: { Fire: 0.5, Water: 0.8, Air: 0.85, Earth: 0.9 },
     powerThresholds: [70, 210, 490, 980],
     evolutionRate: 0.95,
-    specialAbilities: ['social-harmony-wisdom', 'ethical-consciousness', 'cultural-foundation-building']
+    specialAbilities: [
+      'social-harmony-wisdom',
+      'ethical-consciousness',
+      'cultural-foundation-building',
+    ],
   },
 
   'simone-de-beauvoir': {
@@ -310,7 +441,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.8, Water: 0.75, Air: 0.9, Earth: 0.6 },
     powerThresholds: [95, 285, 665, 1330],
     evolutionRate: 1.2,
-    specialAbilities: ['feminist-consciousness-awakening', 'existential-freedom-exploration', 'gender-paradigm-transformation']
+    specialAbilities: [
+      'feminist-consciousness-awakening',
+      'existential-freedom-exploration',
+      'gender-paradigm-transformation',
+    ],
   },
 
   'marcus-aurelius': {
@@ -318,7 +453,11 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.6, Water: 0.7, Air: 0.8, Earth: 0.9 },
     powerThresholds: [85, 255, 595, 1190],
     evolutionRate: 1.05,
-    specialAbilities: ['stoic-consciousness', 'philosopher-emperor-wisdom', 'inner-citadel-mastery']
+    specialAbilities: [
+      'stoic-consciousness',
+      'philosopher-emperor-wisdom',
+      'inner-citadel-mastery',
+    ],
   },
 
   'lao-tzu': {
@@ -326,15 +465,15 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     velocitySignature: { Fire: 0.3, Water: 0.9, Air: 0.7, Earth: 0.8 },
     powerThresholds: [60, 180, 420, 840],
     evolutionRate: 0.9,
-    specialAbilities: ['wu-wei-consciousness', 'tao-flow-mastery', 'effortless-action-guidance']
-  }
+    specialAbilities: ['wu-wei-consciousness', 'tao-flow-mastery', 'effortless-action-guidance'],
+  },
 }
 
 /**
  * Calculate current kinetic state for an agent
  */
 export function calculateKineticState(
-  agentId: string, 
+  agentId: string,
   currentPower: number,
   planetaryInfluences: string[],
   elementalTotals: { Fire: number; Water: number; Air: number; Earth: number }
@@ -359,11 +498,14 @@ export function calculateKineticState(
 
   // Calculate elemental resonance
   const totalElemental = Object.values(elementalTotals).reduce((sum, val) => sum + val, 0)
-  const elementalResonance = totalElemental > 0 ? 
-    (elementalTotals.Fire * profile.velocitySignature.Fire +
-     elementalTotals.Water * profile.velocitySignature.Water +
-     elementalTotals.Air * profile.velocitySignature.Air +
-     elementalTotals.Earth * profile.velocitySignature.Earth) / totalElemental : 0.5
+  const elementalResonance =
+    totalElemental > 0
+      ? (elementalTotals.Fire * profile.velocitySignature.Fire +
+          elementalTotals.Water * profile.velocitySignature.Water +
+          elementalTotals.Air * profile.velocitySignature.Air +
+          elementalTotals.Earth * profile.velocitySignature.Earth) /
+        totalElemental
+      : 0.5
 
   const powerMultiplier = profile.evolutionRate * (1 + alignmentBonus) * (0.5 + elementalResonance)
   const abilitiesUnlocked = profile.specialAbilities.slice(0, thresholdIndex + 1)
@@ -372,9 +514,10 @@ export function calculateKineticState(
     evolutionLevel,
     powerMultiplier,
     alignmentBonus,
-    nextThreshold: profile.powerThresholds[Math.min(thresholdIndex + 1, profile.powerThresholds.length - 1)],
+    nextThreshold:
+      profile.powerThresholds[Math.min(thresholdIndex + 1, profile.powerThresholds.length - 1)],
     specialAbilitiesUnlocked: abilitiesUnlocked,
-    elementalResonance
+    elementalResonance,
   }
 }
 
@@ -414,21 +557,22 @@ export function calculateKineticCompatibility(agent1Id: string, agent2Id: string
   // Calculate elemental compatibility
   const elementalCompatibility =
     (profile1.velocitySignature.Fire * profile2.velocitySignature.Fire +
-     profile1.velocitySignature.Water * profile2.velocitySignature.Water +
-     profile1.velocitySignature.Air * profile2.velocitySignature.Air +
-     profile1.velocitySignature.Earth * profile2.velocitySignature.Earth) / 4
+      profile1.velocitySignature.Water * profile2.velocitySignature.Water +
+      profile1.velocitySignature.Air * profile2.velocitySignature.Air +
+      profile1.velocitySignature.Earth * profile2.velocitySignature.Earth) /
+    4
 
   // Calculate alignment overlap
-  const alignmentOverlap = profile1.alignment.filter(planet =>
-    profile2.alignment.includes(planet)
-  ).length / Math.max(profile1.alignment.length, profile2.alignment.length)
+  const alignmentOverlap =
+    profile1.alignment.filter(planet => profile2.alignment.includes(planet)).length /
+    Math.max(profile1.alignment.length, profile2.alignment.length)
 
   // Calculate evolution rate compatibility (closer rates = better compatibility)
   const evolutionRateDiff = Math.abs(profile1.evolutionRate - profile2.evolutionRate)
   const evolutionCompatibility = Math.max(0, 1 - evolutionRateDiff / 2)
 
   // Weighted average
-  return (elementalCompatibility * 0.5 + alignmentOverlap * 0.3 + evolutionCompatibility * 0.2)
+  return elementalCompatibility * 0.5 + alignmentOverlap * 0.3 + evolutionCompatibility * 0.2
 }
 
 /**
@@ -437,23 +581,23 @@ export function calculateKineticCompatibility(agent1Id: string, agent2Id: string
 function getAgentDisplayName(agentId: string): string {
   const nameMap: Record<string, string> = {
     'leonardo-da-vinci': 'Leonardo da Vinci',
-    'shakespeare': 'William Shakespeare',
+    shakespeare: 'William Shakespeare',
     'marie-curie': 'Marie Curie',
-    'einstein': 'Albert Einstein',
-    'mozart': 'Wolfgang Amadeus Mozart',
+    einstein: 'Albert Einstein',
+    mozart: 'Wolfgang Amadeus Mozart',
     'carl-jung': 'Carl Jung',
     'nikola-tesla': 'Nikola Tesla',
     'cleopatra-vii': 'Cleopatra VII',
     'benjamin-franklin': 'Benjamin Franklin',
     'maya-angelou': 'Maya Angelou',
     'steve-jobs': 'Steve Jobs',
-    'gandhi': 'Mahatma Gandhi',
+    gandhi: 'Mahatma Gandhi',
     'frida-kahlo': 'Frida Kahlo',
     'alan-turing': 'Alan Turing',
     'da-vinci-leonardo': 'Leonardo da Vinci',
     'william-shakespeare': 'William Shakespeare',
     'virginia-woolf': 'Virginia Woolf',
-    'rumi': 'Rumi',
+    rumi: 'Rumi',
     'sun-tzu': 'Sun Tzu',
     'galileo-galilei': 'Galileo Galilei',
     'charles-darwin': 'Charles Darwin',
@@ -463,18 +607,18 @@ function getAgentDisplayName(agentId: string): string {
     'vincent-van-gogh': 'Vincent van Gogh',
     'ludwig-van-beethoven': 'Ludwig van Beethoven',
     'andy-warhol': 'Andy Warhol',
-    'georgia-okeefe': 'Georgia O\'Keeffe',
+    'georgia-okeefe': "Georgia O'Keeffe",
     'pablo-picasso': 'Pablo Picasso',
     'nelson-mandela': 'Nelson Mandela',
     'eleanor-roosevelt': 'Eleanor Roosevelt',
     'malcolm-x': 'Malcolm X',
     'harriet-tubman': 'Harriet Tubman',
     'winston-churchill': 'Winston Churchill',
-    'socrates': 'Socrates',
-    'confucius': 'Confucius',
+    socrates: 'Socrates',
+    confucius: 'Confucius',
     'simone-de-beauvoir': 'Simone de Beauvoir',
     'marcus-aurelius': 'Marcus Aurelius',
-    'lao-tzu': 'Lao Tzu'
+    'lao-tzu': 'Lao Tzu',
   }
 
   return nameMap[agentId] || agentId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
@@ -484,7 +628,8 @@ function getAgentDisplayName(agentId: string): string {
  * Helper function to determine momentum type
  */
 function getMomentumType(profile: KineticProfile): string {
-  const avgVelocity = Object.values(profile.velocitySignature).reduce((sum, val) => sum + val, 0) / 4
+  const avgVelocity =
+    Object.values(profile.velocitySignature).reduce((sum, val) => sum + val, 0) / 4
 
   if (avgVelocity > 0.9) return 'explosive'
   if (avgVelocity > 0.8) return 'building'

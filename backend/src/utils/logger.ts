@@ -27,10 +27,10 @@ export const logger = winston.createLogger({
     winston.format((info: any) => {
       try {
         if (info?.req && (info.req as any).user?.id) {
-          info.userId = (info.req as any).user.id;
+          info.userId = (info.req as any).user.id
         }
       } catch {}
-      return info;
+      return info
     })(),
     logFormat === 'json' ? productionFormat : developmentFormat
   ),
@@ -38,32 +38,36 @@ export const logger = winston.createLogger({
   transports: [
     // Console transport
     new winston.transports.Console({
-      stderrLevels: ['error']
-    })
-  ]
+      stderrLevels: ['error'],
+    }),
+  ],
 })
 
 // Add file transports in production
 if (process.env.NODE_ENV === 'production') {
-  logger.add(new winston.transports.File({
-    filename: 'logs/error.log',
-    level: 'error',
-    maxsize: 10485760, // 10MB
-    maxFiles: 5
-  }))
-  
-  logger.add(new winston.transports.File({
-    filename: 'logs/combined.log',
-    maxsize: 10485760, // 10MB
-    maxFiles: 10
-  }))
+  logger.add(
+    new winston.transports.File({
+      filename: 'logs/error.log',
+      level: 'error',
+      maxsize: 10485760, // 10MB
+      maxFiles: 5,
+    })
+  )
+
+  logger.add(
+    new winston.transports.File({
+      filename: 'logs/combined.log',
+      maxsize: 10485760, // 10MB
+      maxFiles: 10,
+    })
+  )
 }
 
 // Create a stream for morgan middleware
 export const loggerStream = {
   write: (message: string) => {
     logger.info(message.trim())
-  }
+  },
 }
 
 export default logger

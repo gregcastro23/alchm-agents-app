@@ -7,20 +7,15 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Planetary Agents - Consciousness Evolution Platform',
-  description: 'Revolutionary consciousness evolution through AI-powered planetary agents and real-time cosmic integration',
+  description:
+    'Revolutionary consciousness evolution through AI-powered planetary agents and real-time cosmic integration',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
       <body className={inter.className}>
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

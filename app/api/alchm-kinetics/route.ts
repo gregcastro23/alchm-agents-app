@@ -101,19 +101,23 @@ export async function GET(req: Request) {
       const smoothingFactor = 0.2 // 20% influence from neighbors
 
       const smoothedTotals = {
-        spirit: s.totals.spirit * (1 - smoothingFactor) +
-                (prev.totals.spirit + next.totals.spirit) * smoothingFactor / 2,
-        essence: s.totals.essence * (1 - smoothingFactor) +
-                 (prev.totals.essence + next.totals.essence) * smoothingFactor / 2,
-        matter: s.totals.matter * (1 - smoothingFactor) +
-                (prev.totals.matter + next.totals.matter) * smoothingFactor / 2,
-        substance: s.totals.substance * (1 - smoothingFactor) +
-                  (prev.totals.substance + next.totals.substance) * smoothingFactor / 2,
+        spirit:
+          s.totals.spirit * (1 - smoothingFactor) +
+          ((prev.totals.spirit + next.totals.spirit) * smoothingFactor) / 2,
+        essence:
+          s.totals.essence * (1 - smoothingFactor) +
+          ((prev.totals.essence + next.totals.essence) * smoothingFactor) / 2,
+        matter:
+          s.totals.matter * (1 - smoothingFactor) +
+          ((prev.totals.matter + next.totals.matter) * smoothingFactor) / 2,
+        substance:
+          s.totals.substance * (1 - smoothingFactor) +
+          ((prev.totals.substance + next.totals.substance) * smoothingFactor) / 2,
       }
 
       return {
         ...s,
-        totals: smoothedTotals
+        totals: smoothedTotals,
       }
     })
     // Mercury triad smoothing applied for traditional calibration
@@ -216,21 +220,44 @@ export async function GET(req: Request) {
 
       // Calculus relationship validation
       try {
-        if (samples.length >= 2 && elementalVelocity.length >= 2 && elementalMomentum.length >= 2 && power.length >= 2) {
-          const calculusSamples = samples.slice(0, Math.min(samples.length, elementalVelocity.length, elementalMomentum.length, power.length)).map((sample, i) => {
-            // Calculate inertia from sample data if not provided
-            const inertia = sample.inertia || Math.max(1, 1 + (sample.Matter || 0) + (sample.totals?.Earth || 0) + (sample.Substance || 0) / 2)
-            
-            return {
-              t: new Date(sample.timestamp),
-              elements: sample.totals,
-              velocity: elementalVelocity[i]?.v || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
-              momentum: elementalMomentum[i]?.p || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
-              inertia,
-              energy: sample.Energy,
-              power: power[i]?.power || 0
-            }
-          })
+        if (
+          samples.length >= 2 &&
+          elementalVelocity.length >= 2 &&
+          elementalMomentum.length >= 2 &&
+          power.length >= 2
+        ) {
+          const calculusSamples = samples
+            .slice(
+              0,
+              Math.min(
+                samples.length,
+                elementalVelocity.length,
+                elementalMomentum.length,
+                power.length
+              )
+            )
+            .map((sample, i) => {
+              // Calculate inertia from sample data if not provided
+              const inertia =
+                sample.inertia ||
+                Math.max(
+                  1,
+                  1 +
+                    (sample.Matter || 0) +
+                    (sample.totals?.Earth || 0) +
+                    (sample.Substance || 0) / 2
+                )
+
+              return {
+                t: new Date(sample.timestamp),
+                elements: sample.totals,
+                velocity: elementalVelocity[i]?.v || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
+                momentum: elementalMomentum[i]?.p || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
+                inertia,
+                energy: sample.Energy,
+                power: power[i]?.power || 0,
+              }
+            })
 
           const calculusValidation = validateCalculusRelationships(calculusSamples)
           traditionalValidation.calculusValidation = calculusValidation
@@ -240,7 +267,7 @@ export async function GET(req: Request) {
         traditionalValidation.calculusValidation = {
           isValid: false,
           errors: [`Calculus validation failed: ${error.message}`],
-          warnings: []
+          warnings: [],
         }
       }
     }

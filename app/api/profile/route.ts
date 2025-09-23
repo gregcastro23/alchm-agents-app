@@ -1,8 +1,24 @@
 import { NextResponse } from 'next/server'
+import { addDays, formatISO } from 'date-fns'
+import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { generateAccurateHoroscope } from '@/lib/monica/horoscope-generator'
+import { generateAlchmForBirthInfo } from '@/lib/alchemizer'
+import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
 
 export const revalidate = 0
+
+const BirthDataSchema = z.object({
+  year: z.number().int().min(1900).max(2100),
+  month: z.number().int().min(0).max(11),
+  day: z.number().int().min(1).max(31),
+  hour: z.number().int().min(0).max(23),
+  minute: z.number().int().min(0).max(59),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  locationName: z.string().min(1).max(200).optional(),
+})
 
 export async function PATCH(req: Request) {
   try {
@@ -10,74 +26,145 @@ export async function PATCH(req: Request) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
+
     const userId = session.user.id
     const body = await req.json().catch(() => ({}))
-    const birthInfo = body?.birthInfo
-    const name = body?.name
-    const avatarUrl = body?.avatarUrl
+    const name = typeof body?.name === 'string' ? body.name : undefined
+    const avatarUrl = typeof body?.avatarUrl === 'string' ? body.avatarUrl : undefined
+    const rawBirthInfo = body?.birthInfo
+    const sharing = body?.sharingPreferences
 
-    if (!birthInfo || typeof birthInfo !== 'object') {
-      return NextResponse.json({ error: 'Missing or invalid birthInfo' }, { status: 400 })
+    if (!rawBirthInfo) {
+      return NextResponse.json({ error: 'Missing birthInfo' }, { status: 400 })
     }
 
-    // Validate birthInfo structure
-    const requiredFields = ['year', 'month', 'day', 'hour', 'minute', 'latitude', 'longitude']
-    for (const field of requiredFields) {
-      if (typeof birthInfo[field] !== 'number') {
-        return NextResponse.json(
-          { error: `Invalid birthInfo: ${field} must be a number` },
-          { status: 400 }
-        )
-      }
-    }
-
-    // Validate ranges
-    const currentYear = new Date().getFullYear()
-    if (birthInfo.year < 1900 || birthInfo.year > currentYear) {
+    const parsedBirth = BirthDataSchema.safeParse(rawBirthInfo)
+    if (!parsedBirth.success) {
       return NextResponse.json(
-        { error: `Birth year must be between 1900 and ${currentYear}` },
+        { error: 'Invalid birthInfo', details: parsedBirth.error.format() },
         { status: 400 }
       )
     }
 
-    if (birthInfo.month < 0 || birthInfo.month > 11) {
-      return NextResponse.json(
-        { error: 'Birth month must be between 0 and 11 (zero-based)' },
-        { status: 400 }
-      )
-    }
+    const birthInfo = parsedBirth.data
 
-    if (birthInfo.latitude < -90 || birthInfo.latitude > 90) {
-      return NextResponse.json(
-        { error: 'Latitude must be between -90 and 90' },
-        { status: 400 }
-      )
-    }
+    const birthDate = new Date(
+      Date.UTC(birthInfo.year, birthInfo.month, birthInfo.day, birthInfo.hour, birthInfo.minute)
+    )
 
-    if (birthInfo.longitude < -180 || birthInfo.longitude > 180) {
-      return NextResponse.json(
-        { error: 'Longitude must be between -180 and 180' },
-        { status: 400 }
-      )
-    }
+    // Generate natal chart and alchemical metrics
+    const horoscope = generateAccurateHoroscope({
+      year: birthInfo.year,
+      month: birthInfo.month + 1,
+      day: birthInfo.day,
+      hour: birthInfo.hour,
+      minute: birthInfo.minute,
+      latitude: birthInfo.latitude,
+      longitude: birthInfo.longitude,
+    })
 
-    const profile = await prisma.profile.upsert({
+    const alchm = await generateAlchmForBirthInfo({
+      birthDate: formatISO(birthDate, { representation: 'date' }),
+      birthTime: `${String(birthInfo.hour).padStart(2, '0')}:${String(birthInfo.minute).padStart(2, '0')}`,
+    })
+
+    const spirit = alchm?.['Alchemy Effects']?.['Total Spirit'] || 0
+    const essence = alchm?.['Alchemy Effects']?.['Total Essence'] || 0
+    const matter = alchm?.['Alchemy Effects']?.['Total Matter'] || 0
+    const substance = alchm?.['Alchemy Effects']?.['Total Substance'] || 0
+
+    const monica = calculateMonicaConstant({
+      spirit,
+      essence,
+      matter,
+      substance,
+      Heat: alchm?.Heat || 0,
+      Entropy: alchm?.Entropy || 0,
+      Reactivity: alchm?.Reactivity || 0,
+      Energy: alchm?.Energy || 0,
+    })
+
+    const profile = await prisma.userProfile.upsert({
       where: { userId },
       update: {
-        birthInfo: birthInfo as any,
-        ...(name ? { name } : {}),
-        ...(avatarUrl ? { avatarUrl } : {}),
+        birthDate,
+        birthTime: `${String(birthInfo.hour).padStart(2, '0')}:${String(birthInfo.minute).padStart(2, '0')}`,
+        birthLocation: {
+          name: birthInfo.locationName || 'Unknown',
+          latitude: birthInfo.latitude,
+          longitude: birthInfo.longitude,
+        },
+        natalChart: horoscope,
+        monicaConstant: monica.value,
+        dominantElement: alchm?.['Dominant Element'] || 'Fire',
+        ...(typeof sharing?.allowPublicAgents === 'boolean'
+          ? { allowPublicAgents: sharing.allowPublicAgents }
+          : {}),
+        ...(typeof sharing?.shareChartWithAgents === 'boolean'
+          ? { shareChartWithAgents: sharing.shareChartWithAgents }
+          : {}),
       },
       create: {
         userId,
-        birthInfo: birthInfo as any,
-        name: name || 'Explorer',
-        avatarUrl: avatarUrl || null,
+        birthDate,
+        birthTime: `${String(birthInfo.hour).padStart(2, '0')}:${String(birthInfo.minute).padStart(2, '0')}`,
+        birthLocation: {
+          name: birthInfo.locationName || 'Unknown',
+          latitude: birthInfo.latitude,
+          longitude: birthInfo.longitude,
+        },
+        natalChart: horoscope,
+        monicaConstant: monica.value,
+        dominantElement: alchm?.['Dominant Element'] || 'Fire',
       },
     })
 
-    return NextResponse.json({ profile }, { status: 200 })
+    if (name || avatarUrl) {
+      await prisma.profile.upsert({
+        where: { userId },
+        update: {
+          ...(name ? { name } : {}),
+          ...(avatarUrl ? { avatarUrl } : {}),
+          birthInfo: {
+            year: birthInfo.year,
+            month: birthInfo.month,
+            day: birthInfo.day,
+            hour: birthInfo.hour,
+            minute: birthInfo.minute,
+            latitude: birthInfo.latitude,
+            longitude: birthInfo.longitude,
+          },
+        },
+        create: {
+          userId,
+          name: name || 'Explorer',
+          avatarUrl: avatarUrl || null,
+          birthInfo: {
+            year: birthInfo.year,
+            month: birthInfo.month,
+            day: birthInfo.day,
+            hour: birthInfo.hour,
+            minute: birthInfo.minute,
+            latitude: birthInfo.latitude,
+            longitude: birthInfo.longitude,
+          },
+        },
+      })
+    }
+
+    return NextResponse.json({
+      profile,
+      calculations: {
+        monicaConstant: monica,
+        alchemy: {
+          spirit,
+          essence,
+          matter,
+          substance,
+          dominantElement: alchm?.['Dominant Element'] || 'Fire',
+        },
+      },
+    })
   } catch (e: any) {
     console.error('Profile update error:', e)
     return NextResponse.json(
@@ -93,8 +180,15 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    const profile = await prisma.profile.findUnique({ where: { userId: session.user.id } })
-    return NextResponse.json({ profile }, { status: 200 })
+    const [basicProfile, detailedProfile] = await Promise.all([
+      prisma.profile.findUnique({ where: { userId: session.user.id } }),
+      prisma.userProfile.findUnique({ where: { userId: session.user.id } }),
+    ])
+
+    return NextResponse.json({
+      profile: detailedProfile,
+      presentation: basicProfile,
+    })
   } catch (e: any) {
     return NextResponse.json(
       { error: 'Failed to load profile', details: e?.message || String(e) },
@@ -102,5 +196,3 @@ export async function GET() {
     )
   }
 }
-
-

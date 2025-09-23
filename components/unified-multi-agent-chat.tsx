@@ -30,7 +30,7 @@ import {
   Download,
   Share,
   Eye,
-  EyeOff
+  EyeOff,
 } from 'lucide-react'
 
 import type {
@@ -41,7 +41,7 @@ import type {
   CouncilPreset,
   AgentFilter,
   ChatSession,
-  MonicaRole
+  MonicaRole,
 } from '@/lib/unified-agent-types'
 import type { CraftedAgent } from '@/lib/agent-types'
 import { unifiedAgentFactory } from '@/lib/unified-agent-factory'
@@ -105,7 +105,7 @@ export function UnifiedMultiAgentChat({
   enableAutoSync = false,
   isOpen,
   onClose,
-  title = "Consciousness Council",
+  title = 'Consciousness Council',
   variant = 'mixed',
   theme = 'default',
   messageStyle = 'default',
@@ -122,9 +122,8 @@ export function UnifiedMultiAgentChat({
   allowAgentMixing = false,
   customHeader,
   onSessionUpdate,
-  onAgentEvolution
+  onAgentEvolution,
 }: UnifiedMultiAgentChatProps) {
-
   // Core state
   const [availableAgents, setAvailableAgents] = useState<UnifiedAgent[]>([])
   const [selectedAgents, setSelectedAgents] = useState<UnifiedAgent[]>([])
@@ -188,9 +187,9 @@ export function UnifiedMultiAgentChat({
           bridgeEras: true,
           moderateDiscussion: monicaRole === 'moderator',
           contextualGuidance: true,
-          groupDynamicsAnalysis: true
+          groupDynamicsAnalysis: true,
         },
-        specializations: ['Group Dynamics', 'Consciousness Evolution', 'Multi-Agent Coordination']
+        specializations: ['Group Dynamics', 'Consciousness Evolution', 'Multi-Agent Coordination'],
       })
       setMonicaAgent(monica)
     } else if (!monicaIncluded && monicaAgent) {
@@ -206,7 +205,7 @@ export function UnifiedMultiAgentChat({
         agents: [...selectedAgents, ...(monicaAgent ? [monicaAgent] : [])],
         messages,
         groupDynamics: groupDynamics || currentSession.groupDynamics,
-        lastMessageAt: new Date()
+        lastMessageAt: new Date(),
       }
       setCurrentSession(updatedSession)
       onSessionUpdate(updatedSession)
@@ -215,8 +214,11 @@ export function UnifiedMultiAgentChat({
 
   // Filter available agents based on search and filters
   const filteredAgents = availableAgents.filter(agent => {
-    if (searchQuery && !agent.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !agent.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+    if (
+      searchQuery &&
+      !agent.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !agent.title.toLowerCase().includes(searchQuery.toLowerCase())
+    ) {
       return false
     }
 
@@ -228,7 +230,10 @@ export function UnifiedMultiAgentChat({
       return false
     }
 
-    if (agentFilter.consciousnessLevel && !agentFilter.consciousnessLevel.includes(agent.consciousness.level)) {
+    if (
+      agentFilter.consciousnessLevel &&
+      !agentFilter.consciousnessLevel.includes(agent.consciousness.level)
+    ) {
       return false
     }
 
@@ -236,16 +241,19 @@ export function UnifiedMultiAgentChat({
   })
 
   // Agent selection handlers
-  const handleAgentSelect = useCallback((agent: UnifiedAgent) => {
-    if (selectedAgents.length >= maxAgents) {
-      return
-    }
+  const handleAgentSelect = useCallback(
+    (agent: UnifiedAgent) => {
+      if (selectedAgents.length >= maxAgents) {
+        return
+      }
 
-    if (!selectedAgents.find(a => a.id === agent.id)) {
-      const updatedAgent = { ...agent, active: true, status: 'idle' as const }
-      setSelectedAgents(prev => [...prev, updatedAgent])
-    }
-  }, [selectedAgents, maxAgents])
+      if (!selectedAgents.find(a => a.id === agent.id)) {
+        const updatedAgent = { ...agent, active: true, status: 'idle' as const }
+        setSelectedAgents(prev => [...prev, updatedAgent])
+      }
+    },
+    [selectedAgents, maxAgents]
+  )
 
   const handleAgentRemove = useCallback((agentId: string) => {
     setSelectedAgents(prev => prev.filter(a => a.id !== agentId))
@@ -263,7 +271,7 @@ export function UnifiedMultiAgentChat({
       id: `msg-${Date.now()}`,
       role: 'user',
       content: inputMessage.trim(),
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     setMessages(prev => [...prev, userMessage])
@@ -271,10 +279,12 @@ export function UnifiedMultiAgentChat({
     setIsLoading(true)
 
     // Update agent status to thinking
-    setSelectedAgents(prev => prev.map(agent => ({
-      ...agent,
-      status: 'thinking' as const
-    })))
+    setSelectedAgents(prev =>
+      prev.map(agent => ({
+        ...agent,
+        status: 'thinking' as const,
+      }))
+    )
 
     try {
       // Call unified API endpoint
@@ -286,15 +296,15 @@ export function UnifiedMultiAgentChat({
           message: inputMessage.trim(),
           context: {
             sessionHistory: messages,
-            groupDynamics: groupDynamics,
+            groupDynamics,
             enableMemoryPersistence,
             realtimeUpdates: realTimeUpdates,
             variant,
             modelOverrides,
             theme,
-            messageStyle
-          }
-        })
+            messageStyle,
+          },
+        }),
       })
 
       if (!response.ok) throw new Error('Failed to get response')
@@ -314,7 +324,7 @@ export function UnifiedMultiAgentChat({
         consciousnessLevel: selectedAgents.find(a => a.id === res.agentId)?.consciousness.level,
         timestamp: new Date(),
         processingTime: res.processingTime,
-        metadata: res.metadata
+        metadata: res.metadata,
       }))
 
       setMessages(prev => [...prev, ...agentMessages])
@@ -330,7 +340,6 @@ export function UnifiedMultiAgentChat({
           onAgentEvolution(evolution.agentId, evolution.changes)
         })
       }
-
     } catch (error) {
       console.error('Failed to send message:', error)
 
@@ -341,32 +350,42 @@ export function UnifiedMultiAgentChat({
         content: 'I apologize, but there was an issue processing your message. Please try again.',
         timestamp: new Date(),
         agentName: 'System',
-        agentColor: '#ef4444'
+        agentColor: '#ef4444',
       }
       setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
 
       // Reset agent status
-      setSelectedAgents(prev => prev.map(agent => ({
-        ...agent,
-        status: 'idle' as const
-      })))
+      setSelectedAgents(prev =>
+        prev.map(agent => ({
+          ...agent,
+          status: 'idle' as const,
+        }))
+      )
     }
-  }, [inputMessage, isLoading, selectedAgents, monicaAgent, messages, groupDynamics, enableMemoryPersistence, realTimeUpdates, onAgentEvolution])
+  }, [
+    inputMessage,
+    isLoading,
+    selectedAgents,
+    monicaAgent,
+    messages,
+    groupDynamics,
+    enableMemoryPersistence,
+    realTimeUpdates,
+    onAgentEvolution,
+  ])
 
   // Render agent selection panel
   const renderAgentSelection = () => (
     <Card className="mb-4">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Select Agents ({selectedAgents.length}/{maxAgents})</CardTitle>
+          <CardTitle className="text-lg">
+            Select Agents ({selectedAgents.length}/{maxAgents})
+          </CardTitle>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSettings(!showSettings)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)}>
               <Settings className="w-4 h-4" />
             </Button>
             <Button
@@ -384,7 +403,7 @@ export function UnifiedMultiAgentChat({
           <Input
             placeholder="Search agents..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className="flex-1"
           />
           <Button variant="outline" size="sm">
@@ -395,14 +414,11 @@ export function UnifiedMultiAgentChat({
         {/* Monica toggle */}
         {allowMonica && (
           <div className="flex items-center gap-2 mt-2 p-2 bg-violet-50 rounded-lg">
-            <Checkbox
-              checked={monicaIncluded}
-              onCheckedChange={handleMonicaToggle}
-            />
+            <Checkbox checked={monicaIncluded} onCheckedChange={handleMonicaToggle} />
             <span className="text-sm font-medium">Include Monica as {monicaRole}</span>
             <select
               value={monicaRole}
-              onChange={(e) => setMonicaRole(e.target.value as MonicaRole['type'])}
+              onChange={e => setMonicaRole(e.target.value as MonicaRole['type'])}
               className="ml-auto text-xs bg-white border rounded px-2 py-1"
             >
               <option value="guide">Guide</option>
@@ -427,7 +443,9 @@ export function UnifiedMultiAgentChat({
                     className="flex items-center gap-2 bg-white border rounded-lg px-3 py-2"
                   >
                     <Avatar className="w-6 h-6">
-                      <AvatarFallback style={{ backgroundColor: agent.appearance.color, color: 'white' }}>
+                      <AvatarFallback
+                        style={{ backgroundColor: agent.appearance.color, color: 'white' }}
+                      >
                         {agent.appearance.symbol}
                       </AvatarFallback>
                     </Avatar>
@@ -463,7 +481,9 @@ export function UnifiedMultiAgentChat({
                 >
                   <div className="flex items-center gap-2">
                     <Avatar className="w-8 h-8">
-                      <AvatarFallback style={{ backgroundColor: agent.appearance.color, color: 'white' }}>
+                      <AvatarFallback
+                        style={{ backgroundColor: agent.appearance.color, color: 'white' }}
+                      >
                         {agent.appearance.symbol}
                       </AvatarFallback>
                     </Avatar>
@@ -500,11 +520,13 @@ export function UnifiedMultiAgentChat({
           >
             {message.role === 'agent' && (
               <Avatar className="w-8 h-8 flex-shrink-0">
-                <AvatarFallback style={{
-                  backgroundColor: message.agentColor || '#6b7280',
-                  color: 'white',
-                  fontSize: '12px'
-                }}>
+                <AvatarFallback
+                  style={{
+                    backgroundColor: message.agentColor || '#6b7280',
+                    color: 'white',
+                    fontSize: '12px',
+                  }}
+                >
                   {message.agentSymbol || message.agentName?.[0] || '?'}
                 </AvatarFallback>
               </Avatar>
@@ -525,33 +547,32 @@ export function UnifiedMultiAgentChat({
                     </Badge>
                   )}
                   {message.processingTime && (
-                    <span className="text-xs text-gray-500">
-                      ({message.processingTime}ms)
-                    </span>
+                    <span className="text-xs text-gray-500">({message.processingTime}ms)</span>
                   )}
                 </div>
               )}
 
-              <div className={`p-3 rounded-lg ${
-                message.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-900'
-              }`}>
+              <div
+                className={`p-3 rounded-lg ${
+                  message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'
+                }`}
+              >
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
 
-                {message.metadata?.synthesizedInsights && message.metadata.synthesizedInsights.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-gray-200">
-                    <div className="text-xs font-medium text-gray-600 mb-1">Insights:</div>
-                    <ul className="text-xs text-gray-600 space-y-1">
-                      {message.metadata.synthesizedInsights.map((insight, idx) => (
-                        <li key={idx} className="flex items-start gap-1">
-                          <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                          {insight}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                {message.metadata?.synthesizedInsights &&
+                  message.metadata.synthesizedInsights.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      <div className="text-xs font-medium text-gray-600 mb-1">Insights:</div>
+                      <ul className="text-xs text-gray-600 space-y-1">
+                        {message.metadata.synthesizedInsights.map((insight, idx) => (
+                          <li key={idx} className="flex items-start gap-1">
+                            <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                            {insight}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
               </div>
 
               <div className="text-xs text-gray-500 mt-1">
@@ -579,7 +600,9 @@ export function UnifiedMultiAgentChat({
               <div className="bg-gray-100 rounded-lg p-3">
                 <div className="flex items-center gap-2">
                   <Activity className="w-4 h-4 animate-spin" />
-                  <span className="text-sm text-gray-600">Processing consciousness patterns...</span>
+                  <span className="text-sm text-gray-600">
+                    Processing consciousness patterns...
+                  </span>
                 </div>
               </div>
             </div>
@@ -597,13 +620,13 @@ export function UnifiedMultiAgentChat({
       <div className="flex gap-2">
         <Input
           value={inputMessage}
-          onChange={(e) => setInputMessage(e.target.value)}
+          onChange={e => setInputMessage(e.target.value)}
           placeholder={
             selectedAgents.length === 0
-              ? "Select agents to start the conversation..."
+              ? 'Select agents to start the conversation...'
               : `Ask your council of ${selectedAgents.length} ${selectedAgents.length === 1 ? 'agent' : 'agents'}...`
           }
-          onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+          onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
           disabled={selectedAgents.length === 0 || isLoading}
           className="flex-1"
         />
@@ -641,14 +664,14 @@ export function UnifiedMultiAgentChat({
 
         <div className="flex-1 flex flex-col min-h-0">
           {/* Custom header */}
-          {customHeader && (
-            <div className="mb-4">
-              {customHeader}
-            </div>
-          )}
+          {customHeader && <div className="mb-4">{customHeader}</div>}
 
           {/* View mode tabs */}
-          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="flex-1 flex flex-col">
+          <Tabs
+            value={viewMode}
+            onValueChange={v => setViewMode(v as any)}
+            className="flex-1 flex flex-col"
+          >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="chat">Chat</TabsTrigger>
               {enableGroupDynamics && <TabsTrigger value="dynamics">Dynamics</TabsTrigger>}
@@ -685,7 +708,9 @@ export function UnifiedMultiAgentChat({
                             <h4 className="text-sm font-medium mb-2">Dominant Elements</h4>
                             <div className="flex gap-1">
                               {groupDynamics.consciousnessNetwork.dominantElements.map(element => (
-                                <Badge key={element} variant="outline">{element}</Badge>
+                                <Badge key={element} variant="outline">
+                                  {element}
+                                </Badge>
                               ))}
                             </div>
                           </div>
@@ -695,7 +720,10 @@ export function UnifiedMultiAgentChat({
                           <h4 className="text-sm font-medium mb-2">Active Synergies</h4>
                           <div className="space-y-1">
                             {groupDynamics.consciousnessNetwork.synergies.map((synergy, idx) => (
-                              <div key={idx} className="text-sm text-green-600 flex items-center gap-1">
+                              <div
+                                key={idx}
+                                className="text-sm text-green-600 flex items-center gap-1"
+                              >
                                 <Sparkles className="w-3 h-3" />
                                 {synergy}
                               </div>
@@ -707,7 +735,10 @@ export function UnifiedMultiAgentChat({
                           <h4 className="text-sm font-medium mb-2">Group Connections</h4>
                           <div className="space-y-2">
                             {groupDynamics.consciousnessNetwork.connections.map((conn, idx) => (
-                              <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                              >
                                 <span className="text-sm">
                                   {selectedAgents.find(a => a.id === conn.agent1)?.name} ↔{' '}
                                   {selectedAgents.find(a => a.id === conn.agent2)?.name}

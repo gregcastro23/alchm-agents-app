@@ -88,7 +88,7 @@ export class BatchPerformanceMonitor extends EventEmitter {
     queueLength: { warning: 50, critical: 100 },
     averageProcessingTime: { warning: 30000, critical: 60000 }, // ms
     failureRate: { warning: 0.05, critical: 0.15 },
-    throughputDrop: { warning: 0.2, critical: 0.5 } // percentage drop
+    throughputDrop: { warning: 0.2, critical: 0.5 }, // percentage drop
   }
 
   constructor(options?: {
@@ -153,12 +153,12 @@ export class BatchPerformanceMonitor extends EventEmitter {
           averageProcessingTime: queueMetrics.averageProcessingTime,
           throughputPerMinute: Math.round(queueMetrics.throughputPerHour / 60),
           queueLength: queueMetrics.queuedJobs,
-          activeWorkers: queueMetrics.resourceUtilization.activeWorkers
+          activeWorkers: queueMetrics.resourceUtilization.activeWorkers,
         },
         systemResources: await this.collectSystemMetrics(),
         bottlenecks: [],
         optimizationRecommendations: [],
-        alerts: []
+        alerts: [],
       }
 
       // Store metrics
@@ -170,7 +170,6 @@ export class BatchPerformanceMonitor extends EventEmitter {
       }
 
       this.emit('metricsCollected', metrics)
-
     } catch (error) {
       console.error('Error collecting performance metrics:', error)
     }
@@ -182,7 +181,7 @@ export class BatchPerformanceMonitor extends EventEmitter {
       cpuUsage: 30 + Math.random() * 40, // 30-70%
       memoryUsage: 40 + Math.random() * 30, // 40-70%
       diskIO: Math.random() * 100,
-      networkLatency: 10 + Math.random() * 40 // 10-50ms
+      networkLatency: 10 + Math.random() * 40, // 10-50ms
     }
   }
 
@@ -214,7 +213,7 @@ export class BatchPerformanceMonitor extends EventEmitter {
       metrics: latestMetrics,
       bottlenecks,
       recommendations,
-      alerts
+      alerts,
     })
 
     if (alerts.length > 0) {
@@ -229,12 +228,15 @@ export class BatchPerformanceMonitor extends EventEmitter {
     if (metrics.systemResources.cpuUsage > this.thresholds.cpuUsage.warning) {
       bottlenecks.push({
         type: 'cpu',
-        severity: metrics.systemResources.cpuUsage > this.thresholds.cpuUsage.critical ? 'critical' : 'high',
+        severity:
+          metrics.systemResources.cpuUsage > this.thresholds.cpuUsage.critical
+            ? 'critical'
+            : 'high',
         description: `High CPU usage: ${metrics.systemResources.cpuUsage.toFixed(1)}%`,
         impact: 'Slower job processing, increased latency',
         suggestedAction: 'Consider scaling workers or optimizing job algorithms',
         affectedJobs: [],
-        metrics: { cpuUsage: metrics.systemResources.cpuUsage }
+        metrics: { cpuUsage: metrics.systemResources.cpuUsage },
       })
     }
 
@@ -242,12 +244,15 @@ export class BatchPerformanceMonitor extends EventEmitter {
     if (metrics.systemResources.memoryUsage > this.thresholds.memoryUsage.warning) {
       bottlenecks.push({
         type: 'memory',
-        severity: metrics.systemResources.memoryUsage > this.thresholds.memoryUsage.critical ? 'critical' : 'high',
+        severity:
+          metrics.systemResources.memoryUsage > this.thresholds.memoryUsage.critical
+            ? 'critical'
+            : 'high',
         description: `High memory usage: ${metrics.systemResources.memoryUsage.toFixed(1)}%`,
         impact: 'Risk of out-of-memory errors, job failures',
         suggestedAction: 'Implement memory optimization or add more RAM',
         affectedJobs: [],
-        metrics: { memoryUsage: metrics.systemResources.memoryUsage }
+        metrics: { memoryUsage: metrics.systemResources.memoryUsage },
       })
     }
 
@@ -255,25 +260,34 @@ export class BatchPerformanceMonitor extends EventEmitter {
     if (metrics.batchProcessing.queueLength > this.thresholds.queueLength.warning) {
       bottlenecks.push({
         type: 'queue',
-        severity: metrics.batchProcessing.queueLength > this.thresholds.queueLength.critical ? 'critical' : 'medium',
+        severity:
+          metrics.batchProcessing.queueLength > this.thresholds.queueLength.critical
+            ? 'critical'
+            : 'medium',
         description: `Large queue backlog: ${metrics.batchProcessing.queueLength} jobs`,
         impact: 'Increased wait times, delayed job completion',
         suggestedAction: 'Scale workers or optimize job prioritization',
         affectedJobs: [],
-        metrics: { queueLength: metrics.batchProcessing.queueLength }
+        metrics: { queueLength: metrics.batchProcessing.queueLength },
       })
     }
 
     // Processing time bottleneck
-    if (metrics.batchProcessing.averageProcessingTime > this.thresholds.averageProcessingTime.warning) {
+    if (
+      metrics.batchProcessing.averageProcessingTime > this.thresholds.averageProcessingTime.warning
+    ) {
       bottlenecks.push({
         type: 'cpu',
-        severity: metrics.batchProcessing.averageProcessingTime > this.thresholds.averageProcessingTime.critical ? 'critical' : 'medium',
+        severity:
+          metrics.batchProcessing.averageProcessingTime >
+          this.thresholds.averageProcessingTime.critical
+            ? 'critical'
+            : 'medium',
         description: `Slow processing: ${(metrics.batchProcessing.averageProcessingTime / 1000).toFixed(1)}s average`,
         impact: 'Reduced throughput, poor user experience',
         suggestedAction: 'Optimize job algorithms or increase worker capacity',
         affectedJobs: [],
-        metrics: { averageProcessingTime: metrics.batchProcessing.averageProcessingTime }
+        metrics: { averageProcessingTime: metrics.batchProcessing.averageProcessingTime },
       })
     }
 
@@ -298,8 +312,8 @@ export class BatchPerformanceMonitor extends EventEmitter {
         actionItems: [
           'Increase maxConcurrentJobs setting',
           'Add additional worker nodes',
-          'Implement auto-scaling based on queue depth'
-        ]
+          'Implement auto-scaling based on queue depth',
+        ],
       })
     }
 
@@ -315,13 +329,14 @@ export class BatchPerformanceMonitor extends EventEmitter {
         actionItems: [
           'Profile and optimize slow job types',
           'Implement batch processing for similar jobs',
-          'Add caching for repeated operations'
-        ]
+          'Add caching for repeated operations',
+        ],
       })
     }
 
     // High failure rate optimization
-    const failureRate = metrics.batchProcessing.failedJobs / Math.max(1, metrics.batchProcessing.totalJobs)
+    const failureRate =
+      metrics.batchProcessing.failedJobs / Math.max(1, metrics.batchProcessing.totalJobs)
     if (failureRate > 0.05) {
       recommendations.push({
         category: 'configuration',
@@ -333,8 +348,8 @@ export class BatchPerformanceMonitor extends EventEmitter {
         actionItems: [
           'Implement better retry mechanisms',
           'Add input validation',
-          'Improve error logging and monitoring'
-        ]
+          'Improve error logging and monitoring',
+        ],
       })
     }
 
@@ -350,8 +365,8 @@ export class BatchPerformanceMonitor extends EventEmitter {
         actionItems: [
           'Implement job data streaming',
           'Add memory cleanup routines',
-          'Optimize data structures'
-        ]
+          'Optimize data structures',
+        ],
       })
     }
 
@@ -363,44 +378,56 @@ export class BatchPerformanceMonitor extends EventEmitter {
 
     // CPU usage alert
     if (metrics.systemResources.cpuUsage > this.thresholds.cpuUsage.warning) {
-      alerts.push(this.createAlert(
-        'cpu_high',
-        metrics.systemResources.cpuUsage > this.thresholds.cpuUsage.critical ? 'critical' : 'warning',
-        'High CPU Usage',
-        `CPU usage is ${metrics.systemResources.cpuUsage.toFixed(1)}%`,
-        'cpu_usage',
-        metrics.systemResources.cpuUsage,
-        this.thresholds.cpuUsage.warning,
-        ['batch-processor', 'workers']
-      ))
+      alerts.push(
+        this.createAlert(
+          'cpu_high',
+          metrics.systemResources.cpuUsage > this.thresholds.cpuUsage.critical
+            ? 'critical'
+            : 'warning',
+          'High CPU Usage',
+          `CPU usage is ${metrics.systemResources.cpuUsage.toFixed(1)}%`,
+          'cpu_usage',
+          metrics.systemResources.cpuUsage,
+          this.thresholds.cpuUsage.warning,
+          ['batch-processor', 'workers']
+        )
+      )
     }
 
     // Memory usage alert
     if (metrics.systemResources.memoryUsage > this.thresholds.memoryUsage.warning) {
-      alerts.push(this.createAlert(
-        'memory_high',
-        metrics.systemResources.memoryUsage > this.thresholds.memoryUsage.critical ? 'critical' : 'warning',
-        'High Memory Usage',
-        `Memory usage is ${metrics.systemResources.memoryUsage.toFixed(1)}%`,
-        'memory_usage',
-        metrics.systemResources.memoryUsage,
-        this.thresholds.memoryUsage.warning,
-        ['batch-processor', 'workers']
-      ))
+      alerts.push(
+        this.createAlert(
+          'memory_high',
+          metrics.systemResources.memoryUsage > this.thresholds.memoryUsage.critical
+            ? 'critical'
+            : 'warning',
+          'High Memory Usage',
+          `Memory usage is ${metrics.systemResources.memoryUsage.toFixed(1)}%`,
+          'memory_usage',
+          metrics.systemResources.memoryUsage,
+          this.thresholds.memoryUsage.warning,
+          ['batch-processor', 'workers']
+        )
+      )
     }
 
     // Queue length alert
     if (metrics.batchProcessing.queueLength > this.thresholds.queueLength.warning) {
-      alerts.push(this.createAlert(
-        'queue_backlog',
-        metrics.batchProcessing.queueLength > this.thresholds.queueLength.critical ? 'critical' : 'warning',
-        'Queue Backlog',
-        `${metrics.batchProcessing.queueLength} jobs in queue`,
-        'queue_length',
-        metrics.batchProcessing.queueLength,
-        this.thresholds.queueLength.warning,
-        ['job-queue', 'workers']
-      ))
+      alerts.push(
+        this.createAlert(
+          'queue_backlog',
+          metrics.batchProcessing.queueLength > this.thresholds.queueLength.critical
+            ? 'critical'
+            : 'warning',
+          'Queue Backlog',
+          `${metrics.batchProcessing.queueLength} jobs in queue`,
+          'queue_length',
+          metrics.batchProcessing.queueLength,
+          this.thresholds.queueLength.warning,
+          ['job-queue', 'workers']
+        )
+      )
     }
 
     return alerts
@@ -426,7 +453,7 @@ export class BatchPerformanceMonitor extends EventEmitter {
       currentValue,
       thresholdValue,
       affectedComponents,
-      acknowledged: false
+      acknowledged: false,
     }
   }
 
@@ -440,7 +467,7 @@ export class BatchPerformanceMonitor extends EventEmitter {
       jobId: job.id,
       type: job.type,
       duration: job.actualDuration,
-      status: 'completed'
+      status: 'completed',
     })
   }
 
@@ -451,7 +478,7 @@ export class BatchPerformanceMonitor extends EventEmitter {
       type: job.type,
       duration: job.actualDuration,
       status: 'failed',
-      error: job.error
+      error: job.error,
     })
   }
 
@@ -470,16 +497,18 @@ export class BatchPerformanceMonitor extends EventEmitter {
     return this.metrics.length > 0 ? this.metrics[this.metrics.length - 1] : null
   }
 
-  getMetricsHistory(timeframe: 'last_hour' | 'last_day' | 'all' = 'last_hour'): PerformanceMetrics[] {
+  getMetricsHistory(
+    timeframe: 'last_hour' | 'last_day' | 'all' = 'last_hour'
+  ): PerformanceMetrics[] {
     const now = Date.now()
     let cutoffTime: number
 
     switch (timeframe) {
       case 'last_hour':
-        cutoffTime = now - (60 * 60 * 1000)
+        cutoffTime = now - 60 * 60 * 1000
         break
       case 'last_day':
-        cutoffTime = now - (24 * 60 * 60 * 1000)
+        cutoffTime = now - 24 * 60 * 60 * 1000
         break
       default:
         return [...this.metrics]
@@ -502,12 +531,17 @@ export class BatchPerformanceMonitor extends EventEmitter {
     return false
   }
 
-  getTrendAnalysis(metric: string, timeframe: TrendAnalysis['timeframe'] = 'last_hour'): TrendAnalysis | null {
+  getTrendAnalysis(
+    metric: string,
+    timeframe: TrendAnalysis['timeframe'] = 'last_hour'
+  ): TrendAnalysis | null {
     const history = this.getMetricsHistory(timeframe)
     if (history.length < 2) return null
 
     // Extract metric values
-    const values = history.map(m => this.extractMetricValue(m, metric)).filter(v => v !== null) as number[]
+    const values = history
+      .map(m => this.extractMetricValue(m, metric))
+      .filter(v => v !== null) as number[]
     if (values.length < 2) return null
 
     // Calculate trend
@@ -531,8 +565,8 @@ export class BatchPerformanceMonitor extends EventEmitter {
       changePercent,
       prediction: {
         nextValue: last + (last - first), // Simple linear prediction
-        confidence: Math.max(0.1, Math.min(0.9, 1 - Math.abs(changePercent) / 100))
-      }
+        confidence: Math.max(0.1, Math.min(0.9, 1 - Math.abs(changePercent) / 100)),
+      },
     }
   }
 
@@ -574,6 +608,6 @@ export class BatchPerformanceMonitor extends EventEmitter {
 // Singleton instance
 export const batchPerformanceMonitor = new BatchPerformanceMonitor({
   monitoringInterval: 15000, // 15 seconds
-  analysisInterval: 60000,   // 1 minute
-  autoStart: true
+  analysisInterval: 60000, // 1 minute
+  autoStart: true,
 })

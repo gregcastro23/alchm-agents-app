@@ -75,20 +75,20 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
     birthDate: agent.birthDate || '1970-01-01',
     birthTime: agent.birthTime || '12:00',
     latitude: agent.birthLocation?.latitude || 0,
-    longitude: agent.birthLocation?.longitude || 0
+    longitude: agent.birthLocation?.longitude || 0,
   }))
 
   // Use batch live consciousness for all group agents
   const {
     multiAgentData: liveConsciousnessData,
     loading: liveLoading,
-    error: liveError
+    error: liveError,
   } = useLiveConsciousness(
     undefined, // No single birth chart
     {
       agents: agentBirthCharts,
       refreshInterval: 120000, // 2 minutes for group chat
-      autoRefresh: true
+      autoRefresh: true,
     }
   )
 
@@ -204,17 +204,19 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                   sessionId,
                   userMessage: input.trim(),
                   agentResponse: resp.content,
-                  location: userLocation
-                })
+                  location: userLocation,
+                }),
               })
 
               // Update evolution data for UI display
-              const evolutionResponse = await fetch(`/api/agent-evolution?agentId=${agent.id}&action=metrics`)
+              const evolutionResponse = await fetch(
+                `/api/agent-evolution?agentId=${agent.id}&action=metrics`
+              )
               if (evolutionResponse.ok) {
                 const evolutionData = await evolutionResponse.json()
                 setAgentEvolutionData(prev => ({
                   ...prev,
-                  [agent.id]: evolutionData.metrics
+                  [agent.id]: evolutionData.metrics,
                 }))
               }
             } catch (error) {
@@ -304,7 +306,7 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
           {selectedAgents.map(agent => {
             const evolutionData = agentEvolutionData[agent.id]
             const liveData = liveConsciousnessData?.[agent.name]
-            
+
             return (
               <div
                 key={agent.id}
@@ -317,11 +319,11 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                   {agent.appearance.symbol.charAt(0)}
                 </div>
                 <span className="text-xs font-medium">{agent.name}</span>
-                
+
                 {/* Live MC or birth MC fallback */}
                 {liveData ? (
-                  <Badge 
-                    size="sm" 
+                  <Badge
+                    size="sm"
                     className="text-xs"
                     title={`Birth MC: ${liveData.birthMC.toFixed(2)} → Live MC: ${liveData.liveMC.toFixed(2)}`}
                   >
@@ -337,7 +339,7 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                     MC: {agent.consciousness.monicaConstant.toFixed(1)}
                   </Badge>
                 )}
-                
+
                 {/* Live consciousness level */}
                 {liveData && (
                   <Badge
@@ -348,7 +350,7 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                     {liveData.liveConsciousnessLevel}
                   </Badge>
                 )}
-                
+
                 {evolutionData && (
                   <Badge
                     size="sm"
@@ -362,16 +364,20 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
             )
           })}
         </div>
-        
+
         {/* Live Consciousness Summary */}
         {liveConsciousnessData && Object.keys(liveConsciousnessData).length > 0 && (
           <div className="mt-2 p-2 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded text-xs">
             <div className="flex items-center justify-between">
               <span className="text-purple-700 dark:text-purple-300">
                 {(() => {
-                  const validData = Object.values(liveConsciousnessData).filter(d => d && 'liveMC' in d)
-                  const avgLiveMC = validData.length > 0 ?
-                    validData.reduce((sum, d) => sum + (d.liveMC || 0), 0) / validData.length : 0
+                  const validData = Object.values(liveConsciousnessData).filter(
+                    d => d && 'liveMC' in d
+                  )
+                  const avgLiveMC =
+                    validData.length > 0
+                      ? validData.reduce((sum, d) => sum + (d.liveMC || 0), 0) / validData.length
+                      : 0
                   const enhancedCount = validData.filter(d => (d.mcChange || 0) > 0.1).length
                   return `Group Avg MC: ${avgLiveMC.toFixed(2)} • ${enhancedCount} enhanced`
                 })()}
@@ -409,25 +415,31 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                         <>
                           <div className="flex justify-between">
                             <span className="text-gray-600">Live MC:</span>
-                            <span className={`font-medium ${liveConsciousnessData[agent.name].mcChange > 0 ? 'text-green-600' : liveConsciousnessData[agent.name].mcChange < 0 ? 'text-red-600' : ''}`}>
+                            <span
+                              className={`font-medium ${liveConsciousnessData[agent.name].mcChange > 0 ? 'text-green-600' : liveConsciousnessData[agent.name].mcChange < 0 ? 'text-red-600' : ''}`}
+                            >
                               {liveConsciousnessData[agent.name].liveMC.toFixed(3)}
                               {liveConsciousnessData[agent.name].mcChange !== 0 && (
                                 <span className="ml-1">
-                                  ({liveConsciousnessData[agent.name].mcChange > 0 ? '+' : ''}{liveConsciousnessData[agent.name].mcPercentChange.toFixed(1)}%)
+                                  ({liveConsciousnessData[agent.name].mcChange > 0 ? '+' : ''}
+                                  {liveConsciousnessData[agent.name].mcPercentChange.toFixed(1)}%)
                                 </span>
                               )}
                             </span>
                           </div>
-                          
+
                           <div className="flex justify-between">
                             <span className="text-gray-600">Transit Effect:</span>
                             <span className="font-medium text-purple-600">
-                              {liveConsciousnessData[agent.name].dominantTransitEffect?.replace(/_/g, ' ') || 'neutral'}
+                              {liveConsciousnessData[agent.name].dominantTransitEffect?.replace(
+                                /_/g,
+                                ' '
+                              ) || 'neutral'}
                             </span>
                           </div>
                         </>
                       )}
-                      
+
                       <div className="flex justify-between">
                         <span className="text-gray-600">Consciousness Velocity:</span>
                         <span className="font-medium">
@@ -444,9 +456,7 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
 
                       <div className="flex justify-between">
                         <span className="text-gray-600">Total Growth:</span>
-                        <span className="font-medium">
-                          {evolutionData.totalGrowth.toFixed(2)}
-                        </span>
+                        <span className="font-medium">{evolutionData.totalGrowth.toFixed(2)}</span>
                       </div>
 
                       <div className="flex justify-between">
@@ -461,15 +471,13 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                     <div className="mt-2">
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-xs text-gray-600">Evolution Progress</span>
-                        <span className="text-xs font-medium">
-                          {evolutionData.evolutionStage}
-                        </span>
+                        <span className="text-xs font-medium">{evolutionData.evolutionStage}</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-1.5">
                         <div
                           className="bg-gradient-to-r from-purple-500 to-blue-500 h-1.5 rounded-full transition-all duration-300"
                           style={{
-                            width: `${Math.min((evolutionData.totalGrowth / (evolutionData.nextThreshold || 1)) * 100, 100)}%`
+                            width: `${Math.min((evolutionData.totalGrowth / (evolutionData.nextThreshold || 1)) * 100, 100)}%`,
                           }}
                         />
                       </div>

@@ -1,7 +1,7 @@
 /**
  * Load Testing for Planetary Agents Backend
  * =========================================
- * 
+ *
  * Comprehensive stress testing to ensure the system can handle
  * production load with thousands of concurrent users.
  */
@@ -20,8 +20,8 @@ const LOAD_TEST_CONFIG = {
     '/api/health',
     '/api/planetary/current-hour',
     '/api/tokens/calculate',
-    '/api/kinetics/enhanced'
-  ]
+    '/api/kinetics/enhanced',
+  ],
 }
 
 class LoadTester {
@@ -33,7 +33,7 @@ class LoadTester {
       responseTimes: [],
       errors: [],
       startTime: null,
-      endTime: null
+      endTime: null,
     }
   }
 
@@ -68,12 +68,11 @@ class LoadTester {
     while (Date.now() < endTime) {
       try {
         // Random endpoint selection
-        const endpoint = LOAD_TEST_CONFIG.endpoints[
-          Math.floor(Math.random() * LOAD_TEST_CONFIG.endpoints.length)
-        ]
+        const endpoint =
+          LOAD_TEST_CONFIG.endpoints[Math.floor(Math.random() * LOAD_TEST_CONFIG.endpoints.length)]
 
         await this.makeRequest(endpoint, userId)
-        
+
         // Wait before next request
         const delay = 1000 / LOAD_TEST_CONFIG.requestsPerSecond
         await this.sleep(delay + Math.random() * delay) // Add jitter
@@ -81,7 +80,7 @@ class LoadTester {
         this.results.errors.push({
           userId,
           error: error.message,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
       }
     }
@@ -89,28 +88,28 @@ class LoadTester {
 
   async makeRequest(endpoint, userId) {
     const startTime = performance.now()
-    
+
     try {
       let requestBody = {}
-      
+
       // Customize request body based on endpoint
       switch (endpoint) {
         case '/api/planetary/current-hour':
           requestBody = {
             location: { lat: 37.7749, lon: -122.4194 },
-            datetime: new Date().toISOString()
+            datetime: new Date().toISOString(),
           }
           break
         case '/api/tokens/calculate':
           requestBody = {
             tokens: { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 },
-            location: { lat: 37.7749, lon: -122.4194 }
+            location: { lat: 37.7749, lon: -122.4194 },
           }
           break
         case '/api/kinetics/enhanced':
           requestBody = {
             location: { lat: 37.7749, lon: -122.4194 },
-            options: { includeAgentOptimization: true }
+            options: { includeAgentOptimization: true },
           }
           break
       }
@@ -122,11 +121,11 @@ class LoadTester {
       const response = await fetch(`${BACKEND_URL}${endpoint}`, {
         method,
         headers,
-        body
+        body,
       })
 
       const responseTime = performance.now() - startTime
-      
+
       this.results.totalRequests++
       this.results.responseTimes.push(responseTime)
 
@@ -138,16 +137,15 @@ class LoadTester {
           userId,
           endpoint,
           status: response.status,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
       }
-
     } catch (error) {
       const responseTime = performance.now() - startTime
       this.results.totalRequests++
       this.results.failedRequests++
       this.results.responseTimes.push(responseTime)
-      
+
       throw error
     }
   }
@@ -155,7 +153,7 @@ class LoadTester {
   generateReport() {
     const duration = (this.results.endTime - this.results.startTime) / 1000
     const successRate = (this.results.successfulRequests / this.results.totalRequests) * 100
-    
+
     // Calculate percentiles
     const sortedTimes = this.results.responseTimes.sort((a, b) => a - b)
     const p50 = sortedTimes[Math.floor(sortedTimes.length * 0.5)]
@@ -202,8 +200,10 @@ class LoadTester {
     // Overall assessment
     const overallPass = successRate > 99 && p95 < 100 && avg < 50
     console.log('')
-    console.log(`🎯 OVERALL ASSESSMENT: ${overallPass ? '✅ PRODUCTION READY' : '⚠️  NEEDS OPTIMIZATION'}`)
-    
+    console.log(
+      `🎯 OVERALL ASSESSMENT: ${overallPass ? '✅ PRODUCTION READY' : '⚠️  NEEDS OPTIMIZATION'}`
+    )
+
     if (!overallPass) {
       console.log('')
       console.log('🔧 OPTIMIZATION RECOMMENDATIONS:')
@@ -224,39 +224,40 @@ class WebSocketLoadTester {
     console.log('')
     console.log('🌐 WEBSOCKET LOAD TEST')
     console.log('======================')
-    
+
     const connections = []
     const maxConnections = 50
-    
+
     try {
       // Create multiple WebSocket connections
       for (let i = 0; i < maxConnections; i++) {
         const ws = new WebSocket(WEBSOCKET_URL)
         connections.push(ws)
-        
+
         ws.onopen = () => {
           // Subscribe to a channel
-          ws.send(JSON.stringify({
-            type: 'subscribe',
-            channel: 'planetary-hours',
-            data: { location: { lat: 37.7749, lon: -122.4194 } }
-          }))
+          ws.send(
+            JSON.stringify({
+              type: 'subscribe',
+              channel: 'planetary-hours',
+              data: { location: { lat: 37.7749, lon: -122.4194 } },
+            })
+          )
         }
-        
+
         // Small delay between connections
         await this.sleep(10)
       }
-      
+
       console.log(`✅ Created ${connections.length} WebSocket connections`)
-      
+
       // Wait for connections to stabilize
       await this.sleep(2000)
-      
+
       // Close all connections
       connections.forEach(ws => ws.close())
-      
+
       console.log('✅ WebSocket load test completed successfully')
-      
     } catch (error) {
       console.log(`❌ WebSocket load test failed: ${error.message}`)
     }
@@ -271,13 +272,13 @@ class WebSocketLoadTester {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const loadTester = new LoadTester()
   const wsLoadTester = new WebSocketLoadTester()
-  
+
   console.log('🚀 Starting comprehensive load testing...')
   console.log('')
-  
+
   await loadTester.runStressTest()
   await wsLoadTester.testWebSocketLoad()
-  
+
   console.log('')
   console.log('🎯 Load testing complete!')
 }

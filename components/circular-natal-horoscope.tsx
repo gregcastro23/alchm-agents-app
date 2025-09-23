@@ -24,7 +24,11 @@ interface CircularNatalHoroscopeProps {
   }
 }
 
-export default function CircularNatalHoroscope({ className, showKinetics = false, birthInfo }: CircularNatalHoroscopeProps) {
+export default function CircularNatalHoroscope({
+  className,
+  showKinetics = false,
+  birthInfo,
+}: CircularNatalHoroscopeProps) {
   const [horoscope, setHoroscope] = useState<AstrologizeWheelResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -72,7 +76,9 @@ export default function CircularNatalHoroscope({ className, showKinetics = false
 
   if (loading) {
     return (
-      <div className={`${showKinetics ? 'grid grid-cols-1 lg:grid-cols-3 gap-6' : ''} ${className}`}>
+      <div
+        className={`${showKinetics ? 'grid grid-cols-1 lg:grid-cols-3 gap-6' : ''} ${className}`}
+      >
         <Card className={`cosmic-glass ${showKinetics ? 'lg:col-span-2' : ''}`}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 cosmic-text-gradient">
@@ -129,8 +135,7 @@ export default function CircularNatalHoroscope({ className, showKinetics = false
             <span>
               {birthInfo
                 ? `${new Date(birthInfo.year, birthInfo.month, birthInfo.day).toLocaleDateString()}`
-                : 'Live cosmic positions updated regularly'
-              }
+                : 'Live cosmic positions updated regularly'}
             </span>
           </div>
         </CardHeader>
@@ -142,7 +147,7 @@ export default function CircularNatalHoroscope({ className, showKinetics = false
                   className="w-full max-w-md aspect-square cosmic-chart-container"
                   dangerouslySetInnerHTML={{ __html: horoscope.svg }}
                   style={{
-                    filter: isDarkMode ? 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.2))' : 'none'
+                    filter: isDarkMode ? 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.2))' : 'none',
                   }}
                 />
               </div>
@@ -155,25 +160,27 @@ export default function CircularNatalHoroscope({ className, showKinetics = false
                   height={400}
                   className="w-full max-w-md aspect-square rounded-lg cosmic-glass"
                   style={{
-                    filter: isDarkMode ? 'drop-shadow(0 0 20px rgba(124, 58, 237, 0.3))' : 'none'
+                    filter: isDarkMode ? 'drop-shadow(0 0 20px rgba(124, 58, 237, 0.3))' : 'none',
                   }}
                 />
               </div>
             ) : horoscope?.meta?.localGenerationFailed ? (
               <div className="flex flex-col items-center justify-center h-48 text-center space-y-2">
-                <div className="text-cosmic-starlight-lavender">Chart generation temporarily unavailable</div>
+                <div className="text-cosmic-starlight-lavender">
+                  Chart generation temporarily unavailable
+                </div>
                 <div className="text-sm text-cosmic-starlight-lavender opacity-70">
                   Both external service and local generation failed
                 </div>
                 {horoscope.meta.error && (
-                  <div className="text-xs text-red-400 max-w-xs">
-                    Error: {horoscope.meta.error}
-                  </div>
+                  <div className="text-xs text-red-400 max-w-xs">Error: {horoscope.meta.error}</div>
                 )}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-48 text-center space-y-2">
-                <div className="text-cosmic-starlight-lavender">Chart data processed but no visualization generated</div>
+                <div className="text-cosmic-starlight-lavender">
+                  Chart data processed but no visualization generated
+                </div>
                 <div className="text-sm text-cosmic-starlight-lavender opacity-70">
                   This may indicate a temporary service issue
                 </div>
@@ -186,8 +193,8 @@ export default function CircularNatalHoroscope({ className, showKinetics = false
                   {horoscope?.meta?.local
                     ? '✨ Chart generated with cosmic precision - External service temporarily unavailable'
                     : horoscope?.meta?.fallback
-                    ? '🔮 Cosmic fallback active - Service temporarily unavailable'
-                    : '⚡ Chart generated in enhanced mode with cosmic algorithms'}
+                      ? '🔮 Cosmic fallback active - Service temporarily unavailable'
+                      : '⚡ Chart generated in enhanced mode with cosmic algorithms'}
                 </AlertDescription>
               </Alert>
             )}

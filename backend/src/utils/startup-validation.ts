@@ -24,12 +24,20 @@ export function validateProductionConfig(): ValidationResult {
   })
 
   // Validate NODE_ENV
-  if (process.env.NODE_ENV && !['development', 'test', 'production'].includes(process.env.NODE_ENV)) {
-    errors.push(`Invalid NODE_ENV value: ${process.env.NODE_ENV}. Must be one of: development, test, production`)
+  if (
+    process.env.NODE_ENV &&
+    !['development', 'test', 'production'].includes(process.env.NODE_ENV)
+  ) {
+    errors.push(
+      `Invalid NODE_ENV value: ${process.env.NODE_ENV}. Must be one of: development, test, production`
+    )
   }
 
   // Check CORS configuration
-  if (process.env.NODE_ENV === 'production' && (!process.env.CORS_ORIGINS || process.env.CORS_ORIGINS.includes('localhost'))) {
+  if (
+    process.env.NODE_ENV === 'production' &&
+    (!process.env.CORS_ORIGINS || process.env.CORS_ORIGINS.includes('localhost'))
+  ) {
     warnings.push('Production environment should not include localhost in CORS_ORIGINS')
   }
 
@@ -42,18 +50,24 @@ export function validateProductionConfig(): ValidationResult {
   // Validate rate limiting configuration
   const rateLimit = parseInt(process.env.RATE_LIMIT_REQUESTS_PER_MINUTE || '100')
   if (isNaN(rateLimit) || rateLimit < 1) {
-    errors.push(`Invalid RATE_LIMIT_REQUESTS_PER_MINUTE value: ${process.env.RATE_LIMIT_REQUESTS_PER_MINUTE}. Must be a positive number`)
+    errors.push(
+      `Invalid RATE_LIMIT_REQUESTS_PER_MINUTE value: ${process.env.RATE_LIMIT_REQUESTS_PER_MINUTE}. Must be a positive number`
+    )
   }
 
   // Validate request size limits
   const maxRequestSize = parseInt(process.env.MAX_REQUEST_SIZE_MB || '2')
   if (isNaN(maxRequestSize) || maxRequestSize < 1 || maxRequestSize > 50) {
-    errors.push(`Invalid MAX_REQUEST_SIZE_MB value: ${process.env.MAX_REQUEST_SIZE_MB}. Must be between 1 and 50`)
+    errors.push(
+      `Invalid MAX_REQUEST_SIZE_MB value: ${process.env.MAX_REQUEST_SIZE_MB}. Must be between 1 and 50`
+    )
   }
 
   // Check cache configuration
   if (!process.env.REDIS_URL && process.env.NODE_ENV === 'production') {
-    warnings.push('No REDIS_URL configured in production. Memory cache will be used, which may not be optimal for scaling.')
+    warnings.push(
+      'No REDIS_URL configured in production. Memory cache will be used, which may not be optimal for scaling.'
+    )
   }
 
   // Validate cache TTL values
@@ -61,7 +75,7 @@ export function validateProductionConfig(): ValidationResult {
     'PLANETARY_CACHE_TTL',
     'CONSCIOUSNESS_CACHE_TTL',
     'KINETICS_CACHE_TTL',
-    'TOKEN_CACHE_TTL'
+    'TOKEN_CACHE_TTL',
   ]
 
   cacheTTLs.forEach(ttlVar => {
@@ -76,19 +90,23 @@ export function validateProductionConfig(): ValidationResult {
     'ENABLE_KINETICS_BACKEND',
     'ENABLE_CONSCIOUSNESS_BACKEND',
     'ENABLE_PLANETARY_BACKEND',
-    'ENABLE_TOKEN_BACKEND'
+    'ENABLE_TOKEN_BACKEND',
   ]
 
   const enabledFeatures = featureFlags.filter(flag => process.env[flag] === 'true')
   if (enabledFeatures.length === 0) {
-    warnings.push('No backend features are enabled. At least one feature should be enabled for the service to be useful.')
+    warnings.push(
+      'No backend features are enabled. At least one feature should be enabled for the service to be useful.'
+    )
   }
 
   // Check WebSocket configuration
   if (process.env.ENABLE_WEBSOCKET === 'true') {
     const wsPort = parseInt(process.env.WEBSOCKET_PORT || '8001')
     if (isNaN(wsPort) || wsPort < 1 || wsPort > 65535) {
-      errors.push(`Invalid WEBSOCKET_PORT value: ${process.env.WEBSOCKET_PORT}. Must be a number between 1 and 65535`)
+      errors.push(
+        `Invalid WEBSOCKET_PORT value: ${process.env.WEBSOCKET_PORT}. Must be a number between 1 and 65535`
+      )
     }
     if (wsPort === port) {
       errors.push('WEBSOCKET_PORT cannot be the same as PORT')
@@ -103,7 +121,7 @@ export function validateProductionConfig(): ValidationResult {
   return {
     valid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   }
 }
 
@@ -128,9 +146,13 @@ export async function validateSystemResources(): Promise<ValidationResult> {
     const majorVersion = parseInt(nodeVersion.substring(1).split('.')[0])
 
     if (majorVersion < 18) {
-      errors.push(`Node.js version ${nodeVersion} is not supported. Minimum required version is 18.x`)
+      errors.push(
+        `Node.js version ${nodeVersion} is not supported. Minimum required version is 18.x`
+      )
     } else if (majorVersion < 20) {
-      warnings.push(`Node.js version ${nodeVersion} is supported but upgrading to 20.x is recommended`)
+      warnings.push(
+        `Node.js version ${nodeVersion} is supported but upgrading to 20.x is recommended`
+      )
     }
 
     // Check available disk space (simplified check)
@@ -141,15 +163,16 @@ export async function validateSystemResources(): Promise<ValidationResult> {
     } catch (error) {
       warnings.push('Unable to check disk space')
     }
-
   } catch (error) {
-    errors.push(`Error during system resource validation: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    errors.push(
+      `Error during system resource validation: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
   }
 
   return {
     valid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   }
 }
 

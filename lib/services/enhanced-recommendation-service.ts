@@ -1,12 +1,16 @@
 /**
  * Enhanced Recommendation Service
- * Integrates rune influence, agent resonance, and token alignment 
+ * Integrates rune influence, agent resonance, and token alignment
  * into cuisine, ingredient, and recipe recommendations
  */
 
 import { KalchmFoodAnalyzer, FOOD_PROFILES } from '@/lib/food-recommendation-rules'
 import { TokensClient, TokenCalculationResult } from '@/lib/clients/tokens-client'
-import { RuneAgentClient, RuneOfTheMoment, AgentRecommendation } from '@/lib/clients/rune-agent-client'
+import {
+  RuneAgentClient,
+  RuneOfTheMoment,
+  AgentRecommendation,
+} from '@/lib/clients/rune-agent-client'
 
 // Types
 export interface RecommendationRequest {
@@ -36,7 +40,16 @@ export interface CuisineRecommendation {
 
 export interface IngredientRecommendation {
   name: string
-  category: 'protein' | 'vegetable' | 'grain' | 'spice' | 'herb' | 'fat' | 'dairy' | 'fruit' | 'other'
+  category:
+    | 'protein'
+    | 'vegetable'
+    | 'grain'
+    | 'spice'
+    | 'herb'
+    | 'fat'
+    | 'dairy'
+    | 'fruit'
+    | 'other'
   score: number
   reasoning: string[]
   runeResonance: number
@@ -90,22 +103,24 @@ export class EnhancedRecommendationService {
   /**
    * Generate comprehensive recommendations with rune/agent influence
    */
-  static async generateRecommendations(request: RecommendationRequest): Promise<EnhancedRecommendationResult> {
+  static async generateRecommendations(
+    request: RecommendationRequest
+  ): Promise<EnhancedRecommendationResult> {
     const startTime = Date.now()
-    
+
     try {
       // Generate parallel backend requests for context
       const [tokenResult, runeAgentResult] = await Promise.all([
         TokensClient.calculateRates({
           datetime: request.datetime,
-          location: request.location
+          location: request.location,
         }),
         RuneAgentClient.generateComplete({
           datetime: request.datetime,
           location: request.location,
           context: 'cuisine',
-          preferences: request.preferences
-        })
+          preferences: request.preferences,
+        }),
       ])
 
       // Calculate influence weights based on data quality
@@ -115,11 +130,15 @@ export class EnhancedRecommendationService {
       const [cuisines, ingredients, recipes] = await Promise.all([
         this.generateCuisineRecommendations(request, tokenResult, runeAgentResult, influence),
         this.generateIngredientRecommendations(request, tokenResult, runeAgentResult, influence),
-        this.generateRecipeRecommendations(request, tokenResult, runeAgentResult, influence)
+        this.generateRecipeRecommendations(request, tokenResult, runeAgentResult, influence),
       ])
 
       // Calculate overall confidence
-      const confidenceScore = this.calculateOverallConfidence(tokenResult, runeAgentResult, influence)
+      const confidenceScore = this.calculateOverallConfidence(
+        tokenResult,
+        runeAgentResult,
+        influence
+      )
 
       return {
         cuisines,
@@ -129,18 +148,17 @@ export class EnhancedRecommendationService {
           rune: runeAgentResult.rune,
           agent: runeAgentResult.agent,
           tokens: tokenResult,
-          influence
+          influence,
         },
         metadata: {
           generationTime: Date.now() - startTime,
           totalRecommendations: cuisines.length + ingredients.length + recipes.length,
-          confidenceScore
-        }
+          confidenceScore,
+        },
       }
-
     } catch (error) {
       console.error('Enhanced recommendation generation failed:', error)
-      
+
       // Fallback to basic recommendations
       return this.generateFallbackRecommendations(request, startTime)
     }
@@ -156,8 +174,18 @@ export class EnhancedRecommendationService {
     influence: any
   ): Promise<CuisineRecommendation[]> {
     const cuisineTypes = [
-      'Italian', 'Japanese', 'Mediterranean', 'Indian', 'Thai', 'Mexican',
-      'French', 'Chinese', 'Middle Eastern', 'Vietnamese', 'Korean', 'Greek'
+      'Italian',
+      'Japanese',
+      'Mediterranean',
+      'Indian',
+      'Thai',
+      'Mexican',
+      'French',
+      'Chinese',
+      'Middle Eastern',
+      'Vietnamese',
+      'Korean',
+      'Greek',
     ]
 
     const recommendations: CuisineRecommendation[] = []
@@ -184,18 +212,24 @@ export class EnhancedRecommendationService {
       // Final score normalization
       const finalScore = Math.max(0, Math.min(1, score)) * seasonalRelevance
 
-      if (finalScore > 0.3) { // Only include decent recommendations
+      if (finalScore > 0.3) {
+        // Only include decent recommendations
         recommendations.push({
           name: cuisine,
           score: finalScore,
-          reasoning: this.generateCuisineReasoning(cuisine, runeInfluence, agentResonance, tokenAlignment),
+          reasoning: this.generateCuisineReasoning(
+            cuisine,
+            runeInfluence,
+            agentResonance,
+            tokenAlignment
+          ),
           runeInfluence: this.getRuneInfluenceDescription(cuisine, runeAgent.rune),
           agentGuidance: this.getAgentGuidanceDescription(cuisine, runeAgent.agent),
           tokenAlignment: this.getTokenAlignmentDescription(cuisine, tokens),
           characteristics: this.getCuisineCharacteristics(cuisine),
           suggestedDishes: this.getSuggestedDishes(cuisine, runeAgent.rune.element),
           cookingMethods: this.getCuisineCookingMethods(cuisine),
-          seasonalRelevance
+          seasonalRelevance,
         })
       }
     }
@@ -240,17 +274,23 @@ export class EnhancedRecommendationService {
 
       const finalScore = Math.max(0, Math.min(1, score))
 
-      if (finalScore > 0.4) { // Higher threshold for ingredients
+      if (finalScore > 0.4) {
+        // Higher threshold for ingredients
         recommendations.push({
           name: ingredient.name,
           category: ingredient.category,
           score: finalScore,
-          reasoning: this.generateIngredientReasoning(ingredient, runeResonance, agentEndorsement, tokenSynergy),
+          reasoning: this.generateIngredientReasoning(
+            ingredient,
+            runeResonance,
+            agentEndorsement,
+            tokenSynergy
+          ),
           runeResonance,
           agentEndorsement,
           tokenSynergy,
           nutritionalBenefits: ingredient.nutritionalBenefits,
-          preparationSuggestions: ingredient.preparationSuggestions
+          preparationSuggestions: ingredient.preparationSuggestions,
         })
       }
     }
@@ -289,19 +329,25 @@ export class EnhancedRecommendationService {
 
       const finalScore = Math.max(0, Math.min(1, score))
 
-      if (finalScore > 0.5) { // High threshold for recipes
+      if (finalScore > 0.5) {
+        // High threshold for recipes
         recommendations.push({
           name: recipe.name,
           cuisineType: recipe.cuisineType,
           difficulty: recipe.difficulty,
           cookingTime: recipe.cookingTime,
           score: finalScore,
-          reasoning: this.generateRecipeReasoning(recipe, runeAlignment, agentCompatibility, tokenHarmony),
+          reasoning: this.generateRecipeReasoning(
+            recipe,
+            runeAlignment,
+            agentCompatibility,
+            tokenHarmony
+          ),
           runeGuidance: this.getRecipeRuneGuidance(recipe, runeAgent.rune),
           agentTips: this.getRecipeAgentTips(recipe, runeAgent.agent),
           ingredients: recipe.ingredients,
           cookingMethod: recipe.cookingMethod,
-          energeticProperties: this.calculateRecipeEnergeticProperties(recipe, runeAgent.rune)
+          energeticProperties: this.calculateRecipeEnergeticProperties(recipe, runeAgent.rune),
         })
       }
     }
@@ -311,7 +357,7 @@ export class EnhancedRecommendationService {
   }
 
   // Helper methods for scoring and influence calculation
-  
+
   private static calculateInfluenceWeights(tokens: TokenCalculationResult, runeAgent: any) {
     // Weight based on data source quality
     const tokenReliability = tokens.metadata.source === 'backend' ? 1.0 : 0.7
@@ -320,7 +366,7 @@ export class EnhancedRecommendationService {
     return {
       runeWeight: 0.3 * runeAgentReliability,
       agentWeight: 0.25 * runeAgentReliability,
-      tokenWeight: 0.2 * tokenReliability
+      tokenWeight: 0.2 * tokenReliability,
     }
   }
 
@@ -334,8 +380,14 @@ export class EnhancedRecommendationService {
 
     // Add some variety based on cuisine characteristics
     const cuisineScores = {
-      'Mediterranean': 0.8, 'Japanese': 0.7, 'Italian': 0.75, 'Indian': 0.6,
-      'Thai': 0.65, 'Vietnamese': 0.7, 'Greek': 0.8, 'Mexican': 0.6
+      Mediterranean: 0.8,
+      Japanese: 0.7,
+      Italian: 0.75,
+      Indian: 0.6,
+      Thai: 0.65,
+      Vietnamese: 0.7,
+      Greek: 0.8,
+      Mexican: 0.6,
     }
 
     return score + (cuisineScores[cuisine as keyof typeof cuisineScores] || 0.5) * 0.2
@@ -344,23 +396,33 @@ export class EnhancedRecommendationService {
   private static calculateRuneInfluence(cuisine: string, rune: RuneOfTheMoment): number {
     // Map cuisines to elements
     const cuisineElements = {
-      'Italian': 'fire', 'Mediterranean': 'earth', 'Japanese': 'water',
-      'Thai': 'fire', 'Indian': 'fire', 'Vietnamese': 'water',
-      'French': 'air', 'Chinese': 'earth', 'Korean': 'fire',
-      'Greek': 'earth', 'Mexican': 'fire', 'Middle Eastern': 'earth'
+      Italian: 'fire',
+      Mediterranean: 'earth',
+      Japanese: 'water',
+      Thai: 'fire',
+      Indian: 'fire',
+      Vietnamese: 'water',
+      French: 'air',
+      Chinese: 'earth',
+      Korean: 'fire',
+      Greek: 'earth',
+      Mexican: 'fire',
+      'Middle Eastern': 'earth',
     }
 
     const cuisineElement = cuisineElements[cuisine as keyof typeof cuisineElements]
-    
+
     // Same element gets boost, all elements are compatible
     return cuisineElement === rune.element ? 0.3 : 0.1
   }
 
   private static calculateAgentResonance(cuisine: string, agent: AgentRecommendation): number {
     // Check if agent has culinary specialties matching cuisine
-    const resonance = agent.culinarySpecialty.some(specialty => 
+    const resonance = agent.culinarySpecialty.some(specialty =>
       specialty.toLowerCase().includes(cuisine.toLowerCase())
-    ) ? 0.2 : 0.05
+    )
+      ? 0.2
+      : 0.05
 
     // Add consciousness-based wisdom bonus
     return resonance + (agent.overallScore / 100) * 0.1
@@ -369,13 +431,22 @@ export class EnhancedRecommendationService {
   private static calculateTokenAlignment(cuisine: string, tokens: TokenCalculationResult): number {
     // Map cuisines to token preferences
     const cuisineTokenMapping = {
-      'Italian': 'Spirit', 'Japanese': 'Essence', 'Mediterranean': 'Matter',
-      'Indian': 'Spirit', 'Thai': 'Spirit', 'Vietnamese': 'Essence',
-      'French': 'Substance', 'Chinese': 'Matter', 'Korean': 'Spirit',
-      'Greek': 'Matter', 'Mexican': 'Spirit', 'Middle Eastern': 'Matter'
+      Italian: 'Spirit',
+      Japanese: 'Essence',
+      Mediterranean: 'Matter',
+      Indian: 'Spirit',
+      Thai: 'Spirit',
+      Vietnamese: 'Essence',
+      French: 'Substance',
+      Chinese: 'Matter',
+      Korean: 'Spirit',
+      Greek: 'Matter',
+      Mexican: 'Spirit',
+      'Middle Eastern': 'Matter',
     }
 
-    const primaryToken = cuisineTokenMapping[cuisine as keyof typeof cuisineTokenMapping] || 'Spirit'
+    const primaryToken =
+      cuisineTokenMapping[cuisine as keyof typeof cuisineTokenMapping] || 'Spirit'
     const tokenValue = tokens.rates[primaryToken as keyof typeof tokens.rates] || 1.0
 
     // Normalize token influence
@@ -384,14 +455,14 @@ export class EnhancedRecommendationService {
 
   private static calculateSeasonalRelevance(cuisine: string, datetime: Date): number {
     const month = datetime.getMonth()
-    
+
     // Seasonal cuisine preferences
     const seasonalMapping = {
-      'Mediterranean': [4, 5, 6, 7, 8], // Spring/Summer
-      'Italian': [0, 1, 2, 9, 10, 11], // Fall/Winter  
-      'Thai': [3, 4, 5, 6, 7, 8], // Warm months
-      'Japanese': [0, 1, 2, 3, 9, 10, 11], // All seasons
-      'Indian': [9, 10, 11, 0, 1, 2] // Cooler months
+      Mediterranean: [4, 5, 6, 7, 8], // Spring/Summer
+      Italian: [0, 1, 2, 9, 10, 11], // Fall/Winter
+      Thai: [3, 4, 5, 6, 7, 8], // Warm months
+      Japanese: [0, 1, 2, 3, 9, 10, 11], // All seasons
+      Indian: [9, 10, 11, 0, 1, 2], // Cooler months
     }
 
     const cuisineSeasons = seasonalMapping[cuisine as keyof typeof seasonalMapping]
@@ -399,12 +470,16 @@ export class EnhancedRecommendationService {
   }
 
   // Additional helper methods for ingredient and recipe scoring...
-  
+
   private static calculateBaseIngredientScore(ingredient: any, preferences: any): number {
     let score = 0.5
-    
+
     // Check dietary preferences
-    if (preferences?.dietaryRestrictions?.includes('vegetarian') && ingredient.category === 'protein' && ingredient.animalBased) {
+    if (
+      preferences?.dietaryRestrictions?.includes('vegetarian') &&
+      ingredient.category === 'protein' &&
+      ingredient.animalBased
+    ) {
       return 0 // Exclude
     }
 
@@ -423,27 +498,79 @@ export class EnhancedRecommendationService {
       fire: ['spices', 'peppers', 'garlic', 'ginger'],
       water: ['cucumber', 'melon', 'seafood', 'dairy'],
       earth: ['root vegetables', 'grains', 'legumes', 'nuts'],
-      air: ['leafy greens', 'herbs', 'light fruits']
+      air: ['leafy greens', 'herbs', 'light fruits'],
     }
 
     const resonantIngredients = elementMapping[rune.element] || []
-    return resonantIngredients.some(type => 
-      ingredient.name.toLowerCase().includes(type) || 
-      ingredient.category.toLowerCase().includes(type)
-    ) ? 0.3 : 0.1
+    return resonantIngredients.some(
+      type =>
+        ingredient.name.toLowerCase().includes(type) ||
+        ingredient.category.toLowerCase().includes(type)
+    )
+      ? 0.3
+      : 0.1
   }
 
   private static getIngredientDatabase() {
     // Simplified ingredient database
     return [
-      { name: 'Tomatoes', category: 'vegetable', nutritionalBenefits: ['Lycopene', 'Vitamin C'], preparationSuggestions: ['Raw', 'Roasted', 'Sauce'], seasons: ['summer'] },
-      { name: 'Basil', category: 'herb', nutritionalBenefits: ['Anti-inflammatory', 'Antioxidants'], preparationSuggestions: ['Fresh', 'Pesto', 'Dried'], seasons: ['summer'] },
-      { name: 'Quinoa', category: 'grain', nutritionalBenefits: ['Complete protein', 'Fiber'], preparationSuggestions: ['Boiled', 'Salad', 'Soup'], seasons: ['all'] },
-      { name: 'Salmon', category: 'protein', nutritionalBenefits: ['Omega-3', 'Protein'], preparationSuggestions: ['Grilled', 'Baked', 'Poached'], seasons: ['all'], animalBased: true },
-      { name: 'Avocado', category: 'fat', nutritionalBenefits: ['Healthy fats', 'Fiber'], preparationSuggestions: ['Raw', 'Smoothie', 'Toast'], seasons: ['all'] },
-      { name: 'Sweet Potato', category: 'vegetable', nutritionalBenefits: ['Beta-carotene', 'Fiber'], preparationSuggestions: ['Roasted', 'Mashed', 'Fries'], seasons: ['fall', 'winter'] },
-      { name: 'Spinach', category: 'vegetable', nutritionalBenefits: ['Iron', 'Folate'], preparationSuggestions: ['Sautéed', 'Salad', 'Smoothie'], seasons: ['spring', 'fall'] },
-      { name: 'Turmeric', category: 'spice', nutritionalBenefits: ['Anti-inflammatory', 'Antioxidants'], preparationSuggestions: ['Ground', 'Tea', 'Curry'], seasons: ['all'] }
+      {
+        name: 'Tomatoes',
+        category: 'vegetable',
+        nutritionalBenefits: ['Lycopene', 'Vitamin C'],
+        preparationSuggestions: ['Raw', 'Roasted', 'Sauce'],
+        seasons: ['summer'],
+      },
+      {
+        name: 'Basil',
+        category: 'herb',
+        nutritionalBenefits: ['Anti-inflammatory', 'Antioxidants'],
+        preparationSuggestions: ['Fresh', 'Pesto', 'Dried'],
+        seasons: ['summer'],
+      },
+      {
+        name: 'Quinoa',
+        category: 'grain',
+        nutritionalBenefits: ['Complete protein', 'Fiber'],
+        preparationSuggestions: ['Boiled', 'Salad', 'Soup'],
+        seasons: ['all'],
+      },
+      {
+        name: 'Salmon',
+        category: 'protein',
+        nutritionalBenefits: ['Omega-3', 'Protein'],
+        preparationSuggestions: ['Grilled', 'Baked', 'Poached'],
+        seasons: ['all'],
+        animalBased: true,
+      },
+      {
+        name: 'Avocado',
+        category: 'fat',
+        nutritionalBenefits: ['Healthy fats', 'Fiber'],
+        preparationSuggestions: ['Raw', 'Smoothie', 'Toast'],
+        seasons: ['all'],
+      },
+      {
+        name: 'Sweet Potato',
+        category: 'vegetable',
+        nutritionalBenefits: ['Beta-carotene', 'Fiber'],
+        preparationSuggestions: ['Roasted', 'Mashed', 'Fries'],
+        seasons: ['fall', 'winter'],
+      },
+      {
+        name: 'Spinach',
+        category: 'vegetable',
+        nutritionalBenefits: ['Iron', 'Folate'],
+        preparationSuggestions: ['Sautéed', 'Salad', 'Smoothie'],
+        seasons: ['spring', 'fall'],
+      },
+      {
+        name: 'Turmeric',
+        category: 'spice',
+        nutritionalBenefits: ['Anti-inflammatory', 'Antioxidants'],
+        preparationSuggestions: ['Ground', 'Tea', 'Curry'],
+        seasons: ['all'],
+      },
     ]
   }
 
@@ -456,7 +583,7 @@ export class EnhancedRecommendationService {
         difficulty: 'easy' as const,
         cookingTime: 25,
         ingredients: ['quinoa', 'tomatoes', 'cucumber', 'olives', 'feta'],
-        cookingMethod: 'Assembly'
+        cookingMethod: 'Assembly',
       },
       {
         name: 'Miso Glazed Salmon',
@@ -464,7 +591,7 @@ export class EnhancedRecommendationService {
         difficulty: 'moderate' as const,
         cookingTime: 35,
         ingredients: ['salmon', 'miso', 'mirin', 'sake', 'scallions'],
-        cookingMethod: 'Baking'
+        cookingMethod: 'Baking',
       },
       {
         name: 'Thai Basil Stir-fry',
@@ -472,30 +599,42 @@ export class EnhancedRecommendationService {
         difficulty: 'easy' as const,
         cookingTime: 15,
         ingredients: ['basil', 'garlic', 'chilies', 'vegetables', 'soy sauce'],
-        cookingMethod: 'Stir-frying'
-      }
+        cookingMethod: 'Stir-frying',
+      },
     ]
   }
 
   // More helper methods...
 
-  private static calculateIngredientAgentEndorsement(ingredient: any, agent: AgentRecommendation): number {
+  private static calculateIngredientAgentEndorsement(
+    ingredient: any,
+    agent: AgentRecommendation
+  ): number {
     // Agent consciousness level influences endorsement
     return agent.overallScore / 500 // Small influence
   }
 
-  private static calculateIngredientTokenSynergy(ingredient: any, tokens: TokenCalculationResult): number {
+  private static calculateIngredientTokenSynergy(
+    ingredient: any,
+    tokens: TokenCalculationResult
+  ): number {
     // Simple token synergy calculation
-    const avgToken = Object.values(tokens.rates).reduce((sum, rate) => sum + rate, 0) / Object.keys(tokens.rates).length
+    const avgToken =
+      Object.values(tokens.rates).reduce((sum, rate) => sum + rate, 0) /
+      Object.keys(tokens.rates).length
     return Math.min(0.1, avgToken / 10)
   }
 
   private static violatesDietaryRestrictions(ingredient: any, restrictions?: string[]): boolean {
     if (!restrictions) return false
-    
+
     if (restrictions.includes('vegetarian') && ingredient.animalBased) return true
-    if (restrictions.includes('vegan') && (ingredient.animalBased || ingredient.category === 'dairy')) return true
-    
+    if (
+      restrictions.includes('vegan') &&
+      (ingredient.animalBased || ingredient.category === 'dairy')
+    )
+      return true
+
     return false
   }
 
@@ -509,7 +648,12 @@ export class EnhancedRecommendationService {
 
   // Reasoning and description generators
 
-  private static generateCuisineReasoning(cuisine: string, runeInfluence: number, agentResonance: number, tokenAlignment: number): string[] {
+  private static generateCuisineReasoning(
+    cuisine: string,
+    runeInfluence: number,
+    agentResonance: number,
+    tokenAlignment: number
+  ): string[] {
     const reasons = []
     if (runeInfluence > 0.2) reasons.push('Strong rune element alignment')
     if (agentResonance > 0.15) reasons.push('Agent consciousness endorsement')
@@ -517,16 +661,27 @@ export class EnhancedRecommendationService {
     return reasons.length > 0 ? reasons : ['Good overall compatibility']
   }
 
-  private static generateIngredientReasoning(ingredient: any, runeResonance: number, agentEndorsement: number, tokenSynergy: number): string[] {
+  private static generateIngredientReasoning(
+    ingredient: any,
+    runeResonance: number,
+    agentEndorsement: number,
+    tokenSynergy: number
+  ): string[] {
     const reasons = []
     if (runeResonance > 0.2) reasons.push('Elemental resonance with current rune')
     if (agentEndorsement > 0.05) reasons.push('Agent consciousness support')
     if (tokenSynergy > 0.05) reasons.push('Token energy alignment')
-    if (ingredient.seasons?.includes(this.getCurrentSeason(new Date()))) reasons.push('Seasonal availability')
+    if (ingredient.seasons?.includes(this.getCurrentSeason(new Date())))
+      reasons.push('Seasonal availability')
     return reasons.length > 0 ? reasons : ['Nutritional benefits']
   }
 
-  private static generateRecipeReasoning(recipe: any, runeAlignment: number, agentCompatibility: number, tokenHarmony: number): string[] {
+  private static generateRecipeReasoning(
+    recipe: any,
+    runeAlignment: number,
+    agentCompatibility: number,
+    tokenHarmony: number
+  ): string[] {
     const reasons = []
     if (runeAlignment > 0.2) reasons.push('Aligned with current runic energy')
     if (agentCompatibility > 0.15) reasons.push('Agent-recommended preparation')
@@ -542,7 +697,7 @@ export class EnhancedRecommendationService {
     // Cooking time preference
     if (preferences?.cookingTime === 'quick' && recipe.cookingTime <= 20) score += 0.2
     if (preferences?.cookingTime === 'moderate' && recipe.cookingTime <= 45) score += 0.1
-    
+
     // Difficulty preference
     if (recipe.difficulty === 'easy') score += 0.1
 
@@ -552,27 +707,33 @@ export class EnhancedRecommendationService {
   private static calculateRecipeRuneAlignment(recipe: any, rune: RuneOfTheMoment): number {
     // Check if cooking method aligns with rune element
     const methodElementMapping = {
-      'fire': ['grilling', 'roasting', 'sautéing'],
-      'water': ['steaming', 'poaching', 'braising'],
-      'earth': ['baking', 'slow cooking'],
-      'air': ['raw', 'light cooking', 'whipping']
+      fire: ['grilling', 'roasting', 'sautéing'],
+      water: ['steaming', 'poaching', 'braising'],
+      earth: ['baking', 'slow cooking'],
+      air: ['raw', 'light cooking', 'whipping'],
     }
 
     const alignedMethods = methodElementMapping[rune.element] || []
-    return alignedMethods.some(method => 
-      recipe.cookingMethod.toLowerCase().includes(method)
-    ) ? 0.3 : 0.1
+    return alignedMethods.some(method => recipe.cookingMethod.toLowerCase().includes(method))
+      ? 0.3
+      : 0.1
   }
 
-  private static calculateRecipeAgentCompatibility(recipe: any, agent: AgentRecommendation): number {
+  private static calculateRecipeAgentCompatibility(
+    recipe: any,
+    agent: AgentRecommendation
+  ): number {
     // Agent's culinary expertise influences compatibility
     return agent.overallScore / 400 // Small influence
   }
 
   private static calculateRecipeTokenHarmony(recipe: any, tokens: TokenCalculationResult): number {
     // Token harmony based on recipe complexity and token levels
-    const complexity = recipe.difficulty === 'advanced' ? 0.8 : recipe.difficulty === 'moderate' ? 0.5 : 0.3
-    const avgToken = Object.values(tokens.rates).reduce((sum, rate) => sum + rate, 0) / Object.keys(tokens.rates).length
+    const complexity =
+      recipe.difficulty === 'advanced' ? 0.8 : recipe.difficulty === 'moderate' ? 0.5 : 0.3
+    const avgToken =
+      Object.values(tokens.rates).reduce((sum, rate) => sum + rate, 0) /
+      Object.keys(tokens.rates).length
     return Math.min(0.15, (avgToken * complexity) / 10)
   }
 
@@ -586,17 +747,20 @@ export class EnhancedRecommendationService {
     return `${agent.name} recommends ${cuisine} for its alignment with your current consciousness state`
   }
 
-  private static getTokenAlignmentDescription(cuisine: string, tokens: TokenCalculationResult): string {
+  private static getTokenAlignmentDescription(
+    cuisine: string,
+    tokens: TokenCalculationResult
+  ): string {
     const phase = tokens.marketPhase
     return `Current ${phase} token phase supports ${cuisine} cuisine energy`
   }
 
   private static getCuisineCharacteristics(cuisine: string): string[] {
     const characteristics = {
-      'Mediterranean': ['Fresh ingredients', 'Olive oil based', 'Seasonal'],
-      'Japanese': ['Minimal processing', 'Umami rich', 'Balanced presentation'],
-      'Italian': ['Simple preparations', 'Quality ingredients', 'Regional diversity'],
-      'Thai': ['Bold flavors', 'Balance of sweet/sour/salty', 'Fresh herbs']
+      Mediterranean: ['Fresh ingredients', 'Olive oil based', 'Seasonal'],
+      Japanese: ['Minimal processing', 'Umami rich', 'Balanced presentation'],
+      Italian: ['Simple preparations', 'Quality ingredients', 'Regional diversity'],
+      Thai: ['Bold flavors', 'Balance of sweet/sour/salty', 'Fresh herbs'],
     }
     return characteristics[cuisine as keyof typeof characteristics] || ['Authentic flavors']
   }
@@ -607,17 +771,17 @@ export class EnhancedRecommendationService {
       fire: ['Spicy stir-fries', 'Grilled proteins', 'Warming soups'],
       water: ['Cooling salads', 'Poached dishes', 'Hydrating foods'],
       earth: ['Hearty stews', 'Roasted vegetables', 'Grain bowls'],
-      air: ['Light salads', 'Raw preparations', 'Airy desserts']
+      air: ['Light salads', 'Raw preparations', 'Airy desserts'],
     }
     return baseDishesByElement[element as keyof typeof baseDishesByElement] || ['Balanced meals']
   }
 
   private static getCuisineCookingMethods(cuisine: string): string[] {
     const methods = {
-      'Mediterranean': ['Grilling', 'Roasting', 'Raw preparation'],
-      'Japanese': ['Steaming', 'Grilling', 'Raw (sashimi)'],
-      'Italian': ['Boiling (pasta)', 'Sautéing', 'Baking'],
-      'Thai': ['Stir-frying', 'Steaming', 'Raw (som tam)']
+      Mediterranean: ['Grilling', 'Roasting', 'Raw preparation'],
+      Japanese: ['Steaming', 'Grilling', 'Raw (sashimi)'],
+      Italian: ['Boiling (pasta)', 'Sautéing', 'Baking'],
+      Thai: ['Stir-frying', 'Steaming', 'Raw (som tam)'],
     }
     return methods[cuisine as keyof typeof methods] || ['Various methods']
   }
@@ -629,32 +793,48 @@ export class EnhancedRecommendationService {
   private static getRecipeAgentTips(recipe: any, agent: AgentRecommendation): string[] {
     return [
       `${agent.name} suggests focusing on the energetic quality of ingredients`,
-      'Prepare with conscious intention for optimal nourishment'
+      'Prepare with conscious intention for optimal nourishment',
     ]
   }
 
   private static calculateRecipeEnergeticProperties(recipe: any, rune: RuneOfTheMoment) {
     return {
       element: rune.element,
-      temperature: rune.element === 'fire' ? 'warming' as const : 
-                  rune.element === 'water' ? 'cooling' as const : 'neutral' as const,
-      mood: rune.element === 'fire' ? 'energizing' : 
-            rune.element === 'water' ? 'calming' : 
-            rune.element === 'earth' ? 'grounding' : 'uplifting'
+      temperature:
+        rune.element === 'fire'
+          ? ('warming' as const)
+          : rune.element === 'water'
+            ? ('cooling' as const)
+            : ('neutral' as const),
+      mood:
+        rune.element === 'fire'
+          ? 'energizing'
+          : rune.element === 'water'
+            ? 'calming'
+            : rune.element === 'earth'
+              ? 'grounding'
+              : 'uplifting',
     }
   }
 
-  private static calculateOverallConfidence(tokens: TokenCalculationResult, runeAgent: any, influence: any): number {
+  private static calculateOverallConfidence(
+    tokens: TokenCalculationResult,
+    runeAgent: any,
+    influence: any
+  ): number {
     const tokenReliability = tokens.metadata.source === 'backend' ? 0.9 : 0.7
     const runeAgentReliability = runeAgent.metadata.source === 'backend' ? 0.9 : 0.7
-    
+
     return Math.round((tokenReliability + runeAgentReliability) * 50)
   }
 
   /**
    * Fallback recommendations when backend services fail
    */
-  private static async generateFallbackRecommendations(request: RecommendationRequest, startTime: number): Promise<EnhancedRecommendationResult> {
+  private static async generateFallbackRecommendations(
+    request: RecommendationRequest,
+    startTime: number
+  ): Promise<EnhancedRecommendationResult> {
     // Basic recommendations without backend influence
     const basicCuisines: CuisineRecommendation[] = [
       {
@@ -667,8 +847,8 @@ export class EnhancedRecommendationService {
         characteristics: ['Fresh ingredients', 'Olive oil based'],
         suggestedDishes: ['Greek salad', 'Grilled vegetables'],
         cookingMethods: ['Grilling', 'Raw preparation'],
-        seasonalRelevance: 1.0
-      }
+        seasonalRelevance: 1.0,
+      },
     ]
 
     return {
@@ -689,13 +869,13 @@ export class EnhancedRecommendationService {
             suggestions: ['Balanced meals'],
             avoid: ['Processed foods'],
             cookingMethods: ['Mindful preparation'],
-            seasonalAlignment: 'All seasons'
+            seasonalAlignment: 'All seasons',
           },
           activationWindow: {
             start: request.datetime,
             end: new Date(request.datetime.getTime() + 3600000),
-            optimalMoment: new Date(request.datetime.getTime() + 1800000)
-          }
+            optimalMoment: new Date(request.datetime.getTime() + 1800000),
+          },
         },
         agent: {
           agentId: 'fallback-agent',
@@ -707,7 +887,7 @@ export class EnhancedRecommendationService {
           overallScore: 70,
           reasoning: ['Available for basic guidance'],
           culinarySpecialty: ['Balanced nutrition'],
-          recommendedInteractionStyle: 'conversational'
+          recommendedInteractionStyle: 'conversational',
         },
         tokens: {
           rates: { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 },
@@ -721,16 +901,16 @@ export class EnhancedRecommendationService {
             calculationTime: 0,
             source: 'local_fallback',
             planetaryHour: 'Sun',
-            location: `${request.location.latitude},${request.location.longitude}`
-          }
+            location: `${request.location.latitude},${request.location.longitude}`,
+          },
         },
-        influence: { runeWeight: 0.2, agentWeight: 0.2, tokenWeight: 0.1 }
+        influence: { runeWeight: 0.2, agentWeight: 0.2, tokenWeight: 0.1 },
       },
       metadata: {
         generationTime: Date.now() - startTime,
         totalRecommendations: 1,
-        confidenceScore: 60
-      }
+        confidenceScore: 60,
+      },
     }
   }
 }

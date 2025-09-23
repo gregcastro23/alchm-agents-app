@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
           const cacheContext = buildCacheContext(agent.id, message, {
             sessionId,
             agents: activeAgents,
-            conversationType: 'group' as const
+            conversationType: 'group' as const,
           })
 
           const cachedResponse = await agentCache.getCachedResponse(agent.id, message, cacheContext)
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
               symbol: agent.symbol,
               monicaConstant: agent.monicaConstant,
               consciousnessLevel: agent.consciousnessLevel,
-              cached: true
+              cached: true,
             }
           }
 
@@ -84,10 +84,13 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
 
           const responseTime = Date.now() - startTime
 
-          const content = response.text || "I apologize, but I'm unable to provide a response at this moment."
+          const content =
+            response.text || "I apologize, but I'm unable to provide a response at this moment."
 
           // Cache the group chat response for future similar conversations
-          const personalityScore = agent.monicaConstant ? Math.min(agent.monicaConstant / 6, 1.0) : 0.7
+          const personalityScore = agent.monicaConstant
+            ? Math.min(agent.monicaConstant / 6, 1.0)
+            : 0.7
           await agentCache.cacheResponse(
             agent.id,
             message,
@@ -104,7 +107,7 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
             symbol: agent.symbol,
             monicaConstant: agent.monicaConstant,
             consciousnessLevel: agent.consciousnessLevel,
-            responseTime
+            responseTime,
           }
         } catch (error) {
           console.error(`Error getting response from ${agent.name}:`, error)
@@ -139,7 +142,7 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
       // Log interaction for each agent
       for (const [index, response] of responses.entries()) {
         const agent = activeAgents[index]
-        const powerGained = (agent.monicaConstant * 0.5) + 5 // Power based on Monica Constant
+        const powerGained = agent.monicaConstant * 0.5 + 5 // Power based on Monica Constant
 
         await consciousnessPersistence.logInteraction({
           userId,
@@ -154,8 +157,8 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
             groupSession: true,
             totalAgents: activeAgents.length,
             sessionId: sessionId || 'gallery',
-            cached: response.cached || false
-          }
+            cached: response.cached || false,
+          },
         })
       }
     } catch (dbError) {

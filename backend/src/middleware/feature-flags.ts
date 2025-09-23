@@ -21,7 +21,7 @@ export const featureFlagMiddleware = (req: Request, res: Response, next: NextFun
     planetaryHoursBackend: process.env.PLANETARY_HOURS_BACKEND === 'true',
     thermodynamicsBackend: process.env.THERMODYNAMICS_BACKEND === 'true',
     tokenCalculationsBackend: process.env.TOKEN_CALCULATIONS_BACKEND === 'true',
-    kineticsBackend: process.env.KINETICS_BACKEND === 'true'
+    kineticsBackend: process.env.KINETICS_BACKEND === 'true',
   }
 
   next()

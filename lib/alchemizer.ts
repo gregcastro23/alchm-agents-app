@@ -379,8 +379,10 @@ export function alchemize(
   } catch {}
 
   const envFlag =
-    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS === 'true') || false
-  const ADDITIVE_ONLY_ELEMENTS = (uiOverride !== null ? uiOverride : envFlag)
+    (typeof process !== 'undefined' &&
+      process.env?.NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS === 'true') ||
+    false
+  const ADDITIVE_ONLY_ELEMENTS = uiOverride !== null ? uiOverride : envFlag
   // Emit analytics for A/B tracking
   recordElementalLogicMode(ADDITIVE_ONLY_ELEMENTS ? 'additive' : 'legacy')
   // Check cache first
@@ -736,7 +738,7 @@ export async function generateAlchmForCurrentMoment(): Promise<Record<string, an
 
     // Check cache first
     const cached = currentMomentCache.get(cacheKey)
-    if (cached && (now.getTime() - cached.timestamp) < CACHE_TTL) {
+    if (cached && now.getTime() - cached.timestamp < CACHE_TTL) {
       console.log('Using cached alchemical data for current moment')
       return cached.data
     }
@@ -756,7 +758,7 @@ export async function generateAlchmForCurrentMoment(): Promise<Record<string, an
 
     // Create birth info object for the current moment
     const currentMomentInfo = {
-      year: year,
+      year,
       month: parseInt(month),
       day: parseInt(day),
       hour: parseInt(hour),
@@ -944,7 +946,7 @@ export async function generateAlchmForCurrentMoment(): Promise<Record<string, an
     // Cache the result for future requests
     currentMomentCache.set(cacheKey, {
       data: alchmData,
-      timestamp: now.getTime()
+      timestamp: now.getTime(),
     })
 
     // Clean up old cache entries (keep only last 10)

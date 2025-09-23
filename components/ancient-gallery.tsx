@@ -79,7 +79,7 @@ export function AncientGallery({
 
   // Precompute live stats on-demand when sorting by living metrics
   useEffect(() => {
-    let agents = activeTab === 'legendary' ? collections.legendary : DEMO_AGENTS
+    const agents = activeTab === 'legendary' ? collections.legendary : DEMO_AGENTS
     if (['power', 'overall', 'wisdom', 'charisma', 'intuition'].includes(sortBy)) {
       const missing = agents.filter(a => !liveStatsCache[a.id])
       if (missing.length > 0) {

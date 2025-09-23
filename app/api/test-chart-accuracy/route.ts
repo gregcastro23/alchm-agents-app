@@ -14,10 +14,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
 
     if (!body.birth) {
-      return NextResponse.json(
-        { error: 'Missing birth information' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Missing birth information' }, { status: 400 })
     }
 
     // Validate birth info
@@ -31,7 +28,7 @@ export async function POST(req: NextRequest) {
       hour: birth.hour,
       minute: birth.minute,
       latitude: birth.latitude || 40.7128,
-      longitude: birth.longitude || -74.0060,
+      longitude: birth.longitude || -74.006,
     }
 
     // Run accuracy comparison
@@ -44,26 +41,25 @@ export async function POST(req: NextRequest) {
           metadata: accuracyTest.legacy.metadata,
           ascendant: accuracyTest.legacy.tropical.Ascendant,
           planetCount: accuracyTest.legacy.tropical.CelestialBodies.all.length,
-          samplePlanets: accuracyTest.legacy.tropical.CelestialBodies.all.slice(0, 3)
+          samplePlanets: accuracyTest.legacy.tropical.CelestialBodies.all.slice(0, 3),
         },
         enhanced: {
           metadata: accuracyTest.enhanced.metadata,
           ascendant: accuracyTest.enhanced.tropical.Ascendant,
           planetCount: accuracyTest.enhanced.tropical.CelestialBodies.all.length,
-          samplePlanets: accuracyTest.enhanced.tropical.CelestialBodies.all.slice(0, 3)
-        }
+          samplePlanets: accuracyTest.enhanced.tropical.CelestialBodies.all.slice(0, 3),
+        },
       },
       improvements: accuracyTest.improvements,
       summary: accuracyTest.summary,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
     console.error('Chart accuracy test error:', error)
     return NextResponse.json(
       {
         error: 'Failed to test chart accuracy',
-        details: error instanceof Error ? error.message : String(error)
+        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     )
@@ -76,14 +72,14 @@ export async function GET() {
     description: 'Compare legacy vs enhanced astronomical calculations',
     usage: 'POST with birth info to test accuracy improvements',
     expectedImprovements: {
-      'Sun': '±0.1° vs ±2-5° (legacy)',
-      'Moon': '±0.5° vs ±2-5° (legacy)',
-      'Mercury': '±2.0° improvement for retrograde periods',
-      'Venus': '±1.0° improvement for retrograde periods',
-      'Mars': '±1.5° improvement for elliptical orbit',
-      'Jupiter': '±0.5° improvement',
-      'Saturn': '±0.3° improvement',
-      'Ascendant': '±1.0° improvement with proper sidereal time'
-    }
+      Sun: '±0.1° vs ±2-5° (legacy)',
+      Moon: '±0.5° vs ±2-5° (legacy)',
+      Mercury: '±2.0° improvement for retrograde periods',
+      Venus: '±1.0° improvement for retrograde periods',
+      Mars: '±1.5° improvement for elliptical orbit',
+      Jupiter: '±0.5° improvement',
+      Saturn: '±0.3° improvement',
+      Ascendant: '±1.0° improvement with proper sidereal time',
+    },
   })
 }

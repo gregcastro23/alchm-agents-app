@@ -13,7 +13,13 @@ import {
   plutoData,
 } from './planets'
 import type { PlanetData, TransitData } from './planets/types'
-import { calculateAllPlanets, calculateProfessionalHouses, type EnhancedBirthInfo, toJulianDay, longitudeToSignDegree } from './enhanced-astronomical-calculator'
+import {
+  calculateAllPlanets,
+  calculateProfessionalHouses,
+  type EnhancedBirthInfo,
+  toJulianDay,
+  longitudeToSignDegree,
+} from './enhanced-astronomical-calculator'
 
 // Define orbital periods for planets in days
 const orbitalPeriods = {
@@ -79,7 +85,11 @@ function safeDegreeValue(degree: any): number {
 }
 
 // Utility function to ensure valid planetary position object
-function validatePlanetaryPosition(position: any): { sign: string; degree: number; retrograde: boolean } {
+function validatePlanetaryPosition(position: any): {
+  sign: string
+  degree: number
+  retrograde: boolean
+} {
   return {
     sign: typeof position?.sign === 'string' ? position.sign : 'Aries',
     degree: safeDegreeValue(position?.degree),
@@ -199,7 +209,8 @@ function findSignFromTransitDates(
       const s = parseMonthDay(dates.Start)
       const e = parseMonthDay(dates.End)
       const startYear = currentYear
-      const endYear = (s.month > e.month || (s.month === e.month && s.day > e.day)) ? currentYear + 1 : currentYear
+      const endYear =
+        s.month > e.month || (s.month === e.month && s.day > e.day) ? currentYear + 1 : currentYear
       const startDate = new Date(startYear, s.month - 1, s.day)
       const endDate = new Date(endYear, e.month - 1, e.day)
 
@@ -309,7 +320,9 @@ export function getCurrentPlanetaryPositions(
   // Check cache first (unless forced timestamp is provided)
   if (!timestamp) {
     const cachedPositions =
-      performanceCache.getPlanetaryPositions<Record<string, { sign: string; degree: number; retrograde: boolean }>>()
+      performanceCache.getPlanetaryPositions<
+        Record<string, { sign: string; degree: number; retrograde: boolean }>
+      >()
     if (cachedPositions) {
       return cachedPositions
     }
@@ -335,10 +348,22 @@ export function getCurrentPlanetaryPositions(
 
   const enhanced = calculateAllPlanets(birthInfo)
 
-  const calculatedPositions: Record<string, { sign: string; degree: number; retrograde: boolean }> = {}
+  const calculatedPositions: Record<string, { sign: string; degree: number; retrograde: boolean }> =
+    {}
 
   // Map enhanced planets (Sun..Pluto)
-  ;['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'].forEach(planet => {
+  ;[
+    'Sun',
+    'Moon',
+    'Mercury',
+    'Venus',
+    'Mars',
+    'Jupiter',
+    'Saturn',
+    'Uranus',
+    'Neptune',
+    'Pluto',
+  ].forEach(planet => {
     const pos = enhanced.planets[planet]
     if (pos) {
       calculatedPositions[planet] = {
@@ -351,7 +376,18 @@ export function getCurrentPlanetaryPositions(
 
   // Override with date-correlated transit data from planet files when available
   const nowDate = new Date()
-  ;['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'].forEach(planet => {
+  ;[
+    'Sun',
+    'Moon',
+    'Mercury',
+    'Venus',
+    'Mars',
+    'Jupiter',
+    'Saturn',
+    'Uranus',
+    'Neptune',
+    'Pluto',
+  ].forEach(planet => {
     const transit = getTransitPositionFromDates(planet, nowDate)
     if (transit && calculatedPositions[planet]) {
       calculatedPositions[planet].sign = transit.sign
@@ -366,20 +402,45 @@ export function getCurrentPlanetaryPositions(
   // Approximate Chiron via transit dates if available (fallback to Aries 0°)
   const chironTransit = getTransitPositionFromDates('Chiron' as any, now)
   calculatedPositions['Chiron'] = chironTransit
-    ? validatePlanetaryPosition({ sign: chironTransit.sign, degree: chironTransit.degree, retrograde: true })
+    ? validatePlanetaryPosition({
+        sign: chironTransit.sign,
+        degree: chironTransit.degree,
+        retrograde: true,
+      })
     : validatePlanetaryPosition({ sign: 'Aries', degree: 0, retrograde: true })
 
   // Derive Ascendant and MC from enhanced calculator when possible
   // Asc already available via enhanced, compute MC as Ascendant + 90° on ecliptic
   const ascSign = enhanced.ascendant.sign
   const ascDeg = enhanced.ascendant.signDegree
-  const signs = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces']
+  const signs = [
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
+  ]
   const ascIndex = signs.indexOf(ascSign)
   const ascAbs = ascIndex * 30 + ascDeg
   const mcAbs = (ascAbs + 90) % 360
   const mcSD = longitudeToSignDegree(mcAbs)
-  calculatedPositions['Ascendant'] = validatePlanetaryPosition({ sign: ascSign, degree: ascDeg, retrograde: false })
-  calculatedPositions['MC'] = validatePlanetaryPosition({ sign: mcSD.sign, degree: mcSD.degree, retrograde: false })
+  calculatedPositions['Ascendant'] = validatePlanetaryPosition({
+    sign: ascSign,
+    degree: ascDeg,
+    retrograde: false,
+  })
+  calculatedPositions['MC'] = validatePlanetaryPosition({
+    sign: mcSD.sign,
+    degree: mcSD.degree,
+    retrograde: false,
+  })
 
   performanceCache.setPlanetaryPositions(calculatedPositions)
   console.log(`[Planetary Positions] Enhanced calculation complete at: ${new Date().toISOString()}`)

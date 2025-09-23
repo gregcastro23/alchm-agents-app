@@ -9,7 +9,7 @@ const analyzeAspectsWithKinetics = async (planet1: string, planet2: string, loca
     phase: 'applying' as const,
     velocity: 0.1,
     exact: new Date(),
-    accuracy: 0.9
+    accuracy: 0.9,
   }
 }
 import { sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
@@ -25,7 +25,7 @@ export function AspectPhaseIndicator({
   planet1,
   planet2,
   location = { latitude: 37.7749, longitude: -122.4194 },
-  className = ''
+  className = '',
 }: AspectPhaseIndicatorProps) {
   const [aspectData, setAspectData] = useState<{
     type: string
@@ -43,7 +43,7 @@ export function AspectPhaseIndicator({
         // Sample alchemical data for aspect analysis
         const samples = await sampleHourlyAlchm(location, new Date(), {
           hoursToSample: 3,
-          includePlanetaryHours: true
+          includePlanetaryHours: true,
         })
 
         if (!samples || samples.length === 0) {
@@ -55,9 +55,10 @@ export function AspectPhaseIndicator({
         const analysis = await analyzeAspectsWithKinetics(samples, location)
 
         // Find the aspect between our two planets
-        const relevantAspect = analysis.aspects.find(a =>
-          (a.planet1 === planet1 && a.planet2 === planet2) ||
-          (a.planet1 === planet2 && a.planet2 === planet1)
+        const relevantAspect = analysis.aspects.find(
+          a =>
+            (a.planet1 === planet1 && a.planet2 === planet2) ||
+            (a.planet1 === planet2 && a.planet2 === planet1)
         )
 
         if (relevantAspect) {
@@ -65,7 +66,7 @@ export function AspectPhaseIndicator({
             type: relevantAspect.type,
             phase: relevantAspect.status,
             orb: Math.abs(relevantAspect.orb),
-            rate: relevantAspect.rate
+            rate: relevantAspect.rate,
           })
         } else {
           setAspectData(null)
@@ -121,8 +122,8 @@ export function AspectPhaseIndicator({
 
   const getPhaseDescription = () => {
     const orbText = `${aspectData.orb.toFixed(1)}°`
-    const rateText = Math.abs(aspectData.rate) > 0.01 ?
-      ` (${Math.abs(aspectData.rate).toFixed(2)}°/hr)` : ''
+    const rateText =
+      Math.abs(aspectData.rate) > 0.01 ? ` (${Math.abs(aspectData.rate).toFixed(2)}°/hr)` : ''
 
     switch (aspectData.phase) {
       case 'applying':
@@ -145,7 +146,7 @@ export function AspectPhaseIndicator({
 export function AspectPhaseWidget({
   planets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars'],
   location = { latitude: 37.7749, longitude: -122.4194 },
-  className = ''
+  className = '',
 }: {
   planets?: string[]
   location?: { latitude: number; longitude: number }
@@ -162,7 +163,7 @@ export function AspectPhaseWidget({
         // Sample alchemical data for aspect analysis
         const samples = await sampleHourlyAlchm(location, new Date(), {
           hoursToSample: 3,
-          includePlanetaryHours: true
+          includePlanetaryHours: true,
         })
 
         if (!samples || samples.length === 0) {
@@ -174,8 +175,8 @@ export function AspectPhaseWidget({
         const analysis = await analyzeAspectsWithKinetics(samples, location)
 
         // Filter for aspects involving our selected planets
-        const relevantAspects = analysis.aspects.filter(a =>
-          planets.includes(a.planet1) || planets.includes(a.planet2)
+        const relevantAspects = analysis.aspects.filter(
+          a => planets.includes(a.planet1) || planets.includes(a.planet2)
         )
 
         // Sort by orb (closest to exact first)

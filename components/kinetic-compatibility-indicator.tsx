@@ -4,12 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Users,
   Zap,
@@ -20,7 +15,7 @@ import {
   Sparkles,
   Activity,
   Target,
-  Timer
+  Timer,
 } from 'lucide-react'
 import type { CraftedAgent } from '@/lib/agent-types'
 
@@ -58,7 +53,7 @@ export function KineticCompatibilityIndicator({
   agent2,
   location,
   variant = 'compact',
-  showRecommendations = true
+  showRecommendations = true,
 }: KineticCompatibilityIndicatorProps) {
   const [compatibilityData, setCompatibilityData] = useState<KineticCompatibilityData | null>(null)
   const [loading, setLoading] = useState(false)
@@ -95,7 +90,9 @@ export function KineticCompatibilityIndicator({
     }
   }
 
-  const getCompatibilityLevel = (score: number): { label: string; color: string; icon: React.ElementType } => {
+  const getCompatibilityLevel = (
+    score: number
+  ): { label: string; color: string; icon: React.ElementType } => {
     if (score >= 0.8) return { label: 'Exceptional', color: 'text-purple-600', icon: Sparkles }
     if (score >= 0.7) return { label: 'Excellent', color: 'text-blue-600', icon: Heart }
     if (score >= 0.6) return { label: 'Good', color: 'text-green-600', icon: Users }
@@ -153,7 +150,8 @@ export function KineticCompatibilityIndicator({
             <div className="text-sm">
               <div className="font-medium">{compatLevel.label} Compatibility</div>
               <div className="text-gray-600">
-                Current context: {compatibilityData.currentContext.bothOptimal ? 'Optimal' : 'Standard'}
+                Current context:{' '}
+                {compatibilityData.currentContext.bothOptimal ? 'Optimal' : 'Standard'}
               </div>
             </div>
           </TooltipContent>
@@ -194,13 +192,16 @@ export function KineticCompatibilityIndicator({
             <div className="flex items-center space-x-2">
               <Brain className="h-4 w-4 text-gray-500" />
               <span className="text-gray-600">
-                Consciousness: {Math.round(compatibilityData.synergy.combinedConsciousnessRate * 100)}%
+                Consciousness:{' '}
+                {Math.round(compatibilityData.synergy.combinedConsciousnessRate * 100)}%
               </span>
             </div>
           </div>
 
           <div className="mt-3">
-            <div className={`text-sm font-medium ${getMomentumSynergyColor(compatibilityData.synergy.momentumSynergy)}`}>
+            <div
+              className={`text-sm font-medium ${getMomentumSynergyColor(compatibilityData.synergy.momentumSynergy)}`}
+            >
               {compatibilityData.synergy.momentumSynergy}
             </div>
           </div>
@@ -231,8 +232,8 @@ export function KineticCompatibilityIndicator({
             </div>
             {compatibilityData.compatibility.enhancement > 1 && (
               <Badge className="bg-green-100 text-green-700">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                +{Math.round((compatibilityData.compatibility.enhancement - 1) * 100)}%
+                <TrendingUp className="h-3 w-3 mr-1" />+
+                {Math.round((compatibilityData.compatibility.enhancement - 1) * 100)}%
               </Badge>
             )}
           </div>
@@ -246,7 +247,12 @@ export function KineticCompatibilityIndicator({
               <span className="font-medium text-sm">Current Context</span>
             </div>
             <div className="text-sm space-y-1">
-              <div>Hour: <span className="font-medium">{compatibilityData.currentContext.planetaryHour}</span></div>
+              <div>
+                Hour:{' '}
+                <span className="font-medium">
+                  {compatibilityData.currentContext.planetaryHour}
+                </span>
+              </div>
               {compatibilityData.currentContext.bothOptimal ? (
                 <Badge className="bg-purple-100 text-purple-700">
                   <Sparkles className="h-3 w-3 mr-1" />
@@ -254,7 +260,8 @@ export function KineticCompatibilityIndicator({
                 </Badge>
               ) : (
                 <div className="text-gray-600">
-                  {compatibilityData.currentContext.agent1Optimal ? agent1.name : agent2.name} optimal
+                  {compatibilityData.currentContext.agent1Optimal ? agent1.name : agent2.name}{' '}
+                  optimal
                 </div>
               )}
             </div>
@@ -266,8 +273,16 @@ export function KineticCompatibilityIndicator({
               <span className="font-medium text-sm">Synergy Metrics</span>
             </div>
             <div className="text-sm space-y-1">
-              <div>Shared Peak Hours: <span className="font-medium">{compatibilityData.synergy.sharedPeakCount}</span></div>
-              <div>Consciousness Rate: <span className="font-medium">{Math.round(compatibilityData.synergy.combinedConsciousnessRate * 100)}%</span></div>
+              <div>
+                Shared Peak Hours:{' '}
+                <span className="font-medium">{compatibilityData.synergy.sharedPeakCount}</span>
+              </div>
+              <div>
+                Consciousness Rate:{' '}
+                <span className="font-medium">
+                  {Math.round(compatibilityData.synergy.combinedConsciousnessRate * 100)}%
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -278,7 +293,9 @@ export function KineticCompatibilityIndicator({
             <Activity className="h-4 w-4 text-gray-600" />
             <span className="font-medium text-sm">Momentum Synergy</span>
           </div>
-          <div className={`text-lg font-medium ${getMomentumSynergyColor(compatibilityData.synergy.momentumSynergy)}`}>
+          <div
+            className={`text-lg font-medium ${getMomentumSynergyColor(compatibilityData.synergy.momentumSynergy)}`}
+          >
             {compatibilityData.synergy.momentumSynergy}
           </div>
         </div>
@@ -291,7 +308,7 @@ export function KineticCompatibilityIndicator({
               <span className="font-medium text-sm">Optimal Interaction Hours</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {compatibilityData.synergy.sharedPeakHours.map((hour) => (
+              {compatibilityData.synergy.sharedPeakHours.map(hour => (
                 <Badge key={hour} variant="outline" className="text-blue-600">
                   {hour}
                 </Badge>
@@ -345,7 +362,7 @@ interface MultiAgentCompatibilityProps {
 export function MultiAgentCompatibility({
   agents,
   location,
-  maxDisplayPairs = 6
+  maxDisplayPairs = 6,
 }: MultiAgentCompatibilityProps) {
   const [analysis, setAnalysis] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -366,8 +383,8 @@ export function MultiAgentCompatibility({
         body: JSON.stringify({
           agentIds,
           location,
-          analysisType: 'pairwise'
-        })
+          analysisType: 'pairwise',
+        }),
       })
 
       if (response.ok) {
@@ -420,7 +437,10 @@ export function MultiAgentCompatibility({
             const compatLevel = getCompatibilityLevel(compatibility)
 
             return (
-              <div key={`${pair.agent1}-${pair.agent2}`} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+              <div
+                key={`${pair.agent1}-${pair.agent2}`}
+                className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+              >
                 <div className="flex items-center space-x-3">
                   <Badge variant="outline" className="text-xs">
                     #{index + 1}

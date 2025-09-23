@@ -39,7 +39,7 @@ export class AgentMemoryManager {
     memoryUsageMB: 0,
     garbageCollectionRuns: 0,
     agentsEvicted: 0,
-    cacheHitRate: 0
+    cacheHitRate: 0,
   }
 
   private static gcTimer: NodeJS.Timeout | null = null
@@ -106,8 +106,10 @@ export class AgentMemoryManager {
     const estimatedSize = this.estimateAgentMemorySize(agent)
 
     // Check if we need to evict agents first
-    if (this.agentCache.size >= this.MAX_AGENTS_IN_MEMORY ||
-        this.metrics.memoryUsageMB + (estimatedSize / 1024 / 1024) > this.MAX_MEMORY_MB) {
+    if (
+      this.agentCache.size >= this.MAX_AGENTS_IN_MEMORY ||
+      this.metrics.memoryUsageMB + estimatedSize / 1024 / 1024 > this.MAX_MEMORY_MB
+    ) {
       this.evictLeastRecentlyUsedAgent()
     }
 
@@ -116,7 +118,7 @@ export class AgentMemoryManager {
       lastAccessed: now,
       accessCount: 1,
       memorySize: estimatedSize,
-      priority: this.calculateAgentPriority(agent)
+      priority: this.calculateAgentPriority(agent),
     }
 
     this.agentCache.set(agent.id, memoryEntry)
@@ -137,8 +139,14 @@ export class AgentMemoryManager {
 
     // Add bonus for popular agents
     const popularAgents = new Set([
-      'leonardo-da-vinci', 'william-shakespeare', 'albert-einstein',
-      'nikola-tesla', 'marie-curie', 'cleopatra', 'socrates', 'carl-jung'
+      'leonardo-da-vinci',
+      'william-shakespeare',
+      'albert-einstein',
+      'nikola-tesla',
+      'marie-curie',
+      'cleopatra',
+      'socrates',
+      'carl-jung',
     ])
     const popularityBonus = popularAgents.has(agent.id) ? 0.2 : 0
 
@@ -238,7 +246,7 @@ export class AgentMemoryManager {
       'marie-curie',
       'cleopatra',
       'socrates',
-      'carl-jung'
+      'carl-jung',
     ]
 
     for (const agentId of popularAgents) {
@@ -260,7 +268,8 @@ export class AgentMemoryManager {
 
     // Simple moving average for hit rate
     const hits = wasHit ? 1 : 0
-    this.metrics.cacheHitRate = (this.metrics.cacheHitRate * (currentRequests - 1) + hits) / currentRequests
+    this.metrics.cacheHitRate =
+      (this.metrics.cacheHitRate * (currentRequests - 1) + hits) / currentRequests
   }
 
   /**
@@ -269,7 +278,7 @@ export class AgentMemoryManager {
   static getMemoryMetrics(): MemoryMetrics {
     return {
       ...this.metrics,
-      memoryUsageMB: this.calculateTotalMemoryUsage()
+      memoryUsageMB: this.calculateTotalMemoryUsage(),
     }
   }
 
@@ -327,7 +336,7 @@ export class AgentMemoryManager {
       memoryUsageMB: Math.round(metrics.memoryUsageMB * 100) / 100,
       cacheHitRatePercent: Math.round(metrics.cacheHitRate * 100),
       totalEvictions: metrics.agentsEvicted,
-      gcRuns: metrics.garbageCollectionRuns
+      gcRuns: metrics.garbageCollectionRuns,
     }
   }
 }

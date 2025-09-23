@@ -15,7 +15,7 @@ import {
   Eye,
   EyeOff,
   PlayCircle,
-  PauseCircle
+  PauseCircle,
 } from 'lucide-react'
 import type { CraftedAgent } from '@/lib/agent-types'
 
@@ -82,7 +82,7 @@ export function ChartTransformVisualization({
   variant = 'full',
   showAnimation = true,
   autoUpdate = true,
-  onTransformUpdate
+  onTransformUpdate,
 }: ChartTransformVisualizationProps) {
   const [transformData, setTransformData] = useState<ChartTransformData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -101,7 +101,7 @@ export function ChartTransformVisualization({
 
     return planets.map((planet, index) => {
       // Convert degree position to radians for circle positioning
-      const totalDegrees = planet.degree + (getSignOrder(planet.sign) * 30)
+      const totalDegrees = planet.degree + getSignOrder(planet.sign) * 30
       const radians = (totalDegrees * Math.PI) / 180 - Math.PI / 2 // Start from top
 
       const x = centerX + radius * Math.cos(radians)
@@ -114,22 +114,43 @@ export function ChartTransformVisualization({
         house: planet.house || 1,
         x,
         y,
-        symbol: getPlanetSymbol(planet.planet)
+        symbol: getPlanetSymbol(planet.planet),
       }
     })
   }
 
   const getSignOrder = (sign: string): number => {
-    const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-                   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+    const signs = [
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
+    ]
     return signs.indexOf(sign)
   }
 
   const getPlanetSymbol = (planet: string): string => {
     const symbols = {
-      'Sun': '☉', 'Moon': '☽', 'Mercury': '☿', 'Venus': '♀',
-      'Mars': '♂', 'Jupiter': '♃', 'Saturn': '♄', 'Uranus': '♅',
-      'Neptune': '♆', 'Pluto': '♇', 'North Node': '☊', 'South Node': '☋'
+      Sun: '☉',
+      Moon: '☽',
+      Mercury: '☿',
+      Venus: '♀',
+      Mars: '♂',
+      Jupiter: '♃',
+      Saturn: '♄',
+      Uranus: '♅',
+      Neptune: '♆',
+      Pluto: '♇',
+      'North Node': '☊',
+      'South Node': '☋',
     }
     return symbols[planet as keyof typeof symbols] || '○'
   }
@@ -138,7 +159,12 @@ export function ChartTransformVisualization({
   const calculateAspects = (points: ChartPoint[]): AspectLine[] => {
     const aspects: AspectLine[] = []
     const aspectOrbs = {
-      conjunction: 8, opposition: 8, trine: 6, square: 6, sextile: 4, quincunx: 3
+      conjunction: 8,
+      opposition: 8,
+      trine: 6,
+      square: 6,
+      sextile: 4,
+      quincunx: 3,
     }
 
     for (let i = 0; i < points.length; i++) {
@@ -147,8 +173,8 @@ export function ChartTransformVisualization({
         const point2 = points[j]
 
         // Calculate angular difference
-        const deg1 = (getSignOrder(point1.sign) * 30) + point1.degree
-        const deg2 = (getSignOrder(point2.sign) * 30) + point2.degree
+        const deg1 = getSignOrder(point1.sign) * 30 + point1.degree
+        const deg2 = getSignOrder(point2.sign) * 30 + point2.degree
         let diff = Math.abs(deg1 - deg2)
         if (diff > 180) diff = 360 - diff
 
@@ -159,7 +185,7 @@ export function ChartTransformVisualization({
           { type: 'trine' as const, angle: 120 },
           { type: 'square' as const, angle: 90 },
           { type: 'sextile' as const, angle: 60 },
-          { type: 'quincunx' as const, angle: 150 }
+          { type: 'quincunx' as const, angle: 150 },
         ]
 
         for (const aspectType of aspectTypes) {
@@ -173,7 +199,7 @@ export function ChartTransformVisualization({
               type: aspectType.type,
               orb,
               applying: Math.random() > 0.5, // Simplified
-              exact: orb < 1
+              exact: orb < 1,
             })
             break
           }
@@ -193,7 +219,7 @@ export function ChartTransformVisualization({
       { planet: 'Venus', sign: 'Aries', degree: 2, house: 12 },
       { planet: 'Mars', sign: 'Sagittarius', degree: 16, house: 8 },
       { planet: 'Jupiter', sign: 'Virgo', degree: 27, house: 5 },
-      { planet: 'Saturn', sign: 'Cancer', degree: 11, house: 3 }
+      { planet: 'Saturn', sign: 'Cancer', degree: 11, house: 3 },
     ]
 
     const currentPlanets = [
@@ -203,7 +229,7 @@ export function ChartTransformVisualization({
       { planet: 'Venus', sign: 'Leo', degree: 13, house: 12 },
       { planet: 'Mars', sign: 'Pisces', degree: 20, house: 8 },
       { planet: 'Jupiter', sign: 'Cancer', degree: 7, house: 5 },
-      { planet: 'Saturn', sign: 'Aries', degree: 3, house: 3 }
+      { planet: 'Saturn', sign: 'Aries', degree: 3, house: 3 },
     ]
 
     const natalPoints = generateChartPoints(natalPlanets)
@@ -217,24 +243,40 @@ export function ChartTransformVisualization({
     currentPoints.forEach(currentPoint => {
       natalPoints.forEach(natalPoint => {
         if (currentPoint.planet !== natalPoint.planet) {
-          const deg1 = (getSignOrder(currentPoint.sign) * 30) + currentPoint.degree
-          const deg2 = (getSignOrder(natalPoint.sign) * 30) + natalPoint.degree
+          const deg1 = getSignOrder(currentPoint.sign) * 30 + currentPoint.degree
+          const deg2 = getSignOrder(natalPoint.sign) * 30 + natalPoint.degree
           let diff = Math.abs(deg1 - deg2)
           if (diff > 180) diff = 360 - diff
 
-          if (diff <= 8 || Math.abs(diff - 180) <= 8 || Math.abs(diff - 120) <= 6 ||
-              Math.abs(diff - 90) <= 6 || Math.abs(diff - 60) <= 4) {
+          if (
+            diff <= 8 ||
+            Math.abs(diff - 180) <= 8 ||
+            Math.abs(diff - 120) <= 6 ||
+            Math.abs(diff - 90) <= 6 ||
+            Math.abs(diff - 60) <= 4
+          ) {
             transitAspects.push({
               from: currentPoint,
               to: natalPoint,
-              type: diff <= 8 ? 'conjunction' :
-                    Math.abs(diff - 180) <= 8 ? 'opposition' :
-                    Math.abs(diff - 120) <= 6 ? 'trine' :
-                    Math.abs(diff - 90) <= 6 ? 'square' : 'sextile',
-              orb: Math.min(diff, Math.abs(diff - 180), Math.abs(diff - 120),
-                           Math.abs(diff - 90), Math.abs(diff - 60)),
+              type:
+                diff <= 8
+                  ? 'conjunction'
+                  : Math.abs(diff - 180) <= 8
+                    ? 'opposition'
+                    : Math.abs(diff - 120) <= 6
+                      ? 'trine'
+                      : Math.abs(diff - 90) <= 6
+                        ? 'square'
+                        : 'sextile',
+              orb: Math.min(
+                diff,
+                Math.abs(diff - 180),
+                Math.abs(diff - 120),
+                Math.abs(diff - 90),
+                Math.abs(diff - 60)
+              ),
               applying: Math.random() > 0.5,
-              exact: false
+              exact: false,
             })
           }
         }
@@ -244,35 +286,41 @@ export function ChartTransformVisualization({
     return {
       natal: {
         points: natalPoints,
-        aspects: natalAspects
+        aspects: natalAspects,
       },
       current: {
         points: currentPoints,
         aspects: currentAspects,
-        transitAspects: transitAspects.slice(0, 6) // Limit for clarity
+        transitAspects: transitAspects.slice(0, 6), // Limit for clarity
       },
       transformMetrics: {
-        totalAspectChanges: Math.abs(currentAspects.length - natalAspects.length) + transitAspects.length,
+        totalAspectChanges:
+          Math.abs(currentAspects.length - natalAspects.length) + transitAspects.length,
         powerShift: (Math.random() - 0.5) * 2,
         elementalShift: {
           fire: (Math.random() - 0.5) * 2,
           water: (Math.random() - 0.5) * 2,
           air: (Math.random() - 0.5) * 2,
-          earth: (Math.random() - 0.5) * 2
+          earth: (Math.random() - 0.5) * 2,
         },
-        intensityLevel: transitAspects.length > 4 ? 'intense' :
-                       transitAspects.length > 2 ? 'strong' : 'moderate',
-        dominantTransits: transitAspects.slice(0, 3).map(t => `${t.from.planet} ${t.type} ${t.to.planet}`)
-      }
+        intensityLevel:
+          transitAspects.length > 4 ? 'intense' : transitAspects.length > 2 ? 'strong' : 'moderate',
+        dominantTransits: transitAspects
+          .slice(0, 3)
+          .map(t => `${t.from.planet} ${t.type} ${t.to.planet}`),
+      },
     }
   }
 
   // Memoize the callback to prevent recreation on every render
-  const stableOnTransformUpdate = useCallback((data: ChartTransformData) => {
-    if (onTransformUpdate) {
-      onTransformUpdate(data)
-    }
-  }, [onTransformUpdate])
+  const stableOnTransformUpdate = useCallback(
+    (data: ChartTransformData) => {
+      if (onTransformUpdate) {
+        onTransformUpdate(data)
+      }
+    },
+    [onTransformUpdate]
+  )
 
   const fetchTransformData = useCallback(async () => {
     // Prevent multiple simultaneous calls
@@ -286,7 +334,6 @@ export function ChartTransformVisualization({
       const data = generateMockChartData()
       setTransformData(data)
       stableOnTransformUpdate(data)
-
     } catch (error) {
       console.error('Failed to fetch chart transform data:', error)
       setError('Failed to load chart transformation data')
@@ -311,12 +358,12 @@ export function ChartTransformVisualization({
       trine: '#45b7d1',
       square: '#f7b731',
       sextile: '#5f27cd',
-      quincunx: '#00d2d3'
+      quincunx: '#00d2d3',
     }
     return colors[type as keyof typeof colors] || '#666'
   }
 
-  const AspectLine = ({ aspect, className = '' }: { aspect: AspectLine, className?: string }) => (
+  const AspectLine = ({ aspect, className = '' }: { aspect: AspectLine; className?: string }) => (
     <line
       x1={aspect.from.x}
       y1={aspect.from.y}
@@ -330,22 +377,19 @@ export function ChartTransformVisualization({
     />
   )
 
-  const ChartPoint = ({ point, color = '#333', size = 'normal' }: {
-    point: ChartPoint,
-    color?: string,
+  const ChartPoint = ({
+    point,
+    color = '#333',
+    size = 'normal',
+  }: {
+    point: ChartPoint
+    color?: string
     size?: 'small' | 'normal' | 'large'
   }) => {
     const radius = size === 'small' ? 12 : size === 'large' ? 20 : 16
     return (
       <g>
-        <circle
-          cx={point.x}
-          cy={point.y}
-          r={radius}
-          fill={color}
-          stroke="white"
-          strokeWidth={2}
-        />
+        <circle cx={point.x} cy={point.y} r={radius} fill={color} stroke="white" strokeWidth={2} />
         <text
           x={point.x}
           y={point.y + 4}
@@ -390,7 +434,9 @@ export function ChartTransformVisualization({
   }
 
   return (
-    <Card className={`${className} border-2 border-purple-200 bg-gradient-to-br from-purple-50/50 to-pink-50/50`}>
+    <Card
+      className={`${className} border-2 border-purple-200 bg-gradient-to-br from-purple-50/50 to-pink-50/50`}
+    >
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Layers className="w-5 h-5 text-purple-600" />
@@ -404,12 +450,12 @@ export function ChartTransformVisualization({
             {agent ? `${agent.name}'s consciousness shifts` : 'Current planetary influences'}
           </p>
           <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsAnimating(!isAnimating)}
-            >
-              {isAnimating ? <PauseCircle className="w-3 h-3" /> : <PlayCircle className="w-3 h-3" />}
+            <Button variant="ghost" size="sm" onClick={() => setIsAnimating(!isAnimating)}>
+              {isAnimating ? (
+                <PauseCircle className="w-3 h-3" />
+              ) : (
+                <PlayCircle className="w-3 h-3" />
+              )}
             </Button>
             <Button variant="ghost" size="sm" onClick={fetchTransformData}>
               <RefreshCw className="w-3 h-3" />
@@ -423,13 +469,18 @@ export function ChartTransformVisualization({
           <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
             <ArrowUpDown className="w-4 h-4 mx-auto mb-1 text-purple-600" />
             <div className="text-sm font-medium">Aspect Changes</div>
-            <div className="text-lg font-bold">{transformData.transformMetrics.totalAspectChanges}</div>
+            <div className="text-lg font-bold">
+              {transformData.transformMetrics.totalAspectChanges}
+            </div>
           </div>
           <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
             <TrendingUp className="w-4 h-4 mx-auto mb-1 text-blue-600" />
             <div className="text-sm font-medium">Power Shift</div>
-            <div className={`text-lg font-bold ${transformData.transformMetrics.powerShift > 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {transformData.transformMetrics.powerShift > 0 ? '+' : ''}{(transformData.transformMetrics.powerShift * 100).toFixed(0)}%
+            <div
+              className={`text-lg font-bold ${transformData.transformMetrics.powerShift > 0 ? 'text-green-600' : 'text-red-600'}`}
+            >
+              {transformData.transformMetrics.powerShift > 0 ? '+' : ''}
+              {(transformData.transformMetrics.powerShift * 100).toFixed(0)}%
             </div>
           </div>
           <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
@@ -440,7 +491,9 @@ export function ChartTransformVisualization({
           <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
             <Zap className="w-4 h-4 mx-auto mb-1 text-orange-600" />
             <div className="text-sm font-medium">Intensity</div>
-            <div className="text-sm font-bold capitalize">{transformData.transformMetrics.intensityLevel}</div>
+            <div className="text-sm font-bold capitalize">
+              {transformData.transformMetrics.intensityLevel}
+            </div>
           </div>
         </div>
 
@@ -456,7 +509,7 @@ export function ChartTransformVisualization({
             <div className="flex items-center gap-4 mb-4">
               <div className="flex items-center gap-2">
                 <Button
-                  variant={showNatal ? "default" : "outline"}
+                  variant={showNatal ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setShowNatal(!showNatal)}
                 >
@@ -464,7 +517,7 @@ export function ChartTransformVisualization({
                   Natal
                 </Button>
                 <Button
-                  variant={showCurrent ? "default" : "outline"}
+                  variant={showCurrent ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setShowCurrent(!showCurrent)}
                 >
@@ -475,26 +528,34 @@ export function ChartTransformVisualization({
             </div>
 
             <div className="flex justify-center">
-              <svg width="300" height="300" className="border rounded-full bg-white dark:bg-black/20">
+              <svg
+                width="300"
+                height="300"
+                className="border rounded-full bg-white dark:bg-black/20"
+              >
                 {/* Natal aspects */}
-                {showNatal && transformData.natal.aspects.map((aspect, i) => (
-                  <AspectLine key={`natal-${i}`} aspect={aspect} className="opacity-40" />
-                ))}
+                {showNatal &&
+                  transformData.natal.aspects.map((aspect, i) => (
+                    <AspectLine key={`natal-${i}`} aspect={aspect} className="opacity-40" />
+                  ))}
 
                 {/* Current aspects */}
-                {showCurrent && transformData.current.aspects.map((aspect, i) => (
-                  <AspectLine key={`current-${i}`} aspect={aspect} />
-                ))}
+                {showCurrent &&
+                  transformData.current.aspects.map((aspect, i) => (
+                    <AspectLine key={`current-${i}`} aspect={aspect} />
+                  ))}
 
                 {/* Natal points */}
-                {showNatal && transformData.natal.points.map((point, i) => (
-                  <ChartPoint key={`natal-${i}`} point={point} color="#666" size="small" />
-                ))}
+                {showNatal &&
+                  transformData.natal.points.map((point, i) => (
+                    <ChartPoint key={`natal-${i}`} point={point} color="#666" size="small" />
+                  ))}
 
                 {/* Current points */}
-                {showCurrent && transformData.current.points.map((point, i) => (
-                  <ChartPoint key={`current-${i}`} point={point} color="#333" />
-                ))}
+                {showCurrent &&
+                  transformData.current.points.map((point, i) => (
+                    <ChartPoint key={`current-${i}`} point={point} color="#333" />
+                  ))}
 
                 {/* Center circle */}
                 <circle cx="150" cy="150" r="60" fill="none" stroke="#ddd" strokeWidth="1" />
@@ -507,12 +568,21 @@ export function ChartTransformVisualization({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="text-center">
                 <h4 className="font-medium mb-2">Natal Chart</h4>
-                <svg width="200" height="200" className="border rounded-full bg-white dark:bg-black/20 mx-auto">
+                <svg
+                  width="200"
+                  height="200"
+                  className="border rounded-full bg-white dark:bg-black/20 mx-auto"
+                >
                   {transformData.natal.aspects.map((aspect, i) => (
                     <AspectLine key={i} aspect={aspect} />
                   ))}
                   {transformData.natal.points.map((point, i) => (
-                    <ChartPoint key={i} point={{ ...point, x: point.x * 0.67, y: point.y * 0.67 }} color="#666" size="small" />
+                    <ChartPoint
+                      key={i}
+                      point={{ ...point, x: point.x * 0.67, y: point.y * 0.67 }}
+                      color="#666"
+                      size="small"
+                    />
                   ))}
                   <circle cx="100" cy="100" r="40" fill="none" stroke="#ddd" strokeWidth="1" />
                   <circle cx="100" cy="100" r="80" fill="none" stroke="#ddd" strokeWidth="1" />
@@ -521,12 +591,21 @@ export function ChartTransformVisualization({
 
               <div className="text-center">
                 <h4 className="font-medium mb-2">Current Moment</h4>
-                <svg width="200" height="200" className="border rounded-full bg-white dark:bg-black/20 mx-auto">
+                <svg
+                  width="200"
+                  height="200"
+                  className="border rounded-full bg-white dark:bg-black/20 mx-auto"
+                >
                   {transformData.current.aspects.map((aspect, i) => (
                     <AspectLine key={i} aspect={aspect} />
                   ))}
                   {transformData.current.points.map((point, i) => (
-                    <ChartPoint key={i} point={{ ...point, x: point.x * 0.67, y: point.y * 0.67 }} color="#333" size="small" />
+                    <ChartPoint
+                      key={i}
+                      point={{ ...point, x: point.x * 0.67, y: point.y * 0.67 }}
+                      color="#333"
+                      size="small"
+                    />
                   ))}
                   <circle cx="100" cy="100" r="40" fill="none" stroke="#ddd" strokeWidth="1" />
                   <circle cx="100" cy="100" r="80" fill="none" stroke="#ddd" strokeWidth="1" />
@@ -548,7 +627,11 @@ export function ChartTransformVisualization({
             </div>
 
             <div className="flex justify-center">
-              <svg width="300" height="300" className="border rounded-full bg-white dark:bg-black/20">
+              <svg
+                width="300"
+                height="300"
+                className="border rounded-full bg-white dark:bg-black/20"
+              >
                 {/* Transit aspects only */}
                 {transformData.current.transitAspects.map((aspect, i) => (
                   <AspectLine key={`transit-${i}`} aspect={aspect} />

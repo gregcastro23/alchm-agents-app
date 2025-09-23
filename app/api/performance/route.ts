@@ -82,7 +82,7 @@ let cacheMetrics: CacheMetrics = {
   hits: 0,
   misses: 0,
   totalRequests: 0,
-  startTime: Date.now()
+  startTime: Date.now(),
 }
 
 // Helper functions for performance calculations
@@ -94,7 +94,9 @@ function calculateCacheHitRatio(stats: any): string {
   }
 
   // Fallback to estimated ratio based on cache content
-  const activeEntries = stats.entries ? stats.entries.filter((entry: any) => !entry.expired).length : 0
+  const activeEntries = stats.entries
+    ? stats.entries.filter((entry: any) => !entry.expired).length
+    : 0
   const totalEntries = stats.size || 0
 
   if (totalEntries === 0) return '0%'
@@ -123,7 +125,7 @@ export function resetCacheMetrics(): void {
     hits: 0,
     misses: 0,
     totalRequests: 0,
-    startTime: Date.now()
+    startTime: Date.now(),
   }
 }
 

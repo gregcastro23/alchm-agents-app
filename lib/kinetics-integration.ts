@@ -69,9 +69,8 @@ export class KineticsIntegration {
       try {
         const aspectAnalysis = await this.getCurrentDynamicAspects()
         if (aspectAnalysis) {
-          const { velocityModifier, powerModifier } = this.computeAspectKineticModifiers(
-            aspectAnalysis
-          )
+          const { velocityModifier, powerModifier } =
+            this.computeAspectKineticModifiers(aspectAnalysis)
 
           // Apply velocity modifier (cap to 1.0 to preserve scale)
           enhanced = {
@@ -168,9 +167,10 @@ export class KineticsIntegration {
    * - Velocity: +up to 15% for applying (proximity-weighted), +25% at exact, gentle decay when separating
    * - Power: +20% within 3 days before exact, +25% at exact
    */
-  private computeAspectKineticModifiers(
-    analysis: DynamicAspectsAnalysis
-  ): { velocityModifier: number; powerModifier: number } {
+  private computeAspectKineticModifiers(analysis: DynamicAspectsAnalysis): {
+    velocityModifier: number
+    powerModifier: number
+  } {
     const aspects = analysis.currentAspects || []
 
     const exactAspects = aspects.filter(a => (a as any).orb !== undefined && a.orb <= 1.0)

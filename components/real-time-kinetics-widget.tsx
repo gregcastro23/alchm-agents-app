@@ -23,7 +23,7 @@ import {
   Activity,
   Timer,
   BarChart3,
-  Sparkles
+  Sparkles,
 } from 'lucide-react'
 import { UnifiedKineticsClient } from '@/lib/kinetics-unified-client'
 
@@ -72,7 +72,7 @@ export function RealTimeKineticsWidget({
   userLocation = { lat: 37.7749, lon: -122.4194 },
   className = '',
   variant = 'full',
-  onDataUpdate
+  onDataUpdate,
 }: RealTimeKineticsWidgetProps) {
   const [kineticData, setKineticData] = useState<KineticData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -92,7 +92,7 @@ export function RealTimeKineticsWidget({
         date: new Date().toISOString().split('T')[0],
         includeElemental: true,
         includePlanetary: true,
-        window: 3
+        window: 3,
       })
 
       // Process data into our format
@@ -113,25 +113,50 @@ export function RealTimeKineticsWidget({
 
       // Calculate elemental levels from kinetics data
       const elementalTotals = kinetics.elemental?.totals || { Fire: 5, Water: 5, Air: 5, Earth: 5 }
-      const maxElemental = Math.max(elementalTotals.Fire, elementalTotals.Water, elementalTotals.Air, elementalTotals.Earth)
+      const maxElemental = Math.max(
+        elementalTotals.Fire,
+        elementalTotals.Water,
+        elementalTotals.Air,
+        elementalTotals.Earth
+      )
 
       const alchemicalLevels = {
         spirit: (elementalTotals.Fire / maxElemental) * 10,
         essence: (elementalTotals.Water / maxElemental) * 10,
         matter: (elementalTotals.Earth / maxElemental) * 10,
-        substance: (elementalTotals.Air / maxElemental) * 10
+        substance: (elementalTotals.Air / maxElemental) * 10,
       }
 
       // Calculate velocity trends from power momentum
       const powerHistory = kinetics.power.slice(-3)
-      const isIncreasing = powerHistory.length >= 2 && powerHistory[powerHistory.length - 1].power > powerHistory[powerHistory.length - 2].power
-      const isDecreasing = powerHistory.length >= 2 && powerHistory[powerHistory.length - 1].power < powerHistory[powerHistory.length - 2].power
+      const isIncreasing =
+        powerHistory.length >= 2 &&
+        powerHistory[powerHistory.length - 1].power > powerHistory[powerHistory.length - 2].power
+      const isDecreasing =
+        powerHistory.length >= 2 &&
+        powerHistory[powerHistory.length - 1].power < powerHistory[powerHistory.length - 2].power
 
       const velocityTrends = {
-        spirit: isIncreasing ? 'increasing' as const : isDecreasing ? 'decreasing' as const : 'stable' as const,
-        essence: isIncreasing ? 'increasing' as const : isDecreasing ? 'decreasing' as const : 'stable' as const,
-        matter: isIncreasing ? 'increasing' as const : isDecreasing ? 'decreasing' as const : 'stable' as const,
-        substance: isIncreasing ? 'increasing' as const : isDecreasing ? 'decreasing' as const : 'stable' as const
+        spirit: isIncreasing
+          ? ('increasing' as const)
+          : isDecreasing
+            ? ('decreasing' as const)
+            : ('stable' as const),
+        essence: isIncreasing
+          ? ('increasing' as const)
+          : isDecreasing
+            ? ('decreasing' as const)
+            : ('stable' as const),
+        matter: isIncreasing
+          ? ('increasing' as const)
+          : isDecreasing
+            ? ('decreasing' as const)
+            : ('stable' as const),
+        substance: isIncreasing
+          ? ('increasing' as const)
+          : isDecreasing
+            ? ('decreasing' as const)
+            : ('stable' as const),
       }
 
       const processedData: KineticData = {
@@ -144,8 +169,8 @@ export function RealTimeKineticsWidget({
             fire: elementalTotals.Fire / maxElemental,
             water: elementalTotals.Water / maxElemental,
             air: elementalTotals.Air / maxElemental,
-            earth: elementalTotals.Earth / maxElemental
-          }
+            earth: elementalTotals.Earth / maxElemental,
+          },
         },
         nextHour: {
           planet: planetaryHours[1] || 'Moon',
@@ -153,15 +178,18 @@ export function RealTimeKineticsWidget({
           endTime: nextHourEnd,
           powerLevel: currentPower * 0.9, // Estimate
           elementalInfluence: {
-            fire: 0.5, water: 0.5, air: 0.5, earth: 0.5 // Placeholder
-          }
+            fire: 0.5,
+            water: 0.5,
+            air: 0.5,
+            earth: 0.5, // Placeholder
+          },
         },
         timeToNext: Math.floor((hourEnd.getTime() - now.getTime()) / (1000 * 60)),
         alchemicalLevels,
         velocityTrends,
         powerMomentum: currentPower,
         chartTransformIntensity: currentPower * 0.8,
-        optimalAgentTypes: getOptimalAgentTypes(currentHourPlanet, alchemicalLevels)
+        optimalAgentTypes: getOptimalAgentTypes(currentHourPlanet, alchemicalLevels),
       }
 
       setKineticData(processedData)
@@ -170,7 +198,6 @@ export function RealTimeKineticsWidget({
       if (onDataUpdate) {
         onDataUpdate(processedData)
       }
-
     } catch (error) {
       console.error('Failed to fetch kinetic data:', error)
       setError('Failed to load current moment kinetics')
@@ -180,7 +207,10 @@ export function RealTimeKineticsWidget({
   }
 
   // Get optimal agent types based on current conditions
-  const getOptimalAgentTypes = (planetaryHour: string, alchemical: typeof kineticData.alchemicalLevels): string[] => {
+  const getOptimalAgentTypes = (
+    planetaryHour: string,
+    alchemical: typeof kineticData.alchemicalLevels
+  ): string[] => {
     const types = []
 
     // Planetary hour influences
@@ -211,7 +241,12 @@ export function RealTimeKineticsWidget({
     }
 
     // Alchemical influences
-    const maxAlchemical = Math.max(alchemical.spirit, alchemical.essence, alchemical.matter, alchemical.substance)
+    const maxAlchemical = Math.max(
+      alchemical.spirit,
+      alchemical.essence,
+      alchemical.matter,
+      alchemical.substance
+    )
     if (alchemical.spirit === maxAlchemical) types.push('Innovative', 'Visionary')
     if (alchemical.essence === maxAlchemical) types.push('Emotional', 'Artistic')
     if (alchemical.matter === maxAlchemical) types.push('Scientific', 'Practical')
@@ -231,8 +266,10 @@ export function RealTimeKineticsWidget({
     const timeInterval = setInterval(() => {
       if (kineticData) {
         const now = new Date()
-        const timeToNext = Math.floor((kineticData.currentHour.endTime.getTime() - now.getTime()) / (1000 * 60))
-        setKineticData(prev => prev ? { ...prev, timeToNext } : null)
+        const timeToNext = Math.floor(
+          (kineticData.currentHour.endTime.getTime() - now.getTime()) / (1000 * 60)
+        )
+        setKineticData(prev => (prev ? { ...prev, timeToNext } : null))
       }
     }, 60000)
 
@@ -244,32 +281,47 @@ export function RealTimeKineticsWidget({
 
   const getPlanetSymbol = (planet: string): string => {
     const symbols = {
-      'Sun': '☉', 'Moon': '☽', 'Mercury': '☿', 'Venus': '♀',
-      'Mars': '♂', 'Jupiter': '♃', 'Saturn': '♄', 'Uranus': '♅',
-      'Neptune': '♆', 'Pluto': '♇'
+      Sun: '☉',
+      Moon: '☽',
+      Mercury: '☿',
+      Venus: '♀',
+      Mars: '♂',
+      Jupiter: '♃',
+      Saturn: '♄',
+      Uranus: '♅',
+      Neptune: '♆',
+      Pluto: '♇',
     }
     return symbols[planet as keyof typeof symbols] || '○'
   }
 
   const getTrendIcon = (trend: 'increasing' | 'stable' | 'decreasing') => {
     switch (trend) {
-      case 'increasing': return <TrendingUp className="w-3 h-3 text-green-500" />
-      case 'decreasing': return <TrendingDown className="w-3 h-3 text-red-500" />
-      default: return <Minus className="w-3 h-3 text-gray-500" />
+      case 'increasing':
+        return <TrendingUp className="w-3 h-3 text-green-500" />
+      case 'decreasing':
+        return <TrendingDown className="w-3 h-3 text-red-500" />
+      default:
+        return <Minus className="w-3 h-3 text-gray-500" />
     }
   }
 
   const getTrendColor = (trend: 'increasing' | 'stable' | 'decreasing') => {
     switch (trend) {
-      case 'increasing': return 'text-green-600'
-      case 'decreasing': return 'text-red-600'
-      default: return 'text-gray-600'
+      case 'increasing':
+        return 'text-green-600'
+      case 'decreasing':
+        return 'text-red-600'
+      default:
+        return 'text-gray-600'
     }
   }
 
   if (loading) {
     return (
-      <Card className={`${className} border-2 border-blue-200 bg-gradient-to-br from-blue-50/50 to-purple-50/50`}>
+      <Card
+        className={`${className} border-2 border-blue-200 bg-gradient-to-br from-blue-50/50 to-purple-50/50`}
+      >
         <CardContent className="p-6">
           <div className="flex items-center justify-center space-x-2">
             <RefreshCw className="w-4 h-4 animate-spin" />
@@ -300,19 +352,25 @@ export function RealTimeKineticsWidget({
 
   if (variant === 'compact') {
     return (
-      <Card className={`${className} border-2 border-blue-200 bg-gradient-to-br from-blue-50/50 to-purple-50/50`}>
+      <Card
+        className={`${className} border-2 border-blue-200 bg-gradient-to-br from-blue-50/50 to-purple-50/50`}
+      >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="text-2xl">{getPlanetSymbol(kineticData.currentHour.planet)}</div>
               <div>
                 <div className="font-medium">{kineticData.currentHour.planet} Hour</div>
-                <div className="text-xs text-muted-foreground">{kineticData.timeToNext}m remaining</div>
+                <div className="text-xs text-muted-foreground">
+                  {kineticData.timeToNext}m remaining
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-1">
               <Activity className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-mono">{(kineticData.powerMomentum * 100).toFixed(0)}%</span>
+              <span className="text-sm font-mono">
+                {(kineticData.powerMomentum * 100).toFixed(0)}%
+              </span>
             </div>
           </div>
         </CardContent>
@@ -321,7 +379,9 @@ export function RealTimeKineticsWidget({
   }
 
   return (
-    <Card className={`${className} border-2 border-blue-200 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/50 dark:to-purple-950/50`}>
+    <Card
+      className={`${className} border-2 border-blue-200 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/50 dark:to-purple-950/50`}
+    >
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Globe className="w-5 h-5 text-blue-600" />
@@ -348,7 +408,7 @@ export function RealTimeKineticsWidget({
                 </div>
               </div>
             </div>
-            <Progress value={(60 - kineticData.timeToNext) / 60 * 100} className="h-2" />
+            <Progress value={((60 - kineticData.timeToNext) / 60) * 100} className="h-2" />
           </div>
 
           <div className="p-4 bg-white dark:bg-black/20 rounded-lg border">
@@ -375,17 +435,44 @@ export function RealTimeKineticsWidget({
           </h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { name: 'Spirit', value: kineticData.alchemicalLevels.spirit, icon: Flame, color: 'red' },
-              { name: 'Essence', value: kineticData.alchemicalLevels.essence, icon: Droplets, color: 'blue' },
-              { name: 'Matter', value: kineticData.alchemicalLevels.matter, icon: Mountain, color: 'green' },
-              { name: 'Substance', value: kineticData.alchemicalLevels.substance, icon: Wind, color: 'yellow' }
+              {
+                name: 'Spirit',
+                value: kineticData.alchemicalLevels.spirit,
+                icon: Flame,
+                color: 'red',
+              },
+              {
+                name: 'Essence',
+                value: kineticData.alchemicalLevels.essence,
+                icon: Droplets,
+                color: 'blue',
+              },
+              {
+                name: 'Matter',
+                value: kineticData.alchemicalLevels.matter,
+                icon: Mountain,
+                color: 'green',
+              },
+              {
+                name: 'Substance',
+                value: kineticData.alchemicalLevels.substance,
+                icon: Wind,
+                color: 'yellow',
+              },
             ].map(({ name, value, icon: Icon, color }) => (
-              <div key={name} className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
+              <div
+                key={name}
+                className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border"
+              >
                 <Icon className={`w-4 h-4 mx-auto mb-1 text-${color}-600`} />
                 <div className="text-xs font-medium mb-1">{name}</div>
                 <div className="font-mono text-sm">{value.toFixed(1)}</div>
                 <div className="mt-1">
-                  {getTrendIcon(kineticData.velocityTrends[name.toLowerCase() as keyof typeof kineticData.velocityTrends])}
+                  {getTrendIcon(
+                    kineticData.velocityTrends[
+                      name.toLowerCase() as keyof typeof kineticData.velocityTrends
+                    ]
+                  )}
                 </div>
               </div>
             ))}
@@ -399,7 +486,9 @@ export function RealTimeKineticsWidget({
               <Zap className="w-4 h-4 text-yellow-600" />
               <span className="font-medium">Power Momentum</span>
             </div>
-            <div className="text-2xl font-bold text-yellow-700">{(kineticData.powerMomentum * 100).toFixed(0)}%</div>
+            <div className="text-2xl font-bold text-yellow-700">
+              {(kineticData.powerMomentum * 100).toFixed(0)}%
+            </div>
             <Progress value={kineticData.powerMomentum * 100} className="h-2 mt-2" />
           </div>
 
@@ -408,7 +497,9 @@ export function RealTimeKineticsWidget({
               <Activity className="w-4 h-4 text-purple-600" />
               <span className="font-medium">Chart Transform</span>
             </div>
-            <div className="text-2xl font-bold text-purple-700">{(kineticData.chartTransformIntensity * 100).toFixed(0)}%</div>
+            <div className="text-2xl font-bold text-purple-700">
+              {(kineticData.chartTransformIntensity * 100).toFixed(0)}%
+            </div>
             <Progress value={kineticData.chartTransformIntensity * 100} className="h-2 mt-2" />
           </div>
         </div>

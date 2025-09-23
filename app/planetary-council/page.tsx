@@ -22,7 +22,8 @@ export default function PlanetaryCouncilPage() {
           </p>
         </div>
         <div className="mt-3 text-xs text-muted-foreground">
-          Tip: The council auto-syncs to the current sky by default. You can toggle sync in the panel.
+          Tip: The council auto-syncs to the current sky by default. You can toggle sync in the
+          panel.
         </div>
 
         {!isOpen && (
@@ -38,7 +39,7 @@ export default function PlanetaryCouncilPage() {
       <PlanetaryWisdomChat
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        defaultActivePlanets={["Sun", "Moon", "Mercury"]}
+        defaultActivePlanets={['Sun', 'Moon', 'Mercury']}
         enableAutoSync={true}
         syncInterval={60000}
         showCurrentSkyChart={true}

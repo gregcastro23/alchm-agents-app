@@ -1,4 +1,10 @@
-import { Request, Response, NextFunction, type RequestHandler, type ErrorRequestHandler } from 'express'
+import {
+  Request,
+  Response,
+  NextFunction,
+  type RequestHandler,
+  type ErrorRequestHandler,
+} from 'express'
 import { logger } from '../utils/logger.js'
 
 export interface ApiError extends Error {
@@ -34,27 +40,32 @@ export const errorHandler: ErrorRequestHandler = (
     url: req.url,
     method: req.method,
     ip: req.ip,
-    userAgent: req.get('User-Agent')
+    userAgent: req.get('User-Agent'),
   })
 
   // Don't leak error details in production
   const response = {
     success: false,
     error: {
-      message: statusCode >= 500 && process.env.NODE_ENV === 'production' 
-        ? 'Internal Server Error' 
-        : message,
+      message:
+        statusCode >= 500 && process.env.NODE_ENV === 'production'
+          ? 'Internal Server Error'
+          : message,
       statusCode,
       timestamp: new Date().toISOString(),
-      path: req.path
+      path: req.path,
     },
-    ...(process.env.NODE_ENV === 'development' && { stack })
+    ...(process.env.NODE_ENV === 'development' && { stack }),
   }
 
   res.status(statusCode).json(response)
 }
 
-export const notFoundHandler: RequestHandler = (req: Request, res: Response, next: NextFunction): void => {
+export const notFoundHandler: RequestHandler = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
   const error = new AppError(`Route ${req.originalUrl} not found`, 404)
   next(error)
 }

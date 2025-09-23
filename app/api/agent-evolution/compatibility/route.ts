@@ -27,9 +27,12 @@ export async function GET(request: NextRequest) {
     const agent2Profile = agentKineticProfiles[agent2Id]
 
     if (!agent1Profile || !agent2Profile) {
-      return NextResponse.json({
-        error: `Agent profile not found: ${!agent1Profile ? agent1Id : agent2Id}`
-      }, { status: 404 })
+      return NextResponse.json(
+        {
+          error: `Agent profile not found: ${!agent1Profile ? agent1Id : agent2Id}`,
+        },
+        { status: 404 }
+      )
     }
 
     // Get current kinetic context
@@ -37,14 +40,20 @@ export async function GET(request: NextRequest) {
       lat,
       lon,
       date: new Date().toISOString().split('T')[0],
-      includePlanetary: true
+      includePlanetary: true,
     })
 
     const currentHour = kinetics.timing?.planetaryHours[0] || 'Sun'
 
     // Calculate basic kinetic compatibility (element compatibility)
-    const elementCompatibility = calculateElementCompatibility(agent1Profile.elements, agent2Profile.elements)
-    const astrologyCompatibility = calculateAstrologyCompatibility(agent1Profile.astrology, agent2Profile.astrology)
+    const elementCompatibility = calculateElementCompatibility(
+      agent1Profile.elements,
+      agent2Profile.elements
+    )
+    const astrologyCompatibility = calculateAstrologyCompatibility(
+      agent1Profile.astrology,
+      agent2Profile.astrology
+    )
     const baseCompatibility = (elementCompatibility + astrologyCompatibility) / 2
 
     // Calculate enhanced compatibility with current context
@@ -65,32 +74,32 @@ export async function GET(request: NextRequest) {
       agent2Profile.momentum || 'steady'
     )
 
-    let result: any = {
+    const result: any = {
       agent1Id,
       agent2Id,
       compatibility: {
         base: baseCompatibility,
         contextual: contextualCompatibility,
-        enhancement: contextualCompatibility / baseCompatibility
+        enhancement: contextualCompatibility / baseCompatibility,
       },
       currentContext: {
         planetaryHour: currentHour,
         agent1Optimal,
         agent2Optimal,
-        bothOptimal
+        bothOptimal,
       },
       synergy: {
         sharedPeakHours,
         sharedPeakCount: sharedPeakHours.length,
         momentumSynergy,
-        combinedConsciousnessRate: (agent1Profile.evolutionRate + agent2Profile.evolutionRate) / 2
+        combinedConsciousnessRate: (agent1Profile.evolutionRate + agent2Profile.evolutionRate) / 2,
       },
       recommendations: generateCompatibilityRecommendations(
         agent1Profile,
         agent2Profile,
         bothOptimal,
         baseCompatibility
-      )
+      ),
     }
 
     // Include evolution data if requested
@@ -98,13 +107,17 @@ export async function GET(request: NextRequest) {
       const agent1Evolution = await ConsciousnessMemorySystem.getEvolutionMetrics(agent1Id)
       const agent2Evolution = await ConsciousnessMemorySystem.getEvolutionMetrics(agent2Id)
 
-      const evolutionCompatibility = calculateEvolutionCompatibility(agent1Evolution, agent2Evolution)
+      const evolutionCompatibility = calculateEvolutionCompatibility(
+        agent1Evolution,
+        agent2Evolution
+      )
 
       result.evolution = {
         agent1: agent1Evolution,
         agent2: agent2Evolution,
         compatibility: evolutionCompatibility,
-        growthPotential: (agent1Evolution.consciousnessVelocity + agent2Evolution.consciousnessVelocity) / 2
+        growthPotential:
+          (agent1Evolution.consciousnessVelocity + agent2Evolution.consciousnessVelocity) / 2,
       }
     }
 
@@ -139,20 +152,20 @@ export async function POST(request: NextRequest) {
               payload: {
                 agent1Id: agentIds[i],
                 agent2Id: agentIds[j],
-                location: targetLocation
-              }
+                location: targetLocation,
+              },
             })
 
             results.push({
               agent1: agentIds[i],
               agent2: agentIds[j],
-              compatibility: compatibilityResult.output
+              compatibility: compatibilityResult.output,
             })
           } catch (error) {
             results.push({
               agent1: agentIds[i],
               agent2: agentIds[j],
-              error: 'Compatibility analysis failed'
+              error: 'Compatibility analysis failed',
             })
           }
         }
@@ -162,20 +175,24 @@ export async function POST(request: NextRequest) {
       try {
         const groupResult = await routeTask({
           kind: 'consciousness_velocity',
-          payload: { agentIds, location: targetLocation }
+          payload: { agentIds, location: targetLocation },
         })
 
-        results = [{
-          type: 'group_analysis',
-          agentIds,
-          groupConsciousness: groupResult.output
-        }]
+        results = [
+          {
+            type: 'group_analysis',
+            agentIds,
+            groupConsciousness: groupResult.output,
+          },
+        ]
       } catch (error) {
-        results = [{
-          type: 'group_analysis',
-          agentIds,
-          error: 'Group analysis failed'
-        }]
+        results = [
+          {
+            type: 'group_analysis',
+            agentIds,
+            error: 'Group analysis failed',
+          },
+        ]
       }
     }
 
@@ -184,11 +201,14 @@ export async function POST(request: NextRequest) {
       analysisType,
       agentCount: agentIds.length,
       results,
-      location: targetLocation
+      location: targetLocation,
     })
   } catch (error) {
     console.error('Batch compatibility analysis error:', error)
-    return NextResponse.json({ error: 'Failed to perform batch compatibility analysis' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to perform batch compatibility analysis' },
+      { status: 500 }
+    )
   }
 }
 
@@ -200,36 +220,36 @@ function calculateMomentumSynergy(type1: string, type2: string): string {
       building: 'Complementary Growth',
       oscillating: 'Dynamic Balance',
       explosive: 'Controlled Power',
-      gradual: 'Steady Progress'
+      gradual: 'Steady Progress',
     },
     building: {
       sustained: 'Stable Foundation',
       building: 'Exponential Growth',
       oscillating: 'Creative Tension',
       explosive: 'Breakthrough Potential',
-      gradual: 'Patient Development'
+      gradual: 'Patient Development',
     },
     oscillating: {
       sustained: 'Stabilizing Force',
       building: 'Adaptive Growth',
       oscillating: 'Resonant Frequency',
       explosive: 'Chaotic Creativity',
-      gradual: 'Rhythmic Flow'
+      gradual: 'Rhythmic Flow',
     },
     explosive: {
       sustained: 'Grounding Power',
       building: 'Accelerated Momentum',
       oscillating: 'Electric Synergy',
       explosive: 'Revolutionary Force',
-      gradual: 'Focused Intensity'
+      gradual: 'Focused Intensity',
     },
     gradual: {
       sustained: 'Enduring Wisdom',
       building: 'Methodical Progress',
       oscillating: 'Gentle Waves',
       explosive: 'Patient Power',
-      gradual: 'Deep Resonance'
-    }
+      gradual: 'Deep Resonance',
+    },
   }
 
   return synergyMap[type1]?.[type2] || 'Moderate Synergy'
@@ -275,7 +295,10 @@ function generateCompatibilityRecommendations(
   return recommendations
 }
 
-function calculateEvolutionCompatibility(evolution1: any, evolution2: any): {
+function calculateEvolutionCompatibility(
+  evolution1: any,
+  evolution2: any
+): {
   score: number
   factors: string[]
 } {
@@ -295,8 +318,12 @@ function calculateEvolutionCompatibility(evolution1: any, evolution2: any): {
   }
 
   // Evolution stage compatibility
-  const stage1 = ['Initial', 'Developing', 'Maturing', 'Advanced', 'Transcendent'].indexOf(evolution1.evolutionStage)
-  const stage2 = ['Initial', 'Developing', 'Maturing', 'Advanced', 'Transcendent'].indexOf(evolution2.evolutionStage)
+  const stage1 = ['Initial', 'Developing', 'Maturing', 'Advanced', 'Transcendent'].indexOf(
+    evolution1.evolutionStage
+  )
+  const stage2 = ['Initial', 'Developing', 'Maturing', 'Advanced', 'Transcendent'].indexOf(
+    evolution2.evolutionStage
+  )
   const stageDiff = Math.abs(stage1 - stage2)
 
   if (stageDiff === 0) {
@@ -318,7 +345,7 @@ function calculateEvolutionCompatibility(evolution1: any, evolution2: any): {
 
   return {
     score: Math.min(score, 1),
-    factors
+    factors,
   }
 }
 
@@ -354,16 +381,16 @@ function calculateAstrologyCompatibility(astrology1: any, astrology2: any): numb
 
 function calculatePlanetCompatibility(planet1: string, planet2: string): number {
   const planetaryAffinities: Record<string, string[]> = {
-    'Sun': ['Mars', 'Jupiter', 'Venus'],
-    'Moon': ['Venus', 'Jupiter', 'Mercury'],
-    'Mercury': ['Moon', 'Venus', 'Uranus'],
-    'Venus': ['Sun', 'Moon', 'Mercury', 'Jupiter'],
-    'Mars': ['Sun', 'Pluto', 'Jupiter'],
-    'Jupiter': ['Sun', 'Moon', 'Venus', 'Mars'],
-    'Saturn': ['Capricorn', 'Aquarius'],
-    'Uranus': ['Mercury', 'Aquarius'],
-    'Neptune': ['Pisces', 'Jupiter'],
-    'Pluto': ['Mars', 'Scorpio']
+    Sun: ['Mars', 'Jupiter', 'Venus'],
+    Moon: ['Venus', 'Jupiter', 'Mercury'],
+    Mercury: ['Moon', 'Venus', 'Uranus'],
+    Venus: ['Sun', 'Moon', 'Mercury', 'Jupiter'],
+    Mars: ['Sun', 'Pluto', 'Jupiter'],
+    Jupiter: ['Sun', 'Moon', 'Venus', 'Mars'],
+    Saturn: ['Capricorn', 'Aquarius'],
+    Uranus: ['Mercury', 'Aquarius'],
+    Neptune: ['Pisces', 'Jupiter'],
+    Pluto: ['Mars', 'Scorpio'],
   }
 
   if (planet1 === planet2) return 0.8
@@ -373,18 +400,18 @@ function calculatePlanetCompatibility(planet1: string, planet2: string): number 
 
 function calculateSignCompatibility(sign1: string, sign2: string): number {
   const signAffinities: Record<string, string[]> = {
-    'Aries': ['Leo', 'Sagittarius', 'Gemini', 'Aquarius'],
-    'Taurus': ['Virgo', 'Capricorn', 'Cancer', 'Pisces'],
-    'Gemini': ['Libra', 'Aquarius', 'Aries', 'Leo'],
-    'Cancer': ['Scorpio', 'Pisces', 'Taurus', 'Virgo'],
-    'Leo': ['Aries', 'Sagittarius', 'Gemini', 'Libra'],
-    'Virgo': ['Taurus', 'Capricorn', 'Cancer', 'Scorpio'],
-    'Libra': ['Gemini', 'Aquarius', 'Leo', 'Sagittarius'],
-    'Scorpio': ['Cancer', 'Pisces', 'Virgo', 'Capricorn'],
-    'Sagittarius': ['Aries', 'Leo', 'Libra', 'Aquarius'],
-    'Capricorn': ['Taurus', 'Virgo', 'Scorpio', 'Pisces'],
-    'Aquarius': ['Gemini', 'Libra', 'Aries', 'Sagittarius'],
-    'Pisces': ['Cancer', 'Scorpio', 'Taurus', 'Capricorn']
+    Aries: ['Leo', 'Sagittarius', 'Gemini', 'Aquarius'],
+    Taurus: ['Virgo', 'Capricorn', 'Cancer', 'Pisces'],
+    Gemini: ['Libra', 'Aquarius', 'Aries', 'Leo'],
+    Cancer: ['Scorpio', 'Pisces', 'Taurus', 'Virgo'],
+    Leo: ['Aries', 'Sagittarius', 'Gemini', 'Libra'],
+    Virgo: ['Taurus', 'Capricorn', 'Cancer', 'Scorpio'],
+    Libra: ['Gemini', 'Aquarius', 'Leo', 'Sagittarius'],
+    Scorpio: ['Cancer', 'Pisces', 'Virgo', 'Capricorn'],
+    Sagittarius: ['Aries', 'Leo', 'Libra', 'Aquarius'],
+    Capricorn: ['Taurus', 'Virgo', 'Scorpio', 'Pisces'],
+    Aquarius: ['Gemini', 'Libra', 'Aries', 'Sagittarius'],
+    Pisces: ['Cancer', 'Scorpio', 'Taurus', 'Capricorn'],
   }
 
   if (sign1 === sign2) return 0.9

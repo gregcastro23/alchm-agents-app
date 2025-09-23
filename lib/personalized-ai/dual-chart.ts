@@ -118,7 +118,7 @@ export function analyzeTransits(
       if (aspect) {
         majorTransits.push({
           transitPlanet: currentPlanet,
-          natalPlanet: natalPlanet,
+          natalPlanet,
           aspect: aspect.type,
           orb: aspect.orb,
           influence: getAspectInfluence(aspect.type),

@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PatternToRuneConverter } from '@/lib/runes/pattern-to-rune-converter'
 import { ChartGeometryExtractor } from '@/lib/chart-geometry-extractor'
-import {
-  detectPatternsStatic,
-  PlanetPosition
-} from '@/lib/astrological-pattern-recognition'
+import { detectPatternsStatic, PlanetPosition } from '@/lib/astrological-pattern-recognition'
 import { calculateEnhancedChart } from '@/lib/enhanced-chart-calculator'
-import {
-  createNatalSigilRune,
-  RuneGeometry,
-  SigilStyle
-} from '@/lib/runes/natal-sigil-runes'
+import { createNatalSigilRune, RuneGeometry, SigilStyle } from '@/lib/runes/natal-sigil-runes'
 import { BirthInfoSchema, type BirthInfo } from '@/lib/schemas'
 
 export const dynamic = 'force-dynamic'
@@ -36,7 +29,7 @@ export async function POST(request: NextRequest) {
       patternType,
       aspectFocused,
       prompt,
-      chartData
+      chartData,
     } = body
 
     // Validate birth info if provided
@@ -65,14 +58,14 @@ export async function POST(request: NextRequest) {
           sign: p.sign,
           degree: p.degree,
           house: p.house,
-          date: new Date()
+          date: new Date(),
         }))
 
         // Convert AspectData to Aspect format
         const convertedAspects = enhancedChart.aspects.map(aspect => ({
           ...aspect,
           type: aspect.type as any,
-          separating: !aspect.applying
+          separating: !aspect.applying,
         }))
 
         // Extract geometry from chart data
@@ -90,8 +83,8 @@ export async function POST(request: NextRequest) {
           aspects: pattern.aspects.map(aspect => ({
             ...aspect,
             type: aspect.type as any,
-            separating: !aspect.applying
-          }))
+            separating: !aspect.applying,
+          })),
         }))
         finalGeometry.dominantElement = enhancedChart.alchemicalData.dominantElement
       } else if (chartData) {
@@ -102,7 +95,7 @@ export async function POST(request: NextRequest) {
             sign: data.sign,
             degree: data.degree,
             house: data.house || 1,
-            date: new Date()
+            date: new Date(),
           })
         )
 
@@ -113,10 +106,7 @@ export async function POST(request: NextRequest) {
           800
         )
       } else {
-        return NextResponse.json(
-          { error: 'No birth info or geometry provided' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'No birth info or geometry provided' }, { status: 400 })
       }
     }
 
@@ -127,7 +117,7 @@ export async function POST(request: NextRequest) {
             planet,
             sign: data.sign,
             degree: data.degree,
-            house: data.house || 1
+            house: data.house || 1,
           }))
         : []
 
@@ -140,7 +130,11 @@ export async function POST(request: NextRequest) {
     let sigil
 
     // Generate sigil based on type
-    if (aspectFocused || (!finalGeometry.sacredPatterns || finalGeometry.sacredPatterns.length === 0)) {
+    if (
+      aspectFocused ||
+      !finalGeometry.sacredPatterns ||
+      finalGeometry.sacredPatterns.length === 0
+    ) {
       // Generate aspect-focused sigil
       console.log('Generating aspect-focused sigil...')
 
@@ -152,11 +146,7 @@ export async function POST(request: NextRequest) {
         )
 
         // Create sigil without pattern
-        sigil = createNatalSigilRune(
-          finalGeometry,
-          style,
-          'aspect-based'
-        )
+        sigil = createNatalSigilRune(finalGeometry, style, 'aspect-based')
 
         // Try to generate image
         try {
@@ -166,22 +156,17 @@ export async function POST(request: NextRequest) {
             width: 1024,
             height: 1024,
             cfg_scale: 12,
-            steps: 50
+            steps: 50,
           })
 
-          sigil.generatedImageUrl = imageData?.generated_image_url ||
-                                   imageData?.url ||
-                                   imageData?.imageUrl
+          sigil.generatedImageUrl =
+            imageData?.generated_image_url || imageData?.url || imageData?.imageUrl
         } catch (imageError) {
           console.warn('Image generation failed, returning sigil without image:', imageError)
         }
       } else {
         // Use provided prompt
-        sigil = createNatalSigilRune(
-          finalGeometry,
-          style,
-          'aspect-based'
-        )
+        sigil = createNatalSigilRune(finalGeometry, style, 'aspect-based')
 
         try {
           const { fetchImaginize } = await import('@/lib/astrologize')
@@ -190,12 +175,11 @@ export async function POST(request: NextRequest) {
             width: 1024,
             height: 1024,
             cfg_scale: 12,
-            steps: 50
+            steps: 50,
           })
 
-          sigil.generatedImageUrl = imageData?.generated_image_url ||
-                                   imageData?.url ||
-                                   imageData?.imageUrl
+          sigil.generatedImageUrl =
+            imageData?.generated_image_url || imageData?.url || imageData?.imageUrl
         } catch (imageError) {
           console.warn('Image generation failed:', imageError)
         }
@@ -203,7 +187,8 @@ export async function POST(request: NextRequest) {
     } else {
       // Generate pattern-based sigil
       const dominantPattern = patternType
-        ? finalGeometry.sacredPatterns.find(p => p.type === patternType) || finalGeometry.sacredPatterns[0]
+        ? finalGeometry.sacredPatterns.find(p => p.type === patternType) ||
+          finalGeometry.sacredPatterns[0]
         : finalGeometry.sacredPatterns.sort((a, b) => b.strength - a.strength)[0]
 
       if (!dominantPattern) {
@@ -229,7 +214,7 @@ export async function POST(request: NextRequest) {
       dominantPattern: finalGeometry.sacredPatterns[0]?.type,
       dominantElement: finalGeometry.dominantElement,
       generationTime: new Date().toISOString(),
-      style
+      style,
     }
 
     return NextResponse.json({
@@ -241,16 +226,16 @@ export async function POST(request: NextRequest) {
         powerNodeCount: finalGeometry.powerNodes.length,
         patternCount: finalGeometry.sacredPatterns.length,
         dominantElement: finalGeometry.dominantElement,
-        elementalBalance: finalGeometry.elementalBalance
+        elementalBalance: finalGeometry.elementalBalance,
       },
-      metadata
+      metadata,
     })
   } catch (error) {
     console.error('Error in natal sigil generation:', error)
     return NextResponse.json(
       {
         error: 'Failed to generate natal sigil',
-        details: error instanceof Error ? error.message : String(error)
+        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     )
@@ -274,7 +259,7 @@ export async function GET(request: NextRequest) {
       'mystic-rectangle',
       'kite',
       'grand-sextile',
-      'cradle'
+      'cradle',
     ],
     aspectTypes: [
       'conjunction',
@@ -287,7 +272,7 @@ export async function GET(request: NextRequest) {
       'sesquiquadrate',
       'semisquare',
       'quintile',
-      'biquintile'
+      'biquintile',
     ],
     endpoints: {
       generate: {
@@ -300,9 +285,9 @@ export async function GET(request: NextRequest) {
           patternType: 'Optional specific pattern to use',
           aspectFocused: 'Generate from aspects instead of patterns',
           prompt: 'Optional custom prompt',
-          chartData: 'Optional chart data'
-        }
-      }
-    }
+          chartData: 'Optional chart data',
+        },
+      },
+    },
   })
 }

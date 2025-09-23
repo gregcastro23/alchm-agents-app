@@ -186,7 +186,8 @@ export const CosmicChartTheme = {
       boxShadow: '0 10px 25px -5px rgba(124, 58, 237, 0.25)',
     },
     etherealGlow: {
-      boxShadow: '0 20px 40px -10px rgba(124, 58, 237, 0.4), 0 10px 20px -5px rgba(124, 58, 237, 0.1)',
+      boxShadow:
+        '0 20px 40px -10px rgba(124, 58, 237, 0.4), 0 10px 20px -5px rgba(124, 58, 237, 0.1)',
       filter: 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.3))',
     },
     planetGlow: (color: string) => ({
@@ -225,20 +226,28 @@ export function generateChartStyles(isDarkMode: boolean = false): string {
       .chart-container {
         font-family: ${theme.fonts.primary};
         background: ${bgColor};
-        ${isDarkMode ? `
+        ${
+          isDarkMode
+            ? `
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
           box-shadow: ${theme.effects.glassMorphism.boxShadow};
-        ` : ''}
+        `
+            : ''
+        }
       }
 
       .chart-title {
         font-size: ${theme.fontSize.title}px;
         font-weight: 700;
         fill: ${textColor};
-        ${isDarkMode ? `
+        ${
+          isDarkMode
+            ? `
           filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
-        ` : ''}
+        `
+            : ''
+        }
       }
 
       .chart-subtitle {
@@ -283,8 +292,12 @@ export function generateChartStyles(isDarkMode: boolean = false): string {
 }
 
 // Get zodiac sector colors
-export function getZodiacColors(sign: string, isDarkMode: boolean): { fill: string; stroke: string } {
-  const baseColor = CosmicChartTheme.colors.zodiac[sign as keyof typeof CosmicChartTheme.colors.zodiac]
+export function getZodiacColors(
+  sign: string,
+  isDarkMode: boolean
+): { fill: string; stroke: string } {
+  const baseColor =
+    CosmicChartTheme.colors.zodiac[sign as keyof typeof CosmicChartTheme.colors.zodiac]
 
   if (isDarkMode) {
     return {
@@ -301,7 +314,8 @@ export function getZodiacColors(sign: string, isDarkMode: boolean): { fill: stri
 
 // Get planet styling
 export function getPlanetStyle(planet: string, isDarkMode: boolean) {
-  const planetColors = CosmicChartTheme.colors.planets[planet as keyof typeof CosmicChartTheme.colors.planets]
+  const planetColors =
+    CosmicChartTheme.colors.planets[planet as keyof typeof CosmicChartTheme.colors.planets]
 
   if (!planetColors) {
     return {
@@ -321,7 +335,8 @@ export function getPlanetStyle(planet: string, isDarkMode: boolean) {
 
 // Get aspect line styling
 export function getAspectStyle(aspectType: string, isDarkMode: boolean) {
-  const aspectColors = CosmicChartTheme.colors.aspects[aspectType as keyof typeof CosmicChartTheme.colors.aspects]
+  const aspectColors =
+    CosmicChartTheme.colors.aspects[aspectType as keyof typeof CosmicChartTheme.colors.aspects]
 
   if (!aspectColors) {
     return {

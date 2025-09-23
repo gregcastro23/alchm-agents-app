@@ -184,7 +184,16 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
           // Validate Monica Constant calculation inputs and result
           let monicaConstant = 0
           try {
-            const mcResult = calculateMC(spirit, essence, matter, substance, fire, water, air, earth)
+            const mcResult = calculateMC(
+              spirit,
+              essence,
+              matter,
+              substance,
+              fire,
+              water,
+              air,
+              earth
+            )
             monicaConstant = Number.isFinite(mcResult) ? mcResult : 0
           } catch (error) {
             console.warn('Error calculating Monica Constant:', error)
@@ -311,7 +320,8 @@ export function usePlanetaryPositionsOnly(options: UsePlanetaryPositionsOptions 
   const legacyPositions = planetaryPositions.reduce(
     (acc, pos) => {
       // Ensure degree is valid before converting to string
-      const safeDegree = typeof pos.degree === 'number' && Number.isFinite(pos.degree) ? pos.degree : 0
+      const safeDegree =
+        typeof pos.degree === 'number' && Number.isFinite(pos.degree) ? pos.degree : 0
       acc[pos.planet] = {
         sign: typeof pos.sign === 'string' ? pos.sign : 'Aries',
         degree: safeDegree.toString(),

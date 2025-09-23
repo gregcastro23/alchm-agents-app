@@ -44,7 +44,7 @@ export interface LiveConsciousnessResult {
     substance: number
     aNumber: number
   }
-  
+
   // Dynamic values (current moment applied to birth chart)
   liveMC: number
   liveKalchm: {
@@ -54,12 +54,12 @@ export interface LiveConsciousnessResult {
     substance: number
     aNumber: number
   }
-  
+
   // Change indicators
   mcChange: number
   mcPercentChange: number
   dominantTransitEffect: string
-  
+
   // Interpretations
   consciousnessLevel: string
   liveConsciousnessLevel: string
@@ -68,7 +68,7 @@ export interface LiveConsciousnessResult {
     transitInfluence: string
     cosmicWeather: string
   }
-  
+
   // Metadata
   timestamp: string
   calculationTime?: number
@@ -102,8 +102,8 @@ export const MONICA_BIRTH_CHART: BirthChartData = {
     hour: 12,
     minute: 0,
     latitude: 0,
-    longitude: 0
-  }
+    longitude: 0,
+  },
 }
 
 export function useLiveConsciousness(
@@ -113,7 +113,7 @@ export function useLiveConsciousness(
   const {
     refreshInterval = 60000, // 1 minute default
     autoRefresh = true,
-    agents = []
+    agents = [],
   } = options
 
   const [state, setState] = useState<LiveConsciousnessState>({
@@ -121,7 +121,7 @@ export function useLiveConsciousness(
     multiAgentData: null,
     loading: false,
     error: null,
-    lastUpdated: null
+    lastUpdated: null,
   })
 
   const calculateLive = useCallback(async () => {
@@ -159,9 +159,8 @@ export function useLiveConsciousness(
         multiAgentData,
         loading: false,
         error: null,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       })
-
     } catch (error) {
       // Enter cooldown and serve fallback on error
       setBackendDownCooldown(5)
@@ -169,7 +168,7 @@ export function useLiveConsciousness(
       setState(prev => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : 'Backend calculation error'
+        error: error instanceof Error ? error.message : 'Backend calculation error',
       }))
     }
   }, [birthChart ? JSON.stringify(birthChart) : '', agents.map(a => a.name).join('|')])
@@ -179,7 +178,6 @@ export function useLiveConsciousness(
     if (birthChart || agents.length > 0) {
       calculateLive()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [birthChart ? JSON.stringify(birthChart) : '', agents.map(a => a.name).join('|')])
 
   // Auto-refresh functionality
@@ -206,13 +204,16 @@ export function useLiveConsciousness(
   return {
     ...state,
     refresh,
-    isStale: state.lastUpdated ? 
-      Date.now() - state.lastUpdated.getTime() > refreshInterval * 2 : true
+    isStale: state.lastUpdated
+      ? Date.now() - state.lastUpdated.getTime() > refreshInterval * 2
+      : true,
   }
 }
 
 // Specialized hook for Monica's live consciousness
-export function useMonicaLiveConsciousness(options: Omit<UseLiveConsciousnessOptions, 'agents'> = {}) {
+export function useMonicaLiveConsciousness(
+  options: Omit<UseLiveConsciousnessOptions, 'agents'> = {}
+) {
   return useLiveConsciousness(MONICA_BIRTH_CHART, options)
 }
 
@@ -221,16 +222,18 @@ export function useConsciousnessHistory(
   birthChart: BirthChartData,
   maxHistoryPoints = 24 // 24 hours of hourly data
 ) {
-  const [history, setHistory] = useState<Array<{
-    timestamp: string
-    mc: number
-    level: string
-    change: number
-  }>>([])
+  const [history, setHistory] = useState<
+    Array<{
+      timestamp: string
+      mc: number
+      level: string
+      change: number
+    }>
+  >([])
 
   const { data, loading, error } = useLiveConsciousness(birthChart, {
     refreshInterval: 60000 * 60, // 1 hour
-    autoRefresh: true
+    autoRefresh: true,
   })
 
   useEffect(() => {
@@ -240,15 +243,15 @@ export function useConsciousnessHistory(
           timestamp: data.timestamp,
           mc: data.liveMC,
           level: data.liveConsciousnessLevel,
-          change: data.mcChange
+          change: data.mcChange,
         }
 
         // Prevent duplicate timestamps
         const filtered = prev.filter(point => point.timestamp !== newPoint.timestamp)
         const updated = [...filtered, newPoint].slice(-maxHistoryPoints)
-        
-        return updated.sort((a, b) => 
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+
+        return updated.sort(
+          (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         )
       })
     }
@@ -256,31 +259,36 @@ export function useConsciousnessHistory(
 
   return {
     history,
-    currentPoint: data ? {
-      timestamp: data.timestamp,
-      mc: data.liveMC,
-      level: data.liveConsciousnessLevel,
-      change: data.mcChange
-    } : null,
+    currentPoint: data
+      ? {
+          timestamp: data.timestamp,
+          mc: data.liveMC,
+          level: data.liveConsciousnessLevel,
+          change: data.mcChange,
+        }
+      : null,
     loading,
-    error
+    error,
   }
 }
 
 // Utility function to format MC change for display
-export function formatMCChange(change: number, percentChange: number): {
+export function formatMCChange(
+  change: number,
+  percentChange: number
+): {
   text: string
   color: string
   icon: string
 } {
   const absChange = Math.abs(change)
   const absPercent = Math.abs(percentChange)
-  
+
   if (absChange < 0.1) {
     return {
       text: 'Stable',
       color: 'text-slate-500',
-      icon: '⚖️'
+      icon: '⚖️',
     }
   }
 
@@ -289,19 +297,19 @@ export function formatMCChange(change: number, percentChange: number): {
       return {
         text: `+${change.toFixed(3)} (↑${percentChange.toFixed(1)}%)`,
         color: 'text-emerald-500',
-        icon: '🚀'
+        icon: '🚀',
       }
     } else if (absPercent > 10) {
       return {
         text: `+${change.toFixed(3)} (↑${percentChange.toFixed(1)}%)`,
         color: 'text-green-500',
-        icon: '📈'
+        icon: '📈',
       }
     } else {
       return {
         text: `+${change.toFixed(3)} (↑${percentChange.toFixed(1)}%)`,
         color: 'text-emerald-400',
-        icon: '✨'
+        icon: '✨',
       }
     }
   } else {
@@ -309,19 +317,19 @@ export function formatMCChange(change: number, percentChange: number): {
       return {
         text: `${change.toFixed(3)} (↓${absPercent.toFixed(1)}%)`,
         color: 'text-red-500',
-        icon: '⚠️'
+        icon: '⚠️',
       }
     } else if (absPercent > 10) {
       return {
         text: `${change.toFixed(3)} (↓${absPercent.toFixed(1)}%)`,
         color: 'text-orange-500',
-        icon: '📉'
+        icon: '📉',
       }
     } else {
       return {
         text: `${change.toFixed(3)} (↓${absPercent.toFixed(1)}%)`,
         color: 'text-yellow-500',
-        icon: '🔄'
+        icon: '🔄',
       }
     }
   }
@@ -348,7 +356,9 @@ export function getConsciousnessColor(level: string): string {
 }
 
 // API functions using frontend proxy
-async function fetchLiveConsciousness(birthChart: BirthChartData): Promise<LiveConsciousnessResult> {
+async function fetchLiveConsciousness(
+  birthChart: BirthChartData
+): Promise<LiveConsciousnessResult> {
   try {
     if (isBackendDown()) {
       logBackendUnavailableOnce()
@@ -359,7 +369,7 @@ async function fetchLiveConsciousness(birthChart: BirthChartData): Promise<LiveC
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(birthChart)
+      body: JSON.stringify(birthChart),
     })
 
     if (!response.ok) {
@@ -389,33 +399,33 @@ function generateFallbackConsciousnessData(birthChart: BirthChartData): LiveCons
   // Simple hash function for consistent results based on name
   const name = birthChart.name || 'Unknown Agent'
   const nameHash = name.split('').reduce((a, b) => {
-    a = ((a << 5) - a) + b.charCodeAt(0)
+    a = (a << 5) - a + b.charCodeAt(0)
     return a & a
   }, 0)
 
   const r = Math.abs(nameHash) / 2147483647 // Normalize to 0-1
 
   // Generate deterministic but realistic numbers matching LiveConsciousnessResult
-  const birthMC = 2.0 + (r * 3.0) // 2.0 - 5.0
+  const birthMC = 2.0 + r * 3.0 // 2.0 - 5.0
   const liveDelta = (r - 0.5) * 0.6 // -0.3 to +0.3
   const liveMC = Math.max(0.5, birthMC + liveDelta)
   const mcChange = liveMC - birthMC
   const mcPercentChange = birthMC !== 0 ? (mcChange / birthMC) * 100 : 0
 
   const birthKalchm = {
-    spirit: 2 + (r * 4),
-    essence: 2 + (r * 4),
-    matter: 2 + (r * 4),
-    substance: 1 + (r * 3),
-    aNumber: 20 + Math.floor(r * 40)
+    spirit: 2 + r * 4,
+    essence: 2 + r * 4,
+    matter: 2 + r * 4,
+    substance: 1 + r * 3,
+    aNumber: 20 + Math.floor(r * 40),
   }
 
   const liveKalchm = {
-    spirit: birthKalchm.spirit + (liveDelta * 5),
-    essence: birthKalchm.essence + (liveDelta * 4),
-    matter: birthKalchm.matter + (liveDelta * 3),
-    substance: birthKalchm.substance + (liveDelta * 2),
-    aNumber: birthKalchm.aNumber + Math.floor(liveDelta * 10)
+    spirit: birthKalchm.spirit + liveDelta * 5,
+    essence: birthKalchm.essence + liveDelta * 4,
+    matter: birthKalchm.matter + liveDelta * 3,
+    substance: birthKalchm.substance + liveDelta * 2,
+    aNumber: birthKalchm.aNumber + Math.floor(liveDelta * 10),
   }
 
   const levels = ['Awakening', 'Active', 'Elevated', 'Advanced', 'Illuminated'] as const
@@ -434,21 +444,28 @@ function generateFallbackConsciousnessData(birthChart: BirthChartData): LiveCons
     consciousnessLevel,
     liveConsciousnessLevel,
     interpretations: {
-      mcChange: mcChange > 0 ? 'Consciousness rising in fallback context' : mcChange < 0 ? 'Minor contraction observed' : 'Stable consciousness',
+      mcChange:
+        mcChange > 0
+          ? 'Consciousness rising in fallback context'
+          : mcChange < 0
+            ? 'Minor contraction observed'
+            : 'Stable consciousness',
       transitInfluence: 'Transit influence approximated (fallback)',
-      cosmicWeather: 'Calm cosmic conditions (fallback)'
+      cosmicWeather: 'Calm cosmic conditions (fallback)',
     },
     timestamp: new Date().toISOString(),
     calculationTime: 0,
-    fromCache: false
+    fromCache: false,
   }
 }
 
-async function fetchBatchLiveConsciousness(agents: BirthChartData[]): Promise<Record<string, LiveConsciousnessResult>> {
+async function fetchBatchLiveConsciousness(
+  agents: BirthChartData[]
+): Promise<Record<string, LiveConsciousnessResult>> {
   // For now, process individually since we only have single endpoint
   // TODO: Add batch endpoint to frontend proxy
   const results: Record<string, LiveConsciousnessResult> = {}
-  
+
   for (const agent of agents) {
     try {
       results[agent.name] = await fetchLiveConsciousness(agent)
@@ -459,6 +476,6 @@ async function fetchBatchLiveConsciousness(agents: BirthChartData[]): Promise<Re
       results[agent.name] = generateFallbackConsciousnessData(agent)
     }
   }
-  
+
   return results
 }

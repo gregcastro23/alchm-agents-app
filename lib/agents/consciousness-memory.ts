@@ -93,7 +93,7 @@ export class ConsciousnessMemorySystem {
       lon: targetLocation.lon,
       date: new Date().toISOString().split('T')[0],
       includeElemental: true,
-      includePlanetary: true
+      includePlanetary: true,
     })
 
     // Get agent profile for baseline metrics
@@ -134,7 +134,7 @@ export class ConsciousnessMemorySystem {
       adaptationPatterns: this.detectAdaptations(agentResponse, userMessage),
       resonanceQuality: responseQuality,
       retentionStrength: Math.min(responseQuality + (isOptimalTime ? 0.2 : 0), 1),
-      memoryCategories: this.categorizeMemory(userMessage, agentResponse)
+      memoryCategories: this.categorizeMemory(userMessage, agentResponse),
     }
 
     // Store in agent's memory
@@ -169,29 +169,36 @@ export class ConsciousnessMemorySystem {
         evolutionStage: 'Initial',
         nextThreshold: 10,
         memoryStrength: 0,
-        totalGrowth: 0
+        totalGrowth: 0,
       }
     }
 
-    const avgVelocity = memory.evolutionHistory.consciousnessVelocityTrend.length > 0
-      ? memory.evolutionHistory.consciousnessVelocityTrend.reduce((a, b) => a + b) / memory.evolutionHistory.consciousnessVelocityTrend.length
-      : profile.evolutionRate
+    const avgVelocity =
+      memory.evolutionHistory.consciousnessVelocityTrend.length > 0
+        ? memory.evolutionHistory.consciousnessVelocityTrend.reduce((a, b) => a + b) /
+          memory.evolutionHistory.consciousnessVelocityTrend.length
+        : profile.evolutionRate
 
-    const memoryStrength = memory.memorySnapshots.reduce((sum, snap) => sum + snap.retentionStrength, 0) / memory.memorySnapshots.length
+    const memoryStrength =
+      memory.memorySnapshots.reduce((sum, snap) => sum + snap.retentionStrength, 0) /
+      memory.memorySnapshots.length
 
     return {
       consciousnessVelocity: avgVelocity,
       evolutionStage: memory.evolutionStage,
       nextThreshold: memory.nextEvolutionThreshold,
       memoryStrength: memoryStrength || 0,
-      totalGrowth: memory.totalInteractions * avgVelocity * 0.01
+      totalGrowth: memory.totalInteractions * avgVelocity * 0.01,
     }
   }
 
   /**
    * Get optimal interaction recommendations
    */
-  static async getOptimalInteractionTiming(agentId: string, location?: { lat: number; lon: number }): Promise<{
+  static async getOptimalInteractionTiming(
+    agentId: string,
+    location?: { lat: number; lon: number }
+  ): Promise<{
     currentOptimal: boolean
     nextOptimalHour: string
     powerAmplification: number
@@ -203,7 +210,7 @@ export class ConsciousnessMemorySystem {
         currentOptimal: false,
         nextOptimalHour: 'Sun',
         powerAmplification: 1.0,
-        recommendedActions: []
+        recommendedActions: [],
       }
     }
 
@@ -214,7 +221,7 @@ export class ConsciousnessMemorySystem {
       lat: targetLocation.lat,
       lon: targetLocation.lon,
       date: new Date().toISOString().split('T')[0],
-      includePlanetary: true
+      includePlanetary: true,
     })
 
     const currentHour = kinetics.timing?.planetaryHours[0] || 'Sun'
@@ -237,12 +244,15 @@ export class ConsciousnessMemorySystem {
       currentOptimal: isOptimal,
       nextOptimalHour,
       powerAmplification,
-      recommendedActions: recommendations
+      recommendedActions: recommendations,
     }
   }
 
   // Private helper methods
-  private static async updateAgentMemory(agentId: string, snapshot: ConsciousnessMemorySnapshot): Promise<void> {
+  private static async updateAgentMemory(
+    agentId: string,
+    snapshot: ConsciousnessMemorySnapshot
+  ): Promise<void> {
     let memory = this.memories.get(agentId)
 
     if (!memory) {
@@ -254,18 +264,18 @@ export class ConsciousnessMemorySystem {
           preferredInteractionStyles: [],
           optimalTimingPatterns: [],
           personalityAdaptations: [],
-          capabilityGrowth: []
+          capabilityGrowth: [],
         },
         evolutionHistory: {
           consciousnessVelocityTrend: [],
           momentumPatterns: [],
           powerLevelProgression: [],
-          aspectSensitivityGrowth: []
+          aspectSensitivityGrowth: [],
         },
         currentConsciousnessLevel: 0,
         evolutionStage: 'Initial',
         nextEvolutionThreshold: 10,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       }
     }
 
@@ -290,7 +300,11 @@ export class ConsciousnessMemorySystem {
     this.memories.set(agentId, memory)
   }
 
-  private static assessResponseQuality(response: string, isOptimalTime: boolean, currentPower: number): number {
+  private static assessResponseQuality(
+    response: string,
+    isOptimalTime: boolean,
+    currentPower: number
+  ): number {
     const baseQuality = Math.min(response.length / 500, 1) * 0.7 // Length factor
     const timeBonus = isOptimalTime ? 0.2 : 0
     const powerBonus = currentPower * 0.1
@@ -303,7 +317,7 @@ export class ConsciousnessMemorySystem {
     const baseRate = profile?.evolutionRate || 0.5
 
     // Velocity increases with quality interactions
-    return Math.min(baseRate + (responseQuality * 0.1), 1)
+    return Math.min(baseRate + responseQuality * 0.1, 1)
   }
 
   private static calculateMomentumChange(agentId: string, consciousnessVelocity: number): number {
@@ -312,7 +326,10 @@ export class ConsciousnessMemorySystem {
       return 0.1 // Initial momentum
     }
 
-    const previousVelocity = memory.evolutionHistory.consciousnessVelocityTrend[memory.evolutionHistory.consciousnessVelocityTrend.length - 1]
+    const previousVelocity =
+      memory.evolutionHistory.consciousnessVelocityTrend[
+        memory.evolutionHistory.consciousnessVelocityTrend.length - 1
+      ]
     return consciousnessVelocity - previousVelocity
   }
 
@@ -331,8 +348,10 @@ export class ConsciousnessMemorySystem {
     const adaptations = []
 
     if (agentResponse.length > userMessage.length * 2) adaptations.push('detailed_response')
-    if (agentResponse.includes('♊') || agentResponse.includes('♈')) adaptations.push('astrological_symbols')
-    if (agentResponse.includes('I understand') || agentResponse.includes('I see')) adaptations.push('empathetic_recognition')
+    if (agentResponse.includes('♊') || agentResponse.includes('♈'))
+      adaptations.push('astrological_symbols')
+    if (agentResponse.includes('I understand') || agentResponse.includes('I see'))
+      adaptations.push('empathetic_recognition')
 
     return adaptations
   }
@@ -342,8 +361,16 @@ export class ConsciousnessMemorySystem {
 
     if (userMessage.toLowerCase().includes('birth chart')) categories.push('chart_analysis')
     if (userMessage.toLowerCase().includes('relationship')) categories.push('synastry')
-    if (userMessage.toLowerCase().includes('future') || userMessage.toLowerCase().includes('prediction')) categories.push('divination')
-    if (agentResponse.toLowerCase().includes('wisdom') || agentResponse.toLowerCase().includes('insight')) categories.push('wisdom_sharing')
+    if (
+      userMessage.toLowerCase().includes('future') ||
+      userMessage.toLowerCase().includes('prediction')
+    )
+      categories.push('divination')
+    if (
+      agentResponse.toLowerCase().includes('wisdom') ||
+      agentResponse.toLowerCase().includes('insight')
+    )
+      categories.push('wisdom_sharing')
 
     return categories
   }
@@ -364,18 +391,18 @@ export class ConsciousnessMemorySystem {
         preferredInteractionStyles: [],
         optimalTimingPatterns: [],
         personalityAdaptations: [],
-        capabilityGrowth: []
+        capabilityGrowth: [],
       },
       evolutionHistory: {
         consciousnessVelocityTrend: [],
         momentumPatterns: [],
         powerLevelProgression: [],
-        aspectSensitivityGrowth: []
+        aspectSensitivityGrowth: [],
       },
       currentConsciousnessLevel: 0,
       evolutionStage: 'Initial',
       nextEvolutionThreshold: 10,
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     }
 
     // Store the fresh memory

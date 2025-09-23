@@ -15,7 +15,7 @@ import {
   PATTERN_SIGIL_MAPPINGS,
   createNatalSigilRune,
   calculateSigilPower,
-  calculateSigilCosts
+  calculateSigilCosts,
 } from './natal-sigil-runes'
 
 export class PatternToRuneConverter {
@@ -127,10 +127,13 @@ export class PatternToRuneConverter {
    * Generate aspect line descriptions for the prompt
    */
   static describeAspectLines(geometry: RuneGeometry): string {
-    const aspectGroups = geometry.aspectLines.reduce((acc, line) => {
-      acc[line.type] = (acc[line.type] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
+    const aspectGroups = geometry.aspectLines.reduce(
+      (acc, line) => {
+        acc[line.type] = (acc[line.type] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>
+    )
 
     const descriptions = Object.entries(aspectGroups).map(([type, count]) => {
       switch (type) {
@@ -183,8 +186,8 @@ export class PatternToRuneConverter {
           powerNodeCount: geometry.powerNodes.length,
           dominantPattern: pattern.type,
           patternStrength: pattern.strength,
-          elementalSignature: geometry.dominantElement
-        }
+          elementalSignature: geometry.dominantElement,
+        },
       })
 
       // Handle fallback responses
@@ -213,16 +216,11 @@ export class PatternToRuneConverter {
       }
 
       return sigilRune
-
     } catch (error) {
       console.error('Error generating sigil from pattern:', error)
 
       // Return a basic sigil without image on error
-      const fallbackSigil = createNatalSigilRune(
-        geometry,
-        style,
-        'pattern-based'
-      )
+      const fallbackSigil = createNatalSigilRune(geometry, style, 'pattern-based')
 
       fallbackSigil.description = `${style} sigil for ${pattern.type} pattern (image generation pending)`
       return fallbackSigil
@@ -239,11 +237,10 @@ export class PatternToRuneConverter {
   ): Promise<NatalSigilRune[]> {
     const variations = await Promise.all(
       styles.map(style =>
-        this.generateSigilFromPattern(pattern, geometry, style)
-          .catch(err => {
-            console.error(`Failed to generate ${style} variation:`, err)
-            return null
-          })
+        this.generateSigilFromPattern(pattern, geometry, style).catch(err => {
+          console.error(`Failed to generate ${style} variation:`, err)
+          return null
+        })
       )
     )
 
@@ -259,7 +256,7 @@ export class PatternToRuneConverter {
     let hash = 0
     for (let i = 0; i < hashString.length; i++) {
       const char = hashString.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32-bit integer
     }
     return Math.abs(hash)
@@ -311,7 +308,7 @@ export class PatternToRuneConverter {
     const sortedPatterns = patterns.sort((a, b) => b.strength - a.strength)
 
     // Build composite prompt
-    let compositePrompt = SIGIL_STYLE_PARAMS[style].prompt_modifier + ', '
+    let compositePrompt = `${SIGIL_STYLE_PARAMS[style].prompt_modifier}, `
     compositePrompt += 'Multi-layered sacred sigil combining '
     compositePrompt += sortedPatterns.map(p => p.type).join(', ')
 
@@ -322,7 +319,8 @@ export class PatternToRuneConverter {
     // Add secondary patterns
     if (sortedPatterns.length > 1) {
       compositePrompt += ', secondary patterns: '
-      compositePrompt += sortedPatterns.slice(1)
+      compositePrompt += sortedPatterns
+        .slice(1)
         .map(p => `${p.type} (${p.strength}%)`)
         .join(', ')
     }
@@ -344,9 +342,9 @@ export class PatternToRuneConverter {
           patterns: patterns.map(p => ({
             type: p.type,
             strength: p.strength,
-            planets: p.planets
-          }))
-        }
+            planets: p.planets,
+          })),
+        },
       })
 
       const compositeSigil = createNatalSigilRune(
@@ -362,7 +360,6 @@ export class PatternToRuneConverter {
       compositeSigil.powerLevel = 100
 
       return compositeSigil
-
     } catch (error) {
       console.error('Error generating composite sigil:', error)
       throw error
@@ -372,10 +369,7 @@ export class PatternToRuneConverter {
   /**
    * Generate prompt for aspect-focused sigil (no major pattern)
    */
-  static generateAspectFocusedPrompt(
-    geometry: RuneGeometry,
-    style: SigilStyle
-  ): string {
+  static generateAspectFocusedPrompt(geometry: RuneGeometry, style: SigilStyle): string {
     const styleParams = SIGIL_STYLE_PARAMS[style]
     const aspectLines = this.describeAspectLines(geometry)
 

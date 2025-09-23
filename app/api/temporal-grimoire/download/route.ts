@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 declare global {
-  var temporalGrimoireCache: Map<string, {
-    data: Buffer
-    format: string
-    filename: string
-    timestamp: number
-  }> | undefined
+  var temporalGrimoireCache:
+    | Map<
+        string,
+        {
+          data: Buffer
+          format: string
+          filename: string
+          timestamp: number
+        }
+      >
+    | undefined
 }
 
 export async function GET(request: NextRequest) {
@@ -16,10 +21,7 @@ export async function GET(request: NextRequest) {
     const filename = searchParams.get('filename')
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Download ID is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Download ID is required' }, { status: 400 })
     }
 
     // Check if cache exists and has the file
@@ -69,12 +71,8 @@ export async function GET(request: NextRequest) {
         'Content-Length': cacheEntry.data.length.toString(),
       },
     })
-
   } catch (error) {
     console.error('Error serving grimoire download:', error)
-    return NextResponse.json(
-      { error: 'Failed to serve download' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to serve download' }, { status: 500 })
   }
 }

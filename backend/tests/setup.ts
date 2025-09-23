@@ -19,8 +19,8 @@ jest.mock('redis', () => ({
     del: jest.fn(),
     exists: jest.fn(),
     flushDb: jest.fn(),
-    keys: jest.fn()
-  }))
+    keys: jest.fn(),
+  })),
 }))
 
 // Global test utilities

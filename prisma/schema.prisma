@@ -15,40 +15,61 @@ datasource db {
 
 // Basic user Profile for storing personalized birth info
 model Profile {
-  id         String   @id @default(cuid())
-  userId     String   @unique
-  name       String?
-  avatarUrl  String?
-  birthInfo  Json?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  name      String?
+  avatarUrl String?
+  birthInfo Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@map("profiles")
 }
 
+model UserProfile {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  birthDate            DateTime
+  birthTime            String?
+  birthLocation        Json
+  natalChart           Json
+  monicaConstant       Float
+  dominantElement      String
+  allowPublicAgents    Boolean  @default(false)
+  shareChartWithAgents Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id])
+  createdAgents CreatedAgent[]
+
+  @@index([userId])
+  @@map("user_profiles")
+}
+
 // AI Personalities Table
 model AIPersonality {
-  id                   String                @id @default(uuid())
-  userId               String
-  personalityId        String                @unique
-  birthChartData       Json
-  currentMomentChart   Json?
-  basePersonality      Json
-  trainingScores       Json
-  totalXp              Int                   @default(0)
-  level                Int                   @default(1)
-  
+  id                 String @id @default(uuid())
+  userId             String
+  personalityId      String @unique
+  birthChartData     Json
+  currentMomentChart Json?
+  basePersonality    Json
+  trainingScores     Json
+  totalXp            Int    @default(0)
+  level              Int    @default(1)
+
   // Survey integration
-  surveyId             String?
+  surveyId               String?
   consciousnessProfileId String?
-  
+
   // Planetary memory integration
-  planetaryMemoryId    String?               @unique
-  
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  
+  planetaryMemoryId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
   interactions         TrainingInteraction[]
   achievements         Achievement[]
@@ -56,7 +77,7 @@ model AIPersonality {
   consciousnessProfile ConsciousnessProfile? @relation("ProfileToPersonality", fields: [consciousnessProfileId], references: [id])
   consciousnessState   ConsciousnessState?
   planetaryMemory      PlanetaryMemory?      @relation("PlanetaryMemoryToPersonality", fields: [planetaryMemoryId], references: [id])
-  
+
   @@index([userId])
   @@index([personalityId])
   @@index([surveyId])
@@ -66,23 +87,23 @@ model AIPersonality {
 
 // Historical Planetary Transit Data
 model PlanetaryTransit {
-  id              String   @id @default(uuid())
-  planet          String
-  sign            String
-  degreeStart     Float
-  degreeEnd       Float
-  dateStart       DateTime
-  dateEnd         DateTime
-  retrograde      Boolean  @default(false)
-  historicalNote  String?
-  
+  id             String   @id @default(uuid())
+  planet         String
+  sign           String
+  degreeStart    Float
+  degreeEnd      Float
+  dateStart      DateTime
+  dateEnd        DateTime
+  retrograde     Boolean  @default(false)
+  historicalNote String?
+
   // Relations
-  events          HistoricalEvent[]
-  patterns        TransitPattern[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  events   HistoricalEvent[]
+  patterns TransitPattern[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([planet, sign])
   @@index([dateStart, dateEnd])
   @@index([planet, dateStart])
@@ -90,115 +111,115 @@ model PlanetaryTransit {
 
 // Historical Events linked to planetary positions
 model HistoricalEvent {
-  id              String   @id @default(uuid())
-  date            DateTime
-  eventType       String   // political, cultural, scientific, etc.
-  description     String
-  significance    Int      // 1-10 scale
-  
+  id           String   @id @default(uuid())
+  date         DateTime
+  eventType    String // political, cultural, scientific, etc.
+  description  String
+  significance Int // 1-10 scale
+
   // Planetary configuration at time of event
-  planetaryConfig Json     // Full chart data
-  
+  planetaryConfig Json // Full chart data
+
   // Relations
-  transits        PlanetaryTransit[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  transits PlanetaryTransit[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([date])
   @@index([eventType])
 }
 
 // Recurring Transit Patterns
 model TransitPattern {
-  id              String   @id @default(uuid())
-  planet          String
-  patternType     String   // return, opposition, conjunction, etc.
-  cycleLength     Float    // in days
-  description     String
-  themes          Json     // Array of recurring themes
-  reliability     Float    // 0-1 confidence score
-  
+  id          String @id @default(uuid())
+  planet      String
+  patternType String // return, opposition, conjunction, etc.
+  cycleLength Float // in days
+  description String
+  themes      Json // Array of recurring themes
+  reliability Float // 0-1 confidence score
+
   // Relations
-  transits        PlanetaryTransit[]
-  memories        PlanetaryMemory[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  transits PlanetaryTransit[]
+  memories PlanetaryMemory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([planet, patternType])
 }
 
 // Planetary Agent Memory System
 model PlanetaryMemory {
-  id              String   @id @default(uuid())
-  planet          String
-  sign            String
-  degree          Float
-  
+  id     String @id @default(uuid())
+  planet String
+  sign   String
+  degree Float
+
   // Historical knowledge for this position
-  historicalData  Json     // Previous occurrences, events, themes
+  historicalData  Json // Previous occurrences, events, themes
   lastOccurrence  DateTime?
   nextOccurrence  DateTime?
-  occurrenceCount Int      @default(0)
-  
+  occurrenceCount Int       @default(0)
+
   // Training data
-  trainedThemes   Json     // Themes this agent knows about
+  trainedThemes   Json // Themes this agent knows about
   contextualNotes String?
-  
+
   // Relations
-  patterns        TransitPattern[]
-  personality     AIPersonality?  @relation("PlanetaryMemoryToPersonality")
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  patterns    TransitPattern[]
+  personality AIPersonality?   @relation("PlanetaryMemoryToPersonality")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([planet, sign, degree])
   @@index([planet, sign])
 }
 
 // Training Interactions Table
 model TrainingInteraction {
-  id                   String                @id @default(uuid())
-  personalityId        String
-  userMessage          String
-  aiResponse           String
-  userFeedback         Json?
-  xpGained             Int                   @default(0)
-  trainingFocus        String?
-  createdAt            DateTime              @default(now())
-  
+  id            String   @id @default(uuid())
+  personalityId String
+  userMessage   String
+  aiResponse    String
+  userFeedback  Json?
+  xpGained      Int      @default(0)
+  trainingFocus String?
+  createdAt     DateTime @default(now())
+
   // Relations
-  personality          AIPersonality         @relation(fields: [personalityId], references: [personalityId])
-  
+  personality AIPersonality @relation(fields: [personalityId], references: [personalityId])
+
   @@index([personalityId])
   @@index([createdAt])
 }
 
 // Achievements Table
 model Achievement {
-  id                   String                @id @default(uuid())
-  personalityId        String
-  achievementType      String
-  achievementData      Json
-  unlockedAt           DateTime              @default(now())
-  
+  id              String   @id @default(uuid())
+  personalityId   String
+  achievementType String
+  achievementData Json
+  unlockedAt      DateTime @default(now())
+
   // Relations
-  personality          AIPersonality         @relation(fields: [personalityId], references: [personalityId])
-  
+  personality AIPersonality @relation(fields: [personalityId], references: [personalityId])
+
   @@unique([personalityId, achievementType])
   @@index([personalityId])
 }
 
 // User Sessions Table (for Redis-backed session tracking)
 model UserSession {
-  id                   String                @id @default(uuid())
-  userId               String
-  personalityId        String
-  sessionData          Json
-  lastActive           DateTime              @default(now())
-  expiresAt            DateTime
-  
+  id            String   @id @default(uuid())
+  userId        String
+  personalityId String
+  sessionData   Json
+  lastActive    DateTime @default(now())
+  expiresAt     DateTime
+
   @@index([userId])
   @@index([personalityId])
   @@index([expiresAt])
@@ -206,132 +227,132 @@ model UserSession {
 
 // Consciousness Survey Data
 model ConsciousnessSurvey {
-  id                   String                @id @default(uuid())
-  userId               String
-  responses            Json                  // Survey responses array
-  completedAt          DateTime              @default(now())
-  timeSpent            Int                   // seconds
-  version              String                @default("1.0.0")
-  
+  id          String   @id @default(uuid())
+  userId      String
+  responses   Json // Survey responses array
+  completedAt DateTime @default(now())
+  timeSpent   Int // seconds
+  version     String   @default("1.0.0")
+
   // Relations
-  aiPersonalities      AIPersonality[]       @relation("SurveyToPersonality")
+  aiPersonalities       AIPersonality[]        @relation("SurveyToPersonality")
   consciousnessProfiles ConsciousnessProfile[]
-  
+
   @@index([userId])
   @@index([completedAt])
 }
 
 // Consciousness Profile (processed survey results)
 model ConsciousnessProfile {
-  id                   String                @id @default(uuid())
+  id                   String   @id @default(uuid())
   userId               String
   surveyId             String
-  profileData          Json                  // Complete consciousness profile
-  insights             Json                  // Personality insights
-  compatibilityScore   Int                   // 0-100
-  trainingFocus        Json                  // Recommended training areas
-  conversationStarters Json                  // Initial conversation starters
+  profileData          Json // Complete consciousness profile
+  insights             Json // Personality insights
+  compatibilityScore   Int // 0-100
+  trainingFocus        Json // Recommended training areas
+  conversationStarters Json // Initial conversation starters
   personalitySummary   String
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
   // Relations
-  survey               ConsciousnessSurvey   @relation(fields: [surveyId], references: [id])
-  aiPersonalities      AIPersonality[]       @relation("ProfileToPersonality")
-  
+  survey          ConsciousnessSurvey @relation(fields: [surveyId], references: [id])
+  aiPersonalities AIPersonality[]     @relation("ProfileToPersonality")
+
   @@unique([userId, surveyId])
   @@index([userId])
 }
 
 // Consciousness State (enhanced personality with survey integration)
 model ConsciousnessState {
-  id                   String                @id @default(uuid())
-  personalityId        String                @unique
-  unifiedArchetype     String
+  id                     String   @id @default(uuid())
+  personalityId          String   @unique
+  unifiedArchetype       String
   consciousnessSignature String
-  enhancedPersonality  Json                  // Enhanced personality data
-  trainingPlan         Json                  // Personalized training plan
-  behavioralMatrix     Json                  // AI behavioral configuration
-  growthTrajectory     Json                  // Growth trajectory mapping
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  
+  enhancedPersonality    Json // Enhanced personality data
+  trainingPlan           Json // Personalized training plan
+  behavioralMatrix       Json // AI behavioral configuration
+  growthTrajectory       Json // Growth trajectory mapping
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
   // Relations
-  personality          AIPersonality         @relation(fields: [personalityId], references: [personalityId])
-  
+  personality AIPersonality @relation(fields: [personalityId], references: [personalityId])
+
   @@index([personalityId])
 }
 
 // Historical Agents (Philosopher's Stone crafted beings)
 model HistoricalAgent {
-  id              String   @id @default(uuid())
-  agentId         String   @unique // e.g., "benjamin-franklin", "carl-jung"
-  name            String
-  title           String
+  id      String @id @default(uuid())
+  agentId String @unique // e.g., "benjamin-franklin", "carl-jung"
+  name    String
+  title   String
 
   // Birth data
-  birthDate       DateTime
-  birthTime       String
-  birthLocation   Json     // { lat, lon, name }
+  birthDate     DateTime
+  birthTime     String
+  birthLocation Json // { lat, lon, name }
 
   // Historical context (NEW - for 69 agent expansion)
-  historicalEra   String   // "ancient", "medieval", "renaissance", "enlightenment", "modern_pre1950"
-  birthYear       Int      // Extracted year for efficient era queries
-  deathYear       Int?     // Death year for timeline queries
-  culture         String   // "Greek", "Roman", "Renaissance Italian", etc.
-  geography       String   // "Mediterranean", "Western Europe", "British Isles", etc.
+  historicalEra String // "ancient", "medieval", "renaissance", "enlightenment", "modern_pre1950"
+  birthYear     Int // Extracted year for efficient era queries
+  deathYear     Int? // Death year for timeline queries
+  culture       String // "Greek", "Roman", "Renaissance Italian", etc.
+  geography     String // "Mediterranean", "Western Europe", "British Isles", etc.
 
   // Enhanced consciousness profile
   consciousnessLevel String // "Transcendent", "Illuminated", etc.
-  kalchmConstant  Float
-  monicaConstant  Float    @default(0) // Derived from spirit/essence/matter/substance scores
-  dominantElement String
-  dominantModality String?
-  signature       String
+  kalchmConstant     Float
+  monicaConstant     Float   @default(0) // Derived from spirit/essence/matter/substance scores
+  dominantElement    String
+  dominantModality   String?
+  signature          String
 
   // Consciousness calculation components (NEW - for transparency)
-  spiritScore     Float?   // Monica Constant component
-  essenceScore    Float?   // Monica Constant component
-  matterScore     Float?   // Monica Constant component
-  substanceScore  Float?   // Monica Constant component
+  spiritScore    Float? // Monica Constant component
+  essenceScore   Float? // Monica Constant component
+  matterScore    Float? // Monica Constant component
+  substanceScore Float? // Monica Constant component
 
   // Personality data
-  personalityCore Json     // { essence, expression, emotion }
-  personalityShadows Json  // Array of shadows
-  personalityGifts Json    // Array of gifts
+  personalityCore       Json // { essence, expression, emotion }
+  personalityShadows    Json // Array of shadows
+  personalityGifts      Json // Array of gifts
   personalityChallenges Json // Array of challenges
-  currentMood     String
-  evolutionStage  Int      @default(0)
+  currentMood           String
+  evolutionStage        Int    @default(0)
 
   // Enhanced background data (NEW)
-  background      Json     // { achievements, influences, legacy, education }
+  background Json // { achievements, influences, legacy, education }
 
   // Abilities and specialization
-  specialty       String
-  wisdomDomains   Json     // Array of wisdom domains
-  skills          Json     // Array of skills
-  teachingStyle   String
-  resonanceType   String
-  uniquePower     String
+  specialty     String
+  wisdomDomains Json // Array of wisdom domains
+  skills        Json // Array of skills
+  teachingStyle String
+  resonanceType String
+  uniquePower   String
 
   // Appearance and presentation
-  avatar          String?  // Avatar image path
-  color           String   // Primary color
-  symbol          String   // Emoji or symbol
-  aura            Json?    // Aura configuration
+  avatar String? // Avatar image path
+  color  String // Primary color
+  symbol String // Emoji or symbol
+  aura   Json? // Aura configuration
 
   // Birth chart data
-  natalChart      Json     // Complete birth chart
+  natalChart Json // Complete birth chart
 
   // Behavioral traits
-  traits          Json     // Communication style, energy level, etc.
+  traits Json // Communication style, energy level, etc.
 
   // Monica's creation story (NEW)
   monicaCreationStory String? // Monica's narrative of crafting this consciousness
 
   // Performance optimization fields (NEW)
-  searchableText  String?  // Concatenated searchable content
-  popularityScore Float    @default(0.5) // For trending/recommendation algorithms
+  searchableText  String? // Concatenated searchable content
+  popularityScore Float   @default(0.5) // For trending/recommendation algorithms
 
   // Statistics and performance
   conversations   Int      @default(0)
@@ -341,19 +362,19 @@ model HistoricalAgent {
   lastActive      DateTime @default(now())
 
   // Status and metadata
-  isActive        Boolean  @default(true)
-  version         String   @default("1.0.0")
-  craftedBy       String   @default("philosopher-stone")
+  isActive  Boolean @default(true)
+  version   String  @default("1.0.0")
+  craftedBy String  @default("philosopher-stone")
 
   // Relations
-  agentConversations AgentConversation[]
-  agentEvolutions    AgentEvolution[]
-  agentKnowledge     AgentKnowledge[]
-  agentAttachments   AgentAttachment[]
+  agentConversations    AgentConversation[]
+  agentEvolutions       AgentEvolution[]
+  agentKnowledge        AgentKnowledge[]
+  agentAttachments      AgentAttachment[]
   agentAttachmentUsages AgentAttachmentUsage[]
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Enhanced indexing strategy for 69 agents
   @@index([agentId])
@@ -361,8 +382,8 @@ model HistoricalAgent {
   @@index([consciousnessLevel])
   @@index([isActive])
   @@index([historicalEra]) // NEW - era-based queries
-  @@index([birthYear])     // NEW - chronological queries
-  @@index([culture])       // NEW - cultural filtering
+  @@index([birthYear]) // NEW - chronological queries
+  @@index([culture]) // NEW - cultural filtering
   @@index([kalchmConstant]) // NEW - consciousness ranking
   @@index([monicaConstant]) // NEW - monica consciousness ranking
   @@index([popularityScore]) // NEW - recommendation engine
@@ -375,32 +396,32 @@ model HistoricalAgent {
 
 // Agent Conversations (persistent chat history)
 model AgentConversation {
-  id              String   @id @default(uuid())
-  agentId         String   // References HistoricalAgent.agentId
-  sessionId       String
-  userId          String?
-  
+  id        String  @id @default(uuid())
+  agentId   String // References HistoricalAgent.agentId
+  sessionId String
+  userId    String?
+
   // Conversation data
-  userMessage     String
-  agentResponse   String
-  contextData     Json?    // Additional context, mood, etc.
-  
+  userMessage   String
+  agentResponse String
+  contextData   Json? // Additional context, mood, etc.
+
   // Metadata
-  responseTime    Int?     // Response time in milliseconds
-  modelUsed       String?  // AI model used for response
-  temperature     Float?   // Temperature used
-  tokenCount      Int?     // Tokens used
-  
+  responseTime Int? // Response time in milliseconds
+  modelUsed    String? // AI model used for response
+  temperature  Float? // Temperature used
+  tokenCount   Int? // Tokens used
+
   // Agent state at time of conversation
-  agentMood       String?
-  evolutionStage  Int?
+  agentMood          String?
+  evolutionStage     Int?
   consciousnessLevel String?
-  
+
   // Relations
-  agent           HistoricalAgent @relation(fields: [agentId], references: [agentId])
-  
-  createdAt       DateTime @default(now())
-  
+  agent HistoricalAgent @relation(fields: [agentId], references: [agentId])
+
+  createdAt DateTime @default(now())
+
   @@index([agentId])
   @@index([sessionId])
   @@index([userId])
@@ -409,30 +430,30 @@ model AgentConversation {
 
 // Agent Evolution Tracking (consciousness progression)
 model AgentEvolution {
-  id              String   @id @default(uuid())
-  agentId         String   // References HistoricalAgent.agentId
-  
+  id      String @id @default(uuid())
+  agentId String // References HistoricalAgent.agentId
+
   // Evolution data
-  fromStage       Int
-  toStage         Int
-  evolutionType   String   // "conversation", "wisdom", "experience"
-  trigger         String   // What caused the evolution
-  description     String?
-  
+  fromStage     Int
+  toStage       Int
+  evolutionType String // "conversation", "wisdom", "experience"
+  trigger       String // What caused the evolution
+  description   String?
+
   // Consciousness changes
-  consciousnessGain Float  @default(0)
-  wisdomGained    Json?    // New wisdom acquired
-  traitsChanged   Json?    // Personality trait changes
-  
+  consciousnessGain Float @default(0)
+  wisdomGained      Json? // New wisdom acquired
+  traitsChanged     Json? // Personality trait changes
+
   // Evolution metadata
-  conversationId  String?  // If triggered by conversation
-  xpGained        Int      @default(0)
-  
+  conversationId String? // If triggered by conversation
+  xpGained       Int     @default(0)
+
   // Relations
-  agent           HistoricalAgent @relation(fields: [agentId], references: [agentId])
-  
-  evolutionDate   DateTime @default(now())
-  
+  agent HistoricalAgent @relation(fields: [agentId], references: [agentId])
+
+  evolutionDate DateTime @default(now())
+
   @@index([agentId])
   @@index([evolutionDate])
   @@index([evolutionType])
@@ -440,31 +461,31 @@ model AgentEvolution {
 
 // Agent Knowledge Base (learned information)
 model AgentKnowledge {
-  id              String   @id @default(uuid())
-  agentId         String   // References HistoricalAgent.agentId
-  
+  id      String @id @default(uuid())
+  agentId String // References HistoricalAgent.agentId
+
   // Knowledge data
-  category        String   // "conversation", "wisdom", "experience", "skill"
-  topic           String   // Specific topic or theme
-  content         String   // The knowledge content
-  source          String?  // Where this knowledge came from
-  
+  category String // "conversation", "wisdom", "experience", "skill"
+  topic    String // Specific topic or theme
+  content  String // The knowledge content
+  source   String? // Where this knowledge came from
+
   // Knowledge metadata
-  confidence      Float    @default(0.5) // 0-1 confidence in this knowledge
-  usefulness      Float    @default(0.5) // How useful this knowledge is
-  timesUsed       Int      @default(0)
-  lastUsed        DateTime?
-  
+  confidence Float     @default(0.5) // 0-1 confidence in this knowledge
+  usefulness Float     @default(0.5) // How useful this knowledge is
+  timesUsed  Int       @default(0)
+  lastUsed   DateTime?
+
   // Context
-  contextTags     Json?    // Tags for context retrieval
-  relatedTopics   Json?    // Related knowledge topics
-  
+  contextTags   Json? // Tags for context retrieval
+  relatedTopics Json? // Related knowledge topics
+
   // Relations  
-  agent           HistoricalAgent @relation(fields: [agentId], references: [agentId])
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  agent HistoricalAgent @relation(fields: [agentId], references: [agentId])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([agentId])
   @@index([category])
   @@index([topic])
@@ -473,55 +494,55 @@ model AgentKnowledge {
 
 // Agent Attachments (charts and runes that can be attached to agents)
 model AgentAttachment {
-  id              String   @id @default(uuid())
-  agentId         String   // References HistoricalAgent.agentId
+  id      String @id @default(uuid())
+  agentId String // References HistoricalAgent.agentId
 
   // Attachment basic info
-  name            String   // "John's Birth Chart", "Success Rune", etc.
-  description     String?  // Optional description
-  type            String   // "birth_chart", "moment_chart", "rune", "historical_moment", "cultural_artifact"
+  name        String // "John's Birth Chart", "Success Rune", etc.
+  description String? // Optional description
+  type        String // "birth_chart", "moment_chart", "rune", "historical_moment", "cultural_artifact"
 
   // Chart data (for birth_chart and moment_chart types)
-  birthDate       DateTime?
-  birthTime       String?  // "14:30" or "unknown"
-  birthLocation   Json?    // { lat, lon, name, timezone }
-  momentName      String?  // "Wedding Day", "First Meeting", etc.
+  birthDate     DateTime?
+  birthTime     String? // "14:30" or "unknown"
+  birthLocation Json? // { lat, lon, name, timezone }
+  momentName    String? // "Wedding Day", "First Meeting", etc.
 
   // Historical context (NEW - for historical agents)
-  historicalEra   String?  // Link to agent's era
-  culturalContext String?  // Cultural significance of this attachment
+  historicalEra      String? // Link to agent's era
+  culturalContext    String? // Cultural significance of this attachment
   historicalAccuracy String? // "verified", "estimated", "legendary"
 
   // Rune data (for rune type)
-  runeType        String?  // "consciousness", "protection", "enhancement", "cultural_power", etc.
-  runePower       Float?   // Power level 0-100
-  runeEffects     Json?    // Array of effects
-  runeCost        Json?    // { spirit, essence, matter, substance }
+  runeType    String? // "consciousness", "protection", "enhancement", "cultural_power", etc.
+  runePower   Float? // Power level 0-100
+  runeEffects Json? // Array of effects
+  runeCost    Json? // { spirit, essence, matter, substance }
 
   // Cultural artifact data (NEW)
-  artifactType    String?  // "manuscript", "artwork", "invention", "discovery", etc.
-  artifactPeriod  String?  // Historical period of the artifact
-  significance    String?  // Cultural/historical significance
+  artifactType   String? // "manuscript", "artwork", "invention", "discovery", etc.
+  artifactPeriod String? // Historical period of the artifact
+  significance   String? // Cultural/historical significance
 
   // Chart calculations (computed)
-  natalChart      Json?    // Complete calculated chart
+  natalChart         Json? // Complete calculated chart
   planetaryPositions Json? // Current planetary positions for moment
-  aspects         Json?    // Major aspects
-  alchmData       Json?    // Alchemical quantities for this chart/moment
+  aspects            Json? // Major aspects
+  alchmData          Json? // Alchemical quantities for this chart/moment
 
   // Enhanced metadata (NEW)
-  tags            Json?    // Array of tags for organization
-  culturalTags    Json?    // Culture-specific tags
-  relevanceScore  Float    @default(0.5) // How relevant to the agent
-  isActive        Boolean  @default(true)
-  priority        Int      @default(0) // For ordering attachments
+  tags           Json? // Array of tags for organization
+  culturalTags   Json? // Culture-specific tags
+  relevanceScore Float   @default(0.5) // How relevant to the agent
+  isActive       Boolean @default(true)
+  priority       Int     @default(0) // For ordering attachments
 
   // Relations
-  agent           HistoricalAgent @relation(fields: [agentId], references: [agentId])
-  usageRecords    AgentAttachmentUsage[]
+  agent        HistoricalAgent        @relation(fields: [agentId], references: [agentId])
+  usageRecords AgentAttachmentUsage[]
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Enhanced indexing for historical agents
   @@index([agentId])
@@ -538,27 +559,49 @@ model AgentAttachment {
 
 // Agent Attachment Usage (tracking when agents reference attachments)
 model AgentAttachmentUsage {
-  id              String   @id @default(uuid())
-  agentId         String   // References HistoricalAgent.agentId
-  attachmentId    String   // References AgentAttachment.id
-  conversationId  String?  // If used in a conversation
-  
+  id             String  @id @default(uuid())
+  agentId        String // References HistoricalAgent.agentId
+  attachmentId   String // References AgentAttachment.id
+  conversationId String? // If used in a conversation
+
   // Usage context
-  usageType       String   // "reference", "analysis", "comparison", "guidance"
-  context         String   // What the agent was discussing when they used it
-  relevanceScore  Float    @default(0.5) // How relevant was this attachment (0-1)
-  
+  usageType      String // "reference", "analysis", "comparison", "guidance"
+  context        String // What the agent was discussing when they used it
+  relevanceScore Float  @default(0.5) // How relevant was this attachment (0-1)
+
   // Relations
-  agent           HistoricalAgent @relation(fields: [agentId], references: [agentId])
-  attachment      AgentAttachment @relation(fields: [attachmentId], references: [id])
-  
-  usedAt          DateTime @default(now())
-  
+  agent      HistoricalAgent @relation(fields: [agentId], references: [agentId])
+  attachment AgentAttachment @relation(fields: [attachmentId], references: [id])
+
+  usedAt DateTime @default(now())
+
   @@index([agentId])
   @@index([attachmentId])
   @@index([usedAt])
   @@index([relevanceScore])
   @@map("agent_attachment_usage")
+}
+
+model CreatedAgent {
+  id               String    @id @default(cuid())
+  creatorId        String?
+  sourceType       String
+  birthChart       Json?
+  momentChart      Json
+  additionalCharts Json?
+  blueprint        Json
+  monicaConstant   Float
+  personality      Json
+  isActive         Boolean   @default(true)
+  lastUsed         DateTime?
+  createdAt        DateTime  @default(now())
+
+  creator       User?        @relation(fields: [creatorId], references: [id])
+  userProfile   UserProfile? @relation(fields: [userProfileId], references: [id])
+  userProfileId String?
+
+  @@index([creatorId])
+  @@map("created_agents")
 }
 
 // Historical Agent Summary View (Performance Optimization)
@@ -611,38 +654,38 @@ enum CulturalCategory {
 
 // Agent Transit Events for Temporal Analysis
 model AgentTransitEvent {
-  id                String   @id @default(cuid())
-  agentId          String   // References HistoricalAgent.agentId
+  id               String   @id @default(cuid())
+  agentId          String // References HistoricalAgent.agentId
   timestamp        DateTime
-  planetaryDegree  Float    // 0-360 degree position
-  transitingPlanet String   // Planet triggering the transit
-  aspectType       String?  // conjunction, trine, square, etc.
+  planetaryDegree  Float // 0-360 degree position
+  transitingPlanet String // Planet triggering the transit
+  aspectType       String? // conjunction, trine, square, etc.
 
   // Elemental Alignment (0-1 scale for each element)
-  elementalFire    Float    @default(0)
-  elementalWater   Float    @default(0)
-  elementalAir     Float    @default(0)
-  elementalEarth   Float    @default(0)
+  elementalFire  Float @default(0)
+  elementalWater Float @default(0)
+  elementalAir   Float @default(0)
+  elementalEarth Float @default(0)
 
   // Consciousness Impact Metrics
   consciousnessImpact Float @default(0) // 0-1 scale
   significanceScore   Float @default(0) // Enhanced with elemental reinforcement
 
   // Temporal Context
-  planetaryHour    String   // Planetary hour at time of event
-  seasonalPhase    String   // Spring, Summer, Autumn, Winter
-  powerLevel       Float    @default(0) // Overall power level 0-1
+  planetaryHour String // Planetary hour at time of event
+  seasonalPhase String // Spring, Summer, Autumn, Winter
+  powerLevel    Float  @default(0) // Overall power level 0-1
 
   // Quality Metrics
-  depth            Float    @default(0) // Response depth quality
-  clarity          Float    @default(0) // Clarity of manifestation
-  resonance        Float    @default(0) // Agent-time resonance
-  temporalAlignment Float   @default(0) // How well-timed the event was
+  depth             Float @default(0) // Response depth quality
+  clarity           Float @default(0) // Clarity of manifestation
+  resonance         Float @default(0) // Agent-time resonance
+  temporalAlignment Float @default(0) // How well-timed the event was
 
   // Pattern Recognition Data
-  patternType      String?  // Type of pattern this event belongs to
-  clusterGroup     String?  // For grouping related events
-  reinforcementScore Float  @default(0) // Elemental reinforcement boost
+  patternType        String? // Type of pattern this event belongs to
+  clusterGroup       String? // For grouping related events
+  reinforcementScore Float   @default(0) // Elemental reinforcement boost
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -661,29 +704,29 @@ model AgentTransitEvent {
 
 // Temporal Query Bookmarks (saved explorations)
 model TemporalBookmark {
-  id          String   @id @default(cuid())
-  userId      String?  // Optional user association
-  title       String   // User-friendly title
-  description String?  // Optional description
+  id          String  @id @default(cuid())
+  userId      String? // Optional user association
+  title       String // User-friendly title
+  description String? // Optional description
 
   // Query Data
-  queryType   String   // 'natural_language' or 'structured'
-  queryText   String   // Original query string
-  queryData   Json     // Parsed TemporalQuery object
+  queryType String // 'natural_language' or 'structured'
+  queryText String // Original query string
+  queryData Json // Parsed TemporalQuery object
 
   // Results Cache
-  resultData  Json?    // Cached TemporalAnalysisResult
-  resultHash  String?  // Hash for cache invalidation
+  resultData Json? // Cached TemporalAnalysisResult
+  resultHash String? // Hash for cache invalidation
 
   // Usage Metadata
-  accessCount Int      @default(0)
+  accessCount  Int       @default(0)
   lastAccessed DateTime?
-  isPublic    Boolean  @default(false)
-  isFavorite  Boolean  @default(false)
+  isPublic     Boolean   @default(false)
+  isFavorite   Boolean   @default(false)
 
   // Query Performance
-  executionTime Int?   // Milliseconds to execute
-  resultCount   Int?   // Number of events found
+  executionTime Int? // Milliseconds to execute
+  resultCount   Int? // Number of events found
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -697,44 +740,44 @@ model TemporalBookmark {
 
 // Temporal Pattern Cache (detected patterns)
 model TemporalPattern {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Pattern Identification
-  patternType String   // 'recurring_activation', 'elemental_resonance', etc.
-  degree      Float    // Primary degree for this pattern
-  frequency   Int      // Number of occurrences
+  patternType String // 'recurring_activation', 'elemental_resonance', etc.
+  degree      Float // Primary degree for this pattern
+  frequency   Int // Number of occurrences
 
   // Agent Involvement
-  agentIds    Json     // Array of agent IDs involved
-  agentCount  Int      // Count for indexing
+  agentIds   Json // Array of agent IDs involved
+  agentCount Int // Count for indexing
 
   // Elemental Signature
-  dominantElement     String  // Primary element
-  elementalFireAvg    Float   @default(0)
-  elementalWaterAvg   Float   @default(0)
-  elementalAirAvg     Float   @default(0)
-  elementalEarthAvg   Float   @default(0)
+  dominantElement   String // Primary element
+  elementalFireAvg  Float  @default(0)
+  elementalWaterAvg Float  @default(0)
+  elementalAirAvg   Float  @default(0)
+  elementalEarthAvg Float  @default(0)
 
   // Pattern Metrics
-  reinforcementScore Float   @default(0) // Elemental reinforcement score
-  significance       String  // 'low', 'medium', 'high', 'critical'
-  confidenceLevel    Float   @default(0) // 0-1 confidence in pattern
+  reinforcementScore Float  @default(0) // Elemental reinforcement score
+  significance       String // 'low', 'medium', 'high', 'critical'
+  confidenceLevel    Float  @default(0) // 0-1 confidence in pattern
 
   // Temporal Range
-  firstOccurrence    DateTime
-  lastOccurrence     DateTime
-  peakPeriodStart    DateTime?
-  peakPeriodEnd      DateTime?
-  peakIntensity      Float    @default(0)
+  firstOccurrence DateTime
+  lastOccurrence  DateTime
+  peakPeriodStart DateTime?
+  peakPeriodEnd   DateTime?
+  peakIntensity   Float     @default(0)
 
   // Pattern Description
-  description        String   // Generated description
-  interpretation     String   // Astrological interpretation
+  description    String // Generated description
+  interpretation String // Astrological interpretation
 
   // Cache Management
-  isActive           Boolean  @default(true)
-  cacheExpiry        DateTime?
-  lastCalculated     DateTime @default(now())
+  isActive       Boolean   @default(true)
+  cacheExpiry    DateTime?
+  lastCalculated DateTime  @default(now())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -750,30 +793,30 @@ model TemporalPattern {
 
 // Collaborative Time Session (real-time exploration)
 model CollaborativeTimeSession {
-  id          String   @id @default(cuid())
-  sessionCode String   @unique // Short code for joining
-  title       String   // Session title
-  description String?  // Optional description
+  id          String  @id @default(cuid())
+  sessionCode String  @unique // Short code for joining
+  title       String // Session title
+  description String? // Optional description
 
   // Session State
-  isActive    Boolean  @default(true)
-  maxUsers    Int      @default(5)
-  currentUserCount Int @default(0)
+  isActive         Boolean @default(true)
+  maxUsers         Int     @default(5)
+  currentUserCount Int     @default(0)
 
   // Current Exploration Context
-  currentQuery     Json?    // Active TemporalQuery
-  currentResults   Json?    // Current TemporalAnalysisResult
-  sharedCursor     Json?    // { degree, timestamp, userId }
+  currentQuery   Json? // Active TemporalQuery
+  currentResults Json? // Current TemporalAnalysisResult
+  sharedCursor   Json? // { degree, timestamp, userId }
 
   // Session Configuration
-  allowedAgents    Json?    // Array of allowed agent IDs
-  timeRangeStart   DateTime?
-  timeRangeEnd     DateTime?
-  explorationMode  String   @default("open") // "guided", "structured", "open"
+  allowedAgents   Json? // Array of allowed agent IDs
+  timeRangeStart  DateTime?
+  timeRangeEnd    DateTime?
+  explorationMode String    @default("open") // "guided", "structured", "open"
 
   // Creator and Management
-  createdBy   String   // User ID of creator
-  moderators  Json?    // Array of moderator user IDs
+  createdBy  String // User ID of creator
+  moderators Json? // Array of moderator user IDs
 
   // Session Metadata
   lastActivity DateTime @default(now())
@@ -783,8 +826,8 @@ model CollaborativeTimeSession {
   updatedAt DateTime @updatedAt
 
   // Relations
-  participants   CollaborativeSessionParticipant[]
-  updates        CollaborativeSessionUpdate[]
+  participants CollaborativeSessionParticipant[]
+  updates      CollaborativeSessionUpdate[]
 
   @@index([sessionCode])
   @@index([isActive, expiresAt])
@@ -795,27 +838,27 @@ model CollaborativeTimeSession {
 
 // Session Participants
 model CollaborativeSessionParticipant {
-  id          String   @id @default(cuid())
-  sessionId   String
-  userId      String
-  username    String?  // Display name
+  id        String  @id @default(cuid())
+  sessionId String
+  userId    String
+  username  String? // Display name
 
   // Participation State
-  joinedAt    DateTime @default(now())
-  lastActive  DateTime @default(now())
-  isOnline    Boolean  @default(true)
+  joinedAt   DateTime @default(now())
+  lastActive DateTime @default(now())
+  isOnline   Boolean  @default(true)
 
   // Permissions
-  canModerate Boolean  @default(false)
-  canQuery    Boolean  @default(true)
-  canShare    Boolean  @default(true)
+  canModerate Boolean @default(false)
+  canQuery    Boolean @default(true)
+  canShare    Boolean @default(true)
 
   // Cursor Position (for shared exploration)
-  currentDegree   Float?   // Current degree focus
-  currentTime     DateTime? // Current time focus
+  currentDegree Float? // Current degree focus
+  currentTime   DateTime? // Current time focus
 
   // Relations
-  session     CollaborativeTimeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  session CollaborativeTimeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, userId])
   @@index([sessionId, isOnline])
@@ -825,22 +868,22 @@ model CollaborativeSessionParticipant {
 
 // Session Update Log (for real-time sync)
 model CollaborativeSessionUpdate {
-  id          String   @id @default(cuid())
-  sessionId   String
-  userId      String?  // User who triggered the update
+  id        String  @id @default(cuid())
+  sessionId String
+  userId    String? // User who triggered the update
 
   // Update Data
-  updateType  String   // "query", "cursor_move", "pattern_discovery", "bookmark", etc.
-  updateData  Json     // Update payload
+  updateType String // "query", "cursor_move", "pattern_discovery", "bookmark", etc.
+  updateData Json // Update payload
 
   // Broadcast Info
-  shouldBroadcast Boolean @default(true)
+  shouldBroadcast Boolean   @default(true)
   broadcastedAt   DateTime?
 
-  timestamp   DateTime @default(now())
+  timestamp DateTime @default(now())
 
   // Relations
-  session     CollaborativeTimeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  session CollaborativeTimeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId, timestamp])
   @@index([updateType])
@@ -849,24 +892,24 @@ model CollaborativeSessionUpdate {
 
 // Temporal Analysis Cache (for performance)
 model TemporalAnalysisCache {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Cache Key
-  queryHash   String   @unique  // MD5 hash of query parameters
-  queryData   Json     // Original query for reference
+  queryHash String @unique // MD5 hash of query parameters
+  queryData Json // Original query for reference
 
   // Cached Results
-  resultData  Json     // Full TemporalAnalysisResult
+  resultData Json // Full TemporalAnalysisResult
 
   // Cache Metadata
-  executionTime  Int   // Milliseconds to generate
-  resultCount    Int   // Number of events in result
-  patternCount   Int   // Number of patterns detected
+  executionTime Int // Milliseconds to generate
+  resultCount   Int // Number of events in result
+  patternCount  Int // Number of patterns detected
 
   // Cache Management
-  hitCount    Int      @default(0)
-  lastHit     DateTime?
-  expiresAt   DateTime
+  hitCount  Int       @default(0)
+  lastHit   DateTime?
+  expiresAt DateTime
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -882,23 +925,23 @@ model TemporalAnalysisCache {
 
 // Monica Settings and Preferences
 model MonicaUserSettings {
-  id              String   @id @default(cuid())
-  userId          String   @unique // User identifier
+  id     String @id @default(cuid())
+  userId String @unique // User identifier
 
   // Personality Configuration
-  personality     String   @default("friendly") // friendly, formal, mystical, teacher
-  assistanceLevel Int      @default(2) // 0-4 scale (minimal to maximum)
-  proactiveTips   Boolean  @default(true)
+  personality      String  @default("friendly") // friendly, formal, mystical, teacher
+  assistanceLevel  Int     @default(2) // 0-4 scale (minimal to maximum)
+  proactiveTips    Boolean @default(true)
   explanationDepth String  @default("detailed") // simple, detailed, esoteric
 
   // Behavior Settings
-  position        String   @default("bottom-right") // bottom-right, bottom-left, floating
-  autoHide        String   @default("never") // never, 30s, 1m, 5m
+  position String @default("bottom-right") // bottom-right, bottom-left, floating
+  autoHide String @default("never") // never, 30s, 1m, 5m
 
   // Interaction Preferences
-  preferredTime   String   @default("evening") // morning, afternoon, evening, night
-  learningStyle   String   @default("hands-on") // visual, hands-on, reading, interactive
-  interests       Json     @default("[]") // Array of interest areas
+  preferredTime String @default("evening") // morning, afternoon, evening, night
+  learningStyle String @default("hands-on") // visual, hands-on, reading, interactive
+  interests     Json   @default("[]") // Array of interest areas
 
   // Advanced Settings
   contextualAwareness Boolean @default(true)
@@ -909,8 +952,8 @@ model MonicaUserSettings {
   updatedAt DateTime @updatedAt
 
   // Relations
-  progress        MonicaUserProgress?
-  interactions    MonicaInteraction[]
+  progress     MonicaUserProgress?
+  interactions MonicaInteraction[]
 
   @@index([userId])
   @@map("monica_user_settings")
@@ -918,42 +961,42 @@ model MonicaUserSettings {
 
 // User Learning Progress and XP System
 model MonicaUserProgress {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  settingsId      String   @unique
+  id         String @id @default(cuid())
+  userId     String @unique
+  settingsId String @unique
 
   // Level and XP System
-  level           Int      @default(1)
-  totalXP         Int      @default(0)
-  xpToNextLevel   Int      @default(100)
+  level         Int @default(1)
+  totalXP       Int @default(0)
+  xpToNextLevel Int @default(100)
 
   // Learning Metrics
-  completedTutorials     Json     @default("[]") // Array of tutorial IDs
-  currentLearning        String?  // Current tutorial ID
-  suggestedNext          Json     @default("[]") // Array of suggested tutorial IDs
-  lastAction             String?  // Last user action
+  completedTutorials Json    @default("[]") // Array of tutorial IDs
+  currentLearning    String? // Current tutorial ID
+  suggestedNext      Json    @default("[]") // Array of suggested tutorial IDs
+  lastAction         String? // Last user action
 
   // Engagement Metrics
-  totalInteractions      Int      @default(0)
-  currentStreak          Int      @default(0) // Days of consecutive activity
-  longestStreak          Int      @default(0)
-  lastActiveDate         DateTime @default(now())
+  totalInteractions Int      @default(0)
+  currentStreak     Int      @default(0) // Days of consecutive activity
+  longestStreak     Int      @default(0)
+  lastActiveDate    DateTime @default(now())
 
   // Achievement System
-  masteryCertificates    Json     @default("[]") // Array of earned certificates
-  favoriteFeatures       Json     @default("[]") // Array of favorite feature names
+  masteryCertificates Json @default("[]") // Array of earned certificates
+  favoriteFeatures    Json @default("[]") // Array of favorite feature names
 
   // Learning Analytics
-  averageSessionTime     Int      @default(0) // Average session duration in minutes
-  preferredDifficulty    String   @default("intermediate") // beginner, intermediate, advanced
-  learningVelocity       Float    @default(1.0) // Learning speed multiplier
+  averageSessionTime  Int    @default(0) // Average session duration in minutes
+  preferredDifficulty String @default("intermediate") // beginner, intermediate, advanced
+  learningVelocity    Float  @default(1.0) // Learning speed multiplier
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  settings        MonicaUserSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
-  moduleProgress  MonicaModuleProgress[]
+  settings       MonicaUserSettings     @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+  moduleProgress MonicaModuleProgress[]
 
   @@index([userId])
   @@index([level])
@@ -964,37 +1007,37 @@ model MonicaUserProgress {
 
 // Learning Module Progress Tracking
 model MonicaModuleProgress {
-  id              String   @id @default(cuid())
-  userId          String
-  progressId      String
+  id         String @id @default(cuid())
+  userId     String
+  progressId String
 
   // Module Identification
-  moduleId        String   // e.g., 'dashboard-basics', 'agent-creation'
-  moduleName      String   // Human-readable name
-  category        String   // basics, intermediate, advanced, master
+  moduleId   String // e.g., 'dashboard-basics', 'agent-creation'
+  moduleName String // Human-readable name
+  category   String // basics, intermediate, advanced, master
 
   // Progress Tracking
-  completed       Boolean  @default(false)
-  progress        Int      @default(0) // 0-100 percentage
-  currentStep     Int      @default(0) // Current step in module
-  totalSteps      Int      @default(1) // Total steps in module
+  completed   Boolean @default(false)
+  progress    Int     @default(0) // 0-100 percentage
+  currentStep Int     @default(0) // Current step in module
+  totalSteps  Int     @default(1) // Total steps in module
 
   // Performance Metrics
-  timeSpent       Int      @default(0) // Total time in minutes
-  attemptsCount   Int      @default(0) // Number of attempts
-  hintsUsed       Int      @default(0) // Hints requested
-  mistakesMade    Int      @default(0) // Errors made
+  timeSpent     Int @default(0) // Total time in minutes
+  attemptsCount Int @default(0) // Number of attempts
+  hintsUsed     Int @default(0) // Hints requested
+  mistakesMade  Int @default(0) // Errors made
 
   // Completion Data
-  xpEarned        Int      @default(0) // XP awarded for completion
-  completedAt     DateTime? // When module was completed
-  lastAccessed    DateTime @default(now())
+  xpEarned     Int       @default(0) // XP awarded for completion
+  completedAt  DateTime? // When module was completed
+  lastAccessed DateTime  @default(now())
 
   // Learning Context
-  difficultyRating Float?  // User's rating of difficulty (1-5)
+  difficultyRating Float? // User's rating of difficulty (1-5)
   userFeedback     String? // User's feedback on module
-  struggledWith    Json?   // Array of concepts user struggled with
-  masteredConcepts Json?   // Array of concepts user mastered
+  struggledWith    Json? // Array of concepts user struggled with
+  masteredConcepts Json? // Array of concepts user mastered
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1013,39 +1056,39 @@ model MonicaModuleProgress {
 
 // Monica Interaction Log (for learning and personalization)
 model MonicaInteraction {
-  id              String   @id @default(cuid())
-  userId          String
-  settingsId      String
+  id         String @id @default(cuid())
+  userId     String
+  settingsId String
 
   // Interaction Context
-  pageUrl         String   // Page where interaction occurred
-  interactionType String   // help_request, tip_click, tutorial_start, settings_change, etc.
-  sessionId       String?  // Session identifier
+  pageUrl         String // Page where interaction occurred
+  interactionType String // help_request, tip_click, tutorial_start, settings_change, etc.
+  sessionId       String? // Session identifier
 
   // Interaction Data
-  contextData     Json?    // Page-specific context
-  userAction      String   // Description of user action
-  monicaResponse  String?  // Monica's response or assistance provided
+  contextData    Json? // Page-specific context
+  userAction     String // Description of user action
+  monicaResponse String? // Monica's response or assistance provided
 
   // Outcome Metrics
-  wasHelpful      Boolean? // User feedback on helpfulness
-  resultedInAction Boolean @default(false) // Did user take suggested action
-  timeToComplete  Int?     // Time to complete suggested action (seconds)
+  wasHelpful       Boolean? // User feedback on helpfulness
+  resultedInAction Boolean  @default(false) // Did user take suggested action
+  timeToComplete   Int? // Time to complete suggested action (seconds)
 
   // Learning Data
-  userConfidence  Int?     // User's confidence level (1-5) before interaction
-  improvementSeen Boolean  @default(false) // Did user improve after interaction
-  followUpNeeded  Boolean  @default(false) // Does Monica need to follow up
+  userConfidence  Int? // User's confidence level (1-5) before interaction
+  improvementSeen Boolean @default(false) // Did user improve after interaction
+  followUpNeeded  Boolean @default(false) // Does Monica need to follow up
 
   // Metadata
-  deviceType      String?  // mobile, desktop, tablet
-  browserInfo     String?  // Browser and version
-  timeOfDay       String?  // morning, afternoon, evening, night
+  deviceType  String? // mobile, desktop, tablet
+  browserInfo String? // Browser and version
+  timeOfDay   String? // morning, afternoon, evening, night
 
   createdAt DateTime @default(now())
 
   // Relations
-  settings     MonicaUserSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+  settings MonicaUserSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([settingsId])
@@ -1058,18 +1101,18 @@ model MonicaInteraction {
 
 // Agent Evolution State for Kinetics System
 model AgentEvolutionState {
-  id                      String   @id @default(cuid())
-  agentId                 String
-  userId                  String?  @default("anonymous")
-  currentLevel            String   @default("bronze")
-  totalPower              Float    @default(0)
-  interactionCount        Int      @default(0)
-  lastInteraction         DateTime @default(now())
-  specialAbilitiesUnlocked String  @default("[]")
-  evolutionHistory        String   @default("[]")
-  affinityScores          String   @default("{}")
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  id                       String   @id @default(cuid())
+  agentId                  String
+  userId                   String?  @default("anonymous")
+  currentLevel             String   @default("bronze")
+  totalPower               Float    @default(0)
+  interactionCount         Int      @default(0)
+  lastInteraction          DateTime @default(now())
+  specialAbilitiesUnlocked String   @default("[]")
+  evolutionHistory         String   @default("[]")
+  affinityScores           String   @default("{}")
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 
   @@unique([agentId, userId])
   @@index([agentId])
@@ -1097,33 +1140,35 @@ model ConsciousnessInteraction {
 
 // User Authentication and Management
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(cuid())
+  email        String    @unique
   passwordHash String?
   name         String?
-  provider     String?  @default("email") // email/google/apple
-  verified     Boolean  @default(false)
-  createdAt    DateTime @default(now())
+  provider     String?   @default("email") // email/google/apple
+  verified     Boolean   @default(false)
+  createdAt    DateTime  @default(now())
   lastLogin    DateTime?
-  
-  subscription Subscription?
-  
+
+  subscription  Subscription?
+  userProfile   UserProfile?
+  createdAgents CreatedAgent[]
+
   @@index([email])
   @@map("users")
 }
 
 // Subscription Management
 model Subscription {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  tier      String   @default("free") // free/alchemist/master
-  status    String   @default("active") // active/cancelled/past_due
-  features  String   @default("{}")
-  createdAt DateTime @default(now())
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  tier      String    @default("free") // free/alchemist/master
+  status    String    @default("active") // active/cancelled/past_due
+  features  String    @default("{}")
+  createdAt DateTime  @default(now())
   expiresAt DateTime?
-  
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([tier])
   @@index([status])
   @@map("subscriptions")
@@ -1131,37 +1176,37 @@ model Subscription {
 
 // Contextual Help Analytics
 model MonicaContextualHelp {
-  id              String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Page and Context
-  pageUrl         String   // Page identifier
-  contextType     String   // first_visit, feature_unused, confusion_detected, etc.
+  pageUrl     String // Page identifier
+  contextType String // first_visit, feature_unused, confusion_detected, etc.
 
   // Help Content
-  tipId           String   // Unique tip identifier
-  tipContent      String   // The help content shown
-  priority        String   // low, medium, high
-  category        String   // navigation, feature, learning, troubleshooting
+  tipId      String // Unique tip identifier
+  tipContent String // The help content shown
+  priority   String // low, medium, high
+  category   String // navigation, feature, learning, troubleshooting
 
   // Effectiveness Metrics
-  timesShown      Int      @default(0) // How many times this tip was shown
-  timesActedOn    Int      @default(0) // How many times users acted on this tip
-  averageRating   Float?   // Average user rating of helpfulness
-  successRate     Float    @default(0.0) // Success rate of this tip
+  timesShown    Int    @default(0) // How many times this tip was shown
+  timesActedOn  Int    @default(0) // How many times users acted on this tip
+  averageRating Float? // Average user rating of helpfulness
+  successRate   Float  @default(0.0) // Success rate of this tip
 
   // A/B Testing
-  variant         String?  // For A/B testing different tip versions
-  testGroup       String?  // Control, variant_a, variant_b, etc.
+  variant   String? // For A/B testing different tip versions
+  testGroup String? // Control, variant_a, variant_b, etc.
 
   // Content Evolution
-  version         String   @default("1.0") // Version of the tip content
-  isActive        Boolean  @default(true) // Whether tip is currently active
-  deprecatedAt    DateTime? // When tip was deprecated
+  version      String    @default("1.0") // Version of the tip content
+  isActive     Boolean   @default(true) // Whether tip is currently active
+  deprecatedAt DateTime? // When tip was deprecated
 
   // Performance Data
-  averageViewTime Int      @default(0) // Average time users spend viewing tip (seconds)
-  bounceRate      Float    @default(0.0) // Percentage who immediately dismiss
-  conversionRate  Float    @default(0.0) // Percentage who complete suggested action
+  averageViewTime Int   @default(0) // Average time users spend viewing tip (seconds)
+  bounceRate      Float @default(0.0) // Percentage who immediately dismiss
+  conversionRate  Float @default(0.0) // Percentage who complete suggested action
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1177,28 +1222,28 @@ model MonicaContextualHelp {
 
 // Monica Knowledge Base (what Monica learns about users)
 model MonicaKnowledge {
-  id              String   @id @default(cuid())
-  userId          String
+  id     String @id @default(cuid())
+  userId String
 
   // Knowledge Type
-  knowledgeType   String   // user_preference, behavioral_pattern, learning_style, expertise_level
-  category        String   // navigation, features, consciousness, astrology, etc.
+  knowledgeType String // user_preference, behavioral_pattern, learning_style, expertise_level
+  category      String // navigation, features, consciousness, astrology, etc.
 
   // Knowledge Content
-  key             String   // Specific knowledge key (e.g., 'prefers_detailed_explanations')
-  value           String   // Knowledge value (e.g., 'true', 'advanced', 'morning_person')
-  confidence      Float    @default(0.5) // Confidence in this knowledge (0-1)
+  key        String // Specific knowledge key (e.g., 'prefers_detailed_explanations')
+  value      String // Knowledge value (e.g., 'true', 'advanced', 'morning_person')
+  confidence Float  @default(0.5) // Confidence in this knowledge (0-1)
 
   // Context and Source
-  sourceType      String   // interaction, explicit_setting, inferred_behavior, etc.
-  sourceData      Json?    // Additional context about how this was learned
-  lastObserved    DateTime @default(now())
-  timesObserved   Int      @default(1)
+  sourceType    String // interaction, explicit_setting, inferred_behavior, etc.
+  sourceData    Json? // Additional context about how this was learned
+  lastObserved  DateTime @default(now())
+  timesObserved Int      @default(1)
 
   // Knowledge Evolution
-  isActive        Boolean  @default(true)
-  supersededBy    String?  // ID of knowledge that replaced this
-  validUntil      DateTime? // Expiration date for temporal knowledge
+  isActive     Boolean   @default(true)
+  supersededBy String? // ID of knowledge that replaced this
+  validUntil   DateTime? // Expiration date for temporal knowledge
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1213,17 +1258,17 @@ model MonicaKnowledge {
 }
 
 model EvolutionState {
-  id          String   @id @default(uuid())
-  userId      String
-  agentId     String
-  mcValue     Float
-  spirit      Float
-  essence     Float
-  matter      Float
-  substance   Float
-  aNumber     Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  userId    String
+  agentId   String
+  mcValue   Float
+  spirit    Float
+  essence   Float
+  matter    Float
+  substance Float
+  aNumber   Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Duplicate model removed. Use the primary definition at line ~1082.

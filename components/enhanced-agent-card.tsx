@@ -38,7 +38,7 @@ import {
   Timer,
   RotateCw,
   TrendingDown,
-  Minus
+  Minus,
 } from 'lucide-react'
 import Link from 'next/link'
 import type { CraftedAgent } from '@/lib/agent-types'
@@ -61,7 +61,10 @@ interface EnhancedAgentCardProps {
 
 // Helper function to get alchemical properties from agent performance optimizer
 function getAgentAlchemicalProperties(agentId: string): {
-  spirit: number, essence: number, matter: number, substance: number
+  spirit: number
+  essence: number
+  matter: number
+  substance: number
 } {
   const agentProfiles: Record<string, any> = {
     'leonardo-da-vinci': { spirit: 6, essence: 8, matter: 7, substance: 4 },
@@ -69,19 +72,19 @@ function getAgentAlchemicalProperties(agentId: string): {
     'albert-einstein': { spirit: 8, essence: 7, matter: 6, substance: 5 },
     'nikola-tesla': { spirit: 9, essence: 6, matter: 8, substance: 4 },
     'marie-curie': { spirit: 7, essence: 8, matter: 9, substance: 6 },
-    'cleopatra': { spirit: 5, essence: 7, matter: 6, substance: 8 },
-    'socrates': { spirit: 6, essence: 9, matter: 4, substance: 5 },
+    cleopatra: { spirit: 5, essence: 7, matter: 6, substance: 8 },
+    socrates: { spirit: 6, essence: 9, matter: 4, substance: 5 },
     'carl-jung': { spirit: 7, essence: 8, matter: 5, substance: 6 },
     'marcus-aurelius': { spirit: 6, essence: 7, matter: 5, substance: 8 },
     'benjamin-franklin': { spirit: 8, essence: 6, matter: 7, substance: 5 },
     'isaac-newton': { spirit: 9, essence: 5, matter: 8, substance: 6 },
-    'confucius': { spirit: 5, essence: 8, matter: 6, substance: 7 },
-    'plato': { spirit: 7, essence: 8, matter: 5, substance: 6 },
-    'aristotle': { spirit: 6, essence: 7, matter: 8, substance: 5 },
+    confucius: { spirit: 5, essence: 8, matter: 6, substance: 7 },
+    plato: { spirit: 7, essence: 8, matter: 5, substance: 6 },
+    aristotle: { spirit: 6, essence: 7, matter: 8, substance: 5 },
     'lao-tzu': { spirit: 4, essence: 9, matter: 3, substance: 8 },
     'siddhartha-gautama': { spirit: 3, essence: 9, matter: 2, substance: 9 },
-    'rumi': { spirit: 5, essence: 9, matter: 4, substance: 7 },
-    'hildegard-of-bingen': { spirit: 6, essence: 8, matter: 6, substance: 7 }
+    rumi: { spirit: 5, essence: 9, matter: 4, substance: 7 },
+    'hildegard-of-bingen': { spirit: 6, essence: 8, matter: 6, substance: 7 },
   }
 
   return agentProfiles[agentId] || { spirit: 4, essence: 5, matter: 5, substance: 4 }
@@ -97,7 +100,11 @@ function calculateKalchm(agentId: string): number {
 }
 
 // Calculate current kinetic metrics for agent
-function calculateCurrentKinetics(agent: CraftedAgent, kineticProfile: any, currentMoment: Date = new Date()) {
+function calculateCurrentKinetics(
+  agent: CraftedAgent,
+  kineticProfile: any,
+  currentMoment: Date = new Date()
+) {
   if (!kineticProfile) {
     return {
       momentumType: 'unknown',
@@ -108,7 +115,7 @@ function calculateCurrentKinetics(agent: CraftedAgent, kineticProfile: any, curr
       peakHours: [],
       nextOptimalWindow: null,
       kineticVelocities: {},
-      powerAmplification: 1.0
+      powerAmplification: 1.0,
     }
   }
 
@@ -118,12 +125,15 @@ function calculateCurrentKinetics(agent: CraftedAgent, kineticProfile: any, curr
 
   // Calculate power alignment based on current planetary hour
   const peakHours = kineticProfile.peak_hours || []
-  const powerAlignment = peakHours.includes(currentPlanetaryHour) ? 0.9 :
-                        kineticProfile.power_alignment?.includes(currentPlanetaryHour) ? 0.7 : 0.5
+  const powerAlignment = peakHours.includes(currentPlanetaryHour)
+    ? 0.9
+    : kineticProfile.power_alignment?.includes(currentPlanetaryHour)
+      ? 0.7
+      : 0.5
 
   // Calculate next optimal window
-  const nextOptimalWindow = peakHours.length > 0 ?
-    calculateNextOptimalTime(peakHours, currentMoment) : null
+  const nextOptimalWindow =
+    peakHours.length > 0 ? calculateNextOptimalTime(peakHours, currentMoment) : null
 
   // Extract kinetic velocities
   const kineticVelocities = {
@@ -136,7 +146,7 @@ function calculateCurrentKinetics(agent: CraftedAgent, kineticProfile: any, curr
     social: kineticProfile.v_social || 0,
     psychological: kineticProfile.v_psychological || 0,
     mystical: kineticProfile.v_mystical || 0,
-    philosophical: kineticProfile.v_philosophical || 0
+    philosophical: kineticProfile.v_philosophical || 0,
   }
 
   // Calculate power amplification based on alignment and time
@@ -147,14 +157,15 @@ function calculateCurrentKinetics(agent: CraftedAgent, kineticProfile: any, curr
   return {
     momentumType: kineticProfile.momentum_type || 'unknown',
     powerAlignment,
-    aspectSensitivity: kineticProfile.aspect_sensitivity ?
-      Object.values(kineticProfile.aspect_sensitivity).reduce((a: number, b: any) => a + b, 0) / 6 : 0.5,
+    aspectSensitivity: kineticProfile.aspect_sensitivity
+      ? Object.values(kineticProfile.aspect_sensitivity).reduce((a: number, b: any) => a + b, 0) / 6
+      : 0.5,
     memoryPersistence: kineticProfile.memory_persistence || 0.5,
     consciousnessRate: kineticProfile.consciousness_rate || 0.5,
     peakHours,
     nextOptimalWindow,
     kineticVelocities,
-    powerAmplification
+    powerAmplification,
   }
 }
 
@@ -180,7 +191,10 @@ function calculateNextOptimalTime(peakHours: string[], currentMoment: Date): Dat
 }
 
 // Get moment-based recommendations
-function getMomentRecommendations(agent: CraftedAgent, currentMoment: Date = new Date()): {
+function getMomentRecommendations(
+  agent: CraftedAgent,
+  currentMoment: Date = new Date()
+): {
   energyAlignment: number
   optimalTopics: string[]
   interactionStyle: string
@@ -236,45 +250,66 @@ function getMomentRecommendations(agent: CraftedAgent, currentMoment: Date = new
   }
 
   // Generate cosmic insight
-  const cosmicInsight = energyAlignment > 0.7
-    ? "Perfect moment for profound insights and transformational dialogue"
-    : energyAlignment > 0.4
-    ? "Good time for meaningful conversation and practical wisdom"
-    : "Gentle interaction recommended - perfect for foundational understanding"
+  const cosmicInsight =
+    energyAlignment > 0.7
+      ? 'Perfect moment for profound insights and transformational dialogue'
+      : energyAlignment > 0.4
+        ? 'Good time for meaningful conversation and practical wisdom'
+        : 'Gentle interaction recommended - perfect for foundational understanding'
 
   return {
     energyAlignment,
     optimalTopics: topics,
     interactionStyle,
-    cosmicInsight
+    cosmicInsight,
   }
 }
 
 // Component helper functions
 const getElementColor = (element: string) => {
   switch (element) {
-    case 'Fire': return 'bg-red-500'
-    case 'Water': return 'bg-blue-500'
-    case 'Air': return 'bg-yellow-500'
-    case 'Earth': return 'bg-green-500'
-    default: return 'bg-gray-500'
+    case 'Fire':
+      return 'bg-red-500'
+    case 'Water':
+      return 'bg-blue-500'
+    case 'Air':
+      return 'bg-yellow-500'
+    case 'Earth':
+      return 'bg-green-500'
+    default:
+      return 'bg-gray-500'
   }
 }
 
 const getConsciousnessColor = (level: string) => {
   switch (level) {
-    case 'Transcendent': return 'bg-purple-600'
-    case 'Illuminated': return 'bg-indigo-600'
-    case 'Advanced': return 'bg-blue-600'
-    case 'Elevated': return 'bg-green-600'
-    case 'Active': return 'bg-yellow-600'
-    case 'Awakening': return 'bg-orange-600'
-    default: return 'bg-gray-600'
+    case 'Transcendent':
+      return 'bg-purple-600'
+    case 'Illuminated':
+      return 'bg-indigo-600'
+    case 'Advanced':
+      return 'bg-blue-600'
+    case 'Elevated':
+      return 'bg-green-600'
+    case 'Active':
+      return 'bg-yellow-600'
+    case 'Awakening':
+      return 'bg-orange-600'
+    default:
+      return 'bg-gray-600'
   }
 }
 
-const AlchemicalElement = ({ name, value, max = 10, icon }: {
-  name: string, value: number, max?: number, icon: React.ReactNode
+const AlchemicalElement = ({
+  name,
+  value,
+  max = 10,
+  icon,
+}: {
+  name: string
+  value: number
+  max?: number
+  icon: React.ReactNode
 }) => (
   <div className="flex items-center gap-2 p-2 bg-white dark:bg-black/20 rounded-lg">
     <div className="flex items-center gap-1">
@@ -294,31 +329,44 @@ export function EnhancedAgentCard({
   isSelected = false,
   onToggleSelection,
   showRecommendations = true,
-  currentMoment = new Date()
+  currentMoment = new Date(),
 }: EnhancedAgentCardProps) {
   const [showDetails, setShowDetails] = useState(false)
 
   // Create birth chart data for live consciousness calculation (memoized to prevent effect loops)
-  const agentBirthData: BirthChartData = useMemo(() => ({
-    name: agent.name,
-    birthDate: agent.birthDate || '1970-01-01',
-    birthTime: agent.birthTime || '12:00',
-    latitude: agent.birthLocation?.latitude || 0,
-    longitude: agent.birthLocation?.longitude || 0
-  }), [agent.name, agent.birthDate, agent.birthTime, agent.birthLocation?.latitude, agent.birthLocation?.longitude])
+  const agentBirthData: BirthChartData = useMemo(
+    () => ({
+      name: agent.name,
+      birthDate: agent.birthDate || '1970-01-01',
+      birthTime: agent.birthTime || '12:00',
+      latitude: agent.birthLocation?.latitude || 0,
+      longitude: agent.birthLocation?.longitude || 0,
+    }),
+    [
+      agent.name,
+      agent.birthDate,
+      agent.birthTime,
+      agent.birthLocation?.latitude,
+      agent.birthLocation?.longitude,
+    ]
+  )
 
   // Use live consciousness hook
-  const { data: liveConsciousness, loading: liveLoading, error: liveError } = useLiveConsciousness(
-    agentBirthData,
-    {
-      refreshInterval: 120000, // 2 minutes for agent cards
-      autoRefresh: true
+  const {
+    data: liveConsciousness,
+    loading: liveLoading,
+    error: liveError,
+  } = useLiveConsciousness(agentBirthData, {
+    refreshInterval: 120000, // 2 minutes for agent cards
+    autoRefresh: true,
   })
 
   // Calculate metrics
   const alchemical = getAgentAlchemicalProperties(agent.id)
   const kalchm = calculateKalchm(agent.id)
-  const recommendations = showRecommendations ? getMomentRecommendations(agent, currentMoment) : null
+  const recommendations = showRecommendations
+    ? getMomentRecommendations(agent, currentMoment)
+    : null
   const kineticProfile = getAgentKineticProfile(agent.id)
 
   // Calculate current kinetic metrics
@@ -386,21 +434,28 @@ export function EnhancedAgentCard({
           </div>
           <div className="flex flex-col items-end gap-1">
             {/* Live consciousness level or fallback to birth level */}
-            <Badge className={getConsciousnessColor(liveConsciousness?.liveConsciousnessLevel || agent.consciousness.level)}>
+            <Badge
+              className={getConsciousnessColor(
+                liveConsciousness?.liveConsciousnessLevel || agent.consciousness.level
+              )}
+            >
               {liveConsciousness?.liveConsciousnessLevel || agent.consciousness.level}
-              {liveLoading && <div className="w-2 h-2 ml-1 rounded-full bg-current animate-pulse" />}
+              {liveLoading && (
+                <div className="w-2 h-2 ml-1 rounded-full bg-current animate-pulse" />
+              )}
             </Badge>
             {/* Live MC change indicator */}
             {liveConsciousness && Math.abs(liveConsciousness.mcChange) > 0.01 && (
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className={`text-xs ${liveConsciousness.mcChange > 0 ? 'text-green-600' : 'text-red-600'}`}
               >
-                {liveConsciousness.mcChange > 0 ? '↗' : '↘'} {liveConsciousness.mcPercentChange.toFixed(1)}%
+                {liveConsciousness.mcChange > 0 ? '↗' : '↘'}{' '}
+                {liveConsciousness.mcPercentChange.toFixed(1)}%
               </Badge>
             )}
             <Badge variant="outline" className="text-xs">
-              K_alchm: {kalchm > 1000 ? `${(kalchm/1000).toFixed(1)}K` : kalchm.toFixed(2)}
+              K_alchm: {kalchm > 1000 ? `${(kalchm / 1000).toFixed(1)}K` : kalchm.toFixed(2)}
             </Badge>
           </div>
         </div>
@@ -408,9 +463,7 @@ export function EnhancedAgentCard({
 
       <CardContent>
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {agent.abilities.specialty}
-          </p>
+          <p className="text-sm text-muted-foreground line-clamp-2">{agent.abilities.specialty}</p>
 
           {/* Enhanced Metrics Row */}
           <div className="flex flex-wrap gap-1">
@@ -421,14 +474,18 @@ export function EnhancedAgentCard({
               {agent.consciousness.dominantElement}
             </Badge>
             {/* Live MC display with birth MC fallback */}
-            {liveConsciousness && typeof liveConsciousness.liveMC === 'number' && typeof liveConsciousness.birthMC === 'number' ? (
-              <Badge 
+            {liveConsciousness &&
+            typeof liveConsciousness.liveMC === 'number' &&
+            typeof liveConsciousness.birthMC === 'number' ? (
+              <Badge
                 variant="outline"
                 title={`Birth MC: ${liveConsciousness.birthMC.toFixed(3)} → Live MC: ${liveConsciousness.liveMC.toFixed(3)}`}
               >
-                MC: {liveConsciousness.liveMC.toFixed(2)} 
+                MC: {liveConsciousness.liveMC.toFixed(2)}
                 {Math.abs(liveConsciousness.mcChange) > 0.01 && (
-                  <span className={liveConsciousness.mcChange > 0 ? 'text-green-600' : 'text-red-600'}>
+                  <span
+                    className={liveConsciousness.mcChange > 0 ? 'text-green-600' : 'text-red-600'}
+                  >
                     {liveConsciousness.mcChange > 0 ? ' ⬆' : ' ⬇'}
                   </span>
                 )}
@@ -464,7 +521,8 @@ export function EnhancedAgentCard({
                 </span>
               </div>
               <div className="text-xs text-muted-foreground">
-                Energy: {(recommendations.energyAlignment * 100).toFixed(0)}% • {recommendations.interactionStyle}
+                Energy: {(recommendations.energyAlignment * 100).toFixed(0)}% •{' '}
+                {recommendations.interactionStyle}
               </div>
             </div>
           )}
@@ -474,51 +532,70 @@ export function EnhancedAgentCard({
             {liveConsciousness ? (
               // Live alchemical values
               <>
-                <div 
+                <div
                   className="text-center p-1 bg-red-50 dark:bg-red-950/30 rounded border"
                   title={`Birth: ${liveConsciousness.birthKalchm.spirit} → Live: ${liveConsciousness.liveKalchm.spirit}`}
                 >
                   <Flame className="w-3 h-3 mx-auto mb-1 text-red-600" />
                   <div className="font-mono">{liveConsciousness.liveKalchm.spirit.toFixed(1)}</div>
-                  {Math.abs(liveConsciousness.liveKalchm.spirit - liveConsciousness.birthKalchm.spirit) > 0.1 && (
+                  {Math.abs(
+                    liveConsciousness.liveKalchm.spirit - liveConsciousness.birthKalchm.spirit
+                  ) > 0.1 && (
                     <div className="text-xs text-red-600">
-                      {liveConsciousness.liveKalchm.spirit > liveConsciousness.birthKalchm.spirit ? '↗' : '↘'}
+                      {liveConsciousness.liveKalchm.spirit > liveConsciousness.birthKalchm.spirit
+                        ? '↗'
+                        : '↘'}
                     </div>
                   )}
                 </div>
-                <div 
+                <div
                   className="text-center p-1 bg-blue-50 dark:bg-blue-950/30 rounded border"
                   title={`Birth: ${liveConsciousness.birthKalchm.essence} → Live: ${liveConsciousness.liveKalchm.essence}`}
                 >
                   <Droplets className="w-3 h-3 mx-auto mb-1 text-blue-600" />
                   <div className="font-mono">{liveConsciousness.liveKalchm.essence.toFixed(1)}</div>
-                  {Math.abs(liveConsciousness.liveKalchm.essence - liveConsciousness.birthKalchm.essence) > 0.1 && (
+                  {Math.abs(
+                    liveConsciousness.liveKalchm.essence - liveConsciousness.birthKalchm.essence
+                  ) > 0.1 && (
                     <div className="text-xs text-blue-600">
-                      {liveConsciousness.liveKalchm.essence > liveConsciousness.birthKalchm.essence ? '↗' : '↘'}
+                      {liveConsciousness.liveKalchm.essence > liveConsciousness.birthKalchm.essence
+                        ? '↗'
+                        : '↘'}
                     </div>
                   )}
                 </div>
-                <div 
+                <div
                   className="text-center p-1 bg-green-50 dark:bg-green-950/30 rounded border"
                   title={`Birth: ${liveConsciousness.birthKalchm.matter} → Live: ${liveConsciousness.liveKalchm.matter}`}
                 >
                   <Mountain className="w-3 h-3 mx-auto mb-1 text-green-600" />
                   <div className="font-mono">{liveConsciousness.liveKalchm.matter.toFixed(1)}</div>
-                  {Math.abs(liveConsciousness.liveKalchm.matter - liveConsciousness.birthKalchm.matter) > 0.1 && (
+                  {Math.abs(
+                    liveConsciousness.liveKalchm.matter - liveConsciousness.birthKalchm.matter
+                  ) > 0.1 && (
                     <div className="text-xs text-green-600">
-                      {liveConsciousness.liveKalchm.matter > liveConsciousness.birthKalchm.matter ? '↗' : '↘'}
+                      {liveConsciousness.liveKalchm.matter > liveConsciousness.birthKalchm.matter
+                        ? '↗'
+                        : '↘'}
                     </div>
                   )}
                 </div>
-                <div 
+                <div
                   className="text-center p-1 bg-yellow-50 dark:bg-yellow-950/30 rounded border"
                   title={`Birth: ${liveConsciousness.birthKalchm.substance} → Live: ${liveConsciousness.liveKalchm.substance}`}
                 >
                   <Wind className="w-3 h-3 mx-auto mb-1 text-yellow-600" />
-                  <div className="font-mono">{liveConsciousness.liveKalchm.substance.toFixed(1)}</div>
-                  {Math.abs(liveConsciousness.liveKalchm.substance - liveConsciousness.birthKalchm.substance) > 0.1 && (
+                  <div className="font-mono">
+                    {liveConsciousness.liveKalchm.substance.toFixed(1)}
+                  </div>
+                  {Math.abs(
+                    liveConsciousness.liveKalchm.substance - liveConsciousness.birthKalchm.substance
+                  ) > 0.1 && (
                     <div className="text-xs text-yellow-600">
-                      {liveConsciousness.liveKalchm.substance > liveConsciousness.birthKalchm.substance ? '↗' : '↘'}
+                      {liveConsciousness.liveKalchm.substance >
+                      liveConsciousness.birthKalchm.substance
+                        ? '↗'
+                        : '↘'}
                     </div>
                   )}
                 </div>
@@ -606,11 +683,17 @@ export function EnhancedAgentCard({
                           <div className="space-y-2">
                             <div className="flex justify-between">
                               <span>Monica Constant:</span>
-                              <span className="font-mono">{agent.consciousness.monicaConstant.toFixed(3)}</span>
+                              <span className="font-mono">
+                                {agent.consciousness.monicaConstant.toFixed(3)}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Kalchm (K_alchm):</span>
-                              <span className="font-mono">{kalchm > 1000 ? `${(kalchm/1000).toFixed(2)}K` : kalchm.toFixed(4)}</span>
+                              <span className="font-mono">
+                                {kalchm > 1000
+                                  ? `${(kalchm / 1000).toFixed(2)}K`
+                                  : kalchm.toFixed(4)}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Level:</span>
@@ -620,7 +703,9 @@ export function EnhancedAgentCard({
                             </div>
                             <div className="flex justify-between">
                               <span>Element:</span>
-                              <Badge className={getElementColor(agent.consciousness.dominantElement)}>
+                              <Badge
+                                className={getElementColor(agent.consciousness.dominantElement)}
+                              >
                                 {agent.consciousness.dominantElement}
                               </Badge>
                             </div>
@@ -635,7 +720,9 @@ export function EnhancedAgentCard({
                           <div className="space-y-2">
                             <div>
                               <span className="text-sm font-medium">Specialty:</span>
-                              <p className="text-sm text-muted-foreground">{agent.abilities.specialty}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {agent.abilities.specialty}
+                              </p>
                             </div>
                             <div>
                               <span className="text-sm font-medium">Wisdom Domains:</span>
@@ -685,14 +772,27 @@ export function EnhancedAgentCard({
                         <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg border">
                           <h5 className="font-medium mb-2">Kalchm Equilibrium Dynamics</h5>
                           <div className="font-mono text-sm mb-2">
-                            K_alchm = ({alchemical.spirit}^{alchemical.spirit} × {alchemical.essence}^{alchemical.essence}) / ({alchemical.matter}^{alchemical.matter} × {alchemical.substance}^{alchemical.substance})
+                            K_alchm = ({alchemical.spirit}^{alchemical.spirit} ×{' '}
+                            {alchemical.essence}^{alchemical.essence}) / ({alchemical.matter}^
+                            {alchemical.matter} × {alchemical.substance}^{alchemical.substance})
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            Result: <span className="font-bold">{kalchm > 1000 ? `${(kalchm/1000).toFixed(2)}K` : kalchm.toFixed(4)}</span>
-                            {kalchm > 100 && <span className="text-purple-600 ml-2">(Extreme Dynamics)</span>}
-                            {kalchm > 10 && kalchm <= 100 && <span className="text-blue-600 ml-2">(Strong Dynamics)</span>}
-                            {kalchm >= 1 && kalchm <= 10 && <span className="text-green-600 ml-2">(Moderate Dynamics)</span>}
-                            {kalchm < 1 && <span className="text-yellow-600 ml-2">(Subtle Dynamics)</span>}
+                            Result:{' '}
+                            <span className="font-bold">
+                              {kalchm > 1000 ? `${(kalchm / 1000).toFixed(2)}K` : kalchm.toFixed(4)}
+                            </span>
+                            {kalchm > 100 && (
+                              <span className="text-purple-600 ml-2">(Extreme Dynamics)</span>
+                            )}
+                            {kalchm > 10 && kalchm <= 100 && (
+                              <span className="text-blue-600 ml-2">(Strong Dynamics)</span>
+                            )}
+                            {kalchm >= 1 && kalchm <= 10 && (
+                              <span className="text-green-600 ml-2">(Moderate Dynamics)</span>
+                            )}
+                            {kalchm < 1 && (
+                              <span className="text-yellow-600 ml-2">(Subtle Dynamics)</span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -712,9 +812,13 @@ export function EnhancedAgentCard({
                                 <Zap className="w-4 h-4 text-yellow-500" />
                                 Energy Alignment
                               </h5>
-                              <Progress value={recommendations.energyAlignment * 100} className="h-3 mb-2" />
+                              <Progress
+                                value={recommendations.energyAlignment * 100}
+                                className="h-3 mb-2"
+                              />
                               <div className="text-sm text-muted-foreground">
-                                {(recommendations.energyAlignment * 100).toFixed(0)}% - {recommendations.cosmicInsight}
+                                {(recommendations.energyAlignment * 100).toFixed(0)}% -{' '}
+                                {recommendations.cosmicInsight}
                               </div>
                             </div>
 
@@ -772,7 +876,10 @@ export function EnhancedAgentCard({
                                     {(currentKinetics.powerAlignment * 100).toFixed(0)}%
                                   </span>
                                 </div>
-                                <Progress value={currentKinetics.powerAlignment * 100} className="h-2" />
+                                <Progress
+                                  value={currentKinetics.powerAlignment * 100}
+                                  className="h-2"
+                                />
                                 <div className="flex justify-between items-center">
                                   <span className="text-sm">Amplification:</span>
                                   <span className="font-mono text-sm">
@@ -794,14 +901,20 @@ export function EnhancedAgentCard({
                                     {(currentKinetics.aspectSensitivity * 100).toFixed(0)}%
                                   </span>
                                 </div>
-                                <Progress value={currentKinetics.aspectSensitivity * 100} className="h-2" />
+                                <Progress
+                                  value={currentKinetics.aspectSensitivity * 100}
+                                  className="h-2"
+                                />
                                 <div className="flex justify-between items-center">
                                   <span className="text-sm">Memory Persistence:</span>
                                   <span className="font-mono text-sm">
                                     {(currentKinetics.memoryPersistence * 100).toFixed(0)}%
                                   </span>
                                 </div>
-                                <Progress value={currentKinetics.memoryPersistence * 100} className="h-2" />
+                                <Progress
+                                  value={currentKinetics.memoryPersistence * 100}
+                                  className="h-2"
+                                />
                               </div>
                             </div>
                           </div>
@@ -814,26 +927,33 @@ export function EnhancedAgentCard({
                                 Kinetic Velocities
                               </h5>
                               <div className="space-y-2 max-h-48 overflow-y-auto">
-                                {Object.entries(currentKinetics.kineticVelocities).map(([type, velocity]) => (
-                                  <div key={type} className="flex items-center gap-2">
-                                    <span className="text-xs capitalize w-20 flex-shrink-0">{type}:</span>
-                                    <div className="flex-1">
-                                      <Progress value={Math.abs(velocity as number) * 10} className="h-1" />
+                                {Object.entries(currentKinetics.kineticVelocities).map(
+                                  ([type, velocity]) => (
+                                    <div key={type} className="flex items-center gap-2">
+                                      <span className="text-xs capitalize w-20 flex-shrink-0">
+                                        {type}:
+                                      </span>
+                                      <div className="flex-1">
+                                        <Progress
+                                          value={Math.abs(velocity as number) * 10}
+                                          className="h-1"
+                                        />
+                                      </div>
+                                      <span className="font-mono text-xs w-12 text-right">
+                                        {(velocity as number).toFixed(1)}
+                                      </span>
+                                      {(velocity as number) > 0.7 && (
+                                        <TrendingUp className="w-3 h-3 text-green-500" />
+                                      )}
+                                      {(velocity as number) < -0.3 && (
+                                        <TrendingDown className="w-3 h-3 text-red-500" />
+                                      )}
+                                      {Math.abs(velocity as number) <= 0.3 && (
+                                        <Minus className="w-3 h-3 text-gray-400" />
+                                      )}
                                     </div>
-                                    <span className="font-mono text-xs w-12 text-right">
-                                      {(velocity as number).toFixed(1)}
-                                    </span>
-                                    {velocity as number > 0.7 && (
-                                      <TrendingUp className="w-3 h-3 text-green-500" />
-                                    )}
-                                    {velocity as number < -0.3 && (
-                                      <TrendingDown className="w-3 h-3 text-red-500" />
-                                    )}
-                                    {Math.abs(velocity as number) <= 0.3 && (
-                                      <Minus className="w-3 h-3 text-gray-400" />
-                                    )}
-                                  </div>
-                                ))}
+                                  )
+                                )}
                               </div>
                             </div>
 
@@ -849,7 +969,10 @@ export function EnhancedAgentCard({
                                     {(currentKinetics.consciousnessRate * 100).toFixed(1)}%
                                   </span>
                                 </div>
-                                <Progress value={currentKinetics.consciousnessRate * 100} className="h-2" />
+                                <Progress
+                                  value={currentKinetics.consciousnessRate * 100}
+                                  className="h-2"
+                                />
                                 <div className="text-xs text-muted-foreground">
                                   Rate of consciousness development per interaction cycle
                                 </div>
@@ -859,7 +982,8 @@ export function EnhancedAgentCard({
                         </div>
 
                         {/* Optimal Timing */}
-                        {(currentKinetics.peakHours.length > 0 || currentKinetics.nextOptimalWindow) && (
+                        {(currentKinetics.peakHours.length > 0 ||
+                          currentKinetics.nextOptimalWindow) && (
                           <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 rounded-lg border">
                             <h5 className="font-medium mb-3 flex items-center gap-2">
                               <Clock className="w-4 h-4 text-orange-500" />
@@ -884,7 +1008,7 @@ export function EnhancedAgentCard({
                                   <div className="text-sm text-muted-foreground mt-1">
                                     {currentKinetics.nextOptimalWindow.toLocaleTimeString([], {
                                       hour: '2-digit',
-                                      minute: '2-digit'
+                                      minute: '2-digit',
                                     })}
                                   </div>
                                 </div>
@@ -901,11 +1025,21 @@ export function EnhancedAgentCard({
                               Kinetic Compatibility Notes
                             </h5>
                             <div className="text-sm text-muted-foreground">
-                              This agent operates with <span className="font-medium capitalize">{currentKinetics.momentumType}</span> momentum patterns,
-                              showing {currentKinetics.powerAlignment > 0.7 ? 'strong' : currentKinetics.powerAlignment > 0.4 ? 'moderate' : 'subtle'} alignment
-                              with current cosmic energies.
-                              {currentKinetics.aspectSensitivity > 0.6 && " Highly sensitive to astrological aspects."}
-                              {currentKinetics.memoryPersistence > 0.7 && " Excellent memory retention across sessions."}
+                              This agent operates with{' '}
+                              <span className="font-medium capitalize">
+                                {currentKinetics.momentumType}
+                              </span>{' '}
+                              momentum patterns, showing{' '}
+                              {currentKinetics.powerAlignment > 0.7
+                                ? 'strong'
+                                : currentKinetics.powerAlignment > 0.4
+                                  ? 'moderate'
+                                  : 'subtle'}{' '}
+                              alignment with current cosmic energies.
+                              {currentKinetics.aspectSensitivity > 0.6 &&
+                                ' Highly sensitive to astrological aspects.'}
+                              {currentKinetics.memoryPersistence > 0.7 &&
+                                ' Excellent memory retention across sessions.'}
                             </div>
                           </div>
                         )}
@@ -926,10 +1060,16 @@ export function EnhancedAgentCard({
                                 <div className="flex justify-between items-center mb-1">
                                   <span className="text-sm">Consciousness Velocity</span>
                                   <span className="font-mono text-sm">
-                                    {(agent.stats.kineticEvolution.consciousnessVelocity * 100).toFixed(1)}%
+                                    {(
+                                      agent.stats.kineticEvolution.consciousnessVelocity * 100
+                                    ).toFixed(1)}
+                                    %
                                   </span>
                                 </div>
-                                <Progress value={agent.stats.kineticEvolution.consciousnessVelocity * 100} className="h-2" />
+                                <Progress
+                                  value={agent.stats.kineticEvolution.consciousnessVelocity * 100}
+                                  className="h-2"
+                                />
                               </div>
 
                               <div className="p-3 bg-white dark:bg-black/20 rounded-lg border">
@@ -939,13 +1079,18 @@ export function EnhancedAgentCard({
                                     {agent.stats.kineticEvolution.interactionMomentum}
                                   </span>
                                 </div>
-                                <Progress value={agent.stats.kineticEvolution.interactionMomentum} className="h-2" />
+                                <Progress
+                                  value={agent.stats.kineticEvolution.interactionMomentum}
+                                  className="h-2"
+                                />
                               </div>
 
                               <div className="p-3 bg-white dark:bg-black/20 rounded-lg border">
                                 <div className="flex justify-between items-center">
                                   <span className="text-sm">Evolution Trajectory</span>
-                                  <Badge variant="outline">{agent.stats.kineticEvolution.evolutionTrajectory}</Badge>
+                                  <Badge variant="outline">
+                                    {agent.stats.kineticEvolution.evolutionTrajectory}
+                                  </Badge>
                                 </div>
                               </div>
                             </div>
@@ -956,12 +1101,14 @@ export function EnhancedAgentCard({
                                 Power Level Unlocks
                               </h5>
                               <div className="space-y-1">
-                                {agent.stats.kineticEvolution.powerLevelUnlocks.map((unlock, index) => (
-                                  <div key={index} className="flex items-center gap-2 text-sm">
-                                    <Star className="w-3 h-3 text-yellow-500" />
-                                    {unlock}
-                                  </div>
-                                ))}
+                                {agent.stats.kineticEvolution.powerLevelUnlocks.map(
+                                  (unlock, index) => (
+                                    <div key={index} className="flex items-center gap-2 text-sm">
+                                      <Star className="w-3 h-3 text-yellow-500" />
+                                      {unlock}
+                                    </div>
+                                  )
+                                )}
                               </div>
                             </div>
                           </div>
@@ -989,9 +1136,14 @@ export function EnhancedAgentCard({
 
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                             {Object.entries(signVector).map(([sign, value]) => (
-                              <div key={sign} className="text-center p-2 bg-white dark:bg-black/20 rounded border">
+                              <div
+                                key={sign}
+                                className="text-center p-2 bg-white dark:bg-black/20 rounded border"
+                              >
                                 <div className="font-medium">{sign}</div>
-                                <div className="font-mono text-muted-foreground">{value.toFixed(1)}</div>
+                                <div className="font-mono text-muted-foreground">
+                                  {value.toFixed(1)}
+                                </div>
                               </div>
                             ))}
                           </div>

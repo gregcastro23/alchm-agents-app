@@ -23,7 +23,7 @@ import {
   Info,
   ChevronRight,
   Plus,
-  X
+  X,
 } from 'lucide-react'
 import NatalSigilGenerator from '@/components/natal-sigil-generator'
 import { MeditationGuidance } from '@/components/sigil/meditation-guidance'
@@ -32,7 +32,11 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import QuickChartInput from '@/components/quick-chart-input'
 import { ChartGeometryExtractor } from '@/lib/chart-geometry-extractor'
 import { detectPatternsStatic, PlanetPosition } from '@/lib/astrological-pattern-recognition'
-import { calculateEnhancedChart, parseBirthData, geocodeLocation } from '@/lib/enhanced-chart-calculator'
+import {
+  calculateEnhancedChart,
+  parseBirthData,
+  geocodeLocation,
+} from '@/lib/enhanced-chart-calculator'
 import { RuneGeometry, NatalSigilRune, SigilStyle } from '@/lib/runes/natal-sigil-runes'
 import { PatternToRuneConverter } from '@/lib/runes/pattern-to-rune-converter'
 import type { BirthInfo } from '@/lib/schemas'
@@ -60,7 +64,7 @@ export default function RuneForgePage() {
     name: '',
     date: '',
     time: '',
-    location: ''
+    location: '',
   })
 
   const handleQuickChartSubmit = useCallback(async (chartData: any) => {
@@ -83,7 +87,7 @@ export default function RuneForgePage() {
             hour: parsed.hour || 12,
             minute: parsed.minute || 0,
             latitude: 0,
-            longitude: 0
+            longitude: 0,
           }
         }
       } else if (chartData.birthInfo) {
@@ -105,7 +109,7 @@ export default function RuneForgePage() {
         planet: p.planet,
         sign: p.sign,
         degree: p.degree,
-        house: p.house
+        house: p.house,
       }))
 
       const extractedGeometry = ChartGeometryExtractor.extractFromChartData(
@@ -158,7 +162,7 @@ export default function RuneForgePage() {
         hour,
         minute,
         latitude: coords.latitude,
-        longitude: coords.longitude
+        longitude: coords.longitude,
       }
 
       setBirthInfo(parsedBirthInfo)
@@ -170,7 +174,7 @@ export default function RuneForgePage() {
         planet: p.planet,
         sign: p.sign,
         degree: p.degree,
-        house: p.house
+        house: p.house,
       }))
 
       const extractedGeometry = ChartGeometryExtractor.extractFromChartData(
@@ -193,15 +197,18 @@ export default function RuneForgePage() {
     }
   }, [manualInput])
 
-  const handleSigilGenerated = useCallback((sigil: NatalSigilRune) => {
-    const newSigil: GeneratedSigil = {
-      ...sigil,
-      generationTime: new Date().toISOString(),
-      birthInfo
-    }
-    setGeneratedSigils(prev => [...prev, newSigil])
-    setActiveTab('gallery')
-  }, [birthInfo])
+  const handleSigilGenerated = useCallback(
+    (sigil: NatalSigilRune) => {
+      const newSigil: GeneratedSigil = {
+        ...sigil,
+        generationTime: new Date().toISOString(),
+        birthInfo,
+      }
+      setGeneratedSigils(prev => [...prev, newSigil])
+      setActiveTab('gallery')
+    },
+    [birthInfo]
+  )
 
   const handleBatchGenerate = useCallback(async () => {
     if (!geometry) return
@@ -224,7 +231,7 @@ export default function RuneForgePage() {
         const newSigils: GeneratedSigil[] = variations.map(sigil => ({
           ...sigil,
           generationTime: new Date().toISOString(),
-          birthInfo
+          birthInfo,
         }))
 
         setGeneratedSigils(prev => [...prev, ...newSigils])
@@ -264,7 +271,8 @@ export default function RuneForgePage() {
           Rune Forge
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Transform your natal chart geometry into personalized runic sigils for meditation and magical practice
+          Transform your natal chart geometry into personalized runic sigils for meditation and
+          magical practice
         </p>
       </div>
 
@@ -380,7 +388,7 @@ export default function RuneForgePage() {
                   <Input
                     id="name"
                     value={manualInput.name}
-                    onChange={(e) => setManualInput(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={e => setManualInput(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="Your name"
                   />
                 </div>
@@ -394,7 +402,7 @@ export default function RuneForgePage() {
                     id="date"
                     type="date"
                     value={manualInput.date}
-                    onChange={(e) => setManualInput(prev => ({ ...prev, date: e.target.value }))}
+                    onChange={e => setManualInput(prev => ({ ...prev, date: e.target.value }))}
                   />
                 </div>
 
@@ -407,7 +415,7 @@ export default function RuneForgePage() {
                     id="time"
                     type="time"
                     value={manualInput.time}
-                    onChange={(e) => setManualInput(prev => ({ ...prev, time: e.target.value }))}
+                    onChange={e => setManualInput(prev => ({ ...prev, time: e.target.value }))}
                   />
                 </div>
 
@@ -419,7 +427,7 @@ export default function RuneForgePage() {
                   <Input
                     id="location"
                     value={manualInput.location}
-                    onChange={(e) => setManualInput(prev => ({ ...prev, location: e.target.value }))}
+                    onChange={e => setManualInput(prev => ({ ...prev, location: e.target.value }))}
                     placeholder="City, Country"
                   />
                 </div>
@@ -451,11 +459,15 @@ export default function RuneForgePage() {
                 <CardHeader>
                   <CardTitle>Chart Analysis Complete</CardTitle>
                   <CardDescription>
-                    {birthInfo?.name || 'Subject'} • {birthInfo && new Date(birthInfo.year, birthInfo.month, birthInfo.day).toLocaleDateString()}
+                    {birthInfo?.name || 'Subject'} •{' '}
+                    {birthInfo &&
+                      new Date(birthInfo.year, birthInfo.month, birthInfo.day).toLocaleDateString()}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-4 text-center`}>
+                  <div
+                    className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-4 text-center`}
+                  >
                     <div className="p-3 bg-muted rounded">
                       <div className="text-2xl font-bold">{geometry.aspectLines.length}</div>
                       <div className="text-xs text-muted-foreground">Aspects</div>
@@ -480,16 +492,10 @@ export default function RuneForgePage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Batch Generation</CardTitle>
-                  <CardDescription>
-                    Generate sigils in all four styles at once
-                  </CardDescription>
+                  <CardDescription>Generate sigils in all four styles at once</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button
-                    onClick={handleBatchGenerate}
-                    disabled={isProcessing}
-                    className="w-full"
-                  >
+                  <Button onClick={handleBatchGenerate} disabled={isProcessing} className="w-full">
                     <Grid className="mr-2 h-4 w-4" />
                     Generate All Styles
                   </Button>
@@ -519,15 +525,11 @@ export default function RuneForgePage() {
             <CardHeader>
               <CardTitle>Generated Sigils</CardTitle>
               <CardDescription>
-                Your collection of {generatedSigils.length} natal sigil{generatedSigils.length !== 1 ? 's' : ''}
+                Your collection of {generatedSigils.length} natal sigil
+                {generatedSigils.length !== 1 ? 's' : ''}
               </CardDescription>
               {generatedSigils.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDownloadAll}
-                  className="ml-auto"
-                >
+                <Button variant="outline" size="sm" onClick={handleDownloadAll} className="ml-auto">
                   <Download className="mr-2 h-4 w-4" />
                   Download All
                 </Button>
@@ -601,12 +603,16 @@ export default function RuneForgePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'} gap-4`}>
+                  <div
+                    className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'} gap-4`}
+                  >
                     {generatedSigils.map((sigil, index) => (
                       <div
                         key={sigil.id}
                         className={`p-4 border rounded-lg cursor-pointer transition-all hover:border-purple-500 hover:bg-purple-900/10 ${
-                          selectedSigilIndex === index ? 'border-purple-500 bg-purple-900/20' : 'border-slate-600'
+                          selectedSigilIndex === index
+                            ? 'border-purple-500 bg-purple-900/20'
+                            : 'border-slate-600'
                         }`}
                         onClick={() => setSelectedSigilIndex(index)}
                       >
@@ -625,7 +631,9 @@ export default function RuneForgePage() {
                           )}
                         </div>
                         <h4 className="font-medium text-sm text-center truncate">{sigil.name}</h4>
-                        <p className="text-xs text-center text-muted-foreground capitalize">{sigil.style}</p>
+                        <p className="text-xs text-center text-muted-foreground capitalize">
+                          {sigil.style}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -638,7 +646,10 @@ export default function RuneForgePage() {
                   isVisible={true}
                   onComplete={() => {
                     // Optional: Add completion tracking or other actions
-                    console.log('Meditation completed for:', generatedSigils[selectedSigilIndex].name)
+                    console.log(
+                      'Meditation completed for:',
+                      generatedSigils[selectedSigilIndex].name
+                    )
                   }}
                 />
               )}
@@ -655,16 +666,12 @@ export default function RuneForgePage() {
         >
           <Card
             className="max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>{generatedSigils[selectedSigilIndex].name}</CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedSigilIndex(null)}
-                >
+                <Button variant="ghost" size="sm" onClick={() => setSelectedSigilIndex(null)}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -700,12 +707,14 @@ export default function RuneForgePage() {
                 <div>
                   <h4 className="font-medium mb-2">Meditation Instructions</h4>
                   <ol className="space-y-1 text-sm text-muted-foreground">
-                    {generatedSigils[selectedSigilIndex].meditationInstructions.map((instruction, i) => (
-                      <li key={i} className="flex gap-2">
-                        <span className="font-medium">{i + 1}.</span>
-                        <span>{instruction}</span>
-                      </li>
-                    ))}
+                    {generatedSigils[selectedSigilIndex].meditationInstructions.map(
+                      (instruction, i) => (
+                        <li key={i} className="flex gap-2">
+                          <span className="font-medium">{i + 1}.</span>
+                          <span>{instruction}</span>
+                        </li>
+                      )
+                    )}
                   </ol>
                 </div>
 

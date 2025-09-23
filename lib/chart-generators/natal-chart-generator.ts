@@ -6,9 +6,15 @@ import {
   generateAccurateHoroscope,
   generateProfessionalHoroscope,
   type GeneratedHoroscope,
-  type PlanetPosition
+  type PlanetPosition,
 } from '../monica/horoscope-generator'
-import { CosmicChartTheme, generateChartStyles, getZodiacColors, getPlanetStyle, getAspectStyle } from './chart-styles'
+import {
+  CosmicChartTheme,
+  generateChartStyles,
+  getZodiacColors,
+  getPlanetStyle,
+  getAspectStyle,
+} from './chart-styles'
 
 export interface ChartConfig {
   size: number
@@ -43,7 +49,7 @@ const PLANET_SYMBOLS = {
   Saturn: '♄',
   Uranus: '♅',
   Neptune: '♆',
-  Pluto: '♇'
+  Pluto: '♇',
 }
 
 // Zodiac symbols
@@ -59,7 +65,7 @@ const ZODIAC_SYMBOLS = {
   Sagittarius: '♐',
   Capricorn: '♑',
   Aquarius: '♒',
-  Pisces: '♓'
+  Pisces: '♓',
 }
 
 // Use cosmic theme colors - now imported from chart-styles.ts
@@ -74,7 +80,12 @@ function degToRad(degrees: number): number {
 /**
  * Calculate position on circle from degrees (0° = top, clockwise)
  */
-function calculatePosition(degrees: number, radius: number, centerX: number, centerY: number): { x: number; y: number } {
+function calculatePosition(
+  degrees: number,
+  radius: number,
+  centerX: number,
+  centerY: number
+): { x: number; y: number } {
   // Convert to standard mathematical coordinates (0° = right, counter-clockwise)
   // then adjust for astrological coordinates (0° = top, clockwise)
   const adjustedDegrees = 90 - degrees
@@ -82,7 +93,7 @@ function calculatePosition(degrees: number, radius: number, centerX: number, cen
 
   return {
     x: centerX + radius * Math.cos(radian),
-    y: centerY - radius * Math.sin(radian)
+    y: centerY - radius * Math.sin(radian),
   }
 }
 
@@ -90,8 +101,20 @@ function calculatePosition(degrees: number, radius: number, centerX: number, cen
  * Convert sign and degree to absolute degrees (0-360)
  */
 function signDegreeToAbsolute(sign: string, degree: number): number {
-  const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-                 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+  const signs = [
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
+  ]
   const signIndex = signs.indexOf(sign)
   return signIndex * 30 + degree
 }
@@ -123,12 +146,24 @@ function generateZodiacWheel(config: ChartConfig): string {
       `A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${end1.x} ${end1.y}`,
       `L ${end2.x} ${end2.y}`,
       `A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${start2.x} ${start2.y}`,
-      'Z'
+      'Z',
     ].join(' ')
 
     // Get cosmic colors for this zodiac sign
-    const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-                   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+    const signs = [
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
+    ]
     const zodiacColors = getZodiacColors(signs[i], isDarkMode)
 
     svg += `
@@ -143,7 +178,9 @@ function generateZodiacWheel(config: ChartConfig): string {
     // Zodiac symbol with cosmic styling
     const symbolPos = calculatePosition(midAngle, (outerRadius + innerRadius) / 2, centerX, centerY)
     const symbol = ZODIAC_SYMBOLS[signs[i] as keyof typeof ZODIAC_SYMBOLS] || signs[i][0]
-    const textColor = isDarkMode ? CosmicChartTheme.colors.text.primary.dark : CosmicChartTheme.colors.text.primary.light
+    const textColor = isDarkMode
+      ? CosmicChartTheme.colors.text.primary.dark
+      : CosmicChartTheme.colors.text.primary.light
 
     svg += `
       <text x="${symbolPos.x}" y="${symbolPos.y}"
@@ -178,7 +215,7 @@ function generateHouses(config: ChartConfig, ascendantDegree: number): string {
 
   // Draw 12 house cusps starting from ascendant
   for (let i = 0; i < 12; i++) {
-    const houseCusp = (ascendantDegree + (i * 30)) % 360
+    const houseCusp = (ascendantDegree + i * 30) % 360
     const start = calculatePosition(houseCusp, innerRadius * 0.7, centerX, centerY)
     const end = calculatePosition(houseCusp, innerRadius, centerX, centerY)
 
@@ -213,7 +250,7 @@ function generatePlanets(config: ChartConfig, planets: PlanetPosition[]): string
   const { centerX, centerY, outerRadius, innerRadius, isDarkMode = false } = config
   let svg = ''
 
-  planets.forEach((planet) => {
+  planets.forEach(planet => {
     const absoluteDegree = signDegreeToAbsolute(planet.Sign.label, planet.degrees)
     const radius = innerRadius + (outerRadius - innerRadius) * 0.3
     const position = calculatePosition(absoluteDegree, radius, centerX, centerY)
@@ -283,7 +320,7 @@ function generateAspects(config: ChartConfig, planets: PlanetPosition[]): string
     opposition: { degrees: 180, orb: 8 },
     trine: { degrees: 120, orb: 6 },
     square: { degrees: 90, orb: 6 },
-    sextile: { degrees: 60, orb: 4 }
+    sextile: { degrees: 60, orb: 4 },
   }
 
   for (let i = 0; i < planets.length; i++) {
@@ -338,18 +375,21 @@ export function generateNatalChartSVG(
 
     if (options.useEnhancedCalculations !== false) {
       try {
-        horoscope = generateProfessionalHoroscope({
-          year: birthInfo.year,
-          month: birthInfo.month + 1, // Convert to 1-based month
-          day: birthInfo.day,
-          hour: birthInfo.hour,
-          minute: birthInfo.minute,
-          latitude: birthInfo.latitude || 40.7128,
-          longitude: birthInfo.longitude || -74.0060,
-        }, {
-          useLegacyFallback: false,
-          includeAccuracyMetadata: true
-        })
+        horoscope = generateProfessionalHoroscope(
+          {
+            year: birthInfo.year,
+            month: birthInfo.month + 1, // Convert to 1-based month
+            day: birthInfo.day,
+            hour: birthInfo.hour,
+            minute: birthInfo.minute,
+            latitude: birthInfo.latitude || 40.7128,
+            longitude: birthInfo.longitude || -74.006,
+          },
+          {
+            useLegacyFallback: false,
+            includeAccuracyMetadata: true,
+          }
+        )
         method = 'Enhanced VSOP87-like calculations (±0.1° precision)'
       } catch (enhancedError) {
         console.warn('Enhanced calculations failed, using legacy fallback:', enhancedError)
@@ -386,7 +426,7 @@ export function generateNatalChartSVG(
       strokeWidth: 2,
       fontSize: 12,
       isDarkMode: true, // Default to dark mode for cosmic theme
-      responsive: true
+      responsive: true,
     }
 
     const ascendantDegree = signDegreeToAbsolute(
@@ -402,10 +442,18 @@ export function generateNatalChartSVG(
 
     // Generate cosmic chart styles
     const chartStyles = generateChartStyles(config.isDarkMode)
-    const bgColor = config.isDarkMode ? CosmicChartTheme.colors.background.glass : CosmicChartTheme.colors.background.light
-    const borderColor = config.isDarkMode ? CosmicChartTheme.colors.border.glow : CosmicChartTheme.colors.border.light
-    const titleColor = config.isDarkMode ? CosmicChartTheme.colors.text.primary.dark : CosmicChartTheme.colors.text.primary.light
-    const subtitleColor = config.isDarkMode ? CosmicChartTheme.colors.text.secondary.dark : CosmicChartTheme.colors.text.secondary.light
+    const bgColor = config.isDarkMode
+      ? CosmicChartTheme.colors.background.glass
+      : CosmicChartTheme.colors.background.light
+    const borderColor = config.isDarkMode
+      ? CosmicChartTheme.colors.border.glow
+      : CosmicChartTheme.colors.border.light
+    const titleColor = config.isDarkMode
+      ? CosmicChartTheme.colors.text.primary.dark
+      : CosmicChartTheme.colors.text.primary.light
+    const subtitleColor = config.isDarkMode
+      ? CosmicChartTheme.colors.text.secondary.dark
+      : CosmicChartTheme.colors.text.secondary.light
 
     // Assemble complete cosmic SVG
     const svg = `
@@ -469,7 +517,7 @@ export function generateNatalChartSVG(
           ${new Date(birthInfo.year, birthInfo.month, birthInfo.day).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
+            day: 'numeric',
           })} at ${String(birthInfo.hour).padStart(2, '0')}:${String(birthInfo.minute).padStart(2, '0')}
         </text>
 
@@ -490,13 +538,12 @@ export function generateNatalChartSVG(
         generated: true,
         local: true,
         timestamp: new Date().toISOString(),
-        method: method,
+        method,
         calculationEngine: method.includes('Enhanced') ? 'VSOP87-like' : 'simplified-linear',
         accuracy: method.includes('Enhanced') ? '±0.1°' : '±2-5°',
-        enhancedCalculations: method.includes('Enhanced')
-      }
+        enhancedCalculations: method.includes('Enhanced'),
+      },
     }
-
   } catch (error) {
     console.error('Error generating local natal chart:', error)
 
@@ -521,8 +568,8 @@ export function generateNatalChartSVG(
         generated: false,
         local: true,
         timestamp: new Date().toISOString(),
-        method: 'fallback-error'
-      }
+        method: 'fallback-error',
+      },
     }
   }
 }

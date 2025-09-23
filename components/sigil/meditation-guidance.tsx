@@ -30,7 +30,7 @@ import {
   Moon,
   Atom,
   Infinity,
-  CheckCircle
+  CheckCircle,
 } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { MobileMeditationGuidance } from './mobile-meditation-guidance'
@@ -65,164 +65,198 @@ interface StyleMeditation {
 
 const MEDITATION_STYLES: Record<SigilStyle, StyleMeditation> = {
   nordic: {
-    name: "Nordic Runic Activation",
-    element: "Ice & Fire",
+    name: 'Nordic Runic Activation',
+    element: 'Ice & Fire',
     preparationTime: 180, // 3 minutes
     phases: [
       {
-        id: "grounding",
-        name: "Earth Connection",
+        id: 'grounding',
+        name: 'Earth Connection',
         duration: 120,
-        instruction: "Sit in stillness and feel your connection to the ancient earth beneath you",
-        visualization: "Imagine roots growing from your spine deep into the frozen Nordic soil",
-        breathingPattern: "4-4-4 (inhale-hold-exhale)",
-        focusPoint: "Base of spine, connection to earth",
-        icon: <Mountain className="w-5 h-5" />
+        instruction: 'Sit in stillness and feel your connection to the ancient earth beneath you',
+        visualization: 'Imagine roots growing from your spine deep into the frozen Nordic soil',
+        breathingPattern: '4-4-4 (inhale-hold-exhale)',
+        focusPoint: 'Base of spine, connection to earth',
+        icon: <Mountain className="w-5 h-5" />,
       },
       {
-        id: "invocation",
-        name: "Runic Invocation",
+        id: 'invocation',
+        name: 'Runic Invocation',
         duration: 180,
-        instruction: "Trace each rune of your sigil with your mind's eye, feeling its ancient power",
-        visualization: "See each rune glowing with blue-white fire against the northern lights",
-        breathingPattern: "Deep, rhythmic breathing like winter wind",
-        focusPoint: "Third eye, connecting to runic wisdom",
-        icon: <Gem className="w-5 h-5" />
+        instruction:
+          "Trace each rune of your sigil with your mind's eye, feeling its ancient power",
+        visualization: 'See each rune glowing with blue-white fire against the northern lights',
+        breathingPattern: 'Deep, rhythmic breathing like winter wind',
+        focusPoint: 'Third eye, connecting to runic wisdom',
+        icon: <Gem className="w-5 h-5" />,
       },
       {
-        id: "activation",
-        name: "Power Awakening",
+        id: 'activation',
+        name: 'Power Awakening',
         duration: 240,
-        instruction: "Feel the runic energy flowing through your body like liquid starlight",
-        visualization: "Your sigil burning bright against the aurora borealis",
-        breathingPattern: "Natural, deep breathing",
+        instruction: 'Feel the runic energy flowing through your body like liquid starlight',
+        visualization: 'Your sigil burning bright against the aurora borealis',
+        breathingPattern: 'Natural, deep breathing',
         focusPoint: "Heart center, embodying the rune's power",
-        icon: <Sparkles className="w-5 h-5" />
-      }
+        icon: <Sparkles className="w-5 h-5" />,
+      },
     ],
-    completionRitual: "End by placing your hands on your heart and speaking: 'By the ancient ways, this power is awakened within me.'",
-    benefits: ["Enhanced intuition", "Connection to ancestral wisdom", "Strength and endurance", "Clarity in decision-making"]
+    completionRitual:
+      "End by placing your hands on your heart and speaking: 'By the ancient ways, this power is awakened within me.'",
+    benefits: [
+      'Enhanced intuition',
+      'Connection to ancestral wisdom',
+      'Strength and endurance',
+      'Clarity in decision-making',
+    ],
   },
   celtic: {
-    name: "Celtic Spiral Meditation",
-    element: "Earth & Water",
+    name: 'Celtic Spiral Meditation',
+    element: 'Earth & Water',
     preparationTime: 240, // 4 minutes
     phases: [
       {
-        id: "sacred_circle",
-        name: "Sacred Circle",
+        id: 'sacred_circle',
+        name: 'Sacred Circle',
         duration: 150,
-        instruction: "Create a sacred space by visualizing a circle of standing stones around you",
-        visualization: "Ancient oak trees and crystal clear streams surrounding your meditation space",
-        breathingPattern: "Circular breathing - imagine your breath as a spiral",
-        focusPoint: "Solar plexus, center of personal power",
-        icon: <Target className="w-5 h-5" />
+        instruction: 'Create a sacred space by visualizing a circle of standing stones around you',
+        visualization:
+          'Ancient oak trees and crystal clear streams surrounding your meditation space',
+        breathingPattern: 'Circular breathing - imagine your breath as a spiral',
+        focusPoint: 'Solar plexus, center of personal power',
+        icon: <Target className="w-5 h-5" />,
       },
       {
-        id: "spiral_journey",
-        name: "Spiral Journey",
+        id: 'spiral_journey',
+        name: 'Spiral Journey',
         duration: 300,
-        instruction: "Follow the spiral patterns of your sigil, moving from outer edge to center",
-        visualization: "Walking a sacred spiral path through ancient Celtic landscapes",
-        breathingPattern: "7-1-7-1 pattern (in-pause-out-pause)",
-        focusPoint: "Heart chakra, connecting to the land",
-        icon: <Compass className="w-5 h-5" />
+        instruction: 'Follow the spiral patterns of your sigil, moving from outer edge to center',
+        visualization: 'Walking a sacred spiral path through ancient Celtic landscapes',
+        breathingPattern: '7-1-7-1 pattern (in-pause-out-pause)',
+        focusPoint: 'Heart chakra, connecting to the land',
+        icon: <Compass className="w-5 h-5" />,
       },
       {
-        id: "wisdom_download",
-        name: "Wisdom Integration",
+        id: 'wisdom_download',
+        name: 'Wisdom Integration',
         duration: 180,
-        instruction: "Allow the ancient Celtic wisdom to flow into your consciousness",
-        visualization: "Golden light from the center of your sigil filling your entire being",
-        breathingPattern: "Natural, flowing like a gentle stream",
-        focusPoint: "Crown chakra, receiving divine wisdom",
-        icon: <Crown className="w-5 h-5" />
-      }
+        instruction: 'Allow the ancient Celtic wisdom to flow into your consciousness',
+        visualization: 'Golden light from the center of your sigil filling your entire being',
+        breathingPattern: 'Natural, flowing like a gentle stream',
+        focusPoint: 'Crown chakra, receiving divine wisdom',
+        icon: <Crown className="w-5 h-5" />,
+      },
     ],
-    completionRitual: "Place your hands on the earth (or visualize doing so) and say: 'I am connected to the eternal spiral of wisdom.'",
-    benefits: ["Deep earth connection", "Enhanced creativity", "Emotional healing", "Intuitive problem-solving"]
+    completionRitual:
+      "Place your hands on the earth (or visualize doing so) and say: 'I am connected to the eternal spiral of wisdom.'",
+    benefits: [
+      'Deep earth connection',
+      'Enhanced creativity',
+      'Emotional healing',
+      'Intuitive problem-solving',
+    ],
   },
   alchemical: {
-    name: "Alchemical Transformation",
-    element: "Fire & Mercury",
+    name: 'Alchemical Transformation',
+    element: 'Fire & Mercury',
     preparationTime: 300, // 5 minutes
     phases: [
       {
-        id: "nigredo",
-        name: "Dissolution (Nigredo)",
+        id: 'nigredo',
+        name: 'Dissolution (Nigredo)',
         duration: 240,
-        instruction: "Release all preconceptions and dissolve into the primordial darkness",
-        visualization: "Your consciousness becoming like a black, fertile void pregnant with potential",
-        breathingPattern: "Slow, deep breathing to release tension",
-        focusPoint: "Lower abdomen, releasing what no longer serves",
-        icon: <Moon className="w-5 h-5" />
+        instruction: 'Release all preconceptions and dissolve into the primordial darkness',
+        visualization:
+          'Your consciousness becoming like a black, fertile void pregnant with potential',
+        breathingPattern: 'Slow, deep breathing to release tension',
+        focusPoint: 'Lower abdomen, releasing what no longer serves',
+        icon: <Moon className="w-5 h-5" />,
       },
       {
-        id: "albedo",
-        name: "Purification (Albedo)",
+        id: 'albedo',
+        name: 'Purification (Albedo)',
         duration: 300,
-        instruction: "Feel the alchemical fire burning away impurities, leaving pure essence",
-        visualization: "White light purifying your energy body, your sigil glowing like molten silver",
-        breathingPattern: "Sharp inhale, long exhale - breathing out impurities",
-        focusPoint: "Heart center, purification and clarity",
-        icon: <Flame className="w-5 h-5" />
+        instruction: 'Feel the alchemical fire burning away impurities, leaving pure essence',
+        visualization:
+          'White light purifying your energy body, your sigil glowing like molten silver',
+        breathingPattern: 'Sharp inhale, long exhale - breathing out impurities',
+        focusPoint: 'Heart center, purification and clarity',
+        icon: <Flame className="w-5 h-5" />,
       },
       {
-        id: "rubedo",
-        name: "Integration (Rubedo)",
+        id: 'rubedo',
+        name: 'Integration (Rubedo)',
         duration: 360,
-        instruction: "Embody the perfected consciousness, integrating all elements of your sigil",
+        instruction: 'Embody the perfected consciousness, integrating all elements of your sigil',
         visualization: "Golden-red light of the philosopher's stone radiating from your sigil",
-        breathingPattern: "Balanced, harmonious breathing",
-        focusPoint: "Crown and heart together, unified consciousness",
-        icon: <Sun className="w-5 h-5" />
-      }
+        breathingPattern: 'Balanced, harmonious breathing',
+        focusPoint: 'Crown and heart together, unified consciousness',
+        icon: <Sun className="w-5 h-5" />,
+      },
     ],
-    completionRitual: "Touch your forehead, heart, and solar plexus while saying: 'As above, so below. The great work is within me.'",
-    benefits: ["Personal transformation", "Emotional balance", "Enhanced willpower", "Spiritual integration"]
+    completionRitual:
+      "Touch your forehead, heart, and solar plexus while saying: 'As above, so below. The great work is within me.'",
+    benefits: [
+      'Personal transformation',
+      'Emotional balance',
+      'Enhanced willpower',
+      'Spiritual integration',
+    ],
   },
   cosmic: {
-    name: "Cosmic Consciousness Activation",
-    element: "Ether & Light",
+    name: 'Cosmic Consciousness Activation',
+    element: 'Ether & Light',
     preparationTime: 180, // 3 minutes
     phases: [
       {
-        id: "stellar_alignment",
-        name: "Stellar Alignment",
+        id: 'stellar_alignment',
+        name: 'Stellar Alignment',
         duration: 200,
-        instruction: "Align your consciousness with the cosmic forces that shaped your sigil",
-        visualization: "Stars and planets arranging themselves according to your birth pattern",
-        breathingPattern: "Cosmic rhythm - 8 counts in, 8 counts out",
-        focusPoint: "Top of head, connecting to cosmic consciousness",
-        icon: <Star className="w-5 h-5" />
+        instruction: 'Align your consciousness with the cosmic forces that shaped your sigil',
+        visualization: 'Stars and planets arranging themselves according to your birth pattern',
+        breathingPattern: 'Cosmic rhythm - 8 counts in, 8 counts out',
+        focusPoint: 'Top of head, connecting to cosmic consciousness',
+        icon: <Star className="w-5 h-5" />,
       },
       {
-        id: "frequency_attunement",
-        name: "Frequency Attunement",
+        id: 'frequency_attunement',
+        name: 'Frequency Attunement',
         duration: 300,
-        instruction: "Attune to the vibrational frequency of your personal cosmic signature",
-        visualization: "Your sigil vibrating with the frequency of distant galaxies",
-        breathingPattern: "Vibrational breathing - feel each breath as cosmic energy",
-        focusPoint: "Whole body resonance, cellular activation",
-        icon: <Atom className="w-5 h-5" />
+        instruction: 'Attune to the vibrational frequency of your personal cosmic signature',
+        visualization: 'Your sigil vibrating with the frequency of distant galaxies',
+        breathingPattern: 'Vibrational breathing - feel each breath as cosmic energy',
+        focusPoint: 'Whole body resonance, cellular activation',
+        icon: <Atom className="w-5 h-5" />,
       },
       {
-        id: "expansion",
-        name: "Consciousness Expansion",
+        id: 'expansion',
+        name: 'Consciousness Expansion',
         duration: 420,
-        instruction: "Expand your awareness to encompass the infinite cosmos within",
-        visualization: "Your consciousness expanding to fill the universe, your sigil at the center",
-        breathingPattern: "Expansive breathing - each breath expanding your awareness",
-        focusPoint: "Infinite space, boundless awareness",
-        icon: <Infinity className="w-5 h-5" />
-      }
+        instruction: 'Expand your awareness to encompass the infinite cosmos within',
+        visualization:
+          'Your consciousness expanding to fill the universe, your sigil at the center',
+        breathingPattern: 'Expansive breathing - each breath expanding your awareness',
+        focusPoint: 'Infinite space, boundless awareness',
+        icon: <Infinity className="w-5 h-5" />,
+      },
     ],
-    completionRitual: "Raise your hands to the sky and declare: 'I am one with the cosmic consciousness. My sigil is a gateway to infinite possibility.'",
-    benefits: ["Expanded awareness", "Cosmic consciousness", "Enhanced psychic abilities", "Universal connection"]
-  }
+    completionRitual:
+      "Raise your hands to the sky and declare: 'I am one with the cosmic consciousness. My sigil is a gateway to infinite possibility.'",
+    benefits: [
+      'Expanded awareness',
+      'Cosmic consciousness',
+      'Enhanced psychic abilities',
+      'Universal connection',
+    ],
+  },
 }
 
-export function MeditationGuidance({ sigil, isVisible, onComplete, className = "" }: MeditationGuidanceProps) {
+export function MeditationGuidance({
+  sigil,
+  isVisible,
+  onComplete,
+  className = '',
+}: MeditationGuidanceProps) {
   const isMobile = useIsMobile()
 
   // Render mobile version on mobile devices
@@ -253,11 +287,12 @@ export function MeditationGuidance({ sigil, isVisible, onComplete, className = "
 
     if (isActive && !isPaused && preparationComplete) {
       interval = setInterval(() => {
-        setTimeElapsed((prev) => {
+        setTimeElapsed(prev => {
           const newTime = prev + 1
 
           // Check if current phase is complete
-          const phaseEndTime = meditation.phases.slice(0, currentPhase + 1)
+          const phaseEndTime = meditation.phases
+            .slice(0, currentPhase + 1)
             .reduce((sum, phase) => sum + phase.duration, 0)
 
           if (newTime >= phaseEndTime && currentPhase < meditation.phases.length - 1) {
@@ -276,7 +311,15 @@ export function MeditationGuidance({ sigil, isVisible, onComplete, className = "
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [isActive, isPaused, preparationComplete, currentPhase, meditation.phases, totalDuration, onComplete])
+  }, [
+    isActive,
+    isPaused,
+    preparationComplete,
+    currentPhase,
+    meditation.phases,
+    totalDuration,
+    onComplete,
+  ])
 
   const startMeditation = () => {
     if (!preparationComplete) {
@@ -306,7 +349,8 @@ export function MeditationGuidance({ sigil, isVisible, onComplete, className = "
   }
 
   const getCurrentPhaseProgress = () => {
-    const phaseStartTime = meditation.phases.slice(0, currentPhase)
+    const phaseStartTime = meditation.phases
+      .slice(0, currentPhase)
       .reduce((sum, phase) => sum + phase.duration, 0)
     const phaseElapsed = timeElapsed - phaseStartTime
     const phaseProgress = Math.min(100, (phaseElapsed / currentMeditationPhase.duration) * 100)
@@ -320,7 +364,9 @@ export function MeditationGuidance({ sigil, isVisible, onComplete, className = "
   if (!isVisible) return null
 
   return (
-    <Card className={`bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border-purple-500/50 ${className}`}>
+    <Card
+      className={`bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border-purple-500/50 ${className}`}
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -329,12 +375,12 @@ export function MeditationGuidance({ sigil, isVisible, onComplete, className = "
             </div>
             <div>
               <CardTitle className="text-purple-300">{meditation.name}</CardTitle>
-              <CardDescription>Activate your {sigil.style} sigil through guided meditation</CardDescription>
+              <CardDescription>
+                Activate your {sigil.style} sigil through guided meditation
+              </CardDescription>
             </div>
           </div>
-          <Badge className="bg-purple-600">
-            {meditation.element}
-          </Badge>
+          <Badge className="bg-purple-600">{meditation.element}</Badge>
         </div>
       </CardHeader>
 
@@ -346,7 +392,10 @@ export function MeditationGuidance({ sigil, isVisible, onComplete, className = "
               <CheckCircle className="w-10 h-10 text-white" />
             </div>
             <h3 className="text-2xl font-bold text-emerald-300">Activation Complete!</h3>
-            <p className="text-emerald-200">Your {sigil.style} sigil has been successfully activated and integrated into your consciousness.</p>
+            <p className="text-emerald-200">
+              Your {sigil.style} sigil has been successfully activated and integrated into your
+              consciousness.
+            </p>
 
             <div className="p-4 bg-emerald-900/20 rounded-lg border border-emerald-500/30">
               <h4 className="font-semibold text-emerald-300 mb-2">Completion Ritual</h4>
@@ -377,7 +426,11 @@ export function MeditationGuidance({ sigil, isVisible, onComplete, className = "
               </div>
             </div>
 
-            <Button onClick={resetMeditation} variant="outline" className="border-purple-500 text-purple-300">
+            <Button
+              onClick={resetMeditation}
+              variant="outline"
+              className="border-purple-500 text-purple-300"
+            >
               <RotateCcw className="w-4 h-4 mr-2" />
               Meditate Again
             </Button>
@@ -442,9 +495,10 @@ export function MeditationGuidance({ sigil, isVisible, onComplete, className = "
             <div className="p-4 bg-purple-900/20 rounded-lg border border-purple-500/30">
               <h4 className="font-semibold text-purple-300 mb-2">Before You Begin</h4>
               <p className="text-purple-100 text-sm leading-relaxed">
-                This meditation will guide you through the sacred activation of your {sigil.style} sigil.
-                Each phase is designed to attune your consciousness to the specific energetic signature of your personalized rune.
-                Trust the process and allow yourself to be fully present with each instruction.
+                This meditation will guide you through the sacred activation of your {sigil.style}{' '}
+                sigil. Each phase is designed to attune your consciousness to the specific energetic
+                signature of your personalized rune. Trust the process and allow yourself to be
+                fully present with each instruction.
               </p>
             </div>
 
@@ -469,11 +523,15 @@ export function MeditationGuidance({ sigil, isVisible, onComplete, className = "
                 <div className="text-sm text-slate-400">Elapsed</div>
               </div>
               <div className="p-3 bg-indigo-900/30 rounded-lg text-center">
-                <div className="text-2xl font-bold text-indigo-300">{currentPhase + 1}/{meditation.phases.length}</div>
+                <div className="text-2xl font-bold text-indigo-300">
+                  {currentPhase + 1}/{meditation.phases.length}
+                </div>
                 <div className="text-sm text-slate-400">Phase</div>
               </div>
               <div className="p-3 bg-pink-900/30 rounded-lg text-center">
-                <div className="text-2xl font-bold text-pink-300">{Math.round(getOverallProgress())}%</div>
+                <div className="text-2xl font-bold text-pink-300">
+                  {Math.round(getOverallProgress())}%
+                </div>
                 <div className="text-sm text-slate-400">Complete</div>
               </div>
             </div>
@@ -496,7 +554,9 @@ export function MeditationGuidance({ sigil, isVisible, onComplete, className = "
                   </div>
                   <div>
                     <CardTitle className="text-purple-300">{currentMeditationPhase.name}</CardTitle>
-                    <CardDescription>{formatTime(currentMeditationPhase.duration)} duration</CardDescription>
+                    <CardDescription>
+                      {formatTime(currentMeditationPhase.duration)} duration
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -519,9 +579,7 @@ export function MeditationGuidance({ sigil, isVisible, onComplete, className = "
                   </div>
                   <div className="p-3 bg-pink-900/20 rounded-lg">
                     <h5 className="font-medium text-pink-300 mb-2">Focus Point</h5>
-                    <p className="text-pink-100 text-sm">
-                      {currentMeditationPhase.focusPoint}
-                    </p>
+                    <p className="text-pink-100 text-sm">{currentMeditationPhase.focusPoint}</p>
                   </div>
                 </div>
 

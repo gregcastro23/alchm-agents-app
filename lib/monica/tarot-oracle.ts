@@ -834,11 +834,12 @@ export async function getCurrentDecan(
     }
   } catch (error) {
     // Handle AbortError and abort messages specifically
-    if (error instanceof Error && (
-      error.name === 'AbortError' ||
-      error.message.includes('aborted') ||
-      error.message.includes('Request aborted')
-    )) {
+    if (
+      error instanceof Error &&
+      (error.name === 'AbortError' ||
+        error.message.includes('aborted') ||
+        error.message.includes('Request aborted'))
+    ) {
       console.log('getCurrentDecan: Request was aborted, re-throwing')
       throw error // Re-throw AbortError so it can be caught by the calling component
     }

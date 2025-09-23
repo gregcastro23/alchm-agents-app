@@ -19,7 +19,8 @@ export async function POST(request: Request) {
     }
 
     const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY
-    const FEEDBACK_TO_EMAIL = process.env.FEEDBACK_TO_EMAIL || process.env.NEXT_PUBLIC_FEEDBACK_TO_EMAIL
+    const FEEDBACK_TO_EMAIL =
+      process.env.FEEDBACK_TO_EMAIL || process.env.NEXT_PUBLIC_FEEDBACK_TO_EMAIL
     const FEEDBACK_FROM_EMAIL = process.env.FEEDBACK_FROM_EMAIL || 'no-reply@planetary-agents.local'
 
     const payload = {
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
       const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${SENDGRID_API_KEY}`,
+          Authorization: `Bearer ${SENDGRID_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(sgPayload),
@@ -75,5 +76,3 @@ function escapeHtml(input: string) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
 }
-
-

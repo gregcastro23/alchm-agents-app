@@ -16,7 +16,7 @@ import {
   computeInertia,
   type ElementKey,
   type ElementVector,
-  type MetricVector
+  type MetricVector,
 } from './alchemical-kinetics'
 
 export interface Location {
@@ -124,7 +124,7 @@ export class CelestialEnergyCalculator {
         hour: timestamp.getHours(),
         minute: timestamp.getMinutes(),
         latitude: location.lat,
-        longitude: location.lon
+        longitude: location.lon,
       })
 
       // Validate horoscope data (check both possible structures)
@@ -139,7 +139,7 @@ export class CelestialEnergyCalculator {
         includePlanetaryHours: true,
         validateTiming: true,
         hoursToSample: 1,
-        startHour: timestamp.getHours()
+        startHour: timestamp.getHours(),
       })
 
       const sample = alchemicalSample[0] // Get the single sample for this moment
@@ -162,7 +162,7 @@ export class CelestialEnergyCalculator {
         heat: sample.metrics.Heat,
         entropy: sample.metrics.Entropy,
         reactivity: sample.metrics.Reactivity,
-        energy: sample.metrics.Energy
+        energy: sample.metrics.Energy,
       }
 
       // Calculate elemental distribution
@@ -170,7 +170,7 @@ export class CelestialEnergyCalculator {
         Fire: sample.elements.Fire,
         Water: sample.elements.Water,
         Air: sample.elements.Air,
-        Earth: sample.elements.Earth
+        Earth: sample.elements.Earth,
       }
 
       // Calculate planetary context
@@ -187,17 +187,18 @@ export class CelestialEnergyCalculator {
         thermodynamic,
         elemental,
         planetary,
-        consciousness
+        consciousness,
       }
 
       // Cache the result
       this.cache.set(cacheKey, moment)
 
       return moment
-
     } catch (error) {
       console.error('Error calculating celestial moment:', error)
-      throw new Error(`Failed to calculate celestial energy: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to calculate celestial energy: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -237,7 +238,7 @@ export class CelestialEnergyCalculator {
     return {
       moments: smoothedMoments,
       statistics,
-      patterns
+      patterns,
     }
   }
 
@@ -302,7 +303,7 @@ export class CelestialEnergyCalculator {
       spirit: sample.alchemical.Spirit,
       matter: sample.alchemical.Matter,
       essence: sample.alchemical.Essence,
-      substance: sample.alchemical.Substance
+      substance: sample.alchemical.Substance,
     }
   }
 
@@ -320,10 +321,10 @@ export class CelestialEnergyCalculator {
     const moonDegree = this.extractPlanetaryDegrees(horoscope)['Moon']
 
     // Solar amplification (fire principle)
-    const solarAmplification = 1 + (Math.sin(sunDegree * Math.PI / 180) * 0.1)
+    const solarAmplification = 1 + Math.sin((sunDegree * Math.PI) / 180) * 0.1
 
     // Lunar modulation (water principle)
-    const lunarModulation = 1 + (Math.cos(moonDegree * Math.PI / 180) * 0.08)
+    const lunarModulation = 1 + Math.cos((moonDegree * Math.PI) / 180) * 0.08
 
     // Golden ratio enhancement for consciousness resonance
     const PHI = 1.618033988749
@@ -342,29 +343,38 @@ export class CelestialEnergyCalculator {
       Fire: currentSample.elements.Fire,
       Water: currentSample.elements.Water,
       Air: currentSample.elements.Air,
-      Earth: currentSample.elements.Earth
+      Earth: currentSample.elements.Earth,
     }
 
     const metrics: MetricVector = {
       Heat: currentSample.metrics.Heat,
       Entropy: currentSample.metrics.Entropy,
       Reactivity: currentSample.metrics.Reactivity,
-      Energy: currentSample.metrics.Energy
+      Energy: currentSample.metrics.Energy,
     }
 
     // Calculate kinetic properties
-    const velocity = computeElementalVelocity(elements, timeSeries.length > 1 ? timeSeries : [currentSample, currentSample])
+    const velocity = computeElementalVelocity(
+      elements,
+      timeSeries.length > 1 ? timeSeries : [currentSample, currentSample]
+    )
     const momentum = computeElementalMomentum(elements, velocity)
-    const power = computePower(metrics, timeSeries.length > 1 ? timeSeries : [currentSample, currentSample])
+    const power = computePower(
+      metrics,
+      timeSeries.length > 1 ? timeSeries : [currentSample, currentSample]
+    )
     const inertia = computeInertia(elements)
-    const metricVelocity = computeMetricVelocity(metrics, timeSeries.length > 1 ? timeSeries : [currentSample, currentSample])
+    const metricVelocity = computeMetricVelocity(
+      metrics,
+      timeSeries.length > 1 ? timeSeries : [currentSample, currentSample]
+    )
 
     return {
       velocity,
       momentum,
       power,
       inertia,
-      metricVelocity
+      metricVelocity,
     }
   }
 
@@ -391,8 +401,7 @@ export class CelestialEnergyCalculator {
     for (const [, data] of planets) {
       signCounts[data.sign] = (signCounts[data.sign] || 0) + 1
     }
-    const dominantSign = Object.entries(signCounts)
-      .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Aries'
+    const dominantSign = Object.entries(signCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || 'Aries'
 
     // Calculate moon phase (simplified)
     const sunDegree = this.extractPlanetaryDegrees(horoscope)['Sun']
@@ -406,7 +415,7 @@ export class CelestialEnergyCalculator {
       dominantPlanet,
       dominantSign,
       moonPhase,
-      retrogradeCount
+      retrogradeCount,
     }
   }
 
@@ -415,20 +424,20 @@ export class CelestialEnergyCalculator {
    */
   private calculateConsciousnessMetrics(alchemical: any, kinetic: any, planetary: any) {
     // Resonance level based on A# and elemental harmony
-    const resonanceLevel = Math.min(1.0, alchemical.A_number / 100) *
-      (1 + (kinetic.power / 10) * 0.1)
+    const resonanceLevel =
+      Math.min(1.0, alchemical.A_number / 100) * (1 + (kinetic.power / 10) * 0.1)
 
     // Evolution phase based on planetary context
     const evolutionPhase = this.determineEvolutionPhase(planetary, alchemical)
 
     // Spiritual amplitude based on spirit-to-matter ratio
-    const spiritualAmplitude = alchemical.spirit / (alchemical.matter + 1) *
-      (1 + planetary.moonPhase * 0.2)
+    const spiritualAmplitude =
+      (alchemical.spirit / (alchemical.matter + 1)) * (1 + planetary.moonPhase * 0.2)
 
     return {
       resonanceLevel: Math.min(1.0, Math.max(0.0, resonanceLevel)),
       evolutionPhase,
-      spiritualAmplitude: Math.max(0.0, spiritualAmplitude)
+      spiritualAmplitude: Math.max(0.0, spiritualAmplitude),
     }
   }
 
@@ -437,8 +446,13 @@ export class CelestialEnergyCalculator {
    */
   private determineEvolutionPhase(planetary: any, alchemical: any): string {
     const phases = [
-      'Initiation', 'Development', 'Integration', 'Mastery',
-      'Transcendence', 'Illumination', 'Unity'
+      'Initiation',
+      'Development',
+      'Integration',
+      'Mastery',
+      'Transcendence',
+      'Illumination',
+      'Unity',
     ]
 
     // Base phase on A# level
@@ -461,12 +475,13 @@ export class CelestialEnergyCalculator {
     const steps: Date[] = []
     const current = new Date(startDate)
 
-    const intervalMs = {
-      minute: 60 * 1000,
-      hour: 60 * 60 * 1000,
-      day: 24 * 60 * 60 * 1000,
-      week: 7 * 24 * 60 * 60 * 1000
-    }[interval] || 60 * 60 * 1000
+    const intervalMs =
+      {
+        minute: 60 * 1000,
+        hour: 60 * 60 * 1000,
+        day: 24 * 60 * 60 * 1000,
+        week: 7 * 24 * 60 * 60 * 1000,
+      }[interval] || 60 * 60 * 1000
 
     while (current <= endDate) {
       steps.push(new Date(current))
@@ -515,7 +530,8 @@ export class CelestialEnergyCalculator {
       throw new Error('Cannot calculate statistics for empty moment series')
     }
 
-    const duration = moments[moments.length - 1].timestamp.getTime() - moments[0].timestamp.getTime()
+    const duration =
+      moments[moments.length - 1].timestamp.getTime() - moments[0].timestamp.getTime()
 
     // Find peak energy moment
     const peakEnergy = moments.reduce((peak, current) =>
@@ -529,16 +545,16 @@ export class CelestialEnergyCalculator {
         spirit: this.average(moments.map(m => m.alchemical.spirit)),
         matter: this.average(moments.map(m => m.alchemical.matter)),
         essence: this.average(moments.map(m => m.alchemical.essence)),
-        substance: this.average(moments.map(m => m.alchemical.substance))
+        substance: this.average(moments.map(m => m.alchemical.substance)),
       },
       kinetic: {
         power: this.average(moments.map(m => m.kinetic.power)),
-        inertia: this.average(moments.map(m => m.kinetic.inertia))
+        inertia: this.average(moments.map(m => m.kinetic.inertia)),
       },
       consciousness: {
         resonanceLevel: this.average(moments.map(m => m.consciousness.resonanceLevel)),
-        spiritualAmplitude: this.average(moments.map(m => m.consciousness.spiritualAmplitude))
-      }
+        spiritualAmplitude: this.average(moments.map(m => m.consciousness.spiritualAmplitude)),
+      },
     }
 
     // Analyze trends
@@ -549,7 +565,7 @@ export class CelestialEnergyCalculator {
       totalMoments: moments.length,
       peakEnergy,
       averageValues,
-      trends
+      trends,
     }
   }
 
@@ -561,7 +577,7 @@ export class CelestialEnergyCalculator {
       return {
         alchemical: 'stable' as const,
         kinetic: 'stable' as const,
-        consciousness: 'stable' as const
+        consciousness: 'stable' as const,
       }
     }
 
@@ -570,23 +586,28 @@ export class CelestialEnergyCalculator {
 
     // Alchemical trend
     const alchemicalChange = last.alchemical.A_number - first.alchemical.A_number
-    const alchemicalTrend = Math.abs(alchemicalChange) < 0.1 ? 'stable' :
-      alchemicalChange > 0 ? 'rising' : 'falling'
+    const alchemicalTrend =
+      Math.abs(alchemicalChange) < 0.1 ? 'stable' : alchemicalChange > 0 ? 'rising' : 'falling'
 
     // Kinetic trend
     const kineticChange = last.kinetic.power - first.kinetic.power
-    const kineticTrend = Math.abs(kineticChange) < 0.1 ? 'stable' :
-      kineticChange > 0 ? 'accelerating' : 'decelerating'
+    const kineticTrend =
+      Math.abs(kineticChange) < 0.1 ? 'stable' : kineticChange > 0 ? 'accelerating' : 'decelerating'
 
     // Consciousness trend
-    const consciousnessChange = last.consciousness.resonanceLevel - first.consciousness.resonanceLevel
-    const consciousnessTrend = Math.abs(consciousnessChange) < 0.05 ? 'stabilizing' :
-      consciousnessChange > 0 ? 'evolving' : 'transforming'
+    const consciousnessChange =
+      last.consciousness.resonanceLevel - first.consciousness.resonanceLevel
+    const consciousnessTrend =
+      Math.abs(consciousnessChange) < 0.05
+        ? 'stabilizing'
+        : consciousnessChange > 0
+          ? 'evolving'
+          : 'transforming'
 
     return {
       alchemical: alchemicalTrend,
       kinetic: kineticTrend,
-      consciousness: consciousnessTrend
+      consciousness: consciousnessTrend,
     }
   }
 
@@ -604,9 +625,9 @@ export class CelestialEnergyCalculator {
         description: `Detected ${peaks.length} significant alchemical peaks`,
         timeWindow: {
           start: moments[Math.min(...peaks)].timestamp,
-          end: moments[Math.max(...peaks)].timestamp
+          end: moments[Math.max(...peaks)].timestamp,
         },
-        significance: peaks.length / moments.length
+        significance: peaks.length / moments.length,
       })
     }
 
@@ -619,9 +640,9 @@ export class CelestialEnergyCalculator {
         description: `Progression through phases: ${uniquePhases.join(' → ')}`,
         timeWindow: {
           start: moments[0].timestamp,
-          end: moments[moments.length - 1].timestamp
+          end: moments[moments.length - 1].timestamp,
         },
-        significance: uniquePhases.length / 7 // 7 total phases
+        significance: uniquePhases.length / 7, // 7 total phases
       })
     }
 
@@ -633,8 +654,18 @@ export class CelestialEnergyCalculator {
    */
   private getSignIndex(sign: string): number {
     const signs = [
-      'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
     ]
     return signs.indexOf(sign)
   }
@@ -656,9 +687,7 @@ export class CelestialEnergyCalculator {
     const threshold = this.average(values) * 1.2 // 20% above average
 
     for (let i = 1; i < values.length - 1; i++) {
-      if (values[i] > values[i - 1] &&
-          values[i] > values[i + 1] &&
-          values[i] > threshold) {
+      if (values[i] > values[i - 1] && values[i] > values[i + 1] && values[i] > threshold) {
         peaks.push(i)
       }
     }
@@ -671,9 +700,4 @@ export class CelestialEnergyCalculator {
 export const celestialEnergyCalculator = new CelestialEnergyCalculator()
 
 // Export types
-export type {
-  CelestialMoment,
-  CelestialTimeSeries,
-  TimeSeriesOptions,
-  Location
-}
+export type { CelestialMoment, CelestialTimeSeries, TimeSeriesOptions, Location }

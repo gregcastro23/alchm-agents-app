@@ -5,7 +5,7 @@ import {
   agentKineticProfiles,
   calculateKineticState,
   getAgentKineticProfile,
-  calculateKineticCompatibility
+  calculateKineticCompatibility,
 } from './kinetic-profiles'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 
@@ -142,15 +142,20 @@ async function handleKineticsTask(
     } catch (error) {
       console.warn('Failed to load evolution state for power calculation, using default:', error)
     }
-    
+
     // Get planetary influences
     const planetaryInfluences = kinetics.timing?.planetaryHours || ['Sun']
-    
+
     // Get elemental totals
     const elementalTotals = kinetics.elemental?.totals || { Fire: 5, Water: 5, Air: 5, Earth: 5 }
 
     // Calculate kinetic state
-    const kineticState = calculateKineticState(agentId, currentPower, planetaryInfluences, elementalTotals)
+    const kineticState = calculateKineticState(
+      agentId,
+      currentPower,
+      planetaryInfluences,
+      elementalTotals
+    )
 
     return {
       output: {
@@ -168,8 +173,9 @@ async function handleKineticsTask(
         evolutionRate: profile.evolutionRate,
         kinetics: {
           power: kinetics.power[kinetics.power.length - 1]?.power || 0.5,
-          velocity: kinetics.elementalVelocity?.[kinetics.elementalVelocity.length - 1]?.magnitude || 0.5
-        }
+          velocity:
+            kinetics.elementalVelocity?.[kinetics.elementalVelocity.length - 1]?.magnitude || 0.5,
+        },
       },
       agentId,
       degraded: false,

@@ -331,15 +331,15 @@ export async function computeLiveStats(
   const baseCharisma = clamp01(agent.stats.resonanceScore) * 100
 
   // Initialize temporal state
-  let temporalState = {
+  const temporalState = {
     planetaryHour: 'Sun',
     moonPhase: 'Waxing',
     seasonalInfluence: 'Neutral',
     currentTime: now,
   }
 
-  let activeModifiers: StatModifier[] = []
-  let specialStates: SpecialState[] = []
+  const activeModifiers: StatModifier[] = []
+  const specialStates: SpecialState[] = []
 
   try {
     // Fetch current cosmic state from kinetics
@@ -647,7 +647,7 @@ function calculateModifiedStats(params: {
   const { basePower, baseWisdom, baseCharisma, agent, activeModifiers, confidence } = params
 
   // Base stats from consciousness and chart
-  let stats = {
+  const stats = {
     power: basePower,
     wisdom: baseWisdom,
     charisma: baseCharisma,

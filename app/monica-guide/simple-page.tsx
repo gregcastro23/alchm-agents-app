@@ -61,7 +61,7 @@ export default function SimpleMonicaPage() {
         },
         body: JSON.stringify({
           message: currentInput,
-          sessionId: 'monica-session-' + Date.now(),
+          sessionId: `monica-session-${Date.now()}`,
           includeAlchm: true,
           quickProfile: { goal: 'quick_start', mood: 'curious', topFocus: ['character_vector'] },
           model: 'gpt-4o-mini',
@@ -72,7 +72,7 @@ export default function SimpleMonicaPage() {
       const data = await response.json()
 
       const monicaMessage: MonicaMessage = {
-        id: Date.now().toString() + '_monica',
+        id: `${Date.now().toString()}_monica`,
         type: 'monica',
         content:
           data.response ||
@@ -84,7 +84,7 @@ export default function SimpleMonicaPage() {
     } catch (error) {
       console.error('Error:', error)
       const errorMessage: MonicaMessage = {
-        id: Date.now().toString() + '_error',
+        id: `${Date.now().toString()}_error`,
         type: 'monica',
         content:
           'Oh my, I seem to be having connection troubles. My Virgo rising wants everything to work perfectly! Please try again. 🌸',

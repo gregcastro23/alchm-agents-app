@@ -2,17 +2,54 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import {
-  ComposedChart, LineChart, AreaChart, ResponsiveContainer,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, Area,
-  ReferenceLine, Brush, ScatterChart, Scatter, RadialBarChart,
-  RadialBar, Cell, PieChart, Pie
+  ComposedChart,
+  LineChart,
+  AreaChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  Line,
+  Area,
+  ReferenceLine,
+  Brush,
+  ScatterChart,
+  Scatter,
+  RadialBarChart,
+  RadialBar,
+  Cell,
+  PieChart,
+  Pie,
 } from 'recharts'
 import {
-  TrendingUp, TrendingDown, Minus, Zap, Atom, Waves,
-  Mountain, Flame, Droplets, Wind, Circle, BarChart3,
-  LineChart as LineChartIcon, Activity, Target, Maximize2,
-  Minimize2, Play, Pause, RotateCcw, Download, Settings,
-  Eye, EyeOff, Layers, Clock
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Zap,
+  Atom,
+  Waves,
+  Mountain,
+  Flame,
+  Droplets,
+  Wind,
+  Circle,
+  BarChart3,
+  LineChart as LineChartIcon,
+  Activity,
+  Target,
+  Maximize2,
+  Minimize2,
+  Play,
+  Pause,
+  RotateCcw,
+  Download,
+  Settings,
+  Eye,
+  EyeOff,
+  Layers,
+  Clock,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -71,7 +108,7 @@ export default function AlchemicalMetricsChart({
   enableComparison = false,
   comparisonData,
   realTimeMode = false,
-  onExport
+  onExport,
 }: AlchemicalMetricsChartProps) {
   // State management
   const [chartConfig, setChartConfig] = useState<ChartConfig>({
@@ -81,36 +118,155 @@ export default function AlchemicalMetricsChart({
     showPatterns: true,
     timeWindow: 24,
     zoomLevel: 1,
-    animationSpeed: 1000
+    animationSpeed: 1000,
   })
 
   const [metricToggles, setMetricToggles] = useState<MetricToggle[]>([
     // Alchemical metrics
-    { key: 'A_number', label: 'A#', color: '#FFD700', icon: <Atom className="w-4 h-4" />, enabled: true, category: 'alchemical' },
-    { key: 'spirit', label: 'Spirit', color: '#9333EA', icon: <Flame className="w-4 h-4" />, enabled: true, category: 'alchemical' },
-    { key: 'matter', label: 'Matter', color: '#059669', icon: <Mountain className="w-4 h-4" />, enabled: true, category: 'alchemical' },
-    { key: 'essence', label: 'Essence', color: '#DC2626', icon: <Droplets className="w-4 h-4" />, enabled: true, category: 'alchemical' },
-    { key: 'substance', label: 'Substance', color: '#2563EB', icon: <Circle className="w-4 h-4" />, enabled: true, category: 'alchemical' },
+    {
+      key: 'A_number',
+      label: 'A#',
+      color: '#FFD700',
+      icon: <Atom className="w-4 h-4" />,
+      enabled: true,
+      category: 'alchemical',
+    },
+    {
+      key: 'spirit',
+      label: 'Spirit',
+      color: '#9333EA',
+      icon: <Flame className="w-4 h-4" />,
+      enabled: true,
+      category: 'alchemical',
+    },
+    {
+      key: 'matter',
+      label: 'Matter',
+      color: '#059669',
+      icon: <Mountain className="w-4 h-4" />,
+      enabled: true,
+      category: 'alchemical',
+    },
+    {
+      key: 'essence',
+      label: 'Essence',
+      color: '#DC2626',
+      icon: <Droplets className="w-4 h-4" />,
+      enabled: true,
+      category: 'alchemical',
+    },
+    {
+      key: 'substance',
+      label: 'Substance',
+      color: '#2563EB',
+      icon: <Circle className="w-4 h-4" />,
+      enabled: true,
+      category: 'alchemical',
+    },
 
     // Kinetic metrics
-    { key: 'power', label: 'Power', color: '#F59E0B', icon: <Zap className="w-4 h-4" />, enabled: false, category: 'kinetic' },
-    { key: 'inertia', label: 'Inertia', color: '#6B7280', icon: <Minus className="w-4 h-4" />, enabled: false, category: 'kinetic' },
+    {
+      key: 'power',
+      label: 'Power',
+      color: '#F59E0B',
+      icon: <Zap className="w-4 h-4" />,
+      enabled: false,
+      category: 'kinetic',
+    },
+    {
+      key: 'inertia',
+      label: 'Inertia',
+      color: '#6B7280',
+      icon: <Minus className="w-4 h-4" />,
+      enabled: false,
+      category: 'kinetic',
+    },
 
     // Thermodynamic metrics
-    { key: 'heat', label: 'Heat', color: '#EF4444', icon: <TrendingUp className="w-4 h-4" />, enabled: false, category: 'thermo' },
-    { key: 'entropy', label: 'Entropy', color: '#8B5CF6', icon: <Waves className="w-4 h-4" />, enabled: false, category: 'thermo' },
-    { key: 'reactivity', label: 'Reactivity', color: '#10B981', icon: <Activity className="w-4 h-4" />, enabled: false, category: 'thermo' },
-    { key: 'energy', label: 'Energy', color: '#F97316', icon: <Target className="w-4 h-4" />, enabled: false, category: 'thermo' },
+    {
+      key: 'heat',
+      label: 'Heat',
+      color: '#EF4444',
+      icon: <TrendingUp className="w-4 h-4" />,
+      enabled: false,
+      category: 'thermo',
+    },
+    {
+      key: 'entropy',
+      label: 'Entropy',
+      color: '#8B5CF6',
+      icon: <Waves className="w-4 h-4" />,
+      enabled: false,
+      category: 'thermo',
+    },
+    {
+      key: 'reactivity',
+      label: 'Reactivity',
+      color: '#10B981',
+      icon: <Activity className="w-4 h-4" />,
+      enabled: false,
+      category: 'thermo',
+    },
+    {
+      key: 'energy',
+      label: 'Energy',
+      color: '#F97316',
+      icon: <Target className="w-4 h-4" />,
+      enabled: false,
+      category: 'thermo',
+    },
 
     // Elemental metrics
-    { key: 'Fire', label: 'Fire', color: '#DC2626', icon: <Flame className="w-4 h-4" />, enabled: false, category: 'elemental' },
-    { key: 'Water', label: 'Water', color: '#2563EB', icon: <Droplets className="w-4 h-4" />, enabled: false, category: 'elemental' },
-    { key: 'Air', label: 'Air', color: '#F59E0B', icon: <Wind className="w-4 h-4" />, enabled: false, category: 'elemental' },
-    { key: 'Earth', label: 'Earth', color: '#059669', icon: <Mountain className="w-4 h-4" />, enabled: false, category: 'elemental' },
+    {
+      key: 'Fire',
+      label: 'Fire',
+      color: '#DC2626',
+      icon: <Flame className="w-4 h-4" />,
+      enabled: false,
+      category: 'elemental',
+    },
+    {
+      key: 'Water',
+      label: 'Water',
+      color: '#2563EB',
+      icon: <Droplets className="w-4 h-4" />,
+      enabled: false,
+      category: 'elemental',
+    },
+    {
+      key: 'Air',
+      label: 'Air',
+      color: '#F59E0B',
+      icon: <Wind className="w-4 h-4" />,
+      enabled: false,
+      category: 'elemental',
+    },
+    {
+      key: 'Earth',
+      label: 'Earth',
+      color: '#059669',
+      icon: <Mountain className="w-4 h-4" />,
+      enabled: false,
+      category: 'elemental',
+    },
 
     // Consciousness metrics
-    { key: 'resonanceLevel', label: 'Resonance', color: '#8B5CF6', icon: <Waves className="w-4 h-4" />, enabled: false, category: 'consciousness' },
-    { key: 'spiritualAmplitude', label: 'Spiritual Amplitude', color: '#EC4899', icon: <TrendingUp className="w-4 h-4" />, enabled: false, category: 'consciousness' }
+    {
+      key: 'resonanceLevel',
+      label: 'Resonance',
+      color: '#8B5CF6',
+      icon: <Waves className="w-4 h-4" />,
+      enabled: false,
+      category: 'consciousness',
+    },
+    {
+      key: 'spiritualAmplitude',
+      label: 'Spiritual Amplitude',
+      color: '#EC4899',
+      icon: <TrendingUp className="w-4 h-4" />,
+      enabled: false,
+      category: 'consciousness',
+    },
   ])
 
   const [isPlaying, setIsPlaying] = useState(false)
@@ -148,7 +304,7 @@ export default function AlchemicalMetricsChart({
         resonanceLevel: moment.consciousness.resonanceLevel * 100,
         spiritualAmplitude: moment.consciousness.spiritualAmplitude,
         evolutionPhase: moment.consciousness.evolutionPhase,
-        dominantPlanet: moment.planetary.dominantPlanet
+        dominantPlanet: moment.planetary.dominantPlanet,
       }
 
       return processedMoment
@@ -183,7 +339,7 @@ export default function AlchemicalMetricsChart({
           min: Math.min(...values),
           max: Math.max(...values),
           avg: values.reduce((sum, val) => sum + val, 0) / values.length,
-          trend: values[values.length - 1] - values[0]
+          trend: values[values.length - 1] - values[0],
         }
       }
     })
@@ -212,7 +368,7 @@ export default function AlchemicalMetricsChart({
           end: i,
           type: 'A# Peak',
           color: '#FFD700',
-          significance: 0.8
+          significance: 0.8,
         })
         peakStart = -1
       }
@@ -242,18 +398,14 @@ export default function AlchemicalMetricsChart({
   // Handle metric toggle
   const toggleMetric = useCallback((key: string) => {
     setMetricToggles(prev =>
-      prev.map(toggle =>
-        toggle.key === key ? { ...toggle, enabled: !toggle.enabled } : toggle
-      )
+      prev.map(toggle => (toggle.key === key ? { ...toggle, enabled: !toggle.enabled } : toggle))
     )
   }, [])
 
   // Handle category toggle
   const toggleCategory = useCallback((category: string, enabled: boolean) => {
     setMetricToggles(prev =>
-      prev.map(toggle =>
-        toggle.category === category ? { ...toggle, enabled } : toggle
-      )
+      prev.map(toggle => (toggle.category === category ? { ...toggle, enabled } : toggle))
     )
   }, [])
 
@@ -273,10 +425,7 @@ export default function AlchemicalMetricsChart({
           {payload.map((entry: any, index: number) => (
             <div key={index} className="flex items-center justify-between">
               <span className="text-purple-300 text-sm flex items-center gap-2">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: entry.color }}
-                />
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
                 {entry.dataKey}:
               </span>
               <span className="text-purple-100 font-medium">
@@ -287,12 +436,8 @@ export default function AlchemicalMetricsChart({
         </div>
         {data.evolutionPhase && (
           <div className="mt-2 pt-2 border-t border-purple-500/20">
-            <p className="text-xs text-purple-400">
-              Evolution: {data.evolutionPhase}
-            </p>
-            <p className="text-xs text-purple-400">
-              Dominant: {data.dominantPlanet}
-            </p>
+            <p className="text-xs text-purple-400">Evolution: {data.evolutionPhase}</p>
+            <p className="text-xs text-purple-400">Dominant: {data.dominantPlanet}</p>
           </div>
         )}
       </div>
@@ -303,7 +448,7 @@ export default function AlchemicalMetricsChart({
   const renderChart = () => {
     const commonProps = {
       data: filteredData,
-      margin: { top: 20, right: 30, left: 20, bottom: 20 }
+      margin: { top: 20, right: 30, left: 20, bottom: 20 },
     }
 
     switch (chartConfig.type) {
@@ -311,12 +456,7 @@ export default function AlchemicalMetricsChart({
         return (
           <LineChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
-            <XAxis
-              dataKey="formattedTime"
-              stroke="#9CA3AF"
-              fontSize={12}
-              tickLine={false}
-            />
+            <XAxis dataKey="formattedTime" stroke="#9CA3AF" fontSize={12} tickLine={false} />
             <YAxis stroke="#9CA3AF" fontSize={12} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
@@ -339,12 +479,7 @@ export default function AlchemicalMetricsChart({
         return (
           <AreaChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
-            <XAxis
-              dataKey="formattedTime"
-              stroke="#9CA3AF"
-              fontSize={12}
-              tickLine={false}
-            />
+            <XAxis dataKey="formattedTime" stroke="#9CA3AF" fontSize={12} tickLine={false} />
             <YAxis stroke="#9CA3AF" fontSize={12} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
@@ -376,7 +511,7 @@ export default function AlchemicalMetricsChart({
               stroke="#9CA3AF"
               fontSize={12}
               tickLine={false}
-              tickFormatter={(timestamp) => new Date(timestamp).toLocaleTimeString()}
+              tickFormatter={timestamp => new Date(timestamp).toLocaleTimeString()}
             />
             <YAxis stroke="#9CA3AF" fontSize={12} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
@@ -396,27 +531,23 @@ export default function AlchemicalMetricsChart({
         return (
           <ComposedChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
-            <XAxis
-              dataKey="formattedTime"
-              stroke="#9CA3AF"
-              fontSize={12}
-              tickLine={false}
-            />
+            <XAxis dataKey="formattedTime" stroke="#9CA3AF" fontSize={12} tickLine={false} />
             <YAxis stroke="#9CA3AF" fontSize={12} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
 
             {/* Pattern highlights */}
-            {chartConfig.showPatterns && patternHighlights.map((pattern, index) => (
-              <ReferenceLine
-                key={index}
-                x={filteredData[pattern.start]?.formattedTime}
-                stroke={pattern.color}
-                strokeDasharray="5 5"
-                opacity={0.5}
-                label={{ value: pattern.type, position: 'top' }}
-              />
-            ))}
+            {chartConfig.showPatterns &&
+              patternHighlights.map((pattern, index) => (
+                <ReferenceLine
+                  key={index}
+                  x={filteredData[pattern.start]?.formattedTime}
+                  stroke={pattern.color}
+                  strokeDasharray="5 5"
+                  opacity={0.5}
+                  label={{ value: pattern.type, position: 'top' }}
+                />
+              ))}
 
             {/* Metrics lines */}
             {enabledMetrics.map(metric => (
@@ -438,7 +569,7 @@ export default function AlchemicalMetricsChart({
                 x={filteredData[playbackPosition]?.formattedTime}
                 stroke="#FFD700"
                 strokeWidth={3}
-                label={{ value: "Now", position: 'top' }}
+                label={{ value: 'Now', position: 'top' }}
               />
             )}
 
@@ -489,9 +620,7 @@ export default function AlchemicalMetricsChart({
             {/* Chart type selector */}
             <Tabs
               value={chartConfig.type}
-              onValueChange={(value) =>
-                setChartConfig(prev => ({ ...prev, type: value as any }))
-              }
+              onValueChange={value => setChartConfig(prev => ({ ...prev, type: value as any }))}
             >
               <TabsList className="cosmic-tabs">
                 <TabsTrigger value="composite" className="cosmic-tab">
@@ -552,14 +681,9 @@ export default function AlchemicalMetricsChart({
 
             return (
               <div key={metric.key} className="flex items-center gap-2">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: metric.color }}
-                />
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: metric.color }} />
                 <span className="text-purple-300">{metric.label}:</span>
-                <span className="text-purple-100 font-medium">
-                  {stat.avg.toFixed(2)}
-                </span>
+                <span className="text-purple-100 font-medium">{stat.avg.toFixed(2)}</span>
                 {stat.trend > 0 ? (
                   <TrendingUp className="w-3 h-3 text-green-400" />
                 ) : stat.trend < 0 ? (
@@ -611,15 +735,13 @@ export default function AlchemicalMetricsChart({
                     <Button
                       key={metric.key}
                       size="sm"
-                      variant={metric.enabled ? "default" : "outline"}
+                      variant={metric.enabled ? 'default' : 'outline'}
                       className={`cosmic-button text-xs ${
-                        metric.enabled
-                          ? 'text-white'
-                          : 'text-purple-300 border-purple-500/30'
+                        metric.enabled ? 'text-white' : 'text-purple-300 border-purple-500/30'
                       }`}
                       style={{
                         backgroundColor: metric.enabled ? metric.color : 'transparent',
-                        borderColor: metric.color
+                        borderColor: metric.color,
                       }}
                       onClick={() => toggleMetric(metric.key)}
                     >
@@ -641,9 +763,7 @@ export default function AlchemicalMetricsChart({
             <label className="text-sm text-purple-300">Smoothing</label>
             <Switch
               checked={chartConfig.smoothing}
-              onCheckedChange={(checked) =>
-                setChartConfig(prev => ({ ...prev, smoothing: checked }))
-              }
+              onCheckedChange={checked => setChartConfig(prev => ({ ...prev, smoothing: checked }))}
             />
           </div>
 
@@ -651,7 +771,7 @@ export default function AlchemicalMetricsChart({
             <label className="text-sm text-purple-300">Show Patterns</label>
             <Switch
               checked={chartConfig.showPatterns}
-              onCheckedChange={(checked) =>
+              onCheckedChange={checked =>
                 setChartConfig(prev => ({ ...prev, showPatterns: checked }))
               }
             />

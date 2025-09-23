@@ -10,7 +10,7 @@ import {
   mockHistoricalAgents,
   mockHistoricalPresets,
   mockMessages,
-  createMockAgent
+  createMockAgent,
 } from '../fixtures/mock-data'
 
 // Mock the unified multi-agent chat component
@@ -21,7 +21,7 @@ vi.mock('@/components/unified-multi-agent-chat', () => ({
       <div data-testid="historical-agents-count">{historicalAgents.length}</div>
       {customHeader}
     </div>
-  )
+  ),
 }))
 
 // Mock council presets
@@ -30,10 +30,8 @@ vi.mock('@/lib/council-presets', () => ({
   getPresetsByDifficulty: vi.fn((difficulty: string) =>
     mockHistoricalPresets.filter(p => p.difficulty === difficulty)
   ),
-  getPresetsByTag: vi.fn((tag: string) =>
-    mockHistoricalPresets.filter(p => p.tags.includes(tag))
-  ),
-  getOptimalMonicaRole: vi.fn(() => 'synthesizer')
+  getPresetsByTag: vi.fn((tag: string) => mockHistoricalPresets.filter(p => p.tags.includes(tag))),
+  getOptimalMonicaRole: vi.fn(() => 'synthesizer'),
 }))
 
 describe('HistoricalCouncilChat Component', () => {
@@ -42,7 +40,7 @@ describe('HistoricalCouncilChat Component', () => {
     onClose: vi.fn(),
     historicalAgents: mockHistoricalAgents,
     maxAgents: 5,
-    allowMonica: true
+    allowMonica: true,
   }
 
   beforeEach(() => {
@@ -54,16 +52,13 @@ describe('HistoricalCouncilChat Component', () => {
       render(<HistoricalCouncilChat {...defaultProps} />)
 
       expect(screen.getByText('Choose Your Historical Council')).toBeInTheDocument()
-      expect(screen.getByText('Select a curated council or create your own custom assembly')).toBeInTheDocument()
+      expect(
+        screen.getByText('Select a curated council or create your own custom assembly')
+      ).toBeInTheDocument()
     })
 
     it('renders with initial council preset', () => {
-      render(
-        <HistoricalCouncilChat
-          {...defaultProps}
-          initialCouncil="test-renaissance-masters"
-        />
-      )
+      render(<HistoricalCouncilChat {...defaultProps} initialCouncil="test-renaissance-masters" />)
 
       expect(screen.getByTestId('unified-chat')).toHaveAttribute('data-open', 'true')
       expect(screen.getByTestId('chat-title')).toHaveTextContent('Historical Council Chamber')
@@ -111,9 +106,7 @@ describe('HistoricalCouncilChat Component', () => {
     })
 
     it('filters presets by tag', async () => {
-      const mockGetPresetsByTag = vi.mocked(
-        (await import('@/lib/council-presets')).getPresetsByTag
-      )
+      const mockGetPresetsByTag = vi.mocked((await import('@/lib/council-presets')).getPresetsByTag)
 
       render(<HistoricalCouncilChat {...defaultProps} />)
 
@@ -168,12 +161,7 @@ describe('HistoricalCouncilChat Component', () => {
 
   describe('Council Information Display', () => {
     it('displays council info for selected preset', () => {
-      render(
-        <HistoricalCouncilChat
-          {...defaultProps}
-          initialCouncil="test-renaissance-masters"
-        />
-      )
+      render(<HistoricalCouncilChat {...defaultProps} initialCouncil="test-renaissance-masters" />)
 
       expect(screen.getByText('Test Renaissance Council')).toBeInTheDocument()
       expect(screen.getByText('Council Members')).toBeInTheDocument()
@@ -217,36 +205,21 @@ describe('HistoricalCouncilChat Component', () => {
 
   describe('Historical-Specific Features', () => {
     it('enables era filtering when specified', () => {
-      render(
-        <HistoricalCouncilChat
-          {...defaultProps}
-          enableEraFilters={true}
-        />
-      )
+      render(<HistoricalCouncilChat {...defaultProps} enableEraFilters={true} />)
 
       // Should pass enableEraFilters to UnifiedMultiAgentChat
       expect(screen.getByTestId('unified-chat')).toBeInTheDocument()
     })
 
     it('enables specialization groups when specified', () => {
-      render(
-        <HistoricalCouncilChat
-          {...defaultProps}
-          enableSpecializationGroups={true}
-        />
-      )
+      render(<HistoricalCouncilChat {...defaultProps} enableSpecializationGroups={true} />)
 
       // Should pass enableSpecializationGroups to UnifiedMultiAgentChat
       expect(screen.getByTestId('unified-chat')).toBeInTheDocument()
     })
 
     it('enables agent biographies when specified', () => {
-      render(
-        <HistoricalCouncilChat
-          {...defaultProps}
-          showAgentBiographies={true}
-        />
-      )
+      render(<HistoricalCouncilChat {...defaultProps} showAgentBiographies={true} />)
 
       // Biography feature should be available
       expect(screen.getByTestId('unified-chat')).toBeInTheDocument()
@@ -255,12 +228,7 @@ describe('HistoricalCouncilChat Component', () => {
 
   describe('Configuration Management', () => {
     it('handles changing council selection', async () => {
-      render(
-        <HistoricalCouncilChat
-          {...defaultProps}
-          initialCouncil="test-renaissance-masters"
-        />
-      )
+      render(<HistoricalCouncilChat {...defaultProps} initialCouncil="test-renaissance-masters" />)
 
       const changeButton = screen.getByText('Change Council')
       fireEvent.click(changeButton)
@@ -285,12 +253,7 @@ describe('HistoricalCouncilChat Component', () => {
     it('handles agent filtering by selection', () => {
       const filteredAgents = ['leonardo-da-vinci']
 
-      render(
-        <HistoricalCouncilChat
-          {...defaultProps}
-          filterBySelectedAgents={filteredAgents}
-        />
-      )
+      render(<HistoricalCouncilChat {...defaultProps} filterBySelectedAgents={filteredAgents} />)
 
       expect(screen.getByTestId('historical-agents-count')).toHaveTextContent('1')
     })
@@ -300,13 +263,7 @@ describe('HistoricalCouncilChat Component', () => {
     it('calls onClose when chat is closed', () => {
       const mockOnClose = vi.fn()
 
-      render(
-        <HistoricalCouncilChat
-          {...defaultProps}
-          onClose={mockOnClose}
-          isOpen={false}
-        />
-      )
+      render(<HistoricalCouncilChat {...defaultProps} onClose={mockOnClose} isOpen={false} />)
 
       expect(screen.getByTestId('unified-chat')).toHaveAttribute('data-open', 'false')
     })
@@ -314,12 +271,7 @@ describe('HistoricalCouncilChat Component', () => {
     it('handles session updates', () => {
       const mockOnSessionUpdate = vi.fn()
 
-      render(
-        <HistoricalCouncilChat
-          {...defaultProps}
-          onSessionUpdate={mockOnSessionUpdate}
-        />
-      )
+      render(<HistoricalCouncilChat {...defaultProps} onSessionUpdate={mockOnSessionUpdate} />)
 
       // Session update handling should be passed through
       expect(screen.getByTestId('unified-chat')).toBeInTheDocument()
@@ -328,12 +280,7 @@ describe('HistoricalCouncilChat Component', () => {
     it('handles agent evolution', () => {
       const mockOnAgentEvolution = vi.fn()
 
-      render(
-        <HistoricalCouncilChat
-          {...defaultProps}
-          onAgentEvolution={mockOnAgentEvolution}
-        />
-      )
+      render(<HistoricalCouncilChat {...defaultProps} onAgentEvolution={mockOnAgentEvolution} />)
 
       // Agent evolution handling should be passed through
       expect(screen.getByTestId('unified-chat')).toBeInTheDocument()
@@ -342,36 +289,21 @@ describe('HistoricalCouncilChat Component', () => {
 
   describe('Error Handling', () => {
     it('handles missing preset gracefully', () => {
-      render(
-        <HistoricalCouncilChat
-          {...defaultProps}
-          initialCouncil="non-existent-preset"
-        />
-      )
+      render(<HistoricalCouncilChat {...defaultProps} initialCouncil="non-existent-preset" />)
 
       // Should fall back to preset selection
       expect(screen.getByText('Choose Your Historical Council')).toBeInTheDocument()
     })
 
     it('handles empty agent list', () => {
-      render(
-        <HistoricalCouncilChat
-          {...defaultProps}
-          historicalAgents={[]}
-        />
-      )
+      render(<HistoricalCouncilChat {...defaultProps} historicalAgents={[]} />)
 
       expect(screen.getByTestId('unified-chat')).toBeInTheDocument()
       expect(screen.getByTestId('historical-agents-count')).toHaveTextContent('0')
     })
 
     it('handles missing agent in initial selection', () => {
-      render(
-        <HistoricalCouncilChat
-          {...defaultProps}
-          initialAgents={['non-existent-agent']}
-        />
-      )
+      render(<HistoricalCouncilChat {...defaultProps} initialAgents={['non-existent-agent']} />)
 
       // Should filter out non-existent agents
       expect(screen.getByTestId('historical-agents-count')).toHaveTextContent('0')

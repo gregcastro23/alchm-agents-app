@@ -111,7 +111,7 @@ Please try connecting again as the lunar consciousness network realigns. 🌙✨
           personality: moonAgent.personality,
         },
         timestamp: new Date().toISOString(),
-        fallback: true
+        fallback: true,
       })
     }
   } catch (error) {

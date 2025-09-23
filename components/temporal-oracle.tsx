@@ -2,9 +2,22 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import {
-  Sparkles, Search, Loader2, Wand2, Clock, Brain,
-  Send, Lightbulb, History, Bookmark, Share2,
-  ChevronRight, Eye, Zap, Star, Compass
+  Sparkles,
+  Search,
+  Loader2,
+  Wand2,
+  Clock,
+  Brain,
+  Send,
+  Lightbulb,
+  History,
+  Bookmark,
+  Share2,
+  ChevronRight,
+  Eye,
+  Zap,
+  Star,
+  Compass,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -40,7 +53,7 @@ export default function TemporalOracle({
   suggestedQueries,
   selectedAgents = [],
   isProcessing = false,
-  onSuggestionRequest
+  onSuggestionRequest,
 }: TemporalOracleProps) {
   const [query, setQuery] = useState('')
   const [expandedSuggestions, setExpandedSuggestions] = useState(false)
@@ -53,76 +66,79 @@ export default function TemporalOracle({
   const enhancedSuggestions: QuerySuggestion[] = [
     {
       id: 'renaissance_fire',
-      text: "Show Fire reinforcements during Renaissance creativity peaks",
+      text: 'Show Fire reinforcements during Renaissance creativity peaks',
       category: 'element',
       difficulty: 'intermediate',
       description: 'Explore how Fire element amplified creative expression in Renaissance period',
-      expectedResults: '15-30 significant events with elemental analysis'
+      expectedResults: '15-30 significant events with elemental analysis',
     },
     {
       id: 'einstein_air',
       text: "Analyze Einstein's breakthrough patterns during Air transits",
       category: 'agent',
       difficulty: 'advanced',
-      description: 'Deep dive into Einstein\'s consciousness evolution during intellectual transits',
-      expectedResults: 'Detailed consciousness progression with temporal correlations'
+      description: "Deep dive into Einstein's consciousness evolution during intellectual transits",
+      expectedResults: 'Detailed consciousness progression with temporal correlations',
     },
     {
       id: 'consciousness_spikes',
-      text: "Find consciousness evolution spikes across all agents",
+      text: 'Find consciousness evolution spikes across all agents',
       category: 'consciousness',
       difficulty: 'expert',
       description: 'Identify periods of rapid consciousness development across agent network',
-      expectedResults: 'Complex multi-agent evolution analysis with pattern detection'
+      expectedResults: 'Complex multi-agent evolution analysis with pattern detection',
     },
     {
       id: 'elemental_harmony',
-      text: "Explore elemental harmony patterns in recent observations",
+      text: 'Explore elemental harmony patterns in recent observations',
       category: 'pattern',
       difficulty: 'beginner',
       description: 'Discover how different elements work together in temporal analysis',
-      expectedResults: 'Clear elemental interaction patterns with visual representations'
+      expectedResults: 'Clear elemental interaction patterns with visual representations',
     },
     {
       id: 'degree_hotspots',
-      text: "Show degree hotspots with multiple agent activations",
+      text: 'Show degree hotspots with multiple agent activations',
       category: 'temporal',
       difficulty: 'intermediate',
       description: 'Find specific planetary degrees where multiple agents show activity',
-      expectedResults: 'Degree-based clustering analysis with significance scoring'
+      expectedResults: 'Degree-based clustering analysis with significance scoring',
     },
     {
       id: 'seasonal_patterns',
-      text: "Compare agent activity patterns across seasonal phases",
+      text: 'Compare agent activity patterns across seasonal phases',
       category: 'temporal',
       difficulty: 'beginner',
       description: 'Analyze how seasonal changes affect agent consciousness activity',
-      expectedResults: 'Seasonal trend analysis with agent-specific insights'
-    }
+      expectedResults: 'Seasonal trend analysis with agent-specific insights',
+    },
   ]
 
   // Oracle wisdom messages based on query patterns
   const oracleWisdoms: OracleWisdom[] = [
     {
-      message: "The cosmos whispers that Fire elements seek Air for perfect manifestation...",
+      message: 'The cosmos whispers that Fire elements seek Air for perfect manifestation...',
       type: 'insight',
-      context: 'elemental_combination'
+      context: 'elemental_combination',
     },
     {
-      message: "Temporal patterns align best when consciousness is open to multiple perspectives...",
+      message:
+        'Temporal patterns align best when consciousness is open to multiple perspectives...',
       type: 'guidance',
-      context: 'pattern_analysis'
+      context: 'pattern_analysis',
     },
     {
-      message: "Beware of seeking only confirmation - the greatest insights come from unexpected correlations...",
+      message:
+        'Beware of seeking only confirmation - the greatest insights come from unexpected correlations...',
       type: 'warning',
-      context: 'bias_prevention'
+      context: 'bias_prevention',
     },
     {
-      message: "Your exploration grows stronger with each query - the universe celebrates your curiosity...",
+      message:
+        'Your exploration grows stronger with each query - the universe celebrates your curiosity...',
       type: 'encouragement',
-      context: 'progress_recognition'
-    }
+      context: 'progress_recognition',
+    },
   ]
 
   useEffect(() => {
@@ -152,7 +168,7 @@ export default function TemporalOracle({
       type: 'natural_language',
       query: query.trim(),
       reinforcementMode: true,
-      agents: selectedAgents.length > 0 ? selectedAgents : undefined
+      agents: selectedAgents.length > 0 ? selectedAgents : undefined,
     }
 
     // Add to recent queries
@@ -184,32 +200,48 @@ export default function TemporalOracle({
 
   const getCategoryIcon = (category: QuerySuggestion['category']) => {
     switch (category) {
-      case 'agent': return <Brain className="w-4 h-4" />
-      case 'element': return <Zap className="w-4 h-4" />
-      case 'temporal': return <Clock className="w-4 h-4" />
-      case 'pattern': return <Compass className="w-4 h-4" />
-      case 'consciousness': return <Star className="w-4 h-4" />
-      default: return <Sparkles className="w-4 h-4" />
+      case 'agent':
+        return <Brain className="w-4 h-4" />
+      case 'element':
+        return <Zap className="w-4 h-4" />
+      case 'temporal':
+        return <Clock className="w-4 h-4" />
+      case 'pattern':
+        return <Compass className="w-4 h-4" />
+      case 'consciousness':
+        return <Star className="w-4 h-4" />
+      default:
+        return <Sparkles className="w-4 h-4" />
     }
   }
 
   const getDifficultyColor = (difficulty: QuerySuggestion['difficulty']) => {
     switch (difficulty) {
-      case 'beginner': return 'bg-green-500/20 text-green-300'
-      case 'intermediate': return 'bg-yellow-500/20 text-yellow-300'
-      case 'advanced': return 'bg-orange-500/20 text-orange-300'
-      case 'expert': return 'bg-red-500/20 text-red-300'
-      default: return 'bg-gray-500/20 text-gray-300'
+      case 'beginner':
+        return 'bg-green-500/20 text-green-300'
+      case 'intermediate':
+        return 'bg-yellow-500/20 text-yellow-300'
+      case 'advanced':
+        return 'bg-orange-500/20 text-orange-300'
+      case 'expert':
+        return 'bg-red-500/20 text-red-300'
+      default:
+        return 'bg-gray-500/20 text-gray-300'
     }
   }
 
   const getOracleIcon = (type: OracleWisdom['type']) => {
     switch (type) {
-      case 'guidance': return <Compass className="w-4 h-4" />
-      case 'insight': return <Lightbulb className="w-4 h-4" />
-      case 'warning': return <Eye className="w-4 h-4" />
-      case 'encouragement': return <Star className="w-4 h-4" />
-      default: return <Sparkles className="w-4 h-4" />
+      case 'guidance':
+        return <Compass className="w-4 h-4" />
+      case 'insight':
+        return <Lightbulb className="w-4 h-4" />
+      case 'warning':
+        return <Eye className="w-4 h-4" />
+      case 'encouragement':
+        return <Star className="w-4 h-4" />
+      default:
+        return <Sparkles className="w-4 h-4" />
     }
   }
 
@@ -231,19 +263,25 @@ export default function TemporalOracle({
           )}
         </CardTitle>
         <p className="text-purple-300 text-sm">
-          Ask the Oracle about temporal patterns, agent consciousness evolution, and elemental resonances...
+          Ask the Oracle about temporal patterns, agent consciousness evolution, and elemental
+          resonances...
         </p>
       </CardHeader>
 
       <CardContent className="space-y-6">
         {/* Oracle Wisdom Display */}
         {oracleWisdom && (
-          <div className={`border rounded-lg p-4 ${
-            oracleWisdom.type === 'warning' ? 'border-orange-400/30 bg-orange-500/10' :
-            oracleWisdom.type === 'insight' ? 'border-blue-400/30 bg-blue-500/10' :
-            oracleWisdom.type === 'guidance' ? 'border-purple-400/30 bg-purple-500/10' :
-            'border-green-400/30 bg-green-500/10'
-          }`}>
+          <div
+            className={`border rounded-lg p-4 ${
+              oracleWisdom.type === 'warning'
+                ? 'border-orange-400/30 bg-orange-500/10'
+                : oracleWisdom.type === 'insight'
+                  ? 'border-blue-400/30 bg-blue-500/10'
+                  : oracleWisdom.type === 'guidance'
+                    ? 'border-purple-400/30 bg-purple-500/10'
+                    : 'border-green-400/30 bg-green-500/10'
+            }`}
+          >
             <div className="flex items-start gap-3">
               {getOracleIcon(oracleWisdom.type)}
               <div>
@@ -262,7 +300,7 @@ export default function TemporalOracle({
             <Textarea
               ref={textareaRef}
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={e => setQuery(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Ask the Oracle... (e.g., 'Show Fire reinforcements during Renaissance creativity peaks')"
               className="w-full p-4 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-purple-300 min-h-[100px] resize-none focus:border-gold/50 focus:ring-2 focus:ring-gold/20"
@@ -277,7 +315,7 @@ export default function TemporalOracle({
             <div className="flex items-center gap-2">
               <select
                 value={queryCategory}
-                onChange={(e) => setQueryCategory(e.target.value)}
+                onChange={e => setQueryCategory(e.target.value)}
                 className="bg-purple-900/50 border border-purple-500/30 rounded px-3 py-1 text-sm text-purple-200"
                 disabled={isProcessing}
               >
@@ -356,56 +394,60 @@ export default function TemporalOracle({
               className="text-purple-400 hover:text-purple-200"
             >
               {expandedSuggestions ? 'Show Less' : 'Show More'}
-              <ChevronRight className={`w-3 h-3 ml-1 transition-transform ${expandedSuggestions ? 'rotate-90' : ''}`} />
+              <ChevronRight
+                className={`w-3 h-3 ml-1 transition-transform ${expandedSuggestions ? 'rotate-90' : ''}`}
+              />
             </Button>
           </div>
 
           <div className="grid gap-3">
-            {(expandedSuggestions ? enhancedSuggestions : enhancedSuggestions.slice(0, 3)).map((suggestion) => (
-              <div
-                key={suggestion.id}
-                onClick={() => handleSuggestionClick(suggestion)}
-                className="border border-purple-500/20 rounded-lg p-3 hover:bg-purple-500/10 cursor-pointer transition-colors group"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="text-purple-400 mt-0.5">
-                    {getCategoryIcon(suggestion.category)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-medium text-purple-100 group-hover:text-white">
-                        {suggestion.text}
-                      </p>
-                      <Badge className={`text-xs ${getDifficultyColor(suggestion.difficulty)}`}>
-                        {suggestion.difficulty}
-                      </Badge>
+            {(expandedSuggestions ? enhancedSuggestions : enhancedSuggestions.slice(0, 3)).map(
+              suggestion => (
+                <div
+                  key={suggestion.id}
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  className="border border-purple-500/20 rounded-lg p-3 hover:bg-purple-500/10 cursor-pointer transition-colors group"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="text-purple-400 mt-0.5">
+                      {getCategoryIcon(suggestion.category)}
                     </div>
-                    <p className="text-xs text-purple-400 mb-2">
-                      {suggestion.description}
-                    </p>
-                    <p className="text-xs text-purple-500">
-                      Expected: {suggestion.expectedResults}
-                    </p>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-sm font-medium text-purple-100 group-hover:text-white">
+                          {suggestion.text}
+                        </p>
+                        <Badge className={`text-xs ${getDifficultyColor(suggestion.difficulty)}`}>
+                          {suggestion.difficulty}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-purple-400 mb-2">{suggestion.description}</p>
+                      <p className="text-xs text-purple-500">
+                        Expected: {suggestion.expectedResults}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            )}
 
             {/* Simple suggestions from props */}
             {suggestedQueries.length > 0 && (
               <div className="border-t border-purple-500/20 pt-3">
                 <div className="text-xs text-purple-400 mb-2">Context-Aware Suggestions:</div>
                 <div className="flex flex-wrap gap-2">
-                  {suggestedQueries.slice(0, expandedSuggestions ? suggestedQueries.length : 4).map((suggestion, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className="text-xs bg-indigo-800/30 hover:bg-indigo-700/40 border border-indigo-500/20 rounded-full px-3 py-1 text-indigo-200 transition-colors"
-                      disabled={isProcessing}
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
+                  {suggestedQueries
+                    .slice(0, expandedSuggestions ? suggestedQueries.length : 4)
+                    .map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="text-xs bg-indigo-800/30 hover:bg-indigo-700/40 border border-indigo-500/20 rounded-full px-3 py-1 text-indigo-200 transition-colors"
+                        disabled={isProcessing}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
                 </div>
               </div>
             )}

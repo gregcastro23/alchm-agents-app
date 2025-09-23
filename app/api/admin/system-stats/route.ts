@@ -12,7 +12,7 @@ async function isAdminUser(userId: string): Promise<boolean> {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: { subscription: true }
+      include: { subscription: true },
     })
 
     // Admin check: either email is admin or subscription tier is master
@@ -29,19 +29,25 @@ export async function GET(req: NextRequest) {
     const userId = session?.user?.id
 
     if (!userId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Authentication required'
-      }, { status: 401 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Authentication required',
+        },
+        { status: 401 }
+      )
     }
 
     // Check admin privileges
     const isAdmin = await isAdminUser(userId)
     if (!isAdmin) {
-      return NextResponse.json({
-        success: false,
-        error: 'Admin privileges required'
-      }, { status: 403 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Admin privileges required',
+        },
+        { status: 403 }
+      )
     }
 
     const { searchParams } = new URL(req.url)
@@ -62,19 +68,21 @@ export async function GET(req: NextRequest) {
       totalAgentEvolutions,
       recentEvolutions,
       errorLogs,
-      popularAgents
+      popularAgents,
     ] = await Promise.all([
       // Total users
       prisma.user.count(),
 
       // Active users (had interaction in timeRange)
-      prisma.consciousnessInteraction.findMany({
-        where: {
-          createdAt: { gte: timeRangeStart }
-        },
-        select: { userId: true },
-        distinct: ['userId']
-      }).then(users => users.length),
+      prisma.consciousnessInteraction
+        .findMany({
+          where: {
+            createdAt: { gte: timeRangeStart },
+          },
+          select: { userId: true },
+          distinct: ['userId'],
+        })
+        .then(users => users.length),
 
       // Total interactions
       prisma.consciousnessInteraction.count(),
@@ -82,8 +90,8 @@ export async function GET(req: NextRequest) {
       // Recent interactions
       prisma.consciousnessInteraction.count({
         where: {
-          createdAt: { gte: timeRangeStart }
-        }
+          createdAt: { gte: timeRangeStart },
+        },
       }),
 
       // Total agent evolutions
@@ -92,42 +100,42 @@ export async function GET(req: NextRequest) {
       // Recent evolutions (level changes)
       prisma.agentEvolutionState.count({
         where: {
-          lastInteraction: { gte: timeRangeStart }
-        }
+          lastInteraction: { gte: timeRangeStart },
+        },
       }),
 
       // Error logs from Monica interactions
       prisma.monicaInteraction.findMany({
         where: {
           createdAt: { gte: timeRangeStart },
-          monicaResponse: { contains: 'error' }
+          monicaResponse: { contains: 'error' },
         },
         select: {
           id: true,
           createdAt: true,
           pageUrl: true,
-          monicaResponse: true
+          monicaResponse: true,
         },
         take: 10,
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
       }),
 
       // Popular agents by interaction count
       prisma.consciousnessInteraction.groupBy({
         by: ['agentId'],
         where: {
-          createdAt: { gte: timeRangeStart }
+          createdAt: { gte: timeRangeStart },
         },
         _count: {
-          agentId: true
+          agentId: true,
         },
         orderBy: {
           _count: {
-            agentId: 'desc'
-          }
+            agentId: 'desc',
+          },
         },
-        take: 10
-      })
+        take: 10,
+      }),
     ])
 
     // Performance metrics
@@ -137,16 +145,16 @@ export async function GET(req: NextRequest) {
     const tierDistribution = await prisma.subscription.groupBy({
       by: ['tier'],
       _count: {
-        tier: true
-      }
+        tier: true,
+      },
     })
 
     // Agent evolution level distribution
     const evolutionLevels = await prisma.agentEvolutionState.groupBy({
       by: ['currentLevel'],
       _count: {
-        currentLevel: true
-      }
+        currentLevel: true,
+      },
     })
 
     // Memory and system metrics
@@ -156,12 +164,12 @@ export async function GET(req: NextRequest) {
         heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024), // MB
         heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024), // MB
         external: Math.round(memoryUsage.external / 1024 / 1024), // MB
-        rss: Math.round(memoryUsage.rss / 1024 / 1024) // MB
+        rss: Math.round(memoryUsage.rss / 1024 / 1024), // MB
       },
       uptime: Math.round(process.uptime()),
       nodeVersion: process.version,
       platform: process.platform,
-      loadAverage: process.platform === 'linux' ? require('os').loadavg() : [0, 0, 0]
+      loadAverage: process.platform === 'linux' ? require('os').loadavg() : [0, 0, 0],
     }
 
     return NextResponse.json({
@@ -174,49 +182,51 @@ export async function GET(req: NextRequest) {
           recentInteractions,
           totalAgentEvolutions,
           recentEvolutions,
-          timeRange: `${timeRange} hours`
+          timeRange: `${timeRange} hours`,
         },
         performance: {
           systemHealth,
           slowEndpoints,
-          systemMetrics
+          systemMetrics,
         },
         users: {
           tierDistribution: tierDistribution.map(t => ({
             tier: t.tier,
-            count: t._count.tier
+            count: t._count.tier,
           })),
-          growthRate: activeUsers > 0 ? ((activeUsers / totalUsers) * 100).toFixed(1) + '%' : '0%'
+          growthRate: activeUsers > 0 ? `${((activeUsers / totalUsers) * 100).toFixed(1)}%` : '0%',
         },
         agents: {
           popularAgents: popularAgents.map(a => ({
             agentId: a.agentId,
-            interactionCount: a._count.agentId
+            interactionCount: a._count.agentId,
           })),
           evolutionLevels: evolutionLevels.map(l => ({
             level: l.currentLevel,
-            count: l._count.currentLevel
-          }))
+            count: l._count.currentLevel,
+          })),
         },
         errors: {
           recentErrorLogs: errorLogs.map(error => ({
             id: error.id,
             timestamp: error.createdAt,
             source: error.pageUrl,
-            message: error.monicaResponse?.substring(0, 200)
+            message: error.monicaResponse?.substring(0, 200),
           })),
-          errorRate: systemHealth.errorRate
+          errorRate: systemHealth.errorRate,
         },
-        timestamp: now.toISOString()
-      }
+        timestamp: now.toISOString(),
+      },
     })
-
   } catch (error) {
     console.error('Admin system stats error:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to get system statistics'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to get system statistics',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -226,10 +236,13 @@ export async function POST(req: NextRequest) {
     const userId = session?.user?.id
 
     if (!userId || !(await isAdminUser(userId))) {
-      return NextResponse.json({
-        success: false,
-        error: 'Admin privileges required'
-      }, { status: 403 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Admin privileges required',
+        },
+        { status: 403 }
+      )
     }
 
     const { action, data } = await req.json()
@@ -240,7 +253,7 @@ export async function POST(req: NextRequest) {
         performanceMonitor.clearMetrics()
         return NextResponse.json({
           success: true,
-          message: 'Performance cache cleared'
+          message: 'Performance cache cleared',
         })
 
       case 'send_system_notification':
@@ -249,31 +262,35 @@ export async function POST(req: NextRequest) {
         try {
           // Get all users
           const users = await prisma.user.findMany({
-            select: { id: true, email: true }
+            select: { id: true, email: true },
           })
 
           // Send notification to each user (would batch this in production)
-          for (const user of users.slice(0, 10)) { // Limit to 10 for demo
+          for (const user of users.slice(0, 10)) {
+            // Limit to 10 for demo
             await fetch('/api/notifications', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 type: type || 'system_announcement',
                 userId: user.id,
-                metadata: { message, adminSent: true }
-              })
+                metadata: { message, adminSent: true },
+              }),
             })
           }
 
           return NextResponse.json({
             success: true,
-            message: `System notification sent to ${users.length} users`
+            message: `System notification sent to ${users.length} users`,
           })
         } catch (error) {
-          return NextResponse.json({
-            success: false,
-            error: 'Failed to send system notification'
-          }, { status: 500 })
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'Failed to send system notification',
+            },
+            { status: 500 }
+          )
         }
 
       case 'export_data':
@@ -289,15 +306,15 @@ export async function POST(req: NextRequest) {
               name: true,
               createdAt: true,
               verified: true,
-              provider: true
-            }
+              provider: true,
+            },
           })
         }
 
         if (tables?.includes('interactions')) {
           exportData.interactions = await prisma.consciousnessInteraction.findMany({
             take: 1000, // Limit for demo
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
           })
         }
 
@@ -309,21 +326,26 @@ export async function POST(req: NextRequest) {
           success: true,
           exportData,
           timestamp: new Date().toISOString(),
-          format: format || 'json'
+          format: format || 'json',
         })
 
       default:
-        return NextResponse.json({
-          success: false,
-          error: 'Invalid admin action'
-        }, { status: 400 })
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Invalid admin action',
+          },
+          { status: 400 }
+        )
     }
-
   } catch (error) {
     console.error('Admin action error:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to execute admin action'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to execute admin action',
+      },
+      { status: 500 }
+    )
   }
 }

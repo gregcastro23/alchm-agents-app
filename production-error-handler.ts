@@ -30,7 +30,7 @@ class ProductionLogger {
       context,
       endpoint: req?.url,
       userAgent: req?.headers.get('user-agent') || undefined,
-      ip: req?.ip || req?.headers.get('x-forwarded-for')?.toString() || undefined
+      ip: req?.ip || req?.headers.get('x-forwarded-for')?.toString() || undefined,
     }
 
     // Add to memory store
@@ -45,7 +45,7 @@ class ProductionLogger {
         error: '❌',
         warn: '⚠️',
         info: 'ℹ️',
-        debug: '🐛'
+        debug: '🐛',
       }[level]
 
       console.log(`${prefix} [${level.toUpperCase()}] ${message}`)
@@ -98,7 +98,7 @@ class ProductionLogger {
       errors,
       warnings,
       total,
-      errorRate: total > 0 ? (errors / total) * 100 : 0
+      errorRate: total > 0 ? (errors / total) * 100 : 0,
     }
   }
 
@@ -136,7 +136,7 @@ export function createErrorResponse(
     {
       error: message,
       timestamp: new Date().toISOString(),
-      status
+      status,
     },
     { status }
   )
@@ -158,7 +158,7 @@ export function createSuccessResponse(
     success: true,
     data,
     timestamp: new Date().toISOString(),
-    ...(message && { message })
+    ...(message && { message }),
   })
 }
 
@@ -175,11 +175,15 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<NextResp
       const req = args[0] as NextRequest
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
 
-      logger.error('Unhandled API error', {
-        error: errorMessage,
-        stack: error instanceof Error ? error.stack : undefined,
-        endpoint: req?.url
-      }, req)
+      logger.error(
+        'Unhandled API error',
+        {
+          error: errorMessage,
+          stack: error instanceof Error ? error.stack : undefined,
+          endpoint: req?.url,
+        },
+        req
+      )
 
       return createErrorResponse(
         'Internal server error',
@@ -252,18 +256,17 @@ export class PerformanceMonitor {
  * Beta testing specific error tracking
  */
 export class BetaErrorTracker {
-  static trackUserError(
-    userId: string,
-    operation: string,
-    error: string,
-    req?: NextRequest
-  ): void {
-    logger.error(`Beta user error: ${operation}`, {
-      userId,
-      operation,
-      error,
-      isBetaUser: true
-    }, req)
+  static trackUserError(userId: string, operation: string, error: string, req?: NextRequest): void {
+    logger.error(
+      `Beta user error: ${operation}`,
+      {
+        userId,
+        operation,
+        error,
+        isBetaUser: true,
+      },
+      req
+    )
   }
 
   static trackFeatureUsage(
@@ -272,19 +275,27 @@ export class BetaErrorTracker {
     success: boolean,
     req?: NextRequest
   ): void {
-    logger.info(`Beta feature usage: ${feature}`, {
-      userId,
-      feature,
-      success,
-      isBetaUser: true
-    }, req)
+    logger.info(
+      `Beta feature usage: ${feature}`,
+      {
+        userId,
+        feature,
+        success,
+        isBetaUser: true,
+      },
+      req
+    )
   }
 }
 
 /**
  * Database error helper
  */
-export function handleDatabaseError(error: any, operation: string, req?: NextRequest): NextResponse {
+export function handleDatabaseError(
+  error: any,
+  operation: string,
+  req?: NextRequest
+): NextResponse {
   let message = 'Database operation failed'
   let status = 500
 
@@ -299,11 +310,16 @@ export function handleDatabaseError(error: any, operation: string, req?: NextReq
     status = 400
   }
 
-  return createErrorResponse(message, status, {
-    operation,
-    prismaCode: error.code,
-    originalMessage: error.message
-  }, req)
+  return createErrorResponse(
+    message,
+    status,
+    {
+      operation,
+      prismaCode: error.code,
+      originalMessage: error.message,
+    },
+    req
+  )
 }
 
 // Export utilities for use in API routes

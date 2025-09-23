@@ -19,8 +19,8 @@ export async function GET() {
       backend: { status: 'unknown', latency: 0, error: null },
       redis: { status: 'unknown', error: null },
       memory: { usage: 0, percentage: 0 },
-      uptime: process.uptime()
-    }
+      uptime: process.uptime(),
+    },
   }
 
   let overallStatus = 'healthy'
@@ -34,14 +34,14 @@ export async function GET() {
     healthCheck.checks.database = {
       status: 'healthy',
       latency,
-      error: null
+      error: null,
     }
   } catch (error) {
     overallStatus = 'unhealthy'
     healthCheck.checks.database = {
       status: 'unhealthy',
       latency: 0,
-      error: error instanceof Error ? error.message : 'Database connection failed'
+      error: error instanceof Error ? error.message : 'Database connection failed',
     }
   }
 
@@ -53,7 +53,7 @@ export async function GET() {
     const response = await fetch(`${backendUrl}/api/health`, {
       method: 'GET',
       headers: { 'User-Agent': 'Frontend-HealthCheck/1.0' },
-      signal: AbortSignal.timeout(5000) // 5 second timeout
+      signal: AbortSignal.timeout(5000), // 5 second timeout
     })
 
     const latency = Date.now() - start
@@ -62,20 +62,20 @@ export async function GET() {
       healthCheck.checks.backend = {
         status: 'healthy',
         latency,
-        error: null
+        error: null,
       }
     } else {
       healthCheck.checks.backend = {
         status: 'degraded',
         latency,
-        error: `Backend returned status ${response.status}`
+        error: `Backend returned status ${response.status}`,
       }
     }
   } catch (error) {
     healthCheck.checks.backend = {
       status: 'unhealthy',
       latency: 0,
-      error: error instanceof Error ? error.message : 'Backend connection failed'
+      error: error instanceof Error ? error.message : 'Backend connection failed',
     }
   }
 
@@ -86,7 +86,7 @@ export async function GET() {
 
   healthCheck.checks.memory = {
     usage: Math.round(totalMemory / 1024 / 1024), // MB
-    percentage: memoryPercentage
+    percentage: memoryPercentage,
   }
 
   // High memory usage warning
@@ -98,8 +98,7 @@ export async function GET() {
   healthCheck.status = overallStatus
 
   // Return appropriate HTTP status code
-  const statusCode = overallStatus === 'healthy' ? 200 :
-                    overallStatus === 'degraded' ? 200 : 503
+  const statusCode = overallStatus === 'healthy' ? 200 : overallStatus === 'degraded' ? 200 : 503
 
   return NextResponse.json(healthCheck, { status: statusCode })
 }

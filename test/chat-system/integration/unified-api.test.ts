@@ -10,39 +10,41 @@ import {
   mockMessages,
   mockGroupDynamics,
   mockApiResponse,
-  performanceTestData
+  performanceTestData,
 } from '../fixtures/mock-data'
 
 // Mock external dependencies
 vi.mock('ai', () => ({
-  generateText: vi.fn()
+  generateText: vi.fn(),
 }))
 
 vi.mock('@ai-sdk/openai', () => ({
-  openai: vi.fn((model: string) => `mocked-${model}`)
+  openai: vi.fn((model: string) => `mocked-${model}`),
 }))
 
 vi.mock('@/lib/agent-cache-system', () => ({
   agentCache: {
     getCachedResponse: vi.fn(),
-    cacheResponse: vi.fn()
+    cacheResponse: vi.fn(),
   },
-  buildCacheContext: vi.fn()
+  buildCacheContext: vi.fn(),
 }))
 
 vi.mock('@/lib/consciousness-persistence', () => ({
   consciousnessPersistence: {
     updateAgentMemory: vi.fn(),
-    getSessionHistory: vi.fn()
-  }
+    getSessionHistory: vi.fn(),
+  },
 }))
 
 vi.mock('@/lib/alchemizer', () => ({
-  generateAlchmForCurrentMoment: vi.fn(() => Promise.resolve({
-    A: 3.5,
-    dominantElement: 'Air',
-    timestamp: new Date()
-  }))
+  generateAlchmForCurrentMoment: vi.fn(() =>
+    Promise.resolve({
+      A: 3.5,
+      dominantElement: 'Air',
+      timestamp: new Date(),
+    })
+  ),
 }))
 
 describe('Unified Multi-Agent Chat API Integration', () => {
@@ -56,7 +58,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
 
     // Default successful responses
     mockGenerateText.mockResolvedValue({
-      text: 'This is a test response from the agent.'
+      text: 'This is a test response from the agent.',
     })
 
     mockAgentCache.getCachedResponse.mockResolvedValue(null) // No cache hit by default
@@ -67,7 +69,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
     it('validates required fields', async () => {
       const request = new NextRequest('http://localhost/api/unified-multi-agent-chat', {
         method: 'POST',
-        body: JSON.stringify({})
+        body: JSON.stringify({}),
       })
 
       const response = await POST(request)
@@ -82,8 +84,8 @@ describe('Unified Multi-Agent Chat API Integration', () => {
         method: 'POST',
         body: JSON.stringify({
           message: 'Test message',
-          agents: 'not-an-array'
-        })
+          agents: 'not-an-array',
+        }),
       })
 
       const response = await POST(request)
@@ -102,9 +104,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -126,9 +128,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
             sessionHistory: [],
             enableMemoryPersistence: false,
             realtimeUpdates: false,
-            variant: 'historical'
-          }
-        })
+            variant: 'historical',
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -150,9 +152,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -174,9 +176,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -194,11 +196,13 @@ describe('Unified Multi-Agent Chat API Integration', () => {
     it('limits agents to maximum of 6', async () => {
       const manyAgents = [
         ...mockUnifiedAgents,
-        ...Array(5).fill(null).map((_, i) => ({
-          ...mockUnifiedAgents[0],
-          id: `extra-agent-${i}`,
-          name: `Extra Agent ${i}`
-        }))
+        ...Array(5)
+          .fill(null)
+          .map((_, i) => ({
+            ...mockUnifiedAgents[0],
+            id: `extra-agent-${i}`,
+            name: `Extra Agent ${i}`,
+          })),
       ]
 
       const request = new NextRequest('http://localhost/api/unified-multi-agent-chat', {
@@ -209,9 +213,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -233,16 +237,16 @@ describe('Unified Multi-Agent Chat API Integration', () => {
             sessionHistory: [],
             enableMemoryPersistence: false,
             realtimeUpdates: false,
-            variant: 'historical'
-          }
-        })
+            variant: 'historical',
+          },
+        }),
       })
 
       await POST(request)
 
       expect(mockGenerateText).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gpt-4o'
+          model: 'mocked-gpt-4o',
         })
       )
     })
@@ -256,9 +260,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
             consciousnessVelocity: 0.8,
             interactionMomentum: 0.7,
             evolutionTrajectory: 'ascending' as const,
-            aspectSensitivity: 0.6
-          }
-        }
+            aspectSensitivity: 0.6,
+          },
+        },
       }
 
       const request = new NextRequest('http://localhost/api/unified-multi-agent-chat', {
@@ -270,16 +274,16 @@ describe('Unified Multi-Agent Chat API Integration', () => {
             sessionHistory: [],
             enableMemoryPersistence: false,
             realtimeUpdates: false,
-            variant: 'planetary'
-          }
-        })
+            variant: 'planetary',
+          },
+        }),
       })
 
       await POST(request)
 
       expect(mockGenerateText).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gpt-3.5-turbo'
+          model: 'mocked-gpt-3.5-turbo',
         })
       )
     })
@@ -295,17 +299,17 @@ describe('Unified Multi-Agent Chat API Integration', () => {
             enableMemoryPersistence: false,
             realtimeUpdates: false,
             modelOverrides: {
-              historical: 'gpt-4o-mini'
-            }
-          }
-        })
+              historical: 'gpt-4o-mini',
+            },
+          },
+        }),
       })
 
       await POST(request)
 
       expect(mockGenerateText).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gpt-4o-mini'
+          model: 'mocked-gpt-4o-mini',
         })
       )
     })
@@ -320,16 +324,16 @@ describe('Unified Multi-Agent Chat API Integration', () => {
             sessionHistory: [],
             enableMemoryPersistence: false,
             realtimeUpdates: false,
-            variant: 'laboratory'
-          }
-        })
+            variant: 'laboratory',
+          },
+        }),
       })
 
       await POST(request)
 
       expect(mockGenerateText).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gpt-4o'
+          model: 'mocked-gpt-4o',
         })
       )
     })
@@ -340,7 +344,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       const cachedResponse = {
         agentResponse: 'This is a cached response',
         timestamp: new Date(),
-        metadata: {}
+        metadata: {},
       }
 
       mockAgentCache.getCachedResponse.mockResolvedValueOnce(cachedResponse)
@@ -353,9 +357,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -375,9 +379,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       await POST(request)
@@ -390,7 +394,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
         expect.objectContaining({
           agentType: 'historical',
           consciousnessLevel: 'Advanced',
-          groupSize: 1
+          groupSize: 1,
         })
       )
     })
@@ -406,9 +410,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -430,9 +434,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -456,9 +460,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -481,9 +485,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -503,9 +507,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: mockMessages,
             enableMemoryPersistence: true,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -529,9 +533,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -542,8 +546,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
     })
 
     it('handles cosmic context generation failures', async () => {
-      vi.mocked(require('@/lib/alchemizer').generateAlchmForCurrentMoment)
-        .mockRejectedValueOnce(new Error('Cosmic service down'))
+      vi.mocked(require('@/lib/alchemizer').generateAlchmForCurrentMoment).mockRejectedValueOnce(
+        new Error('Cosmic service down')
+      )
 
       const request = new NextRequest('http://localhost/api/unified-multi-agent-chat', {
         method: 'POST',
@@ -553,9 +558,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -567,7 +572,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
     it('handles malformed request body', async () => {
       const request = new NextRequest('http://localhost/api/unified-multi-agent-chat', {
         method: 'POST',
-        body: 'invalid json'
+        body: 'invalid json',
       })
 
       const response = await POST(request)
@@ -590,9 +595,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -601,7 +606,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
 
       expect(response.status).toBe(200)
       expect(data.processingTime).toBeLessThan(performanceTestData.expectedResponseTimes.small)
-      expect(endTime - startTime).toBeLessThan(performanceTestData.expectedResponseTimes.small + 500) // Add buffer for test overhead
+      expect(endTime - startTime).toBeLessThan(
+        performanceTestData.expectedResponseTimes.small + 500
+      ) // Add buffer for test overhead
     })
 
     it('handles complex requests efficiently', async () => {
@@ -613,9 +620,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: mockMessages,
             enableMemoryPersistence: true,
-            realtimeUpdates: true
-          }
-        })
+            realtimeUpdates: true,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -634,9 +641,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)
@@ -658,9 +665,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
           context: {
             sessionHistory: [],
             enableMemoryPersistence: false,
-            realtimeUpdates: false
-          }
-        })
+            realtimeUpdates: false,
+          },
+        }),
       })
 
       const response = await POST(request)

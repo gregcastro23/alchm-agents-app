@@ -22,7 +22,7 @@ import {
   Flame,
   Droplets,
   Wind,
-  Mountain
+  Mountain,
 } from 'lucide-react'
 import type { CraftedAgent } from '@/lib/agent-types'
 import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
@@ -40,7 +40,12 @@ interface AgentRecommendation {
     momentumCompatibility: number
     powerAmplification: number
   }
-  recommendationType: 'optimal_timing' | 'high_compatibility' | 'consciousness_growth' | 'complementary_wisdom' | 'momentum_synergy'
+  recommendationType:
+    | 'optimal_timing'
+    | 'high_compatibility'
+    | 'consciousness_growth'
+    | 'complementary_wisdom'
+    | 'momentum_synergy'
   timeWindow: {
     optimal: boolean
     nextOptimal?: Date
@@ -50,7 +55,12 @@ interface AgentRecommendation {
 }
 
 interface RecommendationCategory {
-  type: 'optimal_timing' | 'high_compatibility' | 'consciousness_growth' | 'complementary_wisdom' | 'momentum_synergy'
+  type:
+    | 'optimal_timing'
+    | 'high_compatibility'
+    | 'consciousness_growth'
+    | 'complementary_wisdom'
+    | 'momentum_synergy'
   title: string
   description: string
   icon: React.ComponentType<{ className?: string }>
@@ -77,7 +87,7 @@ export function MomentBasedRecommendations({
   maxRecommendations = 8,
   showReasonDetails = true,
   onAgentSelect,
-  onRecommendationUpdate
+  onRecommendationUpdate,
 }: MomentBasedRecommendationsProps) {
   const [recommendations, setRecommendations] = useState<RecommendationCategory[]>([])
   const [loading, setLoading] = useState(true)
@@ -99,12 +109,18 @@ export function MomentBasedRecommendations({
 
     // Calculate optimal timing score
     const optimalHours = kineticProfile.peak_hours || []
-    const isOptimalTime = optimalHours.includes(currentPlanetaryHour) ||
-                         (hour >= 6 && hour <= 18 && kineticProfile.power_alignment?.includes('Sun')) ||
-                         (hour >= 19 || hour <= 5 && kineticProfile.power_alignment?.includes('Moon'))
+    const isOptimalTime =
+      optimalHours.includes(currentPlanetaryHour) ||
+      (hour >= 6 && hour <= 18 && kineticProfile.power_alignment?.includes('Sun')) ||
+      hour >= 19 ||
+      (hour <= 5 && kineticProfile.power_alignment?.includes('Moon'))
 
     // Calculate planetary alignment
-    const planetaryAlignment = kineticProfile.power_alignment?.split('_').includes(currentPlanetaryHour) ? 0.9 : 0.5
+    const planetaryAlignment = kineticProfile.power_alignment
+      ?.split('_')
+      .includes(currentPlanetaryHour)
+      ? 0.9
+      : 0.5
 
     // Calculate aspect sensitivity based on current aspects
     const aspectSensitivity = calculateAspectSensitivity(kineticProfile, momentData)
@@ -114,22 +130,39 @@ export function MomentBasedRecommendations({
 
     // Calculate power amplification
     const currentPower = momentData.power?.[momentData.power.length - 1]?.power || 0.5
-    const powerAmplification = Math.min(1, currentPower * (kineticProfile.consciousness_rate || 0.5))
+    const powerAmplification = Math.min(
+      1,
+      currentPower * (kineticProfile.consciousness_rate || 0.5)
+    )
 
     // Overall score calculation
-    const baseScore = (planetaryAlignment * 0.3) +
-                     (aspectSensitivity * 0.2) +
-                     (momentumCompatibility * 0.3) +
-                     (powerAmplification * 0.2)
+    const baseScore =
+      planetaryAlignment * 0.3 +
+      aspectSensitivity * 0.2 +
+      momentumCompatibility * 0.3 +
+      powerAmplification * 0.2
 
     const optimalBonus = isOptimalTime ? 0.2 : 0
     const finalScore = Math.min(1, baseScore + optimalBonus)
 
     // Determine recommendation type
-    const recommendationType = determineRecommendationType(isOptimalTime, finalScore, kineticProfile, selectedAgents, agent)
+    const recommendationType = determineRecommendationType(
+      isOptimalTime,
+      finalScore,
+      kineticProfile,
+      selectedAgents,
+      agent
+    )
 
     // Generate reasons
-    const reasons = generateReasons(agent, kineticProfile, isOptimalTime, planetaryAlignment, aspectSensitivity, currentPlanetaryHour)
+    const reasons = generateReasons(
+      agent,
+      kineticProfile,
+      isOptimalTime,
+      planetaryAlignment,
+      aspectSensitivity,
+      currentPlanetaryHour
+    )
 
     // Generate synergies
     const synergies = generateSynergies(agent, kineticProfile, momentData, selectedAgents)
@@ -144,15 +177,15 @@ export function MomentBasedRecommendations({
         planetaryAlignment,
         aspectSensitivity,
         momentumCompatibility,
-        powerAmplification
+        powerAmplification,
       },
       recommendationType,
       timeWindow: {
         optimal: isOptimalTime,
         nextOptimal: isOptimalTime ? undefined : calculateNextOptimalTime(kineticProfile),
-        duration: isOptimalTime ? 60 : undefined
+        duration: isOptimalTime ? 60 : undefined,
       },
-      synergies
+      synergies,
     }
   }
 
@@ -160,19 +193,25 @@ export function MomentBasedRecommendations({
     if (!profile.aspect_sensitivity) return 0.5
 
     // Simplified aspect calculation - in production would use real aspect data
-    const sensitivitySum = Object.values(profile.aspect_sensitivity).reduce((sum: number, val: any) => sum + val, 0)
+    const sensitivitySum = Object.values(profile.aspect_sensitivity).reduce(
+      (sum: number, val: any) => sum + val,
+      0
+    )
     const averageSensitivity = sensitivitySum / Object.keys(profile.aspect_sensitivity).length
 
-    return Math.min(1, averageSensitivity * (momentData.power?.[momentData.power.length - 1]?.power || 0.5))
+    return Math.min(
+      1,
+      averageSensitivity * (momentData.power?.[momentData.power.length - 1]?.power || 0.5)
+    )
   }
 
   const calculateMomentumCompatibility = (profile: any, momentData: any): number => {
     const momentumTypes = {
-      'sustained': 0.8,
-      'building': momentData.power?.[momentData.power.length - 1]?.power > 0.6 ? 0.9 : 0.4,
-      'oscillating': 0.6,
-      'explosive': 0.7,
-      'gradual': 0.5
+      sustained: 0.8,
+      building: momentData.power?.[momentData.power.length - 1]?.power > 0.6 ? 0.9 : 0.4,
+      oscillating: 0.6,
+      explosive: 0.7,
+      gradual: 0.5,
     }
 
     return momentumTypes[profile.momentum_type as keyof typeof momentumTypes] || 0.5
@@ -218,7 +257,10 @@ export function MomentBasedRecommendations({
       reasons.push('Accelerated consciousness evolution in current conditions')
     }
 
-    if (agent.consciousness.level === 'Illuminated' || agent.consciousness.level === 'Transcendent') {
+    if (
+      agent.consciousness.level === 'Illuminated' ||
+      agent.consciousness.level === 'Transcendent'
+    ) {
       reasons.push('Advanced consciousness ideal for current moment complexity')
     }
 
@@ -253,10 +295,15 @@ export function MomentBasedRecommendations({
     // Synergies with selected agents
     selectedAgents.forEach(selectedAgent => {
       if (selectedAgent.consciousness.dominantElement !== dominantElement) {
-        synergies.push(`Balances ${selectedAgent.name}'s ${selectedAgent.consciousness.dominantElement} energy`)
+        synergies.push(
+          `Balances ${selectedAgent.name}'s ${selectedAgent.consciousness.dominantElement} energy`
+        )
       }
 
-      if (Math.abs(selectedAgent.consciousness.monicaConstant - agent.consciousness.monicaConstant) < 1) {
+      if (
+        Math.abs(selectedAgent.consciousness.monicaConstant - agent.consciousness.monicaConstant) <
+        1
+      ) {
         synergies.push(`Resonant consciousness level with ${selectedAgent.name}`)
       }
     })
@@ -287,11 +334,11 @@ export function MomentBasedRecommendations({
         planetaryAlignment: 0.5,
         aspectSensitivity: 0.5,
         momentumCompatibility: 0.5,
-        powerAmplification: 0.5
+        powerAmplification: 0.5,
       },
       recommendationType: 'complementary_wisdom',
       timeWindow: { optimal: false },
-      synergies: []
+      synergies: [],
     }
   }
 
@@ -339,7 +386,7 @@ export function MomentBasedRecommendations({
           description: 'Agents in their peak planetary hours',
           icon: Timer,
           color: 'text-green-600',
-          agents: agentRecommendations.filter(r => r.recommendationType === 'optimal_timing')
+          agents: agentRecommendations.filter(r => r.recommendationType === 'optimal_timing'),
         },
         {
           type: 'high_compatibility',
@@ -347,7 +394,7 @@ export function MomentBasedRecommendations({
           description: 'Best overall alignment with current moment',
           icon: Star,
           color: 'text-yellow-600',
-          agents: agentRecommendations.filter(r => r.recommendationType === 'high_compatibility')
+          agents: agentRecommendations.filter(r => r.recommendationType === 'high_compatibility'),
         },
         {
           type: 'consciousness_growth',
@@ -355,7 +402,7 @@ export function MomentBasedRecommendations({
           description: 'Enhanced evolution potential now',
           icon: TrendingUp,
           color: 'text-blue-600',
-          agents: agentRecommendations.filter(r => r.recommendationType === 'consciousness_growth')
+          agents: agentRecommendations.filter(r => r.recommendationType === 'consciousness_growth'),
         },
         {
           type: 'complementary_wisdom',
@@ -363,7 +410,7 @@ export function MomentBasedRecommendations({
           description: 'Balances your current selection',
           icon: Brain,
           color: 'text-purple-600',
-          agents: agentRecommendations.filter(r => r.recommendationType === 'complementary_wisdom')
+          agents: agentRecommendations.filter(r => r.recommendationType === 'complementary_wisdom'),
         },
         {
           type: 'momentum_synergy',
@@ -371,8 +418,8 @@ export function MomentBasedRecommendations({
           description: 'Aligned kinetic patterns',
           icon: Activity,
           color: 'text-orange-600',
-          agents: agentRecommendations.filter(r => r.recommendationType === 'momentum_synergy')
-        }
+          agents: agentRecommendations.filter(r => r.recommendationType === 'momentum_synergy'),
+        },
       ].filter(category => category.agents.length > 0)
 
       setRecommendations(categories)
@@ -381,7 +428,6 @@ export function MomentBasedRecommendations({
       if (onRecommendationUpdate) {
         onRecommendationUpdate(agentRecommendations)
       }
-
     } catch (error) {
       console.error('Failed to fetch recommendations:', error)
       setError('Failed to load moment-based recommendations')
@@ -402,11 +448,16 @@ export function MomentBasedRecommendations({
 
   const getElementIcon = (element: string) => {
     switch (element) {
-      case 'Fire': return Flame
-      case 'Water': return Droplets
-      case 'Air': return Wind
-      case 'Earth': return Mountain
-      default: return Target
+      case 'Fire':
+        return Flame
+      case 'Water':
+        return Droplets
+      case 'Air':
+        return Wind
+      case 'Earth':
+        return Mountain
+      default:
+        return Target
     }
   }
 
@@ -414,7 +465,10 @@ export function MomentBasedRecommendations({
     const ElementIcon = getElementIcon(recommendation.agent.consciousness.dominantElement)
 
     return (
-      <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => onAgentSelect?.(recommendation.agent)}>
+      <Card
+        className="hover:shadow-md transition-shadow cursor-pointer"
+        onClick={() => onAgentSelect?.(recommendation.agent)}
+      >
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-3">
@@ -440,7 +494,10 @@ export function MomentBasedRecommendations({
             <div className="flex items-center gap-2 text-xs">
               <ElementIcon className="w-3 h-3" />
               <span className="flex-1">Power Alignment</span>
-              <Progress value={recommendation.kineticContext.planetaryAlignment * 100} className="w-16 h-2" />
+              <Progress
+                value={recommendation.kineticContext.planetaryAlignment * 100}
+                className="w-16 h-2"
+              />
             </div>
             {recommendation.kineticContext.isOptimalTime && (
               <div className="flex items-center gap-1 text-xs text-green-600">
@@ -478,7 +535,9 @@ export function MomentBasedRecommendations({
           {!recommendation.timeWindow.optimal && recommendation.timeWindow.nextOptimal && (
             <div className="text-xs text-orange-600 mt-2 flex items-center gap-1">
               <Clock className="w-3 h-3" />
-              <span>Next optimal: {recommendation.timeWindow.nextOptimal.toLocaleTimeString()}</span>
+              <span>
+                Next optimal: {recommendation.timeWindow.nextOptimal.toLocaleTimeString()}
+              </span>
             </div>
           )}
         </CardContent>
@@ -495,8 +554,8 @@ export function MomentBasedRecommendations({
             <RefreshCw className="w-4 h-4 animate-spin" />
             <span>
               {!allAgents || !Array.isArray(allAgents) || allAgents.length === 0
-                ? "Loading agents..."
-                : "Calculating moment-based recommendations..."}
+                ? 'Loading agents...'
+                : 'Calculating moment-based recommendations...'}
             </span>
           </div>
         </CardContent>
@@ -521,7 +580,9 @@ export function MomentBasedRecommendations({
   }
 
   return (
-    <Card className={`${className} border-2 border-green-200 bg-gradient-to-br from-green-50/50 to-blue-50/50`}>
+    <Card
+      className={`${className} border-2 border-green-200 bg-gradient-to-br from-green-50/50 to-blue-50/50`}
+    >
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Lightbulb className="w-5 h-5 text-green-600" />
@@ -548,7 +609,7 @@ export function MomentBasedRecommendations({
             return (
               <Button
                 key={category.type}
-                variant={activeCategory === category.type ? "default" : "outline"}
+                variant={activeCategory === category.type ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setActiveCategory(category.type)}
                 className="flex items-center gap-1"
@@ -595,7 +656,9 @@ export function MomentBasedRecommendations({
             {recommendations.find(cat => cat.type === activeCategory)!.agents.length > 4 && (
               <Button variant="outline" className="w-full">
                 <Users className="w-3 h-3 mr-1" />
-                Show {recommendations.find(cat => cat.type === activeCategory)!.agents.length - 4} More
+                Show {recommendations.find(cat => cat.type === activeCategory)!.agents.length -
+                  4}{' '}
+                More
               </Button>
             )}
           </div>

@@ -4,13 +4,13 @@
  */
 
 import { useState, useCallback, useEffect } from 'react'
-import { 
+import {
   EnhancedRecommendationService,
   RecommendationRequest,
   EnhancedRecommendationResult,
   CuisineRecommendation,
   IngredientRecommendation,
-  RecipeRecommendation
+  RecipeRecommendation,
 } from '@/lib/services/enhanced-recommendation-service'
 
 interface UseEnhancedRecommendationsOptions {
@@ -34,26 +34,35 @@ interface UseEnhancedRecommendationsReturn {
   cuisines: CuisineRecommendation[]
   ingredients: IngredientRecommendation[]
   recipes: RecipeRecommendation[]
-  
+
   // Context and metadata
   context: EnhancedRecommendationResult['context'] | null
   metadata: EnhancedRecommendationResult['metadata'] | null
-  
+
   // State management
   loading: boolean
   error: string | null
-  
+
   // Actions
   getAllRecommendations: (request?: Partial<RecommendationRequest>) => Promise<void>
-  getCuisineRecommendations: (request?: Partial<RecommendationRequest>) => Promise<CuisineRecommendation[]>
-  getIngredientRecommendations: (request?: Partial<RecommendationRequest>) => Promise<IngredientRecommendation[]>
-  getRecipeRecommendations: (request?: Partial<RecommendationRequest>) => Promise<RecipeRecommendation[]>
+  getCuisineRecommendations: (
+    request?: Partial<RecommendationRequest>
+  ) => Promise<CuisineRecommendation[]>
+  getIngredientRecommendations: (
+    request?: Partial<RecommendationRequest>
+  ) => Promise<IngredientRecommendation[]>
+  getRecipeRecommendations: (
+    request?: Partial<RecommendationRequest>
+  ) => Promise<RecipeRecommendation[]>
   refresh: () => Promise<void>
-  
+
   // Filtering and sorting
   filterByScore: (minScore: number, type?: 'cuisines' | 'ingredients' | 'recipes') => void
-  sortBy: (criteria: 'score' | 'name' | 'seasonal', type?: 'cuisines' | 'ingredients' | 'recipes') => void
-  
+  sortBy: (
+    criteria: 'score' | 'name' | 'seasonal',
+    type?: 'cuisines' | 'ingredients' | 'recipes'
+  ) => void
+
   // Analytics
   getRecommendationStats: () => {
     totalRecommendations: number
@@ -70,7 +79,7 @@ export function useEnhancedRecommendations(
     autoGenerate = false,
     defaultLocation = { latitude: 37.7749, longitude: -122.4194 },
     refreshInterval,
-    filterOptions = {}
+    filterOptions = {},
   } = options
 
   // State
@@ -84,117 +93,135 @@ export function useEnhancedRecommendations(
   const [lastRequest, setLastRequest] = useState<RecommendationRequest | null>(null)
 
   // Core recommendation generation
-  const getAllRecommendations = useCallback(async (partialRequest?: Partial<RecommendationRequest>) => {
-    setLoading(true)
-    setError(null)
+  const getAllRecommendations = useCallback(
+    async (partialRequest?: Partial<RecommendationRequest>) => {
+      setLoading(true)
+      setError(null)
 
-    try {
+      try {
+        const request: RecommendationRequest = {
+          datetime: new Date(),
+          location: defaultLocation,
+          preferences: {
+            intensity: 'moderate',
+          },
+          ...partialRequest,
+        }
+
+        setLastRequest(request)
+
+        const result = await EnhancedRecommendationService.generateRecommendations(request)
+
+        // Apply filters if specified
+        let filteredCuisines = result.cuisines
+        let filteredIngredients = result.ingredients
+        let filteredRecipes = result.recipes
+
+        if (filterOptions.minCuisineScore) {
+          filteredCuisines = filteredCuisines.filter(c => c.score >= filterOptions.minCuisineScore!)
+        }
+        if (filterOptions.minIngredientScore) {
+          filteredIngredients = filteredIngredients.filter(
+            i => i.score >= filterOptions.minIngredientScore!
+          )
+        }
+        if (filterOptions.minRecipeScore) {
+          filteredRecipes = filteredRecipes.filter(r => r.score >= filterOptions.minRecipeScore!)
+        }
+
+        // Apply max recommendations limit
+        if (filterOptions.maxRecommendations?.cuisines) {
+          filteredCuisines = filteredCuisines.slice(0, filterOptions.maxRecommendations.cuisines)
+        }
+        if (filterOptions.maxRecommendations?.ingredients) {
+          filteredIngredients = filteredIngredients.slice(
+            0,
+            filterOptions.maxRecommendations.ingredients
+          )
+        }
+        if (filterOptions.maxRecommendations?.recipes) {
+          filteredRecipes = filteredRecipes.slice(0, filterOptions.maxRecommendations.recipes)
+        }
+
+        setCuisines(filteredCuisines)
+        setIngredients(filteredIngredients)
+        setRecipes(filteredRecipes)
+        setContext(result.context)
+        setMetadata(result.metadata)
+
+        console.log(
+          `Enhanced recommendations generated: ${filteredCuisines.length} cuisines, ${filteredIngredients.length} ingredients, ${filteredRecipes.length} recipes (${result.metadata.generationTime}ms)`
+        )
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Recommendation generation failed'
+        setError(errorMessage)
+        console.error('Enhanced recommendations error:', err)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [defaultLocation, filterOptions]
+  )
+
+  // Individual recommendation type generators
+  const getCuisineRecommendations = useCallback(
+    async (partialRequest?: Partial<RecommendationRequest>): Promise<CuisineRecommendation[]> => {
       const request: RecommendationRequest = {
         datetime: new Date(),
         location: defaultLocation,
-        preferences: {
-          intensity: 'moderate'
-        },
-        ...partialRequest
+        ...partialRequest,
       }
 
-      setLastRequest(request)
+      try {
+        const result = await EnhancedRecommendationService.generateRecommendations(request)
+        return result.cuisines
+      } catch (error) {
+        console.error('Cuisine recommendations failed:', error)
+        return []
+      }
+    },
+    [defaultLocation]
+  )
 
-      const result = await EnhancedRecommendationService.generateRecommendations(request)
-
-      // Apply filters if specified
-      let filteredCuisines = result.cuisines
-      let filteredIngredients = result.ingredients
-      let filteredRecipes = result.recipes
-
-      if (filterOptions.minCuisineScore) {
-        filteredCuisines = filteredCuisines.filter(c => c.score >= filterOptions.minCuisineScore!)
-      }
-      if (filterOptions.minIngredientScore) {
-        filteredIngredients = filteredIngredients.filter(i => i.score >= filterOptions.minIngredientScore!)
-      }
-      if (filterOptions.minRecipeScore) {
-        filteredRecipes = filteredRecipes.filter(r => r.score >= filterOptions.minRecipeScore!)
-      }
-
-      // Apply max recommendations limit
-      if (filterOptions.maxRecommendations?.cuisines) {
-        filteredCuisines = filteredCuisines.slice(0, filterOptions.maxRecommendations.cuisines)
-      }
-      if (filterOptions.maxRecommendations?.ingredients) {
-        filteredIngredients = filteredIngredients.slice(0, filterOptions.maxRecommendations.ingredients)
-      }
-      if (filterOptions.maxRecommendations?.recipes) {
-        filteredRecipes = filteredRecipes.slice(0, filterOptions.maxRecommendations.recipes)
+  const getIngredientRecommendations = useCallback(
+    async (
+      partialRequest?: Partial<RecommendationRequest>
+    ): Promise<IngredientRecommendation[]> => {
+      const request: RecommendationRequest = {
+        datetime: new Date(),
+        location: defaultLocation,
+        ...partialRequest,
       }
 
-      setCuisines(filteredCuisines)
-      setIngredients(filteredIngredients)
-      setRecipes(filteredRecipes)
-      setContext(result.context)
-      setMetadata(result.metadata)
+      try {
+        const result = await EnhancedRecommendationService.generateRecommendations(request)
+        return result.ingredients
+      } catch (error) {
+        console.error('Ingredient recommendations failed:', error)
+        return []
+      }
+    },
+    [defaultLocation]
+  )
 
-      console.log(
-        `Enhanced recommendations generated: ${filteredCuisines.length} cuisines, ${filteredIngredients.length} ingredients, ${filteredRecipes.length} recipes (${result.metadata.generationTime}ms)`
-      )
+  const getRecipeRecommendations = useCallback(
+    async (partialRequest?: Partial<RecommendationRequest>): Promise<RecipeRecommendation[]> => {
+      const request: RecommendationRequest = {
+        datetime: new Date(),
+        location: defaultLocation,
+        ...partialRequest,
+      }
 
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Recommendation generation failed'
-      setError(errorMessage)
-      console.error('Enhanced recommendations error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [defaultLocation, filterOptions])
-
-  // Individual recommendation type generators
-  const getCuisineRecommendations = useCallback(async (partialRequest?: Partial<RecommendationRequest>): Promise<CuisineRecommendation[]> => {
-    const request: RecommendationRequest = {
-      datetime: new Date(),
-      location: defaultLocation,
-      ...partialRequest
-    }
-
-    try {
-      const result = await EnhancedRecommendationService.generateRecommendations(request)
-      return result.cuisines
-    } catch (error) {
-      console.error('Cuisine recommendations failed:', error)
-      return []
-    }
-  }, [defaultLocation])
-
-  const getIngredientRecommendations = useCallback(async (partialRequest?: Partial<RecommendationRequest>): Promise<IngredientRecommendation[]> => {
-    const request: RecommendationRequest = {
-      datetime: new Date(),
-      location: defaultLocation,
-      ...partialRequest
-    }
-
-    try {
-      const result = await EnhancedRecommendationService.generateRecommendations(request)
-      return result.ingredients
-    } catch (error) {
-      console.error('Ingredient recommendations failed:', error)
-      return []
-    }
-  }, [defaultLocation])
-
-  const getRecipeRecommendations = useCallback(async (partialRequest?: Partial<RecommendationRequest>): Promise<RecipeRecommendation[]> => {
-    const request: RecommendationRequest = {
-      datetime: new Date(),
-      location: defaultLocation,
-      ...partialRequest
-    }
-
-    try {
-      const result = await EnhancedRecommendationService.generateRecommendations(request)
-      return result.recipes
-    } catch (error) {
-      console.error('Recipe recommendations failed:', error)
-      return []
-    }
-  }, [defaultLocation])
+      try {
+        const result = await EnhancedRecommendationService.generateRecommendations(request)
+        return result.recipes
+      } catch (error) {
+        console.error('Recipe recommendations failed:', error)
+        return []
+      }
+    },
+    [defaultLocation]
+  )
 
   // Refresh with last request
   const refresh = useCallback(async () => {
@@ -206,72 +233,90 @@ export function useEnhancedRecommendations(
   }, [lastRequest, getAllRecommendations])
 
   // Filtering and sorting utilities
-  const filterByScore = useCallback((minScore: number, type?: 'cuisines' | 'ingredients' | 'recipes') => {
-    if (!type || type === 'cuisines') {
-      setCuisines(prev => prev.filter(c => c.score >= minScore))
-    }
-    if (!type || type === 'ingredients') {
-      setIngredients(prev => prev.filter(i => i.score >= minScore))
-    }
-    if (!type || type === 'recipes') {
-      setRecipes(prev => prev.filter(r => r.score >= minScore))
-    }
-  }, [])
-
-  const sortBy = useCallback((criteria: 'score' | 'name' | 'seasonal', type?: 'cuisines' | 'ingredients' | 'recipes') => {
-    const getSortValue = (item: any) => {
-      switch (criteria) {
-        case 'score': return item.score
-        case 'name': return item.name
-        case 'seasonal': return item.seasonalRelevance || 0
-        default: return item.score
+  const filterByScore = useCallback(
+    (minScore: number, type?: 'cuisines' | 'ingredients' | 'recipes') => {
+      if (!type || type === 'cuisines') {
+        setCuisines(prev => prev.filter(c => c.score >= minScore))
       }
-    }
-
-    const sortFunction = (a: any, b: any) => {
-      if (criteria === 'name') {
-        return getSortValue(a).localeCompare(getSortValue(b))
+      if (!type || type === 'ingredients') {
+        setIngredients(prev => prev.filter(i => i.score >= minScore))
       }
-      return getSortValue(b) - getSortValue(a) // Descending for numbers
-    }
+      if (!type || type === 'recipes') {
+        setRecipes(prev => prev.filter(r => r.score >= minScore))
+      }
+    },
+    []
+  )
 
-    if (!type || type === 'cuisines') {
-      setCuisines(prev => [...prev].sort(sortFunction))
-    }
-    if (!type || type === 'ingredients') {
-      setIngredients(prev => [...prev].sort(sortFunction))
-    }
-    if (!type || type === 'recipes') {
-      setRecipes(prev => [...prev].sort(sortFunction))
-    }
-  }, [])
+  const sortBy = useCallback(
+    (criteria: 'score' | 'name' | 'seasonal', type?: 'cuisines' | 'ingredients' | 'recipes') => {
+      const getSortValue = (item: any) => {
+        switch (criteria) {
+          case 'score':
+            return item.score
+          case 'name':
+            return item.name
+          case 'seasonal':
+            return item.seasonalRelevance || 0
+          default:
+            return item.score
+        }
+      }
+
+      const sortFunction = (a: any, b: any) => {
+        if (criteria === 'name') {
+          return getSortValue(a).localeCompare(getSortValue(b))
+        }
+        return getSortValue(b) - getSortValue(a) // Descending for numbers
+      }
+
+      if (!type || type === 'cuisines') {
+        setCuisines(prev => [...prev].sort(sortFunction))
+      }
+      if (!type || type === 'ingredients') {
+        setIngredients(prev => [...prev].sort(sortFunction))
+      }
+      if (!type || type === 'recipes') {
+        setRecipes(prev => [...prev].sort(sortFunction))
+      }
+    },
+    []
+  )
 
   // Analytics helper
   const getRecommendationStats = useCallback(() => {
     const totalRecommendations = cuisines.length + ingredients.length + recipes.length
-    const allScores = [...cuisines.map(c => c.score), ...ingredients.map(i => i.score), ...recipes.map(r => r.score)]
-    const averageScore = allScores.length > 0 ? allScores.reduce((sum, score) => sum + score, 0) / allScores.length : 0
+    const allScores = [
+      ...cuisines.map(c => c.score),
+      ...ingredients.map(i => i.score),
+      ...recipes.map(r => r.score),
+    ]
+    const averageScore =
+      allScores.length > 0 ? allScores.reduce((sum, score) => sum + score, 0) / allScores.length : 0
 
     // Determine source breakdown from context
     const backendSources = [
       context?.tokens.metadata.source === 'backend' ? 1 : 0,
-      context?.rune && metadata?.source?.includes('backend') ? 1 : 0
+      context?.rune && metadata?.source?.includes('backend') ? 1 : 0,
     ].reduce((sum, val) => sum + val, 0)
 
     const sourceBreakdown = {
       backend: Math.round((backendSources / 2) * 100),
-      local: Math.round(((2 - backendSources) / 2) * 100)
+      local: Math.round(((2 - backendSources) / 2) * 100),
     }
 
-    const confidenceLevel: 'high' | 'medium' | 'low' = 
-      (metadata?.confidenceScore || 0) > 80 ? 'high' : 
-      (metadata?.confidenceScore || 0) > 60 ? 'medium' : 'low'
+    const confidenceLevel: 'high' | 'medium' | 'low' =
+      (metadata?.confidenceScore || 0) > 80
+        ? 'high'
+        : (metadata?.confidenceScore || 0) > 60
+          ? 'medium'
+          : 'low'
 
     return {
       totalRecommendations,
       averageScore,
       sourceBreakdown,
-      confidenceLevel
+      confidenceLevel,
     }
   }, [cuisines, ingredients, recipes, context, metadata])
 
@@ -300,22 +345,22 @@ export function useEnhancedRecommendations(
     recipes,
     context,
     metadata,
-    
+
     // State
     loading,
     error,
-    
+
     // Actions
     getAllRecommendations,
     getCuisineRecommendations,
     getIngredientRecommendations,
     getRecipeRecommendations,
     refresh,
-    
+
     // Utilities
     filterByScore,
     sortBy,
-    getRecommendationStats
+    getRecommendationStats,
   }
 }
 
@@ -328,9 +373,9 @@ export function useQuickCuisineRecommendations(preferences?: RecommendationReque
       maxRecommendations: {
         cuisines: 3,
         ingredients: 0,
-        recipes: 0
-      }
-    }
+        recipes: 0,
+      },
+    },
   })
 }
 
@@ -344,8 +389,8 @@ export function useCompleteRecommendations(preferences?: RecommendationRequest['
       maxRecommendations: {
         cuisines: 6,
         ingredients: 12,
-        recipes: 8
-      }
-    }
+        recipes: 8,
+      },
+    },
   })
 }

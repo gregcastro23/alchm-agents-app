@@ -14,7 +14,7 @@ import {
   Sparkles,
   Gauge,
   Brain,
-  Timer
+  Timer,
 } from 'lucide-react'
 
 interface KineticMetrics {
@@ -58,7 +58,11 @@ interface KineticsChartPaneProps {
   realTimeMode?: boolean
 }
 
-export default function KineticsChartPane({ birthInfo, className, realTimeMode = false }: KineticsChartPaneProps) {
+export default function KineticsChartPane({
+  birthInfo,
+  className,
+  realTimeMode = false,
+}: KineticsChartPaneProps) {
   const [metrics, setMetrics] = useState<KineticMetrics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -68,19 +72,21 @@ export default function KineticsChartPane({ birthInfo, className, realTimeMode =
     try {
       setLoading(true)
 
-      const payload = birthInfo ? {
-        birthInfo,
-        includeAgentInsights: true,
-        calculateMoment: realTimeMode
-      } : {
-        calculateMoment: true,
-        includeAgentInsights: true
-      }
+      const payload = birthInfo
+        ? {
+            birthInfo,
+            includeAgentInsights: true,
+            calculateMoment: realTimeMode,
+          }
+        : {
+            calculateMoment: true,
+            includeAgentInsights: true,
+          }
 
       const response = await fetch('/api/agent-kinetics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
@@ -124,7 +130,8 @@ export default function KineticsChartPane({ birthInfo, className, realTimeMode =
 
   const getProgressColor = (value: number): string => {
     if (value > 0.8) return 'bg-gradient-to-r from-cosmic-gold to-elemental-fire'
-    if (value > 0.6) return 'bg-gradient-to-r from-cosmic-celestial-purple to-cosmic-ethereal-violet'
+    if (value > 0.6)
+      return 'bg-gradient-to-r from-cosmic-celestial-purple to-cosmic-ethereal-violet'
     if (value > 0.4) return 'bg-gradient-to-r from-cosmic-ethereal-violet to-cosmic-stellar-blue'
     return 'bg-gradient-to-r from-cosmic-stellar-blue to-cosmic-nebula-purple'
   }
@@ -201,7 +208,9 @@ export default function KineticsChartPane({ birthInfo, className, realTimeMode =
         {/* Alchemical Number */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-cosmic-starlight-lavender">Alchemical Number (A#)</span>
+            <span className="text-sm font-medium text-cosmic-starlight-lavender">
+              Alchemical Number (A#)
+            </span>
             <span className={`text-lg font-bold ${getIntensityColor(metrics.A)}`}>
               {metrics.A.toFixed(3)}
             </span>
@@ -251,9 +260,7 @@ export default function KineticsChartPane({ birthInfo, className, realTimeMode =
             {Object.entries(metrics.kinetic).map(([key, value]) => (
               <div key={key} className="flex justify-between p-2 cosmic-glass rounded">
                 <span className="capitalize text-cosmic-starlight-lavender">{key}</span>
-                <span className={`font-mono ${getIntensityColor(value)}`}>
-                  {value.toFixed(3)}
-                </span>
+                <span className={`font-mono ${getIntensityColor(value)}`}>{value.toFixed(3)}</span>
               </div>
             ))}
           </div>
@@ -293,7 +300,7 @@ export default function KineticsChartPane({ birthInfo, className, realTimeMode =
               <div>
                 <p className="text-xs text-cosmic-starlight-lavender mb-2">Activated Agents:</p>
                 <div className="flex flex-wrap gap-1">
-                  {metrics.agentInsights.activatedAgents.map((agent) => (
+                  {metrics.agentInsights.activatedAgents.map(agent => (
                     <Badge key={agent} variant="outline" className="text-xs cosmic-glass">
                       {agent}
                     </Badge>
@@ -313,7 +320,7 @@ export default function KineticsChartPane({ birthInfo, className, realTimeMode =
               <div>
                 <p className="text-xs text-cosmic-starlight-lavender mb-1">Optimal Aspects:</p>
                 <div className="flex flex-wrap gap-1">
-                  {metrics.agentInsights.optimalAspects.map((aspect) => (
+                  {metrics.agentInsights.optimalAspects.map(aspect => (
                     <Badge key={aspect} variant="secondary" className="text-xs">
                       {aspect}
                     </Badge>

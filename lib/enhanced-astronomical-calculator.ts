@@ -11,10 +11,10 @@ import SunCalc from 'suncalc'
 
 export interface EnhancedPlanetPosition {
   planet: string
-  longitude: number  // 0-360 degrees absolute longitude
-  latitude: number   // heliocentric latitude
-  distance: number   // AU from center of calculation
-  speed: number      // degrees per day
+  longitude: number // 0-360 degrees absolute longitude
+  latitude: number // heliocentric latitude
+  distance: number // AU from center of calculation
+  speed: number // degrees per day
   retrograde: boolean
   sign: string
   signDegree: number // 0-30 within sign
@@ -66,54 +66,54 @@ const J2000 = 2451545.0
 // Improved orbital elements for planets (J2000.0 epoch)
 const ENHANCED_ORBITAL_ELEMENTS = {
   Sun: {
-    L0: 280.46646,  // mean longitude at epoch
-    L1: 36000.76983,  // mean longitude change per century
-    L2: 0.0003032,  // mean longitude T^2 term
+    L0: 280.46646, // mean longitude at epoch
+    L1: 36000.76983, // mean longitude change per century
+    L2: 0.0003032, // mean longitude T^2 term
     eccentricity: 0.016708634,
     eccentricity1: -0.000042037,
     eccentricity2: -0.0000001267,
-    omega: 102.93735,  // longitude of perihelion
-    omega1: 1.71946,   // change per century
-    omega2: 0.00046,   // T^2 term
+    omega: 102.93735, // longitude of perihelion
+    omega1: 1.71946, // change per century
+    omega2: 0.00046, // T^2 term
   },
   Moon: {
     L0: 218.3164477,
     L1: 481267.88123421,
     L2: -0.0015786,
-    D0: 297.8501921,  // mean elongation
+    D0: 297.8501921, // mean elongation
     D1: 445267.1114034,
-    M0: 357.5291092,  // sun's mean anomaly
+    M0: 357.5291092, // sun's mean anomaly
     M1: 35999.0502909,
     Mp0: 134.9633964, // moon's mean anomaly
     Mp1: 477198.8675055,
-    F0: 93.2720950,   // argument of latitude
+    F0: 93.272095, // argument of latitude
     F1: 483202.0175233,
     eccentricity: 0.0549,
   },
   Mercury: {
-    L0: 252.25032350,
+    L0: 252.2503235,
     L1: 149472.67411175,
     L2: 0.00000535,
-    a: 0.38709927,     // semi-major axis
-    e: 0.20563593,     // eccentricity
-    e1: 0.00001906,    // eccentricity rate
-    I: 7.00497902,     // inclination
-    I1: -0.00594749,   // inclination rate
-    omega: 252.25032350, // longitude of ascending node
+    a: 0.38709927, // semi-major axis
+    e: 0.20563593, // eccentricity
+    e1: 0.00001906, // eccentricity rate
+    I: 7.00497902, // inclination
+    I1: -0.00594749, // inclination rate
+    omega: 252.2503235, // longitude of ascending node
     omega1: 149472.67411175,
-    w: 77.45779628,    // longitude of perihelion
+    w: 77.45779628, // longitude of perihelion
     w1: 0.16047689,
   },
   Venus: {
-    L0: 181.97909950,
+    L0: 181.9790995,
     L1: 58517.81538729,
     L2: 0.00000165,
     a: 0.72333566,
     e: 0.00677672,
     e1: -0.00004107,
     I: 3.39467605,
-    I1: -0.00078890,
-    omega: 181.97909950,
+    I1: -0.0007889,
+    omega: 181.9790995,
     omega1: 58517.81538729,
     w: 131.60246718,
     w1: 0.00268329,
@@ -123,7 +123,7 @@ const ENHANCED_ORBITAL_ELEMENTS = {
     L1: 19140.30268499,
     L2: 0.00000261,
     a: 1.52371034,
-    e: 0.09339410,
+    e: 0.0933941,
     e1: 0.00007882,
     I: 1.84969142,
     I1: -0.00813131,
@@ -136,7 +136,7 @@ const ENHANCED_ORBITAL_ELEMENTS = {
     L0: 34.39644051,
     L1: 3034.74612775,
     L2: 0.00021252,
-    a: 5.20288700,
+    a: 5.202887,
     e: 0.04838624,
     e1: -0.00013253,
     I: 1.30439695,
@@ -171,9 +171,9 @@ const ENHANCED_ORBITAL_ELEMENTS = {
     I: 0.77263783,
     I1: -0.00242939,
     omega: 73.926961,
-    omega1: 0.000000,
+    omega1: 0.0,
     w: 96.937351,
-    w1: 0.000000,
+    w1: 0.0,
   },
   Neptune: {
     L0: 304.34866548,
@@ -185,30 +185,40 @@ const ENHANCED_ORBITAL_ELEMENTS = {
     I: 1.76995259,
     I1: 0.00022574,
     omega: 131.784057,
-    omega1: 0.000000,
+    omega1: 0.0,
     w: 273.187275,
-    w1: 0.000000,
+    w1: 0.0,
   },
   Pluto: {
     L0: 238.92903833,
     L1: 145.20780515,
-    L2: 0.00000000,
+    L2: 0.0,
     a: 39.48211675,
-    e: 0.24882730,
-    e1: 0.00005170,
+    e: 0.2488273,
+    e1: 0.0000517,
     I: 17.14001206,
     I1: 0.00004818,
     omega: 110.30393684,
-    omega1: 0.00000000,
+    omega1: 0.0,
     w: 113.763283,
-    w1: 0.000000,
-  }
+    w1: 0.0,
+  },
 }
 
 // Zodiac signs array
 const ZODIAC_SIGNS = [
-  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+  'Aries',
+  'Taurus',
+  'Gemini',
+  'Cancer',
+  'Leo',
+  'Virgo',
+  'Libra',
+  'Scorpio',
+  'Sagittarius',
+  'Capricorn',
+  'Aquarius',
+  'Pisces',
 ]
 
 /**
@@ -228,8 +238,14 @@ export function toJulianDay(date: Date): number {
   const y = year + 4800 - a
   const m = month + 12 * a - 3
 
-  const jdn = day + Math.floor((153 * m + 2) / 5) + 365 * y +
-              Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045
+  const jdn =
+    day +
+    Math.floor((153 * m + 2) / 5) +
+    365 * y +
+    Math.floor(y / 4) -
+    Math.floor(y / 100) +
+    Math.floor(y / 400) -
+    32045
 
   // Add fractional day for time precision
   const fractionalDay = (hour - 12) / 24 + minute / 1440 + second / 86400 + millisecond / 86400000
@@ -263,7 +279,7 @@ export function longitudeToSignDegree(longitude: number): { sign: string; degree
 
   return {
     sign: ZODIAC_SIGNS[signIndex],
-    degree: signDegree
+    degree: signDegree,
   }
 }
 
@@ -293,25 +309,26 @@ function calculateSunPosition(T: number): EnhancedPlanetPosition {
   const elements = ENHANCED_ORBITAL_ELEMENTS.Sun
 
   // Mean longitude of the Sun
-  let L = elements.L0 + elements.L1 * T + elements.L2 * T * T
+  const L = elements.L0 + elements.L1 * T + elements.L2 * T * T
 
   // Eccentricity of Earth's orbit
   const e = elements.eccentricity + elements.eccentricity1 * T + elements.eccentricity2 * T * T
 
   // Sun's mean anomaly
   const M = normalizeDegrees(L - elements.omega - elements.omega1 * T - elements.omega2 * T * T)
-  const MRad = M * Math.PI / 180
+  const MRad = (M * Math.PI) / 180
 
   // Equation of center (simplified)
-  const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(MRad) +
-            (0.019993 - 0.000101 * T) * Math.sin(2 * MRad) +
-            0.000289 * Math.sin(3 * MRad)
+  const C =
+    (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(MRad) +
+    (0.019993 - 0.000101 * T) * Math.sin(2 * MRad) +
+    0.000289 * Math.sin(3 * MRad)
 
   // True longitude
   const trueLongitude = L + C
 
   // Calculate speed (approximate)
-  const speed = elements.L1 / 365.25 + 2 * elements.L2 * T / 365.25
+  const speed = elements.L1 / 365.25 + (2 * elements.L2 * T) / 365.25
 
   const position = longitudeToSignDegree(trueLongitude)
 
@@ -320,10 +337,10 @@ function calculateSunPosition(T: number): EnhancedPlanetPosition {
     longitude: normalizeDegrees(trueLongitude),
     latitude: 0,
     distance: 1.0, // AU
-    speed: speed,
+    speed,
     retrograde: false, // Sun never retrograde from Earth perspective
     sign: position.sign,
-    signDegree: position.degree
+    signDegree: position.degree,
   }
 }
 
@@ -349,23 +366,24 @@ function calculateMoonPosition(T: number): EnhancedPlanetPosition {
   const F = normalizeDegrees(elements.F0 + elements.F1 * T)
 
   // Convert to radians
-  const LRad = L * Math.PI / 180
-  const DRad = D * Math.PI / 180
-  const MRad = M * Math.PI / 180
-  const MpRad = Mp * Math.PI / 180
-  const FRad = F * Math.PI / 180
+  const LRad = (L * Math.PI) / 180
+  const DRad = (D * Math.PI) / 180
+  const MRad = (M * Math.PI) / 180
+  const MpRad = (Mp * Math.PI) / 180
+  const FRad = (F * Math.PI) / 180
 
   // Main periodic terms for longitude (simplified ELP2000)
-  let sigmaL = 6.288774 * Math.sin(MpRad) +
-               1.274027 * Math.sin(2 * DRad - MpRad) +
-               0.658314 * Math.sin(2 * DRad) +
-               0.213618 * Math.sin(2 * MpRad) +
-               -0.185116 * Math.sin(MRad) +
-               -0.114332 * Math.sin(2 * FRad) +
-               0.058793 * Math.sin(2 * DRad - 2 * MpRad) +
-               0.057066 * Math.sin(2 * DRad - MRad - MpRad) +
-               0.053322 * Math.sin(2 * DRad + MpRad) +
-               0.045758 * Math.sin(2 * DRad - MRad)
+  const sigmaL =
+    6.288774 * Math.sin(MpRad) +
+    1.274027 * Math.sin(2 * DRad - MpRad) +
+    0.658314 * Math.sin(2 * DRad) +
+    0.213618 * Math.sin(2 * MpRad) +
+    -0.185116 * Math.sin(MRad) +
+    -0.114332 * Math.sin(2 * FRad) +
+    0.058793 * Math.sin(2 * DRad - 2 * MpRad) +
+    0.057066 * Math.sin(2 * DRad - MRad - MpRad) +
+    0.053322 * Math.sin(2 * DRad + MpRad) +
+    0.045758 * Math.sin(2 * DRad - MRad)
 
   // True longitude
   const trueLongitude = L + sigmaL
@@ -380,10 +398,10 @@ function calculateMoonPosition(T: number): EnhancedPlanetPosition {
     longitude: normalizeDegrees(trueLongitude),
     latitude: 0, // Simplified - actual Moon has significant latitude
     distance: 60.4, // Earth radii, approximate
-    speed: speed,
+    speed,
     retrograde: false,
     sign: position.sign,
-    signDegree: position.degree
+    signDegree: position.degree,
   }
 }
 
@@ -397,14 +415,14 @@ function calculatePlanetPositionVSOP(planet: string, T: number): EnhancedPlanetP
   }
 
   // Mean longitude
-  let L = elements.L0 + elements.L1 * T + (elements.L2 || 0) * T * T
+  const L = elements.L0 + elements.L1 * T + (elements.L2 || 0) * T * T
 
   // Eccentricity
   const e = elements.e + (elements.e1 || 0) * T
 
   // Mean anomaly
   const M = normalizeDegrees(L - elements.w - (elements.w1 || 0) * T)
-  const MRad = M * Math.PI / 180
+  const MRad = (M * Math.PI) / 180
 
   // Solve Kepler's equation (simplified)
   let E = MRad
@@ -416,7 +434,7 @@ function calculatePlanetPositionVSOP(planet: string, T: number): EnhancedPlanetP
   const nu = 2 * Math.atan(Math.sqrt((1 + e) / (1 - e)) * Math.tan(E / 2))
 
   // True longitude
-  const trueLongitude = normalizeDegrees((nu * 180 / Math.PI) + elements.w + (elements.w1 || 0) * T)
+  const trueLongitude = normalizeDegrees((nu * 180) / Math.PI + elements.w + (elements.w1 || 0) * T)
 
   // Calculate speed
   const speed = elements.L1 / 365.25
@@ -434,16 +452,14 @@ function calculatePlanetPositionVSOP(planet: string, T: number): EnhancedPlanetP
     speed: Math.abs(speed),
     retrograde,
     sign: position.sign,
-    signDegree: position.degree
+    signDegree: position.degree,
   }
 }
 
 /**
  * Enhanced ascendant calculation using proper sidereal time
  */
-export function calculateEnhancedAscendant(
-  birthInfo: EnhancedBirthInfo
-): EnhancedAscendant {
+export function calculateEnhancedAscendant(birthInfo: EnhancedBirthInfo): EnhancedAscendant {
   const birthDate = new Date(
     birthInfo.year,
     birthInfo.month - 1,
@@ -462,10 +478,7 @@ export function calculateEnhancedAscendant(
   const T0 = (jd0 - J2000) / 36525
 
   // GMST at 0h UT (IAU 2000A formula)
-  let gmst0 = 24110.54841 +
-              8640184.812866 * T0 +
-              0.093104 * T0 * T0 -
-              0.0000062 * T0 * T0 * T0
+  let gmst0 = 24110.54841 + 8640184.812866 * T0 + 0.093104 * T0 * T0 - 0.0000062 * T0 * T0 * T0
 
   // Convert to hours and add time since 0h UT
   gmst0 = (gmst0 / 3600) % 24
@@ -478,23 +491,19 @@ export function calculateEnhancedAscendant(
   const lstDegrees = lst * 15
 
   // Calculate ascendant longitude (simplified formula)
-  const latRad = birthInfo.latitude * Math.PI / 180
-  const lstRad = lstDegrees * Math.PI / 180
+  const latRad = (birthInfo.latitude * Math.PI) / 180
+  const lstRad = (lstDegrees * Math.PI) / 180
 
   // Obliquity of ecliptic (IAU 2000A)
-  const epsilon = 23.43929111 -
-                  0.013004167 * T -
-                  0.000001639 * T * T +
-                  0.000000504 * T * T * T
+  const epsilon = 23.43929111 - 0.013004167 * T - 0.000001639 * T * T + 0.000000504 * T * T * T
 
-  const epsilonRad = epsilon * Math.PI / 180
+  const epsilonRad = (epsilon * Math.PI) / 180
 
   // Ascendant calculation
   const y = -Math.cos(lstRad)
-  const x = Math.sin(lstRad) * Math.cos(epsilonRad) +
-            Math.tan(latRad) * Math.sin(epsilonRad)
+  const x = Math.sin(lstRad) * Math.cos(epsilonRad) + Math.tan(latRad) * Math.sin(epsilonRad)
 
-  let ascLongitude = Math.atan2(y, x) * 180 / Math.PI
+  let ascLongitude = (Math.atan2(y, x) * 180) / Math.PI
   ascLongitude = normalizeDegrees(ascLongitude)
 
   const position = longitudeToSignDegree(ascLongitude)
@@ -504,7 +513,7 @@ export function calculateEnhancedAscendant(
     sign: position.sign,
     signDegree: position.degree,
     rightAscension: lstDegrees,
-    declination: 0 // Simplified
+    declination: 0, // Simplified
   }
 }
 
@@ -527,7 +536,18 @@ export function calculateAllPlanets(birthInfo: EnhancedBirthInfo): {
 
   const jd = toJulianDay(birthDate)
 
-  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']
+  const planetNames = [
+    'Sun',
+    'Moon',
+    'Mercury',
+    'Venus',
+    'Mars',
+    'Jupiter',
+    'Saturn',
+    'Uranus',
+    'Neptune',
+    'Pluto',
+  ]
   const planets: Record<string, EnhancedPlanetPosition> = {}
 
   for (const planetName of planetNames) {
@@ -539,7 +559,7 @@ export function calculateAllPlanets(birthInfo: EnhancedBirthInfo): {
   return {
     planets,
     ascendant,
-    julianDay: jd
+    julianDay: jd,
   }
 }
 
@@ -561,14 +581,14 @@ export function accuracyComparison(
   // For now, return placeholder data showing expected improvements
 
   const expectedImprovements = {
-    'Sun': 0.1,     // Expected improvement in degrees
-    'Moon': 0.5,    // Moon has larger orbital variations
-    'Mercury': 2.0, // Highly elliptical orbit
-    'Venus': 1.0,   // Retrograde periods
-    'Mars': 1.5,    // Elliptical orbit
-    'Jupiter': 0.5, // Slower planet, less error accumulation
-    'Saturn': 0.3,  // Even slower
-    'Ascendant': 1.0 // Depends on accurate time/location
+    Sun: 0.1, // Expected improvement in degrees
+    Moon: 0.5, // Moon has larger orbital variations
+    Mercury: 2.0, // Highly elliptical orbit
+    Venus: 1.0, // Retrograde periods
+    Mars: 1.5, // Elliptical orbit
+    Jupiter: 0.5, // Slower planet, less error accumulation
+    Saturn: 0.3, // Even slower
+    Ascendant: 1.0, // Depends on accurate time/location
   }
 
   const values = Object.values(expectedImprovements)
@@ -576,7 +596,7 @@ export function accuracyComparison(
   return {
     improvements: expectedImprovements,
     averageImprovement: values.reduce((a, b) => a + b, 0) / values.length,
-    maxImprovement: Math.max(...values)
+    maxImprovement: Math.max(...values),
   }
 }
 
@@ -603,10 +623,7 @@ function calculateMidheaven(
   const H = (jd - jd0) * 24
   const T0 = (jd0 - J2000) / 36525
 
-  let gmst0 = 24110.54841 +
-              8640184.812866 * T0 +
-              0.093104 * T0 * T0 -
-              0.0000062 * T0 * T0 * T0
+  let gmst0 = 24110.54841 + 8640184.812866 * T0 + 0.093104 * T0 * T0 - 0.0000062 * T0 * T0 * T0
 
   gmst0 = (gmst0 / 3600) % 24
   if (gmst0 < 0) gmst0 += 24
@@ -622,7 +639,7 @@ function calculateMidheaven(
   return {
     longitude: mcLongitude,
     sign: position.sign,
-    signDegree: position.degree
+    signDegree: position.degree,
   }
 }
 
@@ -671,7 +688,7 @@ export function calculateProfessionalHouses(
     system,
     houses,
     ascendant,
-    midheaven
+    midheaven,
   }
 }
 
@@ -682,14 +699,14 @@ function calculateEqualHouses(ascendant: EnhancedAscendant): EnhancedHousePositi
   const houses: EnhancedHousePosition[] = []
 
   for (let i = 0; i < 12; i++) {
-    const houseLongitude = normalizeDegrees(ascendant.longitude + (i * 30))
+    const houseLongitude = normalizeDegrees(ascendant.longitude + i * 30)
     const position = longitudeToSignDegree(houseLongitude)
 
     houses.push({
       houseNumber: i + 1,
       longitude: houseLongitude,
       sign: position.sign,
-      signDegree: position.degree
+      signDegree: position.degree,
     })
   }
 
@@ -707,22 +724,22 @@ function calculatePlacidusHouses(
   jd: number
 ): EnhancedHousePosition[] {
   const houses: EnhancedHousePosition[] = []
-  const latRad = birthInfo.latitude * Math.PI / 180
+  const latRad = (birthInfo.latitude * Math.PI) / 180
 
   // Obliquity of ecliptic
   const T = centuriesSinceJ2000(jd)
-  const epsilon = (23.43929111 - 0.013004167 * T) * Math.PI / 180
+  const epsilon = ((23.43929111 - 0.013004167 * T) * Math.PI) / 180
 
   // Calculate intermediate house cusps using time proportions
-  const mcLon = midheaven.longitude * Math.PI / 180
-  const ascLon = ascendant.longitude * Math.PI / 180
+  const mcLon = (midheaven.longitude * Math.PI) / 180
+  const ascLon = (ascendant.longitude * Math.PI) / 180
 
   // Houses 1, 4, 7, 10 are the angles
   const angles = [
-    ascendant.longitude,                           // House 1 (ASC)
-    normalizeDegrees(midheaven.longitude + 180),   // House 4 (IC)
-    normalizeDegrees(ascendant.longitude + 180),   // House 7 (DSC)
-    midheaven.longitude                            // House 10 (MC)
+    ascendant.longitude, // House 1 (ASC)
+    normalizeDegrees(midheaven.longitude + 180), // House 4 (IC)
+    normalizeDegrees(ascendant.longitude + 180), // House 7 (DSC)
+    midheaven.longitude, // House 10 (MC)
   ]
 
   // Calculate intermediate houses using Placidus method
@@ -745,23 +762,27 @@ function calculatePlacidusHouses(
       let baseAngle: number
       let nextAngle: number
 
-      if (quadrant === 0) { // Houses 2, 3
+      if (quadrant === 0) {
+        // Houses 2, 3
         baseAngle = ascendant.longitude
         nextAngle = midheaven.longitude
-      } else if (quadrant === 1) { // Houses 5, 6
+      } else if (quadrant === 1) {
+        // Houses 5, 6
         baseAngle = midheaven.longitude
         nextAngle = normalizeDegrees(ascendant.longitude + 180)
-      } else if (quadrant === 2) { // Houses 8, 9
+      } else if (quadrant === 2) {
+        // Houses 8, 9
         baseAngle = normalizeDegrees(ascendant.longitude + 180)
         nextAngle = normalizeDegrees(midheaven.longitude + 180)
-      } else { // Houses 11, 12
+      } else {
+        // Houses 11, 12
         baseAngle = normalizeDegrees(midheaven.longitude + 180)
         nextAngle = ascendant.longitude
         if (nextAngle < baseAngle) nextAngle += 360
       }
 
       // Time-based division (simplified)
-      const fraction = position === 0 ? 1/3 : 2/3
+      const fraction = position === 0 ? 1 / 3 : 2 / 3
       const angleDiff = nextAngle - baseAngle
       if (angleDiff < 0) {
         houseLongitude = normalizeDegrees(baseAngle + (angleDiff + 360) * fraction)
@@ -775,7 +796,7 @@ function calculatePlacidusHouses(
       houseNumber: house,
       longitude: houseLongitude,
       sign: position.sign,
-      signDegree: position.degree
+      signDegree: position.degree,
     })
   }
 
@@ -792,17 +813,17 @@ function calculateKochHouses(
   jd: number
 ): EnhancedHousePosition[] {
   const houses: EnhancedHousePosition[] = []
-  const latRad = birthInfo.latitude * Math.PI / 180
+  const latRad = (birthInfo.latitude * Math.PI) / 180
 
   // Koch system uses similar principles to Placidus but with different calculations
   // For simplicity, we'll use a modified version that creates unequal houses
 
   // Start with the four angles
   const angles = [
-    ascendant.longitude,                           // House 1
-    normalizeDegrees(midheaven.longitude + 180),   // House 4
-    normalizeDegrees(ascendant.longitude + 180),   // House 7
-    midheaven.longitude                            // House 10
+    ascendant.longitude, // House 1
+    normalizeDegrees(midheaven.longitude + 180), // House 4
+    normalizeDegrees(ascendant.longitude + 180), // House 7
+    midheaven.longitude, // House 10
   ]
 
   for (let house = 1; house <= 12; house++) {
@@ -817,7 +838,7 @@ function calculateKochHouses(
       const quadrant = Math.floor((house - 1) / 3)
       const position = (house - 1) % 3
 
-      let baseAngle = angles[quadrant]
+      const baseAngle = angles[quadrant]
       let nextAngle = angles[(quadrant + 1) % 4]
 
       if (nextAngle < baseAngle) nextAngle += 360
@@ -832,7 +853,7 @@ function calculateKochHouses(
       houseNumber: house,
       longitude: houseLongitude,
       sign: position.sign,
-      signDegree: position.degree
+      signDegree: position.degree,
     })
   }
 
@@ -865,11 +886,12 @@ function calculateCampanusHouses(
       houseLongitude = normalizeDegrees(midheaven.longitude + 180)
     } else {
       // Simplified Campanus calculation - uses modified equal house with latitude correction
-      const baseHouse = house <= 6 ? ascendant.longitude : normalizeDegrees(ascendant.longitude + 180)
+      const baseHouse =
+        house <= 6 ? ascendant.longitude : normalizeDegrees(ascendant.longitude + 180)
       const houseOffset = ((house - 1) % 6) * 30
 
       // Apply latitude correction
-      const latCorrection = Math.sin(birthInfo.latitude * Math.PI / 180) * 5
+      const latCorrection = Math.sin((birthInfo.latitude * Math.PI) / 180) * 5
       houseLongitude = normalizeDegrees(baseHouse + houseOffset + latCorrection)
     }
 
@@ -878,7 +900,7 @@ function calculateCampanusHouses(
       houseNumber: house,
       longitude: houseLongitude,
       sign: position.sign,
-      signDegree: position.degree
+      signDegree: position.degree,
     })
   }
 
@@ -918,7 +940,7 @@ function calculateRegiomontanusHouses(
         ascendant.longitude,
         midheaven.longitude,
         normalizeDegrees(ascendant.longitude + 180),
-        normalizeDegrees(midheaven.longitude + 180)
+        normalizeDegrees(midheaven.longitude + 180),
       ]
 
       const baseAngle = baseAngles[quadrant]
@@ -933,7 +955,7 @@ function calculateRegiomontanusHouses(
       houseNumber: house,
       longitude: houseLongitude,
       sign: position.sign,
-      signDegree: position.degree
+      signDegree: position.degree,
     })
   }
 
