@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -64,7 +64,7 @@ import { MomentBasedRecommendations } from '@/components/moment-based-recommenda
 import { useSearchParams } from 'next/navigation'
 import { degreeAgentMatcher } from '@/lib/degree-agent-matcher'
 
-export default function GalleryPage() {
+function GalleryPageContent() {
   const [viewMode, setViewMode] = useState<GalleryViewMode>('grid')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedAgents, setSelectedAgents] = useState<string[]>([])
@@ -843,5 +843,13 @@ export default function GalleryPage() {
         enableSpecializationGroups={true}
       />
     </div>
+  )
+}
+
+export default function GalleryPage() {
+  return (
+    <Suspense fallback={<div className="container py-8">Loading gallery...</div>}>
+      <GalleryPageContent />
+    </Suspense>
   )
 }

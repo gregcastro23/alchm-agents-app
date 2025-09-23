@@ -84,11 +84,13 @@ export class DegreeAgentMatcher {
    * Initialize agent profiles with natal data
    */
   private initializeAgentProfiles() {
-    const agents = getDemoAgentByIds([
+    const { DEMO_AGENTS } = require('./demo-agents-data')
+    const ids = [
       'leonardo-da-vinci', 'william-shakespeare', 'albert-einstein',
       'carl-jung', 'nikola-tesla', 'marie-curie', 'cleopatra-vii',
       'benjamin-franklin', 'galileo-galilei', 'isaac-newton'
-    ])
+    ]
+    const agents: CraftedAgent[] = DEMO_AGENTS.filter((a: any) => ids.includes(a.id))
 
     agents.forEach(agent => {
       const profile = this.createAgentDegreeProfile(agent)

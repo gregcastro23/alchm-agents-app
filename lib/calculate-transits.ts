@@ -187,11 +187,21 @@ function findSignFromTransitDates(
     const transitDates = getTransitDates(planet)
     if (!transitDates) return null
 
-    const currentDateStr = date.toISOString().split('T')[0]
+    // Normalize provided Start/End strings to the current year using month/day only
+    const currentYear = date.getFullYear()
+
+    const parseMonthDay = (s: string): { month: number; day: number } => {
+      const parts = s.split('-')
+      return { month: Number(parts[1]), day: Number(parts[2]) }
+    }
 
     for (const [sign, dates] of Object.entries(transitDates)) {
-      const startDate = new Date(dates.Start)
-      const endDate = new Date(dates.End)
+      const s = parseMonthDay(dates.Start)
+      const e = parseMonthDay(dates.End)
+      const startYear = currentYear
+      const endYear = (s.month > e.month || (s.month === e.month && s.day > e.day)) ? currentYear + 1 : currentYear
+      const startDate = new Date(startYear, s.month - 1, s.day)
+      const endDate = new Date(endYear, e.month - 1, e.day)
 
       if (date >= startDate && date <= endDate) {
         // Found the current sign!
