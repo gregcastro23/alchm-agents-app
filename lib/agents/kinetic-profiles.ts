@@ -476,7 +476,8 @@ export function calculateKineticState(
   agentId: string,
   currentPower: number,
   planetaryInfluences: string[],
-  elementalTotals: { Fire: number; Water: number; Air: number; Earth: number }
+  elementalTotals: { Fire: number; Water: number; Air: number; Earth: number },
+  forceMagnitude?: number
 ) {
   const profile = agentKineticProfiles[agentId]
   if (!profile) return null
@@ -507,7 +508,10 @@ export function calculateKineticState(
         totalElemental
       : 0.5
 
-  const powerMultiplier = profile.evolutionRate * (1 + alignmentBonus) * (0.5 + elementalResonance)
+  // Apply force acceleration boost (high force accelerates evolution)
+  const forceBoost = forceMagnitude ? (1 + forceMagnitude / 10) : 1.0
+
+  const powerMultiplier = profile.evolutionRate * (1 + alignmentBonus) * (0.5 + elementalResonance) * forceBoost
   const abilitiesUnlocked = profile.specialAbilities.slice(0, thresholdIndex + 1)
 
   return {

@@ -11,6 +11,7 @@ export type KineticsGetParams = {
   includeElemental?: boolean
   includePlanetary?: boolean
   validateTraditional?: boolean
+  includeForce?: boolean
 }
 
 export type KineticsPostBody = {
@@ -47,6 +48,7 @@ export class AlchemicalKineticsClient {
       url.searchParams.set('includeElemental', String(params.includeElemental !== false))
       url.searchParams.set('includePlanetary', String(params.includePlanetary !== false))
       url.searchParams.set('validateTraditional', String(params.validateTraditional === true))
+      if (params.includeForce) url.searchParams.set('includeForce', String(params.includeForce))
 
       const res = await fetch(url.toString())
       if (!res.ok) {

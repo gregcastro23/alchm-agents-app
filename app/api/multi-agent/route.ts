@@ -20,6 +20,8 @@ import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
 import { ANumberCalculator } from '@/lib/core-energy-rules'
 import { getLunarDegreePersonality, getMoonDegree } from '@/lib/moon-phase-calculator'
 import { PlanetaryHourCalculator, SEPHIROTIC_PRIORITY } from '@/lib/planetary-hour'
+import { sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
+import { computeForce } from '@/lib/alchemical-kinetics'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -331,6 +333,54 @@ export async function POST(req: Request) {
       const user = await getCurrentUser(req)
       const userId = user?.id || getUserIdFromRequest(req)
 
+      // Calculate current force magnitude directly
+      let forceMagnitude = 0
+      try {
+        // Sample current kinetics data
+        const samples = await sampleHourlyAlchm(
+          { latitude: 37.7749, longitude: -122.4194 },
+          new Date(),
+          { hoursToSample: 2, includePlanetaryHours: true }
+        )
+
+        if (samples.length >= 2) {
+          // Compute force from the last two samples
+          const forceResults = computeForce(
+            [{
+              t: samples[samples.length - 2].t,
+              p: {
+                Fire: samples[samples.length - 2].totals.Fire,
+                Water: samples[samples.length - 2].totals.Water,
+                Air: samples[samples.length - 2].totals.Air,
+                Earth: samples[samples.length - 2].totals.Earth,
+              },
+              inertia: 1 + samples[samples.length - 2].matter + samples[samples.length - 2].earth + samples[samples.length - 2].substance / 2,
+              planetaryHour: samples[samples.length - 2].planetaryHour,
+            }],
+            [{
+              t: samples[samples.length - 1].t,
+              v: {
+                Fire: (samples[samples.length - 1].totals.Fire - samples[samples.length - 2].totals.Fire) /
+                      ((samples[samples.length - 1].t.getTime() - samples[samples.length - 2].t.getTime()) / 3600000),
+                Water: (samples[samples.length - 1].totals.Water - samples[samples.length - 2].totals.Water) /
+                       ((samples[samples.length - 1].t.getTime() - samples[samples.length - 2].t.getTime()) / 3600000),
+                Air: (samples[samples.length - 1].totals.Air - samples[samples.length - 2].totals.Air) /
+                     ((samples[samples.length - 1].t.getTime() - samples[samples.length - 2].t.getTime()) / 3600000),
+                Earth: (samples[samples.length - 1].totals.Earth - samples[samples.length - 2].totals.Earth) /
+                       ((samples[samples.length - 1].t.getTime() - samples[samples.length - 2].t.getTime()) / 3600000),
+              },
+              planetaryHour: samples[samples.length - 1].planetaryHour,
+            }]
+          )
+
+          if (forceResults.length > 0) {
+            forceMagnitude = forceResults[0].magnitude || 0
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to compute force data for multi-agent logging:', error)
+      }
+
       // Log interaction for each agent
       for (const response of responses) {
         const agentId = `${response.agent.toLowerCase()}-multi`
@@ -343,6 +393,7 @@ export async function POST(req: Request) {
           powerGained,
           planetaryInfluence: response.agent,
           elementalResonance: response.elementalInfo.elementalAffinity,
+          forceMagnitude,
           metadata: {
             question,
             responseLength: response.response.length,

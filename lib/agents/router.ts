@@ -120,6 +120,7 @@ async function handleKineticsTask(
       includeElemental: true,
       includePlanetary: true,
       validateTraditional: true,
+      includeForce: true,
     })
 
     // Get agent profile from new kinetic profiles
@@ -149,12 +150,21 @@ async function handleKineticsTask(
     // Get elemental totals
     const elementalTotals = kinetics.elemental?.totals || { Fire: 5, Water: 5, Air: 5, Earth: 5 }
 
-    // Calculate kinetic state
+    // Calculate force magnitude from recent kinetics data
+    let forceMagnitude = 0
+    if (kinetics.elementalForce && kinetics.elementalForce.length > 0) {
+      // Use the most recent force magnitude
+      const latestForce = kinetics.elementalForce[kinetics.elementalForce.length - 1]
+      forceMagnitude = latestForce.magnitude || 0
+    }
+
+    // Calculate kinetic state with force
     const kineticState = calculateKineticState(
       agentId,
       currentPower,
       planetaryInfluences,
-      elementalTotals
+      elementalTotals,
+      forceMagnitude
     )
 
     return {
@@ -175,6 +185,8 @@ async function handleKineticsTask(
           power: kinetics.power[kinetics.power.length - 1]?.power || 0.5,
           velocity:
             kinetics.elementalVelocity?.[kinetics.elementalVelocity.length - 1]?.magnitude || 0.5,
+          force: kinetics.elementalForce?.[kinetics.elementalForce.length - 1] || null,
+          forceMagnitude,
         },
       },
       agentId,

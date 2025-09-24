@@ -1129,6 +1129,7 @@ model ConsciousnessInteraction {
   powerGained        Float
   planetaryInfluence String
   elementalResonance Float
+  forceMagnitude     Float?
   timestamp          DateTime @default(now())
   metadata           String   @default("{}")
 

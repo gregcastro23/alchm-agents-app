@@ -37,6 +37,7 @@ export interface InteractionData {
   powerGained: number
   planetaryInfluence: string
   elementalResonance: number
+  forceMagnitude?: number
   metadata?: any
 }
 
@@ -149,6 +150,7 @@ class ConsciousnessPersistence {
           powerGained: data.powerGained,
           planetaryInfluence: data.planetaryInfluence,
           elementalResonance: data.elementalResonance,
+          forceMagnitude: data.forceMagnitude || null,
           metadata: JSON.stringify(data.metadata || {}),
         },
       })

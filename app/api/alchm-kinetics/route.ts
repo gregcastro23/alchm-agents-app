@@ -5,11 +5,13 @@ import {
   computeMetricVelocity,
   computeElementalMomentum,
   computePower,
+  computeForce,
   computeInertia,
   validateKineticResults,
   validateCalculusRelationships,
   type ElementKey,
   type ElementVector,
+  type ForceVector,
 } from '@/lib/alchemical-kinetics'
 
 // Simple moving average used for optional smoothing (Mercury triad default)
@@ -52,6 +54,7 @@ export async function GET(req: Request) {
     const includeElemental = parseBool(searchParams.get('includeElemental'), true)
     const includePlanetary = parseBool(searchParams.get('includePlanetary'), true)
     const validateTraditional = parseBool(searchParams.get('validateTraditional'), false)
+    const includeForce = parseBool(searchParams.get('includeForce'), false)
 
     const smoothingWindow = Number.isFinite(parseInt(windowStr || ''))
       ? Math.max(1, parseInt(windowStr!))
@@ -155,6 +158,12 @@ export async function GET(req: Request) {
       magnitude: number
       momentumType: 'building' | 'sustained' | 'dissipating'
     }> = []
+    let elementalForce: Array<{
+      t: Date
+      f: ForceVector
+      magnitude: number
+      forceType: 'accelerating' | 'decelerating' | 'balanced'
+    }> = []
     if (includeElemental) {
       const momentumInput = elementalVelocity.map((vRec, i) => {
         const s = samples[i]
@@ -167,6 +176,23 @@ export async function GET(req: Request) {
         return { t: vRec.t, v: vRec.v, inertia, substance: s.substance }
       })
       elementalMomentum = computeElementalMomentum(momentumInput)
+
+      // Compute force if requested
+      if (includeForce) {
+        elementalForce = computeForce(
+          elementalMomentum.map((p, i) => ({
+            t: p.t,
+            p: p.p,
+            inertia: momentumInput[i].inertia,
+            planetaryHour: samples[i].planetaryHour,
+          })),
+          elementalVelocity.map(v => ({
+            t: v.t,
+            v: v.v,
+            planetaryHour: samples.find(s => s.t.getTime() === v.t.getTime())?.planetaryHour,
+          }))
+        )
+      }
     }
 
     // Traditional validation
@@ -179,12 +205,14 @@ export async function GET(req: Request) {
         })),
         metricVelocity,
         elementalMomentum,
+        elementalForce,
         power: power.map((p, i) => ({ ...p, planetaryHour: samples[i]?.planetaryHour })),
       }
       const validationCore = validateKineticResults(kineticsForValidation, {
         velocityMax: 1000,
         momentumMax: 5000,
         powerMax: 1000,
+        forceMax: 10000,
       })
 
       // Elemental balance qualitative assessment
@@ -248,15 +276,16 @@ export async function GET(req: Request) {
                     (sample.Substance || 0) / 2
                 )
 
-              return {
-                t: new Date(sample.timestamp),
-                elements: sample.totals,
-                velocity: elementalVelocity[i]?.v || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
-                momentum: elementalMomentum[i]?.p || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
-                inertia,
-                energy: sample.Energy,
-                power: power[i]?.power || 0,
-              }
+            return {
+              t: new Date(sample.timestamp),
+              elements: sample.totals,
+              velocity: elementalVelocity[i]?.v || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
+              momentum: elementalMomentum[i]?.p || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
+              inertia,
+              energy: sample.Energy,
+              power: power[i]?.power || 0,
+              force: elementalForce[i]?.f,
+            }
             })
 
           const calculusValidation = validateCalculusRelationships(calculusSamples)
@@ -293,6 +322,7 @@ export async function GET(req: Request) {
       elementalVelocity,
       metricVelocity,
       elementalMomentum,
+      elementalForce: includeForce ? elementalForce : undefined,
       power,
       traditionalValidation,
       timing: {
@@ -322,6 +352,7 @@ export async function POST(req: Request) {
     const includeElemental = body.includeElemental !== false
     const includePlanetary = body.includePlanetary !== false
     const validateTraditional = body.validateTraditional === true
+    const includeForce = body.includeForce === true
 
     if (!startTime || !endTime) {
       return NextResponse.json(
@@ -400,6 +431,12 @@ export async function POST(req: Request) {
       magnitude: number
       momentumType: 'building' | 'sustained' | 'dissipating'
     }> = []
+    let elementalForce: Array<{
+      t: Date
+      f: ForceVector
+      magnitude: number
+      forceType: 'accelerating' | 'decelerating' | 'balanced'
+    }> = []
     if (includeElemental) {
       const momentumInput = elementalVelocity.map((vRec, i) => {
         const s = samples[i]
@@ -412,6 +449,23 @@ export async function POST(req: Request) {
         return { t: vRec.t, v: vRec.v, inertia, substance: s.substance }
       })
       elementalMomentum = computeElementalMomentum(momentumInput)
+
+      // Compute force if requested
+      if (includeForce) {
+        elementalForce = computeForce(
+          elementalMomentum.map((p, i) => ({
+            t: p.t,
+            p: p.p,
+            inertia: momentumInput[i].inertia,
+            planetaryHour: samples[i].planetaryHour,
+          })),
+          elementalVelocity.map(v => ({
+            t: v.t,
+            v: v.v,
+            planetaryHour: samples.find(s => s.t.getTime() === v.t.getTime())?.planetaryHour,
+          }))
+        )
+      }
     }
 
     let traditionalValidation: any = undefined
@@ -439,6 +493,7 @@ export async function POST(req: Request) {
       elementalVelocity,
       metricVelocity,
       elementalMomentum,
+      elementalForce: includeForce ? elementalForce : undefined,
       power,
       traditionalValidation,
     })
@@ -475,6 +530,19 @@ function flattenAlchemyInfo(alchmData: any): Record<string, any> {
     flattened['Water_Total'] = alchmData['Total Effect Value']['Water'] || 0
     flattened['Air_Total'] = alchmData['Total Effect Value']['Air'] || 0
     flattened['Earth_Total'] = alchmData['Total Effect Value']['Earth'] || 0
+  }
+
+  // Force values (if available)
+  if (alchmData['force']) {
+    flattened['Fire_Force'] = alchmData['force']['Fire'] || 0
+    flattened['Water_Force'] = alchmData['force']['Water'] || 0
+    flattened['Air_Force'] = alchmData['force']['Air'] || 0
+    flattened['Earth_Force'] = alchmData['force']['Earth'] || 0
+    // Calculate magnitude if force values exist
+    const f = alchmData['force']
+    flattened['Force_Magnitude'] = Math.sqrt(
+      (f.Fire || 0) ** 2 + (f.Water || 0) ** 2 + (f.Air || 0) ** 2 + (f.Earth || 0) ** 2
+    )
   }
 
   // Chart info

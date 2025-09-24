@@ -8,7 +8,16 @@
 import { alchemize } from './alchemizer'
 import { generateAccurateHoroscope } from './monica/horoscope-generator'
 import { PlanetaryHourCalculator } from './planetary-hour'
-import type { ElementVector, MetricVector, PlanetaryHour } from './alchemical-kinetics'
+import {
+  computeElementalVelocity,
+  computeElementalMomentum,
+  computeForce,
+  computeInertia,
+  type ElementVector,
+  type MetricVector,
+  type PlanetaryHour,
+  type ForceVector
+} from './alchemical-kinetics'
 
 export interface HourlyAlchemicalSample {
   t: Date
@@ -25,6 +34,7 @@ export interface HourlyAlchemicalSample {
   planetaryHour: PlanetaryHour
   dayNight: 'day' | 'night'
   seasonalPhase: string
+  force?: ForceVector
 }
 
 export class AlchemicalKineticsSampler {
@@ -106,6 +116,59 @@ function convertAlchemizerOutput(alchmData: any): {
     spirit: alchmData['Alchemy Effects']?.['Total Spirit'] || 0,
     essence: alchmData['Alchemy Effects']?.['Total Essence'] || 0,
   }
+}
+
+/**
+ * Attach force calculations to existing samples
+ * Computes velocity, momentum, and force for the sample series
+ */
+export function attachForceToSamples(samples: HourlyAlchemicalSample[]): void {
+  if (!samples || samples.length === 0) return
+
+  // Build inputs for kinetics computation
+  const elementalInput = samples.map(s => ({
+    t: s.t,
+    totals: s.totals,
+    planetaryHour: s.planetaryHour,
+  }))
+
+  // Compute velocity
+  const velocityResults = computeElementalVelocity(elementalInput)
+
+  // Compute momentum (requires velocity and inertia)
+  const momentumInput = velocityResults.map((vRec, i) => {
+    const s = samples[i]
+    const inertia = computeInertia({
+      matter: s.matter,
+      earth: s.earth,
+      substance: s.substance,
+      planetaryHour: s.planetaryHour,
+    })
+    return { t: vRec.t, v: vRec.v, inertia, substance: s.substance }
+  })
+  const momentumResults = computeElementalMomentum(momentumInput)
+
+  // Compute force
+  const forceResults = computeForce(
+    momentumResults.map((p, i) => ({
+      t: p.t,
+      p: p.p,
+      inertia: momentumInput[i].inertia,
+      planetaryHour: samples[i].planetaryHour,
+    })),
+    velocityResults.map((v, i) => ({
+      t: v.t,
+      v: v.v,
+      planetaryHour: samples[i]?.planetaryHour,
+    }))
+  )
+
+  // Attach force to samples
+  forceResults.forEach((forceRec, i) => {
+    if (samples[i]) {
+      samples[i].force = forceRec.f
+    }
+  })
 }
 
 /**
@@ -232,13 +295,20 @@ export function validateTimingPatterns(samples: HourlyAlchemicalSample[]): Timin
     hourGroups[hour].push(sample)
   })
 
-  // Calculate averages per planetary hour
+    // Calculate averages per planetary hour
   Object.entries(hourGroups).forEach(([hour, hourSamples]) => {
     if (hourSamples.length === 0) return
 
     const avgFire = hourSamples.reduce((sum, s) => sum + s.totals.Fire, 0) / hourSamples.length
     const avgWater = hourSamples.reduce((sum, s) => sum + s.totals.Water, 0) / hourSamples.length
     const avgEnergy = hourSamples.reduce((sum, s) => sum + s.Energy, 0) / hourSamples.length
+
+    // Calculate force averages if available
+    const forceSamples = hourSamples.filter(s => s.force)
+    let avgFireForce = 0
+    if (forceSamples.length > 0) {
+      avgFireForce = forceSamples.reduce((sum, s) => sum + (s.force?.Fire || 0), 0) / forceSamples.length
+    }
 
     planetaryPatterns[hour] = avgEnergy
 
@@ -248,6 +318,14 @@ export function validateTimingPatterns(samples: HourlyAlchemicalSample[]): Timin
     }
     if (hour === 'Moon' && avgWater < avgFire * 0.8) {
       warnings.push('Water element unexpectedly low during Moon hours')
+    }
+
+    // Force validation checks
+    if (hour === 'Mars' && avgFireForce < 0.01) {
+      warnings.push('Fire force unexpectedly low during Mars hours (should show acceleration)')
+    }
+    if (hour === 'Saturn' && avgFireForce > -0.01) {
+      warnings.push('Fire force unexpectedly high during Saturn hours (should show deceleration)')
     }
   })
 

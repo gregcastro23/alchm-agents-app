@@ -39,7 +39,37 @@ modifiedMomentum = momentum * getPlanetaryMomentumModifier(planetaryHour)
 - Mars/Saturn hours: +15% momentum boost
 - All other hours: baseline (1.0x)
 
-### 3. **Alchemical Power (Potentia)**
+### 3. **Elemental Force (Vis)**
+*Classical Force Principle - Acceleration and Resistance*
+
+```typescript
+// Force = dp/dt = rate of momentum change = inertia × acceleration
+// For each element:
+force[element] = (currentMomentum[element] - previousMomentum[element]) / timeInterval
+
+// With planetary modulation:
+modifiedForce = force * getPlanetaryForceModifier(planetaryHour)
+
+// Magnitude calculation:
+forceMagnitude = sqrt(force.Fire² + force.Water² + force.Air² + force.Earth²)
+
+// Force classification:
+if (forceMagnitude > 0.1) forceType = 'accelerating'
+else if (forceMagnitude < -0.1) forceType = 'decelerating'
+else forceType = 'balanced'
+```
+
+**Planetary Modifiers:**
+- Mars hours: +20% force amplification (accelerating)
+- Saturn hours: -10% force dampening (stabilizing)
+- All other hours: baseline (1.0x)
+
+**Applications:**
+- Agent evolution: High force accelerates consciousness growth by multiplier (1 + forceMagnitude/10)
+- Token kinetics: Force boosts rate calculations for enhanced yields
+- Group dynamics: Collective force provides resonance bonuses for harmony
+
+### 4. **Alchemical Power (Potentia)**
 *Solar Principle - Capacity for Work*
 
 ```typescript

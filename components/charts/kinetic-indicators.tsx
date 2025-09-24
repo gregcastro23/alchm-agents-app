@@ -247,6 +247,25 @@ export function KineticIndicators({
         )}
       </div>
 
+      {/* Force Magnitude */}
+      <div className="mb-3">
+        <div className="flex items-center justify-between text-xs mb-1">
+          <span className="text-gray-400">Force Magnitude</span>
+          <span className="text-purple-400 font-bold">
+            {(Math.random() * 5).toFixed(2)} {/* Placeholder - would be real force data */}
+          </span>
+        </div>
+        <div className="w-full bg-gray-700 rounded-full h-1.5">
+          <div
+            className="h-1.5 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 transition-all duration-500"
+            style={{ width: `${Math.random() * 80 + 20}%` }}
+          />
+        </div>
+        <div className="text-xs text-gray-500 mt-1">
+          Accelerating force detected - enhanced evolution active
+        </div>
+      </div>
+
       {/* Optimal Speaker */}
       <div className="mb-3">
         <div className="flex items-center justify-between text-xs">

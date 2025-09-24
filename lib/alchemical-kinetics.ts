@@ -18,6 +18,7 @@
 // Shared narrow types for elements and metrics to ensure strictness
 export type ElementKey = 'Fire' | 'Water' | 'Air' | 'Earth'
 export type ElementVector = Record<ElementKey, number>
+export type ForceVector = Record<ElementKey, number>
 export type MetricKey = 'Heat' | 'Entropy' | 'Reactivity' | 'Energy'
 export type MetricVector = Record<MetricKey, number>
 
@@ -84,6 +85,13 @@ export function getPlanetaryMomentumModifier(hour: PlanetaryHour): number {
 export function getPlanetaryInertiaModifier(hour: PlanetaryHour): number {
   // Saturnian stabilization
   return hour === 'Saturn' ? 1.1 : 1.0
+}
+
+export function getPlanetaryForceModifier(hour: PlanetaryHour): number {
+  // Mars + Saturn synthesis for force modulation: Mars amplifies (+20%), Saturn dampens (-10%)
+  if (hour === 'Mars') return 1.2
+  if (hour === 'Saturn') return 0.9
+  return 1.0
 }
 
 export function getSolarAmplification(hour?: PlanetaryHour): number {
@@ -333,6 +341,92 @@ export function computePower(
   return smoothed
 }
 
+/**
+ * Elemental force computation (Vis - Classical force principle)
+ * Force = dp/dt = inertia × (dv/dt) - Newton's second law applied per element
+ * Respects independent elements (no cross interference). Includes planetary timing modifiers.
+ * Force magnitude uses Euclidean norm of per-element forces.
+ */
+export function computeForce(
+  momentumSamples: Array<{
+    t: Date
+    p: ElementVector
+    inertia: number // inertia at this time point
+    planetaryHour?: PlanetaryHour
+  }>,
+  velocitySamples: Array<{
+    t: Date
+    v: ElementVector
+    planetaryHour?: PlanetaryHour
+  }>
+): Array<{
+  t: Date
+  f: ForceVector
+  magnitude: number
+  forceType: 'accelerating' | 'decelerating' | 'balanced'
+}> {
+  if (!momentumSamples || !velocitySamples || momentumSamples.length === 0 || velocitySamples.length === 0) {
+    return []
+  }
+
+  const out: Array<{ t: Date; f: ForceVector; magnitude: number; forceType: 'accelerating' | 'decelerating' | 'balanced' }> = []
+
+  for (let i = 0; i < momentumSamples.length; i++) {
+    const momentumSample = momentumSamples[i]
+    const velocitySample = velocitySamples[i]
+    const previousMomentum = i > 0 ? momentumSamples[i - 1] : undefined
+    const previousVelocity = i > 0 ? velocitySamples[i - 1] : undefined
+
+    const dt = previousMomentum && previousVelocity ? (momentumSample.t.getTime() - previousMomentum.t.getTime()) / 3600000 : 0 // hours
+
+    const rawF: ForceVector = { Fire: 0, Water: 0, Air: 0, Earth: 0 }
+    ;(Object.keys(rawF) as ElementKey[]).forEach(el => {
+      if (!previousMomentum || !previousVelocity || dt === 0) {
+        rawF[el] = 0
+      } else {
+        // Use momentum derivative: f = dp/dt
+        const dp = momentumSample.p[el] - previousMomentum.p[el]
+        const base = safeDivide(dp, dt)
+
+        // Alternative efficient calculation: f = inertia * dv/dt
+        // const dv = velocitySample.v[el] - previousVelocity.v[el]
+        // const accel = safeDivide(dv, dt)
+        // const base = momentumSample.inertia * accel
+
+        const modifier = getPlanetaryForceModifier(momentumSample.planetaryHour ?? '')
+        rawF[el] = base * modifier
+      }
+
+      // Handle NaN and infinite values
+      if (!Number.isFinite(rawF[el])) {
+        rawF[el] = 0
+      }
+    })
+
+    const magnitude = Math.sqrt(
+      rawF.Fire * rawF.Fire +
+        rawF.Water * rawF.Water +
+        rawF.Air * rawF.Air +
+        rawF.Earth * rawF.Earth
+    )
+
+    // Determine force type based on magnitude and direction
+    let forceType: 'accelerating' | 'decelerating' | 'balanced' = 'balanced'
+    if (magnitude > 0.1) {
+      // High magnitude indicates accelerating forces
+      forceType = 'accelerating'
+    } else if (magnitude < -0.1) {
+      // Negative high magnitude indicates decelerating forces
+      forceType = 'decelerating'
+    }
+    // Near zero magnitude remains balanced
+
+    out.push({ t: momentumSample.t, f: rawF, magnitude, forceType })
+  }
+
+  return out
+}
+
 // ---- Inertia Helpers (optional for callers to compute provided inertia) ----
 
 /**
@@ -370,6 +464,7 @@ export function validateCalculusRelationships(
     inertia: number
     energy: number
     power: number
+    force?: ForceVector
   }>
 ): {
   isValid: boolean
@@ -436,6 +531,23 @@ export function validateCalculusRelationships(
       )
     }
 
+    // Validate force = dp/dt for each element
+    if (current.force) {
+      for (const element of ['Fire', 'Water', 'Air', 'Earth'] as ElementKey[]) {
+        const expectedForce = (current.momentum[element] - previous.momentum[element]) / dt
+        const actualForce = current.force[element]
+
+        // Allow for planetary modifiers (up to 30% difference) and numerical precision
+        const forceTolerance = Math.abs(expectedForce) * 0.35 + 0.001
+        if (Math.abs(actualForce - expectedForce) > forceTolerance) {
+          warnings.push(
+            `${element} force calculation mismatch at t=${current.t.toISOString()}: ` +
+              `expected ${expectedForce.toFixed(4)}, got ${actualForce.toFixed(4)}`
+          )
+        }
+      }
+    }
+
     // Validate no NaN or infinite values
     const allValues = [
       ...Object.values(current.elements),
@@ -466,6 +578,7 @@ export type KineticValidationExpectedRanges = {
   velocityMax: number
   momentumMax: number
   powerMax: number
+  forceMax: number
 }
 
 export type KineticValidationResult = {
@@ -494,6 +607,8 @@ export function validateKineticResults(
   const pMax =
     kinetics.elementalMomentum?.reduce((m: number, s: any) => Math.max(m, s.magnitude || 0), 0) ?? 0
   const powMax = kinetics.power?.reduce((m: number, s: any) => Math.max(m, s.power || 0), 0) ?? 0
+  const fMax =
+    kinetics.elementalForce?.reduce((m: number, s: any) => Math.max(m, s.magnitude || 0), 0) ?? 0
   if (vMax > expectedRanges.velocityMax)
     warnings.push(
       `Velocity magnitude exceeds expected max (${vMax.toFixed(3)} > ${expectedRanges.velocityMax}).`
@@ -504,6 +619,8 @@ export function validateKineticResults(
     )
   if (powMax > expectedRanges.powerMax)
     warnings.push(`Power exceeds expected max (${powMax.toFixed(3)} > ${expectedRanges.powerMax}).`)
+  if (fMax > expectedRanges.forceMax)
+    warnings.push(`Force magnitude exceeds expected max (${fMax.toFixed(3)} > ${expectedRanges.forceMax}).`)
 
   // Timing expectations (heuristic counts over series)
   const countByHour: Record<

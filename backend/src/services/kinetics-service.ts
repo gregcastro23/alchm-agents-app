@@ -139,7 +139,8 @@ export async function calculateEnhancedKinetics(
  */
 export function calculateGroupDynamics(
   agentIds: string[],
-  location: { lat: number; lon: number }
+  location: { lat: number; lon: number },
+  collectiveForce?: { Fire: number; Water: number; Air: number; Earth: number }
 ): GroupDynamics {
   try {
     const groupSize = agentIds.length
@@ -154,7 +155,20 @@ export function calculateGroupDynamics(
     const sizeModifier = Math.max(0.5, 1 - (groupSize - 2) * 0.1)
     const planetaryAlignment = planetaryPowers.reduce((sum, p) => sum + p, 0) / groupSize
 
-    const harmony = Math.min(1.0, baseHarmony * sizeModifier * planetaryAlignment)
+    // Compute collective force magnitude for synergy bonus
+    const collectiveForceMagnitude = collectiveForce
+      ? Math.sqrt(
+          collectiveForce.Fire ** 2 +
+          collectiveForce.Water ** 2 +
+          collectiveForce.Air ** 2 +
+          collectiveForce.Earth ** 2
+        )
+      : 0
+
+    // High collective force provides resonance bonus
+    const forceSynergyBonus = collectiveForceMagnitude > 0 ? (1 + collectiveForceMagnitude / 20) : 1.0
+
+    const harmony = Math.min(1.0, baseHarmony * sizeModifier * planetaryAlignment * forceSynergyBonus)
 
     // Calculate power amplification
     const powerAmplification = 1 + (harmony - 0.5) * 0.8
@@ -202,7 +216,8 @@ export function calculateGroupDynamics(
 export function calculateTokenKinetics(
   baseTokenRate: number,
   baseNFTRarity: number,
-  location: { lat: number; lon: number }
+  location: { lat: number; lon: number },
+  forceMagnitude?: number
 ): any {
   try {
     const now = new Date()
@@ -224,7 +239,11 @@ export function calculateTokenKinetics(
     const solarAmplification = 1 + 0.1 * Math.sin((timeOfDay * Math.PI) / 6)
 
     // Calculate current rate
-    const currentRate = baseTokenRate * kineticMultiplier * timeMultiplier
+    let currentRate = baseTokenRate * kineticMultiplier * timeMultiplier
+
+    // Apply force-based rate boost
+    const forceBoost = forceMagnitude ? (1 + forceMagnitude / 10) : 1.0
+    currentRate *= forceBoost
 
     // Calculate power level
     const powerLevel = Math.min(1.0, (currentRate / baseTokenRate) * 0.7 + planetaryPower * 0.3)
