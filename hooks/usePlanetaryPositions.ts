@@ -1,11 +1,18 @@
 // Unified hook for consistent planetary positions across all components
+// Enhanced with Chrome DevTools MCP integration and backend API calls
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
-import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
 import { calculateMC } from '@/lib/monica/monica-constant-validator'
 import { logPerformance } from '@/lib/structured-logger'
+import {
+  defaultAlchemicalMCPConfig,
+  validateTokenEquilibrium,
+  isTokenStable,
+  calculateStabilizationAdjustment,
+  type ElementalTokens
+} from '@/testing/alchemical-devtools/mcp-config'
+import { emergencyHandler, type AstrologicalEvent } from '@/utils/alchemical-emergency-handler'
 
 export interface PlanetaryPosition {
   planet: string
@@ -33,6 +40,19 @@ export interface UnifiedPlanetaryData {
   loading: boolean
   error: string | null
   lastUpdated: Date | null
+  // MCP-enhanced fields for token stabilization
+  mcpMetrics?: {
+    tokenStability: 'stable' | 'warning' | 'critical'
+    equilibrium: ReturnType<typeof validateTokenEquilibrium>
+    performanceMetrics: {
+      calculationTime: number
+      tokenRecalculationTime: number
+      aspectCalculationTime: number
+      memoryUsage: number
+    }
+    lastStabilization?: Date
+    stabilizationEvents: number
+  }
 }
 
 interface UsePlanetaryPositionsOptions {
@@ -80,6 +100,12 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
+  // MCP performance monitoring refs
+  const lastTokenEquilibriumRef = useRef<ReturnType<typeof validateTokenEquilibrium> | null>(null)
+  const stabilizationEventsRef = useRef(0)
+  const lastStabilizationRef = useRef<Date | null>(null)
+  const currentTokensRef = useRef<ElementalTokens>({ spirit: 0, essence: 0, matter: 0, substance: 0 })
+
   const fetchPlanetaryData = useCallback(
     async (force: boolean = false): Promise<void> => {
       const fetchStartTime = Date.now()
@@ -112,6 +138,10 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
 
         setData(prev => ({ ...prev, loading: true, error: null }))
 
+        // MCP: Start performance monitoring for token calculations
+        const tokenCalculationStart = performance.now()
+        const aspectCalculationStart = performance.now()
+
         let result: UnifiedPlanetaryData
 
         if (opts.useApi) {
@@ -133,10 +163,38 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
             lastUpdated: new Date(),
           }
         } else {
-          // Use direct calculation (matches other components)
+          // Use backend API for planetary and alchemical calculations
           const timestamp = new Date().toISOString()
-          const positions = getCurrentPlanetaryPositions(Date.now())
-          const alchm = await generateAlchmForCurrentMoment()
+
+          // Call backend API for current planetary alchemy data
+          const planetaryResponse = await fetch('/api/alchemy/current-planetary-alchemy', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              timestamp: timestamp,
+              location: null // Will use default location
+            }),
+            signal: abortControllerRef.current.signal,
+          })
+
+          if (!planetaryResponse.ok) {
+            throw new Error(`Planetary API request failed: ${planetaryResponse.status}`)
+          }
+
+          const planetaryData = await planetaryResponse.json()
+
+          if (!planetaryData.success) {
+            throw new Error(planetaryData.error || 'Planetary alchemy calculation failed')
+          }
+
+          // Extract data from backend response
+          const positions = planetaryData.data.planetaryPositions
+          const alchm = planetaryData.data.alchemicalQuantities
+
+          // MCP: Track API call performance (replaces aspect calculation time)
+          const aspectCalculationTime = planetaryData.metadata.computeTime || 0
 
           const planetaryPositions = [
             'Sun',
@@ -187,14 +245,76 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
           const air = safeAlchmValue(alchm?.['Total Effect Value']?.['Air'])
           const earth = safeAlchmValue(alchm?.['Total Effect Value']?.['Earth'])
 
+          // MCP: Track token recalculation performance
+          const tokenRecalculationTime = performance.now() - tokenCalculationStart
+
+          // MCP: Validate token equilibrium and stability
+          const currentTokens: ElementalTokens = { spirit, essence, matter, substance }
+          const currentEquilibrium = validateTokenEquilibrium(currentTokens)
+          const tokenStability = !isTokenStable(currentTokens, defaultAlchemicalMCPConfig) ? 'critical' :
+                                currentEquilibrium.overallHealth < 0.7 ? 'warning' : 'stable'
+
+          // MCP: Monitor token fluctuations and apply stabilization if needed
+          let stabilizedTokens = currentTokens
+          let stabilizationApplied = false
+
+          if (tokenStability === 'critical' && lastTokenEquilibriumRef.current) {
+            const previousEquilibrium = lastTokenEquilibriumRef.current
+            const healthChange = Math.abs(currentEquilibrium.overallHealth - previousEquilibrium.overallHealth)
+
+            // Only apply stabilization for significant health changes (>10% change)
+            if (healthChange > 0.1) {
+              const adjustment = calculateStabilizationAdjustment(currentTokens, defaultAlchemicalMCPConfig)
+              stabilizedTokens = {
+                spirit: Math.max(0, spirit + (adjustment.spirit || 0)),
+                essence: Math.max(0, essence + (adjustment.essence || 0)),
+                matter: Math.max(0, matter + (adjustment.matter || 0)),
+                substance: Math.max(0, substance + (adjustment.substance || 0))
+              }
+              stabilizationApplied = true
+              stabilizationEventsRef.current++
+              lastStabilizationRef.current = new Date()
+
+              // Log stabilization event
+              logPerformance('token_stabilization_applied', tokenRecalculationTime, {
+                system: 'mcp',
+                operation: 'stabilization',
+                metadata: {
+                  originalTokens: currentTokens,
+                  adjustedTokens: stabilizedTokens,
+                  equilibrium: currentEquilibrium,
+                  imbalanceChange
+                }
+              })
+            }
+          }
+
+          // Update equilibrium and token references for next comparison
+          lastTokenEquilibriumRef.current = currentEquilibrium
+          currentTokensRef.current = stabilizedTokens
+
+          // MCP: Emergency monitoring for critical astrological events
+          // In a real implementation, this would check for actual astrological events
+          // For now, we'll simulate basic emergency monitoring
+          const mockActiveEvents: AstrologicalEvent[] = [] // Would be populated by astrological calculation
+
+          const emergencyResponse = emergencyHandler.monitorAndRespond(stabilizedTokens, mockActiveEvents)
+
+          // Apply emergency adjustments if triggered
+          if (emergencyResponse.emergency) {
+            stabilizedTokens = emergencyResponse.adjustedTokens
+            stabilizationEventsRef.current++
+            lastStabilizationRef.current = new Date()
+          }
+
           // Validate Monica Constant calculation inputs and result
           let monicaConstant = 0
           try {
             const mcResult = calculateMC(
-              spirit,
-              essence,
-              matter,
-              substance,
+              stabilizedTokens.spirit,
+              stabilizedTokens.essence,
+              stabilizedTokens.matter,
+              stabilizedTokens.substance,
               fire,
               water,
               air,
@@ -210,10 +330,10 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
             timestamp,
             planetaryPositions,
             alchmQuantities: {
-              spirit,
-              essence,
-              matter,
-              substance,
+              spirit: stabilizedTokens.spirit,
+              essence: stabilizedTokens.essence,
+              matter: stabilizedTokens.matter,
+              substance: stabilizedTokens.substance,
               Heat: safeAlchmValue(alchm?.['Heat']),
               Entropy: safeAlchmValue(alchm?.['Entropy']),
               Reactivity: safeAlchmValue(alchm?.['Reactivity']),
@@ -223,6 +343,19 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
             loading: false,
             error: null,
             lastUpdated: new Date(),
+            // MCP: Include performance and stabilization metrics
+            mcpMetrics: {
+              tokenStability,
+              equilibrium: currentEquilibrium,
+              performanceMetrics: {
+                calculationTime: performance.now() - tokenCalculationStart,
+                tokenRecalculationTime,
+                aspectCalculationTime,
+                memoryUsage: (performance as any).memory?.usedJSHeapSize || 0
+              },
+              lastStabilization: lastStabilizationRef.current || undefined,
+              stabilizationEvents: stabilizationEventsRef.current
+            }
           }
         }
 
@@ -236,16 +369,47 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
         setData(result)
         retryCountRef.current = 0 // Reset retry count on success
 
-        // Log successful fetch performance
+        // Log successful fetch performance with MCP metrics
         logPerformance('planetary_positions_fetch_success', Date.now() - fetchStartTime, {
           system: 'hook',
           operation: 'fetch_success',
           metadata: {
             useApi: opts.useApi,
             cached: false,
-            planetsCount: result.planetaryPositions.length
+            planetsCount: result.planetaryPositions.length,
+            mcpMetrics: result.mcpMetrics
           }
         })
+
+        // MCP: Log performance warnings if thresholds exceeded
+        if (result.mcpMetrics) {
+          const { performanceMetrics, tokenStability } = result.mcpMetrics
+          const config = defaultAlchemicalMCPConfig.performanceThresholds
+
+          if (performanceMetrics.calculationTime > config.maxCalculationTime) {
+            logPerformance('token_calculation_performance_warning', performanceMetrics.calculationTime, {
+              system: 'mcp',
+              operation: 'performance_warning',
+              metadata: {
+                threshold: config.maxCalculationTime,
+                actual: performanceMetrics.calculationTime,
+                tokenStability
+              }
+            })
+          }
+
+          if (performanceMetrics.memoryUsage > config.maxMemoryUsage) {
+            logPerformance('token_memory_usage_warning', performanceMetrics.memoryUsage, {
+              system: 'mcp',
+              operation: 'memory_warning',
+              metadata: {
+                threshold: config.maxMemoryUsage,
+                actual: performanceMetrics.memoryUsage,
+                tokenStability
+              }
+            })
+          }
+        }
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
           return // Ignore aborted requests
@@ -283,6 +447,38 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
   const refresh = useCallback(() => {
     fetchPlanetaryData(true)
   }, [fetchPlanetaryData])
+
+  // MCP: Manual token stabilization function
+  const stabilizeTokens = useCallback(() => {
+    if (data.mcpMetrics?.tokenStability === 'critical') {
+      stabilizationEventsRef.current++
+      lastStabilizationRef.current = new Date()
+
+      // Force a recalculation with stabilization
+      fetchPlanetaryData(true)
+
+      logPerformance('manual_token_stabilization_triggered', 0, {
+        system: 'mcp',
+        operation: 'manual_stabilization',
+        metadata: {
+          previousStability: data.mcpMetrics?.tokenStability,
+          equilibrium: data.mcpMetrics?.equilibrium
+        }
+      })
+    }
+  }, [data.mcpMetrics, fetchPlanetaryData])
+
+  // MCP: Get current MCP metrics for external monitoring
+  const getMCPMetrics = useCallback(() => {
+    return data.mcpMetrics
+  }, [data.mcpMetrics])
+
+  // MCP: Check if stabilization is needed
+  const needsStabilization = useCallback(() => {
+    return data.mcpMetrics?.tokenStability === 'critical' ||
+           (data.mcpMetrics?.tokenStability === 'warning' &&
+            data.mcpMetrics.equilibrium.overallHealth < 0.7)
+  }, [data.mcpMetrics])
 
   // Subscribe to shared cache updates
   useEffect(() => {
@@ -326,6 +522,17 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
     isStale: data.lastUpdated
       ? Date.now() - data.lastUpdated.getTime() > opts.refreshInterval
       : true,
+    // MCP-enhanced functions
+    stabilizeTokens,
+    getMCPMetrics,
+    needsStabilization,
+    mcpConfig: defaultAlchemicalMCPConfig,
+    // Emergency monitoring functions
+    getEmergencyStatus: () => emergencyHandler.getMonitoringStatus(),
+    assessEmergency: (events: AstrologicalEvent[]) =>
+      emergencyHandler.assessEmergency(currentTokensRef.current, events),
+    getEmergencyAlerts: (upcomingEvents: AstrologicalEvent[]) =>
+      emergencyHandler.getPredictiveAlerts(upcomingEvents),
   }
 }
 

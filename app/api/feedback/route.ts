@@ -18,7 +18,7 @@ interface FeedbackData {
 }
 
 export async function POST(request: NextRequest) {
-  return withErrorHandling(
+  const result = await withErrorHandling(
     async () => {
       const feedback: FeedbackData = await request.json()
 
@@ -95,24 +95,24 @@ export async function POST(request: NextRequest) {
       operation: 'feedback_submit',
       severity: 'low',
     }
-  ).then(result => {
-    if (result.success === false) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: result.userMessage,
-          context: result.context
-        },
-        { status: 500 }
-      );
-    }
-    return result;
-  });
+  )
+
+  if ('success' in result && result.success === false) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: result.userMessage,
+        context: result.context
+      },
+      { status: 500 }
+    );
+  }
+  return result as NextResponse;
 }
 
 // Optional: GET endpoint to retrieve feedback statistics (admin only)
 export async function GET(request: NextRequest) {
-  return withErrorHandling(
+  const result = await withErrorHandling(
     async () => {
       // In a real implementation, check for admin authentication
       // For now, return mock statistics
@@ -161,17 +161,17 @@ export async function GET(request: NextRequest) {
       operation: 'feedback_stats',
       severity: 'low',
     }
-  ).then(result => {
-    if (result.success === false) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: result.userMessage,
-          context: result.context
-        },
-        { status: 500 }
-      );
-    }
-    return result;
-  });
+  )
+
+  if ('success' in result && result.success === false) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: result.userMessage,
+        context: result.context
+      },
+      { status: 500 }
+    );
+  }
+  return result as NextResponse;
 }

@@ -18,7 +18,7 @@ import {
   SURVEY_METADATA,
 } from '@/lib/consciousness-survey/survey-questions'
 import type { SurveyQuestion, SurveyResponse } from '@/lib/types/consciousness-survey'
-import { SurveyQuestionComponent } from './survey-question-component'
+import { SurveyQuestionComponent } from '@/components/misc/survey-question-component'
 
 interface ConsciousnessSurveyProps {
   onComplete: (responses: SurveyResponse[], timeSpent: number) => void

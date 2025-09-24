@@ -15,9 +15,19 @@ import {
   RefreshCw,
   TrendingUp,
   TrendingDown,
-  Activity
+  Activity,
+  Flame,
+  Droplets,
+  Mountain,
+  Wind,
+  Target,
+  Eye
 } from 'lucide-react'
 import { logger, LogLevel } from '@/lib/structured-logger'
+import { usePlanetaryPositions } from '@/hooks/usePlanetaryPositions'
+import { TokenStabilizationMonitor } from './TokenStabilizationMonitor'
+import { TokenFlowVisualization } from '@/components/visualization/token-flow-visualization'
+import { defaultAlchemicalMCPConfig } from '@/testing/alchemical-devtools/mcp-config'
 
 interface PerformanceMetrics {
   averageResponseTime: number
@@ -38,6 +48,11 @@ export function PerformanceDashboard() {
   const [performanceData, setPerformanceData] = useState<PerformanceData | null>(null)
   const [loading, setLoading] = useState(true)
   const [autoRefresh, setAutoRefresh] = useState(true)
+
+  // MCP-enhanced planetary monitoring
+  const { mcpMetrics, needsStabilization, stabilizeTokens } = usePlanetaryPositions({
+    refreshInterval: 5000
+  })
 
   const fetchPerformanceData = async () => {
     try {
@@ -163,10 +178,12 @@ export function PerformanceDashboard() {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="endpoints">Endpoints</TabsTrigger>
-            <TabsTrigger value="logs">Recent Logs</TabsTrigger>
+            <TabsTrigger value="alchemical">Alchemical</TabsTrigger>
+            <TabsTrigger value="tokens">Tokens</TabsTrigger>
+            <TabsTrigger value="visualization">Flow</TabsTrigger>
+            <TabsTrigger value="logs">Logs</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -234,6 +251,138 @@ export function PerformanceDashboard() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="alchemical" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Token Stability Status */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Token Stability</p>
+                      <p className="text-2xl font-bold capitalize">
+                        {mcpMetrics?.tokenStability || 'Unknown'}
+                      </p>
+                    </div>
+                    <div className={`p-2 rounded-full ${
+                      mcpMetrics?.tokenStability === 'stable' ? 'bg-green-100 text-green-600' :
+                      mcpMetrics?.tokenStability === 'warning' ? 'bg-yellow-100 text-yellow-600' :
+                      'bg-red-100 text-red-600'
+                    }`}>
+                      {mcpMetrics?.tokenStability === 'stable' ? <CheckCircle className="h-6 w-6" /> :
+                       mcpMetrics?.tokenStability === 'warning' ? <AlertTriangle className="h-6 w-6" /> :
+                       <AlertTriangle className="h-6 w-6" />}
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    {needsStabilization() && (
+                      <Button
+                        onClick={stabilizeTokens}
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <Target className="h-4 w-4 mr-1" />
+                        Stabilize Tokens
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Elemental Health */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Elemental Health</p>
+                      <p className="text-2xl font-bold">
+                        {mcpMetrics?.equilibrium.planetaryDignity.toFixed(2) || '0.00'}
+                      </p>
+                    </div>
+                    <Zap className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <div className="mt-2">
+                    <Progress
+                      value={Math.min(100, (mcpMetrics?.equilibrium.planetaryDignity || 0) * 25)}
+                      className="h-2"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Planetary dignity score
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Calculation Performance */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Token Calculation</p>
+                      <p className="text-2xl font-bold">
+                        {mcpMetrics?.performanceMetrics.calculationTime.toFixed(1) || '0.0'}ms
+                      </p>
+                    </div>
+                    <Clock className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <div className="mt-2">
+                    <Progress
+                      value={Math.min(100, (mcpMetrics?.performanceMetrics.calculationTime || 0) /
+                        defaultAlchemicalMCPConfig.performanceThresholds.maxCalculationTime * 100)}
+                      className="h-2"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Target: &lt;{defaultAlchemicalMCPConfig.performanceThresholds.maxCalculationTime}ms
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Element Status Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Elemental Equilibrium</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { name: 'spirit', icon: Flame, color: 'text-orange-500' },
+                    { name: 'essence', icon: Droplets, color: 'text-blue-500' },
+                    { name: 'matter', icon: Mountain, color: 'text-green-500' },
+                    { name: 'substance', icon: Wind, color: 'text-purple-500' }
+                  ].map(({ name, icon: Icon, color }) => {
+                    const config = defaultAlchemicalMCPConfig.tokenStabilization[name as keyof typeof defaultAlchemicalMCPConfig.tokenStabilization]
+                    // Note: In a real implementation, you'd get the actual token values from the hook
+                    const currentValue = 0 // Placeholder - would come from alchmQuantities
+                    const percentage = Math.min((currentValue / config.max) * 100, 100)
+
+                    return (
+                      <div key={name} className="flex items-center space-x-3">
+                        <Icon className={`h-5 w-5 ${color}`} />
+                        <div className="flex-1">
+                          <div className="flex justify-between text-sm">
+                            <span className="capitalize">{name}</span>
+                            <span>{currentValue.toFixed(1)}</span>
+                          </div>
+                          <Progress value={percentage} className="h-1 mt-1" />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tokens" className="space-y-4">
+            <TokenStabilizationMonitor />
+          </TabsContent>
+
+          <TabsContent value="visualization" className="space-y-4">
+            <TokenFlowVisualization width={800} height={500} />
           </TabsContent>
 
           <TabsContent value="endpoints" className="space-y-4">

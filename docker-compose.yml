@@ -20,6 +20,7 @@ services:
     environment:
       - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PUBLIC_BETA_MODE=true
       - DATABASE_URL=postgresql://planetary:consciousness@postgres:5432/planetary_agents
       - REDIS_URL=redis://redis:6379
       - BACKEND_URL=http://backend:8000
@@ -27,6 +28,10 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - GALILEO_PROJECT=${GALILEO_PROJECT}
       - GALILEO_API_KEY=${GALILEO_API_KEY}
+      # Beta optimization flags
+      - NEXT_PUBLIC_FEEDBACK_ENABLED=true
+      - NEXT_PUBLIC_PERFORMANCE_MONITORING=true
+      - NEXT_PUBLIC_ACCESSIBILITY_MODE=true
     depends_on:
       postgres:
         condition: service_healthy
@@ -43,6 +48,12 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`planetary-agents.local`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
     networks:
       - planetary-network
 
@@ -140,7 +151,32 @@ services:
       - planetary-network
 
   # ==============================================
-  # Monitoring Service (Optional)
+  # Reverse Proxy (Traefik)
+  # ==============================================
+  traefik:
+    image: traefik:v3.0
+    container_name: planetary-traefik
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+      - traefik_acme:/letsencrypt
+    environment:
+      - TRAEFIK_API_INSECURE=true
+      - TRAEFIK_PROVIDERS_DOCKER=true
+      - TRAEFIK_PROVIDERS_DOCKER_EXPOSED_BY_DEFAULT=false
+    restart: unless-stopped
+    profiles:
+      - proxy
+    networks:
+      - planetary-network
+
+  # ==============================================
+  # Monitoring Service (Watchtower)
   # ==============================================
   watchtower:
     image: containrrr/watchtower
@@ -151,6 +187,7 @@ services:
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_POLL_INTERVAL=3600
       - WATCHTOWER_INCLUDE_RESTARTING=true
+      - WATCHTOWER_LABEL_ENABLE=true
     restart: unless-stopped
     profiles:
       - monitoring
@@ -176,6 +213,9 @@ volumes:
   backend_temp:
     driver: local
     name: planetary_backend_temp
+  traefik_acme:
+    driver: local
+    name: planetary_traefik_acme
 
 # ==============================================
 # Networks

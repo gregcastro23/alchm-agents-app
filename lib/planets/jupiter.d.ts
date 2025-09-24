@@ -1,3 +1,3 @@
-import { PlanetData } from './types'
-declare const jupiterData: PlanetData
-export default jupiterData
+import { PlanetData } from './types';
+declare const jupiterData: PlanetData;
+export default jupiterData;

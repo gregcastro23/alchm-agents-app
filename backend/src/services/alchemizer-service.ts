@@ -1,6 +1,7 @@
 import { logger } from '../utils/logger.js'
 import { PLANETARY_HOUR_SEQUENCE } from './planetary-hours.js'
 import { alchemize as alchemizeCore } from '../lib/alchemizer-core.js'
+import { cacheService } from './cache.js'
 
 export interface AlchemicalElements {
   spirit: number
@@ -10,11 +11,137 @@ export interface AlchemicalElements {
   aNumber: number
 }
 
+export interface ElementalTokens {
+  spirit: number
+  essence: number
+  matter: number
+  substance: number
+}
+
+export interface TokenEquilibrium {
+  goldenRatio: number
+  elementalHarmony: number
+  planetaryDignity: number
+  overallHealth: number
+}
+
 export interface PlanetaryPosition {
   planet: string
   sign: string
   degree: number
   retrograde: boolean
+}
+
+/**
+ * Validate token equilibrium according to traditional elemental derivations
+ */
+export function validateTokenEquilibrium(tokens: ElementalTokens): TokenEquilibrium {
+  const { spirit, essence, matter, substance } = tokens
+
+  // Traditional Elemental Derivations:
+  // - Spirit: Divine masculine, active principle (Sun, Mercury, Jupiter, Saturn)
+  // - Essence: Divine feminine, passive principle (Moon, Venus, Mars, Uranus, Neptune, Pluto)
+  // - Matter: Physical manifestation, concrete reality (Moon, Venus, Mars, Saturn, Uranus, Pluto)
+  // - Substance: Material foundation, earthly stability (Mercury, Neptune)
+
+  // Validate natural elemental flow rather than forced equilibrium
+  // Elements should reflect planetary influences, not mathematical balance
+
+  // Golden ratio as aspirational harmony (φ ≈ 1.618) between complementary pairs
+  const spiritEssenceRatio = spirit / Math.max(essence, 0.001)
+  const matterSubstanceRatio = matter / Math.max(substance, 0.001)
+  const goldenRatioDeviation = Math.abs(spiritEssenceRatio - 1.618) + Math.abs(matterSubstanceRatio - 1.618)
+
+  // Natural elemental harmony - elements complement rather than balance
+  // Spirit and Essence work together, Matter and Substance work together
+  const elementalHarmony = Math.abs(spirit - essence) + Math.abs(matter - substance)
+
+  // Planetary dignity influence based on traditional rulerships
+  // Higher values indicate stronger traditional correspondences
+  const planetaryDignity = (spirit * 1.0) + (essence * 1.2) + (matter * 1.1) + (substance * 0.9)
+
+  // Overall elemental health based on individual element vitality
+  const overallHealth = (tokens.spirit + tokens.essence + tokens.matter + tokens.substance) / 4
+
+  return {
+    goldenRatio: goldenRatioDeviation,
+    elementalHarmony,
+    planetaryDignity,
+    overallHealth
+  }
+}
+
+/**
+ * Calculate stabilization adjustments for imbalanced tokens
+ */
+export function calculateStabilizationAdjustment(tokens: ElementalTokens): Partial<ElementalTokens> {
+  const adjustment: Partial<ElementalTokens> = {}
+
+  // Define healthy ranges for each element based on planetary rulerships
+  const tokenStabilization = {
+    spirit: { min: 0.2, max: 2.0, equilibrium: 1.0 },
+    essence: { min: 0.5, max: 2.5, equilibrium: 1.2 },
+    matter: { min: 0.5, max: 2.5, equilibrium: 1.1 },
+    substance: { min: 0.1, max: 1.5, equilibrium: 0.9 }
+  }
+
+  // Individual element stabilization based on planetary rulership ranges
+  Object.entries(tokenStabilization).forEach(([element, bounds]) => {
+    const elementKey = element as keyof ElementalTokens
+    const currentValue = tokens[elementKey]
+
+    // Check if element is outside healthy bounds
+    if (currentValue < bounds.min) {
+      // Element is deficient - gently increase toward equilibrium
+      const deficit = bounds.equilibrium - currentValue
+      adjustment[elementKey] = currentValue + deficit * 0.3 // 30% correction
+    } else if (currentValue > bounds.max) {
+      // Element is excessive - gently decrease toward equilibrium
+      const excess = currentValue - bounds.equilibrium
+      adjustment[elementKey] = currentValue - excess * 0.2 // 20% correction
+    }
+  })
+
+  // Validate adjustments don't create new imbalances
+  // Ensure adjustments respect elemental relationships
+  if (adjustment.spirit && adjustment.essence) {
+    // Spirit and Essence should maintain complementary relationship
+    const spiritAdjustment = adjustment.spirit - tokens.spirit
+    const essenceAdjustment = adjustment.essence - tokens.essence
+
+    if (Math.abs(spiritAdjustment - essenceAdjustment) > 0.5) {
+      // Adjustments are too divergent - harmonize them
+      const averageAdjustment = (spiritAdjustment + essenceAdjustment) / 2
+      adjustment.spirit = tokens.spirit + averageAdjustment
+      adjustment.essence = tokens.essence + averageAdjustment
+    }
+  }
+
+  if (adjustment.matter && adjustment.substance) {
+    // Matter and Substance should maintain complementary relationship
+    const matterAdjustment = adjustment.matter - tokens.matter
+    const substanceAdjustment = adjustment.substance - tokens.substance
+
+    if (Math.abs(matterAdjustment - substanceAdjustment) > 0.5) {
+      // Adjustments are too divergent - harmonize them
+      const averageAdjustment = (matterAdjustment + substanceAdjustment) / 2
+      adjustment.matter = tokens.matter + averageAdjustment
+      adjustment.substance = tokens.substance + averageAdjustment
+    }
+  }
+
+  // Final bounds check
+  Object.keys(adjustment).forEach(key => {
+    const tokenKey = key as keyof ElementalTokens
+    const value = adjustment[tokenKey]!
+    const bounds = tokenStabilization[tokenKey]
+
+    // Ensure final values are within absolute bounds
+    if (value < bounds.min) adjustment[tokenKey] = bounds.min
+    if (value > bounds.max) adjustment[tokenKey] = bounds.max
+  })
+
+  return adjustment
 }
 
 function calculateCurrentMomentSimple(): AlchemicalElements {
@@ -44,9 +171,19 @@ function calculateCurrentMomentSimple(): AlchemicalElements {
 }
 
 export async function generateAlchmForCurrentMoment(): Promise<any> {
+  const cacheKey = 'alchm:current-moment'
+  const cacheTTL = 300 // 5 minutes
+
   try {
+    // Check cache first
+    const cached = await cacheService.get(cacheKey)
+    if (cached) {
+      logger.debug('Returning cached current moment alchemical values')
+      return cached
+    }
+
     const simple = calculateCurrentMomentSimple()
-    return {
+    const result = {
       'Alchemy Effects': {
         'Total Spirit': simple.spirit,
         'Total Essence': simple.essence,
@@ -54,9 +191,23 @@ export async function generateAlchmForCurrentMoment(): Promise<any> {
         'Total Substance': simple.substance,
       },
     }
+
+    // Cache the result
+    await cacheService.set(cacheKey, result, cacheTTL)
+    logger.debug('Cached current moment alchemical values for 5 minutes')
+
+    return result
   } catch (error) {
     logger.error('Error generating alchemical values:', error)
-    return {
+
+    // Return cached fallback if available, otherwise default
+    const cached = await cacheService.get(cacheKey)
+    if (cached) {
+      logger.warn('Returning cached fallback values due to error')
+      return cached
+    }
+
+    const fallbackResult = {
       'Alchemy Effects': {
         'Total Spirit': 0.25,
         'Total Essence': 0.25,
@@ -64,6 +215,8 @@ export async function generateAlchmForCurrentMoment(): Promise<any> {
         'Total Substance': 0.25,
       },
     }
+
+    return fallbackResult
   }
 }
 

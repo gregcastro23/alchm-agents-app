@@ -8,14 +8,30 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Sparkles, Crown, TrendingUp, Users, Zap, Settings, LogOut, Star } from 'lucide-react'
-import { AgentKineticEvolution } from '@/components/agents/agent-kinetic-evolution'
-import { GroupConsciousnessIndicator } from '@/components/misc/group-consciousness-indicator'
-import { TokenDashboardKinetics } from '@/components/dashboards/token-dashboard-kinetics'
-import { PlanetaryPositionsMonitor } from '@/components/dashboards/PlanetaryPositionsMonitor'
+import dynamic from 'next/dynamic'
+
+const AgentKineticEvolution = dynamic(() => import('@/components/agents/agent-kinetic-evolution').then(mod => ({ default: mod.AgentKineticEvolution })), {
+  loading: () => <div className="h-32 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
+})
+
+const GroupConsciousnessIndicator = dynamic(() => import('@/components/misc/group-consciousness-indicator').then(mod => ({ default: mod.GroupConsciousnessIndicator })), {
+  loading: () => <div className="h-24 flex items-center justify-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div></div>
+})
+
+const TokenDashboardKinetics = dynamic(() => import('@/components/dashboards/token-dashboard-kinetics').then(mod => ({ default: mod.TokenDashboardKinetics })), {
+  loading: () => <div className="h-40 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
+})
+
+const PlanetaryPositionsMonitor = dynamic(() => import('@/components/dashboards/PlanetaryPositionsMonitor'), {
+  loading: () => <div className="h-48 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
+})
 import { DashboardSkeleton } from '@/components/SkeletonLoader'
-import { FeedbackModal } from '@/components/FeedbackModal'
-import { OnboardingWizard } from '@/components/OnboardingWizard'
+
+const FeedbackModal = dynamic(() => import('@/components/FeedbackModal').then(mod => ({ default: mod.FeedbackModal })))
+
+const OnboardingWizard = dynamic(() => import('@/components/OnboardingWizard').then(mod => ({ default: mod.OnboardingWizard })))
 import { ALL_AGENTS } from '@/lib/demo-agents-data'
+import { usePerformanceMonitor } from '@/hooks/use-performance-monitor'
 
 interface UserData {
   id: string
@@ -30,6 +46,9 @@ export default function DashboardPage() {
   const [selectedAgent, setSelectedAgent] = useState('leonardo-da-vinci')
   const [showOnboarding, setShowOnboarding] = useState(false)
   const router = useRouter()
+
+  // Performance monitoring for critical dashboard component
+  const { trackInteraction, getMetrics } = usePerformanceMonitor('DashboardPage')
 
   useEffect(() => {
     if (status === 'loading') return // Still loading

@@ -28,7 +28,7 @@ import {
   Archive,
 } from 'lucide-react'
 
-import UnifiedMultiAgentChat from './unified-multi-agent-chat'
+import UnifiedMultiAgentChat from '@/components/misc/unified-multi-agent-chat'
 import type { CraftedAgent } from '@/lib/agent-types'
 import type { ChatSession, UnifiedAgent } from '@/lib/unified-agent-types'
 import {

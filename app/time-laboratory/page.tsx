@@ -1,7 +1,13 @@
 'use client'
 
 import React, { useState, useCallback, useEffect } from 'react'
-import CosmicTimeLaboratory from '@/components/misc/cosmic-time-laboratory'
+import dynamic from 'next/dynamic'
+import { Suspense } from 'react'
+
+const CosmicTimeLaboratory = dynamic(() => import('@/components/misc/cosmic-time-laboratory'), {
+  loading: () => <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div></div>,
+  ssr: false
+})
 import TemporalOracle from '@/components/misc/temporal-oracle'
 import TemporalTimeline from '@/components/misc/temporal-timeline'
 import AlchemicalMetricsChart from '@/components/charts/alchemical-metrics-chart'

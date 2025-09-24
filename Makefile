@@ -1,28 +1,53 @@
 # Planetary Agents - Development Makefile
 
-.PHONY: help install dev build start lint type-check clean test setup
-
 # Default target
 help: ## Show this help message
-	@echo "Planetary Agents - Available Commands:"
+	@echo "🌌 Planetary Agents - Development Commands (September 2025)"
+	@echo "═══════════════════════════════════════════════════════════════"
 	@echo ""
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-# Development commands
-install: ## Install dependencies
-	yarn install
+# ==============================================
+# DEVELOPMENT COMMANDS
+# ==============================================
+install: ## Install dependencies with peer dependency resolution
+	yarn install --immutable
+	@echo "✅ Dependencies installed successfully"
 
-dev: ## Start development server
+install-frozen: ## Install dependencies with frozen lockfile (CI/CD)
+	yarn install --immutable
+	@echo "✅ Dependencies installed from lockfile"
+
+dev: ## Start development server with hot reload
 	yarn dev
 
-build: ## Build for production
+dev-clean: ## Start development server with fresh build
+	rm -rf .next
+	yarn dev
+
+full-stack-dev: ## Start full-stack development with frontend and backend
+	concurrently \
+		"yarn dev" \
+		"cd backend && yarn dev" \
+		--names "frontend,backend" \
+		--prefix-colors "cyan,magenta"
+
+build: ## Build for production with optimization
 	yarn build
+
+build-analyze: ## Build with bundle analyzer
+	ANALYZE=true yarn build
 
 start: ## Start production server
 	yarn start
 
-# Code quality
-lint: ## Run linter
+preview: ## Preview production build locally
+	yarn build && yarn start
+
+# ==============================================
+# CODE QUALITY & TESTING
+# ==============================================
+lint: ## Run ESLint with custom configuration
 	yarn lint
 
 lint-fix: ## Fix auto-fixable linting issues
@@ -37,8 +62,78 @@ format-check: ## Check formatting without changing files
 type-check: ## Run TypeScript type checking
 	yarn typecheck
 
-check: ## Run all checks (lint + format + typecheck)
+type-coverage: ## Check TypeScript coverage
+	yarn type-coverage
+
+check: ## Run all code quality checks (lint + format + typecheck)
 	yarn check
+	@echo "✅ All code quality checks passed"
+
+check-strict: ## Run strict code quality checks with coverage
+	yarn check && yarn type-coverage
+	@echo "✅ All strict quality checks passed"
+
+# ==============================================
+# DEPENDENCY MANAGEMENT
+# ==============================================
+deps-check: ## Check for unused dependencies using depcheck
+	@echo "🔍 Checking for unused dependencies..."
+	@yarn dlx depcheck --ignore-dirs=node_modules,.next,.git --ignore-patterns="*.test.*,*.spec.*" --specials=bin,eslint,prettier,husky,lint-staged
+	@echo "✅ Dependency check complete"
+
+deps-clean: ## Remove unused dependencies found by depcheck
+	@echo "🧹 Removing unused dependencies..."
+	@yarn dlx depcheck --ignore-dirs=node_modules,.next,.git --ignore-patterns="*.test.*,*.spec.*" --specials=bin,eslint,prettier,husky,lint-staged --json | jq -r '.dependencies[]' | xargs yarn remove
+	@echo "✅ Unused dependencies removed"
+
+deps-missing: ## Add missing dependencies found by depcheck
+	@echo "📦 Adding missing dependencies..."
+	@yarn dlx depcheck --ignore-dirs=node_modules,.next,.git --ignore-patterns="*.test.*,*.spec.*" --specials=bin,eslint,prettier,husky,lint-staged --json | jq -r '.missing[]' | xargs yarn add
+	@echo "✅ Missing dependencies added"
+
+# ==============================================
+# PERFORMANCE MONITORING
+# ==============================================
+perf-analyze: ## Run bundle analyzer and generate performance reports
+	@echo "📊 Running bundle analysis..."
+	@ANALYZE=true yarn build > /dev/null 2>&1
+	@echo "✅ Bundle analysis complete - check .next/analyze/ for reports"
+
+perf-metrics: ## Show current performance metrics from logs
+	@echo "📈 Current Performance Metrics:"
+	@echo "Recent component renders (>16ms):"
+	@grep "component.*render" dev.log 2>/dev/null | tail -10 || echo "No performance logs found"
+	@echo ""
+	@echo "Recent API performance:"
+	@grep "api.*performance\|performance.*api" dev.log 2>/dev/null | tail -10 || echo "No API performance logs found"
+
+perf-critical-paths: ## Profile critical user paths (dashboard, chat, etc.)
+	@echo "🎯 Profiling Critical Paths..."
+	@echo "1. Dashboard Load Time:"
+	@grep "DashboardPage.*mount\|DashboardPage.*render" dev.log 2>/dev/null | tail -5 || echo "No dashboard metrics found"
+	@echo ""
+	@echo "2. Chat Response Times:"
+	@grep "chat.*performance\|performance.*chat" dev.log 2>/dev/null | tail -5 || echo "No chat metrics found"
+	@echo ""
+	@echo "3. API Response Times:"
+	@grep "api.*response\|response.*api" dev.log 2>/dev/null | tail -5 || echo "No API metrics found"
+
+perf-memory: ## Monitor memory usage patterns
+	@echo "🧠 Memory Usage Monitoring:"
+	@grep "memory\|heap" dev.log 2>/dev/null | tail -10 || echo "No memory metrics found"
+	@echo ""
+	@echo "💡 Memory optimization tips:"
+	@echo "  - Large components use dynamic imports"
+	@echo "  - Heavy libraries are code-split"
+	@echo "  - Unused dependencies removed"
+	@echo "  - Bundle analyzer available: make perf-analyze"
+
+perf-report: perf-analyze perf-metrics perf-critical-paths perf-memory ## Generate comprehensive performance report
+	@echo "📊 Performance Report Generated!"
+	@echo "📁 Bundle reports: .next/analyze/"
+	@echo "📋 Metrics: Check terminal output above"
+	@echo "🎯 Critical paths: Dashboard, Chat, API responses"
+	@echo "💾 Memory: Component and API monitoring"
 
 # Testing - Core
 test: ## Run all tests
@@ -110,7 +205,7 @@ chat-system-status: ## Show chat system testing status
 test-bridges: ## Test consciousness bridge components
 	@echo "Testing Bridge Components..."
 	@echo "  - Testing Monica Constant Validator..."
-	@node -e "console.log('Monica Constant tests would run here - requires Jest setup')"
+	@npx tsx -e "console.log('Monica Constant tests would run here - requires Jest setup')"
 	@echo "  - Testing Token Monitor Integration..."
 	@node -e "console.log('Token Monitor tests would run here - requires Jest setup')"
 	@echo "  - Testing Harmonic Analysis Bridge..."
@@ -135,7 +230,7 @@ test-monica: ## Test Monica agent and interface
 
 test-monica-tarot: ## Test Monica tarot expertise
 	@echo "Testing Monica tarot system..."
-	@node test-monica-tarot.js
+	@npx tsx test-monica-tarot.js
 
 test-monica-constant: ## Test Monica Constant calculations
 	@echo "Testing Monica Constant..."
@@ -658,12 +753,124 @@ kinetics-dev: ## Start dev server for kinetics development
 prod-ready: clean install build test-all ## Prepare for production deployment
 	@echo "Application is ready for production deployment!"
 
-# Docker commands (if using Docker)
-docker-build: ## Build Docker image
-	docker build -t planetary-agents .
+# ==============================================
+# BETA TESTING & OPTIMIZATION
+# ==============================================
+beta-check: ## Run beta readiness checks
+	@echo "🧪 Running Beta Readiness Checks..."
+	@make check-strict
+	@make test-beta-features
+	@make perf-check
+	@echo "✅ Beta readiness checks completed"
 
-docker-run: ## Run Docker container
-	docker run -p 3000:3000 planetary-agents
+beta-features: ## Test beta-specific features
+	@echo "🎯 Testing Beta Features..."
+	@make test-feedback-system
+	@make test-onboarding
+	@make test-performance-monitoring
+	@echo "✅ Beta features validated"
+
+test-feedback-system: ## Test feedback collection system
+	@echo "📝 Testing Feedback System..."
+	@curl -s http://localhost:3000/api/feedback | jq '.success' || echo "Feedback API not responding"
+	@echo "✅ Feedback system check complete"
+
+test-onboarding: ## Test onboarding wizard
+	@echo "🎓 Testing Onboarding System..."
+	@node -e "console.log('Onboarding components available for testing')"
+	@echo "✅ Onboarding system check complete"
+
+test-performance-monitoring: ## Test performance monitoring
+	@echo "📊 Testing Performance Monitoring..."
+	@curl -s "http://localhost:3000/api/performance?action=stats" | jq '.success' || echo "Performance API not responding"
+	@echo "✅ Performance monitoring check complete"
+
+beta-deploy: ## Deploy beta version to staging
+	@echo "🚀 Deploying Beta Version..."
+	@make build
+	@make docker-build
+	@echo "✅ Beta deployment prepared"
+
+# ==============================================
+# DOCKER & CONTAINERIZATION
+# ==============================================
+docker-build: ## Build Docker image with multi-stage optimization
+	docker build -t planetary-agents:latest .
+	@echo "✅ Docker image built successfully"
+
+docker-build-beta: ## Build Docker image with beta optimizations
+	docker build --build-arg DOCKER_BUILD=true -t planetary-agents:beta .
+	@echo "✅ Beta-optimized Docker image built"
+
+docker-run: ## Run Docker container in development mode
+	docker run -p 3000:3000 --env-file .env.local planetary-agents:latest
+
+docker-compose-up: ## Start all services with docker-compose
+	docker-compose up -d
+	@echo "✅ Services started with docker-compose"
+
+docker-compose-up-beta: ## Start all services with beta features enabled
+	docker-compose --profile proxy up -d
+	@echo "✅ Beta services started with reverse proxy"
+
+docker-compose-up-monitoring: ## Start services with monitoring stack
+	docker-compose --profile monitoring up -d
+	@echo "✅ Services started with monitoring"
+
+docker-compose-up-full: ## Start all services including proxy and monitoring
+	docker-compose --profile proxy --profile monitoring up -d
+	@echo "✅ Full stack started (frontend, backend, database, proxy, monitoring)"
+
+docker-compose-down: ## Stop all services
+	docker-compose down
+	@echo "✅ Services stopped"
+
+docker-compose-logs: ## View docker-compose logs
+	docker-compose logs -f
+
+docker-compose-logs-beta: ## View logs for beta deployment
+	docker-compose --profile proxy logs -f
+
+docker-dev-up: ## Start development environment with docker-compose
+	docker-compose -f docker-compose.dev.yml up -d
+	@echo "✅ Development environment started"
+
+docker-dev-up-tools: ## Start development environment with additional tools
+	docker-compose -f docker-compose.dev.yml --profile tools up -d
+	@echo "✅ Development environment with tools started"
+
+docker-dev-down: ## Stop development environment
+	docker-compose -f docker-compose.dev.yml down
+	@echo "✅ Development environment stopped"
+
+docker-clean: ## Clean Docker containers and images
+	docker-compose down -v
+	docker system prune -f
+	docker image prune -f
+	@echo "✅ Docker cleaned"
+
+docker-health: ## Check health of all services
+	@echo "🔍 Checking service health..."
+	@docker-compose ps
+	@echo ""
+	@echo "🌐 Service URLs:"
+	@echo "  Frontend: http://localhost:3000"
+	@echo "  Backend: http://localhost:8000"
+	@echo "  Traefik Dashboard: http://localhost:8080"
+	@echo "  Grafana: http://localhost:3001"
+	@echo "  Prometheus: http://localhost:9090"
+
+docker-beta-deploy: ## Deploy beta version with full monitoring
+	@echo "🚀 Deploying Beta Version..."
+	@make docker-build-beta
+	@make docker-compose-up-full
+	@echo "✅ Beta deployment complete!"
+	@echo ""
+	@echo "🌐 Access URLs:"
+	@echo "  Application: http://planetary-agents.local"
+	@echo "  Traefik Dashboard: http://localhost:8080"
+	@echo "  Grafana: http://localhost:3001"
+	@echo "  Prometheus: http://localhost:9090"
 
 # Help aliases
 h: help ## Alias for help

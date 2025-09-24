@@ -231,6 +231,42 @@ yarn test:ci:chat                # CI/CD pipeline testing
 yarn test:chat:report            # Display latest test summary
 ```
 
+## 📦 Development Guidelines
+
+### Yarn and NPX Usage
+This project uses **Yarn exclusively** for package management. All scripts and commands should use Yarn:
+
+```bash
+# ✅ Correct usage
+yarn install          # Install dependencies
+yarn dev             # Start development server
+yarn build           # Build for production
+yarn test            # Run tests
+npx tsx script.ts    # Execute TypeScript files
+
+# ❌ Avoid npm commands
+npm install          # Don't use npm
+npm run dev          # Don't use npm run
+node script.js       # Use npx tsx for TypeScript files
+```
+
+### Package Management Rules
+- **Use Yarn 4.x** for all dependency management
+- **Use `npx tsx`** for executing TypeScript files in scripts
+- **Never use direct `node` calls** for TypeScript execution
+- **Keep `yarn.lock` synchronized** across all environments
+- **Use `yarn why <package>`** to audit dependencies
+
+### Full-Stack Development
+```bash
+# Start both frontend and backend
+make full-stack-dev
+
+# Or manually:
+yarn dev                    # Frontend (port 3000)
+cd backend && yarn dev     # Backend (port 8000)
+```
+
 ### Make Commands
 ```bash
 make test-chat-system            # Run comprehensive test suite
