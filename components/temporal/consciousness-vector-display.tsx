@@ -23,7 +23,7 @@ import {
   CartesianGrid,
 } from 'recharts'
 import { classifyMC } from '@/lib/monica/monica-constant-validator'
-import { Crown, Zap, Flame, Droplets, Mountain, Wind, Activity, BarChart3 } from 'lucide-react'
+import { Crown, Zap, Flame, Droplets, Mountain, Wind, Activity, BarChart3, RefreshCw, Eye } from 'lucide-react'
 
 type Props = {
   alchmQuantities: {
@@ -264,6 +264,26 @@ export function ConsciousnessVectorDisplay({
 
   return (
     <div className="space-y-6">
+      {/* Enhanced Visualization Controls */}
+      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg border border-purple-500/20">
+        <div className="flex items-center gap-2">
+          <Eye className="w-5 h-5 text-purple-400" />
+          <span className="text-sm font-medium text-purple-200">Consciousness Vector Display</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="flex items-center gap-2 px-3 py-1 text-xs bg-purple-600/50 hover:bg-purple-600/70 rounded text-purple-100 transition-colors">
+            <RefreshCw className="w-3 h-3" />
+            Refresh
+          </button>
+          {liveData && (
+            <div className="flex items-center gap-2 px-2 py-1 text-xs bg-green-600/50 rounded text-green-100">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              Live Data
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Consciousness State Overview */}
       <Card>
         <CardHeader>

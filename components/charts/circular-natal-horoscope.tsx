@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, Star, Calendar, Sparkles } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Loader2, Star, Calendar, Sparkles, ZoomIn, ZoomOut, RotateCcw, Eye, EyeOff } from 'lucide-react'
 import { fetchAstrologizeWheel, type AstrologizeWheelResponse } from '@/lib/astrologize'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useTheme } from 'next-themes'
@@ -34,6 +35,13 @@ export default function CircularNatalHoroscope({
   const [error, setError] = useState<string | null>(null)
   const { theme } = useTheme()
   const isDarkMode = theme === 'dark'
+
+  // Interactive features state
+  const [zoom, setZoom] = useState(1)
+  const [showPlanets, setShowPlanets] = useState(true)
+  const [showHouses, setShowHouses] = useState(true)
+  const [selectedPlanet, setSelectedPlanet] = useState<string | null>(null)
+  const [highlightedElements, setHighlightedElements] = useState<string[]>([])
 
   useEffect(() => {
     const fetchCurrentMomentChart = async () => {
@@ -126,17 +134,58 @@ export default function CircularNatalHoroscope({
     <div className={`${showKinetics ? 'grid grid-cols-1 lg:grid-cols-3 gap-6' : ''} ${className}`}>
       <Card className={`cosmic-glass-ethereal ${showKinetics ? 'lg:col-span-2' : ''}`}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 cosmic-text-gradient">
-            <Sparkles className="w-5 h-5" />
-            {birthInfo?.name ? `${birthInfo.name}'s Cosmic Chart` : 'Current Moment Chart'}
-          </CardTitle>
-          <div className="flex items-center gap-2 text-sm text-cosmic-starlight-lavender">
-            <Calendar className="w-4 h-4" />
-            <span>
-              {birthInfo
-                ? `${new Date(birthInfo.year, birthInfo.month, birthInfo.day).toLocaleDateString()}`
-                : 'Live cosmic positions updated regularly'}
-            </span>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 cosmic-text-gradient">
+                <Sparkles className="w-5 h-5" />
+                {birthInfo?.name ? `${birthInfo.name}'s Cosmic Chart` : 'Current Moment Chart'}
+              </CardTitle>
+              <div className="flex items-center gap-2 text-sm text-cosmic-starlight-lavender">
+                <Calendar className="w-4 h-4" />
+                <span>
+                  {birthInfo
+                    ? `${new Date(birthInfo.year, birthInfo.month, birthInfo.day).toLocaleDateString()}`
+                    : 'Live cosmic positions updated regularly'}
+                </span>
+              </div>
+            </div>
+
+            {/* Interactive Controls */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setZoom(Math.max(0.5, zoom - 0.1))}
+                disabled={zoom <= 0.5}
+              >
+                <ZoomOut className="w-4 h-4" />
+              </Button>
+              <span className="text-sm text-cosmic-starlight-lavender min-w-[60px] text-center">
+                {Math.round(zoom * 100)}%
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setZoom(Math.min(2, zoom + 0.1))}
+                disabled={zoom >= 2}
+              >
+                <ZoomIn className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setZoom(1)}
+              >
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={showPlanets ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowPlanets(!showPlanets)}
+              >
+                {showPlanets ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -144,12 +193,20 @@ export default function CircularNatalHoroscope({
             {horoscope?.svg ? (
               <div className="flex justify-center">
                 <div
-                  className="w-full max-w-md aspect-square cosmic-chart-container"
-                  dangerouslySetInnerHTML={{ __html: horoscope.svg }}
+                  className="w-full max-w-md aspect-square cosmic-chart-container relative overflow-hidden"
                   style={{
-                    filter: isDarkMode ? 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.2))' : 'none',
+                    transform: `scale(${zoom})`,
+                    transformOrigin: 'center',
+                    transition: 'transform 0.3s ease',
                   }}
-                />
+                >
+                  <div
+                    dangerouslySetInnerHTML={{ __html: horoscope.svg }}
+                    style={{
+                      filter: isDarkMode ? 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.2))' : 'none',
+                    }}
+                  />
+                </div>
               </div>
             ) : horoscope?.imageUrl ? (
               <div className="flex justify-center">

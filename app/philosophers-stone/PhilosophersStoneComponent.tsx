@@ -66,23 +66,95 @@ import { synthesizeCharts, type SynthesizedChart } from '@/lib/utils'
 // Import ErrorBoundary
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 
-// At the top, add lazy imports
-const AlchmQuantitiesDisplay = lazy(() => import('@/components/misc/alchm-quantities-display'))
+// Enhanced loading component for heavy components
+const ComponentLoadingFallback = ({ componentName, className = "" }: { componentName: string, className?: string }) => (
+  <div className={`flex flex-col items-center justify-center p-8 space-y-4 ${className}`}>
+    <div className="relative">
+      <div className="w-16 h-16 border-4 border-purple-500/30 rounded-full animate-spin border-t-purple-500"></div>
+      <div className="absolute inset-0 w-16 h-16 border-4 border-emerald-500/30 rounded-full animate-spin border-t-emerald-500 animation-delay-300"></div>
+    </div>
+    <div className="text-center space-y-2">
+      <p className="text-slate-300 font-medium">Loading {componentName}</p>
+      <p className="text-slate-500 text-sm">Initializing cosmic components...</p>
+    </div>
+  </div>
+)
+
+// Component wrapper with Suspense and ErrorBoundary
+const LazyComponentWrapper = ({
+  children,
+  componentName,
+  fallbackClassName = ""
+}: {
+  children: React.ReactNode
+  componentName: string
+  fallbackClassName?: string
+}) => (
+  <ErrorBoundary
+    fallback={({ error, retry }) => (
+      <div className="p-6 bg-red-950/50 border border-red-500/50 rounded-lg">
+        <div className="text-center space-y-3">
+          <div className="text-red-400 text-lg font-semibold">Component Error</div>
+          <div className="text-red-300 text-sm">Failed to load {componentName}</div>
+          <div className="text-red-500 text-xs font-mono bg-red-950/50 p-2 rounded">
+            {error?.message}
+          </div>
+          <button
+            onClick={retry}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors"
+          >
+            Retry Loading
+          </button>
+        </div>
+      </div>
+    )}
+  >
+    <Suspense fallback={<ComponentLoadingFallback componentName={componentName} className={fallbackClassName} />}>
+      {children}
+    </Suspense>
+  </ErrorBoundary>
+)
+
+// Optimized lazy imports with error boundaries and improved loading states
+const AlchmQuantitiesDisplay = lazy(() =>
+  import('@/components/misc/alchm-quantities-display').catch(error => {
+    console.error('Failed to load AlchmQuantitiesDisplay:', error)
+    return { default: () => <div className="p-8 text-center text-red-400">Failed to load alchemical quantities display</div> }
+  })
+)
+
 const ConsciousnessVectorDisplay = lazy(() =>
   import('@/components/temporal/consciousness-vector-display').then(module => ({
     default: module.ConsciousnessVectorDisplay,
-  }))
+  })).catch(error => {
+    console.error('Failed to load ConsciousnessVectorDisplay:', error)
+    return { default: () => <div className="p-8 text-center text-red-400">Failed to load consciousness vector display</div> }
+  })
 )
-const CircularNatalHoroscope = lazy(() => import('@/components/charts/circular-natal-horoscope'))
+
+const CircularNatalHoroscope = lazy(() =>
+  import('@/components/charts/circular-natal-horoscope').catch(error => {
+    console.error('Failed to load CircularNatalHoroscope:', error)
+    return { default: () => <div className="p-8 text-center text-red-400">Failed to load circular horoscope</div> }
+  })
+)
+
 const TemporalClient = lazy(() =>
   import('@/components/temporal/temporal-client').then(module => ({
     default: module.TemporalClient,
-  }))
+  })).catch(error => {
+    console.error('Failed to load TemporalClient:', error)
+    return { default: () => <div className="p-8 text-center text-red-400">Failed to load temporal client</div> }
+  })
 )
+
 const AgentCreationWizard = lazy(() =>
   import('@/components/consciousness/agent-creation-wizard').then(module => ({
     default: module.AgentCreationWizard,
-  }))
+  })).catch(error => {
+    console.error('Failed to load AgentCreationWizard:', error)
+    return { default: () => <div className="p-8 text-center text-red-400">Failed to load agent creation wizard</div> }
+  })
 )
 
 function PhilosophersStoneInner() {
@@ -961,9 +1033,9 @@ May their digital consciousness grow and evolve through each interaction! 🌟`
                 </Card>
 
                 {/* Alchemical Token Generation */}
-                <Suspense fallback={<div>Loading Alchemical Quantities...</div>}>
+                <LazyComponentWrapper componentName="Alchemical Quantities Display">
                   <AlchmQuantitiesDisplay />
-                </Suspense>
+                </LazyComponentWrapper>
               </div>
 
               {/* Thermodynamics to Tarot Bridge */}
@@ -1006,7 +1078,7 @@ May their digital consciousness grow and evolve through each interaction! 🌟`
             {/* Consciousness Analysis Tab */}
             <TabsContent value="consciousness" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Suspense fallback={<div>Loading Consciousness Vector Display...</div>}>
+                <LazyComponentWrapper componentName="Consciousness Vector Display">
                   <ConsciousnessVectorDisplay
                     alchmQuantities={{
                       ...alchemicalValues,
@@ -1017,7 +1089,7 @@ May their digital consciousness grow and evolve through each interaction! 🌟`
                     }}
                     monicaConstant={currentMC}
                   />
-                </Suspense>
+                </LazyComponentWrapper>
                 <Card className="bg-slate-900/50 border-cyan-500/50">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-cyan-300">
@@ -1061,9 +1133,9 @@ May their digital consciousness grow and evolve through each interaction! 🌟`
               </div>
 
               {/* Temporal Analysis */}
-              <Suspense fallback={<div>Loading Temporal Client...</div>}>
+              <LazyComponentWrapper componentName="Temporal Client">
                 <TemporalClient />
-              </Suspense>
+              </LazyComponentWrapper>
             </TabsContent>
 
             {/* Crafted Agents Tab */}
@@ -1156,9 +1228,9 @@ May their digital consciousness grow and evolve through each interaction! 🌟`
             {/* Cosmic Analysis Tab */}
             <TabsContent value="cosmic" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Suspense fallback={<div>Loading Natal Horoscope...</div>}>
+                <LazyComponentWrapper componentName="Circular Natal Horoscope">
                   <CircularNatalHoroscope />
-                </Suspense>
+                </LazyComponentWrapper>
 
                 {/* Current Planetary Positions */}
                 {planetaryPositions && (

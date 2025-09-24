@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Flame, Droplets, Wind, Mountain, Coins, AlertTriangle, Calculator } from 'lucide-react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { Flame, Droplets, Wind, Mountain, Coins, AlertTriangle, Calculator, TrendingUp, TrendingDown, Activity, Zap, RefreshCw } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
 import { useGalileoLog } from '@/hooks/useGalileoLog'
 
 type AlchemyQuantities = {
@@ -25,33 +27,62 @@ type AlchemyData = {
   sunSign: string
   chartRuler: string
   timestamp: string
+  fallback?: boolean
+  error?: string
 }
 
-// Token display component with enhanced precision
+// Historical data for trends
+type HistoricalData = {
+  timestamp: string
+  quantities: AlchemyQuantities
+  heat: number
+  entropy: number
+  reactivity: number
+  energy: number
+}
+
+// Real-time update configuration
+type UpdateConfig = {
+  interval: number // milliseconds
+  enabled: boolean
+  showTrends: boolean
+}
+
+// Enhanced token display component with trends and animations
 function TokenDisplay({
   value,
+  previousValue,
   icon,
   name,
   color,
   description,
   breakdown,
+  isAnimating = false,
 }: {
   value: number
+  previousValue?: number
   icon: React.ReactNode
   name: string
   color: string
   description: string
   breakdown?: string
+  isAnimating?: boolean
 }) {
   // Show 3 decimal places for precision
   const formattedValue = Math.round(value * 1000) / 1000
 
+  // Calculate trend
+  const trend = previousValue !== undefined ? value - previousValue : 0
+  const trendDirection = trend > 0 ? 'up' : trend < 0 ? 'down' : 'stable'
+  const trendColor = trendDirection === 'up' ? 'text-green-500' : trendDirection === 'down' ? 'text-red-500' : 'text-gray-500'
+  const TrendIcon = trendDirection === 'up' ? TrendingUp : trendDirection === 'down' ? TrendingDown : Activity
+
   // Determine token rarity/strength
   const getTokenStrength = (val: number) => {
-    if (val >= 15) return { label: 'Legendary', glow: 'animate-pulse' }
-    if (val >= 12) return { label: 'Epic', glow: '' }
-    if (val >= 9) return { label: 'Rare', glow: '' }
-    if (val >= 6) return { label: 'Uncommon', glow: '' }
+    if (val >= 15) return { label: 'Legendary', glow: 'animate-pulse shadow-lg shadow-red-500/20' }
+    if (val >= 12) return { label: 'Epic', glow: 'shadow-md shadow-orange-500/20' }
+    if (val >= 9) return { label: 'Rare', glow: 'shadow-sm shadow-blue-500/20' }
+    if (val >= 6) return { label: 'Uncommon', glow: 'shadow-sm' }
     if (val >= 3) return { label: 'Common', glow: '' }
     return { label: 'Nascent', glow: '' }
   }
@@ -60,22 +91,46 @@ function TokenDisplay({
 
   return (
     <div
-      className={`relative bg-gradient-to-br from-${color}-50 to-${color}-100 dark:from-${color}-950 dark:to-${color}-900 border-2 border-${color}-300 dark:border-${color}-700 rounded-xl p-4 flex flex-col items-center justify-center transition-all hover:shadow-lg hover:scale-105 ${strength.glow}`}
+      className={`relative bg-gradient-to-br from-${color}-50 to-${color}-100 dark:from-${color}-950 dark:to-${color}-900 border-2 border-${color}-300 dark:border-${color}-700 rounded-xl p-4 flex flex-col items-center justify-center transition-all hover:shadow-lg hover:scale-105 ${strength.glow} ${isAnimating ? 'animate-pulse' : ''}`}
     >
       {/* Token Strength Badge */}
-      <div className="absolute top-2 right-2">
+      <div className="absolute top-2 right-2 flex gap-1">
         <Badge variant="outline" className={`text-xs bg-${color}-100 dark:bg-${color}-900`}>
           {strength.label}
         </Badge>
+        {trend !== 0 && (
+          <div className={`flex items-center gap-1 text-xs ${trendColor}`}>
+            <TrendIcon className="h-3 w-3" />
+            <span className="font-mono">
+              {trend > 0 ? '+' : ''}{Math.abs(trend).toFixed(2)}
+            </span>
+          </div>
+        )}
       </div>
 
-      <div className={`text-${color}-600 dark:text-${color}-400 mb-2`}>{icon}</div>
+      <div className={`text-${color}-600 dark:text-${color}-400 mb-2 ${isAnimating ? 'animate-bounce' : ''}`}>
+        {icon}
+      </div>
       <div className="flex items-center gap-2">
-        <span className="text-3xl font-bold">{formattedValue}</span>
-        <Coins className="h-5 w-5 text-${color}-400" />
+        <span className={`text-3xl font-bold transition-all duration-500 ${isAnimating ? 'text-yellow-500 scale-110' : ''}`}>
+          {formattedValue}
+        </span>
+        <Coins className={`h-5 w-5 text-${color}-400 ${isAnimating ? 'animate-spin' : ''}`} />
       </div>
       <div className="text-sm font-bold mt-1 text-${color}-800 dark:text-${color}-200">{name}</div>
       <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 text-center">{description}</div>
+
+      {/* Progress bar for token level */}
+      <div className="w-full mt-3">
+        <Progress
+          value={Math.min((value / 15) * 100, 100)}
+          className="h-2 bg-${color}-200 dark:bg-${color}-800"
+        />
+        <div className="text-xs text-center mt-1 text-${color}-600 dark:text-${color}-400">
+          {Math.round((value / 15) * 100)}% to Legendary
+        </div>
+      </div>
+
       {breakdown && (
         <div className="text-xs text-${color}-600 dark:text-${color}-400 mt-2 text-center font-mono">
           {breakdown}
@@ -87,9 +142,19 @@ function TokenDisplay({
 
 export default function AlchmQuantitiesDisplay() {
   const [data, setData] = useState<AlchemyData | null>(null)
+  const [previousData, setPreviousData] = useState<AlchemyData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
+  const [isRealTimeEnabled, setIsRealTimeEnabled] = useState(true)
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
+  const [updateConfig, setUpdateConfig] = useState<UpdateConfig>({
+    interval: 30000, // 30 seconds
+    enabled: true,
+    showTrends: true,
+  })
+  const [isAnimatingTokens, setIsAnimatingTokens] = useState(false)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const { info, error: logError } = useGalileoLog()
 
   useEffect(() => {
@@ -138,9 +203,25 @@ export default function AlchmQuantitiesDisplay() {
           throw new Error('Invalid data format')
         }
 
+        // Store previous data for trend calculations
+        setPreviousData(data)
         setData(result)
         setLoading(false)
         setRetryCount(0)
+        setLastUpdate(new Date())
+
+        // Trigger animation if values changed significantly
+        if (data && result.quantities) {
+          const hasSignificantChange = Object.entries(result.quantities).some(([key, value]) => {
+            const prevValue = data.quantities[key as keyof AlchemyQuantities]
+            return Math.abs(value - prevValue) > 0.1
+          })
+
+          if (hasSignificantChange) {
+            setIsAnimatingTokens(true)
+            setTimeout(() => setIsAnimatingTokens(false), 2000)
+          }
+        }
 
         // Log successful data fetch to Galileo
         info('Alchemical quantities fetched successfully', {
@@ -184,10 +265,69 @@ export default function AlchmQuantitiesDisplay() {
 
     fetchAlchmQuantities()
 
+    // Set up real-time updates if enabled
+    if (updateConfig.enabled && updateConfig.interval > 0) {
+      intervalRef.current = setInterval(() => {
+        if (isMounted) fetchAlchmQuantities()
+      }, updateConfig.interval)
+    }
+
     return () => {
       isMounted = false
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
     }
-  }, [retryCount, info, logError])
+  }, [retryCount, updateConfig.enabled, updateConfig.interval, info, logError])
+
+  // Manual refresh function
+  const refreshData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/alchm-quantities', {
+        headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+
+      if (!result || typeof result !== 'object' || !result.quantities) {
+        throw new Error('Invalid data format')
+      }
+
+      // Trigger animation for manual refresh
+      setIsAnimatingTokens(true)
+      setTimeout(() => setIsAnimatingTokens(false), 2000)
+
+      setPreviousData(data)
+      setData(result)
+      setLoading(false)
+      setRetryCount(0)
+      setLastUpdate(new Date())
+
+    } catch (err) {
+      console.error('Manual refresh failed:', err)
+      setError(err instanceof Error ? err.message : String(err))
+      setLoading(false)
+    }
+  }, [data])
+
+  // Toggle real-time updates
+  const toggleRealTime = useCallback(() => {
+    setUpdateConfig(prev => {
+      const newEnabled = !prev.enabled
+      if (!newEnabled && intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      return { ...prev, enabled: newEnabled }
+    })
+  }, [])
 
   if (loading) {
     return (
@@ -270,38 +410,87 @@ export default function AlchmQuantitiesDisplay() {
         </div>
       )}
 
+      {/* Control Panel */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border">
+        <div className="flex items-center gap-4">
+          <Button
+            onClick={refreshData}
+            disabled={loading}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+
+          <Button
+            onClick={toggleRealTime}
+            variant={updateConfig.enabled ? "default" : "outline"}
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Zap className={`h-4 w-4 ${updateConfig.enabled ? 'animate-pulse' : ''}`} />
+            {updateConfig.enabled ? 'Real-time On' : 'Real-time Off'}
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          {lastUpdate && (
+            <div className="flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              Updated {lastUpdate.toLocaleTimeString()}
+            </div>
+          )}
+          {updateConfig.enabled && (
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              Live
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <TokenDisplay
           value={data.quantities.Spirit}
+          previousValue={previousData?.quantities.Spirit}
           icon={<Flame className="h-8 w-8" />}
           name="SPIRIT"
           color="red"
           description="Cosmic creative force"
           breakdown={`Fire: ${data.dominantElement === 'Fire' ? '↑' : '→'}`}
+          isAnimating={isAnimatingTokens}
         />
         <TokenDisplay
           value={data.quantities.Essence}
+          previousValue={previousData?.quantities.Essence}
           icon={<Droplets className="h-8 w-8" />}
           name="ESSENCE"
           color="blue"
           description="Life-giving principle"
           breakdown={`Water: ${data.dominantElement === 'Water' ? '↑' : '→'}`}
+          isAnimating={isAnimatingTokens}
         />
         <TokenDisplay
           value={data.quantities.Matter}
+          previousValue={previousData?.quantities.Matter}
           icon={<Mountain className="h-8 w-8" />}
           name="MATTER"
           color="amber"
           description="Physical manifestation"
           breakdown={`Earth: ${data.dominantElement === 'Earth' ? '↑' : '→'}`}
+          isAnimating={isAnimatingTokens}
         />
         <TokenDisplay
           value={data.quantities.Substance}
+          previousValue={previousData?.quantities.Substance}
           icon={<Wind className="h-8 w-8" />}
           name="SUBSTANCE"
           color="purple"
           description="Etheric matrix"
           breakdown={`Air: ${data.dominantElement === 'Air' ? '↑' : '→'}`}
+          isAnimating={isAnimatingTokens}
         />
       </div>
 
