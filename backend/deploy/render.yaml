@@ -36,7 +36,7 @@ services:
           name: planetary-cache
           property: connectionString
     healthCheckPath: /api/health
-    
+
   - type: redis
     name: planetary-cache
     region: oregon

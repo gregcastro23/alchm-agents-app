@@ -113,7 +113,7 @@ export default function DegreeSpecificAgentPage() {
     const currentPlanetPosition = currentPositions[planet]
 
     if (currentPlanetPosition) {
-      const currentDegree = parseFloat(currentPlanetPosition.degree)
+      const currentDegree = currentPlanetPosition.degree
       const degreeDifference = Math.abs(currentDegree - degree)
       const isCurrentlyAtDegree = currentPlanetPosition.sign === sign && degreeDifference < 1
 

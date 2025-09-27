@@ -11,22 +11,21 @@ services:
   - type: web
     name: planetary-agents-backend-prod
     runtime: node
-    plan: standard  # Higher performance plan
+    plan: standard # Higher performance plan
     region: oregon
-    numInstances: 2  # Load balancing
+    numInstances: 2 # Load balancing
 
     # Optimized build commands
     buildCommand: |
       yarn install --frozen-lockfile --network-timeout 300000
       NODE_OPTIONS="--max-old-space-size=2048" yarn build
     startCommand: yarn start
-
     # Health check configuration
     healthCheckPath: /api/health
 
     # Auto-deploy settings
     autoDeploy: true
-    branch: main  # Deploy from main branch
+    branch: main # Deploy from main branch
 
     envVars:
       - key: NODE_ENV
@@ -38,7 +37,7 @@ services:
       - key: LOG_FORMAT
         value: json
       - key: RATE_LIMIT_REQUESTS_PER_MINUTE
-        value: 200  # Higher limits for production
+        value: 200 # Higher limits for production
       - key: MAX_REQUEST_SIZE_MB
         value: 20
       - key: ENABLE_PERFORMANCE_MONITORING
@@ -63,13 +62,12 @@ services:
   # PostgreSQL database for production
   - type: pserv
     name: planetary-agents-db-prod
-    plan: starter  # Upgrade to 'standard' for higher traffic
+    plan: starter # Upgrade to 'standard' for higher traffic
     region: oregon
     databaseName: planetary_agents_prod
     databaseUser: planetary_admin
 
 ---
-
 # =============================================================================
 # OPTION 2: DOCKER-BASED DEPLOYMENT
 # =============================================================================
@@ -95,7 +93,6 @@ services:
         value: 0.0.0.0
 
 ---
-
 # =============================================================================
 # OPTION 3: STAGING + PRODUCTION SETUP
 # =============================================================================
@@ -112,15 +109,15 @@ services:
     healthCheckPath: /api/health
 
     autoDeploy: true
-    branch: My_alchm  # Deploy from development branch
+    branch: My_alchm # Deploy from development branch
 
     envVars:
       - key: NODE_ENV
         value: staging
       - key: LOG_LEVEL
-        value: debug  # More verbose logging for staging
+        value: debug # More verbose logging for staging
       - key: RATE_LIMIT_REQUESTS_PER_MINUTE
-        value: 50  # Lower limits for staging
+        value: 50 # Lower limits for staging
       - key: ENABLE_PERFORMANCE_MONITORING
         value: true
       - key: PLANETARY_HOURS_BACKEND
@@ -144,14 +141,14 @@ services:
     startCommand: yarn start
     healthCheckPath: /api/health
 
-    autoDeploy: false  # Manual deployment for production
+    autoDeploy: false # Manual deployment for production
     branch: main
 
     envVars:
       - key: NODE_ENV
         value: production
       - key: LOG_LEVEL
-        value: warn  # Less verbose for production
+        value: warn # Less verbose for production
       - key: RATE_LIMIT_REQUESTS_PER_MINUTE
         value: 200
       - key: ENABLE_PERFORMANCE_MONITORING
@@ -174,7 +171,6 @@ services:
     databaseUser: planetary_user
 
 ---
-
 # =============================================================================
 # OPTION 4: MINIMAL QUICK DEPLOYMENT
 # =============================================================================
@@ -202,7 +198,6 @@ services:
         value: https://alchm-backend.onrender.com
 
 ---
-
 # =============================================================================
 # OPTION 5: REDIS + ADVANCED CACHING
 # =============================================================================
@@ -241,7 +236,7 @@ services:
     name: planetary-agents-cache
     plan: starter
     region: oregon
-    ipAllowList: []  # Allow all IPs
+    ipAllowList: [] # Allow all IPs
 
   # PostgreSQL with optimized settings
   - type: pserv

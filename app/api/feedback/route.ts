@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: 'Missing required fields: category and message are required'
+            error: 'Missing required fields: category and message are required',
           },
           { status: 400 }
         )
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: 'Invalid category. Must be one of: ' + validCategories.join(', ')
+            error: 'Invalid category. Must be one of: ' + validCategories.join(', '),
           },
           { status: 400 }
         )
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: 'Rating must be between 1 and 5'
+            error: 'Rating must be between 1 and 5',
           },
           { status: 400 }
         )
@@ -60,9 +60,7 @@ export async function POST(request: NextRequest) {
       const feedbackEntry = {
         ...feedback,
         timestamp: feedback.timestamp || new Date().toISOString(),
-        ip: request.headers.get('x-forwarded-for') ||
-            request.headers.get('x-real-ip') ||
-            'unknown',
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
         userAgent: feedback.userAgent || request.headers.get('user-agent') || 'unknown',
       }
 
@@ -77,8 +75,8 @@ export async function POST(request: NextRequest) {
           rating: feedback.rating,
           messageLength: feedback.message.length,
           hasUserId: !!feedback.userId,
-          url: feedback.url
-        }
+          url: feedback.url,
+        },
       })
 
       // TODO: Save to database
@@ -87,7 +85,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: 'Thank you for your feedback!',
-        feedbackId: `feedback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        feedbackId: `feedback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       })
     },
     {
@@ -102,12 +100,12 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: result.userMessage,
-        context: result.context
+        context: result.context,
       },
       { status: 500 }
-    );
+    )
   }
-  return result as NextResponse;
+  return result as NextResponse
 }
 
 // Optional: GET endpoint to retrieve feedback statistics (admin only)
@@ -125,7 +123,7 @@ export async function GET(request: NextRequest) {
           feature: 15,
           ui: 12,
           performance: 5,
-          general: 2
+          general: 2,
         },
         recentFeedback: [
           {
@@ -133,27 +131,27 @@ export async function GET(request: NextRequest) {
             category: 'feature',
             rating: 5,
             message: 'Love the new planetary positions feature!',
-            timestamp: new Date(Date.now() - 86400000).toISOString() // 1 day ago
+            timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
           },
           {
             id: 'feedback_002',
             category: 'bug',
             rating: 2,
             message: 'Having trouble with the chart loading on mobile',
-            timestamp: new Date(Date.now() - 43200000).toISOString() // 12 hours ago
-          }
-        ]
+            timestamp: new Date(Date.now() - 43200000).toISOString(), // 12 hours ago
+          },
+        ],
       }
 
       logger.info('Feedback statistics requested', {
         system: 'feedback',
         operation: 'stats',
-        metadata: { totalFeedback: mockStats.totalFeedback }
+        metadata: { totalFeedback: mockStats.totalFeedback },
       })
 
       return NextResponse.json({
         success: true,
-        data: mockStats
+        data: mockStats,
       })
     },
     {
@@ -168,10 +166,10 @@ export async function GET(request: NextRequest) {
       {
         success: false,
         error: result.userMessage,
-        context: result.context
+        context: result.context,
       },
       { status: 500 }
-    );
+    )
   }
-  return result as NextResponse;
+  return result as NextResponse
 }

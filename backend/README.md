@@ -97,6 +97,7 @@ yarn start
 - `GET /api/consciousness/status` - Get consciousness system status and performance metrics
 
 **Live Consciousness Features:**
+
 - Real-time birth chart transformation with current planetary transits
 - Dynamic Monica Constant (MC) and Kalchm calculations
 - Consciousness level classification and interpretations
@@ -327,11 +328,13 @@ git push origin main
 If not using render.yaml, configure these settings in Render dashboard:
 
 **Build & Deploy:**
+
 - Build Command: `yarn install && yarn build`
 - Start Command: `yarn start`
 - Environment: `Node.js`
 
 **Required Environment Variables:**
+
 ```bash
 NODE_ENV=production
 ENABLE_KINETICS_BACKEND=true
@@ -342,6 +345,7 @@ CORS_ORIGINS=https://your-frontend-domain.vercel.app
 ```
 
 **Optional Environment Variables:**
+
 ```bash
 REDIS_URL=redis://username:password@host:port  # For Redis addon
 LOG_LEVEL=info
@@ -475,6 +479,7 @@ Set up monitoring for these metrics:
    - Monitor rate limiting thresholds
 
 **Debug Commands:**
+
 ```bash
 # Check service health
 curl https://your-service.onrender.com/api/health | jq

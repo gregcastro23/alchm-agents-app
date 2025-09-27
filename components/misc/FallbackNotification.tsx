@@ -4,16 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  AlertTriangle,
-  X,
-  Info,
-  CheckCircle,
-  Clock,
-  Wifi,
-  WifiOff,
-  RefreshCw
-} from 'lucide-react'
+import { AlertTriangle, X, Info, CheckCircle, Clock, Wifi, WifiOff, RefreshCw } from 'lucide-react'
 
 interface FallbackNotificationProps {
   isVisible: boolean
@@ -34,7 +25,7 @@ const FallbackNotification: React.FC<FallbackNotificationProps> = ({
   onDismiss,
   onRetry,
   autoHide = true,
-  autoHideDelay = 10000
+  autoHideDelay = 10000,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const [countdown, setCountdown] = useState(autoHideDelay / 1000)
@@ -64,7 +55,7 @@ const FallbackNotification: React.FC<FallbackNotificationProps> = ({
           title: 'High Accuracy Active',
           message: 'Real-time planetary positions with maximum precision',
           bgColor: 'bg-green-50 border-green-200',
-          textColor: 'text-green-800'
+          textColor: 'text-green-800',
         }
       case 'medium':
         return {
@@ -73,7 +64,7 @@ const FallbackNotification: React.FC<FallbackNotificationProps> = ({
           title: 'Enhanced Accuracy Active',
           message: 'Advanced astronomical calculations providing reliable data',
           bgColor: 'bg-blue-50 border-blue-200',
-          textColor: 'text-blue-800'
+          textColor: 'text-blue-800',
         }
       case 'low':
         return {
@@ -82,7 +73,7 @@ const FallbackNotification: React.FC<FallbackNotificationProps> = ({
           title: 'Basic Accuracy Active',
           message: 'Standard calculations providing functional astrology data',
           bgColor: 'bg-yellow-50 border-yellow-200',
-          textColor: 'text-yellow-800'
+          textColor: 'text-yellow-800',
         }
       case 'fallback':
         return {
@@ -91,7 +82,7 @@ const FallbackNotification: React.FC<FallbackNotificationProps> = ({
           title: 'Fallback Mode Active',
           message: 'Using pre-calculated data due to service unavailability',
           bgColor: 'bg-red-50 border-red-200',
-          textColor: 'text-red-800'
+          textColor: 'text-red-800',
         }
     }
   }
@@ -117,15 +108,15 @@ const FallbackNotification: React.FC<FallbackNotificationProps> = ({
   const SourceIcon = sourceInfo.icon
 
   return (
-    <div className={`fixed top-4 right-4 z-50 max-w-md ${config.bgColor} border rounded-lg shadow-lg`}>
+    <div
+      className={`fixed top-4 right-4 z-50 max-w-md ${config.bgColor} border rounded-lg shadow-lg`}
+    >
       <Alert className={`${config.bgColor} border-0`}>
         <Icon className={`h-4 w-4 ${config.textColor}`} />
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <span className={`font-semibold ${config.textColor}`}>
-                {config.title}
-              </span>
+              <span className={`font-semibold ${config.textColor}`}>{config.title}</span>
               <Badge variant="outline" className="text-xs">
                 <SourceIcon className="h-3 w-3 mr-1" />
                 {sourceInfo.label}
@@ -134,9 +125,7 @@ const FallbackNotification: React.FC<FallbackNotificationProps> = ({
 
             <div className="flex items-center space-x-2">
               {autoHide && countdown > 0 && (
-                <span className="text-xs text-gray-500">
-                  Auto-hide in {countdown}s
-                </span>
+                <span className="text-xs text-gray-500">Auto-hide in {countdown}s</span>
               )}
 
               <Button
@@ -149,12 +138,7 @@ const FallbackNotification: React.FC<FallbackNotificationProps> = ({
               </Button>
 
               {onDismiss && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onDismiss}
-                  className="h-6 w-6 p-0"
-                >
+                <Button variant="ghost" size="sm" onClick={onDismiss} className="h-6 w-6 p-0">
                   <X className="h-3 w-3" />
                 </Button>
               )}
@@ -181,9 +165,13 @@ const FallbackNotification: React.FC<FallbackNotificationProps> = ({
                 <span className="font-medium">Accuracy Level:</span>
                 <Badge
                   className={
-                    accuracy === 'high' ? 'bg-green-500' :
-                    accuracy === 'medium' ? 'bg-blue-500' :
-                    accuracy === 'low' ? 'bg-yellow-500' : 'bg-red-500'
+                    accuracy === 'high'
+                      ? 'bg-green-500'
+                      : accuracy === 'medium'
+                        ? 'bg-blue-500'
+                        : accuracy === 'low'
+                          ? 'bg-yellow-500'
+                          : 'bg-red-500'
                   }
                 >
                   {accuracy.toUpperCase()}
@@ -205,13 +193,13 @@ const FallbackNotification: React.FC<FallbackNotificationProps> = ({
               <div className="text-xs text-gray-600">
                 {accuracy === 'fallback' ? (
                   <p>
-                    Astrology calculations will use pre-calculated planetary positions.
-                    Results may be less accurate for current timing but remain functional.
+                    Astrology calculations will use pre-calculated planetary positions. Results may
+                    be less accurate for current timing but remain functional.
                   </p>
                 ) : (
                   <p>
-                    Your astrology experience is optimized with {accuracy} accuracy data.
-                    All features remain fully functional.
+                    Your astrology experience is optimized with {accuracy} accuracy data. All
+                    features remain fully functional.
                   </p>
                 )}
               </div>
@@ -219,12 +207,7 @@ const FallbackNotification: React.FC<FallbackNotificationProps> = ({
               {/* Action Buttons */}
               <div className="flex space-x-2 pt-2">
                 {onRetry && accuracy === 'fallback' && (
-                  <Button
-                    onClick={onRetry}
-                    size="sm"
-                    variant="outline"
-                    className="text-xs"
-                  >
+                  <Button onClick={onRetry} size="sm" variant="outline" className="text-xs">
                     <RefreshCw className="h-3 w-3 mr-1" />
                     Try Again
                   </Button>

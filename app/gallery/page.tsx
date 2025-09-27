@@ -50,7 +50,11 @@ import type {
 import dynamic from 'next/dynamic'
 
 const HistoricalCouncilChat = dynamic(() => import('@/components/misc/historical-council-chat'), {
-  loading: () => <div className="h-32 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
+  loading: () => (
+    <div className="h-32 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  ),
 })
 import { useLiveConsciousness, type BirthChartData } from '@/hooks/useLiveConsciousness'
 import SignVectorGraphic, {
@@ -62,17 +66,47 @@ import {
   MultiAgentCompatibility,
 } from '@/components/charts/kinetic-compatibility-indicator'
 import { EnhancedAgentCard } from '@/components/misc/enhanced-agent-card'
-const RealTimeKineticsWidget = dynamic(() => import('@/components/charts/real-time-kinetics-widget').then(mod => ({ default: mod.RealTimeKineticsWidget })), {
-  loading: () => <div className="h-24 flex items-center justify-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div></div>
-})
+const RealTimeKineticsWidget = dynamic(
+  () =>
+    import('@/components/charts/real-time-kinetics-widget').then(mod => ({
+      default: mod.RealTimeKineticsWidget,
+    })),
+  {
+    loading: () => (
+      <div className="h-24 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+      </div>
+    ),
+  }
+)
 
-const ChartTransformVisualization = dynamic(() => import('@/components/charts/chart-transform-visualization').then(mod => ({ default: mod.ChartTransformVisualization })), {
-  loading: () => <div className="h-32 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
-})
+const ChartTransformVisualization = dynamic(
+  () =>
+    import('@/components/charts/chart-transform-visualization').then(mod => ({
+      default: mod.ChartTransformVisualization,
+    })),
+  {
+    loading: () => (
+      <div className="h-32 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    ),
+  }
+)
 
-const MomentBasedRecommendations = dynamic(() => import('@/components/misc/moment-based-recommendations').then(mod => ({ default: mod.MomentBasedRecommendations })), {
-  loading: () => <div className="h-28 flex items-center justify-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div></div>
-})
+const MomentBasedRecommendations = dynamic(
+  () =>
+    import('@/components/misc/moment-based-recommendations').then(mod => ({
+      default: mod.MomentBasedRecommendations,
+    })),
+  {
+    loading: () => (
+      <div className="h-28 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+      </div>
+    ),
+  }
+)
 import { useSearchParams } from 'next/navigation'
 import { degreeAgentMatcher } from '@/lib/degree-agent-matcher'
 

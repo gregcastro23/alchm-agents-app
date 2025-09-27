@@ -13,15 +13,17 @@ This guide covers how to integrate the natal sigil generation components into ex
 **Purpose:** Interactive interface for generating personalized runic sigils from chart geometry.
 
 #### Props Interface
+
 ```typescript
 interface NatalSigilGeneratorProps {
-  geometry: RuneGeometry              // Required: Chart geometry data
-  chartData?: any                     // Optional: Additional chart context
-  onSigilGenerated?: (sigil: NatalSigilRune) => void  // Optional: Callback for generated sigils
+  geometry: RuneGeometry // Required: Chart geometry data
+  chartData?: any // Optional: Additional chart context
+  onSigilGenerated?: (sigil: NatalSigilRune) => void // Optional: Callback for generated sigils
 }
 ```
 
 #### Basic Usage
+
 ```tsx
 import NatalSigilGenerator from '@/components/natal-sigil-generator'
 import { ChartGeometryExtractor } from '@/lib/chart-geometry-extractor'
@@ -49,16 +51,14 @@ function MyChartComponent({ chartData }) {
       <ChartDisplay data={chartData} />
 
       {/* Rune generation button */}
-      <Button onClick={handleGenerateRune}>
-        Generate Sigil
-      </Button>
+      <Button onClick={handleGenerateRune}>Generate Sigil</Button>
 
       {/* Conditional sigil generator */}
       {showGenerator && geometry && (
         <NatalSigilGenerator
           geometry={geometry}
           chartData={chartData}
-          onSigilGenerated={(sigil) => {
+          onSigilGenerated={sigil => {
             console.log('Generated sigil:', sigil)
             setShowGenerator(false)
           }}
@@ -70,24 +70,28 @@ function MyChartComponent({ chartData }) {
 ```
 
 #### Advanced Integration
+
 ```tsx
 function AdvancedChartComponent({ birthInfo, planetPositions }) {
   const [sigilHistory, setSigilHistory] = useState<NatalSigilRune[]>([])
 
-  const handleSigilGenerated = useCallback((sigil: NatalSigilRune) => {
-    // Add to history
-    setSigilHistory(prev => [...prev, sigil])
+  const handleSigilGenerated = useCallback(
+    (sigil: NatalSigilRune) => {
+      // Add to history
+      setSigilHistory(prev => [...prev, sigil])
 
-    // Store in localStorage
-    localStorage.setItem('generated-sigils', JSON.stringify([...sigilHistory, sigil]))
+      // Store in localStorage
+      localStorage.setItem('generated-sigils', JSON.stringify([...sigilHistory, sigil]))
 
-    // Optional: Analytics tracking
-    analytics.track('sigil_generated', {
-      style: sigil.visualStyle,
-      power: sigil.powerLevel,
-      patterns: sigil.sourceGeometry.sacredPatterns.length
-    })
-  }, [sigilHistory])
+      // Optional: Analytics tracking
+      analytics.track('sigil_generated', {
+        style: sigil.visualStyle,
+        power: sigil.powerLevel,
+        patterns: sigil.sourceGeometry.sacredPatterns.length,
+      })
+    },
+    [sigilHistory]
+  )
 
   return (
     <div>
@@ -135,6 +139,7 @@ ChartGeometryExtractor.extractFromCanvas(
 #### Integration Examples
 
 **With Existing Chart Components:**
+
 ```tsx
 function ExistingChartComponent({ planets, aspects }) {
   const handleExtractGeometry = () => {
@@ -143,16 +148,11 @@ function ExistingChartComponent({ planets, aspects }) {
       planet: p.name,
       sign: p.sign,
       degree: p.degree,
-      house: p.house
+      house: p.house,
     }))
 
     // Extract geometry
-    const geometry = ChartGeometryExtractor.extractFromChartData(
-      planetPositions,
-      aspects,
-      800,
-      800
-    )
+    const geometry = ChartGeometryExtractor.extractFromChartData(planetPositions, aspects, 800, 800)
 
     // Use geometry for sigil generation
     return geometry
@@ -160,15 +160,14 @@ function ExistingChartComponent({ planets, aspects }) {
 
   return (
     <div>
-      <Button onClick={handleExtractGeometry}>
-        Extract Chart Geometry
-      </Button>
+      <Button onClick={handleExtractGeometry}>Extract Chart Geometry</Button>
     </div>
   )
 }
 ```
 
 **With SVG Charts:**
+
 ```tsx
 function SVGChartComponent() {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -185,9 +184,7 @@ function SVGChartComponent() {
       <svg ref={svgRef} className="chart-svg">
         {/* Your SVG chart content */}
       </svg>
-      <Button onClick={handleExtractFromSVG}>
-        Generate Sigil from Chart
-      </Button>
+      <Button onClick={handleExtractFromSVG}>Generate Sigil from Chart</Button>
     </div>
   )
 }
@@ -225,6 +222,7 @@ PatternToRuneConverter.recommendStyle(
 #### Integration Examples
 
 **Automatic Style Recommendation:**
+
 ```tsx
 function SmartSigilGenerator({ geometry }) {
   const [recommendedStyle, setRecommendedStyle] = useState<SigilStyle>('nordic')
@@ -250,6 +248,7 @@ function SmartSigilGenerator({ geometry }) {
 ```
 
 **Batch Generation:**
+
 ```tsx
 function BatchSigilGenerator({ pattern, geometry }) {
   const [variations, setVariations] = useState<NatalSigilRune[]>([])
@@ -258,11 +257,12 @@ function BatchSigilGenerator({ pattern, geometry }) {
   const handleBatchGenerate = async () => {
     setIsGenerating(true)
     try {
-      const sigils = await PatternToRuneConverter.generateSigilVariations(
-        pattern,
-        geometry,
-        ['nordic', 'celtic', 'alchemical', 'cosmic']
-      )
+      const sigils = await PatternToRuneConverter.generateSigilVariations(pattern, geometry, [
+        'nordic',
+        'celtic',
+        'alchemical',
+        'cosmic',
+      ])
       setVariations(sigils)
     } finally {
       setIsGenerating(false)
@@ -335,9 +335,7 @@ function ChartWithSigilModal({ chartData }) {
     <div>
       <ChartDisplay data={chartData} />
 
-      <Button onClick={() => setShowModal(true)}>
-        Create Sigil
-      </Button>
+      <Button onClick={() => setShowModal(true)}>Create Sigil</Button>
 
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="max-w-4xl">
@@ -348,7 +346,7 @@ function ChartWithSigilModal({ chartData }) {
           <NatalSigilGenerator
             geometry={extractedGeometry}
             chartData={chartData}
-            onSigilGenerated={(sigil) => {
+            onSigilGenerated={sigil => {
               console.log('Generated:', sigil)
               setShowModal(false)
             }}
@@ -397,6 +395,7 @@ function ComprehensiveChartAnalysis({ chartData }) {
 **File:** `app/chart-of-the-moment/page.tsx`
 
 **Features:**
+
 - Generate sigils from current planetary transits
 - Real-time geometry extraction
 - Moment-specific sigil creation
@@ -429,15 +428,10 @@ function AgentConsultationPage({ planet, sign, degree }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleGenerateAgentSigil}>
-            Generate Planetary Sigil
-          </Button>
+          <Button onClick={handleGenerateAgentSigil}>Generate Planetary Sigil</Button>
 
           {chartGeometry && (
-            <NatalSigilGenerator
-              geometry={chartGeometry}
-              chartData={{ planet, sign, degree }}
-            />
+            <NatalSigilGenerator geometry={chartGeometry} chartData={{ planet, sign, degree }} />
           )}
         </CardContent>
       </Card>
@@ -461,10 +455,7 @@ function BirthChartDisplay({ birthInfo, planets, aspects }) {
 
       {/* Add sigil generation toggle */}
       <div className="mt-4 flex justify-center">
-        <Button
-          variant="outline"
-          onClick={() => setShowSigilGenerator(!showSigilGenerator)}
-        >
+        <Button variant="outline" onClick={() => setShowSigilGenerator(!showSigilGenerator)}>
           <Sparkles className="w-4 h-4 mr-2" />
           {showSigilGenerator ? 'Hide' : 'Show'} Sigil Generator
         </Button>
@@ -473,11 +464,7 @@ function BirthChartDisplay({ birthInfo, planets, aspects }) {
       {/* Conditional sigil generator */}
       {showSigilGenerator && (
         <div className="mt-6">
-          <SigilGenerationSection
-            birthInfo={birthInfo}
-            planets={planets}
-            aspects={aspects}
-          />
+          <SigilGenerationSection birthInfo={birthInfo} planets={planets} aspects={aspects} />
         </div>
       )}
     </div>
@@ -492,7 +479,7 @@ function BirthChartDisplay({ birthInfo, planets, aspects }) {
 ```typescript
 // Create geometry from minimal data
 function createBasicGeometry(
-  elementalBalance: { fire: number, water: number, air: number, earth: number },
+  elementalBalance: { fire: number; water: number; air: number; earth: number },
   dominantElement: string
 ): RuneGeometry {
   return {
@@ -502,16 +489,12 @@ function createBasicGeometry(
     sacredPatterns: [],
     chartBounds: { width: 800, height: 800 },
     dominantElement,
-    elementalBalance
+    elementalBalance,
   }
 }
 
 // Create planetary-specific geometry
-function createPlanetaryGeometry(
-  planet: string,
-  sign: string,
-  degree: number
-): RuneGeometry {
+function createPlanetaryGeometry(planet: string, sign: string, degree: number): RuneGeometry {
   const element = getSignElement(sign)
   const elementalBalance = { fire: 0, water: 0, air: 0, earth: 0 }
   elementalBalance[element.toLowerCase() as keyof typeof elementalBalance] = 100
@@ -556,9 +539,7 @@ function SigilGenerationErrorBoundary({ children }: { children: ReactNode }) {
     <ErrorBoundary
       fallback={({ error }) => (
         <Alert variant="destructive">
-          <AlertDescription>
-            Sigil generation failed: {error.message}
-          </AlertDescription>
+          <AlertDescription>Sigil generation failed: {error.message}</AlertDescription>
         </Alert>
       )}
     >
@@ -576,7 +557,7 @@ async function safeGenerateSigil(params: any) {
     const response = await fetch('/api/generate-natal-sigil', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params)
+      body: JSON.stringify(params),
     })
 
     if (!response.ok) {
@@ -592,7 +573,7 @@ async function safeGenerateSigil(params: any) {
     return {
       success: false,
       error: error.message,
-      fallbackSigil: createFallbackSigil(params.geometry)
+      fallbackSigil: createFallbackSigil(params.geometry),
     }
   }
 }
@@ -647,4 +628,4 @@ test('calls onSigilGenerated when sigil is created', async () => {
 
 ---
 
-*This guide provides comprehensive patterns for integrating natal sigil generation throughout the Planetary Agents system while maintaining code quality and user experience standards.*
+_This guide provides comprehensive patterns for integrating natal sigil generation throughout the Planetary Agents system while maintaining code quality and user experience standards._

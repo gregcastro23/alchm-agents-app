@@ -28,7 +28,7 @@ DEMO_AGENTS.forEach((agent, index) => {
         'optimalInteractionHours',
         'aspectSensitivityGrowth',
         'memoryPersistence',
-        'lastKineticUpdate'
+        'lastKineticUpdate',
       ]
 
       requiredFields.forEach(field => {
@@ -49,7 +49,7 @@ DEMO_AGENTS.forEach((agent, index) => {
     incompleteAgents.push({
       index: index + 1,
       name: agent.name,
-      issues
+      issues,
     })
   }
 })

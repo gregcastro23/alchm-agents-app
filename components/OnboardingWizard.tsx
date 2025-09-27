@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { VisuallyHidden } from '@/components/ui/visually-hidden'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -18,7 +19,7 @@ import {
   ArrowLeft,
   X,
   Target,
-  Zap
+  Zap,
 } from 'lucide-react'
 import { logger } from '@/lib/structured-logger'
 
@@ -66,7 +67,7 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
             </p>
           </div>
         </div>
-      )
+      ),
     },
     {
       id: 'features',
@@ -97,7 +98,8 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
                   <div>
                     <h4 className="font-medium">AI Agent Conversations</h4>
                     <p className="text-sm text-muted-foreground">
-                      Chat with historical figures and AI personalities based on your astrological profile
+                      Chat with historical figures and AI personalities based on your astrological
+                      profile
                     </p>
                   </div>
                 </div>
@@ -133,7 +135,7 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
             </Card>
           </div>
         </div>
-      )
+      ),
     },
     {
       id: 'preferences',
@@ -151,11 +153,14 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
               <Checkbox
                 id="astrology"
                 checked={userPreferences.interestedInAstrology}
-                onCheckedChange={(checked) =>
+                onCheckedChange={checked =>
                   setUserPreferences(prev => ({ ...prev, interestedInAstrology: !!checked }))
                 }
               />
-              <label htmlFor="astrology" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <label
+                htmlFor="astrology"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
                 Astrology & Birth Charts
               </label>
             </div>
@@ -164,11 +169,14 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
               <Checkbox
                 id="ai"
                 checked={userPreferences.interestedInAI}
-                onCheckedChange={(checked) =>
+                onCheckedChange={checked =>
                   setUserPreferences(prev => ({ ...prev, interestedInAI: !!checked }))
                 }
               />
-              <label htmlFor="ai" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <label
+                htmlFor="ai"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
                 AI Conversations & Agents
               </label>
             </div>
@@ -177,11 +185,14 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
               <Checkbox
                 id="charts"
                 checked={userPreferences.interestedInCharts}
-                onCheckedChange={(checked) =>
+                onCheckedChange={checked =>
                   setUserPreferences(prev => ({ ...prev, interestedInCharts: !!checked }))
                 }
               />
-              <label htmlFor="charts" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <label
+                htmlFor="charts"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
                 Charts & Data Visualization
               </label>
             </div>
@@ -190,17 +201,20 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
               <Checkbox
                 id="notifications"
                 checked={userPreferences.wantsNotifications}
-                onCheckedChange={(checked) =>
+                onCheckedChange={checked =>
                   setUserPreferences(prev => ({ ...prev, wantsNotifications: !!checked }))
                 }
               />
-              <label htmlFor="notifications" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <label
+                htmlFor="notifications"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
                 Power Hour Notifications
               </label>
             </div>
           </div>
         </div>
-      )
+      ),
     },
     {
       id: 'getting-started',
@@ -226,7 +240,8 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
                     <div>
                       <h4 className="font-medium">Create Your Birth Chart</h4>
                       <p className="text-sm text-muted-foreground">
-                        Start by entering your birth information to generate your personal astrological profile
+                        Start by entering your birth information to generate your personal
+                        astrological profile
                       </p>
                     </div>
                   </div>
@@ -281,8 +296,8 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
             </Card>
           </div>
         </div>
-      )
-    }
+      ),
+    },
   ]
 
   const currentStepData = steps[currentStep]
@@ -309,7 +324,7 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
       completed: true,
       completedAt: new Date().toISOString(),
       preferences: userPreferences,
-      completedSteps: Array.from(completedSteps)
+      completedSteps: Array.from(completedSteps),
     }
 
     // In a real app, save to localStorage or API
@@ -320,8 +335,8 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
       operation: 'complete',
       metadata: {
         preferences: userPreferences,
-        stepsCompleted: completedSteps.size
-      }
+        stepsCompleted: completedSteps.size,
+      },
     })
 
     onComplete()
@@ -331,7 +346,7 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
     logger.info('User skipped onboarding', {
       system: 'onboarding',
       operation: 'skip',
-      metadata: { stepReached: currentStepData.id }
+      metadata: { stepReached: currentStepData.id },
     })
 
     onSkip()
@@ -355,6 +370,9 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
         aria-labelledby="onboarding-title"
         aria-describedby="onboarding-description"
       >
+        <VisuallyHidden>
+          <DialogTitle>Onboarding Tutorial</DialogTitle>
+        </VisuallyHidden>
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -380,7 +398,9 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
         {/* Progress */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span>Step {currentStep + 1} of {steps.length}</span>
+            <span>
+              Step {currentStep + 1} of {steps.length}
+            </span>
             <span>{Math.round(progress)}% complete</span>
           </div>
           <Progress
@@ -391,9 +411,7 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
         </div>
 
         {/* Content */}
-        <div className="py-4">
-          {currentStepData.content}
-        </div>
+        <div className="py-4">{currentStepData.content}</div>
 
         {/* Navigation */}
         <div className="flex justify-between pt-4 border-t">
@@ -401,7 +419,7 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 0}
-            aria-label={currentStep === 0 ? "Previous step (disabled)" : "Go to previous step"}
+            aria-label={currentStep === 0 ? 'Previous step (disabled)' : 'Go to previous step'}
           >
             <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
             Previous
@@ -417,7 +435,11 @@ export function OnboardingWizard({ open, onComplete, onSkip }: OnboardingWizardP
             </Button>
             <Button
               onClick={handleNext}
-              aria-label={currentStep === steps.length - 1 ? "Complete onboarding and start using the application" : "Go to next step"}
+              aria-label={
+                currentStep === steps.length - 1
+                  ? 'Complete onboarding and start using the application'
+                  : 'Go to next step'
+              }
             >
               {currentStep === steps.length - 1 ? 'Get Started' : 'Next'}
               <ArrowRight className="h-4 w-4 ml-2" aria-hidden="true" />

@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     // Get current user or use anonymous
     const user = await getCurrentUser(request)
-    const userId = user?.id || getUserIdFromRequest(request)
+    const userId = (user as any)?.id || getUserIdFromRequest(request)
 
     if (!agentId) {
       return NextResponse.json({ error: 'agentId required' }, { status: 400 })
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
 
     // Get current user or use anonymous
     const user = await getCurrentUser(request)
-    const userId = user?.id || getUserIdFromRequest(request)
+    const userId = (user as any)?.id || getUserIdFromRequest(request)
 
     if (!agentId) {
       return NextResponse.json({ error: 'agentId required' }, { status: 400 })
@@ -180,31 +180,55 @@ export async function POST(request: NextRequest) {
           if (samples.length >= 2) {
             // Compute force from the last two samples
             const forceResults = computeForce(
-              [{
-                t: samples[samples.length - 2].t,
-                p: {
-                  Fire: samples[samples.length - 2].totals.Fire,
-                  Water: samples[samples.length - 2].totals.Water,
-                  Air: samples[samples.length - 2].totals.Air,
-                  Earth: samples[samples.length - 2].totals.Earth,
+              [
+                {
+                  t: samples[samples.length - 2].t,
+                  p: {
+                    Fire: samples[samples.length - 2].totals.Fire,
+                    Water: samples[samples.length - 2].totals.Water,
+                    Air: samples[samples.length - 2].totals.Air,
+                    Earth: samples[samples.length - 2].totals.Earth,
+                  },
+                  inertia:
+                    1 +
+                    samples[samples.length - 2].matter +
+                    samples[samples.length - 2].earth +
+                    samples[samples.length - 2].substance / 2,
+                  planetaryHour: samples[samples.length - 2].planetaryHour,
                 },
-                inertia: 1 + samples[samples.length - 2].matter + samples[samples.length - 2].earth + samples[samples.length - 2].substance / 2,
-                planetaryHour: samples[samples.length - 2].planetaryHour,
-              }],
-              [{
-                t: samples[samples.length - 1].t,
-                v: {
-                  Fire: (samples[samples.length - 1].totals.Fire - samples[samples.length - 2].totals.Fire) /
-                        ((samples[samples.length - 1].t.getTime() - samples[samples.length - 2].t.getTime()) / 3600000),
-                  Water: (samples[samples.length - 1].totals.Water - samples[samples.length - 2].totals.Water) /
-                         ((samples[samples.length - 1].t.getTime() - samples[samples.length - 2].t.getTime()) / 3600000),
-                  Air: (samples[samples.length - 1].totals.Air - samples[samples.length - 2].totals.Air) /
-                       ((samples[samples.length - 1].t.getTime() - samples[samples.length - 2].t.getTime()) / 3600000),
-                  Earth: (samples[samples.length - 1].totals.Earth - samples[samples.length - 2].totals.Earth) /
-                         ((samples[samples.length - 1].t.getTime() - samples[samples.length - 2].t.getTime()) / 3600000),
+              ],
+              [
+                {
+                  t: samples[samples.length - 1].t,
+                  v: {
+                    Fire:
+                      (samples[samples.length - 1].totals.Fire -
+                        samples[samples.length - 2].totals.Fire) /
+                      ((samples[samples.length - 1].t.getTime() -
+                        samples[samples.length - 2].t.getTime()) /
+                        3600000),
+                    Water:
+                      (samples[samples.length - 1].totals.Water -
+                        samples[samples.length - 2].totals.Water) /
+                      ((samples[samples.length - 1].t.getTime() -
+                        samples[samples.length - 2].t.getTime()) /
+                        3600000),
+                    Air:
+                      (samples[samples.length - 1].totals.Air -
+                        samples[samples.length - 2].totals.Air) /
+                      ((samples[samples.length - 1].t.getTime() -
+                        samples[samples.length - 2].t.getTime()) /
+                        3600000),
+                    Earth:
+                      (samples[samples.length - 1].totals.Earth -
+                        samples[samples.length - 2].totals.Earth) /
+                      ((samples[samples.length - 1].t.getTime() -
+                        samples[samples.length - 2].t.getTime()) /
+                        3600000),
+                  },
+                  planetaryHour: samples[samples.length - 1].planetaryHour,
                 },
-                planetaryHour: samples[samples.length - 1].planetaryHour,
-              }]
+              ]
             )
 
             if (forceResults.length > 0) {
@@ -319,7 +343,7 @@ export async function PUT(request: NextRequest) {
         try {
           // Get current user
           const user = await getCurrentUser(request)
-          const userId = user?.id || getUserIdFromRequest(request)
+          const userId = (user as any)?.id || getUserIdFromRequest(request)
 
           // Reset in database
           const freshState = await consciousnessPersistence.resetAgentEvolution(userId, agentId)

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { planetaryPositionsService, type AccuracyLevel } from '@/lib/services/planetary-positions-service'
+import {
+  planetaryPositionsService,
+  type AccuracyLevel,
+} from '@/lib/services/planetary-positions-service'
 import { logQuantitiesToGalileo } from '@/lib/galileo-logger'
 import { trackPerformanceMetrics } from './metrics/route'
 import { withErrorHandling } from '@/lib/error-handling'
@@ -50,7 +53,10 @@ export async function GET(req: NextRequest) {
       let planetaryData
 
       if (requestBody.includeAlchemy) {
-        planetaryData = await planetaryPositionsService.getPlanetaryPositionsWithAlchemy(date, options)
+        planetaryData = await planetaryPositionsService.getPlanetaryPositionsWithAlchemy(
+          date,
+          options
+        )
       } else {
         planetaryData = await planetaryPositionsService.getPlanetaryPositions(date, options)
       }
@@ -58,39 +64,45 @@ export async function GET(req: NextRequest) {
       // Log to Galileo for observability if alchemy data is included
       if (planetaryData.alchmQuantities) {
         try {
-          await logQuantitiesToGalileo({
-            quantities: {
-              Spirit: planetaryData.alchmQuantities.spirit,
-              Essence: planetaryData.alchmQuantities.essence,
-              Matter: planetaryData.alchmQuantities.matter,
-              Substance: planetaryData.alchmQuantities.substance,
-              ANumber: planetaryData.alchmQuantities.spirit + planetaryData.alchmQuantities.essence +
-                      planetaryData.alchmQuantities.matter + planetaryData.alchmQuantities.substance,
-              DayEssence: 0,
-              NightEssence: 0,
+          await logQuantitiesToGalileo(
+            {
+              quantities: {
+                Spirit: planetaryData.alchmQuantities.spirit,
+                Essence: planetaryData.alchmQuantities.essence,
+                Matter: planetaryData.alchmQuantities.matter,
+                Substance: planetaryData.alchmQuantities.substance,
+                ANumber:
+                  planetaryData.alchmQuantities.spirit +
+                  planetaryData.alchmQuantities.essence +
+                  planetaryData.alchmQuantities.matter +
+                  planetaryData.alchmQuantities.substance,
+                DayEssence: 0,
+                NightEssence: 0,
+              },
+              dominantElement: '',
+              heat: planetaryData.alchmQuantities.Heat,
+              entropy: planetaryData.alchmQuantities.Entropy,
+              reactivity: planetaryData.alchmQuantities.Reactivity,
+              energy: planetaryData.alchmQuantities.Energy,
+              sunSign: planetaryData.planetaryPositions.find(p => p.planet === 'Sun')?.sign || '',
+              chartRuler: '',
+              timestamp: planetaryData.timestamp,
+              planetaryPositions: planetaryData.planetaryPositions.reduce((acc, pos) => {
+                acc[pos.planet] = {
+                  sign: pos.sign,
+                  degree: pos.degree.toString(),
+                  retrograde: pos.retrograde,
+                }
+                return acc
+              }, {} as any),
             },
-            dominantElement: '',
-            heat: planetaryData.alchmQuantities.Heat,
-            entropy: planetaryData.alchmQuantities.Entropy,
-            reactivity: planetaryData.alchmQuantities.Reactivity,
-            energy: planetaryData.alchmQuantities.Energy,
-            sunSign: planetaryData.planetaryPositions.find(p => p.planet === 'Sun')?.sign || '',
-            chartRuler: '',
-            timestamp: planetaryData.timestamp,
-            planetaryPositions: planetaryData.planetaryPositions.reduce((acc, pos) => {
-              acc[pos.planet] = {
-                sign: pos.sign,
-                degree: pos.degree.toString(),
-                retrograde: pos.retrograde,
-              }
-              return acc
-            }, {} as any),
-          }, {
-            api_endpoint: '/api/planetary-positions',
-            request_timestamp: planetaryData.timestamp,
-            calculation_method: `unified-service-${planetaryData.source}`,
-            monica_constant: planetaryData.monicaConstant || 0,
-          })
+            {
+              api_endpoint: '/api/planetary-positions',
+              request_timestamp: planetaryData.timestamp,
+              calculation_method: `unified-service-${planetaryData.source}`,
+              monica_constant: planetaryData.monicaConstant || 0,
+            }
+          )
         } catch (e) {
           console.warn('[Galileo] planetary positions logging failed (non-fatal):', e)
         }
@@ -98,15 +110,20 @@ export async function GET(req: NextRequest) {
 
       // Set cache headers based on accuracy level
       const cacheMaxAge = {
-        high: 300,     // 5 minutes
-        medium: 900,   // 15 minutes
-        low: 3600,     // 1 hour
+        high: 300, // 5 minutes
+        medium: 900, // 15 minutes
+        low: 3600, // 1 hour
         fallback: 86400, // 24 hours
       }[planetaryData.accuracy]
 
       // Track performance metrics
       const responseTime = Date.now() - startTime
-      trackPerformanceMetrics(responseTime, planetaryData.accuracy, planetaryData.cached, planetaryData.source)
+      trackPerformanceMetrics(
+        responseTime,
+        planetaryData.accuracy,
+        planetaryData.cached,
+        planetaryData.source
+      )
 
       return NextResponse.json(planetaryData, {
         headers: {
@@ -128,20 +145,20 @@ export async function GET(req: NextRequest) {
         {
           success: false,
           error: result.userMessage,
-          context: result.context
+          context: result.context,
         },
         { status: 500 }
-      );
+      )
     }
-    return result;
-  });
+    return result
+  })
 }
 
 export async function POST(req: NextRequest) {
   return withErrorHandling(
     async () => {
       const startTime = Date.now()
-      const body = await req.json() as RequestBody
+      const body = (await req.json()) as RequestBody
       const date = body.date ? new Date(body.date) : new Date()
 
       if (isNaN(date.getTime())) {
@@ -161,14 +178,22 @@ export async function POST(req: NextRequest) {
       let planetaryData
 
       if (body.includeAlchemy) {
-        planetaryData = await planetaryPositionsService.getPlanetaryPositionsWithAlchemy(date, options)
+        planetaryData = await planetaryPositionsService.getPlanetaryPositionsWithAlchemy(
+          date,
+          options
+        )
       } else {
         planetaryData = await planetaryPositionsService.getPlanetaryPositions(date, options)
       }
 
       // Track performance metrics
       const responseTime = Date.now() - startTime
-      trackPerformanceMetrics(responseTime, planetaryData.accuracy, planetaryData.cached, planetaryData.source)
+      trackPerformanceMetrics(
+        responseTime,
+        planetaryData.accuracy,
+        planetaryData.cached,
+        planetaryData.source
+      )
 
       return NextResponse.json(planetaryData, {
         headers: {
@@ -189,11 +214,11 @@ export async function POST(req: NextRequest) {
         {
           success: false,
           error: result.userMessage,
-          context: result.context
+          context: result.context,
         },
         { status: 500 }
-      );
+      )
     }
-    return result;
-  });
+    return result
+  })
 }

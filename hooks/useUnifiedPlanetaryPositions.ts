@@ -1,7 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { planetaryPositionsService, type PlanetaryData, type AccuracyLevel } from '@/lib/services/planetary-positions-service'
+import {
+  planetaryPositionsService,
+  type PlanetaryData,
+  type AccuracyLevel,
+} from '@/lib/services/planetary-positions-service'
 
 interface UseUnifiedPlanetaryPositionsOptions {
   accuracy?: AccuracyLevel
@@ -65,8 +69,12 @@ export function useUnifiedPlanetaryPositions(
       const cacheKey = `${opts.accuracy}-${opts.includeAlchemy}-${opts.useCache}`
 
       // Use shared cache if data is fresh and options match
-      if (!force && sharedCache.data && cacheKey === sharedCache.currentOptions &&
-          now - sharedCache.lastFetch < Math.min(opts.refreshInterval, 30000)) {
+      if (
+        !force &&
+        sharedCache.data &&
+        cacheKey === sharedCache.currentOptions &&
+        now - sharedCache.lastFetch < Math.min(opts.refreshInterval, 30000)
+      ) {
         setData(sharedCache.data)
         setLoading(false)
         setError(null)
@@ -103,7 +111,10 @@ export function useUnifiedPlanetaryPositions(
         let result: PlanetaryData
 
         if (opts.includeAlchemy) {
-          result = await planetaryPositionsService.getPlanetaryPositionsWithAlchemy(new Date(), serviceOptions)
+          result = await planetaryPositionsService.getPlanetaryPositionsWithAlchemy(
+            new Date(),
+            serviceOptions
+          )
         } else {
           result = await planetaryPositionsService.getPlanetaryPositions(new Date(), serviceOptions)
         }
@@ -118,7 +129,6 @@ export function useUnifiedPlanetaryPositions(
         setData(result)
         setLastUpdated(new Date())
         retryCountRef.current = 0 // Reset retry count on success
-
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
           return // Ignore aborted requests
@@ -206,9 +216,7 @@ export function useUnifiedPlanetaryPositions(
     loading,
     error,
     lastUpdated,
-    isStale: lastUpdated
-      ? Date.now() - lastUpdated.getTime() > opts.refreshInterval
-      : true,
+    isStale: lastUpdated ? Date.now() - lastUpdated.getTime() > opts.refreshInterval : true,
     refresh,
     clearCache,
   }

@@ -16,7 +16,7 @@ services:
         - DOCKER_BUILD=true
     container_name: planetary-frontend
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
@@ -43,17 +43,23 @@ services:
       - frontend_logs:/app/logs
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://localhost:3000/api/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`planetary-agents.local`)"
-      - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
-      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.frontend.rule=Host(`planetary-agents.local`)'
+      - 'traefik.http.routers.frontend.entrypoints=websecure'
+      - 'traefik.http.routers.frontend.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.frontend.loadbalancer.server.port=3000'
     networks:
       - planetary-network
 
@@ -67,8 +73,8 @@ services:
       target: production
     container_name: planetary-backend
     ports:
-      - "8000:8000"
-      - "8001:8001"  # WebSocket port
+      - '8000:8000'
+      - '8001:8001' # WebSocket port
     environment:
       - NODE_ENV=production
       - PORT=8000
@@ -88,7 +94,7 @@ services:
       - backend_temp:/app/temp
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "scripts/health-check.js"]
+      test: ['CMD', 'node', 'scripts/health-check.js']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -103,7 +109,7 @@ services:
     image: postgres:15-alpine
     container_name: planetary-postgres
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       - POSTGRES_DB=planetary_agents
       - POSTGRES_USER=planetary
@@ -114,7 +120,7 @@ services:
       - ./database/init:/docker-entrypoint-initdb.d
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U planetary -d planetary_agents"]
+      test: ['CMD-SHELL', 'pg_isready -U planetary -d planetary_agents']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -129,7 +135,7 @@ services:
     image: redis:7-alpine
     container_name: planetary-redis
     ports:
-      - "6379:6379"
+      - '6379:6379'
     command: >
       redis-server
       --appendonly yes
@@ -143,7 +149,7 @@ services:
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 3s
       retries: 3
@@ -157,9 +163,9 @@ services:
     image: traefik:v3.0
     container_name: planetary-traefik
     ports:
-      - "80:80"
-      - "443:443"
-      - "8080:8080"  # Traefik dashboard
+      - '80:80'
+      - '443:443'
+      - '8080:8080' # Traefik dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro

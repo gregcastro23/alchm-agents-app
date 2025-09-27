@@ -1,7 +1,13 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -16,7 +22,7 @@ import {
   ThumbsDown,
   AlertCircle,
   CheckCircle,
-  X
+  X,
 } from 'lucide-react'
 import { logger } from '@/lib/structured-logger'
 
@@ -90,8 +96,8 @@ export function FeedbackModal({ trigger, onSubmit }: FeedbackModalProps) {
         metadata: {
           category: feedback.category,
           rating: feedback.rating,
-          hasMessage: !!feedback.message.trim()
-        }
+          hasMessage: !!feedback.message.trim(),
+        },
       })
 
       // Call optional callback
@@ -105,12 +111,11 @@ export function FeedbackModal({ trigger, onSubmit }: FeedbackModalProps) {
         setSubmitted(false)
         setFeedback({ rating: 0, category: '', message: '' })
       }, 2000)
-
     } catch (error) {
       console.error('Failed to submit feedback:', error)
       logger.error('Feedback submission failed', error, {
         system: 'feedback',
-        operation: 'submit_error'
+        operation: 'submit_error',
       })
     } finally {
       setSubmitting(false)
@@ -127,12 +132,7 @@ export function FeedbackModal({ trigger, onSubmit }: FeedbackModalProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            aria-label="Open feedback form"
-          >
+          <Button variant="outline" size="sm" className="gap-2" aria-label="Open feedback form">
             <MessageSquare className="h-4 w-4" aria-hidden="true" />
             Feedback
           </Button>
@@ -149,7 +149,8 @@ export function FeedbackModal({ trigger, onSubmit }: FeedbackModalProps) {
             Share Your Feedback
           </DialogTitle>
           <p id="feedback-dialog-description" className="sr-only">
-            Help us improve Planetary Agents by sharing your feedback, bug reports, or feature requests.
+            Help us improve Planetary Agents by sharing your feedback, bug reports, or feature
+            requests.
           </p>
         </DialogHeader>
 
@@ -158,7 +159,8 @@ export function FeedbackModal({ trigger, onSubmit }: FeedbackModalProps) {
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Thank you for your feedback!</h3>
             <p className="text-muted-foreground">
-              Your input helps us improve Planetary Agents. We appreciate you taking the time to share your thoughts.
+              Your input helps us improve Planetary Agents. We appreciate you taking the time to
+              share your thoughts.
             </p>
           </div>
         ) : (
@@ -174,7 +176,7 @@ export function FeedbackModal({ trigger, onSubmit }: FeedbackModalProps) {
                 aria-labelledby="rating-label"
                 aria-describedby="rating-description"
               >
-                {[1, 2, 3, 4, 5].map((star) => (
+                {[1, 2, 3, 4, 5].map(star => (
                   <button
                     key={star}
                     type="button"
@@ -197,11 +199,11 @@ export function FeedbackModal({ trigger, onSubmit }: FeedbackModalProps) {
               </p>
               {feedback.rating > 0 && (
                 <p className="text-sm text-muted-foreground mt-1" aria-live="polite">
-                  {feedback.rating === 1 && "Poor"}
-                  {feedback.rating === 2 && "Fair"}
-                  {feedback.rating === 3 && "Good"}
-                  {feedback.rating === 4 && "Very Good"}
-                  {feedback.rating === 5 && "Excellent"}
+                  {feedback.rating === 1 && 'Poor'}
+                  {feedback.rating === 2 && 'Fair'}
+                  {feedback.rating === 3 && 'Good'}
+                  {feedback.rating === 4 && 'Very Good'}
+                  {feedback.rating === 5 && 'Excellent'}
                 </p>
               )}
             </div>
@@ -213,11 +215,11 @@ export function FeedbackModal({ trigger, onSubmit }: FeedbackModalProps) {
               </Label>
               <RadioGroup
                 value={feedback.category}
-                onValueChange={(value) => setFeedback(prev => ({ ...prev, category: value }))}
+                onValueChange={value => setFeedback(prev => ({ ...prev, category: value }))}
                 className="mt-2"
                 aria-labelledby="category-label"
               >
-                {FEEDBACK_CATEGORIES.map((category) => {
+                {FEEDBACK_CATEGORIES.map(category => {
                   const IconComponent = category.icon
                   return (
                     <div key={category.value} className="flex items-center space-x-2">
@@ -236,7 +238,8 @@ export function FeedbackModal({ trigger, onSubmit }: FeedbackModalProps) {
                       <span id={`category-${category.value}-desc`} className="sr-only">
                         {category.value === 'bug' && 'Report technical issues or errors'}
                         {category.value === 'feature' && 'Suggest new features or improvements'}
-                        {category.value === 'ui' && 'Share feedback about user interface and experience'}
+                        {category.value === 'ui' &&
+                          'Share feedback about user interface and experience'}
                         {category.value === 'performance' && 'Report speed or performance issues'}
                         {category.value === 'general' && 'General feedback about the application'}
                       </span>
@@ -255,7 +258,7 @@ export function FeedbackModal({ trigger, onSubmit }: FeedbackModalProps) {
                 id="feedback-message"
                 placeholder="Please share your thoughts, suggestions, or any issues you've encountered..."
                 value={feedback.message}
-                onChange={(e) => setFeedback(prev => ({ ...prev, message: e.target.value }))}
+                onChange={e => setFeedback(prev => ({ ...prev, message: e.target.value }))}
                 className="mt-2 min-h-[100px]"
                 required
                 aria-describedby="message-help"
@@ -300,10 +303,15 @@ export function FeedbackModal({ trigger, onSubmit }: FeedbackModalProps) {
               </Button>
             </div>
             <div id="submit-status" className="sr-only">
-              {!feedback.category && "Please select a feedback category"}
-              {feedback.category && !feedback.message.trim() && "Please enter your feedback message"}
-              {feedback.category && feedback.message.trim() && !submitting && "Ready to submit feedback"}
-              {submitting && "Submitting feedback, please wait"}
+              {!feedback.category && 'Please select a feedback category'}
+              {feedback.category &&
+                !feedback.message.trim() &&
+                'Please enter your feedback message'}
+              {feedback.category &&
+                feedback.message.trim() &&
+                !submitting &&
+                'Ready to submit feedback'}
+              {submitting && 'Submitting feedback, please wait'}
             </div>
 
             {/* Beta Notice */}
@@ -314,7 +322,8 @@ export function FeedbackModal({ trigger, onSubmit }: FeedbackModalProps) {
                   <div className="text-sm">
                     <p className="font-medium text-blue-900 dark:text-blue-100">Beta Version</p>
                     <p className="text-blue-700 dark:text-blue-300">
-                      This is a beta version of Planetary Agents. Your feedback helps us improve the experience for everyone.
+                      This is a beta version of Planetary Agents. Your feedback helps us improve the
+                      experience for everyone.
                     </p>
                   </div>
                 </div>

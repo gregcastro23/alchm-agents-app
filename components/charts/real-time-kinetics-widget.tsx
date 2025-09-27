@@ -264,20 +264,21 @@ export function RealTimeKineticsWidget({
 
     // Refresh countdown every minute for time display
     const timeInterval = setInterval(() => {
-      if (kineticData) {
+      setKineticData(prev => {
+        if (!prev) return null
         const now = new Date()
         const timeToNext = Math.floor(
-          (kineticData.currentHour.endTime.getTime() - now.getTime()) / (1000 * 60)
+          (prev.currentHour.endTime.getTime() - now.getTime()) / (1000 * 60)
         )
-        setKineticData(prev => (prev ? { ...prev, timeToNext } : null))
-      }
+        return { ...prev, timeToNext }
+      })
     }, 60000)
 
     return () => {
       clearInterval(interval)
       clearInterval(timeInterval)
     }
-  }, [userLocation])
+  }, [userLocation.lat, userLocation.lon])
 
   const getPlanetSymbol = (planet: string): string => {
     const symbols = {

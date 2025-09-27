@@ -1,24 +1,24 @@
 spec:
   inputs:
     environment:
-      description: "Deployment environment (affects NODE_ENV)"
-      options: ["development", "staging", "production"]
+      description: 'Deployment environment (affects NODE_ENV)'
+      options: ['development', 'staging', 'production']
       default: development
     node_version:
-      description: "Node.js major version for CI image"
-      default: "20"
+      description: 'Node.js major version for CI image'
+      default: '20'
     enable_websocket:
       type: boolean
       default: true
-      description: "Enable WebSocket server in backend"
+      description: 'Enable WebSocket server in backend'
     backend_port:
       type: number
       default: 8000
-      description: "Backend HTTP port"
+      description: 'Backend HTTP port'
     websocket_port:
       type: number
       default: 8001
-      description: "Backend WebSocket port"
+      description: 'Backend WebSocket port'
     planetary_hours_backend:
       type: boolean
       default: true
@@ -32,10 +32,9 @@ spec:
       type: boolean
       default: true
     alchm_backend_url:
-      description: "External Alchm service base URL"
-      default: "https://alchm-backend.onrender.com"
+      description: 'External Alchm service base URL'
+      default: 'https://alchm-backend.onrender.com'
 ---
-
 ## Use project-defined stages: .pre, security, test, build, deploy, .post
 
 default:
@@ -44,27 +43,13 @@ default:
     - corepack enable
     - yarn -v
   cache:
-    key: "${CI_COMMIT_REF_SLUG}-yarn"
+    key: '${CI_COMMIT_REF_SLUG}-yarn'
     paths:
       - .yarn/cache
       - .yarn/releases
       - .yarn/plugins
       - .pnp.cjs
     policy: pull-push
-
-variables:
-  # Map typed inputs to environment variables used by backend
-  NODE_ENV: $[[ inputs.environment ]]
-  PORT: "$[[ inputs.backend_port ]]"
-  WEBSOCKET_PORT: "$[[ inputs.websocket_port ]]"
-  ENABLE_WEBSOCKET: "$[[ inputs.enable_websocket ]]"
-  PLANETARY_HOURS_BACKEND: "$[[ inputs.planetary_hours_backend ]]"
-  THERMODYNAMICS_BACKEND: "$[[ inputs.thermodynamics_backend ]]"
-  TOKEN_CALCULATIONS_BACKEND: "$[[ inputs.token_calculations_backend ]]"
-  KINETICS_BACKEND: "$[[ inputs.kinetics_backend ]]"
-  ALCHM_BACKEND_URL: $[[ inputs.alchm_backend_url ]]
-  CORS_ORIGINS: "http://localhost:3000,https://localhost:3000"
-  HOST: "127.0.0.1"
 
 backend:install:
   stage: test
@@ -74,14 +59,14 @@ backend:install:
 
 backend:build:
   stage: test
-  needs: ["backend:install"]
+  needs: ['backend:install']
   script:
     - cd backend
     - yarn build
 
 backend:test:
   stage: test
-  needs: ["backend:build"]
+  needs: ['backend:build']
   script:
     - cd backend
     - yarn test --ci --reporters=default --reporters=jest-junit || yarn test --ci
@@ -89,7 +74,7 @@ backend:test:
 # Optional lightweight runtime smoke check (build artifact execution)
 backend:smoke-health:
   stage: build
-  needs: ["backend:build"]
+  needs: ['backend:build']
   script:
     - cd backend
     - node dist/index.js &
@@ -133,10 +118,12 @@ variables:
 
   # Node.js configuration
   NODE_VERSION: '18'
-  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/.yarn-cache"
+  YARN_CACHE_FOLDER: '$CI_PROJECT_DIR/.yarn-cache'
 
   # Backend specific
-  BACKEND_DIR: "backend"
+  BACKEND_DIR: 'backend'
+
+# Global variables (moved to top level)
 
 # =============================================================================
 # SECURITY STAGE
@@ -211,16 +198,16 @@ backend_production_validation:
     - SERVER_PID=$!
     - sleep 10
     - "HEALTH_RESPONSE=$(curl -s -w '%{http_code}' http://localhost:8000/api/health)"
-    - "HEALTH_CODE=${HEALTH_RESPONSE: -3}"
-    - "if [ \"$HEALTH_CODE\" -eq 200 ]; then echo \"✅ Health check passed\"; elif [ \"$HEALTH_CODE\" -eq 503 ]; then echo \"⚠️ Health check degraded but operational\"; else echo \"❌ Health check failed with code $HEALTH_CODE\"; fi"
+    - 'HEALTH_CODE=${HEALTH_RESPONSE: -3}'
+    - 'if [ "$HEALTH_CODE" -eq 200 ]; then echo "✅ Health check passed"; elif [ "$HEALTH_CODE" -eq 503 ]; then echo "⚠️ Health check degraded but operational"; else echo "❌ Health check failed with code $HEALTH_CODE"; fi'
     - kill $SERVER_PID
     - echo "Production validation complete"
   variables:
     NODE_ENV: production
-    ENABLE_KINETICS_BACKEND: "true"
-    ENABLE_CONSCIOUSNESS_BACKEND: "true"
-    ENABLE_PLANETARY_BACKEND: "true"
-    ENABLE_TOKEN_BACKEND: "true"
+    ENABLE_KINETICS_BACKEND: 'true'
+    ENABLE_CONSCIOUSNESS_BACKEND: 'true'
+    ENABLE_PLANETARY_BACKEND: 'true'
+    ENABLE_TOKEN_BACKEND: 'true'
   only:
     changes:
       - backend/**/*

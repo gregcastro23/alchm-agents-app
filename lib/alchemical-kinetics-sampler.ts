@@ -16,7 +16,7 @@ import {
   type ElementVector,
   type MetricVector,
   type PlanetaryHour,
-  type ForceVector
+  type ForceVector,
 } from './alchemical-kinetics'
 
 export interface HourlyAlchemicalSample {
@@ -295,7 +295,7 @@ export function validateTimingPatterns(samples: HourlyAlchemicalSample[]): Timin
     hourGroups[hour].push(sample)
   })
 
-    // Calculate averages per planetary hour
+  // Calculate averages per planetary hour
   Object.entries(hourGroups).forEach(([hour, hourSamples]) => {
     if (hourSamples.length === 0) return
 
@@ -307,7 +307,8 @@ export function validateTimingPatterns(samples: HourlyAlchemicalSample[]): Timin
     const forceSamples = hourSamples.filter(s => s.force)
     let avgFireForce = 0
     if (forceSamples.length > 0) {
-      avgFireForce = forceSamples.reduce((sum, s) => sum + (s.force?.Fire || 0), 0) / forceSamples.length
+      avgFireForce =
+        forceSamples.reduce((sum, s) => sum + (s.force?.Fire || 0), 0) / forceSamples.length
     }
 
     planetaryPatterns[hour] = avgEnergy

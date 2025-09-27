@@ -83,9 +83,7 @@ export function HistoricalCouncilChat({
   const [customAgents, setCustomAgents] = useState<string[]>(
     filterBySelectedAgents.length > 0 ? filterBySelectedAgents : initialAgents
   )
-  const [showPresetSelection, setShowPresetSelection] = useState(
-    !selectedPreset && customAgents.length === 0
-  )
+  const [showPresetSelection, setShowPresetSelection] = useState(false)
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all')
   const [tagFilter, setTagFilter] = useState<string>('all')
 
@@ -301,18 +299,13 @@ export function HistoricalCouncilChat({
     return (
       <Card className="mb-4">
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg">
-                {selectedPreset ? selectedPreset.name : 'Custom Council'}
-              </CardTitle>
-              {selectedPreset && (
-                <p className="text-sm text-muted-foreground mt-1">{selectedPreset.description}</p>
-              )}
-            </div>
-            <Button variant="outline" size="sm" onClick={() => setShowPresetSelection(true)}>
-              Change Council
-            </Button>
+          <div>
+            <CardTitle className="text-lg">
+              {selectedPreset ? selectedPreset.name : 'Custom Council'}
+            </CardTitle>
+            {selectedPreset && (
+              <p className="text-sm text-muted-foreground mt-1">{selectedPreset.description}</p>
+            )}
           </div>
         </CardHeader>
         <CardContent>

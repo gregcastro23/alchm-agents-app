@@ -40,7 +40,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
     logger.info(`Agent API action: ${action}`, {
       system: 'api',
       operation: 'agents_unified',
-      metadata: { action, parametersKeys: Object.keys(parameters) }
+      metadata: { action, parametersKeys: Object.keys(parameters) },
     })
 
     switch (action) {
@@ -75,24 +75,29 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
         return await handleAgentInteraction(parameters)
 
       default:
-        return NextResponse.json({
-          success: false,
-          error: `Unknown action: ${action}`,
-          timestamp: new Date().toISOString(),
-        }, { status: 400 })
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Unknown action: ${action}`,
+            timestamp: new Date().toISOString(),
+          },
+          { status: 400 }
+        )
     }
-
   } catch (error) {
     logger.error('Unified agent API error', error, {
       system: 'api',
-      operation: 'agents_unified'
+      operation: 'agents_unified',
     })
 
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error',
-      timestamp: new Date().toISOString(),
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Internal server error',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -105,7 +110,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<UnifiedAge
   try {
     logger.info(`Agent API GET action: ${action}`, {
       system: 'api',
-      operation: 'agents_unified_get'
+      operation: 'agents_unified_get',
     })
 
     switch (action) {
@@ -124,31 +129,36 @@ export async function GET(request: NextRequest): Promise<NextResponse<UnifiedAge
             uptime: process.uptime(),
             cache: {
               available: agentCache.isAvailable(),
-              size: await agentCache.getSize?.() || 0
-            }
+              size: (await agentCache.getSize?.()) || 0,
+            },
           },
           timestamp: new Date().toISOString(),
         })
 
       default:
-        return NextResponse.json({
-          success: false,
-          error: `Unknown GET action: ${action}`,
-          timestamp: new Date().toISOString(),
-        }, { status: 400 })
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Unknown GET action: ${action}`,
+            timestamp: new Date().toISOString(),
+          },
+          { status: 400 }
+        )
     }
-
   } catch (error) {
     logger.error('Unified agent API GET error', error, {
       system: 'api',
-      operation: 'agents_unified_get'
+      operation: 'agents_unified_get',
     })
 
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error',
-      timestamp: new Date().toISOString(),
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Internal server error',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -162,7 +172,7 @@ async function handleListAgents(params: any): Promise<NextResponse<UnifiedAgentR
     limit = 50,
     offset = 0,
     sortBy = 'name',
-    sortOrder = 'asc'
+    sortOrder = 'asc',
   } = params
 
   try {
@@ -286,23 +296,25 @@ async function handleListAgents(params: any): Promise<NextResponse<UnifiedAgentR
         pagination: {
           limit: parseInt(limit),
           offset: parseInt(offset),
-          hasMore: allAgents.length === parseInt(limit)
-        }
+          hasMore: allAgents.length === parseInt(limit),
+        },
       },
       timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
     logger.error('Failed to list agents', error, {
       system: 'agents',
-      operation: 'list'
+      operation: 'list',
     })
 
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to retrieve agents',
-      timestamp: new Date().toISOString(),
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to retrieve agents',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -310,11 +322,14 @@ async function handleGetAgent(params: any): Promise<NextResponse<UnifiedAgentRes
   const { id } = params
 
   if (!id) {
-    return NextResponse.json({
-      success: false,
-      error: 'Agent ID is required',
-      timestamp: new Date().toISOString(),
-    }, { status: 400 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Agent ID is required',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 400 }
+    )
   }
 
   try {
@@ -360,17 +375,20 @@ async function handleGetAgent(params: any): Promise<NextResponse<UnifiedAgentRes
           evolutionPoints: 0,
           lastActive: new Date(),
           historicalEra: demoAgent.historicalEra,
-          craftedBy: 'philosopher-stone'
+          craftedBy: 'philosopher-stone',
         }
       }
     }
 
     if (!agent) {
-      return NextResponse.json({
-        success: false,
-        error: 'Agent not found',
-        timestamp: new Date().toISOString(),
-      }, { status: 404 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Agent not found',
+          timestamp: new Date().toISOString(),
+        },
+        { status: 404 }
+      )
     }
 
     // Format the agent data consistently
@@ -386,19 +404,21 @@ async function handleGetAgent(params: any): Promise<NextResponse<UnifiedAgentRes
       data: formattedAgent,
       timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
     logger.error('Failed to get agent', error, {
       system: 'agents',
       operation: 'get',
-      metadata: { agentId: id }
+      metadata: { agentId: id },
     })
 
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to retrieve agent',
-      timestamp: new Date().toISOString(),
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to retrieve agent',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -410,16 +430,19 @@ async function handleCreateAgent(params: any): Promise<NextResponse<UnifiedAgent
     birthLocation,
     preferredSpecialty,
     personalityNotes,
-    personalityParameters
+    personalityParameters,
   } = params
 
   // Validation logic (reuse from existing create-agent endpoint)
   if (!name || !birthDate || !birthTime || !birthLocation) {
-    return NextResponse.json({
-      success: false,
-      error: 'Missing required fields',
-      timestamp: new Date().toISOString(),
-    }, { status: 400 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Missing required fields',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 400 }
+    )
   }
 
   try {
@@ -467,7 +490,7 @@ async function handleCreateAgent(params: any): Promise<NextResponse<UnifiedAgent
     logger.info('Agent created successfully', {
       system: 'agents',
       operation: 'create',
-      metadata: { agentId, name }
+      metadata: { agentId, name },
     })
 
     return NextResponse.json({
@@ -476,38 +499,46 @@ async function handleCreateAgent(params: any): Promise<NextResponse<UnifiedAgent
       message: `Agent ${name} created successfully`,
       timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
     logger.error('Failed to create agent', error, {
       system: 'agents',
       operation: 'create',
-      metadata: { name }
+      metadata: { name },
     })
 
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to create agent',
-      timestamp: new Date().toISOString(),
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to create agent',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    )
   }
 }
 
 async function handleUpdateAgent(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
   // Implementation for updating agents
-  return NextResponse.json({
-    success: false,
-    error: 'Update functionality coming soon',
-    timestamp: new Date().toISOString(),
-  }, { status: 501 })
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'Update functionality coming soon',
+      timestamp: new Date().toISOString(),
+    },
+    { status: 501 }
+  )
 }
 
 async function handleDeleteAgent(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
   // Implementation for deleting agents
-  return NextResponse.json({
-    success: false,
-    error: 'Delete functionality coming soon',
-    timestamp: new Date().toISOString(),
-  }, { status: 501 })
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'Delete functionality coming soon',
+      timestamp: new Date().toISOString(),
+    },
+    { status: 501 }
+  )
 }
 
 async function handleGetStats(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
@@ -515,8 +546,13 @@ async function handleGetStats(params: any): Promise<NextResponse<UnifiedAgentRes
     const dbStats = await HistoricalAgentsService.getStats()
     const demoStats = {
       totalAgents: DEMO_AGENTS.length,
-      totalConversations: DEMO_AGENTS.reduce((sum, agent) => sum + (agent.stats?.conversations || 0), 0),
-      averageMonicaConstant: DEMO_AGENTS.reduce((sum, agent) => sum + agent.consciousness.monicaConstant, 0) / DEMO_AGENTS.length
+      totalConversations: DEMO_AGENTS.reduce(
+        (sum, agent) => sum + (agent.stats?.conversations || 0),
+        0
+      ),
+      averageMonicaConstant:
+        DEMO_AGENTS.reduce((sum, agent) => sum + agent.consciousness.monicaConstant, 0) /
+        DEMO_AGENTS.length,
     }
 
     return NextResponse.json({
@@ -526,44 +562,52 @@ async function handleGetStats(params: any): Promise<NextResponse<UnifiedAgentRes
         demo: demoStats,
         combined: {
           totalAgents: (dbStats.totalAgents || 0) + demoStats.totalAgents,
-          totalConversations: (dbStats.totalConversations || 0) + demoStats.totalConversations
-        }
+          totalConversations: (dbStats.totalConversations || 0) + demoStats.totalConversations,
+        },
       },
       timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
     logger.error('Failed to get agent stats', error, {
       system: 'agents',
-      operation: 'stats'
+      operation: 'stats',
     })
 
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to retrieve stats',
-      timestamp: new Date().toISOString(),
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to retrieve stats',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    )
   }
 }
 
 async function handleDashboard(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
   // Redirect to existing dashboard endpoint or consolidate here
-  return NextResponse.json({
-    success: false,
-    error: 'Use /api/agent-dashboard for dashboard functionality',
-    timestamp: new Date().toISOString(),
-  }, { status: 302 })
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'Use /api/agent-dashboard for dashboard functionality',
+      timestamp: new Date().toISOString(),
+    },
+    { status: 302 }
+  )
 }
 
 async function handleSearchAgents(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
   const { query, filters = {} } = params
 
   if (!query) {
-    return NextResponse.json({
-      success: false,
-      error: 'Search query is required',
-      timestamp: new Date().toISOString(),
-    }, { status: 400 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Search query is required',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 400 }
+    )
   }
 
   try {
@@ -571,10 +615,11 @@ async function handleSearchAgents(params: any): Promise<NextResponse<UnifiedAgen
     const allAgents = await handleListAgents({ limit: 1000 })
     const agents = allAgents.success ? allAgents.data.agents : []
 
-    const searchResults = agents.filter(agent =>
-      agent.name.toLowerCase().includes(query.toLowerCase()) ||
-      agent.title.toLowerCase().includes(query.toLowerCase()) ||
-      agent.abilities.specialty.toLowerCase().includes(query.toLowerCase())
+    const searchResults = agents.filter(
+      agent =>
+        agent.name.toLowerCase().includes(query.toLowerCase()) ||
+        agent.title.toLowerCase().includes(query.toLowerCase()) ||
+        agent.abilities.specialty.toLowerCase().includes(query.toLowerCase())
     )
 
     return NextResponse.json({
@@ -582,40 +627,48 @@ async function handleSearchAgents(params: any): Promise<NextResponse<UnifiedAgen
       data: {
         query,
         results: searchResults.slice(0, 20), // Limit results
-        total: searchResults.length
+        total: searchResults.length,
       },
       timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
     logger.error('Failed to search agents', error, {
       system: 'agents',
       operation: 'search',
-      metadata: { query }
+      metadata: { query },
     })
 
-    return NextResponse.json({
-      success: false,
-      error: 'Search failed',
-      timestamp: new Date().toISOString(),
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Search failed',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    )
   }
 }
 
 async function handleEvolveAgent(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
   // Placeholder for evolution functionality
-  return NextResponse.json({
-    success: false,
-    error: 'Evolution functionality coming soon',
-    timestamp: new Date().toISOString(),
-  }, { status: 501 })
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'Evolution functionality coming soon',
+      timestamp: new Date().toISOString(),
+    },
+    { status: 501 }
+  )
 }
 
 async function handleAgentInteraction(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
   // Placeholder for interaction tracking
-  return NextResponse.json({
-    success: false,
-    error: 'Interaction tracking coming soon',
-    timestamp: new Date().toISOString(),
-  }, { status: 501 })
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'Interaction tracking coming soon',
+      timestamp: new Date().toISOString(),
+    },
+    { status: 501 }
+  )
 }

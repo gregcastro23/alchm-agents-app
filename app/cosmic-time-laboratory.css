@@ -38,8 +38,10 @@
   /* Sacred Geometry */
   --cosmic-border-radius: 0.75rem;
   --cosmic-border-radius-large: 1.5rem;
-  --cosmic-shadow-mystical: 0 10px 25px -5px rgba(124, 58, 237, 0.25), 0 10px 10px -5px rgba(124, 58, 237, 0.04);
-  --cosmic-shadow-ethereal: 0 20px 40px -10px rgba(124, 58, 237, 0.4), 0 10px 20px -5px rgba(124, 58, 237, 0.1);
+  --cosmic-shadow-mystical:
+    0 10px 25px -5px rgba(124, 58, 237, 0.25), 0 10px 10px -5px rgba(124, 58, 237, 0.04);
+  --cosmic-shadow-ethereal:
+    0 20px 40px -10px rgba(124, 58, 237, 0.4), 0 10px 20px -5px rgba(124, 58, 237, 0.1);
 
   /* Animation Durations */
   --cosmic-transition-fast: 150ms;
@@ -52,8 +54,20 @@
 
 /* Base Cosmic Theme Application */
 .cosmic-time-laboratory {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, var(--cosmic-deep-space) 0%, var(--cosmic-nebula-purple) 25%, var(--cosmic-stellar-blue) 50%, var(--cosmic-nebula-purple) 75%, var(--cosmic-deep-space) 100%);
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  background: linear-gradient(
+    135deg,
+    var(--cosmic-deep-space) 0%,
+    var(--cosmic-nebula-purple) 25%,
+    var(--cosmic-stellar-blue) 50%,
+    var(--cosmic-nebula-purple) 75%,
+    var(--cosmic-deep-space) 100%
+  );
   min-height: 100vh;
   color: var(--cosmic-starlight-lavender);
   position: relative;
@@ -82,8 +96,12 @@
 }
 
 @keyframes cosmic-starfield {
-  0% { transform: translateY(0px); }
-  100% { transform: translateY(-100px); }
+  0% {
+    transform: translateY(0px);
+  }
+  100% {
+    transform: translateY(-100px);
+  }
 }
 
 /* Cosmic Glass Morphism */
@@ -110,9 +128,15 @@
 }
 
 @keyframes cosmic-shimmer {
-  0% { left: -100%; }
-  50% { left: 100%; }
-  100% { left: 100%; }
+  0% {
+    left: -100%;
+  }
+  50% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 /* Enhanced Glass for Important Elements */
@@ -135,12 +159,21 @@
 }
 
 @keyframes cosmic-text-glow {
-  0% { filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5)); }
-  100% { filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.8)); }
+  0% {
+    filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5));
+  }
+  100% {
+    filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.8));
+  }
 }
 
 .cosmic-text-gradient {
-  background: linear-gradient(135deg, var(--cosmic-gold) 0%, var(--cosmic-celestial-purple) 50%, #60a5fa 100%);
+  background: linear-gradient(
+    135deg,
+    var(--cosmic-gold) 0%,
+    var(--cosmic-celestial-purple) 50%,
+    #60a5fa 100%
+  );
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -148,7 +181,11 @@
 
 /* Cosmic Buttons */
 .cosmic-button {
-  background: linear-gradient(135deg, var(--cosmic-ethereal-violet) 0%, var(--cosmic-mystical-indigo) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--cosmic-ethereal-violet) 0%,
+    var(--cosmic-mystical-indigo) 100%
+  );
   border: 1px solid rgba(251, 191, 36, 0.3);
   color: white;
   padding: 0.75rem 1.5rem;
@@ -161,7 +198,11 @@
 }
 
 .cosmic-button:hover {
-  background: linear-gradient(135deg, var(--cosmic-celestial-purple) 0%, var(--cosmic-ethereal-violet) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--cosmic-celestial-purple) 0%,
+    var(--cosmic-ethereal-violet) 100%
+  );
   box-shadow: var(--cosmic-shadow-ethereal);
   transform: translateY(-2px);
 }
@@ -270,23 +311,52 @@
 }
 
 @keyframes elemental-pulse-subtle {
-  0%, 100% { opacity: 0.8; transform: scale(1); }
-  50% { opacity: 0.9; transform: scale(1.02); }
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
 }
 
 @keyframes elemental-pulse-moderate {
-  0%, 100% { opacity: 0.9; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
 }
 
 @keyframes elemental-pulse-strong {
-  0%, 100% { opacity: 0.95; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.08); }
+  0%,
+  100% {
+    opacity: 0.95;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
 }
 
 @keyframes elemental-pulse-intense {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.12); filter: brightness(1.2); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+    filter: brightness(1.2);
+  }
 }
 
 /* Cosmic Icons and Symbols */
@@ -305,8 +375,13 @@
 }
 
 @keyframes cosmic-float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 /* Cosmic Loading States */
@@ -327,8 +402,12 @@
 }
 
 @keyframes cosmic-loading-sweep {
-  0% { left: -100%; }
-  100% { left: 100%; }
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 /* Cosmic Progress Bars */
@@ -359,8 +438,12 @@
 }
 
 @keyframes cosmic-progress-shine {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* Cosmic Tooltips */
@@ -383,7 +466,12 @@
   left: -1px;
   right: -1px;
   bottom: -1px;
-  background: linear-gradient(135deg, var(--cosmic-gold), transparent, var(--cosmic-celestial-purple));
+  background: linear-gradient(
+    135deg,
+    var(--cosmic-gold),
+    transparent,
+    var(--cosmic-celestial-purple)
+  );
   border-radius: inherit;
   z-index: -1;
 }
@@ -508,6 +596,13 @@
 /* Dark Mode Adjustments */
 @media (prefers-color-scheme: dark) {
   .cosmic-time-laboratory {
-    background: linear-gradient(135deg, #000000 0%, var(--cosmic-deep-space) 25%, var(--cosmic-nebula-purple) 50%, var(--cosmic-deep-space) 75%, #000000 100%);
+    background: linear-gradient(
+      135deg,
+      #000000 0%,
+      var(--cosmic-deep-space) 25%,
+      var(--cosmic-nebula-purple) 50%,
+      var(--cosmic-deep-space) 75%,
+      #000000 100%
+    );
   }
 }

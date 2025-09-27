@@ -2,14 +2,15 @@
 
 import { SessionProvider } from 'next-auth/react'
 import { Toaster } from '@/components/ui/toaster'
-import { MonicaOmnipresent } from '@/components/monica/monica-omnipresent'
+// Temporarily disable MonicaLazy for debugging
+// import { MonicaLazy } from '@/components/monica/monica-lazy'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       {children}
       <Toaster />
-      <MonicaOmnipresent />
+      {/* <MonicaLazy /> */}
     </SessionProvider>
   )
 }

@@ -7,14 +7,14 @@ http:
     security-headers:
       headers:
         customRequestHeaders:
-          X-Frame-Options: "DENY"
-          X-Content-Type-Options: "nosniff"
-          X-XSS-Protection: "1; mode=block"
-          Referrer-Policy: "strict-origin-when-cross-origin"
+          X-Frame-Options: 'DENY'
+          X-Content-Type-Options: 'nosniff'
+          X-XSS-Protection: '1; mode=block'
+          Referrer-Policy: 'strict-origin-when-cross-origin'
           Content-Security-Policy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:;"
         customResponseHeaders:
-          Server: ""
-          X-Powered-By: ""
+          Server: ''
+          X-Powered-By: ''
 
     # Rate limiting
     rate-limit:
@@ -25,10 +25,10 @@ http:
     # Compression
     gzip:
       compress:
-        defaultEncoding: "gzip"
+        defaultEncoding: 'gzip'
         encodings:
-          - "gzip"
-          - "deflate"
+          - 'gzip'
+          - 'deflate'
 
     # Redirect HTTP to HTTPS
     redirect-to-https:
@@ -39,7 +39,7 @@ http:
   routers:
     # API rate limiting
     api-rate-limit:
-      rule: "PathPrefix(`/api/`)"
+      rule: 'PathPrefix(`/api/`)'
       middlewares:
         - rate-limit
         - security-headers
@@ -49,7 +49,7 @@ http:
 
     # Static assets caching
     static-assets:
-      rule: "PathPrefix(`/_next/static/`)"
+      rule: 'PathPrefix(`/_next/static/`)'
       middlewares:
         - gzip
         - security-headers
@@ -58,7 +58,7 @@ http:
 
     # Health check bypass
     health-check:
-      rule: "Path(`/api/health`)"
+      rule: 'Path(`/api/health`)'
       service: planetary-frontend
       priority: 200
 
@@ -66,17 +66,17 @@ http:
     planetary-frontend:
       loadBalancer:
         servers:
-          - url: "http://frontend:3000"
+          - url: 'http://frontend:3000'
         healthCheck:
-          path: "/api/health"
-          interval: "10s"
-          timeout: "3s"
+          path: '/api/health'
+          interval: '10s'
+          timeout: '3s'
 
     planetary-backend:
       loadBalancer:
         servers:
-          - url: "http://backend:8000"
+          - url: 'http://backend:8000'
         healthCheck:
-          path: "/api/health"
-          interval: "10s"
-          timeout: "3s"
+          path: '/api/health'
+          interval: '10s'
+          timeout: '3s'

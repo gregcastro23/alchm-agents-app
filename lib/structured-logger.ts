@@ -11,7 +11,7 @@ export enum LogLevel {
   INFO = 1,
   WARN = 2,
   ERROR = 3,
-  CRITICAL = 4
+  CRITICAL = 4,
 }
 
 export interface LogContext {
@@ -93,7 +93,7 @@ class StructuredLogger {
         ...logContext.metadata,
         errorName: error.name,
         errorMessage: error.message,
-        errorStack: error.stack
+        errorStack: error.stack,
       }
     }
 
@@ -110,7 +110,7 @@ class StructuredLogger {
         ...logContext.metadata,
         errorName: error.name,
         errorMessage: error.message,
-        errorStack: error.stack
+        errorStack: error.stack,
       }
     }
 
@@ -125,7 +125,7 @@ class StructuredLogger {
       ...context,
       operation,
       duration,
-      system: 'performance'
+      system: 'performance',
     }
 
     this.info(`Performance: ${operation} completed in ${duration}ms`, perfContext)
@@ -134,8 +134,15 @@ class StructuredLogger {
   /**
    * Log API request/response
    */
-  apiRequest(endpoint: string, method: string, statusCode: number, duration: number, context?: LogContext): void {
-    const level = statusCode >= 500 ? LogLevel.ERROR : statusCode >= 400 ? LogLevel.WARN : LogLevel.INFO
+  apiRequest(
+    endpoint: string,
+    method: string,
+    statusCode: number,
+    duration: number,
+    context?: LogContext
+  ): void {
+    const level =
+      statusCode >= 500 ? LogLevel.ERROR : statusCode >= 400 ? LogLevel.WARN : LogLevel.INFO
     const message = `API ${method} ${endpoint} - ${statusCode} (${duration}ms)`
 
     this.log(level, message, {
@@ -143,34 +150,45 @@ class StructuredLogger {
       system: 'api',
       operation: 'request',
       duration,
-      metadata: { method, endpoint, statusCode }
+      metadata: { method, endpoint, statusCode },
     })
   }
 
   /**
    * Log agent interactions
    */
-  agentInteraction(agentId: string, userId: string, interactionType: string, context?: LogContext): void {
+  agentInteraction(
+    agentId: string,
+    userId: string,
+    interactionType: string,
+    context?: LogContext
+  ): void {
     this.info(`Agent interaction: ${interactionType}`, {
       ...context,
       system: 'agent',
       operation: 'interaction',
       agentId,
       userId,
-      metadata: { interactionType }
+      metadata: { interactionType },
     })
   }
 
   /**
    * Log planetary position calculations
    */
-  planetaryCalculation(source: string, accuracy: string, duration: number, cached: boolean, context?: LogContext): void {
+  planetaryCalculation(
+    source: string,
+    accuracy: string,
+    duration: number,
+    cached: boolean,
+    context?: LogContext
+  ): void {
     this.info(`Planetary calculation: ${source} (${accuracy})`, {
       ...context,
       system: 'planetary',
       operation: 'calculation',
       duration,
-      metadata: { source, accuracy, cached }
+      metadata: { source, accuracy, cached },
     })
   }
 
@@ -186,7 +204,7 @@ class StructuredLogger {
       system: 'consciousness',
       operation,
       agentId,
-      metadata: { success }
+      metadata: { success },
     })
   }
 
@@ -201,9 +219,7 @@ class StructuredLogger {
    * Get logs by level
    */
   getLogsByLevel(level: LogLevel, count: number = 50): LogEntry[] {
-    return this.logBuffer
-      .filter(entry => entry.level >= level)
-      .slice(-count)
+    return this.logBuffer.filter(entry => entry.level >= level).slice(-count)
   }
 
   /**
@@ -215,9 +231,9 @@ class StructuredLogger {
     requestCount: number
     topEndpoints: Record<string, number>
   } {
-    const cutoffTime = Date.now() - (hours * 60 * 60 * 1000)
-    const recentLogs = this.logBuffer.filter(entry =>
-      new Date(entry.timestamp).getTime() > cutoffTime
+    const cutoffTime = Date.now() - hours * 60 * 60 * 1000
+    const recentLogs = this.logBuffer.filter(
+      entry => new Date(entry.timestamp).getTime() > cutoffTime
     )
 
     const apiLogs = recentLogs.filter(entry => entry.context.system === 'api')
@@ -236,12 +252,13 @@ class StructuredLogger {
     })
 
     return {
-      averageResponseTime: responseTimes.length > 0
-        ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
-        : 0,
+      averageResponseTime:
+        responseTimes.length > 0
+          ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length
+          : 0,
       errorRate: recentLogs.length > 0 ? errorLogs.length / recentLogs.length : 0,
       requestCount: apiLogs.length,
-      topEndpoints
+      topEndpoints,
     }
   }
 
@@ -261,18 +278,18 @@ class StructuredLogger {
         metadata: {
           ...context.metadata,
           environment: process.env.NODE_ENV,
-          version: process.env.npm_package_version || 'unknown'
-        }
+          version: process.env.npm_package_version || 'unknown',
+        },
       },
       error,
-      stack: error?.stack
+      stack: error?.stack,
     }
 
     // Add performance data if enabled
     if (this.enablePerformanceLogging && typeof window === 'undefined') {
       entry.performance = {
         memoryUsage: process.memoryUsage(),
-        uptime: process.uptime()
+        uptime: process.uptime(),
       }
     }
 
@@ -360,19 +377,41 @@ class StructuredLogger {
 export const logger = StructuredLogger.getInstance()
 
 // Convenience functions for common use cases
-export const logAPIRequest = (endpoint: string, method: string, statusCode: number, duration: number, context?: LogContext) => {
+export const logAPIRequest = (
+  endpoint: string,
+  method: string,
+  statusCode: number,
+  duration: number,
+  context?: LogContext
+) => {
   logger.apiRequest(endpoint, method, statusCode, duration, context)
 }
 
-export const logAgentInteraction = (agentId: string, userId: string, interactionType: string, context?: LogContext) => {
+export const logAgentInteraction = (
+  agentId: string,
+  userId: string,
+  interactionType: string,
+  context?: LogContext
+) => {
   logger.agentInteraction(agentId, userId, interactionType, context)
 }
 
-export const logPlanetaryCalculation = (source: string, accuracy: string, duration: number, cached: boolean, context?: LogContext) => {
+export const logPlanetaryCalculation = (
+  source: string,
+  accuracy: string,
+  duration: number,
+  cached: boolean,
+  context?: LogContext
+) => {
   logger.planetaryCalculation(source, accuracy, duration, cached, context)
 }
 
-export const logConsciousnessOperation = (operation: string, agentId: string, success: boolean, context?: LogContext) => {
+export const logConsciousnessOperation = (
+  operation: string,
+  agentId: string,
+  success: boolean,
+  context?: LogContext
+) => {
   logger.consciousness(operation, agentId, success, context)
 }
 

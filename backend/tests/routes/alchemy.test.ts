@@ -13,12 +13,10 @@ describe('Alchemy Routes', () => {
         spirit: 0.3,
         essence: 0.4,
         matter: 0.2,
-        substance: 0.1
+        substance: 0.1,
       }
 
-      const response = await request(app)
-        .post('/api/alchemy/token-equilibrium')
-        .send({ tokens })
+      const response = await request(app).post('/api/alchemy/token-equilibrium').send({ tokens })
 
       expect(response.status).toBe(401) // Should require auth
     })
@@ -28,7 +26,7 @@ describe('Alchemy Routes', () => {
         spirit: 'invalid',
         essence: 0.4,
         matter: 0.2,
-        substance: 0.1
+        substance: 0.1,
       }
 
       const response = await request(app)
@@ -47,12 +45,12 @@ describe('Alchemy Routes', () => {
           spirit: 0.3,
           essence: 0.4,
           matter: 0.2,
-          substance: 0.1
+          substance: 0.1,
         },
         astrologicalEvent: {
           type: 'eclipse',
-          severity: 'critical'
-        }
+          severity: 'critical',
+        },
       }
 
       const response = await request(app)
@@ -68,12 +66,12 @@ describe('Alchemy Routes', () => {
           spirit: 'invalid',
           essence: 0.4,
           matter: 0.2,
-          substance: 0.1
+          substance: 0.1,
         },
         astrologicalEvent: {
           type: 'eclipse',
-          severity: 'invalid'
-        }
+          severity: 'invalid',
+        },
       }
 
       const response = await request(app)
@@ -87,8 +85,7 @@ describe('Alchemy Routes', () => {
 
   describe('GET /api/alchemy/status', () => {
     it('should return alchemy service status', async () => {
-      const response = await request(app)
-        .get('/api/alchemy/status')
+      const response = await request(app).get('/api/alchemy/status')
 
       expect(response.status).toBe(200)
       expect(response.body.success).toBe(true)

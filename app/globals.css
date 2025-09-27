@@ -102,28 +102,48 @@ body::before {
   width: 100%;
   height: 100%;
   background:
-    radial-gradient(ellipse at top, #2E1065 0%, #1E0A3C 25%, #0C0319 50%, #050210 100%),
+    radial-gradient(ellipse at top, #2e1065 0%, #1e0a3c 25%, #0c0319 50%, #050210 100%),
     radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
     radial-gradient(circle at 40% 40%, rgba(120, 200, 255, 0.1) 0%, transparent 50%);
-  background-size: 100% 100%, 80% 80%, 60% 60%, 40% 40%;
+  background-size:
+    100% 100%,
+    80% 80%,
+    60% 60%,
+    40% 40%;
   z-index: -3;
 }
 
 /* Animated cosmic particles and nebula */
 @keyframes twinkle {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.1); }
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
 }
 
 @keyframes drift {
-  0% { transform: rotate(0deg) translateX(0px) rotate(0deg); }
-  100% { transform: rotate(360deg) translateX(30px) rotate(-360deg); }
+  0% {
+    transform: rotate(0deg) translateX(0px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(30px) rotate(-360deg);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 /* Main starfield */
@@ -145,9 +165,20 @@ body::after {
     radial-gradient(2px 2px at 40% 60%, rgba(120, 255, 255, 0.6), transparent),
     radial-gradient(1px 1px at 80% 70%, rgba(255, 255, 255, 0.8), transparent),
     radial-gradient(1px 1px at 15% 50%, rgba(255, 150, 255, 0.7), transparent);
-  background-size: 400% 400%, 350% 350%, 300% 300%, 280% 280%, 320% 320%,
-                   360% 360%, 250% 250%, 330% 330%, 290% 290%, 310% 310%;
-  animation: twinkle 8s ease-in-out infinite, drift 20s linear infinite;
+  background-size:
+    400% 400%,
+    350% 350%,
+    300% 300%,
+    280% 280%,
+    320% 320%,
+    360% 360%,
+    250% 250%,
+    330% 330%,
+    290% 290%,
+    310% 310%;
+  animation:
+    twinkle 8s ease-in-out infinite,
+    drift 20s linear infinite;
   z-index: -2;
   pointer-events: none;
 }
@@ -155,7 +186,7 @@ body::after {
 /* Additional cosmic dust layer */
 .dark body:before {
   background:
-    radial-gradient(ellipse at top, #2E1065 0%, #1E0A3C 25%, #0C0319 50%, #050210 100%),
+    radial-gradient(ellipse at top, #2e1065 0%, #1e0a3c 25%, #0c0319 50%, #050210 100%),
     radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
     radial-gradient(circle at 40% 40%, rgba(120, 200, 255, 0.1) 0%, transparent 50%),
@@ -165,12 +196,12 @@ body::after {
 /* Enhanced cosmic card styling */
 .dark .bg-card,
 .dark [class*='bg-']:not(.bg-transparent):not(.bg-gradient-) {
-  background:
-    linear-gradient(135deg,
-      rgba(30, 20, 60, 0.9) 0%,
-      rgba(15, 10, 40, 0.85) 50%,
-      rgba(25, 15, 50, 0.9) 100%
-    );
+  background: linear-gradient(
+    135deg,
+    rgba(30, 20, 60, 0.9) 0%,
+    rgba(15, 10, 40, 0.85) 50%,
+    rgba(25, 15, 50, 0.9) 100%
+  );
   backdrop-filter: blur(15px) saturate(1.2);
   border: 1px solid rgba(138, 43, 226, 0.3);
   box-shadow:
@@ -222,19 +253,26 @@ body::after {
 }
 
 /* Ensure general text readability without breaking backgrounds */
-.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
-.dark p, .dark span:not([class*="bg-"]), .dark div:not([class*="bg-"]) {
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6,
+.dark p,
+.dark span:not([class*='bg-']),
+.dark div:not([class*='bg-']) {
   color: rgb(243, 244, 246);
 }
 
 /* Enhanced cosmic container styling */
 .dark .rounded-lg {
-  background:
-    linear-gradient(135deg,
-      rgba(30, 20, 60, 0.95) 0%,
-      rgba(20, 15, 45, 0.9) 50%,
-      rgba(35, 25, 65, 0.95) 100%
-    );
+  background: linear-gradient(
+    135deg,
+    rgba(30, 20, 60, 0.95) 0%,
+    rgba(20, 15, 45, 0.9) 50%,
+    rgba(35, 25, 65, 0.95) 100%
+  );
   border: 1px solid rgba(138, 43, 226, 0.3);
   box-shadow:
     0 4px 20px rgba(0, 0, 0, 0.3),
@@ -242,12 +280,12 @@ body::after {
 }
 
 .dark .rounded-md {
-  background:
-    linear-gradient(135deg,
-      rgba(25, 15, 50, 0.9) 0%,
-      rgba(15, 10, 35, 0.85) 50%,
-      rgba(30, 20, 55, 0.9) 100%
-    );
+  background: linear-gradient(
+    135deg,
+    rgba(25, 15, 50, 0.9) 0%,
+    rgba(15, 10, 35, 0.85) 50%,
+    rgba(30, 20, 55, 0.9) 100%
+  );
   border: 1px solid rgba(138, 43, 226, 0.25);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }

@@ -143,11 +143,7 @@ export function SkeletonLoader({ type, count = 1, className = '' }: SkeletonLoad
     }
   }
 
-  return (
-    <>
-      {Array.from({ length: count }).map((_, index) => renderSkeleton(index))}
-    </>
-  )
+  return <>{Array.from({ length: count }).map((_, index) => renderSkeleton(index))}</>
 }
 
 // Specialized skeleton components for common use cases

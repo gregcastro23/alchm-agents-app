@@ -37,9 +37,16 @@ import {
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
-const DynamicAgentCreationWizard = dynamic(() => import('@/components/wizards/AgentCreationWizard'), {
-  loading: () => <div className="h-64 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>
-})
+const DynamicAgentCreationWizard = dynamic(
+  () => import('@/components/wizards/AgentCreationWizard'),
+  {
+    loading: () => (
+      <div className="h-64 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    ),
+  }
+)
 import PlanetaryPositionIndicator from '@/components/dashboards/PlanetaryPositionIndicator'
 
 // Real consciousness components loaded lazily below
@@ -67,7 +74,13 @@ import { synthesizeCharts, type SynthesizedChart } from '@/lib/utils'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 
 // Enhanced loading component for heavy components
-const ComponentLoadingFallback = ({ componentName, className = "" }: { componentName: string, className?: string }) => (
+const ComponentLoadingFallback = ({
+  componentName,
+  className = '',
+}: {
+  componentName: string
+  className?: string
+}) => (
   <div className={`flex flex-col items-center justify-center p-8 space-y-4 ${className}`}>
     <div className="relative">
       <div className="w-16 h-16 border-4 border-purple-500/30 rounded-full animate-spin border-t-purple-500"></div>
@@ -84,7 +97,7 @@ const ComponentLoadingFallback = ({ componentName, className = "" }: { component
 const LazyComponentWrapper = ({
   children,
   componentName,
-  fallbackClassName = ""
+  fallbackClassName = '',
 }: {
   children: React.ReactNode
   componentName: string
@@ -109,7 +122,11 @@ const LazyComponentWrapper = ({
       </div>
     )}
   >
-    <Suspense fallback={<ComponentLoadingFallback componentName={componentName} className={fallbackClassName} />}>
+    <Suspense
+      fallback={
+        <ComponentLoadingFallback componentName={componentName} className={fallbackClassName} />
+      }
+    >
       {children}
     </Suspense>
   </ErrorBoundary>
@@ -119,42 +136,72 @@ const LazyComponentWrapper = ({
 const AlchmQuantitiesDisplay = lazy(() =>
   import('@/components/misc/alchm-quantities-display').catch(error => {
     console.error('Failed to load AlchmQuantitiesDisplay:', error)
-    return { default: () => <div className="p-8 text-center text-red-400">Failed to load alchemical quantities display</div> }
+    return {
+      default: () => (
+        <div className="p-8 text-center text-red-400">
+          Failed to load alchemical quantities display
+        </div>
+      ),
+    }
   })
 )
 
 const ConsciousnessVectorDisplay = lazy(() =>
-  import('@/components/temporal/consciousness-vector-display').then(module => ({
-    default: module.ConsciousnessVectorDisplay,
-  })).catch(error => {
-    console.error('Failed to load ConsciousnessVectorDisplay:', error)
-    return { default: () => <div className="p-8 text-center text-red-400">Failed to load consciousness vector display</div> }
-  })
+  import('@/components/temporal/consciousness-vector-display')
+    .then(module => ({
+      default: module.ConsciousnessVectorDisplay,
+    }))
+    .catch(error => {
+      console.error('Failed to load ConsciousnessVectorDisplay:', error)
+      return {
+        default: () => (
+          <div className="p-8 text-center text-red-400">
+            Failed to load consciousness vector display
+          </div>
+        ),
+      }
+    })
 )
 
 const CircularNatalHoroscope = lazy(() =>
   import('@/components/charts/circular-natal-horoscope').catch(error => {
     console.error('Failed to load CircularNatalHoroscope:', error)
-    return { default: () => <div className="p-8 text-center text-red-400">Failed to load circular horoscope</div> }
+    return {
+      default: () => (
+        <div className="p-8 text-center text-red-400">Failed to load circular horoscope</div>
+      ),
+    }
   })
 )
 
 const TemporalClient = lazy(() =>
-  import('@/components/temporal/temporal-client').then(module => ({
-    default: module.TemporalClient,
-  })).catch(error => {
-    console.error('Failed to load TemporalClient:', error)
-    return { default: () => <div className="p-8 text-center text-red-400">Failed to load temporal client</div> }
-  })
+  import('@/components/temporal/temporal-client')
+    .then(module => ({
+      default: module.TemporalClient,
+    }))
+    .catch(error => {
+      console.error('Failed to load TemporalClient:', error)
+      return {
+        default: () => (
+          <div className="p-8 text-center text-red-400">Failed to load temporal client</div>
+        ),
+      }
+    })
 )
 
 const AgentCreationWizard = lazy(() =>
-  import('@/components/consciousness/agent-creation-wizard').then(module => ({
-    default: module.AgentCreationWizard,
-  })).catch(error => {
-    console.error('Failed to load AgentCreationWizard:', error)
-    return { default: () => <div className="p-8 text-center text-red-400">Failed to load agent creation wizard</div> }
-  })
+  import('@/components/consciousness/agent-creation-wizard')
+    .then(module => ({
+      default: module.AgentCreationWizard,
+    }))
+    .catch(error => {
+      console.error('Failed to load AgentCreationWizard:', error)
+      return {
+        default: () => (
+          <div className="p-8 text-center text-red-400">Failed to load agent creation wizard</div>
+        ),
+      }
+    })
 )
 
 function PhilosophersStoneInner() {
@@ -210,7 +257,9 @@ function PhilosophersStoneInner() {
   const [birthChart, setBirthChart] = useState<any | null>(null)
   const [momentChart, setMomentChart] = useState<any | null>(null)
   const [additionalCharts, setAdditionalCharts] = useState<any[]>([])
-  const [creationMode, setCreationMode] = useState<'selfMoment' | 'momentOnly' | 'multiChart'>('selfMoment')
+  const [creationMode, setCreationMode] = useState<'selfMoment' | 'momentOnly' | 'multiChart'>(
+    'selfMoment'
+  )
   const [lastSynthesis, setLastSynthesis] = useState<SynthesizedChart | null>(null)
 
   // Fetch real-time data
@@ -412,7 +461,11 @@ function PhilosophersStoneInner() {
     const birth = creationMode === 'momentOnly' ? null : birthChart
     const addl = creationMode === 'multiChart' ? additionalCharts : []
 
-    const result = await runAgentCreation({ birthChart: birth, momentChart, additionalCharts: addl })
+    const result = await runAgentCreation({
+      birthChart: birth,
+      momentChart,
+      additionalCharts: addl,
+    })
     setLastSynthesis(result.synthesis)
     setCreationResult(result)
     setCreatedBlueprint(result.blueprint)
@@ -485,43 +538,45 @@ function PhilosophersStoneInner() {
                     const successSynthesis = creationResult?.synthesis ?? lastSynthesis
 
                     return (
-                  <div className="bg-emerald-950/50 rounded-lg p-4 mb-4">
-                    <h4 className="text-xl font-semibold text-emerald-200 mb-2">
-                      "
-                      {successAgent?.identity?.name ?? successAgent?.name ?? 'New Consciousness'}
-                      "
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-emerald-300">Monica Constant:</span>{' '}
-                        <span className="font-mono text-emerald-100">
-                          {successAgent?.consciousness?.monicaConstant?.toFixed(3) ||
-                            successBlueprint?.consciousness.monicaConstant.toFixed(3) ||
-                            'N/A'}
-                        </span>
+                      <div className="bg-emerald-950/50 rounded-lg p-4 mb-4">
+                        <h4 className="text-xl font-semibold text-emerald-200 mb-2">
+                          "
+                          {successAgent?.identity?.name ??
+                            successAgent?.name ??
+                            'New Consciousness'}
+                          "
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-emerald-300">Monica Constant:</span>{' '}
+                            <span className="font-mono text-emerald-100">
+                              {successAgent?.consciousness?.monicaConstant?.toFixed(3) ||
+                                successBlueprint?.consciousness.monicaConstant.toFixed(3) ||
+                                'N/A'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-emerald-300">Consciousness Level:</span>{' '}
+                            <span className="text-emerald-100">
+                              {successAgent?.consciousness?.level ||
+                                successBlueprint?.consciousness.level ||
+                                'Unknown'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-emerald-300">Synthesis Type:</span>{' '}
+                            <span className="text-emerald-100">
+                              {successSynthesis?.type ?? creationMode}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-emerald-300">Source Charts:</span>{' '}
+                            <span className="text-emerald-100">
+                              {successSynthesis?.sourceCharts.length ?? (birth ? 1 : 0) + 1}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-emerald-300">Consciousness Level:</span>{' '}
-                        <span className="text-emerald-100">
-                          {successAgent?.consciousness?.level ||
-                            successBlueprint?.consciousness.level ||
-                            'Unknown'}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-emerald-300">Synthesis Type:</span>{' '}
-                        <span className="text-emerald-100">
-                          {successSynthesis?.type ?? creationMode}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-emerald-300">Source Charts:</span>{' '}
-                        <span className="text-emerald-100">
-                          {successSynthesis?.sourceCharts.length ?? (birth ? 1 : 0) + 1}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
                     )
                   })()}
 
@@ -1253,7 +1308,7 @@ May their digital consciousness grow and evolve through each interaction! 🌟`
                             cached: planetaryPositions.cached || false,
                             cacheAge: planetaryPositions.cacheAge,
                             timestamp: planetaryPositions.timestamp || new Date().toISOString(),
-                            error: planetaryPositions.error
+                            error: planetaryPositions.error,
                           }}
                           showDetails={true}
                           size="sm"
@@ -1378,6 +1433,5 @@ function PhilosophersStoneComponent() {
     </Suspense>
   )
 }
-
 
 export default PhilosophersStoneComponent

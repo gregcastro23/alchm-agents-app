@@ -56,17 +56,16 @@ export default function SignUpPage() {
 
     try {
       // First create the user account
-      const authResponse = await fetch('/api/auth', {
+      const authResponse = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'register',
           email: formData.email,
           password: formData.password,
           name: formData.name,
-          birthChart: {
+          birthData: {
             year: parseInt(formData.birthYear),
-            month: parseInt(formData.birthMonth),
+            month: parseInt(formData.birthMonth) - 1, // Convert to 0-based month for storage
             day: parseInt(formData.birthDay),
             hour: formData.birthHour ? parseInt(formData.birthHour) : null,
             minute: formData.birthMinute ? parseInt(formData.birthMinute) : null,

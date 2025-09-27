@@ -21,7 +21,7 @@ import {
   Mountain,
   Wind,
   Target,
-  Eye
+  Eye,
 } from 'lucide-react'
 import { logger, LogLevel } from '@/lib/structured-logger'
 import { usePlanetaryPositions } from '@/hooks/usePlanetaryPositions'
@@ -51,7 +51,7 @@ export function PerformanceDashboard() {
 
   // MCP-enhanced planetary monitoring
   const { mcpMetrics, needsStabilization, stabilizeTokens } = usePlanetaryPositions({
-    refreshInterval: 5000
+    refreshInterval: 5000,
   })
 
   const fetchPerformanceData = async () => {
@@ -62,12 +62,13 @@ export function PerformanceDashboard() {
       // Calculate system health
       let systemHealth: 'healthy' | 'warning' | 'critical' = 'healthy'
       if (metrics.errorRate > 0.1) systemHealth = 'critical'
-      else if (metrics.errorRate > 0.05 || metrics.averageResponseTime > 2000) systemHealth = 'warning'
+      else if (metrics.errorRate > 0.05 || metrics.averageResponseTime > 2000)
+        systemHealth = 'warning'
 
       setPerformanceData({
         timestamp: new Date().toISOString(),
         metrics,
-        systemHealth
+        systemHealth,
       })
     } catch (error) {
       console.error('Failed to fetch performance data:', error)
@@ -87,19 +88,27 @@ export function PerformanceDashboard() {
 
   const getHealthColor = (health: string) => {
     switch (health) {
-      case 'healthy': return 'bg-green-500'
-      case 'warning': return 'bg-yellow-500'
-      case 'critical': return 'bg-red-500'
-      default: return 'bg-gray-500'
+      case 'healthy':
+        return 'bg-green-500'
+      case 'warning':
+        return 'bg-yellow-500'
+      case 'critical':
+        return 'bg-red-500'
+      default:
+        return 'bg-gray-500'
     }
   }
 
   const getHealthIcon = (health: string) => {
     switch (health) {
-      case 'healthy': return <CheckCircle className="h-4 w-4" />
-      case 'warning': return <AlertTriangle className="h-4 w-4" />
-      case 'critical': return <AlertTriangle className="h-4 w-4" />
-      default: return <Activity className="h-4 w-4" />
+      case 'healthy':
+        return <CheckCircle className="h-4 w-4" />
+      case 'warning':
+        return <AlertTriangle className="h-4 w-4" />
+      case 'critical':
+        return <AlertTriangle className="h-4 w-4" />
+      default:
+        return <Activity className="h-4 w-4" />
     }
   }
 
@@ -158,16 +167,11 @@ export function PerformanceDashboard() {
             </Badge>
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchPerformanceData}
-              disabled={loading}
-            >
+            <Button variant="outline" size="sm" onClick={fetchPerformanceData} disabled={loading}>
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
             <Button
-              variant={autoRefresh ? "default" : "outline"}
+              variant={autoRefresh ? 'default' : 'outline'}
               size="sm"
               onClick={() => setAutoRefresh(!autoRefresh)}
             >
@@ -193,7 +197,9 @@ export function PerformanceDashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Avg Response Time</p>
-                      <p className="text-2xl font-bold">{metrics.averageResponseTime.toFixed(0)}ms</p>
+                      <p className="text-2xl font-bold">
+                        {metrics.averageResponseTime.toFixed(0)}ms
+                      </p>
                     </div>
                     <Clock className="h-8 w-8 text-muted-foreground" />
                   </div>
@@ -202,9 +208,7 @@ export function PerformanceDashboard() {
                       value={Math.min((metrics.averageResponseTime / 2000) * 100, 100)}
                       className="h-2"
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Target: &lt;2000ms
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">Target: &lt;2000ms</p>
                   </div>
                 </CardContent>
               </Card>
@@ -223,13 +227,8 @@ export function PerformanceDashboard() {
                     )}
                   </div>
                   <div className="mt-2">
-                    <Progress
-                      value={metrics.errorRate * 100}
-                      className="h-2"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Target: &lt;5%
-                    </p>
+                    <Progress value={metrics.errorRate * 100} className="h-2" />
+                    <p className="text-xs text-muted-foreground mt-1">Target: &lt;5%</p>
                   </div>
                 </CardContent>
               </Card>
@@ -244,9 +243,7 @@ export function PerformanceDashboard() {
                     <Zap className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <div className="mt-2">
-                    <p className="text-xs text-muted-foreground">
-                      Last hour
-                    </p>
+                    <p className="text-xs text-muted-foreground">Last hour</p>
                   </div>
                 </CardContent>
               </Card>
@@ -265,14 +262,22 @@ export function PerformanceDashboard() {
                         {mcpMetrics?.tokenStability || 'Unknown'}
                       </p>
                     </div>
-                    <div className={`p-2 rounded-full ${
-                      mcpMetrics?.tokenStability === 'stable' ? 'bg-green-100 text-green-600' :
-                      mcpMetrics?.tokenStability === 'warning' ? 'bg-yellow-100 text-yellow-600' :
-                      'bg-red-100 text-red-600'
-                    }`}>
-                      {mcpMetrics?.tokenStability === 'stable' ? <CheckCircle className="h-6 w-6" /> :
-                       mcpMetrics?.tokenStability === 'warning' ? <AlertTriangle className="h-6 w-6" /> :
-                       <AlertTriangle className="h-6 w-6" />}
+                    <div
+                      className={`p-2 rounded-full ${
+                        mcpMetrics?.tokenStability === 'stable'
+                          ? 'bg-green-100 text-green-600'
+                          : mcpMetrics?.tokenStability === 'warning'
+                            ? 'bg-yellow-100 text-yellow-600'
+                            : 'bg-red-100 text-red-600'
+                      }`}
+                    >
+                      {mcpMetrics?.tokenStability === 'stable' ? (
+                        <CheckCircle className="h-6 w-6" />
+                      ) : mcpMetrics?.tokenStability === 'warning' ? (
+                        <AlertTriangle className="h-6 w-6" />
+                      ) : (
+                        <AlertTriangle className="h-6 w-6" />
+                      )}
                     </div>
                   </div>
                   <div className="mt-2">
@@ -308,9 +313,7 @@ export function PerformanceDashboard() {
                       value={Math.min(100, (mcpMetrics?.equilibrium.planetaryDignity || 0) * 25)}
                       className="h-2"
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Planetary dignity score
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">Planetary dignity score</p>
                   </div>
                 </CardContent>
               </Card>
@@ -329,12 +332,17 @@ export function PerformanceDashboard() {
                   </div>
                   <div className="mt-2">
                     <Progress
-                      value={Math.min(100, (mcpMetrics?.performanceMetrics.calculationTime || 0) /
-                        defaultAlchemicalMCPConfig.performanceThresholds.maxCalculationTime * 100)}
+                      value={Math.min(
+                        100,
+                        ((mcpMetrics?.performanceMetrics.calculationTime || 0) /
+                          defaultAlchemicalMCPConfig.performanceThresholds.maxCalculationTime) *
+                          100
+                      )}
                       className="h-2"
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      Target: &lt;{defaultAlchemicalMCPConfig.performanceThresholds.maxCalculationTime}ms
+                      Target: &lt;
+                      {defaultAlchemicalMCPConfig.performanceThresholds.maxCalculationTime}ms
                     </p>
                   </div>
                 </CardContent>
@@ -352,9 +360,12 @@ export function PerformanceDashboard() {
                     { name: 'spirit', icon: Flame, color: 'text-orange-500' },
                     { name: 'essence', icon: Droplets, color: 'text-blue-500' },
                     { name: 'matter', icon: Mountain, color: 'text-green-500' },
-                    { name: 'substance', icon: Wind, color: 'text-purple-500' }
+                    { name: 'substance', icon: Wind, color: 'text-purple-500' },
                   ].map(({ name, icon: Icon, color }) => {
-                    const config = defaultAlchemicalMCPConfig.tokenStabilization[name as keyof typeof defaultAlchemicalMCPConfig.tokenStabilization]
+                    const config =
+                      defaultAlchemicalMCPConfig.tokenStabilization[
+                        name as keyof typeof defaultAlchemicalMCPConfig.tokenStabilization
+                      ]
                     // Note: In a real implementation, you'd get the actual token values from the hook
                     const currentValue = 0 // Placeholder - would come from alchmQuantities
                     const percentage = Math.min((currentValue / config.max) * 100, 100)
@@ -393,7 +404,7 @@ export function PerformanceDashboard() {
               <CardContent>
                 <div className="space-y-3">
                   {Object.entries(metrics.topEndpoints)
-                    .sort(([,a], [,b]) => b - a)
+                    .sort(([, a], [, b]) => b - a)
                     .slice(0, 10)
                     .map(([endpoint, count]) => (
                       <div key={endpoint} className="flex items-center justify-between">
@@ -415,17 +426,19 @@ export function PerformanceDashboard() {
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {logger.getLogsByLevel(LogLevel.ERROR, 10).map((log, index) => (
                     <div key={index} className="text-xs p-2 bg-red-50 dark:bg-red-950 rounded">
-                      <div className="font-mono">{new Date(log.timestamp).toLocaleTimeString()}</div>
+                      <div className="font-mono">
+                        {new Date(log.timestamp).toLocaleTimeString()}
+                      </div>
                       <div className="text-red-700 dark:text-red-300">{log.message}</div>
                       {log.context.operation && (
-                        <div className="text-muted-foreground">Operation: {log.context.operation}</div>
+                        <div className="text-muted-foreground">
+                          Operation: {log.context.operation}
+                        </div>
                       )}
                     </div>
                   ))}
                   {logger.getLogsByLevel(LogLevel.ERROR, 10).length === 0 && (
-                    <div className="text-center text-muted-foreground py-4">
-                      No recent errors
-                    </div>
+                    <div className="text-center text-muted-foreground py-4">No recent errors</div>
                   )}
                 </div>
               </CardContent>

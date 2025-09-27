@@ -7,9 +7,9 @@
  */
 
 export interface ElementalTokens {
-  spirit: number    // Divine masculine, active principle (Hermes principle of correspondence)
-  essence: number   // Divine feminine, passive principle (Luna's receptive nature)
-  matter: number    // Physical manifestation, concrete reality (Saturn's structure)
+  spirit: number // Divine masculine, active principle (Hermes principle of correspondence)
+  essence: number // Divine feminine, passive principle (Luna's receptive nature)
+  matter: number // Physical manifestation, concrete reality (Saturn's structure)
   substance: number // Material foundation, earthly stability (Gaia's grounding)
 }
 
@@ -40,23 +40,23 @@ export interface AlchemicalMCPConfig {
   /** Token stabilization parameters based on planetary dignities */
   tokenStabilization: {
     spirit: {
-      min: number        // Minimum spirit threshold (Mercury's minimum influence)
-      max: number        // Maximum spirit threshold (Mercury's maximum influence)
+      min: number // Minimum spirit threshold (Mercury's minimum influence)
+      max: number // Maximum spirit threshold (Mercury's maximum influence)
       equilibrium: number // Perfect balance point (Hermetic mean)
     }
     essence: {
-      min: number        // Moon's minimum essence during void periods
-      max: number        // Moon's maximum essence during full phase
+      min: number // Moon's minimum essence during void periods
+      max: number // Moon's maximum essence during full phase
       equilibrium: number
     }
     matter: {
-      min: number        // Saturn's minimum material grounding
-      max: number        // Sun's maximum material manifestation
+      min: number // Saturn's minimum material grounding
+      max: number // Sun's maximum material manifestation
       equilibrium: number
     }
     substance: {
-      min: number        // Earth's minimum material foundation
-      max: number        // Venus's maximum material harmony
+      min: number // Earth's minimum material foundation
+      max: number // Venus's maximum material harmony
       equilibrium: number
     }
   }
@@ -100,39 +100,39 @@ export const defaultAlchemicalMCPConfig: AlchemicalMCPConfig = {
 
   tokenStabilization: {
     spirit: {
-      min: 0.1,      // Mercury's minimum intellectual activity
-      max: 2.5,      // Mercury's maximum communicative intensity
-      equilibrium: 1.2 // Hermetic balance point for mental faculties
+      min: 0.1, // Mercury's minimum intellectual activity
+      max: 2.5, // Mercury's maximum communicative intensity
+      equilibrium: 1.2, // Hermetic balance point for mental faculties
     },
     essence: {
-      min: 0.2,      // Moon's minimum during void-of-course
-      max: 3.0,      // Moon's maximum during full phase in water sign
-      equilibrium: 1.4 // Emotional equilibrium point
+      min: 0.2, // Moon's minimum during void-of-course
+      max: 3.0, // Moon's maximum during full phase in water sign
+      equilibrium: 1.4, // Emotional equilibrium point
     },
     matter: {
-      min: 0.3,      // Saturn's minimum material structure
-      max: 2.8,      // Sun's maximum material manifestation
-      equilibrium: 1.5 // Physical manifestation balance
+      min: 0.3, // Saturn's minimum material structure
+      max: 2.8, // Sun's maximum material manifestation
+      equilibrium: 1.5, // Physical manifestation balance
     },
     substance: {
-      min: 0.4,      // Earth's minimum grounding
-      max: 2.2,      // Venus's maximum material harmony
-      equilibrium: 1.1 // Material foundation balance
-    }
+      min: 0.4, // Earth's minimum grounding
+      max: 2.2, // Venus's maximum material harmony
+      equilibrium: 1.1, // Material foundation balance
+    },
   },
 
   performanceThresholds: {
-    maxCalculationTime: 100,    // < 100ms for real-time astrology
-    maxDomUpdateTime: 50,       // < 50ms for smooth animations
-    maxMemoryUsage: 50 * 1024 * 1024 // 50MB memory limit
+    maxCalculationTime: 100, // < 100ms for real-time astrology
+    maxDomUpdateTime: 50, // < 50ms for smooth animations
+    maxMemoryUsage: 50 * 1024 * 1024, // 50MB memory limit
   },
 
   planetaryMonitoring: {
     trackHourChanges: true,
     captureAspectScreenshots: true,
     logRetrogradeEffects: true,
-    validateLunarPhases: true
-  }
+    validateLunarPhases: true,
+  },
 }
 
 // Cache for equilibrium calculations to avoid redundant computations
@@ -150,7 +150,7 @@ export function validateTokenEquilibrium(tokens: ElementalTokens): TokenEquilibr
 
   // Check cache first
   const cached = equilibriumCache.get(cacheKey)
-  if (cached && (now - cached.timestamp) < CACHE_TTL) {
+  if (cached && now - cached.timestamp < CACHE_TTL) {
     return cached.result
   }
 
@@ -168,7 +168,8 @@ export function validateTokenEquilibrium(tokens: ElementalTokens): TokenEquilibr
   // Golden ratio as aspirational harmony (φ ≈ 1.618) between complementary pairs
   const spiritEssenceRatio = spirit / Math.max(essence, 0.001)
   const matterSubstanceRatio = matter / Math.max(substance, 0.001)
-  const goldenRatioDeviation = Math.abs(spiritEssenceRatio - 1.618) + Math.abs(matterSubstanceRatio - 1.618)
+  const goldenRatioDeviation =
+    Math.abs(spiritEssenceRatio - 1.618) + Math.abs(matterSubstanceRatio - 1.618)
 
   // Natural elemental harmony - elements complement rather than balance
   // Spirit and Essence work together, Matter and Substance work together
@@ -176,7 +177,7 @@ export function validateTokenEquilibrium(tokens: ElementalTokens): TokenEquilibr
 
   // Planetary dignity influence based on traditional rulerships
   // Higher values indicate stronger traditional correspondences
-  const planetaryDignity = (spirit * 1.0) + (essence * 1.2) + (matter * 1.1) + (substance * 0.9)
+  const planetaryDignity = spirit * 1.0 + essence * 1.2 + matter * 1.1 + substance * 0.9
 
   // Overall elemental health based on individual element vitality
   const overallHealth = (tokens.spirit + tokens.essence + tokens.matter + tokens.substance) / 4
@@ -185,7 +186,7 @@ export function validateTokenEquilibrium(tokens: ElementalTokens): TokenEquilibr
     goldenRatio: goldenRatioDeviation,
     elementalHarmony,
     planetaryDignity,
-    overallHealth
+    overallHealth,
   }
 
   // Cache the result
@@ -212,10 +213,14 @@ export function isTokenStable(tokens: ElementalTokens, config: AlchemicalMCPConf
   const { tokenStabilization } = config
 
   return (
-    spirit >= tokenStabilization.spirit.min && spirit <= tokenStabilization.spirit.max &&
-    essence >= tokenStabilization.essence.min && essence <= tokenStabilization.essence.max &&
-    matter >= tokenStabilization.matter.min && matter <= tokenStabilization.matter.max &&
-    substance >= tokenStabilization.substance.min && substance <= tokenStabilization.substance.max
+    spirit >= tokenStabilization.spirit.min &&
+    spirit <= tokenStabilization.spirit.max &&
+    essence >= tokenStabilization.essence.min &&
+    essence <= tokenStabilization.essence.max &&
+    matter >= tokenStabilization.matter.min &&
+    matter <= tokenStabilization.matter.max &&
+    substance >= tokenStabilization.substance.min &&
+    substance <= tokenStabilization.substance.max
   )
 }
 

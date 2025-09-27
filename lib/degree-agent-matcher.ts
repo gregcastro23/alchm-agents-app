@@ -131,7 +131,7 @@ export class DegreeAgentMatcher {
    * Extract or calculate natal placements for an agent
    */
   private extractNatalPlacements(agent: CraftedAgent): AgentDegreeProfile['natalPlacements'] {
-    const placements: AgentDegreeProfile['natalPlacements'] = {}
+    let placements: AgentDegreeProfile['natalPlacements'] = {}
 
     // If agent has natal chart data, use it
     if (agent.consciousness?.natalChart?.planets) {

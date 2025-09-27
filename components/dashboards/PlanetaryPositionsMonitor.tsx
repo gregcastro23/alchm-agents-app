@@ -17,7 +17,7 @@ import {
   TrendingUp,
   Database,
   Wifi,
-  WifiOff
+  WifiOff,
 } from 'lucide-react'
 
 interface AccuracyValidation {
@@ -60,7 +60,7 @@ interface PlanetaryMetrics {
   cache: CacheMetrics
   performance: PerformanceMetrics
   health: {
-    circuitBreakers: Record<string, { state: string, failures: number, lastFailure: string | null }>
+    circuitBreakers: Record<string, { state: string; failures: number; lastFailure: string | null }>
     externalApiStatus: string
     lastHealthCheck: string
   }
@@ -83,7 +83,9 @@ const PlanetaryPositionsMonitor: React.FC = () => {
   const [data, setData] = useState<MonitorData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'overview' | 'accuracy' | 'performance' | 'cache' | 'health'>('overview')
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'accuracy' | 'performance' | 'cache' | 'health'
+  >('overview')
   const [autoRefresh, setAutoRefresh] = useState(true)
 
   const fetchMetrics = async () => {
@@ -105,7 +107,7 @@ const PlanetaryPositionsMonitor: React.FC = () => {
       const response = await fetch('/api/planetary-positions/metrics?action=validate')
       const result = await response.json()
       if (result.success) {
-        setData(prev => prev ? { ...prev, validation: result.validation } : null)
+        setData(prev => (prev ? { ...prev, validation: result.validation } : null))
       }
     } catch (err) {
       console.error('Validation failed:', err)
@@ -117,7 +119,7 @@ const PlanetaryPositionsMonitor: React.FC = () => {
       const response = await fetch('/api/planetary-positions/metrics?action=health')
       const result = await response.json()
       if (result.success) {
-        setData(prev => prev ? { ...prev, health: result.health } : null)
+        setData(prev => (prev ? { ...prev, health: result.health } : null))
       }
     } catch (err) {
       console.error('Health check failed:', err)
@@ -140,20 +142,29 @@ const PlanetaryPositionsMonitor: React.FC = () => {
 
   const getAccuracyColor = (accuracy: string) => {
     switch (accuracy) {
-      case 'high': return 'bg-green-500'
-      case 'medium': return 'bg-yellow-500'
-      case 'low': return 'bg-orange-500'
-      case 'fallback': return 'bg-red-500'
-      default: return 'bg-gray-500'
+      case 'high':
+        return 'bg-green-500'
+      case 'medium':
+        return 'bg-yellow-500'
+      case 'low':
+        return 'bg-orange-500'
+      case 'fallback':
+        return 'bg-red-500'
+      default:
+        return 'bg-gray-500'
     }
   }
 
   const getHealthColor = (status: string) => {
     switch (status) {
-      case 'healthy': return 'text-green-600'
-      case 'degraded': return 'text-yellow-600'
-      case 'offline': return 'text-red-600'
-      default: return 'text-gray-600'
+      case 'healthy':
+        return 'text-green-600'
+      case 'degraded':
+        return 'text-yellow-600'
+      case 'offline':
+        return 'text-red-600'
+      default:
+        return 'text-gray-600'
     }
   }
 
@@ -210,7 +221,7 @@ const PlanetaryPositionsMonitor: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Button
                 onClick={() => setAutoRefresh(!autoRefresh)}
-                variant={autoRefresh ? "default" : "outline"}
+                variant={autoRefresh ? 'default' : 'outline'}
                 size="sm"
               >
                 <RefreshCw className={`h-4 w-4 mr-1 ${autoRefresh ? 'animate-spin' : ''}`} />
@@ -231,12 +242,12 @@ const PlanetaryPositionsMonitor: React.FC = () => {
               { id: 'accuracy', label: 'Accuracy', icon: Target },
               { id: 'performance', label: 'Performance', icon: Zap },
               { id: 'cache', label: 'Cache', icon: Database },
-              { id: 'health', label: 'Health', icon: Wifi }
+              { id: 'health', label: 'Health', icon: Wifi },
             ].map(({ id, label, icon: Icon }) => (
               <Button
                 key={id}
                 onClick={() => setActiveTab(id as any)}
-                variant={activeTab === id ? "default" : "outline"}
+                variant={activeTab === id ? 'default' : 'outline'}
                 size="sm"
                 className="flex items-center space-x-1"
               >
@@ -262,7 +273,11 @@ const PlanetaryPositionsMonitor: React.FC = () => {
                     <Target className="h-8 w-8 text-blue-600" />
                   </div>
                   <div className="mt-2">
-                    <Badge className={getAccuracyColor(metrics.accuracyValidation.lastValidation?.accuracy || 'unknown')}>
+                    <Badge
+                      className={getAccuracyColor(
+                        metrics.accuracyValidation.lastValidation?.accuracy || 'unknown'
+                      )}
+                    >
                       {metrics.accuracyValidation.lastValidation?.accuracy || 'unknown'}
                     </Badge>
                   </div>
@@ -282,7 +297,10 @@ const PlanetaryPositionsMonitor: React.FC = () => {
                     <Clock className="h-8 w-8 text-green-600" />
                   </div>
                   <div className="mt-2">
-                    <Progress value={Math.min(metrics.performance.average / 1000 * 100, 100)} className="h-2" />
+                    <Progress
+                      value={Math.min((metrics.performance.average / 1000) * 100, 100)}
+                      className="h-2"
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -311,7 +329,9 @@ const PlanetaryPositionsMonitor: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">API Health</p>
-                      <p className={`text-lg font-bold ${getHealthColor(metrics.health.externalApiStatus)}`}>
+                      <p
+                        className={`text-lg font-bold ${getHealthColor(metrics.health.externalApiStatus)}`}
+                      >
                         {metrics.health.externalApiStatus}
                       </p>
                     </div>
@@ -322,7 +342,11 @@ const PlanetaryPositionsMonitor: React.FC = () => {
                     )}
                   </div>
                   <div className="mt-2">
-                    <Badge variant={metrics.health.externalApiStatus === 'healthy' ? 'default' : 'destructive'}>
+                    <Badge
+                      variant={
+                        metrics.health.externalApiStatus === 'healthy' ? 'default' : 'destructive'
+                      }
+                    >
                       {metrics.health.externalApiStatus}
                     </Badge>
                   </div>
@@ -398,11 +422,13 @@ const PlanetaryPositionsMonitor: React.FC = () => {
                     <div>
                       <p className="text-sm text-gray-600">Sources Used</p>
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {Object.entries(metrics.accuracyValidation.sourcesUsed).map(([source, count]) => (
-                          <Badge key={source} variant="outline" className="text-xs">
-                            {source}: {count}
-                          </Badge>
-                        ))}
+                        {Object.entries(metrics.accuracyValidation.sourcesUsed).map(
+                          ([source, count]) => (
+                            <Badge key={source} variant="outline" className="text-xs">
+                              {source}: {count}
+                            </Badge>
+                          )
+                        )}
                       </div>
                     </div>
                   </div>
@@ -460,7 +486,17 @@ const PlanetaryPositionsMonitor: React.FC = () => {
                         <span>{metrics.usage.requestsByAccuracy.high || 0}</span>
                       </div>
                       <Progress
-                        value={(metrics.usage.requestsByAccuracy.high || 0) / Math.max(Object.values(metrics.usage.requestsByAccuracy).reduce((a, b) => a + b, 0), 1) * 100}
+                        value={
+                          ((metrics.usage.requestsByAccuracy.high || 0) /
+                            Math.max(
+                              Object.values(metrics.usage.requestsByAccuracy).reduce(
+                                (a, b) => a + b,
+                                0
+                              ),
+                              1
+                            )) *
+                          100
+                        }
                         className="h-2"
                       />
                     </div>
@@ -470,7 +506,17 @@ const PlanetaryPositionsMonitor: React.FC = () => {
                         <span>{metrics.usage.requestsByAccuracy.medium || 0}</span>
                       </div>
                       <Progress
-                        value={(metrics.usage.requestsByAccuracy.medium || 0) / Math.max(Object.values(metrics.usage.requestsByAccuracy).reduce((a, b) => a + b, 0), 1) * 100}
+                        value={
+                          ((metrics.usage.requestsByAccuracy.medium || 0) /
+                            Math.max(
+                              Object.values(metrics.usage.requestsByAccuracy).reduce(
+                                (a, b) => a + b,
+                                0
+                              ),
+                              1
+                            )) *
+                          100
+                        }
                         className="h-2"
                       />
                     </div>
@@ -480,7 +526,17 @@ const PlanetaryPositionsMonitor: React.FC = () => {
                         <span>{metrics.usage.requestsByAccuracy.low || 0}</span>
                       </div>
                       <Progress
-                        value={(metrics.usage.requestsByAccuracy.low || 0) / Math.max(Object.values(metrics.usage.requestsByAccuracy).reduce((a, b) => a + b, 0), 1) * 100}
+                        value={
+                          ((metrics.usage.requestsByAccuracy.low || 0) /
+                            Math.max(
+                              Object.values(metrics.usage.requestsByAccuracy).reduce(
+                                (a, b) => a + b,
+                                0
+                              ),
+                              1
+                            )) *
+                          100
+                        }
                         className="h-2"
                       />
                     </div>
@@ -507,15 +563,11 @@ const PlanetaryPositionsMonitor: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Cache Hits</p>
-                      <p className="text-xl font-bold">
-                        {metrics.cache.hits.toLocaleString()}
-                      </p>
+                      <p className="text-xl font-bold">{metrics.cache.hits.toLocaleString()}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Cache Misses</p>
-                      <p className="text-xl font-bold">
-                        {metrics.cache.misses.toLocaleString()}
-                      </p>
+                      <p className="text-xl font-bold">{metrics.cache.misses.toLocaleString()}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Total Requests</p>
@@ -546,11 +598,18 @@ const PlanetaryPositionsMonitor: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center space-x-2">
-                    <div className={`w-3 h-3 rounded-full ${
-                      metrics.health.externalApiStatus === 'healthy' ? 'bg-green-500' :
-                      metrics.health.externalApiStatus === 'degraded' ? 'bg-yellow-500' : 'bg-red-500'
-                    }`} />
-                    <span className={`text-lg font-semibold ${getHealthColor(metrics.health.externalApiStatus)}`}>
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        metrics.health.externalApiStatus === 'healthy'
+                          ? 'bg-green-500'
+                          : metrics.health.externalApiStatus === 'degraded'
+                            ? 'bg-yellow-500'
+                            : 'bg-red-500'
+                      }`}
+                    />
+                    <span
+                      className={`text-lg font-semibold ${getHealthColor(metrics.health.externalApiStatus)}`}
+                    >
                       {metrics.health.externalApiStatus.toUpperCase()}
                     </span>
                   </div>

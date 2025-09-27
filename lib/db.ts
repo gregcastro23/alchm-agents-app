@@ -1,5 +1,5 @@
 import 'server-only'
-import { PrismaClient } from './generated/prisma'
+import { PrismaClient } from '@prisma/client'
 import Redis from 'ioredis'
 
 declare global {

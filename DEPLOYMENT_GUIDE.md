@@ -29,6 +29,7 @@ The GitLab CI/CD pipeline provides automated testing, building, and deployment g
 #### 1. Automatic Pipeline Trigger
 
 The pipeline automatically runs when you push changes to:
+
 - `main` branch
 - Any backend files in `backend/**/*`
 
@@ -95,6 +96,7 @@ Deploy directly to Render using the provided `render.yaml` configuration.
 ### Step 3: Use Automated Configuration
 
 **Option A: Use render.yaml (Recommended)**
+
 1. In Render dashboard: Settings → General
 2. Enable: "Auto-deploy from render.yaml"
 3. The `backend/render.yaml` will automatically configure everything
@@ -103,6 +105,7 @@ Deploy directly to Render using the provided `render.yaml` configuration.
 If not using render.yaml, set these manually:
 
 **Environment Variables** (Settings → Environment):
+
 ```bash
 # Essential
 NODE_ENV=production
@@ -132,29 +135,29 @@ REDIS_URL=redis://username:password@host:port
 
 ### Required Environment Variables
 
-| Variable | Value | Purpose |
-|----------|-------|---------|
-| `NODE_ENV` | `production` | Enables production optimizations |
-| `ENABLE_KINETICS_BACKEND` | `true` | Enable kinetics calculations |
-| `ENABLE_CONSCIOUSNESS_BACKEND` | `true` | Enable consciousness tracking |
-| `ENABLE_PLANETARY_BACKEND` | `true` | Enable planetary calculations |
-| `ENABLE_TOKEN_BACKEND` | `true` | Enable token rate calculations |
+| Variable                       | Value        | Purpose                          |
+| ------------------------------ | ------------ | -------------------------------- |
+| `NODE_ENV`                     | `production` | Enables production optimizations |
+| `ENABLE_KINETICS_BACKEND`      | `true`       | Enable kinetics calculations     |
+| `ENABLE_CONSCIOUSNESS_BACKEND` | `true`       | Enable consciousness tracking    |
+| `ENABLE_PLANETARY_BACKEND`     | `true`       | Enable planetary calculations    |
+| `ENABLE_TOKEN_BACKEND`         | `true`       | Enable token rate calculations   |
 
 ### Important Environment Variables
 
-| Variable | Example | Purpose |
-|----------|---------|---------|
-| `CORS_ORIGINS` | `https://yourdomain.com` | Frontend domain(s) |
-| `MAX_REQUEST_SIZE_MB` | `2` | Request size limit |
-| `RATE_LIMIT_REQUESTS_PER_MINUTE` | `100` | API rate limiting |
+| Variable                         | Example                  | Purpose            |
+| -------------------------------- | ------------------------ | ------------------ |
+| `CORS_ORIGINS`                   | `https://yourdomain.com` | Frontend domain(s) |
+| `MAX_REQUEST_SIZE_MB`            | `2`                      | Request size limit |
+| `RATE_LIMIT_REQUESTS_PER_MINUTE` | `100`                    | API rate limiting  |
 
 ### Optional Environment Variables
 
-| Variable | Example | Purpose |
-|----------|---------|---------|
-| `REDIS_URL` | `redis://user:pass@host:port` | Enhanced caching |
-| `LOG_LEVEL` | `info` | Logging verbosity |
-| `ALCHM_BACKEND_URL` | `https://alchm-backend.onrender.com` | External service |
+| Variable            | Example                              | Purpose           |
+| ------------------- | ------------------------------------ | ----------------- |
+| `REDIS_URL`         | `redis://user:pass@host:port`        | Enhanced caching  |
+| `LOG_LEVEL`         | `info`                               | Logging verbosity |
+| `ALCHM_BACKEND_URL` | `https://alchm-backend.onrender.com` | External service  |
 
 ---
 
@@ -170,6 +173,7 @@ curl https://YOUR_SERVICE_URL.onrender.com/api/health | jq
 ```
 
 **Expected Response:**
+
 ```json
 {
   "status": "healthy" | "degraded",
@@ -221,6 +225,7 @@ After backend deployment, update your frontend:
 ### Environment Variables
 
 **For Vercel/Netlify:**
+
 ```bash
 NEXT_PUBLIC_BACKEND_URL=https://YOUR_SERVICE_URL.onrender.com
 NEXT_PUBLIC_WEBSOCKET_URL=wss://YOUR_SERVICE_URL.onrender.com
@@ -256,12 +261,12 @@ console.log('Backend status:', health.status)
 
 Monitor these key metrics:
 
-| Metric | Target | Action if Exceeded |
-|--------|--------|--------------------|
+| Metric        | Target  | Action if Exceeded       |
+| ------------- | ------- | ------------------------ |
 | Response Time | < 500ms | Check caching, add Redis |
-| Error Rate | < 1% | Review logs, fix issues |
-| Memory Usage | < 80% | Optimize or upgrade plan |
-| CPU Usage | < 70% | Optimize or upgrade plan |
+| Error Rate    | < 1%    | Review logs, fix issues  |
+| Memory Usage  | < 80%   | Optimize or upgrade plan |
+| CPU Usage     | < 70%   | Optimize or upgrade plan |
 
 ---
 
@@ -270,11 +275,13 @@ Monitor these key metrics:
 ### Redis Cache (Recommended for Production)
 
 **In Render:**
+
 1. Dashboard → Add Redis
 2. Choose plan (Starter $7/month)
 3. REDIS_URL automatically added
 
 **Performance Benefits:**
+
 - 10x faster response times
 - Better scalability
 - Shared cache across instances
@@ -282,6 +289,7 @@ Monitor these key metrics:
 ### Custom Domain
 
 **In Render:**
+
 1. Settings → Custom Domains
 2. Add your domain
 3. Update DNS records
@@ -290,11 +298,13 @@ Monitor these key metrics:
 ### Auto-Deploy
 
 **GitLab Integration:**
+
 - Pushes to `main` trigger pipeline
 - Manual deployment approval
 - Automated testing before deploy
 
 **Render Auto-Deploy:**
+
 - Automatic deployment on git push
 - Build status notifications
 - Zero-downtime deployments
@@ -306,24 +316,28 @@ Monitor these key metrics:
 ### Common Issues
 
 **1. 503 Service Unavailable**
+
 ```bash
 # Check feature flags
 curl https://YOUR_SERVICE_URL.onrender.com/api/health | jq '.featureFlags'
 ```
 
 **2. CORS Errors**
+
 ```bash
 # Verify CORS_ORIGINS environment variable
 # Should include your frontend domain
 ```
 
 **3. Slow Response Times**
+
 ```bash
 # Add Redis for caching
 # Check logs for performance bottlenecks
 ```
 
 **4. Build Failures**
+
 ```bash
 # Check GitLab CI/CD pipeline logs
 # Verify Node.js version compatibility
@@ -350,16 +364,19 @@ curl -X POST https://YOUR_SERVICE_URL.onrender.com/api/planetary/current-hour \
 ## 📞 Support & Resources
 
 ### Documentation
+
 - **Backend README**: `backend/README.md`
 - **API Documentation**: Available at deployed URL root
 - **GitLab Pages**: Auto-generated documentation
 
 ### Deployment Resources
+
 - **render.yaml**: `backend/render.yaml`
 - **Dockerfile**: `backend/Dockerfile.production`
 - **GitLab CI/CD**: `.gitlab-ci.yml`
 
 ### Monitoring URLs
+
 - **GitLab Repository**: https://gitlab.com/xalchm/my_alchm
 - **CI/CD Pipelines**: https://gitlab.com/xalchm/my_alchm/-/pipelines
 - **Render Dashboard**: https://dashboard.render.com
@@ -371,6 +388,7 @@ curl -X POST https://YOUR_SERVICE_URL.onrender.com/api/planetary/current-hour \
 Your Planetary Agents Backend is now production-ready!
 
 **✅ What You've Achieved:**
+
 - Automated CI/CD pipeline with security scanning
 - Production-hardened backend with real calculations
 - Comprehensive monitoring and health checks
@@ -378,6 +396,7 @@ Your Planetary Agents Backend is now production-ready!
 - Full documentation and troubleshooting guides
 
 **🚀 Next Steps:**
+
 1. Deploy frontend with backend URL
 2. Test complete user flows
 3. Set up monitoring alerts

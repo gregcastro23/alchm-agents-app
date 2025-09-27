@@ -20,7 +20,7 @@ const colors = {
   red: '\x1b[31m',
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
-  reset: '\x1b[0m'
+  reset: '\x1b[0m',
 }
 
 function log(message, color = colors.reset) {
@@ -36,8 +36,8 @@ function makeRequest(path, method = 'GET', data = null) {
       method: method,
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'Backend-Test/1.0'
-      }
+        'User-Agent': 'Backend-Test/1.0',
+      },
     }
 
     if (data && method !== 'GET') {
@@ -45,9 +45,9 @@ function makeRequest(path, method = 'GET', data = null) {
       options.headers['Content-Length'] = Buffer.byteLength(postData)
     }
 
-    const req = http.request(options, (res) => {
+    const req = http.request(options, res => {
       let body = ''
-      res.on('data', (chunk) => {
+      res.on('data', chunk => {
         body += chunk
       })
 
@@ -57,19 +57,19 @@ function makeRequest(path, method = 'GET', data = null) {
           resolve({
             statusCode: res.statusCode,
             headers: res.headers,
-            body: jsonBody
+            body: jsonBody,
           })
         } catch (error) {
           resolve({
             statusCode: res.statusCode,
             headers: res.headers,
-            body: body
+            body: body,
           })
         }
       })
     })
 
-    req.on('error', (error) => {
+    req.on('error', error => {
       reject(error)
     })
 
@@ -121,11 +121,7 @@ async function testSecurityHeaders() {
     const response = await makeRequest('/')
     const headers = response.headers
 
-    const securityHeaders = [
-      'x-content-type-options',
-      'x-frame-options',
-      'x-xss-protection'
-    ]
+    const securityHeaders = ['x-content-type-options', 'x-frame-options', 'x-xss-protection']
 
     let passed = 0
     securityHeaders.forEach(header => {
@@ -182,8 +178,19 @@ async function testApiEndpoints() {
 
   const endpoints = [
     { path: '/api/health', method: 'GET' },
-    { path: '/api/planetary/current-hour', method: 'POST', data: { location: { lat: 37.7749, lon: -122.4194 } } },
-    { path: '/api/tokens/calculate', method: 'POST', data: { tokens: { Spirit: 1, Essence: 0.8, Matter: 0.6, Substance: 0.4 }, location: { lat: 37.7749, lon: -122.4194 } } }
+    {
+      path: '/api/planetary/current-hour',
+      method: 'POST',
+      data: { location: { lat: 37.7749, lon: -122.4194 } },
+    },
+    {
+      path: '/api/tokens/calculate',
+      method: 'POST',
+      data: {
+        tokens: { Spirit: 1, Essence: 0.8, Matter: 0.6, Substance: 0.4 },
+        location: { lat: 37.7749, lon: -122.4194 },
+      },
+    },
   ]
 
   let passed = 0
@@ -196,7 +203,10 @@ async function testApiEndpoints() {
         log(`✅ ${endpoint.method} ${endpoint.path}`, colors.green)
         passed++
       } else if (response.statusCode === 503) {
-        log(`⚠️  ${endpoint.method} ${endpoint.path} - Service disabled via feature flag`, colors.yellow)
+        log(
+          `⚠️  ${endpoint.method} ${endpoint.path} - Service disabled via feature flag`,
+          colors.yellow
+        )
         passed++ // Feature flags are expected
       } else {
         log(`❌ ${endpoint.method} ${endpoint.path} - Status: ${response.statusCode}`, colors.red)
@@ -224,7 +234,11 @@ async function testErrorHandling() {
 
     // Test malformed JSON
     try {
-      const badJsonResponse = await makeRequest('/api/planetary/current-hour', 'POST', 'invalid json')
+      const badJsonResponse = await makeRequest(
+        '/api/planetary/current-hour',
+        'POST',
+        'invalid json'
+      )
       if (badJsonResponse.statusCode >= 400 && badJsonResponse.statusCode < 500) {
         log('✅ Bad JSON handling works correctly', colors.green)
       } else {
@@ -275,7 +289,7 @@ async function runTests() {
     { name: 'Security Headers', fn: testSecurityHeaders },
     { name: 'Rate Limiting', fn: testRateLimiting },
     { name: 'API Endpoints', fn: testApiEndpoints },
-    { name: 'Error Handling', fn: testErrorHandling }
+    { name: 'Error Handling', fn: testErrorHandling },
   ]
 
   let totalTests = tests.length
@@ -290,7 +304,10 @@ async function runTests() {
 
   // Final results
   log('\n' + '='.repeat(50), colors.blue)
-  log(`📊 Test Results: ${passedTests}/${totalTests} passed`, passedTests === totalTests ? colors.green : colors.yellow)
+  log(
+    `📊 Test Results: ${passedTests}/${totalTests} passed`,
+    passedTests === totalTests ? colors.green : colors.yellow
+  )
 
   if (passedTests === totalTests) {
     log('🎉 All tests passed! Backend is ready for production.', colors.green)

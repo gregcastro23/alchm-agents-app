@@ -738,10 +738,24 @@ Client usage:
 ```ts
 import { UnifiedKineticsClient } from '@/lib/kinetics-unified-client'
 
-await UnifiedKineticsClient.getKinetics({ lat, lon, date, includeElemental: true, includePlanetary: true, window: 3 })
-await UnifiedKineticsClient.getEnhanced({ location: { lat, lon }, options: { includeAgentOptimization: true, includePowerPrediction: true } })
+await UnifiedKineticsClient.getKinetics({
+  lat,
+  lon,
+  date,
+  includeElemental: true,
+  includePlanetary: true,
+  window: 3,
+})
+await UnifiedKineticsClient.getEnhanced({
+  location: { lat, lon },
+  options: { includeAgentOptimization: true, includePowerPrediction: true },
+})
 await UnifiedKineticsClient.getGroupDynamics({ agentIds, location: { lat, lon } })
-await UnifiedKineticsClient.getTokenMetrics({ baseTokenRate, baseNFTRarity, location: { lat, lon } })
+await UnifiedKineticsClient.getTokenMetrics({
+  baseTokenRate,
+  baseNFTRarity,
+  location: { lat, lon },
+})
 ```
 
 ## Changelog

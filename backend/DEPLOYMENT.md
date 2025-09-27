@@ -37,12 +37,14 @@ git push origin main
 ### Step 3: Configure Service
 
 **Basic Settings:**
+
 - **Name**: `planetary-agents-backend`
 - **Region**: Choose based on your users' location
 - **Branch**: `main`
 - **Root Directory**: `backend` (if your backend is in a subdirectory)
 
 **Build & Deploy:**
+
 - **Runtime**: `Node`
 - **Build Command**: `yarn install && yarn build`
 - **Start Command**: `yarn start`
@@ -52,6 +54,7 @@ git push origin main
 In the Render dashboard, add these environment variables:
 
 **Required:**
+
 ```bash
 NODE_ENV=production
 ENABLE_KINETICS_BACKEND=true
@@ -61,6 +64,7 @@ ENABLE_TOKEN_BACKEND=true
 ```
 
 **Important:**
+
 ```bash
 CORS_ORIGINS=https://your-frontend-domain.vercel.app,https://www.yourdomain.com
 MAX_REQUEST_SIZE_MB=2
@@ -68,6 +72,7 @@ RATE_LIMIT_REQUESTS_PER_MINUTE=100
 ```
 
 **Optional (for enhanced performance):**
+
 ```bash
 REDIS_URL=redis://username:password@host:port
 LOG_LEVEL=info
@@ -129,6 +134,7 @@ docker run -p 8000:8000 -p 8001:8001 \
 ### Deploy to Cloud Providers
 
 **AWS ECS:**
+
 ```bash
 # Push to ECR
 aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin your-account.dkr.ecr.us-west-2.amazonaws.com
@@ -137,6 +143,7 @@ docker push your-account.dkr.ecr.us-west-2.amazonaws.com/planetary-agents-backen
 ```
 
 **Google Cloud Run:**
+
 ```bash
 # Push to GCR
 docker tag planetary-agents-backend:latest gcr.io/your-project/planetary-agents-backend:latest
@@ -290,6 +297,7 @@ NEXT_PUBLIC_WEBSOCKET_URL=wss://your-backend-url.com
 ```
 
 For Vercel frontend deployment:
+
 1. Go to your Vercel dashboard
 2. Select your project
 3. Go to Settings → Environment Variables
@@ -301,6 +309,7 @@ For Vercel frontend deployment:
 ### Common Issues
 
 **1. 503 Service Unavailable**
+
 ```bash
 # Check if feature flags are enabled
 curl https://your-backend-url.com/api/health | jq '.featureFlags'
@@ -309,6 +318,7 @@ curl https://your-backend-url.com/api/health | jq '.featureFlags'
 ```
 
 **2. CORS Errors**
+
 ```bash
 # Verify CORS_ORIGINS includes your frontend domain
 # Add to environment variables:
@@ -316,6 +326,7 @@ CORS_ORIGINS=https://your-frontend.vercel.app,https://www.yourdomain.com
 ```
 
 **3. Memory Issues**
+
 ```bash
 # Check memory usage in logs
 # Add Redis to reduce memory usage:
@@ -323,6 +334,7 @@ REDIS_URL=redis://your-redis-instance
 ```
 
 **4. Slow Response Times**
+
 ```bash
 # Enable caching
 REDIS_URL=redis://your-redis-instance
@@ -335,15 +347,18 @@ CONSCIOUSNESS_CACHE_TTL=300
 ### Log Analysis
 
 **Render Logs:**
+
 - Go to Render dashboard → Your service → Logs tab
 - Look for error patterns and performance metrics
 
 **Docker Logs:**
+
 ```bash
 docker logs container-name
 ```
 
 **PM2 Logs:**
+
 ```bash
 pm2 logs planetary-backend
 ```
@@ -351,12 +366,14 @@ pm2 logs planetary-backend
 ### Health Monitoring
 
 Set up monitoring alerts for:
+
 - Health endpoint returning non-200 status
 - Response times > 1000ms
 - Error rate > 5%
 - Memory usage > 80%
 
 **Example monitoring command:**
+
 ```bash
 # Run every 5 minutes via cron
 */5 * * * * curl -f https://your-backend-url.com/api/health || echo "Backend health check failed" | mail -s "Alert" admin@yourdomain.com
@@ -365,6 +382,7 @@ Set up monitoring alerts for:
 ## 📈 Scaling Considerations
 
 **For High Traffic:**
+
 1. **Enable Redis**: For shared caching across instances
 2. **Horizontal Scaling**: Multiple instances behind load balancer
 3. **Rate Limiting**: Adjust based on traffic patterns
@@ -372,6 +390,7 @@ Set up monitoring alerts for:
 5. **Database**: Consider PostgreSQL for persistent data
 
 **Performance Optimization:**
+
 ```bash
 # Environment variables for scaling
 RATE_LIMIT_REQUESTS_PER_MINUTE=500
@@ -395,6 +414,7 @@ REDIS_URL=redis://your-production-redis
 Your Planetary Agents Backend is now live!
 
 **Next Steps:**
+
 1. Update frontend to use new backend URL
 2. Test full user flows end-to-end
 3. Set up monitoring and alerting
@@ -402,6 +422,7 @@ Your Planetary Agents Backend is now live!
 5. Document your deployment for team reference
 
 **Support:**
+
 - Check the main README.md for API documentation
 - Use `/api/health` endpoint for system status
 - Monitor logs for any issues

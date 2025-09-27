@@ -17,7 +17,7 @@ import {
   RotateCcw,
   Play,
   Pause,
-  Settings
+  Settings,
 } from 'lucide-react'
 import { usePlanetaryPositions } from '@/hooks/usePlanetaryPositions'
 
@@ -37,17 +37,17 @@ type TokenEquilibrium = {
 
 // Element colors for consistent theming
 const elementColors = {
-  spirit: { primary: '#f59e0b', secondary: '#fbbf24', glow: '#d97706' },    // Amber
-  essence: { primary: '#3b82f6', secondary: '#60a5fa', glow: '#1d4ed8' },   // Blue
-  matter: { primary: '#10b981', secondary: '#34d399', glow: '#059669' },    // Emerald
-  substance: { primary: '#8b5cf6', secondary: '#a78bfa', glow: '#7c3aed' }   // Purple
+  spirit: { primary: '#f59e0b', secondary: '#fbbf24', glow: '#d97706' }, // Amber
+  essence: { primary: '#3b82f6', secondary: '#60a5fa', glow: '#1d4ed8' }, // Blue
+  matter: { primary: '#10b981', secondary: '#34d399', glow: '#059669' }, // Emerald
+  substance: { primary: '#8b5cf6', secondary: '#a78bfa', glow: '#7c3aed' }, // Purple
 }
 
 const elementIcons = {
   spirit: Flame,
   essence: Droplets,
   matter: Mountain,
-  substance: Wind
+  substance: Wind,
 }
 
 interface FlowParticle {
@@ -78,10 +78,10 @@ export function TokenFlowVisualization({
   showParticles = true,
   showEquilibrium = true,
   animationSpeed = 1,
-  className = ''
+  className = '',
 }: TokenFlowVisualizationProps) {
   const { alchmQuantities, planetaryPositions, mcpMetrics } = usePlanetaryPositions({
-    refreshInterval: 2000 // More frequent updates for smooth animation
+    refreshInterval: 2000, // More frequent updates for smooth animation
   })
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -98,7 +98,7 @@ export function TokenFlowVisualization({
     spirit: alchmQuantities.spirit,
     essence: alchmQuantities.essence,
     matter: alchmQuantities.matter,
-    substance: alchmQuantities.substance
+    substance: alchmQuantities.substance,
   }
 
   // State for equilibrium data from backend
@@ -106,7 +106,7 @@ export function TokenFlowVisualization({
     goldenRatio: 0,
     elementalHarmony: 0,
     planetaryDignity: 0,
-    overallHealth: 0.5
+    overallHealth: 0.5,
   })
 
   // Fetch equilibrium data from backend
@@ -143,23 +143,23 @@ export function TokenFlowVisualization({
       spirit: {
         x: centerX + radius * Math.cos(-Math.PI / 2), // Top
         y: centerY + radius * Math.sin(-Math.PI / 2),
-        angle: -Math.PI / 2
+        angle: -Math.PI / 2,
       },
       essence: {
         x: centerX + radius * Math.cos(Math.PI), // Left
         y: centerY + radius * Math.sin(Math.PI),
-        angle: Math.PI
+        angle: Math.PI,
       },
       matter: {
         x: centerX + radius * Math.cos(0), // Right
         y: centerY + radius * Math.sin(0),
-        angle: 0
+        angle: 0,
       },
       substance: {
         x: centerX + radius * Math.cos(Math.PI / 2), // Bottom
         y: centerY + radius * Math.sin(Math.PI / 2),
-        angle: Math.PI / 2
-      }
+        angle: Math.PI / 2,
+      },
     }
   }, [width, height])
 
@@ -173,7 +173,8 @@ export function TokenFlowVisualization({
       const prevValue = lastTokensRef.current![element as keyof ElementalTokens]
       const change = value - prevValue
 
-      if (Math.abs(change) > 0.01) { // Only generate particles for significant changes
+      if (Math.abs(change) > 0.01) {
+        // Only generate particles for significant changes
         const particleCount = Math.min(Math.abs(change) * 10, 5) // Max 5 particles per change
 
         for (let i = 0; i < particleCount; i++) {
@@ -190,7 +191,7 @@ export function TokenFlowVisualization({
             life: 0,
             maxLife: 120, // 2 seconds at 60fps
             size: Math.abs(change) * 2 + 1,
-            intensity: Math.abs(change) * 0.5
+            intensity: Math.abs(change) * 0.5,
           })
         }
       }
@@ -209,7 +210,7 @@ export function TokenFlowVisualization({
         y: particle.y + particle.vy,
         life: particle.life + 1,
         vx: particle.vx * 0.99, // Slow down over time
-        vy: particle.vy * 0.99
+        vy: particle.vy * 0.99,
       }))
       .filter(particle => particle.life < particle.maxLife)
   }
@@ -265,8 +266,12 @@ export function TokenFlowVisualization({
 
       // Element node
       const gradient = ctx.createRadialGradient(
-        position.x, position.y, 0,
-        position.x, position.y, 25
+        position.x,
+        position.y,
+        0,
+        position.x,
+        position.y,
+        25
       )
       const colors = elementColors[element as keyof ElementalTokens]
       gradient.addColorStop(0, colors.primary)
@@ -299,17 +304,21 @@ export function TokenFlowVisualization({
     // Draw flow particles
     if (showParticles) {
       particlesRef.current.forEach(particle => {
-        const lifeRatio = 1 - (particle.life / particle.maxLife)
+        const lifeRatio = 1 - particle.life / particle.maxLife
         const colors = elementColors[particle.element]
 
-        ctx.fillStyle = `${colors.primary}${Math.floor(lifeRatio * 255).toString(16).padStart(2, '0')}`
+        ctx.fillStyle = `${colors.primary}${Math.floor(lifeRatio * 255)
+          .toString(16)
+          .padStart(2, '0')}`
         ctx.beginPath()
         ctx.arc(particle.x, particle.y, particle.size * lifeRatio, 0, 2 * Math.PI)
         ctx.fill()
 
         // Particle trail effect
         if (lifeRatio > 0.5) {
-          ctx.strokeStyle = `${colors.secondary}${Math.floor(lifeRatio * 128).toString(16).padStart(2, '0')}`
+          ctx.strokeStyle = `${colors.secondary}${Math.floor(lifeRatio * 128)
+            .toString(16)
+            .padStart(2, '0')}`
           ctx.lineWidth = 1
           ctx.beginPath()
           ctx.arc(particle.x, particle.y, particle.size * lifeRatio * 1.5, 0, 2 * Math.PI)
@@ -330,7 +339,11 @@ export function TokenFlowVisualization({
 
       if (mcpMetrics) {
         ctx.fillText(`Stability: ${mcpMetrics.tokenStability}`, 10, 80)
-        ctx.fillText(`Calc Time: ${mcpMetrics.performanceMetrics.calculationTime.toFixed(1)}ms`, 10, 95)
+        ctx.fillText(
+          `Calc Time: ${mcpMetrics.performanceMetrics.calculationTime.toFixed(1)}ms`,
+          10,
+          95
+        )
       }
     }
   }
@@ -391,27 +404,15 @@ export function TokenFlowVisualization({
             Token Flow Visualization
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleAnimation}
-            >
+            <Button variant="outline" size="sm" onClick={toggleAnimation}>
               {isAnimating ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               {isAnimating ? 'Pause' : 'Play'}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={resetVisualization}
-            >
+            <Button variant="outline" size="sm" onClick={resetVisualization}>
               <RotateCcw className="h-4 w-4" />
               Reset
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowDebug(!showDebug)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setShowDebug(!showDebug)}>
               {showDebug ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               Debug
             </Button>
@@ -435,7 +436,8 @@ export function TokenFlowVisualization({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Object.entries(currentTokens).map(([element, value]) => {
               const IconComponent = elementIcons[element as keyof ElementalTokens]
-              const config = defaultAlchemicalMCPConfig.tokenStabilization[element as keyof ElementalTokens]
+              const config =
+                defaultAlchemicalMCPConfig.tokenStabilization[element as keyof ElementalTokens]
               const percentage = Math.min((value / config.max) * 100, 100)
               const isStable = value >= config.min && value <= config.max
 
@@ -446,8 +448,8 @@ export function TokenFlowVisualization({
                       className={`h-4 w-4 ${elementColors[element as keyof ElementalTokens].primary}`}
                     />
                     <span className="font-medium capitalize text-sm">{element}</span>
-                    <Badge variant={isStable ? "default" : "destructive"} className="text-xs">
-                      {isStable ? "Stable" : "Unstable"}
+                    <Badge variant={isStable ? 'default' : 'destructive'} className="text-xs">
+                      {isStable ? 'Stable' : 'Unstable'}
                     </Badge>
                   </div>
                   <div className="space-y-1">
@@ -475,7 +477,9 @@ export function TokenFlowVisualization({
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">Spirit Vitality</div>
-                    <div className={`text-lg font-mono ${currentTokens.spirit >= 0.5 ? 'text-green-500' : 'text-red-500'}`}>
+                    <div
+                      className={`text-lg font-mono ${currentTokens.spirit >= 0.5 ? 'text-green-500' : 'text-red-500'}`}
+                    >
                       {currentTokens.spirit >= 0.5 ? 'Healthy' : 'Deficient'}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
@@ -484,7 +488,9 @@ export function TokenFlowVisualization({
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">Essence Flow</div>
-                    <div className={`text-lg font-mono ${currentTokens.essence >= 0.8 ? 'text-green-500' : 'text-red-500'}`}>
+                    <div
+                      className={`text-lg font-mono ${currentTokens.essence >= 0.8 ? 'text-green-500' : 'text-red-500'}`}
+                    >
                       {currentTokens.essence >= 0.8 ? 'Healthy' : 'Deficient'}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
@@ -493,16 +499,18 @@ export function TokenFlowVisualization({
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">Material Grounding</div>
-                    <div className={`text-lg font-mono ${currentTokens.matter >= 0.8 ? 'text-green-500' : 'text-red-500'}`}>
+                    <div
+                      className={`text-lg font-mono ${currentTokens.matter >= 0.8 ? 'text-green-500' : 'text-red-500'}`}
+                    >
                       {currentTokens.matter >= 0.8 ? 'Healthy' : 'Deficient'}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Physical manifestation
-                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">Physical manifestation</div>
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">Substance Stability</div>
-                    <div className={`text-lg font-mono ${currentTokens.substance >= 0.3 ? 'text-green-500' : 'text-red-500'}`}>
+                    <div
+                      className={`text-lg font-mono ${currentTokens.substance >= 0.3 ? 'text-green-500' : 'text-red-500'}`}
+                    >
                       {currentTokens.substance >= 0.3 ? 'Healthy' : 'Deficient'}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
@@ -527,15 +535,21 @@ export function TokenFlowVisualization({
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
                     <div className="text-muted-foreground">Calculation</div>
-                    <div className="font-mono">{mcpMetrics.performanceMetrics.calculationTime.toFixed(1)}ms</div>
+                    <div className="font-mono">
+                      {mcpMetrics.performanceMetrics.calculationTime.toFixed(1)}ms
+                    </div>
                   </div>
                   <div>
                     <div className="text-muted-foreground">Token Recalc</div>
-                    <div className="font-mono">{mcpMetrics.performanceMetrics.tokenRecalculationTime.toFixed(1)}ms</div>
+                    <div className="font-mono">
+                      {mcpMetrics.performanceMetrics.tokenRecalculationTime.toFixed(1)}ms
+                    </div>
                   </div>
                   <div>
                     <div className="text-muted-foreground">Memory</div>
-                    <div className="font-mono">{(mcpMetrics.performanceMetrics.memoryUsage / 1024 / 1024).toFixed(1)}MB</div>
+                    <div className="font-mono">
+                      {(mcpMetrics.performanceMetrics.memoryUsage / 1024 / 1024).toFixed(1)}MB
+                    </div>
                   </div>
                   <div>
                     <div className="text-muted-foreground">Stabilizations</div>

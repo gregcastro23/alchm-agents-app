@@ -112,23 +112,23 @@ export function synthesizeCharts({
 
   let weightedMonicaConstant = 0
   if (momentChart?.['Alchemy Effects']) {
-    weightedMonicaConstant += momentWeight * (
-      (momentChart['Alchemy Effects']['Total Spirit'] || 0) +
-      (momentChart['Alchemy Effects']['Total Essence'] || 0) +
-      (momentChart['Alchemy Effects']['Total Matter'] || 0) +
-      (momentChart['Alchemy Effects']['Total Substance'] || 0)
-    )
+    weightedMonicaConstant +=
+      momentWeight *
+      ((momentChart['Alchemy Effects']['Total Spirit'] || 0) +
+        (momentChart['Alchemy Effects']['Total Essence'] || 0) +
+        (momentChart['Alchemy Effects']['Total Matter'] || 0) +
+        (momentChart['Alchemy Effects']['Total Substance'] || 0))
   }
 
   // Add contributions from other charts
   for (const chart of allCharts.slice(1)) {
     if (chart?.['Alchemy Effects']) {
-      weightedMonicaConstant += otherWeight * (
-        (chart['Alchemy Effects']['Total Spirit'] || 0) +
-        (chart['Alchemy Effects']['Total Essence'] || 0) +
-        (chart['Alchemy Effects']['Total Matter'] || 0) +
-        (chart['Alchemy Effects']['Total Substance'] || 0)
-      )
+      weightedMonicaConstant +=
+        otherWeight *
+        ((chart['Alchemy Effects']['Total Spirit'] || 0) +
+          (chart['Alchemy Effects']['Total Essence'] || 0) +
+          (chart['Alchemy Effects']['Total Matter'] || 0) +
+          (chart['Alchemy Effects']['Total Substance'] || 0))
     }
   }
 

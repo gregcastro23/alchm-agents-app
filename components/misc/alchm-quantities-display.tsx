@@ -1,7 +1,20 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { Flame, Droplets, Wind, Mountain, Coins, AlertTriangle, Calculator, TrendingUp, TrendingDown, Activity, Zap, RefreshCw } from 'lucide-react'
+import {
+  Flame,
+  Droplets,
+  Wind,
+  Mountain,
+  Coins,
+  AlertTriangle,
+  Calculator,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  Zap,
+  RefreshCw,
+} from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -74,8 +87,14 @@ function TokenDisplay({
   // Calculate trend
   const trend = previousValue !== undefined ? value - previousValue : 0
   const trendDirection = trend > 0 ? 'up' : trend < 0 ? 'down' : 'stable'
-  const trendColor = trendDirection === 'up' ? 'text-green-500' : trendDirection === 'down' ? 'text-red-500' : 'text-gray-500'
-  const TrendIcon = trendDirection === 'up' ? TrendingUp : trendDirection === 'down' ? TrendingDown : Activity
+  const trendColor =
+    trendDirection === 'up'
+      ? 'text-green-500'
+      : trendDirection === 'down'
+        ? 'text-red-500'
+        : 'text-gray-500'
+  const TrendIcon =
+    trendDirection === 'up' ? TrendingUp : trendDirection === 'down' ? TrendingDown : Activity
 
   // Determine token rarity/strength
   const getTokenStrength = (val: number) => {
@@ -102,17 +121,22 @@ function TokenDisplay({
           <div className={`flex items-center gap-1 text-xs ${trendColor}`}>
             <TrendIcon className="h-3 w-3" />
             <span className="font-mono">
-              {trend > 0 ? '+' : ''}{Math.abs(trend).toFixed(2)}
+              {trend > 0 ? '+' : ''}
+              {Math.abs(trend).toFixed(2)}
             </span>
           </div>
         )}
       </div>
 
-      <div className={`text-${color}-600 dark:text-${color}-400 mb-2 ${isAnimating ? 'animate-bounce' : ''}`}>
+      <div
+        className={`text-${color}-600 dark:text-${color}-400 mb-2 ${isAnimating ? 'animate-bounce' : ''}`}
+      >
         {icon}
       </div>
       <div className="flex items-center gap-2">
-        <span className={`text-3xl font-bold transition-all duration-500 ${isAnimating ? 'text-yellow-500 scale-110' : ''}`}>
+        <span
+          className={`text-3xl font-bold transition-all duration-500 ${isAnimating ? 'text-yellow-500 scale-110' : ''}`}
+        >
           {formattedValue}
         </span>
         <Coins className={`h-5 w-5 text-${color}-400 ${isAnimating ? 'animate-spin' : ''}`} />
@@ -309,7 +333,6 @@ export default function AlchmQuantitiesDisplay() {
       setLoading(false)
       setRetryCount(0)
       setLastUpdate(new Date())
-
     } catch (err) {
       console.error('Manual refresh failed:', err)
       setError(err instanceof Error ? err.message : String(err))
@@ -426,7 +449,7 @@ export default function AlchmQuantitiesDisplay() {
 
           <Button
             onClick={toggleRealTime}
-            variant={updateConfig.enabled ? "default" : "outline"}
+            variant={updateConfig.enabled ? 'default' : 'outline'}
             size="sm"
             className="flex items-center gap-2"
           >

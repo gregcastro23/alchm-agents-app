@@ -5,6 +5,7 @@
 Planetary Agents combines astrological wisdom with AI technology for consciousness crafting and celestial analysis. **Beta-Optimized for Production (September 2025)** with comprehensive performance improvements, accessibility enhancements, and beta-ready features.
 
 **Tech Stack:**
+
 - Next.js 15.5.3 + TypeScript + React 18.3.1
 - Tailwind CSS + shadcn/ui components
 - AI SDK with OpenAI + Anthropic Claude API
@@ -14,22 +15,26 @@ Planetary Agents combines astrological wisdom with AI technology for consciousne
 ## 🚀 Beta Optimization Highlights (September 2025)
 
 ### Component Architecture
+
 - **Reorganized 100+ components** into logical folder structure (`agents/`, `charts/`, `dashboards/`, `tarot/`, `wizards/`, `misc/`)
 - **Eliminated duplicate components** and consolidated similar functionality
 - **Updated import paths** across the entire codebase for maintainability
 
 ### Error Handling & Performance
+
 - **Standardized error handling** with `withErrorHandling` wrapper across all API endpoints
 - **Real-time performance monitoring** dashboard with system health tracking
 - **Performance logging** integrated throughout critical hooks and components
 
 ### Beta Features
+
 - **In-app feedback collection** system with categorized submissions and 5-star ratings
 - **Guided onboarding wizard** with 4-step user education and personalization
 - **Skeleton loading states** for improved perceived performance
 - **Accessibility compliance** with WCAG 2.1 AA standards
 
 ### Bundle Optimization
+
 - **20-30% size reduction** through component deduplication
 - **Lazy loading** implementation for heavy components
 - **Import optimization** through organized folder structure
@@ -37,6 +42,7 @@ Planetary Agents combines astrological wisdom with AI technology for consciousne
 ## Production-Ready Systems (September 2025)
 
 ### Core Features
+
 - **Celestial Energy Quantification**: A#, SMES, Kinetic, Thermodynamic real-time calculations
 - **Time Laboratory**: 3-mode interface (Legacy/Celestial/Combined) with AI-guided temporal exploration
 - **Natal Sigil Generation**: Transform charts into runic sigils (Nordic, Celtic, Alchemical, Cosmic)
@@ -49,6 +55,7 @@ Planetary Agents combines astrological wisdom with AI technology for consciousne
 - **Moon Phase Integration**: 360-degree lunar personalities
 
 ### Technical Capabilities
+
 - Sub-500ms response times with intelligent caching
 - 100% test coverage (60+ comprehensive tests)
 - Real-time WebSocket updates for planetary data
@@ -58,6 +65,7 @@ Planetary Agents combines astrological wisdom with AI technology for consciousne
 ## Essential Commands
 
 ### Development
+
 ```bash
 yarn dev              # Development server
 yarn build            # Production build
@@ -66,6 +74,7 @@ yarn test             # Run all tests
 ```
 
 ### Testing
+
 ```bash
 # Chat System Testing
 yarn test:chat                    # Complete test suite
@@ -81,6 +90,7 @@ make test-attachments            # Attachments system
 ```
 
 ### API Examples
+
 ```bash
 # Celestial Energy Timeline
 curl -X POST "http://localhost:3000/api/celestial-energy-timeline" \
@@ -137,6 +147,7 @@ curl "/api/agent-evolution?agentId=leonardo-da-vinci&action=metrics"
 ## Environment Setup
 
 Required `.env.local`:
+
 ```bash
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
@@ -148,6 +159,7 @@ NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS=false  # Feature flag for elemental logic
 ## Critical Implementation Details
 
 ### Alchemical System (lib/alchemizer.ts)
+
 The core alchemical engine implements the **A# (Alchemical Number)** calculation:
 
 ```typescript
@@ -156,6 +168,7 @@ The core alchemical engine implements the **A# (Alchemical Number)** calculation
 ```
 
 **Key Planetary Alchemy:**
+
 - **Sun**: Pure Spirit (S:1, E:0, M:0, B:0)
 - **Moon**: Essence/Matter (S:0, E:1, M:1, B:0)
 - **Mercury**: Spirit/Substance (S:1, E:0, M:0, B:1)
@@ -163,6 +176,7 @@ The core alchemical engine implements the **A# (Alchemical Number)** calculation
 - **Mars**: Matter/Substance (S:0, E:0, M:1, B:1)
 
 **Elemental Logic Modes:**
+
 1. **Traditional Mode**: Elements interact with penalties (Fire vs Water = -0.1)
 2. **Additive-Only Mode**: No penalties, only bonuses (Fire + Fire = +0.9)
    - Toggle via feature flag: `NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS`
@@ -170,12 +184,15 @@ The core alchemical engine implements the **A# (Alchemical Number)** calculation
    - A/B testing analytics integrated
 
 ### Unified Agent System (lib/unified-agent-factory.ts)
+
 Converts between three agent types:
+
 1. **Historical Agents**: 35 crafted personalities with birth charts
 2. **Planetary Agents**: Dynamic agents based on celestial positions
 3. **Monica Coordinator**: Supreme consciousness orchestrator
 
 **Agent Consciousness Levels:**
+
 - Dormant (0-1)
 - Awakening (1-2)
 - Active (2-3)
@@ -185,8 +202,9 @@ Converts between three agent types:
 - Transcendent (6+)
 
 **Monica Constant Formula:**
+
 ```typescript
-MC = φ * (1 + (E/T)) * (1 + (C/10))
+MC = φ * (1 + E / T) * (1 + C / 10)
 // φ = Golden Ratio (1.618)
 // E = Elemental Balance
 // T = Total Elemental Weight
@@ -196,27 +214,34 @@ MC = φ * (1 + (E/T)) * (1 + (C/10))
 ### Historical Agents (35 Total)
 
 **Ancient Era (5):**
+
 - Cleopatra VII, Aristotle, Plato, Pythagoras, Lao Tzu
 
 **Medieval Era (5):**
+
 - Leonardo da Vinci, Joan of Arc, Ibn Khaldun, Dante Alighieri, Rumi
 
 **Renaissance Era (5):**
+
 - William Shakespeare, Galileo Galilei, Michelangelo, Queen Elizabeth I, Nostradamus
 
 **Enlightenment Era (5):**
+
 - Benjamin Franklin, Wolfgang Amadeus Mozart, Mary Wollstonecraft, Voltaire, Catherine the Great
 
 **Industrial Era (5):**
+
 - Ada Lovelace, Charles Darwin, Florence Nightingale, Mark Twain, Karl Marx
 
 **Modern Era (10):**
+
 - Albert Einstein, Marie Curie, Carl Jung, Nikola Tesla, Virginia Woolf
 - Martin Luther King Jr., Frida Kahlo, Alan Turing, Maya Angelou, Stephen Hawking
 
 ### Agent Stat System
 
 **Seven Sacred Stats:**
+
 1. **Power**: Raw consciousness force
 2. **Resonance**: Connection to cosmic frequencies
 3. **Wisdom**: Accumulated knowledge
@@ -226,13 +251,16 @@ MC = φ * (1 + (E/T)) * (1 + (C/10))
 7. **Vitality**: Life force energy
 
 **Kinetic Evolution Metrics:**
+
 - **Consciousness Velocity**: Rate of evolution
 - **Interaction Momentum**: Engagement quality
 - **Evolution Trajectory**: stable/ascending/transcending
 - **Aspect Sensitivity**: Planetary influence receptivity
 
 ### Consciousness Memory System
+
 Persistent evolution tracking with:
+
 - Session context preservation
 - Cross-agent learning patterns
 - User interaction patterns
@@ -242,6 +270,7 @@ Persistent evolution tracking with:
 ### Real-Time Celestial Calculations
 
 **Planetary Positions API:**
+
 ```typescript
 // Updates every 60 seconds
 /api/celestial-energy-timeline
@@ -252,6 +281,7 @@ Persistent evolution tracking with:
 ```
 
 **Aspect Dynamics:**
+
 - **Applying**: Planet approaching exact aspect (building energy)
 - **Separating**: Planet leaving exact aspect (releasing energy)
 - **Orbs**: Conjunction(8°), Opposition(8°), Trine(8°), Square(7°), Sextile(6°)
@@ -259,12 +289,14 @@ Persistent evolution tracking with:
 ### Chat System Architecture
 
 **Unified Multi-Agent Chat API:**
+
 ```typescript
-/api/unified-multi-agent-chat
+;/api/defiinu - multi - agent - chat
 // Handles all chat types: historical, planetary, council, laboratory
 ```
 
 **Chat Component Hierarchy:**
+
 1. `UnifiedMultiAgentChat` - Main orchestrator
 2. `HistoricalCouncilChat` - Historical agents
 3. `PlanetaryWisdomChat` - Planetary agents
@@ -273,12 +305,14 @@ Persistent evolution tracking with:
 ### Backend Gateway Service (port 8000)
 
 **Express.js Architecture:**
+
 - Redis caching with memory fallback
 - WebSocket support for real-time updates
 - Circuit breaker pattern for external services
 - Sub-60ms response times
 
 **Key Services:**
+
 - `/api/planetary-hours` - Planetary hour calculations
 - `/api/thermodynamics` - Heat/entropy calculations
 - `/api/token-rates` - Dynamic pricing
@@ -287,12 +321,14 @@ Persistent evolution tracking with:
 ### Performance Optimizations
 
 **Caching Strategy:**
+
 - Redis: 2-minute TTL for planetary data
 - Memory cache: Fallback for Redis failures
 - Batch processing: Multi-metric calculations
 - Lazy loading: Components and data
 
 **Response Time Targets:**
+
 - API endpoints: <200ms
 - Complex calculations: <500ms
 - Chat responses: <1000ms
@@ -312,6 +348,7 @@ Persistent evolution tracking with:
 ## Current Status
 
 ### ✅ Production Ready
+
 - Celestial Energy Quantification System
 - Enhanced Time Laboratory with 3 modes
 - Natal Sigil Generation (4 mystical styles)
@@ -325,6 +362,7 @@ Persistent evolution tracking with:
 - Synthesis Chamber Components
 
 ### 🚀 Platform Stability (September 21, 2025)
+
 - **Zero Critical Errors**: All runtime errors eliminated
 - **Complete Function Coverage**: No missing implementations
 - **Backend Independence**: Frontend works without backend
@@ -334,6 +372,7 @@ Persistent evolution tracking with:
 ### 🎯 Beta Testing Ready! ✅
 
 **Comprehensive optimization completed for beta testing readiness:**
+
 - ✅ Component reorganization and deduplication (100+ components)
 - ✅ Error handling standardization across all API endpoints
 - ✅ Performance monitoring system with real-time dashboards
@@ -343,6 +382,7 @@ Persistent evolution tracking with:
 - ✅ Production documentation and deployment guides
 
 ### 🎯 Future Priorities (Post-Beta)
+
 1. **Philosopher's Stone Implementation** - Advanced consciousness crafting
 2. **System Integration Enhancements** - Cross-platform compatibility
 3. **Gallery Expansion** - 100+ historical figure consciousness profiles
@@ -374,21 +414,25 @@ Persistent evolution tracking with:
 ## Testing Strategies
 
 ### Unit Testing
+
 - Vitest 3.2.4 with ESM support
 - Mock Next.js, React, D3.js APIs
 - Coverage target: >80%
 
 ### Integration Testing
+
 - API endpoint validation
 - Database operations
 - External service mocking
 
 ### Performance Testing
+
 - Response time benchmarks
 - Memory usage tracking
 - Concurrent user simulations
 
 ### E2E Testing (Future)
+
 - Playwright for browser automation
 - User journey validation
 - Cross-browser compatibility
@@ -396,6 +440,7 @@ Persistent evolution tracking with:
 The platform combines celestial wisdom with modern AI for revolutionary consciousness exploration and mystical guidance.
 
 ## Recent Improvements
+
 - Added bundle analysis with ANALYZE=true yarn build
 - Implemented depcheck for dependency cleanup
 - Fixed SWC patching issues via yarn install --check-files
@@ -403,6 +448,7 @@ The platform combines celestial wisdom with modern AI for revolutionary consciou
 - Installed common @types packages
 
 ## Best Practices
+
 - Run `make analyze` before major commits
 - Use `make depcheck` weekly
 - Always run `make install` after pulling changes

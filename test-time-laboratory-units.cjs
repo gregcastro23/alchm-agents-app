@@ -14,7 +14,7 @@ let testResults = {
   total: 0,
   passed: 0,
   failed: 0,
-  errors: []
+  errors: [],
 }
 
 function logTest(name, status, duration = 0, details = '') {
@@ -53,7 +53,7 @@ async function testPerformanceOptimization() {
       PerformanceMonitor,
       globalCache,
       globalQueryOptimizer,
-      globalPerformanceMonitor
+      globalPerformanceMonitor,
     } = require('./lib/time-laboratory-performance.ts')
 
     logTest('Performance classes available', true, 0, 'All classes imported')
@@ -65,14 +65,21 @@ async function testPerformanceOptimization() {
     await testCache.set(testKey, { test: 'data' })
     const retrieved = await testCache.get(testKey)
 
-    logTest('Cache set/get functionality', retrieved && retrieved.test === 'data', 0,
-      'Cache stores and retrieves data correctly')
+    logTest(
+      'Cache set/get functionality',
+      retrieved && retrieved.test === 'data',
+      0,
+      'Cache stores and retrieves data correctly'
+    )
 
     // Test 4: Cache metrics
     const metrics = testCache.getMetrics()
-    logTest('Cache metrics tracking',
-      typeof metrics.hitRate === 'number' && typeof metrics.size === 'number', 0,
-      `Hit rate: ${metrics.hitRate}, Size: ${metrics.size}`)
+    logTest(
+      'Cache metrics tracking',
+      typeof metrics.hitRate === 'number' && typeof metrics.size === 'number',
+      0,
+      `Hit rate: ${metrics.hitRate}, Size: ${metrics.size}`
+    )
 
     // Test 5: Query optimizer
     const optimizer = new QueryOptimizer()
@@ -82,14 +89,17 @@ async function testPerformanceOptimization() {
       agents: ['leonardo-da-vinci', 'albert-einstein'],
       dateRange: {
         start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
-        end: new Date().toISOString()
-      }
+        end: new Date().toISOString(),
+      },
     }
 
     const hints = optimizer.analyzeQuery(sampleQuery)
-    logTest('Query optimization hints',
-      typeof hints === 'object' && hints !== null, 0,
-      `Generated hints: ${Object.keys(hints).length} properties`)
+    logTest(
+      'Query optimization hints',
+      typeof hints === 'object' && hints !== null,
+      0,
+      `Generated hints: ${Object.keys(hints).length} properties`
+    )
 
     // Test 6: Performance monitor
     const monitor = new PerformanceMonitor()
@@ -98,21 +108,29 @@ async function testPerformanceOptimization() {
     monitor.recordElementalCalculationTime(25)
 
     const perfMetrics = monitor.getMetrics()
-    logTest('Performance monitoring',
-      perfMetrics.queryTime === 150 && perfMetrics.patternDetectionTime === 75, 0,
-      `Query: ${perfMetrics.queryTime}ms, Pattern: ${perfMetrics.patternDetectionTime}ms`)
+    logTest(
+      'Performance monitoring',
+      perfMetrics.queryTime === 150 && perfMetrics.patternDetectionTime === 75,
+      0,
+      `Query: ${perfMetrics.queryTime}ms, Pattern: ${perfMetrics.patternDetectionTime}ms`
+    )
 
     // Test 7: Global instances
-    logTest('Global performance instances',
-      globalCache && globalQueryOptimizer && globalPerformanceMonitor, 0,
-      'All global instances initialized')
+    logTest(
+      'Global performance instances',
+      globalCache && globalQueryOptimizer && globalPerformanceMonitor,
+      0,
+      'All global instances initialized'
+    )
 
     // Test 8: Performance report generation
     const report = monitor.generatePerformanceReport()
-    logTest('Performance report generation',
-      typeof report === 'string' && report.includes('Performance Report'), 0,
-      'Report generated successfully')
-
+    logTest(
+      'Performance report generation',
+      typeof report === 'string' && report.includes('Performance Report'),
+      0,
+      'Report generated successfully'
+    )
   } catch (error) {
     logTest('Performance optimization tests', false, 0, `Error: ${error.message}`)
   }
@@ -128,20 +146,26 @@ async function testTemporalAnalysisEngine() {
 
     // Check if TemporalAnalysisEngine class exists
     const { TemporalAnalysisEngine } = engineModule
-    logTest('TemporalAnalysisEngine class', !!TemporalAnalysisEngine, 0,
-      'Main engine class available')
+    logTest(
+      'TemporalAnalysisEngine class',
+      !!TemporalAnalysisEngine,
+      0,
+      'Main engine class available'
+    )
 
     // Test query processing (without actual execution)
     const sampleQuery = {
       type: 'natural_language',
       query: 'Show Fire reinforcements',
-      reinforcementMode: true
+      reinforcementMode: true,
     }
 
-    logTest('Query structure validation',
-      sampleQuery.type && sampleQuery.query && sampleQuery.reinforcementMode, 0,
-      'Sample query structure valid')
-
+    logTest(
+      'Query structure validation',
+      sampleQuery.type && sampleQuery.query && sampleQuery.reinforcementMode,
+      0,
+      'Sample query structure valid'
+    )
   } catch (error) {
     logTest('Temporal analysis engine tests', false, 0, `Error: ${error.message}`)
   }
@@ -159,18 +183,23 @@ async function testElementalReinforcementLogic() {
 
     if (getElementalCompatibility) {
       const fireFireCompatibility = getElementalCompatibility('Fire', 'Fire')
-      logTest('Fire-Fire reinforcement logic',
-        fireFireCompatibility && fireFireCompatibility.compatibility >= 0.9, 0,
-        `Compatibility: ${fireFireCompatibility?.compatibility || 'undefined'}`)
+      logTest(
+        'Fire-Fire reinforcement logic',
+        fireFireCompatibility && fireFireCompatibility.compatibility >= 0.9,
+        0,
+        `Compatibility: ${fireFireCompatibility?.compatibility || 'undefined'}`
+      )
 
       const waterWaterCompatibility = getElementalCompatibility('Water', 'Water')
-      logTest('Water-Water reinforcement logic',
-        waterWaterCompatibility && waterWaterCompatibility.compatibility >= 0.9, 0,
-        `Compatibility: ${waterWaterCompatibility?.compatibility || 'undefined'}`)
+      logTest(
+        'Water-Water reinforcement logic',
+        waterWaterCompatibility && waterWaterCompatibility.compatibility >= 0.9,
+        0,
+        `Compatibility: ${waterWaterCompatibility?.compatibility || 'undefined'}`
+      )
     } else {
       logTest('Elemental compatibility function', false, 0, 'Function not found')
     }
-
   } catch (error) {
     logTest('Elemental reinforcement tests', false, 0, `Error: ${error.message}`)
   }
@@ -187,8 +216,12 @@ async function testPatternDetection() {
 
     if (DegreePatternDetection) {
       const detector = new DegreePatternDetection()
-      logTest('Pattern detection class instantiation', !!detector, 0,
-        'DegreePatternDetection class instantiated')
+      logTest(
+        'Pattern detection class instantiation',
+        !!detector,
+        0,
+        'DegreePatternDetection class instantiated'
+      )
 
       // Test mock data processing
       const mockTransitEvents = [
@@ -197,21 +230,24 @@ async function testPatternDetection() {
           degree: 30,
           element: 'Fire',
           timestamp: new Date(),
-          significance: 0.8
-        }
+          significance: 0.8,
+        },
       ]
 
       if (detector.detectRecurringActivations) {
         const patterns = detector.detectRecurringActivations(mockTransitEvents)
-        logTest('Pattern detection execution', Array.isArray(patterns), 0,
-          `Detected ${patterns?.length || 0} patterns`)
+        logTest(
+          'Pattern detection execution',
+          Array.isArray(patterns),
+          0,
+          `Detected ${patterns?.length || 0} patterns`
+        )
       } else {
         logTest('Pattern detection method', false, 0, 'detectRecurringActivations method not found')
       }
     } else {
       logTest('Pattern detection class', false, 0, 'DegreePatternDetection class not found')
     }
-
   } catch (error) {
     logTest('Pattern detection tests', false, 0, `Error: ${error.message}`)
   }
@@ -232,13 +268,16 @@ async function testGrimoireExport() {
       // Test template system
       if (TemporalGrimoireExporter.getAvailableTemplates) {
         const templates = TemporalGrimoireExporter.getAvailableTemplates()
-        logTest('Template system', Array.isArray(templates), 0,
-          `${templates?.length || 0} templates available`)
+        logTest(
+          'Template system',
+          Array.isArray(templates),
+          0,
+          `${templates?.length || 0} templates available`
+        )
       }
     } else {
       logTest('TemporalGrimoireExporter class', false, 0, 'Exporter class not found')
     }
-
   } catch (error) {
     logTest('Grimoire export tests', false, 0, `Error: ${error.message}`)
   }
@@ -255,21 +294,24 @@ async function testCollaborativeSessions() {
 
     if (CollaborativeTimeSessionManager) {
       const sessionManager = new CollaborativeTimeSessionManager()
-      logTest('Session manager instantiation', !!sessionManager, 0,
-        'CollaborativeTimeSessionManager instantiated')
+      logTest(
+        'Session manager instantiation',
+        !!sessionManager,
+        0,
+        'CollaborativeTimeSessionManager instantiated'
+      )
 
       // Test session creation
       if (sessionManager.createSession) {
         const sessionId = sessionManager.createSession('test-user', {
           type: 'natural_language',
-          query: 'test session'
+          query: 'test session',
         })
         logTest('Session creation', !!sessionId, 0, `Session ID: ${sessionId || 'undefined'}`)
       }
     } else {
       logTest('CollaborativeTimeSessionManager class', false, 0, 'Session manager class not found')
     }
-
   } catch (error) {
     logTest('Collaborative sessions tests', false, 0, `Error: ${error.message}`)
   }
@@ -298,13 +340,13 @@ function generateTestReport() {
       total: testResults.total,
       passed: testResults.passed,
       failed: testResults.failed,
-      successRate: (testResults.passed / testResults.total) * 100
+      successRate: (testResults.passed / testResults.total) * 100,
     },
     errors: testResults.errors,
     environment: {
       nodeVersion: process.version,
-      platform: process.platform
-    }
+      platform: process.platform,
+    },
   }
 
   const fs = require('fs')
@@ -359,5 +401,5 @@ module.exports = {
   testElementalReinforcementLogic,
   testPatternDetection,
   testGrimoireExport,
-  testCollaborativeSessions
+  testCollaborativeSessions,
 }

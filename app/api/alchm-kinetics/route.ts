@@ -276,16 +276,16 @@ export async function GET(req: Request) {
                     (sample.Substance || 0) / 2
                 )
 
-            return {
-              t: new Date(sample.timestamp),
-              elements: sample.totals,
-              velocity: elementalVelocity[i]?.v || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
-              momentum: elementalMomentum[i]?.p || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
-              inertia,
-              energy: sample.Energy,
-              power: power[i]?.power || 0,
-              force: elementalForce[i]?.f,
-            }
+              return {
+                t: new Date(sample.timestamp),
+                elements: sample.totals,
+                velocity: elementalVelocity[i]?.v || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
+                momentum: elementalMomentum[i]?.p || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
+                inertia,
+                energy: sample.Energy,
+                power: power[i]?.power || 0,
+                force: elementalForce[i]?.f,
+              }
             })
 
           const calculusValidation = validateCalculusRelationships(calculusSamples)

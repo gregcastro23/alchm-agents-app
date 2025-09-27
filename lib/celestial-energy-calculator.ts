@@ -231,9 +231,9 @@ export class CelestialEnergyCalculator {
       ? this.applySmoothing(moments, options.smoothingWindow)
       : moments
 
-    // Calculate statistics and patterns
-    const statistics = this.calculateStatistics(smoothedMoments)
-    const patterns = this.detectPatterns(smoothedMoments)
+    // Calculate statistics and patterns (only if we have moments)
+    const statistics = smoothedMoments.length > 0 ? this.calculateStatistics(smoothedMoments) : null
+    const patterns = smoothedMoments.length > 0 ? this.detectPatterns(smoothedMoments) : null
 
     return {
       moments: smoothedMoments,
@@ -300,10 +300,10 @@ export class CelestialEnergyCalculator {
 
     return {
       A_number,
-      spirit: sample.alchemical.Spirit,
-      matter: sample.alchemical.Matter,
-      essence: sample.alchemical.Essence,
-      substance: sample.alchemical.Substance,
+      spirit: sample.spirit || 0,
+      matter: sample.matter || 0,
+      essence: sample.essence || 0,
+      substance: sample.substance || 0,
     }
   }
 
@@ -311,7 +311,11 @@ export class CelestialEnergyCalculator {
    * Calculate advanced A# using planetary positions and alchemical ratios
    */
   private calculateAlchemicalNumber(sample: any, horoscope: HoroscopeData): number {
-    const { Spirit, Matter, Essence, Substance } = sample.alchemical
+    // Get alchemical values directly from sample (capitalized for consistency)
+    const Spirit = sample.spirit || 0
+    const Matter = sample.matter || 0
+    const Essence = sample.essence || 0
+    const Substance = sample.substance || 0
 
     // Base A# calculation
     let A_number = Spirit + Matter + Essence + Substance

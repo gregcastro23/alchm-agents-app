@@ -1,12 +1,19 @@
 /* Cosmic Theme Overrides */
 
-/* Force dark mode backgrounds for all cards */
-.dark .bg-gradient-to-br[class*='from-'][class*='to-'],
-.dark [class*='bg-'][class*='-50'],
-.dark [class*='bg-'][class*='-100'] {
-  background: rgba(20, 20, 40, 0.8) !important;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+/* Force dark mode backgrounds for all cards with higher specificity */
+.dark .bg-gradient-to-br.from-emerald-50.to-purple-50,
+.dark .bg-gradient-to-br.from-green-50.to-blue-50,
+.dark .bg-gradient-to-br.from-purple-50.to-indigo-50,
+.dark .bg-gradient-to-br.from-amber-50.to-orange-50,
+.dark .bg-gradient-to-br.from-blue-50.to-indigo-50,
+.dark .bg-gradient-to-br.from-purple-50.to-pink-50,
+.dark .bg-gradient-to-br.from-green-50.to-teal-50,
+.dark .bg-gradient-to-br.from-indigo-50.via-purple-50.to-pink-50 {
+  background: rgba(20, 20, 40, 0.9) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.1) !important;
 }
 
 /* Specific gradient backgrounds for colored cards */
@@ -85,16 +92,21 @@
   border-color: rgba(167, 139, 250, 0.5) !important;
 }
 
-/* Main cards should have semi-transparent backgrounds */
+/* Main cards should have cosmic glass backgrounds */
 .dark .rounded-lg.border {
-  background: rgba(20, 20, 40, 0.9) !important;
-  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+  background: rgba(20, 20, 40, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.15) !important;
 }
 
-/* Ensure all Card components have proper styling */
+/* Ensure all Card components have cosmic glass styling */
 .dark [data-radix-collection-item],
 .dark .rounded-lg.shadow-sm {
-  background: rgba(30, 30, 50, 0.9) !important;
+  background: rgba(30, 30, 50, 0.95) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
   border: 1px solid rgba(139, 92, 246, 0.2) !important;
 }
 
@@ -103,8 +115,12 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* Ensure cosmic background is visible */
+/* Ensure cosmic background is visible and properly layered */
 .dark {
+  background: transparent !important;
+}
+
+.dark body.cosmic-time-laboratory {
   background: transparent !important;
 }
 

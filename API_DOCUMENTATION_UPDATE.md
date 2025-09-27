@@ -4,7 +4,7 @@ All endpoints return JSON and enforce TypeScript strict types on the server.
 
 Feature flag: set `NEXT_PUBLIC_KINETICS_BACKEND=true` to route frontend through these endpoints via `UnifiedKineticsClient`.
 
-1) POST `/api/alchm-kinetics/enhanced`
+1. POST `/api/alchm-kinetics/enhanced`
 
 Request:
 
@@ -30,19 +30,30 @@ Response:
       "power": [{ "t": "2025-09-20T00:00:00Z", "power": 0.62 }],
       "timing": { "planetaryHours": ["Sun", "Moon", "Mars"], "seasonalInfluence": "Autumn" }
     },
-    "agentOptimization": { "recommendations": [], "currentConditions": { "hour": "Sun", "power": 0.62, "momentum": "sustained" } },
-    "powerPrediction": { "trend": "rising", "confidence": 0.7, "nextHourPower": 0.68, "peakWindow": null }
+    "agentOptimization": {
+      "recommendations": [],
+      "currentConditions": { "hour": "Sun", "power": 0.62, "momentum": "sustained" }
+    },
+    "powerPrediction": {
+      "trend": "rising",
+      "confidence": 0.7,
+      "nextHourPower": 0.68,
+      "peakWindow": null
+    }
   },
   "computeTimeMs": 42
 }
 ```
 
-2) POST `/api/kinetics/group`
+2. POST `/api/kinetics/group`
 
 Request:
 
 ```json
-{ "agentIds": ["galileo-galilei", "leonardo-da-vinci", "michelangelo"], "location": { "lat": 37.7749, "lon": -122.4194 } }
+{
+  "agentIds": ["galileo-galilei", "leonardo-da-vinci", "michelangelo"],
+  "location": { "lat": 37.7749, "lon": -122.4194 }
+}
 ```
 
 Response:
@@ -61,7 +72,7 @@ Response:
 }
 ```
 
-3) POST `/api/kinetics/token`
+3. POST `/api/kinetics/token`
 
 Request:
 
@@ -107,16 +118,30 @@ Client usage (frontend):
 import { UnifiedKineticsClient } from '@/lib/kinetics-unified-client'
 
 // Base kinetics (auto-fallback when flag disabled)
-await UnifiedKineticsClient.getKinetics({ lat, lon, date, includeElemental: true, includePlanetary: true, window: 3 })
+await UnifiedKineticsClient.getKinetics({
+  lat,
+  lon,
+  date,
+  includeElemental: true,
+  includePlanetary: true,
+  window: 3,
+})
 
 // Enhanced kinetics (requires NEXT_PUBLIC_KINETICS_BACKEND=true)
-await UnifiedKineticsClient.getEnhanced({ location: { lat, lon }, options: { includeAgentOptimization: true, includePowerPrediction: true } })
+await UnifiedKineticsClient.getEnhanced({
+  location: { lat, lon },
+  options: { includeAgentOptimization: true, includePowerPrediction: true },
+})
 
 // Group dynamics
 await UnifiedKineticsClient.getGroupDynamics({ agentIds, location: { lat, lon } })
 
 // Token/NFT metrics
-await UnifiedKineticsClient.getTokenMetrics({ baseTokenRate, baseNFTRarity, location: { lat, lon } })
+await UnifiedKineticsClient.getTokenMetrics({
+  baseTokenRate,
+  baseNFTRarity,
+  location: { lat, lon },
+})
 ```
 
 Latency target: <200ms for cached/common paths. Use the unified client to progressively enable backend and fall back to existing client logic on errors.
@@ -126,40 +151,46 @@ Latency target: <200ms for cached/common paths. Use the unified client to progre
 ## New Endpoint: `/api/generate-natal-sigil`
 
 ### Overview
+
 Generates personalized runic sigils from natal chart geometry using AI-powered mystical art creation.
 
 ### Methods
 
 #### POST `/api/generate-natal-sigil`
+
 Generate a natal sigil from birth information or chart geometry.
 
 **Request Body:**
+
 ```typescript
 interface GenerateSigilRequest {
-  birthInfo?: BirthInfo                    // Optional birth information
-  geometry?: RuneGeometry                  // Optional pre-computed geometry
-  style?: 'nordic' | 'celtic' | 'alchemical' | 'cosmic'  // Sigil style
-  patternType?: string                     // Specific pattern to use
-  aspectFocused?: boolean                  // Generate from aspects vs patterns
-  prompt?: string                          // Custom prompt override
-  chartData?: any                          // Alternative chart data format
+  birthInfo?: BirthInfo // Optional birth information
+  geometry?: RuneGeometry // Optional pre-computed geometry
+  style?: 'nordic' | 'celtic' | 'alchemical' | 'cosmic' // Sigil style
+  patternType?: string // Specific pattern to use
+  aspectFocused?: boolean // Generate from aspects vs patterns
+  prompt?: string // Custom prompt override
+  chartData?: any // Alternative chart data format
 }
 ```
 
 **Response:**
+
 ```typescript
 interface GenerateSigilResponse {
   success: boolean
-  sigil: NatalSigilRune                    // Generated sigil with metadata
-  sourcePattern?: PatternConfiguration    // Source pattern used
-  geometry: {                              // Geometry summary
+  sigil: NatalSigilRune // Generated sigil with metadata
+  sourcePattern?: PatternConfiguration // Source pattern used
+  geometry: {
+    // Geometry summary
     aspectCount: number
     powerNodeCount: number
     patternCount: number
     dominantElement: string
     elementalBalance: ElementBalance
   }
-  metadata: {                              // Generation metadata
+  metadata: {
+    // Generation metadata
     aspectCount: number
     powerNodeCount: number
     patternCount: number
@@ -172,6 +203,7 @@ interface GenerateSigilResponse {
 ```
 
 **Example Request:**
+
 ```bash
 curl -X POST "/api/generate-natal-sigil" \
   -H "Content-Type: application/json" \
@@ -191,6 +223,7 @@ curl -X POST "/api/generate-natal-sigil" \
 ```
 
 **Example Response:**
+
 ```json
 {
   "success": true,
@@ -243,22 +276,39 @@ curl -X POST "/api/generate-natal-sigil" \
 ```
 
 #### GET `/api/generate-natal-sigil`
+
 Get service information and available options.
 
 **Response:**
+
 ```json
 {
   "service": "Natal Sigil Generator",
   "version": "1.0.0",
   "availableStyles": ["nordic", "celtic", "alchemical", "cosmic"],
   "supportedPatterns": [
-    "grand-trine", "t-square", "grand-cross", "yod", "stellium",
-    "mystic-rectangle", "kite", "grand-sextile", "cradle"
+    "grand-trine",
+    "t-square",
+    "grand-cross",
+    "yod",
+    "stellium",
+    "mystic-rectangle",
+    "kite",
+    "grand-sextile",
+    "cradle"
   ],
   "aspectTypes": [
-    "conjunction", "opposition", "trine", "square", "sextile",
-    "quincunx", "semisextile", "sesquiquadrate", "semisquare",
-    "quintile", "biquintile"
+    "conjunction",
+    "opposition",
+    "trine",
+    "square",
+    "sextile",
+    "quincunx",
+    "semisextile",
+    "sesquiquadrate",
+    "semisquare",
+    "quintile",
+    "biquintile"
   ],
   "endpoints": {
     "generate": {
@@ -273,6 +323,7 @@ Get service information and available options.
 ### Error Responses
 
 **400 Bad Request:**
+
 ```json
 {
   "error": "Invalid birth information",
@@ -281,6 +332,7 @@ Get service information and available options.
 ```
 
 **400 Bad Request - No Patterns:**
+
 ```json
 {
   "error": "No significant patterns found for sigil generation"
@@ -288,6 +340,7 @@ Get service information and available options.
 ```
 
 **500 Internal Server Error:**
+
 ```json
 {
   "error": "Failed to generate natal sigil",
@@ -298,6 +351,7 @@ Get service information and available options.
 ### Input Validation
 
 **BirthInfo Requirements:**
+
 - `year`: Required integer (e.g., 1990)
 - `month`: Required integer 0-11 (0-based, e.g., 2 for March)
 - `day`: Required integer 1-31
@@ -308,6 +362,7 @@ Get service information and available options.
 - `name`: Optional string (default: "Subject")
 
 **Style Options:**
+
 - `nordic`: Angular runic strokes with stone textures
 - `celtic`: Flowing knotwork with illuminated manuscript style
 - `alchemical`: Geometric precision with hermetic symbols
@@ -316,13 +371,14 @@ Get service information and available options.
 ### Integration Examples
 
 #### Frontend Integration
+
 ```typescript
 // React component usage
 const generateSigil = async (birthData: BirthInfo, style: string) => {
   const response = await fetch('/api/generate-natal-sigil', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ birthInfo: birthData, style })
+    body: JSON.stringify({ birthInfo: birthData, style }),
   })
 
   if (!response.ok) {
@@ -334,13 +390,14 @@ const generateSigil = async (birthData: BirthInfo, style: string) => {
 ```
 
 #### Chart Integration
+
 ```typescript
 // Generate from existing chart data
 const generateFromChart = async (chartData: any, style: string) => {
   const response = await fetch('/api/generate-natal-sigil', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chartData, style })
+    body: JSON.stringify({ chartData, style }),
   })
 
   return response.json()
@@ -348,40 +405,43 @@ const generateFromChart = async (chartData: any, style: string) => {
 ```
 
 #### Batch Generation
+
 ```typescript
 // Generate multiple styles
 const generateAllStyles = async (birthInfo: BirthInfo) => {
   const styles = ['nordic', 'celtic', 'alchemical', 'cosmic']
-  const promises = styles.map(style =>
-    generateSigil(birthInfo, style)
-  )
+  const promises = styles.map(style => generateSigil(birthInfo, style))
 
   return Promise.all(promises)
 }
 ```
 
 ### Rate Limiting
+
 - Maximum 10 requests per minute per IP
 - Maximum 100 requests per hour per IP
 - Longer generation times for complex charts (up to 30 seconds)
 
 ### Performance Notes
+
 - Pattern-based generation: 5-15 seconds
 - Aspect-focused generation: 3-8 seconds
 - Batch generation: Process styles sequentially to avoid rate limits
 - Image generation depends on imaginize API availability
 
 ### Dependencies
+
 - **imaginize API**: Required for image generation
 - **Chart Calculator**: For birth info processing
 - **Pattern Recognition**: For sacred pattern detection
 - **Geometry Extractor**: For aspect coordinate extraction
 
 ### Caching
+
 - Generated images cached by imaginize service
 - Pattern detection results cached per chart
 - Geometry extraction cached for repeated requests
 
 ---
 
-*This endpoint integrates seamlessly with the existing rune system and provides a complete solution for transforming astrological data into personalized mystical tools.*
+_This endpoint integrates seamlessly with the existing rune system and provides a complete solution for transforming astrological data into personalized mystical tools._

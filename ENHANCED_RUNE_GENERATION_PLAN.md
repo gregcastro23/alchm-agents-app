@@ -15,6 +15,7 @@
 #### **Phase 1: Core Infrastructure Extension**
 
 **1. Extend Existing Rune System** (`lib/runes/natal-sigil-runes.ts`)
+
 ```typescript
 import { Rune, RuneEffect, AlchemicalCost } from './rune-system'
 import { PatternConfiguration, Aspect } from '../astrological-pattern-recognition'
@@ -46,6 +47,7 @@ export interface EnhancedAspectLine extends Aspect {
 ```
 
 **2. Enhance Pattern Recognition Integration** (`lib/runes/pattern-to-rune-converter.ts`)
+
 ```typescript
 import { PatternConfiguration, detectPatterns } from '../astrological-pattern-recognition'
 import { fetchImaginize } from '../astrologize'
@@ -53,7 +55,7 @@ import { fetchImaginize } from '../astrologize'
 export class PatternToRuneConverter {
   static convertPatternToPrompt(pattern: PatternConfiguration, style: string): string {
     const basePrompt = `Ancient ${style} runic sigil embodying ${pattern.type}:`
-    
+
     switch (pattern.type) {
       case 'grand-trine':
         return `${basePrompt} Three-fold harmony in ${pattern.element} element, 
@@ -74,7 +76,7 @@ export class PatternToRuneConverter {
     style: string
   ): Promise<NatalSigilRune> {
     const prompt = this.convertPatternToPrompt(pattern, style)
-    
+
     const imageData = await fetchImaginize(prompt, {
       style_preset: `mystical-${style}`,
       width: 1024,
@@ -85,8 +87,8 @@ export class PatternToRuneConverter {
       geometryHints: {
         aspectCount: geometry.aspectLines.length,
         powerNodeCount: geometry.powerNodes.length,
-        dominantPattern: pattern.type
-      }
+        dominantPattern: pattern.type,
+      },
     })
 
     return {
@@ -107,7 +109,7 @@ export class PatternToRuneConverter {
       rarity: this.calculateRarity(pattern.strength),
       description: `Personalized sigil derived from your natal ${pattern.type} pattern`,
       craftingTime: 15,
-      meditationInstructions: this.generateMeditationInstructions(pattern)
+      meditationInstructions: this.generateMeditationInstructions(pattern),
     }
   }
 }
@@ -116,6 +118,7 @@ export class PatternToRuneConverter {
 #### **Phase 2: Chart Integration Enhancement**
 
 **3. Unified Geometry Extraction Service** (`lib/chart-geometry-extractor.ts`)
+
 ```typescript
 export class ChartGeometryExtractor {
   static extractFromSVG(svgElement: SVGElement): RuneGeometry {
@@ -123,13 +126,13 @@ export class ChartGeometryExtractor {
     const aspectLines = this.parseAspectLines(svgElement)
     const powerNodes = this.detectPowerNodes(aspectLines)
     const centerPoint = this.calculateChartCenter(svgElement)
-    
+
     return {
       aspectLines,
       centerPoint,
       powerNodes,
       sacredPatterns: [], // Will be populated by pattern recognition
-      chartBounds: this.getSVGBounds(svgElement)
+      chartBounds: this.getSVGBounds(svgElement),
     }
   }
 
@@ -171,15 +174,15 @@ export function EnhancedChartDisplay({ chartData, showRuneGenerator = false }) {
       <svg ref={chartRef} className="chart-svg">
         {/* Existing chart rendering */}
       </svg>
-      
+
       {showRuneGenerator && (
         <div className="mt-4">
           <Button onClick={handleExtractGeometry}>
             Extract Chart Geometry for Rune
           </Button>
-          
+
           {extractedGeometry && (
-            <NatalSigilGenerator 
+            <NatalSigilGenerator
               geometry={extractedGeometry}
               chartData={chartData}
             />
@@ -194,10 +197,11 @@ export function EnhancedChartDisplay({ chartData, showRuneGenerator = false }) {
 #### **Phase 3: Advanced UI Components**
 
 **5. Natal Sigil Generator Component** (`components/natal-sigil-generator.tsx`)
+
 ```typescript
-export function NatalSigilGenerator({ 
-  geometry, 
-  chartData 
+export function NatalSigilGenerator({
+  geometry,
+  chartData
 }: {
   geometry: RuneGeometry
   chartData: any
@@ -212,7 +216,7 @@ export function NatalSigilGenerator({
       // Use the most prominent pattern for sigil generation
       const dominantPattern = geometry.sacredPatterns
         .sort((a, b) => b.strength - a.strength)[0]
-      
+
       if (dominantPattern) {
         const sigil = await PatternToRuneConverter.generateSigilFromPattern(
           dominantPattern,
@@ -260,8 +264,8 @@ export function NatalSigilGenerator({
           </div>
 
           {/* Generation Controls */}
-          <Button 
-            onClick={handleGenerate} 
+          <Button
+            onClick={handleGenerate}
             disabled={isGenerating}
             className="w-full"
           >
@@ -282,6 +286,7 @@ export function NatalSigilGenerator({
 #### **Phase 4: API Enhancement**
 
 **6. Enhanced API Route** (`app/api/generate-natal-sigil/route.ts`)
+
 ```typescript
 import { NextRequest, NextResponse } from 'next/server'
 import { PatternToRuneConverter } from '@/lib/runes/pattern-to-rune-converter'
@@ -291,7 +296,7 @@ import { BirthInfoSchema } from '@/lib/schemas'
 export async function POST(request: NextRequest) {
   try {
     const { birthInfo, geometry, style, patternType } = await request.json()
-    
+
     // Validate birth info if provided
     if (birthInfo) {
       BirthInfoSchema.parse(birthInfo)
@@ -312,8 +317,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate sigil from dominant pattern
-    const dominantPattern = finalGeometry.sacredPatterns
-      .sort((a, b) => b.strength - a.strength)[0]
+    const dominantPattern = finalGeometry.sacredPatterns.sort((a, b) => b.strength - a.strength)[0]
 
     if (!dominantPattern) {
       return NextResponse.json(
@@ -332,7 +336,7 @@ export async function POST(request: NextRequest) {
       success: true,
       sigil,
       sourcePattern: dominantPattern,
-      geometry: finalGeometry
+      geometry: finalGeometry,
     })
   } catch (error) {
     return NextResponse.json(

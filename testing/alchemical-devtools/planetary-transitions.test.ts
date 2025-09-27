@@ -16,22 +16,22 @@ import { logger, LogLevel } from '@/lib/structured-logger'
 import {
   defaultAlchemicalMCPConfig,
   validateTokenEquilibrium,
-  type ElementalTokens
+  type ElementalTokens,
 } from './mcp-config'
 
 // Mock Chrome DevTools Protocol for testing
 const mockCDP = {
   Page: {
     captureScreenshot: vi.fn().mockResolvedValue({ data: 'mock-screenshot-data' }),
-    navigate: vi.fn().mockResolvedValue({})
+    navigate: vi.fn().mockResolvedValue({}),
   },
   Runtime: {
-    evaluate: vi.fn().mockResolvedValue({ result: { value: {} } })
+    evaluate: vi.fn().mockResolvedValue({ result: { value: {} } }),
   },
   Network: {
     on: vi.fn(),
-    enable: vi.fn().mockResolvedValue({})
-  }
+    enable: vi.fn().mockResolvedValue({}),
+  },
 }
 
 // Planetary hour transitions and their expected token behaviors
@@ -40,62 +40,62 @@ const PLANETARY_CORRESPONDENCES = {
     element: 'Fire',
     tokenFocus: 'matter',
     expectedIncrease: 0.3,
-    description: 'Solar hours manifest material reality and concrete achievement'
+    description: 'Solar hours manifest material reality and concrete achievement',
   },
   Moon: {
     element: 'Water',
     tokenFocus: 'essence',
     expectedIncrease: 0.4,
-    description: 'Lunar hours enhance emotional depth and intuitive wisdom'
+    description: 'Lunar hours enhance emotional depth and intuitive wisdom',
   },
   Mercury: {
     element: 'Air',
     tokenFocus: 'spirit',
     expectedIncrease: 0.5,
-    description: 'Mercurial hours accelerate mental activity and communication'
+    description: 'Mercurial hours accelerate mental activity and communication',
   },
   Venus: {
     element: 'Earth',
     tokenFocus: 'substance',
     expectedIncrease: 0.25,
-    description: 'Venusian hours harmonize material relationships and beauty'
+    description: 'Venusian hours harmonize material relationships and beauty',
   },
   Mars: {
     element: 'Fire',
     tokenFocus: 'spirit',
     expectedIncrease: 0.35,
-    description: 'Martian hours energize action and determination'
+    description: 'Martian hours energize action and determination',
   },
   Jupiter: {
     element: 'Fire',
     tokenFocus: 'matter',
     expectedIncrease: 0.45,
-    description: 'Jupiterian hours expand prosperity and wisdom'
+    description: 'Jupiterian hours expand prosperity and wisdom',
   },
   Saturn: {
     element: 'Earth',
     tokenFocus: 'substance',
     expectedIncrease: 0.2,
-    description: 'Saturnian hours structure discipline and long-term goals'
+    description: 'Saturnian hours structure discipline and long-term goals',
   },
   Uranus: {
     element: 'Air',
     tokenFocus: 'spirit',
     expectedIncrease: 0.6,
-    description: 'Uranian hours revolutionize innovation and liberation'
+    description: 'Uranian hours revolutionize innovation and liberation',
   },
   Neptune: {
     element: 'Water',
     tokenFocus: 'essence',
     expectedIncrease: 0.55,
-    description: 'Neptunian hours dissolve boundaries and enhance compassion'
+    description: 'Neptunian hours dissolve boundaries and enhance compassion',
   },
   Pluto: {
     element: 'Water',
     tokenFocus: 'essence',
     expectedIncrease: 0.4,
-    description: 'Plutonian hours transform through deep emotional catharsis'
-  }
+    description: 'Plutonian hours transform through deep emotional catharsis',
+  },
 } as const
 
 interface TransitionCapture {
@@ -127,7 +127,7 @@ class PlanetaryTransitionTester {
     try {
       const result = await this.cdpClient.Page.captureScreenshot({
         format: 'png',
-        quality: 80
+        quality: 80,
       })
 
       const filename = `planetary-transition-${transition}-${Date.now()}.png`
@@ -137,8 +137,8 @@ class PlanetaryTransitionTester {
         metadata: {
           transition,
           filename,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       })
 
       return result.data
@@ -169,7 +169,9 @@ class PlanetaryTransitionTester {
     const screenshotData = await this.captureTransitionScreenshot(`${fromPlanet}-to-${toPlanet}`)
 
     const transitionTime = performance.now() - startTime
-    const stabilityChange = Math.abs(equilibriumAfter.overallHealth - equilibriumBefore.overallHealth)
+    const stabilityChange = Math.abs(
+      equilibriumAfter.overallHealth - equilibriumBefore.overallHealth
+    )
 
     const capture: TransitionCapture = {
       timestamp: new Date(),
@@ -182,8 +184,8 @@ class PlanetaryTransitionTester {
       performanceMetrics: {
         transitionTime,
         calculationTime: transitionTime, // Simplified
-        stabilityChange
-      }
+        stabilityChange,
+      },
     }
 
     this.captures.push(capture)
@@ -195,8 +197,8 @@ class PlanetaryTransitionTester {
         toPlanet,
         stabilityChange,
         transitionTime,
-        tokenChanges: this.calculateTokenChanges(tokensBefore, tokensAfter)
-      }
+        tokenChanges: this.calculateTokenChanges(tokensBefore, tokensAfter),
+      },
     })
 
     return capture
@@ -212,7 +214,7 @@ class PlanetaryTransitionTester {
         spirit: alchm['Alchemy Effects']?.['Total Spirit'] || 0,
         essence: alchm['Alchemy Effects']?.['Total Essence'] || 0,
         matter: alchm['Alchemy Effects']?.['Total Matter'] || 0,
-        substance: alchm['Alchemy Effects']?.['Total Substance'] || 0
+        substance: alchm['Alchemy Effects']?.['Total Substance'] || 0,
       }
     } catch (error) {
       console.error('Failed to get current tokens:', error)
@@ -223,7 +225,10 @@ class PlanetaryTransitionTester {
   /**
    * Calculate percentage changes in tokens during transition
    */
-  private calculateTokenChanges(before: ElementalTokens, after: ElementalTokens): Record<string, number> {
+  private calculateTokenChanges(
+    before: ElementalTokens,
+    after: ElementalTokens
+  ): Record<string, number> {
     const changes: Record<string, number> = {}
 
     Object.keys(before).forEach(key => {
@@ -239,15 +244,20 @@ class PlanetaryTransitionTester {
   /**
    * Validate token behavior matches traditional planetary correspondences
    */
-  validatePlanetaryCorrespondence(planet: string, tokensBefore: ElementalTokens, tokensAfter: ElementalTokens): boolean {
-    const correspondence = PLANETARY_CORRESPONDENCES[planet as keyof typeof PLANETARY_CORRESPONDENCES]
+  validatePlanetaryCorrespondence(
+    planet: string,
+    tokensBefore: ElementalTokens,
+    tokensAfter: ElementalTokens
+  ): boolean {
+    const correspondence =
+      PLANETARY_CORRESPONDENCES[planet as keyof typeof PLANETARY_CORRESPONDENCES]
     if (!correspondence) return false
 
     const tokenChanges = this.calculateTokenChanges(tokensBefore, tokensAfter)
     const focusTokenChange = tokenChanges[correspondence.tokenFocus]
 
     // Check if the focused token increased by at least the expected amount
-    const isValid = focusTokenChange >= (correspondence.expectedIncrease * 100 * 0.8) // 80% of expected minimum
+    const isValid = focusTokenChange >= correspondence.expectedIncrease * 100 * 0.8 // 80% of expected minimum
 
     if (!isValid) {
       logger.log(LogLevel.WARNING, 'Planetary correspondence validation failed', {
@@ -257,8 +267,8 @@ class PlanetaryTransitionTester {
           expectedFocus: correspondence.tokenFocus,
           expectedIncrease: correspondence.expectedIncrease,
           actualChange: focusTokenChange,
-          tokenChanges
-        }
+          tokenChanges,
+        },
       })
     }
 
@@ -289,8 +299,8 @@ class PlanetaryTransitionTester {
         metadata: {
           phase,
           essenceChange: capture.tokensAfter.essence - capture.tokensBefore.essence,
-          stabilityChange: capture.performanceMetrics.stabilityChange
-        }
+          stabilityChange: capture.performanceMetrics.stabilityChange,
+        },
       })
     }
   }
@@ -306,7 +316,9 @@ class PlanetaryTransitionTester {
     const retrogradeStart = await this.monitorHourTransition('Direct', `${planet}-Retrograde`)
 
     // Validate token stability during retrograde (should be more stable, less fluctuation)
-    const stabilityDuringRetrograde = validateTokenEquilibrium(retrogradeStart.tokensAfter).overallHealth
+    const stabilityDuringRetrograde = validateTokenEquilibrium(
+      retrogradeStart.tokensAfter
+    ).overallHealth
 
     expect(stabilityDuringRetrograde).toBeLessThan(0.5) // Expect good stability during retrograde
 
@@ -321,8 +333,8 @@ class PlanetaryTransitionTester {
       metadata: {
         planet,
         stabilityScore: stabilityDuringRetrograde,
-        specialHandling: planet === 'Mercury'
-      }
+        specialHandling: planet === 'Mercury',
+      },
     })
   }
 
@@ -339,9 +351,11 @@ class PlanetaryTransitionTester {
     }
 
     // Validate collective harmony during group activity
-    const averageStability = captures.reduce((sum, capture) =>
-      sum + validateTokenEquilibrium(capture.tokensAfter).overallHealth, 0
-    ) / captures.length
+    const averageStability =
+      captures.reduce(
+        (sum, capture) => sum + validateTokenEquilibrium(capture.tokensAfter).overallHealth,
+        0
+      ) / captures.length
 
     expect(averageStability).toBeLessThan(0.3) // Expect good collective harmony
 
@@ -350,8 +364,8 @@ class PlanetaryTransitionTester {
       metadata: {
         userCount,
         averageStability,
-        capturesCount: captures.length
-      }
+        capturesCount: captures.length,
+      },
     })
   }
 
@@ -388,8 +402,18 @@ describe('Planetary Transitions Testing Suite', () => {
     })
 
     it('should validate planetary correspondences', async () => {
-      const tokensBefore: ElementalTokens = { spirit: 1.0, essence: 1.0, matter: 1.0, substance: 1.0 }
-      const tokensAfter: ElementalTokens = { spirit: 1.5, essence: 1.0, matter: 1.0, substance: 1.0 }
+      const tokensBefore: ElementalTokens = {
+        spirit: 1.0,
+        essence: 1.0,
+        matter: 1.0,
+        substance: 1.0,
+      }
+      const tokensAfter: ElementalTokens = {
+        spirit: 1.5,
+        essence: 1.0,
+        matter: 1.0,
+        substance: 1.0,
+      }
 
       const isValid = tester.validatePlanetaryCorrespondence('Mercury', tokensBefore, tokensAfter)
       expect(isValid).toBe(true)
@@ -461,7 +485,7 @@ describe('Planetary Transitions Testing Suite', () => {
         LogLevel.INFO,
         'Planetary hour transition monitored',
         expect.objectContaining({
-          operation: 'planetary_transition'
+          operation: 'planetary_transition',
         })
       )
     })

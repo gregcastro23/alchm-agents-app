@@ -18,6 +18,7 @@ The planetary agents consolidation inadvertently broke the historical agent chat
 **File**: `app/gallery/chat/[id]/page.tsx`
 
 Features:
+
 - Dynamic routing for each agent via `[id]` parameter
 - Agent lookup from `DEMO_AGENTS` array
 - Real-time chat interface with message history
@@ -32,6 +33,7 @@ Changed from: `/planetary-agents?agent=${agent.id}`
 Changed to: `/gallery/chat/${agent.id}`
 
 Files updated:
+
 - `app/gallery/page.tsx` - Line 266
 - `components/agent-card.tsx` - Lines 146, 313, 533
 - `components/agent-detail-modal.tsx` - Line 443
@@ -42,6 +44,7 @@ Files updated:
 **File**: `app/planetary-agents/page.tsx`
 
 Implementation:
+
 ```typescript
 const searchParams = useSearchParams()
 const router = useRouter()
@@ -61,6 +64,7 @@ useEffect(() => {
 ### 4. Environment Configuration
 
 Added to `.env.local`:
+
 ```
 GALILEO_FAIL_SILENTLY=true
 ```
@@ -71,18 +75,18 @@ This prevents Galileo logging errors from breaking the application.
 
 ### Current Routes
 
-| Route | Purpose |
-|-------|---------|
-| `/gallery` | Browse all 35 historical agents |
-| `/gallery/chat/[id]` | Chat with specific historical agent |
-| `/planetary-agents` | Select planet for consultation |
-| `/agents/[planet]/[sign]/[degree]` | Degree-specific planetary wisdom |
-| `/planetary-council` | Multi-agent consultation (up to 5) |
+| Route                              | Purpose                             |
+| ---------------------------------- | ----------------------------------- |
+| `/gallery`                         | Browse all 35 historical agents     |
+| `/gallery/chat/[id]`               | Chat with specific historical agent |
+| `/planetary-agents`                | Select planet for consultation      |
+| `/agents/[planet]/[sign]/[degree]` | Degree-specific planetary wisdom    |
+| `/planetary-council`               | Multi-agent consultation (up to 5)  |
 
 ### Backward Compatibility
 
-| Old URL | Redirects To |
-|---------|--------------|
+| Old URL                        | Redirects To         |
+| ------------------------------ | -------------------- |
 | `/planetary-agents?agent=[id]` | `/gallery/chat/[id]` |
 
 ## Testing Checklist
@@ -108,6 +112,7 @@ This prevents Galileo logging errors from breaking the application.
 ## Future Enhancements
 
 Consider these potential improvements:
+
 - Add agent search/filter on chat page
 - Implement chat history persistence
 - Add agent-specific greeting messages

@@ -44,7 +44,7 @@ interface PlanetaryMetrics {
   cache: CacheMetrics
   performance: PerformanceMetrics
   health: {
-    circuitBreakers: Record<string, { state: string, failures: number, lastFailure: string | null }>
+    circuitBreakers: Record<string, { state: string; failures: number; lastFailure: string | null }>
     externalApiStatus: string
     lastHealthCheck: string
   }
@@ -58,7 +58,7 @@ interface PlanetaryMetrics {
 // In-memory metrics storage (would be Redis in production)
 let metricsStorage: {
   accuracyValidations: AccuracyValidationResult[]
-  performanceLogs: { timestamp: number, responseTime: number, accuracy: string, cached: boolean }[]
+  performanceLogs: { timestamp: number; responseTime: number; accuracy: string; cached: boolean }[]
   cacheHits: number
   cacheMisses: number
   requestsByAccuracy: Record<string, number>
@@ -105,13 +105,15 @@ export async function GET(req: NextRequest) {
       metrics,
       timestamp: new Date().toISOString(),
     })
-
   } catch (error) {
     console.error('Planetary positions metrics error:', error)
-    return NextResponse.json({
-      error: 'Failed to generate planetary positions metrics',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Failed to generate planetary positions metrics',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -123,9 +125,18 @@ async function runAccuracyValidation(): Promise<AccuracyValidationResult> {
   try {
     // Get positions from different sources for comparison
     const [highAccuracy, enhancedCalc, basicTransits] = await Promise.all([
-      planetaryPositionsService.getPlanetaryPositions(testDate, { accuracy: 'high', useCache: false }),
-      planetaryPositionsService.getPlanetaryPositions(testDate, { accuracy: 'medium', useCache: false }),
-      planetaryPositionsService.getPlanetaryPositions(testDate, { accuracy: 'low', useCache: false }),
+      planetaryPositionsService.getPlanetaryPositions(testDate, {
+        accuracy: 'high',
+        useCache: false,
+      }),
+      planetaryPositionsService.getPlanetaryPositions(testDate, {
+        accuracy: 'medium',
+        useCache: false,
+      }),
+      planetaryPositionsService.getPlanetaryPositions(testDate, {
+        accuracy: 'low',
+        useCache: false,
+      }),
     ])
 
     const responseTime = Date.now() - startTime
@@ -178,7 +189,6 @@ async function runAccuracyValidation(): Promise<AccuracyValidationResult> {
     }
 
     return result
-
   } catch (error) {
     console.error('Accuracy validation failed:', error)
     const responseTime = Date.now() - startTime
@@ -214,13 +224,12 @@ async function checkServiceHealth() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         date: new Date().toISOString(),
-        accuracy: 'high'
+        accuracy: 'high',
       }),
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(5000),
     })
 
     healthStatus.externalApiStatus = testResponse.ok ? 'healthy' : 'degraded'
-
   } catch (error) {
     healthStatus.externalApiStatus = 'offline'
   }
@@ -257,7 +266,10 @@ async function generatePlanetaryMetrics(): Promise<PlanetaryMetrics> {
     p50: responseTimes.length > 0 ? responseTimes[Math.floor(responseTimes.length * 0.5)] : 0,
     p95: responseTimes.length > 0 ? responseTimes[Math.floor(responseTimes.length * 0.95)] : 0,
     p99: responseTimes.length > 0 ? responseTimes[Math.floor(responseTimes.length * 0.99)] : 0,
-    average: responseTimes.length > 0 ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length : 0,
+    average:
+      responseTimes.length > 0
+        ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
+        : 0,
     min: responseTimes.length > 0 ? Math.min(...responseTimes) : 0,
     max: responseTimes.length > 0 ? Math.max(...responseTimes) : 0,
     totalRequests: recentLogs.length,
@@ -269,16 +281,20 @@ async function generatePlanetaryMetrics(): Promise<PlanetaryMetrics> {
     v => now - new Date(v.timestamp).getTime() < 24 * 60 * 60 * 1000
   )
 
-  const sourcesUsed = validations.reduce((acc, v) => {
-    acc[v.source] = (acc[v.source] || 0) + 1
-    return acc
-  }, {} as Record<string, number>)
+  const sourcesUsed = validations.reduce(
+    (acc, v) => {
+      acc[v.source] = (acc[v.source] || 0) + 1
+      return acc
+    },
+    {} as Record<string, number>
+  )
 
   const accuracyValidation = {
     lastValidation: validations.length > 0 ? validations[validations.length - 1] : null,
-    averagePrecision: recentValidations.length > 0
-      ? recentValidations.reduce((sum, v) => sum + v.precision, 0) / recentValidations.length
-      : 0,
+    averagePrecision:
+      recentValidations.length > 0
+        ? recentValidations.reduce((sum, v) => sum + v.precision, 0) / recentValidations.length
+        : 0,
     validationCount: recentValidations.length,
     sourcesUsed,
   }
@@ -304,7 +320,12 @@ async function generatePlanetaryMetrics(): Promise<PlanetaryMetrics> {
 }
 
 // Hook to track performance (call this from the main planetary-positions endpoint)
-export function trackPerformanceMetrics(responseTime: number, accuracy: string, cached: boolean, source: string) {
+export function trackPerformanceMetrics(
+  responseTime: number,
+  accuracy: string,
+  cached: boolean,
+  source: string
+) {
   metricsStorage.performanceLogs.push({
     timestamp: Date.now(),
     responseTime,
@@ -325,6 +346,7 @@ export function trackPerformanceMetrics(responseTime: number, accuracy: string, 
   }
 
   // Track usage by accuracy and source
-  metricsStorage.requestsByAccuracy[accuracy] = (metricsStorage.requestsByAccuracy[accuracy] || 0) + 1
+  metricsStorage.requestsByAccuracy[accuracy] =
+    (metricsStorage.requestsByAccuracy[accuracy] || 0) + 1
   metricsStorage.requestsBySource[source] = (metricsStorage.requestsBySource[source] || 0) + 1
 }

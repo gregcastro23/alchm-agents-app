@@ -45,16 +45,16 @@ export async function GET(request: NextRequest) {
 
     const currentHour = kinetics.timing?.planetaryHours[0] || 'Sun'
 
-    // Calculate basic kinetic compatibility (element compatibility)
-    const elementCompatibility = calculateElementCompatibility(
-      agent1Profile.elements,
-      agent2Profile.elements
+    // Calculate basic kinetic compatibility (velocity signature compatibility)
+    const velocityCompatibility = calculateVelocityCompatibility(
+      agent1Profile.velocitySignature,
+      agent2Profile.velocitySignature
     )
-    const astrologyCompatibility = calculateAstrologyCompatibility(
-      agent1Profile.astrology,
-      agent2Profile.astrology
+    const evolutionCompatibility = calculateEvolutionCompatibility(
+      agent1Profile.evolutionRate,
+      agent2Profile.evolutionRate
     )
-    const baseCompatibility = (elementCompatibility + astrologyCompatibility) / 2
+    const baseCompatibility = (velocityCompatibility + evolutionCompatibility) / 2
 
     // Calculate enhanced compatibility with current context
     const agent1Optimal = agent1Profile.alignment.includes(currentHour)
@@ -68,10 +68,10 @@ export async function GET(request: NextRequest) {
       agent2Profile.alignment.includes(hour)
     )
 
-    // Momentum synergy analysis
-    const momentumSynergy = calculateMomentumSynergy(
-      agent1Profile.momentum || 'steady',
-      agent2Profile.momentum || 'steady'
+    // Momentum synergy analysis (based on evolution rate similarity)
+    const momentumSynergy = calculateEvolutionSynergy(
+      agent1Profile.evolutionRate,
+      agent2Profile.evolutionRate
     )
 
     const result: any = {
@@ -295,60 +295,6 @@ function generateCompatibilityRecommendations(
   return recommendations
 }
 
-function calculateEvolutionCompatibility(
-  evolution1: any,
-  evolution2: any
-): {
-  score: number
-  factors: string[]
-} {
-  const factors = []
-  let score = 0.5 // Base score
-
-  // Consciousness velocity alignment
-  const velocityDiff = Math.abs(evolution1.consciousnessVelocity - evolution2.consciousnessVelocity)
-  if (velocityDiff < 0.1) {
-    score += 0.2
-    factors.push('Matched consciousness development pace')
-  } else if (velocityDiff < 0.3) {
-    score += 0.1
-    factors.push('Similar consciousness development pace')
-  } else {
-    factors.push('Different consciousness development paces - mentor potential')
-  }
-
-  // Evolution stage compatibility
-  const stage1 = ['Initial', 'Developing', 'Maturing', 'Advanced', 'Transcendent'].indexOf(
-    evolution1.evolutionStage
-  )
-  const stage2 = ['Initial', 'Developing', 'Maturing', 'Advanced', 'Transcendent'].indexOf(
-    evolution2.evolutionStage
-  )
-  const stageDiff = Math.abs(stage1 - stage2)
-
-  if (stageDiff === 0) {
-    score += 0.15
-    factors.push('Same consciousness evolution stage')
-  } else if (stageDiff === 1) {
-    score += 0.1
-    factors.push('Adjacent evolution stages - good learning potential')
-  } else {
-    factors.push('Different evolution stages - mentor-student dynamic')
-  }
-
-  // Memory strength compatibility
-  const memoryDiff = Math.abs(evolution1.memoryStrength - evolution2.memoryStrength)
-  if (memoryDiff < 0.2) {
-    score += 0.1
-    factors.push('Compatible memory retention patterns')
-  }
-
-  return {
-    score: Math.min(score, 1),
-    factors,
-  }
-}
-
 // Helper functions for compatibility calculation
 function calculateElementCompatibility(elements1: string[], elements2: string[]): number {
   if (!elements1 || !elements2) return 0.5
@@ -396,6 +342,41 @@ function calculatePlanetCompatibility(planet1: string, planet2: string): number 
   if (planet1 === planet2) return 0.8
   if (planetaryAffinities[planet1]?.includes(planet2)) return 0.6
   return 0.4
+}
+
+function calculateVelocityCompatibility(
+  velocity1: { Fire: number; Water: number; Air: number; Earth: number },
+  velocity2: { Fire: number; Water: number; Air: number; Earth: number }
+): number {
+  // Calculate compatibility based on velocity signature similarity
+  const elements = ['Fire', 'Water', 'Air', 'Earth'] as const
+  let totalSimilarity = 0
+
+  for (const element of elements) {
+    const diff = Math.abs(velocity1[element] - velocity2[element])
+    const similarity = Math.max(0, 1 - diff) // Convert difference to similarity (0-1)
+    totalSimilarity += similarity
+  }
+
+  return totalSimilarity / elements.length
+}
+
+function calculateEvolutionCompatibility(rate1: number, rate2: number): number {
+  // Calculate compatibility based on evolution rate similarity
+  // Closer rates = higher compatibility
+  const diff = Math.abs(rate1 - rate2)
+  return Math.max(0.1, 1 - diff) // Minimum 0.1, maximum 1.0
+}
+
+function calculateEvolutionSynergy(rate1: number, rate2: number): string {
+  // Determine synergy type based on evolution rate relationship
+  const avgRate = (rate1 + rate2) / 2
+  const diff = Math.abs(rate1 - rate2)
+
+  if (diff < 0.2) return 'Perfect Resonance'
+  if (diff < 0.5) return 'Complementary Flow'
+  if (avgRate > 1.2) return 'High Energy Synergy'
+  return 'Balanced Evolution'
 }
 
 function calculateSignCompatibility(sign1: string, sign2: string): number {

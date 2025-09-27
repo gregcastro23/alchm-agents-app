@@ -50,7 +50,8 @@ export function validateTokenEquilibrium(tokens: ElementalTokens): TokenEquilibr
   // Golden ratio as aspirational harmony (φ ≈ 1.618) between complementary pairs
   const spiritEssenceRatio = spirit / Math.max(essence, 0.001)
   const matterSubstanceRatio = matter / Math.max(substance, 0.001)
-  const goldenRatioDeviation = Math.abs(spiritEssenceRatio - 1.618) + Math.abs(matterSubstanceRatio - 1.618)
+  const goldenRatioDeviation =
+    Math.abs(spiritEssenceRatio - 1.618) + Math.abs(matterSubstanceRatio - 1.618)
 
   // Natural elemental harmony - elements complement rather than balance
   // Spirit and Essence work together, Matter and Substance work together
@@ -58,7 +59,7 @@ export function validateTokenEquilibrium(tokens: ElementalTokens): TokenEquilibr
 
   // Planetary dignity influence based on traditional rulerships
   // Higher values indicate stronger traditional correspondences
-  const planetaryDignity = (spirit * 1.0) + (essence * 1.2) + (matter * 1.1) + (substance * 0.9)
+  const planetaryDignity = spirit * 1.0 + essence * 1.2 + matter * 1.1 + substance * 0.9
 
   // Overall elemental health based on individual element vitality
   const overallHealth = (tokens.spirit + tokens.essence + tokens.matter + tokens.substance) / 4
@@ -67,14 +68,16 @@ export function validateTokenEquilibrium(tokens: ElementalTokens): TokenEquilibr
     goldenRatio: goldenRatioDeviation,
     elementalHarmony,
     planetaryDignity,
-    overallHealth
+    overallHealth,
   }
 }
 
 /**
  * Calculate stabilization adjustments for imbalanced tokens
  */
-export function calculateStabilizationAdjustment(tokens: ElementalTokens): Partial<ElementalTokens> {
+export function calculateStabilizationAdjustment(
+  tokens: ElementalTokens
+): Partial<ElementalTokens> {
   const adjustment: Partial<ElementalTokens> = {}
 
   // Define healthy ranges for each element based on planetary rulerships
@@ -82,7 +85,7 @@ export function calculateStabilizationAdjustment(tokens: ElementalTokens): Parti
     spirit: { min: 0.2, max: 2.0, equilibrium: 1.0 },
     essence: { min: 0.5, max: 2.5, equilibrium: 1.2 },
     matter: { min: 0.5, max: 2.5, equilibrium: 1.1 },
-    substance: { min: 0.1, max: 1.5, equilibrium: 0.9 }
+    substance: { min: 0.1, max: 1.5, equilibrium: 0.9 },
   }
 
   // Individual element stabilization based on planetary rulership ranges

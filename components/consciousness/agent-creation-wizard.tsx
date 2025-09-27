@@ -230,20 +230,21 @@ export function AgentCreationWizard({
   const [birthChartData, setBirthChartData] = useState<any | null>(null)
   const [momentChartData, setMomentChartData] = useState<any | null>(null)
   const [additionalCharts, setAdditionalCharts] = useState<any[]>([])
-  const [creationMode, setCreationMode] = useState<'selfMoment' | 'momentOnly' | 'multiChart'>('selfMoment')
+  const [creationMode, setCreationMode] = useState<'selfMoment' | 'momentOnly' | 'multiChart'>(
+    'selfMoment'
+  )
   const emitChartsIfReady = useMemo(
-    () =>
-      () => {
-        if (!onChartsLoaded) return
-        if (!momentChartData) return
-        if (creationMode !== 'momentOnly' && !birthChartData) return
-        onChartsLoaded({
-          birthChart: creationMode === 'momentOnly' ? null : birthChartData,
-          momentChart: momentChartData,
-          additionalCharts,
-          mode: creationMode,
-        })
-      },
+    () => () => {
+      if (!onChartsLoaded) return
+      if (!momentChartData) return
+      if (creationMode !== 'momentOnly' && !birthChartData) return
+      onChartsLoaded({
+        birthChart: creationMode === 'momentOnly' ? null : birthChartData,
+        momentChart: momentChartData,
+        additionalCharts,
+        mode: creationMode,
+      })
+    },
     [additionalCharts, birthChartData, creationMode, momentChartData, onChartsLoaded]
   )
   const [creationResult, setCreationResult] = useState<{

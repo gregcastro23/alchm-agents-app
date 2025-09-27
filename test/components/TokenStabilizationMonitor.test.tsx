@@ -5,17 +5,17 @@ import { vi } from 'vitest'
 // Mock the usePlanetaryPositions hook
 const mockUsePlanetaryPositions = vi.fn()
 vi.mock('@/hooks/usePlanetaryPositions', () => ({
-  usePlanetaryPositions: mockUsePlanetaryPositions
+  usePlanetaryPositions: mockUsePlanetaryPositions,
 }))
 
 // Mock logger
 vi.mock('@/lib/structured-logger', () => ({
   logger: {
-    log: vi.fn()
+    log: vi.fn(),
   },
   LogLevel: {
-    INFO: 'info'
-  }
+    INFO: 'info',
+  },
 }))
 
 describe('TokenStabilizationMonitor', () => {
@@ -29,12 +29,12 @@ describe('TokenStabilizationMonitor', () => {
         Heat: 0.3,
         Entropy: 0.2,
         Reactivity: 0.1,
-        Energy: 0.6
+        Energy: 0.6,
       },
       planetaryPositions: [],
       loading: false,
       error: null,
-      refresh: vi.fn()
+      refresh: vi.fn(),
     })
   })
 
@@ -77,12 +77,12 @@ describe('TokenStabilizationMonitor', () => {
         Heat: 0,
         Entropy: 0,
         Reactivity: 0,
-        Energy: 0
+        Energy: 0,
       },
       planetaryPositions: [],
       loading: true,
       error: null,
-      refresh: vi.fn()
+      refresh: vi.fn(),
     })
 
     render(<TokenStabilizationMonitor />)
@@ -100,12 +100,12 @@ describe('TokenStabilizationMonitor', () => {
         Heat: 0,
         Entropy: 0,
         Reactivity: 0,
-        Energy: 0
+        Energy: 0,
       },
       planetaryPositions: [],
       loading: false,
       error: 'Test error',
-      refresh: vi.fn()
+      refresh: vi.fn(),
     })
 
     render(<TokenStabilizationMonitor />)

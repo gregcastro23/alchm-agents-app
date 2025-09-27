@@ -14,11 +14,17 @@ import { alchemicalValidator, type ValidationResult } from './alchemical-validat
 import {
   defaultAlchemicalMCPConfig,
   validateTokenEquilibrium,
-  type ElementalTokens
+  type ElementalTokens,
 } from '@/testing/alchemical-devtools/mcp-config'
 
 export interface AstrologicalEvent {
-  type: 'eclipse' | 'grand_cross' | 'grand_trine' | 'planetary_station' | 'void_moon' | 'retrograde_storm'
+  type:
+    | 'eclipse'
+    | 'grand_cross'
+    | 'grand_trine'
+    | 'planetary_station'
+    | 'void_moon'
+    | 'retrograde_storm'
   severity: 'low' | 'medium' | 'high' | 'critical'
   planets: string[]
   description: string
@@ -27,9 +33,9 @@ export interface AstrologicalEvent {
     end: Date
   }
   expectedImpact: {
-    spirit: number    // Expected change in spirit tokens (-1 to 1)
-    essence: number   // Expected change in essence tokens (-1 to 1)
-    matter: number    // Expected change in matter tokens (-1 to 1)
+    spirit: number // Expected change in spirit tokens (-1 to 1)
+    essence: number // Expected change in essence tokens (-1 to 1)
+    matter: number // Expected change in matter tokens (-1 to 1)
     substance: number // Expected change in substance tokens (-1 to 1)
   }
 }
@@ -37,7 +43,10 @@ export interface AstrologicalEvent {
 export interface EmergencyProtocol {
   id: string
   triggerCondition: (tokens: ElementalTokens, event: AstrologicalEvent) => boolean
-  stabilizationAction: (tokens: ElementalTokens, event: AstrologicalEvent) => Partial<ElementalTokens>
+  stabilizationAction: (
+    tokens: ElementalTokens,
+    event: AstrologicalEvent
+  ) => Partial<ElementalTokens>
   recoveryTime: number // minutes
   description: string
   hermeticPrinciple: string
@@ -51,11 +60,11 @@ export interface EmergencyResponse {
   monitoringLevel: 'standard' | 'elevated' | 'critical'
 }
 
-  /**
-   * Emergency protocols for different astrological crisis scenarios
-   * Focus on individual element health rather than forced mathematical balance
-   */
-  const EMERGENCY_PROTOCOLS: EmergencyProtocol[] = [
+/**
+ * Emergency protocols for different astrological crisis scenarios
+ * Focus on individual element health rather than forced mathematical balance
+ */
+const EMERGENCY_PROTOCOLS: EmergencyProtocol[] = [
   {
     id: 'eclipse_essence_stabilization',
     triggerCondition: (tokens, event) =>
@@ -64,17 +73,20 @@ export interface EmergencyResponse {
       tokens.essence < defaultAlchemicalMCPConfig.tokenStabilization.essence.min,
     stabilizationAction: (tokens, event) => {
       // During eclipses, lunar essence tokens need special protection
-      const essenceAdjustment = (defaultAlchemicalMCPConfig.tokenStabilization.essence.equilibrium - tokens.essence) * 0.6
+      const essenceAdjustment =
+        (defaultAlchemicalMCPConfig.tokenStabilization.essence.equilibrium - tokens.essence) * 0.6
 
       return {
         essence: tokens.essence + essenceAdjustment,
         // Support essence with complementary lunar matter
-        matter: tokens.matter + essenceAdjustment * 0.4
+        matter: tokens.matter + essenceAdjustment * 0.4,
       }
     },
     recoveryTime: 180, // 3 hours post-eclipse
-    description: 'Eclipse essence stabilization protects lunar emotional foundations during solar-lunar conjunctions',
-    hermeticPrinciple: 'As above, so below: Solar eclipses unite celestial opposites - protect lunar essence'
+    description:
+      'Eclipse essence stabilization protects lunar emotional foundations during solar-lunar conjunctions',
+    hermeticPrinciple:
+      'As above, so below: Solar eclipses unite celestial opposites - protect lunar essence',
   },
 
   {
@@ -111,7 +123,7 @@ export interface EmergencyResponse {
     },
     recoveryTime: 120, // 2 hours post-aspect
     description: 'Grand cross elemental harmonization strengthens deficient planetary influences',
-    hermeticPrinciple: 'Balance through understanding opposition - strengthen planetary rulerships'
+    hermeticPrinciple: 'Balance through understanding opposition - strengthen planetary rulerships',
   },
 
   {
@@ -121,19 +133,21 @@ export interface EmergencyResponse {
       tokens.spirit > defaultAlchemicalMCPConfig.tokenStabilization.spirit.max * 0.8,
     stabilizationAction: (tokens, event) => {
       // During retrograde storms, excessive spirit energy needs grounding
-      const spiritReduction = (tokens.spirit - defaultAlchemicalMCPConfig.tokenStabilization.spirit.equilibrium) * 0.4
+      const spiritReduction =
+        (tokens.spirit - defaultAlchemicalMCPConfig.tokenStabilization.spirit.equilibrium) * 0.4
 
       return {
         spirit: tokens.spirit - spiritReduction,
         // Ground excess spirit in saturnine matter structure
         matter: tokens.matter + spiritReduction * 0.6,
         // Provide mercurial substance foundation
-        substance: tokens.substance + spiritReduction * 0.4
+        substance: tokens.substance + spiritReduction * 0.4,
       }
     },
     recoveryTime: 240, // 4 hours during retrograde storm
-    description: 'Retrograde spirit grounding stabilizes volatile mental energy through material structure',
-    hermeticPrinciple: 'During apparent backward motion, ground spirit in saturnine matter'
+    description:
+      'Retrograde spirit grounding stabilizes volatile mental energy through material structure',
+    hermeticPrinciple: 'During apparent backward motion, ground spirit in saturnine matter',
   },
 
   {
@@ -148,7 +162,8 @@ export interface EmergencyResponse {
 
       // Reduce excessive spirit concentration (solar/mercurial overload)
       if (tokens.spirit > 2.0) {
-        const reduction = (tokens.spirit - defaultAlchemicalMCPConfig.tokenStabilization.spirit.equilibrium) * 0.3
+        const reduction =
+          (tokens.spirit - defaultAlchemicalMCPConfig.tokenStabilization.spirit.equilibrium) * 0.3
         adjustments.spirit = tokens.spirit - reduction
         adjustments.matter = (adjustments.matter || tokens.matter) + reduction * 0.5
         adjustments.substance = (adjustments.substance || tokens.substance) + reduction * 0.5
@@ -156,7 +171,8 @@ export interface EmergencyResponse {
 
       // Reduce excessive essence concentration (lunar/venusian overload)
       if (tokens.essence > 2.5) {
-        const reduction = (tokens.essence - defaultAlchemicalMCPConfig.tokenStabilization.essence.equilibrium) * 0.3
+        const reduction =
+          (tokens.essence - defaultAlchemicalMCPConfig.tokenStabilization.essence.equilibrium) * 0.3
         adjustments.essence = tokens.essence - reduction
         adjustments.spirit = (adjustments.spirit || tokens.spirit) + reduction * 0.4
       }
@@ -164,8 +180,10 @@ export interface EmergencyResponse {
       return adjustments
     },
     recoveryTime: 90, // 1.5 hours post-station
-    description: 'Planetary station energy distribution prevents elemental overload from concentrated celestial power',
-    hermeticPrinciple: 'Stationary planets concentrate power - distribute wisely across elemental realms'
+    description:
+      'Planetary station energy distribution prevents elemental overload from concentrated celestial power',
+    hermeticPrinciple:
+      'Stationary planets concentrate power - distribute wisely across elemental realms',
   },
 
   {
@@ -175,18 +193,21 @@ export interface EmergencyResponse {
       tokens.essence < defaultAlchemicalMCPConfig.tokenStabilization.essence.min,
     stabilizationAction: (tokens, event) => {
       // Void moon periods require essence preservation without new initiations
-      const essenceBoost = (defaultAlchemicalMCPConfig.tokenStabilization.essence.equilibrium - tokens.essence) * 0.4
+      const essenceBoost =
+        (defaultAlchemicalMCPConfig.tokenStabilization.essence.equilibrium - tokens.essence) * 0.4
 
       return {
         essence: tokens.essence + essenceBoost,
         // Support with lunar matter but don't initiate new spirit activities
-        matter: tokens.matter + essenceBoost * 0.3
+        matter: tokens.matter + essenceBoost * 0.3,
       }
     },
     recoveryTime: 60, // 1 hour during void period
-    description: 'Void moon essence protection preserves emotional stability during lunar rest periods',
-    hermeticPrinciple: 'In silence, essence finds its natural equilibrium - avoid new spirit initiations'
-  }
+    description:
+      'Void moon essence protection preserves emotional stability during lunar rest periods',
+    hermeticPrinciple:
+      'In silence, essence finds its natural equilibrium - avoid new spirit initiations',
+  },
 ]
 
 /**
@@ -201,7 +222,10 @@ export class AlchemicalEmergencyHandler {
   /**
    * Assess current astrological situation and determine if emergency protocols are needed
    */
-  assessEmergency(tokens: ElementalTokens, activeEvents: AstrologicalEvent[]): EmergencyResponse | null {
+  assessEmergency(
+    tokens: ElementalTokens,
+    activeEvents: AstrologicalEvent[]
+  ): EmergencyResponse | null {
     // Early return if no events to process
     if (!activeEvents.length) return null
 
@@ -222,7 +246,7 @@ export class AlchemicalEmergencyHandler {
             protocol,
             adjustments,
             recoveryDeadline: new Date(Date.now() + protocol.recoveryTime * 60 * 1000),
-            monitoringLevel: this.determineMonitoringLevel(event, tokens)
+            monitoringLevel: this.determineMonitoringLevel(event, tokens),
           }
 
           // Log emergency activation
@@ -234,8 +258,8 @@ export class AlchemicalEmergencyHandler {
               severity: event.severity,
               adjustments,
               recoveryTime: protocol.recoveryTime,
-              hermeticPrinciple: protocol.hermeticPrinciple
-            }
+              hermeticPrinciple: protocol.hermeticPrinciple,
+            },
           })
 
           this.activeEmergencies.set(protocol.id, response)
@@ -252,7 +276,7 @@ export class AlchemicalEmergencyHandler {
   /**
    * Check if any active emergencies need recovery monitoring
    */
-  checkRecoveryStatus(): { recovering: EmergencyResponse[], completed: string[] } {
+  checkRecoveryStatus(): { recovering: EmergencyResponse[]; completed: string[] } {
     const now = new Date()
     const recovering: EmergencyResponse[] = []
     const completed: string[] = []
@@ -266,8 +290,8 @@ export class AlchemicalEmergencyHandler {
           operation: 'emergency_recovery',
           metadata: {
             protocolId,
-            duration: response.protocol?.recoveryTime
-          }
+            duration: response.protocol?.recoveryTime,
+          },
         })
       } else {
         recovering.push(response)
@@ -290,7 +314,10 @@ export class AlchemicalEmergencyHandler {
 
         // Ensure bounds are respected
         const config = defaultAlchemicalMCPConfig.tokenStabilization[elementKey]
-        adjustedTokens[elementKey] = Math.max(config.min, Math.min(config.max, adjustedTokens[elementKey]))
+        adjustedTokens[elementKey] = Math.max(
+          config.min,
+          Math.min(config.max, adjustedTokens[elementKey])
+        )
       }
     })
 
@@ -305,8 +332,8 @@ export class AlchemicalEmergencyHandler {
           protocolId: response.protocol?.id,
           beforeHealth: beforeEquilibrium.overallHealth,
           afterHealth: afterEquilibrium.overallHealth,
-          improvement: beforeEquilibrium.overallHealth - afterEquilibrium.overallHealth
-        }
+          improvement: beforeEquilibrium.overallHealth - afterEquilibrium.overallHealth,
+        },
       })
     } else {
       logger.warn('Emergency adjustments did not improve equilibrium', {
@@ -314,8 +341,8 @@ export class AlchemicalEmergencyHandler {
         metadata: {
           protocolId: response.protocol?.id,
           beforeHealth: beforeEquilibrium.overallHealth,
-          afterHealth: afterEquilibrium.overallHealth
-        }
+          afterHealth: afterEquilibrium.overallHealth,
+        },
       })
     }
 
@@ -335,7 +362,7 @@ export class AlchemicalEmergencyHandler {
       .map(event => ({
         event,
         riskLevel: this.calculateEventRisk(event),
-        preparationSteps: this.getPreparationSteps(event)
+        preparationSteps: this.getPreparationSteps(event),
       }))
       .sort((a, b) => {
         const severityOrder = { low: 0, medium: 1, high: 2, critical: 3 }
@@ -346,10 +373,13 @@ export class AlchemicalEmergencyHandler {
   /**
    * Comprehensive emergency monitoring and response
    */
-  monitorAndRespond(tokens: ElementalTokens, activeEvents: AstrologicalEvent[]): {
+  monitorAndRespond(
+    tokens: ElementalTokens,
+    activeEvents: AstrologicalEvent[]
+  ): {
     emergency: EmergencyResponse | null
     adjustedTokens: ElementalTokens
-    alerts: Array<{ event: AstrologicalEvent, riskLevel: string, preparationSteps: string[] }>
+    alerts: Array<{ event: AstrologicalEvent; riskLevel: string; preparationSteps: string[] }>
   } {
     // Check for active emergency recovery
     this.checkRecoveryStatus()
@@ -358,9 +388,7 @@ export class AlchemicalEmergencyHandler {
     const emergency = this.assessEmergency(tokens, activeEvents)
 
     // Apply emergency adjustments if needed
-    const adjustedTokens = emergency
-      ? this.applyEmergencyAdjustments(tokens, emergency)
-      : tokens
+    const adjustedTokens = emergency ? this.applyEmergencyAdjustments(tokens, emergency) : tokens
 
     // Get predictive alerts
     const alerts = this.getPredictiveAlerts(activeEvents)
@@ -368,14 +396,17 @@ export class AlchemicalEmergencyHandler {
     return {
       emergency,
       adjustedTokens,
-      alerts
+      alerts,
     }
   }
 
   /**
    * Determine monitoring level based on event severity and token stability
    */
-  private determineMonitoringLevel(event: AstrologicalEvent, tokens: ElementalTokens): 'standard' | 'elevated' | 'critical' {
+  private determineMonitoringLevel(
+    event: AstrologicalEvent,
+    tokens: ElementalTokens
+  ): 'standard' | 'elevated' | 'critical' {
     const equilibrium = validateTokenEquilibrium(tokens)
     const hasImbalance = equilibrium.overallHealth < 0.7
 
@@ -394,10 +425,11 @@ export class AlchemicalEmergencyHandler {
   private calculateEventRisk(event: AstrologicalEvent): 'low' | 'medium' | 'high' | 'critical' {
     const severityScore = { low: 1, medium: 2, high: 3, critical: 4 }[event.severity]
     const planetCount = event.planets.length
-    const durationHours = (event.duration.end.getTime() - event.duration.start.getTime()) / (1000 * 60 * 60)
+    const durationHours =
+      (event.duration.end.getTime() - event.duration.start.getTime()) / (1000 * 60 * 60)
 
     // Risk increases with severity, planet involvement, and duration
-    const riskScore = severityScore + (planetCount * 0.5) + (durationHours * 0.1)
+    const riskScore = severityScore + planetCount * 0.5 + durationHours * 0.1
 
     if (riskScore >= 5) return 'critical'
     if (riskScore >= 3.5) return 'high'
@@ -412,7 +444,7 @@ export class AlchemicalEmergencyHandler {
     const baseSteps = [
       'Monitor token equilibrium closely',
       'Prepare emergency stabilization protocols',
-      'Log baseline token values'
+      'Log baseline token values',
     ]
 
     switch (event.type) {
@@ -421,35 +453,35 @@ export class AlchemicalEmergencyHandler {
           ...baseSteps,
           'Secure essence token stability during lunar eclipse',
           'Monitor spirit-matter balance during solar eclipse',
-          'Prepare for sudden energetic shifts'
+          'Prepare for sudden energetic shifts',
         ]
       case 'grand_cross':
         return [
           ...baseSteps,
           'Balance all four elements during cross tensions',
           'Monitor for elemental conflicts',
-          'Prepare for rapid stabilization needs'
+          'Prepare for rapid stabilization needs',
         ]
       case 'retrograde_storm':
         return [
           ...baseSteps,
           'Ground excess spirit energy in matter',
           'Monitor communication token stability',
-          'Prepare for extended volatility period'
+          'Prepare for extended volatility period',
         ]
       case 'planetary_station':
         return [
           ...baseSteps,
           'Monitor planet-specific token concentrations',
           'Prepare for energy intensification',
-          'Track token flow during stationary period'
+          'Track token flow during stationary period',
         ]
       case 'void_moon':
         return [
           ...baseSteps,
           'Preserve essence token equilibrium',
           'Minimize major energetic changes',
-          'Maintain stable token baseline'
+          'Maintain stable token baseline',
         ]
       default:
         return baseSteps
@@ -469,7 +501,7 @@ export class AlchemicalEmergencyHandler {
     return {
       level: this.monitoringLevel,
       activeEmergencies: this.activeEmergencies.size,
-      recoveryProtocols: recovering.length
+      recoveryProtocols: recovering.length,
     }
   }
 }
@@ -493,6 +525,9 @@ export function assessEmergencySituation(
 /**
  * Get emergency preparation recommendations
  */
-export function getEmergencyPreparation(tokens: ElementalTokens, upcomingEvents: AstrologicalEvent[]) {
+export function getEmergencyPreparation(
+  tokens: ElementalTokens,
+  upcomingEvents: AstrologicalEvent[]
+) {
   return emergencyHandler.getPredictiveAlerts(upcomingEvents)
 }

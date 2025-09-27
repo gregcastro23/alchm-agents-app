@@ -68,9 +68,9 @@ const basicTransitsCB = new CircuitBreaker()
 export class PlanetaryPositionsService {
   private cache = new Map<string, { data: PlanetaryData; timestamp: number; expiresAt: number }>()
   private readonly cacheTTL = {
-    high: 5 * 60 * 1000,     // 5 minutes for high accuracy
-    medium: 15 * 60 * 1000,  // 15 minutes for medium
-    low: 60 * 60 * 1000,     // 1 hour for low
+    high: 5 * 60 * 1000, // 5 minutes for high accuracy
+    medium: 15 * 60 * 1000, // 15 minutes for medium
+    low: 60 * 60 * 1000, // 1 hour for low
     fallback: 24 * 60 * 60 * 1000, // 24 hours for fallback
   }
 
@@ -80,9 +80,10 @@ export class PlanetaryPositionsService {
   private generateCacheKey(date: Date, accuracy: AccuracyLevel): string {
     // Cache by hour for high/medium, by day for low/fallback
     const precision = accuracy === 'high' || accuracy === 'medium' ? 'hour' : 'day'
-    const timeKey = precision === 'hour'
-      ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${date.getHours()}`
-      : `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+    const timeKey =
+      precision === 'hour'
+        ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${date.getHours()}`
+        : `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
 
     return `planetary-${precision}-${timeKey}-${accuracy}`
   }
@@ -124,8 +125,9 @@ export class PlanetaryPositionsService {
 
     // Cleanup old cache entries (keep last 100)
     if (this.cache.size > 100) {
-      const entries = Array.from(this.cache.entries())
-        .sort(([,a], [,b]) => a.timestamp - b.timestamp)
+      const entries = Array.from(this.cache.entries()).sort(
+        ([, a], [, b]) => a.timestamp - b.timestamp
+      )
 
       entries.slice(0, 20).forEach(([key]) => this.cache.delete(key))
     }
@@ -134,7 +136,10 @@ export class PlanetaryPositionsService {
   /**
    * Method 1: External API (highest accuracy)
    */
-  private async fetchFromExternalAPI(date: Date, options: ServiceOptions): Promise<PlanetaryData | null> {
+  private async fetchFromExternalAPI(
+    date: Date,
+    options: ServiceOptions
+  ): Promise<PlanetaryData | null> {
     try {
       // Create birth info for current moment
       const birthInfo: BirthInfo = {
@@ -149,12 +154,12 @@ export class PlanetaryPositionsService {
       }
 
       const result = await externalApiCB.exec(async () => {
-        return await Promise.race([
+        return (await Promise.race([
           fetchAlchmize({ birth: birthInfo }),
           new Promise((_, reject) =>
             setTimeout(() => reject(new Error('External API timeout')), options.timeout)
-          )
-        ]) as any
+          ),
+        ])) as any
       })
 
       if (!result.result?.astrologize) {
@@ -164,7 +169,6 @@ export class PlanetaryPositionsService {
       // This is a fallback - external API doesn't provide planetary positions directly
       // We would need to parse the astrologize SVG or use a different approach
       return null
-
     } catch (error) {
       console.warn('External API planetary positions failed:', error)
       return null
@@ -174,7 +178,10 @@ export class PlanetaryPositionsService {
   /**
    * Method 2: Enhanced Astronomical Calculator (high accuracy)
    */
-  private async fetchFromEnhancedCalculator(date: Date, options: ServiceOptions): Promise<PlanetaryData> {
+  private async fetchFromEnhancedCalculator(
+    date: Date,
+    options: ServiceOptions
+  ): Promise<PlanetaryData> {
     try {
       const birthInfo: EnhancedBirthInfo = {
         year: date.getUTCFullYear(),
@@ -192,7 +199,7 @@ export class PlanetaryPositionsService {
           calculateAllPlanets(birthInfo),
           new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Enhanced calculator timeout')), options.timeout)
-          )
+          ),
         ])
       })
 
@@ -200,14 +207,16 @@ export class PlanetaryPositionsService {
         throw new Error('Enhanced calculator returned no result')
       }
 
-      const planetaryPositions: PlanetaryPosition[] = Object.entries(result.result.planets).map(([planet, pos]: [string, any]) => ({
-        planet,
-        sign: pos.sign || 'Aries',
-        degree: Math.max(0, Math.min(29.9999, pos.signDegree || 0)),
-        longitude: pos.longitude,
-        retrograde: Boolean(pos.retrograde),
-        speed: pos.speed,
-      }))
+      const planetaryPositions: PlanetaryPosition[] = Object.entries(result.result.planets).map(
+        ([planet, pos]: [string, any]) => ({
+          planet,
+          sign: pos.sign || 'Aries',
+          degree: Math.max(0, Math.min(29.9999, pos.signDegree || 0)),
+          longitude: pos.longitude,
+          retrograde: Boolean(pos.retrograde),
+          speed: pos.speed,
+        })
+      )
 
       return {
         timestamp: date.toISOString(),
@@ -216,7 +225,6 @@ export class PlanetaryPositionsService {
         accuracy: 'high',
         cached: false,
       }
-
     } catch (error) {
       console.warn('Enhanced calculator failed:', error)
       throw error
@@ -226,14 +234,17 @@ export class PlanetaryPositionsService {
   /**
    * Method 3: Basic Transit Calculations (medium accuracy)
    */
-  private async fetchFromBasicTransits(date: Date, options: ServiceOptions): Promise<PlanetaryData> {
+  private async fetchFromBasicTransits(
+    date: Date,
+    options: ServiceOptions
+  ): Promise<PlanetaryData> {
     try {
       const result = await basicTransitsCB.exec(async () => {
         return await Promise.race([
           getCurrentPlanetaryPositions(date.getTime()),
           new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Basic transits timeout')), options.timeout)
-          )
+          ),
         ])
       })
 
@@ -241,12 +252,14 @@ export class PlanetaryPositionsService {
         throw new Error('Basic transits returned no result')
       }
 
-      const planetaryPositions: PlanetaryPosition[] = Object.entries(result.result).map(([planet, pos]: [string, any]) => ({
-        planet,
-        sign: pos.sign || 'Aries',
-        degree: Math.max(0, Math.min(29.9999, parseFloat(pos.degree) || 0)),
-        retrograde: Boolean(pos.retrograde),
-      }))
+      const planetaryPositions: PlanetaryPosition[] = Object.entries(result.result).map(
+        ([planet, pos]: [string, any]) => ({
+          planet,
+          sign: pos.sign || 'Aries',
+          degree: Math.max(0, Math.min(29.9999, parseFloat(pos.degree) || 0)),
+          retrograde: Boolean(pos.retrograde),
+        })
+      )
 
       return {
         timestamp: date.toISOString(),
@@ -255,7 +268,6 @@ export class PlanetaryPositionsService {
         accuracy: 'medium',
         cached: false,
       }
-
     } catch (error) {
       console.warn('Basic transits failed:', error)
       throw error
@@ -317,26 +329,48 @@ export class PlanetaryPositionsService {
 
     if (opts.accuracy === 'high') {
       methods.push(
-        { method: () => this.fetchFromExternalAPI(date, opts), source: 'external-api', accuracy: 'high' },
-        { method: () => this.fetchFromEnhancedCalculator(date, opts), source: 'enhanced-calculator', accuracy: 'high' },
-        { method: () => this.fetchFromBasicTransits(date, opts), source: 'basic-transits', accuracy: 'medium' },
+        {
+          method: () => this.fetchFromExternalAPI(date, opts),
+          source: 'external-api',
+          accuracy: 'high',
+        },
+        {
+          method: () => this.fetchFromEnhancedCalculator(date, opts),
+          source: 'enhanced-calculator',
+          accuracy: 'high',
+        },
+        {
+          method: () => this.fetchFromBasicTransits(date, opts),
+          source: 'basic-transits',
+          accuracy: 'medium',
+        }
       )
     } else if (opts.accuracy === 'medium') {
       methods.push(
-        { method: () => this.fetchFromEnhancedCalculator(date, opts), source: 'enhanced-calculator', accuracy: 'high' },
-        { method: () => this.fetchFromBasicTransits(date, opts), source: 'basic-transits', accuracy: 'medium' },
+        {
+          method: () => this.fetchFromEnhancedCalculator(date, opts),
+          source: 'enhanced-calculator',
+          accuracy: 'high',
+        },
+        {
+          method: () => this.fetchFromBasicTransits(date, opts),
+          source: 'basic-transits',
+          accuracy: 'medium',
+        }
       )
     } else if (opts.accuracy === 'low') {
-      methods.push(
-        { method: () => this.fetchFromBasicTransits(date, opts), source: 'basic-transits', accuracy: 'medium' },
-      )
+      methods.push({
+        method: () => this.fetchFromBasicTransits(date, opts),
+        source: 'basic-transits',
+        accuracy: 'medium',
+      })
     }
 
     // Always have static fallback as last resort
     methods.push({
       method: () => Promise.resolve(this.getStaticFallbackPositions(date)),
       source: 'static-fallback',
-      accuracy: 'fallback'
+      accuracy: 'fallback',
     })
 
     // Try methods in order

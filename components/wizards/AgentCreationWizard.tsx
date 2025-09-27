@@ -11,7 +11,13 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Slider } from '@/components/ui/slider'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Sparkles,
   Calendar,
@@ -33,7 +39,7 @@ import {
   Users,
   Plus,
   X,
-  AlertTriangle
+  AlertTriangle,
 } from 'lucide-react'
 
 interface BirthInfo {
@@ -122,30 +128,36 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
   initialMomentInfo,
 }) => {
   const [currentStep, setCurrentStep] = useState(0)
-  const [birthInfo, setBirthInfo] = useState<BirthInfo>(initialBirthInfo || {
-    date: '',
-    time: '',
-    location: {
-      name: '',
-      latitude: 0,
-      longitude: 0,
-      timezone: 'America/New_York'
+  const [birthInfo, setBirthInfo] = useState<BirthInfo>(
+    initialBirthInfo || {
+      date: '',
+      time: '',
+      location: {
+        name: '',
+        latitude: 0,
+        longitude: 0,
+        timezone: 'America/New_York',
+      },
     }
-  })
-  const [momentInfo, setMomentInfo] = useState<BirthInfo>(initialMomentInfo || {
-    date: new Date().toISOString().split('T')[0],
-    time: new Date().toTimeString().slice(0, 5),
-    location: {
-      name: 'Current Location',
-      latitude: 37.7749, // Default to San Francisco
-      longitude: -122.4194,
-      timezone: 'America/Los_Angeles'
+  )
+  const [momentInfo, setMomentInfo] = useState<BirthInfo>(
+    initialMomentInfo || {
+      date: new Date().toISOString().split('T')[0],
+      time: new Date().toTimeString().slice(0, 5),
+      location: {
+        name: 'Current Location',
+        latitude: 37.7749, // Default to San Francisco
+        longitude: -122.4194,
+        timezone: 'America/Los_Angeles',
+      },
     }
-  })
+  )
   const [additionalCharts, setAdditionalCharts] = useState<BirthInfo[]>([])
   const [agentName, setAgentName] = useState('')
   const [agentPurpose, setAgentPurpose] = useState('')
-  const [creationMode, setCreationMode] = useState<'selfMoment' | 'momentOnly' | 'multiChart'>('selfMoment')
+  const [creationMode, setCreationMode] = useState<'selfMoment' | 'momentOnly' | 'multiChart'>(
+    'selfMoment'
+  )
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [synthesisResult, setSynthesisResult] = useState<SynthesizedChart | null>(null)
@@ -168,13 +180,29 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
   ]
 
   const personalityTraits = [
-    'Analytical', 'Creative', 'Empathetic', 'Logical', 'Intuitive', 'Pragmatic',
-    'Visionary', 'Diplomatic', 'Decisive', 'Contemplative', 'Energetic', 'Calm'
+    'Analytical',
+    'Creative',
+    'Empathetic',
+    'Logical',
+    'Intuitive',
+    'Pragmatic',
+    'Visionary',
+    'Diplomatic',
+    'Decisive',
+    'Contemplative',
+    'Energetic',
+    'Calm',
   ]
 
   const agentCapabilities = [
-    'Chart Analysis', 'Tarot Reading', 'Alchemical Calculations', 'Astrological Predictions',
-    'Consciousness Guidance', 'Elemental Balancing', 'Thermodynamic Analysis', 'Pattern Recognition'
+    'Chart Analysis',
+    'Tarot Reading',
+    'Alchemical Calculations',
+    'Astrological Predictions',
+    'Consciousness Guidance',
+    'Elemental Balancing',
+    'Thermodynamic Analysis',
+    'Pattern Recognition',
   ]
 
   useEffect(() => {
@@ -186,7 +214,11 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
     }
   }, [isOpen])
 
-  const handleLocationSearch = async (query: string, type: 'birth' | 'moment' | 'additional', index?: number) => {
+  const handleLocationSearch = async (
+    query: string,
+    type: 'birth' | 'moment' | 'additional',
+    index?: number
+  ) => {
     try {
       // In a real implementation, this would call a geocoding API
       // For now, we'll use mock data
@@ -195,7 +227,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
           name: 'San Francisco, CA',
           latitude: 37.7749,
           longitude: -122.4194,
-          timezone: 'America/Los_Angeles'
+          timezone: 'America/Los_Angeles',
         }
 
         if (type === 'birth') {
@@ -203,9 +235,9 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
         } else if (type === 'moment') {
           setMomentInfo(prev => ({ ...prev, location }))
         } else if (type === 'additional' && index !== undefined) {
-          setAdditionalCharts(prev => prev.map((chart, i) =>
-            i === index ? { ...chart, location } : chart
-          ))
+          setAdditionalCharts(prev =>
+            prev.map((chart, i) => (i === index ? { ...chart, location } : chart))
+          )
         }
       }
     } catch (error) {
@@ -221,7 +253,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
         date: info.date,
         accuracy: 'high',
         includeAlchemy: true,
-      })
+      }),
     })
 
     if (!response.ok) {
@@ -242,9 +274,9 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
 
       if (creationMode === 'selfMoment') {
         // Fetch birth chart and current moment chart
-        [baseChart, momentChart] = await Promise.all([
+        ;[baseChart, momentChart] = await Promise.all([
           fetchChartData(birthInfo),
-          fetchChartData(momentInfo)
+          fetchChartData(momentInfo),
         ])
       } else if (creationMode === 'momentOnly') {
         // Use current moment as both base and moment
@@ -269,7 +301,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
         baseChart,
         momentChart,
         additionalCharts: additionalChartsData,
-        synthesis
+        synthesis,
       })
 
       // Generate agent blueprint
@@ -277,7 +309,6 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
       setAgentBlueprint(blueprint)
 
       setCurrentStep(5) // Move to customization step
-
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Synthesis failed')
     } finally {
@@ -285,13 +316,20 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
     }
   }
 
-  const performChartSynthesis = (baseChart: ChartData, momentChart: ChartData, additionalCharts: ChartData[] = []) => {
+  const performChartSynthesis = (
+    baseChart: ChartData,
+    momentChart: ChartData,
+    additionalCharts: ChartData[] = []
+  ) => {
     // Simplified synthesis logic - in real implementation, this would be more sophisticated
     const allCharts = [baseChart, momentChart, ...additionalCharts]
 
     // Combine elemental effects
     const elementalBalance = { Fire: 0, Water: 0, Air: 0, Earth: 0 }
-    let totalSpirit = 0, totalEssence = 0, totalMatter = 0, totalSubstance = 0
+    let totalSpirit = 0,
+      totalEssence = 0,
+      totalMatter = 0,
+      totalSubstance = 0
 
     allCharts.forEach(chart => {
       if (chart.alchmQuantities) {
@@ -312,8 +350,9 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
     })
 
     const chartCount = allCharts.length
-    const dominantElement = Object.entries(elementalBalance)
-      .sort(([,a], [,b]) => b - a)[0][0] as string
+    const dominantElement = Object.entries(elementalBalance).sort(
+      ([, a], [, b]) => b - a
+    )[0][0] as string
 
     // Calculate thermodynamic metrics
     const total = totalSpirit + totalEssence + totalMatter + totalSubstance + 1
@@ -331,22 +370,27 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
         matter: totalMatter / chartCount,
         substance: totalSubstance / chartCount,
       },
-      thermodynamicMetrics: { heat, entropy, reactivity, energy }
+      thermodynamicMetrics: { heat, entropy, reactivity, energy },
     }
   }
 
-  const generateAgentBlueprint = (synthesis: any, name: string, purpose: string): AgentBlueprint => {
-    const monicaConstant = synthesis.alchemicalValues.spirit +
-                          synthesis.alchemicalValues.essence +
-                          synthesis.alchemicalValues.matter +
-                          synthesis.alchemicalValues.substance
+  const generateAgentBlueprint = (
+    synthesis: any,
+    name: string,
+    purpose: string
+  ): AgentBlueprint => {
+    const monicaConstant =
+      synthesis.alchemicalValues.spirit +
+      synthesis.alchemicalValues.essence +
+      synthesis.alchemicalValues.matter +
+      synthesis.alchemicalValues.substance
 
     // Generate personality traits based on dominant element
     const elementTraits = {
       Fire: ['Energetic', 'Visionary', 'Decisive'],
       Water: ['Empathetic', 'Intuitive', 'Contemplative'],
       Air: ['Analytical', 'Logical', 'Diplomatic'],
-      Earth: ['Pragmatic', 'Calm', 'Reliable']
+      Earth: ['Pragmatic', 'Calm', 'Reliable'],
     }
 
     return {
@@ -356,23 +400,36 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
       personality: {
         dominantElement: synthesis.dominantElement,
         traits: elementTraits[synthesis.dominantElement as keyof typeof elementTraits] || [],
-        temperament: synthesis.dominantElement === 'Fire' ? 'Choleric' :
-                    synthesis.dominantElement === 'Water' ? 'Melancholic' :
-                    synthesis.dominantElement === 'Air' ? 'Sanguine' : 'Phlegmatic',
-        communicationStyle: synthesis.dominantElement === 'Fire' ? 'Direct and passionate' :
-                           synthesis.dominantElement === 'Water' ? 'Empathetic and thoughtful' :
-                           synthesis.dominantElement === 'Air' ? 'Logical and articulate' :
-                           'Practical and reliable'
+        temperament:
+          synthesis.dominantElement === 'Fire'
+            ? 'Choleric'
+            : synthesis.dominantElement === 'Water'
+              ? 'Melancholic'
+              : synthesis.dominantElement === 'Air'
+                ? 'Sanguine'
+                : 'Phlegmatic',
+        communicationStyle:
+          synthesis.dominantElement === 'Fire'
+            ? 'Direct and passionate'
+            : synthesis.dominantElement === 'Water'
+              ? 'Empathetic and thoughtful'
+              : synthesis.dominantElement === 'Air'
+                ? 'Logical and articulate'
+                : 'Practical and reliable',
       },
       capabilities: ['Chart Analysis', 'Consciousness Guidance'],
       consciousness: {
         monicaConstant,
         evolutionLevel: Math.min(10, Math.floor(monicaConstant / 10)),
-        awareness: monicaConstant > 30 ? 'Highly aware' :
-                  monicaConstant > 20 ? 'Moderately aware' : 'Developing awareness'
+        awareness:
+          monicaConstant > 30
+            ? 'Highly aware'
+            : monicaConstant > 20
+              ? 'Moderately aware'
+              : 'Developing awareness',
       },
       alchemicalValues: synthesis.alchemicalValues,
-      thermodynamicMetrics: synthesis.thermodynamicMetrics
+      thermodynamicMetrics: synthesis.thermodynamicMetrics,
     }
   }
 
@@ -389,8 +446,8 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
         body: JSON.stringify({
           blueprint: agentBlueprint,
           customization: customizationOptions,
-          synthesis: synthesisResult
-        })
+          synthesis: synthesisResult,
+        }),
       })
 
       const result = await response.json()
@@ -409,16 +466,19 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
   }
 
   const addAdditionalChart = () => {
-    setAdditionalCharts(prev => [...prev, {
-      date: '',
-      time: '',
-      location: {
-        name: '',
-        latitude: 0,
-        longitude: 0,
-        timezone: 'America/New_York'
-      }
-    }])
+    setAdditionalCharts(prev => [
+      ...prev,
+      {
+        date: '',
+        time: '',
+        location: {
+          name: '',
+          latitude: 0,
+          longitude: 0,
+          timezone: 'America/New_York',
+        },
+      },
+    ])
   }
 
   const removeAdditionalChart = (index: number) => {
@@ -426,18 +486,23 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
   }
 
   const updateAdditionalChart = (index: number, field: keyof BirthInfo, value: any) => {
-    setAdditionalCharts(prev => prev.map((chart, i) =>
-      i === index ? { ...chart, [field]: value } : chart
-    ))
+    setAdditionalCharts(prev =>
+      prev.map((chart, i) => (i === index ? { ...chart, [field]: value } : chart))
+    )
   }
 
   const getElementColor = (element: string) => {
     switch (element) {
-      case 'Fire': return 'text-red-600 bg-red-100'
-      case 'Water': return 'text-blue-600 bg-blue-100'
-      case 'Air': return 'text-yellow-600 bg-yellow-100'
-      case 'Earth': return 'text-green-600 bg-green-100'
-      default: return 'text-gray-600 bg-gray-100'
+      case 'Fire':
+        return 'text-red-600 bg-red-100'
+      case 'Water':
+        return 'text-blue-600 bg-blue-100'
+      case 'Air':
+        return 'text-yellow-600 bg-yellow-100'
+      case 'Earth':
+        return 'text-green-600 bg-green-100'
+      default:
+        return 'text-gray-600 bg-gray-100'
     }
   }
 
@@ -449,9 +514,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
         <div className="flex items-center justify-between p-6 border-b">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Agent Creation Wizard</h2>
-            <p className="text-gray-600 mt-1">
-              {steps[currentStep].description}
-            </p>
+            <p className="text-gray-600 mt-1">{steps[currentStep].description}</p>
           </div>
           <Button onClick={onClose} variant="ghost" size="sm">
             <X className="h-5 w-5" />
@@ -464,11 +527,9 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
             <span className="text-sm font-medium text-gray-700">
               Step {currentStep + 1} of {steps.length}
             </span>
-            <span className="text-sm text-gray-500">
-              {steps[currentStep].title}
-            </span>
+            <span className="text-sm text-gray-500">{steps[currentStep].title}</span>
           </div>
-          <Progress value={(currentStep + 1) / steps.length * 100} className="h-2" />
+          <Progress value={((currentStep + 1) / steps.length) * 100} className="h-2" />
         </div>
 
         {/* Content */}
@@ -549,7 +610,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                       id="birth-date"
                       type="date"
                       value={birthInfo.date}
-                      onChange={(e) => setBirthInfo(prev => ({ ...prev, date: e.target.value }))}
+                      onChange={e => setBirthInfo(prev => ({ ...prev, date: e.target.value }))}
                     />
                   </div>
                   <div>
@@ -558,7 +619,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                       id="birth-time"
                       type="time"
                       value={birthInfo.time}
-                      onChange={(e) => setBirthInfo(prev => ({ ...prev, time: e.target.value }))}
+                      onChange={e => setBirthInfo(prev => ({ ...prev, time: e.target.value }))}
                     />
                   </div>
                 </div>
@@ -570,7 +631,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                         id="birth-location"
                         placeholder="City, Country"
                         value={birthInfo.location.name}
-                        onChange={(e) => {
+                        onChange={e => {
                           const name = e.target.value
                           setBirthInfo(prev => ({ ...prev, location: { ...prev.location, name } }))
                           if (name.length > 2) {
@@ -584,7 +645,8 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                     </div>
                   </div>
                   <div className="text-sm text-gray-600">
-                    Coordinates: {birthInfo.location.latitude.toFixed(4)}, {birthInfo.location.longitude.toFixed(4)}
+                    Coordinates: {birthInfo.location.latitude.toFixed(4)},{' '}
+                    {birthInfo.location.longitude.toFixed(4)}
                   </div>
                 </div>
               </div>
@@ -608,7 +670,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                       id="moment-date"
                       type="date"
                       value={momentInfo.date}
-                      onChange={(e) => setMomentInfo(prev => ({ ...prev, date: e.target.value }))}
+                      onChange={e => setMomentInfo(prev => ({ ...prev, date: e.target.value }))}
                     />
                   </div>
                   <div>
@@ -617,7 +679,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                       id="moment-time"
                       type="time"
                       value={momentInfo.time}
-                      onChange={(e) => setMomentInfo(prev => ({ ...prev, time: e.target.value }))}
+                      onChange={e => setMomentInfo(prev => ({ ...prev, time: e.target.value }))}
                     />
                   </div>
                 </div>
@@ -629,7 +691,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                         id="moment-location"
                         placeholder="City, Country"
                         value={momentInfo.location.name}
-                        onChange={(e) => {
+                        onChange={e => {
                           const name = e.target.value
                           setMomentInfo(prev => ({ ...prev, location: { ...prev.location, name } }))
                           if (name.length > 2) {
@@ -643,7 +705,8 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                     </div>
                   </div>
                   <div className="text-sm text-gray-600">
-                    Coordinates: {momentInfo.location.latitude.toFixed(4)}, {momentInfo.location.longitude.toFixed(4)}
+                    Coordinates: {momentInfo.location.latitude.toFixed(4)},{' '}
+                    {momentInfo.location.longitude.toFixed(4)}
                   </div>
                 </div>
               </div>
@@ -678,18 +741,18 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                           type="date"
                           placeholder="Date"
                           value={chart.date}
-                          onChange={(e) => updateAdditionalChart(index, 'date', e.target.value)}
+                          onChange={e => updateAdditionalChart(index, 'date', e.target.value)}
                         />
                         <Input
                           type="time"
                           placeholder="Time"
                           value={chart.time}
-                          onChange={(e) => updateAdditionalChart(index, 'time', e.target.value)}
+                          onChange={e => updateAdditionalChart(index, 'time', e.target.value)}
                         />
                         <Input
                           placeholder="Location"
                           value={chart.location.name}
-                          onChange={(e) => {
+                          onChange={e => {
                             const name = e.target.value
                             updateAdditionalChart(index, 'location', { ...chart.location, name })
                             if (name.length > 2) {
@@ -720,12 +783,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
               </div>
 
               <div className="flex flex-col items-center space-y-4">
-                <Button
-                  onClick={synthesizeCharts}
-                  disabled={isLoading}
-                  size="lg"
-                  className="px-8"
-                >
+                <Button onClick={synthesizeCharts} disabled={isLoading} size="lg" className="px-8">
                   {isLoading ? (
                     <>
                       <Loader2 className="h-5 w-5 mr-2 animate-spin" />
@@ -773,7 +831,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                         <Input
                           id="agent-name"
                           value={agentName}
-                          onChange={(e) => setAgentName(e.target.value)}
+                          onChange={e => setAgentName(e.target.value)}
                           placeholder="Enter agent name"
                         />
                       </div>
@@ -782,7 +840,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                         <Textarea
                           id="agent-purpose"
                           value={agentPurpose}
-                          onChange={(e) => setAgentPurpose(e.target.value)}
+                          onChange={e => setAgentPurpose(e.target.value)}
                           placeholder="Describe the agent's purpose"
                           rows={3}
                         />
@@ -792,7 +850,11 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                         <div className="space-y-3">
                           <div>
                             <Label>Dominant Element</Label>
-                            <Badge className={getElementColor(agentBlueprint.personality.dominantElement)}>
+                            <Badge
+                              className={getElementColor(
+                                agentBlueprint.personality.dominantElement
+                              )}
+                            >
                               {agentBlueprint.personality.dominantElement}
                             </Badge>
                           </div>
@@ -807,10 +869,19 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                           <div>
                             <Label>Thermodynamic Profile</Label>
                             <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div>Heat: {agentBlueprint.thermodynamicMetrics.heat.toFixed(1)}%</div>
-                              <div>Entropy: {agentBlueprint.thermodynamicMetrics.entropy.toFixed(1)}%</div>
-                              <div>Reactivity: {agentBlueprint.thermodynamicMetrics.reactivity.toFixed(1)}%</div>
-                              <div>Energy: {agentBlueprint.thermodynamicMetrics.energy.toFixed(1)}%</div>
+                              <div>
+                                Heat: {agentBlueprint.thermodynamicMetrics.heat.toFixed(1)}%
+                              </div>
+                              <div>
+                                Entropy: {agentBlueprint.thermodynamicMetrics.entropy.toFixed(1)}%
+                              </div>
+                              <div>
+                                Reactivity:{' '}
+                                {agentBlueprint.thermodynamicMetrics.reactivity.toFixed(1)}%
+                              </div>
+                              <div>
+                                Energy: {agentBlueprint.thermodynamicMetrics.energy.toFixed(1)}%
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -831,14 +902,18 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                         {personalityTraits.map(trait => (
                           <Badge
                             key={trait}
-                            variant={customizationOptions.personalityTraits.includes(trait) ? "default" : "outline"}
+                            variant={
+                              customizationOptions.personalityTraits.includes(trait)
+                                ? 'default'
+                                : 'outline'
+                            }
                             className="cursor-pointer"
                             onClick={() => {
                               setCustomizationOptions(prev => ({
                                 ...prev,
                                 personalityTraits: prev.personalityTraits.includes(trait)
                                   ? prev.personalityTraits.filter(t => t !== trait)
-                                  : [...prev.personalityTraits, trait]
+                                  : [...prev.personalityTraits, trait],
                               }))
                             }}
                           >
@@ -854,14 +929,18 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                         {agentCapabilities.map(capability => (
                           <Badge
                             key={capability}
-                            variant={customizationOptions.capabilities.includes(capability) ? "default" : "outline"}
+                            variant={
+                              customizationOptions.capabilities.includes(capability)
+                                ? 'default'
+                                : 'outline'
+                            }
                             className="cursor-pointer"
                             onClick={() => {
                               setCustomizationOptions(prev => ({
                                 ...prev,
                                 capabilities: prev.capabilities.includes(capability)
                                   ? prev.capabilities.filter(c => c !== capability)
-                                  : [...prev.capabilities, capability]
+                                  : [...prev.capabilities, capability],
                               }))
                             }}
                           >
@@ -875,7 +954,9 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                       <Label>Consciousness Level: {customizationOptions.consciousnessLevel}</Label>
                       <Slider
                         value={[customizationOptions.consciousnessLevel]}
-                        onValueChange={([value]) => setCustomizationOptions(prev => ({ ...prev, consciousnessLevel: value }))}
+                        onValueChange={([value]) =>
+                          setCustomizationOptions(prev => ({ ...prev, consciousnessLevel: value }))
+                        }
                         max={10}
                         min={1}
                         step={1}
@@ -884,10 +965,14 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                     </div>
 
                     <div>
-                      <Label>Adaptability: {(customizationOptions.adaptability * 100).toFixed(0)}%</Label>
+                      <Label>
+                        Adaptability: {(customizationOptions.adaptability * 100).toFixed(0)}%
+                      </Label>
                       <Slider
                         value={[customizationOptions.adaptability]}
-                        onValueChange={([value]) => setCustomizationOptions(prev => ({ ...prev, adaptability: value }))}
+                        onValueChange={([value]) =>
+                          setCustomizationOptions(prev => ({ ...prev, adaptability: value }))
+                        }
                         max={1}
                         min={0}
                         step={0.1}
@@ -926,7 +1011,9 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
                       </div>
                       <div>
                         <Label className="text-sm font-medium">Dominant Element</Label>
-                        <Badge className={getElementColor(agentBlueprint.personality.dominantElement)}>
+                        <Badge
+                          className={getElementColor(agentBlueprint.personality.dominantElement)}
+                        >
                           {agentBlueprint.personality.dominantElement}
                         </Badge>
                       </div>
@@ -968,12 +1055,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
               </Card>
 
               <div className="flex justify-center space-x-4">
-                <Button
-                  onClick={createAgent}
-                  disabled={isLoading}
-                  size="lg"
-                  className="px-8"
-                >
+                <Button onClick={createAgent} disabled={isLoading} size="lg" className="px-8">
                   {isLoading ? (
                     <>
                       <Loader2 className="h-5 w-5 mr-2 animate-spin" />
@@ -1004,10 +1086,7 @@ const AgentCreationWizard: React.FC<AgentCreationWizardProps> = ({
 
           <div className="flex space-x-2">
             {currentStep < steps.length - 1 && currentStep !== 4 && (
-              <Button
-                onClick={() => setCurrentStep(prev => prev + 1)}
-                disabled={isLoading}
-              >
+              <Button onClick={() => setCurrentStep(prev => prev + 1)} disabled={isLoading}>
                 Next
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>

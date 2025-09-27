@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+const fs = require('fs')
+const path = require('path')
+const { execSync } = require('child_process')
 
 /**
  * Update component imports after reorganization
@@ -51,11 +51,11 @@ const componentMapping = {
   'character-vector-dashboard': 'dashboards/character-vector-dashboard',
   'enhanced-tarot-dashboard': 'dashboards/enhanced-tarot-dashboard',
   'galileo-dashboard': 'dashboards/galileo-dashboard',
-  'PlanetaryPositionIndicator': 'dashboards/PlanetaryPositionIndicator',
-  'PlanetaryPositionsMonitor': 'dashboards/PlanetaryPositionsMonitor',
+  PlanetaryPositionIndicator: 'dashboards/PlanetaryPositionIndicator',
+  PlanetaryPositionsMonitor: 'dashboards/PlanetaryPositionsMonitor',
   'synastry-compatibility-dashboard': 'dashboards/synastry-compatibility-dashboard',
   'token-dashboard-kinetics': 'dashboards/token-dashboard-kinetics',
-  'TokenMonitorIntegration': 'dashboards/TokenMonitorIntegration',
+  TokenMonitorIntegration: 'dashboards/TokenMonitorIntegration',
   'universe-connection-dashboard': 'dashboards/universe-connection-dashboard',
 
   // Tarot
@@ -64,7 +64,7 @@ const componentMapping = {
   'unified-tarot-system': 'tarot/unified-tarot-system',
 
   // Wizards
-  'AgentCreationWizard': 'wizards/AgentCreationWizard',
+  AgentCreationWizard: 'wizards/AgentCreationWizard',
   'create-ai-wizard': 'wizards/create-ai-wizard',
 
   // Misc
@@ -73,12 +73,12 @@ const componentMapping = {
   'ancient-gallery': 'misc/ancient-gallery',
   'cosmic-time-laboratory': 'misc/cosmic-time-laboratory',
   'enhanced-agent-card': 'misc/enhanced-agent-card',
-  'FallbackNotification': 'misc/FallbackNotification',
+  FallbackNotification: 'misc/FallbackNotification',
   'galileo-logger': 'misc/galileo-logger',
   'gallery-group-chat': 'misc/gallery-group-chat',
   'group-consciousness-indicator': 'misc/group-consciousness-indicator',
-  'HarmonicAnalysisBridge': 'misc/HarmonicAnalysisBridge',
-  'header': 'misc/header',
+  HarmonicAnalysisBridge: 'misc/HarmonicAnalysisBridge',
+  header: 'misc/header',
   'historical-council-chat': 'misc/historical-council-chat',
   'historical-transit-card': 'misc/historical-transit-card',
   'moment-based-recommendations': 'misc/moment-based-recommendations',
@@ -101,30 +101,30 @@ const componentMapping = {
   'temporal-timeline': 'misc/temporal-timeline',
   'theme-provider': 'misc/theme-provider',
   'unified-multi-agent-chat': 'misc/unified-multi-agent-chat',
-};
+}
 
 function updateImportsInFile(filePath) {
   try {
-    let content = fs.readFileSync(filePath, 'utf8');
-    let updated = false;
+    let content = fs.readFileSync(filePath, 'utf8')
+    let updated = false
 
     // Update import statements
     for (const [component, newPath] of Object.entries(componentMapping)) {
-      const oldImportRegex = new RegExp(`from ['"]@/components/${component}['"]`, 'g');
-      const newImport = `from '@/components/${newPath}'`;
+      const oldImportRegex = new RegExp(`from ['"]@/components/${component}['"]`, 'g')
+      const newImport = `from '@/components/${newPath}'`
 
       if (oldImportRegex.test(content)) {
-        content = content.replace(oldImportRegex, newImport);
-        updated = true;
+        content = content.replace(oldImportRegex, newImport)
+        updated = true
       }
     }
 
     if (updated) {
-      fs.writeFileSync(filePath, content, 'utf8');
-      console.log(`Updated imports in: ${filePath}`);
+      fs.writeFileSync(filePath, content, 'utf8')
+      console.log(`Updated imports in: ${filePath}`)
     }
   } catch (error) {
-    console.error(`Error updating ${filePath}:`, error.message);
+    console.error(`Error updating ${filePath}:`, error.message)
   }
 }
 
@@ -134,40 +134,40 @@ function findFilesWithImports() {
     const result = execSync(
       'find . -name "*.tsx" -o -name "*.ts" -o -name "*.jsx" -o -name "*.js" | grep -v node_modules | grep -v .next | grep -v dist',
       { encoding: 'utf8' }
-    );
+    )
 
-    return result.trim().split('\n').filter(Boolean);
+    return result.trim().split('\n').filter(Boolean)
   } catch (error) {
-    console.error('Error finding files:', error.message);
-    return [];
+    console.error('Error finding files:', error.message)
+    return []
   }
 }
 
 function main() {
-  console.log('Starting import updates...');
+  console.log('Starting import updates...')
 
-  const files = findFilesWithImports();
-  console.log(`Found ${files.length} files to check`);
+  const files = findFilesWithImports()
+  console.log(`Found ${files.length} files to check`)
 
-  let updatedCount = 0;
+  let updatedCount = 0
   for (const file of files) {
     if (fs.existsSync(file)) {
-      const content = fs.readFileSync(file, 'utf8');
+      const content = fs.readFileSync(file, 'utf8')
       const hasOldImports = Object.keys(componentMapping).some(component =>
         content.includes(`@/components/${component}`)
-      );
+      )
 
       if (hasOldImports) {
-        updateImportsInFile(file);
-        updatedCount++;
+        updateImportsInFile(file)
+        updatedCount++
       }
     }
   }
 
-  console.log(`Updated imports in ${updatedCount} files`);
-  console.log('Import updates complete!');
+  console.log(`Updated imports in ${updatedCount} files`)
+  console.log('Import updates complete!')
 }
 
 if (require.main === module) {
-  main();
+  main()
 }

@@ -199,14 +199,12 @@ export function generateConsciousnessCraftingInsight(
 ```tsx
 // Basic widget integration
 import TarotCosmicWidget from '@/components/tarot-cosmic-widget'
-
 ;<TarotCosmicWidget variant="card" showExpanded={false} />
 ```
 
 ```tsx
 // Full dashboard integration
 import EnhancedTarotDashboard from '@/components/enhanced-tarot-dashboard'
-
 ;<EnhancedTarotDashboard
   variant="full"
   showAdvancedInsights={true}

@@ -113,7 +113,7 @@ export class ChartSynthesizer {
       { name: 'spirit', value: spirit },
       { name: 'essence', value: essence },
       { name: 'matter', value: matter },
-      { name: 'substance', value: substance }
+      { name: 'substance', value: substance },
     ]
     const dominant = elements.reduce((prev, current) =>
       current.value > prev.value ? current : prev
@@ -121,14 +121,14 @@ export class ChartSynthesizer {
 
     // Calculate synthesis efficiency (how well the synthesis preserved total energy)
     const totalInputEnergy = monicaConstants.reduce((sum, val) => sum + val, 0)
-    const synthesisEfficiency = totalInputEnergy > 0 ?
-      (synthesizedChart.monicaConstant / totalInputEnergy) : 0
+    const synthesisEfficiency =
+      totalInputEnergy > 0 ? synthesizedChart.monicaConstant / totalInputEnergy : 0
 
     return {
       chartCount,
       dominantElement: dominant.name,
       synthesisEfficiency,
-      monicaConstantRange: { min, max, avg }
+      monicaConstantRange: { min, max, avg },
     }
   }
 }

@@ -14,7 +14,7 @@ import {
   Info,
   Wifi,
   WifiOff,
-  Database
+  Database,
 } from 'lucide-react'
 
 interface PlanetaryPositionData {
@@ -37,7 +37,7 @@ const PlanetaryPositionIndicator: React.FC<PlanetaryPositionIndicatorProps> = ({
   positionData,
   showDetails = false,
   size = 'md',
-  compact = false
+  compact = false,
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date())
 
@@ -56,35 +56,35 @@ const PlanetaryPositionIndicator: React.FC<PlanetaryPositionIndicatorProps> = ({
           color: 'bg-green-500 text-white',
           icon: CheckCircle,
           label: 'High Accuracy',
-          description: 'Real-time calculations with external API validation'
+          description: 'Real-time calculations with external API validation',
         }
       case 'medium':
         return {
           color: 'bg-yellow-500 text-white',
           icon: AlertTriangle,
           label: 'Medium Accuracy',
-          description: 'Enhanced astronomical calculations'
+          description: 'Enhanced astronomical calculations',
         }
       case 'low':
         return {
           color: 'bg-orange-500 text-white',
           icon: Clock,
           label: 'Basic Accuracy',
-          description: 'Standard astronomical transits'
+          description: 'Standard astronomical transits',
         }
       case 'fallback':
         return {
           color: 'bg-red-500 text-white',
           icon: XCircle,
           label: 'Fallback Mode',
-          description: 'Static data due to service unavailability'
+          description: 'Static data due to service unavailability',
         }
       default:
         return {
           color: 'bg-gray-500 text-white',
           icon: Info,
           label: 'Unknown',
-          description: 'Accuracy level undetermined'
+          description: 'Accuracy level undetermined',
         }
     }
   }
@@ -95,31 +95,31 @@ const PlanetaryPositionIndicator: React.FC<PlanetaryPositionIndicatorProps> = ({
         return {
           label: 'External API',
           icon: Wifi,
-          description: 'Real-time data from professional astrology service'
+          description: 'Real-time data from professional astrology service',
         }
       case 'enhanced-calculator':
         return {
           label: 'Enhanced Calculator',
           icon: Database,
-          description: 'Advanced astronomical calculations with corrections'
+          description: 'Advanced astronomical calculations with corrections',
         }
       case 'basic-transits':
         return {
           label: 'Basic Transits',
           icon: RefreshCw,
-          description: 'Standard astronomical transit calculations'
+          description: 'Standard astronomical transit calculations',
         }
       case 'static-fallback':
         return {
           label: 'Static Fallback',
           icon: WifiOff,
-          description: 'Pre-calculated data due to service issues'
+          description: 'Pre-calculated data due to service issues',
         }
       default:
         return {
           label: 'Unknown Source',
           icon: Info,
-          description: 'Data source undetermined'
+          description: 'Data source undetermined',
         }
     }
   }
@@ -166,7 +166,7 @@ const PlanetaryPositionIndicator: React.FC<PlanetaryPositionIndicatorProps> = ({
   const sizeClasses = {
     sm: 'text-xs px-2 py-1',
     md: 'text-sm px-3 py-1',
-    lg: 'text-base px-4 py-2'
+    lg: 'text-base px-4 py-2',
   }
 
   if (compact) {
@@ -205,9 +205,7 @@ const PlanetaryPositionIndicator: React.FC<PlanetaryPositionIndicatorProps> = ({
         </Badge>
       )}
 
-      <span className="text-xs text-gray-500">
-        {formatTimeAgo(positionData.timestamp)}
-      </span>
+      <span className="text-xs text-gray-500">{formatTimeAgo(positionData.timestamp)}</span>
     </div>
   )
 
@@ -249,7 +247,9 @@ const PlanetaryPositionIndicator: React.FC<PlanetaryPositionIndicatorProps> = ({
             <div>
               <span className="font-medium">Cache Status:</span>
               <br />
-              {positionData.cached ? `Cached (${formatCacheAge(positionData.cacheAge)})` : 'Live Data'}
+              {positionData.cached
+                ? `Cached (${formatCacheAge(positionData.cacheAge)})`
+                : 'Live Data'}
             </div>
           </div>
 
@@ -264,8 +264,8 @@ const PlanetaryPositionIndicator: React.FC<PlanetaryPositionIndicatorProps> = ({
           )}
 
           <div className="text-xs text-gray-500 border-t pt-2">
-            This indicator shows the reliability and freshness of planetary position data.
-            Higher accuracy levels provide more precise astrological calculations.
+            This indicator shows the reliability and freshness of planetary position data. Higher
+            accuracy levels provide more precise astrological calculations.
           </div>
         </div>
       </PopoverContent>

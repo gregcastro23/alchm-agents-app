@@ -16,7 +16,7 @@ import {
   defaultAlchemicalMCPConfig,
   validateTokenEquilibrium,
   type ElementalTokens,
-  type TokenEquilibrium
+  type TokenEquilibrium,
 } from '@/testing/alchemical-devtools/mcp-config'
 
 export interface PlanetaryContext {
@@ -57,11 +57,11 @@ export interface ValidationViolation {
 
 export interface DignityScore {
   planet: string
-  domicile: number     // Rulership (1.0 = strong, 0.5 = weak)
-  exaltation: number   // Exaltation (1.0 = exalted, 0 = neutral)
-  detriment: number    // Detriment (-0.5 = in detriment)
-  fall: number         // Fall (-1.0 = in fall)
-  totalScore: number   // Combined dignity score
+  domicile: number // Rulership (1.0 = strong, 0.5 = weak)
+  exaltation: number // Exaltation (1.0 = exalted, 0 = neutral)
+  detriment: number // Detriment (-0.5 = in detriment)
+  fall: number // Fall (-1.0 = in fall)
+  totalScore: number // Combined dignity score
 }
 
 /**
@@ -72,53 +72,284 @@ const PLANETARY_DIGNITIES: Record<string, Record<string, DignityScore>> = {
   Sun: {
     Leo: { planet: 'Sun', domicile: 1.0, exaltation: 0, detriment: 0, fall: 0, totalScore: 1.0 },
     Aries: { planet: 'Sun', domicile: 0.5, exaltation: 0, detriment: 0, fall: 0, totalScore: 0.5 },
-    Aquarius: { planet: 'Sun', domicile: 0, exaltation: 0, detriment: -0.5, fall: 0, totalScore: -0.5 },
-    Libra: { planet: 'Sun', domicile: 0, exaltation: 0, detriment: -1.0, fall: 0, totalScore: -1.0 }
+    Aquarius: {
+      planet: 'Sun',
+      domicile: 0,
+      exaltation: 0,
+      detriment: -0.5,
+      fall: 0,
+      totalScore: -0.5,
+    },
+    Libra: {
+      planet: 'Sun',
+      domicile: 0,
+      exaltation: 0,
+      detriment: -1.0,
+      fall: 0,
+      totalScore: -1.0,
+    },
   },
   Moon: {
-    Cancer: { planet: 'Moon', domicile: 1.0, exaltation: 0, detriment: 0, fall: 0, totalScore: 1.0 },
-    Taurus: { planet: 'Moon', domicile: 0.5, exaltation: 0, detriment: 0, fall: 0, totalScore: 0.5 },
-    Capricorn: { planet: 'Moon', domicile: 0, exaltation: 0, detriment: -0.5, fall: 0, totalScore: -0.5 },
-    Scorpio: { planet: 'Moon', domicile: 0, exaltation: 0, detriment: -1.0, fall: 0, totalScore: -1.0 }
+    Cancer: {
+      planet: 'Moon',
+      domicile: 1.0,
+      exaltation: 0,
+      detriment: 0,
+      fall: 0,
+      totalScore: 1.0,
+    },
+    Taurus: {
+      planet: 'Moon',
+      domicile: 0.5,
+      exaltation: 0,
+      detriment: 0,
+      fall: 0,
+      totalScore: 0.5,
+    },
+    Capricorn: {
+      planet: 'Moon',
+      domicile: 0,
+      exaltation: 0,
+      detriment: -0.5,
+      fall: 0,
+      totalScore: -0.5,
+    },
+    Scorpio: {
+      planet: 'Moon',
+      domicile: 0,
+      exaltation: 0,
+      detriment: -1.0,
+      fall: 0,
+      totalScore: -1.0,
+    },
   },
   Mercury: {
-    Gemini: { planet: 'Mercury', domicile: 1.0, exaltation: 0, detriment: 0, fall: 0, totalScore: 1.0 },
-    Virgo: { planet: 'Mercury', domicile: 1.0, exaltation: 0, detriment: 0, fall: 0, totalScore: 1.0 },
-    Sagittarius: { planet: 'Mercury', domicile: 0.5, exaltation: 0, detriment: 0, fall: 0, totalScore: 0.5 },
-    Pisces: { planet: 'Mercury', domicile: 0, exaltation: 0, detriment: -1.0, fall: 0, totalScore: -1.0 }
+    Gemini: {
+      planet: 'Mercury',
+      domicile: 1.0,
+      exaltation: 0,
+      detriment: 0,
+      fall: 0,
+      totalScore: 1.0,
+    },
+    Virgo: {
+      planet: 'Mercury',
+      domicile: 1.0,
+      exaltation: 0,
+      detriment: 0,
+      fall: 0,
+      totalScore: 1.0,
+    },
+    Sagittarius: {
+      planet: 'Mercury',
+      domicile: 0.5,
+      exaltation: 0,
+      detriment: 0,
+      fall: 0,
+      totalScore: 0.5,
+    },
+    Pisces: {
+      planet: 'Mercury',
+      domicile: 0,
+      exaltation: 0,
+      detriment: -1.0,
+      fall: 0,
+      totalScore: -1.0,
+    },
   },
   Venus: {
-    Libra: { planet: 'Venus', domicile: 1.0, exaltation: 0, detriment: 0, fall: 0, totalScore: 1.0 },
-    Taurus: { planet: 'Venus', domicile: 1.0, exaltation: 0, detriment: 0, fall: 0, totalScore: 1.0 },
-    Pisces: { planet: 'Venus', domicile: 0, exaltation: 0.5, detriment: 0, fall: 0, totalScore: 0.5 },
-    Aries: { planet: 'Venus', domicile: 0, exaltation: 0, detriment: -0.5, fall: 0, totalScore: -0.5 },
-    Scorpio: { planet: 'Venus', domicile: 0, exaltation: 0, detriment: -0.5, fall: 0, totalScore: -0.5 },
-    Virgo: { planet: 'Venus', domicile: 0, exaltation: 0, detriment: 0, fall: -1.0, totalScore: -1.0 }
+    Libra: {
+      planet: 'Venus',
+      domicile: 1.0,
+      exaltation: 0,
+      detriment: 0,
+      fall: 0,
+      totalScore: 1.0,
+    },
+    Taurus: {
+      planet: 'Venus',
+      domicile: 1.0,
+      exaltation: 0,
+      detriment: 0,
+      fall: 0,
+      totalScore: 1.0,
+    },
+    Pisces: {
+      planet: 'Venus',
+      domicile: 0,
+      exaltation: 0.5,
+      detriment: 0,
+      fall: 0,
+      totalScore: 0.5,
+    },
+    Aries: {
+      planet: 'Venus',
+      domicile: 0,
+      exaltation: 0,
+      detriment: -0.5,
+      fall: 0,
+      totalScore: -0.5,
+    },
+    Scorpio: {
+      planet: 'Venus',
+      domicile: 0,
+      exaltation: 0,
+      detriment: -0.5,
+      fall: 0,
+      totalScore: -0.5,
+    },
+    Virgo: {
+      planet: 'Venus',
+      domicile: 0,
+      exaltation: 0,
+      detriment: 0,
+      fall: -1.0,
+      totalScore: -1.0,
+    },
   },
   Mars: {
     Aries: { planet: 'Mars', domicile: 1.0, exaltation: 0, detriment: 0, fall: 0, totalScore: 1.0 },
-    Scorpio: { planet: 'Mars', domicile: 1.0, exaltation: 0, detriment: 0, fall: 0, totalScore: 1.0 },
-    Capricorn: { planet: 'Mars', domicile: 0, exaltation: 0.5, detriment: 0, fall: 0, totalScore: 0.5 },
-    Taurus: { planet: 'Mars', domicile: 0, exaltation: 0, detriment: -0.5, fall: 0, totalScore: -0.5 },
-    Libra: { planet: 'Mars', domicile: 0, exaltation: 0, detriment: -0.5, fall: 0, totalScore: -0.5 },
-    Cancer: { planet: 'Mars', domicile: 0, exaltation: 0, detriment: 0, fall: -1.0, totalScore: -1.0 }
+    Scorpio: {
+      planet: 'Mars',
+      domicile: 1.0,
+      exaltation: 0,
+      detriment: 0,
+      fall: 0,
+      totalScore: 1.0,
+    },
+    Capricorn: {
+      planet: 'Mars',
+      domicile: 0,
+      exaltation: 0.5,
+      detriment: 0,
+      fall: 0,
+      totalScore: 0.5,
+    },
+    Taurus: {
+      planet: 'Mars',
+      domicile: 0,
+      exaltation: 0,
+      detriment: -0.5,
+      fall: 0,
+      totalScore: -0.5,
+    },
+    Libra: {
+      planet: 'Mars',
+      domicile: 0,
+      exaltation: 0,
+      detriment: -0.5,
+      fall: 0,
+      totalScore: -0.5,
+    },
+    Cancer: {
+      planet: 'Mars',
+      domicile: 0,
+      exaltation: 0,
+      detriment: 0,
+      fall: -1.0,
+      totalScore: -1.0,
+    },
   },
   Jupiter: {
-    Pisces: { planet: 'Jupiter', domicile: 1.0, exaltation: 0, detriment: 0, fall: 0, totalScore: 1.0 },
-    Sagittarius: { planet: 'Jupiter', domicile: 1.0, exaltation: 0, detriment: 0, fall: 0, totalScore: 1.0 },
-    Cancer: { planet: 'Jupiter', domicile: 0, exaltation: 0.5, detriment: 0, fall: 0, totalScore: 0.5 },
-    Gemini: { planet: 'Jupiter', domicile: 0, exaltation: 0, detriment: -0.5, fall: 0, totalScore: -0.5 },
-    Virgo: { planet: 'Jupiter', domicile: 0, exaltation: 0, detriment: -0.5, fall: 0, totalScore: -0.5 },
-    Capricorn: { planet: 'Jupiter', domicile: 0, exaltation: 0, detriment: 0, fall: -1.0, totalScore: -1.0 }
+    Pisces: {
+      planet: 'Jupiter',
+      domicile: 1.0,
+      exaltation: 0,
+      detriment: 0,
+      fall: 0,
+      totalScore: 1.0,
+    },
+    Sagittarius: {
+      planet: 'Jupiter',
+      domicile: 1.0,
+      exaltation: 0,
+      detriment: 0,
+      fall: 0,
+      totalScore: 1.0,
+    },
+    Cancer: {
+      planet: 'Jupiter',
+      domicile: 0,
+      exaltation: 0.5,
+      detriment: 0,
+      fall: 0,
+      totalScore: 0.5,
+    },
+    Gemini: {
+      planet: 'Jupiter',
+      domicile: 0,
+      exaltation: 0,
+      detriment: -0.5,
+      fall: 0,
+      totalScore: -0.5,
+    },
+    Virgo: {
+      planet: 'Jupiter',
+      domicile: 0,
+      exaltation: 0,
+      detriment: -0.5,
+      fall: 0,
+      totalScore: -0.5,
+    },
+    Capricorn: {
+      planet: 'Jupiter',
+      domicile: 0,
+      exaltation: 0,
+      detriment: 0,
+      fall: -1.0,
+      totalScore: -1.0,
+    },
   },
   Saturn: {
-    Aquarius: { planet: 'Saturn', domicile: 1.0, exaltation: 0, detriment: 0, fall: 0, totalScore: 1.0 },
-    Capricorn: { planet: 'Saturn', domicile: 1.0, exaltation: 0, detriment: 0, fall: 0, totalScore: 1.0 },
-    Libra: { planet: 'Saturn', domicile: 0, exaltation: 0.5, detriment: 0, fall: 0, totalScore: 0.5 },
-    Cancer: { planet: 'Saturn', domicile: 0, exaltation: 0, detriment: -0.5, fall: 0, totalScore: -0.5 },
-    Leo: { planet: 'Saturn', domicile: 0, exaltation: 0, detriment: -0.5, fall: 0, totalScore: -0.5 },
-    Aries: { planet: 'Saturn', domicile: 0, exaltation: 0, detriment: 0, fall: -1.0, totalScore: -1.0 }
-  }
+    Aquarius: {
+      planet: 'Saturn',
+      domicile: 1.0,
+      exaltation: 0,
+      detriment: 0,
+      fall: 0,
+      totalScore: 1.0,
+    },
+    Capricorn: {
+      planet: 'Saturn',
+      domicile: 1.0,
+      exaltation: 0,
+      detriment: 0,
+      fall: 0,
+      totalScore: 1.0,
+    },
+    Libra: {
+      planet: 'Saturn',
+      domicile: 0,
+      exaltation: 0.5,
+      detriment: 0,
+      fall: 0,
+      totalScore: 0.5,
+    },
+    Cancer: {
+      planet: 'Saturn',
+      domicile: 0,
+      exaltation: 0,
+      detriment: -0.5,
+      fall: 0,
+      totalScore: -0.5,
+    },
+    Leo: {
+      planet: 'Saturn',
+      domicile: 0,
+      exaltation: 0,
+      detriment: -0.5,
+      fall: 0,
+      totalScore: -0.5,
+    },
+    Aries: {
+      planet: 'Saturn',
+      domicile: 0,
+      exaltation: 0,
+      detriment: 0,
+      fall: -1.0,
+      totalScore: -1.0,
+    },
+  },
 }
 
 /**
@@ -139,15 +370,17 @@ export class AlchemicalValidator {
       return {
         isValid: false,
         score: 0,
-        violations: [{
-          principle: 'Elemental Presence',
-          severity: 'critical',
-          description: 'No elemental tokens present',
-          correction: 'Initialize elemental tokens',
-          affectedTokens: ['spirit', 'essence', 'matter', 'substance']
-        }],
+        violations: [
+          {
+            principle: 'Elemental Presence',
+            severity: 'critical',
+            description: 'No elemental tokens present',
+            correction: 'Initialize elemental tokens',
+            affectedTokens: ['spirit', 'essence', 'matter', 'substance'],
+          },
+        ],
         recommendations: ['Initialize elemental tokens'],
-        hermeticAlignment: 0
+        hermeticAlignment: 0,
       }
     }
 
@@ -168,7 +401,7 @@ export class AlchemicalValidator {
         severity: 'medium',
         description: `Spirit tokens (${tokens.spirit.toFixed(2)}) are deficient - missing solar/mercurial/jovian/saturnine influence`,
         correction: 'Strengthen solar, mercurial, jovian, or saturnine planetary influences',
-        affectedTokens: ['spirit']
+        affectedTokens: ['spirit'],
       })
       recommendations.push('Enhance solar hour activities or mercury-ruled communications')
     }
@@ -179,8 +412,9 @@ export class AlchemicalValidator {
         principle: 'Essence Flow',
         severity: 'medium',
         description: `Essence tokens (${tokens.essence.toFixed(2)}) are deficient - missing lunar/venusian/martian/uranic/neptunian/plutonian influence`,
-        correction: 'Strengthen lunar, venusian, martial, uranian, neptunian, or plutonian planetary influences',
-        affectedTokens: ['essence']
+        correction:
+          'Strengthen lunar, venusian, martial, uranian, neptunian, or plutonian planetary influences',
+        affectedTokens: ['essence'],
       })
       recommendations.push('Enhance lunar activities or venus-ruled relationships')
     }
@@ -192,7 +426,7 @@ export class AlchemicalValidator {
         severity: 'medium',
         description: `Matter tokens (${tokens.matter.toFixed(2)}) are deficient - missing concrete planetary influences`,
         correction: 'Ground energy through physical activities and material concerns',
-        affectedTokens: ['matter']
+        affectedTokens: ['matter'],
       })
       recommendations.push('Focus on practical matters and physical manifestation')
     }
@@ -204,18 +438,23 @@ export class AlchemicalValidator {
         severity: 'low',
         description: `Substance tokens (${tokens.substance.toFixed(2)}) are deficient - missing mercurial or neptunian material foundation`,
         correction: 'Build material stability through practical planning or dream work',
-        affectedTokens: ['substance']
+        affectedTokens: ['substance'],
       })
-      recommendations.push('Establish material foundations through mercurial or neptunian activities')
+      recommendations.push(
+        'Establish material foundations through mercurial or neptunian activities'
+      )
     }
 
     // Golden ratio as aspirational harmony between complementary elements
     const spiritEssenceRatio = tokens.spirit / Math.max(tokens.essence, 0.001)
     const matterSubstanceRatio = tokens.matter / Math.max(tokens.substance, 0.001)
-    const goldenRatioDeviation = Math.abs(spiritEssenceRatio - 1.618) + Math.abs(matterSubstanceRatio - 1.618)
+    const goldenRatioDeviation =
+      Math.abs(spiritEssenceRatio - 1.618) + Math.abs(matterSubstanceRatio - 1.618)
 
     if (goldenRatioDeviation > 1.0) {
-      recommendations.push('Consider balancing complementary elemental pairs toward golden ratio harmony')
+      recommendations.push(
+        'Consider balancing complementary elemental pairs toward golden ratio harmony'
+      )
     }
 
     // No hermetic balance requirement - elements derive naturally from planetary influences
@@ -227,7 +466,7 @@ export class AlchemicalValidator {
       score,
       violations,
       recommendations,
-      hermeticAlignment: elementalHealth
+      hermeticAlignment: elementalHealth,
     }
   }
 
@@ -251,7 +490,7 @@ export class AlchemicalValidator {
         severity: hourDignity.totalScore < -0.5 ? 'high' : 'medium',
         description: `${hourRuler} in ${hourDignity.totalScore < -0.5 ? 'detriment/fall' : 'weak dignity'} affects ${affectedTokens.join(', ')} tokens`,
         correction: `Strengthen ${hourRuler}'s dignity or compensate with beneficial aspects`,
-        affectedTokens
+        affectedTokens,
       })
     }
 
@@ -265,7 +504,7 @@ export class AlchemicalValidator {
             severity: 'high',
             description: 'Mercury retrograde may cause spirit token volatility',
             correction: 'Stabilize spirit tokens during Mercury retrograde',
-            affectedTokens: ['spirit']
+            affectedTokens: ['spirit'],
           })
         }
       }
@@ -280,20 +519,23 @@ export class AlchemicalValidator {
           severity: 'low',
           description: `${aspect.planets.join('-')} ${aspect.aspect} creates energetic tension`,
           correction: 'Monitor token stability during challenging aspects',
-          affectedTokens: ['spirit', 'essence', 'matter', 'substance']
+          affectedTokens: ['spirit', 'essence', 'matter', 'substance'],
         })
       }
     })
 
     const dignityScore = Math.max(0, (hourDignity.totalScore + 1) / 2) // Normalize to 0-1
-    const score = violations.filter(v => v.severity === 'critical' || v.severity === 'high').length === 0 ? dignityScore : dignityScore * 0.7
+    const score =
+      violations.filter(v => v.severity === 'critical' || v.severity === 'high').length === 0
+        ? dignityScore
+        : dignityScore * 0.7
 
     return {
       isValid: violations.filter(v => v.severity === 'critical').length === 0,
       score,
       violations,
       recommendations,
-      hermeticAlignment: dignityScore
+      hermeticAlignment: dignityScore,
     }
   }
 
@@ -307,22 +549,27 @@ export class AlchemicalValidator {
 
     if (context.isVoidOfCourse) {
       // During void-of-course, essence tokens should be stable
-      const essenceStability = Math.abs(tokens.essence - this.config.tokenStabilization.essence.equilibrium)
+      const essenceStability = Math.abs(
+        tokens.essence - this.config.tokenStabilization.essence.equilibrium
+      )
       const stabilityRatio = essenceStability / this.config.tokenStabilization.essence.equilibrium
 
-      if (stabilityRatio > 0.2) { // More than 20% deviation
+      if (stabilityRatio > 0.2) {
+        // More than 20% deviation
         violations.push({
           principle: 'Void-of-Course Stability',
           severity: stabilityRatio > 0.4 ? 'high' : 'medium',
           description: `Moon void-of-course requires essence stability, current deviation: ${(stabilityRatio * 100).toFixed(1)}%`,
           correction: 'Stabilize essence tokens during void-of-course periods',
-          affectedTokens: ['essence']
+          affectedTokens: ['essence'],
         })
         recommendations.push('Maintain essence equilibrium during void-of-course moon')
       }
 
       // Spirit tokens should also remain stable
-      const spiritStability = Math.abs(tokens.spirit - this.config.tokenStabilization.spirit.equilibrium)
+      const spiritStability = Math.abs(
+        tokens.spirit - this.config.tokenStabilization.spirit.equilibrium
+      )
       const spiritRatio = spiritStability / this.config.tokenStabilization.spirit.equilibrium
 
       if (spiritRatio > 0.15) {
@@ -331,20 +578,24 @@ export class AlchemicalValidator {
           severity: 'medium',
           description: `Spirit tokens fluctuating during void-of-course: ${(spiritRatio * 100).toFixed(1)}% deviation`,
           correction: 'Minimize spirit token changes during void periods',
-          affectedTokens: ['spirit']
+          affectedTokens: ['spirit'],
         })
       }
     }
 
-    const score = violations.length === 0 ? 1.0 :
-                  violations.some(v => v.severity === 'high' || v.severity === 'critical') ? 0.3 : 0.7
+    const score =
+      violations.length === 0
+        ? 1.0
+        : violations.some(v => v.severity === 'high' || v.severity === 'critical')
+          ? 0.3
+          : 0.7
 
     return {
       isValid: violations.filter(v => v.severity === 'critical').length === 0,
       score,
       violations,
       recommendations,
-      hermeticAlignment: score
+      hermeticAlignment: score,
     }
   }
 
@@ -359,28 +610,26 @@ export class AlchemicalValidator {
     const allViolations = [
       ...goldenResult.violations,
       ...dignityResult.violations,
-      ...voidResult.violations
+      ...voidResult.violations,
     ]
 
     const allRecommendations = [
       ...goldenResult.recommendations,
       ...dignityResult.recommendations,
-      ...voidResult.recommendations
+      ...voidResult.recommendations,
     ]
 
     // Calculate weighted score
     const weights = { golden: 0.4, dignity: 0.3, void: 0.3 }
-    const score = (
+    const score =
       goldenResult.score * weights.golden +
       dignityResult.score * weights.dignity +
       voidResult.score * weights.void
-    )
 
-    const hermeticAlignment = (
+    const hermeticAlignment =
       goldenResult.hermeticAlignment * weights.golden +
       dignityResult.hermeticAlignment * weights.dignity +
       voidResult.hermeticAlignment * weights.void
-    )
 
     // Log validation results for monitoring
     logger.info('Comprehensive alchemical validation completed', {
@@ -390,8 +639,8 @@ export class AlchemicalValidator {
         planetaryContext: context,
         validationScore: score,
         violationCount: allViolations.length,
-        recommendationsCount: allRecommendations.length
-      }
+        recommendationsCount: allRecommendations.length,
+      },
     })
 
     return {
@@ -399,7 +648,7 @@ export class AlchemicalValidator {
       score,
       violations: allViolations,
       recommendations: [...new Set(allRecommendations)], // Remove duplicates
-      hermeticAlignment
+      hermeticAlignment,
     }
   }
 
@@ -415,7 +664,7 @@ export class AlchemicalValidator {
       exaltation: 0,
       detriment: 0,
       fall: 0,
-      totalScore: 0
+      totalScore: 0,
     }
   }
 
@@ -424,13 +673,13 @@ export class AlchemicalValidator {
    */
   private getPlanetTokens(planet: string): (keyof ElementalTokens)[] {
     const planetTokens: Record<string, (keyof ElementalTokens)[]> = {
-      Sun: ['matter'],        // Solar hour increases material manifestation
-      Moon: ['essence'],      // Lunar hour enhances emotional essence
-      Mercury: ['spirit'],    // Mercurial hour accelerates mental spirit
-      Venus: ['substance'],   // Venusian hour harmonizes material substance
-      Mars: ['spirit'],       // Martial hour energizes action and spirit
-      Jupiter: ['matter'],    // Jupiterian hour expands material prosperity
-      Saturn: ['substance']   // Saturnian hour structures material discipline
+      Sun: ['matter'], // Solar hour increases material manifestation
+      Moon: ['essence'], // Lunar hour enhances emotional essence
+      Mercury: ['spirit'], // Mercurial hour accelerates mental spirit
+      Venus: ['substance'], // Venusian hour harmonizes material substance
+      Mars: ['spirit'], // Martial hour energizes action and spirit
+      Jupiter: ['matter'], // Jupiterian hour expands material prosperity
+      Saturn: ['substance'], // Saturnian hour structures material discipline
     }
 
     return planetTokens[planet] || ['spirit', 'essence', 'matter', 'substance']
@@ -439,7 +688,10 @@ export class AlchemicalValidator {
   /**
    * Emergency stabilization for critical token imbalances
    */
-  emergencyStabilize(tokens: ElementalTokens, violations: ValidationViolation[]): Partial<ElementalTokens> {
+  emergencyStabilize(
+    tokens: ElementalTokens,
+    violations: ValidationViolation[]
+  ): Partial<ElementalTokens> {
     const adjustments: Partial<ElementalTokens> = {}
 
     violations.forEach(violation => {
@@ -461,8 +713,8 @@ export class AlchemicalValidator {
         metadata: {
           originalTokens: tokens,
           adjustments,
-          criticalViolations: violations.filter(v => v.severity === 'critical').length
-        }
+          criticalViolations: violations.filter(v => v.severity === 'critical').length,
+        },
       })
     }
 
@@ -486,7 +738,10 @@ export function quickValidateTokens(tokens: ElementalTokens): boolean {
 /**
  * Get validation summary for dashboard display
  */
-export function getValidationSummary(tokens: ElementalTokens, context?: PlanetaryContext): {
+export function getValidationSummary(
+  tokens: ElementalTokens,
+  context?: PlanetaryContext
+): {
   overallHealth: 'excellent' | 'good' | 'fair' | 'poor' | 'critical'
   score: number
   criticalIssues: number
@@ -510,6 +765,6 @@ export function getValidationSummary(tokens: ElementalTokens, context?: Planetar
     overallHealth,
     score: result.score,
     criticalIssues,
-    recommendations: result.recommendations
+    recommendations: result.recommendations,
   }
 }

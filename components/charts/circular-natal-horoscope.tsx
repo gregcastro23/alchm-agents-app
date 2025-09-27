@@ -4,7 +4,17 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Loader2, Star, Calendar, Sparkles, ZoomIn, ZoomOut, RotateCcw, Eye, EyeOff } from 'lucide-react'
+import {
+  Loader2,
+  Star,
+  Calendar,
+  Sparkles,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Eye,
+  EyeOff,
+} from 'lucide-react'
 import { fetchAstrologizeWheel, type AstrologizeWheelResponse } from '@/lib/astrologize'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useTheme } from 'next-themes'
@@ -171,15 +181,11 @@ export default function CircularNatalHoroscope({
               >
                 <ZoomIn className="w-4 h-4" />
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setZoom(1)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setZoom(1)}>
                 <RotateCcw className="w-4 h-4" />
               </Button>
               <Button
-                variant={showPlanets ? "default" : "outline"}
+                variant={showPlanets ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setShowPlanets(!showPlanets)}
               >

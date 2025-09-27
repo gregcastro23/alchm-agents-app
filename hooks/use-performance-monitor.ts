@@ -26,8 +26,8 @@ export function usePerformanceMonitor(componentName: string, enabled: boolean = 
       operation: 'mount',
       metadata: {
         componentName,
-        timestamp: mountTimeRef.current
-      }
+        timestamp: mountTimeRef.current,
+      },
     })
 
     // Track component unmount
@@ -42,10 +42,11 @@ export function usePerformanceMonitor(componentName: string, enabled: boolean = 
           componentName,
           totalLifetime,
           renderCount: renderCountRef.current,
-          averageRenderTime: renderTimesRef.current.length > 0
-            ? renderTimesRef.current.reduce((a, b) => a + b, 0) / renderTimesRef.current.length
-            : 0
-        }
+          averageRenderTime:
+            renderTimesRef.current.length > 0
+              ? renderTimesRef.current.reduce((a, b) => a + b, 0) / renderTimesRef.current.length
+              : 0,
+        },
       })
     }
   }, [componentName, enabled])
@@ -71,8 +72,8 @@ export function usePerformanceMonitor(componentName: string, enabled: boolean = 
             componentName,
             renderCount: renderCountRef.current,
             renderTime,
-            isSlow: renderTime > 16
-          }
+            isSlow: renderTime > 16,
+          },
         })
       }
 
@@ -92,24 +93,27 @@ export function usePerformanceMonitor(componentName: string, enabled: boolean = 
     return {
       used: performance.memory.usedJSHeapSize,
       total: performance.memory.totalJSHeapSize,
-      limit: performance.memory.jsHeapSizeLimit
+      limit: performance.memory.jsHeapSizeLimit,
     }
   }, [enabled])
 
   // Manual performance tracking
-  const trackInteraction = useCallback((interactionName: string, duration?: number) => {
-    if (!enabled) return
+  const trackInteraction = useCallback(
+    (interactionName: string, duration?: number) => {
+      if (!enabled) return
 
-    logPerformance(`${componentName}_${interactionName}`, duration || 0, {
-      system: 'component',
-      operation: 'interaction',
-      metadata: {
-        componentName,
-        interactionName,
-        memoryUsage: getMemoryUsage()
-      }
-    })
-  }, [componentName, enabled, getMemoryUsage])
+      logPerformance(`${componentName}_${interactionName}`, duration || 0, {
+        system: 'component',
+        operation: 'interaction',
+        metadata: {
+          componentName,
+          interactionName,
+          memoryUsage: getMemoryUsage(),
+        },
+      })
+    },
+    [componentName, enabled, getMemoryUsage]
+  )
 
   // Get current metrics
   const getMetrics = useCallback((): PerformanceMetrics => {
@@ -118,17 +122,18 @@ export function usePerformanceMonitor(componentName: string, enabled: boolean = 
       mountTime: mountTimeRef.current,
       renderCount: renderCountRef.current,
       lastRenderTime: lastRenderTimeRef.current,
-      averageRenderTime: renderTimesRef.current.length > 0
-        ? renderTimesRef.current.reduce((a, b) => a + b, 0) / renderTimesRef.current.length
-        : 0,
-      memoryUsage: getMemoryUsage()?.used
+      averageRenderTime:
+        renderTimesRef.current.length > 0
+          ? renderTimesRef.current.reduce((a, b) => a + b, 0) / renderTimesRef.current.length
+          : 0,
+      memoryUsage: getMemoryUsage()?.used,
     }
   }, [componentName, getMemoryUsage])
 
   return {
     trackInteraction,
     getMetrics,
-    getMemoryUsage
+    getMemoryUsage,
   }
 }
 

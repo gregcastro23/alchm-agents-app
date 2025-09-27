@@ -28,21 +28,9 @@
       "@/middleware/*": ["src/middleware/*"],
       "@/lib/*": ["src/lib/*"]
     },
-    "types": [
-      "node"
-    ],
-    "typeRoots": [
-      "./src/types",
-      "./node_modules/@types"
-    ]
+    "types": ["node"],
+    "typeRoots": ["./src/types", "./node_modules/@types"]
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

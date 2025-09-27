@@ -22,6 +22,7 @@ cd backend
 ```
 
 The backend will be available at:
+
 - **API**: http://localhost:8000
 - **WebSocket**: ws://localhost:8001
 - **Health Check**: http://localhost:8000/api/health
@@ -47,12 +48,13 @@ NEXT_PUBLIC_KINETICS_BACKEND=true
 The unified clients are already created in your `lib/unified-clients/` directory:
 
 - `planetary-client.ts` - Planetary hours with fallback
-- `thermodynamics-client.ts` - Thermodynamics with fallback  
+- `thermodynamics-client.ts` - Thermodynamics with fallback
 - `token-client.ts` - Token calculations with fallback
 
 ## 🔄 Migration Strategy
 
 ### Phase 1: Backend Setup (✅ Complete)
+
 - Backend service deployed and running
 - All API endpoints functional
 - WebSocket server operational
@@ -61,6 +63,7 @@ The unified clients are already created in your `lib/unified-clients/` directory
 ### Phase 2: Gradual Migration
 
 #### Step 1: Enable Planetary Hours Backend
+
 ```typescript
 // Replace existing planetary hour calls
 import { UnifiedPlanetaryClient } from '@/lib/unified-clients/planetary-client'
@@ -71,11 +74,12 @@ import { UnifiedPlanetaryClient } from '@/lib/unified-clients/planetary-client'
 // New way (with automatic fallback):
 const planetaryHour = await UnifiedPlanetaryClient.getCurrentPlanetaryHour({
   datetime: date,
-  location: { lat, lon }
+  location: { lat, lon },
 })
 ```
 
 #### Step 2: Enable Thermodynamics Backend
+
 ```typescript
 import { UnifiedThermodynamicsClient } from '@/lib/unified-clients/thermodynamics-client'
 
@@ -84,13 +88,14 @@ const result = await UnifiedThermodynamicsClient.calculateThermodynamics(element
 ```
 
 #### Step 3: Enable Token Calculations Backend
+
 ```typescript
 import { UnifiedTokenClient } from '@/lib/unified-clients/token-client'
 
 // Replace token rate calculations
 const tokenData = await UnifiedTokenClient.calculateTokens({
   tokens: { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 },
-  location: { lat, lon }
+  location: { lat, lon },
 })
 ```
 
@@ -127,16 +132,18 @@ const ws = new WebSocket('ws://localhost:8001')
 
 ws.onopen = () => {
   // Subscribe to planetary hours
-  ws.send(JSON.stringify({
-    type: 'subscribe',
-    channel: 'planetary-hours',
-    data: {
-      location: { lat: 37.7749, lon: -122.4194 }
-    }
-  }))
+  ws.send(
+    JSON.stringify({
+      type: 'subscribe',
+      channel: 'planetary-hours',
+      data: {
+        location: { lat: 37.7749, lon: -122.4194 },
+      },
+    })
+  )
 }
 
-ws.onmessage = (event) => {
+ws.onmessage = event => {
   const message = JSON.parse(event.data)
   if (message.type === 'update' && message.channel === 'planetary-hours') {
     // Handle planetary hour update
@@ -156,17 +163,19 @@ export function usePlanetaryWebSocket(location: { lat: number; lon: number }) {
 
   useEffect(() => {
     const ws = new WebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_URL!)
-    
+
     ws.onopen = () => {
       setConnected(true)
-      ws.send(JSON.stringify({
-        type: 'subscribe',
-        channel: 'planetary-hours',
-        data: { location }
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'subscribe',
+          channel: 'planetary-hours',
+          data: { location },
+        })
+      )
     }
 
-    ws.onmessage = (event) => {
+    ws.onmessage = event => {
       const message = JSON.parse(event.data)
       if (message.type === 'update' && message.channel === 'planetary-hours') {
         setPlanetaryHour(message.data)
@@ -191,7 +200,7 @@ export function usePlanetaryWebSocket(location: { lat: number; lon: number }) {
 // Before
 import { PlanetaryHourCalculator } from '@/lib/core-energy-rules'
 
-// After  
+// After
 import { UnifiedPlanetaryClient } from '@/lib/unified-clients/planetary-client'
 import { usePlanetaryWebSocket } from '@/hooks/usePlanetaryWebSocket'
 
@@ -291,11 +300,11 @@ export async function checkBackendHealth() {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/health`)
     const health = await response.json()
-    
+
     return {
       healthy: health.status === 'healthy',
       services: health.services,
-      responseTime: health.responseTime
+      responseTime: health.responseTime,
     }
   } catch (error) {
     return { healthy: false, error: error.message }
@@ -343,6 +352,7 @@ export function BackendErrorBoundary({ children }: { children: React.ReactNode }
 If you need to disable the backend service:
 
 ### 1. Environment Variables
+
 ```env
 # Disable all backend features
 NEXT_PUBLIC_PLANETARY_HOURS_BACKEND=false
@@ -352,12 +362,14 @@ NEXT_PUBLIC_KINETICS_BACKEND=false
 ```
 
 ### 2. Runtime Disable
+
 ```typescript
 // Temporarily disable backend in code
 process.env.NEXT_PUBLIC_PLANETARY_HOURS_BACKEND = 'false'
 ```
 
 ### 3. Complete Rollback
+
 Simply stop the backend service - all unified clients will automatically fall back to frontend calculations.
 
 ## 📈 Monitoring & Observability
@@ -388,33 +400,38 @@ const metrics = {
   responseTime: 'avg(api_response_time_seconds) by (endpoint)',
   cacheHitRate: 'cache_hits / (cache_hits + cache_misses) * 100',
   errorRate: 'api_errors / api_requests * 100',
-  fallbackUsage: 'frontend_fallback_count / total_requests * 100'
+  fallbackUsage: 'frontend_fallback_count / total_requests * 100',
 }
 ```
 
 ## 🎯 Best Practices
 
 ### 1. Progressive Enhancement
+
 - Start with one system (e.g., planetary hours)
 - Monitor performance and stability
 - Gradually enable other systems
 
 ### 2. Caching Strategy
+
 - Use appropriate TTL values for different data types
 - Monitor cache hit rates
 - Implement cache warming for critical data
 
 ### 3. Error Handling
+
 - Always implement fallbacks
 - Log errors for monitoring
 - Provide user feedback for service issues
 
 ### 4. Performance Optimization
+
 - Use WebSocket for real-time data
 - Implement request coalescing
 - Monitor and optimize slow endpoints
 
 ### 5. Security
+
 - Validate all inputs
 - Implement rate limiting
 - Use CORS appropriately
@@ -422,6 +439,7 @@ const metrics = {
 ## 🆘 Troubleshooting
 
 ### Backend Service Won't Start
+
 ```bash
 # Check logs
 cd backend
@@ -435,6 +453,7 @@ cat .env
 ```
 
 ### Frontend Can't Connect to Backend
+
 ```typescript
 // Test backend connectivity
 fetch('http://localhost:8000/api/health')
@@ -444,15 +463,17 @@ fetch('http://localhost:8000/api/health')
 ```
 
 ### WebSocket Connection Issues
+
 ```typescript
 // Debug WebSocket connection
 const ws = new WebSocket('ws://localhost:8001')
 ws.onopen = () => console.log('WebSocket connected')
-ws.onerror = (error) => console.error('WebSocket error:', error)
-ws.onclose = (event) => console.log('WebSocket closed:', event.code, event.reason)
+ws.onerror = error => console.error('WebSocket error:', error)
+ws.onclose = event => console.log('WebSocket closed:', event.code, event.reason)
 ```
 
 ### Performance Issues
+
 ```bash
 # Check backend performance
 curl -w "@curl-format.txt" -o /dev/null -s "http://localhost:8000/api/health"

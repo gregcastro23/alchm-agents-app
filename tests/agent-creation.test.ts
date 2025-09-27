@@ -9,10 +9,10 @@ const mockMomentChart = {
     'Total Spirit': 2.5,
     'Total Essence': 1.8,
     'Total Matter': 1.2,
-    'Total Substance': 0.9
+    'Total Substance': 0.9,
   },
   transits: { 'sun-transit': 'aries' },
-  activatedHouses: ['1st', '7th']
+  activatedHouses: ['1st', '7th'],
 }
 
 const mockBirthChart = {
@@ -20,10 +20,10 @@ const mockBirthChart = {
     'Total Spirit': 1.5,
     'Total Essence': 2.2,
     'Total Matter': 1.8,
-    'Total Substance': 1.1
+    'Total Substance': 1.1,
   },
   transits: { 'moon-transit': 'cancer' },
-  activatedHouses: ['4th', '10th']
+  activatedHouses: ['4th', '10th'],
 }
 
 const mockAdditionalChart = {
@@ -31,10 +31,10 @@ const mockAdditionalChart = {
     'Total Spirit': 3.0,
     'Total Essence': 1.5,
     'Total Matter': 2.0,
-    'Total Substance': 1.3
+    'Total Substance': 1.3,
   },
   transits: { 'mercury-transit': 'gemini' },
-  activatedHouses: ['3rd', '9th']
+  activatedHouses: ['3rd', '9th'],
 }
 
 describe('Chart Synthesis Engine', () => {
@@ -43,7 +43,7 @@ describe('Chart Synthesis Engine', () => {
       const result = synthesizeCharts({
         birthChart: null,
         momentChart: mockMomentChart,
-        additionalCharts: []
+        additionalCharts: [],
       })
 
       expect(result.type).toBe('moment-only')
@@ -62,7 +62,7 @@ describe('Chart Synthesis Engine', () => {
       const result = synthesizeCharts({
         birthChart: mockBirthChart,
         momentChart: mockMomentChart,
-        additionalCharts: []
+        additionalCharts: [],
       })
 
       expect(result.type).toBe('birth-moment')
@@ -73,7 +73,7 @@ describe('Chart Synthesis Engine', () => {
       expect(result.consciousness.substance).toBe(1.0) // (0.9 + 1.1) / 2
 
       // Weighted monicaConstant: moment gets 60% weight, birth gets 40% weight
-      const expectedWeighted = (0.6 * 6.4) + (0.4 * 6.6) // birth total = 1.5 + 2.2 + 1.8 + 1.1 = 6.6
+      const expectedWeighted = 0.6 * 6.4 + 0.4 * 6.6 // birth total = 1.5 + 2.2 + 1.8 + 1.1 = 6.6
       expect(result.monicaConstant).toBeCloseTo(expectedWeighted, 5)
       expect(result.dominantInfluence).toBe('birth-moment-balance')
     })
@@ -82,7 +82,7 @@ describe('Chart Synthesis Engine', () => {
       const result = synthesizeCharts({
         birthChart: mockBirthChart,
         momentChart: mockMomentChart,
-        additionalCharts: [mockAdditionalChart]
+        additionalCharts: [mockAdditionalChart],
       })
 
       expect(result.type).toBe('multi-chart')
@@ -98,7 +98,7 @@ describe('Chart Synthesis Engine', () => {
       const result = synthesizeCharts({
         birthChart: mockBirthChart,
         momentChart: mockMomentChart,
-        additionalCharts: [mockAdditionalChart]
+        additionalCharts: [mockAdditionalChart],
       })
 
       expect(result.transits).toHaveProperty('sun-transit', 'aries')
@@ -109,13 +109,13 @@ describe('Chart Synthesis Engine', () => {
     it('should deduplicate activated houses', () => {
       const chartWithDuplicates = {
         ...mockMomentChart,
-        activatedHouses: ['1st', '7th', '1st'] // duplicate 1st house
+        activatedHouses: ['1st', '7th', '1st'], // duplicate 1st house
       }
 
       const result = synthesizeCharts({
         birthChart: null,
         momentChart: chartWithDuplicates,
-        additionalCharts: []
+        additionalCharts: [],
       })
 
       expect(result.activatedHouses).toEqual(['1st', '7th'])
@@ -127,7 +127,7 @@ describe('Chart Synthesis Engine', () => {
         synthesizeCharts({
           birthChart: mockBirthChart,
           momentChart: null as any,
-          additionalCharts: []
+          additionalCharts: [],
         })
       }).toThrow('Moment chart is required for synthesis')
     })
@@ -138,7 +138,7 @@ describe('Chart Synthesis Engine', () => {
       const result = synthesizeCharts({
         birthChart: null,
         momentChart: { ...mockMomentChart, 'Alchemy Effects': undefined },
-        additionalCharts: [chartWithoutAlchemy]
+        additionalCharts: [chartWithoutAlchemy],
       })
 
       // Should still work but with zero values for missing effects
@@ -160,7 +160,7 @@ describe('Chart Synthesis Engine', () => {
       const result = synthesizer.synthesize({
         birthChart: mockBirthChart,
         momentChart: mockMomentChart,
-        additionalCharts: []
+        additionalCharts: [],
       })
 
       expect(result.type).toBe('birth-moment')
@@ -187,7 +187,7 @@ describe('Chart Synthesis Engine', () => {
       const result = synthesizer.synthesizeMultiChart({
         birthChart: mockBirthChart,
         momentChart: mockMomentChart,
-        additionalCharts: [mockAdditionalChart]
+        additionalCharts: [mockAdditionalChart],
       })
 
       expect(result.type).toBe('multi-chart')
@@ -199,7 +199,7 @@ describe('Chart Synthesis Engine', () => {
         synthesizer.synthesizeMultiChart({
           birthChart: null,
           momentChart: null as any,
-          additionalCharts: []
+          additionalCharts: [],
         })
       }).toThrow('Moment chart is required for multi-chart synthesis')
     })
@@ -209,7 +209,7 @@ describe('Chart Synthesis Engine', () => {
         synthesizer.synthesizeMultiChart({
           birthChart: null,
           momentChart: mockMomentChart,
-          additionalCharts: []
+          additionalCharts: [],
         })
       }).toThrow('At least one additional chart is required for multi-chart synthesis')
     })
@@ -218,16 +218,18 @@ describe('Chart Synthesis Engine', () => {
       expect(synthesizer.validateChart(mockMomentChart)).toBe(true)
       expect(synthesizer.validateChart({})).toBe(false)
       expect(synthesizer.validateChart({ 'Alchemy Effects': {} })).toBe(false)
-      expect(synthesizer.validateChart({
-        'Alchemy Effects': { 'Total Spirit': 'invalid' }
-      })).toBe(false)
+      expect(
+        synthesizer.validateChart({
+          'Alchemy Effects': { 'Total Spirit': 'invalid' },
+        })
+      ).toBe(false)
     })
 
     it('should get synthesis statistics', () => {
       const synthesizedChart = synthesizer.synthesize({
         birthChart: mockBirthChart,
         momentChart: mockMomentChart,
-        additionalCharts: [mockAdditionalChart]
+        additionalCharts: [mockAdditionalChart],
       })
 
       const stats = synthesizer.getSynthesisStats(synthesizedChart)
@@ -257,11 +259,11 @@ describe('Agent Generator', () => {
           spirit: 3.0,
           essence: 1.5,
           matter: 2.0,
-          substance: 2.0
+          substance: 2.0,
         },
         sourceCharts: [mockMomentChart],
         dominantInfluence: 'moment-dominant',
-        type: 'moment-only' as const
+        type: 'moment-only' as const,
       }
 
       const agent = generator.generateFromSynthesis(synthesis, 'test-user')
@@ -282,10 +284,10 @@ describe('Agent Generator', () => {
           spirit: 1.0,
           essence: 2.5,
           matter: 0.5,
-          substance: 0.0
+          substance: 0.0,
         },
         sourceCharts: [mockMomentChart],
-        type: 'moment-only' as const
+        type: 'moment-only' as const,
       }
 
       const agent = generator.generateFromSynthesis(synthesis)
@@ -303,10 +305,10 @@ describe('Agent Generator', () => {
           spirit: 0.5,
           essence: 0.5,
           matter: 1.5,
-          substance: 0.5
+          substance: 0.5,
         },
         sourceCharts: [mockMomentChart],
-        type: 'moment-only' as const
+        type: 'moment-only' as const,
       }
 
       const agent = generator.generateFromSynthesis(synthesis)
@@ -324,10 +326,10 @@ describe('Agent Generator', () => {
           spirit: 0.2,
           essence: 0.3,
           matter: 0.2,
-          substance: 0.8
+          substance: 0.8,
         },
         sourceCharts: [mockMomentChart],
-        type: 'moment-only' as const
+        type: 'moment-only' as const,
       }
 
       const agent = generator.generateFromSynthesis(synthesis)
@@ -343,14 +345,14 @@ describe('Agent Generator', () => {
         monicaConstant: 5.123,
         consciousness: { spirit: 2, essence: 1, matter: 1, substance: 1 },
         sourceCharts: [mockMomentChart],
-        type: 'moment-only' as const
+        type: 'moment-only' as const,
       }
 
       const synthesis2 = {
         monicaConstant: 7.456,
         consciousness: { spirit: 2, essence: 1, matter: 1, substance: 1 },
         sourceCharts: [mockMomentChart],
-        type: 'moment-only' as const
+        type: 'moment-only' as const,
       }
 
       const agent1 = generator.generateFromSynthesis(synthesis1)
@@ -366,7 +368,7 @@ describe('Agent Generator', () => {
         consciousness: { spirit: 2, essence: 2, matter: 1, substance: 1 },
         sourceCharts: [mockMomentChart],
         type: 'birth-moment' as const,
-        dominantInfluence: 'balanced'
+        dominantInfluence: 'balanced',
       }
 
       const agent = generator.generateFromSynthesis(synthesis)
@@ -382,7 +384,7 @@ describe('Agent Generator', () => {
         monicaConstant: 0.1,
         consciousness: { spirit: 0.1, essence: 0, matter: 0, substance: 0 },
         sourceCharts: [],
-        type: 'moment-only' as const
+        type: 'moment-only' as const,
       }
 
       const agent = generator.generateFromSynthesis(minimalSynthesis)
@@ -401,7 +403,7 @@ describe('Agent Generator', () => {
       const synthesizedChart = synthesizer.synthesize({
         birthChart: mockBirthChart,
         momentChart: mockMomentChart,
-        additionalCharts: []
+        additionalCharts: [],
       })
 
       // Step 2: Generate agent from synthesis
@@ -423,7 +425,7 @@ describe('Agent Generator', () => {
       const synthesizedChart = synthesizer.synthesizeMultiChart({
         birthChart: mockBirthChart,
         momentChart: mockMomentChart,
-        additionalCharts: [mockAdditionalChart]
+        additionalCharts: [mockAdditionalChart],
       })
 
       // Generate agent

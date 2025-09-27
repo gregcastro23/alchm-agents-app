@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { prisma } from '@/lib/db'
+import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
 import { performanceMonitor } from '@/lib/performance-monitor'
 
 /**
@@ -26,13 +27,14 @@ async function isAdminUser(userId: string): Promise<boolean> {
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession()
-    const userId = session?.user?.id
+    const user = await getCurrentUser(req)
+    const userId = (user as any)?.id || getUserIdFromRequest(req)
 
-    if (!userId) {
+    if (!userId || userId === 'anonymous') {
       return NextResponse.json(
         {
           success: false,
-          error: 'Authentication required',
+          error: 'Admin authentication required',
         },
         { status: 401 }
       )
@@ -77,7 +79,7 @@ export async function GET(req: NextRequest) {
       prisma.consciousnessInteraction
         .findMany({
           where: {
-            createdAt: { gte: timeRangeStart },
+            timestamp: { gte: timeRangeStart },
           },
           select: { userId: true },
           distinct: ['userId'],
@@ -90,7 +92,7 @@ export async function GET(req: NextRequest) {
       // Recent interactions
       prisma.consciousnessInteraction.count({
         where: {
-          createdAt: { gte: timeRangeStart },
+          timestamp: { gte: timeRangeStart },
         },
       }),
 
@@ -124,7 +126,7 @@ export async function GET(req: NextRequest) {
       prisma.consciousnessInteraction.groupBy({
         by: ['agentId'],
         where: {
-          createdAt: { gte: timeRangeStart },
+          timestamp: { gte: timeRangeStart },
         },
         _count: {
           agentId: true,
@@ -192,18 +194,18 @@ export async function GET(req: NextRequest) {
         users: {
           tierDistribution: tierDistribution.map(t => ({
             tier: t.tier,
-            count: t._count.tier,
+            count: t._count?.tier || 0,
           })),
           growthRate: activeUsers > 0 ? `${((activeUsers / totalUsers) * 100).toFixed(1)}%` : '0%',
         },
         agents: {
           popularAgents: popularAgents.map(a => ({
             agentId: a.agentId,
-            interactionCount: a._count.agentId,
+            interactionCount: a._count?.agentId || 0,
           })),
           evolutionLevels: evolutionLevels.map(l => ({
             level: l.currentLevel,
-            count: l._count.currentLevel,
+            count: l._count?.currentLevel || 0,
           })),
         },
         errors: {
@@ -268,15 +270,18 @@ export async function POST(req: NextRequest) {
           // Send notification to each user (would batch this in production)
           for (const user of users.slice(0, 10)) {
             // Limit to 10 for demo
-            await fetch('/api/notifications', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                type: type || 'system_announcement',
-                userId: user.id,
-                metadata: { message, adminSent: true },
-              }),
-            })
+            await fetch(
+              `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/notifications`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  type: type || 'system_announcement',
+                  userId: user.email,
+                  metadata: { message, adminSent: true },
+                }),
+              }
+            )
           }
 
           return NextResponse.json({
@@ -301,7 +306,6 @@ export async function POST(req: NextRequest) {
         if (tables?.includes('users')) {
           exportData.users = await prisma.user.findMany({
             select: {
-              id: true,
               email: true,
               name: true,
               createdAt: true,
@@ -314,7 +318,7 @@ export async function POST(req: NextRequest) {
         if (tables?.includes('interactions')) {
           exportData.interactions = await prisma.consciousnessInteraction.findMany({
             take: 1000, // Limit for demo
-            orderBy: { createdAt: 'desc' },
+            orderBy: { timestamp: 'desc' },
           })
         }
 

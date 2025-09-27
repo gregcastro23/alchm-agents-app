@@ -4,7 +4,11 @@ import { body, validationResult } from 'express-validator'
 import rateLimit from 'express-rate-limit'
 import { alchmClient } from '../services/alchm-client.js'
 import { thermodynamicsService } from '../services/thermodynamics.js'
-import { validateTokenEquilibrium, calculateStabilizationAdjustment, generateAlchmForCurrentMoment } from '../services/alchemizer-service.js'
+import {
+  validateTokenEquilibrium,
+  calculateStabilizationAdjustment,
+  generateAlchmForCurrentMoment,
+} from '../services/alchemizer-service.js'
 import { getCurrentPlanetaryPositions } from '../services/planetary-service.js'
 import { asyncHandler, AppError } from '../middleware/error-handler.js'
 import { authMiddleware } from '../middleware/auth.js'
@@ -330,7 +334,7 @@ router.post(
       spirit: Number(tokens.spirit),
       essence: Number(tokens.essence),
       matter: Number(tokens.matter),
-      substance: Number(tokens.substance)
+      substance: Number(tokens.substance),
     })
 
     res.json({
@@ -341,8 +345,8 @@ router.post(
         overallHealth: equilibrium.overallHealth,
         goldenRatioDeviation: equilibrium.goldenRatio,
         elementalHarmony: equilibrium.elementalHarmony,
-        planetaryDignity: equilibrium.planetaryDignity
-      }
+        planetaryDignity: equilibrium.planetaryDignity,
+      },
     })
   })
 )
@@ -372,7 +376,7 @@ router.post(
       spirit: Number(tokens.spirit),
       essence: Number(tokens.essence),
       matter: Number(tokens.matter),
-      substance: Number(tokens.substance)
+      substance: Number(tokens.substance),
     }
 
     const adjustments = calculateStabilizationAdjustment(currentTokens)
@@ -385,13 +389,13 @@ router.post(
           spirit: currentTokens.spirit + (adjustments.spirit || 0),
           essence: currentTokens.essence + (adjustments.essence || 0),
           matter: currentTokens.matter + (adjustments.matter || 0),
-          substance: currentTokens.substance + (adjustments.substance || 0)
-        }
+          substance: currentTokens.substance + (adjustments.substance || 0),
+        },
       },
       metadata: {
         originalTokens: currentTokens,
-        hasAdjustments: Object.keys(adjustments).length > 0
-      }
+        hasAdjustments: Object.keys(adjustments).length > 0,
+      },
     })
   })
 )
@@ -404,8 +408,14 @@ router.post(
   '/current-planetary-alchemy',
   [
     body('timestamp').optional().isISO8601().withMessage('timestamp must be valid ISO8601 string'),
-    body('location.lat').optional().isFloat({ min: -90, max: 90 }).withMessage('latitude must be between -90 and 90'),
-    body('location.lon').optional().isFloat({ min: -180, max: 180 }).withMessage('longitude must be between -180 and 180'),
+    body('location.lat')
+      .optional()
+      .isFloat({ min: -90, max: 90 })
+      .withMessage('latitude must be between -90 and 90'),
+    body('location.lon')
+      .optional()
+      .isFloat({ min: -180, max: 180 })
+      .withMessage('longitude must be between -180 and 180'),
   ],
   asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req)
@@ -431,14 +441,14 @@ router.post(
       data: {
         planetaryPositions: positions,
         alchemicalQuantities: alchm,
-        timestamp: new Date(requestTime).toISOString()
+        timestamp: new Date(requestTime).toISOString(),
       },
       metadata: {
         computeTime,
         requestTime: new Date(requestTime).toISOString(),
         location: location || null,
-        hasAlchemicalData: !!alchm
-      }
+        hasAlchemicalData: !!alchm,
+      },
     })
   })
 )
@@ -456,7 +466,9 @@ router.post(
     body('tokens.matter').isNumeric().withMessage('matter must be numeric'),
     body('tokens.substance').isNumeric().withMessage('substance must be numeric'),
     body('astrologicalEvent.type').isString().withMessage('event type must be string'),
-    body('astrologicalEvent.severity').isIn(['low', 'medium', 'high', 'critical']).withMessage('severity must be low, medium, high, or critical'),
+    body('astrologicalEvent.severity')
+      .isIn(['low', 'medium', 'high', 'critical'])
+      .withMessage('severity must be low, medium, high, or critical'),
   ],
   asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req)
@@ -470,7 +482,8 @@ router.post(
     const emergencyProtocols = [
       {
         id: 'eclipse_essence_stabilization',
-        triggerCondition: () => astrologicalEvent.type === 'eclipse' &&
+        triggerCondition: () =>
+          astrologicalEvent.type === 'eclipse' &&
           astrologicalEvent.severity === 'critical' &&
           tokens.essence < 0.7,
         stabilizationAction: () => {
@@ -479,35 +492,40 @@ router.post(
             essence: essenceAdjustment,
             matter: essenceAdjustment * 0.4,
             priority: 'high',
-            reason: 'Eclipse essence stabilization protects lunar emotional foundations'
+            reason: 'Eclipse essence stabilization protects lunar emotional foundations',
           }
-        }
+        },
       },
       {
         id: 'grand_cross_elemental_harmonization',
-        triggerCondition: () => astrologicalEvent.type === 'grand_cross' &&
+        triggerCondition: () =>
+          astrologicalEvent.type === 'grand_cross' &&
           Object.values(tokens).some((value: number) => value < 0.3),
         stabilizationAction: () => {
-          const adjustments: any = { priority: 'high', reason: 'Grand cross creates elemental tension' }
+          const adjustments: any = {
+            priority: 'high',
+            reason: 'Grand cross creates elemental tension',
+          }
           if (tokens.spirit < 0.5) adjustments.spirit = 0.3
           if (tokens.essence < 0.7) adjustments.essence = 0.4
           if (tokens.matter < 0.6) adjustments.matter = 0.25
           if (tokens.substance < 0.4) adjustments.substance = 0.2
           return adjustments
-        }
+        },
       },
       {
         id: 'retrograde_mercury_communication_stress',
-        triggerCondition: () => astrologicalEvent.type === 'retrograde' &&
+        triggerCondition: () =>
+          astrologicalEvent.type === 'retrograde' &&
           astrologicalEvent.planet === 'Mercury' &&
           tokens.substance < 0.5,
         stabilizationAction: () => ({
           substance: (1.0 - tokens.substance) * 0.5,
           spirit: (1.0 - tokens.spirit) * 0.3,
           priority: 'medium',
-          reason: 'Mercury retrograde communication stress affects mercurial substance'
-        })
-      }
+          reason: 'Mercury retrograde communication stress affects mercurial substance',
+        }),
+      },
     ]
 
     // Find applicable emergency protocols
@@ -521,7 +539,7 @@ router.post(
       triggeredProtocols.push({
         id: protocol.id,
         priority: adjustment.priority,
-        reason: adjustment.reason
+        reason: adjustment.reason,
       })
 
       // Merge adjustments
@@ -532,8 +550,10 @@ router.post(
       }
 
       // Update priority if higher
-      if (adjustment.priority === 'critical' ||
-          (adjustment.priority === 'high' && totalAdjustments.priority !== 'critical')) {
+      if (
+        adjustment.priority === 'critical' ||
+        (adjustment.priority === 'high' && totalAdjustments.priority !== 'critical')
+      ) {
         totalAdjustments.priority = adjustment.priority
       } else if (adjustment.priority === 'medium' && totalAdjustments.priority === 'low') {
         totalAdjustments.priority = adjustment.priority
@@ -554,15 +574,15 @@ router.post(
         assessment: {
           eventType: astrologicalEvent.type,
           severity: astrologicalEvent.severity,
-          tokenHealth: validateTokenEquilibrium(tokens)
-        }
+          tokenHealth: validateTokenEquilibrium(tokens),
+        },
       },
       metadata: {
         inputTokens: tokens,
         astrologicalEvent,
         protocolsChecked: emergencyProtocols.length,
-        protocolsTriggered: applicableProtocols.length
-      }
+        protocolsTriggered: applicableProtocols.length,
+      },
     })
   })
 )

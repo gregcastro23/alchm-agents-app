@@ -159,16 +159,19 @@ export function calculateGroupDynamics(
     const collectiveForceMagnitude = collectiveForce
       ? Math.sqrt(
           collectiveForce.Fire ** 2 +
-          collectiveForce.Water ** 2 +
-          collectiveForce.Air ** 2 +
-          collectiveForce.Earth ** 2
+            collectiveForce.Water ** 2 +
+            collectiveForce.Air ** 2 +
+            collectiveForce.Earth ** 2
         )
       : 0
 
     // High collective force provides resonance bonus
-    const forceSynergyBonus = collectiveForceMagnitude > 0 ? (1 + collectiveForceMagnitude / 20) : 1.0
+    const forceSynergyBonus = collectiveForceMagnitude > 0 ? 1 + collectiveForceMagnitude / 20 : 1.0
 
-    const harmony = Math.min(1.0, baseHarmony * sizeModifier * planetaryAlignment * forceSynergyBonus)
+    const harmony = Math.min(
+      1.0,
+      baseHarmony * sizeModifier * planetaryAlignment * forceSynergyBonus
+    )
 
     // Calculate power amplification
     const powerAmplification = 1 + (harmony - 0.5) * 0.8
@@ -242,7 +245,7 @@ export function calculateTokenKinetics(
     let currentRate = baseTokenRate * kineticMultiplier * timeMultiplier
 
     // Apply force-based rate boost
-    const forceBoost = forceMagnitude ? (1 + forceMagnitude / 10) : 1.0
+    const forceBoost = forceMagnitude ? 1 + forceMagnitude / 10 : 1.0
     currentRate *= forceBoost
 
     // Calculate power level

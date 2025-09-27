@@ -15,11 +15,15 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Docker optimization - standalone output
-  output: 'standalone',
+  // Explicitly set workspace root to avoid lockfile detection issues
+  outputFileTracingRoot: process.env.DOCKER_BUILD
+    ? undefined
+    : '/Users/GregCastro/Desktop/planetary-agents',
 
-  // Fix workspace root detection
-  outputFileTracingRoot: process.env.DOCKER_BUILD ? undefined : '/Users/GregCastro/Desktop/planetary-agents',
+  // Docker optimization - standalone output (only for production builds)
+  ...(process.env.NODE_ENV === 'production' && process.env.DOCKER_BUILD ? {
+    output: 'standalone',
+  } : {}),
 
   // Transpile packages that need special handling
   transpilePackages: [
@@ -31,7 +35,14 @@ const nextConfig = {
   ],
 
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-*', 'recharts', 'react-hook-form', 'd3', '@ai-sdk/openai'],
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-*',
+      'recharts',
+      'react-hook-form',
+      'd3',
+      '@ai-sdk/openai',
+    ],
     // Enable faster refresh
     swcPlugins: [],
   },

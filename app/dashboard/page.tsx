@@ -10,26 +10,67 @@ import { Progress } from '@/components/ui/progress'
 import { Sparkles, Crown, TrendingUp, Users, Zap, Settings, LogOut, Star } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
-const AgentKineticEvolution = dynamic(() => import('@/components/agents/agent-kinetic-evolution').then(mod => ({ default: mod.AgentKineticEvolution })), {
-  loading: () => <div className="h-32 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
-})
+const AgentKineticEvolution = dynamic(
+  () =>
+    import('@/components/agents/agent-kinetic-evolution').then(mod => ({
+      default: mod.AgentKineticEvolution,
+    })),
+  {
+    loading: () => (
+      <div className="h-32 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    ),
+  }
+)
 
-const GroupConsciousnessIndicator = dynamic(() => import('@/components/misc/group-consciousness-indicator').then(mod => ({ default: mod.GroupConsciousnessIndicator })), {
-  loading: () => <div className="h-24 flex items-center justify-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div></div>
-})
+const GroupConsciousnessIndicator = dynamic(
+  () =>
+    import('@/components/misc/group-consciousness-indicator').then(mod => ({
+      default: mod.GroupConsciousnessIndicator,
+    })),
+  {
+    loading: () => (
+      <div className="h-24 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+      </div>
+    ),
+  }
+)
 
-const TokenDashboardKinetics = dynamic(() => import('@/components/dashboards/token-dashboard-kinetics').then(mod => ({ default: mod.TokenDashboardKinetics })), {
-  loading: () => <div className="h-40 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
-})
+const TokenDashboardKinetics = dynamic(
+  () =>
+    import('@/components/dashboards/token-dashboard-kinetics').then(mod => ({
+      default: mod.TokenDashboardKinetics,
+    })),
+  {
+    loading: () => (
+      <div className="h-40 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    ),
+  }
+)
 
-const PlanetaryPositionsMonitor = dynamic(() => import('@/components/dashboards/PlanetaryPositionsMonitor'), {
-  loading: () => <div className="h-48 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
-})
+const PlanetaryPositionsMonitor = dynamic(
+  () => import('@/components/dashboards/PlanetaryPositionsMonitor'),
+  {
+    loading: () => (
+      <div className="h-48 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    ),
+  }
+)
 import { DashboardSkeleton } from '@/components/SkeletonLoader'
 
-const FeedbackModal = dynamic(() => import('@/components/FeedbackModal').then(mod => ({ default: mod.FeedbackModal })))
+const FeedbackModal = dynamic(() =>
+  import('@/components/FeedbackModal').then(mod => ({ default: mod.FeedbackModal }))
+)
 
-const OnboardingWizard = dynamic(() => import('@/components/OnboardingWizard').then(mod => ({ default: mod.OnboardingWizard })))
+const OnboardingWizard = dynamic(() =>
+  import('@/components/OnboardingWizard').then(mod => ({ default: mod.OnboardingWizard }))
+)
 import { ALL_AGENTS } from '@/lib/demo-agents-data'
 import { usePerformanceMonitor } from '@/hooks/use-performance-monitor'
 
@@ -75,7 +116,9 @@ export default function DashboardPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Consciousness Dashboard</h1>
-          <p className="text-muted-foreground">Loading your personalized astrological insights...</p>
+          <p className="text-muted-foreground">
+            Loading your personalized astrological insights...
+          </p>
         </div>
         <DashboardSkeleton />
       </div>
@@ -303,10 +346,7 @@ export default function DashboardPage() {
 
               <FeedbackModal
                 trigger={
-                  <Button
-                    variant="outline"
-                    className="h-20 flex-col gap-2"
-                  >
+                  <Button variant="outline" className="h-20 flex-col gap-2">
                     <Star className="h-6 w-6" />
                     <span className="text-sm">Feedback</span>
                   </Button>

@@ -509,9 +509,10 @@ export function calculateKineticState(
       : 0.5
 
   // Apply force acceleration boost (high force accelerates evolution)
-  const forceBoost = forceMagnitude ? (1 + forceMagnitude / 10) : 1.0
+  const forceBoost = forceMagnitude ? 1 + forceMagnitude / 10 : 1.0
 
-  const powerMultiplier = profile.evolutionRate * (1 + alignmentBonus) * (0.5 + elementalResonance) * forceBoost
+  const powerMultiplier =
+    profile.evolutionRate * (1 + alignmentBonus) * (0.5 + elementalResonance) * forceBoost
   const abilitiesUnlocked = profile.specialAbilities.slice(0, thresholdIndex + 1)
 
   return {

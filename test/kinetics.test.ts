@@ -3,7 +3,7 @@ import {
   computeForce,
   getPlanetaryForceModifier,
   type ForceVector,
-  type ElementVector
+  type ElementVector,
 } from '../lib/alchemical-kinetics'
 
 describe('Force Kinetics', () => {

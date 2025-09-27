@@ -7,8 +7,8 @@ services:
   - type: web
     name: planetary-agents-backend
     runtime: node
-    plan: starter  # Change to 'standard' or 'pro' for production
-    region: oregon  # or 'frankfurt' for EU
+    plan: starter # Change to 'standard' or 'pro' for production
+    region: oregon # or 'frankfurt' for EU
 
     # Build configuration
     buildCommand: corepack enable && corepack prepare yarn@4.0.0 --activate && yarn install && yarn build
@@ -70,9 +70,9 @@ services:
       - key: TOKEN_CACHE_TTL
         value: 60
 
-      # Database configuration
+      # Database configuration - PostgreSQL
       - key: DATABASE_URL
-        value: file:./planetary_agents.db
+        value: postgresql://username:password@hostname:port/database
 
       # CORS origins - UPDATE THIS with your actual frontend domain
       - key: CORS_ORIGINS
@@ -91,7 +91,6 @@ services:
     # numInstances: 1
     # minInstances: 1
     # maxInstances: 3
-
 # Optional Redis service for enhanced caching
 # Uncomment to add Redis caching (requires paid plan)
 # - type: redis

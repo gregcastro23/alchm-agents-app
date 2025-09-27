@@ -365,11 +365,21 @@ export function computeForce(
   magnitude: number
   forceType: 'accelerating' | 'decelerating' | 'balanced'
 }> {
-  if (!momentumSamples || !velocitySamples || momentumSamples.length === 0 || velocitySamples.length === 0) {
+  if (
+    !momentumSamples ||
+    !velocitySamples ||
+    momentumSamples.length === 0 ||
+    velocitySamples.length === 0
+  ) {
     return []
   }
 
-  const out: Array<{ t: Date; f: ForceVector; magnitude: number; forceType: 'accelerating' | 'decelerating' | 'balanced' }> = []
+  const out: Array<{
+    t: Date
+    f: ForceVector
+    magnitude: number
+    forceType: 'accelerating' | 'decelerating' | 'balanced'
+  }> = []
 
   for (let i = 0; i < momentumSamples.length; i++) {
     const momentumSample = momentumSamples[i]
@@ -377,7 +387,10 @@ export function computeForce(
     const previousMomentum = i > 0 ? momentumSamples[i - 1] : undefined
     const previousVelocity = i > 0 ? velocitySamples[i - 1] : undefined
 
-    const dt = previousMomentum && previousVelocity ? (momentumSample.t.getTime() - previousMomentum.t.getTime()) / 3600000 : 0 // hours
+    const dt =
+      previousMomentum && previousVelocity
+        ? (momentumSample.t.getTime() - previousMomentum.t.getTime()) / 3600000
+        : 0 // hours
 
     const rawF: ForceVector = { Fire: 0, Water: 0, Air: 0, Earth: 0 }
     ;(Object.keys(rawF) as ElementKey[]).forEach(el => {
@@ -620,7 +633,9 @@ export function validateKineticResults(
   if (powMax > expectedRanges.powerMax)
     warnings.push(`Power exceeds expected max (${powMax.toFixed(3)} > ${expectedRanges.powerMax}).`)
   if (fMax > expectedRanges.forceMax)
-    warnings.push(`Force magnitude exceeds expected max (${fMax.toFixed(3)} > ${expectedRanges.forceMax}).`)
+    warnings.push(
+      `Force magnitude exceeds expected max (${fMax.toFixed(3)} > ${expectedRanges.forceMax}).`
+    )
 
   // Timing expectations (heuristic counts over series)
   const countByHour: Record<

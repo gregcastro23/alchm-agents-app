@@ -23,7 +23,18 @@ import {
   CartesianGrid,
 } from 'recharts'
 import { classifyMC } from '@/lib/monica/monica-constant-validator'
-import { Crown, Zap, Flame, Droplets, Mountain, Wind, Activity, BarChart3, RefreshCw, Eye } from 'lucide-react'
+import {
+  Crown,
+  Zap,
+  Flame,
+  Droplets,
+  Mountain,
+  Wind,
+  Activity,
+  BarChart3,
+  RefreshCw,
+  Eye,
+} from 'lucide-react'
 
 type Props = {
   alchmQuantities: {

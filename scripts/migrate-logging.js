@@ -20,14 +20,10 @@ const IGNORED_DIRS = [
   'build',
   'coverage',
   '.vitest',
-  'test-results'
+  'test-results',
 ]
 
-const IGNORED_FILES = [
-  'migrate-logging.js',
-  'yarn.lock',
-  'package-lock.json'
-]
+const IGNORED_FILES = ['migrate-logging.js', 'yarn.lock', 'package-lock.json']
 
 const FILE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx']
 
@@ -46,29 +42,31 @@ const CONSOLE_PATTERNS = [
         return `logger.debug(${args})`
       }
     },
-    type: 'log'
+    type: 'log',
   },
   // console.error patterns
   {
     pattern: /console\.error\(([^)]+)\)/g,
     replacement: (match, args) => `logger.error(${args})`,
-    type: 'error'
+    type: 'error',
   },
   // console.warn patterns
   {
     pattern: /console\.warn\(([^)]+)\)/g,
     replacement: (match, args) => `logger.warn(${args})`,
-    type: 'warn'
-  }
+    type: 'warn',
+  },
 ]
 
 function shouldProcessFile(filePath) {
   const ext = path.extname(filePath)
   const fileName = path.basename(filePath)
 
-  return FILE_EXTENSIONS.includes(ext) &&
-         !IGNORED_FILES.includes(fileName) &&
-         !IGNORED_DIRS.some(dir => filePath.includes(`/${dir}/`))
+  return (
+    FILE_EXTENSIONS.includes(ext) &&
+    !IGNORED_FILES.includes(fileName) &&
+    !IGNORED_DIRS.some(dir => filePath.includes(`/${dir}/`))
+  )
 }
 
 function findFiles(dir, files = []) {
@@ -95,7 +93,7 @@ function analyzeFile(filePath) {
     consoleLogs: 0,
     consoleErrors: 0,
     consoleWarns: 0,
-    totalConsoleStatements: 0
+    totalConsoleStatements: 0,
   }
 
   // Count console statements
@@ -143,7 +141,7 @@ function migrateFile(filePath, dryRun = true) {
   }
 
   // Add logger import if needed
-  if (needsLoggerImport && !content.includes("import { logger }")) {
+  if (needsLoggerImport && !content.includes('import { logger }')) {
     const importStatement = "import { logger } from '@/lib/structured-logger'\n"
 
     // Find the first import statement and add after it
@@ -226,7 +224,8 @@ async function main() {
   console.log(`\n${dryRun ? '🔍 DRY RUN' : '🔄 MIGRATING'} CONSOLE STATEMENTS...`)
 
   let totalChanges = 0
-  for (const stat of allStats.slice(0, 5)) { // Process top 5 files first
+  for (const stat of allStats.slice(0, 5)) {
+    // Process top 5 files first
     const changes = migrateFile(stat.file, dryRun)
     totalChanges += changes
   }

@@ -20,14 +20,10 @@ const IGNORED_DIRS = [
   'build',
   'coverage',
   '.vitest',
-  'test-results'
+  'test-results',
 ]
 
-const IGNORED_FILES = [
-  'yarn.lock',
-  'package-lock.json',
-  'analyze-bundle.js'
-]
+const IGNORED_FILES = ['yarn.lock', 'package-lock.json', 'analyze-bundle.js']
 
 const FILE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.json']
 
@@ -40,7 +36,7 @@ const COMMON_DEPENDENCIES = [
   '@types/react',
   '@types/node',
   'eslint',
-  'prettier'
+  'prettier',
 ]
 
 // Large libraries that might need lazy loading
@@ -50,7 +46,7 @@ const LARGE_LIBRARIES = [
   'react-day-picker',
   'lucide-react',
   '@radix-ui',
-  'date-fns'
+  'date-fns',
 ]
 
 function findFiles(dir, files = []) {
@@ -74,9 +70,11 @@ function shouldProcessFile(filePath) {
   const ext = path.extname(filePath)
   const fileName = path.basename(filePath)
 
-  return FILE_EXTENSIONS.includes(ext) &&
-         !IGNORED_FILES.includes(fileName) &&
-         !IGNORED_DIRS.some(dir => filePath.includes(`/${dir}/`))
+  return (
+    FILE_EXTENSIONS.includes(ext) &&
+    !IGNORED_FILES.includes(fileName) &&
+    !IGNORED_DIRS.some(dir => filePath.includes(`/${dir}/`))
+  )
 }
 
 function analyzeDependencies() {
@@ -87,7 +85,7 @@ function analyzeDependencies() {
   const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'))
   const allDependencies = {
     ...packageJson.dependencies,
-    ...packageJson.devDependencies
+    ...packageJson.devDependencies,
   }
 
   // Find all import statements
@@ -95,7 +93,7 @@ function analyzeDependencies() {
   const importPatterns = [
     /import\s+.*?\s+from\s+['"]([^'"]+)['"]/g,
     /import\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
-    /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g
+    /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
   ]
 
   const usedImports = new Set()
@@ -147,15 +145,20 @@ function analyzeDependencies() {
     }
   }
 
-  return { unusedDeps, largeDeps, potentiallyUnused, totalDeps: Object.keys(allDependencies).length }
+  return {
+    unusedDeps,
+    largeDeps,
+    potentiallyUnused,
+    totalDeps: Object.keys(allDependencies).length,
+  }
 }
 
 function analyzeComponentUsage() {
   console.log('\n🔍 Analyzing Component Usage')
   console.log('='.repeat(50))
 
-  const componentFiles = findFiles('components').filter(file =>
-    file.endsWith('.tsx') || file.endsWith('.ts')
+  const componentFiles = findFiles('components').filter(
+    file => file.endsWith('.tsx') || file.endsWith('.ts')
   )
 
   const componentStats = []
@@ -187,7 +190,7 @@ function analyzeComponentUsage() {
         hasLazy,
         hasSuspense,
         hasLargeLibs,
-        complexity: lines > 500 ? 'high' : lines > 200 ? 'medium' : 'low'
+        complexity: lines > 500 ? 'high' : lines > 200 ? 'medium' : 'low',
       })
     } catch (error) {
       continue
@@ -212,24 +215,24 @@ function analyzeBundleSize() {
     const bundleStats = {
       estimatedSize: 'Unknown',
       chunks: [],
-      suggestions: []
+      suggestions: [],
     }
 
     // Count component files
-    const componentCount = findFiles('components').filter(file =>
-      file.endsWith('.tsx') || file.endsWith('.ts')
+    const componentCount = findFiles('components').filter(
+      file => file.endsWith('.tsx') || file.endsWith('.ts')
     ).length
 
     // Count pages
-    const pageCount = findFiles('app').filter(file =>
-      file.endsWith('page.tsx') || file.endsWith('layout.tsx')
+    const pageCount = findFiles('app').filter(
+      file => file.endsWith('page.tsx') || file.endsWith('layout.tsx')
     ).length
 
     bundleStats.suggestions = [
       `Found ${componentCount} components - consider code splitting`,
       `Found ${pageCount} pages - ensure proper lazy loading`,
       'Consider using dynamic imports for heavy components',
-      'Implement proper tree shaking for unused exports'
+      'Implement proper tree shaking for unused exports',
     ]
 
     return bundleStats
@@ -237,7 +240,7 @@ function analyzeBundleSize() {
     return {
       estimatedSize: 'Unable to analyze',
       chunks: [],
-      suggestions: ['Run build and use bundle analyzer for detailed stats']
+      suggestions: ['Run build and use bundle analyzer for detailed stats'],
     }
   }
 }
@@ -331,7 +334,6 @@ async function main() {
 
     console.log('\n✅ Analysis Complete!')
     console.log('💡 Run this script again after implementing changes to track progress.')
-
   } catch (error) {
     console.error('❌ Analysis failed:', error.message)
     process.exit(1)
