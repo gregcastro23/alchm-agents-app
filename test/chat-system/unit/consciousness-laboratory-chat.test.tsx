@@ -1,18 +1,6 @@
 // Unit tests for ConsciousnessLaboratoryChat component
 // Tests experimental protocols, mixed agent selection, and research features
 
-import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import '@testing-library/jest-dom'
-import ConsciousnessLaboratoryChat from '@/components/agents/consciousness-laboratory-chat'
-import {
-  mockHistoricalAgents,
-  mockPlanetaryConfigs,
-  mockMixedPresets,
-  performanceTestData,
-} from '../fixtures/mock-data'
-
 // Mock the unified multi-agent chat component
 vi.mock('@/components/unified-multi-agent-chat', () => ({
   default: ({
@@ -35,17 +23,34 @@ vi.mock('@/components/unified-multi-agent-chat', () => ({
 
 // Mock council presets
 vi.mock('@/lib/council-presets', () => ({
-  MIXED_COUNCIL_PRESETS: mockMixedPresets,
+  MIXED_COUNCIL_PRESETS: [],
   HISTORICAL_COUNCIL_PRESETS: [],
   PLANETARY_COUNCIL_PRESETS: [],
 }))
 
 // Mock planetary config helper
 vi.mock('@/lib/planetary-config-helper', () => ({
-  createDefaultPlanetaryConfigs: vi.fn(() => mockPlanetaryConfigs),
+  createDefaultPlanetaryConfigs: vi.fn(() => []),
 }))
 
+import React from 'react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import '@testing-library/jest-dom'
+import ConsciousnessLaboratoryChat from '@/components/agents/consciousness-laboratory-chat'
+import {
+  mockHistoricalAgents,
+  mockPlanetaryConfigs,
+  mockMixedPresets,
+  performanceTestData,
+} from '../fixtures/mock-data'
+
 describe('ConsciousnessLaboratoryChat Component', () => {
+  beforeEach(() => {
+    // Setup mocks with test data
+    vi.clearAllMocks()
+  })
+
   const defaultProps = {
     isOpen: true,
     onClose: vi.fn(),

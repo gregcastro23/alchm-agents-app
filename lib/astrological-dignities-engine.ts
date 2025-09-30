@@ -80,6 +80,17 @@ export interface ConsciousnessStats {
   intuitive_receptivity_quotient: number // Based on Moon and Neptune
 }
 
+export interface ConsciousParameters {
+  alchemical_pillars: {
+    spirit_forging: number
+    essence_distillation: number
+    matter_transmutation: number
+    substance_refinement: number
+    elemental_harmony: number
+    consciousness_expansion: number
+  }
+}
+
 // PLANETARY DIGNITY TABLES
 export const ESSENTIAL_DIGNITIES = {
   Sun: { domicile: 'Leo', exaltation: 'Aries', detriment: 'Aquarius', fall: 'Libra' },

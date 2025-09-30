@@ -1272,4 +1272,260 @@ model EvolutionState {
   updatedAt DateTime @updatedAt
 }
 
+// Natal Chart Management for Transit System
+// -----------------------------------------
+
+// User Natal Charts (stored birth charts for transit monitoring)
+model UserNatalChart {
+  id     String @id @default(cuid())
+  userId String
+
+  // Chart Identification
+  chartName   String // "My Birth Chart", "John's Chart", etc.
+  description String? // Optional description
+
+  // Birth Data
+  birthDate     DateTime
+  birthTime     String // "14:30" or "unknown"
+  birthLocation Json // { lat, lon, name, timezone, accuracy }
+
+  // Calculated Chart Data
+  planets Json // Array of { planet, degree, sign, house, retrograde }
+  houses  Json // Array of house cusps
+  aspects Json? // Array of major aspects
+  nodes   Json? // North/South nodes
+
+  // Alchemical Calculations
+  monicaConstant   Float // Calculated MC for this chart
+  dominantElement  String // Primary element
+  dominantModality String? // Cardinal, Fixed, Mutable
+  spiritScore      Float
+  essenceScore     Float
+  matterScore      Float
+  substanceScore   Float
+
+  // Transit Preferences
+  preferences Json // { notificationThreshold, enabledTransits, reminderFrequency, transitTypes }
+
+  // Metadata
+  isActive       Boolean @default(true)
+  isPrimary      Boolean @default(false) // User's primary chart
+  lastAnalyzed   DateTime?
+  analysisCount  Int      @default(0)
+  transitCount   Int      @default(0) // Number of significant transits found
+  notificationOn Boolean  @default(true)
+
+  // Relations
+  transitSignificances TransitSignificance[]
+  transitNotifications TransitNotification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, isPrimary])
+  @@index([isActive])
+  @@index([birthDate])
+  @@map("user_natal_charts")
+}
+
+// Transit Significance Records (calculated transit impacts)
+model TransitSignificance {
+  id           String @id @default(cuid())
+  chartId      String // References UserNatalChart.id
+  userId       String
+  natalChartId String // Foreign key to UserNatalChart
+
+  // Transit Details
+  transitDate   DateTime
+  transitDegree Float // 0-360
+  transitPlanet String @default("Sun") // Currently Sun transits only
+
+  // Natal Placement
+  natalDegree  Float
+  natalPlanet  String
+  natalSign    String
+  natalHouse   Int?
+  aspectType   String? // "conjunction", "opposition", etc.
+  aspectOrb    Float? // Degrees of orb
+
+  // Degree-Agent Mapping
+  primaryAgentId     String // Agent at this degree
+  secondaryAgentIds  Json // Array of secondary agents
+  elementalAffinity  String // Fire, Water, Air, Earth
+  degreeSignificance String // low, medium, high, critical
+
+  // Significance Scores (0-1)
+  overallScore             Float
+  elementalAlignmentScore  Float // Same element bonus
+  consciousnessImpactScore Float // Based on agent evolution
+  historicalPrecedence     Float // Based on past patterns
+  personalRelevance        Float // Based on user profile
+
+  // Elemental Alignment Details
+  sameElement       Boolean @default(false)
+  complementary     Boolean @default(false)
+  reinforcementBonus Float   @default(0)
+
+  // Consciousness Themes and Recommendations
+  transitThemes           Json // Array of themes
+  consciousnessAmplifiers Json // Array of amplifiers
+  recommendedActions      Json // Array of recommended actions
+  recommendedQueries      Json // Array of suggested queries
+
+  // Notification Status
+  notificationSent     Boolean   @default(false)
+  notificationSentAt   DateTime?
+  userViewed           Boolean   @default(false)
+  userViewedAt         DateTime?
+  userDismissed        Boolean   @default(false)
+  userBookmarked       Boolean   @default(false)
+  userInteractionCount Int       @default(0)
+
+  // Relations
+  natalChart    UserNatalChart        @relation(fields: [natalChartId], references: [id], onDelete: Cascade)
+  notifications TransitNotification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([natalChartId])
+  @@index([transitDate])
+  @@index([overallScore])
+  @@index([primaryAgentId])
+  @@index([notificationSent, transitDate])
+  @@index([userId, transitDate])
+  @@index([userBookmarked])
+  @@map("transit_significances")
+}
+
+// Transit Notifications (user-facing transit alerts)
+model TransitNotification {
+  id                      String @id @default(cuid())
+  userId                  String
+  natalChartId            String
+  transitSignificanceId   String? // Optional link to TransitSignificance
+  transitSignificanceData Json? // Denormalized for performance
+
+  // Notification Details
+  title       String // "Tesla Energy Activation at 15° Aries"
+  message     String // Detailed message
+  notifyDate  DateTime // When to send notification
+  transitDate DateTime // Actual transit date
+
+  // Notification Priority
+  priority       String // "low", "medium", "high", "critical"
+  urgency        String @default("normal") // "normal", "urgent", "time_sensitive"
+  category       String // "personal_transit", "agent_activation", "consciousness_breakthrough"
+  actionRequired Boolean @default(false)
+
+  // Delivery Status
+  status         String    @default("pending") // pending, sent, delivered, read, dismissed
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  readAt         DateTime?
+  dismissedAt    DateTime?
+  deliveryMethod String    @default("in_app") // in_app, email, push, sms
+
+  // User Interaction
+  interactionCount Int       @default(0)
+  lastInteraction  DateTime?
+  userRating       Int? // 1-5 star rating
+  userFeedback     String? // Optional feedback
+
+  // Context and Metadata
+  contextData Json? // Additional context
+  expiresAt   DateTime? // Auto-dismiss after this date
+  isActive    Boolean   @default(true)
+
+  // Relations
+  natalChart           UserNatalChart       @relation(fields: [natalChartId], references: [id], onDelete: Cascade)
+  transitSignificance  TransitSignificance? @relation(fields: [transitSignificanceId], references: [id])
+  interactionEvents    NotificationInteractionEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([natalChartId])
+  @@index([status, notifyDate])
+  @@index([userId, status])
+  @@index([priority, notifyDate])
+  @@index([isActive, expiresAt])
+  @@map("transit_notifications")
+}
+
+// Notification Interaction Events (detailed tracking)
+model NotificationInteractionEvent {
+  id             String @id @default(cuid())
+  notificationId String
+  userId         String
+
+  // Event Details
+  eventType String // "view", "click", "dismiss", "bookmark", "share", "rate"
+  eventData Json? // Additional event data
+
+  // Context
+  deviceType   String? // mobile, desktop, tablet
+  location     String? // Page where interaction occurred
+  durationView Int? // Time spent viewing (seconds)
+
+  timestamp DateTime @default(now())
+
+  // Relations
+  notification TransitNotification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId])
+  @@index([userId])
+  @@index([eventType])
+  @@index([timestamp])
+  @@map("notification_interaction_events")
+}
+
+// Transit Monitoring Jobs (automated background processing)
+model TransitMonitoringJob {
+  id String @id @default(cuid())
+
+  // Job Configuration
+  jobType       String // "daily_scan", "weekly_forecast", "real_time_monitor"
+  targetUserId  String? // Specific user or null for all
+  targetChartId String? // Specific chart or null for all
+
+  // Schedule
+  scheduledFor DateTime
+  frequency    String? // "daily", "weekly", "hourly", "on_demand"
+  timezone     String  @default("UTC")
+
+  // Execution Status
+  status         String    @default("pending") // pending, running, completed, failed
+  startedAt      DateTime?
+  completedAt    DateTime?
+  executionTime  Int? // Milliseconds
+  lastError      String? // Error message if failed
+  retryCount     Int       @default(0)
+  maxRetries     Int       @default(3)
+
+  // Results
+  chartsProcessed         Int @default(0)
+  transitsFound           Int @default(0)
+  notificationsCreated    Int @default(0)
+  significantTransits     Int @default(0) // Score > threshold
+  highPriorityTransits    Int @default(0)
+  criticalTransits        Int @default(0)
+
+  // Performance Metrics
+  avgProcessingTime Float? // Avg ms per chart
+  cacheHitRate      Float? // Cache effectiveness
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, scheduledFor])
+  @@index([jobType])
+  @@index([targetUserId])
+  @@index([scheduledFor])
+  @@map("transit_monitoring_jobs")
+}
+
 // Duplicate model removed. Use the primary definition at line ~1082.

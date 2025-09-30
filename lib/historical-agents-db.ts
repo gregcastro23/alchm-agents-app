@@ -332,6 +332,13 @@ export class HistoricalAgentsService {
   /**
    * Get historical agent by ID from database
    */
+  static async getAgentById(
+    agentId: string,
+    includeRelations = false
+  ): Promise<EnhancedHistoricalAgent | null> {
+    return this.getAgent(agentId, includeRelations)
+  }
+
   static async getAgent(
     agentId: string,
     includeRelations = false
@@ -850,6 +857,47 @@ export class HistoricalAgentsService {
       throw new Error(`Failed to create agent: ${error.message}`)
     }
   }
+
+  /**
+   * Get statistics for the historical agents system
+   */
+  static async getStats(): Promise<{
+    totalAgents: number
+    activeAgents: number
+    totalConversations: number
+    totalWisdomShared: number
+    averageResonance: number
+  }> {
+    const agents = await prisma.historicalAgent.findMany({
+      select: {
+        conversations: true,
+        wisdomShared: true,
+        resonanceScore: true,
+        lastActive: true,
+      },
+    })
+
+    const totalAgents = agents.length
+    const activeAgents = agents.filter(
+      agent =>
+        agent.lastActive &&
+        new Date(agent.lastActive) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+    ).length
+    const totalConversations = agents.reduce((sum, agent) => sum + (agent.conversations || 0), 0)
+    const totalWisdomShared = agents.reduce((sum, agent) => sum + (agent.wisdomShared || 0), 0)
+    const averageResonance =
+      totalAgents > 0
+        ? agents.reduce((sum, agent) => sum + (agent.resonanceScore || 0), 0) / totalAgents
+        : 0
+
+    return {
+      totalAgents,
+      activeAgents,
+      totalConversations,
+      totalWisdomShared,
+      averageResonance,
+    }
+  }
 }
 
 // Legacy compatibility - convert database agent to CraftedAgent format
@@ -902,4 +950,6 @@ export function dbAgentToCraftedAgent(dbAgent: HistoricalAgent): CraftedAgent {
       lastActive: dbAgent.lastActive,
     },
   }
+
+  return enhancedAgent
 }

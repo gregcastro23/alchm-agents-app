@@ -2,8 +2,9 @@
 import { alchemize } from '@/lib/alchemizer'
 import { PlanetaryHourCalculator } from '@/lib/planetary-hour'
 import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
-import { generateAccurateHoroscope, validateBirthInfo } from './horoscope-generator'
+import { generateProfessionalHoroscope, validateBirthInfo } from './horoscope-generator'
 import { calculateAverageMonicaConstant } from './monica-constant'
+import { planetaryPositionSyncService } from '@/lib/services/planetary-position-sync'
 
 // Types for alchemical training
 export interface AlchemicalSample {
@@ -65,6 +66,15 @@ export interface TrainingResult {
     dateRange: { start: Date; end: Date }
     locations: Array<{ latitude: number; longitude: number }>
     errors?: string[]
+  }
+}
+
+export interface SynchronizedAlchemicalData extends AlchemicalData {
+  sync_metadata?: {
+    synchronized: boolean
+    authoritative_source: string
+    corrections_applied: number
+    sync_timestamp: string
   }
 }
 
@@ -158,7 +168,10 @@ export async function trainOnAlchemicalValues(numSamples: number = 15): Promise<
       continue
     }
 
-    const horoscope = generateAccurateHoroscope(birthInfo)
+    const horoscope = generateProfessionalHoroscope(birthInfo, {
+      useLegacyFallback: false,
+      includeAccuracyMetadata: true,
+    })
 
     // Set planetary hour calculator location
     planetaryCalculator.setCoordinates(birthInfo.latitude, birthInfo.longitude)
@@ -318,7 +331,10 @@ export async function todayHourlyAlchemize(
       longitude: location.longitude,
     }
 
-    const horoscope = generateAccurateHoroscope(birthInfo)
+    const horoscope = generateProfessionalHoroscope(birthInfo, {
+      useLegacyFallback: false,
+      includeAccuracyMetadata: true,
+    })
     const hourDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hour, 0)
     const planetaryHour = planetaryCalculator.getPlanetaryHour(hourDate)
 
@@ -691,4 +707,172 @@ function generateRetrogradeRecommendations(_positions: any): string[] {
     'Enhanced essence values indicate favorable conditions for emotional processing',
     'Consider reducing external initiatives during retrograde periods',
   ]
+}
+
+/**
+ * Generate alchemical data using cross-backend synchronized planetary positions
+ * This function provides the highest accuracy by synchronizing VSOP87 calculations
+ * with WhatToEatNext's planetary position rectification service.
+ */
+export async function generateSynchronizedAlchmForBirthInfo(
+  birthInfo: BirthInfo
+): Promise<SynchronizedAlchemicalData> {
+  try {
+    // First, synchronize planetary positions
+    const birthDate = new Date(
+      birthInfo.year,
+      birthInfo.month - 1, // Convert to 0-based month
+      birthInfo.day,
+      birthInfo.hour,
+      birthInfo.minute
+    )
+
+    const syncResult = await planetaryPositionSyncService.synchronizePositions(birthDate)
+
+    if (!syncResult.success) {
+      console.warn('Planetary position synchronization failed, falling back to local VSOP87')
+      // Fallback to original implementation
+      const horoscope = await generateProfessionalHoroscope(birthInfo, {
+        useLegacyFallback: true,
+      })
+      return alchemize(birthInfo, horoscope)
+    }
+
+    // Generate horoscope with synchronized positions
+    const horoscope = await generateProfessionalHoroscope(birthInfo, {
+      synchronizedPositions: syncResult.synchronized_positions,
+      useLegacyFallback: true, // Keep legacy as backup
+    })
+
+    const alchmData = alchemize(birthInfo, horoscope) as SynchronizedAlchemicalData
+
+    // Add synchronization metadata
+    alchmData.sync_metadata = {
+      synchronized: true,
+      authoritative_source: syncResult.sync_report.authoritative_source,
+      corrections_applied: syncResult.sync_report.corrections_applied,
+      sync_timestamp: new Date().toISOString(),
+    }
+
+    return alchmData
+  } catch (error) {
+    console.error('Synchronized alchemical calculation failed:', error)
+
+    // Fallback to original implementation
+    try {
+      const horoscope = await generateProfessionalHoroscope(birthInfo, {
+        useLegacyFallback: true,
+      })
+      return alchemize(birthInfo, horoscope)
+    } catch (fallbackError) {
+      console.error('Fallback alchemical calculation also failed:', fallbackError)
+      throw new Error(`Alchemical calculation failed: ${error.message}`)
+    }
+  }
+}
+
+/**
+ * Batch process multiple birth infos with synchronized planetary positions
+ * Optimized for performance with caching and parallel processing
+ */
+export async function generateBatchSynchronizedAlchm(
+  birthInfos: BirthInfo[],
+  options: {
+    maxConcurrency?: number
+    enableCache?: boolean
+    progressCallback?: (completed: number, total: number) => void
+  } = {}
+): Promise<SynchronizedAlchemicalData[]> {
+  const { maxConcurrency = 5, enableCache = true, progressCallback } = options
+  const results: SynchronizedAlchemicalData[] = []
+
+  // Process in batches to avoid overwhelming the sync service
+  for (let i = 0; i < birthInfos.length; i += maxConcurrency) {
+    const batch = birthInfos.slice(i, i + maxConcurrency)
+
+    const batchPromises = batch.map(async birthInfo => {
+      try {
+        return await generateSynchronizedAlchmForBirthInfo(birthInfo)
+      } catch (error) {
+        console.error(
+          `Failed to process birth info for ${birthInfo.year}-${birthInfo.month}-${birthInfo.day}:`,
+          error
+        )
+
+        // Return fallback result
+        const fallbackHoroscope = await generateProfessionalHoroscope(birthInfo, {
+          useLegacyFallback: true,
+        })
+        const fallbackData = alchemize(birthInfo, fallbackHoroscope) as SynchronizedAlchemicalData
+        fallbackData.sync_metadata = {
+          synchronized: false,
+          authoritative_source: 'fallback_error',
+          corrections_applied: 0,
+          sync_timestamp: new Date().toISOString(),
+        }
+        return fallbackData
+      }
+    })
+
+    const batchResults = await Promise.all(batchPromises)
+    results.push(...batchResults)
+
+    // Report progress
+    if (progressCallback) {
+      progressCallback(Math.min(i + maxConcurrency, birthInfos.length), birthInfos.length)
+    }
+  }
+
+  return results
+}
+
+/**
+ * Get synchronization health and recommendations for alchemical calculations
+ */
+export async function getAlchemicalSyncHealth(): Promise<{
+  sync_available: boolean
+  accuracy_level: 'high' | 'medium' | 'low'
+  recommendations: string[]
+  last_sync_status?: any
+}> {
+  try {
+    const health = await planetaryPositionSyncService.getHealthStatus()
+    const syncStatus = await planetaryPositionSyncService.getSyncStatus()
+
+    const recommendations: string[] = []
+
+    if (health.overall_health === 'healthy') {
+      recommendations.push('Cross-backend synchronization is fully operational')
+      recommendations.push('Using highest accuracy VSOP87 + rectification calculations')
+    } else if (health.overall_health === 'warning') {
+      recommendations.push('Partial synchronization available, some accuracy optimizations limited')
+      recommendations.push('Consider checking WhatToEatNext connectivity')
+    } else {
+      recommendations.push('Synchronization unavailable, using local VSOP87 calculations only')
+      recommendations.push('Check cross-backend connectivity and API keys')
+    }
+
+    return {
+      sync_available: health.overall_health === 'healthy',
+      accuracy_level:
+        health.overall_health === 'healthy'
+          ? 'high'
+          : health.overall_health === 'warning'
+            ? 'medium'
+            : 'low',
+      recommendations,
+      last_sync_status: syncStatus,
+    }
+  } catch (error) {
+    console.error('Failed to get alchemical sync health:', error)
+    return {
+      sync_available: false,
+      accuracy_level: 'low',
+      recommendations: [
+        'Synchronization health check failed',
+        'Using local VSOP87 calculations as fallback',
+        'Check system connectivity and configuration',
+      ],
+    }
+  }
 }

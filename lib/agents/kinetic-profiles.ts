@@ -15,6 +15,32 @@ export interface KineticProfile {
   specialAbilities: string[] // Unique capabilities unlocked at higher levels
 }
 
+export interface ExtendedKineticProfile extends KineticProfile {
+  name: string
+  id: string
+  // Legacy compatibility fields
+  peak_hours: string[]
+  consciousness_rate: number
+  memory_persistence: number
+  momentum_type: string
+  // Additional properties used in the codebase
+  power_alignment?: string[]
+  aspect_sensitivity?: number
+  v_creative?: number
+  v_linguistic?: number
+  v_scientific?: number
+  v_strategic?: number
+  v_charismatic?: number
+  v_inventive?: number
+  v_social?: number
+  v_psychological?: number
+  v_mystical?: number
+  v_philosophical?: number
+}
+
+// Alias export for compatibility
+export type AgentKineticProfile = ExtendedKineticProfile
+
 export const agentKineticProfiles: Record<string, KineticProfile> = {
   'leonardo-da-vinci': {
     alignment: ['Mercury', 'Sun', 'Jupiter'],
@@ -529,7 +555,7 @@ export function calculateKineticState(
 /**
  * Get agent kinetic profile by ID
  */
-export function getAgentKineticProfile(agentId: string) {
+export function getAgentKineticProfile(agentId: string): ExtendedKineticProfile | null {
   const profile = agentKineticProfiles[agentId]
   if (!profile) return null
 
@@ -547,6 +573,19 @@ export function getAgentKineticProfile(agentId: string) {
     consciousness_rate: profile.evolutionRate,
     memory_persistence: profile.evolutionRate * 0.8,
     momentum_type: getMomentumType(profile),
+    // Add default values for properties used in the codebase
+    power_alignment: profile.alignment,
+    aspect_sensitivity: profile.evolutionRate * 0.6,
+    v_creative: profile.velocitySignature.Fire * 0.8,
+    v_linguistic: profile.velocitySignature.Air * 0.9,
+    v_scientific: profile.velocitySignature.Earth * 0.7,
+    v_strategic: profile.velocitySignature.Air * 0.8,
+    v_charismatic: profile.velocitySignature.Fire * 0.9,
+    v_inventive: profile.velocitySignature.Air * 0.7,
+    v_social: profile.velocitySignature.Water * 0.8,
+    v_psychological: profile.velocitySignature.Water * 0.9,
+    v_mystical: profile.velocitySignature.Water * 0.7,
+    v_philosophical: profile.velocitySignature.Earth * 0.8,
   }
 }
 

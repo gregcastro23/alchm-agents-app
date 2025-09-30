@@ -11,8 +11,8 @@ const prisma = new PrismaClient()
 export async function saveEvolutionState(userId: string, agentId: string, state: any) {
   await prisma.agentEvolutionState.upsert({
     where: { userId_agentId: { userId, agentId } },
-    update: { state: JSON.stringify(state) },
-    create: { userId, agentId, state: JSON.stringify(state) },
+    update: { evolutionHistory: JSON.stringify(state) },
+    create: { userId, agentId, evolutionHistory: JSON.stringify(state) },
   })
 }
 

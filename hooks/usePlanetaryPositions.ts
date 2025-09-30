@@ -149,20 +149,21 @@ export function usePlanetaryPositionsOnly(options: UsePlanetaryPositionsOptions 
   const { planetaryPositions, loading, error, refresh } = usePlanetaryPositions(options)
 
   // Convert to legacy format for backward compatibility with validation
-  const legacyPositions = planetaryPositions?.reduce(
-    (acc, pos) => {
-      // Ensure degree is valid before converting to string
-      const safeDegree =
-        typeof pos.degree === 'number' && Number.isFinite(pos.degree) ? pos.degree : 0
-      acc[pos.planet] = {
-        sign: typeof pos.sign === 'string' ? pos.sign : 'Aries',
-        degree: safeDegree.toString(),
-        retrograde: typeof pos.retrograde === 'boolean' ? pos.retrograde : false,
-      }
-      return acc
-    },
-    {} as Record<string, { sign: string; degree: string; retrograde: boolean }>
-  ) || {}
+  const legacyPositions =
+    planetaryPositions?.reduce(
+      (acc, pos) => {
+        // Ensure degree is valid before converting to string
+        const safeDegree =
+          typeof pos.degree === 'number' && Number.isFinite(pos.degree) ? pos.degree : 0
+        acc[pos.planet] = {
+          sign: typeof pos.sign === 'string' ? pos.sign : 'Aries',
+          degree: safeDegree.toString(),
+          retrograde: typeof pos.retrograde === 'boolean' ? pos.retrograde : false,
+        }
+        return acc
+      },
+      {} as Record<string, { sign: string; degree: string; retrograde: boolean }>
+    ) || {}
 
   return {
     positions: legacyPositions,

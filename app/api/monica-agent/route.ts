@@ -1,6 +1,6 @@
 import { generateText } from 'ai'
 import { openai } from '@ai-sdk/openai'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { verifyApiKeys } from '../secure-config'
 import {
   logAgentConversation,
@@ -346,7 +346,7 @@ import {
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     // Verify API keys are available
     if (!verifyApiKeys()) {

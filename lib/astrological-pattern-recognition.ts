@@ -401,6 +401,10 @@ function detectTSquare(planets: PlanetPosition[], aspects: Aspect[]): PatternCon
   return patterns
 }
 
+// Export aliases for plural naming convention
+export const detectGrandTrines = detectGrandTrine
+export const detectTSquares = detectTSquare
+
 // Detect Yod pattern (two quincunxes with a sextile base)
 function detectYod(planets: PlanetPosition[], aspects: Aspect[]): PatternConfiguration[] {
   const patterns: PatternConfiguration[] = []

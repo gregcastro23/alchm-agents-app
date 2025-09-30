@@ -416,6 +416,7 @@ export async function POST(req: NextRequest) {
       await prisma.monicaInteraction.create({
         data: {
           userId,
+          settingsId: 'default', // TODO: Get user's actual settings ID
           interactionType: 'data_deletion_request',
           pageUrl: '/api/user-data-export',
           sessionId: `deletion-request-${Date.now()}`,

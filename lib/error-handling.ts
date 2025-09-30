@@ -339,6 +339,53 @@ export async function withErrorHandling<T>(
 }
 
 /**
+ * Next.js API route error handling wrapper that returns NextResponse objects
+ */
+export async function withApiErrorHandling<T>(
+  operation: () => Promise<T>,
+  context: Partial<ErrorContext>,
+  options?: FallbackOptions
+): Promise<NextResponse> {
+  try {
+    const result = await operation()
+    return NextResponse.json(result)
+  } catch (error) {
+    // Handle the error and return a NextResponse
+    const errorResponse = await AgentErrorHandler.executeWithFallback(
+      () => Promise.reject(error),
+      context,
+      options
+    )
+
+    if (errorResponse && typeof errorResponse === 'object' && 'error' in errorResponse) {
+      // It's an ErrorResponse object
+      return NextResponse.json(
+        {
+          success: false,
+          error: errorResponse.error,
+          userMessage: errorResponse.userMessage,
+          fallbackAvailable: errorResponse.fallbackAvailable,
+          retryable: errorResponse.retryable,
+        },
+        { status: 500 }
+      )
+    }
+
+    // Fallback for unexpected errors
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Internal server error',
+        userMessage: 'An unexpected error occurred',
+        fallbackAvailable: false,
+        retryable: false,
+      },
+      { status: 500 }
+    )
+  }
+}
+
+/**
  * Utility function for creating safe agent responses
  */
 export function createSafeAgentResponse(

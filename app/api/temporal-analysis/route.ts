@@ -20,6 +20,7 @@ interface TemporalAnalysisRequest {
   query: TemporalQuery
   useCache?: boolean
   cacheFor?: number // Minutes to cache result
+  natalChart?: Array<{ planet: string; degree: number; sign?: string; house?: number }>
 }
 
 interface TemporalAnalysisResponse {
@@ -71,6 +72,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Add natal chart to query if provided
+    if (requestData.natalChart && requestData.natalChart.length > 0) {
+      requestData.query.natalChart = requestData.natalChart
+    }
+
     // Generate cache key and optimization hints
     const cacheKey = globalCache.generateKey(requestData.query)
     const optimizationHints = globalQueryOptimizer.analyzeQuery(requestData.query)
@@ -93,6 +99,7 @@ export async function POST(request: NextRequest) {
           patternCount: cachedResult.patterns.length,
           cacheHitRate: globalCache.getMetrics().hitRate,
           optimizationHints,
+          natalTransitsCount: cachedResult.natalTransits?.significantTransits.length || 0,
         },
       } as TemporalAnalysisResponse)
     }
@@ -126,6 +133,8 @@ export async function POST(request: NextRequest) {
         cacheHitRate: globalCache.getMetrics().hitRate,
         optimizationHints,
         performanceMetrics: globalPerformanceMonitor.getMetrics(),
+        natalTransitsCount: result.natalTransits?.significantTransits.length || 0,
+        significantTransitDates: result.natalTransits?.transitSignificance.length || 0,
       },
     } as TemporalAnalysisResponse)
   } catch (error) {

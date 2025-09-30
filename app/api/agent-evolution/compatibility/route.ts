@@ -108,8 +108,8 @@ export async function GET(request: NextRequest) {
       const agent2Evolution = await ConsciousnessMemorySystem.getEvolutionMetrics(agent2Id)
 
       const evolutionCompatibility = calculateEvolutionCompatibility(
-        agent1Evolution,
-        agent2Evolution
+        agent1Evolution.consciousnessVelocity,
+        agent2Evolution.consciousnessVelocity
       )
 
       result.evolution = {

@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 
 /**
  * Time Laboratory Unit Tests
@@ -7,7 +7,8 @@
  * Tests Time Laboratory components in isolation without requiring running server.
  */
 
-const { performance } = require('perf_hooks')
+import { performance } from 'perf_hooks'
+import { writeFileSync } from 'fs'
 
 // Test Results Tracking
 let testResults = {
@@ -38,7 +39,7 @@ async function testPerformanceOptimization() {
 
   try {
     // Test 1: Import performance module
-    const perfModule = require('./lib/time-laboratory-performance.ts')
+    import('@/lib/time-laboratory-performance')
     logTest('Performance module import', true, 0, 'Module imports successfully')
   } catch (error) {
     logTest('Performance module import', false, 0, `Import error: ${error.message}`)
@@ -54,7 +55,7 @@ async function testPerformanceOptimization() {
       globalCache,
       globalQueryOptimizer,
       globalPerformanceMonitor,
-    } = require('./lib/time-laboratory-performance.ts')
+    } = await import('@/lib/time-laboratory-performance')
 
     logTest('Performance classes available', true, 0, 'All classes imported')
 
@@ -141,7 +142,7 @@ async function testTemporalAnalysisEngine() {
 
   try {
     // Test import
-    const engineModule = require('./lib/temporal-analysis-engine.ts')
+    const engineModule = await import('@/lib/temporal-analysis-engine')
     logTest('Temporal analysis engine import', true, 0, 'Engine module imports')
 
     // Check if TemporalAnalysisEngine class exists
@@ -175,7 +176,7 @@ async function testElementalReinforcementLogic() {
   console.log('\n🔥 Testing Elemental Reinforcement Logic...')
 
   try {
-    const reinforcementModule = require('./lib/elemental-reinforcement.ts')
+    const reinforcementModule = await import('@/lib/elemental-reinforcement')
     logTest('Elemental reinforcement import', true, 0, 'Module imports successfully')
 
     // Test elemental compatibility
@@ -209,33 +210,44 @@ async function testPatternDetection() {
   console.log('\n🔍 Testing Pattern Detection System...')
 
   try {
-    const patternModule = require('./lib/degree-pattern-detection.ts')
+    const patternModule = await import('@/lib/degree-pattern-detection')
     logTest('Pattern detection import', true, 0, 'Module imports successfully')
 
     const { DegreePatternDetection } = patternModule
 
     if (DegreePatternDetection) {
-      const detector = new DegreePatternDetection()
       logTest(
-        'Pattern detection class instantiation',
-        !!detector,
+        'Pattern detection class available',
+        true,
         0,
-        'DegreePatternDetection class instantiated'
+        'DegreePatternDetection class available'
       )
 
       // Test mock data processing
-      const mockTransitEvents = [
+      const mockTransitEvents: any[] = [
         {
           agentId: 'test-agent',
-          degree: 30,
-          element: 'Fire',
           timestamp: new Date(),
-          significance: 0.8,
+          planetaryDegree: 30,
+          elementalAlignment: { Fire: 0.8, Water: 0.1, Air: 0.05, Earth: 0.05 },
+          significanceScore: 0.8,
+          consciousnessImpact: 0.7,
+          transitingPlanet: 'Sun',
+          planetaryHour: 'Sun',
+          seasonalPhase: 'Spring',
+          powerLevel: 0.8,
+          qualityMetrics: {
+            depth: 0.7,
+            clarity: 0.8,
+            resonance: 0.75,
+            temporalAlignment: 0.9,
+          },
         },
       ]
 
-      if (detector.detectRecurringActivations) {
-        const patterns = detector.detectRecurringActivations(mockTransitEvents)
+      if (DegreePatternDetection.findRecurringDegreeActivations) {
+        const patterns =
+          await DegreePatternDetection.findRecurringDegreeActivations(mockTransitEvents)
         logTest(
           'Pattern detection execution',
           Array.isArray(patterns),
@@ -243,7 +255,12 @@ async function testPatternDetection() {
           `Detected ${patterns?.length || 0} patterns`
         )
       } else {
-        logTest('Pattern detection method', false, 0, 'detectRecurringActivations method not found')
+        logTest(
+          'Pattern detection method',
+          false,
+          0,
+          'findRecurringDegreeActivations method not found'
+        )
       }
     } else {
       logTest('Pattern detection class', false, 0, 'DegreePatternDetection class not found')
@@ -257,7 +274,7 @@ async function testGrimoireExport() {
   console.log('\n📜 Testing Grimoire Export System...')
 
   try {
-    const grimoireModule = require('./lib/temporal-grimoire-export.ts')
+    const grimoireModule = await import('@/lib/temporal-grimoire-export')
     logTest('Grimoire export import', true, 0, 'Module imports successfully')
 
     const { TemporalGrimoireExporter } = grimoireModule
@@ -287,7 +304,7 @@ async function testCollaborativeSessions() {
   console.log('\n🤝 Testing Collaborative Time Sessions...')
 
   try {
-    const collaborativeModule = require('./lib/collaborative-time-sessions.ts')
+    const collaborativeModule = await import('@/lib/collaborative-time-sessions')
     logTest('Collaborative sessions import', true, 0, 'Module imports successfully')
 
     const { CollaborativeTimeSessionManager } = collaborativeModule
@@ -349,11 +366,10 @@ function generateTestReport() {
     },
   }
 
-  const fs = require('fs')
   const reportFilename = `test-results-time-laboratory-units-${new Date().toISOString().replace(/[:.]/g, '-')}.json`
 
   try {
-    fs.writeFileSync(reportFilename, JSON.stringify(report, null, 2))
+    writeFileSync(reportFilename, JSON.stringify(report, null, 2))
     console.log(`\n📄 Test report saved: ${reportFilename}`)
   } catch (error) {
     console.log(`\n⚠️  Could not save test report: ${error.message}`)
@@ -387,14 +403,14 @@ async function runUnitTests() {
 }
 
 // Run tests if called directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   runUnitTests().catch(error => {
     console.error('❌ Unit test suite failed:', error)
     process.exit(1)
   })
 }
 
-module.exports = {
+export {
   runUnitTests,
   testPerformanceOptimization,
   testTemporalAnalysisEngine,

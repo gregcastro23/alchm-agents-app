@@ -21,9 +21,11 @@ const nextConfig = {
     : '/Users/GregCastro/Desktop/planetary-agents',
 
   // Docker optimization - standalone output (only for production builds)
-  ...(process.env.NODE_ENV === 'production' && process.env.DOCKER_BUILD ? {
-    output: 'standalone',
-  } : {}),
+  ...(process.env.NODE_ENV === 'production' && process.env.DOCKER_BUILD
+    ? {
+        output: 'standalone',
+      }
+    : {}),
 
   // Transpile packages that need special handling
   transpilePackages: [

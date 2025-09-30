@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ApiResilienceSystem } from '@/lib/api-resilience-system'
+import { ApiResilienceSystem, ApiMetrics, CircuitBreakerState } from '@/lib/api-resilience-system'
 
 /**
  * Agent API Resilience Metrics Endpoint
@@ -13,8 +13,10 @@ export async function GET(request: NextRequest) {
 
     if (apiName) {
       // Get metrics for specific API
-      const metrics = ApiResilienceSystem.getApiMetrics(apiName)
-      const circuitStatus = ApiResilienceSystem.getCircuitBreakerStatus(apiName)
+      const metrics = ApiResilienceSystem.getApiMetrics(apiName) as ApiMetrics | null
+      const circuitStatus = ApiResilienceSystem.getCircuitBreakerStatus(
+        apiName
+      ) as CircuitBreakerState | null
 
       if (!metrics) {
         return NextResponse.json(

@@ -15,6 +15,13 @@ const CosmicTimeLaboratory = dynamic(() => import('@/components/misc/cosmic-time
 import TemporalOracle from '@/components/misc/temporal-oracle'
 import TemporalTimeline from '@/components/misc/temporal-timeline'
 import AlchemicalMetricsChart from '@/components/charts/alchemical-metrics-chart'
+import { NatalChartManager } from '@/components/natal-chart-manager'
+import { TransitNotificationCenter } from '@/components/transit-notification-center'
+import { TransitDashboard } from '@/components/transit-dashboard'
+import { ZodiacWheel } from '@/components/zodiac-wheel'
+import { TransitComparison } from '@/components/transit-comparison'
+import { JobMonitoringDashboard } from '@/components/job-monitoring-dashboard'
+import { PlanetaryAgentsView } from '@/components/time-laboratory/planetary-agents-view'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -49,6 +56,7 @@ import {
   Target,
   TrendingUp,
   Eye,
+  Bell,
 } from 'lucide-react'
 import { AspectPhaseWidget } from '@/components/charts/aspect-phase-indicator'
 import type {
@@ -103,7 +111,18 @@ export default function TimeLaboratoryPage() {
   )
   const [celestialSessions, setCelestialSessions] = useState<CelestialSession[]>([])
   const [isCelestialProcessing, setIsCelestialProcessing] = useState(false)
-  const [activeView, setActiveView] = useState<'legacy' | 'celestial' | 'combined'>('celestial')
+  const [activeView, setActiveView] = useState<
+    | 'legacy'
+    | 'celestial'
+    | 'combined'
+    | 'natal'
+    | 'notifications'
+    | 'transits'
+    | 'zodiac'
+    | 'comparison'
+    | 'jobs'
+    | 'planetary-agents'
+  >('celestial')
 
   // Celestial configuration state
   const [timeRange, setTimeRange] = useState<{ start: Date; end: Date }>({
@@ -124,6 +143,13 @@ export default function TimeLaboratoryPage() {
   const [includeAgentInsights, setIncludeAgentInsights] = useState(true)
   const [realTimeMode, setRealTimeMode] = useState(false)
   const [showAgentActivations, setShowAgentActivations] = useState(true)
+
+  // New component state
+  const [transitData, setTransitData] = useState<any[]>([])
+  const [natalChart, setNatalChart] = useState<any>(null)
+  const [currentTransits, setCurrentTransits] = useState<any[]>([])
+  const [selectedTransits, setSelectedTransits] = useState<any[]>([])
+  const [chatEnabled, setChatEnabled] = useState(true)
 
   // Enhanced suggestions for both modes
   const legacyQueries = [
@@ -315,6 +341,89 @@ export default function TimeLaboratoryPage() {
     setLocation(preset)
   }, [])
 
+  // Handle planetary agent chat initiation
+  const handleChatInitiate = useCallback(
+    async (planet: string, sign: string, degree: number, context: any) => {
+      try {
+        // Open chat interface with pre-filled context
+        const chatData = {
+          planet,
+          sign,
+          degree,
+          question:
+            context.context === 'planetary_agent_activation'
+              ? `Tell me about your influence during this transit`
+              : `What wisdom do you have for me during this time?`,
+          time: new Date().getHours().toString(),
+          context: context,
+        }
+
+        // For now, we'll log to console - in production this would open a chat modal
+        console.log('Initiating chat with planetary agent:', chatData)
+
+        // You could integrate with an existing chat system here
+        // For example: openChatModal(chatData)
+      } catch (error) {
+        console.error('Failed to initiate chat:', error)
+      }
+    },
+    []
+  )
+
+  // Load transit data for new components
+  const loadTransitData = useCallback(async () => {
+    try {
+      const response = await fetch('/api/personalized-planetary-transits?userId=demo-user')
+      if (response.ok) {
+        const data = await response.json()
+        setTransitData(data.transits?.all || [])
+      }
+    } catch (error) {
+      console.error('Failed to load transit data:', error)
+    }
+  }, [])
+
+  // Load natal chart data
+  const loadNatalChart = useCallback(async () => {
+    try {
+      const response = await fetch('/api/user-natal-charts?userId=demo-user')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.charts && data.charts.length > 0) {
+          setNatalChart(data.charts[0])
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load natal chart:', error)
+    }
+  }, [])
+
+  // Load current planetary positions
+  const loadCurrentTransits = useCallback(async () => {
+    try {
+      // This would integrate with astronomical calculations
+      // For now, we'll use mock data
+      setCurrentTransits([
+        { planet: 'Sun', longitude: 45, sign: 'Taurus' },
+        { planet: 'Moon', longitude: 120, sign: 'Leo' },
+        { planet: 'Mercury', longitude: 35, sign: 'Taurus' },
+        { planet: 'Venus', longitude: 80, sign: 'Gemini' },
+        { planet: 'Mars', longitude: 200, sign: 'Libra' },
+      ])
+    } catch (error) {
+      console.error('Failed to load current transits:', error)
+    }
+  }, [])
+
+  // Initialize data for new components
+  useEffect(() => {
+    if (['transits', 'zodiac', 'comparison'].includes(activeView)) {
+      loadTransitData()
+      loadNatalChart()
+      loadCurrentTransits()
+    }
+  }, [activeView, loadTransitData, loadNatalChart, loadCurrentTransits])
+
   // Export handler for celestial data
   const handleCelestialExport = useCallback(
     (format: 'png' | 'svg' | 'csv') => {
@@ -398,7 +507,19 @@ export default function TimeLaboratoryPage() {
                 <p className="text-purple-300">
                   {activeView === 'celestial'
                     ? 'Quantify and visualize A#, SMES, Kinetic, and Thermodynamic celestial energies'
-                    : 'Advanced temporal analysis of consciousness evolution and agent transit patterns'}
+                    : activeView === 'natal'
+                      ? 'Create and manage your natal charts for personalized astrological insights'
+                      : activeView === 'notifications'
+                        ? 'Stay updated on significant astrological transits and planetary agent activations'
+                        : activeView === 'transits'
+                          ? 'Comprehensive dashboard for upcoming planetary transits with filtering and analysis'
+                          : activeView === 'zodiac'
+                            ? 'Interactive 360° zodiac wheel showing natal and transiting planetary positions'
+                            : activeView === 'comparison'
+                              ? 'Compare multiple transits side-by-side to understand their relative significance'
+                              : activeView === 'jobs'
+                                ? 'Monitor background transit monitoring jobs and system performance'
+                                : 'Advanced temporal analysis of consciousness evolution and agent transit patterns'}
                 </p>
               </div>
             </div>
@@ -418,6 +539,34 @@ export default function TimeLaboratoryPage() {
                   <TabsTrigger value="combined" className="cosmic-tab">
                     <Layers className="w-4 h-4 mr-2" />
                     Combined
+                  </TabsTrigger>
+                  <TabsTrigger value="natal" className="cosmic-tab">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Natal Charts
+                  </TabsTrigger>
+                  <TabsTrigger value="notifications" className="cosmic-tab">
+                    <Bell className="w-4 h-4 mr-2" />
+                    Notifications
+                  </TabsTrigger>
+                  <TabsTrigger value="transits" className="cosmic-tab">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Transit Dashboard
+                  </TabsTrigger>
+                  <TabsTrigger value="zodiac" className="cosmic-tab">
+                    <Target className="w-4 h-4 mr-2" />
+                    Zodiac Wheel
+                  </TabsTrigger>
+                  <TabsTrigger value="comparison" className="cosmic-tab">
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    Transit Comparison
+                  </TabsTrigger>
+                  <TabsTrigger value="jobs" className="cosmic-tab">
+                    <Activity className="w-4 h-4 mr-2" />
+                    Job Monitoring
+                  </TabsTrigger>
+                  <TabsTrigger value="planetary-agents" className="cosmic-tab">
+                    <Users className="w-4 h-4 mr-2" />
+                    Planetary Agents
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -1077,6 +1226,82 @@ export default function TimeLaboratoryPage() {
               </Button>
             </div>
           </Card>
+        )}
+
+        {/* Natal Charts Management */}
+        {activeView === 'natal' && (
+          <div className="space-y-6">
+            <NatalChartManager userId="demo-user" />
+          </div>
+        )}
+
+        {/* Transit Notifications */}
+        {activeView === 'notifications' && (
+          <div className="space-y-6">
+            <TransitNotificationCenter userId="demo-user" />
+          </div>
+        )}
+
+        {/* Transit Dashboard */}
+        {activeView === 'transits' && (
+          <div className="space-y-6">
+            <TransitDashboard
+              userId="demo-user"
+              enableChat={chatEnabled}
+              onChatInitiate={handleChatInitiate}
+            />
+          </div>
+        )}
+
+        {/* Zodiac Wheel */}
+        {activeView === 'zodiac' && (
+          <div className="space-y-6">
+            <ZodiacWheel
+              natalChart={natalChart}
+              currentTransits={currentTransits}
+              activeTransits={transitData}
+              onDegreeClick={(degree, sign) => {
+                console.log('Degree clicked:', degree, sign)
+                // Could open agent chat or show degree details
+              }}
+              onPlanetClick={(planet, isNatal) => {
+                console.log('Planet clicked:', planet, isNatal)
+                // Could open planet details or agent chat
+              }}
+            />
+          </div>
+        )}
+
+        {/* Transit Comparison */}
+        {activeView === 'comparison' && (
+          <div className="space-y-6">
+            <TransitComparison
+              userId="demo-user"
+              availableTransits={transitData}
+              onTransitSelect={transit => {
+                console.log('Transit selected for comparison:', transit)
+                // Could highlight transit in other views or open details
+              }}
+            />
+          </div>
+        )}
+
+        {/* Job Monitoring Dashboard */}
+        {activeView === 'jobs' && (
+          <div className="space-y-6">
+            <JobMonitoringDashboard userId="demo-user" />
+          </div>
+        )}
+
+        {/* Planetary Agents View */}
+        {activeView === 'planetary-agents' && (
+          <div className="space-y-6">
+            <PlanetaryAgentsView
+              selectedDate={timeRange.end}
+              userId="demo-user"
+              onAgentChat={handleChatInitiate}
+            />
+          </div>
         )}
       </div>
     </div>

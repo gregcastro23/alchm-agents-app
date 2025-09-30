@@ -104,16 +104,16 @@ export async function GET(req: Request) {
       const smoothingFactor = 0.2 // 20% influence from neighbors
 
       const smoothedTotals = {
-        spirit:
+        Fire:
           s.totals.spirit * (1 - smoothingFactor) +
           ((prev.totals.spirit + next.totals.spirit) * smoothingFactor) / 2,
-        essence:
+        Water:
           s.totals.essence * (1 - smoothingFactor) +
           ((prev.totals.essence + next.totals.essence) * smoothingFactor) / 2,
-        matter:
+        Earth:
           s.totals.matter * (1 - smoothingFactor) +
           ((prev.totals.matter + next.totals.matter) * smoothingFactor) / 2,
-        substance:
+        Air:
           s.totals.substance * (1 - smoothingFactor) +
           ((prev.totals.substance + next.totals.substance) * smoothingFactor) / 2,
       }
@@ -483,6 +483,7 @@ export async function POST(req: Request) {
         velocityMax: 2000,
         momentumMax: 8000,
         powerMax: 2000,
+        forceMax: 10000,
       })
     }
 

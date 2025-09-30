@@ -59,7 +59,7 @@ function calculateMomentScore(
   // Factor in alchemical resonance
   const alchemicalBonus = alchemicalData?.Energy > 500 ? 0.1 : 0
   const elementalBonus = alchemicalData?.totals
-    ? Math.max(...Object.values(alchemicalData.totals)) > 50
+    ? Math.max(...Object.values(alchemicalData.totals as Record<string, number>)) > 50
       ? 0.1
       : 0
     : 0
@@ -106,7 +106,7 @@ function calculateMomentScore(
     aspectSensitivity,
     momentumCompatibility,
     optimalTopics,
-    nextOptimalWindow,
+    nextOptimalWindow: nextOptimalWindow || undefined,
   }
 }
 

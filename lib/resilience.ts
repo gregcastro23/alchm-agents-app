@@ -74,3 +74,15 @@ export async function withRetries<T>(
   }
   throw lastError
 }
+
+// Global circuit breaker instance for shared use
+const globalCircuitBreaker = new CircuitBreaker()
+
+// Convenience function that uses the global circuit breaker
+export async function circuitBreaker<T>(fn: () => Promise<T>): Promise<T> {
+  const result = await globalCircuitBreaker.exec(fn)
+  if (result.degraded) {
+    throw new Error('Circuit breaker is open - service temporarily unavailable')
+  }
+  return result.result!
+}

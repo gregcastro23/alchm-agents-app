@@ -1,6 +1,6 @@
 import { generateText } from 'ai'
 import { openai } from '@ai-sdk/openai'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { verifyApiKeys } from '../secure-config'
 import {
   logAgentConversation,
@@ -185,7 +185,7 @@ Keep your response concise and distinctive to your planetary nature. Speak in fi
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     // Verify API keys are available
     if (!verifyApiKeys()) {

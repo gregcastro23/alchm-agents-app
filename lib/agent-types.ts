@@ -87,6 +87,17 @@ export type Mood =
   | 'analytically-focused'
   | 'emotionally-deep'
   | 'spiritually-elevated'
+  | 'creatively-inspired'
+  | 'Contemplatively curious'
+  | 'Divinely intoxicated with love'
+  | 'Thoughtfully contemplative'
+  | 'Intensely creative yet melancholy'
+  | 'Musically euphoric'
+  | 'Profoundly contemplative'
+  | 'Powerfully inspiring'
+  | 'Contemplatively systematic'
+  | 'Methodically observant'
+  | 'Defiantly observant'
 
 export interface PersonalityDelta {
   moodShift: number
@@ -112,6 +123,33 @@ export type TeachingStyle =
   | 'Practical-Grounded'
   | 'Intuitive-Mystical'
   | 'Analytical-Precise'
+  | 'Nurturing-Systematic'
+  | 'Question-based dialogue and discovery'
+  | 'Ecstatic poetry and metaphysical storytelling'
+  | 'Personal reflection and philosophical example'
+  | 'Passionate demonstration and emotional authenticity'
+  | 'Playful demonstration and musical experimentation'
+  | 'Dramatic demonstration and poetic metaphor'
+  | 'Personal storytelling and empowering encouragement'
+  | 'Methodical demonstration and logical proof'
+  | 'Patient observation and evidence-based reasoning'
+  | 'Direct observation and mathematical demonstration'
+  | 'Practical-Wisdom'
+  | 'Compassionate-Action'
+  | 'Example-Living'
+  | 'Socratic-Practical'
+  | 'Paradoxical-Mystical'
+  | 'Experiential-Compassionate'
+  | 'Narrative-Empathetic'
+  | 'Systematic-Integrative'
+  | 'Prophetic-Experiential'
+  | 'Practical-Empowering'
+  | 'Visionary-Ceremonial'
+  | 'Inspirational-Action'
+  | 'Visionary-Integrative'
+  | 'Rational-Passionate'
+  | 'Poetic-Scientific'
+  | 'Dialogical-Liberating'
 export type ResonanceType =
   | 'Psychological'
   | 'Energetic'
@@ -121,6 +159,24 @@ export type ResonanceType =
   | 'Spiritual'
   | 'Creative'
   | 'Practical'
+  | 'Intellectual-Diplomatic'
+  | 'Humanitarian-Diplomatic'
+  | 'Spiritual-Political'
+  | 'Moral-Educational'
+  | 'Spiritual-Natural'
+  | 'Enlightened-Universal'
+  | 'Literary-Emotional'
+  | 'Intellectual-Healing'
+  | 'Earth-Spiritual'
+  | 'Environmental-Social'
+  | 'Sacred-Protective'
+  | 'Divine-Warrior'
+  | 'Mystical-Creative'
+  | 'Intellectual-Revolutionary'
+  | 'Spiritual-Liberation'
+  | 'Cosmic-Educational'
+  | 'Environmental-Protective'
+  | 'Educational-Revolutionary'
 
 export interface Abilities {
   specialty: string
@@ -139,6 +195,26 @@ export type AuraType =
   | 'crystalline'
   | 'swirling'
   | 'shimmering'
+  | 'questioning'
+  | 'mystical'
+  | 'noble'
+  | 'harmonic'
+  | 'dramatic'
+  | 'empowering'
+  | 'systematic'
+  | 'evolutionary'
+  | 'revolutionary'
+  | 'radiating'
+  | 'serene'
+  | 'steady'
+  | 'luminous'
+  | 'blazing'
+  | 'growing'
+  | 'sacred'
+  | 'prophetic'
+  | 'stellar'
+  | 'awakening'
+  | 'pulsating'
 
 export interface AuraPattern {
   type: AuraType
@@ -215,6 +291,10 @@ export interface CraftedAgent {
 
   // Monica's creation story for this agent
   monicaCreationStory?: string
+
+  // Additional properties used in unified agent system
+  synthesis?: string
+  historicalEra?: string
 }
 
 // Gallery and Party System Types

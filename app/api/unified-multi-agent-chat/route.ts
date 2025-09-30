@@ -221,8 +221,8 @@ async function processAgentResponse(
     const model = selectOptimalModel(
       agent,
       groupContext.otherAgents.length,
-      context.variant,
-      context.modelOverrides
+      context.variant || 'standard',
+      context.modelOverrides || {}
     )
 
     const result = await generateText({

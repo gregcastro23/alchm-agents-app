@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
     await prisma.monicaInteraction.create({
       data: {
         userId,
+        settingsId: 'default', // TODO: Get user's actual settings ID
         interactionType: 'notification',
         pageUrl: '/notifications',
         sessionId: `notification-${Date.now()}`,

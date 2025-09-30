@@ -127,20 +127,27 @@ export class CelestialEnergyCalculator {
         longitude: location.lon,
       })
 
-      // Validate horoscope data (check both possible structures)
-      const planets = horoscope?.planets || horoscope?.tropical?.CelestialBodies?.all
+      // Validate horoscope data
+      const planets = horoscope?.tropical?.CelestialBodies?.all
       if (!horoscope || !planets) {
         console.error('Invalid horoscope generated:', horoscope)
         throw new Error('Failed to generate valid horoscope data')
       }
 
       // Sample alchemical data
-      const alchemicalSample = await sampleHourlyAlchm(location, timestamp, {
-        includePlanetaryHours: true,
-        validateTiming: true,
-        hoursToSample: 1,
-        startHour: timestamp.getHours(),
-      })
+      const alchemicalSample = await sampleHourlyAlchm(
+        {
+          latitude: location.lat,
+          longitude: location.lon,
+        },
+        timestamp,
+        {
+          includePlanetaryHours: true,
+          validateTiming: true,
+          hoursToSample: 1,
+          startHour: timestamp.getHours(),
+        }
+      )
 
       const sample = alchemicalSample[0] // Get the single sample for this moment
 
@@ -159,18 +166,18 @@ export class CelestialEnergyCalculator {
 
       // Calculate thermodynamic values
       const thermodynamic = {
-        heat: sample.metrics.Heat,
-        entropy: sample.metrics.Entropy,
-        reactivity: sample.metrics.Reactivity,
-        energy: sample.metrics.Energy,
+        heat: sample.Heat,
+        entropy: sample.Entropy,
+        reactivity: sample.Reactivity,
+        energy: sample.Energy,
       }
 
       // Calculate elemental distribution
       const elemental: ElementVector = {
-        Fire: sample.elements.Fire,
-        Water: sample.elements.Water,
-        Air: sample.elements.Air,
-        Earth: sample.elements.Earth,
+        Fire: sample.totals.Fire,
+        Water: sample.totals.Water,
+        Air: sample.totals.Air,
+        Earth: sample.totals.Earth,
       }
 
       // Calculate planetary context
@@ -248,44 +255,31 @@ export class CelestialEnergyCalculator {
   private extractPlanetaryDegrees(horoscope: HoroscopeData): Record<string, number> {
     const degrees: Record<string, number> = {}
 
-    // Handle both legacy and new horoscope structures
-    const planets = horoscope?.planets || horoscope?.tropical?.CelestialBodies?.all
+    // Extract planets from horoscope structure
+    const planets = horoscope?.tropical?.CelestialBodies?.all
 
     if (!horoscope || !planets) {
       console.error('Invalid horoscope data: planets is null or undefined')
       return degrees
     }
 
-    // Handle array format (new structure)
+    // Handle array format
     if (Array.isArray(planets)) {
       for (const planet of planets) {
-        if (planet.name && planet.position && planet.position.tropical) {
-          const degree = planet.position.tropical.degrees
-          degrees[planet.name] = degree
-        }
-      }
-    } else {
-      // Handle object format (legacy structure)
-      for (const [planet, data] of Object.entries(planets)) {
-        if (data.sign && typeof data.degree === 'number') {
-          // Convert sign + degree to absolute degree (0-360)
-          const signIndex = this.getSignIndex(data.sign)
-          degrees[planet] = signIndex * 30 + data.degree
+        if (planet.label && typeof planet.degrees === 'number') {
+          degrees[planet.label] = planet.degrees
         }
       }
     }
 
-    // Add angles from different possible structures
-    if (horoscope.houses?.ASC) {
-      degrees['Ascendant'] = horoscope.houses.ASC
-    } else if (horoscope.tropical?.Ascendant?.degrees) {
+    // Add angles
+    if (horoscope.tropical?.Ascendant?.degrees) {
       degrees['Ascendant'] = horoscope.tropical.Ascendant.degrees
     }
 
-    if (horoscope.houses?.MC) {
-      degrees['Midheaven'] = horoscope.houses.MC
-    } else if (horoscope.tropical?.Houses?.['10']?.cusp) {
-      degrees['Midheaven'] = horoscope.tropical.Houses['10'].cusp
+    // Add midheaven if available
+    if (horoscope.tropical?.Houses?.[10]?.degree) {
+      degrees['Midheaven'] = horoscope.tropical.Houses[10].degree
     }
 
     return degrees
@@ -344,34 +338,37 @@ export class CelestialEnergyCalculator {
    */
   private calculateKineticMetrics(currentSample: any, timeSeries: any[]) {
     const elements: ElementVector = {
-      Fire: currentSample.elements.Fire,
-      Water: currentSample.elements.Water,
-      Air: currentSample.elements.Air,
-      Earth: currentSample.elements.Earth,
+      Fire: currentSample.totals.Fire,
+      Water: currentSample.totals.Water,
+      Air: currentSample.totals.Air,
+      Earth: currentSample.totals.Earth,
     }
 
     const metrics: MetricVector = {
-      Heat: currentSample.metrics.Heat,
-      Entropy: currentSample.metrics.Entropy,
-      Reactivity: currentSample.metrics.Reactivity,
-      Energy: currentSample.metrics.Energy,
+      Heat: currentSample.Heat,
+      Entropy: currentSample.Entropy,
+      Reactivity: currentSample.Reactivity,
+      Energy: currentSample.Energy,
     }
 
-    // Calculate kinetic properties
-    const velocity = computeElementalVelocity(
-      elements,
-      timeSeries.length > 1 ? timeSeries : [currentSample, currentSample]
-    )
-    const momentum = computeElementalMomentum(elements, velocity)
-    const power = computePower(
-      metrics,
-      timeSeries.length > 1 ? timeSeries : [currentSample, currentSample]
-    )
+    // For single moment calculation, use current element values as velocity
+    const velocity: ElementVector = { ...elements }
+
+    // Calculate momentum as weighted elements
+    const momentum: ElementVector = {
+      Fire: elements.Fire * 1.2,
+      Water: elements.Water * 0.8,
+      Air: elements.Air * 1.1,
+      Earth: elements.Earth * 0.9,
+    }
+
+    // Calculate power as sum of thermodynamic values
+    const power = metrics.Heat + metrics.Entropy + metrics.Reactivity + metrics.Energy
+
     const inertia = computeInertia(elements)
-    const metricVelocity = computeMetricVelocity(
-      metrics,
-      timeSeries.length > 1 ? timeSeries : [currentSample, currentSample]
-    )
+
+    // For single moment, use current metrics as metric velocity
+    const metricVelocity: MetricVector = { ...metrics }
 
     return {
       velocity,

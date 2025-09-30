@@ -561,6 +561,30 @@ export class AgentCacheSystem {
   }
 
   /**
+   * Get the current size of the cache
+   */
+  async getSize(): Promise<{ redisSize: number; memorySize: number; totalSize: number }> {
+    let redisSize = 0
+    let memorySize = this.inMemoryCache.size
+
+    if (this.redis && this.isRedisAvailable) {
+      try {
+        // Get all keys matching the cache prefix
+        const keys = await this.redis.keys(`${this.CACHE_PREFIX}*`)
+        redisSize = keys.length
+      } catch (error) {
+        console.warn('Failed to get Redis cache size:', error)
+      }
+    }
+
+    return {
+      redisSize,
+      memorySize,
+      totalSize: redisSize + memorySize,
+    }
+  }
+
+  /**
    * Clear cache for specific agent (useful for agent updates)
    */
   async clearAgentCache(agentId: string): Promise<void> {

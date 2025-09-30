@@ -13,8 +13,8 @@ async function testAuthentication() {
       where: { email: 'test@planetaryagents.com' },
       include: {
         userProfile: true,
-        subscription: true
-      }
+        subscription: true,
+      },
     })
 
     if (!user) {
@@ -42,7 +42,7 @@ async function testAuthentication() {
     // Test 3: Check Monica settings
     console.log('\n3. Checking Monica settings...')
     const monicaSettings = await prisma.monicaUserSettings.findUnique({
-      where: { userId: user.id }
+      where: { userId: user.id },
     })
 
     if (monicaSettings) {
@@ -57,7 +57,7 @@ async function testAuthentication() {
     // Test 4: Check profile data
     console.log('\n4. Checking profile data...')
     const profile = await prisma.profile.findUnique({
-      where: { userId: user.id }
+      where: { userId: user.id },
     })
 
     if (profile) {
@@ -75,7 +75,6 @@ async function testAuthentication() {
     console.log('   Email: test@planetaryagents.com')
     console.log('   Password: testpass123')
     console.log('   Sign In URL: http://localhost:3000/auth/signin')
-
   } catch (error) {
     console.error('❌ Error during authentication test:', error)
   } finally {

@@ -24,6 +24,15 @@ import {
   type PatternConfiguration,
 } from './astrological-pattern-recognition'
 import type { KineticProfile } from './agents/kinetic-profiles'
+import {
+  getDegreeAgents,
+  getDegreeEnhancedAnalysis,
+  calculateNatalTransitSignificance,
+  findSignificantTransitDates,
+  type DegreeAgentMapping,
+  type NatalPlacementTransit,
+  type DegreeTransitSignificance,
+} from './degree-agent-mapping'
 
 export interface TemporalQuery {
   type: 'natural_language' | 'structured'
@@ -35,6 +44,14 @@ export interface TemporalQuery {
   granularity?: 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly'
   reinforcementMode?: boolean // Boost same-element patterns
   location?: { latitude: number; longitude: number }
+  natalChart?: NatalPlacement[] // Natal chart placements for transit analysis
+}
+
+export interface NatalPlacement {
+  planet: string
+  degree: number
+  sign?: string
+  house?: number
 }
 
 export interface ElementVector {
@@ -98,6 +115,11 @@ export interface TemporalAnalysisResult {
     suggestedAgents: string[]
     relatedPatterns: string[]
     deepDiveOpportunities: string[]
+  }
+  natalTransits?: {
+    significantTransits: NatalPlacementTransit[]
+    degreeAgentMappings: DegreeAgentMapping[]
+    transitSignificance: DegreeTransitSignificance[]
   }
 }
 
@@ -171,6 +193,35 @@ export class TemporalAnalysisEngine {
     const degreeMatch = query.match(/(\d+)\s*degree/i)
     if (degreeMatch) {
       parsedQuery.degrees = [parseInt(degreeMatch[1])]
+    }
+
+    // Extract natal chart placements (e.g., "my Sun at 15° Leo", "Moon 0° Scorpio")
+    const natalMatches = query.matchAll(/(\w+)\s+(?:at\s+)?(\d+)°?\s*([A-Za-z]+)/gi)
+    const natalPlacements: NatalPlacement[] = []
+
+    for (const match of natalMatches) {
+      const [, planet, degreeStr, sign] = match
+      const degree = parseInt(degreeStr)
+      if (!isNaN(degree) && degree >= 0 && degree <= 360) {
+        natalPlacements.push({
+          planet: planet.charAt(0).toUpperCase() + planet.slice(1).toLowerCase(),
+          degree,
+          sign,
+        })
+      }
+    }
+
+    if (natalPlacements.length > 0) {
+      parsedQuery.natalChart = natalPlacements
+    }
+
+    // Check for transit-related queries
+    if (
+      query.toLowerCase().includes('transit') ||
+      query.toLowerCase().includes('natal') ||
+      natalPlacements.length > 0
+    ) {
+      parsedQuery.reinforcementMode = true // Enable enhanced analysis for transits
     }
 
     return parsedQuery
@@ -417,13 +468,76 @@ export class TemporalAnalysisEngine {
     // Generate recommendations
     const recommendations = this.generateRecommendations(transitEvents, patterns, parsedQuery)
 
-    return {
+    // Initialize result
+    const result: TemporalAnalysisResult = {
       query: parsedQuery,
       transitEvents,
       patterns,
       reinforcementScores,
       insights,
       recommendations,
+    }
+
+    // Add natal transit analysis if natal chart is provided
+    if (parsedQuery.natalChart && parsedQuery.natalChart.length > 0) {
+      const natalTransits = await this.performNatalTransitAnalysis(
+        parsedQuery.natalChart,
+        dateRange,
+        parsedQuery.location
+      )
+      result.natalTransits = natalTransits
+    }
+
+    return result
+  }
+
+  /**
+   * Perform natal transit analysis for personalized insights
+   */
+  static async performNatalTransitAnalysis(
+    natalChart: NatalPlacement[],
+    dateRange: { start: Date; end: Date },
+    location = this.DEFAULT_LOCATION
+  ): Promise<{
+    significantTransits: NatalPlacementTransit[]
+    degreeAgentMappings: DegreeAgentMapping[]
+    transitSignificance: DegreeTransitSignificance[]
+  }> {
+    const significantTransits: NatalPlacementTransit[] = []
+    const degreeAgentMappings: DegreeAgentMapping[] = []
+    const transitSignificance: DegreeTransitSignificance[] = []
+
+    // Analyze each day in the date range for significant transits
+    const currentDate = new Date(dateRange.start)
+    while (currentDate <= dateRange.end) {
+      const dayTransits = calculateNatalTransitSignificance(natalChart, currentDate, location)
+
+      significantTransits.push(...dayTransits)
+      currentDate.setDate(currentDate.getDate() + 1)
+    }
+
+    // Get unique degree agent mappings for the natal chart
+    const uniqueDegrees = [...new Set(natalChart.map(p => p.degree))]
+    for (const degree of uniqueDegrees) {
+      const mapping = getDegreeAgents(degree)
+      if (mapping) {
+        degreeAgentMappings.push(mapping)
+      }
+    }
+
+    // Find significant transit dates for the year
+    const year = dateRange.start.getFullYear()
+    const yearlySignificance = findSignificantTransitDates(natalChart, year, location)
+    transitSignificance.push(...yearlySignificance)
+
+    return {
+      significantTransits: significantTransits
+        .sort((a, b) => b.significanceScore - a.significanceScore)
+        .slice(0, 50), // Limit to top 50 most significant
+      degreeAgentMappings,
+      transitSignificance: transitSignificance
+        .sort((a, b) => b.significanceScore - a.significanceScore)
+        .slice(0, 20), // Limit to top 20 most significant dates
     }
   }
 
@@ -436,7 +550,7 @@ export class TemporalAnalysisEngine {
   }
 
   private static calculateConsciousnessImpact(
-    profile: AgentKineticProfile,
+    profile: KineticProfile,
     sample: HourlyAlchemicalSample
   ): number {
     const baseRate = profile.evolutionRate
@@ -447,10 +561,7 @@ export class TemporalAnalysisEngine {
     return Math.min(baseRate + hourBonus + energyBonus + elementalBonus, 1.0)
   }
 
-  private static calculateElementalBonus(
-    profile: AgentKineticProfile,
-    elements: ElementVector
-  ): number {
+  private static calculateElementalBonus(profile: KineticProfile, elements: ElementVector): number {
     // Simplified elemental affinity calculation based on agent type
     const totalElemental = elements.Fire + elements.Water + elements.Air + elements.Earth
     return totalElemental > 0 ? Math.min(totalElemental * 0.1, 0.2) : 0
@@ -479,7 +590,7 @@ export class TemporalAnalysisEngine {
   }
 
   private static calculateResonance(
-    profile: AgentKineticProfile,
+    profile: KineticProfile,
     sample: HourlyAlchemicalSample
   ): number {
     const hourMatch = profile.alignment.includes(sample.planetaryHour || 'Sun') ? 0.4 : 0.2

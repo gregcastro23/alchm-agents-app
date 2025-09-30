@@ -29,11 +29,11 @@ export function initializeSentry() {
         return event
       },
 
-      // Custom integrations
+      // Custom integrations - updated for newer Sentry SDK
       integrations: [
-        new Sentry.Integrations.Http({ tracing: true }),
-        new Sentry.Integrations.Console(),
-        new Sentry.Integrations.GlobalHandlers(),
+        Sentry.httpIntegration({ tracing: true }),
+        Sentry.consoleIntegration(),
+        Sentry.globalHandlersIntegration(),
       ],
 
       // Release tracking

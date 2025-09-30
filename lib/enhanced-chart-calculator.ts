@@ -2,7 +2,8 @@
 // Integrates with astrologize API for accurate planetary positions and aspects
 
 import { fetchAstrologizeWheel, fetchAlchmAlchemize } from './astrologize'
-import { alchemize, type BirthInfo } from './alchemizer'
+import { alchemize } from './alchemizer'
+import type { BirthInfo } from './schemas'
 import { generateAccurateHoroscope } from './monica/horoscope-generator'
 import { detectPatternsStatic, type PlanetPosition } from './astrological-pattern-recognition'
 

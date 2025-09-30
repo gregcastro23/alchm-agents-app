@@ -306,7 +306,7 @@ export class ApiResilienceSystem {
    */
   static getApiMetrics(apiName?: string): Map<string, ApiMetrics> | ApiMetrics | null {
     if (apiName) {
-      return this.metrics.get(apiName) || null
+      return this.metrics.get(apiName) ?? null
     }
     return this.metrics
   }

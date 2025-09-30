@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { agentKineticProfiles } from '@/lib/agents/kinetic-profiles'
 import { DEMO_AGENTS } from '@/lib/demo-agents-data'
@@ -143,7 +143,7 @@ function calculateElementalAlignment(birthChart: any, agent: any): number {
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession()
+    const session = await auth()
     const userId = session?.user?.id || 'anonymous'
 
     // Get user's birth chart data
@@ -222,7 +222,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession()
+    const session = await auth()
     const userId = session?.user?.id || 'anonymous'
     const { action, agentId, feedback } = await req.json()
 

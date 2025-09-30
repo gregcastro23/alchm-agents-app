@@ -5,7 +5,7 @@ import {
 } from '@/lib/services/planetary-positions-service'
 import { logQuantitiesToGalileo } from '@/lib/galileo-logger'
 import { trackPerformanceMetrics } from './metrics/route'
-import { withErrorHandling } from '@/lib/error-handling'
+import { withApiErrorHandling } from '@/lib/error-handling'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -18,7 +18,7 @@ interface RequestBody {
 }
 
 export async function GET(req: NextRequest) {
-  return withErrorHandling(
+  return withApiErrorHandling(
     async () => {
       const startTime = Date.now()
       const url = new URL(req.url)
@@ -155,7 +155,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  return withErrorHandling(
+  return withApiErrorHandling(
     async () => {
       const startTime = Date.now()
       const body = (await req.json()) as RequestBody
@@ -205,20 +205,8 @@ export async function POST(req: NextRequest) {
     },
     {
       system: 'api',
-      operation: 'planetary_positions_post',
+      operation: 'planetary_positions_get',
       severity: 'high',
     }
-  ).then(result => {
-    if (result.success === false) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: result.userMessage,
-          context: result.context,
-        },
-        { status: 500 }
-      )
-    }
-    return result
-  })
+  )
 }

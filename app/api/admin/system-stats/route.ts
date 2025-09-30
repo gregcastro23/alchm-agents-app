@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
 import { performanceMonitor } from '@/lib/performance-monitor'
@@ -26,7 +26,7 @@ async function isAdminUser(userId: string): Promise<boolean> {
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession()
+    const session = await auth()
     const user = await getCurrentUser(req)
     const userId = (user as any)?.id || getUserIdFromRequest(req)
 
@@ -234,7 +234,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession()
+    const session = await auth()
     const userId = session?.user?.id
 
     if (!userId || !(await isAdminUser(userId))) {

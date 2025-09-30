@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
         version: survey.version,
       }
 
-      const surveyAnalysis = processSurveyResponses(surveyData)
+      const surveyAnalysis = await processSurveyResponses(surveyData)
       console.log('Survey analysis completed, archetype:', surveyAnalysis.insights.archetype)
 
       // 3. Save consciousness profile

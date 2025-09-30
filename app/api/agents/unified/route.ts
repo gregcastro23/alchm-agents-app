@@ -352,7 +352,7 @@ async function handleGetAgent(params: any): Promise<NextResponse<UnifiedAgentRes
           dominantElement: demoAgent.consciousness.dominantElement,
           dominantModality: 'Mutable',
           signature: demoAgent.abilities.specialty,
-          personalityCore: demoAgent.personality.core,
+          personalityCore: demoAgent.personality.core as any,
           personalityShadows: [],
           personalityGifts: [],
           personalityChallenges: [],
@@ -366,15 +366,15 @@ async function handleGetAgent(params: any): Promise<NextResponse<UnifiedAgentRes
           avatar: demoAgent.appearance.avatar,
           color: demoAgent.appearance.color,
           symbol: demoAgent.appearance.symbol,
-          aura: demoAgent.synthesis,
+          aura: demoAgent.synthesis || 'mysterious',
           natalChart: {},
-          monicaCreationStory: demoAgent.monicaCreationStory,
+          monicaCreationStory: demoAgent.monicaCreationStory || null,
           conversations: 0,
           wisdomShared: 0,
           resonanceScore: 0.5,
           evolutionPoints: 0,
           lastActive: new Date(),
-          historicalEra: demoAgent.historicalEra,
+          historicalEra: demoAgent.historicalEra || 'modern',
           craftedBy: 'philosopher-stone',
         }
       }
@@ -422,7 +422,18 @@ async function handleGetAgent(params: any): Promise<NextResponse<UnifiedAgentRes
   }
 }
 
+interface CreateAgentParams {
+  name: string
+  birthDate: string
+  birthTime: string
+  birthLocation: string | { lat: number; lon: number; name: string }
+  preferredSpecialty?: string
+  personalityNotes?: string
+  personalityParameters?: any
+}
+
 async function handleCreateAgent(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
+  // Type assertion and validation
   const {
     name,
     birthDate,
@@ -431,7 +442,7 @@ async function handleCreateAgent(params: any): Promise<NextResponse<UnifiedAgent
     preferredSpecialty,
     personalityNotes,
     personalityParameters,
-  } = params
+  }: CreateAgentParams = params
 
   // Validation logic (reuse from existing create-agent endpoint)
   if (!name || !birthDate || !birthTime || !birthLocation) {
@@ -473,6 +484,31 @@ async function handleCreateAgent(params: any): Promise<NextResponse<UnifiedAgent
       sourceCharts: synthesis.sourceCharts,
     })
 
+    // Add missing properties to generatedAgent for database compatibility
+    const enhancedAgent = {
+      ...generatedAgent,
+      dominantElement: generatedAgent.identity?.dominantElement || 'Fire',
+      dominantModality: 'Cardinal', // Default modality
+      signature: `${generatedAgent.identity?.name} - ${backendBlueprint.identity.title}`,
+      personalityCore: generatedAgent.personality || {},
+      personalityShadows: [],
+      personalityGifts: [],
+      personalityChallenges: [],
+      currentMood: 'contemplative',
+      evolutionStage: 1,
+      specialty: 'general consciousness',
+      wisdomDomains: generatedAgent.personality?.wisdomDomains || [],
+      teachingStyle: 'intuitive',
+      resonanceType: 'harmonic',
+      uniquePower: 'consciousness amplification',
+      avatar: '',
+      color: '#8B5CF6',
+      symbol: '✨',
+      aura: {},
+      monicaCreationStory:
+        generatedAgent.metadata?.generationSeed?.toString() || 'Generated through cosmic synthesis',
+    }
+
     // Save to database
     const agentId = `agent-${Date.now()}`
     await HistoricalAgentsService.createAgent({
@@ -480,11 +516,33 @@ async function handleCreateAgent(params: any): Promise<NextResponse<UnifiedAgent
       name,
       title: backendBlueprint.identity.title,
       birthDate: new Date(birthDate),
-      birthTime,
-      birthLocation,
+      birthTime: String(birthTime),
+      birthLocation:
+        typeof birthLocation === 'string'
+          ? (JSON.parse(birthLocation) as { lat: number; lon: number; name: string })
+          : (birthLocation as { lat: number; lon: number; name: string }),
       consciousnessLevel: backendBlueprint.consciousness.level,
       kalchmConstant: backendBlueprint.consciousness.monicaConstant,
-      // ... other fields
+      dominantElement: enhancedAgent.dominantElement,
+      dominantModality: enhancedAgent.dominantModality,
+      signature: enhancedAgent.signature,
+      personalityCore: enhancedAgent.personalityCore,
+      personalityShadows: enhancedAgent.personalityShadows,
+      personalityGifts: enhancedAgent.personalityGifts,
+      personalityChallenges: enhancedAgent.personalityChallenges,
+      currentMood: enhancedAgent.currentMood,
+      evolutionStage: enhancedAgent.evolutionStage,
+      specialty: enhancedAgent.specialty,
+      wisdomDomains: enhancedAgent.wisdomDomains,
+      teachingStyle: enhancedAgent.teachingStyle,
+      resonanceType: enhancedAgent.resonanceType,
+      uniquePower: enhancedAgent.uniquePower,
+      avatar: enhancedAgent.avatar,
+      color: enhancedAgent.color,
+      symbol: enhancedAgent.symbol,
+      aura: enhancedAgent.aura,
+      natalChart: synthesis.sourceCharts?.natal || {},
+      monicaCreationStory: enhancedAgent.monicaCreationStory,
     })
 
     logger.info('Agent created successfully', {
@@ -612,8 +670,7 @@ async function handleSearchAgents(params: any): Promise<NextResponse<UnifiedAgen
 
   try {
     // Simple search implementation
-    const allAgents = await handleListAgents({ limit: 1000 })
-    const agents = allAgents.success ? allAgents.data.agents : []
+    const agents = await HistoricalAgentsService.getAllAgents({ limit: 1000 })
 
     const searchResults = agents.filter(
       agent =>

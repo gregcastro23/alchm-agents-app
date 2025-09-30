@@ -13,11 +13,11 @@ export async function POST(request: Request) {
   if (action === 'register') {
     const hashedPassword = await bcrypt.hash(password, 12)
     const user = await prisma.user.create({
-      data: { email, name, hashedPassword },
+      data: { email, name, passwordHash: hashedPassword },
     })
 
     await prisma.userProfile.create({
-      data: { userId: user.id, birthData: JSON.stringify(birthData) },
+      data: { userId: user.id, birthDate: new Date(birthData) },
     })
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' })

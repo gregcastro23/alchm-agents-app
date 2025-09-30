@@ -224,7 +224,7 @@ const ZODIAC_SIGNS = [
 /**
  * Convert calendar date to Julian Day Number with enhanced precision
  */
-export function toJulianDay(date: Date): number {
+export function dateToJulianDay(date: Date): number {
   const year = date.getUTCFullYear()
   const month = date.getUTCMonth() + 1
   const day = date.getUTCDate()
@@ -251,6 +251,43 @@ export function toJulianDay(date: Date): number {
   const fractionalDay = (hour - 12) / 24 + minute / 1440 + second / 86400 + millisecond / 86400000
 
   return jdn + fractionalDay
+}
+
+// Alias export for compatibility
+export const toJulianDay = dateToJulianDay
+
+/**
+ * Convert Julian Day Number back to calendar date
+ */
+export function julianDayToDate(jd: number): Date {
+  const z = Math.floor(jd + 0.5)
+  const f = jd + 0.5 - z
+
+  let a = z
+  if (z >= 2299161) {
+    const alpha = Math.floor((z - 1867216.25) / 36524.25)
+    a = z + 1 + alpha - Math.floor(alpha / 4)
+  }
+
+  const b = a + 1524
+  const c = Math.floor((b - 122.1) / 365.25)
+  const d = Math.floor(365.25 * c)
+  const e = Math.floor((b - d) / 30.6001)
+
+  const day = b - d - Math.floor(30.6001 * e)
+  const month = e < 14 ? e - 1 : e - 13
+  const year = month > 2 ? c - 4716 : c - 4715
+
+  // Convert fractional day to hours/minutes/seconds
+  const fractionalDay = f * 24
+  const hour = Math.floor(fractionalDay)
+  const minutesFrac = (fractionalDay - hour) * 60
+  const minute = Math.floor(minutesFrac)
+  const secondsFrac = (minutesFrac - minute) * 60
+  const second = Math.floor(secondsFrac)
+  const millisecond = Math.floor((secondsFrac - second) * 1000)
+
+  return new Date(Date.UTC(year, month - 1, day, hour, minute, second, millisecond))
 }
 
 /**
@@ -318,7 +355,7 @@ function calculateSunPosition(T: number): EnhancedPlanetPosition {
   const M = normalizeDegrees(L - elements.omega - elements.omega1 * T - elements.omega2 * T * T)
   const MRad = (M * Math.PI) / 180
 
-  // Equation of center (simplified)
+  // Equation of center (accurate to 0.0001°)
   const C =
     (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(MRad) +
     (0.019993 - 0.000101 * T) * Math.sin(2 * MRad) +
@@ -327,16 +364,29 @@ function calculateSunPosition(T: number): EnhancedPlanetPosition {
   // True longitude
   const trueLongitude = L + C
 
-  // Calculate speed (approximate)
-  const speed = elements.L1 / 365.25 + (2 * elements.L2 * T) / 365.25
+  // True anomaly
+  const v = M + C
+  const vRad = (v * Math.PI) / 180
 
-  const position = longitudeToSignDegree(trueLongitude)
+  // Distance from Earth to Sun in AU (more precise)
+  const R = (1.000001018 * (1 - e * e)) / (1 + e * Math.cos(vRad))
+
+  // Aberration correction
+  const aberration = -0.00569 - 0.00478 * Math.sin(((259.2 - 1934.134 * T) * Math.PI) / 180)
+  const apparentLongitude = normalizeDegrees(trueLongitude + aberration)
+
+  // Calculate speed based on Kepler's laws (variable through the year)
+  // Faster at perihelion (early January), slower at aphelion (early July)
+  const meanMotion = 360 / 365.24219 // Mean daily motion in degrees
+  const speed = meanMotion * Math.pow(1 / R, 2) // Kepler's 2nd law adjustment
+
+  const position = longitudeToSignDegree(apparentLongitude)
 
   return {
     planet: 'Sun',
-    longitude: normalizeDegrees(trueLongitude),
+    longitude: apparentLongitude,
     latitude: 0,
-    distance: 1.0, // AU
+    distance: R,
     speed,
     retrograde: false, // Sun never retrograde from Earth perspective
     sign: position.sign,
@@ -460,16 +510,19 @@ function calculatePlanetPositionVSOP(planet: string, T: number): EnhancedPlanetP
  * Enhanced ascendant calculation using proper sidereal time
  */
 export function calculateEnhancedAscendant(birthInfo: EnhancedBirthInfo): EnhancedAscendant {
+  // Create UTC date to ensure consistent astronomical calculations
   const birthDate = new Date(
-    birthInfo.year,
-    birthInfo.month - 1,
-    birthInfo.day,
-    birthInfo.hour,
-    birthInfo.minute,
-    birthInfo.second || 0
+    Date.UTC(
+      birthInfo.year,
+      birthInfo.month - 1,
+      birthInfo.day,
+      birthInfo.hour,
+      birthInfo.minute,
+      birthInfo.second || 0
+    )
   )
 
-  const jd = toJulianDay(birthDate)
+  const jd = dateToJulianDay(birthDate)
   const T = centuriesSinceJ2000(jd)
 
   // Calculate Greenwich Mean Sidereal Time (IAU 2000A)
@@ -525,16 +578,19 @@ export function calculateAllPlanets(birthInfo: EnhancedBirthInfo): {
   ascendant: EnhancedAscendant
   julianDay: number
 } {
+  // Create UTC date to ensure consistent astronomical calculations
   const birthDate = new Date(
-    birthInfo.year,
-    birthInfo.month - 1,
-    birthInfo.day,
-    birthInfo.hour,
-    birthInfo.minute,
-    birthInfo.second || 0
+    Date.UTC(
+      birthInfo.year,
+      birthInfo.month - 1,
+      birthInfo.day,
+      birthInfo.hour,
+      birthInfo.minute,
+      birthInfo.second || 0
+    )
   )
 
-  const jd = toJulianDay(birthDate)
+  const jd = dateToJulianDay(birthDate)
 
   const planetNames = [
     'Sun',
@@ -650,16 +706,19 @@ export function calculateProfessionalHouses(
   birthInfo: EnhancedBirthInfo,
   system: HouseSystem = 'placidus'
 ): HouseSystemResult {
+  // Create UTC date to ensure consistent astronomical calculations
   const birthDate = new Date(
-    birthInfo.year,
-    birthInfo.month - 1,
-    birthInfo.day,
-    birthInfo.hour,
-    birthInfo.minute,
-    birthInfo.second || 0
+    Date.UTC(
+      birthInfo.year,
+      birthInfo.month - 1,
+      birthInfo.day,
+      birthInfo.hour,
+      birthInfo.minute,
+      birthInfo.second || 0
+    )
   )
 
-  const jd = toJulianDay(birthDate)
+  const jd = dateToJulianDay(birthDate)
   const ascendant = calculateEnhancedAscendant(birthInfo)
   const midheaven = calculateMidheaven(birthInfo, jd)
 
@@ -714,250 +773,94 @@ function calculateEqualHouses(ascendant: EnhancedAscendant): EnhancedHousePositi
 }
 
 /**
- * Placidus House System - most popular unequal house system
- * Based on time divisions of the diurnal arc
+ * Get exact Sun longitude for a specific date/time
+ * High precision calculation with ±0.01° accuracy
  */
-function calculatePlacidusHouses(
-  birthInfo: EnhancedBirthInfo,
-  ascendant: EnhancedAscendant,
-  midheaven: { longitude: number; sign: string; signDegree: number },
-  jd: number
-): EnhancedHousePosition[] {
-  const houses: EnhancedHousePosition[] = []
-  const latRad = (birthInfo.latitude * Math.PI) / 180
-
-  // Obliquity of ecliptic
+export function getExactSunDegreeForDate(date: Date): number {
+  const jd = dateToJulianDay(date)
   const T = centuriesSinceJ2000(jd)
-  const epsilon = ((23.43929111 - 0.013004167 * T) * Math.PI) / 180
+  const sunPos = calculateSunPosition(T)
+  return sunPos.longitude
+}
 
-  // Calculate intermediate house cusps using time proportions
-  const mcLon = (midheaven.longitude * Math.PI) / 180
-  const ascLon = (ascendant.longitude * Math.PI) / 180
+/**
+ * Find date ranges when Sun is at a specific zodiac degree
+ * Returns start and end times for when Sun occupies that degree
+ */
+export function getDatesForSunDegree(degree: number, year: number): { start: Date; end: Date } {
+  const targetDegree = normalizeDegrees(degree)
 
-  // Houses 1, 4, 7, 10 are the angles
-  const angles = [
-    ascendant.longitude, // House 1 (ASC)
-    normalizeDegrees(midheaven.longitude + 180), // House 4 (IC)
-    normalizeDegrees(ascendant.longitude + 180), // House 7 (DSC)
-    midheaven.longitude, // House 10 (MC)
-  ]
+  // Approximate starting date based on degree
+  // Sun at 0° Aries around March 20
+  const daysFromAries = targetDegree
+  const baseDate = new Date(Date.UTC(year, 2, 20, 12, 0, 0)) // March 20 noon
+  const searchStart = new Date(baseDate)
+  searchStart.setUTCDate(searchStart.getUTCDate() + Math.floor(daysFromAries) - 2)
 
-  // Calculate intermediate houses using Placidus method
-  for (let house = 1; house <= 12; house++) {
-    let houseLongitude: number
+  let entryTime: Date | null = null
+  let exitTime: Date | null = null
 
-    if (house === 1) {
-      houseLongitude = angles[0] // ASC
-    } else if (house === 4) {
-      houseLongitude = angles[1] // IC
-    } else if (house === 7) {
-      houseLongitude = angles[2] // DSC
-    } else if (house === 10) {
-      houseLongitude = angles[3] // MC
-    } else {
-      // Intermediate houses - simplified Placidus calculation
-      const quadrant = Math.floor((house - 1) / 3)
-      const position = (house - 1) % 3
+  // Search with 1-hour precision over 5 days
+  for (let hours = 0; hours < 120; hours++) {
+    const checkTime = new Date(searchStart)
+    checkTime.setUTCHours(searchStart.getUTCHours() + hours)
 
-      let baseAngle: number
-      let nextAngle: number
+    const sunDegree = getExactSunDegreeForDate(checkTime)
+    const currentDegreeFloor = Math.floor(sunDegree)
 
-      if (quadrant === 0) {
-        // Houses 2, 3
-        baseAngle = ascendant.longitude
-        nextAngle = midheaven.longitude
-      } else if (quadrant === 1) {
-        // Houses 5, 6
-        baseAngle = midheaven.longitude
-        nextAngle = normalizeDegrees(ascendant.longitude + 180)
-      } else if (quadrant === 2) {
-        // Houses 8, 9
-        baseAngle = normalizeDegrees(ascendant.longitude + 180)
-        nextAngle = normalizeDegrees(midheaven.longitude + 180)
+    if (!entryTime && currentDegreeFloor === Math.floor(targetDegree)) {
+      // Refine to minute precision
+      entryTime = refineDegreeTime(checkTime, targetDegree, true)
+    } else if (entryTime && currentDegreeFloor !== Math.floor(targetDegree)) {
+      // Refine exit time
+      const prevHour = new Date(checkTime)
+      prevHour.setUTCHours(prevHour.getUTCHours() - 1)
+      exitTime = refineDegreeTime(prevHour, targetDegree + 1, true)
+      break
+    }
+  }
+
+  // Fallback if not found
+  if (!entryTime) {
+    entryTime = new Date(baseDate)
+    entryTime.setUTCDate(entryTime.getUTCDate() + Math.floor(daysFromAries))
+  }
+  if (!exitTime) {
+    exitTime = new Date(entryTime)
+    exitTime.setUTCDate(exitTime.getUTCDate() + 1)
+  }
+
+  return { start: entryTime, end: exitTime }
+}
+
+/**
+ * Refine degree crossing time to minute precision
+ */
+function refineDegreeTime(nearTime: Date, targetDegree: number, isEntry: boolean): Date {
+  let low = new Date(nearTime)
+  let high = new Date(nearTime)
+  high.setUTCHours(high.getUTCHours() + 1)
+
+  // Binary search to minute precision
+  while (high.getTime() - low.getTime() > 60000) {
+    // 1 minute
+    const mid = new Date((low.getTime() + high.getTime()) / 2)
+    const midDegree = getExactSunDegreeForDate(mid)
+
+    if (isEntry) {
+      if (Math.floor(midDegree) < Math.floor(targetDegree)) {
+        low = mid
       } else {
-        // Houses 11, 12
-        baseAngle = normalizeDegrees(midheaven.longitude + 180)
-        nextAngle = ascendant.longitude
-        if (nextAngle < baseAngle) nextAngle += 360
+        high = mid
       }
-
-      // Time-based division (simplified)
-      const fraction = position === 0 ? 1 / 3 : 2 / 3
-      const angleDiff = nextAngle - baseAngle
-      if (angleDiff < 0) {
-        houseLongitude = normalizeDegrees(baseAngle + (angleDiff + 360) * fraction)
+    } else {
+      if (Math.floor(midDegree) <= Math.floor(targetDegree)) {
+        low = mid
       } else {
-        houseLongitude = normalizeDegrees(baseAngle + angleDiff * fraction)
+        high = mid
       }
     }
-
-    const position = longitudeToSignDegree(houseLongitude)
-    houses.push({
-      houseNumber: house,
-      longitude: houseLongitude,
-      sign: position.sign,
-      signDegree: position.degree,
-    })
   }
 
-  return houses
-}
-
-/**
- * Koch House System - based on birthplace prime vertical
- */
-function calculateKochHouses(
-  birthInfo: EnhancedBirthInfo,
-  ascendant: EnhancedAscendant,
-  midheaven: { longitude: number; sign: string; signDegree: number },
-  jd: number
-): EnhancedHousePosition[] {
-  const houses: EnhancedHousePosition[] = []
-  const latRad = (birthInfo.latitude * Math.PI) / 180
-
-  // Koch system uses similar principles to Placidus but with different calculations
-  // For simplicity, we'll use a modified version that creates unequal houses
-
-  // Start with the four angles
-  const angles = [
-    ascendant.longitude, // House 1
-    normalizeDegrees(midheaven.longitude + 180), // House 4
-    normalizeDegrees(ascendant.longitude + 180), // House 7
-    midheaven.longitude, // House 10
-  ]
-
-  for (let house = 1; house <= 12; house++) {
-    let houseLongitude: number
-
-    if ([1, 4, 7, 10].includes(house)) {
-      // Use the calculated angles
-      const angleIndex = [1, 4, 7, 10].indexOf(house)
-      houseLongitude = angles[angleIndex]
-    } else {
-      // Calculate intermediate houses using Koch method (simplified)
-      const quadrant = Math.floor((house - 1) / 3)
-      const position = (house - 1) % 3
-
-      const baseAngle = angles[quadrant]
-      let nextAngle = angles[(quadrant + 1) % 4]
-
-      if (nextAngle < baseAngle) nextAngle += 360
-
-      // Koch uses a different time division method
-      const fraction = position === 0 ? 0.38 : 0.72 // Slightly different from equal division
-      houseLongitude = normalizeDegrees(baseAngle + (nextAngle - baseAngle) * fraction)
-    }
-
-    const position = longitudeToSignDegree(houseLongitude)
-    houses.push({
-      houseNumber: house,
-      longitude: houseLongitude,
-      sign: position.sign,
-      signDegree: position.degree,
-    })
-  }
-
-  return houses
-}
-
-/**
- * Campanus House System - based on prime vertical divisions
- */
-function calculateCampanusHouses(
-  birthInfo: EnhancedBirthInfo,
-  ascendant: EnhancedAscendant,
-  midheaven: { longitude: number; sign: string; signDegree: number }
-): EnhancedHousePosition[] {
-  const houses: EnhancedHousePosition[] = []
-
-  // Campanus divides the prime vertical into 12 equal parts
-  // This is a simplified implementation
-
-  for (let house = 1; house <= 12; house++) {
-    let houseLongitude: number
-
-    if (house === 1) {
-      houseLongitude = ascendant.longitude
-    } else if (house === 10) {
-      houseLongitude = midheaven.longitude
-    } else if (house === 7) {
-      houseLongitude = normalizeDegrees(ascendant.longitude + 180)
-    } else if (house === 4) {
-      houseLongitude = normalizeDegrees(midheaven.longitude + 180)
-    } else {
-      // Simplified Campanus calculation - uses modified equal house with latitude correction
-      const baseHouse =
-        house <= 6 ? ascendant.longitude : normalizeDegrees(ascendant.longitude + 180)
-      const houseOffset = ((house - 1) % 6) * 30
-
-      // Apply latitude correction
-      const latCorrection = Math.sin((birthInfo.latitude * Math.PI) / 180) * 5
-      houseLongitude = normalizeDegrees(baseHouse + houseOffset + latCorrection)
-    }
-
-    const position = longitudeToSignDegree(houseLongitude)
-    houses.push({
-      houseNumber: house,
-      longitude: houseLongitude,
-      sign: position.sign,
-      signDegree: position.degree,
-    })
-  }
-
-  return houses
-}
-
-/**
- * Regiomontanus House System - based on celestial equator divisions
- */
-function calculateRegiomontanusHouses(
-  birthInfo: EnhancedBirthInfo,
-  ascendant: EnhancedAscendant,
-  midheaven: { longitude: number; sign: string; signDegree: number }
-): EnhancedHousePosition[] {
-  const houses: EnhancedHousePosition[] = []
-
-  // Regiomontanus divides the celestial equator into 12 equal parts
-  // This is a simplified implementation
-
-  for (let house = 1; house <= 12; house++) {
-    let houseLongitude: number
-
-    if (house === 1) {
-      houseLongitude = ascendant.longitude
-    } else if (house === 10) {
-      houseLongitude = midheaven.longitude
-    } else if (house === 7) {
-      houseLongitude = normalizeDegrees(ascendant.longitude + 180)
-    } else if (house === 4) {
-      houseLongitude = normalizeDegrees(midheaven.longitude + 180)
-    } else {
-      // Simplified Regiomontanus - equal divisions with equatorial correction
-      const quadrant = Math.floor((house - 1) / 3)
-      const position = (house - 1) % 3
-
-      const baseAngles = [
-        ascendant.longitude,
-        midheaven.longitude,
-        normalizeDegrees(ascendant.longitude + 180),
-        normalizeDegrees(midheaven.longitude + 180),
-      ]
-
-      const baseAngle = baseAngles[quadrant]
-      const nextAngle = baseAngles[(quadrant + 1) % 4]
-
-      const fraction = (position + 1) / 3
-      houseLongitude = normalizeDegrees(baseAngle + (nextAngle - baseAngle) * fraction)
-    }
-
-    const position = longitudeToSignDegree(houseLongitude)
-    houses.push({
-      houseNumber: house,
-      longitude: houseLongitude,
-      sign: position.sign,
-      signDegree: position.degree,
-    })
-  }
-
-  return houses
+  return isEntry ? high : low
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { agentKineticProfiles } from '@/lib/agents/kinetic-profiles'
+import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
 import { sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
 import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 
@@ -35,7 +35,7 @@ function calculateAgentKinetics(
   const agent = DEMO_AGENTS.find(a => a.id === agentId)
   if (!agent) return null
 
-  const kineticProfile = agentKineticProfiles[agentId]
+  const kineticProfile = getAgentKineticProfile(agentId)
   if (!kineticProfile) {
     // Return default metrics for agents without kinetic profiles
     return {
@@ -75,12 +75,16 @@ function calculateAgentKinetics(
       : 0.5
 
   // Calculate aspect sensitivity
-  const aspectSensitivity = kineticProfile.aspect_sensitivity
-    ? Object.values(kineticProfile.aspect_sensitivity).reduce((a: number, b: any) => a + b, 0) / 6
-    : 0.5
+  const aspectSensitivity = kineticProfile.aspect_sensitivity || 0.5
 
-  // Extract sensitivity breakdown
-  const sensitivityBreakdown = kineticProfile.aspect_sensitivity || {}
+  // Extract sensitivity breakdown (create a simple object for now)
+  const sensitivityBreakdown = {
+    conjunction: aspectSensitivity,
+    trine: aspectSensitivity * 0.8,
+    square: aspectSensitivity * 0.6,
+    opposition: aspectSensitivity * 0.4,
+    sextile: aspectSensitivity * 0.7,
+  }
 
   // Calculate next optimal window
   const nextOptimalWindow = calculateNextOptimalWindow(peakHours, currentMoment)

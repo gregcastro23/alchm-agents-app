@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
 import { generateId } from '@/lib/utils'
 import { HistoricalAgentsService } from '@/lib/historical-agents-db'
 import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
-import { generateAlchmForBirthInfo } from '@/lib/alchemizer'
+import { generateAlchmForBirthInfo, generateAlchmForCurrentMoment } from '@/lib/alchemizer'
 import { fetchCurrentPlanetaryPositions } from '@/lib/monica/fetch-current-positions'
 import { generateAccurateHoroscope } from '@/lib/monica/horoscope-generator'
 import { prisma } from '@/lib/db'
@@ -218,6 +219,7 @@ function enhancePersonalityWithParameters(
 
 export async function POST(request: NextRequest): Promise<NextResponse<CreateAgentResponse>> {
   try {
+    const session = await getServerSession()
     const body: CreateAgentRequest = await request.json()
 
     // Enhanced validation
@@ -242,16 +244,18 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateAge
 
     // Generate birth chart
     console.log('Generating birth chart for new agent...')
-    const birthChart = await generateAccurateHoroscope({
+    const birthInfo = {
       year: birthDateTime.getFullYear(),
-      month: birthDateTime.getMonth() + 1,
+      month: birthDateTime.getMonth(), // zero-based
       day: birthDateTime.getDate(),
       hour: birthDateTime.getHours(),
       minute: birthDateTime.getMinutes(),
       latitude: body.birthLocation.latitude,
       longitude: body.birthLocation.longitude,
-      timezone: body.birthLocation.timezone,
-    })
+      name: body.birthLocation.name,
+    }
+
+    const birthChart = await generateAccurateHoroscope(birthInfo)
 
     const synthesizer = new ChartSynthesizer()
     const generator = new AgentGenerator()

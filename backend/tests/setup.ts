@@ -1,4 +1,5 @@
 import dotenv from 'dotenv'
+/// <reference types="jest" />
 
 // Load test environment variables
 dotenv.config({ path: '.env.test' })

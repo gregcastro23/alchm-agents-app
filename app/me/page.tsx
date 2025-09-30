@@ -166,6 +166,19 @@ export default async function MePage() {
 
   const modality = String(alchm?.['Dominant Modality'] || '')
 
+  // Prepare variables for LiveConsciousnessDisplay
+  const birthInfo = profile.birthInfo as any
+  const safeAlchm = {
+    spirit,
+    essence,
+    matter,
+    substance,
+    Heat,
+    Entropy,
+    Reactivity,
+    EnergyValue,
+  }
+
   return (
     <div className="container mx-auto py-8 space-y-6">
       <div className="flex items-center gap-4">
