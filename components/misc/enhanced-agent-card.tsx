@@ -640,7 +640,7 @@ export function EnhancedAgentCard({
 
           <div className="flex justify-between items-center pt-2">
             <div className="text-xs text-muted-foreground">
-              {agent.stats?.conversations || 0} conversations
+              {agent.stats.conversations} conversations
             </div>
             <div className="flex gap-1">
               <Dialog>

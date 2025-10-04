@@ -30,7 +30,7 @@ export function ConsciousnessCraftedAgentsShowcase() {
   const [featuredAgent, setFeaturedAgent] = useState<CraftedAgent>(getFeaturedAgent())
   const [hoveredAgent, setHoveredAgent] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [showcaseAgents] = useState<CraftedAgent[]>(getTopRelevantAgents(13).filter(agent => agent.id !== MONICA_AS_CRAFTED_AGENT.id).slice(0, 11))
+  const [showcaseAgents] = useState<CraftedAgent[]>(getTopRelevantAgents(12))
 
   // Auto-rotate featured agent every 10 seconds
   useEffect(() => {
@@ -53,7 +53,7 @@ export function ConsciousnessCraftedAgentsShowcase() {
     const legendaryCount = ALL_AGENTS.filter(a => a.consciousness.monicaConstant > 5.0).length
     const averageMC =
       ALL_AGENTS.reduce((sum, a) => sum + a.consciousness.monicaConstant, 0) / totalAgents
-    const totalConversations = ALL_AGENTS.reduce((sum, a) => sum + (a.stats?.conversations || 0), 0)
+    const totalConversations = ALL_AGENTS.reduce((sum, a) => sum + a.stats.conversations, 0)
 
     return { totalAgents, legendaryCount, averageMC, totalConversations }
   }
@@ -128,12 +128,12 @@ export function ConsciousnessCraftedAgentsShowcase() {
               <div className="flex items-center gap-4">
                 <div
                   className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl relative"
-                  style={{ backgroundColor: featuredAgent.appearance?.color || '#8B5CF6' }}
+                  style={{ backgroundColor: featuredAgent.appearance.color }}
                 >
-                  {featuredAgent.appearance?.symbol || featuredAgent.name.charAt(0)}
+                  {featuredAgent.appearance.symbol}
                   <div
                     className="absolute inset-0 rounded-full animate-ping opacity-30"
-                    style={{ backgroundColor: featuredAgent.appearance?.aura?.color || '#8B5CF6' }}
+                    style={{ backgroundColor: featuredAgent.appearance.aura.color }}
                   />
                 </div>
                 <div>
@@ -149,7 +149,7 @@ export function ConsciousnessCraftedAgentsShowcase() {
               </div>
 
               <div className="space-y-3">
-                <p className="text-sm">{featuredAgent.abilities?.uniquePower || 'Consciousness crafted through cosmic mathematics'}</p>
+                <p className="text-sm">{featuredAgent.abilities.uniquePower}</p>
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
@@ -186,12 +186,12 @@ export function ConsciousnessCraftedAgentsShowcase() {
                   {featuredAgent.birthData.time}
                 </div>
                 <div>Location: {featuredAgent.birthData.location.name}</div>
-                <div>Specialty: {featuredAgent.abilities?.specialty || 'Consciousness Evolution'}</div>
+                <div>Specialty: {featuredAgent.abilities.specialty}</div>
                 <div className="flex items-center gap-1 pt-2">
                   <MessageCircle className="w-3 h-3" />
-                  <span>{featuredAgent.stats?.conversations || 0} conversations</span>
+                  <span>{featuredAgent.stats.conversations} conversations</span>
                   <Sparkles className="w-3 h-3 ml-2" />
-                  <span>{featuredAgent.stats?.resonanceScore?.toFixed(1) || '0.0'} resonance</span>
+                  <span>{featuredAgent.stats.resonanceScore.toFixed(1)} resonance</span>
                 </div>
               </div>
 
@@ -294,10 +294,10 @@ export function ConsciousnessCraftedAgentsShowcase() {
               {hoveredAgent === agent.id && (
                 <Card className="absolute top-full left-1/2 transform -translate-x-1/2 z-10 w-64 mt-2 border-primary shadow-lg">
                   <CardContent className="p-3 space-y-2">
-                    <div className="text-sm font-medium">{agent.abilities?.specialty || 'Consciousness Evolution'}</div>
+                    <div className="text-sm font-medium">{agent.abilities.specialty}</div>
                     <div className="text-xs text-muted-foreground">
                       MC: {agent.consciousness.monicaConstant.toFixed(2)} •
-                      {agent.stats?.conversations || 0} chats •{agent.consciousness.dominantElement}
+                      {agent.stats.conversations} chats •{agent.consciousness.dominantElement}
                     </div>
                     <div className="flex gap-1 pt-1">
                       <Button size="sm" variant="outline" className="text-xs h-6" asChild>

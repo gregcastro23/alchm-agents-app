@@ -95,9 +95,9 @@ export function AgentCard({
         <CardContent className="p-4 text-center space-y-2">
           <div
             className="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white font-bold text-xl mb-2"
-            style={{ backgroundColor: agent.appearance?.color || '#8B5CF6' }}
+            style={{ backgroundColor: agent.appearance.color }}
           >
-            {agent.appearance?.symbol || agent.name.charAt(0)}
+            {agent.appearance.symbol}
           </div>
           <h4 className="font-semibold text-sm">{agent.name}</h4>
           <p className="text-xs text-muted-foreground line-clamp-1">{agent.title}</p>
@@ -123,9 +123,9 @@ export function AgentCard({
             <div className="flex items-center gap-4 flex-1">
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
-                style={{ backgroundColor: agent.appearance?.color || '#8B5CF6' }}
+                style={{ backgroundColor: agent.appearance.color }}
               >
-                {agent.appearance?.symbol || agent.name.charAt(0)}
+                {agent.appearance.symbol}
               </div>
 
               <div className="flex-1">
@@ -147,7 +147,7 @@ export function AgentCard({
                 <div className="font-medium">
                   Kalchm: {agent.consciousness.monicaConstant.toFixed(2)}
                 </div>
-                <div className="text-muted-foreground">{agent.stats?.conversations || 0} chats</div>
+                <div className="text-muted-foreground">{agent.stats.conversations} chats</div>
               </div>
 
               {showActions && (
@@ -195,9 +195,9 @@ export function AgentCard({
         <CardContent className="p-3 text-center">
           <div
             className="w-12 h-12 rounded-full mx-auto flex items-center justify-center text-white font-bold mb-2"
-            style={{ backgroundColor: agent.appearance?.color || '#8B5CF6' }}
+            style={{ backgroundColor: agent.appearance.color }}
           >
-            {agent.appearance?.symbol || agent.name.charAt(0)}
+            {agent.appearance.symbol}
           </div>
           <p className="text-xs font-medium line-clamp-1">{agent.name}</p>
           <Badge size="sm" variant="outline" className="mt-1">
@@ -221,13 +221,13 @@ export function AgentCard({
           <div className="flex items-center gap-3">
             <div
               className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg relative"
-              style={{ backgroundColor: agent.appearance?.color || '#8B5CF6' }}
+              style={{ backgroundColor: agent.appearance.color }}
             >
-              {agent.appearance?.symbol || agent.name.charAt(0)}
+              {agent.appearance.symbol}
               {/* Aura effect */}
               <div
                 className="absolute inset-0 rounded-full animate-pulse opacity-30"
-                style={{ backgroundColor: agent.appearance?.aura?.color || '#8B5CF6' }}
+                style={{ backgroundColor: agent.appearance.aura.color }}
               />
             </div>
             <div>
@@ -310,11 +310,11 @@ export function AgentCard({
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="flex items-center gap-1">
             <MessageCircle className="w-3 h-3" />
-            <span>{agent.stats?.conversations || 0} chats</span>
+            <span>{agent.stats.conversations} chats</span>
           </div>
           <div className="flex items-center gap-1">
             <Sparkles className="w-3 h-3" />
-            <span>{agent.stats?.resonanceScore?.toFixed(1) || '0.0'} resonance</span>
+            <span>{agent.stats.resonanceScore.toFixed(1)} resonance</span>
           </div>
         </div>
 
@@ -359,9 +359,9 @@ function AgentDetailsModal({ agent }: { agent: CraftedAgent }) {
         <DialogTitle className="flex items-center gap-3">
           <div
             className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
-            style={{ backgroundColor: agent.appearance?.color || '#8B5CF6' }}
+            style={{ backgroundColor: agent.appearance.color }}
           >
-            {agent.appearance?.symbol || agent.name.charAt(0)}
+            {agent.appearance.symbol}
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -517,19 +517,19 @@ function AgentDetailsModal({ agent }: { agent: CraftedAgent }) {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex justify-between">
               <span>Conversations:</span>
-              <span className="font-medium">{agent.stats?.conversations || 0}</span>
+              <span className="font-medium">{agent.stats.conversations}</span>
             </div>
             <div className="flex justify-between">
               <span>Wisdom Shared:</span>
-              <span className="font-medium">{agent.stats?.wisdomShared || 0}</span>
+              <span className="font-medium">{agent.stats.wisdomShared}</span>
             </div>
             <div className="flex justify-between">
               <span>Resonance Score:</span>
-              <span className="font-medium">{agent.stats?.resonanceScore?.toFixed(2) || '0.00'}</span>
+              <span className="font-medium">{agent.stats.resonanceScore.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span>Evolution Points:</span>
-              <span className="font-medium">{agent.stats?.evolutionPoints || 0}</span>
+              <span className="font-medium">{agent.stats.evolutionPoints}</span>
             </div>
           </div>
         </div>

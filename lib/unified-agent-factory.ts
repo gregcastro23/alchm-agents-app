@@ -39,12 +39,12 @@ export class UnifiedAgentFactory implements AgentFactory {
         dominantElement: agent.consciousness.dominantElement,
         dominantModality: agent.consciousness.dominantModality,
         signature: agent.consciousness.signature,
-        evolutionStage: agent.stats?.evolutionPoints || 0,
+        evolutionStage: agent.stats.evolutionPoints || 0,
         kineticProfile: {
-          consciousnessVelocity: agent.stats?.kineticEvolution?.consciousnessVelocity || 0,
-          interactionMomentum: agent.stats?.kineticEvolution?.interactionMomentum || 0,
-          evolutionTrajectory: agent.stats?.kineticEvolution?.evolutionTrajectory || 'stable',
-          aspectSensitivity: agent.stats?.kineticEvolution?.aspectSensitivityGrowth || 0,
+          consciousnessVelocity: agent.stats.kineticEvolution?.consciousnessVelocity || 0,
+          interactionMomentum: agent.stats.kineticEvolution?.interactionMomentum || 0,
+          evolutionTrajectory: agent.stats.kineticEvolution?.evolutionTrajectory || 'stable',
+          aspectSensitivity: agent.stats.kineticEvolution?.aspectSensitivityGrowth || 0,
         },
       },
 

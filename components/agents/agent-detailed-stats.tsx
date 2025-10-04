@@ -130,7 +130,7 @@ export function AgentDetailedStats({
             <MessageCircle className="w-4 h-4" />
             Conversations
           </div>
-          <div className="text-2xl font-bold">{stats?.conversations?.toLocaleString() || '0'}</div>
+          <div className="text-2xl font-bold">{stats.conversations.toLocaleString()}</div>
         </Card>
 
         <Card className="p-4">
@@ -146,7 +146,7 @@ export function AgentDetailedStats({
             <Zap className="w-4 h-4" />
             Resonance
           </div>
-          <div className="text-2xl font-bold">{stats?.resonanceScore ? (stats.resonanceScore * 100).toFixed(1) : '0.0'}%</div>
+          <div className="text-2xl font-bold">{(stats.resonanceScore * 100).toFixed(1)}%</div>
         </Card>
 
         <Card className="p-4">

@@ -497,7 +497,7 @@ function GalleryPageContent() {
             {/* Total Conversations */}
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
               <div className="text-2xl font-bold text-amber-600">
-                {agents.reduce((sum, a) => sum + (a.stats?.conversations || 0), 0).toLocaleString()}
+                {agents.reduce((sum, a) => sum + a.stats.conversations, 0).toLocaleString()}
               </div>
               <div className="text-xs text-muted-foreground">Total Chats</div>
             </div>
