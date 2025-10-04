@@ -203,12 +203,12 @@ export function AncientGallery({
           break
         case 'compatibility':
           // Placeholder - would calculate user synastry in real implementation
-          aValue = a.stats.resonanceScore
-          bValue = b.stats.resonanceScore
+          aValue = a.stats?.resonanceScore || 0
+          bValue = b.stats?.resonanceScore || 0
           break
         case 'recent':
-          aValue = a.stats.lastActive.getTime()
-          bValue = b.stats.lastActive.getTime()
+          aValue = a.stats?.lastActive?.getTime() || 0
+          bValue = b.stats?.lastActive?.getTime() || 0
           break
         case 'alphabetical':
           aValue = a.name.toLowerCase()

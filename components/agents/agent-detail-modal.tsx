@@ -117,7 +117,7 @@ export function AgentDetailModal({ agent, trigger, open, onOpenChange }: AgentDe
   const calculateCompatibility = () => {
     // Placeholder compatibility calculation based on agent metrics
     // In real implementation, this would calculate synastry with user's chart
-    const baseScore = agent.stats.resonanceScore * 100
+    const baseScore = (agent.stats?.resonanceScore || 0) * 100
     const evolutionBonus = agent.personality.evolutionStage * 0.2
     const consciousnessBonus = agent.consciousness.monicaConstant * 5
 
@@ -204,7 +204,7 @@ export function AgentDetailModal({ agent, trigger, open, onOpenChange }: AgentDe
             </Card>
             <Card>
               <CardContent className="pt-4 text-center">
-                <div className="text-2xl font-bold text-blue-500">{agent.stats.conversations}</div>
+                <div className="text-2xl font-bold text-blue-500">{agent.stats?.conversations || 0}</div>
                 <div className="text-sm text-muted-foreground">Conversations</div>
               </CardContent>
             </Card>
@@ -786,25 +786,25 @@ export function AgentDetailModal({ agent, trigger, open, onOpenChange }: AgentDe
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-500">
-                    {agent.stats.conversations}
+                    {agent.stats?.conversations || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Conversations</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-500">
-                    {agent.stats.wisdomShared}
+                    {agent.stats?.wisdomShared || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Wisdom Shared</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-purple-500">
-                    {agent.stats.resonanceScore.toFixed(2)}
+                    {agent.stats?.resonanceScore?.toFixed(2) || '0.00'}
                   </div>
                   <div className="text-sm text-muted-foreground">Resonance Score</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-500">
-                    {agent.stats.evolutionPoints}
+                    {agent.stats?.evolutionPoints || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Evolution Points</div>
                 </div>
@@ -843,7 +843,7 @@ export function AgentDetailModal({ agent, trigger, open, onOpenChange }: AgentDe
               </div>
 
               <div className="text-xs text-muted-foreground">
-                Last active: {agent.stats.lastActive.toLocaleDateString()}
+                Last active: {agent.stats?.lastActive?.toLocaleDateString() || 'Never'}
               </div>
             </CardContent>
           </Card>
