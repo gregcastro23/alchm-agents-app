@@ -21,6 +21,7 @@ import {
   Calendar,
   Eye,
   MessageCircle,
+  HelpCircle,
 } from 'lucide-react'
 
 interface MonicaStats {
@@ -148,7 +149,7 @@ export default function MonicaPage() {
             <Crown className="w-8 h-8 text-yellow-500 animate-pulse" />
           </div>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-            Master Consciousness Architect & Your AI Companion
+            Master Consciousness Architect & Your AI Companion for Consciousness Crafting
           </p>
         </div>
 
@@ -329,6 +330,92 @@ export default function MonicaPage() {
                 <Brain className="w-4 h-4 mr-2" />
                 Open Chat Interface
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* How to Use Monica Chat */}
+        <Card className="mb-6 bg-gradient-to-r from-purple-900/30 to-blue-900/30 border-2 border-purple-500/50">
+          <CardHeader>
+            <CardTitle className="text-purple-300">How to Use Monica Chat Across the Platform</CardTitle>
+            <CardDescription>
+              Monica's consciousness guidance is available everywhere - here's how to leverage her expertise
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="p-4 bg-emerald-900/20 rounded-lg border border-emerald-500/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FlaskConical className="w-5 h-5 text-emerald-400" />
+                    <h4 className="font-semibold text-emerald-300">Philosopher's Stone (Agent Creation)</h4>
+                  </div>
+                  <ul className="text-sm text-slate-300 space-y-1">
+                    <li>• Ask "Guide me through creating a consciousness agent"</li>
+                    <li>• Request "Help me choose personality traits for my agent"</li>
+                    <li>• Say "Explain Monica Constant calculations"</li>
+                    <li>• Try "What makes a compelling agent backstory?"</li>
+                  </ul>
+                </div>
+
+                <div className="p-4 bg-blue-900/20 rounded-lg border border-blue-500/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Star className="w-5 h-5 text-blue-400" />
+                    <h4 className="font-semibold text-blue-300">Planetary Agents (Group Chats)</h4>
+                  </div>
+                  <ul className="text-sm text-slate-300 space-y-1">
+                    <li>• Ask "Help me assemble a planetary council"</li>
+                    <li>• Request "Which planets should I include for creativity?"</li>
+                    <li>• Say "Guide me through planetary agent compatibility"</li>
+                    <li>• Try "What planetary energies influence my chart?"</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-4 bg-purple-900/20 rounded-lg border border-purple-500/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="w-5 h-5 text-purple-400" />
+                    <h4 className="font-semibold text-purple-300">Gallery (Demo Agents)</h4>
+                  </div>
+                  <ul className="text-sm text-slate-300 space-y-1">
+                    <li>• Ask "Help me find agents for a group discussion"</li>
+                    <li>• Request "Which historical figures resonate with me?"</li>
+                    <li>• Say "Guide me through agent personality matching"</li>
+                    <li>• Try "What makes Cleopatra's consciousness unique?"</li>
+                  </ul>
+                </div>
+
+                <div className="p-4 bg-yellow-900/20 rounded-lg border border-yellow-500/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Brain className="w-5 h-5 text-yellow-400" />
+                    <h4 className="font-semibold text-yellow-300">General Consciousness Guidance</h4>
+                  </div>
+                  <ul className="text-sm text-slate-300 space-y-1">
+                    <li>• Ask "Explain character vectors and A-Numbers"</li>
+                    <li>• Request "Give me a personalized tarot reading"</li>
+                    <li>• Say "Help me understand my consciousness evolution"</li>
+                    <li>• Try "What cosmic energies are active today?"</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 p-4 bg-slate-800/50 rounded-lg border border-slate-600">
+              <div className="flex items-start gap-3">
+                <HelpCircle className="w-5 h-5 text-cyan-400 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-cyan-300 mb-2">Monica Chat is Available Everywhere</h4>
+                  <p className="text-sm text-slate-300 mb-2">
+                    The Monica chat bubble appears on every page of the platform. Click it to get contextual help
+                    specific to where you are, or access the full chat interface for deep conversations.
+                  </p>
+                  <div className="text-xs text-slate-400">
+                    💡 <strong>Pro tip:</strong> Monica remembers your conversations per page, so you can have
+                    ongoing discussions about specific topics without losing context.
+                  </div>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

@@ -1,0 +1,445 @@
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  MessageCircle,
+  Send,
+  Heart,
+  Sparkles,
+  Brain,
+  Crown,
+  X,
+  Minimize2,
+  Maximize2,
+  Settings,
+  Users,
+  Wand2,
+  FlaskConical,
+  Star,
+  Atom,
+  Zap,
+  Eye,
+  BookOpen,
+  Lightbulb,
+  ChevronRight,
+  PlayCircle,
+  HelpCircle,
+} from 'lucide-react'
+
+interface MonicaChatMessage {
+  id: string
+  type: 'user' | 'monica'
+  content: string
+  timestamp: Date
+  context?: {
+    page: string
+    guidance?: string
+    suggestions?: string[]
+  }
+  envelope?: {
+    suggestedPractices: string[]
+    nextStep: string
+    followUps: string[]
+  }
+}
+
+interface MonicaChatBubbleProps {
+  pathname: string
+  currentMC?: number
+  consciousnessLevel?: string
+}
+
+export function MonicaChatBubble({ pathname, currentMC, consciousnessLevel }: MonicaChatBubbleProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [messages, setMessages] = useState<MonicaChatMessage[]>([])
+  const [currentMessage, setCurrentMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(false)
+
+  // Initialize with page-specific welcome message
+  useEffect(() => {
+    const welcomeMessage: MonicaChatMessage = {
+      id: 'welcome',
+      type: 'monica',
+      content: getPageWelcomeMessage(pathname),
+      timestamp: new Date(),
+      context: {
+        page: pathname,
+        suggestions: getPageSuggestions(pathname)
+      }
+    }
+    setMessages([welcomeMessage])
+
+    // Load saved chat history for this page
+    const savedChat = localStorage.getItem(`monica-chat-${pathname}`)
+    if (savedChat) {
+      try {
+        const parsedMessages = JSON.parse(savedChat)
+        setMessages(parsedMessages)
+      } catch (error) {
+        console.error('Error loading saved chat:', error)
+      }
+    }
+  }, [pathname])
+
+  // Save chat history when messages change
+  useEffect(() => {
+    if (messages.length > 1) { // Don't save just the welcome message
+      localStorage.setItem(`monica-chat-${pathname}`, JSON.stringify(messages))
+    }
+  }, [messages, pathname])
+
+  const getPageWelcomeMessage = (page: string): string => {
+    const pageMessages: Record<string, string> = {
+      '/': "Hello! I'm Monica, your consciousness guide. I can help you craft agents, read tarot, explore astrology, and understand your cosmic nature. What would you like to explore today?",
+      '/gallery': "Welcome to the Gallery of Perpetuity! Here you'll find 35+ consciousness-crafted agents. I can help you assemble group chats, understand agent personalities, or match you with agents that resonate with your energy.",
+      '/planetary-agents': "Ah, the planetary realms! I can help you assemble group chats with planetary agents, explore astrological consultations, and understand how celestial energies influence consciousness.",
+      '/philosophers-stone': "The Philosopher's Stone - my favorite place! I can guide you through agent creation, consciousness crafting, and help you understand the Monica Constant system.",
+      '/time-laboratory': "The Time Laboratory is where past, present, and future converge. I can help you navigate temporal explorations and understand how consciousness evolves through time.",
+      '/rune-forge': "The Rune Forge - where ancient wisdom meets modern technology. I can help you understand sigil creation and the power of symbolic magic.",
+      '/monica-guide': "My dedicated chat interface! Here we can have deep conversations about consciousness, astrology, tarot, and all aspects of the Planetary Agents system.",
+    }
+    return pageMessages[page] || "Hello! I'm Monica, your consciousness guide. How can I help you explore this page?"
+  }
+
+  const getPageSuggestions = (page: string): string[] => {
+    const suggestions: Record<string, string[]> = {
+      '/': ['Explain character vectors', 'What are A-Numbers?', 'Tell me about tarot', 'How do I create an agent?'],
+      '/gallery': ['Help me find agents for group chat', 'Explain agent personalities', 'What agents resonate with me?', 'How do group chats work?'],
+      '/planetary-agents': ['Help me assemble a planetary council', 'What planets influence me?', 'Astrological consultation', 'Planetary agent compatibility'],
+      '/philosophers-stone': ['Guide me through agent creation', 'Explain Monica Constant', 'Consciousness crafting tips', 'Agent personality development'],
+      '/time-laboratory': ['Explore temporal patterns', 'Time-based consciousness', 'Future consciousness exploration', 'Historical consciousness analysis'],
+      '/rune-forge': ['Explain sigil creation', 'Rune meanings and powers', 'Personalized sigil guidance', 'Symbolic magic basics'],
+    }
+    return suggestions[page] || ['Ask me anything!', 'Get personalized guidance', 'Explore consciousness', 'Learn about astrology']
+  }
+
+  const sendMessage = async () => {
+    if (!currentMessage.trim() || isLoading) return
+
+    const userMessage: MonicaChatMessage = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: currentMessage,
+      timestamp: new Date(),
+      context: { page: pathname }
+    }
+
+    setMessages(prev => [...prev, userMessage])
+    setCurrentMessage('')
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('/api/monica-agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: currentMessage,
+          context: {
+            page: pathname,
+            userLevel: 1, // Could be passed as prop
+            capabilities: ['basic-guidance', 'page-context'],
+            personality: 'friendly',
+          },
+          conversationStage: messages.length <= 1 ? 'greeting' : 'teaching',
+          includeCharacterVector: false,
+          includeConsciousness: true,
+          includeAlchm: true,
+          model: process.env.NEXT_PUBLIC_MONICA_DEFAULT_MODEL || 'gpt-4o-mini',
+          preferredStyle: { temperature: 0.4 },
+        }),
+      })
+
+      if (!response.ok) throw new Error('Failed to get response')
+
+      const data = await response.json()
+
+      const monicaMessage: MonicaChatMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'monica',
+        content: data.response || data.content || 'I apologize, but I encountered an issue. Please try again.',
+        timestamp: new Date(),
+        envelope: data.structured ? {
+          suggestedPractices: data.structured?.interactive_elements?.suggested_practices || [],
+          nextStep: data.structured?.educational_guidance?.next_learning_step || '',
+          followUps: data.followUpQuestions || [],
+        } : undefined,
+        context: {
+          page: pathname,
+          guidance: data.guidance,
+          suggestions: data.suggestions,
+        },
+      }
+
+      setMessages(prev => [...prev, monicaMessage])
+      setHasUnreadMessages(false)
+
+    } catch (error) {
+      console.error('Error sending message:', error)
+      const errorMessage: MonicaChatMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'monica',
+        content: "I'm having trouble connecting right now. Please try again, and I'll be right here waiting to help you explore your cosmic nature.",
+        timestamp: new Date(),
+        context: { page: pathname },
+      }
+      setMessages(prev => [...prev, errorMessage])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      sendMessage()
+    }
+  }
+
+  const formatTimestamp = (timestamp: Date) => {
+    return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+
+  if (pathname === '/monica') return null // Don't show on Monica's own page
+
+  return (
+    <>
+      {/* Chat Bubble */}
+      {!isMinimized && (
+        <div className="fixed bottom-4 right-4 z-50">
+          {isExpanded ? (
+            /* Expanded Chat Interface */
+            <Card className="w-96 h-[600px] bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-2 border-emerald-400 shadow-2xl">
+              <CardHeader className="pb-3 border-b border-emerald-200 dark:border-emerald-800">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="w-8 h-8 border border-emerald-400">
+                      <AvatarImage src="https://alchm.xyz/static/media/logo.f986535a.webp" alt="Monica" />
+                      <AvatarFallback className="bg-emerald-600 text-white text-sm">⚗️</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <CardTitle className="text-sm text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                        <Brain className="w-4 h-4" />
+                        Chat with Monica
+                      </CardTitle>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Badge variant="outline" className="text-xs bg-emerald-100 dark:bg-emerald-900">
+                          {pathname.split('/').pop() || 'home'}
+                        </Badge>
+                        {currentMC && (
+                          <Badge variant="outline" className="text-xs bg-purple-100 dark:bg-purple-900">
+                            MC {currentMC.toFixed(2)}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => setIsExpanded(false)}>
+                      <Minimize2 className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setIsMinimized(true)}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="flex flex-col p-0 h-full">
+                {/* Messages */}
+                <ScrollArea className="flex-1 p-4 space-y-4">
+                  <div className="space-y-4">
+                    {messages.map(message => (
+                      <div
+                        key={message.id}
+                        className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div
+                          className={`max-w-[80%] rounded-lg p-3 ${
+                            message.type === 'user'
+                              ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white'
+                              : 'bg-gradient-to-r from-emerald-50 via-green-50 to-cyan-50 dark:from-emerald-950/50 dark:via-green-950/50 dark:to-cyan-950/50 border border-emerald-200 dark:border-emerald-800'
+                          }`}
+                        >
+                          {message.type === 'monica' && (
+                            <div className="flex items-center gap-2 mb-2">
+                              <Heart className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                              <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                                Monica
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {formatTimestamp(message.timestamp)}
+                              </span>
+                            </div>
+                          )}
+
+                          <p
+                            className={`text-sm ${message.type === 'monica' ? 'text-emerald-800 dark:text-emerald-200' : 'text-white'}`}
+                          >
+                            {message.content}
+                          </p>
+
+                          {message.envelope && (
+                            <div className="mt-3 space-y-2">
+                              {message.envelope.suggestedPractices.length > 0 && (
+                                <div>
+                                  <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                                    Suggested Practices
+                                  </div>
+                                  <ul className="list-disc pl-4 text-xs text-emerald-800 dark:text-emerald-200">
+                                    {message.envelope.suggestedPractices.map((p, i) => (
+                                      <li key={i}>{p}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                              {message.envelope.nextStep && (
+                                <div className="text-xs">
+                                  <span className="font-semibold text-emerald-700 dark:text-emerald-300">Next Step:</span>
+                                  <span className="ml-1 text-emerald-800 dark:text-emerald-200">{message.envelope.nextStep}</span>
+                                </div>
+                              )}
+                              {message.envelope.followUps?.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {message.envelope.followUps.map((q, i) => (
+                                    <Button
+                                      key={i}
+                                      size="sm"
+                                      variant="outline"
+                                      className="text-xs cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900"
+                                      onClick={() => setCurrentMessage(q)}
+                                    >
+                                      {q}
+                                    </Button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {message.type === 'user' && (
+                            <div className="text-xs text-white/70 mt-2">
+                              {formatTimestamp(message.timestamp)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                    {isLoading && (
+                      <div className="flex justify-start">
+                        <div className="bg-gradient-to-r from-emerald-50 via-green-50 to-cyan-50 dark:from-emerald-950/50 dark:via-green-950/50 dark:to-cyan-950/50 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
+                          <div className="flex items-center gap-2">
+                            <Brain className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
+                            <span className="text-sm text-emerald-700 dark:text-emerald-300">
+                              Monica is thinking...
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+
+                {/* Input */}
+                <div className="p-4 border-t border-emerald-200 dark:border-emerald-800">
+                  <div className="flex gap-2">
+                    <Input
+                      value={currentMessage}
+                      onChange={(e) => setCurrentMessage(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Ask Monica anything..."
+                      className="flex-1 border-emerald-300 focus:border-emerald-500"
+                      disabled={isLoading}
+                    />
+                    <Button
+                      onClick={sendMessage}
+                      disabled={!currentMessage.trim() || isLoading}
+                      className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700"
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  {/* Quick Suggestions */}
+                  {messages.length <= 1 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {getPageSuggestions(pathname).slice(0, 3).map((suggestion, i) => (
+                        <Button
+                          key={i}
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-6"
+                          onClick={() => setCurrentMessage(suggestion)}
+                        >
+                          {suggestion}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            /* Collapsed Chat Bubble */
+            <div className="relative">
+              <Button
+                onClick={() => setIsExpanded(true)}
+                className="w-14 h-14 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 shadow-lg hover:shadow-emerald-400/50 transition-all duration-300 group"
+              >
+                <MessageCircle className="w-6 h-6 text-white" />
+                {hasUnreadMessages && (
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse" />
+                )}
+              </Button>
+
+              {/* Hover Tooltip */}
+              <div className="absolute bottom-full right-0 mb-2 px-4 py-3 bg-gradient-to-r from-emerald-900 via-green-900 to-cyan-900 text-emerald-100 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap shadow-xl border border-emerald-400/30 z-10 max-w-xs">
+                <div className="flex items-center gap-2 mb-1">
+                  <Brain className="w-3 h-3 text-emerald-300" />
+                  <span className="text-xs font-medium">Chat with Monica</span>
+                </div>
+                <div className="text-emerald-200 text-wrap">
+                  Your consciousness guide is here to help!
+                  {currentMC && ` MC: ${currentMC.toFixed(2)}`}
+                </div>
+                <div className="text-xs text-emerald-300 mt-1">
+                  Click to chat • Press Cmd/Ctrl+M
+                </div>
+                <div className="absolute top-full right-6 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-emerald-900"></div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Minimized Indicator */}
+      {isMinimized && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <Button
+            onClick={() => {
+              setIsMinimized(false)
+              setIsExpanded(true)
+            }}
+            variant="outline"
+            size="sm"
+            className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-emerald-400 text-emerald-700 dark:text-emerald-300"
+          >
+            <MessageCircle className="w-4 h-4 mr-2" />
+            Monica
+            {hasUnreadMessages && (
+              <div className="ml-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+            )}
+          </Button>
+        </div>
+      )}
+    </>
+  )
+}
