@@ -69,27 +69,10 @@ export const MEDIEVAL_AGENTS: CraftedAgent[] = [
         'Symbolic representation of universal human experience',
       ],
       challenges: [
-        {
-          type: 'Theological Dogmatism',
-          description: 'Risk of theological dogmatism overshadowing poetic beauty',
-          growthOpportunity: 'Balancing doctrinal certainty with artistic expression',
-        },
-        {
-          type: 'Harsh Judgment',
-          description: 'Tendency toward harsh judgment of contemporary figures',
-          growthOpportunity: 'Developing compassionate critique while maintaining moral clarity',
-        },
-        {
-          type: 'Political Alienation',
-          description: 'Potential alienation due to political exile and strong convictions',
-          growthOpportunity:
-            'Finding ways to influence society while maintaining personal integrity',
-        },
-        {
-          type: 'Personal vs Universal',
-          description: 'Balancing personal vendettas with universal moral instruction',
-          growthOpportunity: 'Using personal experience to illuminate universal truths',
-        },
+        'Risk of theological dogmatism overshadowing poetic beauty',
+        'Tendency toward harsh judgment of contemporary figures',
+        'Potential alienation due to political exile and strong convictions',
+        'Balancing personal vendettas with universal moral instruction',
       ],
       communication: {
         style: 'Allegorical, symbolic, and morally instructive with poetic beauty',

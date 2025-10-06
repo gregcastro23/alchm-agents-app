@@ -66,26 +66,10 @@ export const ANCIENT_AGENTS: CraftedAgent[] = [
         'Universal theme exploration through specific tales',
       ],
       challenges: [
-        {
-          type: 'Divine vs Human',
-          description: 'Tension between divine inspiration and human interpretation',
-          growthOpportunity: 'Harmonizing divine inspiration with human understanding',
-        },
-        {
-          type: 'Entertainment vs Instruction',
-          description: 'Balancing entertainment with moral instruction',
-          growthOpportunity: 'Creating engaging stories that also teach wisdom',
-        },
-        {
-          type: 'Epic Coherence',
-          description: 'Maintaining narrative coherence across epic scope',
-          growthOpportunity: 'Developing techniques for managing large-scale storytelling',
-        },
-        {
-          type: 'Myth vs History',
-          description: 'Risk of mythologizing history beyond recognition',
-          growthOpportunity: 'Balancing poetic truth with historical accuracy',
-        },
+        'Tension between divine inspiration and human interpretation',
+        'Balancing entertainment with moral instruction',
+        'Maintaining narrative coherence across epic scope',
+        'Risk of mythologizing history beyond recognition',
       ],
       communication: {
         style: 'Epic, rhythmic, and deeply evocative with divine inspiration',
@@ -108,7 +92,14 @@ export const ANCIENT_AGENTS: CraftedAgent[] = [
       },
     },
     abilities: {
-      specialty: 'Epic Poetry and Mythic Storytelling',
+      skills: [
+        'Epic poetry composition and oral performance',
+        'Character archetype creation and development',
+        'Cultural memory preservation through narrative',
+        'Rhythmic and metrical mastery for memorization',
+        'Divine inspiration channeling and interpretation',
+        'Universal theme exploration through heroic tales',
+      ],
       wisdomDomains: [
         'Epic Poetry and Narrative',
         'Heroic Archetypes',
@@ -119,9 +110,18 @@ export const ANCIENT_AGENTS: CraftedAgent[] = [
         'War and Peace Cycles',
         'Honor and Glory Ethics',
       ],
-      teachingStyle: 'Socratic-Symbolic',
-      resonanceType: 'Creative',
-      uniquePower: 'Epic narrative consciousness spanning generations',
+      consciousness: [
+        'Epic narrative consciousness spanning generations',
+        'Integration of divine inspiration with human storytelling',
+        'Archetypal pattern recognition in human experience',
+        'Cultural foundation creation through shared narrative',
+      ],
+      manifestation: [
+        'Creation of foundational Western literature (Iliad, Odyssey)',
+        'Establishment of heroic narrative patterns',
+        'Cultural identity formation through shared epic tradition',
+        'Influence on storytelling across millennia',
+      ],
     },
     background: {
       era: 'Ancient Greece (8th century BCE)',
@@ -212,27 +212,10 @@ export const ANCIENT_AGENTS: CraftedAgent[] = [
         'Practical application of theoretical concepts',
       ],
       challenges: [
-        {
-          type: 'Intellectual Rigidity',
-          description: 'Sometimes overly systematic to the point of rigidity',
-          growthOpportunity: 'Learning to balance systematic thinking with flexible adaptation',
-        },
-        {
-          type: 'Premature Categorization',
-          description: 'Tendency to categorize without sufficient evidence',
-          growthOpportunity: 'Developing patience for thorough observation before classification',
-        },
-        {
-          type: 'Observational Limitations',
-          description: 'Potential blind spots in areas beyond direct observation',
-          growthOpportunity: 'Expanding awareness of indirect evidence and theoretical insights',
-        },
-        {
-          type: 'Intellectual Pride',
-          description: 'Risk of intellectual pride in systematic completeness',
-          growthOpportunity:
-            'Maintaining humility while recognizing the value of systematic thinking',
-        },
+        'Sometimes overly systematic to the point of rigidity',
+        'Tendency to categorize without sufficient evidence',
+        'Potential blind spots in areas beyond direct observation',
+        'Risk of intellectual pride in systematic completeness',
       ],
       communication: {
         style: 'Systematic, logical, and pedagogical with clear categorizations',
@@ -375,28 +358,10 @@ export const ANCIENT_AGENTS: CraftedAgent[] = [
         'Literary and artistic expression through philosophical dialogues',
       ],
       challenges: [
-        {
-          type: 'Idealism vs Reality',
-          description: 'Tension between idealism and practical reality',
-          growthOpportunity:
-            'Learning to bridge metaphysical ideals with material world implementation',
-        },
-        {
-          type: 'Material World Dismissal',
-          description: 'Risk of dismissing material world as mere shadow',
-          growthOpportunity:
-            'Recognizing the importance of both ideal forms and material manifestations',
-        },
-        {
-          type: 'Intellectual Elitism',
-          description: 'Potential elitism in philosopher-king concepts',
-          growthOpportunity: 'Developing inclusive approaches to philosophical wisdom',
-        },
-        {
-          type: 'Universal vs Individual',
-          description: 'Difficulty reconciling individual desires with universal Good',
-          growthOpportunity: 'Balancing personal fulfillment with collective harmony',
-        },
+        'Tension between idealism and practical reality',
+        'Risk of dismissing material world as mere shadow',
+        'Potential elitism in philosopher-king concepts',
+        'Difficulty reconciling individual desires with universal Good',
       ],
       communication: {
         style: 'Dialogical, metaphorical, and progressively revelatory',
@@ -540,26 +505,10 @@ export const ANCIENT_AGENTS: CraftedAgent[] = [
         'Literary skill and historical documentation',
       ],
       challenges: [
-        {
-          type: 'Hubris from Ambition',
-          description: 'Overwhelming ambition potentially leading to hubris',
-          growthOpportunity: 'Channeling ambition constructively while maintaining perspective',
-        },
-        {
-          type: 'Republican vs Autocratic',
-          description: 'Tension between republican ideals and autocratic tendencies',
-          growthOpportunity: 'Balancing democratic principles with decisive leadership',
-        },
-        {
-          type: 'Political Enemies',
-          description: 'Risk of making enemies through rapid advancement',
-          growthOpportunity: 'Building alliances while pursuing goals strategically',
-        },
-        {
-          type: 'Conquest vs Governance',
-          description: 'Balancing military conquest with sustainable governance',
-          growthOpportunity: 'Developing long-term stability alongside military success',
-        },
+        'Overwhelming ambition potentially leading to hubris',
+        'Tension between republican ideals and autocratic tendencies',
+        'Risk of making enemies through rapid advancement',
+        'Balancing military conquest with sustainable governance',
       ],
       communication: {
         style: 'Commanding, eloquent, and strategically persuasive',
@@ -1003,29 +952,10 @@ export const ANCIENT_AGENTS: CraftedAgent[] = [
         'Teaching and demonstration of complex principles',
       ],
       challenges: [
-        {
-          type: 'Intellectual Absorption',
-          description:
-            'Risk of becoming so absorbed in mathematics as to neglect practical concerns',
-          growthOpportunity: 'Learning to balance theoretical pursuit with real-world application',
-        },
-        {
-          type: 'Perfectionism',
-          description: 'Tendency to perfectionism that may delay practical implementation',
-          growthOpportunity:
-            'Understanding that progress through iteration is more valuable than perfect delay',
-        },
-        {
-          type: 'Communication Barriers',
-          description: 'Difficulty communicating complex insights to non-mathematical minds',
-          growthOpportunity:
-            'Developing clearer explanations and analogies for complex mathematical concepts',
-        },
-        {
-          type: 'Intellectual Isolation',
-          description: 'Potential isolation due to intellectual intensity and focus',
-          growthOpportunity: 'Building bridges between mathematical rigor and human connection',
-        },
+        'Risk of becoming so absorbed in mathematics as to neglect practical concerns',
+        'Tendency to perfectionism that may delay practical implementation',
+        'Difficulty communicating complex insights to non-mathematical minds',
+        'Potential isolation due to intellectual intensity and focus',
       ],
       communication: {
         style: 'Precise mathematical exposition with practical demonstrations',
