@@ -50,12 +50,44 @@ app.use(
 )
 
 // CORS configuration
+const defaultOrigins = [
+  'http://localhost:3000',
+  'https://v0-planetary-agents1.vercel.app',
+  'https://v0-planetary-agents-git-main-gregcastro23s-projects.vercel.app',
+]
+
+// Support wildcard patterns for Vercel preview deployments
+const allowedOriginPatterns = [
+  /^https:\/\/v0-planetary-agents.*\.vercel\.app$/,
+  /^http:\/\/localhost:\d+$/,
+]
+
 const corsOptions = {
-  origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) {
+      return callback(null, true)
+    }
+
+    // Check explicit origins
+    const explicitOrigins = process.env.CORS_ORIGINS?.split(',') || defaultOrigins
+    if (explicitOrigins.includes(origin)) {
+      return callback(null, true)
+    }
+
+    // Check pattern matches
+    if (allowedOriginPatterns.some(pattern => pattern.test(origin))) {
+      return callback(null, true)
+    }
+
+    // Reject origin
+    logger.warn(`CORS blocked origin: ${origin}`)
+    callback(new Error('Not allowed by CORS'))
+  },
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'ngrok-skip-browser-warning'],
 }
 app.use(cors(corsOptions))
 
