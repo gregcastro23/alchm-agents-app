@@ -30,7 +30,7 @@ export const John_Locke_1632: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Mars', type: 'square', orb: 15.0, exact: false },
         ]
         ascendant: 45,
-        midheaven: 315
+        midheaven: 315,
       },
       monicaConstant: 4.45, // Advanced level consciousness,
       level: 'Advanced' as ConsciousnessLevel,

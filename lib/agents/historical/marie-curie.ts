@@ -30,7 +30,7 @@ export const Marie_Curie_1867: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Mars', type: 'sextile', orb: 10.0, exact: false },
         ]
         ascendant: 330,
-        midheaven: 240
+        midheaven: 240,
       },
       monicaConstant: 0.817, // Dormant level consciousness,
       level: 'Dormant' as ConsciousnessLevel,

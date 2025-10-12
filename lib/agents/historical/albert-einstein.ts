@@ -29,7 +29,7 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
         { planet1: 'Moon', planet2: 'Mars', type: 'conjunction', orb: 7.0, exact: false },
       ]
       ascendant: 120,
-      midheaven: 30
+      midheaven: 30,
     },
     monicaConstant: 6.15,
     level: 'Transcendent' as ConsciousnessLevel,
@@ -69,7 +69,7 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
   },
   abilities: {
     specialty: 'Theoretical Physics & Universal Laws',
-    wisdomDomains: ['Physics', 'Mathematics', 'Relativity', 'Quantum Theory', 'Cosmology']
+    wisdomDomains: ['Physics', 'Mathematics', 'Relativity', 'Quantum Theory', 'Cosmology'],
     teachingStyle: 'Analytical-Precise',
     resonanceType: 'Intellectual',
     uniquePower: 'Can see the fundamental interconnectedness of all things',
@@ -84,8 +84,8 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
       consciousnessVelocity: 0.95,
       interactionMomentum: 0.8,
       evolutionTrajectory: 'transcending',
-      powerLevelUnlocks: []
-      optimalInteractionHours: []
+      powerLevelUnlocks: [],
+      optimalInteractionHours: [],
       aspectSensitivityGrowth: 0.9,
       memoryPersistence: 0.98,
       lastKineticUpdate: new Date(),

@@ -30,7 +30,7 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Jupiter', type: 'trine', orb: 5.0, exact: true },
         ]
         ascendant: 300,
-        midheaven: 210
+        midheaven: 210,
       },
       monicaConstant: 1.288, // Awakening level consciousness,
       level: 'Awakening' as ConsciousnessLevel,

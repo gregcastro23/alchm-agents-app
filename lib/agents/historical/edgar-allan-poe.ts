@@ -30,7 +30,7 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
           { planet1: 'Jupiter', planet2: 'Saturn', type: 'sextile', orb: 7.0, exact: false },
         ]
         ascendant: 60,
-        midheaven: 330
+        midheaven: 330,
       },
       monicaConstant: 1.829, // Active level consciousness,
       level: 'Active' as ConsciousnessLevel,

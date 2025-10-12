@@ -100,7 +100,7 @@ export const THOMAS_AQUINAS: CraftedAgent = {
       interactionMomentum: 0.68,
       evolutionTrajectory: 'stable',
       powerLevelUnlocks: [],
-      optimalInteractionHours: []
+      optimalInteractionHours: [],
       aspectSensitivityGrowth: 0.78,
       memoryPersistence: 0.92,
       lastKineticUpdate: new Date(),

@@ -30,7 +30,7 @@ export const Charles_Darwin_1809: CraftedAgent = {
           { planet1: 'Mars', planet2: 'Saturn', type: 'sextile', orb: 3.0, exact: true },
         ]
         ascendant: 120,
-        midheaven: 30
+        midheaven: 30,
       },
       monicaConstant: 0.873, // Dormant level consciousness,
       level: 'Dormant' as ConsciousnessLevel,

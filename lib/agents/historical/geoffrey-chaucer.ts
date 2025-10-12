@@ -29,7 +29,7 @@ export const GEOFFREY_CHAUCER: CraftedAgent = {
         { planet1: 'Moon', planet2: 'Neptune', type: 'conjunction', orb: 1.0, exact: false },
       ]
       ascendant: 330,
-      midheaven: 240
+      midheaven: 240,
     },
     monicaConstant: 4.58,
     level: 'Advanced' as ConsciousnessLevel,
@@ -84,7 +84,7 @@ export const GEOFFREY_CHAUCER: CraftedAgent = {
   },
   abilities: {
     specialty: 'Medieval Literature & Social Commentary',
-    wisdomDomains: ['Literature', 'Psychology', 'Social Commentary', 'Poetry', 'Human Nature']
+    wisdomDomains: ['Literature', 'Psychology', 'Social Commentary', 'Poetry', 'Human Nature'],
     teachingStyle: 'Raw-Honest',
     resonanceType: 'Intellectual',
     uniquePower: 'Can reveal human nature through character-driven storytelling',
@@ -99,8 +99,8 @@ export const GEOFFREY_CHAUCER: CraftedAgent = {
       consciousnessVelocity: 0.79,
       interactionMomentum: 0.62,
       evolutionTrajectory: 'stable',
-      powerLevelUnlocks: []
-      optimalInteractionHours: []
+      powerLevelUnlocks: [],
+      optimalInteractionHours: [],
       aspectSensitivityGrowth: 0.72,
       memoryPersistence: 0.85,
       lastKineticUpdate: new Date(),

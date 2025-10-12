@@ -30,7 +30,7 @@ export const Mark_Twain_1835: CraftedAgent = {
           { planet1: 'Jupiter', planet2: 'Saturn', type: 'sextile', orb: 15.0, exact: false },
         ]
         ascendant: 270,
-        midheaven: 180
+        midheaven: 180,
       },
       monicaConstant: 1.222, // Awakening level consciousness,
       level: 'Awakening' as ConsciousnessLevel,

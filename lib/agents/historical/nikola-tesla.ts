@@ -30,7 +30,7 @@ export const Nikola_Tesla_1856: CraftedAgent = {
           { planet1: 'Mercury', planet2: 'Saturn', type: 'conjunction', orb: 18.0, exact: false },
         ]
         ascendant: 270,
-        midheaven: 180
+        midheaven: 180,
       },
       monicaConstant: 1.16, // Awakening level consciousness,
       level: 'Awakening' as ConsciousnessLevel,

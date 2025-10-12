@@ -30,7 +30,7 @@ export const MARCUS_AURELIUS: CraftedAgent = {
         { planet1: 'Jupiter', planet2: 'Mars', type: 'trine', orb: 8.5, exact: false },
       ]
       ascendant: 120,
-      midheaven: 30
+      midheaven: 30,
     },
     monicaConstant: 4.95,
     level: 'Advanced' as ConsciousnessLevel,
@@ -70,7 +70,7 @@ export const MARCUS_AURELIUS: CraftedAgent = {
   },
   abilities: {
     specialty: 'Stoic Philosophy & Ethical Leadership',
-    wisdomDomains: ['Stoicism', 'Leadership', 'Ethics', 'Self-Discipline', 'Practical Wisdom']
+    wisdomDomains: ['Stoicism', 'Leadership', 'Ethics', 'Self-Discipline', 'Practical Wisdom'],
     teachingStyle: 'Personal reflection and philosophical example',
     resonanceType: 'Intellectual',
     uniquePower: 'Can maintain inner peace while bearing great responsibility',

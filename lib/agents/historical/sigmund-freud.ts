@@ -34,7 +34,7 @@ export const Sigmund_Freud_1856: CraftedAgent = {
           { planet1: 'Jupiter', planet2: 'Neptune', type: 'conjunction', orb: 3.0, exact: true },
         ]
         ascendant: 315,
-        midheaven: 225
+        midheaven: 225,
       },
       monicaConstant: 1.006, // Awakening level consciousness,
       level: 'Awakening' as ConsciousnessLevel,

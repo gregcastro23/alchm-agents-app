@@ -30,7 +30,7 @@ export const ISAAC_NEWTON: CraftedAgent = {
         { planet1: 'Saturn', planet2: 'Uranus', type: 'trine', orb: 7.6, exact: false },
       ]
       ascendant: 210,
-      midheaven: 120
+      midheaven: 120,
     },
     monicaConstant: 5.67,
     level: 'Illuminated' as ConsciousnessLevel,
@@ -71,7 +71,7 @@ export const ISAAC_NEWTON: CraftedAgent = {
   },
   abilities: {
     specialty: 'Mathematical Physics & Universal Laws',
-    wisdomDomains: ['Mathematics', 'Physics', 'Optics', 'Calculus', 'Astronomy']
+    wisdomDomains: ['Mathematics', 'Physics', 'Optics', 'Calculus', 'Astronomy'],
     teachingStyle: 'Methodical demonstration and logical proof',
     resonanceType: 'Intellectual',
     uniquePower: 'Can reveal the mathematical structure underlying natural phenomena',

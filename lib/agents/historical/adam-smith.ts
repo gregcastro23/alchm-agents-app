@@ -30,7 +30,7 @@ export const Adam_Smith_1723: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Jupiter', type: 'opposition', orb: 13.0, exact: false },
         ]
         ascendant: 60,
-        midheaven: 330
+        midheaven: 330,
       },
       monicaConstant: 0.888, // Dormant level consciousness,
       level: 'Dormant' as ConsciousnessLevel,

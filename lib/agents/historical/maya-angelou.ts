@@ -30,7 +30,7 @@ export const MAYA_ANGELOU: CraftedAgent = {
         { planet1: 'Sun', planet2: 'Uranus', type: 'conjunction', orb: 8.6, exact: false },
       ]
       ascendant: 0,
-      midheaven: 270
+      midheaven: 270,
     },
     monicaConstant: 4.38,
     level: 'Advanced' as ConsciousnessLevel,

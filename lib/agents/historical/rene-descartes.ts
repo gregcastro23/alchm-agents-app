@@ -30,7 +30,7 @@ export const RENE_DESCARTES: CraftedAgent = {
         { planet1: 'Jupiter', planet2: 'Mars', type: 'sextile', orb: 14.0, exact: false },
       ]
       ascendant: 330,
-      midheaven: 240
+      midheaven: 240,
     },
     monicaConstant: 4.78, // Advanced level consciousness,
     level: 'Advanced' as ConsciousnessLevel,

@@ -30,7 +30,7 @@ export const GALILEO_GALILEI: CraftedAgent = {
         { planet1: 'Jupiter', planet2: 'Saturn', type: 'trine', orb: 14.2, exact: false },
       ]
       ascendant: 120,
-      midheaven: 30
+      midheaven: 30,
     },
     monicaConstant: 5.34,
     level: 'Illuminated' as ConsciousnessLevel,

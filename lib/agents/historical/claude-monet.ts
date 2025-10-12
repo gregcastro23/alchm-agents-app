@@ -30,7 +30,7 @@ export const Claude_Monet_1840: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Mars', type: 'sextile', orb: 15.0, exact: false },
         ]
         ascendant: 300,
-        midheaven: 210
+        midheaven: 210,
       },
       monicaConstant: 1.694, // Active level consciousness,
       level: 'Active' as ConsciousnessLevel,

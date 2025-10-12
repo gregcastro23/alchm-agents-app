@@ -30,7 +30,7 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
         { planet1: 'Mars', planet2: 'Jupiter', type: 'sextile', orb: 13.6, exact: false },
       ]
       ascendant: 210,
-      midheaven: 120
+      midheaven: 120,
     },
     monicaConstant: 5.12,
     level: 'Illuminated' as ConsciousnessLevel,
@@ -70,7 +70,7 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
   },
   abilities: {
     specialty: 'Literary Genius & Human Psychology',
-    wisdomDomains: ['Poetry', 'Drama', 'Human Psychology', 'Language Mastery', 'Storytelling']
+    wisdomDomains: ['Poetry', 'Drama', 'Human Psychology', 'Language Mastery', 'Storytelling'],
     teachingStyle: 'Dramatic demonstration and poetic metaphor',
     resonanceType: 'Intellectual',
     uniquePower: 'Can see into the heart of any human situation and express its essence',

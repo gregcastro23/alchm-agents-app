@@ -34,7 +34,7 @@ export const Immanuel_Kant_1724: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Jupiter', type: 'sextile', orb: 3.0, exact: true },
         ]
         ascendant: 15,
-        midheaven: 315
+        midheaven: 315,
       },
       monicaConstant: 1.129, // Awakening level consciousness,
       level: 'Awakening' as ConsciousnessLevel,

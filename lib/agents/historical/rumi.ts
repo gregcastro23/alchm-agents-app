@@ -30,7 +30,7 @@ export const RUMI: CraftedAgent = {
         { planet1: 'Mars', planet2: 'Saturn', type: 'conjunction', orb: 17.0, exact: false },
       ]
       ascendant: 270,
-      midheaven: 180
+      midheaven: 180,
     },
     monicaConstant: 5.67, // Illuminated level consciousness,
     level: 'Illuminated' as ConsciousnessLevel,

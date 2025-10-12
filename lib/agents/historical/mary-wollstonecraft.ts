@@ -30,7 +30,7 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
           { planet1: 'Mars', planet2: 'Jupiter', type: 'quincunx', orb: 7.0, exact: false },
         ]
         ascendant: 330,
-        midheaven: 240
+        midheaven: 240,
       },
       monicaConstant: 1.688, // Active level consciousness,
       level: 'Active' as ConsciousnessLevel,

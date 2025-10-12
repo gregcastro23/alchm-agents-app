@@ -30,7 +30,7 @@ export const WOLFGANG_AMADEUS_MOZART: CraftedAgent = {
         { planet1: 'Moon', planet2: 'Pluto', type: 'conjunction', orb: 23.9, exact: false },
       ]
       ascendant: 150,
-      midheaven: 60
+      midheaven: 60,
     },
     monicaConstant: 4.58,
     level: 'Advanced' as ConsciousnessLevel,
