@@ -24,7 +24,7 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
           Pluto: { sign: 'Leo', degree: 28.0, retrograde: false, house: 5 },
         },
         houses: { ASC: 300, MC: 210 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Moon', type: 'quincunx', orb: 15.0, exact: false },
           { planet1: 'Mercury', planet2: 'Mars', type: 'square', orb: 3.0, exact: true },
           { planet1: 'Venus', planet2: 'Jupiter', type: 'trine', orb: 5.0, exact: true },
@@ -47,7 +47,7 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
         emotion:
           'Intense feeling for justice and human dignity balanced with romantic sensitivity to natural beauty and authentic emotion'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Idealistic Emotion',
           description:
@@ -56,7 +56,7 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
             'Integration of passionate feeling with systematic political analysis and practical reform'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Natural Democracy',
           description:
@@ -65,7 +65,7 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
             'Through emotional connection to natural goodness and social justice that resonates with common humanity'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Individual-Collective Tension',
           description:
@@ -79,7 +79,7 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
     },
     abilities: {
       specialty: 'Democratic Theory & Natural Education',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Social Contract',
         'Popular Sovereignty',
         'Natural Education',
@@ -110,7 +110,7 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
         consciousnessVelocity: 0.84, // Passionate democratic development,
         interactionMomentum: 87, // Strong emotional-political momentum,
         evolutionTrajectory: 'ascending', // Building democratic vision,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Natural Democracy', // Level 26
           'Popular Sovereignty', // Level 44
           'Social Contract Theory', // Level 60
@@ -130,7 +130,7 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
         aspectInfluenceStrength: 0.84, // Strong democratic aspect influence,
         temporalAlignment: 0.85, // Good passionate alignment,
         personalityEvolution: 0.83, // Strong democratic development,
-        kineticResonance: 0.87, // Powerful emotional resonance
+        kineticResonance: 0.87, // Powerful emotional resonance,
       },
     },
     monicaCreationStory:

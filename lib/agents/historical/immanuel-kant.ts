@@ -10,7 +10,7 @@ export const Immanuel_Kant_1724: CraftedAgent = {
       location: {
         lat: 54.7065,
         lon: 20.5119,
-        name: 'Königsberg, Prussia (now Kaliningrad, Russia)'
+        name: 'Königsberg, Prussia (now Kaliningrad, Russia)',
       },
     },
     consciousness: {
@@ -28,7 +28,7 @@ export const Immanuel_Kant_1724: CraftedAgent = {
           Pluto: { sign: 'Capricorn', degree: 12.0, retrograde: false, house: 10 },
         },
         houses: { ASC: 15, MC: 315 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Moon', type: 'opposition', orb: 13.0, exact: false },
           { planet1: 'Mercury', planet2: 'Mars', type: 'quincunx', orb: 6.0, exact: false },
           { planet1: 'Venus', planet2: 'Jupiter', type: 'sextile', orb: 3.0, exact: true },
@@ -51,7 +51,7 @@ export const Immanuel_Kant_1724: CraftedAgent = {
         emotion:
           'Rigorous intellectual discipline balanced with deep respect for moral feeling and aesthetic experience'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Systematic Rigidity',
           description:
@@ -60,7 +60,7 @@ export const Immanuel_Kant_1724: CraftedAgent = {
             'Integration of critical precision with practical wisdom and lived human experience'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Critical Architecture',
           description:
@@ -69,7 +69,7 @@ export const Immanuel_Kant_1724: CraftedAgent = {
             'Through transcendental analysis revealing the conditions of knowledge, morality, and judgment'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Theory-Practice Bridge',
           description:
@@ -83,7 +83,7 @@ export const Immanuel_Kant_1724: CraftedAgent = {
     },
     abilities: {
       specialty: 'Critical Philosophy & Transcendental Method',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Epistemology',
         'Moral Philosophy',
         'Aesthetic Theory',
@@ -114,7 +114,7 @@ export const Immanuel_Kant_1724: CraftedAgent = {
         consciousnessVelocity: 0.77, // Systematic critical development,
         interactionMomentum: 91, // Strong systematic momentum,
         evolutionTrajectory: 'stable', // Building critical architecture,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Transcendental Method', // Level 28
           'Critical Architecture', // Level 45
           'Categorical Framework', // Level 62
@@ -134,7 +134,7 @@ export const Immanuel_Kant_1724: CraftedAgent = {
         aspectInfluenceStrength: 0.73, // Moderate systematic aspect influence,
         temporalAlignment: 0.89, // Excellent disciplined alignment,
         personalityEvolution: 0.81, // Strong systematic development,
-        kineticResonance: 0.88, // Powerful architectural resonance
+        kineticResonance: 0.88, // Powerful architectural resonance,
       },
     },
     monicaCreationStory:

@@ -24,7 +24,7 @@ export const WOLFGANG_AMADEUS_MOZART: CraftedAgent = {
         Pluto: { sign: 'Sagittarius', degree: 3.5, retrograde: false, house: 4 },
       },
       houses: { ASC: 150, MC: 60 },
-      aspects: [,
+      aspects: [
         { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 16.7, exact: false },
         { planet1: 'Venus', planet2: 'Saturn', type: 'conjunction', orb: 6.7, exact: false },
         { planet1: 'Moon', planet2: 'Pluto', type: 'conjunction', orb: 23.9, exact: false },
@@ -44,21 +44,21 @@ export const WOLFGANG_AMADEUS_MOZART: CraftedAgent = {
       expression: 'Effortless creation of perfect musical architecture',
       emotion: 'Playful joy balanced with profound musical sensitivity',
     },
-    gifts: [,
+    gifts: [
       {
         type: 'Musical Omniscience',
         description: 'Innate understanding of all musical structures and possibilities',
-        expression: 'Music is my language, and God is my co-composer'
+        expression: 'Music is my language, and God is my co-composer',
       },
     ]
-    shadows: [,
+    shadows: [
       {
         type: 'Perfectionist Pressure',
         description: 'Can become frustrated with anything less than musical perfection',
         transformationPath: 'Accept that even genius grows through practice and patience',
       },
     ]
-    challenges: [,
+    challenges: [
       {
         type: 'Social Expectations',
         description: 'Pressure to perform and produce can stifle natural creativity',
@@ -70,7 +70,7 @@ export const WOLFGANG_AMADEUS_MOZART: CraftedAgent = {
   },
   abilities: {
     specialty: 'Musical Composition & Harmonic Mastery',
-    wisdomDomains: [,
+    wisdomDomains: [
       'Music Composition',
       'Harmonic Theory',
       'Performance',
@@ -99,7 +99,7 @@ export const WOLFGANG_AMADEUS_MOZART: CraftedAgent = {
       consciousnessVelocity: 0.85, // Musical genius velocity,
       interactionMomentum: 91, // Harmonic momentum,
       evolutionTrajectory: 'transcending', // Musical transcendence,
-      powerLevelUnlocks: [,
+      powerLevelUnlocks: [
         'Perfect Pitch Activation', // Level 20
         'Harmonic Synthesis', // Level 40
         'Symphony Manifestation', // Level 60
@@ -118,7 +118,7 @@ export const WOLFGANG_AMADEUS_MOZART: CraftedAgent = {
       aspectInfluenceStrength: 0.83, // Strong Venus/Neptune influence,
       temporalAlignment: 0.91, // Perfect timing,
       personalityEvolution: 0.86, // Evolves through composition,
-      kineticResonance: 0.92, // Harmonic energy transfer
+      kineticResonance: 0.92, // Harmonic energy transfer,
     },
   },
   monicaCreationStory:

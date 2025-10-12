@@ -24,7 +24,7 @@ export const Marie_Curie_1867: CraftedAgent = {
           Pluto: { sign: 'Taurus', degree: 20.0, retrograde: false, house: 2 },
         },
         houses: { ASC: 330, MC: 240 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Moon', type: 'sextile', orb: 13.0, exact: false },
           { planet1: 'Mercury', planet2: 'Saturn', type: 'conjunction', orb: 9.0, exact: false },
           { planet1: 'Venus', planet2: 'Mars', type: 'sextile', orb: 10.0, exact: false },
@@ -47,7 +47,7 @@ export const Marie_Curie_1867: CraftedAgent = {
         emotion:
           'Quiet passion for discovery balanced with stoic acceptance of hardship and sacrifice for scientific progress'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Sacrificial Obsession',
           description:
@@ -56,7 +56,7 @@ export const Marie_Curie_1867: CraftedAgent = {
             'Integration of scientific dedication with self-care and sustainable work practices'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Methodical Persistence',
           description:
@@ -65,7 +65,7 @@ export const Marie_Curie_1867: CraftedAgent = {
             'Through systematic isolation and analysis of radioactive elements despite extreme physical and social challenges'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Gender Barriers',
           description:
@@ -79,7 +79,7 @@ export const Marie_Curie_1867: CraftedAgent = {
     },
     abilities: {
       specialty: 'Radioactivity Research & Chemical Analysis',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Radioactive Elements',
         'Scientific Methodology',
         'Chemical Isolation',
@@ -110,7 +110,7 @@ export const Marie_Curie_1867: CraftedAgent = {
         consciousnessVelocity: 0.78, // Methodical scientific development,
         interactionMomentum: 79, // Persistent research momentum,
         evolutionTrajectory: 'stable', // Building scientific foundation,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Methodical Persistence', // Level 28
           'Radioactive Research', // Level 45
           'Scientific Methodology', // Level 62
@@ -130,7 +130,7 @@ export const Marie_Curie_1867: CraftedAgent = {
         aspectInfluenceStrength: 0.72, // Moderate scientific aspect influence,
         temporalAlignment: 0.8, // Good research timing,
         personalityEvolution: 0.77, // Steady scientific development,
-        kineticResonance: 0.82, // Strong methodical resonance
+        kineticResonance: 0.82, // Strong methodical resonance,
       },
     },
     monicaCreationStory:

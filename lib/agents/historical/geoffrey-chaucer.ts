@@ -24,7 +24,7 @@ export const GEOFFREY_CHAUCER: CraftedAgent = {
         Pluto: { sign: 'Cancer', degree: 25.0, retrograde: false, house: 5 },
       },
       houses: { ASC: 330, MC: 240 },
-      aspects: [,
+      aspects: [
         { planet1: 'Sun', planet2: 'Mercury', type: 'trine', orb: 10.0, exact: false },
         { planet1: 'Moon', planet2: 'Neptune', type: 'conjunction', orb: 1.0, exact: false },
       ]
@@ -43,21 +43,21 @@ export const GEOFFREY_CHAUCER: CraftedAgent = {
       expression: 'Pilgrims telling stories on the road to Canterbury as mirror of human nature',
       emotion: 'Gentle humor balanced with keen social observation',
     },
-    gifts: [,
+    gifts: [
       {
         type: 'Character Portrayal',
         description: 'Ability to create vivid, psychologically complex characters',
         expression: 'Here bygynneth the Book of the Tales of Caunterbury',
       },
     ]
-    shadows: [,
+    shadows: [
       {
         type: 'Satirical Edge',
         description: 'Can be overly critical of human folly',
         transformationPath: 'Balance critique with compassion for human imperfection',
       },
     ]
-    challenges: [,
+    challenges: [
       {
         type: 'personal-risk',
         description: 'Risk of satirical wit overshadowing deeper moral instruction',

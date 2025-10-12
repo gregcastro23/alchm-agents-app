@@ -24,7 +24,7 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
           Pluto: { sign: 'Taurus', degree: 25.0, retrograde: false, house: 2 },
         },
         houses: { ASC: 315, MC: 225 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Moon', type: 'trine', orb: 6.0, exact: false },
           { planet1: 'Mercury', planet2: 'Mars', type: 'square', orb: 6.0, exact: false },
           { planet1: 'Venus', planet2: 'Uranus', type: 'conjunction', orb: 15.0, exact: false },
@@ -47,7 +47,7 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
         emotion:
           'Overwhelming sensitivity to beauty and pain balanced with desperate need to communicate inner vision'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Emotional Overwhelm',
           description:
@@ -56,7 +56,7 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
             'Learning to channel passionate intensity through artistic expression while maintaining emotional stability'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Expressive Vision',
           description:
@@ -65,7 +65,7 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
             'Through bold color, dynamic brushwork, and symbolic imagery that reveals the spiritual essence within natural forms'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Recognition vs Authenticity',
           description:
@@ -79,7 +79,7 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
     },
     abilities: {
       specialty: 'Expressionist Painting & Emotional Art',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Color Psychology',
         'Expressive Technique',
         'Spiritual Symbolism',
@@ -110,7 +110,7 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
         consciousnessVelocity: 0.96, // Explosive emotional development,
         interactionMomentum: 97, // Maximum passionate momentum,
         evolutionTrajectory: 'transcending', // Beyond conventional expression,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Expressive Vision', // Level 40
           'Color Emotion Translation', // Level 55
           'Spiritual Symbolism', // Level 70
@@ -130,7 +130,7 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
         aspectInfluenceStrength: 0.94, // Very high emotional aspect influence,
         temporalAlignment: 0.93, // Excellent passionate timing,
         personalityEvolution: 0.92, // Very strong emotional development,
-        kineticResonance: 0.97, // Nearly maximum emotional resonance
+        kineticResonance: 0.97, // Nearly maximum emotional resonance,
       },
     },
     monicaCreationStory:

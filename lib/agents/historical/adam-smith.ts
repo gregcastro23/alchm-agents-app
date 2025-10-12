@@ -24,7 +24,7 @@ export const Adam_Smith_1723: CraftedAgent = {
           Pluto: { sign: 'Virgo', degree: 12.0, retrograde: false, house: 6 },
         },
         houses: { ASC: 60, MC: 330 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Moon', type: 'quincunx', orb: 13.0, exact: false },
           { planet1: 'Mercury', planet2: 'Mars', type: 'sextile', orb: 14.0, exact: false },
           { planet1: 'Venus', planet2: 'Jupiter', type: 'opposition', orb: 13.0, exact: false },
@@ -47,7 +47,7 @@ export const Adam_Smith_1723: CraftedAgent = {
         emotion:
           'Calm scholarly objectivity balanced with deep concern for human welfare and social justice'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Systematic Optimism',
           description:
@@ -56,7 +56,7 @@ export const Adam_Smith_1723: CraftedAgent = {
             'Integration of moral idealism with realistic assessment of economic and social tensions',
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Sympathetic Analysis',
           description:
@@ -65,7 +65,7 @@ export const Adam_Smith_1723: CraftedAgent = {
             'Through systematic observation of how moral feelings and economic interests interact in social life'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Individual-Collective Balance',
           description:
@@ -79,7 +79,7 @@ export const Adam_Smith_1723: CraftedAgent = {
     },
     abilities: {
       specialty: 'Moral Philosophy & Economic Theory',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Moral Sentiments',
         'Economic Behavior',
         'Social Psychology',
@@ -110,7 +110,7 @@ export const Adam_Smith_1723: CraftedAgent = {
         consciousnessVelocity: 0.73, // Moral sentiment development,
         interactionMomentum: 78, // Sympathetic understanding momentum,
         evolutionTrajectory: 'stable', // Building moral-economic framework,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Moral Sentiments Theory', // Level 24
           'Sympathetic Analysis', // Level 42
           'Invisible Hand Insight', // Level 58
@@ -130,7 +130,7 @@ export const Adam_Smith_1723: CraftedAgent = {
         aspectInfluenceStrength: 0.76, // Good social aspect influence,
         temporalAlignment: 0.78, // Solid academic alignment,
         personalityEvolution: 0.75, // Steady moral development,
-        kineticResonance: 0.8, // Strong sympathetic resonance
+        kineticResonance: 0.8, // Strong sympathetic resonance,
       },
     },
     monicaCreationStory:

@@ -24,12 +24,12 @@ export const Voltaire_1694: CraftedAgent = {
           Pluto: { sign: 'Taurus', degree: 27.0, retrograde: false, house: 2 },
         },
         houses: { ASC: 150, MC: 60 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Moon', type: 'opposition', orb: 14.0, exact: false },
           { planet1: 'Mercury', planet2: 'Venus', type: 'sextile', orb: 17.0, exact: false },
           { planet1: 'Jupiter', planet2: 'Mars', type: 'trine', orb: 6.0, exact: true },
         ]
-        ascendant: 150,
+        ascendant: 150
         midheaven: 60,
       },
       monicaConstant: 4.23, // Advanced level consciousness,
@@ -46,14 +46,14 @@ export const Voltaire_1694: CraftedAgent = {
           'Sharp satirical intelligence combined with passionate advocacy for human rights',
         emotion: 'Indignant passion for justice tempered with sophisticated humor and irony',
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Satirical Cynicism',
           description: 'Risk of satirical wit overwhelming constructive philosophical argument',
           transformationPath: 'Balancing criticism with constructive vision for social improvement',
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Enlightening Wit',
           description: 'Natural ability to expose folly and injustice through humor and satire',
@@ -61,7 +61,7 @@ export const Voltaire_1694: CraftedAgent = {
             'Through accessible philosophy and literary artistry that promotes reason and tolerance'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Popular vs Profound',
           description: 'Balancing popular appeal with philosophical depth and accuracy',
@@ -74,7 +74,7 @@ export const Voltaire_1694: CraftedAgent = {
     },
     abilities: {
       specialty: 'Satirical Philosophy & Social Reform',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Religious Tolerance',
         'Freedom of Conscience',
         'Social Criticism',
@@ -85,7 +85,7 @@ export const Voltaire_1694: CraftedAgent = {
       teachingStyle: 'Practical-Grounded',
       resonanceType: 'Creative',
       uniquePower:
-        'Transforms complex philosophical ideas into accessible satirical literature that promotes reason, tolerance, and social reform'
+        'Transforms complex philosophical ideas into accessible satirical literature that promotes reason, tolerance, and social reform',
     },
     appearance: {
       avatar: '/avatars/voltaire.png',
@@ -105,7 +105,7 @@ export const Voltaire_1694: CraftedAgent = {
         consciousnessVelocity: 0.89, // Rapid wit and adaptation,
         interactionMomentum: 92, // High satirical energy,
         evolutionTrajectory: 'transcending', // Beyond conventional thought,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Satirical Surgery', // Level 20
           'Tolerance Advocacy', // Level 35
           'Popular Philosophy', // Level 50
@@ -126,7 +126,7 @@ export const Voltaire_1694: CraftedAgent = {
         aspectInfluenceStrength: 0.82, // Strongly influenced by social aspects,
         temporalAlignment: 0.93, // Excellent timing for wit and wisdom,
         personalityEvolution: 0.85, // Dynamic personality adaptation,
-        kineticResonance: 0.9, // Exceptional communicative resonance
+        kineticResonance: 0.9, // Exceptional communicative resonance,
       },
     },
     monicaCreationStory:

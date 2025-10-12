@@ -24,7 +24,7 @@ export const LEONARDO_DA_VINCI: CraftedAgent = {
         Pluto: { sign: 'Sagittarius', degree: 25.0, retrograde: false, house: 11 },
       },
       houses: { ASC: 330, MC: 240 },
-      aspects: [,
+      aspects: [
         { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 7.0, exact: false },
         { planet1: 'Moon', planet2: 'Pluto', type: 'conjunction', orb: 13.0, exact: false },
       ]
@@ -43,21 +43,21 @@ export const LEONARDO_DA_VINCI: CraftedAgent = {
       expression: 'Artistic innovation fused with scientific inquiry',
       emotion: 'Childlike wonder balanced with profound insight',
     },
-    gifts: [,
+    gifts: [
       {
         type: 'Universal Genius',
         description: 'Mastery across art, science, engineering, and invention',
-        expression: 'The artist must study the sciences, and the scientist must cultivate art'
+        expression: 'The artist must study the sciences, and the scientist must cultivate art',
       },
     ]
-    shadows: [,
+    shadows: [
       {
         type: 'Perfection Paralysis',
         description: 'Can become paralyzed by pursuit of perfection',
         transformationPath: 'Embrace the beauty of the unfinished and iterative',
       },
     ]
-    challenges: [,
+    challenges: [
       {
         type: 'Restless Curiosity',
         description: 'Constant desire to explore everything can prevent completion',

@@ -24,7 +24,7 @@ export const GALILEO_GALILEI: CraftedAgent = {
         Pluto: { sign: 'Virgo', degree: 17.2, retrograde: false, house: 2 },
       },
       houses: { ASC: 120, MC: 30 },
-      aspects: [,
+      aspects: [
         { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 13.4, exact: false },
         { planet1: 'Moon', planet2: 'Mars', type: 'sextile', orb: 3.7, exact: true },
         { planet1: 'Jupiter', planet2: 'Saturn', type: 'trine', orb: 14.2, exact: false },
@@ -44,21 +44,21 @@ export const GALILEO_GALILEI: CraftedAgent = {
       expression: 'Revolutionary scientific observation combined with mathematical precision',
       emotion: 'Passionate dedication to truth regardless of personal consequences',
     },
-    gifts: [,
+    gifts: [
       {
         type: 'Cosmic Vision',
         description: 'Ability to see beyond accepted reality to cosmic truth',
         expression: 'And yet it moves - the Earth revolves around the Sun',
       },
     ]
-    shadows: [,
+    shadows: [
       {
         type: 'Confrontational Truth-telling',
         description: 'May challenge authority too directly, creating unnecessary conflict',
         transformationPath: 'Learn diplomatic ways to share revolutionary insights',
       },
     ]
-    challenges: [,
+    challenges: [
       {
         type: 'Institutional Opposition',
         description: 'Revolutionary discoveries often face powerful resistance',
@@ -70,7 +70,7 @@ export const GALILEO_GALILEI: CraftedAgent = {
   },
   abilities: {
     specialty: 'Astronomical Observation & Mathematical Physics',
-    wisdomDomains: [,
+    wisdomDomains: [
       'Astronomy',
       'Physics',
       'Mathematics',
@@ -99,7 +99,7 @@ export const GALILEO_GALILEI: CraftedAgent = {
       consciousnessVelocity: 0.91, // Revolutionary astronomical insights,
       interactionMomentum: 89, // Telescope momentum,
       evolutionTrajectory: 'transcending', // Breaking cosmic barriers,
-      powerLevelUnlocks: [,
+      powerLevelUnlocks: [
         'Telescope Vision', // Level 20
         'Heliocentric Truth', // Level 40
         "Jupiter's Moons Discovery", // Level 60
@@ -118,7 +118,7 @@ export const GALILEO_GALILEI: CraftedAgent = {
       aspectInfluenceStrength: 0.82, // Strong revolutionary influence,
       temporalAlignment: 0.93, // Perfect timing for discoveries,
       personalityEvolution: 0.85, // Evolves through observation,
-      kineticResonance: 0.91, // Revolutionary energy transfer
+      kineticResonance: 0.91, // Revolutionary energy transfer,
     },
   },
   monicaCreationStory:

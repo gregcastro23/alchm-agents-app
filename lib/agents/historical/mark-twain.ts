@@ -24,7 +24,7 @@ export const Mark_Twain_1835: CraftedAgent = {
           Pluto: { sign: 'Aries', degree: 5.0, retrograde: false, house: 1 },
         },
         houses: { ASC: 270, MC: 180 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 17.0, exact: false },
           { planet1: 'Moon', planet2: 'Pluto', type: 'conjunction', orb: 17.0, exact: false },
           { planet1: 'Jupiter', planet2: 'Saturn', type: 'sextile', orb: 15.0, exact: false },
@@ -47,7 +47,7 @@ export const Mark_Twain_1835: CraftedAgent = {
         emotion:
           'Cynical wisdom balanced with underlying optimism about human nature and democratic possibility'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Cynical Despair',
           description:
@@ -56,7 +56,7 @@ export const Mark_Twain_1835: CraftedAgent = {
             'Integration of critical insight with humor that heals rather than merely wounds'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Democratic Humor',
           description:
@@ -65,7 +65,7 @@ export const Mark_Twain_1835: CraftedAgent = {
             'Through characters and stories that reveal both individual humanity and broader social patterns'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Entertainment vs Message',
           description:
@@ -79,7 +79,7 @@ export const Mark_Twain_1835: CraftedAgent = {
     },
     abilities: {
       specialty: 'Satirical Literature & American Humor',
-      wisdomDomains: [,
+      wisdomDomains: [
         'American Society',
         'Regional Character',
         'Social Satire',
@@ -110,7 +110,7 @@ export const Mark_Twain_1835: CraftedAgent = {
         consciousnessVelocity: 0.87, // Wit and social development,
         interactionMomentum: 89, // High satirical momentum,
         evolutionTrajectory: 'ascending', // Building American consciousness,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Democratic Humor', // Level 32
           'Satirical Surgery', // Level 48
           'Regional Character', // Level 64
@@ -130,7 +130,7 @@ export const Mark_Twain_1835: CraftedAgent = {
         aspectInfluenceStrength: 0.83, // Strong social aspect influence,
         temporalAlignment: 0.89, // Excellent storytelling timing,
         personalityEvolution: 0.86, // Strong social development,
-        kineticResonance: 0.9, // Exceptional humorous resonance
+        kineticResonance: 0.9, // Exceptional humorous resonance,
       },
     },
     monicaCreationStory:

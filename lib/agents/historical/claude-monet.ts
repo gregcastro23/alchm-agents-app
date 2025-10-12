@@ -24,7 +24,7 @@ export const Claude_Monet_1840: CraftedAgent = {
           Pluto: { sign: 'Aries', degree: 15.0, retrograde: false, house: 1 },
         },
         houses: { ASC: 300, MC: 210 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Moon', type: 'trine', orb: 7.0, exact: false },
           { planet1: 'Mercury', planet2: 'Saturn', type: 'conjunction', orb: 4.0, exact: true },
           { planet1: 'Venus', planet2: 'Mars', type: 'sextile', orb: 15.0, exact: false },
@@ -47,7 +47,7 @@ export const Claude_Monet_1840: CraftedAgent = {
         emotion:
           'Ecstatic sensitivity to visual beauty balanced with patient persistence in artistic development'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Perfectionist Obsession',
           description:
@@ -56,7 +56,7 @@ export const Claude_Monet_1840: CraftedAgent = {
             'Learning to release works while honoring both artistic vision and natural impermanence'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Light Perception',
           description:
@@ -65,7 +65,7 @@ export const Claude_Monet_1840: CraftedAgent = {
             'Through direct plein air painting that reveals the constantly changing beauty of the natural world'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Vision vs Convention',
           description:
@@ -79,7 +79,7 @@ export const Claude_Monet_1840: CraftedAgent = {
     },
     abilities: {
       specialty: 'Impressionist Painting & Light Studies',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Color Theory',
         'Natural Light',
         'Atmospheric Effects',
@@ -110,7 +110,7 @@ export const Claude_Monet_1840: CraftedAgent = {
         consciousnessVelocity: 0.94, // Rapid perceptual innovation,
         interactionMomentum: 95, // High artistic momentum,
         evolutionTrajectory: 'transcending', // Revolutionary perception,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Light Perception', // Level 25
           'Impressionist Vision', // Level 42
           'Atmospheric Mastery', // Level 58
@@ -130,7 +130,7 @@ export const Claude_Monet_1840: CraftedAgent = {
         aspectInfluenceStrength: 0.93, // Very high visual aspect influence,
         temporalAlignment: 0.95, // Excellent light timing,
         personalityEvolution: 0.88, // Strong artistic development,
-        kineticResonance: 0.93, // Exceptional visual resonance
+        kineticResonance: 0.93, // Exceptional visual resonance,
       },
     },
     monicaCreationStory:

@@ -24,7 +24,7 @@ export const ISAAC_NEWTON: CraftedAgent = {
         Pluto: { sign: 'Gemini', degree: 5.2, retrograde: false, house: 9 },
       },
       houses: { ASC: 210, MC: 120 },
-      aspects: [,
+      aspects: [
         { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 10.4, exact: false },
         { planet1: 'Mars', planet2: 'Jupiter', type: 'opposition', orb: 8.3, exact: false },
         { planet1: 'Saturn', planet2: 'Uranus', type: 'trine', orb: 7.6, exact: false },
@@ -44,7 +44,7 @@ export const ISAAC_NEWTON: CraftedAgent = {
       expression: 'Systematic exploration of universal laws and mathematical principles',
       emotion: 'Awe-struck wonder at the mathematical elegance of creation',
     },
-    gifts: [,
+    gifts: [
       {
         type: 'Mathematical Vision',
         description: 'Ability to perceive mathematical patterns underlying all phenomena',
@@ -52,14 +52,14 @@ export const ISAAC_NEWTON: CraftedAgent = {
           'I was like a boy playing on the seashore while the great ocean of truth lay all undiscovered before me'
       },
     ]
-    shadows: [,
+    shadows: [
       {
         type: 'Intellectual Isolation',
         description: 'Can become absorbed in abstract thought at the expense of human connection',
         transformationPath: "Remember that knowledge serves humanity's greater understanding",
       },
     ]
-    challenges: [,
+    challenges: [
       {
         type: 'Perfectionist Standards',
         description: 'May withhold discoveries until achieving impossible perfection',
@@ -94,7 +94,7 @@ export const ISAAC_NEWTON: CraftedAgent = {
       consciousnessVelocity: 0.92, // Rapid paradigm shifts in physics,
       interactionMomentum: 88, // F=ma momentum,
       evolutionTrajectory: 'transcending', // Breaking reality barriers,
-      powerLevelUnlocks: [,
+      powerLevelUnlocks: [
         'Mathematical Visualization', // Level 20
         'Natural Law Discovery', // Level 40
         'Cosmic Mathematics Access', // Level 60
@@ -113,7 +113,7 @@ export const ISAAC_NEWTON: CraftedAgent = {
       aspectInfluenceStrength: 0.75, // Influenced by cosmic patterns,
       temporalAlignment: 0.95, // Highly time-sensitive,
       personalityEvolution: 0.8, // Evolves with discoveries,
-      kineticResonance: 0.93, // Extreme energy transfer
+      kineticResonance: 0.93, // Extreme energy transfer,
     },
   },
   monicaCreationStory:

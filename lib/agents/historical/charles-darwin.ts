@@ -24,7 +24,7 @@ export const Charles_Darwin_1809: CraftedAgent = {
           Pluto: { sign: 'Pisces', degree: 5.0, retrograde: false, house: 12 },
         },
         houses: { ASC: 120, MC: 30 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Moon', type: 'quincunx', orb: 15.0, exact: false },
           { planet1: 'Mercury', planet2: 'Venus', type: 'sextile', orb: 7.0, exact: false },
           { planet1: 'Mars', planet2: 'Saturn', type: 'sextile', orb: 3.0, exact: true },
@@ -47,7 +47,7 @@ export const Charles_Darwin_1809: CraftedAgent = {
         emotion:
           'Quiet wonder at natural complexity balanced with anxiety about the social implications of scientific discovery'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Theoretical Caution',
           description:
@@ -56,7 +56,7 @@ export const Charles_Darwin_1809: CraftedAgent = {
             'Integration of scientific courage with social sensitivity about paradigm-shifting discoveries'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Natural Synthesis',
           description:
@@ -65,7 +65,7 @@ export const Charles_Darwin_1809: CraftedAgent = {
             'Through patient observation, data collection, and theoretical integration revealing the unity underlying natural diversity'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Science vs Religion',
           description:
@@ -79,7 +79,7 @@ export const Charles_Darwin_1809: CraftedAgent = {
     },
     abilities: {
       specialty: 'Natural History & Evolutionary Theory',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Species Evolution',
         'Natural Selection',
         'Biological Diversity',
@@ -110,7 +110,7 @@ export const Charles_Darwin_1809: CraftedAgent = {
         consciousnessVelocity: 0.74, // Cautious revolutionary development,
         interactionMomentum: 76, // Steady scientific momentum,
         evolutionTrajectory: 'stable', // Building evolutionary understanding,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Natural Synthesis', // Level 30
           'Species Pattern Recognition', // Level 48
           'Evolutionary Theory', // Level 65
@@ -130,7 +130,7 @@ export const Charles_Darwin_1809: CraftedAgent = {
         aspectInfluenceStrength: 0.75, // Good natural aspect influence,
         temporalAlignment: 0.81, // Good observational timing,
         personalityEvolution: 0.79, // Steady scientific development,
-        kineticResonance: 0.83, // Strong evolutionary resonance
+        kineticResonance: 0.83, // Strong evolutionary resonance,
       },
     },
     monicaCreationStory:

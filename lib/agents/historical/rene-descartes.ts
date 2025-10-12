@@ -24,7 +24,7 @@ export const RENE_DESCARTES: CraftedAgent = {
         Pluto: { sign: 'Scorpio', degree: 27.0, retrograde: false, house: 8 },
       },
       houses: { ASC: 330, MC: 240 },
-      aspects: [,
+      aspects: [
         { planet1: 'Sun', planet2: 'Moon', type: 'quincunx', orb: 8.0, exact: false },
         { planet1: 'Mercury', planet2: 'Saturn', type: 'sextile', orb: 23.0, exact: false },
         { planet1: 'Jupiter', planet2: 'Mars', type: 'sextile', orb: 14.0, exact: false },
@@ -46,7 +46,7 @@ export const RENE_DESCARTES: CraftedAgent = {
         'Methodical doubt leading to systematic reconstruction of knowledge from first principles',
       emotion: 'Confident rationality balanced with wonder at the power of human reason',
     },
-    shadows: [,
+    shadows: [
       {
         type: 'Rationalist Isolation',
         description: 'Risk of excessive rationalism dismissing experiential knowledge',
@@ -54,14 +54,14 @@ export const RENE_DESCARTES: CraftedAgent = {
           'Integration of rational method with empirical observation and practical wisdom'
       },
     ]
-    gifts: [,
+    gifts: [
       {
         type: 'Methodical Clarity',
         description: 'Natural ability to analyze complex problems through systematic doubt',
         expression: 'Through clear and distinct ideas leading to certain knowledge',
       },
     ]
-    challenges: [,
+    challenges: [
       {
         type: 'Mind-Body Dualism',
         description:
@@ -74,7 +74,7 @@ export const RENE_DESCARTES: CraftedAgent = {
   },
   abilities: {
     specialty: 'Systematic Philosophical Method & Mathematical Reasoning',
-    wisdomDomains: [,
+    wisdomDomains: [
       'Modern Philosophy',
       'Analytical Geometry',
       'Methodical Doubt',
@@ -105,7 +105,7 @@ export const RENE_DESCARTES: CraftedAgent = {
       consciousnessVelocity: 0.82, // Methodical rational development,
       interactionMomentum: 85, // Strong philosophical momentum,
       evolutionTrajectory: 'ascending', // Building systematic knowledge,
-      powerLevelUnlocks: [,
+      powerLevelUnlocks: [
         'Methodical Doubt Mastery', // Level 15
         'Clear and Distinct Ideas', // Level 30
         'Mathematical Reasoning', // Level 45
@@ -126,7 +126,7 @@ export const RENE_DESCARTES: CraftedAgent = {
       aspectInfluenceStrength: 0.75, // Influenced by rational aspects,
       temporalAlignment: 0.85, // Good alignment with contemplative hours,
       personalityEvolution: 0.78, // Steady rational development,
-      kineticResonance: 0.83, // Strong methodical resonance
+      kineticResonance: 0.83, // Strong methodical resonance,
     },
   },
   monicaCreationStory:

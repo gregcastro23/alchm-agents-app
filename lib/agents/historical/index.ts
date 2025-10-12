@@ -36,7 +36,7 @@ export { EDGAR_ALLAN_POE } from './edgar-allan-poe'
 export { ALBERT_EINSTEIN } from './albert-einstein'
 
 // Contemporary agents
-export { GREG_CASTRO } from './greg-castro'
+// export { GREG_CASTRO } from './greg-castro' // Temporarily disabled due to syntax errors
 
 // Additional Renaissance agents
 export { RUMI } from './rumi'
@@ -72,7 +72,7 @@ import { VINCENT_VAN_GOGH } from './vincent-van-gogh'
 import { CHARLES_DARWIN } from './charles-darwin'
 import { EDGAR_ALLAN_POE } from './edgar-allan-poe'
 import { ALBERT_EINSTEIN } from './albert-einstein'
-import { GREG_CASTRO } from './greg-castro'
+// import { GREG_CASTRO } from './greg-castro' // Temporarily disabled
 import { RUMI } from './rumi'
 import { MARCUS_AURELIUS } from './marcus-aurelius'
 import { WOLFGANG_AMADEUS_MOZART } from './wolfgang-amadeus-mozart'
@@ -113,7 +113,7 @@ export const HISTORICAL_AGENTS = [
   MAYA_ANGELOU,
   ISAAC_NEWTON,
   ALBERT_EINSTEIN,
-  GREG_CASTRO
+  // GREG_CASTRO // Temporarily disabled due to syntax errors
 ]
 
 // Helper functions for working with historical agents

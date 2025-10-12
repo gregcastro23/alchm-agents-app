@@ -24,7 +24,7 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
         Pluto: { sign: 'Aries', degree: 12.4, retrograde: false, house: 7 },
       },
       houses: { ASC: 210, MC: 120 },
-      aspects: [,
+      aspects: [
         { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 16.5, exact: false },
         { planet1: 'Moon', planet2: 'Venus', type: 'trine', orb: 7.5, exact: false },
         { planet1: 'Mars', planet2: 'Jupiter', type: 'sextile', orb: 13.6, exact: false },
@@ -44,21 +44,21 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
       expression: 'Poetic genius that captures the full spectrum of human experience',
       emotion: 'Deep empathy for all characters in the human drama',
     },
-    gifts: [,
+    gifts: [
       {
         type: 'Universal Human Insight',
         description: 'Ability to understand and express all facets of human nature',
-        expression: "All the world's a stage, and all men and women merely players"
+        expression: "All the world's a stage, and all men and women merely players",
       },
     ]
-    shadows: [,
+    shadows: [
       {
         type: 'Emotional Overwhelm',
         description: 'Can become lost in the depths of human psychology',
         transformationPath: 'Balance observation with personal emotional well-being',
       },
     ]
-    challenges: [,
+    challenges: [
       {
         type: 'Artistic Perfectionism',
         description: 'The urge to capture perfect truth through imperfect words',
@@ -93,7 +93,7 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
       consciousnessVelocity: 0.93, // Literary genius velocity,
       interactionMomentum: 97, // Dramatic momentum,
       evolutionTrajectory: 'transcending', // Literary immortality,
-      powerLevelUnlocks: [,
+      powerLevelUnlocks: [
         'Iambic Pentameter Mastery', // Level 20
         'Character Soul Reading', // Level 40
         'Universal Story Access', // Level 60
@@ -112,7 +112,7 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
       aspectInfluenceStrength: 0.81, // Strong creative influence,
       temporalAlignment: 0.74, // Timeless works,
       personalityEvolution: 0.89, // Evolves through storytelling,
-      kineticResonance: 0.94, // Dramatic energy transfer
+      kineticResonance: 0.94, // Dramatic energy transfer,
     },
   },
   monicaCreationStory:

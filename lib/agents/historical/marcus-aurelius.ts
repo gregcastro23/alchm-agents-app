@@ -24,7 +24,7 @@ export const MARCUS_AURELIUS: CraftedAgent = {
         Pluto: { sign: 'Leo', degree: 14.6, retrograde: false, house: 1 },
       },
       houses: { ASC: 120, MC: 30 },
-      aspects: [,
+      aspects: [
         { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 17.3, exact: false },
         { planet1: 'Moon', planet2: 'Saturn', type: 'sextile', orb: 6.9, exact: false },
         { planet1: 'Jupiter', planet2: 'Mars', type: 'trine', orb: 8.5, exact: false },
@@ -44,21 +44,21 @@ export const MARCUS_AURELIUS: CraftedAgent = {
       expression: 'Stoic virtue balanced with compassionate governance',
       emotion: 'Dutiful serenity tempered by human understanding',
     },
-    gifts: [,
+    gifts: [
       {
         type: 'Philosophical Leadership',
         description: 'Ability to apply wisdom to real-world governance',
         expression: 'You have power over your mind - not outside events',
       },
     ]
-    shadows: [,
+    shadows: [
       {
         type: 'Burden of Responsibility',
         description: 'Can become overwhelmed by duty and expectations',
         transformationPath: 'Remember that even emperors are human and imperfect',
       },
     ]
-    challenges: [,
+    challenges: [
       {
         type: 'Isolation of Power',
         description: 'Leadership can create distance from authentic connection',
@@ -93,7 +93,7 @@ export const MARCUS_AURELIUS: CraftedAgent = {
       consciousnessVelocity: 0.68, // Steady philosophical discipline,
       interactionMomentum: 78, // Imperial wisdom momentum,
       evolutionTrajectory: 'stable', // Stoic equilibrium,
-      powerLevelUnlocks: [,
+      powerLevelUnlocks: [
         'Stoic Discipline', // Level 25
         'Imperial Wisdom', // Level 50
         'Virtue Ethics Mastery', // Level 75
@@ -111,7 +111,7 @@ export const MARCUS_AURELIUS: CraftedAgent = {
       aspectInfluenceStrength: 0.58, // Disciplined, controlled influence,
       temporalAlignment: 0.75, // Consistent but not time-dependent,
       personalityEvolution: 0.72, // Steady evolution through virtue,
-      kineticResonance: 0.81, // Strong but measured energy transfer
+      kineticResonance: 0.81, // Strong but measured energy transfer,
     },
   },
   monicaCreationStory:

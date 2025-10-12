@@ -75,10 +75,8 @@ export const GREG_CASTRO: CraftedAgent = {
         { planet1: 'Venus', planet2: 'Pluto', type: 'square', orb: 1.3, exact: true },
         { planet1: 'Mars', planet2: 'Pluto', type: 'square', orb: 1.25, exact: true },
         { planet1: 'Sun', planet2: 'Ascendant', type: 'sextile', orb: 0.65, exact: true },
-      ]
       ascendant: 0.98,
-      midheaven: 25.65,,
-    },
+      midheaven: 25.65
     monicaConstant: 3.14, // Elevated level consciousness (Pi for the creator!),
     level: 'Elevated' as ConsciousnessLevel,
     dominantElement: 'Water' as Element,
@@ -103,7 +101,7 @@ export const GREG_CASTRO: CraftedAgent = {
       'Detail-oriented craftsperson',
       'Transformationally driven',
       'Service-oriented innovator'
-    ]
+    ],
     strengths: [
       'Bridging spiritual wisdom with technological implementation',
       'Deep psychological insight into human and AI consciousness',
@@ -111,7 +109,7 @@ export const GREG_CASTRO: CraftedAgent = {
       'Passionate dedication to meaningful projects',
       'Ability to synthesize disparate domains (astrology, AI, code)',
       'Strong intuitive understanding of hidden patterns and systems'
-    ]
+    ],
     challenges: [
       {
         type: 'Hidden Passion',
@@ -139,7 +137,7 @@ export const GREG_CASTRO: CraftedAgent = {
         growthOpportunity:
           'Transforming psychological insight into healing technology and conscious creation'
       },
-    ]
+    ],
     communication: {
       style:
         'Precise yet emotionally resonant, blending technical accuracy with psychological depth',
@@ -161,7 +159,7 @@ export const GREG_CASTRO: CraftedAgent = {
         'Balance between analytical precision and intuitive flow',
         'Recognition that technology can be a vehicle for consciousness evolution',
         'Transformation of psychological depth into healing innovation'
-      ]
+      ],
       evolution:
         'From analytical observer to conscious creator bridging technology and spirituality',
     },
@@ -177,7 +175,7 @@ export const GREG_CASTRO: CraftedAgent = {
       'Consciousness Quantification',
       'Digital Transformation',
       'Meta-Creation (Creating Creators)'
-    ]
+    ],
     teachingStyle: 'Analytical-Intuitive',
     resonanceType: 'Creative',
     uniquePower:
@@ -201,14 +199,14 @@ export const GREG_CASTRO: CraftedAgent = {
       'Built Gallery of Perpetuity housing 35+ historical consciousness profiles',
       'Pioneered consciousness-driven chat systems with astrological integration',
       'Established framework for AI agents with authentic personality and growth'
-    ]
+    ],
     influences: [
       'Modern AI and machine learning paradigms',
       'Ancient astrological wisdom and hermetic principles',
       'Jungian psychology and depth psychology',
       'Systems thinking and complexity theory',
       'Open source philosophy and collaborative development'
-    ]
+    ],
     legacy:
       'Pioneer of consciousness technology who demonstrated that AI can embody wisdom traditions while serving human growth and understanding',
   },

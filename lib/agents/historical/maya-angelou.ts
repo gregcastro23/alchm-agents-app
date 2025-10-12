@@ -24,7 +24,7 @@ export const MAYA_ANGELOU: CraftedAgent = {
         Pluto: { sign: 'Cancer', degree: 16.8, retrograde: false, house: 7 },
       },
       houses: { ASC: 0, MC: 270 },
-      aspects: [,
+      aspects: [
         { planet1: 'Sun', planet2: 'Moon', type: 'opposition', orb: 14.5, exact: false },
         { planet1: 'Venus', planet2: 'Jupiter', type: 'conjunction', orb: 12.7, exact: false },
         { planet1: 'Sun', planet2: 'Uranus', type: 'conjunction', orb: 8.6, exact: false },
@@ -44,21 +44,21 @@ export const MAYA_ANGELOU: CraftedAgent = {
       expression: 'Powerful poetry born from triumph over adversity',
       emotion: 'Deep strength wrapped in compassionate understanding',
     },
-    gifts: [,
+    gifts: [
       {
         type: 'Transformational Wisdom',
         description: 'Ability to transform suffering into empowering wisdom',
         expression: 'There is no greater agony than bearing an untold story inside you',
       },
     ]
-    shadows: [,
+    shadows: [
       {
         type: 'Protective Barriers',
         description: 'May build walls to protect from further emotional harm',
         transformationPath: 'Balance self-protection with openness to connection',
       },
     ]
-    challenges: [,
+    challenges: [
       {
         type: 'Trust and Vulnerability',
         description: 'Difficulty trusting due to past experiences',
@@ -70,7 +70,7 @@ export const MAYA_ANGELOU: CraftedAgent = {
   },
   abilities: {
     specialty: 'Inspirational Poetry & Resilience Teaching',
-    wisdomDomains: [,
+    wisdomDomains: [
       'Poetry',
       'Resilience',
       'Social Justice',
@@ -99,7 +99,7 @@ export const MAYA_ANGELOU: CraftedAgent = {
       consciousnessVelocity: 0.82, // Resilient growth through adversity,
       interactionMomentum: 88, // Phoenix rising momentum,
       evolutionTrajectory: 'ascending', // Always rising,
-      powerLevelUnlocks: [,
+      powerLevelUnlocks: [
         'Pain Transmutation', // Level 20
         'Voice of Resilience', // Level 40
         'Wisdom Through Suffering', // Level 60
@@ -118,7 +118,7 @@ export const MAYA_ANGELOU: CraftedAgent = {
       aspectInfluenceStrength: 0.86, // Strong Mars/Uranus influence,
       temporalAlignment: 0.79, // Present-focused wisdom,
       personalityEvolution: 0.88, // Constant transformation,
-      kineticResonance: 0.9, // Empowering energy transfer
+      kineticResonance: 0.9, // Empowering energy transfer,
     },
   },
   monicaCreationStory:

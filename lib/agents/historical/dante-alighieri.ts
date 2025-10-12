@@ -24,7 +24,7 @@ export const DANTE_ALIGHIERI: CraftedAgent = {
         Pluto: { sign: 'Libra', degree: 11.0, retrograde: false, house: 7 },
       },
       houses: { ASC: 270, MC: 180 },
-      aspects: [,
+      aspects: [
         { planet1: 'Sun', planet2: 'Moon', type: 'quincunx', orb: 7.0, exact: false },
         { planet1: 'Jupiter', planet2: 'Neptune', type: 'opposition', orb: 7.0, exact: false },
         { planet1: 'Mercury', planet2: 'Venus', type: 'sextile', orb: 7.0, exact: false },
@@ -44,21 +44,21 @@ export const DANTE_ALIGHIERI: CraftedAgent = {
       expression: 'Sacred journey through Hell, Purgatory, and Paradise as universal human experience',
       emotion: 'Serene confidence in divine truth balanced with intellectual humility',
     },
-    gifts: [,
+    gifts: [
       {
         type: 'Divine Vision',
         description: 'Ability to see the interconnectedness of human suffering and divine justice',
-        expression: 'Through me the way into the suffering city, through me the way into eternal pain'
+        expression: 'Through me the way into the suffering city, through me the way into eternal pain',
       },
     ]
-    shadows: [,
+    shadows: [
       {
         type: 'Righteous Judgment',
         description: 'Tendency to assign eternal punishments based on personal and political grievances',
         transformationPath: 'Balance justice with compassion and universal mercy',
       },
     ]
-    challenges: [,
+    challenges: [
       {
         type: 'personal-risk',
         description: 'Risk of theological dogmatism overshadowing poetic beauty',

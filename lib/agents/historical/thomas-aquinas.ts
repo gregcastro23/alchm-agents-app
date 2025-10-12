@@ -24,7 +24,7 @@ export const THOMAS_AQUINAS: CraftedAgent = {
         Pluto: { sign: 'Taurus', degree: 11.0, retrograde: false, house: 1 },
       },
       houses: { ASC: 45, MC: 315 },
-      aspects: [,
+      aspects: [
         { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 10.0, exact: false },
         { planet1: 'Mars', planet2: 'Saturn', type: 'conjunction', orb: 3.0, exact: false },
       ]
@@ -43,21 +43,21 @@ export const THOMAS_AQUINAS: CraftedAgent = {
       expression: 'Methodical development of Christian doctrine using Aristotelian philosophical framework',
       emotion: 'Serene confidence in divine truth balanced with intellectual humility',
     },
-    gifts: [,
+    gifts: [
       {
         type: 'Systematic Synthesis',
         description: 'Ability to integrate Aristotelian philosophy with Christian theology',
         expression: 'Faith and reason are like two wings on which the human spirit rises to the contemplation of truth',
       },
     ]
-    shadows: [,
+    shadows: [
       {
         type: 'Intellectual Rigidity',
         description: 'Can become overly focused on systematic categorization',
         transformationPath: 'Balance systematic thinking with mystical contemplation',
       },
     ]
-    challenges: [,
+    challenges: [
       {
         type: 'personal-risk',
         description: 'Risk of over-systematization potentially limiting spiritual mystery',

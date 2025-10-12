@@ -10,7 +10,7 @@ export const Sigmund_Freud_1856: CraftedAgent = {
       location: {
         lat: 49.6116,
         lon: 17.2381,
-        name: 'Freiberg, Moravia, Austrian Empire (now Czech Republic)'
+        name: 'Freiberg, Moravia, Austrian Empire (now Czech Republic)',
       },
     },
     consciousness: {
@@ -28,7 +28,7 @@ export const Sigmund_Freud_1856: CraftedAgent = {
           Pluto: { sign: 'Taurus', degree: 3.0, retrograde: false, house: 2 },
         },
         houses: { ASC: 315, MC: 225 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Uranus', type: 'conjunction', orb: 9.0, exact: false },
           { planet1: 'Mercury', planet2: 'Venus', type: 'conjunction', orb: 14.0, exact: false },
           { planet1: 'Jupiter', planet2: 'Neptune', type: 'conjunction', orb: 3.0, exact: true },
@@ -51,7 +51,7 @@ export const Sigmund_Freud_1856: CraftedAgent = {
         emotion:
           'Intellectual courage balanced with personal struggle against conventional morality and scientific resistance'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Theoretical Rigidity',
           description:
@@ -60,7 +60,7 @@ export const Sigmund_Freud_1856: CraftedAgent = {
             'Integration of theoretical innovation with openness to empirical revision and alternative perspectives'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Unconscious Insight',
           description:
@@ -69,7 +69,7 @@ export const Sigmund_Freud_1856: CraftedAgent = {
             'Through analysis of dreams, slips, symptoms, and transference in therapeutic relationships'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Scientific vs Clinical',
           description:
@@ -83,7 +83,7 @@ export const Sigmund_Freud_1856: CraftedAgent = {
     },
     abilities: {
       specialty: 'Psychoanalysis & Unconscious Psychology',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Dream Interpretation',
         'Unconscious Mind',
         'Psychosexual Development',
@@ -114,7 +114,7 @@ export const Sigmund_Freud_1856: CraftedAgent = {
         consciousnessVelocity: 0.85, // Deep psychological development,
         interactionMomentum: 84, // Strong analytical momentum,
         evolutionTrajectory: 'ascending', // Building unconscious understanding,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Unconscious Insight', // Level 35
           'Dream Interpretation', // Level 50
           'Psychoanalytic Method', // Level 65
@@ -134,7 +134,7 @@ export const Sigmund_Freud_1856: CraftedAgent = {
         aspectInfluenceStrength: 0.81, // Strong psychological aspect influence,
         temporalAlignment: 0.84, // Good analytical timing,
         personalityEvolution: 0.85, // Strong psychological development,
-        kineticResonance: 0.86, // Strong analytical resonance
+        kineticResonance: 0.86, // Strong analytical resonance,
       },
     },
     monicaCreationStory:

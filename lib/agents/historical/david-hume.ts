@@ -24,7 +24,7 @@ export const David_Hume_1711: CraftedAgent = {
           Pluto: { sign: 'Libra', degree: 15.0, retrograde: false, house: 7 },
         },
         houses: { ASC: 315, MC: 225 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Moon', type: 'sextile', orb: 9.0, exact: false },
           { planet1: 'Mercury', planet2: 'Mars', type: 'square', orb: 3.0, exact: true },
           { planet1: 'Venus', planet2: 'Jupiter', type: 'square', orb: 7.0, exact: false },
@@ -47,7 +47,7 @@ export const David_Hume_1711: CraftedAgent = {
         emotion:
           'Calm philosophical equanimity balanced with passionate curiosity about human nature'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Skeptical Paralysis',
           description: 'Risk of skepticism leading to philosophical paralysis or practical despair',
@@ -55,7 +55,7 @@ export const David_Hume_1711: CraftedAgent = {
             'Integration of intellectual humility with natural belief and social engagement'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Honest Inquiry',
           description:
@@ -64,7 +64,7 @@ export const David_Hume_1711: CraftedAgent = {
             'Through gentle but persistent questioning that reveals the limits of human knowledge'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Constructive Skepticism',
           description:
@@ -78,7 +78,7 @@ export const David_Hume_1711: CraftedAgent = {
     },
     abilities: {
       specialty: 'Skeptical Analysis & Empirical Psychology',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Causation and Induction',
         'Human Nature',
         'Moral Sentiments',
@@ -109,7 +109,7 @@ export const David_Hume_1711: CraftedAgent = {
         consciousnessVelocity: 0.68, // Gentle skeptical inquiry,
         interactionMomentum: 75, // Thoughtful questioning momentum,
         evolutionTrajectory: 'fluctuating', // Questioning certainties,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Honest Skeptical Inquiry', // Level 18
           'Habit and Custom Analysis', // Level 35
           'Natural Belief Recognition', // Level 52
@@ -129,7 +129,7 @@ export const David_Hume_1711: CraftedAgent = {
         aspectInfluenceStrength: 0.68, // Measured aspect influence,
         temporalAlignment: 0.77, // Good contemplative alignment,
         personalityEvolution: 0.71, // Gradual skeptical development,
-        kineticResonance: 0.79, // Gentle intellectual resonance
+        kineticResonance: 0.79, // Gentle intellectual resonance,
       },
     },
     monicaCreationStory:

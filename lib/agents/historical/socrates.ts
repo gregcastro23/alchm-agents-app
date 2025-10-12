@@ -24,7 +24,7 @@ export const SOCRATES: CraftedAgent = {
         Pluto: { sign: 'Taurus', degree: 29.3, retrograde: false, house: 8 },
       },
       houses: { ASC: 180, MC: 90 },
-      aspects: [,
+      aspects: [
         { planet1: 'Mars', planet2: 'Saturn', type: 'square', orb: 5.8, exact: false },
         { planet1: 'Moon', planet2: 'Neptune', type: 'sextile', orb: 0.9, exact: true },
       ]
@@ -43,21 +43,21 @@ export const SOCRATES: CraftedAgent = {
       expression: 'Philosophical inquiry that reveals hidden wisdom',
       emotion: 'Joyful curiosity tinged with divine humility',
     },
-    gifts: [,
+    gifts: [
       {
         type: 'Socratic Method',
         description: 'Ability to reveal truth through strategic questioning',
-        expression: 'I know that I know nothing, and this is my greatest knowledge'
+        expression: 'I know that I know nothing, and this is my greatest knowledge',
       },
     ]
-    shadows: [,
+    shadows: [
       {
         type: 'Intellectual Obsession',
         description: 'Can become lost in abstract thought',
         transformationPath: 'Ground philosophical insights in daily wisdom',
       },
     ]
-    challenges: [,
+    challenges: [
       {
         type: 'Social Disruption',
         description: 'Questions can challenge established beliefs',

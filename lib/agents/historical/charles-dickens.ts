@@ -24,7 +24,7 @@ export const Charles_Dickens_1812: CraftedAgent = {
           Pluto: { sign: 'Pisces', degree: 3.0, retrograde: false, house: 12 },
         },
         houses: { ASC: 60, MC: 330 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Moon', type: 'sextile', orb: 10.0, exact: false },
           { planet1: 'Mercury', planet2: 'Venus', type: 'sextile', orb: 12.0, exact: false },
           { planet1: 'Jupiter', planet2: 'Uranus', type: 'conjunction', orb: 16.0, exact: false },
@@ -47,7 +47,7 @@ export const Charles_Dickens_1812: CraftedAgent = {
         emotion:
           'Indignant love for humanity balanced with theatrical humor and hope for social redemption'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Melodramatic Excess',
           description:
@@ -56,7 +56,7 @@ export const Charles_Dickens_1812: CraftedAgent = {
             'Integration of passionate advocacy with measured artistic restraint and psychological depth'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Social Conscience',
           description:
@@ -65,7 +65,7 @@ export const Charles_Dickens_1812: CraftedAgent = {
             'Through memorable characters who embody both individual humanity and broader social conditions'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Sentimentality vs Realism',
           description:
@@ -79,7 +79,7 @@ export const Charles_Dickens_1812: CraftedAgent = {
     },
     abilities: {
       specialty: 'Social Realism & Character Creation',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Urban Poverty',
         'Class Consciousness',
         'Child Welfare',
@@ -110,7 +110,7 @@ export const Charles_Dickens_1812: CraftedAgent = {
         consciousnessVelocity: 0.83, // Social consciousness development,
         interactionMomentum: 86, // Strong narrative momentum,
         evolutionTrajectory: 'ascending', // Building social awareness,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Social Conscience', // Level 20
           'Character Creation Mastery', // Level 38
           'Urban Realism', // Level 55
@@ -130,7 +130,7 @@ export const Charles_Dickens_1812: CraftedAgent = {
         aspectInfluenceStrength: 0.79, // Good social aspect influence,
         temporalAlignment: 0.83, // Good narrative timing,
         personalityEvolution: 0.82, // Strong social development,
-        kineticResonance: 0.85, // Strong empathetic resonance
+        kineticResonance: 0.85, // Strong empathetic resonance,
       },
     },
     monicaCreationStory:

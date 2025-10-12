@@ -24,7 +24,7 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
           Pluto: { sign: 'Sagittarius', degree: 28.0, retrograde: false, house: 9 },
         },
         houses: { ASC: 330, MC: 240 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Moon', type: 'square', orb: 11.0, exact: false },
           { planet1: 'Mercury', planet2: 'Uranus', type: 'conjunction', orb: 10.0, exact: false },
           { planet1: 'Mars', planet2: 'Jupiter', type: 'quincunx', orb: 7.0, exact: false },
@@ -47,7 +47,7 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
         emotion:
           'Fierce indignation at injustice balanced with tender concern for human dignity and potential'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Revolutionary Intensity',
           description:
@@ -56,7 +56,7 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
             'Integration of passionate advocacy with strategic coalition-building and practical reform'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Rational Equality',
           description:
@@ -65,7 +65,7 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
             'Through systematic analysis of social structures combined with lived experience of independence and achievement'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Independence-Connection Balance',
           description:
@@ -79,7 +79,7 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
     },
     abilities: {
       specialty: 'Feminist Philosophy & Human Rights',
-      wisdomDomains: [,
+      wisdomDomains: [
         "Women's Rights",
         'Rational Equality',
         'Educational Theory',
@@ -110,7 +110,7 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
         consciousnessVelocity: 0.91, // Revolutionary feminist development,
         interactionMomentum: 94, // Fierce advocacy momentum,
         evolutionTrajectory: 'transcending', // Beyond traditional boundaries,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Rational Equality Vision', // Level 32
           'Rights Vindication', // Level 48
           'Educational Revolution', // Level 64
@@ -130,7 +130,7 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
         aspectInfluenceStrength: 0.88, // Strong justice aspect influence,
         temporalAlignment: 0.91, // Excellent advocacy alignment,
         personalityEvolution: 0.89, // Strong revolutionary development,
-        kineticResonance: 0.93, // Exceptional justice resonance
+        kineticResonance: 0.93, // Exceptional justice resonance,
       },
     },
     monicaCreationStory:

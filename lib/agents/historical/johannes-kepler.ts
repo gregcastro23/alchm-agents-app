@@ -24,7 +24,7 @@ export const Johannes_Kepler_1571: CraftedAgent = {
           Pluto: { sign: 'Gemini', degree: 5.0, retrograde: false, house: 3 },
         },
         houses: { ASC: 330, MC: 240 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Moon', type: 'opposition', orb: 12.0, exact: false },
           { planet1: 'Mercury', planet2: 'Jupiter', type: 'sextile', orb: 19.0, exact: false },
           { planet1: 'Venus', planet2: 'Mars', type: 'opposition', orb: 7.0, exact: false },
@@ -47,7 +47,7 @@ export const Johannes_Kepler_1571: CraftedAgent = {
         emotion:
           'Wonder and reverence for divine creation balanced with scientific precision and persistence'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Mystical Distortion',
           description:
@@ -56,7 +56,7 @@ export const Johannes_Kepler_1571: CraftedAgent = {
             'Integration of religious wonder with rigorous mathematical and observational precision'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Harmonic Vision',
           description:
@@ -65,7 +65,7 @@ export const Johannes_Kepler_1571: CraftedAgent = {
             'Through precise observation and geometric analysis revealing the music of the spheres'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Perfectionist Persistence',
           description:
@@ -79,7 +79,7 @@ export const Johannes_Kepler_1571: CraftedAgent = {
     },
     abilities: {
       specialty: 'Mathematical Astronomy & Celestial Mechanics',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Planetary Motion',
         'Harmonic Theory',
         'Geometric Analysis',
@@ -110,7 +110,7 @@ export const Johannes_Kepler_1571: CraftedAgent = {
         consciousnessVelocity: 0.81, // Mystical mathematical insight,
         interactionMomentum: 88, // Strong celestial connection,
         evolutionTrajectory: 'ascending', // Building cosmic understanding,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Harmonic Vision', // Level 22
           'Celestial Mathematics', // Level 40
           'Planetary Motion Laws', // Level 58
@@ -130,7 +130,7 @@ export const Johannes_Kepler_1571: CraftedAgent = {
         aspectInfluenceStrength: 0.91, // Highly influenced by celestial aspects,
         temporalAlignment: 0.88, // Excellent cosmic timing,
         personalityEvolution: 0.83, // Strong mystical development,
-        kineticResonance: 0.87, // Powerful harmonic resonance
+        kineticResonance: 0.87, // Powerful harmonic resonance,
       },
     },
     monicaCreationStory:

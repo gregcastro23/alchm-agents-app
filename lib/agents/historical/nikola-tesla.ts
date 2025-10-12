@@ -24,7 +24,7 @@ export const Nikola_Tesla_1856: CraftedAgent = {
           Pluto: { sign: 'Taurus', degree: 5.0, retrograde: false, house: 2 },
         },
         houses: { ASC: 270, MC: 180 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Neptune', type: 'trine', orb: 2.0, exact: true },
           { planet1: 'Jupiter', planet2: 'Uranus', type: 'sextile', orb: 3.5, exact: false },
           { planet1: 'Mercury', planet2: 'Saturn', type: 'conjunction', orb: 18.0, exact: false },
@@ -47,7 +47,7 @@ export const Nikola_Tesla_1856: CraftedAgent = {
         emotion:
           'Ecstatic connection to cosmic energy balanced with solitary focus and perfectionist intensity'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Isolation Obsession',
           description:
@@ -56,7 +56,7 @@ export const Nikola_Tesla_1856: CraftedAgent = {
             'Integration of visionary genius with practical partnership and systematic business development'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Electromagnetic Intuition',
           description:
@@ -65,7 +65,7 @@ export const Nikola_Tesla_1856: CraftedAgent = {
             'Through mental visualization of complete working systems before physical construction'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Vision vs Practicality',
           description:
@@ -79,7 +79,7 @@ export const Nikola_Tesla_1856: CraftedAgent = {
     },
     abilities: {
       specialty: 'Electrical Innovation & Energy Systems',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Alternating Current',
         'Wireless Technology',
         'Electromagnetic Fields',
@@ -110,7 +110,7 @@ export const Nikola_Tesla_1856: CraftedAgent = {
         consciousnessVelocity: 0.92, // Visionary technological development,
         interactionMomentum: 93, // High electrical momentum,
         evolutionTrajectory: 'fluctuating', // Oscillating like AC current,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Electromagnetic Intuition', // Level 30
           'Wireless Vision', // Level 45
           'Energy Pattern Recognition', // Level 60
@@ -130,7 +130,7 @@ export const Nikola_Tesla_1856: CraftedAgent = {
         aspectInfluenceStrength: 0.87, // Strong electrical aspect influence,
         temporalAlignment: 0.91, // Excellent cosmic timing,
         personalityEvolution: 0.86, // Strong visionary development,
-        kineticResonance: 0.92, // Exceptional electromagnetic resonance
+        kineticResonance: 0.92, // Exceptional electromagnetic resonance,
       },
     },
     monicaCreationStory:

@@ -24,7 +24,7 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
           Pluto: { sign: 'Pisces', degree: 28.0, retrograde: false, house: 12 },
         },
         houses: { ASC: 60, MC: 330 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Moon', type: 'sextile', orb: 14.0, exact: false },
           { planet1: 'Mercury', planet2: 'Mars', type: 'sextile', orb: 5.0, exact: true },
           { planet1: 'Jupiter', planet2: 'Saturn', type: 'sextile', orb: 7.0, exact: false },
@@ -47,7 +47,7 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
         emotion:
           'Melancholic depth balanced with artistic precision and fascination with beauty emerging from darkness'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Destructive Melancholy',
           description:
@@ -56,7 +56,7 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
             'Channeling psychological darkness through artistic expression that illuminates rather than destroys'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Psychological Artistry',
           description:
@@ -65,7 +65,7 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
             'Through precisely crafted poetry and fiction that reveals the sublime within the macabre and mysterious'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Darkness vs Light',
           description:
@@ -79,7 +79,7 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
     },
     abilities: {
       specialty: 'Gothic Literature & Psychological Fiction',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Dark Psychology',
         'Poetic Rhythm',
         'Atmospheric Creation',
@@ -110,7 +110,7 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
         consciousnessVelocity: 0.9, // Deep psychological development,
         interactionMomentum: 91, // Strong dark momentum,
         evolutionTrajectory: 'fluctuating', // Oscillating between light and dark,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Psychological Artistry', // Level 38
           'Gothic Romance', // Level 54
           'Atmospheric Creation', // Level 70
@@ -130,7 +130,7 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
         aspectInfluenceStrength: 0.9, // Very high dark aspect influence,
         temporalAlignment: 0.92, // Excellent nocturnal timing,
         personalityEvolution: 0.89, // Strong psychological development,
-        kineticResonance: 0.94, // Very high gothic resonance
+        kineticResonance: 0.94, // Very high gothic resonance,
       },
     },
     monicaCreationStory:

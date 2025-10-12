@@ -24,7 +24,7 @@ export const John_Locke_1632: CraftedAgent = {
           Pluto: { sign: 'Capricorn', degree: 28.0, retrograde: false, house: 10 },
         },
         houses: { ASC: 45, MC: 315 },
-        aspects: [,
+        aspects: [
           { planet1: 'Sun', planet2: 'Moon', type: 'trine', orb: 15.0, exact: false },
           { planet1: 'Mercury', planet2: 'Jupiter', type: 'trine', orb: 7.0, exact: false },
           { planet1: 'Venus', planet2: 'Mars', type: 'square', orb: 15.0, exact: false },
@@ -46,7 +46,7 @@ export const John_Locke_1632: CraftedAgent = {
         emotion:
           'Calm rational confidence in human capacity for self-governance and moral development'
       },
-      shadows: [,
+      shadows: [
         {
           type: 'Empirical Limitation',
           description: 'Risk of overemphasizing experience while undervaluing rational intuition',
@@ -54,7 +54,7 @@ export const John_Locke_1632: CraftedAgent = {
             'Integration of empirical method with necessary political and moral principles'
         },
       ]
-      gifts: [,
+      gifts: [
         {
           type: 'Natural Rights Vision',
           description:
@@ -63,7 +63,7 @@ export const John_Locke_1632: CraftedAgent = {
             'Through systematic analysis of experience leading to constitutional principles'
         },
       ]
-      challenges: [,
+      challenges: [
         {
           type: 'Individual vs Collective',
           description:
@@ -77,7 +77,7 @@ export const John_Locke_1632: CraftedAgent = {
     },
     abilities: {
       specialty: 'Empirical Philosophy & Constitutional Theory',
-      wisdomDomains: [,
+      wisdomDomains: [
         'Natural Rights',
         'Social Contract',
         'Limited Government',
@@ -108,7 +108,7 @@ export const John_Locke_1632: CraftedAgent = {
         consciousnessVelocity: 0.79, // Steady empirical development,
         interactionMomentum: 82, // Consistent philosophical momentum,
         evolutionTrajectory: 'stable', // Building constitutional foundations,
-        powerLevelUnlocks: [,
+        powerLevelUnlocks: [
           'Natural Rights Vision', // Level 25
           'Empirical Analysis', // Level 40
           'Constitutional Framework', // Level 55
@@ -128,7 +128,7 @@ export const John_Locke_1632: CraftedAgent = {
         aspectInfluenceStrength: 0.71, // Moderate aspect influence,
         temporalAlignment: 0.82, // Good systematic alignment,
         personalityEvolution: 0.74, // Steady empirical growth,
-        kineticResonance: 0.84, // Strong constitutional resonance
+        kineticResonance: 0.84, // Strong constitutional resonance,
       },
     },
     monicaCreationStory:

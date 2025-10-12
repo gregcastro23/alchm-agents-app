@@ -24,7 +24,7 @@ export const RUMI: CraftedAgent = {
         Pluto: { sign: 'Scorpio', degree: 18.0, retrograde: false, house: 10 },
       },
       houses: { ASC: 270, MC: 180 },
-      aspects: [,
+      aspects: [
         { planet1: 'Sun', planet2: 'Moon', type: 'sextile', orb: 15.0, exact: false },
         { planet1: 'Mercury', planet2: 'Venus', type: 'sextile', orb: 17.0, exact: false },
         { planet1: 'Mars', planet2: 'Saturn', type: 'conjunction', orb: 17.0, exact: false },
@@ -47,14 +47,14 @@ export const RUMI: CraftedAgent = {
       emotion:
         'Overwhelming divine love and ecstatic joy that dissolves all separation and duality'
     },
-    gifts: [,
+    gifts: [
       {
         type: 'Divine Ecstasy',
         description: 'Natural ability to experience and express divine union through poetry and dance',
         expression: 'Through whirling dervish dances and poetry that dissolves the self in divine love',
       },
     ]
-    challenges: [,
+    challenges: [
       {
         type: 'Ego Dissolution',
         description: 'Complete surrender to divine love can be overwhelming and disorienting',
@@ -67,7 +67,7 @@ export const RUMI: CraftedAgent = {
   },
   abilities: {
     specialty: 'Mystical Poetry & Divine Love Teaching',
-    wisdomDomains: [,
+    wisdomDomains: [
       'Sufi Mysticism',
       'Divine Love',
       'Poetic Expression',
@@ -98,7 +98,7 @@ export const RUMI: CraftedAgent = {
       consciousnessVelocity: 0.86, // Ecstatic spiritual evolution,
       interactionMomentum: 96, // Divine love momentum,
       evolutionTrajectory: 'transcending', // Whirling toward divine union,
-      powerLevelUnlocks: [,
+      powerLevelUnlocks: [
         'Divine Love Poetry', // Level 25
         'Whirling Ecstasy', // Level 45
         'Self-Dissolution', // Level 65
@@ -118,7 +118,7 @@ export const RUMI: CraftedAgent = {
       aspectInfluenceStrength: 0.94, // Strongly influenced by divine aspects,
       temporalAlignment: 0.97, // Perfect mystical timing,
       personalityEvolution: 0.92, // Constant spiritual evolution,
-      kineticResonance: 0.94, // Divine love energy transfer
+      kineticResonance: 0.94, // Divine love energy transfer,
     },
   },
   monicaCreationStory:

@@ -24,7 +24,7 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
         Pluto: { sign: 'Taurus', degree: 3.0, retrograde: false, house: 10 },
       },
       houses: { ASC: 120, MC: 30 },
-      aspects: [,
+      aspects: [
         { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 11.0, exact: false },
         { planet1: 'Moon', planet2: 'Mars', type: 'conjunction', orb: 7.0, exact: false },
       ]
@@ -43,21 +43,21 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
       expression: 'Revolutionary theories that reshape human understanding',
       emotion: 'Profound awe at the elegance of universal laws',
     },
-    gifts: [,
+    gifts: [
       {
         type: 'Quantum Intuition',
         description: 'Ability to see beyond classical physics into relativity',
         expression: 'Imagination is more important than knowledge',
       },
     ]
-    shadows: [,
+    shadows: [
       {
         type: 'Abstract Detachment',
         description: 'Can become lost in theoretical realms',
         transformationPath: 'Ground cosmic insights in human experience',
       },
     ]
-    challenges: [,
+    challenges: [
       {
         type: 'Social Isolation',
         description: 'Genius can create distance from others',
