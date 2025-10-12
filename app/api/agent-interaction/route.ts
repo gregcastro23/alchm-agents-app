@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { prisma } from '@/lib/db'
-import { ConsciousnessClient } from '@/lib/api-client/consciousness-client'
-import { generateAlchmForBirthInfo, generateAlchmForCurrentMoment } from '@/lib/alchemizer'
-import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
+import { prisma } from '../../../../lib/db'
+import { ConsciousnessClient } from '../../../../lib/api-client/consciousness-client'
+import { calculateMonicaConstant } from '../../../../lib/monica/monica-constant'
 
 const InteractionSchema = z.object({
   userId: z.string().optional(),

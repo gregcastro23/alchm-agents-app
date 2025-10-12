@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { TemporalAnalysisEngine } from '@/lib/temporal-analysis-engine'
-import type { TemporalQuery, TemporalAnalysisResult } from '@/lib/temporal-analysis-engine'
+import { TemporalAnalysisEngine } from '../../../../lib/temporal-analysis-engine'
+import type { TemporalQuery, TemporalAnalysisResult } from '../../../../lib/temporal-analysis-engine'
 import {
   globalCache,
   globalQueryOptimizer,
   globalPerformanceMonitor,
   measureOperation,
-} from '@/lib/time-laboratory-performance'
+} from '../../../../lib/time-laboratory-performance'
 import crypto from 'crypto'
 
 /**

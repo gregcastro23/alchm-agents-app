@@ -5,9 +5,9 @@ import {
   type CelestialTimeSeries,
   type Location,
   type TimeSeriesOptions,
-} from '@/lib/celestial-energy-calculator'
-import { DEMO_AGENTS, ALL_AGENTS } from '@/lib/demo-agents-data'
-import { globalPerformanceMonitor, measureOperation } from '@/lib/time-laboratory-performance'
+} from '../../../../lib/celestial-energy-calculator'
+import { DEMO_AGENTS, ALL_AGENTS } from '../../../../lib/demo-agents-data'
+import { globalPerformanceMonitor, measureOperation } from '../../../../lib/time-laboratory-performance'
 
 /**
  * Celestial Energy Timeline API
@@ -412,7 +412,7 @@ function checkDegreeAlignment(planetaryDegrees: Record<string, number>, agent: a
 
   for (const [planet, degree] of Object.entries(planetaryDegrees)) {
     // Calculate consistent degree from agent ID hash (deterministic, not random)
-    const agentDegree = agent.id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) % 360
+    const agentDegree = agent.id.split('').reduce((sum: number, char: string) => sum + char.charCodeAt(0), 0) % 360
 
     const difference = Math.abs(degree - agentDegree)
     const orb = Math.min(difference, 360 - difference)

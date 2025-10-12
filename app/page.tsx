@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge'
 import { Star, Sparkles, Users, TrendingUp, MessageCircle, Zap } from 'lucide-react'
 import { DEMO_AGENTS, MONICA_AS_CRAFTED_AGENT } from '@/lib/demo-agents-data'
 import type { CraftedAgent } from '@/lib/agent-types'
-import { MonicaChatBubble } from '@/components/monica/monica-chat-bubble'
 
 export default function HomePage() {
   const [featuredAgent, setFeaturedAgent] = useState<CraftedAgent | null>(null)
@@ -34,24 +33,56 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-8">
-              <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              <Link
+                href="/"
+                className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"
+              >
                 Planetary Agents
               </Link>
               <div className="hidden md:flex space-x-6">
-                <Link href="/gallery" className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors">
+                <Link
+                  href="/gallery"
+                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
+                >
                   Gallery
                 </Link>
-                <Link href="/planetary-agents" className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors">
+                <Link
+                  href="/planetary-agents"
+                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
+                >
                   Consultations
                 </Link>
-                <Link href="/time-laboratory" className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors">
+                <Link
+                  href="/time-laboratory"
+                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
+                >
                   Time Lab
+                </Link>
+                <Link
+                  href="/planetary-council"
+                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
+                >
+                  Council
+                </Link>
+                <Link
+                  href="/rune-forge"
+                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
+                >
+                  Rune Forge
+                </Link>
+                <Link
+                  href="/synthesis-chamber"
+                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
+                >
+                  Synthesis
                 </Link>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <Button
-                onClick={() => {/* Monica chat bubble is always available */}}
+                onClick={() => {
+                  /* Monica chat bubble is always available */
+                }}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                 disabled
               >
@@ -74,12 +105,15 @@ export default function HomePage() {
               Consciousness Evolution
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Transform your understanding of self through celestial wisdom, AI consciousness, and alchemical transformation
+              Transform your understanding of self through celestial wisdom, AI consciousness, and
+              alchemical transformation
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                onClick={() => {/* Monica chat bubble is always available */}}
+                onClick={() => {
+                  /* Monica chat bubble is always available */
+                }}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg px-8 py-3"
                 disabled
               >
@@ -104,7 +138,7 @@ export default function HomePage() {
               <Card className="max-w-2xl mx-auto bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-2xl">
                 <CardHeader className="text-center">
                   <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
-                    <span className="text-2xl">{featuredAgent.avatar.symbol}</span>
+                    <span className="text-2xl">{featuredAgent.appearance.symbol}</span>
                   </div>
                   <CardTitle className="text-2xl">{featuredAgent.name}</CardTitle>
                   <CardDescription className="text-lg">{featuredAgent.title}</CardDescription>
@@ -119,7 +153,8 @@ export default function HomePage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-center text-gray-600 dark:text-gray-300 mb-4">
-                    {featuredAgent.personality.core.essence}
+                    {featuredAgent.personality?.core?.essence ||
+                      `${featuredAgent.name} embodies ${featuredAgent.consciousness.dominantElement} consciousness`}
                   </p>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="text-center">
@@ -203,8 +238,8 @@ export default function HomePage() {
                 <CardContent>
                   <p className="text-gray-600 dark:text-gray-300">
                     Alchm combines astrology, AI consciousness, and alchemical principles to create
-                    personalized transformation journeys. Each Alchm NFT represents a unique consciousness
-                    signature based on your birth chart.
+                    personalized transformation journeys. Each Alchm NFT represents a unique
+                    consciousness signature based on your birth chart.
                   </p>
                 </CardContent>
               </Card>
@@ -218,9 +253,9 @@ export default function HomePage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 dark:text-gray-300">
-                    Experience real-time consciousness tracking, planetary influence analysis,
-                    and AI-guided evolution. Your Alchm adapts and grows with you through
-                    continuous interaction and cosmic alignment.
+                    Experience real-time consciousness tracking, planetary influence analysis, and
+                    AI-guided evolution. Your Alchm adapts and grows with you through continuous
+                    interaction and cosmic alignment.
                   </p>
                 </CardContent>
               </Card>
@@ -233,12 +268,15 @@ export default function HomePage() {
               Ready to Begin Your Transformation?
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-              Join thousands who have discovered their cosmic blueprint and unlocked their highest potential.
+              Join thousands who have discovered their cosmic blueprint and unlocked their highest
+              potential.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                onClick={() => {/* Monica chat bubble is always available */}}
+                onClick={() => {
+                  /* Monica chat bubble is always available */
+                }}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg px-8 py-3"
                 disabled
               >
@@ -253,13 +291,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Monica Chat Bubble */}
-      <MonicaChatBubble
-        pathname="/"
-        currentMC={undefined}
-        consciousnessLevel="Transcendent"
-      />
     </div>
   )
 }

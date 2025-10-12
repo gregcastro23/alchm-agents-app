@@ -9,7 +9,8 @@ import type {
   ConversationEntry,
   PersonalityInsight,
   FeedbackEntry,
-  PreferenceResponse
+  PreferenceResponse,
+  EngagementPattern,
 } from './training-interface-design'
 
 // ============================================================================
@@ -359,7 +360,7 @@ export class TrainingDataManager {
   async createSession(sessionData: Partial<TrainingSession>): Promise<TrainingSession> {
     const session: TrainingSession = {
       id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      ...sessionData
+      ...sessionData,
     } as TrainingSession
 
     // Validate session data
@@ -380,13 +381,16 @@ export class TrainingDataManager {
       entityId: session.id,
       entityType: 'session',
       timestamp: new Date().toISOString(),
-      details: { userId: session.userId, sessionType: session.sessionType }
+      details: { userId: session.userId, sessionType: session.sessionType },
     })
 
     return session
   }
 
-  async updateSession(sessionId: string, updates: Partial<TrainingSession>): Promise<TrainingSession> {
+  async updateSession(
+    sessionId: string,
+    updates: Partial<TrainingSession>
+  ): Promise<TrainingSession> {
     const session = this.store.sessions.get(sessionId)
     if (!session) throw new Error(`Session ${sessionId} not found`)
 
@@ -408,19 +412,21 @@ export class TrainingDataManager {
       entityId: sessionId,
       entityType: 'session',
       timestamp: new Date().toISOString(),
-      details: { changes: this.calculateChanges(oldSession, updatedSession) }
+      details: { changes: this.calculateChanges(oldSession, updatedSession) },
     })
 
     return updatedSession
   }
 
-  async createArtifact(artifactData: Omit<TrainingArtifact, 'id' | 'createdAt' | 'version' | 'checksum'>): Promise<TrainingArtifact> {
+  async createArtifact(
+    artifactData: Omit<TrainingArtifact, 'id' | 'createdAt' | 'version' | 'checksum'>
+  ): Promise<TrainingArtifact> {
     const artifact: TrainingArtifact = {
       ...artifactData,
       id: `artifact_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date().toISOString(),
       version: 1,
-      checksum: this.calculateChecksum(artifactData)
+      checksum: this.calculateChecksum(artifactData),
     }
 
     // Validate artifact
@@ -444,7 +450,7 @@ export class TrainingDataManager {
       entityId: artifact.id,
       entityType: 'artifact',
       timestamp: new Date().toISOString(),
-      details: { userId: artifact.userId, type: artifact.type, sessionId: artifact.sessionId }
+      details: { userId: artifact.userId, type: artifact.type, sessionId: artifact.sessionId },
     })
 
     return artifact
@@ -507,7 +513,7 @@ export class TrainingDataManager {
     let hash = 0
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32-bit integer
     }
     return hash.toString(16)
@@ -518,10 +524,15 @@ export class TrainingDataManager {
 
     function deepCompare(path: string, oldVal: any, newVal: any) {
       if (oldVal !== newVal) {
-        if (typeof oldVal === 'object' && typeof newVal === 'object' && oldVal !== null && newVal !== null) {
+        if (
+          typeof oldVal === 'object' &&
+          typeof newVal === 'object' &&
+          oldVal !== null &&
+          newVal !== null
+        ) {
           // Compare objects recursively
           const allKeys = new Set([...Object.keys(oldVal), ...Object.keys(newVal)])
-          for (const key of allKeys) {
+          for (const key of Array.from(allKeys)) {
             deepCompare(`${path}.${key}`, oldVal[key], newVal[key])
           }
         } else {
@@ -544,7 +555,8 @@ export class TrainingDataManager {
     if (!session) return
 
     // Update session relationships
-    const relationships = this.store.sessionRelationships.get(artifact.sessionId) ||
+    const relationships =
+      this.store.sessionRelationships.get(artifact.sessionId) ||
       this.createEmptyRelationships(artifact.sessionId)
 
     if (!relationships.artifacts.includes(artifact.id)) {
@@ -569,15 +581,17 @@ export class TrainingDataManager {
       previousLevel: 0,
       newLevel: 0,
       skillsDeveloped: [],
-      insightsGained: []
+      insightsGained: [],
     }
   }
 
   private isKeyArtifact(artifact: TrainingArtifact): boolean {
     // Determine if artifact is particularly valuable
-    return artifact.qualityMetrics.overall_score > 0.8 ||
-           artifact.analysis.insights.length > 3 ||
-           artifact.tags.includes('breakthrough')
+    return (
+      artifact.qualityMetrics.overall_score > 0.8 ||
+      artifact.analysis.insights.length > 3 ||
+      artifact.tags.includes('breakthrough')
+    )
   }
 
   // =========================================================================
@@ -622,7 +636,11 @@ export class TrainingDataManager {
   // DATA LINEAGE AND EVENT LOGGING
   // =========================================================================
 
-  private async createDataLineage(entityId: string, entityType: string, createdBy: string): Promise<void> {
+  private async createDataLineage(
+    entityId: string,
+    entityType: string,
+    createdBy: string
+  ): Promise<void> {
     const lineage: DataLineage = {
       entityId,
       entityType: entityType as any,
@@ -633,7 +651,7 @@ export class TrainingDataManager {
       dependsOn: [],
       dependedBy: [],
       qualityScore: 1.0,
-      validationStatus: 'valid'
+      validationStatus: 'valid',
     }
 
     this.store.dataLineage.set(entityId, lineage)
@@ -650,7 +668,7 @@ export class TrainingDataManager {
       modifiedBy: 'system', // In real implementation, track actual user
       changeType: 'update',
       changes,
-      reason: 'Regular data update'
+      reason: 'Regular data update',
     })
 
     // Update quality score based on modification history
@@ -681,25 +699,25 @@ export class TrainingDataManager {
       compressionRatio: 1.0,
       encryptionMethod: 'AES-256',
       checksum: '',
-      recoveryPoints: []
+      recoveryPoints: [],
     }
 
     // Collect all entities
-    for (const [id, session] of this.store.sessions) {
+    for (const [id, session] of Array.from(this.store.sessions)) {
       manifest.entities.push({
         type: 'session',
         id,
         checksum: this.calculateChecksum(session),
-        size: JSON.stringify(session).length
+        size: JSON.stringify(session).length,
       })
     }
 
-    for (const [id, artifact] of this.store.trainingArtifacts) {
+    for (const [id, artifact] of Array.from(this.store.trainingArtifacts)) {
       manifest.entities.push({
         type: 'artifact',
         id,
         checksum: this.calculateChecksum(artifact),
-        size: JSON.stringify(artifact).length
+        size: JSON.stringify(artifact).length,
       })
     }
 
@@ -716,7 +734,11 @@ export class TrainingDataManager {
       entityId: manifest.checksum,
       entityType: 'backup',
       timestamp: new Date().toISOString(),
-      details: { description, entityCount: manifest.entities.length, totalSize: manifest.totalSize }
+      details: {
+        description,
+        entityCount: manifest.entities.length,
+        totalSize: manifest.totalSize,
+      },
     })
 
     return manifest
@@ -730,7 +752,7 @@ export class TrainingDataManager {
       entityId: backupId,
       entityType: 'backup',
       timestamp: new Date().toISOString(),
-      details: { success: true }
+      details: { success: true },
     })
 
     return true
@@ -742,23 +764,29 @@ export class TrainingDataManager {
 
   private startIntegrityMonitoring(): void {
     // Run integrity checks every 5 minutes
-    setInterval(() => {
-      this.runIntegrityChecks()
-    }, 5 * 60 * 1000)
+    setInterval(
+      () => {
+        this.runIntegrityChecks()
+      },
+      5 * 60 * 1000
+    )
   }
 
   private startBackupScheduling(): void {
     // Schedule backups every hour
-    setInterval(() => {
-      this.createBackup('Scheduled automatic backup')
-    }, 60 * 60 * 1000)
+    setInterval(
+      () => {
+        this.createBackup('Scheduled automatic backup')
+      },
+      60 * 60 * 1000
+    )
   }
 
   private async runIntegrityChecks(): Promise<void> {
     let issuesFound = 0
 
     // Check session integrity
-    for (const [sessionId, session] of this.store.sessions) {
+    for (const [sessionId, session] of Array.from(this.store.sessions)) {
       try {
         this.validateSession(session)
       } catch (error) {
@@ -768,7 +796,7 @@ export class TrainingDataManager {
     }
 
     // Check artifact integrity
-    for (const [artifactId, artifact] of this.store.trainingArtifacts) {
+    for (const [artifactId, artifact] of Array.from(this.store.trainingArtifacts)) {
       try {
         this.validateArtifact(artifact)
       } catch (error) {
@@ -783,7 +811,7 @@ export class TrainingDataManager {
         entityId: 'system',
         entityType: 'system',
         timestamp: new Date().toISOString(),
-        details: { issuesFound }
+        details: { issuesFound },
       })
     }
   }
@@ -810,22 +838,22 @@ export class TrainingDataManager {
   }
 
   getUserProfile(userId: string): UserTrainingProfile | null {
-    return Array.from(this.store.userProfiles.values())
-      .find(profile => profile.userId === userId) || null
+    return (
+      Array.from(this.store.userProfiles.values()).find(profile => profile.userId === userId) ||
+      null
+    )
   }
 
   searchArtifacts(query: string, userId?: string): TrainingArtifact[] {
     const results: TrainingArtifact[] = []
 
-    for (const artifact of this.store.trainingArtifacts.values()) {
+    for (const artifact of Array.from(this.store.trainingArtifacts.values())) {
       if (userId && artifact.userId !== userId) continue
 
       // Simple text search - in real implementation use full-text search
-      const searchableText = [
-        artifact.content.text,
-        ...artifact.tags,
-        ...artifact.analysis.topics
-      ].join(' ').toLowerCase()
+      const searchableText = [artifact.content.text, ...artifact.tags, ...artifact.analysis.topics]
+        .join(' ')
+        .toLowerCase()
 
       if (searchableText.includes(query.toLowerCase())) {
         results.push(artifact)
@@ -846,15 +874,24 @@ export class TrainingDataManager {
     return {
       totalSessions: sessions.length,
       totalArtifacts: artifacts.length,
-      averageSessionLength: sessions.reduce((sum, s) => sum + (new Date(s.lastActiveAt).getTime() - new Date(s.startedAt).getTime()), 0) / sessions.length / 1000 / 60,
+      averageSessionLength:
+        sessions.reduce(
+          (sum, s) => sum + (new Date(s.lastActiveAt).getTime() - new Date(s.startedAt).getTime()),
+          0
+        ) /
+        sessions.length /
+        1000 /
+        60,
       topActivityTypes: this.calculateTopActivityTypes(artifacts),
       learningProgression: this.calculateLearningProgression(sessions),
       engagementPatterns: this.analyzeEngagementPatterns(sessions),
-      qualityTrends: this.calculateQualityTrends(artifacts)
+      qualityTrends: this.calculateQualityTrends(artifacts),
     }
   }
 
-  private calculateTopActivityTypes(artifacts: TrainingArtifact[]): Array<{ type: string; count: number }> {
+  private calculateTopActivityTypes(
+    artifacts: TrainingArtifact[]
+  ): Array<{ type: string; count: number }> {
     const typeCount: Record<string, number> = {}
 
     artifacts.forEach(artifact => {
@@ -869,34 +906,40 @@ export class TrainingDataManager {
 
   private calculateLearningProgression(sessions: TrainingSession[]): ImprovementTrajectory[] {
     // Simplified - would analyze actual learning metrics
-    return [{
-      skill: 'overall_engagement',
-      dataPoints: sessions.map((session, index) => ({
-        timestamp: session.startedAt,
-        value: Math.min(100, 50 + index * 2),
-        context: `Session ${index + 1}`
-      })),
-      trend: 'improving',
-      confidence: 0.8
-    }]
+    return [
+      {
+        skill: 'overall_engagement',
+        dataPoints: sessions.map((session, index) => ({
+          timestamp: session.startedAt,
+          value: Math.min(100, 50 + index * 2),
+          context: `Session ${index + 1}`,
+        })),
+        trend: 'improving',
+        confidence: 0.8,
+      },
+    ]
   }
 
   private analyzeEngagementPatterns(sessions: TrainingSession[]): EngagementPattern[] {
     // Simplified pattern analysis
-    return [{
-      patternType: 'time_of_day',
-      pattern: { preferredHour: 14 }, // 2 PM
-      strength: 0.7,
-      lastObserved: new Date().toISOString()
-    }]
+    return [
+      {
+        patternType: 'time_of_day',
+        pattern: { preferredHour: 14 }, // 2 PM
+        strength: 0.7,
+        lastObserved: new Date().toISOString(),
+      },
+    ]
   }
 
-  private calculateQualityTrends(artifacts: TrainingArtifact[]): Array<{ timestamp: string; quality: number }> {
+  private calculateQualityTrends(
+    artifacts: TrainingArtifact[]
+  ): Array<{ timestamp: string; quality: number }> {
     return artifacts
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
       .map(artifact => ({
         timestamp: artifact.createdAt,
-        quality: artifact.qualityMetrics.overall_score
+        quality: artifact.qualityMetrics.overall_score,
       }))
   }
 
@@ -923,8 +966,8 @@ export class TrainingDataManager {
         compressionRatio: 1.0,
         encryptionMethod: 'none',
         checksum: '',
-        recoveryPoints: []
-      }
+        recoveryPoints: [],
+      },
     }
   }
 }
@@ -934,7 +977,13 @@ export class TrainingDataManager {
 // ============================================================================
 
 export interface DataEvent {
-  type: 'session_created' | 'session_updated' | 'artifact_created' | 'backup_created' | 'backup_restored' | 'integrity_issues_found'
+  type:
+    | 'session_created'
+    | 'session_updated'
+    | 'artifact_created'
+    | 'backup_created'
+    | 'backup_restored'
+    | 'integrity_issues_found'
   entityId: string
   entityType: 'session' | 'artifact' | 'backup' | 'system'
   timestamp: string
@@ -995,7 +1044,7 @@ export function validateDataIntegrity(data: any): ValidationResult {
   return {
     isValid: issues.length === 0,
     issues,
-    severity: issues.length > 0 ? 'error' : 'none'
+    severity: issues.length > 0 ? 'error' : 'none',
   }
 }
 

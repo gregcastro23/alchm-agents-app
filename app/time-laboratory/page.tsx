@@ -22,6 +22,7 @@ import { ZodiacWheel } from '@/components/zodiac-wheel'
 import { TransitComparison } from '@/components/transit-comparison'
 import { JobMonitoringDashboard } from '@/components/job-monitoring-dashboard'
 import { PlanetaryAgentsView } from '@/components/time-laboratory/planetary-agents-view'
+import { MultiAgentConversation } from '@/components/time-laboratory/multi-agent-conversation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -35,6 +36,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   Clock,
   Sparkles,
@@ -150,6 +152,11 @@ export default function TimeLaboratoryPage() {
   const [currentTransits, setCurrentTransits] = useState<any[]>([])
   const [selectedTransits, setSelectedTransits] = useState<any[]>([])
   const [chatEnabled, setChatEnabled] = useState(true)
+
+  // Planetary group chat state
+  const [planetaryGroupChatOpen, setPlanetaryGroupChatOpen] = useState(false)
+  const [planetaryAgents, setPlanetaryAgents] = useState<any[]>([])
+  const [groupChatMoment, setGroupChatMoment] = useState<Date | null>(null)
 
   // Enhanced suggestions for both modes
   const legacyQueries = [
@@ -621,6 +628,21 @@ export default function TimeLaboratoryPage() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-purple-300">Time Range</label>
                     <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="cosmic-button bg-purple-600 hover:bg-purple-700"
+                        onClick={() => {
+                          const now = new Date()
+                          setTimeRange({
+                            start: now,
+                            end: now,
+                          })
+                        }}
+                      >
+                        <Zap className="w-4 h-4 mr-1" />
+                        Current Moment
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline"
@@ -1300,10 +1322,59 @@ export default function TimeLaboratoryPage() {
               selectedDate={timeRange.end}
               userId="demo-user"
               onAgentChat={handleChatInitiate}
+              onGroupChat={async agents => {
+                // Handle group chat with planetary agents
+                try {
+                  const response = await fetch('/api/moment-planetary-group-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      date: timeRange.end.toISOString(),
+                      userId: 'demo-user',
+                    }),
+                  })
+
+                  if (response.ok) {
+                    const data = await response.json()
+                    if (data.success) {
+                      // Open group chat modal with the planetary agents for this moment
+                      setPlanetaryAgents(data.data.agents)
+                      setGroupChatMoment(timeRange.end)
+                      setPlanetaryGroupChatOpen(true)
+                    }
+                  } else {
+                    console.error('Failed to create group chat')
+                  }
+                } catch (error) {
+                  console.error('Error creating planetary group chat:', error)
+                }
+              }}
             />
           </div>
         )}
       </div>
+
+      {/* Planetary Group Chat Modal */}
+      <Dialog open={planetaryGroupChatOpen} onOpenChange={setPlanetaryGroupChatOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="text-gold flex items-center gap-2">
+              <Users className="w-6 h-6" />
+              Planetary Council - {groupChatMoment?.toLocaleDateString()}{' '}
+              {groupChatMoment?.toLocaleTimeString()}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            <MultiAgentConversation
+              availableAgents={planetaryAgents}
+              userId="demo-user"
+              initialAgents={planetaryAgents.slice(0, 5).map(agent => agent.id)} // Start with first 5 agents
+              onClose={() => setPlanetaryGroupChatOpen(false)}
+              maxAgents={10}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

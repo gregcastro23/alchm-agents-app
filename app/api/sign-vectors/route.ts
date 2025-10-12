@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { CharacterVectorCalculator } from '@/lib/astrological-character-vectors'
-import { generateSignVectorRune, generateAgentCharacterRune } from '@/lib/runes/sign-vector-runes'
-import { DEMO_AGENTS } from '@/lib/demo-agents-data'
+import { CharacterVectorCalculator } from '../../../../lib/astrological-character-vectors'
+import { generateSignVectorRune, generateAgentCharacterRune } from '../../../../lib/runes/sign-vector-runes'
+import { DEMO_AGENTS } from '../../../../lib/demo-agents-data'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -215,7 +215,7 @@ async function generateCollectiveRune(charts: any[]) {
       return NextResponse.json({ error: 'No valid agents found' }, { status: 400 })
     }
 
-    const { generateCollectiveAgentRune } = await import('@/lib/runes/sign-vector-runes')
+    const { generateCollectiveAgentRune } = await import('../../../../lib/runes/sign-vector-runes')
     const rune = generateCollectiveAgentRune(agents)
 
     return NextResponse.json({

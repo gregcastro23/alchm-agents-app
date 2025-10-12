@@ -4,10 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { routeTask } from '@/lib/agents/router'
-import { agentKineticProfiles, type KineticProfile } from '@/lib/agents/kinetic-profiles'
-import { ConsciousnessMemorySystem } from '@/lib/agents/consciousness-memory'
-import { AlchemicalKineticsClient } from '@/lib/kinetics-client'
+import { routeTask } from '../../../../lib/agents/router'
+import { AlchemicalKineticsClient } from '../../../../lib/kinetics-client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -64,7 +62,7 @@ export async function GET(request: NextRequest) {
     const contextualCompatibility = bothOptimal ? baseCompatibility * 1.3 : baseCompatibility
 
     // Shared peak hours analysis
-    const sharedPeakHours = agent1Profile.alignment.filter(hour =>
+    const sharedPeakHours = agent1Profile.alignment.filter((hour: string) =>
       agent2Profile.alignment.includes(hour)
     )
 

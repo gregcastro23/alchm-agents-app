@@ -3,14 +3,112 @@
 import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { TrendingUp, TrendingDown, Circle } from 'lucide-react'
-// Function will be available in future updates
-const analyzeAspectsWithKinetics = async (planet1: string, planet2: string, location: any) => {
-  return {
-    phase: 'applying' as const,
-    velocity: 0.1,
-    exact: new Date(),
-    accuracy: 0.9,
+// Analyze planetary aspects with kinetics
+const analyzeAspectsWithKinetics = async (samples: any[], location: any) => {
+  if (!samples || samples.length === 0) {
+    return { aspects: [] }
   }
+
+  const aspects = []
+  const planets = [
+    'Sun',
+    'Moon',
+    'Mercury',
+    'Venus',
+    'Mars',
+    'Jupiter',
+    'Saturn',
+    'Uranus',
+    'Neptune',
+    'Pluto',
+  ]
+
+  // Analyze aspects between all planet pairs
+  for (let i = 0; i < planets.length; i++) {
+    for (let j = i + 1; j < planets.length; j++) {
+      const planet1 = planets[i]
+      const planet2 = planets[j]
+
+      // Get current positions from sample data
+      const currentSample = samples[0]
+      if (!currentSample || !currentSample.planets) continue
+
+      const pos1 = currentSample.planets[planet1]
+      const pos2 = currentSample.planets[planet2]
+
+      if (
+        !pos1 ||
+        !pos2 ||
+        typeof pos1.longitude !== 'number' ||
+        typeof pos2.longitude !== 'number'
+      )
+        continue
+
+      // Calculate angular separation
+      let separation = Math.abs(pos1.longitude - pos2.longitude)
+      if (separation > 180) separation = 360 - separation
+
+      // Determine aspect type and orb
+      const aspectsToCheck = [
+        { type: 'conjunction', angle: 0, orb: 8 },
+        { type: 'sextile', angle: 60, orb: 6 },
+        { type: 'square', angle: 90, orb: 7 },
+        { type: 'trine', angle: 120, orb: 8 },
+        { type: 'opposition', angle: 180, orb: 8 },
+      ]
+
+      for (const aspect of aspectsToCheck) {
+        const orb = Math.abs(separation - aspect.angle)
+        if (orb <= aspect.orb) {
+          // Calculate aspect phase (applying, exact, separating)
+          let status: 'applying' | 'exact' | 'separating' = 'exact'
+          let rate = 0
+
+          if (samples.length > 1) {
+            // Calculate movement rate
+            const prevSample = samples[1]
+            if (prevSample && prevSample.planets) {
+              const prevPos1 = prevSample.planets[planet1]
+              const prevPos2 = prevSample.planets[planet2]
+
+              if (prevPos1 && prevPos2) {
+                const prevSeparation = Math.abs(prevPos1.longitude - prevPos2.longitude)
+                const prevAdjustedSeparation =
+                  prevSeparation > 180 ? 360 - prevSeparation : prevSeparation
+                const movement = separation - prevAdjustedSeparation
+
+                if (Math.abs(orb) < 1) {
+                  status = 'exact'
+                } else if (
+                  (movement > 0 && separation < aspect.angle) ||
+                  (movement < 0 && separation > aspect.angle)
+                ) {
+                  status = 'applying'
+                } else {
+                  status = 'separating'
+                }
+
+                rate = Math.abs(movement)
+              }
+            }
+          }
+
+          aspects.push({
+            planet1,
+            planet2,
+            type: aspect.type,
+            status,
+            orb: separation - aspect.angle, // Signed orb
+            rate: rate || 0.1, // Default rate if unable to calculate
+          })
+
+          break // Only add the closest aspect
+        }
+      }
+    }
+  }
+
+  return { aspects }
 }
 import { sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
 
@@ -53,6 +151,12 @@ export function AspectPhaseIndicator({
 
         // Analyze aspects with kinetics
         const analysis = await analyzeAspectsWithKinetics(samples, location)
+
+        // Check if aspects data is available
+        if (!analysis || !analysis.aspects || !Array.isArray(analysis.aspects)) {
+          setAspectData(null)
+          return
+        }
 
         // Find the aspect between our two planets
         const relevantAspect = analysis.aspects.find(
@@ -173,6 +277,12 @@ export function AspectPhaseWidget({
 
         // Analyze aspects with kinetics
         const analysis = await analyzeAspectsWithKinetics(samples, location)
+
+        // Check if aspects data is available
+        if (!analysis || !analysis.aspects || !Array.isArray(analysis.aspects)) {
+          setAspects([])
+          return
+        }
 
         // Filter for aspects involving our selected planets
         const relevantAspects = analysis.aspects.filter(

@@ -7,11 +7,11 @@ import {
   createConversationContext,
   type AgentInteractionData,
   type ConversationContext,
-} from '@/lib/galileo-agent-logger'
-import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
-import { ANumberCalculator } from '@/lib/core-energy-rules'
-import { CharacterVectorCalculator } from '@/lib/astrological-character-vectors'
-import { MonicaResponseHandler } from '@/lib/monica/monica-response-handler'
+} from '../../../lib/galileo-agent-logger'
+import { generateAlchmForCurrentMoment } from '../../../lib/alchemizer'
+import { ANumberCalculator } from '../../../lib/core-energy-rules'
+import { CharacterVectorCalculator } from '../../../lib/astrological-character-vectors'
+import { MonicaResponseHandler } from '../../../lib/monica/monica-response-handler'
 import {
   MONICA_BASE_SYSTEM_PROMPT,
   getMonicaContextPrompt,

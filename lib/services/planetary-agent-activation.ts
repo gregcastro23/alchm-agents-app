@@ -18,6 +18,8 @@ import {
   getPlanetaryElement,
   calculateElementalAffinity,
 } from '../astrological-data'
+import { getLunarDegreePersonality } from '../moon-phase-calculator'
+import { PLANET_SYMBOLS, PLANET_COLORS } from '../planetary-config-helper'
 
 export interface ActivatedPlanetaryAgent {
   // Degree information
@@ -183,6 +185,109 @@ export function calculateTransitActivation(
   return activatedAgents.sort(
     (a, b) => (b.transitInfo?.significance || 0) - (a.transitInfo?.significance || 0)
   )
+}
+
+/**
+ * Create planetary agents for all 10 planets at a specific moment
+ */
+export function createMomentPlanetaryAgents(
+  planetaryData: {
+    planets: Record<
+      string,
+      { longitude: number; sign: string; signDegree: number; retrograde?: boolean }
+    >
+  },
+  options: {
+    currentDateTime?: Date
+  } = {}
+): ActivatedPlanetaryAgent[] {
+  const planetNames = [
+    'Sun',
+    'Moon',
+    'Mercury',
+    'Venus',
+    'Mars',
+    'Jupiter',
+    'Saturn',
+    'Uranus',
+    'Neptune',
+    'Pluto',
+  ]
+  const agents: ActivatedPlanetaryAgent[] = []
+
+  for (const planetName of planetNames) {
+    const planetData = planetaryData.planets[planetName]
+    if (!planetData) {
+      console.log(
+        `Planet ${planetName} not found in planetaryData.planets:`,
+        Object.keys(planetaryData.planets)
+      )
+      continue
+    }
+
+    // Create planetary config for unified agent factory
+    const planetaryConfig: PlanetaryConfig = {
+      planet: planetName,
+      sign: planetData.sign,
+      degree: planetData.signDegree.toString(),
+      dignity: getPlanetaryDignity(planetName, planetData.sign),
+      element: getSignElement(planetData.sign),
+      color: PLANET_COLORS[planetName as keyof typeof PLANET_COLORS] || '#8b5cf6',
+      symbol: PLANET_SYMBOLS[planetName as keyof typeof PLANET_SYMBOLS] || '●',
+      isDiurnal: options.currentDateTime ? isDiurnalTime(options.currentDateTime) : true,
+      retrograde: planetData.retrograde || false,
+    }
+
+    // Add lunar personality for Moon agent
+    if (planetName === 'Moon') {
+      const lunarPersonality = getLunarDegreePersonality(planetData.longitude)
+      planetaryConfig.moonPhase = lunarPersonality.phase
+      planetaryConfig.moonPersonality = lunarPersonality.personality
+      planetaryConfig.moonDegree = planetData.longitude
+    }
+
+    // Create unified agent
+    const factory = new UnifiedAgentFactory()
+    const agent = factory.createFromPlanetary(planetaryConfig)
+
+    // Calculate activation strength
+    const activationStrength = calculateActivationStrength(
+      { powerLevel: 0.5 } as any, // Use default config
+      { orb: 0 }
+    )
+
+    // Create activated agent
+    const activatedAgent: ActivatedPlanetaryAgent = {
+      degree: planetData.signDegree,
+      zodiacDegree: planetData.signDegree,
+      sign: planetData.sign,
+      config: {
+        ruler: planetName,
+        sign: planetData.sign,
+        zodiacDegree: planetData.signDegree,
+        element: getPlanetaryElement(planetName) || getSignElement(planetData.sign),
+        powerLevel: 0.5,
+        consciousnessLevel: 'Active',
+        themes: [`${planetName} energy`, `${planetData.sign} expression`],
+        qualities: [`${planetName} characteristics in ${planetData.sign}`],
+        modality: 'Cardinal', // Default
+        isCriticalDegree: false,
+        isAnaretic: false,
+      },
+      agent,
+      activationStrength,
+      consciousnessState: {
+        level: 'Active',
+        powerLevel: activationStrength * 100,
+        themes: [`${planetName} energy`, `${planetData.sign} expression`],
+        qualities: [`${planetName} characteristics in ${planetData.sign}`],
+      },
+    }
+
+    agents.push(activatedAgent)
+  }
+
+  return agents
 }
 
 /**

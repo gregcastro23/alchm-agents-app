@@ -7,11 +7,11 @@ services:
   - type: web
     name: planetary-agents-backend
     runtime: node
-    plan: starter  # Change to 'standard' or 'pro' for production
-    region: oregon  # or 'frankfurt' for EU
+    plan: starter # Change to 'standard' or 'pro' for production
+    region: oregon # or 'frankfurt' for EU
 
     # Build configuration using npm
-    buildCommand: echo "Deprecated. Use Yarn: see render.yaml" && npm ci && npm run build || true
+    buildCommand: 'echo "Deprecated. Use Yarn: see render.yaml" && npm ci && npm run build || true'
     startCommand: node dist/index.js
 
     # Environment configuration
@@ -55,7 +55,7 @@ services:
 
       # Optional CORS configuration (update with your frontend domain)
       - key: CORS_ORIGINS
-        value: "*"
+        value: '*'
 
     # Health check configuration
     healthCheckPath: /api/health
@@ -67,7 +67,6 @@ services:
       maxInstances: 3
       targetCPUPercent: 70
       targetMemoryPercent: 80
-
 # =============================================================================
 # DEPLOYMENT NOTES
 # =============================================================================

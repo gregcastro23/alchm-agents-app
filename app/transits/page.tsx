@@ -225,9 +225,7 @@ export default function TransitsPage() {
               <Star className="w-5 h-5 text-purple-500" />
               Current Cosmic Configuration
             </CardTitle>
-            <CardDescription>
-              Planetary positions at {new Date().toLocaleString()}
-            </CardDescription>
+            <CardDescription>Planetary positions at {new Date().toLocaleString()}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -317,18 +315,13 @@ export default function TransitsPage() {
                           {activation.planet} in {activation.sign}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          {activation.degree.toFixed(1)}° - Activating{' '}
-                          {activation.agents.length} agent
+                          {activation.degree.toFixed(1)}° - Activating {activation.agents.length}{' '}
+                          agent
                           {activation.agents.length > 1 ? 's' : ''}
                         </p>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      asChild
-                      className="flex items-center gap-1"
-                    >
+                    <Button variant="outline" size="sm" asChild className="flex items-center gap-1">
                       <Link
                         href={`/gallery?planet=${activation.planet}&sign=${activation.sign}&degree=${activation.degree.toFixed(1)}`}
                       >

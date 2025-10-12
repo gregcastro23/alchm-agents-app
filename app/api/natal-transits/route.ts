@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   calculateNatalTransitSignificance,
   findSignificantTransitDates,
-} from '@/lib/degree-agent-mapping'
+} from '../../../../lib/degree-agent-mapping'
 import type {
   NatalPlacement,
   NatalPlacementTransit,
   DegreeTransitSignificance,
-} from '@/lib/degree-agent-mapping'
+} from '../../../../lib/degree-agent-mapping'
 
 /**
  * Natal Transit Analysis API
@@ -298,7 +298,7 @@ async function handleDegreeInfo(searchParams: URLSearchParams) {
   }
 
   // Import the degree agent mapping function
-  const { getDegreeAgents } = await import('@/lib/degree-agent-mapping')
+  const { getDegreeAgents } = await import('../../../../lib/degree-agent-mapping')
   const mapping = getDegreeAgents(degree)
 
   return NextResponse.json({

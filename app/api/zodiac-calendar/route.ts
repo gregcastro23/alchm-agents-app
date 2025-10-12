@@ -16,7 +16,7 @@ import {
   getSignDurations,
   ZodiacPosition,
   DateRange,
-} from '@/lib/ephemeris/solar-ephemeris'
+} from '../../../../lib/ephemeris/solar-ephemeris'
 import {
   buildAnnualCalendar,
   getDegreeForDate,
@@ -24,7 +24,7 @@ import {
   getCurrentZodiacPeriod,
   daysUntilNextIngress,
   getMonthlyZodiacCalendar,
-} from '@/lib/ephemeris/degree-calendar-map'
+} from '../../../../lib/ephemeris/degree-calendar-map'
 
 // GET /api/zodiac-calendar
 export async function GET(request: NextRequest) {

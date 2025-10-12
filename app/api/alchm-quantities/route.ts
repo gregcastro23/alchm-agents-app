@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
-import { logQuantitiesToGalileo, type AlchemicalMetrics } from '@/lib/galileo-logger'
-import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
-import { CharacterVectorCalculator } from '@/lib/astrological-character-vectors'
-import { generateRealTimeSignVectorRune } from '@/lib/runes/sign-vector-runes'
+import { generateAlchmForCurrentMoment } from '../../../../lib/alchemizer'
+import { logQuantitiesToGalileo, type AlchemicalMetrics } from '../../../../lib/galileo-logger'
+import { getCurrentPlanetaryPositions } from '../../../../lib/calculate-transits'
+import { CharacterVectorCalculator } from '../../../../lib/astrological-character-vectors'
+import { generateRealTimeSignVectorRune } from '../../../../lib/runes/sign-vector-runes'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -18,7 +18,7 @@ export async function GET() {
     })
 
     // Generate alchemical data for the current moment with timeout
-    const alchmData = await Promise.race([generateAlchmForCurrentMoment(), timeoutPromise])
+    const alchmData = await Promise.race([generateAlchmForCurrentMoment(), timeoutPromise]) as Record<string, any>
 
     // Validate the response data
     if (!alchmData || typeof alchmData !== 'object') {
@@ -119,8 +119,8 @@ export async function GET() {
 
     // Determine dominant element based on calculations
     const elements = { Fire: spirit, Water: essence, Air: matter, Earth: substance }
-    const dominantElement = Object.entries(elements).reduce((a, b) =>
-      elements[a[0]] > elements[b[0]] ? a : b
+    const dominantElement = Object.entries(elements).reduce((a: [string, number], b: [string, number]) =>
+      elements[a[0] as keyof typeof elements] > elements[b[0] as keyof typeof elements] ? a : b
     )[0]
 
     const fallbackData = {

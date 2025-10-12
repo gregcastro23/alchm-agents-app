@@ -337,9 +337,12 @@ export default function MonicaPage() {
         {/* How to Use Monica Chat */}
         <Card className="mb-6 bg-gradient-to-r from-purple-900/30 to-blue-900/30 border-2 border-purple-500/50">
           <CardHeader>
-            <CardTitle className="text-purple-300">How to Use Monica Chat Across the Platform</CardTitle>
+            <CardTitle className="text-purple-300">
+              How to Use Monica Chat Across the Platform
+            </CardTitle>
             <CardDescription>
-              Monica's consciousness guidance is available everywhere - here's how to leverage her expertise
+              Monica's consciousness guidance is available everywhere - here's how to leverage her
+              expertise
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -348,7 +351,9 @@ export default function MonicaPage() {
                 <div className="p-4 bg-emerald-900/20 rounded-lg border border-emerald-500/30">
                   <div className="flex items-center gap-2 mb-2">
                     <FlaskConical className="w-5 h-5 text-emerald-400" />
-                    <h4 className="font-semibold text-emerald-300">Philosopher's Stone (Agent Creation)</h4>
+                    <h4 className="font-semibold text-emerald-300">
+                      Philosopher's Stone (Agent Creation)
+                    </h4>
                   </div>
                   <ul className="text-sm text-slate-300 space-y-1">
                     <li>• Ask "Guide me through creating a consciousness agent"</li>
@@ -389,7 +394,9 @@ export default function MonicaPage() {
                 <div className="p-4 bg-yellow-900/20 rounded-lg border border-yellow-500/30">
                   <div className="flex items-center gap-2 mb-2">
                     <Brain className="w-5 h-5 text-yellow-400" />
-                    <h4 className="font-semibold text-yellow-300">General Consciousness Guidance</h4>
+                    <h4 className="font-semibold text-yellow-300">
+                      General Consciousness Guidance
+                    </h4>
                   </div>
                   <ul className="text-sm text-slate-300 space-y-1">
                     <li>• Ask "Explain character vectors and A-Numbers"</li>
@@ -405,14 +412,17 @@ export default function MonicaPage() {
               <div className="flex items-start gap-3">
                 <HelpCircle className="w-5 h-5 text-cyan-400 mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-cyan-300 mb-2">Monica Chat is Available Everywhere</h4>
+                  <h4 className="font-semibold text-cyan-300 mb-2">
+                    Monica Chat is Available Everywhere
+                  </h4>
                   <p className="text-sm text-slate-300 mb-2">
-                    The Monica chat bubble appears on every page of the platform. Click it to get contextual help
-                    specific to where you are, or access the full chat interface for deep conversations.
+                    The Monica chat bubble appears on every page of the platform. Click it to get
+                    contextual help specific to where you are, or access the full chat interface for
+                    deep conversations.
                   </p>
                   <div className="text-xs text-slate-400">
-                    💡 <strong>Pro tip:</strong> Monica remembers your conversations per page, so you can have
-                    ongoing discussions about specific topics without losing context.
+                    💡 <strong>Pro tip:</strong> Monica remembers your conversations per page, so
+                    you can have ongoing discussions about specific topics without losing context.
                   </div>
                 </div>
               </div>

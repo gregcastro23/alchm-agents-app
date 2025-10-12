@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
+import { generateAlchmForCurrentMoment } from '../../../../lib/alchemizer'
 
 // naive in-process cache
 let cached: { at: number; data: any } | null = null

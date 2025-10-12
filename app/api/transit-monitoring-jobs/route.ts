@@ -12,13 +12,13 @@ import {
   TransitMonitoringScheduler,
   TransitMonitoringOptions,
   TransitMonitoringResult,
-} from '@/lib/jobs/transit-monitoring-job'
+} from '../../../../lib/jobs/transit-monitoring-job'
 import {
   getJobHistory,
   getJobStatistics,
   cancelJob,
   getActiveJobs,
-} from '@/lib/services/job-management-service'
+} from '../../../../lib/services/job-management-service'
 
 const prisma = new PrismaClient()
 

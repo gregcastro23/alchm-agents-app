@@ -24,7 +24,10 @@ import {
 
 // Import planetary agent system functions
 import { getPlanetaryAgentForDegree } from '@/lib/degree-planetary-agent-mapping'
-import { activatePlanetaryAgentForDegree } from '@/lib/services/planetary-agent-activation'
+import {
+  activatePlanetaryAgentForDegree,
+  createMomentPlanetaryAgents,
+} from '@/lib/services/planetary-agent-activation'
 import { calculateAllPlanets, type EnhancedBirthInfo } from '@/lib/enhanced-astronomical-calculator'
 
 // Import interactive components
@@ -38,6 +41,7 @@ interface PlanetaryAgentsViewProps {
   selectedDate: Date
   userId?: string
   onAgentChat?: (agentId: string, agentName: string, transitContext?: any) => void
+  onGroupChat?: (agents: PlanetaryAgentActivation[]) => void
 }
 
 interface AgentStrengthIndicatorProps {
@@ -218,6 +222,7 @@ export const PlanetaryAgentsView: React.FC<PlanetaryAgentsViewProps> = ({
   selectedDate,
   userId = 'demo-user',
   onAgentChat,
+  onGroupChat,
 }) => {
   const [activations, setActivations] = useState<PlanetaryAgentActivation[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -261,39 +266,31 @@ export const PlanetaryAgentsView: React.FC<PlanetaryAgentsViewProps> = ({
       // Calculate current planetary positions
       const planetaryData = calculateAllPlanets(birthInfo)
 
-      // Get the Sun's position (most significant for agent activation)
-      const sunPosition = planetaryData.planets['Sun']
-      const sunLongitude = sunPosition.longitude
-      const sunSignDegree = Math.floor(sunLongitude) % 30 // Degree within sign (0-29)
+      // Create planetary agents for all 10 planets at this moment
+      const activatedAgents = createMomentPlanetaryAgents(planetaryData, {
+        currentDateTime: selectedDate,
+      })
 
-      // Activate planetary agent for the Sun's current degree
-      const activatedAgent = activatePlanetaryAgentForDegree(sunSignDegree)
+      // Convert to our component's format
+      const activations: PlanetaryAgentActivation[] = activatedAgents.map(activatedAgent => ({
+        agent: {
+          id: activatedAgent.agent.id,
+          name: activatedAgent.agent.name,
+          description:
+            activatedAgent.agent.description ||
+            `${activatedAgent.agent.name} planetary intelligence`,
+        },
+        strength: activatedAgent.activationStrength,
+        dignity: activatedAgent.config.dignity as any,
+        element: activatedAgent.config.element as any,
+        consciousness: {
+          level: activatedAgent.consciousnessState.level,
+          powerLevel: activatedAgent.consciousnessState.powerLevel,
+        },
+        planetaryRuler: activatedAgent.agent.name.split(' ')[0], // Extract planet name from "Planet in Sign"
+      }))
 
-      if (activatedAgent) {
-        // Convert to our component's format
-        const activation: PlanetaryAgentActivation = {
-          agent: {
-            id: activatedAgent.agent.id,
-            name: activatedAgent.agent.name,
-            description:
-              activatedAgent.agent.description ||
-              `${activatedAgent.agent.name} planetary intelligence`,
-          },
-          strength: activatedAgent.activationStrength,
-          dignity: activatedAgent.config.dignity as any,
-          element: activatedAgent.config.element as any,
-          consciousness: {
-            level: activatedAgent.consciousnessState.level,
-            powerLevel: activatedAgent.consciousnessState.powerLevel,
-          },
-          planetaryRuler: activatedAgent.config.planetaryRuler,
-        }
-
-        setActivations([activation])
-      } else {
-        setActivations([])
-      }
-
+      setActivations(activations)
       setLastUpdated(new Date())
     } catch (err) {
       console.error('Error loading planetary agents:', err)
@@ -374,6 +371,12 @@ export const PlanetaryAgentsView: React.FC<PlanetaryAgentsViewProps> = ({
     )
   }, [])
 
+  const handleGroupChat = useCallback(() => {
+    if (onGroupChat && activations.length > 0) {
+      onGroupChat(activations)
+    }
+  }, [onGroupChat, activations])
+
   const getSummaryStats = () => {
     const totalAgents = activations.length
     const strongAgents = activations.filter(a => a.strength >= 0.8).length
@@ -422,6 +425,16 @@ export const PlanetaryAgentsView: React.FC<PlanetaryAgentsViewProps> = ({
                 className="cosmic-button"
               >
                 Interactive
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleGroupChat}
+                className="cosmic-button"
+                disabled={activations.length === 0}
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Group Chat
               </Button>
               <Button
                 size="sm"

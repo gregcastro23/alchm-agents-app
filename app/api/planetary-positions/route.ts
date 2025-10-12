@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   planetaryPositionsService,
   type AccuracyLevel,
-} from '@/lib/services/planetary-positions-service'
-import { logQuantitiesToGalileo } from '@/lib/galileo-logger'
+} from '../../../../lib/services/planetary-positions-service'
+import { logQuantitiesToGalileo } from '../../../../lib/galileo-logger'
 import { trackPerformanceMetrics } from './metrics/route'
-import { withApiErrorHandling } from '@/lib/error-handling'
+import { withApiErrorHandling } from '../../../../lib/error-handling'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

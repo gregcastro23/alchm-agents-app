@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { performanceCache } from '@/lib/performance-cache'
+import { performanceCache } from '../../../../lib/performance-cache'
 
 // Performance monitoring API endpoint
 export async function GET(req: Request) {

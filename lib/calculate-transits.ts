@@ -301,6 +301,7 @@ function getTransitPositionFromDates(
     return {
       sign: transitPosition.sign,
       degree: transitPosition.degree.toString(),
+      retrograde: transitPosition.retrograde || false,
     }
   } catch (error) {
     console.error(`Error getting transit position for ${planet}:`, error)

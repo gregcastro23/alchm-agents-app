@@ -1,14 +1,14 @@
 import { generateText } from 'ai'
 import { NextResponse } from 'next/server'
-import { galileo } from '@/lib/galileo-adapter'
+import { galileo } from '../../../../lib/galileo-adapter'
 import { verifyApiKeys } from '../secure-config'
 import {
   getSignElement,
   getPlanetaryElement,
   calculateElementalAffinity,
-} from '@/lib/astrological-data'
-import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
-import { ANumberCalculator } from '@/lib/core-energy-rules'
+} from '../../../../lib/astrological-data'
+import { generateAlchmForCurrentMoment } from '../../../../lib/alchemizer'
+import { ANumberCalculator } from '../../../../lib/core-energy-rules'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

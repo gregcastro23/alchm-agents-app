@@ -13,6 +13,19 @@ export interface KineticProfile {
   powerThresholds: number[] // XP levels [bronze, silver, gold, platinum]
   evolutionRate: number // 1.0 = normal, >1.0 = faster evolution
   specialAbilities: string[] // Unique capabilities unlocked at higher levels
+  // Extended kinetic properties for detailed analysis
+  power_alignment?: string[] // Additional planetary alignments for power
+  aspect_sensitivity?: number // Sensitivity to astrological aspects (0-1)
+  v_creative?: number // Creative velocity component
+  v_linguistic?: number // Linguistic velocity component
+  v_scientific?: number // Scientific velocity component
+  v_strategic?: number // Strategic velocity component
+  v_charismatic?: number // Charismatic velocity component
+  v_inventive?: number // Inventive velocity component
+  v_social?: number // Social velocity component
+  v_psychological?: number // Psychological velocity component
+  v_mystical?: number // Mystical velocity component
+  v_philosophical?: number // Philosophical velocity component
 }
 
 export const agentKineticProfiles: Record<string, KineticProfile> = {
@@ -26,6 +39,18 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
       'invention-manifestation',
       'artistic-technical-fusion',
     ],
+    power_alignment: ['Venus', 'Mars'],
+    aspect_sensitivity: 0.85,
+    v_creative: 0.95,
+    v_linguistic: 0.8,
+    v_scientific: 0.9,
+    v_strategic: 0.75,
+    v_charismatic: 0.7,
+    v_inventive: 0.95,
+    v_social: 0.6,
+    v_psychological: 0.7,
+    v_mystical: 0.8,
+    v_philosophical: 0.85,
   },
 
   shakespeare: {
@@ -38,6 +63,18 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
       'emotional-truth-revelation',
       'linguistic-magic-weaving',
     ],
+    power_alignment: ['Sun', 'Jupiter'],
+    aspect_sensitivity: 0.8,
+    v_creative: 0.9,
+    v_linguistic: 0.95,
+    v_scientific: 0.6,
+    v_strategic: 0.7,
+    v_charismatic: 0.85,
+    v_inventive: 0.75,
+    v_social: 0.8,
+    v_psychological: 0.9,
+    v_mystical: 0.7,
+    v_philosophical: 0.8,
   },
 
   'marie-curie': {
@@ -50,6 +87,18 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
       'radiation-consciousness-bridge',
       'pioneering-barrier-breaking',
     ],
+    power_alignment: ['Mars', 'Pluto'],
+    aspect_sensitivity: 0.9,
+    v_creative: 0.7,
+    v_linguistic: 0.75,
+    v_scientific: 0.95,
+    v_strategic: 0.8,
+    v_charismatic: 0.7,
+    v_inventive: 0.9,
+    v_social: 0.6,
+    v_psychological: 0.8,
+    v_mystical: 0.75,
+    v_philosophical: 0.85,
   },
 
   einstein: {
@@ -58,6 +107,18 @@ export const agentKineticProfiles: Record<string, KineticProfile> = {
     powerThresholds: [150, 400, 900, 2000],
     evolutionRate: 1.4,
     specialAbilities: ['space-time-perception', 'unified-field-awareness', 'paradox-resolution'],
+    power_alignment: ['Saturn', 'Neptune'],
+    aspect_sensitivity: 0.95,
+    v_creative: 0.8,
+    v_linguistic: 0.7,
+    v_scientific: 0.98,
+    v_strategic: 0.85,
+    v_charismatic: 0.75,
+    v_inventive: 0.95,
+    v_social: 0.65,
+    v_psychological: 0.9,
+    v_mystical: 0.85,
+    v_philosophical: 0.95,
   },
 
   mozart: {
@@ -542,6 +603,19 @@ export function getAgentKineticProfile(agentId: string) {
     consciousness_rate: profile.evolutionRate,
     memory_persistence: profile.evolutionRate * 0.8,
     momentum_type: getMomentumType(profile),
+    // Include extended kinetic properties
+    power_alignment: profile.power_alignment || [],
+    aspect_sensitivity: profile.aspect_sensitivity || 0.5,
+    v_creative: profile.v_creative || 0.5,
+    v_linguistic: profile.v_linguistic || 0.5,
+    v_scientific: profile.v_scientific || 0.5,
+    v_strategic: profile.v_strategic || 0.5,
+    v_charismatic: profile.v_charismatic || 0.5,
+    v_inventive: profile.v_inventive || 0.5,
+    v_social: profile.v_social || 0.5,
+    v_psychological: profile.v_psychological || 0.5,
+    v_mystical: profile.v_mystical || 0.5,
+    v_philosophical: profile.v_philosophical || 0.5,
   }
 }
 

@@ -14,8 +14,8 @@ import {
   type DetailedPlanetaryTransitSignificance,
   type NatalPlacement,
   type UserConsciousnessProfile,
-} from '@/lib/services/planetary-transit-significance-scorer'
-import { getNatalChart, incrementAnalysisCount } from '@/lib/services/natal-chart-storage'
+} from '../../../../lib/services/planetary-transit-significance-scorer'
+import { getNatalChart, incrementAnalysisCount } from '../../../../lib/services/natal-chart-storage'
 
 const prisma = new PrismaClient()
 

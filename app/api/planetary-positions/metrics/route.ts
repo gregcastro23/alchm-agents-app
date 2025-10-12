@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { planetaryPositionsService } from '@/lib/services/planetary-positions-service'
-import { prisma } from '@/lib/db'
+import { planetaryPositionsService } from '../../../../lib/services/planetary-positions-service'
+import { prisma } from '../../../../lib/db'
 
 export const dynamic = 'force-dynamic'
 

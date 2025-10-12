@@ -32,7 +32,8 @@ export default function GlobalError({
                 Critical Error
               </h1>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                A critical error occurred in the application. Please refresh the page or contact support if the problem persists.
+                A critical error occurred in the application. Please refresh the page or contact
+                support if the problem persists.
               </p>
             </div>
 
@@ -44,7 +45,7 @@ export default function GlobalError({
                 Reload Application
               </button>
               <button
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = '/')}
                 className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors"
               >
                 Go to Home

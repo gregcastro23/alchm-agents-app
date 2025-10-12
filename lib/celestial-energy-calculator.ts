@@ -383,6 +383,17 @@ export class CelestialEnergyCalculator {
    * Calculate planetary context
    */
   private calculatePlanetaryContext(horoscope: HoroscopeData) {
+    // Null check for horoscope.planets
+    if (!horoscope || !horoscope.planets) {
+      console.error('Invalid horoscope data: planets is null or undefined')
+      return {
+        dominantPlanet: 'Sun',
+        dominantSign: 'Aries',
+        moonPhase: 0,
+        retrogradeCount: 0,
+      }
+    }
+
     const planets = Object.entries(horoscope.planets)
 
     // Find dominant planet (most aspects or strongest dignity)
@@ -400,14 +411,17 @@ export class CelestialEnergyCalculator {
     // Find dominant sign (most planets)
     const signCounts: Record<string, number> = {}
     for (const [, data] of planets) {
-      signCounts[data.sign] = (signCounts[data.sign] || 0) + 1
+      if (data && data.sign) {
+        signCounts[data.sign] = (signCounts[data.sign] || 0) + 1
+      }
     }
     const dominantSign = Object.entries(signCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || 'Aries'
 
     // Calculate moon phase (simplified)
-    const sunDegree = this.extractPlanetaryDegrees(horoscope)['Sun']
-    const moonDegree = this.extractPlanetaryDegrees(horoscope)['Moon']
-    const moonPhase = ((moonDegree - sunDegree + 360) % 360) / 360
+    const sunDegree = this.extractPlanetaryDegrees(horoscope)['Sun'] || 0
+    const moonDegree = this.extractPlanetaryDegrees(horoscope)['Moon'] || 0
+    const moonPhase =
+      isNaN(sunDegree) || isNaN(moonDegree) ? 0 : ((moonDegree - sunDegree + 360) % 360) / 360
 
     // Count retrograde planets
     const retrogradeCount = planets.filter(([, data]) => data.retrograde).length
@@ -672,10 +686,12 @@ export class CelestialEnergyCalculator {
   }
 
   private calculatePlanetaryStrength(planet: string, data: any): number {
-    // Simplified strength calculation
+    // Simplified strength calculation with null checks
     let strength = 1
-    if (data.dignity > 0) strength += data.dignity
-    if (!data.retrograde) strength += 0.5
+    if (data && typeof data === 'object') {
+      if (data.dignity && data.dignity > 0) strength += data.dignity
+      if (data.retrograde === false) strength += 0.5
+    }
     return strength
   }
 

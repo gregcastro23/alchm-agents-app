@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PatternToRuneConverter } from '@/lib/runes/pattern-to-rune-converter'
-import { ChartGeometryExtractor } from '@/lib/chart-geometry-extractor'
-import { detectPatternsStatic, PlanetPosition } from '@/lib/astrological-pattern-recognition'
-import { calculateEnhancedChart } from '@/lib/enhanced-chart-calculator'
-import { createNatalSigilRune, RuneGeometry, SigilStyle } from '@/lib/runes/natal-sigil-runes'
-import { BirthInfoSchema, type BirthInfo } from '@/lib/schemas'
+import { PatternToRuneConverter } from '../../../../lib/runes/pattern-to-rune-converter'
+import { ChartGeometryExtractor } from '../../../../lib/chart-geometry-extractor'
+import { detectPatternsStatic, PlanetPosition } from '../../../../lib/astrological-pattern-recognition'
+import { calculateEnhancedChart } from '../../../../lib/enhanced-chart-calculator'
+import { createNatalSigilRune, RuneGeometry, SigilStyle } from '../../../../lib/runes/natal-sigil-runes'
+import { BirthInfoSchema, type BirthInfo } from '../../../../lib/schemas'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
 
         // Try to generate image
         try {
-          const { fetchImaginize } = await import('@/lib/astrologize')
+          const { fetchImaginize } = await import('../../../../lib/astrologize')
           const imageData = await fetchImaginize(generatedPrompt, {
             style_preset: `mystical-${style}`,
             width: 1024,
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
         sigil = createNatalSigilRune(finalGeometry, style, 'aspect-based')
 
         try {
-          const { fetchImaginize } = await import('@/lib/astrologize')
+          const { fetchImaginize } = await import('../../../../lib/astrologize')
           const imageData = await fetchImaginize(prompt, {
             style_preset: `mystical-${style}`,
             width: 1024,

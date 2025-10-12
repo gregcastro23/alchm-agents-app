@@ -7,7 +7,7 @@ import {
   type ChartCombination,
   type AlchemicalCost,
   type MultiChartRune,
-} from '@/lib/runes/multi-chart-runes'
+} from '../../../../lib/runes/multi-chart-runes'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

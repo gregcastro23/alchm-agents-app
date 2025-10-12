@@ -1,15 +1,15 @@
 import { generateText } from 'ai'
 import { openai } from '@ai-sdk/openai'
 import { NextResponse } from 'next/server'
-import { calculatePlanetaryPosition, getHistoricalInterpretation } from '@/lib/astrological-tools'
+import { calculatePlanetaryPosition, getHistoricalInterpretation } from '../../../../lib/astrological-tools'
 import {
   logAgentConversation,
   createConversationContext,
   type AgentInteractionData,
   type ConversationContext,
-} from '@/lib/galileo-agent-logger'
-import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
-import { ANumberCalculator } from '@/lib/core-energy-rules'
+} from '../../../../lib/galileo-agent-logger'
+import { generateAlchmForCurrentMoment } from '../../../../lib/alchemizer'
+import { ANumberCalculator } from '../../../../lib/core-energy-rules'
 
 export async function POST(req: Request) {
   try {
@@ -87,7 +87,11 @@ Provide comprehensive astrological analysis that incorporates both traditional t
       sessionId: conversationContext.sessionId,
       userMessage: query || 'Tell me about my chart',
       agentResponse: text,
-      aNumberInfo,
+      aNumberInfo: aNumberInfo || {
+        aNumber: 0,
+        category: 'Unknown',
+        components: { spirit: 0, essence: 0, matter: 0, substance: 0 },
+      },
       processingTimeMs: processingTime,
       agentType: 'advanced',
     }

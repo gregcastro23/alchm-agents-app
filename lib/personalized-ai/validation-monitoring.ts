@@ -4,14 +4,12 @@
 import type {
   TrainingSession,
   TrainingActivity,
-  UserSubmission,
-  SubmissionProcessingResult,
-  SessionFeedback,
   PersonalityInsight,
-  TrainingDataCollection
+  TrainingDataCollection,
 } from './training-interface-design'
 
 import { trainingDataManager } from './data-architecture'
+import type { UserSubmission } from './training-orchestration'
 
 // ============================================================================
 // MAIN VALIDATION & MONITORING ENGINE
@@ -45,8 +43,8 @@ export class TrainingValidationMonitor {
     timeRange: { start: string; end: string }
   ): Promise<TrainingEffectivenessReport> {
     const userSessions = await trainingDataManager.getUserSessions(userId, 100)
-    const relevantSessions = userSessions.filter(session =>
-      session.startedAt >= timeRange.start && session.startedAt <= timeRange.end
+    const relevantSessions = userSessions.filter(
+      session => session.startedAt >= timeRange.start && session.startedAt <= timeRange.end
     )
 
     const baselineMetrics = await this.calculateBaselineMetrics(userId, timeRange.start)
@@ -54,7 +52,7 @@ export class TrainingValidationMonitor {
 
     const statisticalSignificance = this.performStatisticalAnalysis(baselineMetrics, currentMetrics)
     const learningTrajectory = this.analyzeLearningTrajectory(relevantSessions)
-    const skillDevelopment = this.assessSkillDevelopment(userId, relevantSessions)
+    const skillDevelopment = await this.assessSkillDevelopment(userId, relevantSessions)
 
     return {
       userId,
@@ -75,7 +73,7 @@ export class TrainingValidationMonitor {
         statisticalSignificance,
         learningTrajectory,
         skillDevelopment
-      )
+      ),
     }
   }
 
@@ -83,9 +81,7 @@ export class TrainingValidationMonitor {
   // A/B TESTING FRAMEWORK
   // =========================================================================
 
-  async startA_B_Experiment(
-    experimentConfig: ExperimentConfig
-  ): Promise<string> {
+  async startA_B_Experiment(experimentConfig: ExperimentConfig): Promise<string> {
     const experimentId = `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
     const experiment: A_B_Experiment = {
@@ -101,8 +97,8 @@ export class TrainingValidationMonitor {
       participantAssignments: new Map(),
       results: {
         variantA: { participants: 0, conversions: 0, metricValues: [] },
-        variantB: { participants: 0, conversions: 0, metricValues: [] }
-      }
+        variantB: { participants: 0, conversions: 0, metricValues: [] },
+      },
     }
 
     this.experiments.set(experimentId, experiment)
@@ -157,11 +153,13 @@ export class TrainingValidationMonitor {
       variantBResults: experiment.results.variantB,
       statisticalAnalysis,
       confidenceLevel: statisticalAnalysis.confidence,
-      winner: statisticalAnalysis.significant ? (
-        experiment.results.variantA.conversions / experiment.results.variantA.participants >
-        experiment.results.variantB.conversions / experiment.results.variantB.participants ? 'A' : 'B'
-      ) : null,
-      recommendations: this.generateExperimentRecommendations(statisticalAnalysis)
+      winner: statisticalAnalysis.significant
+        ? experiment.results.variantA.conversions / experiment.results.variantA.participants >
+          experiment.results.variantB.conversions / experiment.results.variantB.participants
+          ? 'A'
+          : 'B'
+        : null,
+      recommendations: this.generateExperimentRecommendations(statisticalAnalysis),
     }
   }
 
@@ -180,7 +178,7 @@ export class TrainingValidationMonitor {
       activeSessions: this.getActiveSessionCount(),
       processingQueueLength: this.getProcessingQueueLength(),
       dataIntegrityScore: this.calculateDataIntegrityScore(),
-      userSatisfaction: this.getAverageUserSatisfaction()
+      userSatisfaction: this.getAverageUserSatisfaction(),
     }
   }
 
@@ -203,7 +201,7 @@ export class TrainingValidationMonitor {
       coherenceCheck,
       authenticityScore,
       trainingAlignment,
-      processingResult
+      processingResult,
     })
 
     return {
@@ -213,15 +211,15 @@ export class TrainingValidationMonitor {
         contentAnalysis,
         coherenceCheck,
         authenticityScore,
-        trainingAlignment
+        trainingAlignment,
       },
       flags: this.identifyQualityFlags(overallQuality, {
         contentAnalysis,
         coherenceCheck,
         authenticityScore,
-        trainingAlignment
+        trainingAlignment,
       }),
-      recommendations: this.generateQualityRecommendations(overallQuality.breakdown)
+      recommendations: this.generateQualityRecommendations(overallQuality.breakdown),
     }
   }
 
@@ -234,8 +232,8 @@ export class TrainingValidationMonitor {
     timeRange: { start: string; end: string }
   ): Promise<UserExperienceAnalytics> {
     const sessions = await trainingDataManager.getUserSessions(userId, 50)
-    const relevantSessions = sessions.filter(session =>
-      session.startedAt >= timeRange.start && session.startedAt <= timeRange.end
+    const relevantSessions = sessions.filter(
+      session => session.startedAt >= timeRange.start && session.startedAt <= timeRange.end
     )
 
     const engagementPatterns = this.analyzeEngagementPatterns(relevantSessions)
@@ -255,14 +253,14 @@ export class TrainingValidationMonitor {
         engagementPatterns,
         satisfactionTrends,
         dropOffAnalysis,
-        preferenceEvolution
+        preferenceEvolution,
       }),
       insights: this.generateUXInsights({
         engagementPatterns,
         satisfactionTrends,
         dropOffAnalysis,
-        preferenceEvolution
-      })
+        preferenceEvolution,
+      }),
     }
   }
 
@@ -275,36 +273,36 @@ export class TrainingValidationMonitor {
     this.alerts.addAlert({
       id: 'quality_drop',
       name: 'Quality Score Drop',
-      condition: (metrics) => metrics.averageQuality < 0.6,
+      condition: metrics => metrics.averageQuality < 0.6,
       severity: 'high',
-      message: 'Average submission quality has dropped below acceptable threshold'
+      message: 'Average submission quality has dropped below acceptable threshold',
     })
 
     // Performance alerts
     this.alerts.addAlert({
       id: 'response_time_spike',
       name: 'Response Time Spike',
-      condition: (metrics) => metrics.averageResponseTime > 5000, // 5 seconds
+      condition: metrics => metrics.averageResponseTime > 5000, // 5 seconds
       severity: 'medium',
-      message: 'Average response time has exceeded 5 seconds'
+      message: 'Average response time has exceeded 5 seconds',
     })
 
     // Engagement alerts
     this.alerts.addAlert({
       id: 'engagement_drop',
       name: 'User Engagement Drop',
-      condition: (metrics) => metrics.userEngagement < 0.3,
+      condition: metrics => metrics.userEngagement < 0.3,
       severity: 'medium',
-      message: 'User engagement has dropped below 30%'
+      message: 'User engagement has dropped below 30%',
     })
 
     // System health alerts
     this.alerts.addAlert({
       id: 'error_rate_spike',
       name: 'Error Rate Spike',
-      condition: (metrics) => metrics.errorRate > 0.05, // 5%
+      condition: metrics => metrics.errorRate > 0.05, // 5%
       severity: 'high',
-      message: 'System error rate has exceeded 5%'
+      message: 'System error rate has exceeded 5%',
     })
   }
 
@@ -325,24 +323,24 @@ export class TrainingValidationMonitor {
         totalUsers: await this.getTotalUsers(),
         totalSessions: await this.getTotalSessions(),
         averageSessionLength: await this.getAverageSessionLength(),
-        overallSatisfaction: await this.getOverallSatisfaction()
+        overallSatisfaction: await this.getOverallSatisfaction(),
       },
       trends: {
         userGrowth: await this.getUserGrowthTrend(last30Days),
         engagementTrend: await this.getEngagementTrend(last30Days),
         qualityTrend: await this.getQualityTrend(last30Days),
-        performanceTrend: await this.getPerformanceTrend(last30Days)
+        performanceTrend: await this.getPerformanceTrend(last30Days),
       },
       experiments: Array.from(this.experiments.values()).map(exp => ({
         id: exp.id,
         name: exp.name,
         status: exp.status,
         participants: exp.participantAssignments.size,
-        progress: (exp.participantAssignments.size / exp.sampleSize) * 100
+        progress: (exp.participantAssignments.size / exp.sampleSize) * 100,
       })),
       alerts: this.getActiveAlerts(),
       topIssues: await this.getTopIssues(last30Days),
-      recommendations: await this.generateSystemRecommendations()
+      recommendations: await this.generateSystemRecommendations(),
     }
   }
 
@@ -350,7 +348,10 @@ export class TrainingValidationMonitor {
   // PRIVATE HELPER METHODS
   // =========================================================================
 
-  private async calculateBaselineMetrics(userId: string, startDate: string): Promise<BaselineMetrics> {
+  private async calculateBaselineMetrics(
+    userId: string,
+    startDate: string
+  ): Promise<BaselineMetrics> {
     // Calculate metrics from period before training began
     // This would analyze historical data
     return {
@@ -361,27 +362,34 @@ export class TrainingValidationMonitor {
         communication: 50,
         creativity: 50,
         emotional_intelligence: 50,
-        self_reflection: 50
-      }
+        self_reflection: 50,
+      },
     }
   }
 
   private async calculateCurrentMetrics(sessions: TrainingSession[]): Promise<CurrentMetrics> {
     const totalSessions = sessions.length
     const completedSessions = sessions.filter(s => s.progress.overallProgress >= 100).length
-    const averageQuality = sessions.reduce((sum, s) => sum + s.engagementMetrics.challengeAppropriateness, 0) / totalSessions
+    const averageQuality =
+      sessions.reduce((sum, s) => sum + s.engagementMetrics.challengeAppropriateness, 0) /
+      totalSessions
 
     return {
       totalSessions,
       completedSessions,
       completionRate: completedSessions / totalSessions,
       averageQuality,
-      averageEngagement: sessions.reduce((sum, s) => sum + s.engagementMetrics.challengeAppropriateness, 0) / totalSessions,
-      skillImprovements: await this.calculateSkillImprovements(sessions)
+      averageEngagement:
+        sessions.reduce((sum, s) => sum + s.engagementMetrics.challengeAppropriateness, 0) /
+        totalSessions,
+      skillImprovements: await this.calculateSkillImprovements(sessions),
     }
   }
 
-  private performStatisticalAnalysis(baseline: BaselineMetrics, current: CurrentMetrics): StatisticalSignificance {
+  private performStatisticalAnalysis(
+    baseline: BaselineMetrics,
+    current: CurrentMetrics
+  ): StatisticalSignificance {
     // Simplified statistical analysis
     const engagementTTest = this.performTTest(baseline.averageEngagement, current.averageEngagement)
     const qualityTTest = this.performTTest(baseline.averageQuality, current.averageQuality)
@@ -390,7 +398,7 @@ export class TrainingValidationMonitor {
       significant: engagementTTest.p < 0.05 || qualityTTest.p < 0.05,
       confidence: Math.min(engagementTTest.confidence, qualityTTest.confidence),
       effectSize: this.calculateEffectSize(baseline.averageEngagement, current.averageEngagement),
-      pValue: Math.min(engagementTTest.p, qualityTTest.p)
+      pValue: Math.min(engagementTTest.p, qualityTTest.p),
     }
   }
 
@@ -413,7 +421,7 @@ export class TrainingValidationMonitor {
   private analyzeLearningTrajectory(sessions: TrainingSession[]): LearningTrajectory {
     const qualityOverTime = sessions.map((s, i) => ({
       session: i + 1,
-      quality: s.engagementMetrics.challengeAppropriateness
+      quality: s.engagementMetrics.challengeAppropriateness,
     }))
 
     const trend = this.calculateTrend(qualityOverTime.map(p => p.quality))
@@ -422,7 +430,7 @@ export class TrainingValidationMonitor {
       trajectory: qualityOverTime,
       trend: trend > 0.1 ? 'improving' : trend < -0.1 ? 'declining' : 'stable',
       consistency: this.calculateConsistency(qualityOverTime.map(p => p.quality)),
-      milestones: this.identifyMilestones(qualityOverTime)
+      milestones: this.identifyMilestones(qualityOverTime),
     }
   }
 
@@ -447,7 +455,7 @@ export class TrainingValidationMonitor {
     const stdDev = Math.sqrt(variance)
 
     // Return consistency as 1 - (stdDev / mean), higher is more consistent
-    return Math.max(0, Math.min(1, 1 - (stdDev / mean)))
+    return Math.max(0, Math.min(1, 1 - stdDev / mean))
   }
 
   private identifyMilestones(trajectory: Array<{ session: number; quality: number }>): Milestone[] {
@@ -458,7 +466,7 @@ export class TrainingValidationMonitor {
         milestones.push({
           session: point.session,
           type: 'breakthrough',
-          description: `Achieved high quality score (${Math.round(point.quality * 100)}%)`
+          description: `Achieved high quality score (${Math.round(point.quality * 100)}%)`,
         })
       }
     })
@@ -466,7 +474,10 @@ export class TrainingValidationMonitor {
     return milestones
   }
 
-  private async assessSkillDevelopment(userId: string, sessions: TrainingSession[]): Promise<SkillDevelopment> {
+  private async assessSkillDevelopment(
+    userId: string,
+    sessions: TrainingSession[]
+  ): Promise<SkillDevelopment> {
     // Analyze how skills have developed over sessions
     const skills = ['communication', 'creativity', 'emotional_intelligence', 'self_reflection']
     const development: Record<string, SkillProgress> = {}
@@ -474,7 +485,7 @@ export class TrainingValidationMonitor {
     for (const skill of skills) {
       const progressPoints = sessions.map((s, i) => ({
         session: i + 1,
-        level: s.engagementMetrics.challengeAppropriateness * 100 // Simplified
+        level: s.engagementMetrics.challengeAppropriateness * 100, // Simplified
       }))
 
       development[skill] = {
@@ -482,15 +493,19 @@ export class TrainingValidationMonitor {
         baselineLevel: 50,
         currentLevel: progressPoints[progressPoints.length - 1]?.level || 50,
         improvementRate: this.calculateImprovementRate(progressPoints),
-        consistency: this.calculateConsistency(progressPoints.map(p => p.level))
+        consistency: this.calculateConsistency(progressPoints.map(p => p.level)),
       }
     }
 
     return {
       skills: development,
-      strongestSkill: Object.values(development).sort((a, b) => b.currentLevel - a.currentLevel)[0].skill,
-      weakestSkill: Object.values(development).sort((a, b) => a.currentLevel - b.currentLevel)[0].skill,
-      overallProgress: Object.values(development).reduce((sum, skill) => sum + skill.improvementRate, 0) / skills.length
+      strongestSkill: Object.values(development).sort((a, b) => b.currentLevel - a.currentLevel)[0]
+        .skill,
+      weakestSkill: Object.values(development).sort((a, b) => a.currentLevel - b.currentLevel)[0]
+        .skill,
+      overallProgress:
+        Object.values(development).reduce((sum, skill) => sum + skill.improvementRate, 0) /
+        skills.length,
     }
   }
 
@@ -503,7 +518,10 @@ export class TrainingValidationMonitor {
     return (last - first) / points.length // Improvement per session
   }
 
-  private calculateImprovements(baseline: BaselineMetrics, current: CurrentMetrics): ImprovementMetrics {
+  private calculateImprovements(
+    baseline: BaselineMetrics,
+    current: CurrentMetrics
+  ): ImprovementMetrics {
     return {
       engagementImprovement: current.averageEngagement - baseline.averageEngagement,
       qualityImprovement: current.averageQuality - baseline.averageQuality,
@@ -511,9 +529,9 @@ export class TrainingValidationMonitor {
       skillImprovements: Object.fromEntries(
         Object.entries(current.skillImprovements || {}).map(([skill, currentLevel]) => [
           skill,
-          currentLevel - (baseline.skillLevels[skill as keyof typeof baseline.skillLevels] || 50)
+          currentLevel - (baseline.skillLevels[skill as keyof typeof baseline.skillLevels] || 50),
         ])
-      )
+      ),
     }
   }
 
@@ -523,7 +541,8 @@ export class TrainingValidationMonitor {
     skills: SkillDevelopment
   ): number {
     const significanceScore = significance.significant ? significance.confidence : 0.3
-    const trajectoryScore = trajectory.trend === 'improving' ? 0.9 : trajectory.trend === 'stable' ? 0.6 : 0.3
+    const trajectoryScore =
+      trajectory.trend === 'improving' ? 0.9 : trajectory.trend === 'stable' ? 0.6 : 0.3
     const skillScore = skills.overallProgress > 0 ? Math.min(1, skills.overallProgress * 10) : 0.3
 
     return (significanceScore + trajectoryScore + skillScore) / 3
@@ -545,7 +564,9 @@ export class TrainingValidationMonitor {
     }
 
     if (skills.weakestSkill) {
-      recommendations.push(`Focus more on developing ${skills.weakestSkill.replace('_', ' ')} skills`)
+      recommendations.push(
+        `Focus more on developing ${skills.weakestSkill.replace('_', ' ')} skills`
+      )
     }
 
     return recommendations
@@ -574,7 +595,9 @@ export class TrainingValidationMonitor {
     const bRate = variantB.conversions / variantB.participants
 
     // Simplified statistical test
-    const se = Math.sqrt((aRate * (1 - aRate)) / variantA.participants + (bRate * (1 - bRate)) / variantB.participants)
+    const se = Math.sqrt(
+      (aRate * (1 - aRate)) / variantA.participants + (bRate * (1 - bRate)) / variantB.participants
+    )
     const z = Math.abs(aRate - bRate) / se
     const pValue = 2 * (1 - this.normalCDF(z))
     const significant = pValue < 0.05
@@ -583,15 +606,16 @@ export class TrainingValidationMonitor {
       significant,
       confidence: significant ? 1 - pValue : 0.5,
       pValue,
-      effectSize: Math.abs(aRate - bRate)
+      effectSize: Math.abs(aRate - bRate),
     }
   }
 
   private normalCDF(x: number): number {
     // Approximation of normal cumulative distribution function
     const t = 1 / (1 + 0.2316419 * Math.abs(x))
-    const d = 0.3989423 * Math.exp(-x * x / 2)
-    const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))))
+    const d = 0.3989423 * Math.exp((-x * x) / 2)
+    const p =
+      d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))))
     return x > 0 ? 1 - p : p
   }
 
@@ -599,9 +623,13 @@ export class TrainingValidationMonitor {
     const recommendations: string[] = []
 
     if (analysis.significant) {
-      recommendations.push('Experiment shows statistically significant results - consider implementing the winning variant')
+      recommendations.push(
+        'Experiment shows statistically significant results - consider implementing the winning variant'
+      )
     } else {
-      recommendations.push('Results are not yet statistically significant - continue running the experiment')
+      recommendations.push(
+        'Results are not yet statistically significant - continue running the experiment'
+      )
     }
 
     if (analysis.effectSize > 0.1) {
@@ -643,10 +671,13 @@ export class TrainingValidationMonitor {
 
   private startMonitoringProcesses(): void {
     // Collect metrics every 5 minutes
-    setInterval(() => {
-      const metrics = this.trackSystemMetrics()
-      this.storeMetrics(metrics)
-    }, 5 * 60 * 1000)
+    setInterval(
+      () => {
+        const metrics = this.trackSystemMetrics()
+        this.storeMetrics(metrics)
+      },
+      5 * 60 * 1000
+    )
 
     // Check alerts every minute
     setInterval(() => {
@@ -654,9 +685,12 @@ export class TrainingValidationMonitor {
     }, 60 * 1000)
 
     // Run quality analysis every 15 minutes
-    setInterval(() => {
-      this.runQualityAnalysis()
-    }, 15 * 60 * 1000)
+    setInterval(
+      () => {
+        this.runQualityAnalysis()
+      },
+      15 * 60 * 1000
+    )
   }
 
   private storeMetrics(metrics: SystemMetrics): void {
@@ -675,7 +709,8 @@ export class TrainingValidationMonitor {
 
     // Update average and trend
     series.average = series.data.reduce((sum, m) => sum + m.responseTime, 0) / series.data.length
-    series.trend = this.calculateTrend(series.data.map(m => m.responseTime)) > 0 ? 'increasing' : 'decreasing'
+    series.trend =
+      this.calculateTrend(series.data.map(m => m.responseTime)) > 0 ? 'increasing' : 'decreasing'
   }
 
   private checkAlerts(): void {
@@ -695,7 +730,7 @@ export class TrainingValidationMonitor {
       averageQuality: 0.75,
       averageResponseTime: 1200,
       userEngagement: 0.65,
-      errorRate: 0.015
+      errorRate: 0.015,
     }
   }
 
@@ -729,7 +764,7 @@ export class TrainingValidationMonitor {
       current: 1250,
       previous: 1100,
       change: 150,
-      changePercent: 13.6
+      changePercent: 13.6,
     }
   }
 
@@ -738,7 +773,7 @@ export class TrainingValidationMonitor {
       current: 0.75,
       previous: 0.72,
       change: 0.03,
-      changePercent: 4.2
+      changePercent: 4.2,
     }
   }
 
@@ -747,7 +782,7 @@ export class TrainingValidationMonitor {
       current: 0.82,
       previous: 0.79,
       change: 0.03,
-      changePercent: 3.8
+      changePercent: 3.8,
     }
   }
 
@@ -756,7 +791,7 @@ export class TrainingValidationMonitor {
       current: 1200,
       previous: 1350,
       change: -150,
-      changePercent: -11.1
+      changePercent: -11.1,
     }
   }
 
@@ -766,14 +801,14 @@ export class TrainingValidationMonitor {
         issue: 'Response Time Degradation',
         severity: 'medium',
         affectedUsers: 45,
-        trend: 'worsening'
+        trend: 'worsening',
       },
       {
         issue: 'Low Engagement in Creative Activities',
         severity: 'low',
         affectedUsers: 120,
-        trend: 'stable'
-      }
+        trend: 'stable',
+      },
     ]
   }
 
@@ -781,7 +816,7 @@ export class TrainingValidationMonitor {
     return [
       'Consider optimizing database queries to improve response times',
       'Add more creative activities to improve engagement',
-      'Implement user onboarding improvements for better retention'
+      'Implement user onboarding improvements for better retention',
     ]
   }
 
@@ -789,36 +824,47 @@ export class TrainingValidationMonitor {
   // ADDITIONAL PRIVATE METHODS
   // =========================================================================
 
-  private async calculateSkillImprovements(sessions: TrainingSession[]): Promise<Record<string, number>> {
+  private async calculateSkillImprovements(
+    sessions: TrainingSession[]
+  ): Promise<Record<string, number>> {
     // Simplified skill improvement calculation
     return {
       communication: 65,
       creativity: 58,
       emotional_intelligence: 72,
-      self_reflection: 61
+      self_reflection: 61,
     }
   }
 
-  private checkSubmissionCoherence(submission: UserSubmission, activity: TrainingActivity): CoherenceCheck {
+  private checkSubmissionCoherence(
+    submission: UserSubmission,
+    activity: TrainingActivity
+  ): CoherenceCheck {
     // Check if submission aligns with activity requirements
     return {
       score: 0.85,
       issues: [],
-      suggestions: []
+      suggestions: [],
     }
   }
 
-  private async assessAuthenticity(submission: UserSubmission, processingResult: SubmissionProcessingResult): Promise<number> {
+  private async assessAuthenticity(
+    submission: UserSubmission,
+    processingResult: SubmissionProcessingResult
+  ): Promise<number> {
     // Assess how authentic/genuine the submission appears
     return 0.88
   }
 
-  private checkTrainingAlignment(submission: UserSubmission, activity: TrainingActivity): AlignmentCheck {
+  private checkTrainingAlignment(
+    submission: UserSubmission,
+    activity: TrainingActivity
+  ): AlignmentCheck {
     // Check how well submission aligns with training goals
     return {
       score: 0.82,
       alignmentStrength: 'good',
-      misalignments: []
+      misalignments: [],
     }
   }
 
@@ -827,7 +873,7 @@ export class TrainingValidationMonitor {
       contentAnalysis: 0.3,
       coherenceCheck: 0.2,
       authenticityScore: 0.25,
-      trainingAlignment: 0.25
+      trainingAlignment: 0.25,
     }
 
     const score = Object.entries(weights).reduce((sum, [factor, weight]) => {
@@ -836,8 +882,15 @@ export class TrainingValidationMonitor {
 
     return {
       score,
-      grade: score >= 0.9 ? 'excellent' : score >= 0.8 ? 'good' : score >= 0.7 ? 'fair' : 'needs_improvement',
-      breakdown: factors
+      grade:
+        score >= 0.9
+          ? 'excellent'
+          : score >= 0.8
+            ? 'good'
+            : score >= 0.7
+              ? 'fair'
+              : 'needs_improvement',
+      breakdown: factors,
     }
   }
 
@@ -848,7 +901,7 @@ export class TrainingValidationMonitor {
       flags.push({
         type: 'authenticity_concern',
         severity: 'medium',
-        description: 'Submission may lack authenticity'
+        description: 'Submission may lack authenticity',
       })
     }
 
@@ -875,16 +928,19 @@ export class TrainingValidationMonitor {
       activitySequences: [],
       topicClusters: [],
       improvementTrajectories: [],
-      bottleneckPatterns: []
+      bottleneckPatterns: [],
     }
   }
 
-  private analyzeSatisfactionTrends(userId: string, sessions: TrainingSession[]): SatisfactionTrends {
+  private analyzeSatisfactionTrends(
+    userId: string,
+    sessions: TrainingSession[]
+  ): SatisfactionTrends {
     return {
       overall: 4.2,
       trend: 'stable',
       byActivityType: {},
-      factors: []
+      factors: [],
     }
   }
 
@@ -892,16 +948,19 @@ export class TrainingValidationMonitor {
     return {
       criticalPoints: [],
       reasons: [],
-      preventionStrategies: []
+      preventionStrategies: [],
     }
   }
 
-  private trackPreferenceEvolution(userId: string, sessions: TrainingSession[]): PreferenceEvolution {
+  private trackPreferenceEvolution(
+    userId: string,
+    sessions: TrainingSession[]
+  ): PreferenceEvolution {
     return {
       initial: {},
       current: {},
       evolution: [],
-      stability: 0.8
+      stability: 0.8,
     }
   }
 
@@ -914,7 +973,7 @@ export class TrainingValidationMonitor {
     return [
       'Users show strong engagement with creative activities',
       'Session completion rates are high for shorter activities',
-      'Users prefer activities that allow personal expression'
+      'Users prefer activities that allow personal expression',
     ]
   }
 }
@@ -1220,7 +1279,7 @@ class AlertSystem {
           severity: condition.severity,
           message: condition.message,
           triggeredAt: new Date().toISOString(),
-          acknowledged: false
+          acknowledged: false,
         })
       }
     }
@@ -1259,7 +1318,7 @@ class QualityAnalyzer {
       readability: 0.75,
       sentiment: 0.6,
       creativity: 0.7,
-      depth: 0.8
+      depth: 0.8,
     }
   }
 }

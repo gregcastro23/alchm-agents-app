@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
-import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
-import { calculateMC } from '@/lib/monica/monica-constant-validator'
-import { logQuantitiesToGalileo, type AlchemicalMetrics } from '@/lib/galileo-logger'
-import { ChartSynthesizer } from '@/lib/consciousness/chart-synthesizer'
-import { synthesizeCharts } from '@/lib/utils'
+import { getCurrentPlanetaryPositions } from '../../../../lib/calculate-transits'
+import { generateAlchmForCurrentMoment } from '../../../../lib/alchemizer'
+import { calculateMC } from '../../../../lib/monica/monica-constant-validator'
+import { logQuantitiesToGalileo, type AlchemicalMetrics } from '../../../../lib/galileo-logger'
+import { ChartSynthesizer } from '../../../../lib/consciousness/chart-synthesizer'
+import { synthesizeCharts } from '../../../../lib/utils'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { auth } from '@/lib/auth'
-import { ConsciousnessClient } from '@/lib/api-client/consciousness-client'
+import { auth } from '../../../../lib/auth'
+import { ConsciousnessClient } from '../../../../lib/api-client/consciousness-client'
 
 const CreateAgentSchema = z.object({
   birthChart: z.any().nullable().optional(),

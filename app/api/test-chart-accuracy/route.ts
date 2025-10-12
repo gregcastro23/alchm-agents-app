@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { testAstronomicalAccuracy } from '@/lib/monica/horoscope-generator'
-import { BirthInfoSchema } from '@/lib/schemas'
+import { testAstronomicalAccuracy } from '../../../../lib/monica/horoscope-generator'
+import { BirthInfoSchema } from '../../../../lib/schemas'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { agentCache } from '@/lib/agent-cache-system'
+import { agentCache } from '../../../../lib/agent-cache-system'
 
 /**
  * Agent Cache Metrics API Endpoint

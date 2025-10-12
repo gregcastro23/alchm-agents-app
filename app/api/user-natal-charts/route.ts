@@ -10,7 +10,7 @@ import {
   getUserNatalCharts,
   getPrimaryNatalChart,
   CreateNatalChartInput,
-} from '@/lib/services/natal-chart-storage'
+} from '../../../../lib/services/natal-chart-storage'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

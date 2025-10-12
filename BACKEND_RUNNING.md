@@ -42,6 +42,7 @@
 The production site should now connect to the backend through ngrok!
 
 ### Test It
+
 1. Visit: https://v0-planetary-agents1.vercel.app/gallery
 2. Click on any agent
 3. Try chatting - you should get real AI responses now (not fallback messages)

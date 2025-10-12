@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { TemporalGrimoireExporter } from '@/lib/temporal-grimoire-export'
-import type { ExportOptions, GrimoireTemplate } from '@/lib/temporal-grimoire-export'
-import type { TemporalQuery, TemporalAnalysisResult } from '@/lib/temporal-analysis-engine'
+import { TemporalGrimoireExporter } from '../../../../lib/temporal-grimoire-export'
+import type { ExportOptions, GrimoireTemplate } from '../../../../lib/temporal-grimoire-export'
+import type { TemporalQuery, TemporalAnalysisResult } from '../../../../lib/temporal-analysis-engine'
 
 /**
  * Temporal Grimoire Export API

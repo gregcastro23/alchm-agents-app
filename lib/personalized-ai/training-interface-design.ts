@@ -23,12 +23,7 @@ export type TrainingSessionType =
   | 'personality_deepening'
   | 'consciousness_expansion'
 
-export type TrainingPhase =
-  | 'discovery'
-  | 'exploration'
-  | 'deepening'
-  | 'mastery'
-  | 'transcendence'
+export type TrainingPhase = 'discovery' | 'exploration' | 'deepening' | 'mastery' | 'transcendence'
 
 export interface SessionProgress {
   completedActivities: number
@@ -188,69 +183,73 @@ export const TRAINING_ACTIVITIES: TrainingActivity[] = [
         'Describe a moment when you felt truly alive',
         'Share a challenge that revealed your inner strength',
         'Tell about a person who changed your perspective',
-        'Describe your relationship with creativity or imagination'
+        'Describe your relationship with creativity or imagination',
       ],
       followUpSuggestions: [
         'What emotions come up when you think about this story?',
         'How has this experience shaped who you are today?',
-        'What would you tell your younger self about this moment?'
+        'What would you tell your younger self about this moment?',
       ],
       emotionalSupport: [
         'This is a safe space for your authentic story',
         'There are no wrong stories - each one is valuable',
-        'Your vulnerability creates connection and understanding'
+        'Your vulnerability creates connection and understanding',
       ],
       examples: [
         'I remember the summer I spent hiking through the Pacific Northwest...',
         'When I was 8, I decided to become a marine biologist after...',
-        'The day I picked up a paintbrush for the first time...'
-      ]
+        'The day I picked up a paintbrush for the first time...',
+      ],
     },
 
     xpReward: {
       baseXP: 150,
       bonusMultipliers: { creativity: 1.5, depth: 1.3, authenticity: 1.4, engagement: 1.2 },
       unlocks: ['dream_interpreter', 'creativity_workshop'],
-      achievements: ['storyteller']
+      achievements: ['storyteller'],
     },
 
     personalizationRules: [
       {
         condition: 'user_has_artistic_background',
-        modification: 'Add artistic expression prompts'
-      }
+        modification: 'Add artistic expression prompts',
+        priority: 7,
+      },
     ],
 
     adaptiveElements: [
       {
         trigger: 'short_response',
-        adaptation: 'Offer simpler, more focused prompts'
-      }
+        adaptation: 'Offer simpler, more focused prompts',
+      },
     ],
 
     completionCriteria: {
       minimumWords: 50,
-      requiresReflection: true,
-      qualityIndicators: ['personal_connection', 'emotional_depth']
+      requiresSelfReflection: true,
+      qualityIndicators: ['personal_connection', 'emotional_depth'],
     },
 
     qualityMetrics: [
       {
         name: 'authenticity',
         description: 'How genuine and personal the story feels',
-        weight: 0.4
+        weight: 0.4,
+        evaluationMethod: 'ai_assessment',
       },
       {
         name: 'emotional_depth',
         description: 'Level of emotional insight and vulnerability',
-        weight: 0.3
+        weight: 0.3,
+        evaluationMethod: 'ai_assessment',
       },
       {
         name: 'creativity',
         description: 'Imaginative and unique storytelling',
-        weight: 0.3
-      }
-    ]
+        weight: 0.3,
+        evaluationMethod: 'ai_assessment',
+      },
+    ],
   },
 
   // CREATIVE EXPLORATION - Making training feel like play
@@ -270,72 +269,77 @@ export const TRAINING_ACTIVITIES: TrainingActivity[] = [
         'Write about a color that represents your mood',
         'Create a poem about a forgotten memory',
         'Express your relationship with time in verse',
-        'Write a poem from the perspective of your dreams'
+        'Write a poem from the perspective of your dreams',
       ],
       followUpSuggestions: [
         'What surprised you about what emerged?',
         'How did the poem change what you were feeling?',
-        'Would you like to explore this theme further?'
+        'Would you like to explore this theme further?',
       ],
       emotionalSupport: [
         'Poetry isn\'t about being "good" - it\'s about being real',
         'Your unique voice and perspective are what matter',
-        'There\'s no wrong way to express yourself poetically'
-      ]
+        "There's no wrong way to express yourself poetically",
+      ],
     },
 
     xpReward: {
       baseXP: 200,
       bonusMultipliers: { creativity: 2.0, depth: 1.4, authenticity: 1.3, engagement: 1.5 },
       unlocks: ['shadow_exploration', 'joy_manifestation'],
-      achievements: ['poet', 'creative_soul']
+      achievements: ['poet', 'creative_soul'],
     },
 
     personalizationRules: [
       {
         condition: 'user_likes_nature',
-        modification: 'Add nature-inspired poetic prompts'
+        modification: 'Add nature-inspired poetic prompts',
+        priority: 6,
       },
       {
         condition: 'user_is_analytical',
-        modification: 'Include structure-building poetry exercises'
-      }
+        modification: 'Include structure-building poetry exercises',
+        priority: 5,
+      },
     ],
 
     adaptiveElements: [
       {
         trigger: 'user_struggles_with_creativity',
-        adaptation: 'Provide more structured prompts and examples'
+        adaptation: 'Provide more structured prompts and examples',
       },
       {
         trigger: 'user_creates_exceptional_work',
-        adaptation: 'Offer advanced poetic challenges and techniques'
-      }
+        adaptation: 'Offer advanced poetic challenges and techniques',
+      },
     ],
 
     completionCriteria: {
       minimumWords: 30,
       requiresCreativity: true,
-      qualityIndicators: ['metaphorical_language', 'emotional_resonance']
+      qualityIndicators: ['metaphorical_language', 'emotional_resonance'],
     },
 
     qualityMetrics: [
       {
         name: 'poetic_creativity',
         description: 'Use of metaphor, imagery, and unique language',
-        weight: 0.4
+        weight: 0.4,
+        evaluationMethod: 'ai_assessment',
       },
       {
         name: 'emotional_expression',
         description: 'How well the poem conveys feeling and meaning',
-        weight: 0.4
+        weight: 0.4,
+        evaluationMethod: 'ai_assessment',
       },
       {
         name: 'authenticity',
         description: 'Personal voice and genuine expression',
-        weight: 0.2
-      }
-    ]
+        weight: 0.2,
+        evaluationMethod: 'ai_assessment',
+      },
+    ],
   },
 
   // RELATIONSHIP BUILDING - Training through connection
@@ -355,50 +359,79 @@ export const TRAINING_ACTIVITIES: TrainingActivity[] = [
         'Describe your ideal conversation partner and why',
         'What topics make you light up and share freely?',
         'How do you know when a conversation is really working?',
-        'What communication habits would you like to change?'
+        'What communication habits would you like to change?',
       ],
       followUpSuggestions: [
         'What does this reveal about your social needs?',
         'How might this affect how I should communicate with you?',
-        'What would make our conversations even better?'
+        'What would make our conversations even better?',
       ],
       emotionalSupport: [
         'Communication is a skill we can all improve',
         'Your preferences help me understand and connect better',
-        'This is about growth, not judgment'
-      ]
+        'This is about growth, not judgment',
+      ],
     },
 
     xpReward: {
       baseXP: 180,
       bonusMultipliers: { creativity: 1.3, depth: 1.5, authenticity: 1.6, engagement: 1.4 },
       unlocks: ['wisdom_sharing', 'authentic_expression'],
-      achievements: ['communicator', 'relationship_builder']
+      achievements: ['communicator', 'relationship_builder'],
     },
 
     completionCriteria: {
       minimumWords: 75,
       requiresSelfReflection: true,
-      qualityIndicators: ['communication_insight', 'relationship_awareness']
+      qualityIndicators: ['communication_insight', 'relationship_awareness'],
     },
 
     qualityMetrics: [
       {
         name: 'communication_insight',
         description: 'Understanding of personal communication patterns',
-        weight: 0.4
+        weight: 0.4,
+        evaluationMethod: 'ai_assessment',
       },
       {
         name: 'relationship_awareness',
         description: 'Insight into social dynamics and preferences',
-        weight: 0.4
+        weight: 0.4,
+        evaluationMethod: 'ai_assessment',
       },
       {
         name: 'growth_mindset',
         description: 'Openness to improving communication skills',
-        weight: 0.2
-      }
-    ]
+        weight: 0.2,
+        evaluationMethod: 'ai_assessment',
+      },
+    ],
+
+    personalizationRules: [
+      {
+        condition: 'introvert_preference',
+        adjustment: 'reduce_social_elements',
+        trigger: 'user_indicates_preference_for_quiet',
+      },
+      {
+        condition: 'extrovert_preference',
+        adjustment: 'increase_social_elements',
+        trigger: 'user_indicates_preference_for_interaction',
+      },
+    ],
+
+    adaptiveElements: [
+      {
+        elementType: 'prompt_complexity',
+        adaptationTrigger: 'difficulty_level',
+        possibleAdjustments: ['simplify_language', 'add_examples', 'increase_depth'],
+      },
+      {
+        elementType: 'engagement_style',
+        adaptationTrigger: 'user_energy_level',
+        possibleAdjustments: ['make_more_energetic', 'calm_down', 'maintain_current'],
+      },
+    ],
   },
 
   // DREAM EXPLORATION - Accessing subconscious wisdom
@@ -418,51 +451,80 @@ export const TRAINING_ACTIVITIES: TrainingActivity[] = [
         'Describe a vivid dream from the past week',
         'Share an intuition or gut feeling that proved true',
         'Explore a recurring theme in your dreams',
-        'Describe a moment when you just "knew" something'
+        'Describe a moment when you just "knew" something',
       ],
       followUpSuggestions: [
         'What emotions or symbols stand out?',
         'How might this connect to your waking life?',
-        'What action or awareness does this inspire?'
+        'What action or awareness does this inspire?',
       ],
       emotionalSupport: [
         'Dreams and intuitions are valuable messages from within',
         'Your subconscious wisdom is worth exploring',
-        'This is a gentle, non-judgmental space for inner discovery'
-      ]
+        'This is a gentle, non-judgmental space for inner discovery',
+      ],
     },
 
     xpReward: {
       baseXP: 250,
       bonusMultipliers: { creativity: 1.6, depth: 2.0, authenticity: 1.5, engagement: 1.7 },
       unlocks: ['shadow_exploration', 'intuition_training'],
-      achievements: ['dream_interpreter', 'intuitive_sage']
+      achievements: ['dream_interpreter', 'intuitive_sage'],
     },
 
     completionCriteria: {
       minimumWords: 100,
       requiresInterpretation: true,
-      qualityIndicators: ['subconscious_insight', 'intuitive_connection']
+      qualityIndicators: ['subconscious_insight', 'intuitive_connection'],
     },
 
     qualityMetrics: [
       {
         name: 'subconscious_depth',
         description: 'Exploration of deeper psychological or spiritual material',
-        weight: 0.4
+        weight: 0.4,
+        evaluationMethod: 'ai_assessment',
       },
       {
         name: 'intuitive_insight',
         description: 'Connection to inner knowing and wisdom',
-        weight: 0.4
+        weight: 0.4,
+        evaluationMethod: 'ai_assessment',
       },
       {
         name: 'symbolic_understanding',
         description: 'Recognition and interpretation of symbolic language',
-        weight: 0.2
-      }
-    ]
-  }
+        weight: 0.2,
+        evaluationMethod: 'ai_assessment',
+      },
+    ],
+
+    personalizationRules: [
+      {
+        condition: 'lucid_dreamer',
+        adjustment: 'enhance_dream_recall',
+        trigger: 'user_reports_frequent_lucid_dreams',
+      },
+      {
+        condition: 'dream_skeptic',
+        adjustment: 'focus_on_practical_interpretation',
+        trigger: 'user_questions_dream_meaning',
+      },
+    ],
+
+    adaptiveElements: [
+      {
+        elementType: 'symbol_complexity',
+        adaptationTrigger: 'user_symbolic_literacy',
+        possibleAdjustments: ['simplify_symbols', 'add_explanations', 'increase_complexity'],
+      },
+      {
+        elementType: 'emotional_depth',
+        adaptationTrigger: 'comfort_with_emotion',
+        possibleAdjustments: ['lighten_emotional_load', 'deepen_exploration', 'maintain_balance'],
+      },
+    ],
+  },
 ]
 
 // ============================================================================
@@ -545,7 +607,7 @@ export class TrainingSessionManager {
         currentActivityIndex: 0,
         phaseCompletionPercentage: 0,
         overallProgress: 0,
-        estimatedTimeRemaining: 30
+        estimatedTimeRemaining: 30,
       },
       collectedData: {
         textSamples: [],
@@ -553,7 +615,7 @@ export class TrainingSessionManager {
         creativeContent: [],
         preferenceResponses: [],
         feedbackHistory: [],
-        personalityInsights: []
+        personalityInsights: [],
       },
       userPreferences: {
         preferredInputTypes: ['free_text', 'structured_questions'],
@@ -562,7 +624,7 @@ export class TrainingSessionManager {
         sessionLengthPreference: 20,
         feedbackStyle: 'celebratory_motivating',
         challengeLevel: 'beginner_friendly',
-        ...preferences
+        ...preferences,
       },
       engagementMetrics: {
         sessionCount: 1,
@@ -572,10 +634,10 @@ export class TrainingSessionManager {
         activityPreferences: {},
         engagementPatterns: [],
         satisfactionScores: [],
-        challengeAppropriateness: 7
+        challengeAppropriateness: 7,
       },
       startedAt: new Date().toISOString(),
-      lastActiveAt: new Date().toISOString()
+      lastActiveAt: new Date().toISOString(),
     }
 
     this.sessions.set(session.id, session)
@@ -591,7 +653,7 @@ export class TrainingSessionManager {
     // Score activities based on user preferences and session goals
     const scoredActivities = availableActivities.map(activity => ({
       activity,
-      score: this.scoreActivityForUser(activity, session)
+      score: this.scoreActivityForUser(activity, session),
     }))
 
     // Return highest scoring activity
@@ -618,7 +680,7 @@ export class TrainingSessionManager {
       exploration: ['creativity_workshop', 'dream_interpreter', 'wisdom_sharing'],
       deepening: ['shadow_exploration', 'intuition_training', 'authentic_expression'],
       mastery: ['future_visioning', 'legacy_building', 'pattern_recognition'],
-      transcendence: ['joy_manifestation', 'forgiveness_work', 'boundary_setting']
+      transcendence: ['joy_manifestation', 'forgiveness_work', 'boundary_setting'],
     }
 
     return phaseMappings[phase]?.includes(activity.type) || false
@@ -628,12 +690,15 @@ export class TrainingSessionManager {
     if (!activity.unlocksNext) return true
 
     // Check if required activities are completed
-    return activity.unlocksNext.every(requiredActivityId =>
-      session.progress.completedActivities > 0 // Simplified - would check actual completion
+    return activity.unlocksNext.every(
+      requiredActivityId => session.progress.completedActivities > 0 // Simplified - would check actual completion
     )
   }
 
-  private matchesUserPreferences(activity: TrainingActivity, preferences: TrainingPreferences): boolean {
+  private matchesUserPreferences(
+    activity: TrainingActivity,
+    preferences: TrainingPreferences
+  ): boolean {
     // Check input type preference
     if (!preferences.preferredInputTypes.includes(activity.inputType)) {
       return false
@@ -642,7 +707,12 @@ export class TrainingSessionManager {
     // Check difficulty level
     if (activity.difficulty !== preferences.challengeLevel) {
       // Allow one level difference for flexibility
-      const levels: ChallengeLevel[] = ['beginner_friendly', 'moderate_challenge', 'advanced_deep', 'expert_mastery']
+      const levels: ChallengeLevel[] = [
+        'beginner_friendly',
+        'moderate_challenge',
+        'advanced_deep',
+        'expert_mastery',
+      ]
       const activityIndex = levels.indexOf(activity.difficulty)
       const preferredIndex = levels.indexOf(preferences.challengeLevel)
       if (Math.abs(activityIndex - preferredIndex) > 1) return false
@@ -665,21 +735,26 @@ export class TrainingSessionManager {
     score += this.getProgressMatchScore(activity, session.progress) * 0.2
 
     // Score based on time available
-    score += this.getTimeMatchScore(activity, session.userPreferences.sessionLengthPreference) * 0.15
+    score +=
+      this.getTimeMatchScore(activity, session.userPreferences.sessionLengthPreference) * 0.15
 
     // Score based on engagement style match
-    score += this.getEngagementStyleMatchScore(activity, session.userPreferences.engagementStyle) * 0.15
+    score +=
+      this.getEngagementStyleMatchScore(activity, session.userPreferences.engagementStyle) * 0.15
 
     return score
   }
 
-  private getSessionTypeMatchScore(activity: TrainingActivity, sessionType: TrainingSessionType): number {
+  private getSessionTypeMatchScore(
+    activity: TrainingActivity,
+    sessionType: TrainingSessionType
+  ): number {
     const typeMappings: Partial<Record<TrainingSessionType, ActivityType[]>> = {
       initial_onboarding: ['storytelling_circle', 'relationship_roleplay'],
       creative_exploration: ['creativity_workshop', 'dream_interpreter'],
       relationship_building: ['relationship_roleplay', 'wisdom_sharing'],
       personality_deepening: ['shadow_exploration', 'authentic_expression'],
-      consciousness_expansion: ['future_visioning', 'intuition_training']
+      consciousness_expansion: ['future_visioning', 'intuition_training'],
     }
 
     return typeMappings[sessionType]?.includes(activity.type) ? 1 : 0.5
@@ -688,7 +763,12 @@ export class TrainingSessionManager {
   private getProgressMatchScore(activity: TrainingActivity, progress: SessionProgress): number {
     // Prefer activities that build on current progress
     const progressRatio = progress.completedActivities / progress.totalActivities
-    const activityDifficulty = ['beginner_friendly', 'moderate_challenge', 'advanced_deep', 'expert_mastery'].indexOf(activity.difficulty)
+    const activityDifficulty = [
+      'beginner_friendly',
+      'moderate_challenge',
+      'advanced_deep',
+      'expert_mastery',
+    ].indexOf(activity.difficulty)
 
     // Match difficulty to progress level
     const idealDifficulty = Math.floor(progressRatio * 4)
@@ -706,7 +786,10 @@ export class TrainingSessionManager {
     return 0.2 // Way over time limit
   }
 
-  private getEngagementStyleMatchScore(activity: TrainingActivity, preferredStyle: EngagementStyle): number {
+  private getEngagementStyleMatchScore(
+    activity: TrainingActivity,
+    preferredStyle: EngagementStyle
+  ): number {
     // Simplified matching - in real implementation would have detailed mappings
     if (activity.engagementStyle === preferredStyle) return 1
     return 0.7 // Partial match for different but compatible styles
@@ -719,7 +802,7 @@ export class TrainingSessionManager {
       creative_exploration: 2,
       relationship_building: 2,
       personality_deepening: 3,
-      consciousness_expansion: 4
+      consciousness_expansion: 4,
     }
     return counts[sessionType] || 3
   }
@@ -740,6 +823,33 @@ export interface TextSample {
   emotionalDepth?: number
   collectedAt: string
   context?: string
+}
+
+export interface ConversationEntry {
+  id: string
+  userMessage: string
+  aiResponse: string
+  timestamp: string
+  userFeedback?: FeedbackData
+  xpGained: number
+  interactionQuality: 'poor' | 'average' | 'good' | 'excellent'
+  trainingImpact: TrainingImpact
+}
+
+export interface FeedbackData {
+  rating: number // 1-5 stars
+  explicit: boolean // True if user explicitly rated
+  feedbackType: 'positive' | 'negative' | 'neutral' | 'exceptional'
+  correction?: string // User-provided correction
+  timestamp: string
+}
+
+export interface TrainingImpact {
+  consciousnessGrowth: number // 0-1 scale
+  skillImprovement: number // 0-1 scale
+  patternRecognition: number // 0-1 scale
+  emotionalIntelligence: number // 0-1 scale
+  creativityEnhancement: number // 0-1 scale
 }
 
 export interface CreativeSubmission {
@@ -815,7 +925,9 @@ function evaluateMetric(submission: string, metric: QualityMetric): number {
       return submission.includes('imagine') || submission.includes('dream') ? 0.9 : 0.6
     case 'emotional_depth':
       const emotionWords = ['feel', 'emotion', 'heart', 'sad', 'happy', 'angry', 'love']
-      const emotionCount = emotionWords.filter(word => submission.toLowerCase().includes(word)).length
+      const emotionCount = emotionWords.filter(word =>
+        submission.toLowerCase().includes(word)
+      ).length
       return Math.min(emotionCount / 3, 1)
     default:
       return 0.7
@@ -833,7 +945,7 @@ export function generateActivityPrompt(
   if (userContext.recentMood) {
     personalizedPrompt.creativePrompts = [
       `Considering your ${userContext.recentMood} mood: ${personalizedPrompt.creativePrompts[0]}`,
-      ...personalizedPrompt.creativePrompts.slice(1)
+      ...personalizedPrompt.creativePrompts.slice(1),
     ]
   }
 
@@ -847,10 +959,7 @@ export function generateActivityPrompt(
   return personalizedPrompt
 }
 
-export function estimateActivityDuration(
-  activity: TrainingActivity,
-  userHistory: any
-): number {
+export function estimateActivityDuration(activity: TrainingActivity, userHistory: any): number {
   // Adjust duration based on user history
   let estimatedDuration = activity.estimatedDuration
 

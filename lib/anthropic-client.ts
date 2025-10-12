@@ -1,5 +1,5 @@
 import { Anthropic } from '@anthropic-ai/sdk'
-import dotenv from 'dotenv'
+import * as dotenv from 'dotenv'
 
 // Load environment variables
 dotenv.config()

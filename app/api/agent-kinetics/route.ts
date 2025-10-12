@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
-import { sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
-import { DEMO_AGENTS } from '@/lib/demo-agents-data'
+import { getAgentKineticProfile } from '../../../../lib/agents/kinetic-profiles'
+import { sampleHourlyAlchm } from '../../../../lib/alchemical-kinetics-sampler'
+import { DEMO_AGENTS } from '../../../../lib/demo-agents-data'
 
 interface AgentKineticMetrics {
   agentId: string

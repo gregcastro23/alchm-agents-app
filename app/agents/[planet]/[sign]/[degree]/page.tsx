@@ -13,12 +13,10 @@ import {
   findNextOccurrence,
   getPlanetCycleLength,
 } from '@/lib/historical-transits'
-import { getTransitsByPlanet } from '@/lib/historical-transit-data'
 import {
   DegreeSpecificHistoryService,
   type DegreeHistoricalData,
 } from '@/lib/degree-specific-history'
-import { HistoricalTransitCard } from '@/components/misc/historical-transit-card'
 import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
 import {
   getPlanetaryDignity,

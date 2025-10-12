@@ -1,9 +1,9 @@
 // GET /api/personalized-ai/[id] - Retrieve AI configuration
 
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
-import { calculateLevel } from '@/lib/personalized-ai/level-system'
-import type { PersonalizedAIConfig } from '@/lib/types/personalized-ai'
+import { prisma } from '../../../../lib/db'
+import { calculateLevel } from '../../../../lib/personalized-ai/level-system'
+import type { PersonalizedAIConfig } from '../../../../lib/types/personalized-ai'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {

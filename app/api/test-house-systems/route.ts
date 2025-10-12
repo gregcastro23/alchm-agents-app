@@ -3,8 +3,8 @@ import {
   calculateProfessionalHouses,
   type HouseSystem,
   type EnhancedBirthInfo,
-} from '@/lib/enhanced-astronomical-calculator'
-import { BirthInfoSchema } from '@/lib/schemas'
+} from '../../../../lib/enhanced-astronomical-calculator'
+import { BirthInfoSchema } from '../../../../lib/schemas'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

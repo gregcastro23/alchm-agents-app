@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateText } from 'ai'
 import { openai } from '@ai-sdk/openai'
-import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
-import { consciousnessPersistence } from '@/lib/consciousness-persistence'
-import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
+import { agentCache, buildCacheContext } from '../../../../lib/agent-cache-system'
+import { consciousnessPersistence } from '../../../../lib/consciousness-persistence'
+import { getCurrentUser, getUserIdFromRequest } from '../../../../lib/auth-helpers'
 
 export async function POST(request: NextRequest) {
   try {

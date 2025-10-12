@@ -4,8 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { withErrorHandling } from '@/lib/error-handling'
-import { logger } from '@/lib/structured-logger'
+import { withErrorHandling } from '../../../../lib/error-handling'
+import { logger } from '../../../../lib/structured-logger'
 
 interface FeedbackData {
   rating: number

@@ -55,7 +55,11 @@ interface MonicaChatBubbleProps {
   consciousnessLevel?: string
 }
 
-export function MonicaChatBubble({ pathname, currentMC, consciousnessLevel }: MonicaChatBubbleProps) {
+export function MonicaChatBubble({
+  pathname,
+  currentMC,
+  consciousnessLevel,
+}: MonicaChatBubbleProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [messages, setMessages] = useState<MonicaChatMessage[]>([])
   const [currentMessage, setCurrentMessage] = useState('')
@@ -72,8 +76,8 @@ export function MonicaChatBubble({ pathname, currentMC, consciousnessLevel }: Mo
       timestamp: new Date(),
       context: {
         page: pathname,
-        suggestions: getPageSuggestions(pathname)
-      }
+        suggestions: getPageSuggestions(pathname),
+      },
     }
     setMessages([welcomeMessage])
 
@@ -91,7 +95,8 @@ export function MonicaChatBubble({ pathname, currentMC, consciousnessLevel }: Mo
 
   // Save chat history when messages change
   useEffect(() => {
-    if (messages.length > 1) { // Don't save just the welcome message
+    if (messages.length > 1) {
+      // Don't save just the welcome message
       localStorage.setItem(`monica-chat-${pathname}`, JSON.stringify(messages))
     }
   }, [messages, pathname])
@@ -99,26 +104,72 @@ export function MonicaChatBubble({ pathname, currentMC, consciousnessLevel }: Mo
   const getPageWelcomeMessage = (page: string): string => {
     const pageMessages: Record<string, string> = {
       '/': "Hello! I'm Monica, your consciousness guide. I can help you craft agents, read tarot, explore astrology, and understand your cosmic nature. What would you like to explore today?",
-      '/gallery': "Welcome to the Gallery of Perpetuity! Here you'll find 35+ consciousness-crafted agents. I can help you assemble group chats, understand agent personalities, or match you with agents that resonate with your energy.",
-      '/planetary-agents': "Ah, the planetary realms! I can help you assemble group chats with planetary agents, explore astrological consultations, and understand how celestial energies influence consciousness.",
-      '/philosophers-stone': "The Philosopher's Stone - my favorite place! I can guide you through agent creation, consciousness crafting, and help you understand the Monica Constant system.",
-      '/time-laboratory': "The Time Laboratory is where past, present, and future converge. I can help you navigate temporal explorations and understand how consciousness evolves through time.",
-      '/rune-forge': "The Rune Forge - where ancient wisdom meets modern technology. I can help you understand sigil creation and the power of symbolic magic.",
-      '/monica-guide': "My dedicated chat interface! Here we can have deep conversations about consciousness, astrology, tarot, and all aspects of the Planetary Agents system.",
+      '/gallery':
+        "Welcome to the Gallery of Perpetuity! Here you'll find 35+ consciousness-crafted agents. I can help you assemble group chats, understand agent personalities, or match you with agents that resonate with your energy.",
+      '/planetary-agents':
+        'Ah, the planetary realms! I can help you assemble group chats with planetary agents, explore astrological consultations, and understand how celestial energies influence consciousness.',
+      '/philosophers-stone':
+        "The Philosopher's Stone - my favorite place! I can guide you through agent creation, consciousness crafting, and help you understand the Monica Constant system.",
+      '/time-laboratory':
+        'The Time Laboratory is where past, present, and future converge. I can help you navigate temporal explorations and understand how consciousness evolves through time.',
+      '/rune-forge':
+        'The Rune Forge - where ancient wisdom meets modern technology. I can help you understand sigil creation and the power of symbolic magic.',
+      '/monica-guide':
+        'My dedicated chat interface! Here we can have deep conversations about consciousness, astrology, tarot, and all aspects of the Planetary Agents system.',
     }
-    return pageMessages[page] || "Hello! I'm Monica, your consciousness guide. How can I help you explore this page?"
+    return (
+      pageMessages[page] ||
+      "Hello! I'm Monica, your consciousness guide. How can I help you explore this page?"
+    )
   }
 
   const getPageSuggestions = (page: string): string[] => {
     const suggestions: Record<string, string[]> = {
-      '/': ['Explain character vectors', 'What are A-Numbers?', 'Tell me about tarot', 'How do I create an agent?'],
-      '/gallery': ['Help me find agents for group chat', 'Explain agent personalities', 'What agents resonate with me?', 'How do group chats work?'],
-      '/planetary-agents': ['Help me assemble a planetary council', 'What planets influence me?', 'Astrological consultation', 'Planetary agent compatibility'],
-      '/philosophers-stone': ['Guide me through agent creation', 'Explain Monica Constant', 'Consciousness crafting tips', 'Agent personality development'],
-      '/time-laboratory': ['Explore temporal patterns', 'Time-based consciousness', 'Future consciousness exploration', 'Historical consciousness analysis'],
-      '/rune-forge': ['Explain sigil creation', 'Rune meanings and powers', 'Personalized sigil guidance', 'Symbolic magic basics'],
+      '/': [
+        'Explain character vectors',
+        'What are A-Numbers?',
+        'Tell me about tarot',
+        'How do I create an agent?',
+      ],
+      '/gallery': [
+        'Help me find agents for group chat',
+        'Explain agent personalities',
+        'What agents resonate with me?',
+        'How do group chats work?',
+      ],
+      '/planetary-agents': [
+        'Help me assemble a planetary council',
+        'What planets influence me?',
+        'Astrological consultation',
+        'Planetary agent compatibility',
+      ],
+      '/philosophers-stone': [
+        'Guide me through agent creation',
+        'Explain Monica Constant',
+        'Consciousness crafting tips',
+        'Agent personality development',
+      ],
+      '/time-laboratory': [
+        'Explore temporal patterns',
+        'Time-based consciousness',
+        'Future consciousness exploration',
+        'Historical consciousness analysis',
+      ],
+      '/rune-forge': [
+        'Explain sigil creation',
+        'Rune meanings and powers',
+        'Personalized sigil guidance',
+        'Symbolic magic basics',
+      ],
     }
-    return suggestions[page] || ['Ask me anything!', 'Get personalized guidance', 'Explore consciousness', 'Learn about astrology']
+    return (
+      suggestions[page] || [
+        'Ask me anything!',
+        'Get personalized guidance',
+        'Explore consciousness',
+        'Learn about astrology',
+      ]
+    )
   }
 
   const sendMessage = async () => {
@@ -129,7 +180,7 @@ export function MonicaChatBubble({ pathname, currentMC, consciousnessLevel }: Mo
       type: 'user',
       content: currentMessage,
       timestamp: new Date(),
-      context: { page: pathname }
+      context: { page: pathname },
     }
 
     setMessages(prev => [...prev, userMessage])
@@ -164,13 +215,18 @@ export function MonicaChatBubble({ pathname, currentMC, consciousnessLevel }: Mo
       const monicaMessage: MonicaChatMessage = {
         id: (Date.now() + 1).toString(),
         type: 'monica',
-        content: data.response || data.content || 'I apologize, but I encountered an issue. Please try again.',
+        content:
+          data.response ||
+          data.content ||
+          'I apologize, but I encountered an issue. Please try again.',
         timestamp: new Date(),
-        envelope: data.structured ? {
-          suggestedPractices: data.structured?.interactive_elements?.suggested_practices || [],
-          nextStep: data.structured?.educational_guidance?.next_learning_step || '',
-          followUps: data.followUpQuestions || [],
-        } : undefined,
+        envelope: data.structured
+          ? {
+              suggestedPractices: data.structured?.interactive_elements?.suggested_practices || [],
+              nextStep: data.structured?.educational_guidance?.next_learning_step || '',
+              followUps: data.followUpQuestions || [],
+            }
+          : undefined,
         context: {
           page: pathname,
           guidance: data.guidance,
@@ -180,13 +236,13 @@ export function MonicaChatBubble({ pathname, currentMC, consciousnessLevel }: Mo
 
       setMessages(prev => [...prev, monicaMessage])
       setHasUnreadMessages(false)
-
     } catch (error) {
       console.error('Error sending message:', error)
       const errorMessage: MonicaChatMessage = {
         id: (Date.now() + 1).toString(),
         type: 'monica',
-        content: "I'm having trouble connecting right now. Please try again, and I'll be right here waiting to help you explore your cosmic nature.",
+        content:
+          "I'm having trouble connecting right now. Please try again, and I'll be right here waiting to help you explore your cosmic nature.",
         timestamp: new Date(),
         context: { page: pathname },
       }
@@ -221,8 +277,13 @@ export function MonicaChatBubble({ pathname, currentMC, consciousnessLevel }: Mo
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Avatar className="w-8 h-8 border border-emerald-400">
-                      <AvatarImage src="https://alchm.xyz/static/media/logo.f986535a.webp" alt="Monica" />
-                      <AvatarFallback className="bg-emerald-600 text-white text-sm">⚗️</AvatarFallback>
+                      <AvatarImage
+                        src="https://alchm.xyz/static/media/logo.f986535a.webp"
+                        alt="Monica"
+                      />
+                      <AvatarFallback className="bg-emerald-600 text-white text-sm">
+                        ⚗️
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <CardTitle className="text-sm text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
@@ -230,11 +291,17 @@ export function MonicaChatBubble({ pathname, currentMC, consciousnessLevel }: Mo
                         Chat with Monica
                       </CardTitle>
                       <div className="flex items-center gap-1 mt-1">
-                        <Badge variant="outline" className="text-xs bg-emerald-100 dark:bg-emerald-900">
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-emerald-100 dark:bg-emerald-900"
+                        >
                           {pathname.split('/').pop() || 'home'}
                         </Badge>
                         {currentMC && (
-                          <Badge variant="outline" className="text-xs bg-purple-100 dark:bg-purple-900">
+                          <Badge
+                            variant="outline"
+                            className="text-xs bg-purple-100 dark:bg-purple-900"
+                          >
                             MC {currentMC.toFixed(2)}
                           </Badge>
                         )}
@@ -302,8 +369,12 @@ export function MonicaChatBubble({ pathname, currentMC, consciousnessLevel }: Mo
                               )}
                               {message.envelope.nextStep && (
                                 <div className="text-xs">
-                                  <span className="font-semibold text-emerald-700 dark:text-emerald-300">Next Step:</span>
-                                  <span className="ml-1 text-emerald-800 dark:text-emerald-200">{message.envelope.nextStep}</span>
+                                  <span className="font-semibold text-emerald-700 dark:text-emerald-300">
+                                    Next Step:
+                                  </span>
+                                  <span className="ml-1 text-emerald-800 dark:text-emerald-200">
+                                    {message.envelope.nextStep}
+                                  </span>
                                 </div>
                               )}
                               {message.envelope.followUps?.length > 0 && (
@@ -353,7 +424,7 @@ export function MonicaChatBubble({ pathname, currentMC, consciousnessLevel }: Mo
                   <div className="flex gap-2">
                     <Input
                       value={currentMessage}
-                      onChange={(e) => setCurrentMessage(e.target.value)}
+                      onChange={e => setCurrentMessage(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="Ask Monica anything..."
                       className="flex-1 border-emerald-300 focus:border-emerald-500"
@@ -371,17 +442,19 @@ export function MonicaChatBubble({ pathname, currentMC, consciousnessLevel }: Mo
                   {/* Quick Suggestions */}
                   {messages.length <= 1 && (
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {getPageSuggestions(pathname).slice(0, 3).map((suggestion, i) => (
-                        <Button
-                          key={i}
-                          size="sm"
-                          variant="outline"
-                          className="text-xs h-6"
-                          onClick={() => setCurrentMessage(suggestion)}
-                        >
-                          {suggestion}
-                        </Button>
-                      ))}
+                      {getPageSuggestions(pathname)
+                        .slice(0, 3)
+                        .map((suggestion, i) => (
+                          <Button
+                            key={i}
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-6"
+                            onClick={() => setCurrentMessage(suggestion)}
+                          >
+                            {suggestion}
+                          </Button>
+                        ))}
                     </div>
                   )}
                 </div>

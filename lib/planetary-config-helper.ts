@@ -2,10 +2,11 @@
 // Converts MultiAgentChat planetary configs to unified format
 
 import type { PlanetaryConfig } from './unified-agent-types'
+import type { Element } from './agent-types'
 import { getSignElement, getPlanetaryDignity } from './astrological-data'
 import { calculateMoonPhase, getMoonDegree } from './moon-phase-calculator'
 
-const PLANET_SYMBOLS: Record<string, string> = {
+export const PLANET_SYMBOLS: Record<string, string> = {
   Sun: '☉',
   Moon: '☽',
   Mercury: '☿',
@@ -18,7 +19,7 @@ const PLANET_SYMBOLS: Record<string, string> = {
   Pluto: '♇',
 }
 
-const PLANET_COLORS: Record<string, string> = {
+export const PLANET_COLORS: Record<string, string> = {
   Sun: '#f59e0b',
   Moon: '#9ca3af',
   Mercury: '#f97316',
@@ -41,7 +42,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       sign: 'Leo',
       degree: '15',
       dignity: getPlanetaryDignity('Sun', 'Leo'),
-      element: getSignElement('Leo'),
+      element: getSignElement('Leo') as Element,
       color: PLANET_COLORS.Sun,
       symbol: PLANET_SYMBOLS.Sun,
       liveSkySync: true,
@@ -51,7 +52,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       sign: 'Cancer',
       degree: '10',
       dignity: getPlanetaryDignity('Moon', 'Cancer'),
-      element: getSignElement('Cancer'),
+      element: getSignElement('Cancer') as Element,
       color: PLANET_COLORS.Moon,
       symbol: PLANET_SYMBOLS.Moon,
       moonPhase: currentMoonPhase,
@@ -63,7 +64,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       sign: 'Gemini',
       degree: '20',
       dignity: getPlanetaryDignity('Mercury', 'Gemini'),
-      element: getSignElement('Gemini'),
+      element: getSignElement('Gemini') as Element,
       color: PLANET_COLORS.Mercury,
       symbol: PLANET_SYMBOLS.Mercury,
       liveSkySync: true,
@@ -73,7 +74,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       sign: 'Taurus',
       degree: '12',
       dignity: getPlanetaryDignity('Venus', 'Taurus'),
-      element: getSignElement('Taurus'),
+      element: getSignElement('Taurus') as Element,
       color: PLANET_COLORS.Venus,
       symbol: PLANET_SYMBOLS.Venus,
       liveSkySync: true,
@@ -83,7 +84,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       sign: 'Aries',
       degree: '8',
       dignity: getPlanetaryDignity('Mars', 'Aries'),
-      element: getSignElement('Aries'),
+      element: getSignElement('Aries') as Element,
       color: PLANET_COLORS.Mars,
       symbol: PLANET_SYMBOLS.Mars,
       liveSkySync: true,
@@ -93,7 +94,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       sign: 'Sagittarius',
       degree: '25',
       dignity: getPlanetaryDignity('Jupiter', 'Sagittarius'),
-      element: getSignElement('Sagittarius'),
+      element: getSignElement('Sagittarius') as Element,
       color: PLANET_COLORS.Jupiter,
       symbol: PLANET_SYMBOLS.Jupiter,
       liveSkySync: true,
@@ -103,7 +104,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       sign: 'Capricorn',
       degree: '5',
       dignity: getPlanetaryDignity('Saturn', 'Capricorn'),
-      element: getSignElement('Capricorn'),
+      element: getSignElement('Capricorn') as Element,
       color: PLANET_COLORS.Saturn,
       symbol: PLANET_SYMBOLS.Saturn,
       liveSkySync: true,
@@ -113,7 +114,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       sign: 'Aquarius',
       degree: '18',
       dignity: getPlanetaryDignity('Uranus', 'Aquarius'),
-      element: getSignElement('Aquarius'),
+      element: getSignElement('Aquarius') as Element,
       color: PLANET_COLORS.Uranus,
       symbol: PLANET_SYMBOLS.Uranus,
       liveSkySync: true,
@@ -123,7 +124,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       sign: 'Pisces',
       degree: '22',
       dignity: getPlanetaryDignity('Neptune', 'Pisces'),
-      element: getSignElement('Pisces'),
+      element: getSignElement('Pisces') as Element,
       color: PLANET_COLORS.Neptune,
       symbol: PLANET_SYMBOLS.Neptune,
       liveSkySync: true,
@@ -133,7 +134,7 @@ export function createDefaultPlanetaryConfigs(): PlanetaryConfig[] {
       sign: 'Capricorn',
       degree: '28',
       dignity: getPlanetaryDignity('Pluto', 'Capricorn'),
-      element: getSignElement('Capricorn'),
+      element: getSignElement('Capricorn') as Element,
       color: PLANET_COLORS.Pluto,
       symbol: PLANET_SYMBOLS.Pluto,
       liveSkySync: true,
@@ -159,7 +160,7 @@ export function updatePlanetaryConfigWithLiveSky(
     sign: planetData.sign || config.sign,
     degree: planetData.degree?.toString() || config.degree,
     dignity: getPlanetaryDignity(config.planet, planetData.sign || config.sign),
-    element: getSignElement(planetData.sign || config.sign),
+    element: getSignElement(planetData.sign || config.sign) as Element,
   }
 }
 
@@ -173,7 +174,7 @@ export function convertLegacyAgentConfig(legacyConfig: any): PlanetaryConfig {
     sign: legacyConfig.sign,
     degree: legacyConfig.degree,
     dignity: getPlanetaryDignity(legacyConfig.planet, legacyConfig.sign),
-    element: getSignElement(legacyConfig.sign),
+    element: getSignElement(legacyConfig.sign) as Element,
     color: legacyConfig.color || PLANET_COLORS[legacyConfig.planet] || '#6b7280',
     symbol: legacyConfig.symbol || PLANET_SYMBOLS[legacyConfig.planet] || '●',
     moonPhase: legacyConfig.moonPhase,

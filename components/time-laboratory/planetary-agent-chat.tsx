@@ -283,6 +283,7 @@ export const PlanetaryAgentChat: React.FC<PlanetaryAgentChatProps> = ({
       content: inputMessage.trim(),
       timestamp: new Date(),
       type: 'user',
+      consciousness: 0, // User messages don't have consciousness level
     }
 
     setMessages(prev => [...prev, userMessage])

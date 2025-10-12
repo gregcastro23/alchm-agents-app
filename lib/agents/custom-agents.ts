@@ -134,10 +134,8 @@ export const CUSTOM_AGENTS: CraftedAgent[] = [
         },
         {
           type: 'Perfectionist Analysis',
-          description:
-            'Virgo rising with critical eye may delay action through over-analysis',
-          growthOpportunity:
-            'Trusting intuition (Scorpio Moon) to balance analytical precision',
+          description: 'Virgo rising with critical eye may delay action through over-analysis',
+          growthOpportunity: 'Trusting intuition (Scorpio Moon) to balance analytical precision',
         },
         {
           type: 'Emotional Transformation',

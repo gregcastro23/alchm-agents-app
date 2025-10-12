@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { HistoricalAgentsService } from '@/lib/historical-agents-db'
-import { DEMO_AGENTS } from '@/lib/demo-agents-data'
+import { HistoricalAgentsService } from '../../../../lib/historical-agents-db'
+import { DEMO_AGENTS } from '../../../../lib/demo-agents-data'
 
 interface GetAgentsResponse {
   success: boolean
@@ -22,14 +22,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
     const offset = parseInt(searchParams.get('offset') || '0')
 
     // Get agents from database
-    const dbAgents = await HistoricalAgentsService.getAllAgents({
-      includeStats,
-      era,
-      culture,
-      consciousnessLevel,
-      limit,
-      offset,
-    })
+    const queryOptions: any = { includeStats, limit, offset }
+    if (era) queryOptions.era = era
+    if (culture) queryOptions.culture = culture
+    if (consciousnessLevel) queryOptions.consciousnessLevel = consciousnessLevel
+
+    const dbAgents = await HistoricalAgentsService.getAllAgents(queryOptions)
 
     console.log(`Database returned ${dbAgents.length} agents`)
     if (dbAgents.length > 0) {

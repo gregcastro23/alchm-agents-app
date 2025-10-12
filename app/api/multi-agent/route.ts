@@ -7,21 +7,21 @@ import {
   createConversationContext,
   type AgentInteractionData,
   type ConversationContext,
-} from '@/lib/galileo-agent-logger'
+} from '../../../../lib/galileo-agent-logger'
 import {
   getPlanetaryDignity,
   getSignElement,
   getPlanetaryElement,
   calculateElementalAffinity,
-} from '@/lib/astrological-data'
-import { consciousnessPersistence } from '@/lib/consciousness-persistence'
-import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
-import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
-import { ANumberCalculator } from '@/lib/core-energy-rules'
-import { getLunarDegreePersonality, getMoonDegree } from '@/lib/moon-phase-calculator'
-import { PlanetaryHourCalculator, SEPHIROTIC_PRIORITY } from '@/lib/planetary-hour'
-import { sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
-import { computeForce } from '@/lib/alchemical-kinetics'
+} from '../../../../lib/astrological-data'
+import { consciousnessPersistence } from '../../../../lib/consciousness-persistence'
+import { getCurrentUser, getUserIdFromRequest } from '../../../../lib/auth-helpers'
+import { generateAlchmForCurrentMoment } from '../../../../lib/alchemizer'
+import { ANumberCalculator } from '../../../../lib/core-energy-rules'
+import { getLunarDegreePersonality, getMoonDegree } from '../../../../lib/moon-phase-calculator'
+import { PlanetaryHourCalculator, SEPHIROTIC_PRIORITY } from '../../../../lib/planetary-hour'
+import { sampleHourlyAlchm } from '../../../../lib/alchemical-kinetics-sampler'
+import { computeForce } from '../../../../lib/alchemical-kinetics'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
+import { generateAlchmForCurrentMoment } from '../../../../lib/alchemizer'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

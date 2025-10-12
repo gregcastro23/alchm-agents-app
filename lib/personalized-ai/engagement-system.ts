@@ -7,7 +7,7 @@ import type {
   UserSubmission,
   SubmissionProcessingResult,
   Achievement,
-  TrainingStats
+  TrainingStats,
 } from './training-interface-design'
 
 import { trainingDataManager } from './data-architecture'
@@ -55,7 +55,7 @@ export class EngagementEngine {
         description: this.generateXPCelebrationMessage(processingResult.xpGained),
         visualEffect: 'sparkle_burst',
         soundEffect: 'coin_jingle',
-        priority: 'high'
+        priority: 'high',
       })
     }
 
@@ -67,7 +67,7 @@ export class EngagementEngine {
         description: 'Your response was exceptionally thoughtful and insightful!',
         visualEffect: 'golden_shower',
         soundEffect: 'triumph_fanfare',
-        priority: 'high'
+        priority: 'high',
       })
     } else if (qualityScore >= 0.8) {
       celebrations.push({
@@ -76,7 +76,7 @@ export class EngagementEngine {
         description: 'Your response showed great depth and authenticity.',
         visualEffect: 'star_burst',
         soundEffect: 'success_chime',
-        priority: 'medium'
+        priority: 'medium',
       })
     }
 
@@ -94,7 +94,7 @@ export class EngagementEngine {
         description: `You're on fire! ${streakInfo.current} consecutive days of growth!`,
         visualEffect: 'flame_eruption',
         soundEffect: 'epic_orchestral',
-        priority: 'high'
+        priority: 'high',
       })
     }
 
@@ -130,7 +130,7 @@ export class EngagementEngine {
         longest: streakInfo.longest,
         isActive: streakInfo.isActive,
         protectionUsed: streakInfo.protectionUsed,
-        nextMilestone: this.getNextStreakMilestone(streakInfo.current)
+        nextMilestone: this.getNextStreakMilestone(streakInfo.current),
       },
       recentAchievements: await this.getRecentAchievements(userId, 5),
       activeQuests: await this.getActiveQuests(userId),
@@ -138,7 +138,7 @@ export class EngagementEngine {
       chapterProgress: narrativeProgress.chapterProgress,
       upcomingRewards: await this.getUpcomingRewards(userId),
       engagementScore: await this.calculateEngagementScore(userId),
-      motivationalMessage: await this.generateMotivationalMessage(userId, recentSessions)
+      motivationalMessage: await this.generateMotivationalMessage(userId, recentSessions),
     }
   }
 
@@ -161,18 +161,23 @@ export class EngagementEngine {
       objectives: [
         {
           description: 'Complete any training activity',
-          progress: recentActivity.filter(s => s.startedAt.startsWith(new Date().toISOString().split('T')[0])).length,
+          progress: recentActivity.filter(s =>
+            s.startedAt.startsWith(new Date().toISOString().split('T')[0])
+          ).length,
           target: 1,
-          completed: recentActivity.filter(s => s.startedAt.startsWith(new Date().toISOString().split('T')[0])).length >= 1
-        }
+          completed:
+            recentActivity.filter(s =>
+              s.startedAt.startsWith(new Date().toISOString().split('T')[0])
+            ).length >= 1,
+        },
       ],
       rewards: {
         xp: 50,
         title: 'Daily Practitioner',
-        specialUnlocks: ['daily_bonus_xp']
+        specialUnlocks: ['daily_bonus_xp'],
       },
       timeLimit: 24 * 60 * 60 * 1000, // 24 hours
-      difficulty: 'easy'
+      difficulty: 'easy',
     })
 
     // Weekly challenges based on user preferences
@@ -186,21 +191,22 @@ export class EngagementEngine {
         objectives: [
           {
             description: 'Complete 3 creative activities',
-            progress: recentActivity.filter(s =>
-              s.userPreferences?.preferredInputTypes?.includes('creative_writing') ||
-              s.userPreferences?.preferredInputTypes?.includes('poetry')
+            progress: recentActivity.filter(
+              s =>
+                s.userPreferences?.preferredInputTypes?.includes('creative_writing') ||
+                s.userPreferences?.preferredInputTypes?.includes('poetry')
             ).length,
             target: 3,
-            completed: false
-          }
+            completed: false,
+          },
         ],
         rewards: {
           xp: 300,
           title: 'Creative Muse',
-          specialUnlocks: ['advanced_poetry_templates', 'creative_inspiration_pack']
+          specialUnlocks: ['advanced_poetry_templates', 'creative_inspiration_pack'],
         },
         timeLimit: 7 * 24 * 60 * 60 * 1000, // 7 days
-        difficulty: 'medium'
+        difficulty: 'medium',
       })
     }
 
@@ -217,16 +223,16 @@ export class EngagementEngine {
             description: 'Unlock 3 new achievements',
             progress: recentAchievements.length,
             target: 3,
-            completed: recentAchievements.length >= 3
-          }
+            completed: recentAchievements.length >= 3,
+          },
         ],
         rewards: {
           xp: 200,
           title: 'Achievement Seeker',
-          specialUnlocks: ['achievement_showcase', 'rare_achievement_hints']
+          specialUnlocks: ['achievement_showcase', 'rare_achievement_hints'],
         },
         timeLimit: 14 * 24 * 60 * 60 * 1000, // 14 days
-        difficulty: 'medium'
+        difficulty: 'medium',
       })
     }
 
@@ -244,7 +250,7 @@ export class EngagementEngine {
       friendActivity: await this.socialFeatures.getFriendActivity(userId),
       communityChallenges: await this.socialFeatures.getActiveCommunityChallenges(),
       sharedAchievements: await this.socialFeatures.getSharedAchievements(userId),
-      mentorshipOpportunities: await this.socialFeatures.getMentorshipOpportunities(userId)
+      mentorshipOpportunities: await this.socialFeatures.getMentorshipOpportunities(userId),
     }
   }
 
@@ -261,7 +267,7 @@ export class EngagementEngine {
       achievementDescription: achievement.achievementData.description,
       sharedAt: new Date().toISOString(),
       likes: 0,
-      comments: []
+      comments: [],
     }
 
     // In a real implementation, this would post to a social feed
@@ -270,7 +276,7 @@ export class EngagementEngine {
     return {
       success: true,
       shareUrl: `https://planetary-agents.com/shared-achievement/${achievementId}`,
-      message: 'Achievement shared successfully!'
+      message: 'Achievement shared successfully!',
     }
   }
 
@@ -278,7 +284,11 @@ export class EngagementEngine {
   // NARRATIVE PROGRESSION SYSTEM
   // =========================================================================
 
-  async advanceNarrative(userId: string, activityType: string, qualityScore: number): Promise<NarrativeUpdate> {
+  async advanceNarrative(
+    userId: string,
+    activityType: string,
+    qualityScore: number
+  ): Promise<NarrativeUpdate> {
     const currentProgress = await this.narrativeBuilder.getNarrativeProgress(userId)
 
     // Determine narrative advancement based on activity and quality
@@ -293,9 +303,9 @@ export class EngagementEngine {
         newChapterUnlocks = ['mystical_revelations', 'dream_mastery_techniques']
         storyEvent = {
           type: 'chapter_complete',
-          title: 'Dream Weaver\'s Awakening',
+          title: "Dream Weaver's Awakening",
           description: 'Your deep exploration of dreams has unlocked new mystical abilities!',
-          rewards: ['dream_interpretation_mastery', 'lucid_dreaming_guide']
+          rewards: ['dream_interpretation_mastery', 'lucid_dreaming_guide'],
         }
       }
     } else if (qualityScore >= 0.8 && activityType === 'creativity_workshop') {
@@ -313,8 +323,10 @@ export class EngagementEngine {
     await this.narrativeBuilder.updateProgress(userId, {
       chapterProgress: newProgress,
       totalProgress: currentProgress.totalProgress + chapterAdvance,
-      completedChapters: leveledUp ? currentProgress.completedChapters + 1 : currentProgress.completedChapters,
-      unlockedContent: [...currentProgress.unlockedContent, ...newChapterUnlocks]
+      completedChapters: leveledUp
+        ? currentProgress.completedChapters + 1
+        : currentProgress.completedChapters,
+      unlockedContent: [...currentProgress.unlockedContent, ...newChapterUnlocks],
     })
 
     return {
@@ -322,7 +334,7 @@ export class EngagementEngine {
       newProgress,
       chapterComplete: leveledUp,
       unlockedContent: newChapterUnlocks,
-      storyEvent
+      storyEvent,
     }
   }
 
@@ -339,7 +351,7 @@ export class EngagementEngine {
       immediate: [],
       unlockable: [],
       streak: [],
-      social: []
+      social: [],
     }
 
     // Immediate rewards
@@ -347,7 +359,7 @@ export class EngagementEngine {
       rewards.immediate.push({
         type: 'xp',
         amount: activityResult.xpGained,
-        description: `Earned ${activityResult.xpGained} XP for quality work!`
+        description: `Earned ${activityResult.xpGained} XP for quality work!`,
       })
     }
 
@@ -356,17 +368,19 @@ export class EngagementEngine {
       rewards.immediate.push({
         type: 'achievement',
         achievement,
-        description: `Unlocked: ${achievement.achievementData.name}!`
+        description: `Unlocked: ${achievement.achievementData.name}!`,
       })
     }
 
     // Activity-specific rewards
     if (activity.xpReward.achievements) {
-      rewards.unlockable.push(...activity.xpReward.achievements.map(achievement => ({
-        type: 'achievement',
-        id: achievement,
-        description: `Achievement available: ${achievement}`
-      })))
+      rewards.unlockable.push(
+        ...activity.xpReward.achievements.map(achievement => ({
+          type: 'achievement',
+          id: achievement,
+          description: `Achievement available: ${achievement}`,
+        }))
+      )
     }
 
     // Streak bonuses
@@ -375,7 +389,7 @@ export class EngagementEngine {
       rewards.streak.push({
         type: 'xp_multiplier',
         amount: streakBonus,
-        description: `Streak bonus: ${streakBonus}x XP multiplier!`
+        description: `Streak bonus: ${streakBonus}x XP multiplier!`,
       })
     }
 
@@ -401,9 +415,11 @@ export class EngagementEngine {
     const streakInfo = await this.streakProtector.getCurrentStreak(userId)
 
     // Analyze recent performance
-    const recentQuality = recentSessions.reduce((sum, session) =>
-      sum + session.engagementMetrics.challengeAppropriateness, 0
-    ) / recentSessions.length
+    const recentQuality =
+      recentSessions.reduce(
+        (sum, session) => sum + session.engagementMetrics.challengeAppropriateness,
+        0
+      ) / recentSessions.length
 
     let messageType: 'encouragement' | 'celebration' | 'challenge' | 'reflection' = 'encouragement'
     let title = ''
@@ -412,7 +428,7 @@ export class EngagementEngine {
 
     if (streakInfo.current >= 7) {
       messageType = 'celebration'
-      title = 'You\'re on Fire! 🔥'
+      title = "You're on Fire! 🔥"
       content = `Amazing ${streakInfo.current}-day streak! Your consistency is creating real transformation.`
       visualTheme = 'fiery'
     } else if (recentQuality >= 0.85) {
@@ -423,12 +439,13 @@ export class EngagementEngine {
     } else if (recentQuality >= 0.7) {
       messageType = 'encouragement'
       title = 'Great Work! 👏'
-      content = 'You\'re making solid progress. Each session builds on the last.'
+      content = "You're making solid progress. Each session builds on the last."
       visualTheme = 'positive'
     } else if (recentSessions.length === 0) {
       messageType = 'challenge'
       title = 'Ready to Begin? 🌱'
-      content = 'Every journey starts with a single step. Your AI companion is waiting to grow with you.'
+      content =
+        'Every journey starts with a single step. Your AI companion is waiting to grow with you.'
       visualTheme = 'inviting'
     } else {
       messageType = 'reflection'
@@ -443,7 +460,7 @@ export class EngagementEngine {
       content,
       visualTheme,
       personalized: true,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
   }
 
@@ -467,32 +484,32 @@ export class EngagementEngine {
         title: `Achievement Unlocked: ${achievement.achievementData.name}!`,
         description: achievement.achievementData.description,
         visualEffect: 'star_burst',
-        soundEffect: 'success_chime'
+        soundEffect: 'success_chime',
       },
       rare: {
         title: `Rare Achievement: ${achievement.achievementData.name}! 🏆`,
         description: achievement.achievementData.description,
         visualEffect: 'golden_shower',
-        soundEffect: 'triumph_fanfare'
+        soundEffect: 'triumph_fanfare',
       },
       epic: {
         title: `Epic Achievement: ${achievement.achievementData.name}! 👑`,
         description: achievement.achievementData.description,
         visualEffect: 'crown_float',
-        soundEffect: 'epic_orchestral'
+        soundEffect: 'epic_orchestral',
       },
       legendary: {
         title: `Legendary Achievement: ${achievement.achievementData.name}! ✨`,
         description: achievement.achievementData.description,
         visualEffect: 'legendary_aura',
-        soundEffect: 'mythic_chorus'
-      }
+        soundEffect: 'mythic_chorus',
+      },
     }
 
     return {
       type: 'achievement',
       ...celebrations[rarityLevel],
-      priority: rarityLevel === 'legendary' ? 'high' : 'medium'
+      priority: rarityLevel === 'legendary' ? 'high' : 'medium',
     }
   }
 
@@ -504,18 +521,21 @@ export class EngagementEngine {
       personality_twin: 'legendary',
       creative_soul: 'epic',
       memory_master: 'rare',
-      cosmic_harmony: 'legendary'
+      cosmic_harmony: 'legendary',
     }
     return rarities[type] || 'common'
   }
 
-  private async checkForLevelUp(userId: string, xpGained: number): Promise<{ leveledUp: boolean; newLevel: number; rewards: string[] }> {
+  private async checkForLevelUp(
+    userId: string,
+    xpGained: number
+  ): Promise<{ leveledUp: boolean; newLevel: number; rewards: string[] }> {
     // This would check if the XP gain caused a level up
     // Simplified implementation
     return {
       leveledUp: false,
       newLevel: 1,
-      rewards: []
+      rewards: [],
     }
   }
 
@@ -526,7 +546,7 @@ export class EngagementEngine {
       description: `Congratulations! You've reached a new level of consciousness mastery!`,
       visualEffect: 'level_up_explosion',
       soundEffect: 'level_up_fanfare',
-      priority: 'high'
+      priority: 'high',
     }
   }
 
@@ -580,20 +600,29 @@ export class EngagementEngine {
     return 0
   }
 
-  private async calculateSocialRewards(userId: string, activityResult: SubmissionProcessingResult): Promise<Reward[]> {
+  private async calculateSocialRewards(
+    userId: string,
+    activityResult: SubmissionProcessingResult
+  ): Promise<Reward[]> {
     // Would check for social achievements or community contributions
     return []
   }
 
   private startEngagementProcesses(): void {
     // Start background processes for engagement features
-    setInterval(() => {
-      this.checkForStreakRecovery()
-    }, 60 * 60 * 1000) // Check every hour
+    setInterval(
+      () => {
+        this.checkForStreakRecovery()
+      },
+      60 * 60 * 1000
+    ) // Check every hour
 
-    setInterval(() => {
-      this.updateSocialLeaderboards()
-    }, 24 * 60 * 60 * 1000) // Update daily
+    setInterval(
+      () => {
+        this.updateSocialLeaderboards()
+      },
+      24 * 60 * 60 * 1000
+    ) // Update daily
   }
 
   private async checkForStreakRecovery(): Promise<void> {
@@ -645,14 +674,16 @@ class StreakProtectionSystem {
 
   async getCurrentStreak(userId: string): Promise<StreakInfo> {
     // Would fetch from database/cache
-    return this.streakData.get(userId) || {
-      current: 0,
-      longest: 0,
-      isActive: false,
-      lastActivityDate: '',
-      protectionUsed: false,
-      recoveryAvailable: false
-    }
+    return (
+      this.streakData.get(userId) || {
+        current: 0,
+        longest: 0,
+        isActive: false,
+        lastActivityDate: '',
+        protectionUsed: false,
+        recoveryAvailable: false,
+      }
+    )
   }
 
   async protectStreak(userId: string): Promise<boolean> {
@@ -682,7 +713,7 @@ class SocialEngagementFeatures {
       weeklyXP: 42,
       monthlyXP: 156,
       allTimeXP: 89,
-      percentile: 78
+      percentile: 78,
     }
   }
 
@@ -730,14 +761,16 @@ class NarrativeProgressionSystem {
   private narrativeProgress: Map<string, NarrativeProgress> = new Map()
 
   async getNarrativeProgress(userId: string): Promise<NarrativeProgress> {
-    return this.narrativeProgress.get(userId) || {
-      currentChapter: 1,
-      chapterProgress: 0,
-      totalProgress: 0,
-      completedChapters: 0,
-      unlockedContent: [],
-      activeStoryline: 'consciousness_awakening'
-    }
+    return (
+      this.narrativeProgress.get(userId) || {
+        currentChapter: 1,
+        chapterProgress: 0,
+        totalProgress: 0,
+        completedChapters: 0,
+        unlockedContent: [],
+        activeStoryline: 'consciousness_awakening',
+      }
+    )
   }
 
   async updateProgress(userId: string, updates: Partial<NarrativeProgress>): Promise<void> {
@@ -762,10 +795,23 @@ class RewardDistributionEngine {
 // ============================================================================
 
 export interface CelebrationEvent {
-  type: 'xp_gain' | 'achievement' | 'level_up' | 'streak_milestone' | 'quality_excellence' | 'quality_achievement'
+  type:
+    | 'xp_gain'
+    | 'achievement'
+    | 'level_up'
+    | 'streak_milestone'
+    | 'quality_excellence'
+    | 'quality_achievement'
   title: string
   description: string
-  visualEffect: 'sparkle_burst' | 'golden_shower' | 'star_burst' | 'flame_eruption' | 'level_up_explosion' | 'crown_float' | 'legendary_aura'
+  visualEffect:
+    | 'sparkle_burst'
+    | 'golden_shower'
+    | 'star_burst'
+    | 'flame_eruption'
+    | 'level_up_explosion'
+    | 'crown_float'
+    | 'legendary_aura'
   soundEffect: 'coin_jingle' | 'triumph_fanfare' | 'success_chime' | 'epic_orchestral'
   priority: 'low' | 'medium' | 'high'
   data?: any

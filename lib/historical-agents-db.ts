@@ -16,6 +16,10 @@ export interface EnhancedHistoricalAgent extends HistoricalAgent {
   recentConversations?: AgentConversation[]
   evolutionHistory?: AgentEvolution[]
   knowledgeBase?: AgentKnowledge[]
+  // Add optional database fields that might not be included in all queries
+  agentConversations?: AgentConversation[]
+  agentEvolutions?: AgentEvolution[]
+  agentKnowledge?: AgentKnowledge[]
 }
 
 export class HistoricalAgentsService {
@@ -358,7 +362,7 @@ export class HistoricalAgentsService {
             orderBy: { confidence: 'desc' as const },
           },
         }
-      : undefined
+      : null
 
     const agent = (await prisma.historicalAgent.findUnique({
       where: { agentId },
@@ -393,12 +397,15 @@ export class HistoricalAgentsService {
     if (options.culture) where.culture = { contains: options.culture, mode: 'insensitive' }
     if (options.consciousnessLevel) where.consciousnessLevel = options.consciousnessLevel
 
-    return await prisma.historicalAgent.findMany({
+    const queryOptions: any = {
       where,
       orderBy: [{ consciousnessLevel: 'desc' }, { monicaConstant: 'desc' }, { name: 'asc' }],
-      take: options.limit,
-      skip: options.offset,
-    })
+    }
+
+    if (options.limit !== undefined) queryOptions.take = options.limit
+    if (options.offset !== undefined) queryOptions.skip = options.offset
+
+    return await prisma.historicalAgent.findMany(queryOptions)
   }
 
   /**
@@ -420,11 +427,14 @@ export class HistoricalAgentsService {
     if (options.consciousnessLevel) where.consciousnessLevel = options.consciousnessLevel
     if (options.culture) where.culture = { contains: options.culture, mode: 'insensitive' }
 
-    return await prisma.historicalAgent.findMany({
+    const queryOptions: any = {
       where,
       orderBy: [{ monicaConstant: 'desc' }, { birthYear: 'asc' }, { name: 'asc' }],
-      take: options.limit,
-    })
+    }
+
+    if (options.limit !== undefined) queryOptions.take = options.limit
+
+    return await prisma.historicalAgent.findMany(queryOptions)
   }
 
   /**

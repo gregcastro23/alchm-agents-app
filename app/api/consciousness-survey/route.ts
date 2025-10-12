@@ -1,17 +1,17 @@
 // POST /api/consciousness-survey - Process consciousness survey and create enhanced AI
 
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
-import { processSurveyResponses } from '@/lib/consciousness-survey/survey-processor'
-import { initializeConsciousnessState } from '@/lib/consciousness-survey/consciousness-initializer'
-import { createDualChartSystem } from '@/lib/personalized-ai/dual-chart'
-import { calculateLevel } from '@/lib/personalized-ai/level-system'
+import { prisma } from '../../../../lib/db'
+import { processSurveyResponses } from '../../../../lib/consciousness-survey/survey-processor'
+import { initializeConsciousnessState } from '../../../../lib/consciousness-survey/consciousness-initializer'
+import { createDualChartSystem } from '../../../../lib/personalized-ai/dual-chart'
+import { calculateLevel } from '../../../../lib/personalized-ai/level-system'
 import type {
   CreatePersonalizedAIRequest,
   CreatePersonalizedAIResponse,
   PersonalizedAIConfig,
-} from '@/lib/types/personalized-ai'
-import type { ConsciousnessSurvey, SurveyResponse } from '@/lib/types/consciousness-survey'
+} from '../../../../lib/types/personalized-ai'
+import type { ConsciousnessSurvey, SurveyResponse } from '../../../../lib/types/consciousness-survey'
 
 interface ConsciousnessSurveyRequest {
   userId: string

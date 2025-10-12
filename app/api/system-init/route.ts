@@ -8,7 +8,7 @@
 import {
   initializeBackgroundServices,
   getSchedulerStatus,
-} from '@/lib/startup/transit-scheduler-init'
+} from '../../../../lib/startup/transit-scheduler-init'
 
 let initialized = false
 

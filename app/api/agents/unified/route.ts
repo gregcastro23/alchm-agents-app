@@ -7,14 +7,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { HistoricalAgentsService } from '@/lib/historical-agents-db'
-import { DEMO_AGENTS } from '@/lib/demo-agents-data'
-import { ConsciousnessClient } from '@/lib/api-client/consciousness-client'
-import { ChartSynthesizer } from '@/lib/consciousness/chart-synthesizer'
-import { AgentGenerator } from '@/lib/consciousness/agent-generator'
-import { agentCache } from '@/lib/agent-cache-system'
-import { logger } from '@/lib/structured-logger'
-import { AgentErrorHandler } from '@/lib/error-handling'
+import { HistoricalAgentsService } from '../../../../lib/historical-agents-db'
+import { DEMO_AGENTS } from '../../../../lib/demo-agents-data'
+import { ConsciousnessClient } from '../../../../lib/api-client/consciousness-client'
+import { ChartSynthesizer } from '../../../../lib/consciousness/chart-synthesizer'
+import { AgentGenerator } from '../../../../lib/consciousness/agent-generator'
+import { agentCache } from '../../../../lib/agent-cache-system'
+import { logger } from '../../../../lib/structured-logger'
+import { AgentErrorHandler } from '../../../../lib/error-handling'
 
 interface UnifiedAgentRequest {
   action: string
@@ -341,41 +341,67 @@ async function handleGetAgent(params: any): Promise<NextResponse<UnifiedAgentRes
       const demoAgent = DEMO_AGENTS.find(a => a.id === id)
       if (demoAgent) {
         agent = {
+          id: `demo-${demoAgent.id}`,
           agentId: demoAgent.id,
           name: demoAgent.name,
           title: demoAgent.title,
-          birthDate: new Date(),
-          birthTime: '12:00',
-          birthLocation: { lat: 0, lon: 0, name: 'Unknown' },
+          birthDate: demoAgent.birthData?.date || new Date(),
+          birthTime: demoAgent.birthData?.time || '12:00',
+          birthLocation: (demoAgent.birthData?.location || {
+            lat: 0,
+            lon: 0,
+            name: 'Unknown',
+          }) as any,
+          historicalEra: 'modern',
+          birthYear: demoAgent.birthData?.date?.getFullYear() || 2000,
+          deathYear: null,
+          culture: 'Western',
+          geography: 'Global',
           consciousnessLevel: demoAgent.consciousness.level,
           kalchmConstant: demoAgent.consciousness.monicaConstant,
+          monicaConstant: demoAgent.consciousness.monicaConstant,
           dominantElement: demoAgent.consciousness.dominantElement,
-          dominantModality: 'Mutable',
+          dominantModality: demoAgent.consciousness.dominantModality || 'Mutable',
           signature: demoAgent.abilities.specialty,
-          personalityCore: demoAgent.personality.core as any,
-          personalityShadows: [],
-          personalityGifts: [],
-          personalityChallenges: [],
-          currentMood: 'contemplative',
-          evolutionStage: 0,
+          spiritScore: 0,
+          essenceScore: 0,
+          matterScore: 0,
+          substanceScore: 0,
+          personalityCore: demoAgent.personality.core as any as any,
+          personalityShadows: (demoAgent.personality.shadows || []) as any,
+          personalityGifts: (demoAgent.personality.gifts || []) as any,
+          personalityChallenges: (demoAgent.personality.challenges || []) as any,
+          currentMood: demoAgent.personality.currentMood || 'contemplative',
+          evolutionStage: demoAgent.personality.evolutionStage || 0,
+          background: {
+            achievements: [],
+            influences: [],
+            legacy: demoAgent.abilities.uniquePower,
+            education: 'Self-taught through cosmic wisdom',
+          } as any,
           specialty: demoAgent.abilities.specialty,
-          wisdomDomains: [],
-          teachingStyle: 'Intuitive',
-          resonanceType: 'Spirit',
+          wisdomDomains: demoAgent.abilities.wisdomDomains || [],
+          skills: [] as any,
+          teachingStyle: demoAgent.abilities.teachingStyle,
+          resonanceType: demoAgent.abilities.resonanceType,
           uniquePower: demoAgent.abilities.uniquePower,
           avatar: demoAgent.appearance.avatar,
           color: demoAgent.appearance.color,
           symbol: demoAgent.appearance.symbol,
-          aura: demoAgent.synthesis || 'mysterious',
-          natalChart: {},
-          monicaCreationStory: demoAgent.monicaCreationStory || null,
-          conversations: 0,
-          wisdomShared: 0,
-          resonanceScore: 0.5,
-          evolutionPoints: 0,
+          aura: (demoAgent.appearance.aura || {}) as any,
+          natalChart: (demoAgent.consciousness.natalChart || {}) as any,
+          traits: [] as any,
+          monicaCreationStory: 'Generated from demo agent data',
+          searchableText: `${demoAgent.name} ${demoAgent.title} ${demoAgent.abilities.specialty}`,
+          popularityScore: 0,
+          conversations: demoAgent.stats?.conversations || 0,
+          wisdomShared: demoAgent.stats?.wisdomShared || 0,
+          resonanceScore: demoAgent.stats?.resonanceScore || 0,
+          evolutionPoints: demoAgent.stats?.evolutionPoints || 0,
           lastActive: new Date(),
-          historicalEra: demoAgent.historicalEra || 'modern',
-          craftedBy: 'philosopher-stone',
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         }
       }
     }
@@ -497,7 +523,7 @@ async function handleCreateAgent(params: any): Promise<NextResponse<UnifiedAgent
       currentMood: 'contemplative',
       evolutionStage: 1,
       specialty: 'general consciousness',
-      wisdomDomains: generatedAgent.personality?.wisdomDomains || [],
+      wisdomDomains: generatedAgent.abilities?.wisdomDomains || [],
       teachingStyle: 'intuitive',
       resonanceType: 'harmonic',
       uniquePower: 'consciousness amplification',

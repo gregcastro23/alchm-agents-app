@@ -11,15 +11,19 @@ import type {
   TextSample,
   CreativeSubmission,
   FeedbackEntry,
-  PersonalityInsight
+  PersonalityInsight,
 } from './training-interface-design'
 
 import { trainingDataManager } from './data-architecture'
-import { TrainingSessionManager, TRAINING_ACTIVITIES, calculateActivityQuality } from './training-interface-design'
+import {
+  TrainingSessionManager,
+  TRAINING_ACTIVITIES,
+  calculateActivityQuality,
+} from './training-interface-design'
 import { calculateXP, calculateInteractionQuality } from './xp-system'
 import { calculateLevel, checkLevelUp } from './level-system'
+import { anthropic, CLAUDE_MODELS, createClaudeMessage } from '../anthropic-client'
 import { checkAchievements } from './achievements'
-import { createClaudeMessage } from '@/lib/anthropic-client'
 
 // ============================================================================
 // MAIN ORCHESTRATION ENGINE
@@ -28,8 +32,8 @@ import { createClaudeMessage } from '@/lib/anthropic-client'
 export class TrainingOrchestrator {
   private sessionManager: TrainingSessionManager
   private activeSessions: Map<string, ActiveSessionState>
-  private aiProcessor: AIProcessingEngine
-  private qualityMonitor: QualityMonitoringEngine
+  private aiProcessor!: AIProcessingEngine
+  private qualityMonitor!: QualityMonitoringEngine
 
   constructor() {
     this.sessionManager = new TrainingSessionManager()
@@ -64,7 +68,7 @@ export class TrainingOrchestrator {
           currentActivityIndex: 0,
           phaseCompletionPercentage: 0,
           overallProgress: 0,
-          estimatedTimeRemaining: 30
+          estimatedTimeRemaining: 30,
         },
         collectedData: {
           textSamples: [],
@@ -72,7 +76,7 @@ export class TrainingOrchestrator {
           creativeContent: [],
           preferenceResponses: [],
           feedbackHistory: [],
-          personalityInsights: []
+          personalityInsights: [],
         },
         userPreferences: {
           preferredInputTypes: ['free_text', 'structured_questions'],
@@ -81,7 +85,7 @@ export class TrainingOrchestrator {
           sessionLengthPreference: 20,
           feedbackStyle: 'celebratory_motivating',
           challengeLevel: 'beginner_friendly',
-          ...preferences
+          ...preferences,
         },
         engagementMetrics: {
           sessionCount: 1,
@@ -91,10 +95,10 @@ export class TrainingOrchestrator {
           activityPreferences: {},
           engagementPatterns: [],
           satisfactionScores: [],
-          challengeAppropriateness: 7
+          challengeAppropriateness: 7,
         },
         startedAt: new Date().toISOString(),
-        lastActiveAt: new Date().toISOString()
+        lastActiveAt: new Date().toISOString(),
       })
 
       // Initialize active session state
@@ -105,7 +109,7 @@ export class TrainingOrchestrator {
         userEngagement: 'high',
         timeSpent: 0,
         consecutiveActivities: 0,
-        lastActivityCompleted: null
+        lastActivityCompleted: null,
       }
 
       this.activeSessions.set(session.id, activeState)
@@ -121,14 +125,13 @@ export class TrainingOrchestrator {
         success: true,
         session,
         firstActivity,
-        estimatedDuration: session.userPreferences.sessionLengthPreference
+        estimatedDuration: session.userPreferences.sessionLengthPreference,
       }
-
     } catch (error) {
       console.error('Failed to start training session:', error)
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   }
@@ -179,14 +182,13 @@ export class TrainingOrchestrator {
         nextActivity,
         sessionProgress: updatedSession.progress,
         sessionComplete,
-        recommendations: this.generateSessionRecommendations(updatedSession)
+        recommendations: this.generateSessionRecommendations(updatedSession),
       }
-
     } catch (error) {
       console.error('Failed to process activity submission:', error)
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Processing failed'
+        error: error instanceof Error ? error.message : 'Processing failed',
       }
     }
   }
@@ -222,17 +224,16 @@ export class TrainingOrchestrator {
           timeSpent: finalMetrics.totalTimeSpent,
           averageQuality: finalMetrics.averageQuality,
           skillsDeveloped: finalMetrics.skillsDeveloped,
-          engagementScore: finalMetrics.engagementScore
+          engagementScore: finalMetrics.engagementScore,
         },
         insights,
-        recommendations: this.generatePostSessionRecommendations(session, finalMetrics)
+        recommendations: this.generatePostSessionRecommendations(session, finalMetrics),
       }
-
     } catch (error) {
       console.error('Failed to end session:', error)
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Session cleanup failed'
+        error: error instanceof Error ? error.message : 'Session cleanup failed',
       }
     }
   }
@@ -305,7 +306,8 @@ export class TrainingOrchestrator {
       trainingScores: session.userPreferences as any, // Simplified mapping
       dailyXPGained: xpCalculation.totalXP,
       currentLevel: calculateLevel(session.progress.completedActivities * 100), // Simplified
-      harmoniousTransitInteractions: 0 // Can be enhanced later
+      harmoniousTransitInteractions: 0, // Can be enhanced later
+      previousAchievements: [], // TODO: Track and retrieve previous achievements
     }
 
     const newAchievements = checkAchievements(achievementCheckData, session.personalityId)
@@ -330,22 +332,14 @@ export class TrainingOrchestrator {
       newAchievements,
       artifacts,
       processingTime,
-      engagementScore: this.calculateEngagementScore(submission, activity, qualityScore)
+      engagementScore: this.calculateEngagementScore(submission, activity, qualityScore),
     }
   }
 
   // =========================================================================
   // AI PROCESSING ENGINE
   // =========================================================================
-
-  private aiProcessor = new AIProcessingEngine()
-
-  // =========================================================================
   // QUALITY MONITORING
-  // =========================================================================
-
-  private qualityMonitor = new QualityMonitoringEngine()
-
   // =========================================================================
   // UTILITY METHODS
   // =========================================================================
@@ -357,31 +351,38 @@ export class TrainingOrchestrator {
       creative_exploration: 2,
       relationship_building: 2,
       personality_deepening: 3,
-      consciousness_expansion: 4
+      consciousness_expansion: 4,
     }
     return counts[sessionType] || 3
   }
 
-  private validateSubmission(activity: TrainingActivity, submission: UserSubmission): ValidationResult {
+  private validateSubmission(
+    activity: TrainingActivity,
+    submission: UserSubmission
+  ): ValidationResult {
     const issues: string[] = []
 
     if (!submission.content || submission.content.trim().length === 0) {
       issues.push('Submission content is empty')
     }
 
-    if (activity.completionCriteria.minimumWords &&
-        submission.content.split(' ').length < activity.completionCriteria.minimumWords) {
+    if (
+      activity.completionCriteria.minimumWords &&
+      submission.content.split(' ').length < activity.completionCriteria.minimumWords
+    ) {
       issues.push(`Minimum ${activity.completionCriteria.minimumWords} words required`)
     }
 
-    if (activity.completionCriteria.maximumWords &&
-        submission.content.split(' ').length > activity.completionCriteria.maximumWords) {
+    if (
+      activity.completionCriteria.maximumWords &&
+      submission.content.split(' ').length > activity.completionCriteria.maximumWords
+    ) {
       issues.push(`Maximum ${activity.completionCriteria.maximumWords} words allowed`)
     }
 
     return {
       isValid: issues.length === 0,
-      issues
+      issues,
     }
   }
 
@@ -398,12 +399,14 @@ export class TrainingOrchestrator {
     const updatedProgress = {
       ...session.progress,
       completedActivities: session.progress.completedActivities + 1,
-      phaseCompletionPercentage: Math.min(100,
+      phaseCompletionPercentage: Math.min(
+        100,
         ((session.progress.completedActivities + 1) / session.progress.totalActivities) * 100
       ),
-      overallProgress: Math.min(100,
-        (session.progress.completedActivities + 1) / session.progress.totalActivities * 100
-      )
+      overallProgress: Math.min(
+        100,
+        ((session.progress.completedActivities + 1) / session.progress.totalActivities) * 100
+      ),
     }
 
     // Check for level up
@@ -413,7 +416,7 @@ export class TrainingOrchestrator {
 
     return await trainingDataManager.updateSession(session.id, {
       progress: updatedProgress,
-      lastActiveAt: new Date().toISOString()
+      lastActiveAt: new Date().toISOString(),
     })
   }
 
@@ -427,7 +430,7 @@ export class TrainingOrchestrator {
     const qualityWeight = 0.6
     const lengthWeight = 0.4
 
-    return (qualityScore * qualityWeight) + (lengthScore * lengthWeight)
+    return qualityScore * qualityWeight + lengthScore * lengthWeight
   }
 
   private generateSessionRecommendations(session: TrainingSession): SessionRecommendation[] {
@@ -438,7 +441,7 @@ export class TrainingOrchestrator {
       recommendations.push({
         type: 'continue_session',
         message: 'Great progress! Consider extending your session for deeper exploration.',
-        priority: 'medium'
+        priority: 'medium',
       })
     }
 
@@ -447,7 +450,7 @@ export class TrainingOrchestrator {
       recommendations.push({
         type: 'adjust_difficulty',
         message: 'Activities might be too challenging. Consider easier options next time.',
-        priority: 'high'
+        priority: 'high',
       })
     }
 
@@ -462,18 +465,21 @@ export class TrainingOrchestrator {
       averageQuality: 0.8, // Would calculate from stored artifacts
       skillsDeveloped: ['communication', 'self-reflection'],
       engagementScore: 0.85,
-      completionRate: session.progress.completedActivities / session.progress.totalActivities
+      completionRate: session.progress.completedActivities / session.progress.totalActivities,
     }
   }
 
-  private async storeSessionFeedback(session: TrainingSession, feedback: SessionFeedback): Promise<void> {
+  private async storeSessionFeedback(
+    session: TrainingSession,
+    feedback: SessionFeedback
+  ): Promise<void> {
     // Store feedback as artifact
     await trainingDataManager.createArtifact({
       type: 'feedback_entry',
       userId: session.userId,
       sessionId: session.id,
       content: {
-        structured: feedback
+        structured: feedback,
       },
       qualityMetrics: {
         completeness: 1,
@@ -481,7 +487,7 @@ export class TrainingOrchestrator {
         creativity: 0.5,
         emotional_depth: feedback.overallRating > 3 ? 0.8 : 0.3,
         technical_quality: 1,
-        overall_score: feedback.overallRating / 5
+        overall_score: feedback.overallRating / 5,
       },
       analysis: {
         topics: ['session_feedback', 'user_experience'],
@@ -490,21 +496,26 @@ export class TrainingOrchestrator {
           components: {
             positivity: feedback.overallRating > 3 ? 0.8 : 0.2,
             negativity: feedback.overallRating < 3 ? 0.8 : 0.2,
-            neutrality: 0.2
+            neutrality: 0.2,
           },
-          confidence: 0.9
+          confidence: 0.9,
         },
         themes: [],
         insights: [feedback.comments || 'User provided session feedback'],
         recommendations: [],
-        processedAt: new Date().toISOString()
+        processedAt: new Date().toISOString(),
       },
       relatedArtifacts: [],
-      tags: ['feedback', 'session_end', `rating_${feedback.overallRating}`]
+      tags: ['feedback', 'session_end', `rating_${feedback.overallRating}`],
+      modifiedAt: new Date().toISOString(),
+      backupStatus: 'current',
     })
   }
 
-  private async updateUserProfile(session: TrainingSession, metrics: SessionMetrics): Promise<void> {
+  private async updateUserProfile(
+    session: TrainingSession,
+    metrics: SessionMetrics
+  ): Promise<void> {
     // Update user profile with session insights
     // This would integrate with the user profile management system
     console.log(`Updating profile for user ${session.userId} with session metrics`)
@@ -519,7 +530,7 @@ export class TrainingOrchestrator {
       areasForGrowth: ['Try more creative activities'],
       patternsObserved: ['Prefers structured activities'],
       recommendedNextSession: 'creative_exploration',
-      longTermGoals: ['Develop emotional intelligence', 'Enhance creative expression']
+      longTermGoals: ['Develop emotional intelligence', 'Enhance creative expression'],
     }
   }
 
@@ -534,7 +545,9 @@ export class TrainingOrchestrator {
     }
 
     if (metrics.averageQuality > 0.85) {
-      recommendations.push('Excellent quality work! Consider challenging yourself with advanced activities.')
+      recommendations.push(
+        'Excellent quality work! Consider challenging yourself with advanced activities.'
+      )
     }
 
     recommendations.push('Take some time to reflect on your insights before your next session.')
@@ -558,7 +571,7 @@ export class TrainingOrchestrator {
       userId: session.userId,
       sessionId: session.id,
       content: {
-        text: submission.content
+        text: submission.content,
       },
       qualityMetrics: {
         completeness: qualityScore,
@@ -566,11 +579,13 @@ export class TrainingOrchestrator {
         creativity: aiAnalysis.creativity || 0.5,
         emotional_depth: aiAnalysis.sentiment?.overall > 0 ? aiAnalysis.sentiment.overall : 0.5,
         technical_quality: 0.8,
-        overall_score: qualityScore
+        overall_score: qualityScore,
       },
       analysis: aiAnalysis,
       relatedArtifacts: [],
-      tags: [activity.type, activity.inputType, `quality_${Math.round(qualityScore * 100)}`]
+      tags: [activity.type, activity.inputType, `quality_${Math.round(qualityScore * 100)}`],
+      modifiedAt: new Date().toISOString(),
+      backupStatus: 'current',
     })
     artifactIds.push(submissionArtifact.id)
 
@@ -581,7 +596,7 @@ export class TrainingOrchestrator {
         userId: session.userId,
         sessionId: session.id,
         content: {
-          structured: insight
+          structured: insight,
         },
         qualityMetrics: {
           completeness: 1,
@@ -589,18 +604,31 @@ export class TrainingOrchestrator {
           creativity: 0.3,
           emotional_depth: 0.8,
           technical_quality: 0.9,
-          overall_score: 0.9
+          overall_score: 0.9,
         },
         analysis: {
           topics: ['personality', 'insight', insight.dimension.toLowerCase()],
-          sentiment: { overall: 0.2, components: { positivity: 0.6, negativity: 0, neutrality: 0.4 }, confidence: 0.8 },
-          themes: [{ theme: insight.dimension, strength: 1, related_themes: [], examples: [insight.insight] }],
+          sentiment: {
+            overall: 0.2,
+            components: { positivity: 0.6, negativity: 0, neutrality: 0.4 },
+            confidence: 0.8,
+          },
+          themes: [
+            {
+              theme: insight.dimension,
+              strength: 1,
+              related_themes: [],
+              examples: [insight.insight],
+            },
+          ],
           insights: [insight.insight],
           recommendations: [],
-          processedAt: new Date().toISOString()
+          processedAt: new Date().toISOString(),
         },
         relatedArtifacts: [submissionArtifact.id],
-        tags: ['insight', insight.dimension.toLowerCase(), insight.source]
+        tags: ['insight', insight.dimension.toLowerCase(), insight.source],
+        modifiedAt: new Date().toISOString(),
+        backupStatus: 'current',
       })
       artifactIds.push(insightArtifact.id)
     }
@@ -614,22 +642,30 @@ export class TrainingOrchestrator {
 
   private startSessionMonitoring(): void {
     // Clean up inactive sessions every 30 minutes
-    setInterval(() => {
-      this.cleanupInactiveSessions()
-    }, 30 * 60 * 1000)
+    setInterval(
+      () => {
+        this.cleanupInactiveSessions()
+      },
+      30 * 60 * 1000
+    )
 
     // Update session metrics every 5 minutes
-    setInterval(() => {
-      this.updateActiveSessionMetrics()
-    }, 5 * 60 * 1000)
+    setInterval(
+      () => {
+        this.updateActiveSessionMetrics()
+      },
+      5 * 60 * 1000
+    )
   }
 
   private cleanupInactiveSessions(): void {
     const now = Date.now()
     const inactiveThreshold = 2 * 60 * 60 * 1000 // 2 hours
 
-    for (const [sessionId, state] of this.activeSessions) {
-      const lastActivity = new Date(state.lastActivityCompleted || state.sessionId.split('_')[1]).getTime()
+    for (const [sessionId, state] of Array.from(this.activeSessions)) {
+      const lastActivity = new Date(
+        state.lastActivityCompleted || state.sessionId.split('_')[1]
+      ).getTime()
       if (now - lastActivity > inactiveThreshold) {
         console.log(`Cleaning up inactive session: ${sessionId}`)
         this.activeSessions.delete(sessionId)
@@ -638,7 +674,7 @@ export class TrainingOrchestrator {
   }
 
   private updateActiveSessionMetrics(): void {
-    for (const [sessionId, state] of this.activeSessions) {
+    for (const [sessionId, state] of Array.from(this.activeSessions)) {
       state.timeSpent += 5 * 60 // Add 5 minutes
     }
   }
@@ -654,25 +690,135 @@ class AIProcessingEngine {
     activity: TrainingActivity,
     aiPersonality: any
   ): Promise<any> {
-    // In a real implementation, this would call Claude or another AI
-    // For now, return mock analysis
+    try {
+      // Create a comprehensive analysis prompt for Claude
+      const analysisPrompt = `Analyze this training submission for a consciousness development activity.
+
+Activity Type: ${activity.type}
+Activity Description: ${activity.description}
+Submission Content: "${content}"
+
+Please provide a detailed analysis including:
+1. Main topics/themes discussed
+2. Sentiment analysis (positive/negative/neutral components)
+3. Key consciousness themes and their strength
+4. Quality assessment of the submission
+5. Areas for growth and development
+6. Archetypal patterns or insights present
+
+Format your response as JSON with the following structure:
+{
+  "topics": ["topic1", "topic2", ...],
+  "sentiment": {
+    "overall": -1.0 to 1.0,
+    "components": {
+      "positivity": 0-1,
+      "negativity": 0-1,
+      "neutrality": 0-1
+    },
+    "confidence": 0-1
+  },
+  "themes": [
+    {
+      "theme": "theme_name",
+      "strength": 0-1,
+      "related_themes": ["related1", "related2"]
+    }
+  ],
+  "quality_assessment": {
+    "depth": 0-1,
+    "authenticity": 0-1,
+    "insight_level": 0-1,
+    "overall_quality": 0-1
+  },
+  "growth_areas": ["area1", "area2"],
+  "archetypal_insights": ["insight1", "insight2"]
+}`
+
+      // Call Claude for real analysis
+      const response = await createClaudeMessage(
+        analysisPrompt,
+        CLAUDE_MODELS.CLAUDE_3_5_HAIKU, // Use faster model for analysis
+        0.7, // Balanced creativity
+        2000 // Reasonable token limit
+      )
+
+      // Parse the JSON response
+      try {
+        const analysis = JSON.parse(response.content)
+
+        // Validate and provide defaults for missing fields
+        return {
+          topics: analysis.topics || ['general_reflection'],
+          sentiment: analysis.sentiment || {
+            overall: 0.0,
+            components: { positivity: 0.5, negativity: 0.2, neutrality: 0.3 },
+            confidence: 0.7,
+          },
+          themes: analysis.themes || [
+            {
+              theme: 'personal_growth',
+              strength: 0.5,
+              related_themes: ['self_reflection'],
+            },
+          ],
+          quality_assessment: analysis.quality_assessment || {
+            depth: 0.5,
+            authenticity: 0.6,
+            insight_level: 0.4,
+            overall_quality: 0.5,
+          },
+          growth_areas: analysis.growth_areas || ['continued_practice'],
+          archetypal_insights: analysis.archetypal_insights || [],
+        }
+      } catch (parseError) {
+        // If JSON parsing fails, return a basic analysis
+        console.warn('Failed to parse AI analysis response, using fallback:', parseError)
+        return this.getFallbackAnalysis(content)
+      }
+    } catch (error) {
+      console.error('AI analysis failed, using fallback:', error)
+      return this.getFallbackAnalysis(content)
+    }
+  }
+
+  private getFallbackAnalysis(content: string): any {
+    // Enhanced fallback analysis based on content keywords
+    const keywords = content.toLowerCase()
+    const topics = []
+
+    if (keywords.includes('love') || keywords.includes('relationship')) topics.push('relationships')
+    if (keywords.includes('work') || keywords.includes('career')) topics.push('career')
+    if (keywords.includes('health') || keywords.includes('body')) topics.push('health')
+    if (keywords.includes('mind') || keywords.includes('thinking')) topics.push('mental_clarity')
+    if (keywords.includes('emotion') || keywords.includes('feel'))
+      topics.push('emotional_awareness')
+    if (keywords.includes('spirit') || keywords.includes('soul')) topics.push('spiritual_growth')
+
+    if (topics.length === 0) topics.push('personal_growth')
+
     return {
-      topics: ['self-reflection', 'personal-growth'],
+      topics,
       sentiment: {
-        overall: 0.3,
-        components: { positivity: 0.7, negativity: 0.1, neutrality: 0.2 },
-        confidence: 0.8
+        overall: 0.1,
+        components: { positivity: 0.6, negativity: 0.2, neutrality: 0.2 },
+        confidence: 0.6,
       },
-      themes: [{
-        theme: 'personal_growth',
-        strength: 0.8,
-        related_themes: ['self_awareness'],
-        examples: [content.substring(0, 50) + '...']
-      }],
-      insights: ['Shows good self-awareness', 'Demonstrates emotional intelligence'],
-      recommendations: ['Explore this theme further'],
-      processedAt: new Date().toISOString(),
-      creativity: 0.7
+      themes: [
+        {
+          theme: 'personal_development',
+          strength: 0.6,
+          related_themes: ['self_awareness', 'growth'],
+        },
+      ],
+      quality_assessment: {
+        depth: 0.4,
+        authenticity: 0.5,
+        insight_level: 0.3,
+        overall_quality: 0.4,
+      },
+      growth_areas: ['deeper_reflection', 'specific_examples'],
+      archetypal_insights: ['journey_of_self_discovery'],
     }
   }
 
@@ -683,20 +829,24 @@ class AIProcessingEngine {
     aiPersonality: any
   ): Promise<PersonalityInsight[]> {
     // Generate personality insights based on content analysis
-    return [{
-      dimension: 'communication_style',
-      insight: 'Shows clear and thoughtful expression',
-      confidence: 0.85,
-      source: 'text_analysis',
-      generatedAt: new Date().toISOString()
-    }]
+    return [
+      {
+        dimension: 'communication_style',
+        insight: 'Shows clear and thoughtful expression',
+        confidence: 0.85,
+        source: 'text_analysis',
+        generatedAt: new Date().toISOString(),
+      },
+    ]
   }
 }
 
 class QualityMonitoringEngine {
   monitorSubmission(processingResult: SubmissionProcessingResult): void {
     // Monitor quality trends and system performance
-    console.log(`Quality score: ${processingResult.qualityScore}, XP gained: ${processingResult.xpGained}`)
+    console.log(
+      `Quality score: ${processingResult.qualityScore}, XP gained: ${processingResult.xpGained}`
+    )
   }
 }
 

@@ -254,8 +254,8 @@ export function ZodiacWheel({
             onClick={() => onDegreeClick?.(i * 30, sign)}
           />
           {/* Sign symbol */}
-          const midAngle = (startAngle + endAngle) / 2 const symbolPos = getPosition(midAngle,
-          (outerRadius + innerRadius) / 2) signs.push(
+          const midAngle = (startAngle + endAngle) / 2; const symbolPos = getPosition(midAngle,
+          (outerRadius + innerRadius) / 2); signs.push(
           <text
             key={`symbol-${i}`}
             x={symbolPos.x}

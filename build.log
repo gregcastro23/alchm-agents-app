@@ -1,0 +1,6 @@
+   ▲ Next.js 15.5.4
+   - Environments: .env.local, .env.production, .env
+   - Experiments (use with caution):
+     · swcPlugins
+     · optimizePackageImports
+
