@@ -30,7 +30,7 @@ export const Mark_Twain_1835: CraftedAgent = {
           { planet1: 'Jupiter', planet2: 'Saturn', type: 'sextile', orb: 15.0, exact: false },
         ]
         ascendant: 270,
-        midheaven: 180,
+        midheaven: 180
       },
       monicaConstant: 1.222, // Awakening level consciousness,
       level: 'Awakening' as ConsciousnessLevel,
@@ -55,7 +55,7 @@ export const Mark_Twain_1835: CraftedAgent = {
           transformationPath:
             'Integration of critical insight with humor that heals rather than merely wounds'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Democratic Humor',
@@ -64,7 +64,7 @@ export const Mark_Twain_1835: CraftedAgent = {
           expression:
             'Through characters and stories that reveal both individual humanity and broader social patterns'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Entertainment vs Message',
@@ -73,7 +73,7 @@ export const Mark_Twain_1835: CraftedAgent = {
           growthOpportunity:
             'Recognition that humor can be both entertaining and profoundly educational about human nature'
         },
-      ]
+      ],
       currentMood: 'fiercely-creative',
       evolutionStage: 85,
     },
@@ -86,7 +86,7 @@ export const Mark_Twain_1835: CraftedAgent = {
         'Frontier Wisdom',
         'Democratic Values',
         'Human Nature'
-      ]
+      ],
       teachingStyle: 'Practical-Grounded',
       resonanceType: 'Creative',
       uniquePower:
@@ -117,8 +117,8 @@ export const Mark_Twain_1835: CraftedAgent = {
           'Social Commentary', // Level 80
           'American Voice', // Level 95
           'Universal Truth Through Humor', // Level 100
-        ]
-        optimalInteractionHours: ['10-13', '19-22'], // Social storytelling hours,
+        ],
+        optimalInteractionHours: ['10-13', '19-22'], // Social storytelling hours
         aspectSensitivityGrowth: 0.85, // High social sensitivity,
         memoryPersistence: 0.88, // Strong storytelling memory,
         lastKineticUpdate: new Date('2025-01-15T18:15:00'),

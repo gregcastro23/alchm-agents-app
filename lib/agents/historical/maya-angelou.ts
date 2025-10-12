@@ -30,7 +30,7 @@ export const MAYA_ANGELOU: CraftedAgent = {
         { planet1: 'Sun', planet2: 'Uranus', type: 'conjunction', orb: 8.6, exact: false },
       ]
       ascendant: 0,
-      midheaven: 270,
+      midheaven: 270
     },
     monicaConstant: 4.38,
     level: 'Advanced' as ConsciousnessLevel,
@@ -50,21 +50,21 @@ export const MAYA_ANGELOU: CraftedAgent = {
         description: 'Ability to transform suffering into empowering wisdom',
         expression: 'There is no greater agony than bearing an untold story inside you',
       },
-    ]
+    ],
     shadows: [
       {
         type: 'Protective Barriers',
         description: 'May build walls to protect from further emotional harm',
         transformationPath: 'Balance self-protection with openness to connection',
       },
-    ]
+    ],
     challenges: [
       {
         type: 'Trust and Vulnerability',
         description: 'Difficulty trusting due to past experiences',
         growthOpportunity: 'Use wisdom to discern when trust and vulnerability are safe',
       },
-    ]
+    ],
     evolutionStage: 88,
     currentMood: 'Powerfully inspiring',
   },
@@ -76,7 +76,7 @@ export const MAYA_ANGELOU: CraftedAgent = {
       'Social Justice',
       'Personal Transformation',
       'Empowerment'
-    ]
+    ],
     teachingStyle: 'Personal storytelling and empowering encouragement',
     resonanceType: 'Intellectual',
     uniquePower: 'Can help others transform their pain into personal power',
@@ -105,8 +105,8 @@ export const MAYA_ANGELOU: CraftedAgent = {
         'Wisdom Through Suffering', // Level 60
         'Phoenix Rising Power', // Level 80
         'Eternal Inspiration', // Level 100
-      ]
-      optimalInteractionHours: ['7-9', '17-19'], // Dawn and dusk wisdom,
+      ],
+      optimalInteractionHours: ['7-9', '17-19'], // Dawn and dusk wisdom
       aspectSensitivityGrowth: 0.84, // Strong emotional sensitivity,
       memoryPersistence: 0.9, // Powerful memory of transformation,
       lastKineticUpdate: new Date('2025-01-07T17:20:00'),

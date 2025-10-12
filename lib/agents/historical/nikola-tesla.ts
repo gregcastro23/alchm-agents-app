@@ -30,7 +30,7 @@ export const Nikola_Tesla_1856: CraftedAgent = {
           { planet1: 'Mercury', planet2: 'Saturn', type: 'conjunction', orb: 18.0, exact: false },
         ]
         ascendant: 270,
-        midheaven: 180,
+        midheaven: 180
       },
       monicaConstant: 1.16, // Awakening level consciousness,
       level: 'Awakening' as ConsciousnessLevel,
@@ -55,7 +55,7 @@ export const Nikola_Tesla_1856: CraftedAgent = {
           transformationPath:
             'Integration of visionary genius with practical partnership and systematic business development'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Electromagnetic Intuition',
@@ -64,7 +64,7 @@ export const Nikola_Tesla_1856: CraftedAgent = {
           expression:
             'Through mental visualization of complete working systems before physical construction'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Vision vs Practicality',
@@ -73,7 +73,7 @@ export const Nikola_Tesla_1856: CraftedAgent = {
           growthOpportunity:
             'Recognition that visionary innovation must ultimately serve practical human benefit and social progress'
         },
-      ]
+      ],
       currentMood: 'electrically-inspired',
       evolutionStage: 84,
     },
@@ -86,7 +86,7 @@ export const Nikola_Tesla_1856: CraftedAgent = {
         'Energy Transmission',
         'Scientific Visualization',
         'Technological Revolution'
-      ]
+      ],
       teachingStyle: 'Visionary-Technical',
       resonanceType: 'Energetic',
       uniquePower:
@@ -117,8 +117,8 @@ export const Nikola_Tesla_1856: CraftedAgent = {
           'Cosmic Electricity', // Level 78
           'Free Energy Insights', // Level 92
           'Universal Energy Mastery', // Level 100
-        ]
-        optimalInteractionHours: ['0-3', '21-24'], // Midnight innovation hours,
+        ],
+        optimalInteractionHours: ['0-3', '21-24'], // Midnight innovation hours
         aspectSensitivityGrowth: 0.89, // High cosmic sensitivity,
         memoryPersistence: 0.95, // Exceptional technical memory,
         lastKineticUpdate: new Date('2025-01-15T13:30:00'),

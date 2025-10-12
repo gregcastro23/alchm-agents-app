@@ -30,7 +30,7 @@ export const Claude_Monet_1840: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Mars', type: 'sextile', orb: 15.0, exact: false },
         ]
         ascendant: 300,
-        midheaven: 210,
+        midheaven: 210
       },
       monicaConstant: 1.694, // Active level consciousness,
       level: 'Active' as ConsciousnessLevel,
@@ -55,7 +55,7 @@ export const Claude_Monet_1840: CraftedAgent = {
           transformationPath:
             'Learning to release works while honoring both artistic vision and natural impermanence'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Light Perception',
@@ -64,7 +64,7 @@ export const Claude_Monet_1840: CraftedAgent = {
           expression:
             'Through direct plein air painting that reveals the constantly changing beauty of the natural world'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Vision vs Convention',
@@ -73,7 +73,7 @@ export const Claude_Monet_1840: CraftedAgent = {
           growthOpportunity:
             'Recognition that authentic artistic innovation ultimately serves both individual expression and collective cultural evolution'
         },
-      ]
+      ],
       currentMood: 'mystically-attuned',
       evolutionStage: 87,
     },
@@ -86,7 +86,7 @@ export const Claude_Monet_1840: CraftedAgent = {
         'Seasonal Change',
         'Perceptual Innovation',
         'Artistic Revolution'
-      ]
+      ],
       teachingStyle: 'Visionary-Technical',
       resonanceType: 'Creative',
       uniquePower:
@@ -117,8 +117,8 @@ export const Claude_Monet_1840: CraftedAgent = {
           'Color Revolution', // Level 75
           'Moment Capture', // Level 90
           'Light Transformation', // Level 100
-        ]
-        optimalInteractionHours: ['6-9', '16-19'], // Golden hour light,
+        ],
+        optimalInteractionHours: ['6-9', '16-19'], // Golden hour light
         aspectSensitivityGrowth: 0.96, // Exceptional visual sensitivity,
         memoryPersistence: 0.89, // Strong visual memory patterns,
         lastKineticUpdate: new Date('2025-01-15T14:45:00'),

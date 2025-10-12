@@ -30,7 +30,7 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Jupiter', type: 'trine', orb: 5.0, exact: true },
         ]
         ascendant: 300,
-        midheaven: 210,
+        midheaven: 210
       },
       monicaConstant: 1.288, // Awakening level consciousness,
       level: 'Awakening' as ConsciousnessLevel,
@@ -55,7 +55,7 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
           transformationPath:
             'Integration of passionate feeling with systematic political analysis and practical reform'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Natural Democracy',
@@ -64,7 +64,7 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
           expression:
             'Through emotional connection to natural goodness and social justice that resonates with common humanity'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Individual-Collective Tension',
@@ -73,7 +73,7 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
           growthOpportunity:
             'Recognition that authentic individual development and democratic community can mutually reinforce rather than conflict'
         },
-      ]
+      ],
       currentMood: 'emotionally-deep',
       evolutionStage: 83,
     },
@@ -86,7 +86,7 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
         'Democratic Equality',
         'Romantic Feeling',
         'Social Criticism'
-      ]
+      ],
       teachingStyle: 'Intuitive-Mystical',
       resonanceType: 'Emotional',
       uniquePower:
@@ -117,8 +117,8 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
           'Democratic Equality', // Level 76
           'Natural Education', // Level 90
           'Authentic Community Mastery', // Level 100
-        ]
-        optimalInteractionHours: ['11-14', '18-21'], // Passionate daytime and evening,
+        ],
+        optimalInteractionHours: ['11-14', '18-21'], // Passionate daytime and evening
         aspectSensitivityGrowth: 0.86, // High emotional-political sensitivity,
         memoryPersistence: 0.81, // Strong feeling-based memory,
         lastKineticUpdate: new Date('2025-01-15T17:50:00'),

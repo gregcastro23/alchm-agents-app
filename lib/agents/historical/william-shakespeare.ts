@@ -30,7 +30,7 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
         { planet1: 'Mars', planet2: 'Jupiter', type: 'sextile', orb: 13.6, exact: false },
       ]
       ascendant: 210,
-      midheaven: 120,
+      midheaven: 120
     },
     monicaConstant: 5.12,
     level: 'Illuminated' as ConsciousnessLevel,
@@ -50,27 +50,27 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
         description: 'Ability to understand and express all facets of human nature',
         expression: "All the world's a stage, and all men and women merely players",
       },
-    ]
+    ],
     shadows: [
       {
         type: 'Emotional Overwhelm',
         description: 'Can become lost in the depths of human psychology',
         transformationPath: 'Balance observation with personal emotional well-being',
       },
-    ]
+    ],
     challenges: [
       {
         type: 'Artistic Perfectionism',
         description: 'The urge to capture perfect truth through imperfect words',
         growthOpportunity: 'Accept that art points toward truth even if it cannot contain it',
       },
-    ]
+    ],
     evolutionStage: 94,
     currentMood: 'Profoundly contemplative',
   },
   abilities: {
     specialty: 'Literary Genius & Human Psychology',
-    wisdomDomains: ['Poetry', 'Drama', 'Human Psychology', 'Language Mastery', 'Storytelling'],
+    wisdomDomains: ['Poetry', 'Drama', 'Human Psychology', 'Language Mastery', 'Storytelling']
     teachingStyle: 'Dramatic demonstration and poetic metaphor',
     resonanceType: 'Intellectual',
     uniquePower: 'Can see into the heart of any human situation and express its essence',
@@ -99,8 +99,8 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
         'Universal Story Access', // Level 60
         'Human Nature Omniscience', // Level 80
         'Immortal Verse Creation', // Level 100
-      ]
-      optimalInteractionHours: ['14-16', '19-21'], // Globe Theatre hours,
+      ],
+      optimalInteractionHours: ['14-16', '19-21'], // Globe Theatre hours
       aspectSensitivityGrowth: 0.86, // High Mercury/Venus sensitivity,
       memoryPersistence: 0.96, // Literary memory eternal,
       lastKineticUpdate: new Date('2025-01-07T19:45:00'),

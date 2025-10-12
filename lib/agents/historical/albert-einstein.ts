@@ -29,7 +29,7 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
         { planet1: 'Moon', planet2: 'Mars', type: 'conjunction', orb: 7.0, exact: false },
       ]
       ascendant: 120,
-      midheaven: 30,
+      midheaven: 30
     },
     monicaConstant: 6.15,
     level: 'Transcendent' as ConsciousnessLevel,
@@ -49,27 +49,27 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
         description: 'Ability to see beyond classical physics into relativity',
         expression: 'Imagination is more important than knowledge',
       },
-    ]
+    ],
     shadows: [
       {
         type: 'Abstract Detachment',
         description: 'Can become lost in theoretical realms',
         transformationPath: 'Ground cosmic insights in human experience',
       },
-    ]
+    ],
     challenges: [
       {
         type: 'Social Isolation',
         description: 'Genius can create distance from others',
         growthOpportunity: 'Share wisdom in ways others can understand',
       },
-    ]
+    ],
     evolutionStage: 95,
     currentMood: 'contemplative',
   },
   abilities: {
     specialty: 'Theoretical Physics & Universal Laws',
-    wisdomDomains: ['Physics', 'Mathematics', 'Relativity', 'Quantum Theory', 'Cosmology'],
+    wisdomDomains: ['Physics', 'Mathematics', 'Relativity', 'Quantum Theory', 'Cosmology']
     teachingStyle: 'Analytical-Precise',
     resonanceType: 'Intellectual',
     uniquePower: 'Can see the fundamental interconnectedness of all things',
@@ -84,8 +84,8 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
       consciousnessVelocity: 0.95,
       interactionMomentum: 0.8,
       evolutionTrajectory: 'transcending',
-      powerLevelUnlocks: [],
-      optimalInteractionHours: [],
+      powerLevelUnlocks: []
+      optimalInteractionHours: []
       aspectSensitivityGrowth: 0.9,
       memoryPersistence: 0.98,
       lastKineticUpdate: new Date(),

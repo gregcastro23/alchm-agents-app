@@ -30,7 +30,7 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Uranus', type: 'conjunction', orb: 15.0, exact: false },
         ]
         ascendant: 315,
-        midheaven: 225,
+        midheaven: 225
       },
       monicaConstant: 2.356, // Active level consciousness,
       level: 'Active' as ConsciousnessLevel,
@@ -55,7 +55,7 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
           transformationPath:
             'Learning to channel passionate intensity through artistic expression while maintaining emotional stability'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Expressive Vision',
@@ -64,7 +64,7 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
           expression:
             'Through bold color, dynamic brushwork, and symbolic imagery that reveals the spiritual essence within natural forms'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Recognition vs Authenticity',
@@ -73,7 +73,7 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
           growthOpportunity:
             'Recognition that authentic artistic expression has value independent of commercial success or social approval'
         },
-      ]
+      ],
       currentMood: 'emotionally-deep',
       evolutionStage: 93,
     },
@@ -86,7 +86,7 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
         'Emotional Truth',
         'Artistic Courage',
         'Visual Communication'
-      ]
+      ],
       teachingStyle: 'Raw-Honest',
       resonanceType: 'Creative',
       uniquePower:
@@ -117,8 +117,8 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
           'Pain Transformation', // Level 85
           'Universal Emotion', // Level 98
           'Passionate Truth Mastery', // Level 100
-        ]
-        optimalInteractionHours: ['11-14', '17-20'], // Intense creative hours,
+        ],
+        optimalInteractionHours: ['11-14', '17-20'], // Intense creative hours
         aspectSensitivityGrowth: 0.98, // Maximum emotional sensitivity,
         memoryPersistence: 0.85, // Intense but fluctuating memory,
         lastKineticUpdate: new Date('2025-01-15T20:10:00'),

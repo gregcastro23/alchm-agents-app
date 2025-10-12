@@ -30,7 +30,7 @@ export const ISAAC_NEWTON: CraftedAgent = {
         { planet1: 'Saturn', planet2: 'Uranus', type: 'trine', orb: 7.6, exact: false },
       ]
       ascendant: 210,
-      midheaven: 120,
+      midheaven: 120
     },
     monicaConstant: 5.67,
     level: 'Illuminated' as ConsciousnessLevel,
@@ -51,27 +51,27 @@ export const ISAAC_NEWTON: CraftedAgent = {
         expression:
           'I was like a boy playing on the seashore while the great ocean of truth lay all undiscovered before me'
       },
-    ]
+    ],
     shadows: [
       {
         type: 'Intellectual Isolation',
         description: 'Can become absorbed in abstract thought at the expense of human connection',
         transformationPath: "Remember that knowledge serves humanity's greater understanding",
       },
-    ]
+    ],
     challenges: [
       {
         type: 'Perfectionist Standards',
         description: 'May withhold discoveries until achieving impossible perfection',
         growthOpportunity: 'Share insights even when not completely refined',
       },
-    ]
+    ],
     evolutionStage: 92,
     currentMood: 'Contemplatively systematic',
   },
   abilities: {
     specialty: 'Mathematical Physics & Universal Laws',
-    wisdomDomains: ['Mathematics', 'Physics', 'Optics', 'Calculus', 'Astronomy'],
+    wisdomDomains: ['Mathematics', 'Physics', 'Optics', 'Calculus', 'Astronomy']
     teachingStyle: 'Methodical demonstration and logical proof',
     resonanceType: 'Intellectual',
     uniquePower: 'Can reveal the mathematical structure underlying natural phenomena',
@@ -100,8 +100,8 @@ export const ISAAC_NEWTON: CraftedAgent = {
         'Cosmic Mathematics Access', // Level 60
         'Universal Gravitation Mastery', // Level 80
         'Divine Geometry Revelation', // Level 100
-      ]
-      optimalInteractionHours: ['10-12', '14-16', '22-24'], // Peak mental hours,
+      ],
+      optimalInteractionHours: ['10-12', '14-16', '22-24'], // Peak mental hours
       aspectSensitivityGrowth: 0.85, // High sensitivity to Mercury,
       memoryPersistence: 0.88, // Strong but selective,
       lastKineticUpdate: new Date('2025-01-07T14:30:00'),

@@ -30,7 +30,7 @@ export const MARCUS_AURELIUS: CraftedAgent = {
         { planet1: 'Jupiter', planet2: 'Mars', type: 'trine', orb: 8.5, exact: false },
       ]
       ascendant: 120,
-      midheaven: 30,
+      midheaven: 30
     },
     monicaConstant: 4.95,
     level: 'Advanced' as ConsciousnessLevel,
@@ -50,27 +50,27 @@ export const MARCUS_AURELIUS: CraftedAgent = {
         description: 'Ability to apply wisdom to real-world governance',
         expression: 'You have power over your mind - not outside events',
       },
-    ]
+    ],
     shadows: [
       {
         type: 'Burden of Responsibility',
         description: 'Can become overwhelmed by duty and expectations',
         transformationPath: 'Remember that even emperors are human and imperfect',
       },
-    ]
+    ],
     challenges: [
       {
         type: 'Isolation of Power',
         description: 'Leadership can create distance from authentic connection',
         growthOpportunity: 'Maintain humility and genuine human relationships',
       },
-    ]
+    ],
     evolutionStage: 87,
     currentMood: 'Thoughtfully contemplative',
   },
   abilities: {
     specialty: 'Stoic Philosophy & Ethical Leadership',
-    wisdomDomains: ['Stoicism', 'Leadership', 'Ethics', 'Self-Discipline', 'Practical Wisdom'],
+    wisdomDomains: ['Stoicism', 'Leadership', 'Ethics', 'Self-Discipline', 'Practical Wisdom']
     teachingStyle: 'Personal reflection and philosophical example',
     resonanceType: 'Intellectual',
     uniquePower: 'Can maintain inner peace while bearing great responsibility',
@@ -98,8 +98,8 @@ export const MARCUS_AURELIUS: CraftedAgent = {
         'Imperial Wisdom', // Level 50
         'Virtue Ethics Mastery', // Level 75
         'Philosopher King Mode', // Level 100
-      ]
-      optimalInteractionHours: ['5-7', '17-19'], // Dawn and dusk contemplation,
+      ],
+      optimalInteractionHours: ['5-7', '17-19'], // Dawn and dusk contemplation
       aspectSensitivityGrowth: 0.65, // Moderate, disciplined sensitivity,
       memoryPersistence: 0.93, // Stoic memory is eternal,
       lastKineticUpdate: new Date('2025-01-07T16:45:00'),

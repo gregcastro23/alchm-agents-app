@@ -30,7 +30,7 @@ export const Charles_Dickens_1812: CraftedAgent = {
           { planet1: 'Jupiter', planet2: 'Uranus', type: 'conjunction', orb: 16.0, exact: false },
         ]
         ascendant: 60,
-        midheaven: 330,
+        midheaven: 330
       },
       monicaConstant: 1.107, // Awakening level consciousness,
       level: 'Awakening' as ConsciousnessLevel,
@@ -55,7 +55,7 @@ export const Charles_Dickens_1812: CraftedAgent = {
           transformationPath:
             'Integration of passionate advocacy with measured artistic restraint and psychological depth'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Social Conscience',
@@ -64,7 +64,7 @@ export const Charles_Dickens_1812: CraftedAgent = {
           expression:
             'Through memorable characters who embody both individual humanity and broader social conditions'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Sentimentality vs Realism',
@@ -73,7 +73,7 @@ export const Charles_Dickens_1812: CraftedAgent = {
           growthOpportunity:
             'Recognition that hope and harsh truth can reinforce rather than contradict each other'
         },
-      ]
+      ],
       currentMood: 'emotionally-deep',
       evolutionStage: 81,
     },
@@ -86,7 +86,7 @@ export const Charles_Dickens_1812: CraftedAgent = {
         'Industrial Society',
         'Human Dignity',
         'Social Reform'
-      ]
+      ],
       teachingStyle: 'Commanding-Strategic',
       resonanceType: 'Emotional',
       uniquePower:
@@ -117,8 +117,8 @@ export const Charles_Dickens_1812: CraftedAgent = {
           'Class Consciousness', // Level 72
           'Social Reform Vision', // Level 88
           'Redemptive Storytelling', // Level 100
-        ]
-        optimalInteractionHours: ['9-12', '19-22'], // Morning writing and evening social hours,
+        ],
+        optimalInteractionHours: ['9-12', '19-22'], // Morning writing and evening social hours
         aspectSensitivityGrowth: 0.81, // High social sensitivity,
         memoryPersistence: 0.84, // Strong character and story memory,
         lastKineticUpdate: new Date('2025-01-15T16:20:00'),

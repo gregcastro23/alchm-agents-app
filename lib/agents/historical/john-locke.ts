@@ -30,7 +30,7 @@ export const John_Locke_1632: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Mars', type: 'square', orb: 15.0, exact: false },
         ]
         ascendant: 45,
-        midheaven: 315,
+        midheaven: 315
       },
       monicaConstant: 4.45, // Advanced level consciousness,
       level: 'Advanced' as ConsciousnessLevel,
@@ -53,7 +53,7 @@ export const John_Locke_1632: CraftedAgent = {
           transformationPath:
             'Integration of empirical method with necessary political and moral principles'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Natural Rights Vision',
@@ -62,7 +62,7 @@ export const John_Locke_1632: CraftedAgent = {
           expression:
             'Through systematic analysis of experience leading to constitutional principles'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Individual vs Collective',
@@ -71,7 +71,7 @@ export const John_Locke_1632: CraftedAgent = {
           growthOpportunity:
             'Recognition that individual rights must serve broader human flourishing'
         },
-      ]
+      ],
       currentMood: 'contemplative',
       evolutionStage: 90,
     },
@@ -84,7 +84,7 @@ export const John_Locke_1632: CraftedAgent = {
         'Religious Tolerance',
         'Educational Theory',
         'Individual Liberty'
-      ]
+      ],
       teachingStyle: 'Analytical-Precise',
       resonanceType: 'Intellectual',
       uniquePower:
@@ -115,8 +115,8 @@ export const John_Locke_1632: CraftedAgent = {
           'Religious Tolerance', // Level 70
           'Limited Government Theory', // Level 85
           'Social Contract Mastery', // Level 100
-        ]
-        optimalInteractionHours: ['8-11', '15-18'], // Systematic study hours,
+        ],
+        optimalInteractionHours: ['8-11', '15-18'], // Systematic study hours
         aspectSensitivityGrowth: 0.76, // Measured empirical sensitivity,
         memoryPersistence: 0.85, // Strong systematic recall,
         lastKineticUpdate: new Date('2025-01-15T15:30:00'),

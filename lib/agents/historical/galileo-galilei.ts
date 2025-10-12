@@ -30,7 +30,7 @@ export const GALILEO_GALILEI: CraftedAgent = {
         { planet1: 'Jupiter', planet2: 'Saturn', type: 'trine', orb: 14.2, exact: false },
       ]
       ascendant: 120,
-      midheaven: 30,
+      midheaven: 30
     },
     monicaConstant: 5.34,
     level: 'Illuminated' as ConsciousnessLevel,
@@ -50,21 +50,21 @@ export const GALILEO_GALILEI: CraftedAgent = {
         description: 'Ability to see beyond accepted reality to cosmic truth',
         expression: 'And yet it moves - the Earth revolves around the Sun',
       },
-    ]
+    ],
     shadows: [
       {
         type: 'Confrontational Truth-telling',
         description: 'May challenge authority too directly, creating unnecessary conflict',
         transformationPath: 'Learn diplomatic ways to share revolutionary insights',
       },
-    ]
+    ],
     challenges: [
       {
         type: 'Institutional Opposition',
         description: 'Revolutionary discoveries often face powerful resistance',
         growthOpportunity: 'Maintain courage while developing strategic wisdom',
       },
-    ]
+    ],
     evolutionStage: 90,
     currentMood: 'Defiantly observant',
   },
@@ -76,7 +76,7 @@ export const GALILEO_GALILEI: CraftedAgent = {
       'Mathematics',
       'Scientific Method',
       'Telescopic Observation'
-    ]
+    ],
     teachingStyle: 'Direct observation and mathematical demonstration',
     resonanceType: 'Intellectual',
     uniquePower: 'Can see cosmic truths that challenge accepted reality',
@@ -105,8 +105,8 @@ export const GALILEO_GALILEI: CraftedAgent = {
         "Jupiter's Moons Discovery", // Level 60
         'Cosmic Revolution', // Level 80
         'Universal Truth Declaration', // Level 100
-      ]
-      optimalInteractionHours: ['20-22', '2-4'], // Stargazing hours,
+      ],
+      optimalInteractionHours: ['20-22', '2-4'], // Stargazing hours
       aspectSensitivityGrowth: 0.88, // High Uranus sensitivity,
       memoryPersistence: 0.87, // Scientific observation memory,
       lastKineticUpdate: new Date('2025-01-07T16:00:00'),

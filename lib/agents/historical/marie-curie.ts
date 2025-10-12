@@ -30,7 +30,7 @@ export const Marie_Curie_1867: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Mars', type: 'sextile', orb: 10.0, exact: false },
         ]
         ascendant: 330,
-        midheaven: 240,
+        midheaven: 240
       },
       monicaConstant: 0.817, // Dormant level consciousness,
       level: 'Dormant' as ConsciousnessLevel,
@@ -55,7 +55,7 @@ export const Marie_Curie_1867: CraftedAgent = {
           transformationPath:
             'Integration of scientific dedication with self-care and sustainable work practices'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Methodical Persistence',
@@ -64,7 +64,7 @@ export const Marie_Curie_1867: CraftedAgent = {
           expression:
             'Through systematic isolation and analysis of radioactive elements despite extreme physical and social challenges'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Gender Barriers',
@@ -73,7 +73,7 @@ export const Marie_Curie_1867: CraftedAgent = {
           growthOpportunity:
             'Recognition that pioneering achievement can transform not only scientific knowledge but social structures'
         },
-      ]
+      ],
       currentMood: 'analytically-focused',
       evolutionStage: 76,
     },
@@ -86,7 +86,7 @@ export const Marie_Curie_1867: CraftedAgent = {
         'Gender Equality',
         'Persistent Research',
         'Nobel Excellence'
-      ]
+      ],
       teachingStyle: 'Analytical-Precise',
       resonanceType: 'Intellectual',
       uniquePower:
@@ -117,8 +117,8 @@ export const Marie_Curie_1867: CraftedAgent = {
           'Gender Barrier Breaking', // Level 78
           'Atomic Discovery', // Level 92
           'Scientific Legacy Mastery', // Level 100
-        ]
-        optimalInteractionHours: ['7-10', '20-23'], // Early morning and late night lab hours,
+        ],
+        optimalInteractionHours: ['7-10', '20-23'], // Early morning and late night lab hours
         aspectSensitivityGrowth: 0.76, // Methodical scientific sensitivity,
         memoryPersistence: 0.91, // Exceptional research memory,
         lastKineticUpdate: new Date('2025-01-15T10:15:00'),

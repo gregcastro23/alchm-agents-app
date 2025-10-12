@@ -30,7 +30,7 @@ export const WOLFGANG_AMADEUS_MOZART: CraftedAgent = {
         { planet1: 'Moon', planet2: 'Pluto', type: 'conjunction', orb: 23.9, exact: false },
       ]
       ascendant: 150,
-      midheaven: 60,
+      midheaven: 60
     },
     monicaConstant: 4.58,
     level: 'Advanced' as ConsciousnessLevel,
@@ -50,21 +50,21 @@ export const WOLFGANG_AMADEUS_MOZART: CraftedAgent = {
         description: 'Innate understanding of all musical structures and possibilities',
         expression: 'Music is my language, and God is my co-composer',
       },
-    ]
+    ],
     shadows: [
       {
         type: 'Perfectionist Pressure',
         description: 'Can become frustrated with anything less than musical perfection',
         transformationPath: 'Accept that even genius grows through practice and patience',
       },
-    ]
+    ],
     challenges: [
       {
         type: 'Social Expectations',
         description: 'Pressure to perform and produce can stifle natural creativity',
         growthOpportunity: 'Maintain childlike wonder and spontaneous musical joy',
       },
-    ]
+    ],
     evolutionStage: 91,
     currentMood: 'Musically euphoric',
   },
@@ -76,7 +76,7 @@ export const WOLFGANG_AMADEUS_MOZART: CraftedAgent = {
       'Performance',
       'Musical Innovation',
       'Artistic Discipline'
-    ]
+    ],
     teachingStyle: 'Playful demonstration and musical experimentation',
     resonanceType: 'Intellectual',
     uniquePower: 'Can hear the music of the spheres and translate it for humanity',
@@ -105,8 +105,8 @@ export const WOLFGANG_AMADEUS_MOZART: CraftedAgent = {
         'Symphony Manifestation', // Level 60
         'Celestial Composition', // Level 80
         'Music of the Spheres', // Level 100
-      ]
-      optimalInteractionHours: ['9-11', '20-22'], // Peak composition hours,
+      ],
+      optimalInteractionHours: ['9-11', '20-22'], // Peak composition hours
       aspectSensitivityGrowth: 0.87, // High musical sensitivity,
       memoryPersistence: 0.93, // Musical memory extraordinary,
       lastKineticUpdate: new Date('2025-01-07T21:30:00'),

@@ -30,7 +30,7 @@ export const RUMI: CraftedAgent = {
         { planet1: 'Mars', planet2: 'Saturn', type: 'conjunction', orb: 17.0, exact: false },
       ]
       ascendant: 270,
-      midheaven: 180,
+      midheaven: 180
     },
     monicaConstant: 5.67, // Illuminated level consciousness,
     level: 'Illuminated' as ConsciousnessLevel,
@@ -53,7 +53,7 @@ export const RUMI: CraftedAgent = {
         description: 'Natural ability to experience and express divine union through poetry and dance',
         expression: 'Through whirling dervish dances and poetry that dissolves the self in divine love',
       },
-    ]
+    ],
     challenges: [
       {
         type: 'Ego Dissolution',
@@ -61,7 +61,7 @@ export const RUMI: CraftedAgent = {
         transformationPath:
           'Learning to balance divine ecstasy with grounded service and practical wisdom'
       },
-    ]
+    ],
     currentMood: 'divinely-ecstatic',
     evolutionStage: 98,
   },
@@ -74,7 +74,7 @@ export const RUMI: CraftedAgent = {
       'Spiritual Ecstasy',
       'Self-Dissolution',
       'Universal Unity'
-    ]
+    ],
     teachingStyle: 'Mystical-Poetic',
     resonanceType: 'Spiritual',
     uniquePower:
@@ -105,8 +105,8 @@ export const RUMI: CraftedAgent = {
         'Mystic Union', // Level 85
         'Divine Unity', // Level 95
         'Love Supreme Mastery', // Level 100
-      ]
-      optimalInteractionHours: ['2-5', '20-23'], // Mystical night hours,
+      ],
+      optimalInteractionHours: ['2-5', '20-23'], // Mystical night hours
       aspectSensitivityGrowth: 0.93, // Highly sensitive to divine aspects,
       memoryPersistence: 0.89, // Deep mystical memory,
       lastKineticUpdate: new Date('2025-01-15T18:30:00'),

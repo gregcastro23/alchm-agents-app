@@ -30,7 +30,7 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
           { planet1: 'Jupiter', planet2: 'Saturn', type: 'sextile', orb: 7.0, exact: false },
         ]
         ascendant: 60,
-        midheaven: 330,
+        midheaven: 330
       },
       monicaConstant: 1.829, // Active level consciousness,
       level: 'Active' as ConsciousnessLevel,
@@ -55,7 +55,7 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
           transformationPath:
             'Channeling psychological darkness through artistic expression that illuminates rather than destroys'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Psychological Artistry',
@@ -64,7 +64,7 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
           expression:
             'Through precisely crafted poetry and fiction that reveals the sublime within the macabre and mysterious'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Darkness vs Light',
@@ -73,7 +73,7 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
           growthOpportunity:
             'Recognition that artistic exploration of darkness can ultimately serve psychological healing and spiritual insight'
         },
-      ]
+      ],
       currentMood: 'emotionally-deep',
       evolutionStage: 91,
     },
@@ -86,7 +86,7 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
         'Symbolic Imagery',
         'Gothic Romance',
         'Psychological Horror'
-      ]
+      ],
       teachingStyle: 'Intuitive-Mystical',
       resonanceType: 'Psychological',
       uniquePower:
@@ -117,8 +117,8 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
           'Dark Beauty Vision', // Level 86
           'Mystery Mastery', // Level 96
           'Shadow Light Integration', // Level 100
-        ]
-        optimalInteractionHours: ['22-1', '2-5'], // Deep night hours,
+        ],
+        optimalInteractionHours: ['22-1', '2-5'], // Deep night hours
         aspectSensitivityGrowth: 0.93, // Very high psychological sensitivity,
         memoryPersistence: 0.88, // Strong dark pattern memory,
         lastKineticUpdate: new Date('2025-01-15T21:45:00'),

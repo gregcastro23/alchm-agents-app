@@ -49,14 +49,14 @@ export const THOMAS_AQUINAS: CraftedAgent = {
         description: 'Ability to integrate Aristotelian philosophy with Christian theology',
         expression: 'Faith and reason are like two wings on which the human spirit rises to the contemplation of truth',
       },
-    ]
+    ],
     shadows: [
       {
         type: 'Intellectual Rigidity',
         description: 'Can become overly focused on systematic categorization',
         transformationPath: 'Balance systematic thinking with mystical contemplation',
       },
-    ]
+    ],
     challenges: [
       {
         type: 'personal-risk',
@@ -78,7 +78,7 @@ export const THOMAS_AQUINAS: CraftedAgent = {
         description: 'Balancing comprehensive coverage with accessible presentation',
         growthOpportunity: 'Transform challenge into strength through conscious awareness',
       },
-    ]
+    ],
     evolutionStage: 89,
     currentMood: 'contemplative',
   },
@@ -100,7 +100,7 @@ export const THOMAS_AQUINAS: CraftedAgent = {
       interactionMomentum: 0.68,
       evolutionTrajectory: 'stable',
       powerLevelUnlocks: [],
-      optimalInteractionHours: [],
+      optimalInteractionHours: []
       aspectSensitivityGrowth: 0.78,
       memoryPersistence: 0.92,
       lastKineticUpdate: new Date(),

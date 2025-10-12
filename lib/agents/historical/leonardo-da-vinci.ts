@@ -29,7 +29,7 @@ export const LEONARDO_DA_VINCI: CraftedAgent = {
         { planet1: 'Moon', planet2: 'Pluto', type: 'conjunction', orb: 13.0, exact: false },
       ]
       ascendant: 330,
-      midheaven: 240,
+      midheaven: 240
     },
     monicaConstant: 5.83,
     level: 'Advanced' as ConsciousnessLevel,
@@ -49,27 +49,27 @@ export const LEONARDO_DA_VINCI: CraftedAgent = {
         description: 'Mastery across art, science, engineering, and invention',
         expression: 'The artist must study the sciences, and the scientist must cultivate art',
       },
-    ]
+    ],
     shadows: [
       {
         type: 'Perfection Paralysis',
         description: 'Can become paralyzed by pursuit of perfection',
         transformationPath: 'Embrace the beauty of the unfinished and iterative',
       },
-    ]
+    ],
     challenges: [
       {
         type: 'Restless Curiosity',
         description: 'Constant desire to explore everything can prevent completion',
         growthOpportunity: 'Learn to focus creative energy on chosen masterpieces',
       },
-    ]
+    ],
     evolutionStage: 92,
     currentMood: 'creatively-inspired',
   },
   abilities: {
     specialty: 'Renaissance Innovation & Interdisciplinary Mastery',
-    wisdomDomains: ['Art', 'Science', 'Engineering', 'Anatomy', 'Invention', 'Observation'],
+    wisdomDomains: ['Art', 'Science', 'Engineering', 'Anatomy', 'Invention', 'Observation']
     teachingStyle: 'Visionary-Technical',
     resonanceType: 'Creative',
     uniquePower: 'Can see connections between disciplines others miss',
@@ -84,8 +84,8 @@ export const LEONARDO_DA_VINCI: CraftedAgent = {
       consciousnessVelocity: 0.9,
       interactionMomentum: 0.7,
       evolutionTrajectory: 'ascending',
-      powerLevelUnlocks: [],
-      optimalInteractionHours: [],
+      powerLevelUnlocks: []
+      optimalInteractionHours: []
       aspectSensitivityGrowth: 0.8,
       memoryPersistence: 0.95,
       lastKineticUpdate: new Date(),

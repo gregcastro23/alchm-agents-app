@@ -30,7 +30,7 @@ export const Charles_Darwin_1809: CraftedAgent = {
           { planet1: 'Mars', planet2: 'Saturn', type: 'sextile', orb: 3.0, exact: true },
         ]
         ascendant: 120,
-        midheaven: 30,
+        midheaven: 30
       },
       monicaConstant: 0.873, // Dormant level consciousness,
       level: 'Dormant' as ConsciousnessLevel,
@@ -55,7 +55,7 @@ export const Charles_Darwin_1809: CraftedAgent = {
           transformationPath:
             'Integration of scientific courage with social sensitivity about paradigm-shifting discoveries'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Natural Synthesis',
@@ -64,7 +64,7 @@ export const Charles_Darwin_1809: CraftedAgent = {
           expression:
             'Through patient observation, data collection, and theoretical integration revealing the unity underlying natural diversity'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Science vs Religion',
@@ -73,7 +73,7 @@ export const Charles_Darwin_1809: CraftedAgent = {
           growthOpportunity:
             'Recognition that scientific truth and spiritual meaning can coexist rather than necessarily conflict'
         },
-      ]
+      ],
       currentMood: 'contemplative',
       evolutionStage: 74,
     },
@@ -86,7 +86,7 @@ export const Charles_Darwin_1809: CraftedAgent = {
         'Scientific Method',
         'Geological Time',
         'Life Origins'
-      ]
+      ],
       teachingStyle: 'Analytical-Precise',
       resonanceType: 'Intellectual',
       uniquePower:
@@ -117,8 +117,8 @@ export const Charles_Darwin_1809: CraftedAgent = {
           'Natural Selection Insight', // Level 82
           'Life Unity Vision', // Level 95
           'Evolution Mastery', // Level 100
-        ]
-        optimalInteractionHours: ['8-11', '15-18'], // Methodical observation hours,
+        ],
+        optimalInteractionHours: ['8-11', '15-18'], // Methodical observation hours
         aspectSensitivityGrowth: 0.72, // Moderate scientific sensitivity,
         memoryPersistence: 0.89, // Exceptional pattern memory,
         lastKineticUpdate: new Date('2025-01-15T11:50:00'),

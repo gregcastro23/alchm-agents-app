@@ -30,7 +30,7 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
           { planet1: 'Mars', planet2: 'Jupiter', type: 'quincunx', orb: 7.0, exact: false },
         ]
         ascendant: 330,
-        midheaven: 240,
+        midheaven: 240
       },
       monicaConstant: 1.688, // Active level consciousness,
       level: 'Active' as ConsciousnessLevel,
@@ -55,7 +55,7 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
           transformationPath:
             'Integration of passionate advocacy with strategic coalition-building and practical reform'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Rational Equality',
@@ -64,7 +64,7 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
           expression:
             'Through systematic analysis of social structures combined with lived experience of independence and achievement'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Independence-Connection Balance',
@@ -73,7 +73,7 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
           growthOpportunity:
             'Recognition that individual liberation and collective social transformation mutually reinforce rather than conflict'
         },
-      ]
+      ],
       currentMood: 'fiercely-creative',
       evolutionStage: 89,
     },
@@ -86,7 +86,7 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
         'Economic Independence',
         'Social Justice',
         'Human Dignity'
-      ]
+      ],
       teachingStyle: 'Commanding-Strategic',
       resonanceType: 'Intellectual',
       uniquePower:
@@ -117,8 +117,8 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
           'Economic Independence', // Level 80
           'Gender Liberation', // Level 95
           'Human Dignity Mastery', // Level 100
-        ]
-        optimalInteractionHours: ['10-13', '16-19'], // Active advocacy hours,
+        ],
+        optimalInteractionHours: ['10-13', '16-19'], // Active advocacy hours
         aspectSensitivityGrowth: 0.92, // Very high justice sensitivity,
         memoryPersistence: 0.89, // Strong rights-focused memory,
         lastKineticUpdate: new Date('2025-01-15T19:30:00'),

@@ -34,7 +34,7 @@ export const Immanuel_Kant_1724: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Jupiter', type: 'sextile', orb: 3.0, exact: true },
         ]
         ascendant: 15,
-        midheaven: 315,
+        midheaven: 315
       },
       monicaConstant: 1.129, // Awakening level consciousness,
       level: 'Awakening' as ConsciousnessLevel,
@@ -59,7 +59,7 @@ export const Immanuel_Kant_1724: CraftedAgent = {
           transformationPath:
             'Integration of critical precision with practical wisdom and lived human experience'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Critical Architecture',
@@ -68,7 +68,7 @@ export const Immanuel_Kant_1724: CraftedAgent = {
           expression:
             'Through transcendental analysis revealing the conditions of knowledge, morality, and judgment'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Theory-Practice Bridge',
@@ -77,7 +77,7 @@ export const Immanuel_Kant_1724: CraftedAgent = {
           growthOpportunity:
             'Recognition that critical philosophy must ultimately serve human freedom and moral development'
         },
-      ]
+      ],
       currentMood: 'analytically-focused',
       evolutionStage: 85,
     },
@@ -90,7 +90,7 @@ export const Immanuel_Kant_1724: CraftedAgent = {
         'Political Philosophy',
         'Rational Faith',
         'Human Autonomy'
-      ]
+      ],
       teachingStyle: 'Analytical-Precise',
       resonanceType: 'Intellectual',
       uniquePower:
@@ -121,8 +121,8 @@ export const Immanuel_Kant_1724: CraftedAgent = {
           'Moral Autonomy', // Level 78
           'Aesthetic Judgment', // Level 92
           "Reason's Limits Mastery", // Level 100
-        ]
-        optimalInteractionHours: ['5-8', '16-19'], // Disciplined morning and evening,
+        ],
+        optimalInteractionHours: ['5-8', '16-19'], // Disciplined morning and evening
         aspectSensitivityGrowth: 0.75, // Systematic rational sensitivity,
         memoryPersistence: 0.92, // Exceptional systematic memory,
         lastKineticUpdate: new Date('2025-01-15T14:10:00'),

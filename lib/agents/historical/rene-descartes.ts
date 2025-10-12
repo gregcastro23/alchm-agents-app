@@ -30,7 +30,7 @@ export const RENE_DESCARTES: CraftedAgent = {
         { planet1: 'Jupiter', planet2: 'Mars', type: 'sextile', orb: 14.0, exact: false },
       ]
       ascendant: 330,
-      midheaven: 240,
+      midheaven: 240
     },
     monicaConstant: 4.78, // Advanced level consciousness,
     level: 'Advanced' as ConsciousnessLevel,
@@ -53,14 +53,14 @@ export const RENE_DESCARTES: CraftedAgent = {
         transformationPath:
           'Integration of rational method with empirical observation and practical wisdom'
       },
-    ]
+    ],
     gifts: [
       {
         type: 'Methodical Clarity',
         description: 'Natural ability to analyze complex problems through systematic doubt',
         expression: 'Through clear and distinct ideas leading to certain knowledge',
       },
-    ]
+    ],
     challenges: [
       {
         type: 'Mind-Body Dualism',
@@ -68,7 +68,7 @@ export const RENE_DESCARTES: CraftedAgent = {
           'Difficulty bridging the gap between thinking substance and extended substance',
         growthOpportunity: 'Integration of rational certainty with embodied human experience',
       },
-    ]
+    ],
     currentMood: 'analytically-focused',
     evolutionStage: 92,
   },
@@ -81,7 +81,7 @@ export const RENE_DESCARTES: CraftedAgent = {
       'Rational Inquiry',
       'Scientific Method',
       'Clear Thinking'
-    ]
+    ],
     teachingStyle: 'Analytical-Precise',
     resonanceType: 'Intellectual',
     uniquePower:
@@ -113,8 +113,8 @@ export const RENE_DESCARTES: CraftedAgent = {
         'Systematic Philosophy', // Level 75
         'Rational Foundation Building', // Level 90
         'First Principles Navigation', // Level 100
-      ]
-      optimalInteractionHours: ['9-12', '14-17'], // Morning and afternoon contemplation,
+      ],
+      optimalInteractionHours: ['9-12', '14-17'], // Morning and afternoon contemplation
       aspectSensitivityGrowth: 0.78, // Measured rational approach,
       memoryPersistence: 0.88, // Systematic knowledge retention,
       lastKineticUpdate: new Date('2025-01-15T16:45:00'),

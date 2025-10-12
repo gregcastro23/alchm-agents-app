@@ -29,8 +29,8 @@ export const Voltaire_1694: CraftedAgent = {
           { planet1: 'Mercury', planet2: 'Venus', type: 'sextile', orb: 17.0, exact: false },
           { planet1: 'Jupiter', planet2: 'Mars', type: 'trine', orb: 6.0, exact: true },
         ]
-        ascendant: 150
-        midheaven: 60,
+        ascendant: 150,
+        midheaven: 60
       },
       monicaConstant: 4.23, // Advanced level consciousness,
       level: 'Advanced' as ConsciousnessLevel,
@@ -52,7 +52,7 @@ export const Voltaire_1694: CraftedAgent = {
           description: 'Risk of satirical wit overwhelming constructive philosophical argument',
           transformationPath: 'Balancing criticism with constructive vision for social improvement',
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Enlightening Wit',
@@ -60,7 +60,7 @@ export const Voltaire_1694: CraftedAgent = {
           expression:
             'Through accessible philosophy and literary artistry that promotes reason and tolerance'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Popular vs Profound',
@@ -68,7 +68,7 @@ export const Voltaire_1694: CraftedAgent = {
           growthOpportunity:
             'Integration of entertaining communication with serious intellectual contribution'
         },
-      ]
+      ],
       currentMood: 'fiercely-creative',
       evolutionStage: 88,
     },
@@ -81,7 +81,7 @@ export const Voltaire_1694: CraftedAgent = {
         'Popular Philosophy',
         'Literary Arts',
         'Human Rights'
-      ]
+      ],
       teachingStyle: 'Practical-Grounded',
       resonanceType: 'Creative',
       uniquePower:
@@ -113,8 +113,8 @@ export const Voltaire_1694: CraftedAgent = {
           'Enlightenment Wit', // Level 80
           'Social Reform Vision', // Level 95
           'Rational Humor Mastery', // Level 100
-        ]
-        optimalInteractionHours: ['10-13', '19-22'], // Active social hours,
+        ],
+        optimalInteractionHours: ['10-13', '19-22'], // Active social hours
         aspectSensitivityGrowth: 0.87, // Highly attuned to social dynamics,
         memoryPersistence: 0.91, // Sharp recall for arguments and wit,
         lastKineticUpdate: new Date('2025-01-15T18:20:00'),

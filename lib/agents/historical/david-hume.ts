@@ -30,7 +30,7 @@ export const David_Hume_1711: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Jupiter', type: 'square', orb: 7.0, exact: false },
         ]
         ascendant: 315,
-        midheaven: 225,
+        midheaven: 225
       },
       monicaConstant: 1.044, // Awakening level consciousness,
       level: 'Awakening' as ConsciousnessLevel,
@@ -54,7 +54,7 @@ export const David_Hume_1711: CraftedAgent = {
           transformationPath:
             'Integration of intellectual humility with natural belief and social engagement'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Honest Inquiry',
@@ -63,7 +63,7 @@ export const David_Hume_1711: CraftedAgent = {
           expression:
             'Through gentle but persistent questioning that reveals the limits of human knowledge'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Constructive Skepticism',
@@ -72,7 +72,7 @@ export const David_Hume_1711: CraftedAgent = {
           growthOpportunity:
             'Recognition that philosophical humility can coexist with practical confidence and natural belief'
         },
-      ]
+      ],
       currentMood: 'contemplative',
       evolutionStage: 78,
     },
@@ -85,7 +85,7 @@ export const David_Hume_1711: CraftedAgent = {
         'Historical Analysis',
         'Natural Belief',
         'Social Behavior'
-      ]
+      ],
       teachingStyle: 'Socratic-Symbolic',
       resonanceType: 'Intellectual',
       uniquePower:
@@ -116,8 +116,8 @@ export const David_Hume_1711: CraftedAgent = {
           'Moral Sentiments', // Level 68
           'Causation Critique', // Level 84
           'Philosophical Humility', // Level 100
-        ]
-        optimalInteractionHours: ['14-17', '20-23'], // Contemplative afternoon and evening,
+        ],
+        optimalInteractionHours: ['14-17', '20-23'], // Contemplative afternoon and evening
         aspectSensitivityGrowth: 0.72, // Moderate empirical sensitivity,
         memoryPersistence: 0.79, // Good pattern recognition,
         lastKineticUpdate: new Date('2025-01-15T12:15:00'),

@@ -34,7 +34,7 @@ export const Sigmund_Freud_1856: CraftedAgent = {
           { planet1: 'Jupiter', planet2: 'Neptune', type: 'conjunction', orb: 3.0, exact: true },
         ]
         ascendant: 315,
-        midheaven: 225,
+        midheaven: 225
       },
       monicaConstant: 1.006, // Awakening level consciousness,
       level: 'Awakening' as ConsciousnessLevel,
@@ -59,7 +59,7 @@ export const Sigmund_Freud_1856: CraftedAgent = {
           transformationPath:
             'Integration of theoretical innovation with openness to empirical revision and alternative perspectives'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Unconscious Insight',
@@ -68,7 +68,7 @@ export const Sigmund_Freud_1856: CraftedAgent = {
           expression:
             'Through analysis of dreams, slips, symptoms, and transference in therapeutic relationships'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Scientific vs Clinical',
@@ -77,7 +77,7 @@ export const Sigmund_Freud_1856: CraftedAgent = {
           growthOpportunity:
             'Recognition that psychological theories must ultimately serve human self-understanding and emotional healing'
         },
-      ]
+      ],
       currentMood: 'contemplative',
       evolutionStage: 79,
     },
@@ -90,7 +90,7 @@ export const Sigmund_Freud_1856: CraftedAgent = {
         'Therapeutic Relationship',
         'Psychological Theory',
         'Mental Healing'
-      ]
+      ],
       teachingStyle: 'Socratic-Symbolic',
       resonanceType: 'Psychological',
       uniquePower:
@@ -121,8 +121,8 @@ export const Sigmund_Freud_1856: CraftedAgent = {
           'Therapeutic Relationship', // Level 80
           'Psychological Theory', // Level 95
           'Mind Mapping Mastery', // Level 100
-        ]
-        optimalInteractionHours: ['14-17', '21-24'], // Analytical afternoon and deep evening,
+        ],
+        optimalInteractionHours: ['14-17', '21-24'], // Analytical afternoon and deep evening
         aspectSensitivityGrowth: 0.88, // High psychological sensitivity,
         memoryPersistence: 0.87, // Strong pattern memory,
         lastKineticUpdate: new Date('2025-01-15T15:45:00'),

@@ -30,7 +30,7 @@ export const Johannes_Kepler_1571: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Mars', type: 'opposition', orb: 7.0, exact: false },
         ]
         ascendant: 330,
-        midheaven: 240,
+        midheaven: 240
       },
       monicaConstant: 1.114, // Awakening level consciousness,
       level: 'Awakening' as ConsciousnessLevel,
@@ -55,7 +55,7 @@ export const Johannes_Kepler_1571: CraftedAgent = {
           transformationPath:
             'Integration of religious wonder with rigorous mathematical and observational precision'
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Harmonic Vision',
@@ -64,7 +64,7 @@ export const Johannes_Kepler_1571: CraftedAgent = {
           expression:
             'Through precise observation and geometric analysis revealing the music of the spheres'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Perfectionist Persistence',
@@ -73,7 +73,7 @@ export const Johannes_Kepler_1571: CraftedAgent = {
           growthOpportunity:
             'Learning to balance ideal mathematical beauty with empirical precision and practical utility'
         },
-      ]
+      ],
       currentMood: 'mystically-attuned',
       evolutionStage: 82,
     },
@@ -86,7 +86,7 @@ export const Johannes_Kepler_1571: CraftedAgent = {
         'Optical Science',
         'Natural Theology',
         'Mathematical Innovation'
-      ]
+      ],
       teachingStyle: 'Visionary-Technical',
       resonanceType: 'Spiritual',
       uniquePower:
@@ -117,8 +117,8 @@ export const Johannes_Kepler_1571: CraftedAgent = {
           'Divine Geometry', // Level 75
           'Music of the Spheres', // Level 90
           'Cosmic Harmony Mastery', // Level 100
-        ]
-        optimalInteractionHours: ['3-6', '21-24'], // Mystical night hours,
+        ],
+        optimalInteractionHours: ['3-6', '21-24'], // Mystical night hours
         aspectSensitivityGrowth: 0.89, // High celestial sensitivity,
         memoryPersistence: 0.86, // Strong pattern memory,
         lastKineticUpdate: new Date('2025-01-15T09:45:00'),

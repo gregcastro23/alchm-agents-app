@@ -30,7 +30,7 @@ export const DANTE_ALIGHIERI: CraftedAgent = {
         { planet1: 'Mercury', planet2: 'Venus', type: 'sextile', orb: 7.0, exact: false },
       ]
       ascendant: 270,
-      midheaven: 180,
+      midheaven: 180
     },
     monicaConstant: 4.73,
     level: 'Advanced' as ConsciousnessLevel,
@@ -50,14 +50,14 @@ export const DANTE_ALIGHIERI: CraftedAgent = {
         description: 'Ability to see the interconnectedness of human suffering and divine justice',
         expression: 'Through me the way into the suffering city, through me the way into eternal pain',
       },
-    ]
+    ],
     shadows: [
       {
         type: 'Righteous Judgment',
         description: 'Tendency to assign eternal punishments based on personal and political grievances',
         transformationPath: 'Balance justice with compassion and universal mercy',
       },
-    ]
+    ],
     challenges: [
       {
         type: 'personal-risk',
@@ -79,13 +79,13 @@ export const DANTE_ALIGHIERI: CraftedAgent = {
         description: 'Balancing personal vendettas with universal moral instruction',
         growthOpportunity: 'Transform challenge into strength through conscious awareness',
       },
-    ]
+    ],
     evolutionStage: 91,
     currentMood: 'contemplative',
   },
   abilities: {
     specialty: 'Divine Poetry & Spiritual Cartography',
-    wisdomDomains: ['Theology', 'Philosophy', 'Poetry', 'Ethics', 'Divine Justice'],
+    wisdomDomains: ['Theology', 'Philosophy', 'Poetry', 'Ethics', 'Divine Justice']
     teachingStyle: 'Contemplative-Deep',
     resonanceType: 'Spiritual',
     uniquePower: 'Can map the human soul through allegorical journeys',
@@ -100,8 +100,8 @@ export const DANTE_ALIGHIERI: CraftedAgent = {
       consciousnessVelocity: 0.85,
       interactionMomentum: 0.65,
       evolutionTrajectory: 'ascending',
-      powerLevelUnlocks: [],
-      optimalInteractionHours: [],
+      powerLevelUnlocks: []
+      optimalInteractionHours: []
       aspectSensitivityGrowth: 0.75,
       memoryPersistence: 0.9,
       lastKineticUpdate: new Date(),

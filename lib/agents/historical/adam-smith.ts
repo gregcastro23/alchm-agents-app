@@ -30,7 +30,7 @@ export const Adam_Smith_1723: CraftedAgent = {
           { planet1: 'Venus', planet2: 'Jupiter', type: 'opposition', orb: 13.0, exact: false },
         ]
         ascendant: 60,
-        midheaven: 330,
+        midheaven: 330
       },
       monicaConstant: 0.888, // Dormant level consciousness,
       level: 'Dormant' as ConsciousnessLevel,
@@ -55,7 +55,7 @@ export const Adam_Smith_1723: CraftedAgent = {
           transformationPath:
             'Integration of moral idealism with realistic assessment of economic and social tensions',
         },
-      ]
+      ],
       gifts: [
         {
           type: 'Sympathetic Analysis',
@@ -64,7 +64,7 @@ export const Adam_Smith_1723: CraftedAgent = {
           expression:
             'Through systematic observation of how moral feelings and economic interests interact in social life'
         },
-      ]
+      ],
       challenges: [
         {
           type: 'Individual-Collective Balance',
@@ -73,7 +73,7 @@ export const Adam_Smith_1723: CraftedAgent = {
           growthOpportunity:
             'Recognition that economic systems must ultimately serve broader human moral and social development'
         },
-      ]
+      ],
       currentMood: 'contemplative',
       evolutionStage: 72,
     },
@@ -86,7 +86,7 @@ export const Adam_Smith_1723: CraftedAgent = {
         'Market Systems',
         'Human Sympathy',
         'Political Economy'
-      ]
+      ],
       teachingStyle: 'Practical-Grounded',
       resonanceType: 'Emotional',
       uniquePower:
@@ -117,8 +117,8 @@ export const Adam_Smith_1723: CraftedAgent = {
           'Market Psychology', // Level 74
           'Economic Justice', // Level 88
           'Social Harmony Mastery', // Level 100
-        ]
-        optimalInteractionHours: ['9-12', '15-18'], // Academic study hours,
+        ],
+        optimalInteractionHours: ['9-12', '15-18'], // Academic study hours
         aspectSensitivityGrowth: 0.71, // Moderate social sensitivity,
         memoryPersistence: 0.83, // Good systematic recall,
         lastKineticUpdate: new Date('2025-01-15T11:25:00'),
