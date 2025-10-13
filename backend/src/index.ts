@@ -38,7 +38,7 @@ dotenv.config()
 
 const app = express()
 const PORT: number = parseInt(process.env.PORT || '8000', 10)
-const HOST = process.env.HOST || 'localhost'
+const HOST = process.env.HOST || '0.0.0.0'
 const ENABLE_WEBSOCKET = process.env.ENABLE_WEBSOCKET === 'true'
 
 // Security middleware
