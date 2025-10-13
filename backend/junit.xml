@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="33" failures="0" errors="0" time="3.679">
+  <testsuite name="PlanetaryHoursService" errors="0" failures="0" skipped="0" timestamp="2025-10-13T04:01:32" time="2.699" tests="9">
+    <testcase classname="PlanetaryHoursService getCurrentPlanetaryHour should return current planetary hour information" name="PlanetaryHoursService getCurrentPlanetaryHour should return current planetary hour information" time="0.041">
+    </testcase>
+    <testcase classname="PlanetaryHoursService getCurrentPlanetaryHour should handle different times of day correctly" name="PlanetaryHoursService getCurrentPlanetaryHour should handle different times of day correctly" time="0.001">
+    </testcase>
+    <testcase classname="PlanetaryHoursService getCurrentPlanetaryHour should return consistent results for the same time" name="PlanetaryHoursService getCurrentPlanetaryHour should return consistent results for the same time" time="0">
+    </testcase>
+    <testcase classname="PlanetaryHoursService getForecast should return forecast for date range" name="PlanetaryHoursService getForecast should return forecast for date range" time="0.031">
+    </testcase>
+    <testcase classname="PlanetaryHoursService getForecast should handle different intervals correctly" name="PlanetaryHoursService getForecast should handle different intervals correctly" time="0.014">
+    </testcase>
+    <testcase classname="PlanetaryHoursService getOptimalTimes should return optimal times for specific planet" name="PlanetaryHoursService getOptimalTimes should return optimal times for specific planet" time="0.001">
+    </testcase>
+    <testcase classname="PlanetaryHoursService getOptimalTimes should return empty array for invalid planet" name="PlanetaryHoursService getOptimalTimes should return empty array for invalid planet" time="0">
+    </testcase>
+    <testcase classname="PlanetaryHoursService Edge cases should handle extreme latitudes" name="PlanetaryHoursService Edge cases should handle extreme latitudes" time="0">
+    </testcase>
+    <testcase classname="PlanetaryHoursService Edge cases should handle date boundaries correctly" name="PlanetaryHoursService Edge cases should handle date boundaries correctly" time="0.028">
+    </testcase>
+  </testsuite>
+  <testsuite name="ThermodynamicsService" errors="0" failures="0" skipped="0" timestamp="2025-10-13T04:01:32" time="2.796" tests="17">
+    <testcase classname="ThermodynamicsService calculateThermodynamics should calculate basic thermodynamic properties" name="ThermodynamicsService calculateThermodynamics should calculate basic thermodynamic properties" time="0.012">
+    </testcase>
+    <testcase classname="ThermodynamicsService calculateThermodynamics should calculate metrics correctly" name="ThermodynamicsService calculateThermodynamics should calculate metrics correctly" time="0.009">
+    </testcase>
+    <testcase classname="ThermodynamicsService calculateThermodynamics should provide meaningful classifications" name="ThermodynamicsService calculateThermodynamics should provide meaningful classifications" time="0.001">
+    </testcase>
+    <testcase classname="ThermodynamicsService calculateThermodynamics should handle zero values gracefully" name="ThermodynamicsService calculateThermodynamics should handle zero values gracefully" time="0">
+    </testcase>
+    <testcase classname="ThermodynamicsService calculateThermodynamics should handle high values correctly" name="ThermodynamicsService calculateThermodynamics should handle high values correctly" time="0.001">
+    </testcase>
+    <testcase classname="ThermodynamicsService analyzeThermodynamics should return analysis with additional metadata" name="ThermodynamicsService analyzeThermodynamics should return analysis with additional metadata" time="0.001">
+    </testcase>
+    <testcase classname="ThermodynamicsService analyzeThermodynamics should perform conservation checks" name="ThermodynamicsService analyzeThermodynamics should perform conservation checks" time="0.005">
+    </testcase>
+    <testcase classname="ThermodynamicsService analyzeThermodynamics should cache results for identical inputs" name="ThermodynamicsService analyzeThermodynamics should cache results for identical inputs" time="0">
+    </testcase>
+    <testcase classname="ThermodynamicsService batchAnalyze should process multiple input sets" name="ThermodynamicsService batchAnalyze should process multiple input sets" time="0.001">
+    </testcase>
+    <testcase classname="ThermodynamicsService batchAnalyze should handle empty input array" name="ThermodynamicsService batchAnalyze should handle empty input array" time="0">
+    </testcase>
+    <testcase classname="ThermodynamicsService Edge cases and validation should handle negative values" name="ThermodynamicsService Edge cases and validation should handle negative values" time="0.001">
+    </testcase>
+    <testcase classname="ThermodynamicsService Edge cases and validation should throw for invalid inputs" name="ThermodynamicsService Edge cases and validation should throw for invalid inputs" time="0.013">
+    </testcase>
+    <testcase classname="ThermodynamicsService Edge cases and validation should throw for missing properties" name="ThermodynamicsService Edge cases and validation should throw for missing properties" time="0.001">
+    </testcase>
+    <testcase classname="ThermodynamicsService Edge cases and validation should handle extreme values" name="ThermodynamicsService Edge cases and validation should handle extreme values" time="0">
+    </testcase>
+    <testcase classname="ThermodynamicsService Mathematical properties should maintain energy conservation principles" name="ThermodynamicsService Mathematical properties should maintain energy conservation principles" time="0.001">
+    </testcase>
+    <testcase classname="ThermodynamicsService Mathematical properties should show sensitivity to input changes" name="ThermodynamicsService Mathematical properties should show sensitivity to input changes" time="0">
+    </testcase>
+    <testcase classname="ThermodynamicsService Mathematical properties should produce consistent results for same inputs" name="ThermodynamicsService Mathematical properties should produce consistent results for same inputs" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="Alchemizer Service" errors="0" failures="0" skipped="0" timestamp="2025-10-13T04:01:32" time="2.944" tests="2">
+    <testcase classname="Alchemizer Service alchemize calculates correct elements" name="Alchemizer Service alchemize calculates correct elements" time="0.004">
+    </testcase>
+    <testcase classname="Alchemizer Service generateAlchmForCurrentMoment returns valid data" name="Alchemizer Service generateAlchmForCurrentMoment returns valid data" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="Alchemy Routes" errors="0" failures="0" skipped="0" timestamp="2025-10-13T04:01:32" time="3.153" tests="5">
+    <testcase classname="Alchemy Routes POST /api/alchemy/token-equilibrium should validate token equilibrium" name="Alchemy Routes POST /api/alchemy/token-equilibrium should validate token equilibrium" time="0.028">
+    </testcase>
+    <testcase classname="Alchemy Routes POST /api/alchemy/token-equilibrium should reject invalid tokens" name="Alchemy Routes POST /api/alchemy/token-equilibrium should reject invalid tokens" time="0.007">
+    </testcase>
+    <testcase classname="Alchemy Routes POST /api/alchemy/emergency-assessment should perform emergency assessment" name="Alchemy Routes POST /api/alchemy/emergency-assessment should perform emergency assessment" time="0.003">
+    </testcase>
+    <testcase classname="Alchemy Routes POST /api/alchemy/emergency-assessment should validate input data" name="Alchemy Routes POST /api/alchemy/emergency-assessment should validate input data" time="0.004">
+    </testcase>
+    <testcase classname="Alchemy Routes GET /api/alchemy/status should return alchemy service status" name="Alchemy Routes GET /api/alchemy/status should return alchemy service status" time="0.003">
+    </testcase>
+  </testsuite>
+</testsuites>

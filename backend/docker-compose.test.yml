@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # Redis for caching during integration tests
+  redis-test:
+    image: redis:7-alpine
+    container_name: planetary-agents-redis-test
+    ports:
+      - "6380:6379"
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - test-network
+
+  # PostgreSQL for database integration tests (if needed)
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: planetary-agents-postgres-test
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: planetary_agents_test
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+    networks:
+      - test-network
+
+  # Mock external API service for testing
+  mock-alchm-backend:
+    image: node:20-alpine
+    container_name: planetary-agents-mock-api
+    working_dir: /app
+    volumes:
+      - ./tests/fixtures/mock-api:/app
+    command: sh -c "npm install && node server.js"
+    ports:
+      - "9000:9000"
+    environment:
+      PORT: 9000
+      NODE_ENV: test
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge
+
+volumes:
+  postgres-test-data:

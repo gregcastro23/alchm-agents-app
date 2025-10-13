@@ -1,4 +1,4 @@
-import { planetaryHoursService } from '../../src/services/planetary-hours.js'
+import { planetaryHoursService } from '../../../src/services/planetary-hours.js'
 
 describe('PlanetaryHoursService', () => {
   const testLocation = { lat: 37.7749, lon: -122.4194 } // San Francisco

@@ -3,20 +3,24 @@ export default {
   preset: 'ts-jest/presets/default-esm',
   extensionsToTreatAsEsm: ['.ts'],
   testEnvironment: 'node',
-  roots: ['<rootDir>/src', '<rootDir>/tests'],
-  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
+  roots: ['<rootDir>/tests/unit'],
+  testMatch: ['**/?(*.)+(spec|test).ts'],
   transform: {
-    '^.+\\.ts$': ['ts-jest', {
-      useESM: true,
-    }],
+    '^.+\\.ts$': [
+      'ts-jest',
+      {
+        useESM: true,
+      },
+    ],
   },
   collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts', '!src/index.ts'],
-  coverageDirectory: 'coverage',
+  coverageDirectory: 'coverage/unit',
   coverageReporters: ['text', 'lcov', 'html'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   testTimeout: 10000,
   verbose: true,
-  reporters: ['default', 'jest-junit'],
+  displayName: 'Unit Tests',
+  reporters: ['default', ['jest-junit', { outputName: 'junit-unit.xml' }]],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^(\\.{1,2}/.*)\\.js$': '$1',

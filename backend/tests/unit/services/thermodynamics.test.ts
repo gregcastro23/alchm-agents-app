@@ -1,5 +1,5 @@
-import { thermodynamicsService } from '../../src/services/thermodynamics.js'
-import type { ElementalValues } from '../../src/services/thermodynamics.js'
+import { thermodynamicsService } from '../../../src/services/thermodynamics.js'
+import type { ElementalValues } from '../../../src/services/thermodynamics.js'
 
 describe('ThermodynamicsService', () => {
   const validElementalValues: ElementalValues = {
