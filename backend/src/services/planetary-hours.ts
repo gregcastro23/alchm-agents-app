@@ -79,8 +79,32 @@ class PlanetaryHoursService {
     const declination =
       (23.45 * Math.sin((((360 * (284 + dayOfYear)) / 365) * Math.PI) / 180) * Math.PI) / 180
 
-    // Hour angle
-    const hourAngle = Math.acos(-Math.tan(lat) * Math.tan(declination))
+    // Calculate cosine of hour angle
+    const cosHourAngle = -Math.tan(lat) * Math.tan(declination)
+
+    // Handle polar regions (midnight sun / polar night)
+    let hourAngle: number
+    if (cosHourAngle > 1) {
+      // Polar night - sun never rises, use arbitrary 12-hour "night"
+      const midnight = new Date(date)
+      midnight.setHours(0, 0, 0, 0)
+      return {
+        sunrise: midnight,
+        sunset: midnight,
+      }
+    } else if (cosHourAngle < -1) {
+      // Midnight sun - sun never sets, use full 24-hour "day"
+      const startOfDay = new Date(date)
+      startOfDay.setHours(0, 0, 0, 0)
+      const endOfDay = new Date(date)
+      endOfDay.setHours(23, 59, 59, 999)
+      return {
+        sunrise: startOfDay,
+        sunset: endOfDay,
+      }
+    } else {
+      hourAngle = Math.acos(cosHourAngle)
+    }
 
     // Solar noon in decimal hours
     const solarNoon = 12 - location.lon / 15
@@ -299,7 +323,14 @@ class PlanetaryHoursService {
 
     const forecast = await this.getForecast(startOfDay, endOfDay, location, 60)
 
-    return forecast.filter(f => f.planetaryHour.planet === targetPlanet).map(f => f.planetaryHour)
+    return forecast
+      .filter(f => f.planetaryHour.planet === targetPlanet)
+      .map(f => ({
+        ...f.planetaryHour,
+        startTime: new Date(f.planetaryHour.startTime),
+        endTime: new Date(f.planetaryHour.endTime),
+        nextTransition: new Date(f.planetaryHour.nextTransition),
+      }))
   }
 }
 

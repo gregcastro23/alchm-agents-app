@@ -12,6 +12,7 @@ import {
 import { getCurrentPlanetaryPositions } from '../services/planetary-service.js'
 import { asyncHandler, AppError } from '../middleware/error-handler.js'
 import { authMiddleware } from '../middleware/auth.js'
+import { cacheService } from '../services/cache.js'
 
 const router: ExpressRouter = createRouter()
 
@@ -291,6 +292,7 @@ router.get(
   asyncHandler(async (req: Request, res: Response) => {
     const alchmHealth = await alchmClient.healthCheck()
     const alchmStatus = alchmClient.getStatus()
+    const cacheStats = cacheService.getStats()
 
     res.json({
       success: true,
@@ -301,6 +303,7 @@ router.get(
           error: alchmHealth.error,
         },
         circuitBreaker: alchmStatus,
+        cache: cacheStats,
         featureFlags: {
           thermodynamicsBackend: req.featureFlags.thermodynamicsBackend,
         },
@@ -317,10 +320,18 @@ router.post(
   '/token-equilibrium',
   authMiddleware,
   [
-    body('tokens.spirit').isNumeric().withMessage('spirit must be numeric'),
-    body('tokens.essence').isNumeric().withMessage('essence must be numeric'),
-    body('tokens.matter').isNumeric().withMessage('matter must be numeric'),
-    body('tokens.substance').isNumeric().withMessage('substance must be numeric'),
+    body('tokens.spirit')
+      .isFloat({ min: 0, max: 1 })
+      .withMessage('spirit must be between 0 and 1'),
+    body('tokens.essence')
+      .isFloat({ min: 0, max: 1 })
+      .withMessage('essence must be between 0 and 1'),
+    body('tokens.matter')
+      .isFloat({ min: 0, max: 1 })
+      .withMessage('matter must be between 0 and 1'),
+    body('tokens.substance')
+      .isFloat({ min: 0, max: 1 })
+      .withMessage('substance must be between 0 and 1'),
   ],
   asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req)
@@ -465,7 +476,20 @@ router.post(
     body('tokens.essence').isNumeric().withMessage('essence must be numeric'),
     body('tokens.matter').isNumeric().withMessage('matter must be numeric'),
     body('tokens.substance').isNumeric().withMessage('substance must be numeric'),
-    body('astrologicalEvent.type').isString().withMessage('event type must be string'),
+    body('astrologicalEvent.type')
+      .isIn([
+        'eclipse',
+        'retrograde',
+        'conjunction',
+        'opposition',
+        'square',
+        'trine',
+        'transit',
+        'lunar-phase',
+        'solar-return',
+        'aspect',
+      ])
+      .withMessage('event type must be a valid astrological event'),
     body('astrologicalEvent.severity')
       .isIn(['low', 'medium', 'high', 'critical'])
       .withMessage('severity must be low, medium, high, or critical'),
