@@ -102,6 +102,8 @@ backend:test:integration:
     POSTGRES_PASSWORD: test_password
   before_script:
     - cd backend
+    - corepack enable
+    - corepack prepare yarn@4.0.0 --activate
     - apk add --no-cache postgresql-client
     # Wait for services to be ready
     - until nc -z redis 6379; do echo "Waiting for Redis..."; sleep 1; done
