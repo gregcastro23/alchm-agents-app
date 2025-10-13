@@ -122,9 +122,12 @@ backend:test:integration:
 backend:smoke-health:
   stage: build
   needs: ['backend:build']
+  variables:
+    PORT: "8000"
+    ENABLE_WEBSOCKET: "false"
   script:
     - cd backend
-    - node dist/index.js &
+    - PORT=8000 ENABLE_WEBSOCKET=false node dist/index.js &
     - BACK_PID=$!
     - echo "Backend started with pid ${BACK_PID}"
     - apk add --no-cache curl >/dev/null 2>&1 || true
@@ -133,7 +136,8 @@ backend:smoke-health:
       ok=0
       for i in 1 2 3 4 5; do
         sleep 2
-        if curl -fsS http://127.0.0.1:${PORT}/api/health > /dev/null; then
+        echo "Attempting health check on http://127.0.0.1:8000/api/health"
+        if curl -fsS http://127.0.0.1:8000/api/health > /dev/null; then
           echo "Health OK"
           ok=1
           break
