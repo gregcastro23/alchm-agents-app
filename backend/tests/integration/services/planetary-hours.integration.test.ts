@@ -119,15 +119,18 @@ describe('Planetary Hours Service Integration Tests', () => {
       const endDate = new Date('2025-06-21T12:00:00Z')
 
       const start1 = Date.now()
-      await planetaryHoursService.getForecast(startDate, endDate, validLocation, 60)
+      const result1 = await planetaryHoursService.getForecast(startDate, endDate, validLocation, 60)
       const duration1 = Date.now() - start1
 
       // Second call should be faster due to caching
       const start2 = Date.now()
-      await planetaryHoursService.getForecast(startDate, endDate, validLocation, 60)
+      const result2 = await planetaryHoursService.getForecast(startDate, endDate, validLocation, 60)
       const duration2 = Date.now() - start2
 
-      expect(duration2).toBeLessThan(duration1)
+      // Cached response should be faster or equal (handles 0ms edge case)
+      expect(duration2).toBeLessThanOrEqual(duration1)
+      // Results should be identical
+      expect(result1).toEqual(result2)
     })
   })
 

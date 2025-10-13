@@ -14,10 +14,17 @@ class CacheService {
 
   async connect(): Promise<void> {
     const redisUrl = process.env.REDIS_URL
+    const isTestEnv = process.env.NODE_ENV === 'test' || process.env.NO_REDIS === 'true'
 
-    if (redisUrl) {
+    if (redisUrl && !isTestEnv) {
       try {
-        this.redisClient = createClient({ url: redisUrl })
+        this.redisClient = createClient({
+          url: redisUrl,
+          socket: {
+            connectTimeout: 2000, // 2 second connection timeout
+            reconnectStrategy: false, // Don't retry in test environment
+          },
+        })
 
         this.redisClient.on('error', err => {
           logger.error('Redis client error:', err)
@@ -34,14 +41,27 @@ class CacheService {
           this.isRedisConnected = false
         })
 
-        await this.redisClient.connect()
+        // Add connection timeout promise to fail fast
+        const connectPromise = this.redisClient.connect()
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Redis connection timeout after 3s')), 3000)
+        )
+
+        await Promise.race([connectPromise, timeoutPromise])
         logger.info('Cache service initialized with Redis')
       } catch (error) {
-        logger.error('Failed to connect to Redis:', error)
-        this.redisClient = null
+        logger.warn('Failed to connect to Redis, using memory cache:', error)
+        // Clean up failed Redis client
+        if (this.redisClient) {
+          this.redisClient.disconnect().catch(() => {})
+          this.redisClient = null
+        }
         this.setupMemoryCache()
       }
     } else {
+      logger.info(
+        `Cache service initialized with memory fallback${isTestEnv ? ' (test environment)' : ''}`
+      )
       this.setupMemoryCache()
     }
   }
