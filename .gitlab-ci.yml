@@ -73,12 +73,50 @@ backend:build:
       - backend/node_modules/
     expire_in: 1 hour
 
-backend:test:
+backend:test:unit:
   stage: test
   needs: ['backend:build']
   script:
     - cd backend
-    - yarn test --ci
+    - yarn test:unit --ci
+  artifacts:
+    reports:
+      junit: backend/junit-unit.xml
+    paths:
+      - backend/coverage/unit/
+
+backend:test:integration:
+  stage: test
+  needs: ['backend:build']
+  services:
+    - name: redis:7-alpine
+      alias: redis
+    - name: postgres:15-alpine
+      alias: postgres
+  variables:
+    REDIS_TEST_URL: 'redis://redis:6379'
+    POSTGRES_HOST: postgres
+    POSTGRES_PORT: 5432
+    POSTGRES_DB: planetary_agents_test
+    POSTGRES_USER: test_user
+    POSTGRES_PASSWORD: test_password
+  before_script:
+    - cd backend
+    - apk add --no-cache postgresql-client
+    # Wait for services to be ready
+    - until nc -z redis 6379; do echo "Waiting for Redis..."; sleep 1; done
+    - until pg_isready -h postgres -U test_user; do echo "Waiting for PostgreSQL..."; sleep 1; done
+    # Start mock API server
+    - cd tests/fixtures/mock-api && npm install && node server.js &
+    - sleep 3
+  script:
+    - cd /builds/$CI_PROJECT_PATH/backend
+    - yarn test:integration --ci
+  artifacts:
+    reports:
+      junit: backend/junit-integration.xml
+    paths:
+      - backend/coverage/integration/
 
 # Optional lightweight runtime smoke check (build artifact execution)
 backend:smoke-health:
