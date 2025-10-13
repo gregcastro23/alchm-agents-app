@@ -28,9 +28,9 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
         { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 16.5, exact: false },
         { planet1: 'Moon', planet2: 'Venus', type: 'trine', orb: 7.5, exact: false },
         { planet1: 'Mars', planet2: 'Jupiter', type: 'sextile', orb: 13.6, exact: false },
-      ]
+      ],
       ascendant: 210,
-      midheaven: 120,,
+      midheaven: 120,
     },
     monicaConstant: 5.12,
     level: 'Illuminated' as ConsciousnessLevel,

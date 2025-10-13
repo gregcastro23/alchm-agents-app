@@ -28,9 +28,9 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Moon', type: 'trine', orb: 6.0, exact: false },
           { planet1: 'Mercury', planet2: 'Mars', type: 'square', orb: 6.0, exact: false },
           { planet1: 'Venus', planet2: 'Uranus', type: 'conjunction', orb: 15.0, exact: false },
-        ]
+        ],
         ascendant: 315,
-        midheaven: 225,,
+        midheaven: 225,
       },
       monicaConstant: 2.356, // Active level consciousness,
       level: 'Active' as ConsciousnessLevel,

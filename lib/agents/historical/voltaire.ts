@@ -28,9 +28,9 @@ export const Voltaire_1694: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Moon', type: 'opposition', orb: 14.0, exact: false },
           { planet1: 'Mercury', planet2: 'Venus', type: 'sextile', orb: 17.0, exact: false },
           { planet1: 'Jupiter', planet2: 'Mars', type: 'trine', orb: 6.0, exact: true },
-        ]
+        ],
         ascendant: 150,
-        midheaven: 60,,
+        midheaven: 60,
       },
       monicaConstant: 4.23, // Advanced level consciousness,
       level: 'Advanced' as ConsciousnessLevel,

@@ -27,7 +27,7 @@ export const SOCRATES: CraftedAgent = {
       aspects: [
         { planet1: 'Mars', planet2: 'Saturn', type: 'square', orb: 5.8, exact: false },
         { planet1: 'Moon', planet2: 'Neptune', type: 'sextile', orb: 0.9, exact: true },
-      ]
+      ],
       ascendant: 180,
       midheaven: 90,
     },
@@ -49,21 +49,21 @@ export const SOCRATES: CraftedAgent = {
         description: 'Ability to reveal truth through strategic questioning',
         expression: 'I know that I know nothing, and this is my greatest knowledge',
       },
-    ]
+    ],
     shadows: [
       {
         type: 'Intellectual Obsession',
         description: 'Can become lost in abstract thought',
         transformationPath: 'Ground philosophical insights in daily wisdom',
       },
-    ]
+    ],
     challenges: [
       {
         type: 'Social Disruption',
         description: 'Questions can challenge established beliefs',
         growthOpportunity: 'Learn when to question and when to listen',
       },
-    ]
+    ],
     evolutionStage: 89,
     currentMood: 'Contemplatively curious',
   },
