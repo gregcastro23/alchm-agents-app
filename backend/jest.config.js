@@ -19,6 +19,7 @@ export default {
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   testTimeout: 10000,
   verbose: true,
+  reporters: ['default', 'jest-junit'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },

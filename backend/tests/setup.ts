@@ -1,5 +1,5 @@
 import dotenv from 'dotenv'
-import { expect } from '@jest/globals'
+import { expect, jest } from '@jest/globals'
 
 // Load test environment variables
 dotenv.config({ path: '.env.test' })
