@@ -133,11 +133,15 @@ include:
   - template: Security/SAST.gitlab-ci.yml
   - template: Security/Secret-Detection.gitlab-ci.yml
 
+# Override security jobs to remove corepack requirement
+# These jobs use specialized security images that don't have Node.js/corepack
 sast:
   stage: security
+  before_script: []
 
 secret_detection:
   stage: security
+  before_script: []
 
 # =============================================================================
 # TEST STAGE
