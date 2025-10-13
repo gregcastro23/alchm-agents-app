@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { CharacterVectorCalculator } from '../../../../lib/astrological-character-vectors'
-import { generateSignVectorRune, generateAgentCharacterRune } from '../../../../lib/runes/sign-vector-runes'
-import { DEMO_AGENTS } from '../../../../lib/demo-agents-data'
+import { CharacterVectorCalculator } from '@/lib/astrological-character-vectors'
+import { generateSignVectorRune, generateAgentCharacterRune } from '@/lib/runes/sign-vector-runes'
+import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

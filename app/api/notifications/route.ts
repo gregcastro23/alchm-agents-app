@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { prisma } from '../../../../lib/db'
+import { prisma } from '@/lib/db'
 
 interface NotificationRequest {
   type: 'welcome' | 'evolution_milestone' | 'power_hour' | 'weekly_summary'

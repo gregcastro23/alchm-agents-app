@@ -117,8 +117,7 @@ export function MomentBasedRecommendations({
 
     // Calculate planetary alignment
     const planetaryAlignment = kineticProfile.power_alignment
-      ?.split('_')
-      .includes(currentPlanetaryHour)
+      ?.includes(currentPlanetaryHour)
       ? 0.9
       : 0.5
 

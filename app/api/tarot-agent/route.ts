@@ -7,7 +7,7 @@ import {
   createConversationContext,
   type AgentInteractionData,
   type ConversationContext,
-} from '../../../../lib/galileo-agent-logger'
+} from '@/lib/galileo-agent-logger'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

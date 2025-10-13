@@ -1,6 +1,6 @@
 // API endpoint to migrate static agents to database
 import { NextResponse } from 'next/server'
-import { HistoricalAgentsService } from '../../../../lib/historical-agents-db'
+import { HistoricalAgentsService } from '@/lib/historical-agents-db'
 
 export const dynamic = 'force-dynamic'
 

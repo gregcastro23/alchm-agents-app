@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '../../../../lib/db'
-import galileoLogger, { logQuantitiesToGalileo } from '../../../../lib/galileo-logger'
+import { prisma } from '@/lib/db'
+import galileoLogger, { logQuantitiesToGalileo } from '@/lib/galileo-logger'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

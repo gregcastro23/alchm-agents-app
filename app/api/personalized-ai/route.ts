@@ -1,18 +1,18 @@
 // POST /api/personalized-ai - Create a new AI consciousness mirror
 
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '../../../../lib/db'
-import { createDualChartSystem } from '../../../../lib/personalized-ai/dual-chart'
+import { prisma } from '@/lib/db'
+import { createDualChartSystem } from '@/lib/personalized-ai/dual-chart'
 import {
   generateBasePersonality,
   generateInitialTrainingScores,
-} from '../../../../lib/personalized-ai/personality-generator'
-import { calculateLevel } from '../../../../lib/personalized-ai/level-system'
+} from '@/lib/personalized-ai/personality-generator'
+import { calculateLevel } from '@/lib/personalized-ai/level-system'
 import type {
   CreatePersonalizedAIRequest,
   CreatePersonalizedAIResponse,
   PersonalizedAIConfig,
-} from '../../../../lib/types/personalized-ai'
+} from '@/lib/types/personalized-ai'
 import { randomUUID } from 'crypto'
 
 export async function POST(request: NextRequest) {

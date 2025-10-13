@@ -7,18 +7,18 @@ import type {
   AgentResponse,
   Message,
   GroupDynamics,
-} from '../../../../lib/unified-agent-types'
-import { agentCache, buildCacheContext } from '../../../../lib/agent-cache-system'
-import { consciousnessPersistence } from '../../../../lib/consciousness-persistence'
-import { getCurrentUser, getUserIdFromRequest } from '../../../../lib/auth-helpers'
-import { generateAlchmForCurrentMoment } from '../../../../lib/alchemizer'
+} from '@/lib/unified-agent-types'
+import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
+import { consciousnessPersistence } from '@/lib/consciousness-persistence'
+import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
+import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
 import { usePlanetaryPositions } from '@/hooks/usePlanetaryPositions'
 import {
   getPlanetaryDignity,
   getSignElement,
   getPlanetaryElement,
   calculateElementalAffinity,
-} from '../../../../lib/astrological-data'
+} from '@/lib/astrological-data'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

@@ -4,8 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { routeTask } from '../../../../lib/agents/router'
-import { AlchemicalKineticsClient } from '../../../../lib/kinetics-client'
+import { routeTask } from '@/lib/agents/router'
+import { AlchemicalKineticsClient } from '@/lib/kinetics-client'
 
 export async function GET(request: NextRequest) {
   try {

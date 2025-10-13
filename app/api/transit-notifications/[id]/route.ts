@@ -12,7 +12,7 @@ import {
   dismissNotification,
   getUserNotificationPreferences,
   updateUserNotificationPreferences,
-} from '../../../../lib/services/transit-notification-service'
+} from '@/lib/services/transit-notification-service'
 
 const prisma = new PrismaClient()
 

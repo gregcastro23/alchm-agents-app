@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
-import { alchemize, createElementObject, getElementRanking } from '../../../../lib/alchemizer'
+import { alchemize, createElementObject, getElementRanking } from '@/lib/alchemizer'
 import {
   getSignElement,
   getPlanetaryElement,
   calculateElementalAffinity,
-} from '../../../../lib/astrological-data'
-import { getCurrentPlanetaryPositions } from '../../../../lib/calculate-transits'
-import { performanceCache, createRequestHash } from '../../../../lib/performance-cache'
+} from '@/lib/astrological-data'
+import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
+import { performanceCache, createRequestHash } from '@/lib/performance-cache'
 
 // Prevent caching - we always want fresh calculations
 export const dynamic = 'force-dynamic'

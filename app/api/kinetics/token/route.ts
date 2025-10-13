@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { sampleHourlyAlchm } from '../../../../lib/alchemical-kinetics-sampler'
-import { computePower } from '../../../../lib/alchemical-kinetics'
+import { sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
+import { computePower } from '@/lib/alchemical-kinetics'
 
 export async function POST(req: Request) {
   const start = Date.now()

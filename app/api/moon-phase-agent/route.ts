@@ -3,8 +3,8 @@ import {
   calculateMoonPhase,
   generateMoonPhaseAgent,
   getMoonAgentByPhaseAndSign,
-} from '../../../../lib/moon-phase-system'
-import { anthropic } from '../../../../lib/anthropic-client'
+} from '@/lib/moon-phase-system'
+import { anthropic } from '@/lib/anthropic-client'
 
 export async function GET(request: NextRequest) {
   try {

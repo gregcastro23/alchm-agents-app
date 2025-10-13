@@ -3,8 +3,8 @@ import {
   analyzeAllAspectDynamics,
   findNearestApplyingAspect,
   type AspectsSamplingOptions,
-} from '../../../../lib/aspects-sampling'
-import { validateAspectCalculations } from '../../../../lib/aspects-dynamics'
+} from '@/lib/aspects-sampling'
+import { validateAspectCalculations } from '@/lib/aspects-dynamics'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

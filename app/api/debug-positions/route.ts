@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getCurrentPlanetaryPositions, getRawPlanetaryPositions } from '../../../../lib/calculate-transits'
+import { getCurrentPlanetaryPositions, getRawPlanetaryPositions } from '@/lib/calculate-transits'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { calculateAllPlanets, type EnhancedBirthInfo } from '../../../../lib/enhanced-astronomical-calculator'
-import { createMomentPlanetaryAgents } from '../../../../lib/services/planetary-agent-activation'
+import { calculateAllPlanets, type EnhancedBirthInfo } from '@/lib/enhanced-astronomical-calculator'
+import { createMomentPlanetaryAgents } from '@/lib/services/planetary-agent-activation'
 
 export async function POST(request: NextRequest) {
   try {

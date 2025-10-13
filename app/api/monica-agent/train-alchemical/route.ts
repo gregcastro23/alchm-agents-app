@@ -4,7 +4,7 @@ import {
   trainOnAlchemicalValues,
   todayHourlyAlchemize,
   trainWithRetrogrades,
-} from '../../../../lib/monica/alchemical-trainer'
+} from '@/lib/monica/alchemical-trainer'
 
 export async function POST(req: Request) {
   try {

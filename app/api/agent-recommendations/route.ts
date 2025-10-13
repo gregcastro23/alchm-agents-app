@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '../../../../lib/auth'
-import { prisma } from '../../../../lib/db'
-import { agentKineticProfiles } from '../../../../lib/agents/kinetic-profiles'
-import { DEMO_AGENTS } from '../../../../lib/demo-agents-data'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+import { agentKineticProfiles } from '@/lib/agents/kinetic-profiles'
+import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 
 interface AgentRecommendation {
   agentId: string

@@ -7,14 +7,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { HistoricalAgentsService } from '../../../../lib/historical-agents-db'
-import { DEMO_AGENTS } from '../../../../lib/demo-agents-data'
-import { ConsciousnessClient } from '../../../../lib/api-client/consciousness-client'
-import { ChartSynthesizer } from '../../../../lib/consciousness/chart-synthesizer'
-import { AgentGenerator } from '../../../../lib/consciousness/agent-generator'
-import { agentCache } from '../../../../lib/agent-cache-system'
-import { logger } from '../../../../lib/structured-logger'
-import { AgentErrorHandler } from '../../../../lib/error-handling'
+import { HistoricalAgentsService } from '@/lib/historical-agents-db'
+import { DEMO_AGENTS } from '@/lib/demo-agents-data'
+import { ConsciousnessClient } from '@/lib/api-client/consciousness-client'
+import { ChartSynthesizer } from '@/lib/consciousness/chart-synthesizer'
+import { AgentGenerator } from '@/lib/consciousness/agent-generator'
+import { agentCache } from '@/lib/agent-cache-system'
+import { logger } from '@/lib/structured-logger'
+import { AgentErrorHandler } from '@/lib/error-handling'
 
 interface UnifiedAgentRequest {
   action: string

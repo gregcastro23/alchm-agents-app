@@ -5,9 +5,9 @@ import {
   type CelestialTimeSeries,
   type Location,
   type TimeSeriesOptions,
-} from '../../../../lib/celestial-energy-calculator'
-import { DEMO_AGENTS, ALL_AGENTS } from '../../../../lib/demo-agents-data'
-import { globalPerformanceMonitor, measureOperation } from '../../../../lib/time-laboratory-performance'
+} from '@/lib/celestial-energy-calculator'
+import { DEMO_AGENTS, ALL_AGENTS } from '@/lib/demo-agents-data'
+import { globalPerformanceMonitor, measureOperation } from '@/lib/time-laboratory-performance'
 
 /**
  * Celestial Energy Timeline API

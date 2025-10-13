@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { HistoricalAgentsService } from '../../../../lib/historical-agents-db'
-import { DEMO_AGENTS } from '../../../../lib/demo-agents-data'
+import { HistoricalAgentsService } from '@/lib/historical-agents-db'
+import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 
 interface GetAgentsResponse {
   success: boolean

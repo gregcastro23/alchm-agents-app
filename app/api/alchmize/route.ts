@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { BirthInfoSchema, type BirthInfo } from '../../../../lib/schemas'
-import { fetchAlchmize } from '../../../../lib/astrologize'
+import { BirthInfoSchema, type BirthInfo } from '@/lib/schemas'
+import { fetchAlchmize } from '@/lib/astrologize'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

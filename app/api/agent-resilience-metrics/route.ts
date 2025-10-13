@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ApiResilienceSystem, ApiMetrics, CircuitBreakerState } from '../../../../lib/api-resilience-system'
+import { ApiResilienceSystem, ApiMetrics, CircuitBreakerState } from '@/lib/api-resilience-system'
 
 /**
  * Agent API Resilience Metrics Endpoint

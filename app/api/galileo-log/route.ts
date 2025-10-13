@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { logToGalileoStream, isGalileoConfigured } from '../../../../lib/galileo-client'
+import { logToGalileoStream, isGalileoConfigured } from '@/lib/galileo-client'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

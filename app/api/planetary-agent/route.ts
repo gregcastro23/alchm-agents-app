@@ -7,24 +7,24 @@ import {
   createConversationContext,
   type AgentInteractionData,
   type ConversationContext,
-} from '../../../../lib/galileo-agent-logger'
+} from '@/lib/galileo-agent-logger'
 import {
   getPlanetaryDignity,
   getSignElement,
   getPlanetaryElement,
   calculateElementalAffinity,
-} from '../../../../lib/astrological-data'
-import { consciousnessPersistence } from '../../../../lib/consciousness-persistence'
-import { getCurrentUser, getUserIdFromRequest } from '../../../../lib/auth-helpers'
-import { generateAlchmForCurrentMoment } from '../../../../lib/alchemizer'
-import { ANumberCalculator } from '../../../../lib/core-energy-rules'
+} from '@/lib/astrological-data'
+import { consciousnessPersistence } from '@/lib/consciousness-persistence'
+import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
+import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
+import { ANumberCalculator } from '@/lib/core-energy-rules'
 import {
   findLastOccurrence,
   findNextOccurrence,
   getHistoricalEvents,
-} from '../../../../lib/historical-transits'
-import { identifyPlanetaryThemes, findHistoricalPatterns } from '../../../../lib/transit-patterns'
-import { getTransitsByPlanet } from '../../../../lib/historical-transit-data'
+} from '@/lib/historical-transits'
+import { identifyPlanetaryThemes, findHistoricalPatterns } from '@/lib/transit-patterns'
+import { getTransitsByPlanet } from '@/lib/historical-transit-data'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

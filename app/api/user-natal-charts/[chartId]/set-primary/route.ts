@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { setPrimaryChart } from '../../../../lib/services/natal-chart-storage'
+import { setPrimaryChart } from '@/lib/services/natal-chart-storage'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

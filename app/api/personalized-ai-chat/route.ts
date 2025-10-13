@@ -1,24 +1,24 @@
 // POST /api/personalized-ai-chat - Enhanced AI chat with consciousness integration
 
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma, StreakTracker } from '../../../../lib/db'
-import { anthropic, createClaudeMessage } from '../../../../lib/anthropic-client'
-import { calculateXP, calculateInteractionQuality } from '../../../../lib/personalized-ai/xp-system'
-import { calculateLevel, checkLevelUp } from '../../../../lib/personalized-ai/level-system'
-import { checkAchievements, ACHIEVEMENT_DEFINITIONS } from '../../../../lib/personalized-ai/achievements'
-import { generateCurrentMomentChart, analyzeTransits } from '../../../../lib/personalized-ai/dual-chart'
+import { prisma, StreakTracker } from '@/lib/db'
+import { anthropic, createClaudeMessage } from '@/lib/anthropic-client'
+import { calculateXP, calculateInteractionQuality } from '@/lib/personalized-ai/xp-system'
+import { calculateLevel, checkLevelUp } from '@/lib/personalized-ai/level-system'
+import { checkAchievements, ACHIEVEMENT_DEFINITIONS } from '@/lib/personalized-ai/achievements'
+import { generateCurrentMomentChart, analyzeTransits } from '@/lib/personalized-ai/dual-chart'
 import {
   generatePersonalizedChallenges,
   calculateTarotTrainingBonus,
   getAIInteractionStyle,
-} from '../../../../lib/personalized-ai/tarot-training-gamification'
+} from '@/lib/personalized-ai/tarot-training-gamification'
 import type {
   PersonalizedAIChatRequest,
   PersonalizedAIChatResponse,
   TrainingCategory,
   UserFeedback,
   InteractionContext,
-} from '../../../../lib/types/personalized-ai'
+} from '@/lib/types/personalized-ai'
 
 export async function POST(request: NextRequest) {
   try {

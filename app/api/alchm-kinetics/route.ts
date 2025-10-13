@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { sampleHourlyAlchm, validateTimingPatterns } from '../../../../lib/alchemical-kinetics-sampler'
+import { sampleHourlyAlchm, validateTimingPatterns } from '@/lib/alchemical-kinetics-sampler'
 import {
   computeElementalVelocity,
   computeMetricVelocity,
@@ -12,7 +12,7 @@ import {
   type ElementKey,
   type ElementVector,
   type ForceVector,
-} from '../../../../lib/alchemical-kinetics'
+} from '@/lib/alchemical-kinetics'
 
 // Simple moving average used for optional smoothing (Mercury triad default)
 function movingAverage(values: number[], window: number): number[] {

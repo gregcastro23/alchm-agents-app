@@ -3,7 +3,7 @@ import {
   getGalileoConfig,
   isQuantitiesTrackingConfigured,
   logQuantitiesToGalileo,
-} from '../../../../lib/galileo-logger'
+} from '@/lib/galileo-logger'
 import {
   getAgentLoggingConfig,
   isAgentLoggingConfigured,
@@ -14,7 +14,7 @@ import {
   clearFailedLogs,
   getFailureStats,
   type AgentInteractionData,
-} from '../../../../lib/galileo-agent-logger'
+} from '@/lib/galileo-agent-logger'
 
 // Test function for tarot agent logging
 async function testTarotAgentLogging(): Promise<{

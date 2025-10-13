@@ -14,7 +14,7 @@ import {
   getUserNotificationPreferences,
   updateUserNotificationPreferences,
   getNotificationStatistics,
-} from '../../../../lib/services/transit-notification-service'
+} from '@/lib/services/transit-notification-service'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

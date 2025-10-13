@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
-import { generateAlchmForCurrentMoment } from '../../../../lib/alchemizer'
-import { getCurrentPlanetaryPositions } from '../../../../lib/calculate-transits'
-import { generateRealTimeSignVectorRune } from '../../../../lib/runes/sign-vector-runes'
-import { logQuantitiesToGalileo, type AlchemicalMetrics } from '../../../../lib/galileo-logger'
-import { sampleCurrentMoment, sampleHourlyAlchm } from '../../../../lib/alchemical-kinetics-sampler'
-import { computePower, getSolarAmplification } from '../../../../lib/alchemical-kinetics'
-import { findNearestApplyingAspect } from '../../../../lib/aspects-sampling'
+import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
+import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
+import { generateRealTimeSignVectorRune } from '@/lib/runes/sign-vector-runes'
+import { logQuantitiesToGalileo, type AlchemicalMetrics } from '@/lib/galileo-logger'
+import { sampleCurrentMoment, sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
+import { computePower, getSolarAmplification } from '@/lib/alchemical-kinetics'
+import { findNearestApplyingAspect } from '@/lib/aspects-sampling'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

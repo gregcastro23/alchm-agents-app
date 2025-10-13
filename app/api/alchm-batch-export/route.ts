@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AlchemicalKineticsSampler } from '../../../../lib/alchemical-kinetics-sampler'
-import { agentOptimizer } from '../../../../lib/agent-performance-optimizer'
+import { AlchemicalKineticsSampler } from '@/lib/alchemical-kinetics-sampler'
+import { agentOptimizer } from '@/lib/agent-performance-optimizer'
 
 /**
  * Advanced Batch Export API for Alchemical Kinetics

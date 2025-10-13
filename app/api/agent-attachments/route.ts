@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { AgentAttachmentsService } from '../../../../lib/agent-attachments-service'
+import { AgentAttachmentsService } from '@/lib/agent-attachments-service'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

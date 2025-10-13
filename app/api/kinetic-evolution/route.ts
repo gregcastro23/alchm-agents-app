@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { routeTask } from '../../../../lib/agents/router'
+import { routeTask } from '@/lib/agents/router'
 
 export async function POST(req: NextRequest) {
   try {

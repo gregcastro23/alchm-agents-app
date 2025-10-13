@@ -7,11 +7,11 @@ import {
   getMonicaContextPrompt,
   MONICA_BASE_SYSTEM_PROMPT,
   MONICA_SPECIALIZED_PROMPTS,
-} from '../../../../lib/monica/monica-system-prompts'
-import { sanitizeUserInput, clampTemperature } from '../../../../lib/monica/safety'
-import { decideModel } from '../../../../lib/monica/router'
-import { MonicaResponseHandler } from '../../../../lib/monica/monica-response-handler'
-import { selectKnowledge } from '../../../../lib/monica/knowledge'
+} from '@/lib/monica/monica-system-prompts'
+import { sanitizeUserInput, clampTemperature } from '@/lib/monica/safety'
+import { decideModel } from '@/lib/monica/router'
+import { MonicaResponseHandler } from '@/lib/monica/monica-response-handler'
+import { selectKnowledge } from '@/lib/monica/knowledge'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

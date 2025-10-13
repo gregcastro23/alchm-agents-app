@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { generateAlchmForCurrentMoment } from '../../../../lib/alchemizer'
-import { logQuantitiesToGalileo, type AlchemicalMetrics } from '../../../../lib/galileo-logger'
-import { getCurrentPlanetaryPositions } from '../../../../lib/calculate-transits'
-import { CharacterVectorCalculator } from '../../../../lib/astrological-character-vectors'
-import { generateRealTimeSignVectorRune } from '../../../../lib/runes/sign-vector-runes'
+import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
+import { logQuantitiesToGalileo, type AlchemicalMetrics } from '@/lib/galileo-logger'
+import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
+import { CharacterVectorCalculator } from '@/lib/astrological-character-vectors'
+import { generateRealTimeSignVectorRune } from '@/lib/runes/sign-vector-runes'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

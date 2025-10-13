@@ -5,7 +5,7 @@
  * Server-Sent Events (SSE) endpoint for real-time notifications
  */
 
-import { handleRealtimeConnection } from '../../../../lib/services/realtime-notification-service'
+import { handleRealtimeConnection } from '@/lib/services/realtime-notification-service'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

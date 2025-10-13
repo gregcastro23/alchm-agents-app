@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
 import { addDays, formatISO } from 'date-fns'
 import { z } from 'zod'
-import { prisma } from '../../../../lib/db'
-import { auth } from '../../../../lib/auth'
-import { generateAccurateHoroscope } from '../../../../lib/monica/horoscope-generator'
-import { generateAlchmForBirthInfo } from '../../../../lib/alchemizer'
-import { calculateMonicaConstant } from '../../../../lib/monica/monica-constant'
+import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
+import { generateAccurateHoroscope } from '@/lib/monica/horoscope-generator'
+import { generateAlchmForBirthInfo } from '@/lib/alchemizer'
+import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
 
 export const revalidate = 0
 

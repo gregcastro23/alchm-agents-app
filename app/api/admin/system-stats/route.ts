@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '../../../../lib/auth'
-import { prisma } from '../../../../lib/db'
-import { getCurrentUser, getUserIdFromRequest } from '../../../../lib/auth-helpers'
-import { performanceMonitor } from '../../../../lib/performance-monitor'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
+import { performanceMonitor } from '@/lib/performance-monitor'
 
 /**
  * Admin API for system statistics and monitoring

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { analyzeChart, combineCharts, analyzeChartCompatibility } from '../../../../lib/runes/chart-combiner'
-import { BirthChart } from '../../../../lib/runes/multi-chart-runes'
+import { analyzeChart, combineCharts, analyzeChartCompatibility } from '@/lib/runes/chart-combiner'
+import { BirthChart } from '@/lib/runes/multi-chart-runes'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

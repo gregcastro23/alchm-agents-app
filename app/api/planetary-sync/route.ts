@@ -7,7 +7,7 @@
  * Provides real-time synchronization for the most accurate astrological calculations.
  */
 
-import { planetaryPositionSyncService } from '../../../../lib/services/planetary-position-sync'
+import { planetaryPositionSyncService } from '@/lib/services/planetary-position-sync'
 import { NextRequest, NextResponse } from 'next/server'
 
 // GET /api/planetary-sync

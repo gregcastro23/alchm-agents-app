@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { agentCache } from '../../../../lib/agent-cache-system'
-import { ApiResilienceSystem } from '../../../../lib/api-resilience-system'
-import { agentOptimizer } from '../../../../lib/agent-performance-optimizer'
+import { agentCache } from '@/lib/agent-cache-system'
+import { ApiResilienceSystem } from '@/lib/api-resilience-system'
+import { agentOptimizer } from '@/lib/agent-performance-optimizer'
 /**
  * Comprehensive Agent Consciousness Dashboard API
  * Unified monitoring endpoint for all agent systems

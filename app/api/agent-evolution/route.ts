@@ -5,12 +5,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { routeTask } from '../../../../lib/agents/router'
-import { agentKineticProfiles } from '../../../../lib/agents/kinetic-profiles'
-import { consciousnessPersistence } from '../../../../lib/consciousness-persistence'
-import { getCurrentUser, getUserIdFromRequest } from '../../../../lib/auth-helpers'
-import { sampleHourlyAlchm } from '../../../../lib/alchemical-kinetics-sampler'
-import { computeForce } from '../../../../lib/alchemical-kinetics'
+import { routeTask } from '@/lib/agents/router'
+import { agentKineticProfiles } from '@/lib/agents/kinetic-profiles'
+import { consciousnessPersistence } from '@/lib/consciousness-persistence'
+import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
+import { sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
+import { computeForce } from '@/lib/alchemical-kinetics'
 
 function getCurrentPlanetaryHour(): string {
   const hours = ['sun', 'venus', 'mercury', 'moon', 'saturn', 'jupiter', 'mars']
