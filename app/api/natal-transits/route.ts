@@ -298,7 +298,7 @@ async function handleDegreeInfo(searchParams: URLSearchParams) {
   }
 
   // Import the degree agent mapping function
-  const { getDegreeAgents } = await import('../../../../lib/degree-agent-mapping')
+  const { getDegreeAgents } = await import('@/lib/degree-agent-mapping')
   const mapping = getDegreeAgents(degree)
 
   return NextResponse.json({
