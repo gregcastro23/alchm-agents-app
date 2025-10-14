@@ -200,14 +200,20 @@ function findSignFromTransitDates(
     // Normalize provided Start/End strings to the current year using month/day only
     const currentYear = date.getFullYear()
 
-    const parseMonthDay = (s: string): { month: number; day: number } => {
+    const parseMonthDay = (s: string): { month: number; day: number } | null => {
+      if (!s || typeof s !== 'string') return null
       const parts = s.split('-')
+      if (parts.length < 3) return null
       return { month: Number(parts[1]), day: Number(parts[2]) }
     }
 
     for (const [sign, dates] of Object.entries(transitDates)) {
+      if (!dates || !dates.Start || !dates.End) continue
+
       const s = parseMonthDay(dates.Start)
       const e = parseMonthDay(dates.End)
+
+      if (!s || !e) continue
       const startYear = currentYear
       const endYear =
         s.month > e.month || (s.month === e.month && s.day > e.day) ? currentYear + 1 : currentYear
