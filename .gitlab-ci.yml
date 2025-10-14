@@ -87,7 +87,7 @@ backend:test:unit:
 
 backend:test:integration:
   stage: test
-  image: node:$[[ inputs.node_version ]]-alpine
+  image: node:20-alpine
   needs: ['backend:build']
   services:
     - name: redis:7-alpine
