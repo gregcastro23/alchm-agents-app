@@ -38,7 +38,7 @@ spec:
 ## Use project-defined stages: .pre, security, test, build, deploy, .post
 
 default:
-  image: node:$[[ inputs.node_version ]]-alpine
+  image: node:20-alpine
   before_script:
     - corepack enable
     - yarn -v
@@ -334,6 +334,7 @@ deploy_to_render:
 pages:
   stage: deploy
   image: alpine:latest
+  before_script: []
   script:
     - mkdir -p public
     - cp backend/README.md public/index.md || echo "README not found"
@@ -359,6 +360,7 @@ pages:
 deploy_dev:
   stage: deploy
   image: alpine:latest
+  before_script: []
   script:
     - echo "Development deployment configuration"
     - echo "Environment - Development"
@@ -375,6 +377,7 @@ deploy_dev:
 deploy_prod:
   stage: deploy
   image: alpine:latest
+  before_script: []
   script:
     - echo "Production deployment configuration"
     - echo "Environment - Production"
@@ -405,6 +408,7 @@ deploy_prod:
 notify_success:
   stage: deploy
   image: alpine:latest
+  before_script: []
   script:
     - echo "Pipeline completed successfully!"
     - echo "Backend is ready for deployment to Render"
