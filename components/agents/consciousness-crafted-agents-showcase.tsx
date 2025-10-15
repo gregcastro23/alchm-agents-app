@@ -128,12 +128,12 @@ export function ConsciousnessCraftedAgentsShowcase() {
               <div className="flex items-center gap-4">
                 <div
                   className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl relative"
-                  style={{ backgroundColor: featuredAgent.appearance.color }}
+                  style={{ backgroundColor: featuredAgent.appearance?.color || '#8B5CF6' }}
                 >
-                  {featuredAgent.appearance.symbol}
+                  {featuredAgent.appearance?.symbol || '✨'}
                   <div
                     className="absolute inset-0 rounded-full animate-ping opacity-30"
-                    style={{ backgroundColor: featuredAgent.appearance.aura.color }}
+                    style={{ backgroundColor: featuredAgent.appearance?.aura?.color || '#A78BFA' }}
                   />
                 </div>
                 <div>
