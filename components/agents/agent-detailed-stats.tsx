@@ -91,12 +91,12 @@ export function AgentDetailedStats({
         <div className="flex items-center gap-4">
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl relative"
-            style={{ backgroundColor: agent.appearance.color }}
+            style={{ backgroundColor: agent.appearance?.color || '#8B5CF6' }}
           >
-            {agent.appearance.symbol}
+            {agent.appearance?.symbol || '✨'}
             <div
               className="absolute inset-0 rounded-full animate-pulse opacity-30"
-              style={{ backgroundColor: agent.appearance.aura.color }}
+              style={{ backgroundColor: agent.appearance?.aura?.color || '#A78BFA' }}
             />
           </div>
           <div>
