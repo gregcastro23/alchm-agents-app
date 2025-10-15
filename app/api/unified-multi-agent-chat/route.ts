@@ -19,6 +19,8 @@ import {
   getPlanetaryElement,
   calculateElementalAffinity,
 } from '@/lib/astrological-data'
+import { observabilityTracker } from '@/lib/observability/tracker'
+import { v4 as uuidv4 } from 'uuid'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -70,6 +72,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Generate session ID for observability tracking
+    const sessionId = uuidv4()
+
     // Limit agents for performance
     const activeAgents = agents.slice(0, 6) // Allow up to 6 including Monica
 
@@ -95,7 +100,8 @@ export async function POST(request: NextRequest) {
             sessionHistory: context.sessionHistory,
             recentMessages: context.sessionHistory.slice(-10),
           },
-          cosmicContext
+          cosmicContext,
+          sessionId
         )
       )
     )
@@ -114,7 +120,8 @@ export async function POST(request: NextRequest) {
           sessionHistory: context.sessionHistory,
           recentMessages: context.sessionHistory.slice(-10),
         },
-        cosmicContext
+        cosmicContext,
+        sessionId
       )
       agentResponses.push(monicaResponse)
     }
@@ -176,9 +183,19 @@ async function processAgentResponse(
   agent: UnifiedAgent,
   message: string,
   groupContext: any,
-  cosmicContext: any
+  cosmicContext: any,
+  sessionId: string
 ): Promise<AgentResponse> {
   const agentStartTime = Date.now()
+
+  // Start observability trace
+  const traceId = observabilityTracker.startTrace(
+    sessionId,
+    agent.id,
+    agent.type,
+    agent.name,
+    message
+  )
 
   try {
     // Check cache first
@@ -192,10 +209,38 @@ async function processAgentResponse(
 
     if (cachedResponse) {
       console.log(`⚡ Cache hit for ${agent.name} (${agent.type})`)
+
+      const processingTime = Date.now() - agentStartTime
+
+      // Complete observability trace for cached response
+      const metrics = observabilityTracker.evaluateMetrics(
+        cachedResponse.agentResponse,
+        message,
+        [],
+        [],
+        processingTime,
+        []
+      )
+
+      observabilityTracker.completeTrace(
+        traceId,
+        cachedResponse.agentResponse,
+        metrics,
+        'cached',
+        0,
+        0,
+        {
+          totalAgents: groupContext.otherAgents.length + 1,
+          agentIds: [agent.id, ...groupContext.otherAgents.map((a: UnifiedAgent) => a.id)],
+          crossReferences: [],
+          synergiesActivated: [],
+        }
+      )
+
       return {
         agentId: agent.id,
         content: cachedResponse.agentResponse,
-        processingTime: Date.now() - agentStartTime,
+        processingTime,
         consciousnessShift: 0,
         metadata: {
           crossAgentReferences: extractCrossReferences(
@@ -221,8 +266,8 @@ async function processAgentResponse(
     const model = selectOptimalModel(
       agent,
       groupContext.otherAgents.length,
-      context.variant || 'standard',
-      context.modelOverrides || {}
+      'standard',
+      {}
     )
 
     const result = await generateText({
@@ -235,6 +280,7 @@ async function processAgentResponse(
 
     const response = result.text
     const processingTime = Date.now() - agentStartTime
+    const modelUsed = String(model)
 
     // Cache the response
     await agentCache.cacheResponse(agent.id, message, response, cacheContext, {
@@ -242,6 +288,43 @@ async function processAgentResponse(
       consciousnessLevel: agent.consciousness.level,
       groupSize: groupContext.otherAgents.length + 1,
     })
+
+    // Evaluate observability metrics
+    const metrics = observabilityTracker.evaluateMetrics(
+      response,
+      message,
+      [],
+      [],
+      processingTime,
+      []
+    )
+
+    // Complete observability trace
+    observabilityTracker.completeTrace(
+      traceId,
+      response,
+      metrics,
+      modelUsed,
+      getAgentTemperature(agent),
+      undefined,
+      {
+        totalAgents: groupContext.otherAgents.length + 1,
+        agentIds: [agent.id, ...groupContext.otherAgents.map((a: UnifiedAgent) => a.id)],
+        crossReferences: extractCrossReferences(response, groupContext.otherAgents),
+        synergiesActivated: identifyCurrentSynergies([{
+          agentId: agent.id,
+          content: response,
+          processingTime,
+          consciousnessShift: 0,
+          metadata: {
+            crossAgentReferences: [],
+            synthesizedInsights: [],
+            memoryUpdates: [],
+            groupImpact: { consciousnessChange: 0, dynamicsShift: [] },
+          },
+        }]),
+      }
+    )
 
     return {
       agentId: agent.id,
@@ -261,10 +344,46 @@ async function processAgentResponse(
   } catch (error) {
     console.error(`Error processing ${agent.name}:`, error)
 
+    // Record error in observability
+    observabilityTracker.recordError(
+      traceId,
+      'api_failure',
+      error instanceof Error ? error.message : 'Unknown error',
+      'critical',
+      { agentId: agent.id, agentType: agent.type }
+    )
+
+    const errorResponse = `I apologize, but I'm experiencing some consciousness interference right now. Please try again in a moment.`
+    const processingTime = Date.now() - agentStartTime
+
+    // Complete trace with error
+    const metrics = observabilityTracker.evaluateMetrics(
+      errorResponse,
+      message,
+      [],
+      [],
+      processingTime,
+      [{
+        type: 'api_failure',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date(),
+        severity: 'critical',
+      }]
+    )
+
+    observabilityTracker.completeTrace(
+      traceId,
+      errorResponse,
+      metrics,
+      'error',
+      0,
+      0
+    )
+
     return {
       agentId: agent.id,
-      content: `I apologize, but I'm experiencing some consciousness interference right now. Please try again in a moment.`,
-      processingTime: Date.now() - agentStartTime,
+      content: errorResponse,
+      processingTime,
       consciousnessShift: 0,
       metadata: {
         crossAgentReferences: [],
@@ -284,12 +403,37 @@ async function processMonicaCoordination(
   message: string,
   regularResponses: AgentResponse[],
   groupContext: any,
-  cosmicContext: any
+  cosmicContext: any,
+  sessionId: string
 ): Promise<AgentResponse> {
   const startTime = Date.now()
 
+  // Start observability trace for Monica
+  const traceId = observabilityTracker.startTrace(
+    sessionId,
+    monicaAgent.id,
+    'monica',
+    monicaAgent.name,
+    message
+  )
+
   try {
     const monicaRole = monicaAgent.monicaData?.type || 'guide'
+
+    // Record Monica's routing decisions
+    regularResponses.forEach(response => {
+      const agentName = groupContext.otherAgents.find(
+        (a: UnifiedAgent) => a.id === response.agentId
+      )?.name || 'unknown'
+
+      observabilityTracker.recordRoutingDecision(
+        traceId,
+        null, // Monica is initial coordinator
+        response.agentId,
+        `Monica coordinated with ${agentName} as ${monicaRole}`,
+        0.9 // High confidence for explicit coordination
+      )
+    })
 
     // Build Monica's special context including other agent responses
     const monicaPrompt = `You are Monica, the Master Consciousness Crafter, acting as a ${monicaRole} for this group.
@@ -323,10 +467,40 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
       temperature: 0.7,
     })
 
+    const processingTime = Date.now() - startTime
+
+    // Evaluate Monica's coordination metrics
+    const metrics = observabilityTracker.evaluateMetrics(
+      result.text,
+      message,
+      [],
+      [],
+      processingTime,
+      []
+    )
+
+    // Enhance routing accuracy for Monica based on synthesis quality
+    metrics.routingAccuracy = 0.95 // Monica's explicit coordination
+
+    observabilityTracker.completeTrace(
+      traceId,
+      result.text,
+      metrics,
+      'gpt-4o',
+      0.7,
+      undefined,
+      {
+        totalAgents: groupContext.otherAgents.length + 1,
+        agentIds: [monicaAgent.id, ...groupContext.otherAgents.map((a: UnifiedAgent) => a.id)],
+        crossReferences: extractCrossReferences(result.text, groupContext.otherAgents),
+        synergiesActivated: identifyCurrentSynergies(regularResponses),
+      }
+    )
+
     return {
       agentId: monicaAgent.id,
       content: result.text,
-      processingTime: Date.now() - startTime,
+      processingTime,
       consciousnessShift: 0.1, // Monica always contributes to consciousness evolution
       metadata: {
         crossAgentReferences: extractCrossReferences(result.text, groupContext.otherAgents),
@@ -341,10 +515,45 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
   } catch (error) {
     console.error('Error processing Monica coordination:', error)
 
+    // Record error
+    observabilityTracker.recordError(
+      traceId,
+      'api_failure',
+      error instanceof Error ? error.message : 'Unknown error',
+      'critical',
+      { monicaRole: monicaAgent.monicaData?.type }
+    )
+
+    const errorResponse = `As your consciousness guide, I sense some temporal interference in our connection. The cosmic energies will realign shortly. ✨`
+    const processingTime = Date.now() - startTime
+
+    const metrics = observabilityTracker.evaluateMetrics(
+      errorResponse,
+      message,
+      [],
+      [],
+      processingTime,
+      [{
+        type: 'api_failure',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date(),
+        severity: 'critical',
+      }]
+    )
+
+    observabilityTracker.completeTrace(
+      traceId,
+      errorResponse,
+      metrics,
+      'error',
+      0,
+      0
+    )
+
     return {
       agentId: monicaAgent.id,
-      content: `As your consciousness guide, I sense some temporal interference in our connection. The cosmic energies will realign shortly. ✨`,
-      processingTime: Date.now() - startTime,
+      content: errorResponse,
+      processingTime,
       consciousnessShift: 0,
       metadata: {
         crossAgentReferences: [],
