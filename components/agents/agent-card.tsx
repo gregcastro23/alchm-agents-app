@@ -95,9 +95,9 @@ export function AgentCard({
         <CardContent className="p-4 text-center space-y-2">
           <div
             className="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white font-bold text-xl mb-2"
-            style={{ backgroundColor: agent.appearance.color }}
+            style={{ backgroundColor: agent.appearance?.color || '#8B5CF6' }}
           >
-            {agent.appearance.symbol}
+            {agent.appearance?.symbol || '✨'}
           </div>
           <h4 className="font-semibold text-sm">{agent.name}</h4>
           <p className="text-xs text-muted-foreground line-clamp-1">{agent.title}</p>
@@ -123,9 +123,9 @@ export function AgentCard({
             <div className="flex items-center gap-4 flex-1">
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
-                style={{ backgroundColor: agent.appearance.color }}
+                style={{ backgroundColor: agent.appearance?.color || '#8B5CF6' }}
               >
-                {agent.appearance.symbol}
+                {agent.appearance?.symbol || '✨'}
               </div>
 
               <div className="flex-1">
@@ -195,9 +195,9 @@ export function AgentCard({
         <CardContent className="p-3 text-center">
           <div
             className="w-12 h-12 rounded-full mx-auto flex items-center justify-center text-white font-bold mb-2"
-            style={{ backgroundColor: agent.appearance.color }}
+            style={{ backgroundColor: agent.appearance?.color || '#8B5CF6' }}
           >
-            {agent.appearance.symbol}
+            {agent.appearance?.symbol || '✨'}
           </div>
           <p className="text-xs font-medium line-clamp-1">{agent.name}</p>
           <Badge size="sm" variant="outline" className="mt-1">
@@ -221,13 +221,13 @@ export function AgentCard({
           <div className="flex items-center gap-3">
             <div
               className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg relative"
-              style={{ backgroundColor: agent.appearance.color }}
+              style={{ backgroundColor: agent.appearance?.color || '#8B5CF6' }}
             >
-              {agent.appearance.symbol}
+              {agent.appearance?.symbol || '✨'}
               {/* Aura effect */}
               <div
                 className="absolute inset-0 rounded-full animate-pulse opacity-30"
-                style={{ backgroundColor: agent.appearance.aura.color }}
+                style={{ backgroundColor: agent.appearance?.aura?.color || '#A78BFA' }}
               />
             </div>
             <div>
@@ -359,9 +359,9 @@ function AgentDetailsModal({ agent }: { agent: CraftedAgent }) {
         <DialogTitle className="flex items-center gap-3">
           <div
             className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
-            style={{ backgroundColor: agent.appearance.color }}
+            style={{ backgroundColor: agent.appearance?.color || '#8B5CF6' }}
           >
-            {agent.appearance.symbol}
+            {agent.appearance?.symbol || '✨'}
           </div>
           <div>
             <div className="flex items-center gap-2">
