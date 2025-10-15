@@ -12,8 +12,30 @@ export const revalidate = 0
 export async function GET() {
   try {
     const timestamp = new Date().toISOString()
-    const positions = getCurrentPlanetaryPositions(Date.now())
-    const alchm = await generateAlchmForCurrentMoment()
+
+    // Get current planetary positions with error handling
+    let positions
+    try {
+      positions = getCurrentPlanetaryPositions(Date.now())
+    } catch (error) {
+      console.error('Error getting planetary positions:', error)
+      return NextResponse.json(
+        { error: 'Failed to calculate planetary positions', details: String(error) },
+        { status: 500 }
+      )
+    }
+
+    // Generate alchemical data with error handling
+    let alchm
+    try {
+      alchm = await generateAlchmForCurrentMoment()
+    } catch (error) {
+      console.error('Error generating alchemical data:', error)
+      return NextResponse.json(
+        { error: 'Failed to generate alchemical data', details: String(error) },
+        { status: 500 }
+      )
+    }
 
     const planetaryPositions = [
       'Sun',
