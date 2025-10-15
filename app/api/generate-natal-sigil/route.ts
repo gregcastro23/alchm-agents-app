@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
 
         // Try to generate image
         try {
-          const { fetchImaginize } = await import('../../../../lib/astrologize')
+          const { fetchImaginize } = await import('@/lib/astrologize')
           const imageData = await fetchImaginize(generatedPrompt, {
             style_preset: `mystical-${style}`,
             width: 1024,
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
         sigil = createNatalSigilRune(finalGeometry, style, 'aspect-based')
 
         try {
-          const { fetchImaginize } = await import('../../../../lib/astrologize')
+          const { fetchImaginize } = await import('@/lib/astrologize')
           const imageData = await fetchImaginize(prompt, {
             style_preset: `mystical-${style}`,
             width: 1024,
