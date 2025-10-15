@@ -78,8 +78,8 @@ export function ConsciousnessNetworkGraph({
     type: agent.type,
     consciousness: agent.consciousness.monicaConstant,
     element: agent.consciousness.dominantElement,
-    color: agent.appearance.color,
-    symbol: agent.appearance.symbol || agent.appearance.avatar,
+    color: agent.appearance?.color || "#6366f1",
+    symbol: agent.appearance?.symbol || agent.name.charAt(0).toUpperCase() || agent.appearance.avatar,
     status: agent.status,
     radius: nodeRadius[0] + agent.consciousness.monicaConstant * 5,
   }))

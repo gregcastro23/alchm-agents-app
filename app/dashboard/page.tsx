@@ -194,8 +194,8 @@ export default function DashboardPage() {
     consciousnessLevel: agent.consciousness.level,
     element: agent.consciousness.dominantElement,
     specialty: agent.abilities.specialty,
-    color: agent.appearance.color,
-    symbol: agent.appearance.symbol,
+    color: agent.appearance?.color || "#6366f1",
+    symbol: agent.appearance?.symbol || agent.name.charAt(0).toUpperCase(),
     creationStory: agent.abilities.uniquePower,
   }))
 

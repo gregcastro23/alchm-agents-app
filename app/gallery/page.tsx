@@ -867,7 +867,7 @@ function GalleryPageContent() {
                       <div className="flex items-center space-x-2">
                         <div
                           className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: agent.appearance.color }}
+                          style={{ backgroundColor: agent.appearance?.color || "#6366f1" }}
                         />
                         <span className="font-medium text-sm">{agent.name}</span>
                       </div>

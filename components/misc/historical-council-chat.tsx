@@ -319,7 +319,7 @@ export function HistoricalCouncilChat({
               <div className="space-y-1">
                 {selectedAgentData.map(agent => (
                   <div key={agent.id} className="text-sm flex items-center gap-2">
-                    <span style={{ color: agent.appearance.color }}>{agent.appearance.symbol}</span>
+                    <span style={{ color: agent.appearance?.color || '#6366f1' }}>{agent.appearance?.symbol || agent.name.charAt(0).toUpperCase()}</span>
                     {agent.name}
                   </div>
                 ))}

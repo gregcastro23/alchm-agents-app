@@ -143,8 +143,8 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
         element: agent.consciousness.dominantElement,
         modality: agent.consciousness.dominantModality,
         specialty: agent.abilities.specialty,
-        color: agent.appearance.color,
-        symbol: agent.appearance.symbol,
+        color: agent.appearance?.color || '#6366f1',
+        symbol: agent.appearance?.symbol || agent.name.charAt(0).toUpperCase(),
         creationStory: agent.monicaCreationStory,
       }))
 
@@ -314,9 +314,9 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
               >
                 <div
                   className="w-4 h-4 rounded-full flex items-center justify-center text-white text-xs"
-                  style={{ backgroundColor: agent.appearance.color }}
+                  style={{ backgroundColor: agent.appearance?.color || '#6366f1' }}
                 >
-                  {agent.appearance.symbol.charAt(0)}
+                  {agent.appearance?.symbol?.charAt(0) || agent.name.charAt(0).toUpperCase()}
                 </div>
                 <span className="text-xs font-medium">{agent.name}</span>
 
@@ -404,7 +404,7 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                     <div className="flex items-center gap-2 mb-2">
                       <div
                         className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: agent.appearance.color }}
+                        style={{ backgroundColor: agent.appearance?.color || "#6366f1" }}
                       />
                       <span className="font-medium text-xs">{agent.name}</span>
                     </div>

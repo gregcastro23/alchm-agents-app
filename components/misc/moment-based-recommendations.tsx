@@ -473,9 +473,9 @@ export function MomentBasedRecommendations({
             <div className="flex items-center gap-3">
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold"
-                style={{ backgroundColor: recommendation.agent.appearance.color }}
+                style={{ backgroundColor: recommendation.agent.appearance?.color || '#6366f1' }}
               >
-                {recommendation.agent.appearance.symbol}
+                {recommendation.agent.appearance?.symbol || recommendation.agent.name.charAt(0).toUpperCase()}
               </div>
               <div>
                 <h4 className="font-medium">{recommendation.agent.name}</h4>

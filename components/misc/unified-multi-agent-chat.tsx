@@ -444,9 +444,9 @@ export function UnifiedMultiAgentChat({
                   >
                     <Avatar className="w-6 h-6">
                       <AvatarFallback
-                        style={{ backgroundColor: agent.appearance.color, color: 'white' }}
+                        style={{ backgroundColor: agent.appearance?.color || '#6366f1', color: 'white' }}
                       >
-                        {agent.appearance.symbol}
+                        {agent.appearance?.symbol || agent.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium">{agent.name}</span>
@@ -482,9 +482,9 @@ export function UnifiedMultiAgentChat({
                   <div className="flex items-center gap-2">
                     <Avatar className="w-8 h-8">
                       <AvatarFallback
-                        style={{ backgroundColor: agent.appearance.color, color: 'white' }}
+                        style={{ backgroundColor: agent.appearance?.color || '#6366f1', color: 'white' }}
                       >
-                        {agent.appearance.symbol}
+                        {agent.appearance?.symbol || agent.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">

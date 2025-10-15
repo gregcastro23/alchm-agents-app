@@ -330,7 +330,7 @@ export function ConsciousnessVelocityVisualizer({
                     <div className="flex items-center gap-3">
                       <div
                         className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: agentData.agent.appearance.color }}
+                        style={{ backgroundColor: agentData.agent.appearance?.color || "#6366f1" }}
                       />
                       <span>{agentData.agent.name}</span>
                       <Badge className={getEvolutionStageColor(agentData.metrics.evolutionStage)}>
@@ -480,7 +480,7 @@ export function ConsciousnessVelocityVisualizer({
                           </Badge>
                           <div
                             className="w-4 h-4 rounded-full"
-                            style={{ backgroundColor: data.agent.appearance.color }}
+                            style={{ backgroundColor: data.agent.appearance?.color || "#6366f1" }}
                           />
                           <div>
                             <div className="font-medium">{data.agent.name}</div>
