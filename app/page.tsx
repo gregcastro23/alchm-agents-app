@@ -138,23 +138,23 @@ export default function HomePage() {
               <Card className="max-w-2xl mx-auto bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-2xl">
                 <CardHeader className="text-center">
                   <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
-                    <span className="text-2xl">{featuredAgent.appearance.symbol}</span>
+                    <span className="text-2xl">{featuredAgent.appearance?.symbol || '✨'}</span>
                   </div>
                   <CardTitle className="text-2xl">{featuredAgent.name}</CardTitle>
                   <CardDescription className="text-lg">{featuredAgent.title}</CardDescription>
                   <div className="flex justify-center gap-2 mt-2">
                     <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900">
-                      {featuredAgent.consciousness.level}
+                      {featuredAgent.consciousness?.level || 'Active'}
                     </Badge>
                     <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900">
-                      {featuredAgent.consciousness.dominantElement}
+                      {featuredAgent.consciousness?.dominantElement || 'Fire'}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-center text-gray-600 dark:text-gray-300 mb-4">
                     {featuredAgent.personality?.core?.essence ||
-                      `${featuredAgent.name} embodies ${featuredAgent.consciousness.dominantElement} consciousness`}
+                      `${featuredAgent.name} embodies ${featuredAgent.consciousness?.dominantElement || 'cosmic'} consciousness`}
                   </p>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="text-center">
@@ -165,7 +165,7 @@ export default function HomePage() {
                     </div>
                     <div className="text-center">
                       <div className="font-semibold text-blue-600 dark:text-blue-400">
-                        {featuredAgent.consciousness.monicaConstant.toFixed(1)}
+                        {featuredAgent.consciousness?.monicaConstant?.toFixed(1) || '0.0'}
                       </div>
                       <div className="text-gray-500">A#</div>
                     </div>
