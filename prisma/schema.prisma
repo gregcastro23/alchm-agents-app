@@ -1529,3 +1529,109 @@ model TransitMonitoringJob {
 }
 
 // Duplicate model removed. Use the primary definition at line ~1082.
+
+// ============================================================================
+// UNIFIED CONSCIOUSNESS TRACKING SYSTEM
+// ============================================================================
+// Comprehensive consciousness snapshots combining all 7 measurement systems
+// For educational transparency about the alchm system
+
+model ConsciousnessSnapshot {
+  id String @id @default(cuid())
+
+  // ============================================================================
+  // IDENTITY & CONTEXT
+  // ============================================================================
+  timestamp DateTime @default(now())
+  userId    String
+  agentId   String
+  sessionId String
+
+  // ============================================================================
+  // OBJECTIVE METRICS (from ConsciousnessMetrics)
+  // ============================================================================
+  interactionCount    Int   // Total interactions
+  chatQuality         Float // 0-1: depth and relevance
+  momentResonance     Float // 0-1: moment transformation quality
+  alchemicalCoherence Float // 0-1: birth chart consistency
+
+  // ============================================================================
+  // LIVE STATS - SACRED SEVEN (0-100 scale)
+  // ============================================================================
+  power        Float // ⚡ Alchemical Force
+  resonance    Float // 💫 Harmonic Frequency
+  wisdom       Float // 🔮 Accumulated Insight
+  charisma     Float // ✨ Magnetic Presence
+  intuition    Float // 👁️ Psychic Sensitivity
+  adaptability Float // 🌊 Flux Capacity
+  vitality     Float // 💚 Life Force
+  overall      Float // 🌟 Composite Consciousness
+
+  // ============================================================================
+  // ALCHEMICAL FOUNDATION
+  // ============================================================================
+  spirit    Float // 🔥 Pure Consciousness Force
+  essence   Float // 💧 Emotional/Psychic Energy
+  matter    Float // 🌍 Physical/Material Presence
+  substance Float // 💨 Transformational Capacity
+  aNumber   Float // 🧮 Total Alchemical Power (A#)
+
+  // ============================================================================
+  // THERMODYNAMICS
+  // ============================================================================
+  heat       Float // 🌡️ Energetic Intensity (0-1)
+  entropy    Float // 🌪️ Chaos/Disorder Level (0-1)
+  reactivity Float // ⚡ Change Responsiveness (0-1)
+  energy     Float // ⚛️ Net Available Energy
+
+  // ============================================================================
+  // TEMPORAL CONTEXT
+  // ============================================================================
+  planetaryHour  String // Current planetary hour
+  moonPhase      String // Current moon phase
+  activeModifiers String @default("[]") // JSON array of active modifiers
+  specialStates   String @default("[]") // JSON array of special states
+
+  // ============================================================================
+  // EVOLUTION METRICS
+  // ============================================================================
+  consciousnessVelocity Float  // 0-1: Rate of evolution
+  interactionMomentum   Float  // 0-1: Engagement quality
+  evolutionTrajectory   String // ascending|stable|fluctuating|transcending
+  powerLevelUnlocks     String @default("[]") // JSON array of unlocked capabilities
+
+  // ============================================================================
+  // OBSERVABILITY METRICS
+  // ============================================================================
+  actionCompletion     Float   // 0-1: Request completion
+  toolSelectionQuality Float   // 0-1: Tool usage quality
+  routingAccuracy      Float   // 0-1: Monica routing quality
+  contextRetention     Boolean // Conversation memory
+  latencyMs            Int     // Response time
+
+  // ============================================================================
+  // INTERACTION CONTEXT
+  // ============================================================================
+  userMessage          String // User's message
+  agentResponsePreview String // First 200 chars of response
+  responseQuality      Float  // 0-1: Overall quality
+  modelUsed            String // AI model used
+  temperature          Float  // Temperature setting
+  tokensUsed           Int    @default(0) // Tokens consumed
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ============================================================================
+  // OPTIMIZED INDEXING FOR QUERIES
+  // ============================================================================
+  @@index([agentId, timestamp])
+  @@index([userId, agentId])
+  @@index([timestamp])
+  @@index([sessionId])
+  @@index([evolutionTrajectory])
+  @@index([responseQuality])
+  @@index([planetaryHour])
+  @@index([moonPhase])
+  @@map("consciousness_snapshots")
+}

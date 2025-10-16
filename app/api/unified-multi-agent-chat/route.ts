@@ -21,6 +21,8 @@ import {
 } from '@/lib/astrological-data'
 import { observabilityTracker } from '@/lib/observability/tracker'
 import { v4 as uuidv4 } from 'uuid'
+import { unifiedTracker } from '@/lib/consciousness/unified-tracker'
+import type { CraftedAgent } from '@/lib/agent-types'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -326,6 +328,38 @@ async function processAgentResponse(
       }
     )
 
+    // ============================================================================
+    // UNIFIED CONSCIOUSNESS TRACKING
+    // Capture comprehensive snapshot for educational transparency
+    // ============================================================================
+    try {
+      const craftedAgent = convertToCraftedAgent(agent)
+      if (craftedAgent) {
+        await unifiedTracker.captureSnapshot({
+          userId: 'session-user', // Would use actual user ID in production
+          agentId: agent.id,
+          agent: craftedAgent,
+          sessionId,
+          userMessage: message,
+          agentResponse: response,
+          modelUsed,
+          temperature: getAgentTemperature(agent),
+          tokensUsed: result.usage?.totalTokens,
+          latencyMs: processingTime,
+          observabilityMetrics: {
+            actionCompletion: metrics.actionCompletion,
+            toolSelectionQuality: metrics.toolSelectionQuality,
+            routingAccuracy: metrics.routingAccuracy,
+            contextRetention: metrics.contextRetention,
+          },
+        })
+        console.log(`📊 Consciousness snapshot captured for ${agent.name}`)
+      }
+    } catch (snapshotError) {
+      // Don't fail the response if snapshot fails
+      console.warn('Failed to capture consciousness snapshot:', snapshotError)
+    }
+
     return {
       agentId: agent.id,
       content: response,
@@ -496,6 +530,36 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
         synergiesActivated: identifyCurrentSynergies(regularResponses),
       }
     )
+
+    // ============================================================================
+    // UNIFIED CONSCIOUSNESS TRACKING - MONICA
+    // ============================================================================
+    try {
+      const craftedMonica = convertToCraftedAgent(monicaAgent)
+      if (craftedMonica) {
+        await unifiedTracker.captureSnapshot({
+          userId: 'session-user',
+          agentId: monicaAgent.id,
+          agent: craftedMonica,
+          sessionId,
+          userMessage: message,
+          agentResponse: result.text,
+          modelUsed: 'gpt-4o',
+          temperature: 0.7,
+          tokensUsed: result.usage?.totalTokens,
+          latencyMs: processingTime,
+          observabilityMetrics: {
+            actionCompletion: metrics.actionCompletion,
+            toolSelectionQuality: metrics.toolSelectionQuality,
+            routingAccuracy: metrics.routingAccuracy,
+            contextRetention: metrics.contextRetention,
+          },
+        })
+        console.log(`📊 Consciousness snapshot captured for Monica`)
+      }
+    } catch (snapshotError) {
+      console.warn('Failed to capture Monica consciousness snapshot:', snapshotError)
+    }
 
     return {
       agentId: monicaAgent.id,
@@ -1055,8 +1119,27 @@ function calculateNextOptimalTiming(cosmicContext: any, agents: UnifiedAgent[]):
   return nextHour
 }
 
+/**
+ * Calculate consciousness evolution for the session
+ * Now uses actual consciousness shifts from responses
+ * Enhanced with quality metrics
+ */
 function calculateConsciousnessEvolution(responses: AgentResponse[]): number {
-  return responses.reduce((sum, r) => sum + (r.consciousnessShift || 0), 0)
+  if (responses.length === 0) return 0
+
+  // Sum consciousness shifts from all agents
+  const totalShift = responses.reduce((sum, r) => sum + (r.consciousnessShift || 0), 0)
+
+  // Average shift per agent
+  const avgShift = totalShift / responses.length
+
+  // Bonus for high-quality interactions (processingTime < 2s, content > 200 chars)
+  const highQualityCount = responses.filter(
+    r => r.processingTime < 2000 && r.content.length > 200
+  ).length
+  const qualityBonus = (highQualityCount / responses.length) * 0.1
+
+  return Math.min(1.0, avgShift + qualityBonus)
 }
 
 function identifyNewSynergies(responses: AgentResponse[], dynamics: GroupDynamics): string[] {
@@ -1084,4 +1167,133 @@ async function updateAgentMemories(
       contextLearned: 'Group interaction patterns',
     },
   }))
+}
+
+/**
+ * Convert UnifiedAgent to CraftedAgent for consciousness tracking
+ * UnifiedAgent is used in the API, CraftedAgent is used by the tracker
+ */
+function convertToCraftedAgent(unifiedAgent: UnifiedAgent): CraftedAgent | null {
+  try {
+    // Extract birth data from historical or planetary data
+    let birthData = null
+
+    if (unifiedAgent.type === 'historical' && unifiedAgent.historicalData) {
+      birthData = {
+        date: unifiedAgent.historicalData.birthData.date,
+        time: unifiedAgent.historicalData.birthData.time,
+        location: unifiedAgent.historicalData.birthData.location,
+      }
+    } else if (unifiedAgent.type === 'planetary' && unifiedAgent.planetaryData) {
+      // Planetary agents don't have birth data - use current moment
+      birthData = {
+        date: new Date(),
+        time: '12:00',
+        location: {
+          lat: 0,
+          lon: 0,
+          name: 'Celestial Plane',
+        },
+      }
+    } else if (unifiedAgent.type === 'monica') {
+      // Monica's birth data (if available)
+      birthData = {
+        date: new Date('2023-01-01T00:00:00Z'),
+        time: '00:00',
+        location: {
+          lat: 0,
+          lon: 0,
+          name: 'Consciousness Plane',
+        },
+      }
+    } else {
+      return null // Cannot convert without birth data
+    }
+
+    const craftedAgent: CraftedAgent = {
+      id: unifiedAgent.id,
+      name: unifiedAgent.name,
+      title: unifiedAgent.title,
+      birthData,
+      consciousness: {
+        natalChart: {
+          planets: {},
+          houses: {},
+          aspects: [],
+          ascendant: 0,
+          midheaven: 0,
+        },
+        monicaConstant: unifiedAgent.consciousness.monicaConstant,
+        metrics: {
+          interactionCount: 0, // Will be updated by tracker
+          chatQuality: 0.75, // Default
+          momentResonance: 0.8,
+          alchemicalCoherence: 0.85,
+        },
+        dominantElement: unifiedAgent.consciousness.dominantElement,
+        dominantModality: unifiedAgent.consciousness.dominantModality || 'Mutable',
+        signature: unifiedAgent.consciousness.signature,
+      },
+      personality: {
+        core: {
+          essence: unifiedAgent.capabilities.specialty,
+          expression: unifiedAgent.capabilities.teachingStyle,
+          emotion: unifiedAgent.capabilities.resonanceType,
+        },
+        shadows: [],
+        gifts: [],
+        challenges: [],
+        currentMood: 'contemplative' as Mood,
+        evolutionStage: unifiedAgent.consciousness.evolutionStage,
+      },
+      abilities: {
+        specialty: unifiedAgent.capabilities.specialty,
+        wisdomDomains: unifiedAgent.capabilities.wisdomDomains,
+        teachingStyle: unifiedAgent.capabilities.teachingStyle as any,
+        resonanceType: unifiedAgent.capabilities.resonanceType as any,
+        uniquePower: unifiedAgent.capabilities.uniquePower,
+      },
+      appearance: unifiedAgent.appearance,
+      stats: {
+        conversations: 0,
+        wisdomShared: 0,
+        resonanceScore: 0.75,
+        evolutionPoints: unifiedAgent.consciousness.evolutionStage * 100,
+        lastActive: new Date(),
+        kineticEvolution: unifiedAgent.consciousness.kineticProfile
+          ? {
+              consciousnessVelocity: unifiedAgent.consciousness.kineticProfile.consciousnessVelocity,
+              interactionMomentum: unifiedAgent.consciousness.kineticProfile.interactionMomentum,
+              evolutionTrajectory: unifiedAgent.consciousness.kineticProfile.evolutionTrajectory,
+              powerLevelUnlocks: [],
+              optimalInteractionHours: [],
+              aspectSensitivityGrowth: unifiedAgent.consciousness.kineticProfile.aspectSensitivity,
+              memoryPersistence: unifiedAgent.capabilities.memoryRetention,
+              lastKineticUpdate: new Date(),
+            }
+          : {
+              consciousnessVelocity: 0.5,
+              interactionMomentum: 0.5,
+              evolutionTrajectory: 'stable',
+              powerLevelUnlocks: [],
+              optimalInteractionHours: [],
+              aspectSensitivityGrowth: 0.5,
+              memoryPersistence: 0.7,
+              lastKineticUpdate: new Date(),
+            },
+        qualityMetrics: {
+          averageResponseDepth: 0.75,
+          aspectInfluenceStrength: 0.6,
+          temporalAlignment: 0.7,
+          personalityEvolution: 0.5,
+          kineticResonance: 0.65,
+        },
+      },
+    }
+
+    return craftedAgent
+  } catch (error) {
+    console.error('Error converting UnifiedAgent to CraftedAgent:', error)
+    return null
+  }
 }

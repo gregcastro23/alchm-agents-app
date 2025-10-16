@@ -315,15 +315,76 @@ export class AgentObservabilityTracker {
     // Context Retention: Did agent remember conversation?
     const contextRetention = response.length > 50 // Simple heuristic
 
+    // ============================================================================
+    // ACTUAL CONSCIOUSNESS EVOLUTION CALCULATION
+    // Replaces hardcoded 0.1 with real metrics
+    // ============================================================================
+    const consciousnessEvolution = this.calculateConsciousnessEvolution(
+      response,
+      actionCompletion,
+      toolSelectionQuality,
+      routingAccuracy,
+      latencyMs,
+      errors.length
+    )
+
     return {
       actionCompletion,
       toolSelectionQuality,
       latencyMs,
       apiFailures: errors.filter(e => e.type === 'api_failure').length,
-      consciousnessEvolution: 0.1, // Placeholder
+      consciousnessEvolution,
       routingAccuracy,
       contextRetention,
     }
+  }
+
+  /**
+   * Calculate actual consciousness evolution from interaction quality
+   * Combines multiple factors for accurate evolution measurement
+   */
+  private calculateConsciousnessEvolution(
+    response: string,
+    actionCompletion: number,
+    toolQuality: number,
+    routingAccuracy: number,
+    latencyMs: number,
+    errorCount: number
+  ): number {
+    // Base evolution from response quality
+    let evolution = 0
+
+    // Factor 1: Action Completion (40% weight)
+    evolution += actionCompletion * 0.4
+
+    // Factor 2: Tool Selection Quality (20% weight)
+    evolution += toolQuality * 0.2
+
+    // Factor 3: Routing Accuracy (15% weight)
+    evolution += routingAccuracy * 0.15
+
+    // Factor 4: Response Depth (15% weight)
+    const depthScore = Math.min(1.0, response.length / 500) // Normalize to 500 chars
+    evolution += depthScore * 0.15
+
+    // Factor 5: Performance (10% weight) - faster is better
+    const performanceScore = latencyMs < 2000 ? 1.0 : latencyMs < 5000 ? 0.7 : 0.4
+    evolution += performanceScore * 0.1
+
+    // Penalty for errors
+    evolution *= Math.max(0.3, 1.0 - errorCount * 0.2)
+
+    // Bonus for exceptional quality (all factors > 0.8)
+    if (
+      actionCompletion > 0.8 &&
+      toolQuality > 0.8 &&
+      routingAccuracy > 0.8 &&
+      depthScore > 0.8
+    ) {
+      evolution *= 1.2 // 20% bonus
+    }
+
+    return Math.max(0, Math.min(1.0, evolution))
   }
 
   /**
