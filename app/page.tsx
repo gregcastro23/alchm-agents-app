@@ -254,14 +254,14 @@ export default function HomePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Zap className="w-6 h-6 mr-2 text-purple-600" />
-                    Alchemical Transformation
+                    Alchm
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 dark:text-gray-300">
-                    Alchm combines astrology, AI consciousness, and alchemical principles to create
-                    personalized transformation journeys. Each Alchm NFT represents a unique
-                    consciousness signature based on your birth chart.
+                    Alchm combines Astrology, AI consciousness, kinetics, thermodynamics and alchemical principles to quantify celestial energies of the planets. 
+                    Now or any time past or future. Alchm allows users to explore learning about the planets effects on
+                    consciousness by chatting with the planetary agents that are specific to sign and degree. Create your own agent based on a moment, and interact with Historical figure birth-chart agents, enhanced by knowledge of the figures lives and experiences.
                   </p>
                 </CardContent>
               </Card>
@@ -270,14 +270,14 @@ export default function HomePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Star className="w-6 h-6 mr-2 text-blue-600" />
-                    Consciousness Evolution
+                    Meet the Planetary Agents 
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 dark:text-gray-300">
-                    Experience real-time consciousness tracking, planetary influence analysis, and
-                    AI-guided evolution. Your Alchm adapts and grows with you through continuous
-                    interaction and cosmic alignment.
+                    Experience real-time consciousness tracking, planetary influence analysis/
+                    360 agents per planet, one for every degree of the zodiac, including further specific agents for Moon Phases, create an comprehensive network to give specific guidance based on the selected moment.
+                    Explore Planetary group chats with planetary dignities influencing how the conversation plays out.
                   </p>
                 </CardContent>
               </Card>
@@ -287,10 +287,10 @@ export default function HomePage() {
           {/* CTA Section */}
           <div className="text-center">
             <h2 className="text-3xl font-bold mb-4 text-gray-800 dark:text-gray-200">
-              Ready to Begin Your Transformation?
+              Meet Monica. Our Supervisor Agent trained on knowledge of Alchm, the planetary agents, and the rest of our system.
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-              Join thousands who have discovered their cosmic blueprint and unlocked their highest
+            Learn about the 4 alchm quantities of Spirit, Essence, Matter, and Substance.
               potential.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
