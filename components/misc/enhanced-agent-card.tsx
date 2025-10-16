@@ -100,12 +100,17 @@ function calculateKalchm(agentId: string): number {
 }
 
 // Calculate the 7 Sacred Stats from agent data
-function calculateSevenSacredStats(agent: CraftedAgent, alchemical: ReturnType<typeof getAgentAlchemicalProperties>) {
+function calculateSevenSacredStats(
+  agent: CraftedAgent,
+  alchemical: ReturnType<typeof getAgentAlchemicalProperties>,
+  currentKinetics?: ReturnType<typeof calculateCurrentKinetics>
+) {
   const mc = agent.consciousness.monicaConstant
   const stage = agent.personality?.evolutionStage ?? 0
+  const powerAlignment = currentKinetics?.powerAlignment || 0
 
-  // Power: Based on spirit + MC + stage
-  const power = Math.min(100, (alchemical.spirit * 10 + mc * 5 + stage * 0.5))
+  // Power: Based on spirit + MC + stage + current power alignment
+  const power = Math.min(100, (alchemical.spirit * 10 + mc * 5 + stage * 0.5 + powerAlignment * 15))
 
   // Resonance: Based on essence + kinetic metrics
   const resonance = Math.min(100, (alchemical.essence * 10 + (agent.stats.resonanceScore || 0) * 0.1))
@@ -401,14 +406,28 @@ export function EnhancedAgentCard({
   // Calculate metrics
   const alchemical = getAgentAlchemicalProperties(agent.id)
   const kalchm = calculateKalchm(agent.id)
-  const sacredStats = calculateSevenSacredStats(agent, alchemical)
-  const recommendations = showRecommendations
-    ? getMomentRecommendations(agent, currentMoment)
-    : null
   const kineticProfile = getAgentKineticProfile(agent.id)
 
   // Calculate current kinetic metrics
   const currentKinetics = calculateCurrentKinetics(agent, kineticProfile, currentMoment)
+
+  // Calculate birth stats (without current kinetics influence)
+  const birthStats = calculateSevenSacredStats(agent, alchemical)
+
+  // Calculate live stats (with current kinetics influence from liveConsciousness)
+  const liveAlchemical = liveConsciousness?.liveKalchm
+    ? {
+        spirit: liveConsciousness.liveKalchm.spirit,
+        essence: liveConsciousness.liveKalchm.essence,
+        matter: liveConsciousness.liveKalchm.matter,
+        substance: liveConsciousness.liveKalchm.substance
+      }
+    : alchemical
+  const liveStats = calculateSevenSacredStats(agent, liveAlchemical, currentKinetics)
+
+  const recommendations = showRecommendations
+    ? getMomentRecommendations(agent, currentMoment)
+    : null
 
   // Calculate sign vector
   let signVector = null
@@ -491,35 +510,70 @@ export function EnhancedAgentCard({
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground line-clamp-2">{agent.abilities.specialty}</p>
 
-          {/* Seven Sacred Stats */}
+          {/* Seven Sacred Stats - Live Values */}
           <div className="grid grid-cols-7 gap-1 text-xs">
-            <div className="text-center p-1.5 bg-orange-50 dark:bg-orange-950/30 rounded border" title="Power - Alchemical Force">
+            <div className="text-center p-1.5 bg-orange-50 dark:bg-orange-950/30 rounded border" title={`Power - Birth: ${birthStats.power} → Live: ${liveStats.power}`}>
               <Zap className="w-3 h-3 mx-auto mb-1 text-orange-600" />
-              <div className="font-mono text-[10px]">{sacredStats.power}</div>
+              <div className="font-mono text-[10px]">{liveStats.power}</div>
+              {liveStats.power !== birthStats.power && (
+                <div className={`text-[8px] ${liveStats.power > birthStats.power ? 'text-green-600' : 'text-red-600'}`}>
+                  {liveStats.power > birthStats.power ? '↑' : '↓'}{Math.abs(liveStats.power - birthStats.power)}
+                </div>
+              )}
             </div>
-            <div className="text-center p-1.5 bg-purple-50 dark:bg-purple-950/30 rounded border" title="Resonance - Harmonic Frequency">
+            <div className="text-center p-1.5 bg-purple-50 dark:bg-purple-950/30 rounded border" title={`Resonance - Birth: ${birthStats.resonance} → Live: ${liveStats.resonance}`}>
               <Activity className="w-3 h-3 mx-auto mb-1 text-purple-600" />
-              <div className="font-mono text-[10px]">{sacredStats.resonance}</div>
+              <div className="font-mono text-[10px]">{liveStats.resonance}</div>
+              {liveStats.resonance !== birthStats.resonance && (
+                <div className={`text-[8px] ${liveStats.resonance > birthStats.resonance ? 'text-green-600' : 'text-red-600'}`}>
+                  {liveStats.resonance > birthStats.resonance ? '↑' : '↓'}{Math.abs(liveStats.resonance - birthStats.resonance)}
+                </div>
+              )}
             </div>
-            <div className="text-center p-1.5 bg-indigo-50 dark:bg-indigo-950/30 rounded border" title="Wisdom - Accumulated Insight">
+            <div className="text-center p-1.5 bg-indigo-50 dark:bg-indigo-950/30 rounded border" title={`Wisdom - Birth: ${birthStats.wisdom} → Live: ${liveStats.wisdom}`}>
               <Brain className="w-3 h-3 mx-auto mb-1 text-indigo-600" />
-              <div className="font-mono text-[10px]">{sacredStats.wisdom}</div>
+              <div className="font-mono text-[10px]">{liveStats.wisdom}</div>
+              {liveStats.wisdom !== birthStats.wisdom && (
+                <div className={`text-[8px] ${liveStats.wisdom > birthStats.wisdom ? 'text-green-600' : 'text-red-600'}`}>
+                  {liveStats.wisdom > birthStats.wisdom ? '↑' : '↓'}{Math.abs(liveStats.wisdom - birthStats.wisdom)}
+                </div>
+              )}
             </div>
-            <div className="text-center p-1.5 bg-pink-50 dark:bg-pink-950/30 rounded border" title="Charisma - Magnetic Presence">
+            <div className="text-center p-1.5 bg-pink-50 dark:bg-pink-950/30 rounded border" title={`Charisma - Birth: ${birthStats.charisma} → Live: ${liveStats.charisma}`}>
               <Heart className="w-3 h-3 mx-auto mb-1 text-pink-600" />
-              <div className="font-mono text-[10px]">{sacredStats.charisma}</div>
+              <div className="font-mono text-[10px]">{liveStats.charisma}</div>
+              {liveStats.charisma !== birthStats.charisma && (
+                <div className={`text-[8px] ${liveStats.charisma > birthStats.charisma ? 'text-green-600' : 'text-red-600'}`}>
+                  {liveStats.charisma > birthStats.charisma ? '↑' : '↓'}{Math.abs(liveStats.charisma - birthStats.charisma)}
+                </div>
+              )}
             </div>
-            <div className="text-center p-1.5 bg-cyan-50 dark:bg-cyan-950/30 rounded border" title="Intuition - Psychic Sensitivity">
+            <div className="text-center p-1.5 bg-cyan-50 dark:bg-cyan-950/30 rounded border" title={`Intuition - Birth: ${birthStats.intuition} → Live: ${liveStats.intuition}`}>
               <Eye className="w-3 h-3 mx-auto mb-1 text-cyan-600" />
-              <div className="font-mono text-[10px]">{sacredStats.intuition}</div>
+              <div className="font-mono text-[10px]">{liveStats.intuition}</div>
+              {liveStats.intuition !== birthStats.intuition && (
+                <div className={`text-[8px] ${liveStats.intuition > birthStats.intuition ? 'text-green-600' : 'text-red-600'}`}>
+                  {liveStats.intuition > birthStats.intuition ? '↑' : '↓'}{Math.abs(liveStats.intuition - birthStats.intuition)}
+                </div>
+              )}
             </div>
-            <div className="text-center p-1.5 bg-teal-50 dark:bg-teal-950/30 rounded border" title="Adaptability - Flux Capacity">
+            <div className="text-center p-1.5 bg-teal-50 dark:bg-teal-950/30 rounded border" title={`Adaptability - Birth: ${birthStats.adaptability} → Live: ${liveStats.adaptability}`}>
               <RotateCw className="w-3 h-3 mx-auto mb-1 text-teal-600" />
-              <div className="font-mono text-[10px]">{sacredStats.adaptability}</div>
+              <div className="font-mono text-[10px]">{liveStats.adaptability}</div>
+              {liveStats.adaptability !== birthStats.adaptability && (
+                <div className={`text-[8px] ${liveStats.adaptability > birthStats.adaptability ? 'text-green-600' : 'text-red-600'}`}>
+                  {liveStats.adaptability > birthStats.adaptability ? '↑' : '↓'}{Math.abs(liveStats.adaptability - birthStats.adaptability)}
+                </div>
+              )}
             </div>
-            <div className="text-center p-1.5 bg-green-50 dark:bg-green-950/30 rounded border" title="Vitality - Life Force">
+            <div className="text-center p-1.5 bg-green-50 dark:bg-green-950/30 rounded border" title={`Vitality - Birth: ${birthStats.vitality} → Live: ${liveStats.vitality}`}>
               <Sparkles className="w-3 h-3 mx-auto mb-1 text-green-600" />
-              <div className="font-mono text-[10px]">{sacredStats.vitality}</div>
+              <div className="font-mono text-[10px]">{liveStats.vitality}</div>
+              {liveStats.vitality !== birthStats.vitality && (
+                <div className={`text-[8px] ${liveStats.vitality > birthStats.vitality ? 'text-green-600' : 'text-red-600'}`}>
+                  {liveStats.vitality > birthStats.vitality ? '↑' : '↓'}{Math.abs(liveStats.vitality - birthStats.vitality)}
+                </div>
+              )}
             </div>
           </div>
 
@@ -635,20 +689,6 @@ export function EnhancedAgentCard({
             )}
           </div>
 
-          {/* Live Cosmic Weather Influence */}
-          {liveConsciousness?.interpretations && (
-            <div className="p-2 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 rounded-lg border">
-              <div className="flex items-center gap-1 mb-1">
-                <Sparkles className="w-3 h-3 text-purple-600" />
-                <span className="text-xs font-medium text-purple-900 dark:text-purple-100">
-                  Cosmic Influence
-                </span>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {liveConsciousness.interpretations.cosmicWeather}
-              </div>
-            </div>
-          )}
 
           <div className="flex justify-between items-center pt-2">
             <div className="text-xs text-muted-foreground">
