@@ -354,22 +354,15 @@ export function MomentBasedRecommendations({
       setLoading(true)
       setError(null)
 
-      // Add timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 10000)
-      )
-
-      // Get current kinetic data with timeout
-      const momentData = await Promise.race([
-        AlchemicalKineticsClient.get({
-          lat: stableLocation.lat,
-          lon: stableLocation.lon,
-          date: new Date().toISOString().split('T')[0],
-          includeElemental: true,
-          includePlanetary: true,
-        }),
-        timeoutPromise,
-      ])
+      // Get current kinetic data - request only 1 hour for current moment
+      const momentData = await AlchemicalKineticsClient.get({
+        lat: stableLocation.lat,
+        lon: stableLocation.lon,
+        date: new Date().toISOString().split('T')[0],
+        includeElemental: true,
+        includePlanetary: true,
+        hours: 1, // Only request current hour
+      })
 
       setCurrentMomentData(momentData)
 
@@ -437,38 +430,7 @@ export function MomentBasedRecommendations({
       }
     } catch (error) {
       console.error('Failed to fetch recommendations:', error)
-
-      // Generate fallback recommendations using simple scoring
-      if (stableAgents && Array.isArray(stableAgents) && stableAgents.length > 0) {
-        const fallbackMomentData = {
-          timing: { planetaryHours: ['Sun'] },
-          power: [{ power: 0.5 }],
-          elemental: { totals: { Fire: 5, Water: 5, Air: 5, Earth: 5 } },
-        }
-
-        const fallbackRecommendations = stableAgents
-          .slice(0, maxRecommendations)
-          .map(agent => calculateMomentScore(agent, fallbackMomentData))
-          .sort((a, b) => b.score - a.score)
-
-        const fallbackCategories: RecommendationCategory[] = [
-          {
-            type: 'high_compatibility',
-            title: 'Recommended Agents',
-            description: 'Based on general compatibility',
-            icon: Star,
-            color: 'text-yellow-600',
-            agents: fallbackRecommendations,
-          },
-        ]
-
-        setRecommendations(fallbackCategories)
-        setCurrentMomentData(fallbackMomentData)
-        setError('Using estimated recommendations (API unavailable)')
-        setLastUpdate(new Date())
-      } else {
-        setError('Failed to load moment-based recommendations')
-      }
+      setError('Failed to load moment-based recommendations. Please try again.')
     } finally {
       setLoading(false)
       isFetchingRef.current = false

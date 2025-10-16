@@ -8,6 +8,7 @@ export type KineticsGetParams = {
   lon: number
   date: string // YYYY-MM-DD
   window?: number
+  hours?: number // Number of hours to sample (default 3)
   includeElemental?: boolean
   includePlanetary?: boolean
   validateTraditional?: boolean
@@ -45,6 +46,7 @@ export class AlchemicalKineticsClient {
       url.searchParams.set('lon', String(params.lon))
       url.searchParams.set('date', params.date)
       if (params.window) url.searchParams.set('window', String(params.window))
+      if (params.hours) url.searchParams.set('hours', String(params.hours))
       url.searchParams.set('includeElemental', String(params.includeElemental !== false))
       url.searchParams.set('includePlanetary', String(params.includePlanetary !== false))
       url.searchParams.set('validateTraditional', String(params.validateTraditional === true))

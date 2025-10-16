@@ -51,6 +51,7 @@ export async function GET(req: Request) {
     const lon = parseFloat(searchParams.get('lon') || '-122.4194')
     const dateStr = searchParams.get('date') // YYYY-MM-DD
     const windowStr = searchParams.get('window')
+    const hoursStr = searchParams.get('hours') // Number of hours to sample
     const includeElemental = parseBool(searchParams.get('includeElemental'), true)
     const includePlanetary = parseBool(searchParams.get('includePlanetary'), true)
     const validateTraditional = parseBool(searchParams.get('validateTraditional'), false)
@@ -59,6 +60,11 @@ export async function GET(req: Request) {
     const smoothingWindow = Number.isFinite(parseInt(windowStr || ''))
       ? Math.max(1, parseInt(windowStr!))
       : 3
+
+    // Default to 3 hours for current moment requests (current + next 2), or 24 for full day
+    const hoursToSample = Number.isFinite(parseInt(hoursStr || ''))
+      ? Math.max(1, Math.min(24, parseInt(hoursStr!)))
+      : 3 // Changed default from 24 to 3
 
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
       return NextResponse.json({ error: 'Invalid lat/lon' }, { status: 400 })
@@ -78,12 +84,15 @@ export async function GET(req: Request) {
       targetDate = new Date()
     }
 
+    // Start from current hour when requesting limited samples, 0 for full day
+    const startHour = hoursToSample < 24 ? new Date().getHours() : 0
+
     // Phase 2 sampler: gather hourly data with planetary context
     const samples = await sampleHourlyAlchm({ latitude: lat, longitude: lon }, targetDate, {
       includePlanetaryHours: includePlanetary,
       validateTiming: validateTraditional,
-      hoursToSample: 24,
-      startHour: 0,
+      hoursToSample,
+      startHour,
     })
 
     if (!samples || samples.length === 0) {
