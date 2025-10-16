@@ -85,15 +85,23 @@ export function RealTimeKineticsWidget({
       setLoading(true)
       setError(null)
 
-      // Get current alchemical kinetics
-      const kinetics = await UnifiedKineticsClient.getKinetics({
-        lat: userLocation.lat,
-        lon: userLocation.lon,
-        date: new Date().toISOString().split('T')[0],
-        includeElemental: true,
-        includePlanetary: true,
-        window: 3,
-      })
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), 10000)
+      )
+
+      // Get current alchemical kinetics with timeout
+      const kinetics = await Promise.race([
+        UnifiedKineticsClient.getKinetics({
+          lat: userLocation.lat,
+          lon: userLocation.lon,
+          date: new Date().toISOString().split('T')[0],
+          includeElemental: true,
+          includePlanetary: true,
+          window: 3,
+        }),
+        timeoutPromise,
+      ])
 
       // Process data into our format
       const now = new Date()
@@ -200,7 +208,40 @@ export function RealTimeKineticsWidget({
       }
     } catch (error) {
       console.error('Failed to fetch kinetic data:', error)
-      setError('Failed to load current moment kinetics')
+
+      // Generate fallback mock data so component isn't stuck loading
+      const now = new Date()
+      const hourStart = new Date(now)
+      hourStart.setMinutes(0, 0, 0)
+      const hourEnd = new Date(hourStart)
+      hourEnd.setHours(hourEnd.getHours() + 1)
+
+      const fallbackData: KineticData = {
+        currentHour: {
+          planet: 'Sun',
+          startTime: hourStart,
+          endTime: hourEnd,
+          powerLevel: 0.5,
+          elementalInfluence: { fire: 0.5, water: 0.5, air: 0.5, earth: 0.5 },
+        },
+        nextHour: {
+          planet: 'Moon',
+          startTime: new Date(hourEnd),
+          endTime: new Date(new Date(hourEnd).setHours(hourEnd.getHours() + 1)),
+          powerLevel: 0.5,
+          elementalInfluence: { fire: 0.5, water: 0.5, air: 0.5, earth: 0.5 },
+        },
+        timeToNext: Math.floor((hourEnd.getTime() - now.getTime()) / (1000 * 60)),
+        alchemicalLevels: { spirit: 5, essence: 5, matter: 5, substance: 5 },
+        velocityTrends: { spirit: 'stable', essence: 'stable', matter: 'stable', substance: 'stable' },
+        powerMomentum: 0.5,
+        chartTransformIntensity: 0.4,
+        optimalAgentTypes: ['Balanced', 'Adaptive'],
+      }
+
+      setKineticData(fallbackData)
+      setError('Using estimated values (API unavailable)')
+      setLastUpdate(new Date())
     } finally {
       setLoading(false)
     }
