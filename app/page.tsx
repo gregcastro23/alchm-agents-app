@@ -37,21 +37,61 @@ const PLANET_COLORS: Record<string, { from: string; to: string }> = {
   Pluto: { from: 'purple-100', to: 'violet-100' },
 }
 
+interface MomentRecommendation {
+  agentId: string
+  score: number
+  category: 'optimal' | 'enhanced' | 'compatible' | 'challenging' | 'neutral'
+  reasoning: string
+  powerAlignment: number
+  aspectSensitivity: number
+  momentumCompatibility: number
+  optimalTopics: string[]
+}
+
 export default function HomePage() {
-  const [featuredAgent, setFeaturedAgent] = useState<CraftedAgent | null>(null)
+  const [topAgents, setTopAgents] = useState<CraftedAgent[]>([])
+  const [loadingAgents, setLoadingAgents] = useState(true)
+  const [recommendations, setRecommendations] = useState<MomentRecommendation[]>([])
   const [planetaryPositions, setPlanetaryPositions] = useState<PlanetaryPosition[]>([])
   const [loadingPositions, setLoadingPositions] = useState(true)
 
   useEffect(() => {
-    // Rotate featured agent every 30 seconds
-    const agents = [MONICA_AS_CRAFTED_AGENT, ...DEMO_AGENTS]
-    const rotateAgent = () => {
-      const randomAgent = agents[Math.floor(Math.random() * agents.length)]
-      setFeaturedAgent(randomAgent)
+    // Fetch top 5 agents based on current moment synergy
+    const fetchTopAgents = async () => {
+      try {
+        setLoadingAgents(true)
+        const response = await fetch('/api/moment-recommendations?limit=5')
+        if (response.ok) {
+          const data = await response.json()
+          setRecommendations(data.recommendations || [])
+
+          // Map recommendations to actual agents
+          const agentIds = data.recommendations.map((r: MomentRecommendation) => r.agentId)
+          const agents = DEMO_AGENTS.filter(agent => agentIds.includes(agent.id))
+          // Sort by recommendation order
+          const sortedAgents = agentIds
+            .map((id: string) => agents.find(a => a.id === id))
+            .filter(Boolean) as CraftedAgent[]
+
+          setTopAgents(sortedAgents)
+        } else {
+          // Fallback to random agents if API fails
+          const shuffled = [...DEMO_AGENTS].sort(() => 0.5 - Math.random())
+          setTopAgents(shuffled.slice(0, 5))
+        }
+      } catch (error) {
+        console.error('Failed to fetch top agents:', error)
+        // Fallback to random agents
+        const shuffled = [...DEMO_AGENTS].sort(() => 0.5 - Math.random())
+        setTopAgents(shuffled.slice(0, 5))
+      } finally {
+        setLoadingAgents(false)
+      }
     }
 
-    rotateAgent()
-    const interval = setInterval(rotateAgent, 30000)
+    fetchTopAgents()
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchTopAgents, 5 * 60 * 1000)
 
     return () => clearInterval(interval)
   }, [])
@@ -182,71 +222,113 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Agent Showcase */}
-          <div className="mb-20" style={{ minHeight: '400px' }}>
-            <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-200">
-              Featured Agent
+          {/* Top Agents for This Moment */}
+          <div className="mb-20">
+            <h2 className="text-3xl font-bold text-center mb-4 text-gray-800 dark:text-gray-200">
+              Top Agents for This Moment
             </h2>
-            <Card className="max-w-2xl mx-auto bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-2xl" style={{ contain: 'layout' }}>
-              {!featuredAgent ? (
-                <>
-                  <CardHeader className="text-center">
-                    <Skeleton className="w-20 h-20 mx-auto mb-4 rounded-full" />
-                    <Skeleton className="h-8 w-48 mx-auto mb-2" />
-                    <Skeleton className="h-6 w-64 mx-auto mb-2" />
-                    <div className="flex justify-center gap-2 mt-2">
-                      <Skeleton className="h-6 w-20" />
-                      <Skeleton className="h-6 w-20" />
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-16 w-full mb-4" />
-                    <div className="grid grid-cols-2 gap-4">
-                      <Skeleton className="h-16 w-full" />
-                      <Skeleton className="h-16 w-full" />
-                    </div>
-                  </CardContent>
-                </>
-              ) : (
-                <>
-                  <CardHeader className="text-center">
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center" style={{ aspectRatio: '1' }}>
-                      <span className="text-2xl">{featuredAgent.appearance?.symbol || '✨'}</span>
-                    </div>
-                    <CardTitle className="text-2xl">{featuredAgent.name}</CardTitle>
-                    <CardDescription className="text-lg">{featuredAgent.title}</CardDescription>
-                    <div className="flex justify-center gap-2 mt-2">
-                      <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900">
-                        {featuredAgent.consciousness?.dominantElement || 'Fire'}
-                      </Badge>
-                      <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900">
-                        {featuredAgent.consciousness?.dominantModality || 'Cardinal'}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-center text-gray-600 dark:text-gray-300 mb-4">
-                      {featuredAgent.personality?.core?.essence ||
-                        `${featuredAgent.name} - Agent crafted from birth chart with ${featuredAgent.consciousness?.dominantElement || 'cosmic'} dominance`}
-                    </p>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="text-center">
-                        <div className="font-semibold text-purple-600 dark:text-purple-400">
-                          {featuredAgent.stats?.conversations || 0}
+            <p className="text-center text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+              Based on current planetary positions and cosmic energies, these agents have the strongest synergy with this moment
+            </p>
+
+            {loadingAgents ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Card key={i} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl">
+                    <CardHeader className="text-center">
+                      <Skeleton className="w-16 h-16 mx-auto mb-3 rounded-full" />
+                      <Skeleton className="h-6 w-32 mx-auto mb-2" />
+                      <Skeleton className="h-4 w-40 mx-auto" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-20 w-full mb-3" />
+                      <Skeleton className="h-10 w-full" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                {topAgents.map((agent, index) => {
+                  const rec = recommendations.find(r => r.agentId === agent.id)
+                  const categoryColors = {
+                    optimal: 'from-emerald-500 to-green-500',
+                    enhanced: 'from-blue-500 to-cyan-500',
+                    compatible: 'from-purple-500 to-pink-500',
+                    challenging: 'from-orange-500 to-amber-500',
+                    neutral: 'from-gray-500 to-slate-500',
+                  }
+                  const categoryBadge = {
+                    optimal: '⭐ Optimal',
+                    enhanced: '✨ Enhanced',
+                    compatible: '💫 Compatible',
+                    challenging: '🔥 Challenging',
+                    neutral: '⚖️ Neutral',
+                  }
+
+                  return (
+                    <Card
+                      key={agent.id}
+                      className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+                    >
+                      <CardHeader className="text-center pb-4">
+                        <div className={`w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-r ${categoryColors[rec?.category || 'neutral']} flex items-center justify-center shadow-lg`}>
+                          <span className="text-2xl">{agent.appearance?.symbol || '✨'}</span>
                         </div>
-                        <div className="text-gray-500">Conversations</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-semibold text-blue-600 dark:text-blue-400">
-                          {featuredAgent.consciousness?.monicaConstant?.toFixed(1) || '0.0'}
+                        <CardTitle className="text-xl mb-1">{agent.name}</CardTitle>
+                        <CardDescription className="text-sm mb-2">{agent.title}</CardDescription>
+                        <div className="flex justify-center gap-2 flex-wrap">
+                          {rec && (
+                            <Badge variant="secondary" className="text-xs bg-emerald-100 dark:bg-emerald-900">
+                              {categoryBadge[rec.category]}
+                            </Badge>
+                          )}
+                          <Badge variant="outline" className="text-xs">
+                            {agent.consciousness?.dominantElement || 'Fire'}
+                          </Badge>
                         </div>
-                        <div className="text-gray-500">A#</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </>
-              )}
-            </Card>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        {rec && (
+                          <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-3">
+                            {rec.reasoning}
+                          </p>
+                        )}
+                        <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                          <div className="text-center p-2 bg-purple-50 dark:bg-purple-950 rounded">
+                            <div className="font-semibold text-purple-600 dark:text-purple-400">
+                              {rec ? `${Math.round(rec.score * 100)}%` : 'N/A'}
+                            </div>
+                            <div className="text-gray-500">Synergy</div>
+                          </div>
+                          <div className="text-center p-2 bg-blue-50 dark:bg-blue-950 rounded">
+                            <div className="font-semibold text-blue-600 dark:text-blue-400">
+                              {agent.consciousness?.monicaConstant?.toFixed(1) || '0.0'}
+                            </div>
+                            <div className="text-gray-500">A#</div>
+                          </div>
+                        </div>
+                        <Link href={`/gallery/chat/${agent.id}`}>
+                          <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                            <MessageCircle className="w-4 h-4 mr-2" />
+                            Chat Now
+                          </Button>
+                        </Link>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            )}
+
+            <div className="text-center mt-8">
+              <Link href="/gallery">
+                <Button variant="outline" size="lg">
+                  <Star className="w-5 h-5 mr-2" />
+                  Explore All 35+ Agents
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Chart of the Moment */}
