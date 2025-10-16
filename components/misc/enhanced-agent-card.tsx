@@ -99,6 +99,43 @@ function calculateKalchm(agentId: string): number {
   return isFinite(kalchm) && !isNaN(kalchm) ? kalchm : 1.0
 }
 
+// Calculate the 7 Sacred Stats from agent data
+function calculateSevenSacredStats(agent: CraftedAgent, alchemical: ReturnType<typeof getAgentAlchemicalProperties>) {
+  const mc = agent.consciousness.monicaConstant
+  const stage = agent.personality?.evolutionStage ?? 0
+
+  // Power: Based on spirit + MC + stage
+  const power = Math.min(100, (alchemical.spirit * 10 + mc * 5 + stage * 0.5))
+
+  // Resonance: Based on essence + kinetic metrics
+  const resonance = Math.min(100, (alchemical.essence * 10 + (agent.stats.resonanceScore || 0) * 0.1))
+
+  // Wisdom: Based on conversations + wisdom shared
+  const wisdom = Math.min(100, ((agent.stats.wisdomShared || 0) * 0.5 + (agent.stats.conversations || 0) * 0.2 + alchemical.matter * 8))
+
+  // Charisma: Based on stage + essence
+  const charisma = Math.min(100, (stage * 0.6 + alchemical.essence * 8))
+
+  // Intuition: Based on spirit + consciousness velocity
+  const intuition = Math.min(100, (alchemical.spirit * 9 + (agent.stats.kineticEvolution?.consciousnessVelocity || 0) * 30))
+
+  // Adaptability: Based on substance + evolution trajectory
+  const adaptability = Math.min(100, (alchemical.substance * 12 + mc * 3))
+
+  // Vitality: Based on matter + interaction momentum
+  const vitality = Math.min(100, (alchemical.matter * 9 + (agent.stats.kineticEvolution?.interactionMomentum || 0) * 40))
+
+  return {
+    power: Math.round(power),
+    resonance: Math.round(resonance),
+    wisdom: Math.round(wisdom),
+    charisma: Math.round(charisma),
+    intuition: Math.round(intuition),
+    adaptability: Math.round(adaptability),
+    vitality: Math.round(vitality),
+  }
+}
+
 // Calculate current kinetic metrics for agent
 function calculateCurrentKinetics(
   agent: CraftedAgent,
@@ -364,6 +401,7 @@ export function EnhancedAgentCard({
   // Calculate metrics
   const alchemical = getAgentAlchemicalProperties(agent.id)
   const kalchm = calculateKalchm(agent.id)
+  const sacredStats = calculateSevenSacredStats(agent, alchemical)
   const recommendations = showRecommendations
     ? getMomentRecommendations(agent, currentMoment)
     : null
@@ -433,29 +471,17 @@ export function EnhancedAgentCard({
             </div>
           </div>
           <div className="flex flex-col items-end gap-1">
-            {/* Live consciousness level or fallback to birth level */}
-            <Badge
-              className={getConsciousnessColor(
-                liveConsciousness?.liveConsciousnessLevel || agent.consciousness.level
-              )}
-            >
-              {liveConsciousness?.liveConsciousnessLevel || agent.consciousness.level}
-              {liveLoading && (
-                <div className="w-2 h-2 ml-1 rounded-full bg-current animate-pulse" />
-              )}
+            {/* Monica Constant */}
+            <Badge variant="outline" className="text-xs font-mono">
+              MC: {agent.consciousness.monicaConstant.toFixed(2)}
             </Badge>
-            {/* Live MC change indicator */}
-            {liveConsciousness && Math.abs(liveConsciousness.mcChange) > 0.01 && (
-              <Badge
-                variant="outline"
-                className={`text-xs ${liveConsciousness.mcChange > 0 ? 'text-green-600' : 'text-red-600'}`}
-              >
-                {liveConsciousness.mcChange > 0 ? '↗' : '↘'}{' '}
-                {liveConsciousness.mcPercentChange.toFixed(1)}%
-              </Badge>
-            )}
+            {/* Evolution Stage */}
             <Badge variant="outline" className="text-xs">
-              K_alchm: {kalchm > 1000 ? `${(kalchm / 1000).toFixed(1)}K` : kalchm.toFixed(2)}
+              Stage {agent.personality?.evolutionStage ?? 0}
+            </Badge>
+            {/* K_alchm */}
+            <Badge variant="outline" className="text-xs font-mono">
+              K: {kalchm > 1000 ? `${(kalchm / 1000).toFixed(1)}K` : kalchm.toFixed(2)}
             </Badge>
           </div>
         </div>
@@ -465,50 +491,36 @@ export function EnhancedAgentCard({
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground line-clamp-2">{agent.abilities.specialty}</p>
 
-          {/* Enhanced Metrics Row */}
-          <div className="flex flex-wrap gap-1">
-            <Badge
-              variant="outline"
-              className={getElementColor(agent.consciousness.dominantElement)}
-            >
-              {agent.consciousness.dominantElement}
-            </Badge>
-            {/* Live MC display with birth MC fallback */}
-            {liveConsciousness &&
-            typeof liveConsciousness.liveMC === 'number' &&
-            typeof liveConsciousness.birthMC === 'number' ? (
-              <Badge
-                variant="outline"
-                title={`Birth MC: ${liveConsciousness.birthMC.toFixed(3)} → Live MC: ${liveConsciousness.liveMC.toFixed(3)}`}
-              >
-                MC: {liveConsciousness.liveMC.toFixed(2)}
-                {Math.abs(liveConsciousness.mcChange) > 0.01 && (
-                  <span
-                    className={liveConsciousness.mcChange > 0 ? 'text-green-600' : 'text-red-600'}
-                  >
-                    {liveConsciousness.mcChange > 0 ? ' ⬆' : ' ⬇'}
-                  </span>
-                )}
-              </Badge>
-            ) : (
-              <Badge variant="outline">MC: {agent.consciousness.monicaConstant.toFixed(2)}</Badge>
-            )}
-            <Badge variant="outline">Stage {agent.personality?.evolutionStage ?? 0}</Badge>
-            {agent.stats.kineticEvolution && (
-              <Badge variant="outline" className="text-xs">
-                Velocity: {(agent.stats.kineticEvolution.consciousnessVelocity * 100).toFixed(0)}%
-              </Badge>
-            )}
-            {currentKinetics.momentumType !== 'unknown' && (
-              <Badge variant="outline" className="text-xs capitalize">
-                {currentKinetics.momentumType}
-              </Badge>
-            )}
-            {currentKinetics.powerAlignment > 0.8 && (
-              <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
-                Peak Power
-              </Badge>
-            )}
+          {/* Seven Sacred Stats */}
+          <div className="grid grid-cols-7 gap-1 text-xs">
+            <div className="text-center p-1.5 bg-orange-50 dark:bg-orange-950/30 rounded border" title="Power - Alchemical Force">
+              <Zap className="w-3 h-3 mx-auto mb-1 text-orange-600" />
+              <div className="font-mono text-[10px]">{sacredStats.power}</div>
+            </div>
+            <div className="text-center p-1.5 bg-purple-50 dark:bg-purple-950/30 rounded border" title="Resonance - Harmonic Frequency">
+              <Activity className="w-3 h-3 mx-auto mb-1 text-purple-600" />
+              <div className="font-mono text-[10px]">{sacredStats.resonance}</div>
+            </div>
+            <div className="text-center p-1.5 bg-indigo-50 dark:bg-indigo-950/30 rounded border" title="Wisdom - Accumulated Insight">
+              <Brain className="w-3 h-3 mx-auto mb-1 text-indigo-600" />
+              <div className="font-mono text-[10px]">{sacredStats.wisdom}</div>
+            </div>
+            <div className="text-center p-1.5 bg-pink-50 dark:bg-pink-950/30 rounded border" title="Charisma - Magnetic Presence">
+              <Heart className="w-3 h-3 mx-auto mb-1 text-pink-600" />
+              <div className="font-mono text-[10px]">{sacredStats.charisma}</div>
+            </div>
+            <div className="text-center p-1.5 bg-cyan-50 dark:bg-cyan-950/30 rounded border" title="Intuition - Psychic Sensitivity">
+              <Eye className="w-3 h-3 mx-auto mb-1 text-cyan-600" />
+              <div className="font-mono text-[10px]">{sacredStats.intuition}</div>
+            </div>
+            <div className="text-center p-1.5 bg-teal-50 dark:bg-teal-950/30 rounded border" title="Adaptability - Flux Capacity">
+              <RotateCw className="w-3 h-3 mx-auto mb-1 text-teal-600" />
+              <div className="font-mono text-[10px]">{sacredStats.adaptability}</div>
+            </div>
+            <div className="text-center p-1.5 bg-green-50 dark:bg-green-950/30 rounded border" title="Vitality - Life Force">
+              <Sparkles className="w-3 h-3 mx-auto mb-1 text-green-600" />
+              <div className="font-mono text-[10px]">{sacredStats.vitality}</div>
+            </div>
           </div>
 
           {/* Moment Recommendations Preview */}
