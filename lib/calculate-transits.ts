@@ -231,7 +231,10 @@ function findSignFromTransitDates(
     }
 
     for (const [sign, dates] of Object.entries(transitDates)) {
-      if (!dates || !dates.Start || !dates.End) continue
+      // Strict validation: both Start and End must be non-empty strings
+      if (!dates || typeof dates !== 'object') continue
+      if (!dates.Start || typeof dates.Start !== 'string' || dates.Start.length === 0) continue
+      if (!dates.End || typeof dates.End !== 'string' || dates.End.length === 0) continue
 
       const s = parseMonthDay(dates.Start)
       const e = parseMonthDay(dates.End)
