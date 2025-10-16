@@ -169,13 +169,19 @@ export function UnifiedMultiAgentChat({
     })
 
     setAvailableAgents(agents)
+  }, [historicalAgents, planetaryConfigs])
 
-    // Initialize selected agents from initialAgents prop
-    if (initialAgents && initialAgents.length > 0 && agents.length > 0) {
-      const preselected = agents.filter(agent => initialAgents.includes(agent.id))
-      setSelectedAgents(preselected)
+  // Initialize selected agents from initialAgents prop - separate effect to avoid dependency size warning
+  useEffect(() => {
+    if (initialAgents && initialAgents.length > 0 && availableAgents.length > 0) {
+      const preselected = availableAgents.filter(agent => initialAgents.includes(agent.id))
+      if (preselected.length > 0) {
+        setSelectedAgents(preselected)
+      }
     }
-  }, [historicalAgents, planetaryConfigs, initialAgents])
+    // Only run when availableAgents is populated and initialAgents changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableAgents.length, initialAgents?.join(',')])
 
   // Auto-scroll to bottom
   useEffect(() => {
