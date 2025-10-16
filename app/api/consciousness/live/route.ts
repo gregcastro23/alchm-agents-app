@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
+import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
+import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
 
 /**
- * Frontend-to-Backend proxy for live consciousness calculations
- * This route forwards requests to the backend service if available
+ * Live consciousness calculations with frontend fallback
+ * Calculates real-time cosmic weather and consciousness metrics
  */
 export async function POST(request: Request) {
   try {
@@ -17,55 +19,83 @@ export async function POST(request: Request) {
       console.warn('Invalid JSON in consciousness request, using empty body')
     }
 
-    // Check if backend is enabled
-    const backendEnabled = process.env.NEXT_PUBLIC_KINETICS_BACKEND === 'true'
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+    // Parse request body for birth data
+    const birthData = (body as any)?.birthData
+    const birthDate = birthData?.birthDate || '1970-01-01'
+    const birthTime = birthData?.birthTime || '12:00'
+    const latitude = birthData?.latitude || 0
+    const longitude = birthData?.longitude || 0
 
-    if (!backendEnabled) {
-      return NextResponse.json(
-        {
-          error: 'Backend consciousness calculations not available',
-          code: 'BACKEND_DISABLED',
-          details: 'Set NEXT_PUBLIC_KINETICS_BACKEND=true to enable',
-        },
-        { status: 503 }
-      )
-    }
+    // Generate current moment alchemical data
+    const currentAlchm = await generateAlchmForCurrentMoment()
+    const alchmEffects = currentAlchm['Alchemy Effects'] || {}
 
-    // Forward request to backend
-    const backendResponse = await fetch(`${backendUrl}/api/consciousness/live`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Forwarded-From': 'nextjs-frontend',
-      },
-      body: JSON.stringify(body),
+    // Calculate base Monica Constant using current alchemical data
+    const mcResult = calculateMonicaConstant({
+      spirit: alchmEffects['Total Spirit'] || 0,
+      essence: alchmEffects['Total Essence'] || 0,
+      matter: alchmEffects['Total Matter'] || 0,
+      substance: alchmEffects['Total Substance'] || 0,
     })
+    const baseMC = mcResult.value
 
-    if (!backendResponse.ok) {
-      const errorData = await backendResponse.json().catch(() => ({}))
-      return NextResponse.json(
-        {
-          error: 'Backend calculation failed',
-          code: 'BACKEND_ERROR',
-          status: backendResponse.status,
-          details: errorData.error || backendResponse.statusText,
-        },
-        { status: backendResponse.status }
-      )
+    // Calculate live MC with birth data (simplified - using base MC for now)
+    const liveMC = baseMC
+    const mcChange = 0 // Would need historical data to calculate change
+
+    // Determine cosmic weather based on current conditions
+    const energy = currentAlchm.Energy || 0
+    const heat = currentAlchm.Heat || 0
+    const entropy = currentAlchm.Entropy || 0
+
+    let cosmicWeather = 'Balanced cosmic conditions'
+    if (energy > 600) {
+      cosmicWeather = 'High energy cosmic surge - enhanced consciousness activation'
+    } else if (energy > 500) {
+      cosmicWeather = 'Elevated cosmic energy - favorable for spiritual work'
+    } else if (energy < 300) {
+      cosmicWeather = 'Quiet cosmic conditions - ideal for introspection'
+    } else if (heat > 50) {
+      cosmicWeather = 'Dynamic cosmic heat - passionate transformations'
+    } else if (entropy > 50) {
+      cosmicWeather = 'Chaotic cosmic flux - breakthrough potential'
     }
 
-    const result = await backendResponse.json()
+    // Determine consciousness level
+    let consciousnessLevel = 'Active'
+    if (liveMC >= 6) consciousnessLevel = 'Transcendent'
+    else if (liveMC >= 5) consciousnessLevel = 'Illuminated'
+    else if (liveMC >= 4) consciousnessLevel = 'Advanced'
+    else if (liveMC >= 3) consciousnessLevel = 'Elevated'
+    else if (liveMC >= 2) consciousnessLevel = 'Active'
+    else if (liveMC >= 1) consciousnessLevel = 'Awakening'
+    else consciousnessLevel = 'Dormant'
 
-    // Add frontend metadata
-    return NextResponse.json({
-      ...result,
-      meta: {
-        calculatedBy: 'backend',
-        proxiedBy: 'frontend',
+    // Build response
+    const result = {
+      success: true,
+      data: {
+        liveMC,
+        baseMC,
+        mcChange,
+        consciousnessLevel,
+        liveConsciousnessLevel: consciousnessLevel,
+        interpretations: {
+          mcChange: mcChange > 0.1
+            ? 'Consciousness expanding'
+            : mcChange < -0.1
+              ? 'Minor contraction observed'
+              : 'Stable consciousness',
+          transitInfluence: `Current A# ${(currentAlchm['A-Number'] || currentAlchm.A_number || 2).toFixed(2)} - ${(currentAlchm['A-Number'] || currentAlchm.A_number || 2) > 2.5 ? 'spiritual emphasis' : (currentAlchm['A-Number'] || currentAlchm.A_number || 2) < 1.5 ? 'material emphasis' : 'balanced blend'}`,
+          cosmicWeather,
+        },
         timestamp: new Date().toISOString(),
+        calculationTime: 0,
+        fromCache: false,
       },
-    })
+    }
+
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Frontend consciousness proxy error:', error)
 
