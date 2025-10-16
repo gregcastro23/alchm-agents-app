@@ -19,6 +19,7 @@ import {
   buildMonicaPrompt,
   MONICA_PROMPT_VERSION,
   MONICA_PERSONA_VERSION,
+  MONICA_SITE_KNOWLEDGE,
 } from '@/lib/monica/monica-system-prompts'
 import { selectKnowledge } from '@/lib/monica/knowledge'
 import {
@@ -1035,7 +1036,8 @@ Please try connecting again, or explore my profile in the Gallery of Perpetuity.
       MONICA_BASE_SYSTEM_PROMPT,
       contextPrompt,
       specializedPrompt +
-        (knowledgeSnippets ? `\n\nKnowledge Snippets:\n${knowledgeSnippets}` : ''),
+        (knowledgeSnippets ? `\n\nKnowledge Snippets:\n${knowledgeSnippets}` : '') +
+        `\n\n---\n\n${MONICA_SITE_KNOWLEDGE}`,
       {
         currentTask:
           preferredStyle?.currentTask || 'Provide helpful, fast guidance with minimal questions',

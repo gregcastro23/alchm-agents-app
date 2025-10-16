@@ -272,8 +272,8 @@ export function MonicaChatBubble({
         <div className="fixed bottom-4 right-4 z-50" style={{ width: '80px', height: '80px', contain: 'layout style paint' }}>
           {isExpanded ? (
             /* Expanded Chat Interface */
-            <Card className="w-96 h-[600px] bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-2 border-emerald-400 shadow-2xl" style={{ position: 'fixed', bottom: '16px', right: '16px', width: '384px', height: '600px', contain: 'layout' }}>
-              <CardHeader className="pb-3 border-b border-emerald-200 dark:border-emerald-800">
+            <Card className="fixed bottom-4 right-4 w-96 h-[600px] flex flex-col bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-2 border-emerald-400 shadow-2xl">
+              <CardHeader className="pb-3 border-b border-emerald-200 dark:border-emerald-800 shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Avatar className="w-8 h-8 border border-emerald-400">
@@ -319,7 +319,7 @@ export function MonicaChatBubble({
                 </div>
               </CardHeader>
 
-              <CardContent className="flex flex-col p-0 h-full">
+              <CardContent className="flex flex-col p-0 flex-1 min-h-0 overflow-hidden">
                 {/* Messages */}
                 <ScrollArea className="flex-1 p-4 space-y-4">
                   <div className="space-y-4">
@@ -420,7 +420,7 @@ export function MonicaChatBubble({
                 </ScrollArea>
 
                 {/* Input */}
-                <div className="p-4 border-t border-emerald-200 dark:border-emerald-800">
+                <div className="p-4 border-t border-emerald-200 dark:border-emerald-800 shrink-0">
                   <div className="flex gap-2">
                     <Input
                       value={currentMessage}
