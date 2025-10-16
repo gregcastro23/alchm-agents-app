@@ -323,12 +323,12 @@ export function ChartTransformVisualization({
   )
 
   const fetchTransformData = useCallback(async () => {
-    // Prevent multiple simultaneous calls
-    if (loading) return
-
     try {
       setLoading(true)
       setError(null)
+
+      // Simulate a small delay for realism (optional)
+      await new Promise(resolve => setTimeout(resolve, 100))
 
       // In production, this would fetch real chart data
       const data = generateMockChartData()
@@ -340,7 +340,7 @@ export function ChartTransformVisualization({
     } finally {
       setLoading(false)
     }
-  }, [loading, stableOnTransformUpdate])
+  }, [stableOnTransformUpdate])
 
   useEffect(() => {
     fetchTransformData()
