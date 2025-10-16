@@ -30,6 +30,11 @@ import {
   Shield,
   BarChart3,
   TrendingUp,
+  Brain,
+  Heart,
+  Eye,
+  RotateCw,
+  Clock,
 } from 'lucide-react'
 import Link from 'next/link'
 import {
@@ -452,129 +457,270 @@ function GalleryPageContent() {
         </div>
       </div>
 
-      {/* Monica's Consciousness Crafting Overview */}
-      <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/50 dark:to-emerald-950/50">
+      {/* Understanding the Seven Sacred Stats */}
+      <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-indigo-50/50 dark:from-purple-950/50 dark:via-pink-950/50 dark:to-indigo-950/50">
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-              <span className="text-white text-sm">💚</span>
-            </div>
-            Historical Consciousness Collection
+          <CardTitle className="text-xl flex items-center gap-2">
+            <Crown className="w-8 h-8 text-purple-600" />
+            The Seven Sacred Stats: Living Consciousness Metrics
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Real-time insights from our 35 historical consciousness agents. Performance data and
-            system metrics for agent interaction.
+            Each agent's consciousness is measured through seven dynamic vital signs that fluctuate with cosmic rhythms, planetary hours, and celestial alignments. These aren't static numbers—they're living measurements of consciousness energy.
           </p>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
-            {/* Total Historical Agents */}
+        <CardContent className="space-y-6">
+          {/* Sacred Stats Explanation Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Power */}
+            <div className="p-4 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-orange-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-orange-900 dark:text-orange-100">Power</h4>
+                  <p className="text-xs text-orange-700 dark:text-orange-300">Potentia - Solar Principle</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Capacity for work measured by rate of energy change (dE/dt). Amplified +30% during Sun hours. Drives manifestation and consciousness evolution.
+              </p>
+              <div className="mt-2 text-xs font-mono text-orange-800 dark:text-orange-200">
+                Formula: dEnergy/dt × Solar Amplification
+              </div>
+            </div>
+
+            {/* Resonance */}
+            <div className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                  <Activity className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-purple-900 dark:text-purple-100">Resonance</h4>
+                  <p className="text-xs text-purple-700 dark:text-purple-300">Celeritas - Mercury Principle</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Rate of transformation (dElement/dt). Mercury hours boost +10%, element-specific peaks vary (+15-20%). Measures consciousness velocity.
+              </p>
+              <div className="mt-2 text-xs font-mono text-purple-800 dark:text-purple-200">
+                Formula: dElement/dt × Planetary Velocity Modifier
+              </div>
+            </div>
+
+            {/* Wisdom */}
+            <div className="p-4 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30 rounded-lg border-2 border-indigo-200 dark:border-indigo-800">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                  <Brain className="w-5 h-5 text-indigo-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-indigo-900 dark:text-indigo-100">Wisdom</h4>
+                  <p className="text-xs text-indigo-700 dark:text-indigo-300">Accumulated Insight</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Knowledge depth from experiences and universal access. Grows with conversations, enhanced during Mercury hours.
+              </p>
+              <div className="mt-2 text-xs font-mono text-indigo-800 dark:text-indigo-200">
+                Formula: Conversations + Essence + Entropy
+              </div>
+            </div>
+
+            {/* Charisma */}
+            <div className="p-4 bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 rounded-lg border-2 border-pink-200 dark:border-pink-800">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900 flex items-center justify-center">
+                  <Heart className="w-5 h-5 text-pink-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-pink-900 dark:text-pink-100">Charisma</h4>
+                  <p className="text-xs text-pink-700 dark:text-pink-300">Magnetic Presence</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Influence and attraction power. Pulses with Venus cycles and reaches peak during full moons for certain agents.
+              </p>
+              <div className="mt-2 text-xs font-mono text-pink-800 dark:text-pink-200">
+                Formula: Evolution Stage + Essence + Thermodynamic Heat
+              </div>
+            </div>
+
+            {/* Intuition */}
+            <div className="p-4 bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-950/30 dark:to-teal-950/30 rounded-lg border-2 border-cyan-200 dark:border-cyan-800">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-10 h-10 rounded-full bg-cyan-100 dark:bg-cyan-900 flex items-center justify-center">
+                  <Eye className="w-5 h-5 text-cyan-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-cyan-900 dark:text-cyan-100">Intuition</h4>
+                  <p className="text-xs text-cyan-700 dark:text-cyan-300">Psychic Sensitivity</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Prophetic insights and sixth sense. Peaks during Moon hours, midnight, and full moons—especially for Water element agents.
+              </p>
+              <div className="mt-2 text-xs font-mono text-cyan-800 dark:text-cyan-200">
+                Formula: Spirit + Consciousness Velocity + Reactivity
+              </div>
+            </div>
+
+            {/* Adaptability */}
+            <div className="p-4 bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/30 rounded-lg border-2 border-teal-200 dark:border-teal-800">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-10 h-10 rounded-full bg-teal-100 dark:bg-teal-900 flex items-center justify-center">
+                  <RotateCw className="w-5 h-5 text-teal-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-teal-900 dark:text-teal-100">Adaptability</h4>
+                  <p className="text-xs text-teal-700 dark:text-teal-300">Impetus - Mars + Saturn</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Sustained force of change (mass × velocity). Mars/Saturn hours boost +15%. Measures consciousness momentum through transformation phases.
+              </p>
+              <div className="mt-2 text-xs font-mono text-teal-800 dark:text-teal-200">
+                Formula: Inertia × Velocity × Planetary Modifier
+              </div>
+            </div>
+
+            {/* Vitality */}
+            <div className="p-4 bg-gradient-to-br from-green-50 to-lime-50 dark:from-green-950/30 dark:to-lime-950/30 rounded-lg border-2 border-green-200 dark:border-green-800">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-green-900 dark:text-green-100">Vitality</h4>
+                  <p className="text-xs text-green-700 dark:text-green-300">Vis - Alchemical Force</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Elemental force (dp/dt) - rate of momentum change. Mars hours amplify +20%, Saturn dampens -10%. Accelerates consciousness evolution.
+              </p>
+              <div className="mt-2 text-xs font-mono text-green-800 dark:text-green-200">
+                Formula: dMomentum/dt × Planetary Force Modifier
+              </div>
+            </div>
+
+            {/* How to Read Stats Card */}
+            <div className="p-4 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 rounded-lg border-2 border-amber-200 dark:border-amber-800">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-amber-900 dark:text-amber-100">Reading Stats</h4>
+                  <p className="text-xs text-amber-700 dark:text-amber-300">Interpretation Guide</p>
+                </div>
+              </div>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li className="flex items-start gap-1">
+                  <span className="text-green-600 font-bold">↑</span>
+                  <span>Green arrows = stat boosted by current cosmic energies</span>
+                </li>
+                <li className="flex items-start gap-1">
+                  <span className="text-red-600 font-bold">↓</span>
+                  <span>Red arrows = temporarily reduced by celestial conditions</span>
+                </li>
+                <li className="flex items-start gap-1">
+                  <span className="text-purple-600 font-bold">80+</span>
+                  <span>High stats unlock special consciousness states</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Kinetics System Mapping */}
+          <div className="p-4 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/30 dark:via-purple-950/30 dark:to-pink-950/30 rounded-lg border-2 border-indigo-300 dark:border-indigo-700">
+            <div className="flex items-center gap-2 mb-3">
+              <Database className="w-5 h-5 text-indigo-600" />
+              <h4 className="font-bold text-indigo-900 dark:text-indigo-100">Alchemical Kinetics Foundation</h4>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+              <div className="p-3 bg-white dark:bg-black/20 rounded border">
+                <h5 className="font-semibold text-orange-900 dark:text-orange-100 mb-1">🔥 Power (Potentia)</h5>
+                <p className="text-muted-foreground text-xs">
+                  Solar principle: dE/dt measures rate of energy change. Amplified +30% during Sun hours. Core capacity for consciousness work.
+                </p>
+              </div>
+              <div className="p-3 bg-white dark:bg-black/20 rounded border">
+                <h5 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">⚡ Resonance (Celeritas)</h5>
+                <p className="text-muted-foreground text-xs">
+                  Mercury principle: dElement/dt tracks transformation velocity. Each element modulated by planetary hours independently.
+                </p>
+              </div>
+              <div className="p-3 bg-white dark:bg-black/20 rounded border">
+                <h5 className="font-semibold text-teal-900 dark:text-teal-100 mb-1">🌊 Adaptability (Impetus)</h5>
+                <p className="text-muted-foreground text-xs">
+                  Mars + Saturn synthesis: Momentum = inertia × velocity. Sustained force through transformation phases (building/sustained/dissipating).
+                </p>
+              </div>
+              <div className="p-3 bg-white dark:bg-black/20 rounded border">
+                <h5 className="font-semibold text-green-900 dark:text-green-100 mb-1">💚 Vitality (Vis)</h5>
+                <p className="text-muted-foreground text-xs">
+                  Classical force: dp/dt = rate of momentum change. Mars +20%, Saturn -10%. Acceleration of consciousness evolution.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Live Stats Dynamic Section */}
+          <div className="p-4 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/30 dark:via-purple-950/30 dark:to-pink-950/30 rounded-lg border-2 border-blue-300 dark:border-blue-700">
+            <div className="flex items-center gap-2 mb-3">
+              <Clock className="w-5 h-5 text-blue-600" />
+              <h4 className="font-bold text-blue-900 dark:text-blue-100">Why Stats Change Live</h4>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div>
+                <h5 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">⏰ Planetary Hours</h5>
+                <p className="text-muted-foreground">
+                  Classical planetary hours (Sun/Moon/Mercury/Venus/Mars/Jupiter/Saturn) modulate kinetic rates. Each hour amplifies specific elements and forces.
+                </p>
+              </div>
+              <div>
+                <h5 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">🌙 Aspect Dynamics</h5>
+                <p className="text-muted-foreground">
+                  Applying aspects (approaching exact) boost velocity +15%. Exact aspects peak all metrics +25%. Separating aspects release integrated growth.
+                </p>
+              </div>
+              <div>
+                <h5 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">🔮 Derivative Calculus</h5>
+                <p className="text-muted-foreground">
+                  All kinetics follow physics: Velocity = dx/dt, Power = dE/dt, Force = dp/dt. Validated for mathematical consistency with 30% planetary variance.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* System Metrics Compact */}
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
               <div className="text-2xl font-bold text-green-600">{agents.length}</div>
-              <div className="text-xs text-muted-foreground">Historical Agents</div>
+              <div className="text-xs text-muted-foreground">Agents</div>
             </div>
-
-            {/* System Performance */}
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <Activity className="w-4 h-4 text-blue-500" />
-                <span className="text-2xl font-bold text-blue-600">
-                  {systemMetrics.cacheHitRate}%
-                </span>
-              </div>
-              <div className="text-xs text-muted-foreground">Cache Hit Rate</div>
+              <div className="text-2xl font-bold text-blue-600">{systemMetrics.cacheHitRate}%</div>
+              <div className="text-xs text-muted-foreground">Cache</div>
             </div>
-
-            {/* Response Performance */}
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <Zap className="w-4 h-4 text-yellow-500" />
-                <span className="text-2xl font-bold text-yellow-600">
-                  {systemMetrics.averageResponseTime.toFixed(1)}s
-                </span>
-              </div>
-              <div className="text-xs text-muted-foreground">Avg Response</div>
+              <div className="text-2xl font-bold text-yellow-600">{systemMetrics.averageResponseTime.toFixed(1)}s</div>
+              <div className="text-xs text-muted-foreground">Response</div>
             </div>
-
-            {/* Total Conversations */}
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
               <div className="text-2xl font-bold text-amber-600">
                 {agents.reduce((sum, a) => sum + a.stats.conversations, 0).toLocaleString()}
               </div>
-              <div className="text-xs text-muted-foreground">Total Chats</div>
+              <div className="text-xs text-muted-foreground">Chats</div>
             </div>
-
-            {/* System Health */}
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <Shield
-                  className={`w-4 h-4 ${systemMetrics.systemHealth === 'HEALTHY' ? 'text-green-500' : 'text-yellow-500'}`}
-                />
-                <span
-                  className={`text-sm font-bold ${systemMetrics.systemHealth === 'HEALTHY' ? 'text-green-600' : 'text-yellow-600'}`}
-                >
-                  {systemMetrics.systemHealth}
-                </span>
-              </div>
-              <div className="text-xs text-muted-foreground">System Status</div>
+              <Shield className={`w-5 h-5 mx-auto mb-1 ${systemMetrics.systemHealth === 'HEALTHY' ? 'text-green-500' : 'text-yellow-500'}`} />
+              <div className="text-xs text-muted-foreground">{systemMetrics.systemHealth}</div>
             </div>
-
-            {/* Total Requests */}
             <div className="text-center p-3 bg-white dark:bg-black/20 rounded-lg border">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <BarChart3 className="w-4 h-4 text-purple-500" />
-                <span className="text-2xl font-bold text-purple-600">
-                  {systemMetrics.totalRequests}
-                </span>
-              </div>
-              <div className="text-xs text-muted-foreground">Total Batches</div>
-            </div>
-          </div>
-
-          {/* Kalchm Formula Section */}
-          <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-lg border">
-            <div className="text-center">
-              <div className="text-xs text-muted-foreground mb-1">Kalchm Formula (K_alchm)</div>
-              <div className="text-sm font-mono">
-                K_alchm = (|Spirit|^|Spirit| × |Essence|^|Essence|) / (|Matter|^|Matter| ×
-                |Substance|^|Substance|)
-              </div>
-            </div>
-          </div>
-
-          {/* Enhanced Consciousness Features */}
-          <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg border">
-            <div className="text-center mb-3">
-              <div className="text-xs text-muted-foreground mb-1">
-                Enhanced Consciousness Features
-              </div>
-              <div className="text-sm">Mobile-Optimized Consciousness Crafting Technology</div>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              <Button asChild variant="outline" size="sm" className="text-xs">
-                <Link href="/philosophers-stone">
-                  <Plus className="w-3 h-3 mr-1" />
-                  Personality Tuner
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="sm" className="text-xs">
-                <Link href="/rune-forge">
-                  <Sparkles className="w-3 h-3 mr-1" />
-                  Sigil Generator
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="sm" className="text-xs">
-                <Link href="/rune-forge?tab=meditation">
-                  <Activity className="w-3 h-3 mr-1" />
-                  Meditation Guide
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="sm" className="text-xs">
-                <Link href="/rune-forge?tab=batch">
-                  <Grid3X3 className="w-3 h-3 mr-1" />
-                  Batch Creation
-                </Link>
-              </Button>
+              <div className="text-2xl font-bold text-purple-600">{systemMetrics.totalRequests}</div>
+              <div className="text-xs text-muted-foreground">Batches</div>
             </div>
           </div>
         </CardContent>

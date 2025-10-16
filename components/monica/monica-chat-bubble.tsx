@@ -269,50 +269,67 @@ export function MonicaChatBubble({
     <>
       {/* Chat Bubble - Fixed dimensions to prevent CLS */}
       {!isMinimized && (
-        <div className="fixed bottom-4 right-4 z-50" style={{ width: '80px', height: '80px', contain: 'layout style paint' }}>
+        <div className="fixed bottom-4 right-4 z-[100]" style={{ contain: 'layout' }}>
           {isExpanded ? (
             /* Expanded Chat Interface */
-            <Card className="fixed bottom-4 right-4 w-96 h-[600px] flex flex-col bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-2 border-emerald-400 shadow-2xl">
-              <CardHeader className="pb-3 border-b border-emerald-200 dark:border-emerald-800 shrink-0">
+            <Card className="w-96 h-[600px] flex flex-col bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-2 border-emerald-400 shadow-2xl">
+              <CardHeader className="pb-3 bg-gradient-to-r from-emerald-50/50 via-green-50/50 to-cyan-50/50 dark:from-emerald-950/50 dark:via-green-950/50 dark:to-cyan-950/50 border-b border-emerald-200 dark:border-emerald-800 shrink-0">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="w-8 h-8 border border-emerald-400">
-                      <AvatarImage
-                        src="https://alchm.xyz/static/media/logo.f986535a.webp"
-                        alt="Monica"
-                      />
-                      <AvatarFallback className="bg-emerald-600 text-white text-sm">
-                        ⚗️
-                      </AvatarFallback>
-                    </Avatar>
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Avatar className="w-10 h-10 border-2 border-emerald-400 shadow-md">
+                        <AvatarImage
+                          src="https://alchm.xyz/static/media/logo.f986535a.webp"
+                          alt="Monica"
+                        />
+                        <AvatarFallback className="bg-gradient-to-br from-emerald-600 to-green-600 text-white text-sm">
+                          ⚗️
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-900 animate-pulse"></div>
+                    </div>
                     <div>
-                      <CardTitle className="text-sm text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
-                        <Brain className="w-4 h-4" />
-                        Chat with Monica
+                      <CardTitle className="text-base font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                        <Heart className="w-4 h-4 text-emerald-500 animate-pulse" />
+                        Monica
                       </CardTitle>
                       <div className="flex items-center gap-1 mt-1">
                         <Badge
                           variant="outline"
-                          className="text-xs bg-emerald-100 dark:bg-emerald-900"
+                          className="text-[10px] bg-emerald-100 dark:bg-emerald-900 border-emerald-300"
                         >
+                          <Eye className="w-2.5 h-2.5 mr-1" />
                           {pathname.split('/').pop() || 'home'}
                         </Badge>
                         {currentMC && (
                           <Badge
                             variant="outline"
-                            className="text-xs bg-purple-100 dark:bg-purple-900"
+                            className="text-[10px] bg-purple-100 dark:bg-purple-900 border-purple-300"
                           >
-                            MC {currentMC.toFixed(2)}
+                            <Sparkles className="w-2.5 h-2.5 mr-1" />
+                            {currentMC.toFixed(2)}
                           </Badge>
                         )}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" onClick={() => setIsExpanded(false)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsExpanded(false)}
+                      className="hover:bg-emerald-100 dark:hover:bg-emerald-900"
+                      title="Minimize chat"
+                    >
                       <Minimize2 className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setIsMinimized(true)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsMinimized(true)}
+                      className="hover:bg-red-100 dark:hover:bg-red-900"
+                      title="Close chat"
+                    >
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
@@ -326,29 +343,31 @@ export function MonicaChatBubble({
                     {messages.map(message => (
                       <div
                         key={message.id}
-                        className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
                       >
                         <div
-                          className={`max-w-[80%] rounded-lg p-3 ${
+                          className={`max-w-[80%] rounded-lg p-3 shadow-sm ${
                             message.type === 'user'
-                              ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white'
-                              : 'bg-gradient-to-r from-emerald-50 via-green-50 to-cyan-50 dark:from-emerald-950/50 dark:via-green-950/50 dark:to-cyan-950/50 border border-emerald-200 dark:border-emerald-800'
+                              ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-emerald-200 dark:shadow-emerald-900'
+                              : 'bg-gradient-to-r from-emerald-50 via-green-50 to-cyan-50 dark:from-emerald-950/50 dark:via-green-950/50 dark:to-cyan-950/50 border-2 border-emerald-200 dark:border-emerald-800 shadow-emerald-100 dark:shadow-emerald-900/50'
                           }`}
                         >
                           {message.type === 'monica' && (
-                            <div className="flex items-center gap-2 mb-2">
-                              <Heart className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                              <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                            <div className="flex items-center gap-2 mb-2 pb-2 border-b border-emerald-200 dark:border-emerald-800">
+                              <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                                <Heart className="w-3 h-3 text-white" />
+                              </div>
+                              <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
                                 Monica
                               </span>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-[10px] text-muted-foreground ml-auto">
                                 {formatTimestamp(message.timestamp)}
                               </span>
                             </div>
                           )}
 
                           <p
-                            className={`text-sm ${message.type === 'monica' ? 'text-emerald-800 dark:text-emerald-200' : 'text-white'}`}
+                            className={`text-sm leading-relaxed ${message.type === 'monica' ? 'text-emerald-900 dark:text-emerald-100' : 'text-white'}`}
                           >
                             {message.content}
                           </p>
@@ -462,32 +481,48 @@ export function MonicaChatBubble({
             </Card>
           ) : (
             /* Collapsed Chat Bubble */
-            <div className="relative" style={{ width: '56px', height: '56px' }}>
+            <div className="relative group">
               <Button
                 onClick={() => setIsExpanded(true)}
-                className="w-14 h-14 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 shadow-lg hover:shadow-emerald-400/50 group"
-                style={{ transition: 'transform 0.3s, box-shadow 0.3s', willChange: 'transform' }}
+                className="w-14 h-14 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 shadow-lg hover:shadow-emerald-400/50 hover:scale-110 transition-all duration-300"
               >
                 <MessageCircle className="w-6 h-6 text-white" />
                 {hasUnreadMessages && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse" style={{ contain: 'layout style paint' }} />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse border-2 border-white" />
                 )}
               </Button>
 
-              {/* Hover Tooltip */}
-              <div className="absolute bottom-full right-0 mb-2 px-4 py-3 bg-gradient-to-r from-emerald-900 via-green-900 to-cyan-900 text-emerald-100 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap shadow-xl border border-emerald-400/30 z-10 max-w-xs">
-                <div className="flex items-center gap-2 mb-1">
-                  <Brain className="w-3 h-3 text-emerald-300" />
-                  <span className="text-xs font-medium">Chat with Monica</span>
+              {/* Enhanced Hover Tooltip - Fixed positioning */}
+              <div className="absolute bottom-full right-0 mb-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-[110]">
+                <div className="px-4 py-3 bg-gradient-to-r from-emerald-900 via-green-900 to-cyan-900 text-emerald-100 text-sm rounded-lg shadow-2xl border border-emerald-400/50 backdrop-blur-sm min-w-[280px] max-w-xs">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
+                      <Brain className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="font-semibold text-emerald-100">Chat with Monica</span>
+                  </div>
+                  <div className="text-emerald-200 text-xs mb-2">
+                    Your consciousness guide is here to help!
+                  </div>
+                  {currentMC && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="outline" className="text-xs bg-purple-900/50 border-purple-400/50 text-purple-200">
+                        MC {currentMC.toFixed(2)}
+                      </Badge>
+                      {consciousnessLevel && (
+                        <Badge variant="outline" className="text-xs bg-emerald-900/50 border-emerald-400/50 text-emerald-200">
+                          {consciousnessLevel}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-xs text-emerald-300 border-t border-emerald-700 pt-2">
+                    <Sparkles className="w-3 h-3" />
+                    <span>Click to chat • Page: {pathname.split('/').pop() || 'home'}</span>
+                  </div>
+                  {/* Tooltip Arrow */}
+                  <div className="absolute top-full right-6 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-emerald-900"></div>
                 </div>
-                <div className="text-emerald-200 text-wrap">
-                  Your consciousness guide is here to help!
-                  {currentMC && ` MC: ${currentMC.toFixed(2)}`}
-                </div>
-                <div className="text-xs text-emerald-300 mt-1">
-                  Click to chat • Press Cmd/Ctrl+M
-                </div>
-                <div className="absolute top-full right-6 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-emerald-900"></div>
               </div>
             </div>
           )}
