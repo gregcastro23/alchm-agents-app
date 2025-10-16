@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server'
 import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
 import { sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
 import { demoCraftedAgents } from '@/lib/demo-agents-data'
+import {
+  calculateEnhancedMomentScore,
+  type EnhancedMomentScore,
+} from './enhanced-scoring'
 
+// Legacy interface for backward compatibility
 interface RecommendationScore {
   agentId: string
   score: number
@@ -10,125 +15,13 @@ interface RecommendationScore {
   reasoning: string
   powerAlignment: number
   aspectSensitivity: number
-  momentumCompatibility: number
+  momentumCompatibility?: number
+  kineticScore?: number
+  consciousnessScore?: number
+  mcScore?: number
+  elementalResonance?: number
   optimalTopics: string[]
   nextOptimalWindow?: Date
-}
-
-// Helper function to calculate moment score for an agent
-function calculateMomentScore(
-  agentId: string,
-  currentMoment: Date,
-  alchemicalData: any,
-  selectedAgents: string[] = []
-) {
-  const agent = demoCraftedAgents.find(a => a.id === agentId)
-  if (!agent) return null
-
-  const kineticProfile = getAgentKineticProfile(agentId)
-  if (!kineticProfile) return null
-
-  const hour = currentMoment.getHours()
-  const planetaryHours = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']
-  const currentPlanetaryHour = planetaryHours[hour % 7]
-
-  // Calculate base alignment score
-  const peakHours = kineticProfile.peak_hours || []
-  const powerAlignment = peakHours.includes(currentPlanetaryHour)
-    ? 0.9
-    : kineticProfile.power_alignment?.includes(currentPlanetaryHour)
-      ? 0.7
-      : 0.5
-
-  // Calculate aspect sensitivity based on current aspects
-  const aspectSensitivity = kineticProfile.aspect_sensitivity
-    ? Object.values(kineticProfile.aspect_sensitivity).reduce((a: number, b: any) => a + b, 0) / 6
-    : 0.5
-
-  // Momentum compatibility - higher for unique momentum types not in selected agents
-  const selectedMomentumTypes = selectedAgents
-    .map(id => {
-      const profile = getAgentKineticProfile(id)
-      return profile?.momentum_type
-    })
-    .filter(Boolean)
-
-  const isUniqueMomentum = !selectedMomentumTypes.includes(kineticProfile.momentum_type)
-  const momentumCompatibility = isUniqueMomentum ? 0.8 : 0.4
-
-  // Factor in alchemical resonance
-  const alchemicalBonus = alchemicalData?.Energy > 500 ? 0.1 : 0
-  const elementalBonus = alchemicalData?.totals
-    ? Math.max(...Object.values(alchemicalData.totals as Record<string, number>)) > 50
-      ? 0.1
-      : 0
-    : 0
-
-  // Calculate final score
-  const baseScore = powerAlignment * 0.4 + aspectSensitivity * 0.3 + momentumCompatibility * 0.3
-  const bonusScore = alchemicalBonus + elementalBonus
-  const finalScore = Math.min(1, baseScore + bonusScore)
-
-  // Determine recommendation category
-  let category: RecommendationScore['category'] = 'neutral'
-  const isOptimalTime = peakHours.includes(currentPlanetaryHour)
-
-  if (isOptimalTime && finalScore > 0.8) category = 'optimal'
-  else if (finalScore > 0.75) category = 'enhanced'
-  else if (finalScore > 0.6) category = 'compatible'
-  else if (finalScore < 0.4) category = 'challenging'
-
-  // Generate reasoning
-  let reasoning = `${agent.name} shows ${Math.round(finalScore * 100)}% compatibility with current cosmic conditions.`
-  if (isOptimalTime) reasoning += ` Currently in peak planetary hour (${currentPlanetaryHour}).`
-  if (isUniqueMomentum) reasoning += ` Offers unique ${kineticProfile.momentum_type} momentum.`
-  if (aspectSensitivity > 0.7) reasoning += ` Highly responsive to current aspects.`
-
-  // Calculate next optimal window
-  const nextOptimalWindow = calculateNextOptimalWindow(peakHours, currentMoment)
-
-  // Generate optimal topics based on agent abilities and moment
-  const optimalTopics = [...agent.abilities.wisdomDomains.slice(0, 2)]
-  if (finalScore > 0.7) {
-    optimalTopics.push('Deep Exploration', 'Advanced Concepts')
-  } else if (finalScore > 0.5) {
-    optimalTopics.push('Practical Wisdom', 'Life Application')
-  } else {
-    optimalTopics.push('Gentle Guidance', 'Foundational Knowledge')
-  }
-
-  return {
-    agentId,
-    score: finalScore,
-    category,
-    reasoning,
-    powerAlignment,
-    aspectSensitivity,
-    momentumCompatibility,
-    optimalTopics,
-    nextOptimalWindow: nextOptimalWindow || undefined,
-  }
-}
-
-function calculateNextOptimalWindow(peakHours: string[], currentMoment: Date): Date | null {
-  const hour = currentMoment.getHours()
-  const planetaryHours = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']
-
-  // Find next peak hour
-  for (let i = 1; i <= 24; i++) {
-    const nextHour = (hour + i) % 24
-    const planetaryHour = planetaryHours[nextHour % 7]
-    if (peakHours.includes(planetaryHour)) {
-      const nextOptimal = new Date(currentMoment)
-      nextOptimal.setHours(nextHour, 0, 0, 0)
-      if (nextOptimal <= currentMoment) {
-        nextOptimal.setDate(nextOptimal.getDate() + 1)
-      }
-      return nextOptimal
-    }
-  }
-
-  return null
 }
 
 export async function GET(req: Request) {
@@ -158,11 +51,11 @@ export async function GET(req: Request) {
 
     const alchemicalData = samples && samples.length > 0 ? samples[0] : null
 
-    // Calculate recommendations for all agents
+    // Calculate recommendations for all agents using enhanced scoring
     const recommendations: RecommendationScore[] = []
 
     for (const agent of demoCraftedAgents) {
-      const recommendation = calculateMomentScore(
+      const recommendation = calculateEnhancedMomentScore(
         agent.id,
         currentMoment,
         alchemicalData,
@@ -253,11 +146,11 @@ export async function POST(req: Request) {
 
     const alchemicalData = samples && samples.length > 0 ? samples[0] : null
 
-    // Calculate detailed recommendations for specific agents
+    // Calculate detailed recommendations for specific agents using enhanced scoring
     const detailedRecommendations = []
 
     for (const agentId of agentIds) {
-      const recommendation = calculateMomentScore(agentId, moment, alchemicalData, agentIds)
+      const recommendation = calculateEnhancedMomentScore(agentId, moment, alchemicalData, agentIds)
       if (recommendation) {
         const agent = demoCraftedAgents.find(a => a.id === agentId)
         const kineticProfile = getAgentKineticProfile(agentId)

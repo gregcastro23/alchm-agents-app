@@ -56,11 +56,11 @@ export default function HomePage() {
   const [loadingPositions, setLoadingPositions] = useState(true)
 
   useEffect(() => {
-    // Fetch top 5 agents based on current moment synergy
+    // Fetch top 6 agents based on current moment synergy
     const fetchTopAgents = async () => {
       try {
         setLoadingAgents(true)
-        const response = await fetch('/api/moment-recommendations?limit=5')
+        const response = await fetch('/api/moment-recommendations?limit=6')
         if (response.ok) {
           const data = await response.json()
           setRecommendations(data.recommendations || [])
@@ -77,13 +77,13 @@ export default function HomePage() {
         } else {
           // Fallback to random agents if API fails
           const shuffled = [...DEMO_AGENTS].sort(() => 0.5 - Math.random())
-          setTopAgents(shuffled.slice(0, 5))
+          setTopAgents(shuffled.slice(0, 6))
         }
       } catch (error) {
         console.error('Failed to fetch top agents:', error)
         // Fallback to random agents
         const shuffled = [...DEMO_AGENTS].sort(() => 0.5 - Math.random())
-        setTopAgents(shuffled.slice(0, 5))
+        setTopAgents(shuffled.slice(0, 6))
       } finally {
         setLoadingAgents(false)
       }
@@ -233,7 +233,7 @@ export default function HomePage() {
 
             {loadingAgents ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                {[1, 2, 3, 4, 5].map((i) => (
+                {[1, 2, 3, 4, 5, 6].map((i) => (
                   <Card key={i} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl">
                     <CardHeader className="text-center">
                       <Skeleton className="w-16 h-16 mx-auto mb-3 rounded-full" />
