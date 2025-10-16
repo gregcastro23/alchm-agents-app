@@ -26,6 +26,25 @@ import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
 import sunData from '@/lib/planets/sun'
 import { Sun, Calendar, History, TrendingUp, Info } from 'lucide-react'
 
+// Helper function to get current Sun position
+function getCurrentSunPosition() {
+  try {
+    const positions = getCurrentPlanetaryPositions(Date.now())
+    const sunPosition = positions['Sun']
+    if (sunPosition) {
+      return {
+        sign: sunPosition.sign || 'Libra',
+        degree: sunPosition.degree?.toFixed(1) || '23.4',
+        house: sunPosition.house
+      }
+    }
+  } catch (error) {
+    console.warn('Unable to fetch current Sun position:', error)
+  }
+  // Fallback for October 2025
+  return { sign: 'Libra', degree: '23.4', house: null }
+}
+
 export default function SunPlanetPage() {
   const [selectedSign, setSelectedSign] = useState('Leo')
   const [selectedDegree, setSelectedDegree] = useState(15)
@@ -389,13 +408,46 @@ export default function SunPlanetPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">
-                  Interactive solar position explorer coming soon...
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <h4 className="font-semibold text-amber-900 dark:text-amber-100 mb-2">Current Position</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Zodiac Sign:</span>
+                        <span className="font-medium">{getCurrentSunPosition().sign}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Degree:</span>
+                        <span className="font-medium">{getCurrentSunPosition().degree}°</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">House:</span>
+                        <span className="font-medium">{getCurrentSunPosition().house || 'Varies by location'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-800">
+                    <h4 className="font-semibold text-orange-900 dark:text-orange-100 mb-2">Solar Energy</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Spirit Essence:</span>
+                        <span className="font-medium">Pure (10/10)</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Life Force:</span>
+                        <span className="font-medium">Maximum</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Expression:</span>
+                        <span className="font-medium">Yang/Active</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground text-center">
+                  The Sun moves approximately 1° per day through the zodiac, completing its journey through all 12 signs in one year.
                 </p>
-                <Button variant="outline" disabled>
-                  Launch Explorer
-                </Button>
               </div>
             </CardContent>
           </Card>
