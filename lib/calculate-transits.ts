@@ -133,13 +133,56 @@ function getTransitDates(planet: string): Record<string, { Start: string; End: s
     const transitData = planetData.PlanetSpecific?.TransitDates as TransitData
 
     // Handle different transit date formats
+    // Check for decan format FIRST before simple format (since Uranus/Neptune also have sign keys)
     if (
       transitData &&
       typeof transitData === 'object' &&
-      ('Aries' in transitData || 'Taurus' in transitData || 'Gemini' in transitData)
+      ('Pisces' in transitData ||
+        ('Taurus' in transitData &&
+          typeof (transitData as any).Taurus === 'object' &&
+          '1stDecan' in (transitData as any).Taurus) ||
+        ('Gemini' in transitData &&
+          typeof (transitData as any).Gemini === 'object' &&
+          '1stDecan' in (transitData as any).Gemini))
     ) {
-      // Simple format like Mars or Venus
-      return transitData as Record<string, { Start: string; End: string }>
+      // Neptune/Pluto/Uranus format with decans
+      // We'll simplify and use the first decan as the start and the last decan end as the end
+      const simplifiedTransits: Record<string, { Start: string; End: string }> = {}
+
+      for (const sign in transitData) {
+        const signData = (transitData as any)[sign]
+        if (signData && typeof signData === 'object' && '1stDecan' in signData) {
+          const firstDecan = signData['1stDecan']
+
+          // Find the last decan that exists
+          let lastDecan = signData['3rdDecan']
+          if (!lastDecan) lastDecan = signData['2ndDecan']
+          if (!lastDecan) lastDecan = signData['1stDecan']
+
+          // Only add if we have valid start and end dates that are strings
+          if (
+            firstDecan &&
+            lastDecan &&
+            typeof firstDecan.Start === 'string' &&
+            typeof lastDecan.End === 'string' &&
+            firstDecan.Start.length > 0 &&
+            lastDecan.End.length > 0
+          ) {
+            simplifiedTransits[sign] = {
+              Start: firstDecan.Start,
+              End: lastDecan.End,
+            }
+          } else {
+            // Skip signs with invalid dates
+            console.warn(`Skipping ${planet} ${sign} - invalid dates`, {
+              firstDecan: firstDecan?.Start,
+              lastDecan: lastDecan?.End,
+            })
+          }
+        }
+      }
+
+      return simplifiedTransits
     } else if (
       transitData &&
       typeof transitData === 'object' &&
@@ -155,37 +198,10 @@ function getTransitDates(planet: string): Record<string, { Start: string; End: s
     } else if (
       transitData &&
       typeof transitData === 'object' &&
-      ('Pisces' in transitData ||
-        ('Taurus' in transitData &&
-          typeof (transitData as any).Taurus === 'object' &&
-          '1stDecan' in (transitData as any).Taurus))
+      ('Aries' in transitData || 'Taurus' in transitData || 'Gemini' in transitData)
     ) {
-      // Neptune/Pluto/Uranus format with decans
-      // We'll simplify and use the first decan as the start and the last decan end as the end
-      const simplifiedTransits: Record<string, { Start: string; End: string }> = {}
-
-      for (const sign in transitData) {
-        const signData = (transitData as any)[sign]
-        if (signData && typeof signData === 'object' && '1stDecan' in signData) {
-          const decans = ['1stDecan', '2ndDecan', '3rdDecan']
-          const firstDecan = signData['1stDecan']
-
-          // Find the last decan that exists
-          let lastDecan = signData['3rdDecan']
-          if (!lastDecan) lastDecan = signData['2ndDecan']
-          if (!lastDecan) lastDecan = signData['1stDecan']
-
-          // Only add if we have valid start and end dates
-          if (firstDecan?.Start && lastDecan?.End) {
-            simplifiedTransits[sign] = {
-              Start: firstDecan.Start,
-              End: lastDecan.End,
-            }
-          }
-        }
-      }
-
-      return simplifiedTransits
+      // Simple format like Mars or Venus (only if NOT decan format)
+      return transitData as Record<string, { Start: string; End: string }>
     }
 
     return null
