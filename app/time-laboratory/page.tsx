@@ -61,6 +61,7 @@ import {
   Bell,
 } from 'lucide-react'
 import { AspectPhaseWidget } from '@/components/charts/aspect-phase-indicator'
+import { SiteNavigation } from '@/components/misc/site-navigation'
 import type {
   TemporalQuery,
   TemporalAnalysisResult,
@@ -493,8 +494,11 @@ export default function TimeLaboratoryPage() {
   }
 
   return (
-    <div className="cosmic-time-laboratory min-h-screen">
-      <div className="relative z-10 max-w-7xl mx-auto p-6">
+    <>
+      <SiteNavigation />
+
+      <div className="cosmic-time-laboratory min-h-screen">
+        <div className="relative z-10 max-w-7xl mx-auto p-6">
         {/* Enhanced Header */}
         <div className="cosmic-glass-ethereal rounded-2xl p-6 mb-6">
           <div className="flex items-center justify-between">
@@ -1375,6 +1379,7 @@ export default function TimeLaboratoryPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </>
   )
 }

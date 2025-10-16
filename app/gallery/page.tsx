@@ -37,6 +37,7 @@ import {
   Clock,
 } from 'lucide-react'
 import Link from 'next/link'
+import { SiteNavigation } from '@/components/misc/site-navigation'
 import {
   DEMO_AGENTS,
   getAgentCollections,
@@ -418,9 +419,12 @@ function GalleryPageContent() {
   }
 
   return (
-    <div className="container py-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <>
+      <SiteNavigation />
+
+      <div className="container py-8 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Sparkles className="w-8 h-8 text-purple-500" />
@@ -1089,7 +1093,8 @@ function GalleryPageContent() {
         enableEraFilters={true}
         enableSpecializationGroups={true}
       />
-    </div>
+      </div>
+    </>
   )
 }
 
