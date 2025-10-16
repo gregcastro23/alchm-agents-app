@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { routeTask } from '@/lib/agents/router'
 import { AlchemicalKineticsClient } from '@/lib/kinetics-client'
+import { agentKineticProfiles } from '@/lib/agents/kinetic-profiles'
 
 export async function GET(request: NextRequest) {
   try {

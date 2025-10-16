@@ -48,6 +48,17 @@ interface KineticCompatibilityIndicatorProps {
   showRecommendations?: boolean
 }
 
+// Shared utility function for compatibility level calculation
+const getCompatibilityLevel = (
+  score: number
+): { label: string; color: string; icon: React.ElementType } => {
+  if (score >= 0.8) return { label: 'Exceptional', color: 'text-purple-600', icon: Sparkles }
+  if (score >= 0.7) return { label: 'Excellent', color: 'text-blue-600', icon: Heart }
+  if (score >= 0.6) return { label: 'Good', color: 'text-green-600', icon: Users }
+  if (score >= 0.4) return { label: 'Moderate', color: 'text-yellow-600', icon: Activity }
+  return { label: 'Dynamic', color: 'text-orange-600', icon: Zap }
+}
+
 export function KineticCompatibilityIndicator({
   agent1,
   agent2,
@@ -88,16 +99,6 @@ export function KineticCompatibilityIndicator({
     } finally {
       setLoading(false)
     }
-  }
-
-  const getCompatibilityLevel = (
-    score: number
-  ): { label: string; color: string; icon: React.ElementType } => {
-    if (score >= 0.8) return { label: 'Exceptional', color: 'text-purple-600', icon: Sparkles }
-    if (score >= 0.7) return { label: 'Excellent', color: 'text-blue-600', icon: Heart }
-    if (score >= 0.6) return { label: 'Good', color: 'text-green-600', icon: Users }
-    if (score >= 0.4) return { label: 'Moderate', color: 'text-yellow-600', icon: Activity }
-    return { label: 'Dynamic', color: 'text-orange-600', icon: Zap }
   }
 
   const getMomentumSynergyColor = (synergy: string): string => {

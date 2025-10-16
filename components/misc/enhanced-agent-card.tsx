@@ -512,7 +512,7 @@ export function EnhancedAgentCard({
 
           {/* Seven Sacred Stats - Live Values */}
           <div className="grid grid-cols-7 gap-1 text-xs">
-            <div className="text-center p-1.5 bg-orange-50 dark:bg-orange-950/30 rounded border" title={`Power - Birth: ${birthStats.power} → Live: ${liveStats.power}`}>
+            <div className="text-center p-1.5 bg-orange-50 dark:bg-orange-950/30 rounded border" title={`Power (Potentia) = Spirit×10 + MC×5 + Stage×0.5 + Alignment×15\nBirth: ${birthStats.power} → Live: ${liveStats.power}`}>
               <Zap className="w-3 h-3 mx-auto mb-1 text-orange-600" />
               <div className="font-mono text-[10px]">{liveStats.power}</div>
               {liveStats.power !== birthStats.power && (
@@ -521,7 +521,7 @@ export function EnhancedAgentCard({
                 </div>
               )}
             </div>
-            <div className="text-center p-1.5 bg-purple-50 dark:bg-purple-950/30 rounded border" title={`Resonance - Birth: ${birthStats.resonance} → Live: ${liveStats.resonance}`}>
+            <div className="text-center p-1.5 bg-purple-50 dark:bg-purple-950/30 rounded border" title={`Resonance (Celeritas) = Essence×10 + ResonanceScore×0.1\nMercury Principle - Velocity of consciousness\nBirth: ${birthStats.resonance} → Live: ${liveStats.resonance}`}>
               <Activity className="w-3 h-3 mx-auto mb-1 text-purple-600" />
               <div className="font-mono text-[10px]">{liveStats.resonance}</div>
               {liveStats.resonance !== birthStats.resonance && (
@@ -530,7 +530,7 @@ export function EnhancedAgentCard({
                 </div>
               )}
             </div>
-            <div className="text-center p-1.5 bg-indigo-50 dark:bg-indigo-950/30 rounded border" title={`Wisdom - Birth: ${birthStats.wisdom} → Live: ${liveStats.wisdom}`}>
+            <div className="text-center p-1.5 bg-indigo-50 dark:bg-indigo-950/30 rounded border" title={`Wisdom = WisdomShared×0.5 + Conversations×0.2 + Matter×8\nAccumulated knowledge and experience\nBirth: ${birthStats.wisdom} → Live: ${liveStats.wisdom}`}>
               <Brain className="w-3 h-3 mx-auto mb-1 text-indigo-600" />
               <div className="font-mono text-[10px]">{liveStats.wisdom}</div>
               {liveStats.wisdom !== birthStats.wisdom && (
@@ -539,7 +539,7 @@ export function EnhancedAgentCard({
                 </div>
               )}
             </div>
-            <div className="text-center p-1.5 bg-pink-50 dark:bg-pink-950/30 rounded border" title={`Charisma - Birth: ${birthStats.charisma} → Live: ${liveStats.charisma}`}>
+            <div className="text-center p-1.5 bg-pink-50 dark:bg-pink-950/30 rounded border" title={`Charisma = Stage×0.6 + Essence×8\nInfluence and magnetic presence\nBirth: ${birthStats.charisma} → Live: ${liveStats.charisma}`}>
               <Heart className="w-3 h-3 mx-auto mb-1 text-pink-600" />
               <div className="font-mono text-[10px]">{liveStats.charisma}</div>
               {liveStats.charisma !== birthStats.charisma && (
@@ -548,7 +548,7 @@ export function EnhancedAgentCard({
                 </div>
               )}
             </div>
-            <div className="text-center p-1.5 bg-cyan-50 dark:bg-cyan-950/30 rounded border" title={`Intuition - Birth: ${birthStats.intuition} → Live: ${liveStats.intuition}`}>
+            <div className="text-center p-1.5 bg-cyan-50 dark:bg-cyan-950/30 rounded border" title={`Intuition = Spirit×9 + ConsciousnessVelocity×30\nPsychic sensitivity and insight\nBirth: ${birthStats.intuition} → Live: ${liveStats.intuition}`}>
               <Eye className="w-3 h-3 mx-auto mb-1 text-cyan-600" />
               <div className="font-mono text-[10px]">{liveStats.intuition}</div>
               {liveStats.intuition !== birthStats.intuition && (
@@ -557,7 +557,7 @@ export function EnhancedAgentCard({
                 </div>
               )}
             </div>
-            <div className="text-center p-1.5 bg-teal-50 dark:bg-teal-950/30 rounded border" title={`Adaptability - Birth: ${birthStats.adaptability} → Live: ${liveStats.adaptability}`}>
+            <div className="text-center p-1.5 bg-teal-50 dark:bg-teal-950/30 rounded border" title={`Adaptability (Impetus) = Substance×12 + MC×3\nFlexibility and momentum shift capacity\nBirth: ${birthStats.adaptability} → Live: ${liveStats.adaptability}`}>
               <RotateCw className="w-3 h-3 mx-auto mb-1 text-teal-600" />
               <div className="font-mono text-[10px]">{liveStats.adaptability}</div>
               {liveStats.adaptability !== birthStats.adaptability && (
@@ -566,7 +566,7 @@ export function EnhancedAgentCard({
                 </div>
               )}
             </div>
-            <div className="text-center p-1.5 bg-green-50 dark:bg-green-950/30 rounded border" title={`Vitality - Birth: ${birthStats.vitality} → Live: ${liveStats.vitality}`}>
+            <div className="text-center p-1.5 bg-green-50 dark:bg-green-950/30 rounded border" title={`Vitality (Vis) = Matter×9 + InteractionMomentum×40\nLife force and kinetic energy\nBirth: ${birthStats.vitality} → Live: ${liveStats.vitality}`}>
               <Sparkles className="w-3 h-3 mx-auto mb-1 text-green-600" />
               <div className="font-mono text-[10px]">{liveStats.vitality}</div>
               {liveStats.vitality !== birthStats.vitality && (
@@ -600,7 +600,7 @@ export function EnhancedAgentCard({
               <>
                 <div
                   className="text-center p-1 bg-red-50 dark:bg-red-950/30 rounded border"
-                  title={`Birth: ${liveConsciousness.birthKalchm.spirit.toFixed(1)} → Live: ${liveConsciousness.liveKalchm.spirit.toFixed(1)}`}
+                  title={`Spirit (S) - Pure solar fire, consciousness illumination\nFormula: Σ(planet_spirit × aspects × dignity)\nBirth: ${liveConsciousness.birthKalchm.spirit.toFixed(1)} → Live: ${liveConsciousness.liveKalchm.spirit.toFixed(1)}`}
                 >
                   <Flame className="w-3 h-3 mx-auto mb-1 text-red-600" />
                   <div className="font-mono">{liveConsciousness.liveKalchm.spirit.toFixed(1)}</div>
@@ -616,7 +616,7 @@ export function EnhancedAgentCard({
                 </div>
                 <div
                   className="text-center p-1 bg-blue-50 dark:bg-blue-950/30 rounded border"
-                  title={`Birth: ${liveConsciousness.birthKalchm.essence.toFixed(1)} → Live: ${liveConsciousness.liveKalchm.essence.toFixed(1)}`}
+                  title={`Essence (E) - Emotional fluidity, lunar receptivity\nFormula: Σ(planet_essence × water_modulation)\nBirth: ${liveConsciousness.birthKalchm.essence.toFixed(1)} → Live: ${liveConsciousness.liveKalchm.essence.toFixed(1)}`}
                 >
                   <Droplets className="w-3 h-3 mx-auto mb-1 text-blue-600" />
                   <div className="font-mono">{liveConsciousness.liveKalchm.essence.toFixed(1)}</div>
@@ -632,7 +632,7 @@ export function EnhancedAgentCard({
                 </div>
                 <div
                   className="text-center p-1 bg-green-50 dark:bg-green-950/30 rounded border"
-                  title={`Birth: ${liveConsciousness.birthKalchm.matter.toFixed(1)} → Live: ${liveConsciousness.liveKalchm.matter.toFixed(1)}`}
+                  title={`Matter (M) - Physical density, earthly manifestation\nFormula: Σ(planet_matter × earth_stability)\nBirth: ${liveConsciousness.birthKalchm.matter.toFixed(1)} → Live: ${liveConsciousness.liveKalchm.matter.toFixed(1)}`}
                 >
                   <Mountain className="w-3 h-3 mx-auto mb-1 text-green-600" />
                   <div className="font-mono">{liveConsciousness.liveKalchm.matter.toFixed(1)}</div>
@@ -648,7 +648,7 @@ export function EnhancedAgentCard({
                 </div>
                 <div
                   className="text-center p-1 bg-yellow-50 dark:bg-yellow-950/30 rounded border"
-                  title={`Birth: ${liveConsciousness.birthKalchm.substance.toFixed(1)} → Live: ${liveConsciousness.liveKalchm.substance.toFixed(1)}`}
+                  title={`Substance (B) - Mercurial volatility, transformation agent\nFormula: Σ(planet_substance × mercury_quickening)\nBirth: ${liveConsciousness.birthKalchm.substance.toFixed(1)} → Live: ${liveConsciousness.liveKalchm.substance.toFixed(1)}`}
                 >
                   <Wind className="w-3 h-3 mx-auto mb-1 text-yellow-600" />
                   <div className="font-mono">
@@ -669,19 +669,19 @@ export function EnhancedAgentCard({
             ) : (
               // Fallback to calculated birth values
               <>
-                <div className="text-center p-1 bg-red-50 dark:bg-red-950/30 rounded border">
+                <div className="text-center p-1 bg-red-50 dark:bg-red-950/30 rounded border" title="Spirit (S) - Pure solar fire, consciousness illumination">
                   <Flame className="w-3 h-3 mx-auto mb-1 text-red-600" />
                   <div className="font-mono">{alchemical.spirit}</div>
                 </div>
-                <div className="text-center p-1 bg-blue-50 dark:bg-blue-950/30 rounded border">
+                <div className="text-center p-1 bg-blue-50 dark:bg-blue-950/30 rounded border" title="Essence (E) - Emotional fluidity, lunar receptivity">
                   <Droplets className="w-3 h-3 mx-auto mb-1 text-blue-600" />
                   <div className="font-mono">{alchemical.essence}</div>
                 </div>
-                <div className="text-center p-1 bg-green-50 dark:bg-green-950/30 rounded border">
+                <div className="text-center p-1 bg-green-50 dark:bg-green-950/30 rounded border" title="Matter (M) - Physical density, earthly manifestation">
                   <Mountain className="w-3 h-3 mx-auto mb-1 text-green-600" />
                   <div className="font-mono">{alchemical.matter}</div>
                 </div>
-                <div className="text-center p-1 bg-yellow-50 dark:bg-yellow-950/30 rounded border">
+                <div className="text-center p-1 bg-yellow-50 dark:bg-yellow-950/30 rounded border" title="Substance (B) - Mercurial volatility, transformation agent">
                   <Wind className="w-3 h-3 mx-auto mb-1 text-yellow-600" />
                   <div className="font-mono">{alchemical.substance}</div>
                 </div>

@@ -586,8 +586,7 @@ export function calculateKineticState(
  * Get agent kinetic profile by ID
  */
 export function getAgentKineticProfile(agentId: string) {
-  const profile = agentKineticProfiles[agentId]
-  if (!profile) return null
+  const profile = agentKineticProfiles[agentId] || defaultKineticProfile
 
   // Return enhanced profile with name and additional computed properties
   return {
@@ -620,13 +619,33 @@ export function getAgentKineticProfile(agentId: string) {
 }
 
 /**
+ * Default kinetic profile for agents without specific profiles
+ */
+const defaultKineticProfile: KineticProfile = {
+  alignment: ['Sun', 'Mercury'],
+  velocitySignature: { Fire: 0.6, Water: 0.6, Air: 0.6, Earth: 0.6 },
+  powerThresholds: [100, 300, 700, 1500],
+  evolutionRate: 1.0,
+  specialAbilities: ['universal-resonance'],
+  aspect_sensitivity: 0.7,
+  v_creative: 0.6,
+  v_linguistic: 0.6,
+  v_scientific: 0.6,
+  v_strategic: 0.6,
+  v_charismatic: 0.6,
+  v_inventive: 0.6,
+  v_social: 0.6,
+  v_psychological: 0.6,
+  v_mystical: 0.6,
+  v_philosophical: 0.6,
+}
+
+/**
  * Calculate compatibility between two agents
  */
 export function calculateKineticCompatibility(agent1Id: string, agent2Id: string): number {
-  const profile1 = agentKineticProfiles[agent1Id]
-  const profile2 = agentKineticProfiles[agent2Id]
-
-  if (!profile1 || !profile2) return 0
+  const profile1 = agentKineticProfiles[agent1Id] || defaultKineticProfile
+  const profile2 = agentKineticProfiles[agent2Id] || defaultKineticProfile
 
   // Calculate elemental compatibility
   const elementalCompatibility =

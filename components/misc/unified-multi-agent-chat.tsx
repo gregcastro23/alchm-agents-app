@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+// Dialog components removed - now using floating panel
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -169,7 +169,13 @@ export function UnifiedMultiAgentChat({
     })
 
     setAvailableAgents(agents)
-  }, [historicalAgents, planetaryConfigs])
+
+    // Initialize selected agents from initialAgents prop
+    if (initialAgents && initialAgents.length > 0 && agents.length > 0) {
+      const preselected = agents.filter(agent => initialAgents.includes(agent.id))
+      setSelectedAgents(preselected)
+    }
+  }, [historicalAgents, planetaryConfigs, initialAgents])
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -647,22 +653,40 @@ export function UnifiedMultiAgentChat({
     </div>
   )
 
+  if (!isOpen) return null
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl w-full h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            {title}
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/50 z-[200] backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Floating Left Panel */}
+      <div className="fixed left-0 top-0 bottom-0 w-full max-w-2xl z-[201] flex flex-col bg-background shadow-2xl border-r animate-in slide-in-from-left duration-300">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-emerald-50/50 via-green-50/50 to-cyan-50/50 dark:from-emerald-950/50 dark:via-green-950/50 dark:to-cyan-950/50">
+          <div className="flex items-center gap-2">
+            <Users className="w-5 h-5 text-emerald-600" />
+            <h2 className="font-semibold text-lg">{title}</h2>
             {enableGroupDynamics && groupDynamics && (
-              <Badge variant="outline" className="ml-auto">
+              <Badge variant="outline" className="ml-2 bg-purple-100 dark:bg-purple-900">
                 Consciousness: {groupDynamics.consciousnessNetwork.groupConsciousness.toFixed(2)}
               </Badge>
             )}
-          </DialogTitle>
-        </DialogHeader>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="hover:bg-red-100 dark:hover:bg-red-900"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
 
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* Custom header */}
           {customHeader && <div className="mb-4">{customHeader}</div>}
 
@@ -775,8 +799,8 @@ export function UnifiedMultiAgentChat({
             </TabsContent>
           </Tabs>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </>
   )
 }
 
