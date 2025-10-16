@@ -854,9 +854,9 @@ export function MonicaOmnipresent() {
             <Image
               src="https://alchm.xyz/static/media/logo.f986535a.webp"
               alt="Monica - Your Consciousness Guide"
-              className="w-10 h-10 rounded-full"
               width={40}
               height={40}
+              className="w-10 h-10 rounded-full"
             />
             {hasUnreadTips && (
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-bounce shadow-lg">
@@ -908,6 +908,8 @@ export function MonicaOmnipresent() {
                 <Image
                   src="https://alchm.xyz/static/media/logo.f986535a.webp"
                   alt="Monica"
+                  width={32}
+                  height={32}
                   className="w-8 h-8 rounded-full"
                   width={32}
                   height={32}
@@ -1139,6 +1141,8 @@ export function MonicaOmnipresent() {
                 <Image
                   src="https://alchm.xyz/static/media/logo.f986535a.webp"
                   alt="Monica"
+                  width={32}
+                  height={32}
                   className="w-8 h-8 rounded-full"
                   width={32}
                   height={32}

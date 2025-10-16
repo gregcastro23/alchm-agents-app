@@ -49,10 +49,12 @@ import type {
 } from '@/lib/agent-types'
 import dynamic from 'next/dynamic'
 
+import { Skeleton } from '@/components/ui/skeleton'
+
 const HistoricalCouncilChat = dynamic(() => import('@/components/misc/historical-council-chat'), {
   loading: () => (
-    <div className="h-32 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    <div className="h-32 flex items-center justify-center" style={{ minHeight: '128px', contain: 'layout' }}>
+      <Skeleton className="h-8 w-8 rounded-full" />
     </div>
   ),
 })
@@ -73,8 +75,8 @@ const RealTimeKineticsWidget = dynamic(
     })),
   {
     loading: () => (
-      <div className="h-24 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+      <div className="h-24 flex items-center justify-center" style={{ minHeight: '96px', contain: 'layout' }}>
+        <Skeleton className="h-20 w-full" />
       </div>
     ),
   }
@@ -87,8 +89,8 @@ const ChartTransformVisualization = dynamic(
     })),
   {
     loading: () => (
-      <div className="h-32 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="h-32 flex items-center justify-center" style={{ minHeight: '128px', contain: 'layout' }}>
+        <Skeleton className="h-28 w-full" />
       </div>
     ),
   }
@@ -101,8 +103,8 @@ const MomentBasedRecommendations = dynamic(
     })),
   {
     loading: () => (
-      <div className="h-28 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+      <div className="h-28 flex items-center justify-center" style={{ minHeight: '112px', contain: 'layout' }}>
+        <Skeleton className="h-24 w-full" />
       </div>
     ),
   }

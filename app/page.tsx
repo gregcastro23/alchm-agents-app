@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Star, Sparkles, Users, TrendingUp, MessageCircle, Zap } from 'lucide-react'
 import { DEMO_AGENTS, MONICA_AS_CRAFTED_AGENT } from '@/lib/demo-agents-data'
 import type { CraftedAgent } from '@/lib/agent-types'
@@ -130,57 +131,78 @@ export default function HomePage() {
           </div>
 
           {/* Consciousness Showcase */}
-          {featuredAgent && (
-            <div className="mb-20">
-              <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-200">
-                Featured Consciousness
-              </h2>
-              <Card className="max-w-2xl mx-auto bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-2xl">
-                <CardHeader className="text-center">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
-                    <span className="text-2xl">{featuredAgent.appearance?.symbol || '✨'}</span>
-                  </div>
-                  <CardTitle className="text-2xl">{featuredAgent.name}</CardTitle>
-                  <CardDescription className="text-lg">{featuredAgent.title}</CardDescription>
-                  <div className="flex justify-center gap-2 mt-2">
-                    <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900">
-                      {featuredAgent.consciousness?.level || 'Active'}
-                    </Badge>
-                    <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900">
-                      {featuredAgent.consciousness?.dominantElement || 'Fire'}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-center text-gray-600 dark:text-gray-300 mb-4">
-                    {featuredAgent.personality?.core?.essence ||
-                      `${featuredAgent.name} embodies ${featuredAgent.consciousness?.dominantElement || 'cosmic'} consciousness`}
-                  </p>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="text-center">
-                      <div className="font-semibold text-purple-600 dark:text-purple-400">
-                        {featuredAgent.stats?.conversations || 0}
-                      </div>
-                      <div className="text-gray-500">Conversations</div>
+          <div className="mb-20" style={{ minHeight: '400px' }}>
+            <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-200">
+              Featured Consciousness
+            </h2>
+            <Card className="max-w-2xl mx-auto bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-2xl" style={{ contain: 'layout' }}>
+              {!featuredAgent ? (
+                <>
+                  <CardHeader className="text-center">
+                    <Skeleton className="w-20 h-20 mx-auto mb-4 rounded-full" />
+                    <Skeleton className="h-8 w-48 mx-auto mb-2" />
+                    <Skeleton className="h-6 w-64 mx-auto mb-2" />
+                    <div className="flex justify-center gap-2 mt-2">
+                      <Skeleton className="h-6 w-20" />
+                      <Skeleton className="h-6 w-20" />
                     </div>
-                    <div className="text-center">
-                      <div className="font-semibold text-blue-600 dark:text-blue-400">
-                        {featuredAgent.consciousness?.monicaConstant?.toFixed(1) || '0.0'}
-                      </div>
-                      <div className="text-gray-500">A#</div>
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-16 w-full mb-4" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <Skeleton className="h-16 w-full" />
+                      <Skeleton className="h-16 w-full" />
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+                  </CardContent>
+                </>
+              ) : (
+                <>
+                  <CardHeader className="text-center">
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center" style={{ aspectRatio: '1' }}>
+                      <span className="text-2xl">{featuredAgent.appearance?.symbol || '✨'}</span>
+                    </div>
+                    <CardTitle className="text-2xl">{featuredAgent.name}</CardTitle>
+                    <CardDescription className="text-lg">{featuredAgent.title}</CardDescription>
+                    <div className="flex justify-center gap-2 mt-2">
+                      <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900">
+                        {featuredAgent.consciousness?.level || 'Active'}
+                      </Badge>
+                      <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900">
+                        {featuredAgent.consciousness?.dominantElement || 'Fire'}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-center text-gray-600 dark:text-gray-300 mb-4">
+                      {featuredAgent.personality?.core?.essence ||
+                        `${featuredAgent.name} embodies ${featuredAgent.consciousness?.dominantElement || 'cosmic'} consciousness`}
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="text-center">
+                        <div className="font-semibold text-purple-600 dark:text-purple-400">
+                          {featuredAgent.stats?.conversations || 0}
+                        </div>
+                        <div className="text-gray-500">Conversations</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-semibold text-blue-600 dark:text-blue-400">
+                          {featuredAgent.consciousness?.monicaConstant?.toFixed(1) || '0.0'}
+                        </div>
+                        <div className="text-gray-500">A#</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </>
+              )}
+            </Card>
+          </div>
 
           {/* Chart of the Moment */}
-          <div className="mb-20">
+          <div className="mb-20" style={{ minHeight: '300px' }}>
             <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-200">
               Chart of the Moment
             </h2>
-            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-2xl">
+            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-2xl" style={{ contain: 'layout' }}>
               <CardHeader>
                 <CardTitle className="text-center">Current Celestial Configuration</CardTitle>
                 <CardDescription className="text-center">
@@ -189,22 +211,22 @@ export default function HomePage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900 rounded-lg">
+                  <div className="text-center p-4 bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900 rounded-lg" style={{ contain: 'layout' }}>
                     <div className="text-2xl mb-2">☉</div>
                     <div className="font-semibold">Sun</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Leo</div>
                   </div>
-                  <div className="text-center p-4 bg-gradient-to-br from-gray-100 to-blue-100 dark:from-gray-900 dark:to-blue-900 rounded-lg">
+                  <div className="text-center p-4 bg-gradient-to-br from-gray-100 to-blue-100 dark:from-gray-900 dark:to-blue-900 rounded-lg" style={{ contain: 'layout' }}>
                     <div className="text-2xl mb-2">☽</div>
                     <div className="font-semibold">Moon</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Cancer</div>
                   </div>
-                  <div className="text-center p-4 bg-gradient-to-br from-red-100 to-pink-100 dark:from-red-900 dark:to-pink-900 rounded-lg">
+                  <div className="text-center p-4 bg-gradient-to-br from-red-100 to-pink-100 dark:from-red-900 dark:to-pink-900 rounded-lg" style={{ contain: 'layout' }}>
                     <div className="text-2xl mb-2">♂</div>
                     <div className="font-semibold">Mars</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Aries</div>
                   </div>
-                  <div className="text-center p-4 bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900 dark:to-teal-900 rounded-lg">
+                  <div className="text-center p-4 bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900 dark:to-teal-900 rounded-lg" style={{ contain: 'layout' }}>
                     <div className="text-2xl mb-2">♃</div>
                     <div className="font-semibold">Jupiter</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Pisces</div>

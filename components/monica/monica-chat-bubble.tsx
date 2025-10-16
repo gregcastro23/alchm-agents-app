@@ -267,12 +267,12 @@ export function MonicaChatBubble({
 
   return (
     <>
-      {/* Chat Bubble */}
+      {/* Chat Bubble - Fixed dimensions to prevent CLS */}
       {!isMinimized && (
-        <div className="fixed bottom-4 right-4 z-50">
+        <div className="fixed bottom-4 right-4 z-50" style={{ width: '80px', height: '80px', contain: 'layout style paint' }}>
           {isExpanded ? (
             /* Expanded Chat Interface */
-            <Card className="w-96 h-[600px] bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-2 border-emerald-400 shadow-2xl">
+            <Card className="w-96 h-[600px] bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-2 border-emerald-400 shadow-2xl" style={{ position: 'fixed', bottom: '16px', right: '16px', width: '384px', height: '600px', contain: 'layout' }}>
               <CardHeader className="pb-3 border-b border-emerald-200 dark:border-emerald-800">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -462,14 +462,15 @@ export function MonicaChatBubble({
             </Card>
           ) : (
             /* Collapsed Chat Bubble */
-            <div className="relative">
+            <div className="relative" style={{ width: '56px', height: '56px' }}>
               <Button
                 onClick={() => setIsExpanded(true)}
-                className="w-14 h-14 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 shadow-lg hover:shadow-emerald-400/50 transition-all duration-300 group"
+                className="w-14 h-14 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 shadow-lg hover:shadow-emerald-400/50 group"
+                style={{ transition: 'transform 0.3s, box-shadow 0.3s', willChange: 'transform' }}
               >
                 <MessageCircle className="w-6 h-6 text-white" />
                 {hasUnreadMessages && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse" />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse" style={{ contain: 'layout style paint' }} />
                 )}
               </Button>
 

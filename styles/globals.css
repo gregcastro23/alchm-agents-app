@@ -91,4 +91,24 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Optimize layout shifts with CSS containment */
+  .card,
+  [class*="card-"],
+  [data-radix-collection-item] {
+    contain: layout style;
+  }
+
+  /* Prevent layout shifts in animations */
+  [class*="animate-"],
+  .transition-all {
+    will-change: transform, opacity;
+  }
+
+  /* Stabilize images */
+  img,
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
 }
