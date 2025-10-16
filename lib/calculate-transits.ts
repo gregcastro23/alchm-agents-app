@@ -169,11 +169,18 @@ function getTransitDates(planet: string): Record<string, { Start: string; End: s
         if (signData && typeof signData === 'object' && '1stDecan' in signData) {
           const decans = ['1stDecan', '2ndDecan', '3rdDecan']
           const firstDecan = signData['1stDecan']
-          const lastDecan = signData[decans.find(d => d in signData) || '3rdDecan']
 
-          simplifiedTransits[sign] = {
-            Start: firstDecan.Start,
-            End: lastDecan.End,
+          // Find the last decan that exists
+          let lastDecan = signData['3rdDecan']
+          if (!lastDecan) lastDecan = signData['2ndDecan']
+          if (!lastDecan) lastDecan = signData['1stDecan']
+
+          // Only add if we have valid start and end dates
+          if (firstDecan?.Start && lastDecan?.End) {
+            simplifiedTransits[sign] = {
+              Start: firstDecan.Start,
+              End: lastDecan.End,
+            }
           }
         }
       }
