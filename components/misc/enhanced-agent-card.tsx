@@ -529,12 +529,12 @@ export function EnhancedAgentCard({
 
           {/* Alchemical Properties Mini Display - Live or Birth Data */}
           <div className="grid grid-cols-4 gap-1 text-xs">
-            {liveConsciousness ? (
+            {liveConsciousness?.birthKalchm && liveConsciousness?.liveKalchm ? (
               // Live alchemical values
               <>
                 <div
                   className="text-center p-1 bg-red-50 dark:bg-red-950/30 rounded border"
-                  title={`Birth: ${liveConsciousness.birthKalchm.spirit} → Live: ${liveConsciousness.liveKalchm.spirit}`}
+                  title={`Birth: ${liveConsciousness.birthKalchm.spirit.toFixed(1)} → Live: ${liveConsciousness.liveKalchm.spirit.toFixed(1)}`}
                 >
                   <Flame className="w-3 h-3 mx-auto mb-1 text-red-600" />
                   <div className="font-mono">{liveConsciousness.liveKalchm.spirit.toFixed(1)}</div>
@@ -550,7 +550,7 @@ export function EnhancedAgentCard({
                 </div>
                 <div
                   className="text-center p-1 bg-blue-50 dark:bg-blue-950/30 rounded border"
-                  title={`Birth: ${liveConsciousness.birthKalchm.essence} → Live: ${liveConsciousness.liveKalchm.essence}`}
+                  title={`Birth: ${liveConsciousness.birthKalchm.essence.toFixed(1)} → Live: ${liveConsciousness.liveKalchm.essence.toFixed(1)}`}
                 >
                   <Droplets className="w-3 h-3 mx-auto mb-1 text-blue-600" />
                   <div className="font-mono">{liveConsciousness.liveKalchm.essence.toFixed(1)}</div>
@@ -566,7 +566,7 @@ export function EnhancedAgentCard({
                 </div>
                 <div
                   className="text-center p-1 bg-green-50 dark:bg-green-950/30 rounded border"
-                  title={`Birth: ${liveConsciousness.birthKalchm.matter} → Live: ${liveConsciousness.liveKalchm.matter}`}
+                  title={`Birth: ${liveConsciousness.birthKalchm.matter.toFixed(1)} → Live: ${liveConsciousness.liveKalchm.matter.toFixed(1)}`}
                 >
                   <Mountain className="w-3 h-3 mx-auto mb-1 text-green-600" />
                   <div className="font-mono">{liveConsciousness.liveKalchm.matter.toFixed(1)}</div>
@@ -582,7 +582,7 @@ export function EnhancedAgentCard({
                 </div>
                 <div
                   className="text-center p-1 bg-yellow-50 dark:bg-yellow-950/30 rounded border"
-                  title={`Birth: ${liveConsciousness.birthKalchm.substance} → Live: ${liveConsciousness.liveKalchm.substance}`}
+                  title={`Birth: ${liveConsciousness.birthKalchm.substance.toFixed(1)} → Live: ${liveConsciousness.liveKalchm.substance.toFixed(1)}`}
                 >
                   <Wind className="w-3 h-3 mx-auto mb-1 text-yellow-600" />
                   <div className="font-mono">

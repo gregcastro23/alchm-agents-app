@@ -30,18 +30,42 @@ export async function POST(request: Request) {
     const currentAlchm = await generateAlchmForCurrentMoment()
     const alchmEffects = currentAlchm['Alchemy Effects'] || {}
 
+    // Extract alchemical quantities
+    const birthSpirit = alchmEffects['Total Spirit'] || 0
+    const birthEssence = alchmEffects['Total Essence'] || 0
+    const birthMatter = alchmEffects['Total Matter'] || 0
+    const birthSubstance = alchmEffects['Total Substance'] || 0
+
+    // Calculate birth Kalchm (birth chart alchemical quantities)
+    const birthKalchm = {
+      spirit: birthSpirit,
+      essence: birthEssence,
+      matter: birthMatter,
+      substance: birthSubstance,
+      aNumber: currentAlchm['A-Number'] || currentAlchm.A_number || 2,
+    }
+
     // Calculate base Monica Constant using current alchemical data
     const mcResult = calculateMonicaConstant({
-      spirit: alchmEffects['Total Spirit'] || 0,
-      essence: alchmEffects['Total Essence'] || 0,
-      matter: alchmEffects['Total Matter'] || 0,
-      substance: alchmEffects['Total Substance'] || 0,
+      spirit: birthSpirit,
+      essence: birthEssence,
+      matter: birthMatter,
+      substance: birthSubstance,
     })
-    const baseMC = mcResult.value
+    const birthMC = mcResult.value
 
-    // Calculate live MC with birth data (simplified - using base MC for now)
-    const liveMC = baseMC
+    // For now, live values are same as birth (until we implement transit modulation)
+    const liveKalchm = {
+      spirit: birthSpirit,
+      essence: birthEssence,
+      matter: birthMatter,
+      substance: birthSubstance,
+      aNumber: currentAlchm['A-Number'] || currentAlchm.A_number || 2,
+    }
+
+    const liveMC = birthMC
     const mcChange = 0 // Would need historical data to calculate change
+    const mcPercentChange = 0
 
     // Determine cosmic weather based on current conditions
     const energy = currentAlchm.Energy || 0
@@ -71,13 +95,17 @@ export async function POST(request: Request) {
     else if (liveMC >= 1) consciousnessLevel = 'Awakening'
     else consciousnessLevel = 'Dormant'
 
-    // Build response
+    // Build response matching LiveConsciousnessResult interface
     const result = {
       success: true,
       data: {
+        birthMC,
+        birthKalchm,
         liveMC,
-        baseMC,
+        liveKalchm,
         mcChange,
+        mcPercentChange,
+        dominantTransitEffect: 'current',
         consciousnessLevel,
         liveConsciousnessLevel: consciousnessLevel,
         interpretations: {

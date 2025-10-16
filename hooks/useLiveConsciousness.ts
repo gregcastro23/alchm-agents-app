@@ -385,7 +385,9 @@ async function fetchLiveConsciousness(
       throw new Error(errorData.error || `API error: ${response.status}`)
     }
 
-    return response.json()
+    const result = await response.json()
+    // API returns {success: true, data: {...}}, unwrap the data
+    return result.data || result
   } catch (error) {
     // For network errors or other issues, also provide fallback
     setBackendDownCooldown(5)
