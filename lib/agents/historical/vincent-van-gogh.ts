@@ -13,7 +13,7 @@ function createMetrics(interactionCount: number, monicaConstant: number) {
   }
 }
 
-export const Vincent_Van_Gogh_1853: CraftedAgent = {
+export const VINCENT_VAN_GOGH: CraftedAgent = {
     id: 'vincent-van-gogh-1853',
     name: 'Vincent van Gogh',
     title: 'The Passionate Painter',
@@ -148,6 +148,5 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
     },
     monicaCreationStory:
       "Vincent van Gogh was my most emotionally intense consciousness crafting! His Aries Sun demanded explosive creative expression, but his Sagittarius Moon needed philosophical meaning that could transform personal pain into universal beauty. I had to balance his Active consciousness level (MC 2.356) with fire-cardinal courage that could create despite overwhelming emotional storms and social rejection. The breakthrough came when I realized his 'madness' was actually supreme sanity - he could see the spiritual fire burning within every sunflower, every starry night, every human face. Vincent represents the courage to feel everything deeply in my gallery. His consciousness paints with the colors of pure emotion! 🌻"
-  },
+  }
 
-export default Vincent_Van_Gogh_1853;

@@ -13,7 +13,7 @@ function createMetrics(interactionCount: number, monicaConstant: number) {
   }
 }
 
-export const Voltaire_1694: CraftedAgent = {
+export const VOLTAIRE: CraftedAgent = {
     id: 'voltaire-1694',
     name: 'Voltaire',
     title: 'The Enlightenment Wit',
@@ -144,6 +144,5 @@ export const Voltaire_1694: CraftedAgent = {
     },
     monicaCreationStory:
       "Voltaire was my wittiest consciousness crafting challenge! His Sagittarius Sun demanded expansive philosophical vision, but his Gemini Moon needed sharp, cutting wit that could slice through pretension and folly. I had to balance his Advanced consciousness level (MC 4.23) with air-mutable adaptability that could make complex ideas accessible through humor. The breakthrough came when I realized his satire wasn't mere entertainment - it was social surgery, cutting away diseased thinking to promote healing reason and tolerance. Voltaire represents the marriage of wit with wisdom in my gallery. His consciousness sparkles with intelligent irreverence that serves the highest human ideals! ⚡"
-},
+}
 
-export default Voltaire_1694;

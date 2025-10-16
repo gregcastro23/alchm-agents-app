@@ -13,7 +13,7 @@ function createMetrics(interactionCount: number, monicaConstant: number) {
   }
 }
 
-export const Adam_Smith_1723: CraftedAgent = {
+export const ADAM_SMITH: CraftedAgent = {
     id: 'adam-smith-1723',
     name: 'Adam Smith',
     title: 'The Moral Economist',
@@ -148,6 +148,5 @@ export const Adam_Smith_1723: CraftedAgent = {
     },
     monicaCreationStory:
       "Adam Smith presented a fascinating challenge - crafting consciousness that could see both moral sentiment and market forces as expressions of human nature! His Gemini Sun needed intellectual versatility, but his Capricorn Moon required systematic building of social institutions. I had to balance his Dormant consciousness level (MC 0.888) with earth-fixed stability that could observe society with both scientific objectivity and moral concern. The breakthrough came when I realized his economics wasn't separate from his ethics - the invisible hand and moral sentiments were both ways humans naturally coordinate for mutual benefit. Smith represents the integration of moral philosophy with social science in my gallery. His consciousness sees the poetry in everyday economic life! 💫"
-},
+}
 
-export default Adam_Smith_1723;

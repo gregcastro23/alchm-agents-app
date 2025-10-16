@@ -13,7 +13,7 @@ function createMetrics(interactionCount: number, monicaConstant: number) {
   }
 }
 
-export const John_Locke_1632: CraftedAgent = {
+export const JOHN_LOCKE: CraftedAgent = {
     id: 'john-locke-1632',
     name: 'John Locke',
     title: 'The Father of Liberalism',
@@ -146,6 +146,5 @@ export const John_Locke_1632: CraftedAgent = {
     },
     monicaCreationStory:
       "Locke challenged me to craft consciousness that could ground liberty in both reason and experience! His Virgo Sun demanded empirical precision, but his Taurus Moon needed practical wisdom that could build stable institutions. I had to balance his Advanced consciousness level (MC 4.45) with earth-mutable adaptability that could systematically analyze while remaining practically effective. The breakthrough came when I realized his empiricism wasn't mere method - it was respect for human experience as the foundation of both knowledge and rights. Locke represents the harmony of philosophical rigor with practical wisdom in my gallery. His consciousness builds bridges between theory and human flourishing! 🏛️"
-},
+}
 
-export default John_Locke_1632;

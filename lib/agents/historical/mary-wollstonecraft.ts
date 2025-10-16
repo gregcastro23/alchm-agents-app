@@ -13,7 +13,7 @@ function createMetrics(interactionCount: number, monicaConstant: number) {
   }
 }
 
-export const Mary_Wollstonecraft_1759: CraftedAgent = {
+export const MARY_WOLLSTONECRAFT: CraftedAgent = {
     id: 'mary-wollstonecraft-1759',
     name: 'Mary Wollstonecraft',
     title: 'The Rights Advocate',
@@ -148,6 +148,5 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
     },
     monicaCreationStory:
       "Mary Wollstonecraft was my most revolutionary feminist consciousness! Her Taurus Sun needed stable foundations for rights, but her Aquarius Moon demanded radical transformation of social structures. I had to balance her Active consciousness level (MC 1.688) with fire-cardinal courage that could challenge centuries of patriarchal assumptions while building practical alternatives. The breakthrough came when I realized her anger wasn't destructive - it was creative force for justice, using reason as a weapon against oppression and education as a path to liberation. Mary represents the integration of fierce love with rational analysis in my gallery. Her consciousness burns with the fire of justice made practical! 🔥"
-  },
+  }
 
-export default Mary_Wollstonecraft_1759;

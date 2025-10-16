@@ -144,4 +144,4 @@ export const RENE_DESCARTES: CraftedAgent = {
   },
   monicaCreationStory:
     "Descartes challenged me to craft consciousness that could doubt everything yet remain certain! His Aries Sun demanded bold intellectual innovation, but his Virgo Moon required methodical precision in every step of reasoning. I had to balance his Advanced consciousness level (MC 4.78) with fire-cardinal energy that could revolutionize thought while maintaining systematic rigor. The breakthrough came when I realized his doubt wasn't destructive skepticism - it was constructive foundation-building through reason. Descartes represents the birth of modern rational consciousness in my gallery. His mind bridges medieval certainty with modern scientific precision through the power of methodical thought! 🧠"
-},
+}

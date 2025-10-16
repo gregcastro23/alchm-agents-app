@@ -4,24 +4,24 @@
 import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from './agent-types'
 
 // Individual agent imports
-import { Voltaire_1694 } from './agents/historical/voltaire'
-import { John_Locke_1632 } from './agents/historical/john-locke'
-import { David_Hume_1711 } from './agents/historical/david-hume'
-import { Johannes_Kepler_1571 } from './agents/historical/johannes-kepler'
-import { Immanuel_Kant_1724 } from './agents/historical/immanuel-kant'
-import { Adam_Smith_1723 } from './agents/historical/adam-smith'
-import { Jean_Jacques_Rousseau_1712 } from './agents/historical/jean-jacques-rousseau'
-import { Mary_Wollstonecraft_1759 } from './agents/historical/mary-wollstonecraft'
-import { Rene_Descartes_1596 } from './agents/historical/rene-descartes'
-import { Charles_Dickens_1812 } from './agents/historical/charles-dickens'
-import { Claude_Monet_1840 } from './agents/historical/claude-monet'
-import { Nikola_Tesla_1856 } from './agents/historical/nikola-tesla'
-import { Marie_Curie_1867 } from './agents/historical/marie-curie'
-import { Sigmund_Freud_1856 } from './agents/historical/sigmund-freud'
-import { Mark_Twain_1835 } from './agents/historical/mark-twain'
-import { Vincent_van_Gogh_1853 } from './agents/historical/vincent-van-gogh'
-import { Charles_Darwin_1809 } from './agents/historical/charles-darwin'
-import { Edgar_Allan_Poe_1809 } from './agents/historical/edgar-allan-poe'
+import { VOLTAIRE } from './agents/historical/voltaire'
+import { JOHN_LOCKE } from './agents/historical/john-locke'
+import { DAVID_HUME } from './agents/historical/david-hume'
+import { JOHANNES_KEPLER } from './agents/historical/johannes-kepler'
+import { IMMANUEL_KANT } from './agents/historical/immanuel-kant'
+import { ADAM_SMITH } from './agents/historical/adam-smith'
+import { JEAN_JACQUES_ROUSSEAU } from './agents/historical/jean-jacques-rousseau'
+import { MARY_WOLLSTONECRAFT } from './agents/historical/mary-wollstonecraft'
+import { RENE_DESCARTES } from './agents/historical/rene-descartes'
+import { CHARLES_DICKENS } from './agents/historical/charles-dickens'
+import { CLAUDE_MONET } from './agents/historical/claude-monet'
+import { NIKOLA_TESLA } from './agents/historical/nikola-tesla'
+import { MARIE_CURIE } from './agents/historical/marie-curie'
+import { SIGMUND_FREUD } from './agents/historical/sigmund-freud'
+import { MARK_TWAIN } from './agents/historical/mark-twain'
+import { VINCENT_VAN_GOGH } from './agents/historical/vincent-van-gogh'
+import { CHARLES_DARWIN } from './agents/historical/charles-darwin'
+import { EDGAR_ALLAN_POE } from './agents/historical/edgar-allan-poe'
 
 /**
  * Helper to create objective consciousness metrics based on agent characteristics
@@ -4466,25 +4466,25 @@ const EXISTING_DEMO_AGENTS: CraftedAgent[] = [
 export const DEMO_AGENTS: CraftedAgent[] = [
   ...EXISTING_DEMO_AGENTS,
   // Enlightenment era agents
-  Rene_Descartes_1596,
-  Voltaire_1694,
-  John_Locke_1632,
-  David_Hume_1711,
-  Johannes_Kepler_1571,
-  Immanuel_Kant_1724,
-  Adam_Smith_1723,
-  Jean_Jacques_Rousseau_1712,
-  Mary_Wollstonecraft_1759,
+  RENE_DESCARTES,
+  VOLTAIRE,
+  JOHN_LOCKE,
+  DAVID_HUME,
+  JOHANNES_KEPLER,
+  IMMANUEL_KANT,
+  ADAM_SMITH,
+  JEAN_JACQUES_ROUSSEAU,
+  MARY_WOLLSTONECRAFT,
   // Modern era agents
-  Charles_Dickens_1812,
-  Claude_Monet_1840,
-  Nikola_Tesla_1856,
-  Marie_Curie_1867,
-  Sigmund_Freud_1856,
-  Mark_Twain_1835,
-  Vincent_van_Gogh_1853,
-  Charles_Darwin_1809,
-  Edgar_Allan_Poe_1809,
+  CHARLES_DICKENS,
+  CLAUDE_MONET,
+  NIKOLA_TESLA,
+  MARIE_CURIE,
+  SIGMUND_FREUD,
+  MARK_TWAIN,
+  VINCENT_VAN_GOGH,
+  CHARLES_DARWIN,
+  EDGAR_ALLAN_POE,
 ]
 
 // Helper functions for consciousness crafting

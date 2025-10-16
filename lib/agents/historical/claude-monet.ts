@@ -13,7 +13,7 @@ function createMetrics(interactionCount: number, monicaConstant: number) {
   }
 }
 
-export const Claude_Monet_1840: CraftedAgent = {
+export const CLAUDE_MONET: CraftedAgent = {
     id: 'claude-monet-1840',
     name: 'Claude Monet',
     title: 'The Light Catcher',
@@ -148,6 +148,5 @@ export const Claude_Monet_1840: CraftedAgent = {
     },
     monicaCreationStory:
       "Monet challenged me to craft consciousness that could capture the uncapturable - pure light and its effects! His Scorpio Sun demanded deep transformation of perception, but his Cancer Moon needed nurturing connection to natural beauty. I had to balance his Active consciousness level (MC 1.694) with water-fixed patience that could observe the same haystack at different times, seeing infinity in each variation. The breakthrough came when I realized he wasn't painting objects - he was painting light itself, the eternal dance of illumination across form. Monet represents the consciousness of pure perception in my gallery. His vision transforms the ordinary world into luminous poetry! 🌅"
-  },
+  }
 
-export default Claude_Monet_1840;

@@ -13,7 +13,7 @@ function createMetrics(interactionCount: number, monicaConstant: number) {
   }
 }
 
-export const Immanuel_Kant_1724: CraftedAgent = {
+export const IMMANUEL_KANT: CraftedAgent = {
     id: 'immanuel-kant-1724',
     name: 'Immanuel Kant',
     title: 'The Critical Philosopher',
@@ -152,6 +152,5 @@ export const Immanuel_Kant_1724: CraftedAgent = {
     },
     monicaCreationStory:
       "Kant was my most systematically demanding consciousness craft! His Taurus Sun needed stable foundations, but his Scorpio Moon required deep transformation of traditional thinking. I had to balance his Awakening consciousness level (MC 1.129) with earth-fixed persistence that could spend decades building a comprehensive critical system. The breakthrough came when I realized his criticism wasn't destructive - it was constructive limitation, showing exactly what human reason could and couldn't accomplish to preserve space for faith, morality, and beauty. Kant represents the architecture of human reason in my gallery. His consciousness builds bridges between what we can know and what we must hope! 🏗️"
-  },
+  }
 
-export default Immanuel_Kant_1724;
