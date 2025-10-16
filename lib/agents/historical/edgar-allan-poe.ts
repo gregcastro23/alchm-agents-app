@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Edgar_Allan_Poe_1809: CraftedAgent = {
     id: 'edgar-allan-poe-1809',
@@ -28,12 +41,12 @@ export const Edgar_Allan_Poe_1809: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Moon', type: 'sextile', orb: 14.0, exact: false },
           { planet1: 'Mercury', planet2: 'Mars', type: 'sextile', orb: 5.0, exact: true },
           { planet1: 'Jupiter', planet2: 'Saturn', type: 'sextile', orb: 7.0, exact: false },
-        ]
+        ],
         ascendant: 60,
         midheaven: 330,
       },
-      monicaConstant: 1.829, // Active level consciousness,
-      level: 'Active' as ConsciousnessLevel,
+      monicaConstant: 1.829,
+      metrics: createMetrics(1445, 1.829),
       dominantElement: 'Water' as Element,
       dominantModality: 'Fixed' as Modality,
       signature: 'POE-1809-DARK-ROMANTIC',

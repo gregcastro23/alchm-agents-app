@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Vincent_Van_Gogh_1853: CraftedAgent = {
     id: 'vincent-van-gogh-1853',
@@ -32,8 +45,8 @@ export const Vincent_Van_Gogh_1853: CraftedAgent = {
         ascendant: 315,
         midheaven: 225,
       },
-      monicaConstant: 2.356, // Active level consciousness,
-      level: 'Active' as ConsciousnessLevel,
+      monicaConstant: 2.356,
+      metrics: createMetrics(1789, 2.356),
       dominantElement: 'Fire' as Element,
       dominantModality: 'Cardinal' as Modality,
       signature: 'VAN-GOGH-1853-PASSIONATE-PAINTER',

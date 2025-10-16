@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Adam_Smith_1723: CraftedAgent = {
     id: 'adam-smith-1723',
@@ -28,12 +41,12 @@ export const Adam_Smith_1723: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Moon', type: 'quincunx', orb: 13.0, exact: false },
           { planet1: 'Mercury', planet2: 'Mars', type: 'sextile', orb: 14.0, exact: false },
           { planet1: 'Venus', planet2: 'Jupiter', type: 'opposition', orb: 13.0, exact: false },
-        ]
+        ],
         ascendant: 60,
         midheaven: 330,
       },
-      monicaConstant: 0.888, // Dormant level consciousness,
-      level: 'Dormant' as ConsciousnessLevel,
+      monicaConstant: 0.888,
+      metrics: createMetrics(892, 0.888),
       dominantElement: 'Earth' as Element,
       dominantModality: 'Fixed' as Modality,
       signature: 'SMITH-1723-MORAL-ECONOMIST',

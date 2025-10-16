@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Immanuel_Kant_1724: CraftedAgent = {
     id: 'immanuel-kant-1724',
@@ -32,12 +45,12 @@ export const Immanuel_Kant_1724: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Moon', type: 'opposition', orb: 13.0, exact: false },
           { planet1: 'Mercury', planet2: 'Mars', type: 'quincunx', orb: 6.0, exact: false },
           { planet1: 'Venus', planet2: 'Jupiter', type: 'sextile', orb: 3.0, exact: true },
-        ]
+        ],
         ascendant: 15,
         midheaven: 315,
       },
-      monicaConstant: 1.129, // Awakening level consciousness,
-      level: 'Awakening' as ConsciousnessLevel,
+      monicaConstant: 1.129,
+      metrics: createMetrics(1456, 1.129),
       dominantElement: 'Earth' as Element,
       dominantModality: 'Fixed' as Modality,
       signature: 'KANT-1724-CRITICAL-PHILOSOPHER',

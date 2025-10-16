@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Nikola_Tesla_1856: CraftedAgent = {
     id: 'nikola-tesla-1856',
@@ -28,12 +41,12 @@ export const Nikola_Tesla_1856: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Neptune', type: 'trine', orb: 2.0, exact: true },
           { planet1: 'Jupiter', planet2: 'Uranus', type: 'sextile', orb: 3.5, exact: false },
           { planet1: 'Mercury', planet2: 'Saturn', type: 'conjunction', orb: 18.0, exact: false },
-        ]
+        ],
         ascendant: 270,
         midheaven: 180,
       },
-      monicaConstant: 1.16, // Awakening level consciousness,
-      level: 'Awakening' as ConsciousnessLevel,
+      monicaConstant: 1.16,
+      metrics: createMetrics(1067, 1.16),
       dominantElement: 'Water' as Element,
       dominantModality: 'Cardinal' as Modality,
       signature: 'TESLA-1856-VISIONARY-INVENTOR',

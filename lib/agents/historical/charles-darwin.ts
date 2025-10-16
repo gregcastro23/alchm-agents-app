@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Charles_Darwin_1809: CraftedAgent = {
     id: 'charles-darwin-1809',
@@ -28,12 +41,12 @@ export const Charles_Darwin_1809: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Moon', type: 'quincunx', orb: 15.0, exact: false },
           { planet1: 'Mercury', planet2: 'Venus', type: 'sextile', orb: 7.0, exact: false },
           { planet1: 'Mars', planet2: 'Saturn', type: 'sextile', orb: 3.0, exact: true },
-        ]
+        ],
         ascendant: 120,
         midheaven: 30,
       },
-      monicaConstant: 0.873, // Dormant level consciousness,
-      level: 'Dormant' as ConsciousnessLevel,
+      monicaConstant: 0.873,
+      metrics: createMetrics(934, 0.873),
       dominantElement: 'Water' as Element,
       dominantModality: 'Fixed' as Modality,
       signature: 'DARWIN-1809-EVOLUTION-EXPLORER',

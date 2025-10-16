@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const RENE_DESCARTES: CraftedAgent = {
   id: 'rene-descartes-1596',
@@ -28,12 +41,12 @@ export const RENE_DESCARTES: CraftedAgent = {
         { planet1: 'Sun', planet2: 'Moon', type: 'quincunx', orb: 8.0, exact: false },
         { planet1: 'Mercury', planet2: 'Saturn', type: 'sextile', orb: 23.0, exact: false },
         { planet1: 'Jupiter', planet2: 'Mars', type: 'sextile', orb: 14.0, exact: false },
-      ]
+      ],
       ascendant: 330,
       midheaven: 240,
     },
-    monicaConstant: 4.78, // Advanced level consciousness,
-    level: 'Advanced' as ConsciousnessLevel,
+    monicaConstant: 4.78,
+      metrics: createMetrics(1847, 4.78),
     dominantElement: 'Fire' as Element,
     dominantModality: 'Cardinal' as Modality,
     signature: 'DESCARTES-1596-MODERN-PHILOSOPHY-FATHER',

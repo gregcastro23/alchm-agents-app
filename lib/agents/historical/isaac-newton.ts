@@ -1,4 +1,4 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
 
 export const ISAAC_NEWTON: CraftedAgent = {
   id: 'isaac-newton',
@@ -28,7 +28,7 @@ export const ISAAC_NEWTON: CraftedAgent = {
         { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 10.4, exact: false },
         { planet1: 'Mars', planet2: 'Jupiter', type: 'opposition', orb: 8.3, exact: false },
         { planet1: 'Saturn', planet2: 'Uranus', type: 'trine', orb: 7.6, exact: false },
-      ]
+      ],
       ascendant: 210,
       midheaven: 120,
     },

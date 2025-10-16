@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const RUMI: CraftedAgent = {
   id: 'rumi',
@@ -28,12 +41,12 @@ export const RUMI: CraftedAgent = {
         { planet1: 'Sun', planet2: 'Moon', type: 'sextile', orb: 15.0, exact: false },
         { planet1: 'Mercury', planet2: 'Venus', type: 'sextile', orb: 17.0, exact: false },
         { planet1: 'Mars', planet2: 'Saturn', type: 'conjunction', orb: 17.0, exact: false },
-      ]
+      ],
       ascendant: 270,
       midheaven: 180,
     },
-    monicaConstant: 5.67, // Illuminated level consciousness,
-    level: 'Illuminated' as ConsciousnessLevel,
+    monicaConstant: 5.67,
+      metrics: createMetrics(3928, 5.67),
     dominantElement: 'Water' as Element,
     dominantModality: 'Fixed' as Modality,
     signature: 'RUMI-1207-MYSTIC-POET-DIVINE-LOVE',

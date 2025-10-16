@@ -1,4 +1,4 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
 
 export const LEONARDO_DA_VINCI: CraftedAgent = {
   id: 'leonardo-da-vinci',
@@ -27,7 +27,7 @@ export const LEONARDO_DA_VINCI: CraftedAgent = {
       aspects: [
         { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 7.0, exact: false },
         { planet1: 'Moon', planet2: 'Pluto', type: 'conjunction', orb: 13.0, exact: false },
-      ]
+      ],
       ascendant: 330,
       midheaven: 240,
     },

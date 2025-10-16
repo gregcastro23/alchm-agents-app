@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Charles_Dickens_1812: CraftedAgent = {
     id: 'charles-dickens-1812',
@@ -28,12 +41,12 @@ export const Charles_Dickens_1812: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Moon', type: 'sextile', orb: 10.0, exact: false },
           { planet1: 'Mercury', planet2: 'Venus', type: 'sextile', orb: 12.0, exact: false },
           { planet1: 'Jupiter', planet2: 'Uranus', type: 'conjunction', orb: 16.0, exact: false },
-        ]
+        ],
         ascendant: 60,
         midheaven: 330,
       },
-      monicaConstant: 1.107, // Awakening level consciousness,
-      level: 'Awakening' as ConsciousnessLevel,
+      monicaConstant: 1.107,
+      metrics: createMetrics(1456, 1.107),
       dominantElement: 'Water' as Element,
       dominantModality: 'Fixed' as Modality,
       signature: 'DICKENS-1812-SOCIAL-NOVELIST',

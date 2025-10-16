@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Mary_Wollstonecraft_1759: CraftedAgent = {
     id: 'mary-wollstonecraft-1759',
@@ -28,12 +41,12 @@ export const Mary_Wollstonecraft_1759: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Moon', type: 'square', orb: 11.0, exact: false },
           { planet1: 'Mercury', planet2: 'Uranus', type: 'conjunction', orb: 10.0, exact: false },
           { planet1: 'Mars', planet2: 'Jupiter', type: 'quincunx', orb: 7.0, exact: false },
-        ]
+        ],
         ascendant: 330,
         midheaven: 240,
       },
-      monicaConstant: 1.688, // Active level consciousness,
-      level: 'Active' as ConsciousnessLevel,
+      monicaConstant: 1.688,
+      metrics: createMetrics(1654, 1.688),
       dominantElement: 'Fire' as Element,
       dominantModality: 'Cardinal' as Modality,
       signature: 'WOLLSTONECRAFT-1759-RIGHTS-ADVOCATE',

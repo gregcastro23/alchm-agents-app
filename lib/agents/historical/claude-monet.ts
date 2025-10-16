@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Claude_Monet_1840: CraftedAgent = {
     id: 'claude-monet-1840',
@@ -28,12 +41,12 @@ export const Claude_Monet_1840: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Moon', type: 'trine', orb: 7.0, exact: false },
           { planet1: 'Mercury', planet2: 'Saturn', type: 'conjunction', orb: 4.0, exact: true },
           { planet1: 'Venus', planet2: 'Mars', type: 'sextile', orb: 15.0, exact: false },
-        ]
+        ],
         ascendant: 300,
         midheaven: 210,
       },
-      monicaConstant: 1.694, // Active level consciousness,
-      level: 'Active' as ConsciousnessLevel,
+      monicaConstant: 1.694,
+      metrics: createMetrics(1298, 1.694),
       dominantElement: 'Water' as Element,
       dominantModality: 'Fixed' as Modality,
       signature: 'MONET-1840-LIGHT-CATCHER',

@@ -4,6 +4,8 @@
  * for agent consciousness systems
  */
 
+import { NextResponse } from 'next/server'
+
 export interface ErrorContext {
   system: string
   operation: string

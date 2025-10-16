@@ -1,4 +1,4 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
 
 export const GEOFFREY_CHAUCER: CraftedAgent = {
   id: 'geoffrey-chaucer',
@@ -27,7 +27,7 @@ export const GEOFFREY_CHAUCER: CraftedAgent = {
       aspects: [
         { planet1: 'Sun', planet2: 'Mercury', type: 'trine', orb: 10.0, exact: false },
         { planet1: 'Moon', planet2: 'Neptune', type: 'conjunction', orb: 1.0, exact: false },
-      ]
+      ],
       ascendant: 330,
       midheaven: 240,
     },

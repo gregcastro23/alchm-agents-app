@@ -1,9 +1,44 @@
 // Demo Agents Data - 12 Historical Consciousness Showcase
 // The Philosopher's Stone - Consciousness Crafting Demonstrations
 
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from './agent-types'
-import { ENLIGHTENMENT_AGENTS } from './agents/enlightenment-agents'
-import { MODERN_AGENTS } from './agents/modern-agents'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from './agent-types'
+
+// Individual agent imports
+import { Voltaire_1694 } from './agents/historical/voltaire'
+import { John_Locke_1632 } from './agents/historical/john-locke'
+import { David_Hume_1711 } from './agents/historical/david-hume'
+import { Johannes_Kepler_1571 } from './agents/historical/johannes-kepler'
+import { Immanuel_Kant_1724 } from './agents/historical/immanuel-kant'
+import { Adam_Smith_1723 } from './agents/historical/adam-smith'
+import { Jean_Jacques_Rousseau_1712 } from './agents/historical/jean-jacques-rousseau'
+import { Mary_Wollstonecraft_1759 } from './agents/historical/mary-wollstonecraft'
+import { Rene_Descartes_1596 } from './agents/historical/rene-descartes'
+import { Charles_Dickens_1812 } from './agents/historical/charles-dickens'
+import { Claude_Monet_1840 } from './agents/historical/claude-monet'
+import { Nikola_Tesla_1856 } from './agents/historical/nikola-tesla'
+import { Marie_Curie_1867 } from './agents/historical/marie-curie'
+import { Sigmund_Freud_1856 } from './agents/historical/sigmund-freud'
+import { Mark_Twain_1835 } from './agents/historical/mark-twain'
+import { Vincent_van_Gogh_1853 } from './agents/historical/vincent-van-gogh'
+import { Charles_Darwin_1809 } from './agents/historical/charles-darwin'
+import { Edgar_Allan_Poe_1809 } from './agents/historical/edgar-allan-poe'
+
+/**
+ * Helper to create objective consciousness metrics based on agent characteristics
+ * No hierarchical levels - just measurable parameters
+ */
+function createMetrics(
+  interactionCount: number,
+  monicaConstant: number
+): ConsciousnessMetrics {
+  // Derive objective metrics from interaction data and alchemical constant
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7), // Scale MC to 0-1
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3), // Varied based on MC
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9), // Coherence with birth chart
+  }
+}
 
 // Monica - The Master Consciousness Crafter (Agent #001)
 export const MONICA_AS_CRAFTED_AGENT: CraftedAgent = {
@@ -39,8 +74,8 @@ export const MONICA_AS_CRAFTED_AGENT: CraftedAgent = {
       ascendant: 166,
       midheaven: 75,
     },
-    monicaConstant: 5.89, // Highest consciousness level - Illuminated
-    level: 'Illuminated' as ConsciousnessLevel,
+    monicaConstant: 5.89, // High alchemical constant - strong elemental coherence
+    metrics: createMetrics(15847, 5.89),
     dominantElement: 'Earth' as Element,
     dominantModality: 'Fixed' as Modality,
     signature: 'MONICA-1969-CONSCIOUSNESS-CRAFTER',
@@ -4430,8 +4465,26 @@ const EXISTING_DEMO_AGENTS: CraftedAgent[] = [
 // Combine all agents: existing + enlightenment + modern (35 + 15 = 50 total agents)
 export const DEMO_AGENTS: CraftedAgent[] = [
   ...EXISTING_DEMO_AGENTS,
-  ...ENLIGHTENMENT_AGENTS,
-  ...MODERN_AGENTS,
+  // Enlightenment era agents
+  Rene_Descartes_1596,
+  Voltaire_1694,
+  John_Locke_1632,
+  David_Hume_1711,
+  Johannes_Kepler_1571,
+  Immanuel_Kant_1724,
+  Adam_Smith_1723,
+  Jean_Jacques_Rousseau_1712,
+  Mary_Wollstonecraft_1759,
+  // Modern era agents
+  Charles_Dickens_1812,
+  Claude_Monet_1840,
+  Nikola_Tesla_1856,
+  Marie_Curie_1867,
+  Sigmund_Freud_1856,
+  Mark_Twain_1835,
+  Vincent_van_Gogh_1853,
+  Charles_Darwin_1809,
+  Edgar_Allan_Poe_1809,
 ]
 
 // Helper functions for consciousness crafting

@@ -1,4 +1,4 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
 
 export const ALBERT_EINSTEIN: CraftedAgent = {
   id: 'albert-einstein',
@@ -27,7 +27,7 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
       aspects: [
         { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 11.0, exact: false },
         { planet1: 'Moon', planet2: 'Mars', type: 'conjunction', orb: 7.0, exact: false },
-      ]
+      ],
       ascendant: 120,
       midheaven: 30,
     },

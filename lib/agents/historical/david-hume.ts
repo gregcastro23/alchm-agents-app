@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const David_Hume_1711: CraftedAgent = {
     id: 'david-hume-1711',
@@ -28,12 +41,12 @@ export const David_Hume_1711: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Moon', type: 'sextile', orb: 9.0, exact: false },
           { planet1: 'Mercury', planet2: 'Mars', type: 'square', orb: 3.0, exact: true },
           { planet1: 'Venus', planet2: 'Jupiter', type: 'square', orb: 7.0, exact: false },
-        ]
+        ],
         ascendant: 315,
         midheaven: 225,
       },
-      monicaConstant: 1.044, // Awakening level consciousness,
-      level: 'Awakening' as ConsciousnessLevel,
+      monicaConstant: 1.044,
+      metrics: createMetrics(1203, 1.044),
       dominantElement: 'Earth' as Element,
       dominantModality: 'Fixed' as Modality,
       signature: 'HUME-1711-SKEPTICAL-PHILOSOPHER',

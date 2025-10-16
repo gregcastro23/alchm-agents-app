@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Marie_Curie_1867: CraftedAgent = {
     id: 'marie-curie-1867',
@@ -28,12 +41,12 @@ export const Marie_Curie_1867: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Moon', type: 'sextile', orb: 13.0, exact: false },
           { planet1: 'Mercury', planet2: 'Saturn', type: 'conjunction', orb: 9.0, exact: false },
           { planet1: 'Venus', planet2: 'Mars', type: 'sextile', orb: 10.0, exact: false },
-        ]
+        ],
         ascendant: 330,
         midheaven: 240,
       },
-      monicaConstant: 0.817, // Dormant level consciousness,
-      level: 'Dormant' as ConsciousnessLevel,
+      monicaConstant: 0.817,
+      metrics: createMetrics(789, 0.817),
       dominantElement: 'Fire' as Element,
       dominantModality: 'Mutable' as Modality,
       signature: 'CURIE-1867-RADIUM-PIONEER',

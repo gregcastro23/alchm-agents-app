@@ -1,4 +1,4 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
 
 export const MAYA_ANGELOU: CraftedAgent = {
   id: 'maya-angelou',
@@ -28,7 +28,7 @@ export const MAYA_ANGELOU: CraftedAgent = {
         { planet1: 'Sun', planet2: 'Moon', type: 'opposition', orb: 14.5, exact: false },
         { planet1: 'Venus', planet2: 'Jupiter', type: 'conjunction', orb: 12.7, exact: false },
         { planet1: 'Sun', planet2: 'Uranus', type: 'conjunction', orb: 8.6, exact: false },
-      ]
+      ],
       ascendant: 0,
       midheaven: 270,
     },

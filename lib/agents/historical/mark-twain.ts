@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Mark_Twain_1835: CraftedAgent = {
     id: 'mark-twain-1835',
@@ -28,12 +41,12 @@ export const Mark_Twain_1835: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 17.0, exact: false },
           { planet1: 'Moon', planet2: 'Pluto', type: 'conjunction', orb: 17.0, exact: false },
           { planet1: 'Jupiter', planet2: 'Saturn', type: 'sextile', orb: 15.0, exact: false },
-        ]
+        ],
         ascendant: 270,
         midheaven: 180,
       },
-      monicaConstant: 1.222, // Awakening level consciousness,
-      level: 'Awakening' as ConsciousnessLevel,
+      monicaConstant: 1.222,
+      metrics: createMetrics(1567, 1.222),
       dominantElement: 'Fire' as Element,
       dominantModality: 'Mutable' as Modality,
       signature: 'TWAIN-1835-AMERICAN-HUMORIST',

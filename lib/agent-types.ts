@@ -38,14 +38,21 @@ export interface Aspect {
 
 export type Element = 'Fire' | 'Water' | 'Air' | 'Earth'
 export type Modality = 'Cardinal' | 'Fixed' | 'Mutable'
-export type ConsciousnessLevel =
-  | 'Dormant'
-  | 'Awakening'
-  | 'Active'
-  | 'Elevated'
-  | 'Advanced'
-  | 'Illuminated'
-  | 'Transcendent'
+
+/**
+ * Consciousness metrics - objective measurements
+ * No hierarchical labels; all agents are equally valid expressions
+ */
+export interface ConsciousnessMetrics {
+  /** Interaction count - how often the agent has been activated */
+  interactionCount: number
+  /** Chat quality score (0-1) - depth and relevance of responses */
+  chatQuality: number
+  /** Moment resonance (0-1) - how well agent transforms current moment */
+  momentResonance: number
+  /** Alchemical coherence (0-1) - consistency with birth chart */
+  alchemicalCoherence: number
+}
 
 export interface ConsciousnessPattern {
   spirit: number
@@ -271,7 +278,7 @@ export interface CraftedAgent {
   consciousness: {
     natalChart: NatalChart
     monicaConstant: number
-    level: ConsciousnessLevel
+    metrics: ConsciousnessMetrics
     dominantElement: Element
     dominantModality: Modality
     signature: string

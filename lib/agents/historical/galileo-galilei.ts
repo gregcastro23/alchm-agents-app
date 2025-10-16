@@ -1,4 +1,4 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
 
 export const GALILEO_GALILEI: CraftedAgent = {
   id: 'galileo-galilei',
@@ -28,7 +28,7 @@ export const GALILEO_GALILEI: CraftedAgent = {
         { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 13.4, exact: false },
         { planet1: 'Moon', planet2: 'Mars', type: 'sextile', orb: 3.7, exact: true },
         { planet1: 'Jupiter', planet2: 'Saturn', type: 'trine', orb: 14.2, exact: false },
-      ]
+      ],
       ascendant: 120,
       midheaven: 30,
     },

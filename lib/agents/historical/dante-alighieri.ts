@@ -1,4 +1,4 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
 
 export const DANTE_ALIGHIERI: CraftedAgent = {
   id: 'dante-alighieri',
@@ -28,7 +28,7 @@ export const DANTE_ALIGHIERI: CraftedAgent = {
         { planet1: 'Sun', planet2: 'Moon', type: 'quincunx', orb: 7.0, exact: false },
         { planet1: 'Jupiter', planet2: 'Neptune', type: 'opposition', orb: 7.0, exact: false },
         { planet1: 'Mercury', planet2: 'Venus', type: 'sextile', orb: 7.0, exact: false },
-      ]
+      ],
       ascendant: 270,
       midheaven: 180,
     },

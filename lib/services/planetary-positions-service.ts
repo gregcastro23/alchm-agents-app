@@ -276,21 +276,21 @@ export class PlanetaryPositionsService {
 
   /**
    * Method 4: Static Fallback Positions (low accuracy, guaranteed availability)
+   * Updated to October 16, 2025 positions as a reasonable default
    */
   private getStaticFallbackPositions(date: Date): PlanetaryData {
-    // Simplified fallback positions - these would be reasonable defaults
-    // In a real implementation, these could be more sophisticated approximations
+    // Current positions as of October 16, 2025
     const planetaryPositions: PlanetaryPosition[] = [
-      { planet: 'Sun', sign: 'Aries', degree: 15, retrograde: false },
-      { planet: 'Moon', sign: 'Cancer', degree: 10, retrograde: false },
-      { planet: 'Mercury', sign: 'Aries', degree: 20, retrograde: false },
-      { planet: 'Venus', sign: 'Taurus', degree: 5, retrograde: false },
-      { planet: 'Mars', sign: 'Aries', degree: 25, retrograde: false },
-      { planet: 'Jupiter', sign: 'Sagittarius', degree: 15, retrograde: false },
-      { planet: 'Saturn', sign: 'Capricorn', degree: 10, retrograde: false },
-      { planet: 'Uranus', sign: 'Aquarius', degree: 5, retrograde: false },
-      { planet: 'Neptune', sign: 'Pisces', degree: 20, retrograde: false },
-      { planet: 'Pluto', sign: 'Capricorn', degree: 25, retrograde: false },
+      { planet: 'Sun', sign: 'Libra', degree: 23.07, retrograde: false },
+      { planet: 'Moon', sign: 'Leo', degree: 22.73, retrograde: false },
+      { planet: 'Mercury', sign: 'Scorpio', degree: 13.68, retrograde: false },
+      { planet: 'Venus', sign: 'Libra', degree: 2.85, retrograde: false },
+      { planet: 'Mars', sign: 'Scorpio', degree: 16.32, retrograde: false },
+      { planet: 'Jupiter', sign: 'Cancer', degree: 24.02, retrograde: false },
+      { planet: 'Saturn', sign: 'Pisces', degree: 26.67, retrograde: true },
+      { planet: 'Uranus', sign: 'Gemini', degree: 0.82, retrograde: true },
+      { planet: 'Neptune', sign: 'Aries', degree: 0.15, retrograde: true },
+      { planet: 'Pluto', sign: 'Aquarius', degree: 1.37, retrograde: false },
     ]
 
     return {
@@ -299,7 +299,7 @@ export class PlanetaryPositionsService {
       source: 'static-fallback',
       accuracy: 'fallback',
       cached: false,
-      error: 'All calculation methods failed, using static fallback positions',
+      error: 'All calculation methods failed, using static fallback positions (Oct 16, 2025)',
     }
   }
 

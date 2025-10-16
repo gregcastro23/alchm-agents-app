@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
     id: 'jean-jacques-rousseau-1712',
@@ -28,12 +41,12 @@ export const Jean_Jacques_Rousseau_1712: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Moon', type: 'quincunx', orb: 15.0, exact: false },
           { planet1: 'Mercury', planet2: 'Mars', type: 'square', orb: 3.0, exact: true },
           { planet1: 'Venus', planet2: 'Jupiter', type: 'trine', orb: 5.0, exact: true },
-        ]
+        ],
         ascendant: 300,
         midheaven: 210,
       },
-      monicaConstant: 1.288, // Awakening level consciousness,
-      level: 'Awakening' as ConsciousnessLevel,
+      monicaConstant: 1.288,
+      metrics: createMetrics(1378, 1.288),
       dominantElement: 'Fire' as Element,
       dominantModality: 'Mutable' as Modality,
       signature: 'ROUSSEAU-1712-SOCIAL-PHILOSOPHER',

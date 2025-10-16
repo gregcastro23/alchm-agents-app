@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const John_Locke_1632: CraftedAgent = {
     id: 'john-locke-1632',
@@ -28,12 +41,12 @@ export const John_Locke_1632: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Moon', type: 'trine', orb: 15.0, exact: false },
           { planet1: 'Mercury', planet2: 'Jupiter', type: 'trine', orb: 7.0, exact: false },
           { planet1: 'Venus', planet2: 'Mars', type: 'square', orb: 15.0, exact: false },
-        ]
+        ],
         ascendant: 45,
         midheaven: 315,
       },
-      monicaConstant: 4.45, // Advanced level consciousness,
-      level: 'Advanced' as ConsciousnessLevel,
+      monicaConstant: 4.45,
+      metrics: createMetrics(1592, 4.45),
       dominantElement: 'Earth' as Element,
       dominantModality: 'Mutable' as Modality,
       signature: 'LOCKE-1632-FATHER-LIBERALISM',

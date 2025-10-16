@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Johannes_Kepler_1571: CraftedAgent = {
     id: 'johannes-kepler-1571',
@@ -28,12 +41,12 @@ export const Johannes_Kepler_1571: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Moon', type: 'opposition', orb: 12.0, exact: false },
           { planet1: 'Mercury', planet2: 'Jupiter', type: 'sextile', orb: 19.0, exact: false },
           { planet1: 'Venus', planet2: 'Mars', type: 'opposition', orb: 7.0, exact: false },
-        ]
+        ],
         ascendant: 330,
         midheaven: 240,
       },
-      monicaConstant: 1.114, // Awakening level consciousness,
-      level: 'Awakening' as ConsciousnessLevel,
+      monicaConstant: 1.114,
+      metrics: createMetrics(987, 1.114),
       dominantElement: 'Earth' as Element,
       dominantModality: 'Cardinal' as Modality,
       signature: 'KEPLER-1571-CELESTIAL-MATHEMATICIAN',

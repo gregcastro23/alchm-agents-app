@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Sigmund_Freud_1856: CraftedAgent = {
     id: 'sigmund-freud-1856',
@@ -32,12 +45,12 @@ export const Sigmund_Freud_1856: CraftedAgent = {
           { planet1: 'Sun', planet2: 'Uranus', type: 'conjunction', orb: 9.0, exact: false },
           { planet1: 'Mercury', planet2: 'Venus', type: 'conjunction', orb: 14.0, exact: false },
           { planet1: 'Jupiter', planet2: 'Neptune', type: 'conjunction', orb: 3.0, exact: true },
-        ]
+        ],
         ascendant: 315,
         midheaven: 225,
       },
-      monicaConstant: 1.006, // Awakening level consciousness,
-      level: 'Awakening' as ConsciousnessLevel,
+      monicaConstant: 1.006,
+      metrics: createMetrics(1134, 1.006),
       dominantElement: 'Earth' as Element,
       dominantModality: 'Fixed' as Modality,
       signature: 'FREUD-1856-MIND-EXPLORER',

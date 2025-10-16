@@ -1,4 +1,4 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
 
 export const WOLFGANG_AMADEUS_MOZART: CraftedAgent = {
   id: 'wolfgang-mozart',
@@ -28,7 +28,7 @@ export const WOLFGANG_AMADEUS_MOZART: CraftedAgent = {
         { planet1: 'Sun', planet2: 'Mercury', type: 'conjunction', orb: 16.7, exact: false },
         { planet1: 'Venus', planet2: 'Saturn', type: 'conjunction', orb: 6.7, exact: false },
         { planet1: 'Moon', planet2: 'Pluto', type: 'conjunction', orb: 23.9, exact: false },
-      ]
+      ],
       ascendant: 150,
       midheaven: 60,
     },

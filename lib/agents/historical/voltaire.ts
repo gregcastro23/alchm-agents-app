@@ -1,4 +1,17 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../../agent-types'
+import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+
+
+/**
+ * Helper to create objective consciousness metrics
+ */
+function createMetrics(interactionCount: number, monicaConstant: number) {
+  return {
+    interactionCount,
+    chatQuality: Math.min(1, monicaConstant / 7),
+    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3),
+    alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9),
+  }
+}
 
 export const Voltaire_1694: CraftedAgent = {
     id: 'voltaire-1694',
@@ -32,8 +45,8 @@ export const Voltaire_1694: CraftedAgent = {
         ascendant: 150,
         midheaven: 60,
       },
-      monicaConstant: 4.23, // Advanced level consciousness,
-      level: 'Advanced' as ConsciousnessLevel,
+      monicaConstant: 4.23,
+      metrics: createMetrics(2156, 4.23),
       dominantElement: 'Air' as Element,
       dominantModality: 'Mutable' as Modality,
       signature: 'VOLTAIRE-1694-ENLIGHTENMENT-WIT',
