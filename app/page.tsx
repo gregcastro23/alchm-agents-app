@@ -355,10 +355,8 @@ export default function HomePage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {planetaryPositions
-                      .filter((p) => ['Sun', 'Moon', 'Mars', 'Jupiter'].includes(p.planet))
-                      .map((position) => {
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    {planetaryPositions.map((position) => {
                         const colors = PLANET_COLORS[position.planet] || {
                           from: 'gray-100',
                           to: 'gray-200',
@@ -366,14 +364,14 @@ export default function HomePage() {
                         return (
                           <div
                             key={position.planet}
-                            className={`text-center p-4 bg-gradient-to-br from-${colors.from} to-${colors.to} dark:from-${colors.from.replace('100', '900')} dark:to-${colors.to.replace('100', '900')} rounded-lg`}
+                            className={`text-center p-3 bg-gradient-to-br from-${colors.from} to-${colors.to} dark:from-${colors.from.replace('100', '900')} dark:to-${colors.to.replace('100', '900')} rounded-lg`}
                             style={{ contain: 'layout' }}
                           >
                             <div className="text-2xl mb-2">
                               {PLANET_SYMBOLS[position.planet] || '✦'}
                             </div>
-                            <div className="font-semibold">{position.planet}</div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                            <div className="font-semibold text-sm">{position.planet}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">
                               {position.degree.toFixed(0)}° {position.sign}
                               {position.retrograde ? ' ℞' : ''}
                             </div>
@@ -386,7 +384,7 @@ export default function HomePage() {
                   <Link href="/planetary-agents">
                     <Button className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700">
                       <TrendingUp className="w-4 h-4 mr-2" />
-                      Get Your Chart
+                      View All Placements
                     </Button>
                   </Link>
                 </div>

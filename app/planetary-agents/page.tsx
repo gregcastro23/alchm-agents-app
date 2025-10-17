@@ -61,6 +61,7 @@ function PlanetaryAgentsContent() {
   const [showMoonChat, setShowMoonChat] = useState(false)
   const [showGroupChat, setShowGroupChat] = useState(false)
   const [showCouncilSelection, setShowCouncilSelection] = useState(false)
+  const [showPlanetSelection, setShowPlanetSelection] = useState(false)
   const [selectedPreset, setSelectedPreset] = useState<PlanetaryCouncilPreset | null>(null)
   const [selectedPlanets, setSelectedPlanets] = useState<string[]>([])
   const searchParams = useSearchParams()
@@ -204,18 +205,91 @@ function PlanetaryAgentsContent() {
             onClick={() => setShowCouncilSelection(!showCouncilSelection)}
             className="gap-2 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700"
           >
-            <Users className="w-4 h-4" />
-            {showCouncilSelection ? 'Hide Council Selection' : 'Select Planetary Council'}
+            <Crown className="w-4 h-4" />
+            {showCouncilSelection ? 'Hide Council Presets' : 'Planetary Council Presets'}
+          </Button>
+          <Button
+            onClick={() => {
+              setShowPlanetSelection(!showPlanetSelection)
+              if (!showPlanetSelection) {
+                setSelectedPlanets([])
+                setSelectedPreset(null)
+              }
+            }}
+            className="gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
+          >
+            <Sparkles className="w-4 h-4" />
+            {showPlanetSelection ? 'Hide Custom Chat' : 'Create Custom Group Chat'}
           </Button>
         </div>
+
+        {/* Custom Planet Selection - Simple UI */}
+        {showPlanetSelection && (
+          <Card className="mb-8 border-2 border-amber-200 dark:border-amber-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-amber-600" />
+                Select Planets for Custom Group Chat
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                Click planets below to add them to your custom chat. Selected planets will chat about the current moment.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-3 mb-4">
+                {ORDERED_PLANETS.map(planet => {
+                  const isSelected = selectedPlanets.includes(planet)
+                  const pos = positions[planet]
+                  return (
+                    <Button
+                      key={planet}
+                      variant={isSelected ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedPlanets(selectedPlanets.filter(p => p !== planet))
+                        } else if (selectedPlanets.length < 7) {
+                          setSelectedPlanets([...selectedPlanets, planet])
+                        }
+                      }}
+                      className={isSelected ? "bg-amber-600 hover:bg-amber-700" : ""}
+                    >
+                      {PLANET_SYMBOLS[planet]} {planet}
+                      {pos && ` (${pos.sign})`}
+                    </Button>
+                  )
+                })}
+              </div>
+              {selectedPlanets.length > 0 && (
+                <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg">
+                  <p className="text-sm mb-2">
+                    <strong>Selected ({selectedPlanets.length}/7):</strong>{' '}
+                    {selectedPlanets.map(p => `${PLANET_SYMBOLS[p]} ${p}`).join(', ')}
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setShowGroupChat(true)
+                      setShowPlanetSelection(false)
+                    }}
+                    disabled={selectedPlanets.length === 0}
+                    className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Start Chat with {selectedPlanets.length} Planet{selectedPlanets.length !== 1 ? 's' : ''}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Council Selection Section - Nested on page */}
         {showCouncilSelection && (
           <Card className="mb-8 border-2 border-emerald-200 dark:border-emerald-800">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-emerald-600" />
-                Choose Your Celestial Council
+                <Crown className="w-5 h-5 text-emerald-600" />
+                Choose Your Celestial Council Preset
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -318,14 +392,26 @@ function PlanetaryAgentsContent() {
       {/* Planetary Group Chat - Left side bubble like gallery */}
       <UnifiedMultiAgentChat
         isOpen={showGroupChat}
-        onClose={() => setShowGroupChat(false)}
-        title={selectedPreset ? selectedPreset.name : 'Planetary Council'}
+        onClose={() => {
+          setShowGroupChat(false)
+          // Reset selection when closing
+          if (!selectedPreset) {
+            setSelectedPlanets([])
+          }
+        }}
+        title={
+          selectedPreset
+            ? selectedPreset.name
+            : selectedPlanets.length > 0
+            ? `Custom Chat: ${selectedPlanets.map(p => PLANET_SYMBOLS[p]).join(' ')}`
+            : 'Planetary Council'
+        }
         variant="planetary"
         historicalAgents={[]}
         planetaryConfigs={activePlanetaryConfigs}
         initialAgents={activePlanetIds}
         maxAgents={7}
-        allowMonica={selectedPreset?.includeMonica || true}
+        allowMonica={selectedPreset?.includeMonica !== false}
         enableGroupDynamics={true}
         enableExport={true}
         enableAutoSync={true}
