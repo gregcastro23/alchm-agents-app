@@ -384,7 +384,7 @@ export function getCurrentPlanetaryPositions(
   const calculatedPositions: Record<string, { sign: string; degree: number; retrograde: boolean }> =
     {}
 
-  // Map enhanced planets (Sun..Pluto)
+  // Map enhanced planets (Sun..Pluto) - use accurate Swiss Ephemeris calculations
   ;[
     'Sun',
     'Moon',
@@ -407,26 +407,8 @@ export function getCurrentPlanetaryPositions(
     }
   })
 
-  // Override with date-correlated transit data from planet files when available
-  const nowDate = new Date()
-  ;[
-    'Sun',
-    'Moon',
-    'Mercury',
-    'Venus',
-    'Mars',
-    'Jupiter',
-    'Saturn',
-    'Uranus',
-    'Neptune',
-    'Pluto',
-  ].forEach(planet => {
-    const transit = getTransitPositionFromDates(planet, nowDate)
-    if (transit && calculatedPositions[planet]) {
-      calculatedPositions[planet].sign = transit.sign
-      calculatedPositions[planet].degree = safeDegreeValue(transit.degree)
-    }
-  })
+  // Note: We use Swiss Ephemeris calculations exclusively for accuracy
+  // Transit date files are not used as they are approximations and can have data gaps
 
   // For points not produced by enhanced calc: compute Node mean; approximate Chiron and angles
   const node = getMeanNorthNode(now)
