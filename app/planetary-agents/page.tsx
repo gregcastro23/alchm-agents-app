@@ -77,14 +77,10 @@ function PlanetaryAgentsContent() {
   }, [agentId, router])
 
   useEffect(() => {
-    // Load and periodically refresh current planetary positions
-    const load = () => {
-      const current = getCurrentPlanetaryPositions(Date.now()) // bypass cache to avoid stale positions
-      setPositions(current)
-    }
-    load()
-    const interval = setInterval(load, 60_000) // refresh every 60s
-    return () => clearInterval(interval)
+    // Load current planetary positions once on mount
+    // Planetary movements are slow - positions remain accurate for the session
+    const current = getCurrentPlanetaryPositions(Date.now())
+    setPositions(current)
   }, [])
 
   const cards = useMemo(() => {
@@ -276,7 +272,7 @@ function PlanetaryAgentsContent() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">{cards}</div>
 
         <div className="text-center text-xs text-muted-foreground mt-6">
-          Real-time planetary positions update every 60 seconds. Positions are calculated using Swiss Ephemeris.
+          Current planetary positions calculated using Swiss Ephemeris. Positions remain accurate throughout your session.
         </div>
       </div>
 
