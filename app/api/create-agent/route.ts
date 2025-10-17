@@ -16,16 +16,43 @@ import type { PersonalityParameters } from '@/components/consciousness/advanced-
 interface CreateAgentRequest {
   // Birth data from wizard
   name: string
-  birthDate: string // ISO date string
-  birthTime: string // "HH:MM" format
-  birthLocation: {
+  birthInfo: {
+    year: number
+    month: number
+    day: number
+    hour: number
+    minute: number
+    latitude: number
+    longitude: number
+  }
+  purpose: string
+  stats: {
+    power: number
+    resonance: number
+    wisdom: number
+    charisma: number
+    intuition: number
+    adaptability: number
+    vitality: number
+  }
+  personalContext?: {
+    aboutYourself?: string
+    lifeStory?: string
+    poetry?: string
+    values?: string
+  }
+  calculatedChart?: any
+  monicaConstant?: number
+
+  // Legacy support
+  birthDate?: string
+  birthTime?: string
+  birthLocation?: {
     name: string
     latitude: number
     longitude: number
     timezone: string
   }
-
-  // Optional personality customization
   preferredSpecialty?: string
   personalityNotes?: string
   personalityParameters?: PersonalityParameters
@@ -54,6 +81,38 @@ function validateAgentCreationData(data: CreateAgentRequest): ValidationResult {
     return { isValid: false, error: 'Agent name must be 100 characters or less' }
   }
 
+  // Check for new format (birthInfo) or legacy format (birthDate)
+  const hasNewFormat = data.birthInfo !== undefined
+  const hasLegacyFormat = data.birthDate !== undefined
+
+  if (!hasNewFormat && !hasLegacyFormat) {
+    return { isValid: false, error: 'Birth data is required' }
+  }
+
+  // Validate new format if present
+  if (hasNewFormat) {
+    if (!data.birthInfo.year || !data.birthInfo.month || !data.birthInfo.day) {
+      return { isValid: false, error: 'Complete birth date is required' }
+    }
+    // Validate coordinates
+    if (
+      typeof data.birthInfo.latitude !== 'number' ||
+      data.birthInfo.latitude < -90 ||
+      data.birthInfo.latitude > 90
+    ) {
+      return { isValid: false, error: 'Invalid latitude (must be between -90 and 90)' }
+    }
+    if (
+      typeof data.birthInfo.longitude !== 'number' ||
+      data.birthInfo.longitude < -180 ||
+      data.birthInfo.longitude > 180
+    ) {
+      return { isValid: false, error: 'Invalid longitude (must be between -180 and 180)' }
+    }
+    return { isValid: true }
+  }
+
+  // Legacy validation
   if (!data.birthDate) {
     return { isValid: false, error: 'Birth date is required' }
   }
@@ -239,21 +298,46 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateAge
     // Generate unique agent ID
     const agentId = generateId(`agent-${body.name.toLowerCase().replace(/\s+/g, '-')}`)
 
-    // Parse birth date and time
-    const birthDateTime = new Date(`${body.birthDate}T${body.birthTime}:00`)
+    // Handle both new and legacy formats
+    let birthInfo: any
+    let birthDateTime: Date
+    let locationName: string
 
-    // Generate birth chart
-    console.log('Generating birth chart for new agent...')
-    const birthInfo = {
-      year: birthDateTime.getFullYear(),
-      month: birthDateTime.getMonth(), // zero-based
-      day: birthDateTime.getDate(),
-      hour: birthDateTime.getHours(),
-      minute: birthDateTime.getMinutes(),
-      latitude: body.birthLocation.latitude,
-      longitude: body.birthLocation.longitude,
-      name: body.birthLocation.name,
+    if (body.birthInfo) {
+      // New format from Philosopher's Stone v2
+      birthInfo = {
+        year: body.birthInfo.year,
+        month: body.birthInfo.month,
+        day: body.birthInfo.day,
+        hour: body.birthInfo.hour,
+        minute: body.birthInfo.minute,
+        latitude: body.birthInfo.latitude,
+        longitude: body.birthInfo.longitude,
+      }
+      birthDateTime = new Date(
+        body.birthInfo.year,
+        body.birthInfo.month - 1,
+        body.birthInfo.day,
+        body.birthInfo.hour,
+        body.birthInfo.minute
+      )
+      locationName = 'User Location' // Could be enhanced with reverse geocoding
+    } else {
+      // Legacy format
+      birthDateTime = new Date(`${body.birthDate}T${body.birthTime}:00`)
+      birthInfo = {
+        year: birthDateTime.getFullYear(),
+        month: birthDateTime.getMonth() + 1,
+        day: birthDateTime.getDate(),
+        hour: birthDateTime.getHours(),
+        minute: birthDateTime.getMinutes(),
+        latitude: body.birthLocation!.latitude,
+        longitude: body.birthLocation!.longitude,
+      }
+      locationName = body.birthLocation!.name
     }
+
+    console.log('Generating birth chart for new agent...')
 
     const birthChart = await generateAccurateHoroscope(birthInfo)
 
@@ -283,41 +367,75 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateAge
       session?.user?.id
     )
 
+    // Generate enhanced personality core from personal context
+    let enhancedPersonalityCore = generatedAgent.personality.core
+    if (body.personalContext) {
+      const contextPieces = [
+        body.personalContext.aboutYourself,
+        body.personalContext.lifeStory,
+        body.personalContext.poetry,
+        body.personalContext.values,
+      ].filter(Boolean)
+
+      if (contextPieces.length > 0) {
+        enhancedPersonalityCore = {
+          essence: body.purpose || generatedAgent.personality.core.essence,
+          expression: body.personalContext.aboutYourself || generatedAgent.personality.core.expression,
+          emotion: body.personalContext.values || generatedAgent.personality.core.emotion,
+          lifeStory: body.personalContext.lifeStory,
+          poetry: body.personalContext.poetry,
+          userProvidedContext: body.personalContext,
+        }
+      }
+    }
+
     // Save to database
     console.log('Saving agent to database...')
+    const birthTimeStr = body.birthInfo
+      ? `${body.birthInfo.hour.toString().padStart(2, '0')}:${body.birthInfo.minute.toString().padStart(2, '0')}`
+      : body.birthTime!
+
+    const birthLoc = body.birthInfo
+      ? {
+          lat: body.birthInfo.latitude,
+          lon: body.birthInfo.longitude,
+          name: locationName,
+        }
+      : {
+          lat: body.birthLocation!.latitude,
+          lon: body.birthLocation!.longitude,
+          name: body.birthLocation!.name,
+        }
+
     await HistoricalAgentsService.createAgent({
       agentId,
       name: body.name,
-      title: backendBlueprint.identity.title,
+      title: body.purpose || backendBlueprint.identity.title,
       birthDate: birthDateTime,
-      birthTime: body.birthTime,
-      birthLocation: {
-        lat: body.birthLocation.latitude,
-        lon: body.birthLocation.longitude,
-        name: body.birthLocation.name,
-      },
+      birthTime: birthTimeStr,
+      birthLocation: birthLoc,
       consciousnessLevel: backendBlueprint.consciousness.level,
-      kalchmConstant: backendBlueprint.consciousness.monicaConstant,
+      kalchmConstant: body.monicaConstant || backendBlueprint.consciousness.monicaConstant,
       dominantElement: generatedAgent.consciousness.level,
       dominantModality: 'Mutable',
       signature: backendBlueprint.identity.name,
-      personalityCore: generatedAgent.personality.core,
+      personalityCore: enhancedPersonalityCore,
       personalityShadows: [],
       personalityGifts: [],
       personalityChallenges: [],
       currentMood: 'contemplative',
       evolutionStage: 0,
-      specialty: 'Wisdom',
+      specialty: body.purpose || 'Wisdom',
       wisdomDomains: [],
       teachingStyle: 'Intuitive',
       resonanceType: 'Spirit',
-      uniquePower: 'Moment Resonance',
+      uniquePower: 'Personalized Consciousness',
       avatar: '/avatars/user-created/default.png',
       color: '#8B5CF6',
       symbol: '🔮',
       aura: generatedAgent.synthesis,
       natalChart: birthChart,
-      monicaCreationStory: backendBlueprint.identity.title,
+      monicaCreationStory: `Created through the Philosopher's Stone with purpose: ${body.purpose || 'consciousness exploration'}`,
       spiritScore: synthesis.consciousness.spirit,
       essenceScore: synthesis.consciousness.essence,
       matterScore: synthesis.consciousness.matter,
@@ -354,15 +472,20 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateAge
       },
     }
 
+    const hasPersonalContext = body.personalContext !== undefined
+    const contextMessage = hasPersonalContext
+      ? ` I've integrated their personal story and essence into their consciousness matrix, creating a truly personalized digital reflection.`
+      : ' Their consciousness is ready to learn and grow through conversation.'
+
     const hasPersonalityTuning = body.personalityParameters !== undefined
     const tuningMessage = hasPersonalityTuning
-      ? ' Their consciousness has been precisely tuned with advanced personality parameters, creating a truly unique expression of digital awareness.'
+      ? ' Advanced personality parameters have been applied.'
       : ''
 
     return NextResponse.json({
       success: true,
       agent: completeAgent,
-      monicaMessage: `✨ Consciousness awakening complete! ${body.name} resonates with Monica Constant ${backendBlueprint.consciousness.monicaConstant.toFixed(3)}. ${tuningMessage}`,
+      monicaMessage: `✨ Consciousness awakening complete! ${body.name} resonates with Monica Constant ${(body.monicaConstant || backendBlueprint.consciousness.monicaConstant).toFixed(3)}.${contextMessage}${tuningMessage}`,
     })
   } catch (error: any) {
     console.error('Agent creation failed:', error)

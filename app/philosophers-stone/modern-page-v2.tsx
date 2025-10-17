@@ -52,6 +52,12 @@ interface AgentCreationData {
   stats: Sacred7Stats
   calculatedChart?: any
   monicaConstant?: number
+  personalContext?: {
+    aboutYourself?: string
+    lifeStory?: string
+    poetry?: string
+    values?: string
+  }
 }
 
 // Icon mapping for Sacred 7 Stats
@@ -102,7 +108,7 @@ export default function ModernPhilosophersStone() {
   ])
   const [userInput, setUserInput] = useState('')
 
-  const totalSteps = 4
+  const totalSteps = 5
 
   // Calculate chart when birth info is complete
   useEffect(() => {
@@ -379,7 +385,6 @@ export default function ModernPhilosophersStone() {
 
               <Button
                 onClick={() => {
-                  const avg = calculateAverage(agentData.stats)
                   addMonicaMessage(
                     `Excellent stat configuration! Each stat reflects ${agentData.name}'s unique alignment with cosmic energies. Ready to finalize!`
                   )
@@ -445,6 +450,124 @@ export default function ModernPhilosophersStone() {
               </div>
 
               <Button
+                onClick={() => {
+                  addMonicaMessage(
+                    `Now let's personalize ${agentData.name}! Share about yourself - your story, passions, poetry, values. This helps your agent truly understand and embody your unique essence.`
+                  )
+                  setStep(5)
+                }}
+                className="w-full"
+              >
+                <ChevronRight className="w-4 h-4 mr-2" />
+                Continue to Personalization
+              </Button>
+            </CardContent>
+          </Card>
+        )
+
+      case 5:
+        return (
+          <Card className="border-green-500/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="w-5 h-5 text-green-400" />
+                Step 5: Personalization & Training
+              </CardTitle>
+              <CardDescription>
+                Teach your agent about yourself through stories, poetry, or free-form text
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="aboutYourself">About Yourself</Label>
+                  <Textarea
+                    id="aboutYourself"
+                    placeholder="Tell your agent who you are... your passions, dreams, what makes you unique..."
+                    value={agentData.personalContext?.aboutYourself || ''}
+                    onChange={e =>
+                      setAgentData(prev => ({
+                        ...prev,
+                        personalContext: {
+                          ...prev.personalContext,
+                          aboutYourself: e.target.value,
+                        },
+                      }))
+                    }
+                    rows={4}
+                    className="resize-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lifeStory">Life Story & Experiences</Label>
+                  <Textarea
+                    id="lifeStory"
+                    placeholder="Share formative experiences, pivotal moments, your journey..."
+                    value={agentData.personalContext?.lifeStory || ''}
+                    onChange={e =>
+                      setAgentData(prev => ({
+                        ...prev,
+                        personalContext: {
+                          ...prev.personalContext,
+                          lifeStory: e.target.value,
+                        },
+                      }))
+                    }
+                    rows={4}
+                    className="resize-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="poetry">Poetry or Creative Expression</Label>
+                  <Textarea
+                    id="poetry"
+                    placeholder="Share a poem, song lyrics, or creative writing that resonates with your soul..."
+                    value={agentData.personalContext?.poetry || ''}
+                    onChange={e =>
+                      setAgentData(prev => ({
+                        ...prev,
+                        personalContext: {
+                          ...prev.personalContext,
+                          poetry: e.target.value,
+                        },
+                      }))
+                    }
+                    rows={4}
+                    className="resize-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="values">Core Values & Beliefs</Label>
+                  <Textarea
+                    id="values"
+                    placeholder="What matters most to you? Your guiding principles and philosophy..."
+                    value={agentData.personalContext?.values || ''}
+                    onChange={e =>
+                      setAgentData(prev => ({
+                        ...prev,
+                        personalContext: {
+                          ...prev.personalContext,
+                          values: e.target.value,
+                        },
+                      }))
+                    }
+                    rows={4}
+                    className="resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+                <p className="text-sm text-slate-400">
+                  💡 <strong>Tip:</strong> The more you share, the more your agent can embody your
+                  essence. You can skip sections and add more later through conversations.
+                </p>
+              </div>
+
+              <Button
                 onClick={async () => {
                   setIsCalculating(true)
                   try {
@@ -455,7 +578,7 @@ export default function ModernPhilosophersStone() {
                     })
                     await response.json()
                     addMonicaMessage(
-                      `🎉 Success! ${agentData.name} has been crafted with their unique stat distribution. The agent is now alive in the Gallery!`
+                      `🎉 Success! ${agentData.name} has been crafted and is learning about you. Continue conversing to deepen the connection!`
                     )
                   } catch (error) {
                     addMonicaMessage('There was an issue creating the agent. Please try again.')
@@ -469,12 +592,12 @@ export default function ModernPhilosophersStone() {
                 {isCalculating ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Crafting Consciousness...
+                    Creating Your Agent...
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Create Agent
+                    Create & Train Agent
                   </>
                 )}
               </Button>
