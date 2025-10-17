@@ -77,10 +77,32 @@ function PlanetaryAgentsContent() {
   }, [agentId, router])
 
   useEffect(() => {
-    // Load current planetary positions once on mount
+    // Load current planetary positions once on mount via API
     // Planetary movements are slow - positions remain accurate for the session
-    const current = getCurrentPlanetaryPositions(Date.now())
-    setPositions(current)
+    const loadPositions = async () => {
+      try {
+        const response = await fetch('/api/planetary-positions')
+        const data = await response.json()
+
+        if (data.planetaryPositions) {
+          const positionsMap: Record<string, { sign: string; degree: number }> = {}
+          data.planetaryPositions.forEach((planet: any) => {
+            positionsMap[planet.planet] = {
+              sign: planet.sign,
+              degree: planet.degree
+            }
+          })
+          setPositions(positionsMap)
+        }
+      } catch (error) {
+        console.error('Error loading planetary positions:', error)
+        // Fallback to client-side calculation if API fails
+        const current = getCurrentPlanetaryPositions(Date.now())
+        setPositions(current)
+      }
+    }
+
+    loadPositions()
   }, [])
 
   const cards = useMemo(() => {
