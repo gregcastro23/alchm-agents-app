@@ -57,7 +57,7 @@ export const ZODIAC_SIGNS = [
   { name: 'Pisces', element: 'Water', modality: 'Mutable', start: 330, end: 360 },
 ] as const
 
-export function calculateMoonPhase(date: Date = new Date()): MoonPhase {
+export function calculateMoonPhase(date: Date = new Date(), moonPosition?: { sign: string; degree: number }): MoonPhase {
   const LUNAR_MONTH = 29.53058867
   const KNOWN_NEW_MOON = new Date('2000-01-06T18:14:00Z')
 
@@ -78,19 +78,37 @@ export function calculateMoonPhase(date: Date = new Date()): MoonPhase {
     }
   }
 
-  const zodiacDegree = (phasePercentage * 12) % 360
-  const sign =
-    ZODIAC_SIGNS.find(s => zodiacDegree >= s.start && zodiacDegree < s.end) || ZODIAC_SIGNS[0]
-  const degreeInSign = zodiacDegree - sign.start
+  // Use actual Moon position if provided, otherwise fallback to formula
+  let zodiacSign: string
+  let degreeInSign: number
+  let element: string
+  let modality: string
+
+  if (moonPosition) {
+    zodiacSign = moonPosition.sign
+    degreeInSign = moonPosition.degree
+    const sign = ZODIAC_SIGNS.find(s => s.name === moonPosition.sign) || ZODIAC_SIGNS[0]
+    element = sign.element
+    modality = sign.modality
+  } else {
+    // Fallback to formula (less accurate)
+    const zodiacDegree = (phasePercentage * 12) % 360
+    const sign =
+      ZODIAC_SIGNS.find(s => zodiacDegree >= s.start && zodiacDegree < s.end) || ZODIAC_SIGNS[0]
+    degreeInSign = zodiacDegree - sign.start
+    zodiacSign = sign.name
+    element = sign.element
+    modality = sign.modality
+  }
 
   return {
     name: phaseName,
     emoji: phaseEmoji,
     percentage: phasePercentage,
-    zodiacSign: sign.name,
+    zodiacSign,
     zodiacDegree: degreeInSign,
-    element: sign.element,
-    modality: sign.modality,
+    element,
+    modality,
   }
 }
 

@@ -24,7 +24,26 @@ export async function GET(request: NextRequest) {
       )
     } else {
       const targetDate = date ? new Date(date) : new Date()
-      const moonPhase = calculateMoonPhase(targetDate)
+
+      // Fetch actual Moon position from planetary positions API
+      let moonPosition: { sign: string; degree: number } | undefined
+      try {
+        const positionsResponse = await fetch(
+          `${request.nextUrl.origin}/api/planetary-positions`,
+          { cache: 'no-store' }
+        )
+        if (positionsResponse.ok) {
+          const positionsData = await positionsResponse.json()
+          const moonData = positionsData.planetaryPositions?.find((p: any) => p.planet === 'Moon')
+          if (moonData) {
+            moonPosition = { sign: moonData.sign, degree: moonData.degree }
+          }
+        }
+      } catch (posError) {
+        console.error('Error fetching Moon position, using fallback:', posError)
+      }
+
+      const moonPhase = calculateMoonPhase(targetDate, moonPosition)
       moonAgent = generateMoonPhaseAgent(moonPhase)
     }
 
@@ -59,7 +78,26 @@ export async function POST(request: NextRequest) {
       moonAgent = getMoonAgentByPhaseAndSign(phase, sign, degree ? parseFloat(degree) : undefined)
     } else {
       const targetDate = date ? new Date(date) : new Date()
-      const moonPhase = calculateMoonPhase(targetDate)
+
+      // Fetch actual Moon position from planetary positions API
+      let moonPosition: { sign: string; degree: number } | undefined
+      try {
+        const positionsResponse = await fetch(
+          `${request.nextUrl.origin}/api/planetary-positions`,
+          { cache: 'no-store' }
+        )
+        if (positionsResponse.ok) {
+          const positionsData = await positionsResponse.json()
+          const moonData = positionsData.planetaryPositions?.find((p: any) => p.planet === 'Moon')
+          if (moonData) {
+            moonPosition = { sign: moonData.sign, degree: moonData.degree }
+          }
+        }
+      } catch (posError) {
+        console.error('Error fetching Moon position, using fallback:', posError)
+      }
+
+      const moonPhase = calculateMoonPhase(targetDate, moonPosition)
       moonAgent = generateMoonPhaseAgent(moonPhase)
     }
 
