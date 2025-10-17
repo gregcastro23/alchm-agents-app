@@ -13,6 +13,10 @@ import { ANumberCalculator } from '../../../lib/core-energy-rules'
 import { CharacterVectorCalculator } from '../../../lib/astrological-character-vectors'
 import { MonicaResponseHandler } from '../../../lib/monica/monica-response-handler'
 import {
+  calculateAllPlanets,
+  type EnhancedBirthInfo,
+} from '../../../lib/enhanced-astronomical-calculator'
+import {
   MONICA_BASE_SYSTEM_PROMPT,
   getMonicaContextPrompt,
   MONICA_SPECIALIZED_PROMPTS,

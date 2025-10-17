@@ -866,7 +866,10 @@ export default function TimeLaboratoryPage() {
                         >
                           <div className="flex items-center gap-2 mb-2">
                             <Badge className="cosmic-badge">
-                              {(activation.resonanceLevel * 100).toFixed(0)}%
+                              {activation.resonanceLevel != null
+                                ? (activation.resonanceLevel * 100).toFixed(0)
+                                : '0'}
+                              %
                             </Badge>
                             <span className="font-medium text-purple-100">
                               {activation.agentName}
@@ -875,7 +878,7 @@ export default function TimeLaboratoryPage() {
                           <p className="text-sm text-purple-300 mb-2">{activation.message}</p>
                           <p className="text-xs text-purple-400">
                             Activation: {activation.activationType} • Orb:{' '}
-                            {activation.orb.toFixed(1)}°
+                            {activation.orb != null ? activation.orb.toFixed(1) : '0'}°
                           </p>
                         </div>
                       ))}
@@ -1043,7 +1046,7 @@ export default function TimeLaboratoryPage() {
                             <div key={score.element} className="flex justify-between">
                               <span className="text-purple-400">{score.element}:</span>
                               <span className="text-purple-100">
-                                {(score.score * 100).toFixed(0)}%
+                                {score.score != null ? (score.score * 100).toFixed(0) : '0'}%
                               </span>
                             </div>
                           ))}
@@ -1356,29 +1359,29 @@ export default function TimeLaboratoryPage() {
             />
           </div>
         )}
-      </div>
 
-      {/* Planetary Group Chat Modal */}
-      <Dialog open={planetaryGroupChatOpen} onOpenChange={setPlanetaryGroupChatOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
-          <DialogHeader>
-            <DialogTitle className="text-gold flex items-center gap-2">
-              <Users className="w-6 h-6" />
-              Planetary Council - {groupChatMoment?.toLocaleDateString()}{' '}
-              {groupChatMoment?.toLocaleTimeString()}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 overflow-hidden">
-            <MultiAgentConversation
-              availableAgents={planetaryAgents}
-              userId="demo-user"
-              initialAgents={planetaryAgents.slice(0, 5).map(agent => agent.id)} // Start with first 5 agents
-              onClose={() => setPlanetaryGroupChatOpen(false)}
-              maxAgents={10}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+        {/* Planetary Group Chat Modal */}
+        <Dialog open={planetaryGroupChatOpen} onOpenChange={setPlanetaryGroupChatOpen}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+            <DialogHeader>
+              <DialogTitle className="text-gold flex items-center gap-2">
+                <Users className="w-6 h-6" />
+                Planetary Council - {groupChatMoment?.toLocaleDateString()}{' '}
+                {groupChatMoment?.toLocaleTimeString()}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 overflow-hidden">
+              <MultiAgentConversation
+                availableAgents={planetaryAgents}
+                userId="demo-user"
+                initialAgents={planetaryAgents.slice(0, 5).map(agent => agent.id)} // Start with first 5 agents
+                onClose={() => setPlanetaryGroupChatOpen(false)}
+                maxAgents={10}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+        </div>
       </div>
     </>
   )
