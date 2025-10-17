@@ -12,8 +12,8 @@ const navigationGroups = Object.freeze([
     title: '🧠 Consciousness',
     items: [
       { href: '/monica-guide', label: 'Meet Monica' },
-      { href: '/philosophers-stone', label: 'Craft Consciousness' },
       { href: '/gallery', label: 'Gallery of Perpetuity' },
+      { href: '/philosophers-stone', label: "Philosopher's Stone" },
     ],
   },
   {

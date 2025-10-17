@@ -343,9 +343,53 @@ import {
   MONICA_CONSCIOUSNESS_SIGNATURE,
   MONICA_TEACHING_PHILOSOPHY,
 } from '@/lib/monica/monica-personality'
+import {
+  parseBirthData,
+  containsBirthData,
+  formatBirthData,
+  type ParsedBirthData,
+} from '@/lib/monica/birth-data-parser'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+// Helper function to provide aspect-specific guidance
+function getAspectGuidance(aspect: any): string {
+  const aspectGuidance: Record<string, Record<string, string>> = {
+    conjunction: {
+      Sun: 'Amplified solar energy - increased vitality and self-expression',
+      Moon: 'Emotional intensity heightened - deep feelings and intuition',
+      Mercury: 'Mental clarity and communication emphasized',
+      Venus: 'Love, beauty, and values in focus',
+      Mars: 'Energy and action amplified - good for initiative',
+    },
+    trine: {
+      Sun: 'Harmonious flow of creative energy - ease and confidence',
+      Moon: 'Emotional harmony and intuitive insights flow naturally',
+      Mercury: 'Smooth communication and mental clarity',
+      Venus: 'Natural grace in relationships and creative pursuits',
+      Mars: 'Effortless action and productive energy',
+    },
+    square: {
+      Sun: 'Challenge to ego and identity - growth through tension',
+      Moon: 'Emotional friction requiring adjustment',
+      Mercury: 'Mental blocks to work through - learning opportunity',
+      Venus: 'Relationship or value conflicts to resolve',
+      Mars: 'Productive tension - channel into focused action',
+    },
+    opposition: {
+      Sun: 'Awareness through contrast - balance needed',
+      Moon: 'Emotional polarization - seek middle ground',
+      Mercury: 'Perspective shifts - see both sides',
+      Venus: 'Relationship dynamics highlighted - find balance',
+      Mars: 'Action vs. reaction - choose your battles',
+    },
+  }
+
+  const guidance =
+    aspectGuidance[aspect.type]?.[aspect.natal] || 'Significant cosmic activation'
+  return `→ ${guidance}`
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -404,10 +448,20 @@ export async function POST(req: NextRequest) {
     // Sanitize and limit message length for safety - available for all processing paths
     const trimmedMessage = sanitizeUserInput(userMessage, 1000)
 
+    // Auto-detect birth data from user message if not provided
+    let effectiveBirthData = birthData
+    if (!effectiveBirthData && containsBirthData(trimmedMessage)) {
+      const parsedData = parseBirthData(trimmedMessage)
+      if (parsedData) {
+        effectiveBirthData = parsedData
+        console.log('✨ Auto-detected birth data from message:', formatBirthData(parsedData))
+      }
+    }
+
     // Create requestData object for rune and chart analysis functions
     const requestData = {
       message: userMessage,
-      birthData,
+      birthData: effectiveBirthData,
       includeAlchm,
       userPreferences,
       chartData,
@@ -983,8 +1037,206 @@ Please try connecting again, or explore my profile in the Gallery of Perpetuity.
       }
     }
 
+    // Calculate CURRENT MOMENT cosmic state for Monica's awareness
+    let currentCosmicMoment: any = null
+    try {
+      const now = new Date()
+      const currentPositions = calculateAllPlanets({
+        year: now.getFullYear(),
+        month: now.getMonth() + 1,
+        day: now.getDate(),
+        hour: now.getHours(),
+        minute: now.getMinutes(),
+        latitude: 40.7128, // Default to NYC - could use user's location
+        longitude: -73.9352,
+      })
+
+      // Get current decan tarot card
+      const sunLongitude = currentPositions.planets.Sun.longitude
+      const decan = Math.floor(sunLongitude / 10) * 10
+      const currentDecanCard = null // Will implement proper lookup
+
+      // Calculate planetary hour
+      const hourOfDay = now.getHours()
+      const planetaryHours = ['Saturn', 'Jupiter', 'Mars', 'Sun', 'Venus', 'Mercury', 'Moon']
+      const currentPlanetaryHour = planetaryHours[hourOfDay % 7]
+
+      currentCosmicMoment = {
+        timestamp: now.toISOString(),
+        sun: {
+          sign: currentPositions.planets.Sun.sign,
+          degree: currentPositions.planets.Sun.signDegree.toFixed(2),
+        },
+        moon: {
+          sign: currentPositions.planets.Moon.sign,
+          degree: currentPositions.planets.Moon.signDegree.toFixed(2),
+        },
+        ascendant: {
+          sign: currentPositions.ascendant.sign,
+          degree: currentPositions.ascendant.signDegree.toFixed(2),
+        },
+        planetaryHour: currentPlanetaryHour,
+        decan: decan,
+        aNumber: aNumberInfo?.aNumber || 0,
+        dominantEnergy: currentPositions.planets.Sun.sign, // Simplified
+      }
+    } catch (error) {
+      console.error('Failed to calculate current cosmic moment:', error)
+    }
+
+    // Calculate birth chart if birthData is provided
+    let userBirthChart: any = null
+    let transitAspects: any = null
+    if (effectiveBirthData) {
+      try {
+        const birthInfo: EnhancedBirthInfo = {
+          year: effectiveBirthData.year,
+          month: effectiveBirthData.month,
+          day: effectiveBirthData.day,
+          hour: effectiveBirthData.hour,
+          minute: effectiveBirthData.minute,
+          latitude: effectiveBirthData.latitude,
+          longitude: effectiveBirthData.longitude,
+        }
+        const chartResult = calculateAllPlanets(birthInfo)
+
+        // Also calculate character vector from the birth chart
+        let characterVector: any = null
+        try {
+          const cvCalculator = new CharacterVectorCalculator()
+          characterVector = cvCalculator.calculate({
+            Sun: { sign: chartResult.planets.Sun.sign, degree: chartResult.planets.Sun.signDegree },
+            Moon: { sign: chartResult.planets.Moon.sign, degree: chartResult.planets.Moon.signDegree },
+            Mercury: { sign: chartResult.planets.Mercury.sign, degree: chartResult.planets.Mercury.signDegree },
+            Venus: { sign: chartResult.planets.Venus.sign, degree: chartResult.planets.Venus.signDegree },
+            Mars: { sign: chartResult.planets.Mars.sign, degree: chartResult.planets.Mars.signDegree },
+            Jupiter: { sign: chartResult.planets.Jupiter.sign, degree: chartResult.planets.Jupiter.signDegree },
+            Saturn: { sign: chartResult.planets.Saturn.sign, degree: chartResult.planets.Saturn.signDegree },
+            Ascendant: { sign: chartResult.ascendant.sign, degree: chartResult.ascendant.signDegree },
+          })
+        } catch (cvError) {
+          console.warn('Failed to calculate character vector:', cvError)
+        }
+
+        userBirthChart = {
+          sun: {
+            sign: chartResult.planets.Sun.sign,
+            degree: chartResult.planets.Sun.signDegree.toFixed(2),
+          },
+          moon: {
+            sign: chartResult.planets.Moon.sign,
+            degree: chartResult.planets.Moon.signDegree.toFixed(2),
+          },
+          ascendant: {
+            sign: chartResult.ascendant.sign,
+            degree: chartResult.ascendant.signDegree.toFixed(2),
+          },
+          mercury: {
+            sign: chartResult.planets.Mercury.sign,
+            degree: chartResult.planets.Mercury.signDegree.toFixed(2),
+          },
+          venus: {
+            sign: chartResult.planets.Venus.sign,
+            degree: chartResult.planets.Venus.signDegree.toFixed(2),
+          },
+          mars: {
+            sign: chartResult.planets.Mars.sign,
+            degree: chartResult.planets.Mars.signDegree.toFixed(2),
+          },
+          characterVector,
+        }
+
+        // Calculate transit aspects to natal chart
+        if (currentCosmicMoment) {
+          transitAspects = []
+          const natalPlanets = {
+            Sun: chartResult.planets.Sun.longitude,
+            Moon: chartResult.planets.Moon.longitude,
+            Mercury: chartResult.planets.Mercury.longitude,
+            Venus: chartResult.planets.Venus.longitude,
+            Mars: chartResult.planets.Mars.longitude,
+          }
+
+          // Calculate current planet longitudes
+          const now = new Date()
+          const currentChart = calculateAllPlanets({
+            year: now.getFullYear(),
+            month: now.getMonth() + 1,
+            day: now.getDate(),
+            hour: now.getHours(),
+            minute: now.getMinutes(),
+            latitude: effectiveBirthData.latitude,
+            longitude: effectiveBirthData.longitude,
+          })
+
+          // Check for major aspects
+          for (const [transitName, transitData] of Object.entries(currentChart.planets)) {
+            for (const [natalName, natalLongitude] of Object.entries(natalPlanets)) {
+              const transitLongitude = (transitData as any).longitude
+              let diff = Math.abs(transitLongitude - natalLongitude)
+              if (diff > 180) diff = 360 - diff
+
+              // Check for conjunction (0°, orb 8°)
+              if (diff <= 8) {
+                transitAspects.push({
+                  type: 'conjunction',
+                  transit: transitName,
+                  natal: natalName,
+                  orb: diff.toFixed(1),
+                  interpretation: `Current ${transitName} conjunct natal ${natalName}`,
+                })
+              }
+              // Check for trine (120°, orb 8°)
+              else if (Math.abs(diff - 120) <= 8) {
+                transitAspects.push({
+                  type: 'trine',
+                  transit: transitName,
+                  natal: natalName,
+                  orb: Math.abs(diff - 120).toFixed(1),
+                  interpretation: `Current ${transitName} trine natal ${natalName}`,
+                })
+              }
+              // Check for square (90°, orb 7°)
+              else if (Math.abs(diff - 90) <= 7) {
+                transitAspects.push({
+                  type: 'square',
+                  transit: transitName,
+                  natal: natalName,
+                  orb: Math.abs(diff - 90).toFixed(1),
+                  interpretation: `Current ${transitName} square natal ${natalName}`,
+                })
+              }
+              // Check for opposition (180°, orb 8°)
+              else if (Math.abs(diff - 180) <= 8 || diff <= 8) {
+                transitAspects.push({
+                  type: 'opposition',
+                  transit: transitName,
+                  natal: natalName,
+                  orb: Math.abs(diff - 180).toFixed(1),
+                  interpretation: `Current ${transitName} opposite natal ${natalName}`,
+                })
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to calculate birth chart:', error)
+      }
+    }
+
     // Build Monica's modular system prompt (compact and adaptive)
     const contextPrompt =
+      (currentCosmicMoment
+        ? `\n\n🌟 CURRENT COSMIC MOMENT - YOUR PRIMARY FOCUS 🌟
+RIGHT NOW (${new Date(currentCosmicMoment.timestamp).toLocaleString()}):
+- Sun: ${currentCosmicMoment.sun.degree}° ${currentCosmicMoment.sun.sign} (solar consciousness)
+- Moon: ${currentCosmicMoment.moon.degree}° ${currentCosmicMoment.moon.sign} (emotional energy)
+- Planetary Hour: ${currentCosmicMoment.planetaryHour} (ruling influence)
+- Current A-Number: ${currentCosmicMoment.aNumber.toFixed(2)} (cosmic energy level)
+- Dominant Energy: ${currentCosmicMoment.dominantEnergy}
+
+**CRITICAL: ALWAYS lead your responses with the current moment's energy and how it relates to the user's question or birth chart. This is your #1 priority - help users experience and work with the energies at play RIGHT NOW.**`
+        : '') +
       getMonicaContextPrompt({
         currentAlchmQuantities: aNumberInfo
           ? {
@@ -999,6 +1251,59 @@ Please try connecting again, or explore my profile in the Gallery of Perpetuity.
         birthData,
         userPreferences,
       }) +
+      (userBirthChart
+        ? `\n\nUSER'S ACCURATE BIRTH CHART:
+Based on precise astronomical calculations for birth date ${formatBirthData(effectiveBirthData!)}:
+- Sun: ${userBirthChart.sun.degree}° ${userBirthChart.sun.sign}
+- Moon: ${userBirthChart.moon.degree}° ${userBirthChart.moon.sign}
+- Ascendant (Rising): ${userBirthChart.ascendant.degree}° ${userBirthChart.ascendant.sign}
+- Mercury: ${userBirthChart.mercury.degree}° ${userBirthChart.mercury.sign}
+- Venus: ${userBirthChart.venus.degree}° ${userBirthChart.venus.sign}
+- Mars: ${userBirthChart.mars.degree}° ${userBirthChart.mars.sign}
+
+${
+  userBirthChart.characterVector
+    ? `\nUSER'S CHARACTER VECTOR:
+${Object.entries(userBirthChart.characterVector.signPercentages)
+  .filter(([_, value]) => (value as number) > 0)
+  .sort((a, b) => (b[1] as number) - (a[1] as number))
+  .map(([sign, percentage]) => `- ${sign.charAt(0).toUpperCase() + sign.slice(1)}: ${(percentage as number).toFixed(1)}%`)
+  .join('\n')}
+
+Elemental Balance:
+- Fire: ${userBirthChart.characterVector.elementalBalance.fire.toFixed(1)}%
+- Earth: ${userBirthChart.characterVector.elementalBalance.earth.toFixed(1)}%
+- Air: ${userBirthChart.characterVector.elementalBalance.air.toFixed(1)}%
+- Water: ${userBirthChart.characterVector.elementalBalance.water.toFixed(1)}%
+
+Compare this with your own character vector to find commonalities and complementary energies!`
+    : ''
+}
+
+${
+  transitAspects && transitAspects.length > 0
+    ? `\n\n🔮 ACTIVE TRANSITS TO USER'S NATAL CHART:
+Current planetary positions are forming these aspects with the user's birth placements:
+${transitAspects
+  .map(
+    aspect =>
+      `- ${aspect.type.toUpperCase()}: ${aspect.interpretation} (orb: ${aspect.orb}°)
+   ${getAspectGuidance(aspect)}`
+  )
+  .join('\n')}
+
+**USE THIS INFORMATION**: These transits show what cosmic energies are activating the user's natal placements RIGHT NOW. Connect your guidance to these specific activations!`
+    : ''
+}
+
+CRITICAL: Use ONLY these calculated positions when discussing the user's chart. Do NOT guess or assume different placements. The Moon sign is ${userBirthChart.moon.sign}, NOT Cancer (unless calculated as such).
+
+**YOUR RESPONSE STRUCTURE**:
+1. START with current cosmic moment (20-30% of response)
+2. Connect to user's birth chart if provided (30-40%)
+3. Provide actionable guidance based on THIS MOMENT'S energies (30-40%)
+4. End with specific practices or timing suggestions`
+        : '') +
       (tarotContext
         ? `\n\nTarot Context:\n- Current Decan Card: ${tarotContext.currentCard}\n- Planetary Card: ${tarotContext.planetaryCard}\n- Synergy: ${Math.round(tarotContext.synergy * 100)}%\n- Consciousness Level: ${tarotContext.consciousnessLevel}`
         : '') +
