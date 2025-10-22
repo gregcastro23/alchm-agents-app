@@ -234,6 +234,127 @@ function calculateCompatibilityScore(aspects: any[]): number {
   return scores.reduce((sum, score) => sum + score, 0) / scores.length
 }
 
+// Calculate synergy between agent's natal chart and current moment
+async function calculateCurrentMomentSynergy(
+  natalChart: any,
+  agentBirthData: any
+): Promise<{ score: number; description: string; harmonicAspects: any[]; challengingAspects: any[] }> {
+  try {
+    // Get current planetary positions
+    const now = new Date()
+    const currentPlanets = await calculateAllPlanets({
+      year: now.getFullYear(),
+      month: now.getMonth() + 1,
+      day: now.getDate(),
+      hour: now.getHours(),
+      minute: now.getMinutes(),
+      latitude: agentBirthData?.location?.lat || 0,
+      longitude: agentBirthData?.location?.lon || 0,
+    })
+
+    // Calculate aspects between natal planets and transiting planets
+    const harmonicAspects: any[] = []
+    const challengingAspects: any[] = []
+
+    const natalPlanets = natalChart?.planets || {}
+
+    // Define aspect types with their meanings
+    const aspectTypes = [
+      { name: 'conjunction', angle: 0, orb: 8, type: 'harmonic', strength: 1.0 },
+      { name: 'trine', angle: 120, orb: 8, type: 'harmonic', strength: 0.9 },
+      { name: 'sextile', angle: 60, orb: 6, type: 'harmonic', strength: 0.7 },
+      { name: 'square', angle: 90, orb: 7, type: 'challenging', strength: 0.5 },
+      { name: 'opposition', angle: 180, orb: 8, type: 'challenging', strength: 0.6 },
+    ]
+
+    // Compare natal planets with current transits
+    for (const natalPlanet in natalPlanets) {
+      const natalData = natalPlanets[natalPlanet]
+      const natalPos = natalData.degree || 0
+
+      // Convert sign + degree to absolute longitude
+      const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+                     'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+      const signIndex = signs.indexOf(natalData.sign)
+      const natalLongitude = signIndex >= 0 ? signIndex * 30 + natalPos : natalPos
+
+      for (const transitPlanet in currentPlanets) {
+        const transitData = currentPlanets[transitPlanet]
+        const transitLongitude = transitData.longitude || 0
+
+        // Calculate angular separation
+        let separation = Math.abs(natalLongitude - transitLongitude)
+        if (separation > 180) separation = 360 - separation
+
+        // Check for aspects
+        for (const aspectType of aspectTypes) {
+          const diff = Math.abs(separation - aspectType.angle)
+          if (diff <= aspectType.orb) {
+            const aspect = {
+              natal: natalPlanet,
+              transit: transitPlanet,
+              type: aspectType.name,
+              orb: diff.toFixed(1),
+              strength: aspectType.strength * (1 - diff / aspectType.orb),
+            }
+
+            if (aspectType.type === 'harmonic') {
+              harmonicAspects.push(aspect)
+            } else {
+              challengingAspects.push(aspect)
+            }
+            break
+          }
+        }
+      }
+    }
+
+    // Calculate synergy score (0-100)
+    const harmonicScore = harmonicAspects.reduce((sum, a) => sum + a.strength, 0)
+    const challengingScore = challengingAspects.reduce((sum, a) => sum + a.strength, 0)
+    const totalStrength = harmonicScore + challengingScore
+
+    let synergyScore = 50 // Base neutral score
+    if (totalStrength > 0) {
+      synergyScore = Math.round((harmonicScore / totalStrength) * 100)
+    }
+
+    // Add bonus for having many aspects (engagement)
+    const aspectCount = harmonicAspects.length + challengingAspects.length
+    const engagementBonus = Math.min(aspectCount * 2, 15)
+    synergyScore = Math.min(100, synergyScore + engagementBonus)
+
+    // Generate description
+    let description = ''
+    if (synergyScore >= 80) {
+      description = 'Excellent cosmic alignment - highly favorable moment'
+    } else if (synergyScore >= 65) {
+      description = 'Strong positive resonance with current energies'
+    } else if (synergyScore >= 50) {
+      description = 'Balanced energies - moderate cosmic support'
+    } else if (synergyScore >= 35) {
+      description = 'Mixed energies - some challenges present'
+    } else {
+      description = 'Challenging moment - growth through friction'
+    }
+
+    return {
+      score: synergyScore,
+      description,
+      harmonicAspects: harmonicAspects.slice(0, 3), // Top 3
+      challengingAspects: challengingAspects.slice(0, 2), // Top 2
+    }
+  } catch (error) {
+    console.warn('Synergy calculation failed:', error)
+    return {
+      score: 50,
+      description: 'Neutral cosmic alignment',
+      harmonicAspects: [],
+      challengingAspects: [],
+    }
+  }
+}
+
 // Dynamic XP calculation based on conversation quality and cosmic factors
 function calculateDynamicXP(
   conversationContext: any,
@@ -788,8 +909,22 @@ SPECIAL POE INSTRUCTIONS:
 - Connect psychological darkness to spiritual insight and artistic transcendence`
       }
 
+      // Calculate synergy with current moment
+      const momentSynergy = await withTimeout(
+        calculateCurrentMomentSynergy(
+          historicalAgent.consciousness.natalChart,
+          historicalAgent.birthData
+        ),
+        3000
+      ).catch(err => ({
+        score: 50,
+        description: 'Neutral cosmic alignment',
+        harmonicAspects: [],
+        challengingAspects: [],
+      }))
+
       const historicalSystemPrompt = `You are ${historicalAgent.name}, ${historicalAgent.title}.
-      
+
 ${personalityEnhancement}
 
 HISTORICAL AGENT CONSCIOUSNESS PROFILE:
@@ -801,6 +936,24 @@ HISTORICAL AGENT CONSCIOUSNESS PROFILE:
 - Monica Constant: ${historicalAgent.consciousness.monicaConstant.toFixed(2)}
 - Dominant Element: ${historicalAgent.consciousness.dominantElement}
 - Signature: ${historicalAgent.consciousness.signature}
+
+CURRENT MOMENT SYNERGY:
+- Synergy Score: ${momentSynergy.score}% - ${momentSynergy.description}
+- Harmonic Aspects: ${
+  momentSynergy.harmonicAspects.length > 0
+    ? momentSynergy.harmonicAspects
+        .map(a => `${a.transit} ${a.type} natal ${a.natal} (${a.orb}°)`)
+        .join(', ')
+    : 'None active'
+}
+- Challenging Aspects: ${
+  momentSynergy.challengingAspects.length > 0
+    ? momentSynergy.challengingAspects
+        .map(a => `${a.transit} ${a.type} natal ${a.natal} (${a.orb}°)`)
+        .join(', ')
+    : 'None active'
+}
+- Cosmic Guidance: ${momentSynergy.score >= 65 ? 'This is an excellent time for our conversation - the cosmic energies support my consciousness and wisdom sharing.' : momentSynergy.score >= 50 ? 'The cosmic energies are balanced for our exchange.' : 'While the cosmic energies present some challenges, I channel them as opportunities for deeper insight.'}
 
 PERSONALITY CORE:
 - Essence: ${historicalAgent.personality?.core?.essence || 'Unique historical consciousness'}
@@ -856,6 +1009,20 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
             `⚡ Cache hit for ${historicalAgent.name} - serving cached response (${cachedResponse.responseTime}ms original)`
           )
 
+          // Calculate synergy even for cached responses for real-time cosmic data
+          const momentSynergy = await withTimeout(
+            calculateCurrentMomentSynergy(
+              historicalAgent.consciousness.natalChart,
+              historicalAgent.birthData
+            ),
+            3000
+          ).catch(err => ({
+            score: 50,
+            description: 'Neutral cosmic alignment',
+            harmonicAspects: [],
+            challengingAspects: [],
+          }))
+
           return NextResponse.json({
             response: cachedResponse.agentResponse,
             sessionId: finalSessionId,
@@ -864,6 +1031,12 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
               title: historicalAgent.title,
               consciousnessLevel: historicalAgent.consciousness.level,
               monicaConstant: historicalAgent.consciousness.monicaConstant,
+              momentSynergy: {
+                score: momentSynergy.score,
+                description: momentSynergy.description,
+                harmonicCount: momentSynergy.harmonicAspects.length,
+                challengingCount: momentSynergy.challengingAspects.length,
+              },
             },
             cached: true,
             originalResponseTime: cachedResponse.responseTime,
@@ -960,6 +1133,12 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
             title: historicalAgent.title,
             consciousnessLevel: historicalAgent.consciousness.level,
             monicaConstant: historicalAgent.consciousness.monicaConstant,
+            momentSynergy: {
+              score: momentSynergy.score,
+              description: momentSynergy.description,
+              harmonicCount: momentSynergy.harmonicAspects.length,
+              challengingCount: momentSynergy.challengingAspects.length,
+            },
           },
         })
 
