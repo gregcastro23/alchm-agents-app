@@ -473,12 +473,25 @@ export async function POST(req: NextRequest) {
       sessionId,
     }
 
+    // Helper function to add timeout to promises
+    const withTimeout = <T>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+      return Promise.race([
+        promise,
+        new Promise<T>((_, reject) =>
+          setTimeout(() => reject(new Error('Operation timed out')), timeoutMs)
+        ),
+      ])
+    }
+
     // Check if this is a historical agent request - try database first, then fallback to static data
     let historicalAgent = null
     if (agentId) {
       try {
-        // Try to get from database first
-        const dbAgent = await HistoricalAgentsService.getAgent(agentId, true)
+        // Try to get from database first with 3-second timeout
+        const dbAgent = await withTimeout(
+          HistoricalAgentsService.getAgent(agentId, true),
+          3000
+        )
         if (dbAgent) {
           historicalAgent = dbAgentToCraftedAgent(dbAgent)
         } else {
@@ -486,7 +499,7 @@ export async function POST(req: NextRequest) {
           historicalAgent = DEMO_AGENTS.find(agent => agent.id === agentId) || null
         }
       } catch (error) {
-        console.warn('Database lookup failed, using static data:', error)
+        console.warn('Database lookup failed or timed out, using static data:', error)
         historicalAgent = DEMO_AGENTS.find(agent => agent.id === agentId) || null
       }
     }
@@ -496,10 +509,9 @@ export async function POST(req: NextRequest) {
       // Get attachments for this agent
       let attachmentsInfo = ''
       try {
-        const attachments = await AgentAttachmentsService.getAgentAttachments(
-          agentId,
-          undefined,
-          true
+        const attachments = await withTimeout(
+          AgentAttachmentsService.getAgentAttachments(agentId, undefined, true),
+          2000
         )
         if (attachments.length > 0) {
           attachmentsInfo = `\n\nATTACHED CHARTS & RUNES:\n`
@@ -509,7 +521,7 @@ export async function POST(req: NextRequest) {
           attachmentsInfo += `\nYou can reference these attachments in your responses to provide more personalized and detailed analysis. When relevant to the user's question, draw insights from the attached charts and runes.`
         }
       } catch (error) {
-        console.warn('Failed to load attachments for agent:', error)
+        console.warn('Failed to load attachments for agent (timeout or error):', error)
       }
       // Create personality-specific enhancements based on agent ID
       let personalityEnhancement = ''
@@ -880,19 +892,22 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
           ? Math.min(historicalAgent.consciousness.monicaConstant / 6, 1.0)
           : 0.7
 
-        // Cache the response for future use
-        await agentCache.cacheResponse(
-          agentId,
-          trimmedMessage,
-          text,
-          responseTime,
-          cacheContext,
-          personalityScore
-        )
+        // Cache the response for future use (non-blocking)
+        withTimeout(
+          agentCache.cacheResponse(
+            agentId,
+            trimmedMessage,
+            text,
+            responseTime,
+            cacheContext,
+            personalityScore
+          ),
+          2000
+        ).catch(err => console.warn('Cache write failed:', err))
 
-        // Record conversation in database for future learning
-        try {
-          await HistoricalAgentsService.recordConversation(
+        // Record conversation in database for future learning (non-blocking)
+        withTimeout(
+          HistoricalAgentsService.recordConversation(
             agentId,
             finalSessionId,
             trimmedMessage,
@@ -903,37 +918,39 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
               temperature: 0.7,
               tokenCount: text.length,
             }
-          )
-        } catch (dbError) {
-          console.warn('Failed to record conversation:', dbError)
-        }
+          ),
+          2000
+        ).catch(dbError => console.warn('Failed to record conversation:', dbError))
 
-        // Log consciousness evolution interaction
-        try {
-          const user = await getCurrentUser(req)
-          const userId = user?.id || getUserIdFromRequest(req)
+        // Log consciousness evolution interaction (non-blocking)
+        withTimeout(
+          (async () => {
+            const user = await getCurrentUser(req)
+            const userId = user?.id || getUserIdFromRequest(req)
 
-          const powerGained = Math.max(1, Math.floor(text.length / 100)) // Power based on response quality
-          const qualityScore = personalityScore * 0.8 + 0.2 // Adjust for personality authenticity
+            const powerGained = Math.max(1, Math.floor(text.length / 100))
+            const qualityScore = personalityScore * 0.8 + 0.2
 
-          await consciousnessPersistence.logInteraction({
-            userId,
-            agentId,
-            interactionType: 'historical-chat',
-            powerGained,
-            planetaryInfluence: 'mercury', // Default for communication
-            elementalResonance: qualityScore,
-            metadata: {
-              userMessage: trimmedMessage,
-              agentResponse: text.substring(0, 500), // Truncate for storage
-              sessionId: finalSessionId,
-              responseTime,
-              historicalAgent: historicalAgent.name,
-            },
-          })
-        } catch (evolutionError) {
+            await consciousnessPersistence.logInteraction({
+              userId,
+              agentId,
+              interactionType: 'historical-chat',
+              powerGained,
+              planetaryInfluence: 'mercury',
+              elementalResonance: qualityScore,
+              metadata: {
+                userMessage: trimmedMessage,
+                agentResponse: text.substring(0, 500),
+                sessionId: finalSessionId,
+                responseTime,
+                historicalAgent: historicalAgent.name,
+              },
+            })
+          })(),
+          2000
+        ).catch(evolutionError =>
           console.warn('Failed to log consciousness evolution:', evolutionError)
-        }
+        )
 
         return NextResponse.json({
           response: text,
