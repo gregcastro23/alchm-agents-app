@@ -7,12 +7,20 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ArrowLeft, MessageCircle } from 'lucide-react'
-import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 
 type Message = {
   role: 'user' | 'agent'
   content: string
   timestamp: Date
+}
+
+type Agent = {
+  id: string
+  name: string
+  title: string
+  appearance?: {
+    symbol?: string
+  }
 }
 
 export default function HistoricalAgentChatPage() {
@@ -22,8 +30,46 @@ export default function HistoricalAgentChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [agent, setAgent] = useState<Agent | null>(null)
+  const [agentLoading, setAgentLoading] = useState(true)
 
-  const agent = DEMO_AGENTS.find(a => a.id === agentId)
+  // Fetch agent data dynamically
+  useEffect(() => {
+    async function loadAgent() {
+      try {
+        // Try to fetch from API or use static fallback
+        const response = await fetch(`/api/agent-info?id=${agentId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setAgent(data.agent)
+        } else {
+          // Fallback to basic agent info
+          setAgent({
+            id: agentId,
+            name: agentId
+              .split('-')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' '),
+            title: 'Historical Consciousness Agent',
+          })
+        }
+      } catch (error) {
+        console.error('Failed to load agent:', error)
+        // Fallback
+        setAgent({
+          id: agentId,
+          name: agentId
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' '),
+          title: 'Historical Consciousness Agent',
+        })
+      } finally {
+        setAgentLoading(false)
+      }
+    }
+    loadAgent()
+  }, [agentId])
 
   useEffect(() => {
     // Use crypto.randomUUID() if available, fallback to manual UUID generation
@@ -95,6 +141,22 @@ export default function HistoricalAgentChatPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (agentLoading) {
+    return (
+      <div className="container py-8 max-w-4xl mx-auto">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+            </div>
+            <p className="mt-4 text-muted-foreground">Loading agent consciousness...</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   if (!agent) {
