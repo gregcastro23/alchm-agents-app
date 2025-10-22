@@ -33,42 +33,45 @@ export default function HistoricalAgentChatPage() {
   const [agent, setAgent] = useState<Agent | null>(null)
   const [agentLoading, setAgentLoading] = useState(true)
 
-  // Fetch agent data dynamically
+  // Static agent mapping to avoid server-side imports
   useEffect(() => {
-    async function loadAgent() {
-      try {
-        // Try to fetch from API or use static fallback
-        const response = await fetch(`/api/agent-info?id=${agentId}`)
-        if (response.ok) {
-          const data = await response.json()
-          setAgent(data.agent)
-        } else {
-          // Fallback to basic agent info
-          setAgent({
-            id: agentId,
-            name: agentId
-              .split('-')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' '),
-            title: 'Historical Consciousness Agent',
-          })
-        }
-      } catch (error) {
-        console.error('Failed to load agent:', error)
-        // Fallback
-        setAgent({
-          id: agentId,
-          name: agentId
-            .split('-')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' '),
-          title: 'Historical Consciousness Agent',
-        })
-      } finally {
-        setAgentLoading(false)
-      }
+    const agentMap: Record<string, { name: string; title: string; symbol: string }> = {
+      'leonardo-da-vinci': { name: 'Leonardo da Vinci', title: 'The Renaissance Genius', symbol: '🎨' },
+      'carl-jung': { name: 'Carl Jung', title: 'The Shadow Explorer', symbol: '🔮' },
+      'marie-curie': { name: 'Marie Curie', title: 'The Radiant Pioneer', symbol: '⚗️' },
+      'albert-einstein': { name: 'Albert Einstein', title: 'The Cosmic Thinker', symbol: '🌌' },
+      'nikola-tesla': { name: 'Nikola Tesla', title: 'The Electric Visionary', symbol: '⚡' },
+      'william-shakespeare': { name: 'William Shakespeare', title: 'The Bard of Avon', symbol: '🎭' },
+      'cleopatra': { name: 'Cleopatra VII', title: 'The Last Pharaoh', symbol: '👑' },
+      'aristotle': { name: 'Aristotle', title: 'The First Scientist', symbol: '📚' },
+      'sigmund-freud': { name: 'Sigmund Freud', title: 'The Unconscious Explorer', symbol: '🧠' },
+      'mark-twain': { name: 'Mark Twain', title: 'The American Humorist', symbol: '📝' },
+      'vincent-van-gogh': { name: 'Vincent van Gogh', title: 'The Starry Visionary', symbol: '🌟' },
+      'charles-darwin': { name: 'Charles Darwin', title: 'The Evolution Pioneer', symbol: '🦎' },
+      'edgar-allan-poe': { name: 'Edgar Allan Poe', title: 'The Dark Romantic', symbol: '🦅' },
     }
-    loadAgent()
+
+    const info = agentMap[agentId]
+    if (info) {
+      setAgent({
+        id: agentId,
+        name: info.name,
+        title: info.title,
+        appearance: { symbol: info.symbol },
+      })
+    } else {
+      // Fallback for unknown agents
+      setAgent({
+        id: agentId,
+        name: agentId
+          .split('-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' '),
+        title: 'Historical Consciousness Agent',
+        appearance: { symbol: '👤' },
+      })
+    }
+    setAgentLoading(false)
   }, [agentId])
 
   useEffect(() => {
