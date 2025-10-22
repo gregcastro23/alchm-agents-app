@@ -26,7 +26,19 @@ export default function HistoricalAgentChatPage() {
   const agent = DEMO_AGENTS.find(a => a.id === agentId)
 
   useEffect(() => {
-    setSessionId(crypto.randomUUID())
+    // Use crypto.randomUUID() if available, fallback to manual UUID generation
+    const generateUUID = () => {
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID()
+      }
+      // Fallback UUID v4 generation
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = (Math.random() * 16) | 0
+        const v = c === 'x' ? r : (r & 0x3) | 0x8
+        return v.toString(16)
+      })
+    }
+    setSessionId(generateUUID())
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
