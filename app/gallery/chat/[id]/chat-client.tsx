@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, MessageCircle } from 'lucide-react'
+import { ArrowLeft, MessageCircle, Sparkles, TrendingUp } from 'lucide-react'
 
 type Message = {
   role: 'user' | 'agent'
@@ -23,6 +23,13 @@ type Agent = {
   }
 }
 
+type MomentSynergy = {
+  score: number
+  description: string
+  harmonicCount: number
+  challengingCount: number
+}
+
 export default function HistoricalAgentChatPage() {
   const params = useParams()
   const agentId = params.id as string
@@ -32,6 +39,7 @@ export default function HistoricalAgentChatPage() {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [agent, setAgent] = useState<Agent | null>(null)
   const [agentLoading, setAgentLoading] = useState(true)
+  const [momentSynergy, setMomentSynergy] = useState<MomentSynergy | null>(null)
 
   // Static agent mapping to avoid server-side imports
   useEffect(() => {
@@ -130,6 +138,11 @@ export default function HistoricalAgentChatPage() {
           timestamp: new Date(),
         }
         setMessages(prev => [...prev, agentMessage])
+
+        // Update moment synergy if available
+        if (data.agentInfo?.momentSynergy) {
+          setMomentSynergy(data.agentInfo.momentSynergy)
+        }
       } else {
         throw new Error(data.error || 'Failed to get response')
       }
@@ -187,10 +200,30 @@ export default function HistoricalAgentChatPage() {
             Back to Gallery
           </Button>
         </Link>
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-bold">{agent.name}</h1>
           <p className="text-muted-foreground">{agent.title}</p>
         </div>
+
+        {/* Moment Synergy Display */}
+        {momentSynergy && (
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 rounded-lg border border-purple-200 dark:border-purple-800">
+              <Sparkles className="h-4 w-4 text-purple-600" />
+              <span className="text-sm font-medium">Moment Synergy:</span>
+              <span className={`text-lg font-bold ${momentSynergy.score >= 75 ? 'text-green-600' : momentSynergy.score >= 50 ? 'text-blue-600' : 'text-orange-600'}`}>
+                {momentSynergy.score}%
+              </span>
+            </div>
+            <div className="text-xs text-muted-foreground text-right max-w-xs">
+              {momentSynergy.description}
+            </div>
+            <div className="flex gap-2 text-xs">
+              <span className="text-green-600">✓ {momentSynergy.harmonicCount} harmonic</span>
+              <span className="text-orange-600">⚠ {momentSynergy.challengingCount} challenging</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <Card>
