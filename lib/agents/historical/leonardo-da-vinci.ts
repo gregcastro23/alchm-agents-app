@@ -104,4 +104,4 @@ export const LEONARDO_DA_VINCI: CraftedAgent = {
     symbol: '♈🎨',
     aura: { type: 'radiant', color: 'golden', intensity: 0.92 },
   },
-},
+}

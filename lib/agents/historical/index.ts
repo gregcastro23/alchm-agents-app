@@ -119,14 +119,14 @@ export const HISTORICAL_AGENTS = [
 // Helper functions for working with historical agents
 export const getHistoricalAgent = (id: string) => {
   return HISTORICAL_AGENTS.find(agent => agent.id === id)
-},
+}
 
 export const getAllHistoricalAgents = () => {
   return HISTORICAL_AGENTS
-},
+}
 
 export const getHistoricalAgentByName = (name: string) => {
   return HISTORICAL_AGENTS.find(agent =>
     agent.name.toLowerCase() === name.toLowerCase()
   )
-},
+}

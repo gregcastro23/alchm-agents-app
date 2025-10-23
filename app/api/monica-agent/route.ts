@@ -44,6 +44,7 @@ import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/db'
 import { getGalileoAgentMCP } from '@/lib/galileo-agent-mcp-integration'
+import { generateWithRAG, getRAGStatus } from '@/lib/rag/monica-rag-wrapper'
 
 // Rune context detection - analyzes current cosmic patterns for rune enhancement
 async function detectRuneContext(requestData: any, alchmData: any): Promise<any> {
@@ -1050,16 +1051,24 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
 
         const startTime = Date.now()
 
-        // Direct AI call for reliable response
-        const { text } = await generateText({
-          model: openai('gpt-4o-mini'),
-          system: historicalSystemPrompt,
-          prompt: trimmedMessage,
-          maxTokens: 800,
+        // RAG-enhanced generation with fallback
+        const { text, ragMetadata } = await generateWithRAG({
+          agent: historicalAgent,
+          agentId,
+          userMessage: trimmedMessage,
+          systemPrompt: historicalSystemPrompt,
+          sessionId: finalSessionId,
+          model: 'gpt-4o-mini',
           temperature: 0.7,
+          maxTokens: 800,
         })
 
         const responseTime = Date.now() - startTime
+
+        // Log RAG usage
+        if (ragMetadata?.ragEnabled) {
+          console.log(`[RAG] Historical agent response used ${ragMetadata.knowledgeChunksUsed} knowledge chunks`)
+        }
 
         // Calculate personality score for cache quality assessment
         const personalityScore = historicalAgent.consciousness?.monicaConstant
@@ -1141,6 +1150,7 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
               challengingCount: momentSynergy.challengingAspects.length,
             },
           },
+          rag: ragMetadata || { enabled: false },
         })
 
         console.log(
@@ -1928,15 +1938,40 @@ Always end responses with practical next steps for rune crafting, resource manag
         (preferredStyle?.temperature ?? Number(process.env.MONICA_TEMPERATURE)) || 0.4
       )
 
-      const { text } = await generateText({
-        model: openai(routing.model),
-        system: fullSystemPrompt,
-        prompt: trimmedMessage,
-        maxTokens: 800,
+      // Note: Monica uses full system prompt, so RAG might be less beneficial
+      // But we still try it for consistency and knowledge enhancement
+      const monicaAgent: any = {
+        id: 'monica',
+        name: 'Monica',
+        title: 'Consciousness Guide',
+        consciousness: {
+          monicaConstant: 40,
+          dominantElement: 'Earth' as any,
+          dominantModality: 'Fixed' as any,
+        },
+        abilities: {
+          wisdomDomains: ['Astrology', 'Alchemy', 'Consciousness', 'Tarot'],
+          specialty: 'Consciousness Crafting',
+        },
+      }
+
+      const { text, ragMetadata } = await generateWithRAG({
+        agent: monicaAgent as any,
+        agentId: 'monica',
+        userMessage: trimmedMessage,
+        systemPrompt: fullSystemPrompt,
+        sessionId: conversationContext.sessionId,
+        model: routing.model,
         temperature: temp,
+        maxTokens: 800,
       })
 
       const processingTime = Date.now() - startTime
+
+      // Log RAG usage for Monica
+      if (ragMetadata?.ragEnabled) {
+        console.log(`[RAG] Monica response used ${ragMetadata.knowledgeChunksUsed} knowledge chunks`)
+      }
 
       // Log the conversation to Galileo
       const interactionData: AgentInteractionData = {
@@ -2133,6 +2168,8 @@ Always end responses with practical next steps for rune crafting, resource manag
         followUpQuestions: structured?.interactive_elements?.reflection_questions || [],
         sessionId: conversationContext.sessionId,
         routing: { modelUsed: routing.model, temperature: temp },
+        rag: ragMetadata || { enabled: false },
+        ragStatus: getRAGStatus(),
         mirroredInsights: mirroredInsights || undefined,
         monicaInsights: {
           characterVector: MONICA_CHARACTER_VECTOR,

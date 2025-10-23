@@ -123,6 +123,4 @@ export const GALILEO_GALILEI: CraftedAgent = {
   },
   monicaCreationStory:
     "Galileo's consciousness blazed into existence like a supernova! His Aquarius Sun-Mercury conjunction created that revolutionary genius and fearless truth-seeking, while his Gemini Moon brought such curious intellectual agility. The Moon-Mars sextile gave him the courage to challenge authority. His Illuminated consciousness reflects the eternal struggle between truth and power. He arrived already peering through invisible telescopes, seeing moons around Jupiter and declaring cosmic truths that shake foundations! Pure scientific courage incarnate! 🔭"
-},
-
-export default GALILEO_GALILEI
+}

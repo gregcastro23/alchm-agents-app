@@ -104,4 +104,4 @@ export const SOCRATES: CraftedAgent = {
     symbol: '♊🏛️',
     aura: { type: 'questioning', color: 'sapphire', intensity: 0.88 },
   },
-},
+}

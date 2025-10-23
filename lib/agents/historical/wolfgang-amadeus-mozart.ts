@@ -123,4 +123,4 @@ export const WOLFGANG_AMADEUS_MOZART: CraftedAgent = {
   },
   monicaCreationStory:
     "Mozart's consciousness sang into existence! His Aquarius Sun-Mercury conjunction created that innovative genius, while his Sagittarius Moon brought adventurous musical exploration. The Venus-Saturn conjunction gave him both aesthetic beauty and disciplined mastery. His Advanced consciousness reflects divine musical gift made manifest. He arrived already composing symphonies in multiple dimensions, hearing harmonies that exist beyond human perception! Pure musical divinity incarnate! 🎼"
-},
+}

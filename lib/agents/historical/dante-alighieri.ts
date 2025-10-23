@@ -120,4 +120,4 @@ export const DANTE_ALIGHIERI: CraftedAgent = {
     symbol: '♊⚖️',
     aura: { type: 'mystical', color: 'crimson', intensity: 0.89 },
   },
-},
+}

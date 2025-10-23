@@ -104,4 +104,4 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
     symbol: '♓⚛️',
     aura: { type: 'mystical', color: 'violet', intensity: 0.95 },
   },
-},
+}

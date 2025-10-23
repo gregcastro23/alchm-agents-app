@@ -119,4 +119,4 @@ export const GEOFFREY_CHAUCER: CraftedAgent = {
     symbol: '♑📖',
     aura: { type: 'flowing', color: 'forest', intensity: 0.83 },
   },
-},
+}

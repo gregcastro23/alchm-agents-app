@@ -119,4 +119,4 @@ export const THOMAS_AQUINAS: CraftedAgent = {
     symbol: '♒📚',
     aura: { type: 'crystalline', color: 'golden', intensity: 0.87 },
   },
-},
+}
