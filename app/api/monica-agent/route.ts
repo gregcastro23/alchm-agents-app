@@ -43,6 +43,7 @@ import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/db'
+import { getGalileoAgentMCP } from '@/lib/galileo-agent-mcp-integration'
 
 // Rune context detection - analyzes current cosmic patterns for rune enhancement
 async function detectRuneContext(requestData: any, alchmData: any): Promise<any> {
@@ -1146,6 +1147,38 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
           `✅ Successfully generated AI response for ${historicalAgent.name} in ${responseTime}ms`
         )
         console.log(`📊 Response length: ${text.length} characters`)
+
+        // Log interaction to Galileo MCP for observability
+        const galileoMCP = getGalileoAgentMCP()
+        galileoMCP
+          .logAgentInteraction({
+            agentId: historicalAgent.id,
+            agentName: historicalAgent.name,
+            agentType: 'historical',
+            userMessage: trimmedMessage,
+            agentResponse: text,
+            sessionId: finalSessionId,
+            momentSynergy: momentSynergy
+              ? {
+                  score: momentSynergy.score,
+                  description: momentSynergy.description,
+                  harmonicCount: momentSynergy.harmonicAspects.length,
+                  challengingCount: momentSynergy.challengingAspects.length,
+                }
+              : undefined,
+            consciousness: {
+              level: historicalAgent.consciousness.level,
+              monicaConstant: historicalAgent.consciousness.monicaConstant,
+              dominantElement: historicalAgent.consciousness.dominantElement,
+            },
+            performance: {
+              responseTime,
+              tokenCount: text.length,
+              modelUsed: selectedModel,
+            },
+            timestamp: new Date(),
+          })
+          .catch(err => console.warn('Galileo MCP logging failed:', err))
       } catch (error) {
         console.error(`❌ Error generating AI response for ${historicalAgent.name}:`, error)
         console.error(`🔍 Error details:`, {
