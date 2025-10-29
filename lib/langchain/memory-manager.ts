@@ -3,7 +3,8 @@
  * Persistent memory with vector storage
  */
 
-import { BufferMemory, ChatMessageHistory } from 'langchain/memory'
+import { BufferMemory } from '@langchain/community/memory/buffer_memory'
+import { ChatMessageHistory } from '@langchain/community/stores/message/in_memory'
 import { getSemanticSearchService } from '../llamaindex/semantic-search'
 import type { BaseMessage } from '@langchain/core/messages'
 import { HumanMessage, AIMessage } from '@langchain/core/messages'
