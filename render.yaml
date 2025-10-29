@@ -1,0 +1,105 @@
+# Render Blueprint for Planetary Agents
+# Free-tier friendly configuration for Next.js + Express + PostgreSQL
+
+services:
+  # Frontend - Next.js Application
+  - type: web
+    name: planetary-agents-frontend
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: yarn install && npx prisma generate && yarn build
+    startCommand: yarn start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 20.11.0
+      - key: NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS
+        value: true
+      # Database - Set in Render dashboard with your Neon/Supabase URL
+      - key: DATABASE_URL
+        sync: false
+      # Auth - Generate with: openssl rand -base64 32
+      - key: NEXTAUTH_SECRET
+        sync: false
+      - key: NEXTAUTH_URL
+        sync: false
+      # AI APIs
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Backend integration (optional)
+      - key: NEXT_PUBLIC_BACKEND_URL
+        fromService:
+          type: web
+          name: planetary-agents-backend
+          envVarKey: RENDER_EXTERNAL_URL
+      # Feature toggles (set to false initially for faster health checks)
+      - key: NEXT_PUBLIC_PLANETARY_HOURS_BACKEND
+        value: false
+      - key: NEXT_PUBLIC_THERMODYNAMICS_BACKEND
+        value: false
+      - key: NEXT_PUBLIC_TOKEN_CALCULATIONS_BACKEND
+        value: false
+      - key: NEXT_PUBLIC_KINETICS_BACKEND
+        value: false
+      # Galileo (optional, recommended to disable)
+      - key: GALILEO_FAIL_SILENTLY
+        value: true
+      - key: GALILEO_LOG_ENABLED
+        value: false
+    healthCheckPath: /api/health
+    autoDeploy: true
+
+  # Backend - Express Gateway Service
+  - type: web
+    name: planetary-agents-backend
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: yarn install && npx prisma generate && yarn build
+    startCommand: yarn start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 20.11.0
+      - key: PORT
+        value: 8000
+      - key: HOST
+        value: 0.0.0.0
+      # Database - Same as frontend
+      - key: DATABASE_URL
+        sync: false
+      # CORS - Allow frontend domain
+      - key: CORS_ORIGINS
+        fromService:
+          type: web
+          name: planetary-agents-frontend
+          envVarKey: RENDER_EXTERNAL_URL
+      # Feature flags (disabled initially)
+      - key: PLANETARY_HOURS_BACKEND
+        value: false
+      - key: THERMODYNAMICS_BACKEND
+        value: false
+      - key: TOKEN_CALCULATIONS_BACKEND
+        value: false
+      - key: KINETICS_BACKEND
+        value: false
+      # WebSocket (disabled for free tier)
+      - key: ENABLE_WEBSOCKET
+        value: false
+      # Redis (optional, will use memory fallback)
+      - key: REDIS_URL
+        sync: false
+    healthCheckPath: /api/health
+    autoDeploy: true
+
+# Database: Use external service (Neon.tech free tier or Supabase)
+# 1. Create database at neon.tech or supabase.com
+# 2. Get connection string (use pooled connection for Neon)
+# 3. Add to both services as DATABASE_URL environment variable
+# 4. Run migrations: DATABASE_URL=<your-url> npx prisma migrate deploy
