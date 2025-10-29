@@ -8,7 +8,7 @@ import { ChatAnthropic } from '@langchain/anthropic'
 import { AgentExecutor, createOpenAIFunctionsAgent } from 'langchain/agents'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { planetaryAgentTools } from './agent-tools'
-import { BufferMemory } from '@langchain/community/memory/buffer_memory'
+import { BufferMemory } from '@langchain/classic/memory'
 import type { BaseMessage } from '@langchain/core/messages'
 
 export interface AgentRouterConfig {
