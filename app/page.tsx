@@ -147,6 +147,12 @@ export default function HomePage() {
                   Consultations
                 </Link>
                 <Link
+                  href="/philosophers-stone"
+                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
+                >
+                  Philosopher's Stone
+                </Link>
+                <Link
                   href="/time-laboratory"
                   className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
                 >

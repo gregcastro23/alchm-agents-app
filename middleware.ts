@@ -1,28 +1,7 @@
-import { withAuth } from 'next-auth/middleware'
-
-export default withAuth(
-  function middleware(req) {
-    // Allow guest access to all routes (auth is optional)
-    return null
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        // Allow guest access to all routes in matcher
-        // Authentication provides enhanced features but is not required
-        return true
-      },
-    },
-  }
-)
+// Middleware disabled for local development
+// Authentication is optional - all routes are accessible without auth
+// Re-enable when NextAuth is fully configured with proper environment variables
 
 export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/monica/:path*',
-    '/gallery/:path*',
-    '/rune-forge/:path*',
-    '/philosophers-stone/:path*',
-    '/time-laboratory/:path*',
-  ],
+  matcher: [], // Empty matcher = middleware doesn't run on any routes
 }
