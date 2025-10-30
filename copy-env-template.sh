@@ -14,6 +14,11 @@ OPENAI_API_KEY=your_openai_key_here
 # Anthropic Claude configuration (Upgraded Subscription)
 ANTHROPIC_API_KEY=your_anthropic_key_here
 
+# AI Gateway (optional)
+AI_GATEWAY_ENABLED=false
+AI_GATEWAY_URL=https://your-gateway-endpoint/v1
+AI_GATEWAY_API_KEY=your_gateway_key_here
+
 # Optional: Claude model preferences
 # Available models: claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022, claude-3-opus-20240229, claude-3-sonnet-20240229, claude-3-haiku-20240307
 CLAUDE_DEFAULT_MODEL=claude-3-5-sonnet-20241022

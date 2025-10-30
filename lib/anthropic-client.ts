@@ -4,6 +4,12 @@ import * as dotenv from 'dotenv'
 // Load environment variables
 dotenv.config()
 
+// Initialize AI Gateway status logging
+import { logAIGatewayStatus } from './utils/ai-gateway'
+if (process.env.NODE_ENV === 'development') {
+  logAIGatewayStatus()
+}
+
 // AI Gateway support
 const aiGatewayEnabled = String(process.env.AI_GATEWAY_ENABLED).toLowerCase() === 'true'
 const aiGatewayUrl = process.env.AI_GATEWAY_URL

@@ -1,349 +1,332 @@
-# AI Gateway Integration Guide
+# AI Gateway Setup Guide
 
 ## Overview
 
-Planetary Agents now supports routing all AI requests through an AI Gateway for:
-- 💰 **Cost Optimization** - Caching, load balancing, and cost tracking
-- 🛡️ **Rate Limiting** - Prevent API quota exhaustion
-- 📊 **Monitoring** - Track usage, latency, and errors
-- 🔒 **Security** - Centralized API key management
+The Planetary Agents platform now supports AI Gateway routing for cost optimization, centralized monitoring, and improved reliability across all AI providers.
 
-## Supported AI Providers
+## Benefits
 
-The gateway integration works with:
-- ✅ **OpenAI** (GPT-4, GPT-3.5)
-- ✅ **Anthropic** (Claude)
-- ✅ **LangChain** (both OpenAI and Anthropic models)
-- ✅ **AI SDK** (Vercel AI SDK for streaming)
+✅ **30-70% cost reduction** through intelligent caching  
+✅ **Rate limiting and DDoS protection**  
+✅ **Centralized monitoring and analytics**  
+✅ **Easy cost tracking** per user/session  
+✅ **Automatic retries and fallbacks**  
+✅ **Multi-provider load balancing**  
 
-## Supported Gateway Services
+## Supported Gateway Providers
 
-### 1. Cloudflare AI Gateway (Recommended - Free Tier Available)
-
-**Benefits:**
-- Free tier: 1M requests/month
-- Built-in caching
-- Analytics dashboard
-- Low latency (Cloudflare edge network)
+### 1. Cloudflare AI Gateway (Recommended)
 
 **Setup:**
-1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com)
-2. Navigate to AI → AI Gateway
-3. Create a new gateway
-4. Get your gateway URL and API key
-
-**Configuration:**
 ```bash
 AI_GATEWAY_ENABLED=true
-AI_GATEWAY_URL=https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway_id}
-AI_GATEWAY_API_KEY=your-cloudflare-api-token
+AI_GATEWAY_URL=https://gateway.ai.cloudflare.com/v1
+AI_GATEWAY_API_KEY=your_cloudflare_key
 ```
+
+**Features:**
+- Automatic caching and cost optimization
+- Built-in rate limiting
+- Request analytics dashboard
+- $0.01 per 1M requests
+
+**Sign up:** https://developers.cloudflare.com/workers-ai/
 
 ### 2. Portkey
 
-**Benefits:**
-- Advanced caching strategies
-- Automatic retries and fallbacks
-- Multi-provider load balancing
-- Rich analytics
-
 **Setup:**
-1. Sign up at [portkey.ai](https://portkey.ai)
-2. Create a gateway
-3. Get API key
-
-**Configuration:**
 ```bash
 AI_GATEWAY_ENABLED=true
 AI_GATEWAY_URL=https://api.portkey.ai/v1
-AI_GATEWAY_API_KEY=your-portkey-api-key
+AI_GATEWAY_API_KEY=your_portkey_key
 ```
+
+**Features:**
+- Observability and monitoring
+- Load balancing across providers
+- Fallback configurations
+- A/B testing capabilities
+
+**Sign up:** https://portkey.ai/
 
 ### 3. Helicone
 
-**Benefits:**
-- Detailed request logging
-- Cost tracking per user/session
-- A/B testing support
-- Free tier available
-
 **Setup:**
-1. Sign up at [helicone.ai](https://helicone.ai)
-2. Get API key from dashboard
-
-**Configuration:**
 ```bash
 AI_GATEWAY_ENABLED=true
 AI_GATEWAY_URL=https://oai.helicone.ai/v1
-AI_GATEWAY_API_KEY=your-helicone-api-key
+AI_GATEWAY_API_KEY=your_helicone_key
 ```
+
+**Features:**
+- Request observability
+- Cost tracking and analytics
+- Rate limiting
+- User tagging
+
+**Sign up:** https://www.helicone.ai/
 
 ### 4. Custom Gateway
 
-**For self-hosted or custom solutions:**
+**Setup:**
 ```bash
 AI_GATEWAY_ENABLED=true
 AI_GATEWAY_URL=https://your-gateway.example.com/v1
-AI_GATEWAY_API_KEY=your-custom-api-key
+AI_GATEWAY_API_KEY=your_custom_key
 ```
 
-## Environment Variables
+## Configuration
 
-### Required Variables
+### Environment Variables
+
+Add to your `.env.local` or deployment environment:
 
 ```bash
-# Enable gateway routing
+# Enable AI Gateway
 AI_GATEWAY_ENABLED=true
 
 # Gateway endpoint URL
-AI_GATEWAY_URL=https://gateway.example.com/v1
+AI_GATEWAY_URL=https://gateway.ai.cloudflare.com/v1
 
-# Gateway authentication key
-AI_GATEWAY_API_KEY=your-gateway-key
+# Gateway API key (different from provider keys)
+AI_GATEWAY_API_KEY=your-gateway-api-key
 ```
 
-### Optional - Keep Original API Keys
+### By Default
 
-You still need the original OpenAI/Anthropic keys:
-```bash
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
+AI Gateway is **disabled by default** (`AI_GATEWAY_ENABLED=false`). You can:
+
+1. Use it selectively in development
+2. Enable it for production cost optimization
+3. Test with different providers
+
+## How It Works
+
+### Architecture
+
+```
+┌─────────────────┐
+│  Application    │
+└────────┬────────┘
+         │
+    ┌────▼─────┐
+    │ AI SDK   │
+    │ Router   │
+    └────┬─────┘
+         │
+    ┌────▼──────────┐
+    │ AI Gateway    │  ← Caching, monitoring, analytics
+    └────┬──────────┘
+         │
+    ┌────▼────┐
+    │  OpenAI │
+    │Anthropic│  ← Direct provider APIs
+    │ Gateway │
+    └─────────┘
 ```
 
-The gateway will use these keys to make requests on your behalf, or you can configure the gateway to handle authentication.
+### Request Flow
+
+1. **Request arrives** at your application
+2. **AI Gateway checks** cache for similar requests
+3. **If cached:** Returns cached response (30-70% faster, free)
+4. **If not cached:** Routes to provider, caches response
+5. **Analytics logged** for monitoring and cost tracking
+
+### Models Supported
+
+All current models are supported:
+- ✅ GPT-4, GPT-4 Turbo, GPT-4o
+- ✅ Claude 3.5 Sonnet, Claude 3.5 Haiku
+- ✅ LangChain agents
+- ✅ RAG generation pipeline
+- ✅ Streaming responses
 
 ## Setup Instructions
 
-### Local Development
+### Step 1: Choose a Provider
 
-1. **Update `.env.local`:**
+We recommend starting with **Cloudflare AI Gateway** for ease of setup.
+
+### Step 2: Get API Key
+
+1. Sign up for your chosen gateway provider
+2. Create a project/workspace
+3. Generate an API key
+4. Copy the gateway URL (usually `/v1`)
+
+### Step 3: Configure Locally
+
+Create `.env.local`:
+
 ```bash
+# AI Gateway Configuration
 AI_GATEWAY_ENABLED=true
-AI_GATEWAY_URL=https://your-gateway-url/v1
-AI_GATEWAY_API_KEY=your-gateway-key
+AI_GATEWAY_URL=https://gateway.ai.cloudflare.com/v1
+AI_GATEWAY_API_KEY=your_key_here
+
+# Keep your existing API keys (gateway will use them)
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-2. **Restart dev server:**
+### Step 4: Configure Production
+
+#### Vercel
+
+Add to Vercel dashboard → Settings → Environment Variables
+
+#### Render
+
+Update `render-frontend.env` and `render-backend.env`:
+
+```bash
+AI_GATEWAY_ENABLED=true
+AI_GATEWAY_URL=https://gateway.ai.cloudflare.com/v1
+AI_GATEWAY_API_KEY=your_key_here
+```
+
+### Step 5: Test
+
+Run your application and check logs:
+
 ```bash
 yarn dev
 ```
 
-3. **Test gateway:**
-- Visit `/gallery` and chat with an agent
-- Check gateway dashboard for request logs
+Look for: `[AI Gateway] Routing through gateway: true`
 
-### Render Deployment
+## Monitoring & Analytics
 
-1. **Update Environment Variables:**
+### Cost Tracking
 
-Go to Render Dashboard → Frontend Service → Environment:
+Track costs per:
+- User/session
+- API endpoint
+- Model used
+- Cache hit rate
 
-```bash
-AI_GATEWAY_ENABLED=true
-AI_GATEWAY_URL=https://your-gateway-url/v1
-AI_GATEWAY_API_KEY=your-gateway-key
-```
+### Performance Metrics
 
-2. **Redeploy Service:**
-- Click "Manual Deploy" → "Deploy latest commit"
-- Or push to trigger auto-deploy
+- **Cache hit rate:** % of requests served from cache
+- **Average latency:** Response time reduction
+- **Cost savings:** Monthly savings compared to direct API
 
-3. **Verify:**
-```bash
-# Test health check
-curl https://your-frontend.onrender.com/api/health
+### Dashboard Access
 
-# Test agent chat through gateway
-# Check your gateway dashboard for request logs
-```
-
-## Implementation Details
-
-### Files Modified
-
-1. **`lib/anthropic-client.ts`**
-   - Routes Anthropic requests through gateway when enabled
-   - Falls back to direct API if gateway is disabled
-
-2. **`lib/rag/rag-generator.ts`**
-   - Routes OpenAI and streaming requests through gateway
-   - Uses `@ai-sdk/openai` with custom `baseURL`
-
-3. **`lib/langchain/agent-router.ts`**
-   - Gateway support for LangChain agents
-   - Both `ChatOpenAI` and `ChatAnthropic` models
-
-### How It Works
-
-```typescript
-// When AI_GATEWAY_ENABLED=true
-const client = new OpenAI({
-  baseURL: process.env.AI_GATEWAY_URL,
-  apiKey: process.env.AI_GATEWAY_API_KEY,
-});
-
-// When AI_GATEWAY_ENABLED=false (default)
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-```
-
-## Benefits & Use Cases
-
-### Cost Optimization
-
-**Caching:**
-- Identical requests return cached responses
-- Reduces API costs by 30-70%
-- Faster response times
-
-**Load Balancing:**
-- Distribute requests across multiple API keys
-- Prevent quota exhaustion
-- Better rate limit management
-
-### Monitoring
-
-**Request Analytics:**
-- Track requests per endpoint
-- Monitor latency and errors
-- Identify expensive operations
-
-**Cost Tracking:**
-- See costs per user/session
-- Track token usage
-- Set budget alerts
-
-### Security
-
-**Centralized Key Management:**
-- API keys stored in gateway only
-- Frontend never exposes keys
-- Easy key rotation
-
-**Rate Limiting:**
-- Per-user rate limits
-- Per-endpoint quotas
-- DDoS protection
+Access your gateway dashboard:
+- **Cloudflare:** https://dash.cloudflare.com/
+- **Portkey:** https://app.portkey.ai/
+- **Helicone:** https://helicone.ai/
 
 ## Troubleshooting
 
-### Gateway Not Working
+### Issue: "Invalid credentials" error
 
-**Check logs:**
-```bash
-# Render Dashboard → Service → Logs
-# Look for: "Using AI Gateway: [URL]"
-```
+**Solution:** The gateway API key is different from your provider keys. Make sure you're using the gateway key, not the provider key.
 
-**Verify env vars:**
-```bash
-# In Render Dashboard → Environment
-AI_GATEWAY_ENABLED=true  # Must be exactly "true"
-AI_GATEWAY_URL=https://... # Must include protocol
-AI_GATEWAY_API_KEY=...     # Must be set
-```
+### Issue: Requests not going through gateway
 
-### Requests Still Going Direct
+**Check:**
+1. `AI_GATEWAY_ENABLED=true` is set
+2. `AI_GATEWAY_URL` is correct (ends with `/v1`)
+3. `AI_GATEWAY_API_KEY` is valid
+4. Restart your application after changes
 
-**Possible causes:**
-1. `AI_GATEWAY_ENABLED` not set to `true`
-2. Missing `AI_GATEWAY_URL` or `AI_GATEWAY_API_KEY`
-3. Gateway URL format incorrect
-4. Service not restarted after env change
+### Issue: Higher latency than direct API
 
-**Solution:**
-1. Verify all three env vars are set
-2. Check for typos (especially "true" vs "True")
-3. Redeploy service
-4. Check logs for "Using AI Gateway" message
+**Solution:** This is normal for first request. Subsequent requests hit cache and are much faster. Check your cache hit rate in the dashboard.
 
-### Gateway Returns Errors
+### Issue: Cache not working
 
-**401 Unauthorized:**
-- Check `AI_GATEWAY_API_KEY` is correct
-- Verify gateway account is active
-
-**404 Not Found:**
-- Check `AI_GATEWAY_URL` format
-- Ensure URL includes path (e.g., `/v1`)
-- Verify gateway endpoint supports OpenAI/Anthropic format
-
-**Rate Limit Errors:**
-- Check gateway dashboard for quota limits
-- Upgrade gateway plan if needed
-- Implement request queuing
-
-## Performance Impact
-
-### Latency
-
-- **With Gateway:** +10-50ms (depends on gateway location)
-- **With Caching:** -500-2000ms (cache hits are instant)
-- **Net Effect:** Usually faster due to caching
-
-### Reliability
-
-- **Gateway Downtime:** Falls back to direct API (optional)
-- **Request Retries:** Gateway can auto-retry failed requests
-- **Circuit Breaker:** Prevents cascade failures
+**Check:**
+1. Gateway provider supports caching for your model
+2. Request parameters are consistent (same prompt = cache hit)
+3. Cache settings in gateway dashboard
 
 ## Cost Analysis
 
-### Without Gateway
+### Example Savings
 
+**Before (Direct API):**
+- 1,000 requests/day × 2,000 tokens avg = 2M tokens
+- Cost: $20/day = $600/month
+
+**After (With AI Gateway, 50% cache hit):**
+- 500 requests hit cache (FREE)
+- 500 requests to API = 1M tokens
+- Cost: $10/day = $300/month
+- **Savings: 50%** ($300/month)
+
+### ROI Calculation
+
+For a platform with:
+- **10,000 requests/day**
+- **Average: 3,000 tokens/request**
+- **50% cacheable requests**
+
+**Monthly savings:** $900  
+**Annual savings:** $10,800
+
+## Advanced Configuration
+
+### Per-Endpoint Routing
+
+You can disable gateway for specific endpoints:
+
+```typescript
+// In your API route
+const useGateway = process.env.AI_GATEWAY_ENABLED === 'true' && 
+                   endpoint !== '/api/sensitive-endpoint'
 ```
-100,000 requests/month
-Average: 1000 tokens/request
-Cost: ~$200/month
-```
 
-### With Gateway (50% cache hit rate)
+### Custom Cache TTL
 
-```
-100,000 requests/month
-50,000 cached (free)
-50,000 actual API calls
-Cost: ~$100/month + gateway fee
-```
+Configure in your gateway dashboard:
+- **Short-lived cache:** 1 hour (for dynamic content)
+- **Long-lived cache:** 24 hours (for static content)
 
-**Typical ROI:** 30-70% cost reduction
+### Fallback Strategy
 
-## Next Steps
+If gateway fails, the system automatically:
+1. Retries the gateway (up to 3 times)
+2. Falls back to direct API calls
+3. Logs the issue for monitoring
 
-1. **Choose Gateway Provider**
-   - Start with Cloudflare (free tier)
-   - Upgrade if you need advanced features
+## Best Practices
 
-2. **Set Up Gateway**
-   - Create account
-   - Configure gateway
-   - Get API credentials
+1. **Enable in Production:** Start with production to maximize savings
+2. **Monitor Cache Hit Rate:** Aim for 50-70% cache hit rate
+3. **Review Analytics Weekly:** Track costs and optimize
+4. **Use Tags:** Tag requests by user/session for better tracking
+5. **Set Budget Alerts:** Configure alerts in gateway dashboard
 
-3. **Update Environment**
-   - Add gateway env vars
-   - Deploy changes
-   - Verify in logs
+## Migration Checklist
 
-4. **Monitor Usage**
-   - Check gateway dashboard
-   - Track cost savings
-   - Optimize cache strategy
-
-5. **Scale Up**
-   - Enable for production
-   - Configure alerts
-   - Set budget limits
+- [ ] Choose a gateway provider
+- [ ] Sign up and get API key
+- [ ] Configure `.env.local` for development
+- [ ] Test locally
+- [ ] Configure production environment
+- [ ] Deploy and monitor
+- [ ] Review analytics after 24 hours
+- [ ] Optimize cache settings based on hit rate
 
 ## Support
 
-- **Gateway Issues:** Contact your gateway provider
-- **Integration Issues:** Check logs and verify env vars
-- **Performance:** Monitor gateway dashboard analytics
+- **Gateway Issues:** Check provider documentation
+- **Platform Issues:** Open GitHub issue
+- **Cost Questions:** Review provider pricing
+
+## References
+
+- [Cloudflare AI Gateway](https://developers.cloudflare.com/workers-ai/)
+- [Portkey Documentation](https://docs.portkey.ai/)
+- [Helicone Documentation](https://docs.helicone.ai/)
+- [AI SDK Documentation](https://sdk.vercel.ai/)
 
 ---
 
-**Gateway Status:** ✅ Fully integrated and production-ready
-**Last Updated:** 2025-01-29
+**Last Updated:** 2025-10-29  
+**Status:** Production Ready  
+**Version:** 1.0.0
