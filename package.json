@@ -202,7 +202,6 @@
     "typescript": "5.2.2",
     "vitest": "^3.2.4"
   },
-  "packageManager": "yarn@4.10.2",
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "eslint --fix",
