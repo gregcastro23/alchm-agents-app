@@ -50,17 +50,25 @@ export class AgentRouter {
       console.log('[AgentRouter] Initializing...')
 
       // Initialize LLM based on model choice
+      const aiGatewayEnabled = String(process.env.AI_GATEWAY_ENABLED).toLowerCase() === 'true'
       const llm =
         this.config.model === 'anthropic'
           ? new ChatAnthropic({
               modelName: 'claude-3-5-sonnet-20241022',
               temperature: this.config.temperature,
-              anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+              anthropicApiKey: aiGatewayEnabled
+                ? process.env.AI_GATEWAY_API_KEY
+                : process.env.ANTHROPIC_API_KEY,
+              // LangChain Anthropic supports baseURL
+              baseURL: aiGatewayEnabled ? process.env.AI_GATEWAY_URL : undefined,
             })
           : new ChatOpenAI({
               modelName: 'gpt-4-turbo-preview',
               temperature: this.config.temperature,
-              openAIApiKey: process.env.OPENAI_API_KEY,
+              openAIApiKey: aiGatewayEnabled
+                ? process.env.AI_GATEWAY_API_KEY
+                : process.env.OPENAI_API_KEY,
+              baseURL: aiGatewayEnabled ? process.env.AI_GATEWAY_URL : undefined,
             })
 
       // Initialize memory if enabled

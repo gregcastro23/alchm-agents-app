@@ -53,6 +53,11 @@ Deploy Planetary Agents to Render free tier in ~15 minutes.
    NEXTAUTH_SECRET=<your-generated-secret>
    NEXTAUTH_URL=https://<your-frontend-service>.onrender.com
    OPENAI_API_KEY=<your-openai-key>
+
+   # Optional: AI Gateway (for cost optimization)
+   AI_GATEWAY_ENABLED=false  # Set to true if using gateway
+   AI_GATEWAY_URL=<your-gateway-url>
+   AI_GATEWAY_API_KEY=<your-gateway-key>
    ```
 
    **Backend Service** → Environment tab:

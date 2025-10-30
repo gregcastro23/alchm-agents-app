@@ -4,8 +4,8 @@
  */
 
 import { generateText, streamText } from 'ai'
-import { openai } from '@ai-sdk/openai'
-import { anthropic } from '@anthropic-ai/sdk'
+import { openai as openaiProvider } from '@ai-sdk/openai'
+import { Anthropic as AnthropicSDK } from '@anthropic-ai/sdk'
 import { getSemanticSearchService } from '../llamaindex/semantic-search'
 import { getMemoryManager } from '../langchain/memory-manager'
 import type { CraftedAgent } from '../agent-types'
@@ -168,9 +168,13 @@ Wisdom Domains: ${agent.abilities.wisdomDomains.join(', ')}
 
     try {
       if (model === 'anthropic') {
-        // Use Anthropic Claude
-        const client = new anthropic({
-          apiKey: process.env.ANTHROPIC_API_KEY,
+        // Use Anthropic Claude (route via AI Gateway when enabled)
+        const aiGatewayEnabled = String(process.env.AI_GATEWAY_ENABLED).toLowerCase() === 'true'
+        const client = new AnthropicSDK({
+          apiKey: aiGatewayEnabled
+            ? process.env.AI_GATEWAY_API_KEY
+            : process.env.ANTHROPIC_API_KEY,
+          baseURL: aiGatewayEnabled ? process.env.AI_GATEWAY_URL : undefined,
         })
 
         const message = await client.messages.create({
@@ -182,9 +186,15 @@ Wisdom Domains: ${agent.abilities.wisdomDomains.join(', ')}
 
         return message.content[0].type === 'text' ? message.content[0].text : ''
       } else {
-        // Use OpenAI
+        // Use OpenAI (route via AI Gateway when enabled)
+        const aiGatewayEnabled = String(process.env.AI_GATEWAY_ENABLED).toLowerCase() === 'true'
+        const provider = openaiProvider({
+          apiKey: aiGatewayEnabled ? (process.env.AI_GATEWAY_API_KEY as string) : (process.env.OPENAI_API_KEY as string),
+          baseURL: aiGatewayEnabled ? process.env.AI_GATEWAY_URL : undefined,
+        })
+
         const result = await generateText({
-          model: openai('gpt-4-turbo-preview'),
+          model: provider('gpt-4-turbo-preview'),
           prompt,
           temperature,
         })
@@ -335,8 +345,14 @@ Wisdom Domains: ${agent.abilities.wisdomDomains.join(', ')}
       const prompt = this.buildEnhancedPrompt(userMessage, context, agent)
 
       // Stream response
+      const aiGatewayEnabled = String(process.env.AI_GATEWAY_ENABLED).toLowerCase() === 'true'
+      const provider = openaiProvider({
+        apiKey: aiGatewayEnabled ? (process.env.AI_GATEWAY_API_KEY as string) : (process.env.OPENAI_API_KEY as string),
+        baseURL: aiGatewayEnabled ? process.env.AI_GATEWAY_URL : undefined,
+      })
+
       const result = await streamText({
-        model: openai('gpt-4-turbo-preview'),
+        model: provider('gpt-4-turbo-preview'),
         prompt,
       })
 

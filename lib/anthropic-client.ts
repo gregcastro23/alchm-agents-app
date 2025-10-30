@@ -4,9 +4,16 @@ import * as dotenv from 'dotenv'
 // Load environment variables
 dotenv.config()
 
-// Check if ANTHROPIC_API_KEY is available
-// Fall back to OPENAI_API_KEY if ANTHROPIC_API_KEY is not available
-const apiKey = process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY
+// AI Gateway support
+const aiGatewayEnabled = String(process.env.AI_GATEWAY_ENABLED).toLowerCase() === 'true'
+const aiGatewayUrl = process.env.AI_GATEWAY_URL
+const aiGatewayKey = process.env.AI_GATEWAY_API_KEY
+
+// Check if ANTHROPIC_API_KEY is available (or AI Gateway key when enabled)
+// Fall back to OPENAI_API_KEY only when gateway not enabled and Anthropic missing
+const apiKey = aiGatewayEnabled
+  ? aiGatewayKey
+  : process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY
 
 if (!apiKey) {
   console.warn(
@@ -14,9 +21,10 @@ if (!apiKey) {
   )
 }
 
-// Create and export the Anthropic client
+// Create and export the Anthropic client (route via AI Gateway when enabled)
 export const anthropic = new Anthropic({
-  apiKey: apiKey || 'dummy-key', // Use a dummy key if not available (will cause actual API calls to fail)
+  apiKey: apiKey || 'dummy-key',
+  baseURL: aiGatewayEnabled && aiGatewayUrl ? aiGatewayUrl : undefined,
 })
 
 // Model configuration for upgraded subscription

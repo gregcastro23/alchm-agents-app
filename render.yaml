@@ -30,6 +30,13 @@ services:
         sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
+      # AI Gateway (optional - for cost optimization and rate limiting)
+      - key: AI_GATEWAY_ENABLED
+        value: false
+      - key: AI_GATEWAY_URL
+        sync: false
+      - key: AI_GATEWAY_API_KEY
+        sync: false
       # Backend integration (optional)
       - key: NEXT_PUBLIC_BACKEND_URL
         fromService:
