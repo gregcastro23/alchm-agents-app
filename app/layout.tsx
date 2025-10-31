@@ -15,6 +15,12 @@ export const metadata: Metadata = {
   title: 'Planetary Agents - Consciousness Evolution Platform',
   description:
     'Revolutionary consciousness evolution through AI-powered planetary agents and real-time cosmic integration',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
