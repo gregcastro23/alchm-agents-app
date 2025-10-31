@@ -75,15 +75,41 @@ export default function HomePage() {
 
           setTopAgents(sortedAgents)
         } else {
-          // Fallback to random agents if API fails
-          const shuffled = [...DEMO_AGENTS].sort(() => 0.5 - Math.random())
-          setTopAgents(shuffled.slice(0, 6))
+          // Fallback to random agents if API fails - create dummy recommendations
+          const shuffled = [...DEMO_AGENTS].sort(() => 0.5 - Math.random()).slice(0, 6)
+          setTopAgents(shuffled)
+          // Create placeholder recommendations for fallback agents
+          setRecommendations(
+            shuffled.map((agent, idx) => ({
+              agentId: agent.id,
+              score: 0.7 - idx * 0.05, // Decreasing scores
+              category: 'compatible' as const,
+              reasoning: 'Cosmic alignment calculated based on current energies',
+              powerAlignment: 0.7,
+              aspectSensitivity: 0.7,
+              momentumCompatibility: 0.7,
+              optimalTopics: agent.abilities?.wisdomDomains?.slice(0, 3) || []
+            }))
+          )
         }
       } catch (error) {
         console.error('Failed to fetch top agents:', error)
-        // Fallback to random agents
-        const shuffled = [...DEMO_AGENTS].sort(() => 0.5 - Math.random())
-        setTopAgents(shuffled.slice(0, 6))
+        // Fallback to random agents - create dummy recommendations
+        const shuffled = [...DEMO_AGENTS].sort(() => 0.5 - Math.random()).slice(0, 6)
+        setTopAgents(shuffled)
+        // Create placeholder recommendations for fallback agents
+        setRecommendations(
+          shuffled.map((agent, idx) => ({
+            agentId: agent.id,
+            score: 0.7 - idx * 0.05, // Decreasing scores
+            category: 'compatible' as const,
+            reasoning: 'Cosmic alignment calculated based on current energies',
+            powerAlignment: 0.7,
+            aspectSensitivity: 0.7,
+            momentumCompatibility: 0.7,
+            optimalTopics: agent.abilities?.wisdomDomains?.slice(0, 3) || []
+          }))
+        )
       } finally {
         setLoadingAgents(false)
       }
