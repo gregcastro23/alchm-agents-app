@@ -49,15 +49,32 @@ export async function generateWithRAG(options: {
     console.log('[RAG] Feature disabled, using direct generation')
 
     // Direct generation (existing behavior)
-    const { text } = await generateText({
-      model: openai(model),
-      system: systemPrompt,
-      prompt: userMessage,
-      maxTokens,
-      temperature,
-    })
-
-    return { text }
+    // Try OpenAI first, fallback to environment check
+    try {
+      const { text } = await generateText({
+        model: openai(model),
+        system: systemPrompt,
+        prompt: userMessage,
+        maxTokens,
+        temperature,
+      })
+      return { text }
+    } catch (openaiError) {
+      console.error('[AI] OpenAI generation failed:', openaiError)
+      // If OpenAI fails and we have Anthropic key, try that
+      if (process.env.ANTHROPIC_API_KEY) {
+        const { anthropic } = await import('@ai-sdk/anthropic')
+        const { text } = await generateText({
+          model: anthropic('claude-3-5-haiku-20241022'),
+          system: systemPrompt,
+          prompt: userMessage,
+          maxTokens,
+          temperature,
+        })
+        return { text }
+      }
+      throw openaiError
+    }
   }
 
   try {
@@ -93,21 +110,46 @@ export async function generateWithRAG(options: {
     console.error('[RAG] RAG generation failed, falling back to direct generation:', error)
 
     // Fallback to direct generation
-    const { text } = await generateText({
-      model: openai(model),
-      system: systemPrompt,
-      prompt: userMessage,
-      maxTokens,
-      temperature,
-    })
+    try {
+      const { text } = await generateText({
+        model: openai(model),
+        system: systemPrompt,
+        prompt: userMessage,
+        maxTokens,
+        temperature,
+      })
 
-    return {
-      text,
-      ragMetadata: {
-        ragEnabled: false,
-        error: error instanceof Error ? error.message : 'RAG generation failed',
-        fallback: true,
-      },
+      return {
+        text,
+        ragMetadata: {
+          ragEnabled: false,
+          error: error instanceof Error ? error.message : 'RAG generation failed',
+          fallback: true,
+        },
+      }
+    } catch (openaiError) {
+      console.error('[AI] OpenAI fallback also failed, trying Anthropic:', openaiError)
+      // Last resort: try Anthropic if available
+      if (process.env.ANTHROPIC_API_KEY) {
+        const { anthropic } = await import('@ai-sdk/anthropic')
+        const { text } = await generateText({
+          model: anthropic('claude-3-5-haiku-20241022'),
+          system: systemPrompt,
+          prompt: userMessage,
+          maxTokens,
+          temperature,
+        })
+        return {
+          text,
+          ragMetadata: {
+            ragEnabled: false,
+            error: 'OpenAI failed, used Anthropic fallback',
+            fallback: true,
+            modelUsed: 'claude-3-5-haiku',
+          },
+        }
+      }
+      throw new Error(`Both OpenAI and Anthropic failed. OpenAI: ${openaiError}. RAG: ${error}`)
     }
   }
 }
