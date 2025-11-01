@@ -1,0 +1,13 @@
+Deployment triggered at: 2025-10-31T00:00:00Z
+Commit: 08c666a3
+Purpose: Force Vercel redeploy with mobile fixes and autoprefixer fix
+
+Changes included:
+- Autoprefixer removed from PostCSS (Next.js handles it)
+- Mobile navigation added
+- Viewport configuration fixed
+- N/A synergy scores fixed
+- Isaac Asimov name corrected
+
+This should resolve the 500 errors on production.
+
