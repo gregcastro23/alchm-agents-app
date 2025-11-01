@@ -520,8 +520,13 @@ function getAspectGuidance(aspect: any): string {
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('[Monica API] Request received at:', new Date().toISOString())
+    
     // Verify API keys are available
-    if (!verifyApiKeys()) {
+    const hasKeys = verifyApiKeys()
+    console.log('[Monica API] API keys verified:', hasKeys)
+    
+    if (!hasKeys) {
       console.error(
         'API keys not configured. Monica cannot access her cosmic wisdom without proper connection.'
       )
@@ -2209,10 +2214,12 @@ Always end responses with practical next steps for rune crafting, resource manag
       )
     }
   } catch (error) {
-    console.error('Error in Monica agent:', error)
+    console.error('[Monica API] Critical error:', error)
+    console.error('[Monica API] Error stack:', error instanceof Error ? error.stack : 'No stack')
     return NextResponse.json(
       {
-        error: 'Failed to process request',
+        response: 'I apologize, but I encountered a technical error. Please try again.',
+        error: 'MONICA_API_ERROR',
         details: error instanceof Error ? error.message : String(error),
         monicaNote: 'My practical Taurus nature suggests checking the basics first!',
       },
