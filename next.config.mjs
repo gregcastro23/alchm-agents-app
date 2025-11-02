@@ -17,6 +17,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Disable source maps in production to avoid source-map module issues
+  productionBrowserSourceMaps: false,
   // Explicitly set workspace root to avoid lockfile detection issues
   outputFileTracingRoot: process.env.DOCKER_BUILD
     ? undefined
@@ -49,10 +51,23 @@ const nextConfig = {
     ],
     // Enable faster refresh
     swcPlugins: [],
+    // Server actions configuration
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
   },
 
   // Server component configuration for Vercel
-  serverComponentsExternalPackages: ['source-map'],
+  // Bundle these packages instead of externalizing them
+  serverComponentsExternalPackages: [],
+  
+  // Experimental: Fix for Vercel serverless function bundling
+  experimental: {
+    ...nextConfig.experimental,
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
+  },
 
   // Code splitting optimization
   webpack: (config, { dev, isServer }) => {
