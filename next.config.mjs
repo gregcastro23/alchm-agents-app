@@ -51,6 +51,9 @@ const nextConfig = {
     swcPlugins: [],
   },
 
+  // Server component configuration for Vercel
+  serverComponentsExternalPackages: ['source-map'],
+
   // Code splitting optimization
   webpack: (config, { dev, isServer }) => {
     // Only apply webpack config when not using turbopack
@@ -67,6 +70,17 @@ const nextConfig = {
         tls: false,
         path: false,
         os: false,
+      }
+    }
+
+    // Ensure source-map is properly bundled for serverless functions
+    if (isServer) {
+      config.externals = config.externals || []
+      // Don't externalize source-map - bundle it with the function
+      if (Array.isArray(config.externals)) {
+        config.externals = config.externals.filter(
+          (external) => typeof external !== 'string' || !external.includes('source-map')
+        )
       }
     }
 
