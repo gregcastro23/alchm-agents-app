@@ -5,19 +5,26 @@
 export const config = {
   galileoApiKey: process.env.GALILEO_API_KEY,
   openaiApiKey: process.env.OPENAI_API_KEY,
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
 }
 
 // Verify keys are available (without logging them)
 export function verifyApiKeys() {
-  const missingKeys = []
-
-  if (!config.galileoApiKey) missingKeys.push('GALILEO_API_KEY')
-  if (!config.openaiApiKey) missingKeys.push('OPENAI_API_KEY')
-
-  if (missingKeys.length > 0) {
-    console.error(`Missing required environment variables: ${missingKeys.join(', ')}`)
+  // Check for at least ONE AI provider key (OpenAI OR Anthropic)
+  const hasOpenAI = !!config.openaiApiKey
+  const hasAnthropic = !!config.anthropicApiKey
+  
+  if (!hasOpenAI && !hasAnthropic) {
+    console.error('Missing AI API keys: Need either OPENAI_API_KEY or ANTHROPIC_API_KEY')
     return false
   }
 
+  // Galileo is optional
+  if (!config.galileoApiKey) {
+    console.warn('GALILEO_API_KEY not set (optional for observability)')
+  }
+
+  console.log(`API Keys available - OpenAI: ${hasOpenAI}, Anthropic: ${hasAnthropic}`)
   return true
 }
+
