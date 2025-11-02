@@ -60,14 +60,6 @@ const nextConfig = {
   // Server component configuration for Vercel
   // Bundle these packages instead of externalizing them
   serverComponentsExternalPackages: [],
-  
-  // Experimental: Fix for Vercel serverless function bundling
-  experimental: {
-    ...nextConfig.experimental,
-    serverActions: {
-      bodySizeLimit: '2mb',
-    },
-  },
 
   // Code splitting optimization
   webpack: (config, { dev, isServer }) => {
