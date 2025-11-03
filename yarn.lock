@@ -13160,7 +13160,6 @@ __metadata:
     redis: "npm:^5.6.1"
     server-only: "npm:^0.0.1"
     sonner: "npm:^2.0.6"
-    source-map: "npm:^0.7.6"
     storybook: "npm:^9.1.8"
     suncalc: "npm:^1.9.0"
     tailwind-merge: "npm:^3.3.0"
@@ -14668,13 +14667,6 @@ __metadata:
   version: 0.6.1
   resolution: "source-map@npm:0.6.1"
   checksum: 10c0/ab55398007c5e5532957cb0beee2368529618ac0ab372d789806f5718123cc4367d57de3904b4e6a4170eb5a0b0f41373066d02ca0735a0c4d75c7d328d3e011
-  languageName: node
-  linkType: hard
-
-"source-map@npm:^0.7.6":
-  version: 0.7.6
-  resolution: "source-map@npm:0.7.6"
-  checksum: 10c0/59f6f05538539b274ba771d2e9e32f6c65451982510564438e048bc1352f019c6efcdc6dd07909b1968144941c14015c2c7d4369fb7c4d7d53ae769716dcc16c
   languageName: node
   linkType: hard
 
