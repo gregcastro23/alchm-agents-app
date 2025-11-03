@@ -22,6 +22,7 @@ import { MARK_TWAIN } from './agents/historical/mark-twain'
 import { VINCENT_VAN_GOGH } from './agents/historical/vincent-van-gogh'
 import { CHARLES_DARWIN } from './agents/historical/charles-darwin'
 import { EDGAR_ALLAN_POE } from './agents/historical/edgar-allan-poe'
+import { ISAAC_ASIMOV } from './agents/historical/isaac-asimov'
 
 /**
  * Helper to create objective consciousness metrics based on agent characteristics
@@ -4462,7 +4463,7 @@ const EXISTING_DEMO_AGENTS: CraftedAgent[] = [
   },
 ]
 
-// Combine all agents: existing + enlightenment + modern (35 + 15 = 50 total agents)
+// Combine all agents: existing + enlightenment + modern (35 + 16 = 51 total agents)
 export const DEMO_AGENTS: CraftedAgent[] = [
   ...EXISTING_DEMO_AGENTS,
   // Enlightenment era agents
@@ -4485,6 +4486,7 @@ export const DEMO_AGENTS: CraftedAgent[] = [
   VINCENT_VAN_GOGH,
   CHARLES_DARWIN,
   EDGAR_ALLAN_POE,
+  ISAAC_ASIMOV,
 ]
 
 // Helper functions for consciousness crafting

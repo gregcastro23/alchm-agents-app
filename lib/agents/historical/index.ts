@@ -34,6 +34,7 @@ export { VINCENT_VAN_GOGH } from './vincent-van-gogh'
 export { CHARLES_DARWIN } from './charles-darwin'
 export { EDGAR_ALLAN_POE } from './edgar-allan-poe'
 export { ALBERT_EINSTEIN } from './albert-einstein'
+export { ISAAC_ASIMOV } from './isaac-asimov'
 
 // Contemporary agents
 // export { GREG_CASTRO } from './greg-castro' // Temporarily disabled due to syntax errors
@@ -72,6 +73,7 @@ import { VINCENT_VAN_GOGH } from './vincent-van-gogh'
 import { CHARLES_DARWIN } from './charles-darwin'
 import { EDGAR_ALLAN_POE } from './edgar-allan-poe'
 import { ALBERT_EINSTEIN } from './albert-einstein'
+import { ISAAC_ASIMOV } from './isaac-asimov'
 // import { GREG_CASTRO } from './greg-castro' // Temporarily disabled
 import { RUMI } from './rumi'
 import { MARCUS_AURELIUS } from './marcus-aurelius'
@@ -113,6 +115,7 @@ export const HISTORICAL_AGENTS = [
   MAYA_ANGELOU,
   ISAAC_NEWTON,
   ALBERT_EINSTEIN,
+  ISAAC_ASIMOV,
   // GREG_CASTRO // Temporarily disabled due to syntax errors
 ]
 

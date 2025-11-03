@@ -57,10 +57,6 @@ const nextConfig = {
     },
   },
 
-  // Server component configuration for Vercel
-  // Bundle these packages instead of externalizing them
-  serverComponentsExternalPackages: [],
-
   // Code splitting optimization
   webpack: (config, { dev, isServer }) => {
     // Only apply webpack config when not using turbopack

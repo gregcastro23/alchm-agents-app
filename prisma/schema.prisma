@@ -1196,3 +1196,41 @@ enum CulturalCategory {
 
   @@map("cultural_category")
 }
+
+// Workflow-related models for durable workflow execution
+model AgentConsciousness {
+  id                  String   @id @default(cuid())
+  agentId             String
+  userId              String
+  consciousnessLevel  Float    @default(1.0)
+  totalInteractions   Int      @default(0)
+  qualityScore        Float    @default(0.0)
+  stats               Json?
+  lastInteraction     DateTime @default(now())
+  lastEvolution       DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([agentId, userId])
+  @@index([agentId])
+  @@index([userId])
+  @@index([consciousnessLevel])
+  @@map("agent_consciousness")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  data      Json?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+  @@map("notifications")
+}

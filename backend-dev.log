@@ -1,0 +1,33 @@
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.16.2) to ./node_modules/@prisma/client in 146ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: ts,json[39m
+[32m[nodemon] starting `tsx src/index.ts`[39m
+<anonymous_script>:1
+
+
+SyntaxError: Error parsing /Users/GregCastro/Desktop/planetary-agents/backend/node_modules/send/node_modules/debug/node_modules/ms/package.json: Unexpected end of JSON input
+    at parse (<anonymous>)
+    at read (node:internal/modules/package_json_reader:80:16)
+    at readPackage (node:internal/modules/package_json_reader:141:10)
+    at resolveExports (node:internal/modules/cjs/loader:632:15)
+    at Module._findPath (node:internal/modules/cjs/loader:716:31)
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1198:27)
+    at nextResolveSimple (/Users/GregCastro/Desktop/planetary-agents/backend/node_modules/tsx/dist/register-D46fvsV_.cjs:4:1004)
+    at /Users/GregCastro/Desktop/planetary-agents/backend/node_modules/tsx/dist/register-D46fvsV_.cjs:3:2630
+    at /Users/GregCastro/Desktop/planetary-agents/backend/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1542
+    at resolveTsPaths (/Users/GregCastro/Desktop/planetary-agents/backend/node_modules/tsx/dist/register-D46fvsV_.cjs:4:760) {
+  path: '/Users/GregCastro/Desktop/planetary-agents/backend/node_modules/send/node_modules/debug/node_modules/ms/package.json'
+}
+
+Node.js v20.19.3
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m

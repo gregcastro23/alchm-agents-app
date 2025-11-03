@@ -223,11 +223,28 @@ function findSignFromTransitDates(
     // Normalize provided Start/End strings to the current year using month/day only
     const currentYear = date.getFullYear()
 
-    const parseMonthDay = (s: string): { month: number; day: number } | null => {
-      if (!s || typeof s !== 'string') return null
-      const parts = s.split('-')
-      if (parts.length < 3) return null
-      return { month: Number(parts[1]), day: Number(parts[2]) }
+    const parseMonthDay = (s: any): { month: number; day: number } | null => {
+      // More defensive validation to prevent split errors
+      if (!s) return null
+      if (typeof s !== 'string') return null
+      if (s.length === 0) return null
+
+      try {
+        const parts = s.split('-')
+        if (!parts || parts.length < 3) return null
+
+        const month = Number(parts[1])
+        const day = Number(parts[2])
+
+        if (isNaN(month) || isNaN(day)) return null
+        if (month < 1 || month > 12) return null
+        if (day < 1 || day > 31) return null
+
+        return { month, day }
+      } catch (error) {
+        console.warn(`Error parsing month/day from: ${s}`, error)
+        return null
+      }
     }
 
     for (const [sign, dates] of Object.entries(transitDates)) {
