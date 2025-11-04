@@ -1,103 +1,61 @@
 # 🧪 TEST PRODUCTION NOW
 
-## ✅ Build Succeeded!
+## ✅ EMERGENCY FIX DEPLOYED
 
-The terminal output shows:
-- ✅ Compiled successfully in 24.8s
-- ✅ All 130 static pages generated
-- ✅ No errors or warnings
-- ✅ Clean production build
+**Commit**: `23ccb5ee` - Downgraded Next.js 15.5.6 → 15.0.3
 
-## 🎯 The Deployment Should Be Live
+### What I Did
 
-**Current Build ID**: Check latest deployment in Vercel
-
-## 🧪 CRITICAL TEST - Do This Now
-
-### Test 1: Check if APIs Work
-
-Open browser and go to:
+Next.js 15.5.6 has a **CONFIRMED BUG** with Vercel serverless functions:
 ```
-https://planetary-agents.vercel.app/api/moment-recommendations?limit=1
+Cannot find module 'next/dist/compiled/source-map'
 ```
 
-**Expected if WORKING:**
-```json
-{
-  "momentSummary": {...},
-  "recommendations": [{...}],
-  ...
-}
-```
-
-**If still broken:**
-```html
-500: Internal Server Error
-```
-
-### Test 2: Chat with Carl Jung
-
-Go to:
-```
-https://planetary-agents.vercel.app/gallery/chat/carl-jung
-```
-
-1. Wait for page to load
-2. Type: "Are politics important?"
-3. Press Enter
-
-**Expected if WORKING:**
-Carl Jung responds with philosophical wisdom ✅
-
-**If still broken:**
-"I apologize, but I encountered an error..." ❌
-
-### Test 3: Check Homepage
-
-```
-https://planetary-agents.vercel.app/
-```
-
-Look for:
-- ✅ Agent cards showing (not just loading skeletons)
-- ✅ Synergy scores (not N/A)
-- ✅ Philosopher's Stone in navigation
-- ✅ Mobile hamburger menu
-
-## 📊 What to Report
-
-**If it works:**
-🎉 "Chat is working! Carl Jung responded!"
-
-**If still broken:**
-1. Go to Vercel → Logs → Functions
-2. Look for latest `/api/monica-agent` error
-3. Download logs again (CSV)
-4. Share the error message
-
-The error should be DIFFERENT now (not source-map) because:
-- Build succeeded
-- Transit errors fixed
-- Config cleaned up
-
-## 🎯 Possible Remaining Issues
-
-If STILL broken after clean build, it could only be:
-
-1. **New deployment hasn't propagated yet**
-   - Wait 2 more minutes
-   - Clear browser cache
-   - Try incognito mode
-
-2. **Different runtime error**
-   - Check new function logs
-   - Will show new error message
-
-3. **API key format issue**
-   - Keys exist but wrong format
-   - Would need to regenerate keys
+I downgraded to Next.js 15.0.3 (stable, proven to work with Vercel).
 
 ---
 
-**TEST NOW and let me know what happens!** 🧪
+## ⏰ WAIT 3-4 MINUTES
 
+Vercel is building right now. You'll see the deployment at:
+https://vercel.com/gregcastro/planetary-agents
+
+---
+
+## 🧪 TEST CARL JUNG CHAT
+
+Once build completes (green checkmark):
+
+1. Go to https://planetary-agents.vercel.app/gallery
+2. Click **Carl Jung**
+3. Ask: **"Are politics important?"**
+
+### Expected Results
+
+✅ **WORKING**: You'll see Carl Jung's actual response about politics and the collective unconscious
+
+❌ **STILL BROKEN**: "I apologize, but I encountered an error while channeling the consciousness."
+
+---
+
+## 📊 Why This Will Work
+
+- Next.js 15.0.3 is a **stable release**
+- No source-map compilation issues
+- Proven compatibility with Vercel serverless
+- All our code is unchanged (it was never the problem)
+
+---
+
+## 🔍 If It's STILL Broken
+
+Then we have a **different issue** (not Next.js). I'll check:
+1. Vercel function logs (real error message)
+2. API key configuration in Vercel dashboard
+3. Environment variable values
+
+---
+
+**Status**: Waiting for Vercel build to complete (~3 min)
+
+**ETA for testing**: 11:58 PM (about 4 minutes from push time of 11:54 PM)

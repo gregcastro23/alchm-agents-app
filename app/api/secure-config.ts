@@ -14,17 +14,23 @@ export function verifyApiKeys() {
   const hasOpenAI = !!config.openaiApiKey
   const hasAnthropic = !!config.anthropicApiKey
   
+  // Log key prefixes (first 10 chars) for debugging without exposing full keys
+  console.log('[API Keys] OpenAI present:', hasOpenAI, hasOpenAI ? `(starts with ${config.openaiApiKey?.substring(0, 10)}...)` : '')
+  console.log('[API Keys] Anthropic present:', hasAnthropic, hasAnthropic ? `(starts with ${config.anthropicApiKey?.substring(0, 10)}...)` : '')
+  console.log('[API Keys] Galileo present:', !!config.galileoApiKey)
+  
   if (!hasOpenAI && !hasAnthropic) {
-    console.error('Missing AI API keys: Need either OPENAI_API_KEY or ANTHROPIC_API_KEY')
+    console.error('[API Keys] CRITICAL: Missing AI API keys! Need either OPENAI_API_KEY or ANTHROPIC_API_KEY')
+    console.error('[API Keys] Environment variables loaded:', Object.keys(process.env).filter(k => k.includes('API') || k.includes('KEY')))
     return false
   }
 
   // Galileo is optional
   if (!config.galileoApiKey) {
-    console.warn('GALILEO_API_KEY not set (optional for observability)')
+    console.warn('[API Keys] GALILEO_API_KEY not set (optional for observability)')
   }
 
-  console.log(`API Keys available - OpenAI: ${hasOpenAI}, Anthropic: ${hasAnthropic}`)
+  console.log(`[API Keys] Verification passed - OpenAI: ${hasOpenAI}, Anthropic: ${hasAnthropic}`)
   return true
 }
 

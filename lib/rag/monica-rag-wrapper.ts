@@ -51,6 +51,7 @@ export async function generateWithRAG(options: {
     // Direct generation (existing behavior)
     // Try OpenAI first, fallback to environment check
     try {
+      console.log('[AI] Attempting OpenAI generation with model:', model)
       const { text } = await generateText({
         model: openai(model),
         system: systemPrompt,
@@ -58,20 +59,38 @@ export async function generateWithRAG(options: {
         maxTokens,
         temperature,
       })
+      console.log('[AI] OpenAI generation successful, response length:', text.length)
       return { text }
     } catch (openaiError) {
-      console.error('[AI] OpenAI generation failed:', openaiError)
+      console.error('[AI] OpenAI generation failed with error:', openaiError)
+      console.error('[AI] Error details:', {
+        name: openaiError instanceof Error ? openaiError.name : 'Unknown',
+        message: openaiError instanceof Error ? openaiError.message : String(openaiError),
+        stack: openaiError instanceof Error ? openaiError.stack?.substring(0, 200) : 'No stack',
+      })
+      
       // If OpenAI fails and we have Anthropic key, try that
       if (process.env.ANTHROPIC_API_KEY) {
-        const { anthropic } = await import('@ai-sdk/anthropic')
-        const { text } = await generateText({
-          model: anthropic('claude-3-5-haiku-20241022'),
-          system: systemPrompt,
-          prompt: userMessage,
-          maxTokens,
-          temperature,
-        })
-        return { text }
+        console.log('[AI] Attempting Anthropic fallback with claude-3-5-haiku')
+        try {
+          const { anthropic } = await import('@ai-sdk/anthropic')
+          const { text } = await generateText({
+            model: anthropic('claude-3-5-haiku-20241022'),
+            system: systemPrompt,
+            prompt: userMessage,
+            maxTokens,
+            temperature,
+          })
+          console.log('[AI] Anthropic fallback successful, response length:', text.length)
+          return { text }
+        } catch (anthropicError) {
+          console.error('[AI] Anthropic fallback also failed:', anthropicError)
+          console.error('[AI] Anthropic error details:', {
+            name: anthropicError instanceof Error ? anthropicError.name : 'Unknown',
+            message: anthropicError instanceof Error ? anthropicError.message : String(anthropicError),
+          })
+          throw anthropicError // Throw Anthropic error if both fail
+        }
       }
       throw openaiError
     }
@@ -129,24 +148,38 @@ export async function generateWithRAG(options: {
       }
     } catch (openaiError) {
       console.error('[AI] OpenAI fallback also failed, trying Anthropic:', openaiError)
+      console.error('[AI] OpenAI fallback error details:', {
+        name: openaiError instanceof Error ? openaiError.name : 'Unknown',
+        message: openaiError instanceof Error ? openaiError.message : String(openaiError),
+      })
+      
       // Last resort: try Anthropic if available
       if (process.env.ANTHROPIC_API_KEY) {
-        const { anthropic } = await import('@ai-sdk/anthropic')
-        const { text } = await generateText({
-          model: anthropic('claude-3-5-haiku-20241022'),
-          system: systemPrompt,
-          prompt: userMessage,
-          maxTokens,
-          temperature,
-        })
-        return {
-          text,
-          ragMetadata: {
-            ragEnabled: false,
-            error: 'OpenAI failed, used Anthropic fallback',
-            fallback: true,
-            modelUsed: 'claude-3-5-haiku',
-          },
+        console.log('[AI] Attempting final Anthropic fallback')
+        try {
+          const { anthropic } = await import('@ai-sdk/anthropic')
+          const { text } = await generateText({
+            model: anthropic('claude-3-5-haiku-20241022'),
+            system: systemPrompt,
+            prompt: userMessage,
+            maxTokens,
+            temperature,
+          })
+          console.log('[AI] Final Anthropic fallback successful')
+          return {
+            text,
+            ragMetadata: {
+              ragEnabled: false,
+              error: 'OpenAI failed, used Anthropic fallback',
+              fallback: true,
+              modelUsed: 'claude-3-5-haiku',
+            },
+          }
+        } catch (finalAnthropicError) {
+          console.error('[AI] Final Anthropic fallback also failed:', finalAnthropicError)
+          throw new Error(
+            `All AI providers failed. OpenAI: ${openaiError instanceof Error ? openaiError.message : String(openaiError)}. Anthropic: ${finalAnthropicError instanceof Error ? finalAnthropicError.message : String(finalAnthropicError)}`
+          )
         }
       }
       throw new Error(`Both OpenAI and Anthropic failed. OpenAI: ${openaiError}. RAG: ${error}`)
