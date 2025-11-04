@@ -9,7 +9,6 @@
 import { CircuitBreaker, withRetries } from '@/lib/resilience'
 import { EnhancedBirthInfo, calculateAllPlanets } from '@/lib/enhanced-astronomical-calculator'
 import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
-import { fetchAstrologizeWheel, fetchAlchmize, type BirthInfo } from '@/lib/astrologize'
 import { performanceCache } from '@/lib/performance-cache'
 
 export interface PlanetaryPosition {
@@ -61,7 +60,6 @@ const DEFAULT_OPTIONS: Required<ServiceOptions> = {
 }
 
 // Circuit breakers for different services
-const externalApiCB = new CircuitBreaker()
 const enhancedCalcCB = new CircuitBreaker()
 const basicTransitsCB = new CircuitBreaker()
 
@@ -134,46 +132,12 @@ export class PlanetaryPositionsService {
   }
 
   /**
-   * Method 1: External API (highest accuracy)
+   * Method 1 (REMOVED): External API was not providing planetary positions
+   * We now start directly with enhanced calculator for better reliability
+   *
+   * Note: fetchAlchmize does not return planetary positions, only chart SVG
+   * Using enhanced calculator and basic transits provides more reliable results
    */
-  private async fetchFromExternalAPI(
-    date: Date,
-    options: ServiceOptions
-  ): Promise<PlanetaryData | null> {
-    try {
-      // Create birth info for current moment
-      const birthInfo: BirthInfo = {
-        year: date.getUTCFullYear(),
-        month: date.getUTCMonth() + 1, // Convert to 1-based
-        day: date.getUTCDate(),
-        hour: date.getUTCHours(),
-        minute: date.getUTCMinutes(),
-        latitude: 0, // Planetary positions don't depend on location
-        longitude: 0,
-        name: 'Current Moment',
-      }
-
-      const result = await externalApiCB.exec(async () => {
-        return (await Promise.race([
-          fetchAlchmize({ birth: birthInfo }),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('External API timeout')), options.timeout)
-          ),
-        ])) as any
-      })
-
-      if (!result.result?.astrologize) {
-        return null
-      }
-
-      // This is a fallback - external API doesn't provide planetary positions directly
-      // We would need to parse the astrologize SVG or use a different approach
-      return null
-    } catch (error) {
-      console.warn('External API planetary positions failed:', error)
-      return null
-    }
-  }
 
   /**
    * Method 2: Enhanced Astronomical Calculator (high accuracy)
@@ -329,11 +293,6 @@ export class PlanetaryPositionsService {
 
     if (opts.accuracy === 'high') {
       methods.push(
-        {
-          method: () => this.fetchFromExternalAPI(date, opts),
-          source: 'external-api',
-          accuracy: 'high',
-        },
         {
           method: () => this.fetchFromEnhancedCalculator(date, opts),
           source: 'enhanced-calculator',
