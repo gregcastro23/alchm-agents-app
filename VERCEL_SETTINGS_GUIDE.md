@@ -78,7 +78,7 @@ Your Vercel settings are mostly correct. Just change the build command and you'r
 
 Vercel will use these settings for the next deployment (which is happening right now with your Next.js 15.0.3 fix).
 
-**Current deployment** (23ccb5ee) is already building with the old settings, but that's okay - it should still work.
+**Current deploymi hit save. lets commitent** (23ccb5ee) is already building with the old settings, but that's okay - it should still work.
 
 **Next deployment** will use the updated settings.
 
