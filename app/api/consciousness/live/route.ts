@@ -6,21 +6,10 @@ import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
  * Live consciousness calculations with frontend fallback
  * Calculates real-time cosmic weather and consciousness metrics
  */
-export async function POST(request: Request) {
+async function calculateConsciousness(body: any = {}) {
   try {
-    // Safely parse JSON body
-    let body = {}
-    try {
-      const text = await request.text()
-      if (text && text.trim()) {
-        body = JSON.parse(text)
-      }
-    } catch (parseError) {
-      console.warn('Invalid JSON in consciousness request, using empty body')
-    }
-
     // Parse request body for birth data
-    const birthData = (body as any)?.birthData
+    const birthData = body?.birthData
     const birthDate = birthData?.birthDate || '1970-01-01'
     const birthTime = birthData?.birthTime || '12:00'
     const latitude = birthData?.latitude || 0
@@ -123,14 +112,52 @@ export async function POST(request: Request) {
       },
     }
 
-    return NextResponse.json(result)
+    return result
   } catch (error) {
     console.error('Frontend consciousness proxy error:', error)
+    throw error
+  }
+}
 
+export async function GET() {
+  try {
+    // GET requests use default parameters (current moment, no birth data)
+    const result = await calculateConsciousness({})
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error('GET /api/consciousness/live error:', error)
     return NextResponse.json(
       {
-        error: 'Consciousness calculation proxy failed',
-        code: 'PROXY_ERROR',
+        error: 'Consciousness calculation failed',
+        code: 'CALCULATION_ERROR',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    // POST requests parse body for birth data
+    let body = {}
+    try {
+      const text = await request.text()
+      if (text && text.trim()) {
+        body = JSON.parse(text)
+      }
+    } catch (parseError) {
+      console.warn('Invalid JSON in consciousness request, using empty body')
+    }
+
+    const result = await calculateConsciousness(body)
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error('POST /api/consciousness/live error:', error)
+    return NextResponse.json(
+      {
+        error: 'Consciousness calculation failed',
+        code: 'CALCULATION_ERROR',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
