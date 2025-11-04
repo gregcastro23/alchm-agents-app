@@ -118,7 +118,7 @@
     "date-fns": "2.30.0",
     "dotenv": "16.3.1",
     "embla-carousel-react": "^8.6.0",
-    "galileo": "^1.9.0",
+    "galileo": "^1.26.1",
     "input-otp": "^1.4.2",
     "ioredis": "^5.6.1",
     "jsonwebtoken": "^9.0.2",
@@ -220,6 +220,11 @@
     "workerDirectory": [
       "public"
     ]
+  },
+  "resolutions": {
+    "node-domexception": "npm:domexception@^4.0.0",
+    "formdata-node": "^6.0.3",
+    "fetch-blob": "^4.0.0"
   },
   "packageManager": "yarn@4.10.2+sha512.0b0e54ad5381f0a35184957bd3ea44e37f5a4fb1960b903b0fb9a3c7c2c009190455c41ef2a1977b1dbd3b72c5f152da696e9c52e2bc78a011b6adea8ee73ba3"
 }
