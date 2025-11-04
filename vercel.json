@@ -1,12 +1,12 @@
 {
+  "buildCommand": "yarn install --frozen-lockfile && yarn build",
+  "installCommand": "yarn install",
   "framework": "nextjs",
-  "buildCommand": "prisma generate && prisma db push --accept-data-loss && next build",
-  "installCommand": "yarn install --immutable",
-  "outputDirectory": ".next",
   "regions": ["iad1"],
   "functions": {
-    "app/api/*/route.ts": {
-      "maxDuration": 30
+    "app/api/**/*.ts": {
+      "memory": 3008,
+      "maxDuration": 60
     }
   },
   "headers": [
@@ -15,35 +15,10 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-store, max-age=0, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
+          "value": "s-maxage=60, stale-while-revalidate"
         }
       ]
     }
   ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "build": {
-    "env": {
-      "SKIP_INSTALL_DEPS": "0",
-      "NEXT_TELEMETRY_DISABLED": "1"
-    }
-  }
+  "cron": []
 }
