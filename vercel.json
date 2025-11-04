@@ -2,7 +2,6 @@
   "buildCommand": "yarn install --frozen-lockfile && yarn build",
   "installCommand": "yarn install",
   "framework": "nextjs",
-  "regions": ["iad1"],
   "functions": {
     "app/api/**/*.ts": {
       "memory": 3008,
@@ -19,6 +18,5 @@
         }
       ]
     }
-  ],
-  "cron": []
+  ]
 }
