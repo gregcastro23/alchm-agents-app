@@ -14742,7 +14742,6 @@ __metadata:
     "@llamaindex/openai": "npm:^0.4.20"
     "@next/bundle-analyzer": "npm:15.0.3"
     "@next/eslint-plugin-next": "npm:15.0.3"
-    "@next/swc-darwin-arm64": "npm:15.0.3"
     "@opentelemetry/api": "npm:^1.9.0"
     "@opentelemetry/context-async-hooks": "npm:^2.1.0"
     "@opentelemetry/core": "npm:^2.1.0"
@@ -14868,9 +14867,6 @@ __metadata:
     webpack: "npm:^5.102.1"
     workflow: "npm:^4.0.1-beta.5"
     zod: "npm:^3.23.8"
-  dependenciesMeta:
-    "@next/swc-darwin-arm64":
-      optional: true
   languageName: unknown
   linkType: soft
 
