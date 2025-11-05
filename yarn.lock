@@ -14858,13 +14858,13 @@ __metadata:
     tailwind-merge: "npm:^3.3.0"
     tailwindcss: "npm:3.3.3"
     tailwindcss-animate: "npm:^1.0.7"
-    tree-sitter: "npm:^0.25.0"
+    tree-sitter: "npm:^0.22.0"
     tsx: "npm:^4.20.5"
     typescript: "npm:5.2.2"
     vaul: "npm:^1.1.2"
     vite: "npm:^7.1.12"
     vitest: "npm:^3.2.4"
-    web-tree-sitter: "npm:^0.25.10"
+    web-tree-sitter: "npm:^0.24.3"
     webpack: "npm:^5.102.1"
     workflow: "npm:^4.0.1-beta.5"
     zod: "npm:^3.23.8"
@@ -17270,14 +17270,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tree-sitter@npm:^0.25.0":
-  version: 0.25.0
-  resolution: "tree-sitter@npm:0.25.0"
+"tree-sitter@npm:^0.22.0":
+  version: 0.22.4
+  resolution: "tree-sitter@npm:0.22.4"
   dependencies:
     node-addon-api: "npm:^8.3.0"
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^4.8.4"
-  checksum: 10c0/ba994a4be081863e29f90e25658a8b63870193555245edbd3366cc5a4a2400492eea1e41dffaac961648f137274efb3ddb16f05c2896ce049749f0397e0319f4
+  checksum: 10c0/28d03778bdd8b4910aa064a9f3478c3e0ee697948282556b11452f6987a721535f4a9a8c528d9c04e0a0e8b759b8372a2118b9f21f5e200b48438a57a18e9977
   languageName: node
   linkType: hard
 
@@ -18064,15 +18064,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"web-tree-sitter@npm:^0.25.10":
-  version: 0.25.10
-  resolution: "web-tree-sitter@npm:0.25.10"
-  peerDependencies:
-    "@types/emscripten": ^1.40.0
-  peerDependenciesMeta:
-    "@types/emscripten":
-      optional: true
-  checksum: 10c0/8056263c75f59c8f992584386f85675fdce94f67eec506970f49d203a7d25effa96a4736eee5b06f06dc4d8f01339f68d9d4e97d713a6517d19db1f1c0954e06
+"web-tree-sitter@npm:^0.24.3":
+  version: 0.24.7
+  resolution: "web-tree-sitter@npm:0.24.7"
+  checksum: 10c0/f0b123eea895a72060eba05354947dc24a3568bca854d1805abef3c1301cc2bf72975494e7e68a29ad75788d722ce36f0a1021d78ad8cafabe0a21d8a601beff
   languageName: node
   linkType: hard
 

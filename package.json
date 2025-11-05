@@ -202,12 +202,12 @@
     "prettier": "^3.6.2",
     "storybook": "^9.1.8",
     "tailwindcss": "3.3.3",
-    "tree-sitter": "^0.25.0",
+    "tree-sitter": "^0.22.0",
     "tsx": "^4.20.5",
     "typescript": "5.2.2",
     "vite": "^7.1.12",
     "vitest": "^3.2.4",
-    "web-tree-sitter": "^0.25.10",
+    "web-tree-sitter": "^0.24.3",
     "webpack": "^5.102.1"
   },
   "lint-staged": {
