@@ -65,6 +65,7 @@
     "verify-chromadb": "npx tsx scripts/verify-chromadb.ts",
     "verify-db": "npx tsx scripts/verify-database.ts",
     "test-rag": "npx tsx scripts/test-rag-e2e.ts",
+    "benchmark-rag": "npx tsx scripts/benchmark-rag.ts",
     "chroma:docker": "docker run -p 8000:8000 chromadb/chroma"
   },
   "dependencies": {
