@@ -121,11 +121,10 @@ export async function generateWithRAG(
     ]
 
     const response = await generateText({
-      model: anthropic(process.env.CLAUDE_DEFAULT_MODEL || 'claude-3-5-sonnet-20240620'),
+      model: anthropic(process.env.CLAUDE_DEFAULT_MODEL || 'claude-3-sonnet-20240229'),
       system: enhancedSystemPrompt,
       messages,
       temperature: 0.7,
-      maxTokens: 2000,
     })
 
     const totalTime = Date.now() - startTime

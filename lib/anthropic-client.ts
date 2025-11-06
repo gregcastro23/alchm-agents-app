@@ -53,13 +53,16 @@ export const CLAUDE_MODELS = {
 export function getClaudeModel(type: 'default' | 'fast' | 'powerful' = 'default'): string {
   switch (type) {
     case 'default':
-      return process.env.CLAUDE_DEFAULT_MODEL || CLAUDE_MODELS.CLAUDE_3_5_SONNET
+      // Use env var or fallback to Claude 3 Opus (most powerful available)
+      return process.env.CLAUDE_DEFAULT_MODEL || CLAUDE_MODELS.CLAUDE_3_OPUS
     case 'fast':
+      // Use env var or fallback to Claude 3.5 Haiku (fastest available)
       return process.env.CLAUDE_FAST_MODEL || CLAUDE_MODELS.CLAUDE_3_5_HAIKU
     case 'powerful':
+      // Claude 3 Opus is the most powerful model available
       return CLAUDE_MODELS.CLAUDE_3_OPUS
     default:
-      return CLAUDE_MODELS.CLAUDE_3_5_SONNET
+      return CLAUDE_MODELS.CLAUDE_3_OPUS
   }
 }
 
