@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { ArrowLeft, MessageCircle, Sparkles, TrendingUp } from 'lucide-react'
 import { RAGToggle, SourceCitations, RAGFeedbackWidget, type RAGSource } from '@/components/rag'
 import { ragAnalytics } from '@/lib/rag/rag-analytics'
+import { detectAmbiguousQuery } from '@/lib/rag/rag-quality'
 
 type Message = {
   role: 'user' | 'agent'
@@ -112,6 +113,17 @@ export default function HistoricalAgentChatPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || loading || !sessionId || !agent) return
+
+    // Check for ambiguous queries (for analytics and potential user feedback)
+    const ambiguityCheck = detectAmbiguousQuery(input.trim())
+    if (ambiguityCheck.isAmbiguous && ragEnabled) {
+      console.log(
+        `[Chat] ⚠️ Ambiguous query detected: ${ambiguityCheck.reason}`,
+        ambiguityCheck.suggestions
+      )
+      // In the future, could show a toast or suggestion box here
+      // For now, just log and proceed
+    }
 
     const userMessage: Message = {
       role: 'user',

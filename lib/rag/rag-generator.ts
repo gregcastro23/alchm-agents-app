@@ -9,6 +9,12 @@ import { semanticSearch, type SearchResult } from '@/lib/llamaindex/semantic-sea
 import { generateText } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
 import { ragCache } from '@/lib/rag/rag-cache'
+import {
+  rerankResults,
+  filterLowQualitySources,
+  detectAmbiguousQuery,
+  calculateQueryQuality,
+} from '@/lib/rag/rag-quality'
 
 // Configuration
 const MAX_CONTEXT_TOKENS = parseInt(process.env.RAG_MAX_CONTEXT_TOKENS || '1500')
@@ -133,6 +139,17 @@ export async function generateWithRAG(
 
     console.log(`[RAG] Retrieved ${searchResults.length} relevant documents in ${retrievalTime}ms`)
 
+    // Check query quality and ambiguity (for analytics)
+    const queryQuality = calculateQueryQuality(options.userMessage)
+    const ambiguityCheck = detectAmbiguousQuery(options.userMessage)
+    if (ambiguityCheck.isAmbiguous) {
+      console.log(`[RAG] ⚠️ Ambiguous query detected: ${ambiguityCheck.reason}`)
+      // Continue anyway, but log for analytics
+    }
+    console.log(
+      `[RAG] Query quality score: ${(queryQuality.score * 100).toFixed(0)}% (length: ${queryQuality.factors.length.toFixed(2)}, specificity: ${queryQuality.factors.specificity.toFixed(2)}, clarity: ${queryQuality.factors.clarity.toFixed(2)})`
+    )
+
     // If no results, fall back to standard generation
     if (searchResults.length === 0) {
       console.log('[RAG] No relevant documents found, falling back to standard generation')
@@ -148,8 +165,31 @@ export async function generateWithRAG(
       }
     }
 
+    // Stage 1.5: Apply Quality Improvements
+    console.log('[RAG] Applying quality improvements (reranking + filtering)...')
+
+    // Rerank with quality signals (recency, quality, diversity)
+    const rerankedResults = rerankResults(searchResults, options.userMessage, {
+      recencyWeight: 0.1,
+      qualityWeight: 0.2,
+      diversityWeight: 0.1,
+    })
+
+    // Filter low-quality sources (threshold 0.35, min 2 results)
+    const filteredResults = filterLowQualitySources(rerankedResults, {
+      threshold: 0.35,
+      minResults: 2,
+    })
+
+    console.log(
+      `[RAG] Quality filtering: ${searchResults.length} → ${rerankedResults.length} (reranked) → ${filteredResults.length} (filtered)`
+    )
+
+    // Use filteredResults from here on
+    const finalResults = filteredResults
+
     // Stage 2: Build Enhanced Context
-    const enhancedContext = buildEnhancedContext(searchResults, MAX_CONTEXT_TOKENS)
+    const enhancedContext = buildEnhancedContext(finalResults, MAX_CONTEXT_TOKENS)
 
     // Stage 3: Generate with Claude
     const enhancedSystemPrompt = buildEnhancedPrompt(
@@ -178,22 +218,24 @@ export async function generateWithRAG(
     const generationTime = Date.now() - generationStartTime
     const totalTime = Date.now() - startTime
 
-    // Build sources for metadata
-    const sources: RAGSource[] = searchResults.map(r => ({
+    // Build sources for metadata (use finalResults which are filtered and reranked)
+    const sources: RAGSource[] = finalResults.map(r => ({
       agentId: r.agentId,
       agentName: r.agentName,
       excerpt: r.content.substring(0, 100) + (r.content.length > 100 ? '...' : ''),
       relevance: r.score,
     }))
 
-    console.log(`[RAG] Generated response in ${totalTime}ms (retrieval: ${retrievalTime}ms, generation: ${generationTime}ms)`)
+    console.log(
+      `[RAG] Generated response in ${totalTime}ms (retrieval: ${retrievalTime}ms, generation: ${generationTime}ms)`
+    )
 
-    // Store in cache for future use
+    // Store in cache for future use (use finalResults)
     if (USE_CACHE && response.text) {
       await ragCache.set(
         options.userMessage,
         options.agentId,
-        searchResults.map(r => ({
+        finalResults.map(r => ({
           id: `${r.agentId}-${Date.now()}`,
           agentId: r.agentId,
           agentName: r.agentName,
@@ -212,7 +254,7 @@ export async function generateWithRAG(
       ragMetadata: {
         enabled: true,
         ragUsed: true,
-        retrievedDocs: searchResults.length,
+        retrievedDocs: finalResults.length,
         sources,
         retrievalTime,
         generationTime,
