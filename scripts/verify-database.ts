@@ -25,32 +25,32 @@ async function verifyDatabase() {
     console.log('2. Checking RAG tables...')
 
     try {
-      const queryCount = await prisma.rAGQueryLog.count()
-      console.log(`   ✅ RAGQueryLog table: ${queryCount} record(s)`)
+      const queryCount = await prisma.rAGQuery.count()
+      console.log(`   ✅ RAGQuery table: ${queryCount} record(s)`)
     } catch (error) {
-      console.log('   ❌ RAGQueryLog table not found or inaccessible')
+      console.log('   ❌ RAGQuery table not found or inaccessible')
+      throw error
+    }
+
+    try {
+      const sourceCount = await prisma.rAGSource.count()
+      console.log(`   ✅ RAGSource table: ${sourceCount} record(s)`)
+    } catch (error) {
+      console.log('   ❌ RAGSource table not found or inaccessible')
       throw error
     }
 
     try {
       const feedbackCount = await prisma.rAGFeedback.count()
-      console.log(`   ✅ RAGFeedback table: ${feedbackCount} record(s)`)
+      console.log(`   ✅ RAGFeedback table: ${feedbackCount} record(s)\n`)
     } catch (error) {
       console.log('   ❌ RAGFeedback table not found or inaccessible')
       throw error
     }
 
-    try {
-      const analyticsCount = await prisma.rAGAnalytics.count()
-      console.log(`   ✅ RAGAnalytics table: ${analyticsCount} record(s)\n`)
-    } catch (error) {
-      console.log('   ❌ RAGAnalytics table not found or inaccessible')
-      throw error
-    }
-
     // 3. Test write operation
     console.log('3. Testing write operations...')
-    const testQueryLog = await prisma.rAGQueryLog.create({
+    const testQuery = await prisma.rAGQuery.create({
       data: {
         sessionId: 'test-session-' + Date.now(),
         agentId: 'test-agent',
@@ -66,14 +66,14 @@ async function verifyDatabase() {
         avgRelevance: 0,
       },
     })
-    console.log(`   ✅ Write successful (ID: ${testQueryLog.id})`)
+    console.log(`   ✅ Write successful (ID: ${testQuery.id})`)
 
     // 4. Test read operation
     console.log('4. Testing read operations...')
-    const readBack = await prisma.rAGQueryLog.findUnique({
-      where: { id: testQueryLog.id },
+    const readBack = await prisma.rAGQuery.findUnique({
+      where: { id: testQuery.id },
     })
-    if (readBack && readBack.id === testQueryLog.id) {
+    if (readBack && readBack.id === testQuery.id) {
       console.log(`   ✅ Read successful (verified ID: ${readBack.id})`)
     } else {
       throw new Error('Read verification failed')
@@ -81,15 +81,15 @@ async function verifyDatabase() {
 
     // 5. Test delete operation (cleanup)
     console.log('5. Testing delete operations...')
-    await prisma.rAGQueryLog.delete({ where: { id: testQueryLog.id } })
+    await prisma.rAGQuery.delete({ where: { id: testQuery.id } })
     console.log(`   ✅ Delete successful\n`)
 
     console.log('=' .repeat(60))
     console.log('✅ Database Verification Complete!\n')
     console.log('All RAG tables are operational:')
-    console.log('  - RAGQueryLog: Stores query metadata')
+    console.log('  - RAGQuery: Stores query metadata')
+    console.log('  - RAGSource: Stores retrieved sources')
     console.log('  - RAGFeedback: Stores user feedback')
-    console.log('  - RAGAnalytics: Stores analytics events')
     console.log('\nNext steps:')
     console.log('  - Start dev server: npm run dev')
     console.log('  - Test end-to-end: npm run test-rag')

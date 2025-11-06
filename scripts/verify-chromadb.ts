@@ -15,18 +15,28 @@ async function verifyChromaDB() {
   console.log(`Connecting to: ${CHROMA_URL}\n`)
 
   try {
-    // 1. Check heartbeat
+    // 1. Check heartbeat (try v2 API first, fallback to v1)
     console.log('1. Checking ChromaDB heartbeat...')
-    const heartbeat = await fetch(`${CHROMA_URL}/api/v1/heartbeat`)
+    let heartbeatData
+    let apiVersion = 'v2'
+
+    let heartbeat = await fetch(`${CHROMA_URL}/api/v2/heartbeat`)
+    if (!heartbeat.ok || heartbeat.status === 410) {
+      // Try v1 API
+      apiVersion = 'v1'
+      heartbeat = await fetch(`${CHROMA_URL}/api/v1/heartbeat`)
+    }
+
     if (!heartbeat.ok) {
       throw new Error(`Heartbeat failed: ${heartbeat.status} ${heartbeat.statusText}`)
     }
-    const heartbeatData = await heartbeat.json()
-    console.log(`   ✅ ChromaDB is running (heartbeat: ${heartbeatData['nanosecond heartbeat']})\n`)
+
+    heartbeatData = await heartbeat.json()
+    console.log(`   ✅ ChromaDB is running (API ${apiVersion}, heartbeat: ${heartbeatData['nanosecond heartbeat']})\n`)
 
     // 2. List collections
     console.log('2. Listing collections...')
-    const collectionsRes = await fetch(`${CHROMA_URL}/api/v1/collections`)
+    const collectionsRes = await fetch(`${CHROMA_URL}/api/${apiVersion}/collections`)
     if (!collectionsRes.ok) {
       throw new Error(`Collections list failed: ${collectionsRes.status}`)
     }
@@ -46,7 +56,7 @@ async function verifyChromaDB() {
 
       try {
         const countRes = await fetch(
-          `${CHROMA_URL}/api/v1/collections/${collection.id}/count`
+          `${CHROMA_URL}/api/${apiVersion}/collections/${collection.id}/count`
         )
         if (countRes.ok) {
           const countData = await countRes.json()
@@ -68,7 +78,7 @@ async function verifyChromaDB() {
 
       try {
         const searchRes = await fetch(
-          `${CHROMA_URL}/api/v1/collections/${collections[0].id}/query`,
+          `${CHROMA_URL}/api/${apiVersion}/collections/${collections[0].id}/query`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
