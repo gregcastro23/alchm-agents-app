@@ -15,6 +15,12 @@ import {
   detectAmbiguousQuery,
   calculateQueryQuality,
 } from '@/lib/rag/rag-quality'
+import {
+  generateMockResponse,
+  simulateGenerationDelay,
+  shouldUseMockGeneration,
+  getMockGenerationStatus,
+} from '@/lib/rag/mock-generator'
 
 // Configuration
 const MAX_CONTEXT_TOKENS = parseInt(process.env.RAG_MAX_CONTEXT_TOKENS || '1500')
@@ -206,16 +212,60 @@ export async function generateWithRAG(
       { role: 'user' as const, content: options.userMessage },
     ]
 
+    // Stage 3: Generate Response (or use mock)
+    const useMock = shouldUseMockGeneration()
     const generationStartTime = Date.now()
 
-    const response = await generateText({
-      model: anthropic(process.env.CLAUDE_DEFAULT_MODEL || 'claude-3-sonnet-20240229'),
-      system: enhancedSystemPrompt,
-      messages,
-      temperature: 0.7,
-    })
+    let responseText: string
+    let generationTime: number
 
-    const generationTime = Date.now() - generationStartTime
+    if (useMock) {
+      console.log('[RAG] ⚠️  Using mock generation (Anthropic API unavailable)')
+      console.log(`[RAG] Status: ${getMockGenerationStatus()}`)
+      await simulateGenerationDelay()
+      responseText = generateMockResponse({
+        agent: {
+          id: options.agentId,
+          name: options.agent.name || 'Unknown Agent',
+          era: options.agent.era,
+        },
+        userMessage: options.userMessage,
+        sources: finalResults,
+        conversationHistory: options.conversationHistory,
+      })
+      generationTime = Date.now() - generationStartTime
+      console.log(`[RAG] Mock generation completed in ${generationTime}ms`)
+    } else {
+      // Real API generation
+      try {
+        const response = await generateText({
+          model: anthropic(process.env.CLAUDE_DEFAULT_MODEL || 'claude-3-sonnet-20240229'),
+          system: enhancedSystemPrompt,
+          messages,
+          temperature: 0.7,
+        })
+        responseText = response.text
+        generationTime = Date.now() - generationStartTime
+        console.log(`[RAG] Real generation completed in ${generationTime}ms`)
+      } catch (error) {
+        // Fallback to mock on API error
+        console.log('[RAG] ⚠️  API error, falling back to mock generation')
+        console.error('[RAG] API Error:', error)
+        await simulateGenerationDelay()
+        responseText = generateMockResponse({
+          agent: {
+            id: options.agentId,
+            name: options.agent.name || 'Unknown Agent',
+            era: options.agent.era,
+          },
+          userMessage: options.userMessage,
+          sources: finalResults,
+          conversationHistory: options.conversationHistory,
+        })
+        generationTime = Date.now() - generationStartTime
+      }
+    }
+
     const totalTime = Date.now() - startTime
 
     // Build sources for metadata (use finalResults which are filtered and reranked)
@@ -231,7 +281,7 @@ export async function generateWithRAG(
     )
 
     // Store in cache for future use (use finalResults)
-    if (USE_CACHE && response.text) {
+    if (USE_CACHE && responseText) {
       await ragCache.set(
         options.userMessage,
         options.agentId,
@@ -244,13 +294,13 @@ export async function generateWithRAG(
           relevanceScore: r.score,
           metadata: r.metadata,
         })),
-        response.text
+        responseText
       )
       console.log(`[RAG] Cached result for future queries`)
     }
 
     return {
-      text: response.text,
+      text: responseText,
       ragMetadata: {
         enabled: true,
         ragUsed: true,

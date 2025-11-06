@@ -62,6 +62,9 @@
     "rag:test": "curl -X POST http://localhost:3000/api/agents/semantic-search -H 'Content-Type: application/json' -d '{\"concept\": \"wisdom\", \"topK\": 3}'",
     "rag:test:unit": "vitest run test/rag/",
     "rag:test:watch": "vitest test/rag/",
+    "verify-chromadb": "npx tsx scripts/verify-chromadb.ts",
+    "verify-db": "npx tsx scripts/verify-database.ts",
+    "test-rag": "npx tsx scripts/test-rag-e2e.ts",
     "chroma:docker": "docker run -p 8000:8000 chromadb/chroma"
   },
   "dependencies": {
