@@ -46,6 +46,7 @@ export const DAVID_HUME: CraftedAgent = {
         midheaven: 225,
       },
       monicaConstant: 1.044,
+    level: 'Dormant',
       metrics: createMetrics(1203, 1.044),
       dominantElement: 'Earth' as Element,
       dominantModality: 'Fixed' as Modality,

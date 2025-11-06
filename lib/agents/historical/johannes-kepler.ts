@@ -46,6 +46,7 @@ export const JOHANNES_KEPLER: CraftedAgent = {
         midheaven: 240,
       },
       monicaConstant: 1.114,
+    level: 'Dormant',
       metrics: createMetrics(987, 1.114),
       dominantElement: 'Earth' as Element,
       dominantModality: 'Cardinal' as Modality,

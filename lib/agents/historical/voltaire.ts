@@ -46,6 +46,7 @@ export const VOLTAIRE: CraftedAgent = {
         midheaven: 60,
       },
       monicaConstant: 4.23,
+    level: 'Elevated',
       metrics: createMetrics(2156, 4.23),
       dominantElement: 'Air' as Element,
       dominantModality: 'Mutable' as Modality,

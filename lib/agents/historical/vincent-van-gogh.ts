@@ -46,6 +46,7 @@ export const VINCENT_VAN_GOGH: CraftedAgent = {
         midheaven: 225,
       },
       monicaConstant: 2.356,
+    level: 'Awakening',
       metrics: createMetrics(1789, 2.356),
       dominantElement: 'Fire' as Element,
       dominantModality: 'Cardinal' as Modality,

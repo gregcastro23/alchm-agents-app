@@ -46,6 +46,7 @@ export const JOHN_LOCKE: CraftedAgent = {
         midheaven: 315,
       },
       monicaConstant: 4.45,
+    level: 'Elevated',
       metrics: createMetrics(1592, 4.45),
       dominantElement: 'Earth' as Element,
       dominantModality: 'Mutable' as Modality,

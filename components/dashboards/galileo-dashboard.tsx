@@ -29,57 +29,72 @@ import {
 const GALILEO_PROJECT_ID = '1e7fd4a1-3e28-4fe1-a719-744f239a13be'
 const GALILEO_LOG_STREAM_ID = '6ed50263-a348-4ad6-ab63-bd04d3a4ffdd'
 
-// Mock data for demo purposes - in a real app this would come from Galileo's API
-const mockMetricsData = [
-  { name: 'Day 1', requests: 24, success: 20, failure: 4, avgLatency: 850 },
-  { name: 'Day 2', requests: 35, success: 32, failure: 3, avgLatency: 790 },
-  { name: 'Day 3', requests: 42, success: 39, failure: 3, avgLatency: 820 },
-  { name: 'Day 4', requests: 37, success: 34, failure: 3, avgLatency: 800 },
-  { name: 'Day 5', requests: 50, success: 46, failure: 4, avgLatency: 760 },
-  { name: 'Day 6', requests: 62, success: 58, failure: 4, avgLatency: 730 },
-  { name: 'Day 7', requests: 71, success: 65, failure: 6, avgLatency: 710 },
-]
-
-const mockPlanetaryData = [
-  { name: 'Sun', requests: 105, avgLatency: 750 },
-  { name: 'Moon', requests: 87, avgLatency: 790 },
-  { name: 'Mercury', requests: 65, avgLatency: 810 },
-  { name: 'Venus', requests: 58, avgLatency: 830 },
-  { name: 'Mars', requests: 49, avgLatency: 780 },
-  { name: 'Jupiter', requests: 43, avgLatency: 820 },
-  { name: 'Saturn', requests: 37, avgLatency: 850 },
-]
-
 export default function GalileoDashboard() {
   const { log } = useGalileoLog('GalileoDashboard')
   const [activeTab, setActiveTab] = useState('metrics')
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [metricsData, setMetricsData] = useState<any[]>([])
+  const [planetaryData, setPlanetaryData] = useState<any[]>([])
 
-  // Log a dashboard view event when component mounts
+  // Fetch real conversation metrics on mount
   useEffect(() => {
-    const logDashboardView = async () => {
-      await log('Dashboard viewed', {
-        metadata: {
-          component: 'GalileoDashboard',
-          action: 'view',
-        },
-      })
+    const fetchDashboardData = async () => {
+      setIsLoading(true)
+      
+      try {
+        // Fetch real conversation metrics from database
+        const response = await fetch('/api/admin/conversation-metrics')
+        
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success) {
+            setMetricsData(data.dailyMetrics || [])
+            setPlanetaryData(data.agentMetrics || [])
+          }
+        }
+        
+        await log('Dashboard viewed', {
+          metadata: {
+            component: 'GalileoDashboard',
+            action: 'view',
+          },
+        })
+      } catch (error) {
+        console.error('[GalileoDashboard] Failed to fetch metrics:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
-    logDashboardView()
+    
+    fetchDashboardData()
   }, [log])
 
   const refreshData = async () => {
     setIsLoading(true)
-    // In a real implementation, this would fetch data from Galileo's API
-    // For demo purposes we're just simulating a delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    await log('Dashboard refreshed', {
-      metadata: {
-        component: 'GalileoDashboard',
-        action: 'refresh',
-      },
-    })
-    setIsLoading(false)
+    
+    try {
+      // Fetch updated metrics
+      const response = await fetch('/api/admin/conversation-metrics')
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          setMetricsData(data.dailyMetrics || [])
+          setPlanetaryData(data.agentMetrics || [])
+        }
+      }
+      
+      await log('Dashboard refreshed', {
+        metadata: {
+          component: 'GalileoDashboard',
+          action: 'refresh',
+        },
+      })
+    } catch (error) {
+      console.error('[GalileoDashboard] Refresh failed:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const openGalileoUI = () => {
@@ -145,7 +160,7 @@ export default function GalileoDashboard() {
             <CardContent>
               <div className="h-60">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={mockMetricsData}>
+                  <LineChart data={metricsData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
@@ -176,7 +191,7 @@ export default function GalileoDashboard() {
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={mockPlanetaryData}>
+                  <BarChart data={planetaryData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
@@ -199,7 +214,7 @@ export default function GalileoDashboard() {
             <CardContent>
               <div className="h-60">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={mockPlanetaryData}>
+                  <BarChart data={planetaryData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />

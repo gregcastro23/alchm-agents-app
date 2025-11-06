@@ -216,7 +216,7 @@ export default function HistoricalAgentChatPage() {
 
         const agentMessage: Message = {
           role: 'agent',
-          content: agentResponse.response,
+          content: agentResponse.content || agentResponse.response || '', // Support both property names
           timestamp: new Date(),
           ragSources,
           queryId, // Attach queryId for feedback linking

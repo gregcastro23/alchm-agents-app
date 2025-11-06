@@ -5,9 +5,14 @@
  */
 
 import type { SearchResult } from '@/lib/llamaindex/semantic-search'
+import type { UnifiedAgent } from '@/lib/unified-agent-types'
+import {
+  generateConsciousnessResponse,
+  shouldUseConsciousnessGenerator,
+} from './consciousness-response-generator'
 
 export interface MockGenerationOptions {
-  agent: {
+  agent: UnifiedAgent | {
     id: string
     name: string
     era?: string
@@ -18,11 +23,44 @@ export interface MockGenerationOptions {
 }
 
 /**
+ * Helper to check if agent is a full UnifiedAgent
+ */
+function isUnifiedAgent(agent: any): agent is UnifiedAgent {
+  return agent && typeof agent === 'object' && 'consciousness' in agent
+}
+
+/**
  * Generate a mock response that references the retrieved sources
  * This simulates what Claude would do - synthesizing sources into an answer
  */
 export function generateMockResponse(options: MockGenerationOptions): string {
-  const { agent, userMessage, sources } = options
+  const { agent, userMessage, sources, conversationHistory } = options
+
+  console.log('[MockGenerator] 🎬 generateMockResponse called for:', agent.name)
+  console.log('[MockGenerator] Agent keys:', Object.keys(agent))
+
+  // Check if we can use the rich consciousness generator
+  const isFullAgent = isUnifiedAgent(agent)
+  console.log('[MockGenerator] isFullAgent (has consciousness):', isFullAgent)
+
+  if (isFullAgent && shouldUseConsciousnessGenerator(agent)) {
+    console.log('[MockGenerator] ✅ Routing to consciousness generator')
+    return generateConsciousnessResponse({
+      agent,
+      userMessage,
+      sources,
+      conversationHistory,
+    })
+  }
+
+  console.log('[MockGenerator] ❌ Using OLD fallback generation')
+
+  // Fallback to simple generation for minimal agent data
+  const consciousness = isFullAgent ? agent.consciousness : undefined
+  const historicalData = isFullAgent && agent.type === 'historical' ? agent.historicalData : undefined
+  const personality = historicalData?.personality
+  const natalChart = historicalData?.consciousness?.natalChart
+  const era = historicalData?.historicalEra || ('era' in agent ? agent.era : undefined)
 
   // Extract key concepts from query
   const query = userMessage.toLowerCase()
@@ -31,23 +69,56 @@ export function generateMockResponse(options: MockGenerationOptions): string {
                      query.includes('when') || query.includes('where') ||
                      query.includes('who')
 
-  // Build response based on sources
+  // Build response based on sources and agent personality
   const response: string[] = []
 
-  // Opening based on agent and query type
+  // Opening based on agent personality and query type
   if (isQuestion) {
-    response.push(`Based on my knowledge and experience${agent.era ? ` during ${agent.era}` : ''}, `)
+    // Use personality traits if available
+    if (personality?.traits && personality.traits.length > 0) {
+      const dominantTrait = personality.traits[0]
+      response.push(`Ah, an excellent question. As someone who has always embodied ${dominantTrait.toLowerCase()}, `)
+    } else if (era) {
+      response.push(`Based on my knowledge and experience during ${era}, `)
+    } else {
+      response.push(`Based on my knowledge and experience, `)
+    }
   } else {
     response.push(`Regarding your inquiry about this matter, `)
   }
 
   if (sources.length === 0) {
-    // No sources - graceful fallback
-    response.push(
-      `I don't have specific documented knowledge about "${userMessage.slice(0, 50)}..." ` +
-      `in my available sources. However, I'd be happy to discuss this topic from my ` +
-      `philosophical perspective if you'd like to explore it further.`
-    )
+    // No sources - create personality-driven response
+    if (consciousness && natalChart) {
+      // Reference consciousness level and astrological influences
+      const sunSign = natalChart.planets?.find(p => p.name === 'Sun')?.sign || 'the cosmos'
+      const conscLevel = consciousness.level || 'active'
+
+      response.push(
+        `While I don't have specific documented sources about "${userMessage.slice(0, 40)}...", ` +
+        `my consciousness—shaped by ${sunSign} and currently at a ${conscLevel} state—compels me to share my perspective. `
+      )
+
+      // Add personality-specific insight
+      if (personality?.description) {
+        const personalitySnippet = personality.description.slice(0, 150)
+        response.push(
+          `${personalitySnippet}... ` +
+          `This essence informs how I approach your inquiry. Would you like me to elaborate further?`
+        )
+      } else {
+        response.push(
+          `I'd be happy to discuss this topic from my philosophical perspective if you'd like to explore it further.`
+        )
+      }
+    } else {
+      // Fallback for minimal agent data
+      response.push(
+        `I don't have specific documented knowledge about "${userMessage.slice(0, 50)}..." ` +
+        `in my available sources. However, I'd be happy to discuss this topic from my ` +
+        `philosophical perspective if you'd like to explore it further.`
+      )
+    }
   } else if (sources.length === 1) {
     // Single source - direct reference
     const source = sources[0]

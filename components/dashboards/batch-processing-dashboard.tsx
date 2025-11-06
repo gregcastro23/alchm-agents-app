@@ -95,108 +95,40 @@ export default function BatchProcessingDashboard() {
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [expandedJobs, setExpandedJobs] = useState<Set<string>>(new Set())
 
-  // Mock data for demonstration
-  const initializeMockData = useCallback(() => {
-    const mockMetrics: QueueMetrics = {
-      totalJobs: 156,
-      queuedJobs: 12,
-      processingJobs: 3,
-      completedJobs: 135,
-      failedJobs: 6,
-      averageProcessingTime: 4200,
-      throughputPerHour: 24,
-      resourceUtilization: {
-        cpu: 45 + Math.random() * 30,
-        memory: 62 + Math.random() * 20,
-        activeWorkers: 3,
-        maxWorkers: 5,
-      },
-      queueHealth: 'healthy',
+  // Fetch real data from API
+  const fetchRealData = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/batch-metrics')
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setMetrics(data.metrics)
+        setJobs(data.jobs)
+        setAlerts(data.alerts)
+        setBottlenecks(data.bottlenecks)
+      } else {
+        console.error('[BatchDashboard] Invalid API response:', data)
+      }
+    } catch (error) {
+      console.error('[BatchDashboard] Failed to fetch batch metrics:', error)
+      // Keep existing data on error
     }
-
-    const mockJobs: BatchJob[] = [
-      {
-        id: 'job_1731234567890_abc123',
-        type: 'kinetics_export',
-        priority: 'high',
-        status: 'processing',
-        progress: 75,
-        createdAt: new Date(Date.now() - 300000),
-        startedAt: new Date(Date.now() - 180000),
-        estimatedDuration: 240000,
-        retryCount: 0,
-        maxRetries: 3,
-      },
-      {
-        id: 'job_1731234567891_def456',
-        type: 'agent_analysis',
-        priority: 'medium',
-        status: 'queued',
-        progress: 0,
-        createdAt: new Date(Date.now() - 150000),
-        estimatedDuration: 180000,
-        retryCount: 0,
-        maxRetries: 3,
-      },
-      {
-        id: 'job_1731234567892_ghi789',
-        type: 'consciousness_sync',
-        priority: 'low',
-        status: 'completed',
-        progress: 100,
-        createdAt: new Date(Date.now() - 600000),
-        startedAt: new Date(Date.now() - 480000),
-        completedAt: new Date(Date.now() - 60000),
-        estimatedDuration: 360000,
-        actualDuration: 420000,
-        retryCount: 0,
-        maxRetries: 3,
-      },
-    ]
-
-    const mockAlerts: PerformanceAlert[] = [
-      {
-        id: 'alert_cpu_high',
-        level: 'warning',
-        timestamp: new Date(Date.now() - 120000),
-        title: 'High CPU Usage',
-        description: 'CPU usage is 78.5%',
-        metric: 'cpu_usage',
-        currentValue: 78.5,
-        thresholdValue: 70,
-        acknowledged: false,
-      },
-    ]
-
-    const mockBottlenecks: BottleneckAnalysis[] = [
-      {
-        type: 'memory',
-        severity: 'medium',
-        description: 'Memory usage approaching 80%',
-        impact: 'Potential slowdown in job processing',
-        suggestedAction: 'Consider increasing available memory or optimizing memory usage',
-      },
-    ]
-
-    setMetrics(mockMetrics)
-    setJobs(mockJobs)
-    setAlerts(mockAlerts)
-    setBottlenecks(mockBottlenecks)
   }, [])
 
   const refreshData = useCallback(async () => {
     setIsRefreshing(true)
-
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500))
-
-    initializeMockData()
+    await fetchRealData()
     setIsRefreshing(false)
-  }, [initializeMockData])
+  }, [fetchRealData])
 
   useEffect(() => {
-    initializeMockData()
-  }, [initializeMockData])
+    fetchRealData()
+  }, [fetchRealData])
 
   useEffect(() => {
     if (!autoRefresh) return

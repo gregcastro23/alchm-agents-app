@@ -50,7 +50,8 @@ export const ISAAC_ASIMOV: CraftedAgent = {
       ascendant: 282.57, // 12.57° Capricorn Rising
       midheaven: 192.57, // 12.57° Libra MC
     },
-    monicaConstant: 4.82, // High constant reflecting his systematic genius and prolific output
+    monicaConstant: 4.82,
+    level: 'Advanced', // High constant reflecting his systematic genius and prolific output
     metrics: createMetrics(1284, 4.82),
     dominantElement: 'Earth' as Element, // Capricorn Sun & Rising, Taurus Moon, Virgo Saturn
     dominantModality: 'Fixed' as Modality, // Strong Taurus Moon, Leo Jupiter/Neptune

@@ -50,6 +50,7 @@ export const IMMANUEL_KANT: CraftedAgent = {
         midheaven: 315,
       },
       monicaConstant: 1.129,
+    level: 'Dormant',
       metrics: createMetrics(1456, 1.129),
       dominantElement: 'Earth' as Element,
       dominantModality: 'Fixed' as Modality,

@@ -156,16 +156,43 @@ export async function generateWithRAG(
       `[RAG] Query quality score: ${(queryQuality.score * 100).toFixed(0)}% (length: ${queryQuality.factors.length.toFixed(2)}, specificity: ${queryQuality.factors.specificity.toFixed(2)}, clarity: ${queryQuality.factors.clarity.toFixed(2)})`
     )
 
-    // If no results, fall back to standard generation
+    // If no results, still generate a response with mock (no sources)
     if (searchResults.length === 0) {
-      console.log('[RAG] No relevant documents found, falling back to standard generation')
+      console.log('[RAG] ⚠️  No relevant documents found, generating response without sources')
+
+      const useMock = shouldUseMockGeneration()
+      const generationStartTime = Date.now()
+      let responseText: string
+
+      if (useMock) {
+        console.log('[RAG] Using mock generation with no sources')
+        console.log('[RAG] Agent being passed:', options.agent.name, 'ID:', options.agentId)
+        console.log('[RAG] Agent type:', options.agent.type)
+        console.log('[RAG] Agent has historicalData:', !!options.agent.historicalData)
+        await simulateGenerationDelay()
+        responseText = generateMockResponse({
+          agent: options.agent, // Pass full agent object
+          userMessage: options.userMessage,
+          sources: [], // No sources available
+          conversationHistory: options.conversationHistory,
+        })
+        console.log('[RAG] Mock generation returned text length:', responseText.length)
+        console.log('[RAG] First 150 chars:', responseText.substring(0, 150))
+      } else {
+        // Fallback to empty string if no mock and no API
+        responseText = ''
+      }
+
+      const generationTime = Date.now() - generationStartTime
+
       return {
-        text: '',
+        text: responseText,
         ragMetadata: {
           enabled: true,
           ragUsed: false,
           retrievedDocs: 0,
           retrievalTime,
+          generationTime,
           cacheHit: false,
         },
       }
@@ -224,11 +251,7 @@ export async function generateWithRAG(
       console.log(`[RAG] Status: ${getMockGenerationStatus()}`)
       await simulateGenerationDelay()
       responseText = generateMockResponse({
-        agent: {
-          id: options.agentId,
-          name: options.agent.name || 'Unknown Agent',
-          era: options.agent.era,
-        },
+        agent: options.agent, // Pass full agent object
         userMessage: options.userMessage,
         sources: finalResults,
         conversationHistory: options.conversationHistory,
@@ -253,11 +276,7 @@ export async function generateWithRAG(
         console.error('[RAG] API Error:', error)
         await simulateGenerationDelay()
         responseText = generateMockResponse({
-          agent: {
-            id: options.agentId,
-            name: options.agent.name || 'Unknown Agent',
-            era: options.agent.era,
-          },
+          agent: options.agent, // Pass full agent object
           userMessage: options.userMessage,
           sources: finalResults,
           conversationHistory: options.conversationHistory,

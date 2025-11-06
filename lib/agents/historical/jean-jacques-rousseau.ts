@@ -46,6 +46,7 @@ export const JEAN_JACQUES_ROUSSEAU: CraftedAgent = {
         midheaven: 210,
       },
       monicaConstant: 1.288,
+    level: 'Dormant',
       metrics: createMetrics(1378, 1.288),
       dominantElement: 'Fire' as Element,
       dominantModality: 'Mutable' as Modality,

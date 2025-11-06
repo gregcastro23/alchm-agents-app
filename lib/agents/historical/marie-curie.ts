@@ -46,6 +46,7 @@ export const MARIE_CURIE: CraftedAgent = {
         midheaven: 240,
       },
       monicaConstant: 0.817,
+    level: 'Dormant',
       metrics: createMetrics(789, 0.817),
       dominantElement: 'Fire' as Element,
       dominantModality: 'Mutable' as Modality,

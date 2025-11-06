@@ -46,6 +46,7 @@ export const CHARLES_DICKENS: CraftedAgent = {
         midheaven: 330,
       },
       monicaConstant: 1.107,
+    level: 'Dormant',
       metrics: createMetrics(1456, 1.107),
       dominantElement: 'Water' as Element,
       dominantModality: 'Fixed' as Modality,

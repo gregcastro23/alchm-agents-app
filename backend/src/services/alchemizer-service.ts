@@ -722,34 +722,37 @@ function getAbsoluteElementValue(elementObject: Record<string, number>): number 
   )
 }
 
-async function alchemizeFullPlaceholder(birthInfo: any, horoscopeDict: any): Promise<any> {
-  const horoscope = horoscopeDict['tropical']
-  const celestialBodies = horoscope.CelestialBodies
-  let diurnalOrNocturnal = 'Diurnal'
-  if (birthInfo.hour < 5 || birthInfo.hour > 17) {
-    diurnalOrNocturnal = 'Nocturnal'
-  }
-  const metadata = {}
-  // ... (full alchemize logic from workspace rules, adapted to TS)
-  // Implement the entire function as provided, handling all effects, aspects, etc.
-  // For brevity, insert the core loop and calculations here.
-  // Note: This is a placeholder; expand with full code.
-
-  // Example: Rising sign handling
-  const risingSign = horoscope.Ascendant.Sign.label
-  ;(planetInfo as any)['Ascendant']['Diurnal Element'] = (signInfo as any)[risingSign]['Element']
-  ;(planetInfo as any)['Ascendant']['Nocturnal Element'] = (signInfo as any)[risingSign]['Element']
-
-  // ... continue with full planet loop, dignity, decan, degree, elemental, aspects, alchemy
-
-  // Placeholder return to satisfy type
-  return {
-    'Alchemy Effects': {
-      'Total Spirit': 0,
-      'Total Essence': 0,
-      'Total Matter': 0,
-      'Total Substance': 0,
-    },
+async function alchemizeFullImplementation(birthInfo: any, horoscopeDict: any): Promise<any> {
+  // Use the complete alchemize function from alchemizer-core
+  // This implements the full alchemical calculation system including:
+  // - Dignity effects
+  // - Decan effects
+  // - Degree effects
+  // - Elemental effects
+  // - Aspect effects
+  // - Alchemy values (Spirit, Essence, Matter, Substance)
+  // - Thermodynamic properties (Heat, Entropy, Reactivity, Energy)
+  
+  try {
+    const alchmInfo = alchemizeCore(birthInfo, horoscopeDict)
+    
+    logger.info('Alchemical calculation complete', {
+      spirit: alchmInfo['Alchemy Effects']['Total Spirit'],
+      essence: alchmInfo['Alchemy Effects']['Total Essence'],
+      matter: alchmInfo['Alchemy Effects']['Total Matter'],
+      substance: alchmInfo['Alchemy Effects']['Total Substance'],
+      aNumber: alchmInfo['Alchemy Effects']['A #'],
+      dominantElement: alchmInfo['Dominant Element'],
+      heat: alchmInfo['Heat'],
+      entropy: alchmInfo['Entropy'],
+      reactivity: alchmInfo['Reactivity'],
+      energy: alchmInfo['Energy'],
+    })
+    
+    return alchmInfo
+  } catch (error) {
+    logger.error('Alchemize error:', error)
+    throw error
   }
 }
 

@@ -46,6 +46,7 @@ export const RENE_DESCARTES: CraftedAgent = {
       midheaven: 240,
     },
     monicaConstant: 4.78,
+    level: 'Advanced',
       metrics: createMetrics(1847, 4.78),
     dominantElement: 'Fire' as Element,
     dominantModality: 'Cardinal' as Modality,

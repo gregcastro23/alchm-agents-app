@@ -42,22 +42,76 @@ async function saveSession(userId: string, personalityId: string, snapshot: Sess
   })
 }
 
-// Mock function to convert RelationChart to SynastryChart format
+// Calculate real elemental and modal profiles from birth chart data
+function calculateElementalProfile(birthDate: string): ElementalProfile {
+  // Parse date to get zodiac sign
+  const date = new Date(birthDate)
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  
+  // Simple calculation based on Sun sign for basic profile
+  // In a full implementation, this would calculate from full chart
+  const signElements: Record<number, string> = {
+    1: 'capricorn', 2: 'aquarius', 3: 'pisces', 4: 'aries', 5: 'taurus', 6: 'gemini',
+    7: 'cancer', 8: 'leo', 9: 'virgo', 10: 'libra', 11: 'scorpio', 12: 'sagittarius'
+  }
+  
+  const elementMap: Record<string, keyof Omit<ElementalProfile, 'dominant_element' | 'secondary_element'>> = {
+    'aries': 'fire', 'leo': 'fire', 'sagittarius': 'fire',
+    'taurus': 'earth', 'virgo': 'earth', 'capricorn': 'earth',
+    'gemini': 'air', 'libra': 'air', 'aquarius': 'air',
+    'cancer': 'water', 'scorpio': 'water', 'pisces': 'water'
+  }
+  
+  const sign = signElements[month]?.toLowerCase()
+  const primaryElement = elementMap[sign as keyof typeof elementMap] || 'fire'
+  
+  // Create balanced profile with primary element emphasized
+  const profile: ElementalProfile = {
+    fire: primaryElement === 'fire' ? 40 : 20,
+    earth: primaryElement === 'earth' ? 40 : 20,
+    air: primaryElement === 'air' ? 40 : 20,
+    water: primaryElement === 'water' ? 40 : 20,
+    dominant_element: primaryElement,
+    secondary_element: primaryElement === 'fire' ? 'air' : 
+                       primaryElement === 'earth' ? 'water' :
+                       primaryElement === 'air' ? 'fire' : 'earth',
+  }
+  
+  return profile
+}
+
+function calculateModalProfile(birthDate: string): ModalProfile {
+  const date = new Date(birthDate)
+  const month = date.getMonth() + 1
+  
+  // Modality mapping by month (simplified by Sun sign)
+  const modalityMap: Record<number, 'cardinal' | 'fixed' | 'mutable'> = {
+    1: 'cardinal', 2: 'fixed', 3: 'mutable', 4: 'cardinal',
+    5: 'fixed', 6: 'mutable', 7: 'cardinal', 8: 'fixed',
+    9: 'mutable', 10: 'cardinal', 11: 'fixed', 12: 'mutable'
+  }
+  
+  const dominantMode = modalityMap[month] || 'mutable'
+  
+  // Create profile with dominant modality
+  const profile: ModalProfile = {
+    cardinal: dominantMode === 'cardinal' ? 50 : 25,
+    fixed: dominantMode === 'fixed' ? 50 : 25,
+    mutable: dominantMode === 'mutable' ? 50 : 25,
+    dominant_mode: dominantMode,
+  }
+  
+  return profile
+}
+
+// Convert RelationChart to SynastryChart format with real calculations
 function createSynastryChartSkeleton(user: RelationChart, relation: RelationChart): SynastryChart {
-  const mockElemental: ElementalProfile = {
-    fire: 25,
-    earth: 25,
-    air: 25,
-    water: 25,
-    dominant_element: 'fire',
-    secondary_element: 'earth',
-  }
-  const mockModal: ModalProfile = {
-    cardinal: 33,
-    fixed: 33,
-    mutable: 34,
-    dominant_mode: 'mutable',
-  }
+  // Calculate real elemental and modal profiles
+  const userElemental = calculateElementalProfile(user.birthDate)
+  const userModal = calculateModalProfile(user.birthDate)
+  const relationElemental = calculateElementalProfile(relation.birthDate)
+  const relationModal = calculateModalProfile(relation.birthDate)
 
   return {
     person1: {
@@ -69,8 +123,8 @@ function createSynastryChartSkeleton(user: RelationChart, relation: RelationChar
       },
       chart_features: [],
       planetary_placements: [],
-      elemental_emphasis: mockElemental,
-      modal_emphasis: mockModal,
+      elemental_emphasis: userElemental,
+      modal_emphasis: userModal,
     },
     person2: {
       name: relation.name,
@@ -81,8 +135,8 @@ function createSynastryChartSkeleton(user: RelationChart, relation: RelationChar
       },
       chart_features: [],
       planetary_placements: [],
-      elemental_emphasis: mockElemental,
-      modal_emphasis: mockModal,
+      elemental_emphasis: relationElemental,
+      modal_emphasis: relationModal,
     },
   }
 }

@@ -46,6 +46,7 @@ export const NIKOLA_TESLA: CraftedAgent = {
         midheaven: 180,
       },
       monicaConstant: 1.16,
+    level: 'Dormant',
       metrics: createMetrics(1067, 1.16),
       dominantElement: 'Water' as Element,
       dominantModality: 'Cardinal' as Modality,

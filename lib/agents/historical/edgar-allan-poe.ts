@@ -46,6 +46,7 @@ export const EDGAR_ALLAN_POE: CraftedAgent = {
         midheaven: 330,
       },
       monicaConstant: 1.829,
+    level: 'Awakening',
       metrics: createMetrics(1445, 1.829),
       dominantElement: 'Water' as Element,
       dominantModality: 'Fixed' as Modality,

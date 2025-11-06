@@ -5,7 +5,7 @@
  * Preserves semantic boundaries while maintaining optimal chunk sizes for embeddings.
  */
 
-import { HISTORICAL_AGENTS } from '@/lib/agents/historical'
+import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 import type { CraftedAgent } from '@/lib/agent-types'
 import type { DocumentMetadata } from './vector-store'
 
@@ -41,11 +41,11 @@ export interface ChunkingOptions {
  * Load all historical agents as documents
  */
 export async function loadHistoricalAgents(): Promise<AgentDocument[]> {
-  console.log(`[DocumentLoader] Loading ${HISTORICAL_AGENTS.length} historical agents`)
+  console.log(`[DocumentLoader] Loading ${DEMO_AGENTS.length} historical agents`)
 
   const documents: AgentDocument[] = []
 
-  for (const agent of HISTORICAL_AGENTS) {
+  for (const agent of DEMO_AGENTS) {
     try {
       const doc = convertAgentToDocument(agent)
       documents.push(doc)
@@ -65,7 +65,7 @@ export async function loadAgentsByIds(agentIds: string[]): Promise<AgentDocument
   const documents: AgentDocument[] = []
 
   for (const agentId of agentIds) {
-    const agent = HISTORICAL_AGENTS.find(a => a.id === agentId)
+    const agent = DEMO_AGENTS.find(a => a.id === agentId)
 
     if (agent) {
       try {

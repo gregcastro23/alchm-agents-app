@@ -50,6 +50,7 @@ export const SIGMUND_FREUD: CraftedAgent = {
         midheaven: 225,
       },
       monicaConstant: 1.006,
+    level: 'Dormant',
       metrics: createMetrics(1134, 1.006),
       dominantElement: 'Earth' as Element,
       dominantModality: 'Fixed' as Modality,

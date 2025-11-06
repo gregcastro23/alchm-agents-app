@@ -46,6 +46,7 @@ export const CHARLES_DARWIN: CraftedAgent = {
         midheaven: 30,
       },
       monicaConstant: 0.873,
+    level: 'Dormant',
       metrics: createMetrics(934, 0.873),
       dominantElement: 'Water' as Element,
       dominantModality: 'Fixed' as Modality,

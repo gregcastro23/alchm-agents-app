@@ -46,6 +46,7 @@ export const ADAM_SMITH: CraftedAgent = {
         midheaven: 330,
       },
       monicaConstant: 0.888,
+    level: 'Dormant',
       metrics: createMetrics(892, 0.888),
       dominantElement: 'Earth' as Element,
       dominantModality: 'Fixed' as Modality,

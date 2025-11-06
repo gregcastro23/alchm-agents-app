@@ -46,6 +46,7 @@ export const CLAUDE_MONET: CraftedAgent = {
         midheaven: 210,
       },
       monicaConstant: 1.694,
+    level: 'Awakening',
       metrics: createMetrics(1298, 1.694),
       dominantElement: 'Water' as Element,
       dominantModality: 'Fixed' as Modality,

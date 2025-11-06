@@ -406,20 +406,37 @@ export default function TimeLaboratoryPage() {
     }
   }, [])
 
-  // Load current planetary positions
+  // Load current planetary positions using real astronomical calculations
   const loadCurrentTransits = useCallback(async () => {
     try {
-      // This would integrate with astronomical calculations
-      // For now, we'll use mock data
-      setCurrentTransits([
-        { planet: 'Sun', longitude: 45, sign: 'Taurus' },
-        { planet: 'Moon', longitude: 120, sign: 'Leo' },
-        { planet: 'Mercury', longitude: 35, sign: 'Taurus' },
-        { planet: 'Venus', longitude: 80, sign: 'Gemini' },
-        { planet: 'Mars', longitude: 200, sign: 'Libra' },
-      ])
+      // Import the real planetary positions calculator
+      const { getCurrentPlanetaryPositions } = await import('@/lib/calculate-transits')
+      
+      // Get current positions using Swiss Ephemeris calculations
+      const positions = getCurrentPlanetaryPositions()
+      
+      // Sign to longitude offset mapping
+      const signOffsets: Record<string, number> = {
+        'Aries': 0, 'Taurus': 30, 'Gemini': 60, 'Cancer': 90,
+        'Leo': 120, 'Virgo': 150, 'Libra': 180, 'Scorpio': 210,
+        'Sagittarius': 240, 'Capricorn': 270, 'Aquarius': 300, 'Pisces': 330
+      }
+      
+      // Convert to transit format with full longitude calculation
+      const transits = Object.entries(positions).map(([planet, data]) => ({
+        planet,
+        longitude: (signOffsets[data.sign] || 0) + data.degree,
+        sign: data.sign,
+        degree: data.degree,
+        retrograde: data.retrograde
+      }))
+      
+      setCurrentTransits(transits)
+      console.log('[TimeLab] Loaded real planetary transits:', transits.length)
     } catch (error) {
       console.error('Failed to load current transits:', error)
+      // Fallback to empty array instead of mock data
+      setCurrentTransits([])
     }
   }, [])
 

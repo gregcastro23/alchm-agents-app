@@ -46,6 +46,7 @@ export const MARY_WOLLSTONECRAFT: CraftedAgent = {
         midheaven: 240,
       },
       monicaConstant: 1.688,
+    level: 'Awakening',
       metrics: createMetrics(1654, 1.688),
       dominantElement: 'Fire' as Element,
       dominantModality: 'Cardinal' as Modality,

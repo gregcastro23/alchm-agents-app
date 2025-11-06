@@ -270,11 +270,54 @@ class RAGCache {
 
   /**
    * Warm cache with common queries
+   * Pre-populate cache with frequently asked questions to improve response times
    */
   async warm(commonQueries: Array<{ query: string; agentId: string }>): Promise<void> {
     console.log(`[RAGCache] Warming cache with ${commonQueries.length} common queries...`)
-    // This would be implemented to pre-populate cache with common queries
-    // Left as placeholder for now
+    
+    let warmed = 0
+    let failed = 0
+    
+    for (const { query, agentId } of commonQueries) {
+      try {
+        // Check if already cached
+        const cacheKey = this.buildCacheKey(query, agentId)
+        const existing = await this.get(cacheKey)
+        
+        if (existing) {
+          console.log(`[RAGCache] Query already cached: "${query.substring(0, 50)}..."`)
+          continue
+        }
+        
+        // Execute the query to populate cache
+        // Note: This requires the RAG system to be available
+        const { semanticSearch } = await import('../llamaindex/semantic-search')
+        const results = await semanticSearch(query, {
+          agentIds: [agentId],
+          topK: 5,
+        })
+        
+        if (results && results.length > 0) {
+          // Cache the results
+          await this.set(cacheKey, {
+            results,
+            timestamp: Date.now(),
+          })
+          
+          warmed++
+          console.log(`[RAGCache] Warmed cache for: "${query.substring(0, 50)}..." (${results.length} results)`)
+        }
+        
+        // Small delay to avoid overwhelming the system
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+      } catch (error) {
+        failed++
+        console.error(`[RAGCache] Failed to warm query "${query.substring(0, 50)}...":`, error)
+      }
+    }
+    
+    console.log(`[RAGCache] Cache warming complete: ${warmed} warmed, ${failed} failed`)
   }
 
   /**

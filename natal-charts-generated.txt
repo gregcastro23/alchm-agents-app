@@ -1,0 +1,889 @@
+🌟 Generating Natal Charts for Agents...
+
+✅ Generated chart for Carl Jung (carl-jung)
+   Sun: Leo 26° (House 10)
+   Moon: Pisces 8.00° (House 3)
+   Ascendant: Leo 11.00°
+
+✅ Generated chart for Nikola Tesla (nikola-tesla)
+   Sun: Cancer 10° (House 6)
+   Moon: Leo 10.00° (House 11)
+   Ascendant: Cancer 25.00°
+
+✅ Generated chart for Cleopatra VII (cleopatra)
+   Sun: Pisces 1° (House 11)
+   Moon: Aries 13.00° (House 4)
+   Ascendant: Pisces 16.00°
+
+✅ Generated chart for Frida Kahlo (frida-kahlo)
+   Sun: Cancer 6° (House 2)
+   Moon: Gemini 18.00° (House 7)
+   Ascendant: Cancer 21.00°
+
+✅ Generated chart for Leonardo da Vinci (leonardo-da-vinci)
+   Sun: Aries 15° (House 8)
+   Moon: Libra 15.00° (House 1)
+   Ascendant: Aries 0.00°
+
+✅ Generated chart for Marie Curie (marie-curie)
+   Sun: Scorpio 7° (House 7)
+   Moon: Cancer 1.00° (House 12)
+   Ascendant: Scorpio 22.00°
+
+✅ Generated chart for Socrates (socrates)
+   Sun: Pisces 1° (House 4)
+   Moon: Aries 13.00° (House 9)
+   Ascendant: Pisces 16.00°
+
+✅ Generated chart for Jalal ad-Din Rumi (rumi)
+   Sun: Libra 30° (House 4)
+   Moon: Taurus 0.00° (House 9)
+   Ascendant: Libra 15.00°
+
+✅ Generated chart for Marcus Aurelius (marcus-aurelius)
+   Sun: Taurus 26° (House 7)
+   Moon: Pisces 8.00° (House 12)
+   Ascendant: Taurus 11.00°
+
+✅ Generated chart for Vincent van Gogh (vincent-van-gogh)
+   Sun: Aries 30° (House 10)
+   Moon: Taurus 0.00° (House 3)
+   Ascendant: Aries 15.00°
+
+✅ Generated chart for Wolfgang Amadeus Mozart (wolfgang-mozart)
+   Sun: Aquarius 27° (House 5)
+   Moon: Pisces 21.00° (House 10)
+   Ascendant: Aquarius 12.00°
+
+✅ Generated chart for William Shakespeare (william-shakespeare)
+   Sun: Taurus 23° (House 4)
+   Moon: Capricorn 29.00° (House 9)
+   Ascendant: Taurus 8.00°
+
+✅ Generated chart for Maya Angelou (maya-angelou)
+   Sun: Aries 4° (House 9)
+   Moon: Taurus 22.00° (House 2)
+   Ascendant: Aries 19.00°
+
+✅ Generated chart for Isaac Newton (isaac-newton)
+   Sun: Capricorn 4° (House 6)
+   Moon: Taurus 22.00° (House 11)
+   Ascendant: Capricorn 19.00°
+
+✅ Generated chart for Charles Darwin (charles-darwin)
+   Sun: Aquarius 12° (House 3)
+   Moon: Virgo 6.00° (House 8)
+   Ascendant: Aquarius 27.00°
+
+✅ Generated chart for Galileo Galilei (galileo-galilei)
+   Sun: Aquarius 15° (House 6)
+   Moon: Libra 15.00° (House 11)
+   Ascendant: Aquarius 0.00°
+
+✅ Generated chart for René Descartes (rene-descartes-1596)
+   Sun: Aries 31° (House 11)
+   Moon: Taurus 13.00° (House 4)
+   Ascendant: Aries 16.00°
+
+✅ Generated chart for Voltaire (voltaire-1694)
+   Sun: Scorpio 21° (House 9)
+   Moon: Capricorn 3.00° (House 2)
+   Ascendant: Scorpio 6.00°
+
+✅ Generated chart for John Locke (john-locke-1632)
+   Sun: Virgo 29° (House 2)
+   Moon: Aries 17.00° (House 7)
+   Ascendant: Virgo 14.00°
+
+✅ Generated chart for David Hume (david-hume-1711)
+   Sun: Taurus 7° (House 1)
+   Moon: Cancer 1.00° (House 6)
+   Ascendant: Taurus 22.00°
+
+✅ Generated chart for Johannes Kepler (johannes-kepler-1571)
+   Sun: Capricorn 27° (House 4)
+   Moon: Pisces 21.00° (House 9)
+   Ascendant: Capricorn 12.00°
+
+✅ Generated chart for Immanuel Kant (immanuel-kant-1724)
+   Sun: Taurus 22° (House 3)
+   Moon: Capricorn 16.00° (House 8)
+   Ascendant: Taurus 7.00°
+
+✅ Generated chart for Adam Smith (adam-smith-1723)
+   Sun: Gemini 16° (House 11)
+   Moon: Libra 28.00° (House 4)
+   Ascendant: Gemini 1.00°
+
+✅ Generated chart for Jean-Jacques Rousseau (jean-jacques-rousseau-1712)
+   Sun: Cancer 28° (House 11)
+   Moon: Aries 4.00° (House 4)
+   Ascendant: Cancer 13.00°
+
+✅ Generated chart for Mary Wollstonecraft (mary-wollstonecraft-1759)
+   Sun: Taurus 27° (House 8)
+   Moon: Pisces 21.00° (House 1)
+   Ascendant: Taurus 12.00°
+
+✅ Generated chart for Charles Dickens (charles-dickens-1812)
+   Sun: Aquarius 7° (House 10)
+   Moon: Cancer 1.00° (House 3)
+   Ascendant: Aquarius 22.00°
+
+✅ Generated chart for Claude Monet (claude-monet-1840)
+   Sun: Scorpio 14° (House 2)
+   Moon: Libra 2.00° (House 7)
+   Ascendant: Scorpio 29.00°
+
+✅ Generated chart for Nikola Tesla (nikola-tesla-1856)
+   Sun: Cancer 10° (House 6)
+   Moon: Leo 10.00° (House 11)
+   Ascendant: Cancer 25.00°
+
+✅ Generated chart for Marie Curie (marie-curie-1867)
+   Sun: Scorpio 7° (House 7)
+   Moon: Cancer 1.00° (House 12)
+   Ascendant: Scorpio 22.00°
+
+✅ Generated chart for Sigmund Freud (sigmund-freud-1856)
+   Sun: Taurus 6° (House 12)
+   Moon: Gemini 18.00° (House 5)
+   Ascendant: Taurus 21.00°
+
+✅ Generated chart for Mark Twain (mark-twain-1835)
+   Sun: Sagittarius 30° (House 6)
+   Moon: Taurus 0.00° (House 11)
+   Ascendant: Sagittarius 15.00°
+
+✅ Generated chart for Vincent van Gogh (vincent-van-gogh-1853)
+   Sun: Aries 30° (House 10)
+   Moon: Taurus 0.00° (House 3)
+   Ascendant: Aries 15.00°
+
+✅ Generated chart for Charles Darwin (charles-darwin-1809)
+   Sun: Aquarius 12° (House 3)
+   Moon: Virgo 6.00° (House 8)
+   Ascendant: Aquarius 27.00°
+
+✅ Generated chart for Edgar Allan Poe (edgar-allan-poe-1809)
+   Sun: Capricorn 19° (House 9)
+   Moon: Sagittarius 7.00° (House 2)
+   Ascendant: Capricorn 4.00°
+
+✅ Generated chart for Isaac Asimov (isaac-asimov)
+   Sun: Capricorn 2° (House 4)
+   Moon: Aries 26.00° (House 9)
+   Ascendant: Capricorn 17.00°
+
+
+================================================================================
+SUMMARY
+================================================================================
+Total agents missing charts: 35
+Charts generated: 35
+Still need birth data: 0
+================================================================================
+
+📝 Generated charts data:
+[
+  {
+    "id": "carl-jung",
+    "name": "Carl Jung",
+    "chart": {
+      "sun": {
+        "sign": "Leo",
+        "degree": 26,
+        "house": 10
+      },
+      "moon": {
+        "sign": "Pisces",
+        "degree": 8,
+        "house": 3
+      },
+      "ascendant": {
+        "sign": "Leo",
+        "degree": 11
+      }
+    }
+  },
+  {
+    "id": "nikola-tesla",
+    "name": "Nikola Tesla",
+    "chart": {
+      "sun": {
+        "sign": "Cancer",
+        "degree": 10,
+        "house": 6
+      },
+      "moon": {
+        "sign": "Leo",
+        "degree": 10,
+        "house": 11
+      },
+      "ascendant": {
+        "sign": "Cancer",
+        "degree": 25
+      }
+    }
+  },
+  {
+    "id": "cleopatra",
+    "name": "Cleopatra VII",
+    "chart": {
+      "sun": {
+        "sign": "Pisces",
+        "degree": 1,
+        "house": 11
+      },
+      "moon": {
+        "sign": "Aries",
+        "degree": 13,
+        "house": 4
+      },
+      "ascendant": {
+        "sign": "Pisces",
+        "degree": 16
+      }
+    }
+  },
+  {
+    "id": "frida-kahlo",
+    "name": "Frida Kahlo",
+    "chart": {
+      "sun": {
+        "sign": "Cancer",
+        "degree": 6,
+        "house": 2
+      },
+      "moon": {
+        "sign": "Gemini",
+        "degree": 18,
+        "house": 7
+      },
+      "ascendant": {
+        "sign": "Cancer",
+        "degree": 21
+      }
+    }
+  },
+  {
+    "id": "leonardo-da-vinci",
+    "name": "Leonardo da Vinci",
+    "chart": {
+      "sun": {
+        "sign": "Aries",
+        "degree": 15,
+        "house": 8
+      },
+      "moon": {
+        "sign": "Libra",
+        "degree": 15,
+        "house": 1
+      },
+      "ascendant": {
+        "sign": "Aries",
+        "degree": 0
+      }
+    }
+  },
+  {
+    "id": "marie-curie",
+    "name": "Marie Curie",
+    "chart": {
+      "sun": {
+        "sign": "Scorpio",
+        "degree": 7,
+        "house": 7
+      },
+      "moon": {
+        "sign": "Cancer",
+        "degree": 1,
+        "house": 12
+      },
+      "ascendant": {
+        "sign": "Scorpio",
+        "degree": 22
+      }
+    }
+  },
+  {
+    "id": "socrates",
+    "name": "Socrates",
+    "chart": {
+      "sun": {
+        "sign": "Pisces",
+        "degree": 1,
+        "house": 4
+      },
+      "moon": {
+        "sign": "Aries",
+        "degree": 13,
+        "house": 9
+      },
+      "ascendant": {
+        "sign": "Pisces",
+        "degree": 16
+      }
+    }
+  },
+  {
+    "id": "rumi",
+    "name": "Jalal ad-Din Rumi",
+    "chart": {
+      "sun": {
+        "sign": "Libra",
+        "degree": 30,
+        "house": 4
+      },
+      "moon": {
+        "sign": "Taurus",
+        "degree": 0,
+        "house": 9
+      },
+      "ascendant": {
+        "sign": "Libra",
+        "degree": 15
+      }
+    }
+  },
+  {
+    "id": "marcus-aurelius",
+    "name": "Marcus Aurelius",
+    "chart": {
+      "sun": {
+        "sign": "Taurus",
+        "degree": 26,
+        "house": 7
+      },
+      "moon": {
+        "sign": "Pisces",
+        "degree": 8,
+        "house": 12
+      },
+      "ascendant": {
+        "sign": "Taurus",
+        "degree": 11
+      }
+    }
+  },
+  {
+    "id": "vincent-van-gogh",
+    "name": "Vincent van Gogh",
+    "chart": {
+      "sun": {
+        "sign": "Aries",
+        "degree": 30,
+        "house": 10
+      },
+      "moon": {
+        "sign": "Taurus",
+        "degree": 0,
+        "house": 3
+      },
+      "ascendant": {
+        "sign": "Aries",
+        "degree": 15
+      }
+    }
+  },
+  {
+    "id": "wolfgang-mozart",
+    "name": "Wolfgang Amadeus Mozart",
+    "chart": {
+      "sun": {
+        "sign": "Aquarius",
+        "degree": 27,
+        "house": 5
+      },
+      "moon": {
+        "sign": "Pisces",
+        "degree": 21,
+        "house": 10
+      },
+      "ascendant": {
+        "sign": "Aquarius",
+        "degree": 12
+      }
+    }
+  },
+  {
+    "id": "william-shakespeare",
+    "name": "William Shakespeare",
+    "chart": {
+      "sun": {
+        "sign": "Taurus",
+        "degree": 23,
+        "house": 4
+      },
+      "moon": {
+        "sign": "Capricorn",
+        "degree": 29,
+        "house": 9
+      },
+      "ascendant": {
+        "sign": "Taurus",
+        "degree": 8
+      }
+    }
+  },
+  {
+    "id": "maya-angelou",
+    "name": "Maya Angelou",
+    "chart": {
+      "sun": {
+        "sign": "Aries",
+        "degree": 4,
+        "house": 9
+      },
+      "moon": {
+        "sign": "Taurus",
+        "degree": 22,
+        "house": 2
+      },
+      "ascendant": {
+        "sign": "Aries",
+        "degree": 19
+      }
+    }
+  },
+  {
+    "id": "isaac-newton",
+    "name": "Isaac Newton",
+    "chart": {
+      "sun": {
+        "sign": "Capricorn",
+        "degree": 4,
+        "house": 6
+      },
+      "moon": {
+        "sign": "Taurus",
+        "degree": 22,
+        "house": 11
+      },
+      "ascendant": {
+        "sign": "Capricorn",
+        "degree": 19
+      }
+    }
+  },
+  {
+    "id": "charles-darwin",
+    "name": "Charles Darwin",
+    "chart": {
+      "sun": {
+        "sign": "Aquarius",
+        "degree": 12,
+        "house": 3
+      },
+      "moon": {
+        "sign": "Virgo",
+        "degree": 6,
+        "house": 8
+      },
+      "ascendant": {
+        "sign": "Aquarius",
+        "degree": 27
+      }
+    }
+  },
+  {
+    "id": "galileo-galilei",
+    "name": "Galileo Galilei",
+    "chart": {
+      "sun": {
+        "sign": "Aquarius",
+        "degree": 15,
+        "house": 6
+      },
+      "moon": {
+        "sign": "Libra",
+        "degree": 15,
+        "house": 11
+      },
+      "ascendant": {
+        "sign": "Aquarius",
+        "degree": 0
+      }
+    }
+  },
+  {
+    "id": "rene-descartes-1596",
+    "name": "René Descartes",
+    "chart": {
+      "sun": {
+        "sign": "Aries",
+        "degree": 31,
+        "house": 11
+      },
+      "moon": {
+        "sign": "Taurus",
+        "degree": 13,
+        "house": 4
+      },
+      "ascendant": {
+        "sign": "Aries",
+        "degree": 16
+      }
+    }
+  },
+  {
+    "id": "voltaire-1694",
+    "name": "Voltaire",
+    "chart": {
+      "sun": {
+        "sign": "Scorpio",
+        "degree": 21,
+        "house": 9
+      },
+      "moon": {
+        "sign": "Capricorn",
+        "degree": 3,
+        "house": 2
+      },
+      "ascendant": {
+        "sign": "Scorpio",
+        "degree": 6
+      }
+    }
+  },
+  {
+    "id": "john-locke-1632",
+    "name": "John Locke",
+    "chart": {
+      "sun": {
+        "sign": "Virgo",
+        "degree": 29,
+        "house": 2
+      },
+      "moon": {
+        "sign": "Aries",
+        "degree": 17,
+        "house": 7
+      },
+      "ascendant": {
+        "sign": "Virgo",
+        "degree": 14
+      }
+    }
+  },
+  {
+    "id": "david-hume-1711",
+    "name": "David Hume",
+    "chart": {
+      "sun": {
+        "sign": "Taurus",
+        "degree": 7,
+        "house": 1
+      },
+      "moon": {
+        "sign": "Cancer",
+        "degree": 1,
+        "house": 6
+      },
+      "ascendant": {
+        "sign": "Taurus",
+        "degree": 22
+      }
+    }
+  },
+  {
+    "id": "johannes-kepler-1571",
+    "name": "Johannes Kepler",
+    "chart": {
+      "sun": {
+        "sign": "Capricorn",
+        "degree": 27,
+        "house": 4
+      },
+      "moon": {
+        "sign": "Pisces",
+        "degree": 21,
+        "house": 9
+      },
+      "ascendant": {
+        "sign": "Capricorn",
+        "degree": 12
+      }
+    }
+  },
+  {
+    "id": "immanuel-kant-1724",
+    "name": "Immanuel Kant",
+    "chart": {
+      "sun": {
+        "sign": "Taurus",
+        "degree": 22,
+        "house": 3
+      },
+      "moon": {
+        "sign": "Capricorn",
+        "degree": 16,
+        "house": 8
+      },
+      "ascendant": {
+        "sign": "Taurus",
+        "degree": 7
+      }
+    }
+  },
+  {
+    "id": "adam-smith-1723",
+    "name": "Adam Smith",
+    "chart": {
+      "sun": {
+        "sign": "Gemini",
+        "degree": 16,
+        "house": 11
+      },
+      "moon": {
+        "sign": "Libra",
+        "degree": 28,
+        "house": 4
+      },
+      "ascendant": {
+        "sign": "Gemini",
+        "degree": 1
+      }
+    }
+  },
+  {
+    "id": "jean-jacques-rousseau-1712",
+    "name": "Jean-Jacques Rousseau",
+    "chart": {
+      "sun": {
+        "sign": "Cancer",
+        "degree": 28,
+        "house": 11
+      },
+      "moon": {
+        "sign": "Aries",
+        "degree": 4,
+        "house": 4
+      },
+      "ascendant": {
+        "sign": "Cancer",
+        "degree": 13
+      }
+    }
+  },
+  {
+    "id": "mary-wollstonecraft-1759",
+    "name": "Mary Wollstonecraft",
+    "chart": {
+      "sun": {
+        "sign": "Taurus",
+        "degree": 27,
+        "house": 8
+      },
+      "moon": {
+        "sign": "Pisces",
+        "degree": 21,
+        "house": 1
+      },
+      "ascendant": {
+        "sign": "Taurus",
+        "degree": 12
+      }
+    }
+  },
+  {
+    "id": "charles-dickens-1812",
+    "name": "Charles Dickens",
+    "chart": {
+      "sun": {
+        "sign": "Aquarius",
+        "degree": 7,
+        "house": 10
+      },
+      "moon": {
+        "sign": "Cancer",
+        "degree": 1,
+        "house": 3
+      },
+      "ascendant": {
+        "sign": "Aquarius",
+        "degree": 22
+      }
+    }
+  },
+  {
+    "id": "claude-monet-1840",
+    "name": "Claude Monet",
+    "chart": {
+      "sun": {
+        "sign": "Scorpio",
+        "degree": 14,
+        "house": 2
+      },
+      "moon": {
+        "sign": "Libra",
+        "degree": 2,
+        "house": 7
+      },
+      "ascendant": {
+        "sign": "Scorpio",
+        "degree": 29
+      }
+    }
+  },
+  {
+    "id": "nikola-tesla-1856",
+    "name": "Nikola Tesla",
+    "chart": {
+      "sun": {
+        "sign": "Cancer",
+        "degree": 10,
+        "house": 6
+      },
+      "moon": {
+        "sign": "Leo",
+        "degree": 10,
+        "house": 11
+      },
+      "ascendant": {
+        "sign": "Cancer",
+        "degree": 25
+      }
+    }
+  },
+  {
+    "id": "marie-curie-1867",
+    "name": "Marie Curie",
+    "chart": {
+      "sun": {
+        "sign": "Scorpio",
+        "degree": 7,
+        "house": 7
+      },
+      "moon": {
+        "sign": "Cancer",
+        "degree": 1,
+        "house": 12
+      },
+      "ascendant": {
+        "sign": "Scorpio",
+        "degree": 22
+      }
+    }
+  },
+  {
+    "id": "sigmund-freud-1856",
+    "name": "Sigmund Freud",
+    "chart": {
+      "sun": {
+        "sign": "Taurus",
+        "degree": 6,
+        "house": 12
+      },
+      "moon": {
+        "sign": "Gemini",
+        "degree": 18,
+        "house": 5
+      },
+      "ascendant": {
+        "sign": "Taurus",
+        "degree": 21
+      }
+    }
+  },
+  {
+    "id": "mark-twain-1835",
+    "name": "Mark Twain",
+    "chart": {
+      "sun": {
+        "sign": "Sagittarius",
+        "degree": 30,
+        "house": 6
+      },
+      "moon": {
+        "sign": "Taurus",
+        "degree": 0,
+        "house": 11
+      },
+      "ascendant": {
+        "sign": "Sagittarius",
+        "degree": 15
+      }
+    }
+  },
+  {
+    "id": "vincent-van-gogh-1853",
+    "name": "Vincent van Gogh",
+    "chart": {
+      "sun": {
+        "sign": "Aries",
+        "degree": 30,
+        "house": 10
+      },
+      "moon": {
+        "sign": "Taurus",
+        "degree": 0,
+        "house": 3
+      },
+      "ascendant": {
+        "sign": "Aries",
+        "degree": 15
+      }
+    }
+  },
+  {
+    "id": "charles-darwin-1809",
+    "name": "Charles Darwin",
+    "chart": {
+      "sun": {
+        "sign": "Aquarius",
+        "degree": 12,
+        "house": 3
+      },
+      "moon": {
+        "sign": "Virgo",
+        "degree": 6,
+        "house": 8
+      },
+      "ascendant": {
+        "sign": "Aquarius",
+        "degree": 27
+      }
+    }
+  },
+  {
+    "id": "edgar-allan-poe-1809",
+    "name": "Edgar Allan Poe",
+    "chart": {
+      "sun": {
+        "sign": "Capricorn",
+        "degree": 19,
+        "house": 9
+      },
+      "moon": {
+        "sign": "Sagittarius",
+        "degree": 7,
+        "house": 2
+      },
+      "ascendant": {
+        "sign": "Capricorn",
+        "degree": 4
+      }
+    }
+  },
+  {
+    "id": "isaac-asimov",
+    "name": "Isaac Asimov",
+    "chart": {
+      "sun": {
+        "sign": "Capricorn",
+        "degree": 2,
+        "house": 4
+      },
+      "moon": {
+        "sign": "Aries",
+        "degree": 26,
+        "house": 9
+      },
+      "ascendant": {
+        "sign": "Capricorn",
+        "degree": 17
+      }
+    }
+  }
+]

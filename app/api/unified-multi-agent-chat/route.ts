@@ -299,6 +299,12 @@ async function processAgentResponse(
 
       response = ragResult.text
       ragMetadata = ragResult.ragMetadata
+
+      // DEBUG: Log what we got from RAG
+      console.log(`[DEBUG] RAG result - text length: ${response?.length ?? 0}, ragUsed: ${ragMetadata?.ragUsed}`)
+      if (!response || response.length === 0) {
+        console.warn(`[DEBUG] ⚠️ RAG returned empty response! ragMetadata:`, JSON.stringify(ragMetadata))
+      }
     } else {
       // Standard generation without RAG
       const model = selectOptimalModel(

@@ -46,6 +46,7 @@ export const MARK_TWAIN: CraftedAgent = {
         midheaven: 180,
       },
       monicaConstant: 1.222,
+    level: 'Dormant',
       metrics: createMetrics(1567, 1.222),
       dominantElement: 'Fire' as Element,
       dominantModality: 'Mutable' as Modality,

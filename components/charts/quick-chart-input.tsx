@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Search, MapPin, Calendar, Clock, User, Sparkles } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { geocodeLocation } from '@/lib/services/geocoding-service'
 
 interface ParsedChartData {
   name?: string
@@ -22,43 +23,7 @@ interface QuickChartInputProps {
   className?: string
 }
 
-// Mock geocoding function - in production, use a real geocoding service
-const mockGeocode = async (
-  location: string
-): Promise<{ latitude: number; longitude: number; formattedName: string } | null> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500))
-
-  // Mock coordinates for common cities
-  const mockCoordinates: Record<string, { lat: number; lng: number; name: string }> = {
-    'new york': { lat: 40.7128, lng: -74.006, name: 'New York, NY, USA' },
-    london: { lat: 51.5074, lng: -0.1278, name: 'London, England, UK' },
-    paris: { lat: 48.8566, lng: 2.3522, name: 'Paris, France' },
-    tokyo: { lat: 35.6762, lng: 139.6503, name: 'Tokyo, Japan' },
-    sydney: { lat: -33.8688, lng: 151.2093, name: 'Sydney, Australia' },
-    'los angeles': { lat: 34.0522, lng: -118.2437, name: 'Los Angeles, CA, USA' },
-    chicago: { lat: 41.8781, lng: -87.6298, name: 'Chicago, IL, USA' },
-    toronto: { lat: 43.6532, lng: -79.3832, name: 'Toronto, Canada' },
-    berlin: { lat: 52.52, lng: 13.405, name: 'Berlin, Germany' },
-    rome: { lat: 41.9028, lng: 12.4964, name: 'Rome, Italy' },
-  }
-
-  const normalizedLocation = location.toLowerCase().trim()
-  const match = Object.entries(mockCoordinates).find(
-    ([key]) => normalizedLocation.includes(key) || key.includes(normalizedLocation)
-  )
-
-  if (match) {
-    const [, coords] = match
-    return {
-      latitude: coords.lat,
-      longitude: coords.lng,
-      formattedName: coords.name,
-    }
-  }
-
-  return null
-}
+// Geocoding is now handled by lib/services/geocoding-service.ts
 
 // Smart parsing function to extract birth data from natural language input
 const parseChartInput = (input: string): ParsedChartData => {
@@ -171,8 +136,13 @@ export default function QuickChartInput({ onChartParsed, className = '' }: Quick
     setGeocoding(true)
 
     try {
-      // Geocode the location
-      const geoResult = await mockGeocode(parsedData.birthPlace)
+      // Geocode the location using real service
+      const geoResult = await geocodeLocation(parsedData.birthPlace)
+
+      if (!geoResult) {
+        console.error('Failed to geocode location:', parsedData.birthPlace)
+        // Still allow chart creation with manual coordinates if needed
+      }
 
       const finalData: ParsedChartData = {
         ...parsedData,

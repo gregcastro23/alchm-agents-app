@@ -115,94 +115,36 @@ export const PerformanceDashboard: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'1h' | '24h' | '7d' | '30d'>('24h')
   const [autoRefresh, setAutoRefresh] = useState(true)
 
-  // Simulate data fetching
+  // Fetch real dashboard data from API
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true)
 
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      const mockData: DashboardData = {
-        timeRange,
-        systemMetrics: {
-          timestamp: Date.now(),
-          activeUsers: 1247,
-          totalSessions: 8923,
-          averageSessionDuration: 1847, // seconds
-          pageLoadTime: 2.3, // seconds
-          errorRate: 0.023, // percentage
-          apiResponseTime: 245, // milliseconds
-          memoryUsage: 67.5, // percentage
-          cpuUsage: 34.2, // percentage
-        },
-        userAnalytics: {
-          totalUsers: 15420,
-          activeUsers: 1247,
-          newUsersToday: 89,
-          returningUsers: 1158,
-          userRetention: 78.5,
-          averageSessionTime: 1847,
-          topFeatures: [
-            { name: 'Zodiac Wheel', usage: 3456, growth: 12.3 },
-            { name: 'Agent Chat', usage: 2890, growth: 8.7 },
-            { name: 'Council Sessions', usage: 1234, growth: 15.2 },
-            { name: 'Interactive Mode', usage: 2156, growth: 6.8 },
-            { name: 'Degree Explorer', usage: 1789, growth: 11.4 },
-          ],
-          deviceBreakdown: {
-            desktop: 45.2,
-            mobile: 42.1,
-            tablet: 12.7,
-          },
-          browserBreakdown: {
-            Chrome: 68.5,
-            Firefox: 15.3,
-            Safari: 9.2,
-            Edge: 5.8,
-            Other: 1.2,
-          },
-        },
-        agentAnalytics: {
-          totalChats: 15678,
-          activeConversations: 234,
-          averageResponseTime: 1.8,
-          popularAgents: [
-            { name: 'Mercury Agent', chats: 2341, satisfaction: 94.2 },
-            { name: 'Venus Agent', chats: 1987, satisfaction: 96.1 },
-            { name: 'Mars Agent', chats: 1876, satisfaction: 92.8 },
-            { name: 'Jupiter Agent', chats: 1654, satisfaction: 95.7 },
-            { name: 'Saturn Agent', chats: 1432, satisfaction: 93.9 },
-          ],
-          consciousnessGrowth: 1247,
-          councilSessions: 456,
-          averageEvolutionPoints: 2.3,
-        },
-        performanceMetrics: {
-          systemHealth: 'excellent',
-          uptime: 99.97,
-          responseTime: 245,
-          throughput: 1250, // requests per minute
-          errorRate: 0.023,
-          alerts: [
-            {
-              id: '1',
-              type: 'warning',
-              message: 'High memory usage detected on server-3',
-              timestamp: Date.now() - 300000,
-            },
-            {
-              id: '2',
-              type: 'info',
-              message: 'Scheduled maintenance completed successfully',
-              timestamp: Date.now() - 1800000,
-            },
-          ],
-        },
+      try {
+        // Fetch real metrics from API
+        const response = await fetch(`/api/admin/performance-metrics?timeRange=${timeRange}`)
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`)
+        }
+        
+        const apiData = await response.json()
+        
+        if (apiData.success && apiData.metrics) {
+          setData({
+            timeRange,
+            ...apiData.metrics
+          })
+        } else {
+          console.error('[Dashboard] Invalid API response:', apiData)
+        }
+        
+      } catch (error) {
+        console.error('[Dashboard] Failed to fetch metrics:', error)
+        // Keep existing data on error, don't clear it
+      } finally {
+        setLoading(false)
       }
-
-      setData(mockData)
-      setLoading(false)
     }
 
     fetchDashboardData()
