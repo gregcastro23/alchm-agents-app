@@ -21,6 +21,8 @@ export interface RAGQueryLog {
   averageRelevance: number
   sessionId: string
   userId?: string
+  cacheHit?: boolean
+  cacheLatency?: number
 }
 
 export interface RAGAnalytics {
@@ -35,6 +37,12 @@ export interface RAGAnalytics {
   avgRelevanceScore: number
   successRate: number
   errorRate: number
+  cacheHitRate: number
+  cacheHits: number
+  cacheMisses: number
+  avgCacheLatency: number
+  avgCachedResponseTime: number
+  avgUncachedResponseTime: number
   topAgents: Array<{ agentId: string; agentName: string; queryCount: number }>
   topDocuments: Array<{ documentId: string; retrievalCount: number }>
   performanceTrend: Array<{ date: string; avgTime: number; queryCount: number }>
@@ -47,8 +55,9 @@ class RAGAnalyticsManager {
 
   /**
    * Log a RAG query
+   * Returns the generated query ID for linking feedback
    */
-  logQuery(log: Omit<RAGQueryLog, 'id' | 'timestamp'>): void {
+  logQuery(log: Omit<RAGQueryLog, 'id' | 'timestamp'>, sources?: any[]): string {
     const queryLog: RAGQueryLog = {
       ...log,
       id: this.generateId(),
@@ -70,6 +79,43 @@ class RAGAnalyticsManager {
       } catch (error) {
         console.warn('[RAGAnalytics] Failed to persist to localStorage:', error)
       }
+
+      // Also persist to database via API (async, non-blocking)
+      this.persistToDatabase(log, sources).catch(error => {
+        console.warn('[RAGAnalytics] Failed to persist to database:', error)
+      })
+    }
+
+    // Return query ID for feedback linking
+    return queryLog.id
+  }
+
+  /**
+   * Persist log to database via API
+   */
+  private async persistToDatabase(
+    log: Omit<RAGQueryLog, 'id' | 'timestamp'>,
+    sources?: any[]
+  ): Promise<void> {
+    if (typeof window === 'undefined') return
+
+    try {
+      const response = await fetch('/api/rag/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...log,
+          sources,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.details || 'Failed to persist analytics')
+      }
+    } catch (error) {
+      // Silent fail - localStorage is backup
+      console.warn('[RAGAnalytics] Database persistence failed:', error)
     }
   }
 
@@ -104,6 +150,30 @@ class RAGAnalyticsManager {
       filteredLogs.reduce((sum, log) => sum + log.totalTime, 0) / totalQueries || 0
     const avgRelevanceScore =
       filteredLogs.reduce((sum, log) => sum + log.averageRelevance, 0) / totalQueries || 0
+
+    // Calculate cache metrics
+    const cacheHits = filteredLogs.filter(log => log.cacheHit === true).length
+    const cacheMisses = filteredLogs.filter(log => log.cacheHit === false).length
+    const cacheHitRate = totalQueries > 0 ? cacheHits / totalQueries : 0
+
+    const cachedQueries = filteredLogs.filter(log => log.cacheHit === true)
+    const uncachedQueries = filteredLogs.filter(log => log.cacheHit === false)
+
+    const avgCacheLatency =
+      cachedQueries.length > 0
+        ? cachedQueries.reduce((sum, log) => sum + (log.cacheLatency || 0), 0) /
+          cachedQueries.length
+        : 0
+
+    const avgCachedResponseTime =
+      cachedQueries.length > 0
+        ? cachedQueries.reduce((sum, log) => sum + log.totalTime, 0) / cachedQueries.length
+        : 0
+
+    const avgUncachedResponseTime =
+      uncachedQueries.length > 0
+        ? uncachedQueries.reduce((sum, log) => sum + log.totalTime, 0) / uncachedQueries.length
+        : 0
 
     // Top agents
     const agentCounts = new Map<string, { name: string; count: number }>()
@@ -150,6 +220,12 @@ class RAGAnalyticsManager {
       avgRelevanceScore,
       successRate: totalQueries > 0 ? successfulQueries / totalQueries : 0,
       errorRate: totalQueries > 0 ? (totalQueries - successfulQueries) / totalQueries : 0,
+      cacheHitRate,
+      cacheHits,
+      cacheMisses,
+      avgCacheLatency,
+      avgCachedResponseTime,
+      avgUncachedResponseTime,
       topAgents,
       topDocuments: [], // Would need document-level tracking
       performanceTrend,

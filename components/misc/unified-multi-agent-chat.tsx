@@ -45,6 +45,8 @@ import type {
 } from '@/lib/unified-agent-types'
 import type { CraftedAgent } from '@/lib/agent-types'
 import { unifiedAgentFactory } from '@/lib/unified-agent-factory'
+import { RAGToggle } from '@/components/rag'
+import { ragAnalytics } from '@/lib/rag/rag-analytics'
 
 interface ModelOverrides {
   historical?: string
@@ -149,6 +151,9 @@ export function UnifiedMultiAgentChat({
   // Group dynamics
   const [groupDynamics, setGroupDynamics] = useState<GroupDynamics | null>(null)
   const [realTimeUpdates, setRealTimeUpdates] = useState(true)
+
+  // RAG (Retrieval-Augmented Generation)
+  const [ragEnabled, setRagEnabled] = useState(true)
 
   // Session management
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null)
@@ -311,6 +316,7 @@ export function UnifiedMultiAgentChat({
             groupDynamics,
             enableMemoryPersistence,
             realtimeUpdates: realTimeUpdates,
+            enableRAG: ragEnabled,
             variant,
             modelOverrides,
             theme,
@@ -673,7 +679,7 @@ export function UnifiedMultiAgentChat({
       <div className="fixed left-0 top-0 bottom-0 w-full max-w-2xl z-[201] flex flex-col bg-background shadow-2xl border-r animate-in slide-in-from-left duration-300">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-emerald-50/50 via-green-50/50 to-cyan-50/50 dark:from-emerald-950/50 dark:via-green-950/50 dark:to-cyan-950/50">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Users className="w-5 h-5 text-emerald-600" />
             <h2 className="font-semibold text-lg">{title}</h2>
             {enableGroupDynamics && groupDynamics && (
@@ -682,14 +688,17 @@ export function UnifiedMultiAgentChat({
               </Badge>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="hover:bg-red-100 dark:hover:bg-red-900"
-          >
-            <X className="w-4 h-4" />
-          </Button>
+          <div className="flex items-center gap-3">
+            <RAGToggle enabled={ragEnabled} onToggle={setRagEnabled} size="sm" showStatus />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="hover:bg-red-100 dark:hover:bg-red-900"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">

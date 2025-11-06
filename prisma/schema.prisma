@@ -1234,3 +1234,82 @@ model Notification {
   @@index([createdAt])
   @@map("notifications")
 }
+
+// RAG (Retrieval-Augmented Generation) Analytics Models
+model RAGQuery {
+  id              String       @id @default(cuid())
+  timestamp       DateTime     @default(now())
+  sessionId       String
+  userId          String?
+  agentId         String
+  agentName       String
+  query           String       @db.Text
+  queryLength     Int
+  ragUsed         Boolean
+  sourcesRetrieved Int
+  retrievalTime   Int          // milliseconds
+  generationTime  Int?         // milliseconds
+  totalTime       Int          // milliseconds
+  success         Boolean
+  error           String?
+  relevanceScores Json         // array of relevance scores
+  avgRelevance    Float
+  modelUsed       String?
+  temperature     Float?
+  metadata        Json?        // additional context
+  sources         RAGSource[]
+  feedback        RAGFeedback[]
+
+  @@index([agentId])
+  @@index([timestamp])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([ragUsed])
+  @@index([success])
+  @@index([agentId, timestamp])
+  @@index([userId, agentId])
+  @@map("rag_queries")
+}
+
+model RAGSource {
+  id              String    @id @default(cuid())
+  queryId         String
+  documentId      String
+  agentId         String
+  agentName       String
+  title           String
+  content         String    @db.Text
+  relevanceScore  Float
+  era             String?
+  category        String?
+  tags            Json?
+  metadata        Json?
+  query           RAGQuery  @relation(fields: [queryId], references: [id], onDelete: Cascade)
+
+  @@index([queryId])
+  @@index([documentId])
+  @@index([agentId])
+  @@index([relevanceScore])
+  @@map("rag_sources")
+}
+
+model RAGFeedback {
+  id              String    @id @default(cuid())
+  timestamp       DateTime  @default(now())
+  queryId         String
+  userId          String?
+  agentId         String
+  sessionId       String
+  thumbsUp        Boolean?  // true = up, false = down
+  starRating      Int?      // 1-5
+  sourcesHelpful  Boolean?
+  comment         String?   @db.Text
+  query           RAGQuery  @relation(fields: [queryId], references: [id], onDelete: Cascade)
+
+  @@index([queryId])
+  @@index([agentId])
+  @@index([timestamp])
+  @@index([thumbsUp])
+  @@index([starRating])
+  @@map("rag_feedback")
+}

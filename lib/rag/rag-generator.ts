@@ -8,10 +8,12 @@
 import { semanticSearch, type SearchResult } from '@/lib/llamaindex/semantic-search'
 import { generateText } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
+import { ragCache } from '@/lib/rag/rag-cache'
 
 // Configuration
 const MAX_CONTEXT_TOKENS = parseInt(process.env.RAG_MAX_CONTEXT_TOKENS || '1500')
 const CHARS_PER_TOKEN = 4
+const USE_CACHE = process.env.USE_RAG_CACHE !== 'false' // Enabled by default
 
 export interface RAGGenerateOptions {
   agent: any // Historical or planetary agent
@@ -43,6 +45,10 @@ export interface RAGMetadata {
   queryTime?: number
   totalTime?: number
   error?: string
+  cacheHit?: boolean
+  cacheLatency?: number
+  retrievalTime?: number
+  generationTime?: number
 }
 
 export interface RAGResult {
@@ -76,6 +82,42 @@ export async function generateWithRAG(
   try {
     console.log(`[RAG] Generating with RAG for agent ${options.agentId}`)
 
+    // Stage 0: Check Cache (if enabled)
+    if (USE_CACHE) {
+      const cacheCheckStart = Date.now()
+      const cachedResult = await ragCache.get(options.userMessage, options.agentId)
+      const cacheLatency = Date.now() - cacheCheckStart
+
+      if (cachedResult) {
+        console.log(`[RAG] 🎯 Cache hit! Returning cached result (${cacheLatency}ms)`)
+        const totalTime = Date.now() - startTime
+
+        // Convert cached sources to RAGSource format
+        const sources: RAGSource[] = cachedResult.sources.map(s => ({
+          agentId: s.agentId,
+          agentName: s.agentName,
+          excerpt: s.content.substring(0, 100) + (s.content.length > 100 ? '...' : ''),
+          relevance: s.relevanceScore,
+        }))
+
+        return {
+          text: cachedResult.generatedResponse || '',
+          ragMetadata: {
+            enabled: true,
+            ragUsed: true,
+            retrievedDocs: cachedResult.sources.length,
+            sources,
+            queryTime: 0,
+            totalTime,
+            cacheHit: true,
+            cacheLatency,
+          },
+        }
+      }
+
+      console.log(`[RAG] Cache miss, proceeding with retrieval (${cacheLatency}ms)`)
+    }
+
     // Stage 1: Semantic Search
     const searchStartTime = Date.now()
 
@@ -87,9 +129,9 @@ export async function generateWithRAG(
       useReranking: options.ragConfig?.useReranking !== false,
     })
 
-    const queryTime = Date.now() - searchStartTime
+    const retrievalTime = Date.now() - searchStartTime
 
-    console.log(`[RAG] Retrieved ${searchResults.length} relevant documents in ${queryTime}ms`)
+    console.log(`[RAG] Retrieved ${searchResults.length} relevant documents in ${retrievalTime}ms`)
 
     // If no results, fall back to standard generation
     if (searchResults.length === 0) {
@@ -100,7 +142,8 @@ export async function generateWithRAG(
           enabled: true,
           ragUsed: false,
           retrievedDocs: 0,
-          queryTime,
+          retrievalTime,
+          cacheHit: false,
         },
       }
     }
@@ -116,9 +159,14 @@ export async function generateWithRAG(
     )
 
     const messages = [
-      ...(options.conversationHistory || []),
+      ...((options.conversationHistory || []).map(m => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+      }))),
       { role: 'user' as const, content: options.userMessage },
     ]
+
+    const generationStartTime = Date.now()
 
     const response = await generateText({
       model: anthropic(process.env.CLAUDE_DEFAULT_MODEL || 'claude-3-sonnet-20240229'),
@@ -127,6 +175,7 @@ export async function generateWithRAG(
       temperature: 0.7,
     })
 
+    const generationTime = Date.now() - generationStartTime
     const totalTime = Date.now() - startTime
 
     // Build sources for metadata
@@ -137,7 +186,26 @@ export async function generateWithRAG(
       relevance: r.score,
     }))
 
-    console.log(`[RAG] Generated response in ${totalTime}ms (search: ${queryTime}ms)`)
+    console.log(`[RAG] Generated response in ${totalTime}ms (retrieval: ${retrievalTime}ms, generation: ${generationTime}ms)`)
+
+    // Store in cache for future use
+    if (USE_CACHE && response.text) {
+      await ragCache.set(
+        options.userMessage,
+        options.agentId,
+        searchResults.map(r => ({
+          id: `${r.agentId}-${Date.now()}`,
+          agentId: r.agentId,
+          agentName: r.agentName,
+          title: (r.metadata?.title as string) || 'Historical Knowledge',
+          content: r.content,
+          relevanceScore: r.score,
+          metadata: r.metadata,
+        })),
+        response.text
+      )
+      console.log(`[RAG] Cached result for future queries`)
+    }
 
     return {
       text: response.text,
@@ -146,8 +214,10 @@ export async function generateWithRAG(
         ragUsed: true,
         retrievedDocs: searchResults.length,
         sources,
-        queryTime,
+        retrievalTime,
+        generationTime,
         totalTime,
+        cacheHit: false,
       },
     }
   } catch (error) {

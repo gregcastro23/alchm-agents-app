@@ -7,11 +7,15 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ArrowLeft, MessageCircle, Sparkles, TrendingUp } from 'lucide-react'
+import { RAGToggle, SourceCitations, RAGFeedbackWidget, type RAGSource } from '@/components/rag'
+import { ragAnalytics } from '@/lib/rag/rag-analytics'
 
 type Message = {
   role: 'user' | 'agent'
   content: string
   timestamp: Date
+  ragSources?: RAGSource[]
+  queryId?: string // For linking feedback to specific query
 }
 
 type Agent = {
@@ -40,6 +44,7 @@ export default function HistoricalAgentChatPage() {
   const [agent, setAgent] = useState<Agent | null>(null)
   const [agentLoading, setAgentLoading] = useState(true)
   const [momentSynergy, setMomentSynergy] = useState<MomentSynergy | null>(null)
+  const [ragEnabled, setRagEnabled] = useState(true) // RAG enabled by default
 
   // Static agent mapping to avoid server-side imports
   useEffect(() => {
@@ -96,11 +101,17 @@ export default function HistoricalAgentChatPage() {
       })
     }
     setSessionId(generateUUID())
+
+    // Load RAG preference from localStorage
+    const storedRagPref = localStorage.getItem('rag-enabled')
+    if (storedRagPref !== null) {
+      setRagEnabled(JSON.parse(storedRagPref))
+    }
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!input.trim() || loading || !sessionId) return
+    if (!input.trim() || loading || !sessionId || !agent) return
 
     const userMessage: Message = {
       role: 'user',
@@ -111,38 +122,94 @@ export default function HistoricalAgentChatPage() {
     setInput('')
     setLoading(true)
 
+    const queryStartTime = Date.now()
+
     try {
-      const response = await fetch('/api/monica-agent', {
+      // Use unified multi-agent chat API with RAG support
+      const response = await fetch('/api/unified-multi-agent-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          agentId,
-          question: userMessage.content,
-          sessionId,
+          agents: [
+            {
+              id: agent.id,
+              name: agent.name,
+              type: 'historical',
+            },
+          ],
+          message: userMessage.content,
+          context: {
+            sessionHistory: messages.map(m => ({
+              role: m.role === 'user' ? 'user' : 'assistant',
+              content: m.content,
+              timestamp: m.timestamp.toISOString(),
+            })),
+            enableMemoryPersistence: true,
+            realtimeUpdates: false,
+            enableRAG: ragEnabled, // Pass RAG preference
+          },
         }),
       })
 
-      const contentType = response.headers.get('content-type')
-      let data
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json()
-      } else {
-        const textResponse = await response.text()
-        throw new Error('Server returned non-JSON response')
-      }
+      const data = await response.json()
 
-      if (response.ok) {
+      if (response.ok && data.responses && data.responses.length > 0) {
+        const agentResponse = data.responses[0]
+
+        // Extract RAG sources if available
+        const ragSources: RAGSource[] | undefined = agentResponse.ragMetadata?.sources?.map(
+          (source: any) => ({
+            id: source.id || `source-${Math.random()}`,
+            agentId: agent.id,
+            agentName: agent.name,
+            title: source.title || 'Historical Knowledge',
+            content: source.content || '',
+            relevanceScore: source.score || 0,
+            metadata: source.metadata,
+          })
+        )
+
+        // Log analytics and get query ID for feedback
+        const totalTime = Date.now() - queryStartTime
+        const queryId = ragAnalytics.logQuery(
+          {
+            agentId: agent.id,
+            agentName: agent.name,
+            query: userMessage.content,
+            queryLength: userMessage.content.length,
+            ragUsed: ragEnabled && (ragSources?.length || 0) > 0,
+            sourcesRetrieved: ragSources?.length || 0,
+            retrievalTime: agentResponse.ragMetadata?.retrievalTime || 0,
+            generationTime: agentResponse.ragMetadata?.generationTime,
+            totalTime,
+            success: true,
+            relevanceScores: ragSources?.map(s => s.relevanceScore) || [],
+            averageRelevance:
+              ragSources && ragSources.length > 0
+                ? ragSources.reduce((sum, s) => sum + s.relevanceScore, 0) / ragSources.length
+                : 0,
+            sessionId,
+          },
+          // Pass sources for database persistence
+          ragSources?.map(source => ({
+            documentId: source.metadata?.documentId || source.id,
+            agentId: source.agentId,
+            agentName: source.agentName,
+            title: source.title,
+            content: source.content,
+            relevanceScore: source.relevanceScore,
+            metadata: source.metadata,
+          }))
+        )
+
         const agentMessage: Message = {
           role: 'agent',
-          content: data.response,
+          content: agentResponse.response,
           timestamp: new Date(),
+          ragSources,
+          queryId, // Attach queryId for feedback linking
         }
         setMessages(prev => [...prev, agentMessage])
-
-        // Update moment synergy if available
-        if (data.agentInfo?.momentSynergy) {
-          setMomentSynergy(data.agentInfo.momentSynergy)
-        }
       } else {
         throw new Error(data.error || 'Failed to get response')
       }
@@ -154,6 +221,26 @@ export default function HistoricalAgentChatPage() {
         timestamp: new Date(),
       }
       setMessages(prev => [...prev, errorMessage])
+
+      // Log failed query
+      ragAnalytics.logQuery(
+        {
+          agentId: agent.id,
+          agentName: agent.name,
+          query: userMessage.content,
+          queryLength: userMessage.content.length,
+          ragUsed: false,
+          sourcesRetrieved: 0,
+          retrievalTime: 0,
+          totalTime: Date.now() - queryStartTime,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          relevanceScores: [],
+          averageRelevance: 0,
+          sessionId,
+        },
+        [] // No sources for failed queries
+      )
     } finally {
       setLoading(false)
     }
@@ -205,6 +292,9 @@ export default function HistoricalAgentChatPage() {
           <p className="text-muted-foreground">{agent.title}</p>
         </div>
 
+        {/* RAG Toggle */}
+        <RAGToggle enabled={ragEnabled} onToggle={setRagEnabled} size="sm" showStatus />
+
         {/* Moment Synergy Display */}
         {momentSynergy && (
           <div className="flex flex-col items-end gap-1">
@@ -247,23 +337,45 @@ export default function HistoricalAgentChatPage() {
             ) : (
               <div className="space-y-4">
                 {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`p-4 rounded-lg ${
-                      message.role === 'user' ? 'bg-primary/10 ml-8' : 'bg-secondary/10 mr-8'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="text-sm text-muted-foreground min-w-0">
-                        {message.role === 'user' ? 'You' : agent.name}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm leading-relaxed">{message.content}</p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {message.timestamp.toLocaleTimeString()}
-                        </p>
+                  <div key={index}>
+                    <div
+                      className={`p-4 rounded-lg ${
+                        message.role === 'user' ? 'bg-primary/10 ml-8' : 'bg-secondary/10 mr-8'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="text-sm text-muted-foreground min-w-0">
+                          {message.role === 'user' ? 'You' : agent.name}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm leading-relaxed">{message.content}</p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {message.timestamp.toLocaleTimeString()}
+                          </p>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Show source citations for agent messages with RAG sources */}
+                    {message.role === 'agent' && message.ragSources && message.ragSources.length > 0 && (
+                      <div className="mt-2 mr-8">
+                        <SourceCitations sources={message.ragSources} variant="detailed" />
+                      </div>
+                    )}
+
+                    {/* Show feedback widget for agent messages with queryId */}
+                    {message.role === 'agent' && message.queryId && (
+                      <div className="mt-3 mr-8">
+                        <RAGFeedbackWidget
+                          queryId={message.queryId}
+                          agentId={agent.id}
+                          agentName={agent.name}
+                          sessionId={sessionId}
+                          sourcesCount={message.ragSources?.length || 0}
+                          compact
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
