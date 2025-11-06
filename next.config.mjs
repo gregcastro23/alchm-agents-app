@@ -85,6 +85,13 @@ const nextConfig = {
           (external) => typeof external !== 'string' || !external.includes('source-map')
         )
       }
+
+      // Externalize native modules from ChromaDB to prevent bundling issues
+      config.externals.push({
+        'onnxruntime-node': 'commonjs onnxruntime-node',
+        '@chroma-core/default-embed': 'commonjs @chroma-core/default-embed',
+        'chromadb': 'commonjs chromadb',
+      })
     }
 
     // Fix react-remove-scroll module resolution issue

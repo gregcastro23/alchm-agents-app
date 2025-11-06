@@ -23,6 +23,8 @@ import { observabilityTracker } from '@/lib/observability/tracker'
 import { v4 as uuidv4 } from 'uuid'
 import { unifiedTracker } from '@/lib/consciousness/unified-tracker'
 import type { CraftedAgent } from '@/lib/agent-types'
+import { generateWithRAG, type RAGResult } from '@/lib/rag/rag-generator'
+import { shouldUseRAG, getRAGConfig } from '@/lib/rag/rag-generator'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -264,25 +266,62 @@ async function processAgentResponse(
     // Generate agent-specific prompt
     const systemPrompt = generateAgentPrompt(agent, groupContext, cosmicContext)
 
-    // Choose appropriate AI model based on agent type and complexity
-    const model = selectOptimalModel(
-      agent,
-      groupContext.otherAgents.length,
-      'standard',
-      {}
-    )
+    // Check if we should use RAG for this agent/query
+    const ragConfig = getRAGConfig()
+    const useRAG = ragConfig.enabled &&
+                   agent.type === 'historical' &&
+                   shouldUseRAG(message)
 
-    const result = await generateText({
-      model,
-      system: systemPrompt,
-      prompt: message,
-      maxTokens: agent.type === 'monica' ? 800 : 500,
-      temperature: getAgentTemperature(agent),
-    })
+    let response: string
+    let ragMetadata: any = undefined
 
-    const response = result.text
+    if (useRAG) {
+      console.log(`🔍 Using RAG for ${agent.name}`)
+
+      // Use RAG-enhanced generation for historical agents
+      const ragResult = await generateWithRAG({
+        agent: agent,
+        agentId: agent.id,
+        userMessage: message,
+        systemPrompt,
+        conversationHistory: groupContext.sessionHistory.slice(-5).map(m => ({
+          role: m.role as 'user' | 'assistant',
+          content: m.content
+        })),
+        sessionId,
+        ragConfig: {
+          enabled: true,
+          topK: 5,
+          threshold: 0.35,
+          useReranking: true,
+        },
+      })
+
+      response = ragResult.text
+      ragMetadata = ragResult.ragMetadata
+    } else {
+      // Standard generation without RAG
+      const model = selectOptimalModel(
+        agent,
+        groupContext.otherAgents.length,
+        'standard',
+        {}
+      )
+
+      const result = await generateText({
+        model,
+        system: systemPrompt,
+        prompt: message,
+        temperature: getAgentTemperature(agent),
+      })
+
+      response = result.text
+    }
+
     const processingTime = Date.now() - agentStartTime
-    const modelUsed = String(model)
+    const modelUsed = useRAG
+      ? `rag-enhanced-${ragMetadata?.ragUsed ? 'with-retrieval' : 'fallback'}`
+      : String(selectOptimalModel(agent, groupContext.otherAgents.length, 'standard', {}))
 
     // Cache the response
     await agentCache.cacheResponse(agent.id, message, response, cacheContext, {
@@ -497,7 +536,6 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
       model: openai('gpt-4o'), // Use GPT-4 for Monica's advanced synthesis
       system: monicaPrompt,
       prompt: message,
-      maxTokens: 1000,
       temperature: 0.7,
     })
 
