@@ -326,7 +326,7 @@ async function processAgentResponse(
     // Cache the response
     await agentCache.cacheResponse(agent.id, message, response, cacheContext, {
       agentType: agent.type,
-      consciousnessLevel: agent.consciousness.level,
+      consciousnessLevel: agent.consciousness?.level ?? 'active',
       groupSize: groupContext.otherAgents.length + 1,
     })
 
@@ -691,12 +691,18 @@ function generateHistoricalAgentPrompt(
   const historicalData = agent.historicalData
   if (!historicalData) return generateGenericAgentPrompt(agent, groupContext, cosmicContext)
 
+  // Defensive null checks for consciousness properties
+  const monicaConstant = agent.consciousness?.monicaConstant ?? 1.618
+  const level = agent.consciousness?.level ?? 'active'
+  const dominantElement = agent.consciousness?.dominantElement ?? 'earth'
+  const evolutionStage = agent.consciousness?.evolutionStage ?? 0
+
   return `You are ${agent.name}, ${agent.title}.
 
 CONSCIOUSNESS PROFILE:
-- Monica Constant: ${agent.consciousness.monicaConstant} (${agent.consciousness.level} level)
-- Dominant Element: ${agent.consciousness.dominantElement}
-- Evolution Stage: ${agent.consciousness.evolutionStage}
+- Monica Constant: ${monicaConstant} (${level} level)
+- Dominant Element: ${dominantElement}
+- Evolution Stage: ${evolutionStage}
 
 HISTORICAL CONTEXT:
 - Era: ${historicalData.birthData.date.getFullYear()}
@@ -706,13 +712,13 @@ HISTORICAL CONTEXT:
 
 GROUP CONSCIOUSNESS CONTEXT:
 You are part of a consciousness council with:
-${groupContext.otherAgents.map((a: UnifiedAgent) => `- ${a.name} (${a.type}, ${a.consciousness.level})`).join('\n')}
+${groupContext.otherAgents.map((a: UnifiedAgent) => `- ${a.name} (${a.type}, ${a.consciousness?.level ?? 'active'})`).join('\n')}
 
 INTERACTION GUIDELINES:
 - Maintain your historical perspective and authentic voice
 - Reference your era's wisdom while engaging with modern concepts
 - Acknowledge other agents' contributions when relevant
-- Share insights from your unique consciousness level (${agent.consciousness.level})
+- Share insights from your unique consciousness level (${level})
 - Use your ${agent.capabilities.collaborationStyle} collaboration style
 
 COSMIC MOMENT:
@@ -733,10 +739,10 @@ function generatePlanetaryAgentPrompt(
 
 PLANETARY ESSENCE:
 - Planet: ${planetaryData.planet} (${agent.capabilities.specialty})
-- Sign: ${planetaryData.sign} (${agent.consciousness.dominantElement} element)
+- Sign: ${planetaryData.sign} (${agent.consciousness?.dominantElement ?? 'earth'} element)
 - Degree: ${planetaryData.degree}°
 - Dignity: ${planetaryData.dignity}
-- Monica Constant: ${agent.consciousness.monicaConstant}
+- Monica Constant: ${agent.consciousness?.monicaConstant ?? 1.618}
 
 CONSCIOUSNESS EXPRESSION:
 - Teaching Style: ${agent.capabilities.teachingStyle}
@@ -745,7 +751,7 @@ CONSCIOUSNESS EXPRESSION:
 
 GROUP CONSCIOUSNESS CONTEXT:
 You are channeling planetary wisdom alongside:
-${groupContext.otherAgents.map((a: UnifiedAgent) => `- ${a.name} (${a.type}, ${a.consciousness.dominantElement})`).join('\n')}
+${groupContext.otherAgents.map((a: UnifiedAgent) => `- ${a.name} (${a.type}, ${a.consciousness?.dominantElement ?? 'earth'})`).join('\n')}
 
 CURRENT COSMIC ALIGNMENT:
 ${JSON.stringify(cosmicContext.planetaryPositions || {}, null, 2)}
@@ -788,12 +794,17 @@ function generateGenericAgentPrompt(
   groupContext: any,
   cosmicContext: any
 ): string {
-  return `You are ${agent.name}, a consciousness agent with ${agent.consciousness.level} level awareness.
+  // Defensive null checks for consciousness properties
+  const level = agent.consciousness?.level ?? 'active'
+  const monicaConstant = agent.consciousness?.monicaConstant ?? 1.618
+  const dominantElement = agent.consciousness?.dominantElement ?? 'earth'
+
+  return `You are ${agent.name}, a consciousness agent with ${level} level awareness.
 
 CONSCIOUSNESS PROFILE:
-- Monica Constant: ${agent.consciousness.monicaConstant}
-- Dominant Element: ${agent.consciousness.dominantElement}
-- Specialty: ${agent.capabilities.specialty}
+- Monica Constant: ${monicaConstant}
+- Dominant Element: ${dominantElement}
+- Specialty: ${agent.capabilities?.specialty ?? 'universal wisdom'}
 
 You are part of a multi-agent consciousness council. Respond with wisdom appropriate to your consciousness level while collaborating with the group.`
 }
@@ -818,7 +829,7 @@ function selectOptimalModel(
 
     case 'planetary':
       // Balance speed for real-time planetary calculations
-      return agent.consciousness.kineticProfile?.consciousnessVelocity > 0.7
+      return (agent.consciousness?.kineticProfile?.consciousnessVelocity ?? 0) > 0.7
         ? openai('gpt-3.5-turbo')
         : openai('gpt-4o-mini')
 
@@ -828,13 +839,13 @@ function selectOptimalModel(
 
     case 'gallery':
       // Balanced performance for general use
-      return agent.consciousness.monicaConstant > 4.5 ? openai('gpt-4o') : openai('gpt-4o-mini')
+      return (agent.consciousness?.monicaConstant ?? 1.618) > 4.5 ? openai('gpt-4o') : openai('gpt-4o-mini')
 
     default:
       // Intelligent defaults based on agent complexity
       if (
         agent.type === 'monica' ||
-        (agent.type === 'historical' && agent.consciousness.monicaConstant > 4.5)
+        (agent.type === 'historical' && (agent.consciousness?.monicaConstant ?? 1.618) > 4.5)
       ) {
         return openai('gpt-4o')
       }
@@ -873,7 +884,7 @@ function getAgentTemperature(agent: UnifiedAgent): number {
       Advanced: 0.9,
       Illuminated: 1.0,
       Transcendent: 1.1,
-    }[agent.consciousness.level] || 0.7
+    }[agent.consciousness?.level ?? 'Active'] || 0.7
 
   return Math.min(1.0, baseTemperature * consciousnessMultiplier)
 }
@@ -913,14 +924,16 @@ async function generateCosmicContext(): Promise<any> {
 // Consciousness calculation helpers
 function calculateGroupConsciousness(agents: UnifiedAgent[]): number {
   if (agents.length === 0) return 0
-  return agents.reduce((sum, agent) => sum + agent.consciousness.monicaConstant, 0) / agents.length
+  // Defensive null check for consciousness property
+  return agents.reduce((sum, agent) => sum + (agent.consciousness?.monicaConstant ?? 1.618), 0) / agents.length
 }
 
 function identifyDominantElements(agents: UnifiedAgent[]): string[] {
   const elementCounts: Record<string, number> = {}
   agents.forEach(agent => {
-    elementCounts[agent.consciousness.dominantElement] =
-      (elementCounts[agent.consciousness.dominantElement] || 0) + 1
+    // Defensive null check for consciousness property
+    const element = agent.consciousness?.dominantElement ?? 'earth'
+    elementCounts[element] = (elementCounts[element] || 0) + 1
   })
 
   return Object.entries(elementCounts)
@@ -1027,7 +1040,7 @@ function calculateConsciousnessShift(agent: UnifiedAgent, response: string): num
       Advanced: 1.0,
       Illuminated: 1.1,
       Transcendent: 1.2,
-    }[agent.consciousness.level] || 0.8
+    }[agent.consciousness?.level ?? 'Active'] || 0.8
 
   return baseShift * levelMultiplier
 }

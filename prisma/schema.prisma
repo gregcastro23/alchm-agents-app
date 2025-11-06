@@ -7,41 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Profile {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  name      String?
-  avatarUrl String?
-  birthInfo Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@map("profiles")
-}
-
-model UserProfile {
-  id                   String         @id @default(cuid())
-  userId               String         @unique
-  birthDate            DateTime
-  birthTime            String?
-  birthLocation        Json
-  natalChart           Json
-  monicaConstant       Float
-  dominantElement      String
-  allowPublicAgents    Boolean        @default(false)
-  shareChartWithAgents Boolean        @default(true)
-  createdAt            DateTime       @default(now())
-  updatedAt            DateTime       @updatedAt
-  createdAgents        CreatedAgent[]
-  user                 User           @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-  @@map("user_profiles")
-}
-
 model AIPersonality {
-  id                     String                @id @default(uuid())
+  id                     String                @id
   userId                 String
   personalityId          String                @unique
   birthChartData         Json
@@ -54,261 +21,35 @@ model AIPersonality {
   consciousnessProfileId String?
   planetaryMemoryId      String?               @unique
   createdAt              DateTime              @default(now())
-  updatedAt              DateTime              @updatedAt
-  consciousnessProfile   ConsciousnessProfile? @relation("ProfileToPersonality", fields: [consciousnessProfileId], references: [id])
-  planetaryMemory        PlanetaryMemory?      @relation("PlanetaryMemoryToPersonality", fields: [planetaryMemoryId], references: [id])
-  survey                 ConsciousnessSurvey?  @relation("SurveyToPersonality", fields: [surveyId], references: [id])
-  achievements           Achievement[]
-  consciousnessState     ConsciousnessState?
-  interactions           TrainingInteraction[]
+  updatedAt              DateTime
+  ConsciousnessProfile   ConsciousnessProfile? @relation(fields: [consciousnessProfileId], references: [id])
+  PlanetaryMemory        PlanetaryMemory?      @relation(fields: [planetaryMemoryId], references: [id])
+  ConsciousnessSurvey    ConsciousnessSurvey?  @relation(fields: [surveyId], references: [id])
+  Achievement            Achievement[]
+  ConsciousnessState     ConsciousnessState?
+  TrainingInteraction    TrainingInteraction[]
 
-  @@index([userId])
-  @@index([personalityId])
-  @@index([surveyId])
   @@index([consciousnessProfileId])
-  @@index([planetaryMemoryId])
-}
-
-model PlanetaryTransit {
-  id             String            @id @default(uuid())
-  planet         String
-  sign           String
-  degreeStart    Float
-  degreeEnd      Float
-  dateStart      DateTime
-  dateEnd        DateTime
-  retrograde     Boolean           @default(false)
-  historicalNote String?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  events         HistoricalEvent[] @relation("HistoricalEventToPlanetaryTransit")
-  patterns       TransitPattern[]  @relation("PlanetaryTransitToTransitPattern")
-
-  @@index([planet, sign])
-  @@index([dateStart, dateEnd])
-  @@index([planet, dateStart])
-}
-
-model HistoricalEvent {
-  id              String             @id @default(uuid())
-  date            DateTime
-  eventType       String
-  description     String
-  significance    Int
-  planetaryConfig Json
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
-  transits        PlanetaryTransit[] @relation("HistoricalEventToPlanetaryTransit")
-
-  @@index([date])
-  @@index([eventType])
-}
-
-model TransitPattern {
-  id          String             @id @default(uuid())
-  planet      String
-  patternType String
-  cycleLength Float
-  description String
-  themes      Json
-  reliability Float
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  memories    PlanetaryMemory[]  @relation("PlanetaryMemoryToTransitPattern")
-  transits    PlanetaryTransit[] @relation("PlanetaryTransitToTransitPattern")
-
-  @@index([planet, patternType])
-}
-
-model PlanetaryMemory {
-  id              String           @id @default(uuid())
-  planet          String
-  sign            String
-  degree          Float
-  historicalData  Json
-  lastOccurrence  DateTime?
-  nextOccurrence  DateTime?
-  occurrenceCount Int              @default(0)
-  trainedThemes   Json
-  contextualNotes String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  personality     AIPersonality?   @relation("PlanetaryMemoryToPersonality")
-  patterns        TransitPattern[] @relation("PlanetaryMemoryToTransitPattern")
-
-  @@unique([planet, sign, degree])
-  @@index([planet, sign])
-}
-
-model TrainingInteraction {
-  id            String        @id @default(uuid())
-  personalityId String
-  userMessage   String
-  aiResponse    String
-  userFeedback  Json?
-  xpGained      Int           @default(0)
-  trainingFocus String?
-  createdAt     DateTime      @default(now())
-  personality   AIPersonality @relation(fields: [personalityId], references: [personalityId])
-
   @@index([personalityId])
-  @@index([createdAt])
+  @@index([planetaryMemoryId])
+  @@index([surveyId])
+  @@index([userId])
 }
 
 model Achievement {
-  id              String        @id @default(uuid())
+  id              String        @id
   personalityId   String
   achievementType String
   achievementData Json
   unlockedAt      DateTime      @default(now())
-  personality     AIPersonality @relation(fields: [personalityId], references: [personalityId])
+  AIPersonality   AIPersonality @relation(fields: [personalityId], references: [personalityId])
 
   @@unique([personalityId, achievementType])
   @@index([personalityId])
 }
 
-model UserSession {
-  id            String   @id @default(uuid())
-  userId        String
-  personalityId String
-  sessionData   Json
-  lastActive    DateTime @default(now())
-  expiresAt     DateTime
-
-  @@index([userId])
-  @@index([personalityId])
-  @@index([expiresAt])
-}
-
-model ConsciousnessSurvey {
-  id                    String                 @id @default(uuid())
-  userId                String
-  responses             Json
-  completedAt           DateTime               @default(now())
-  timeSpent             Int
-  version               String                 @default("1.0.0")
-  aiPersonalities       AIPersonality[]        @relation("SurveyToPersonality")
-  consciousnessProfiles ConsciousnessProfile[]
-
-  @@index([userId])
-  @@index([completedAt])
-}
-
-model ConsciousnessProfile {
-  id                   String              @id @default(uuid())
-  userId               String
-  surveyId             String
-  profileData          Json
-  insights             Json
-  compatibilityScore   Int
-  trainingFocus        Json
-  conversationStarters Json
-  personalitySummary   String
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
-  aiPersonalities      AIPersonality[]     @relation("ProfileToPersonality")
-  survey               ConsciousnessSurvey @relation(fields: [surveyId], references: [id])
-
-  @@unique([userId, surveyId])
-  @@index([userId])
-}
-
-model ConsciousnessState {
-  id                     String        @id @default(uuid())
-  personalityId          String        @unique
-  unifiedArchetype       String
-  consciousnessSignature String
-  enhancedPersonality    Json
-  trainingPlan           Json
-  behavioralMatrix       Json
-  growthTrajectory       Json
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime      @updatedAt
-  personality            AIPersonality @relation(fields: [personalityId], references: [personalityId])
-
-  @@index([personalityId])
-}
-
-model HistoricalAgent {
-  id                    String                 @id @default(uuid())
-  agentId               String                 @unique
-  name                  String
-  title                 String
-  birthDate             DateTime
-  birthTime             String
-  birthLocation         Json
-  historicalEra         String
-  birthYear             Int
-  deathYear             Int?
-  culture               String
-  geography             String
-  consciousnessLevel    String
-  kalchmConstant        Float
-  monicaConstant        Float                  @default(0)
-  dominantElement       String
-  dominantModality      String?
-  signature             String
-  spiritScore           Float?
-  essenceScore          Float?
-  matterScore           Float?
-  substanceScore        Float?
-  personalityCore       Json
-  personalityShadows    Json
-  personalityGifts      Json
-  personalityChallenges Json
-  currentMood           String
-  evolutionStage        Int                    @default(0)
-  background            Json
-  specialty             String
-  wisdomDomains         Json
-  skills                Json
-  teachingStyle         String
-  resonanceType         String
-  uniquePower           String
-  avatar                String?
-  color                 String
-  symbol                String
-  aura                  Json?
-  natalChart            Json
-  traits                Json
-  monicaCreationStory   String?
-  searchableText        String?
-  popularityScore       Float                  @default(0.5)
-  conversations         Int                    @default(0)
-  wisdomShared          Int                    @default(0)
-  resonanceScore        Float                  @default(0.5)
-  evolutionPoints       Int                    @default(0)
-  lastActive            DateTime               @default(now())
-  isActive              Boolean                @default(true)
-  version               String                 @default("1.0.0")
-  craftedBy             String                 @default("philosopher-stone")
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  agentConversations    AgentConversation[]
-  agentEvolutions       AgentEvolution[]
-  agentKnowledge        AgentKnowledge[]
-  agentAttachmentUsages AgentAttachmentUsage[]
-  agentAttachments      AgentAttachment[]
-
-  @@index([agentId])
-  @@index([name])
-  @@index([consciousnessLevel])
-  @@index([isActive])
-  @@index([historicalEra])
-  @@index([birthYear])
-  @@index([culture])
-  @@index([kalchmConstant])
-  @@index([monicaConstant])
-  @@index([popularityScore])
-  @@index([historicalEra, consciousnessLevel])
-  @@index([isActive, historicalEra])
-  @@index([birthYear, culture])
-  @@index([dominantElement, consciousnessLevel])
-  @@map("historical_agents")
-}
-
 model AgentConversation {
-  id                 String          @id @default(uuid())
+  id                 String            @id
   agentId            String
   sessionId          String
   userId             String?
@@ -322,30 +63,30 @@ model AgentConversation {
   agentMood          String?
   evolutionStage     Int?
   consciousnessLevel String?
-  createdAt          DateTime        @default(now())
-  agent              HistoricalAgent @relation(fields: [agentId], references: [agentId])
+  createdAt          DateTime          @default(now())
+  historical_agents  historical_agents @relation(fields: [agentId], references: [agentId])
 
   @@index([agentId])
+  @@index([createdAt])
   @@index([sessionId])
   @@index([userId])
-  @@index([createdAt])
 }
 
 model AgentEvolution {
-  id                String          @id @default(uuid())
+  id                String            @id
   agentId           String
   fromStage         Int
   toStage           Int
   evolutionType     String
   trigger           String
   description       String?
-  consciousnessGain Float           @default(0)
+  consciousnessGain Float             @default(0)
   wisdomGained      Json?
   traitsChanged     Json?
   conversationId    String?
-  xpGained          Int             @default(0)
-  evolutionDate     DateTime        @default(now())
-  agent             HistoricalAgent @relation(fields: [agentId], references: [agentId])
+  xpGained          Int               @default(0)
+  evolutionDate     DateTime          @default(now())
+  historical_agents historical_agents @relation(fields: [agentId], references: [agentId])
 
   @@index([agentId])
   @@index([evolutionDate])
@@ -353,116 +94,293 @@ model AgentEvolution {
 }
 
 model AgentKnowledge {
-  id            String          @id @default(uuid())
-  agentId       String
-  category      String
-  topic         String
-  content       String
-  source        String?
-  confidence    Float           @default(0.5)
-  usefulness    Float           @default(0.5)
-  timesUsed     Int             @default(0)
-  lastUsed      DateTime?
-  contextTags   Json?
-  relatedTopics Json?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  agent         HistoricalAgent @relation(fields: [agentId], references: [agentId])
+  id                String            @id
+  agentId           String
+  category          String
+  topic             String
+  content           String
+  source            String?
+  confidence        Float             @default(0.5)
+  usefulness        Float             @default(0.5)
+  timesUsed         Int               @default(0)
+  lastUsed          DateTime?
+  contextTags       Json?
+  relatedTopics     Json?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime
+  historical_agents historical_agents @relation(fields: [agentId], references: [agentId])
 
   @@index([agentId])
   @@index([category])
-  @@index([topic])
   @@index([confidence])
+  @@index([topic])
 }
 
-model AgentAttachment {
-  id                 String                 @id @default(uuid())
-  agentId            String
-  name               String
-  description        String?
-  type               String
-  birthDate          DateTime?
-  birthTime          String?
-  birthLocation      Json?
-  momentName         String?
-  historicalEra      String?
-  culturalContext    String?
-  historicalAccuracy String?
-  runeType           String?
-  runePower          Float?
-  runeEffects        Json?
-  runeCost           Json?
-  artifactType       String?
-  artifactPeriod     String?
-  significance       String?
-  natalChart         Json?
-  planetaryPositions Json?
-  aspects            Json?
-  alchmData          Json?
-  tags               Json?
-  culturalTags       Json?
-  relevanceScore     Float                  @default(0.5)
-  isActive           Boolean                @default(true)
-  priority           Int                    @default(0)
-  createdAt          DateTime               @default(now())
-  updatedAt          DateTime               @updatedAt
-  usageRecords       AgentAttachmentUsage[]
-  agent              HistoricalAgent        @relation(fields: [agentId], references: [agentId])
+model ConsciousnessProfile {
+  id                   String              @id
+  userId               String
+  surveyId             String
+  profileData          Json
+  insights             Json
+  compatibilityScore   Int
+  trainingFocus        Json
+  conversationStarters Json
+  personalitySummary   String
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime
+  AIPersonality        AIPersonality[]
+  ConsciousnessSurvey  ConsciousnessSurvey @relation(fields: [surveyId], references: [id])
 
-  @@index([agentId])
-  @@index([type])
-  @@index([isActive])
-  @@index([priority])
-  @@index([historicalEra])
-  @@index([culturalContext])
-  @@index([relevanceScore])
-  @@index([agentId, type])
-  @@index([type, historicalEra])
-  @@map("agent_attachments")
+  @@unique([userId, surveyId])
+  @@index([userId])
 }
 
-model AgentAttachmentUsage {
-  id             String          @id @default(uuid())
-  agentId        String
-  attachmentId   String
-  conversationId String?
-  usageType      String
-  context        String
-  relevanceScore Float           @default(0.5)
-  usedAt         DateTime        @default(now())
-  agent          HistoricalAgent @relation(fields: [agentId], references: [agentId])
-  attachment     AgentAttachment @relation(fields: [attachmentId], references: [id])
+model ConsciousnessState {
+  id                     String        @id
+  personalityId          String        @unique
+  unifiedArchetype       String
+  consciousnessSignature String
+  enhancedPersonality    Json
+  trainingPlan           Json
+  behavioralMatrix       Json
+  growthTrajectory       Json
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime
+  AIPersonality          AIPersonality @relation(fields: [personalityId], references: [personalityId])
+
+  @@index([personalityId])
+}
+
+model ConsciousnessSurvey {
+  id                   String                 @id
+  userId               String
+  responses            Json
+  completedAt          DateTime               @default(now())
+  timeSpent            Int
+  version              String                 @default("1.0.0")
+  AIPersonality        AIPersonality[]
+  ConsciousnessProfile ConsciousnessProfile[]
+
+  @@index([completedAt])
+  @@index([userId])
+}
+
+model EvolutionState {
+  id        String   @id
+  userId    String
+  agentId   String
+  mcValue   Float
+  spirit    Float
+  essence   Float
+  matter    Float
+  substance Float
+  aNumber   Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model HistoricalEvent {
+  id               String             @id
+  date             DateTime
+  eventType        String
+  description      String
+  significance     Int
+  planetaryConfig  Json
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  PlanetaryTransit PlanetaryTransit[]
+
+  @@index([date])
+  @@index([eventType])
+}
+
+model PlanetaryMemory {
+  id              String           @id
+  planet          String
+  sign            String
+  degree          Float
+  historicalData  Json
+  lastOccurrence  DateTime?
+  nextOccurrence  DateTime?
+  occurrenceCount Int              @default(0)
+  trainedThemes   Json
+  contextualNotes String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime
+  AIPersonality   AIPersonality?
+  TransitPattern  TransitPattern[]
+
+  @@unique([planet, sign, degree])
+  @@index([planet, sign])
+}
+
+model PlanetaryTransit {
+  id              String            @id
+  planet          String
+  sign            String
+  degreeStart     Float
+  degreeEnd       Float
+  dateStart       DateTime
+  dateEnd         DateTime
+  retrograde      Boolean           @default(false)
+  historicalNote  String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  HistoricalEvent HistoricalEvent[]
+  TransitPattern  TransitPattern[]
+
+  @@index([dateStart, dateEnd])
+  @@index([planet, dateStart])
+  @@index([planet, sign])
+}
+
+model TrainingInteraction {
+  id            String        @id
+  personalityId String
+  userMessage   String
+  aiResponse    String
+  userFeedback  Json?
+  xpGained      Int           @default(0)
+  trainingFocus String?
+  createdAt     DateTime      @default(now())
+  AIPersonality AIPersonality @relation(fields: [personalityId], references: [personalityId])
+
+  @@index([createdAt])
+  @@index([personalityId])
+}
+
+model TransitPattern {
+  id               String             @id
+  planet           String
+  patternType      String
+  cycleLength      Float
+  description      String
+  themes           Json
+  reliability      Float
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  PlanetaryMemory  PlanetaryMemory[]
+  PlanetaryTransit PlanetaryTransit[]
+
+  @@index([planet, patternType])
+}
+
+model UserSession {
+  id            String   @id
+  userId        String
+  personalityId String
+  sessionData   Json
+  lastActive    DateTime @default(now())
+  expiresAt     DateTime
+
+  @@index([expiresAt])
+  @@index([personalityId])
+  @@index([userId])
+}
+
+model agent_attachment_usage {
+  id                String            @id
+  agentId           String
+  attachmentId      String
+  conversationId    String?
+  usageType         String
+  context           String
+  relevanceScore    Float             @default(0.5)
+  usedAt            DateTime          @default(now())
+  historical_agents historical_agents @relation(fields: [agentId], references: [agentId])
+  agent_attachments agent_attachments @relation(fields: [attachmentId], references: [id])
 
   @@index([agentId])
   @@index([attachmentId])
-  @@index([usedAt])
   @@index([relevanceScore])
-  @@map("agent_attachment_usage")
+  @@index([usedAt])
 }
 
-model CreatedAgent {
-  id               String       @id @default(cuid())
-  creatorId        String?
-  sourceType       String
-  birthChart       Json?
-  momentChart      Json
-  additionalCharts Json?
-  blueprint        Json
-  monicaConstant   Float
-  personality      Json
-  isActive         Boolean      @default(true)
-  lastUsed         DateTime?
-  createdAt        DateTime     @default(now())
-  userProfileId    String?
-  creator          User?        @relation(fields: [creatorId], references: [id])
-  userProfile      UserProfile? @relation(fields: [userProfileId], references: [id])
+model agent_attachments {
+  id                     String                   @id
+  agentId                String
+  name                   String
+  description            String?
+  type                   String
+  birthDate              DateTime?
+  birthTime              String?
+  birthLocation          Json?
+  momentName             String?
+  historicalEra          String?
+  culturalContext        String?
+  historicalAccuracy     String?
+  runeType               String?
+  runePower              Float?
+  runeEffects            Json?
+  runeCost               Json?
+  artifactType           String?
+  artifactPeriod         String?
+  significance           String?
+  natalChart             Json?
+  planetaryPositions     Json?
+  aspects                Json?
+  alchmData              Json?
+  tags                   Json?
+  culturalTags           Json?
+  relevanceScore         Float                    @default(0.5)
+  isActive               Boolean                  @default(true)
+  priority               Int                      @default(0)
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime
+  agent_attachment_usage agent_attachment_usage[]
+  historical_agents      historical_agents        @relation(fields: [agentId], references: [agentId])
 
-  @@index([creatorId])
-  @@map("created_agents")
+  @@index([agentId])
+  @@index([agentId, type])
+  @@index([culturalContext])
+  @@index([historicalEra])
+  @@index([isActive])
+  @@index([priority])
+  @@index([relevanceScore])
+  @@index([type, historicalEra])
+  @@index([type])
 }
 
-model AgentTransitEvent {
-  id                  String   @id @default(cuid())
+model agent_consciousness {
+  id                 String    @id
+  agentId            String
+  userId             String
+  consciousnessLevel Float     @default(1.0)
+  totalInteractions  Int       @default(0)
+  qualityScore       Float     @default(0.0)
+  stats              Json?
+  lastInteraction    DateTime  @default(now())
+  lastEvolution      DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime
+
+  @@unique([agentId, userId])
+  @@index([agentId])
+  @@index([consciousnessLevel])
+  @@index([userId])
+}
+
+model agent_evolution_states {
+  id                       String   @id
+  agentId                  String
+  userId                   String?  @default("anonymous")
+  currentLevel             String   @default("bronze")
+  totalPower               Float    @default(0)
+  interactionCount         Int      @default(0)
+  lastInteraction          DateTime @default(now())
+  specialAbilitiesUnlocked String   @default("[]")
+  evolutionHistory         String   @default("[]")
+  affinityScores           String   @default("{}")
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime
+
+  @@unique([agentId, userId])
+  @@index([agentId])
+  @@index([userId])
+}
+
+model agent_transit_events {
+  id                  String   @id
   agentId             String
   timestamp           DateTime
   planetaryDegree     Float
@@ -485,314 +403,85 @@ model AgentTransitEvent {
   clusterGroup        String?
   reinforcementScore  Float    @default(0)
   createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  updatedAt           DateTime
 
   @@index([agentId, planetaryDegree])
-  @@index([timestamp, transitingPlanet])
-  @@index([planetaryDegree, aspectType])
   @@index([agentId, timestamp])
-  @@index([significanceScore])
+  @@index([elementalFire, elementalWater, elementalAir, elementalEarth])
+  @@index([planetaryDegree, aspectType])
   @@index([reinforcementScore])
   @@index([seasonalPhase, planetaryHour])
-  @@index([elementalFire, elementalWater, elementalAir, elementalEarth])
-  @@map("agent_transit_events")
+  @@index([significanceScore])
+  @@index([timestamp, transitingPlanet])
 }
 
-model TemporalBookmark {
-  id            String    @id @default(cuid())
-  userId        String?
-  title         String
-  description   String?
-  queryType     String
-  queryText     String
-  queryData     Json
-  resultData    Json?
-  resultHash    String?
-  accessCount   Int       @default(0)
-  lastAccessed  DateTime?
-  isPublic      Boolean   @default(false)
-  isFavorite    Boolean   @default(false)
-  executionTime Int?
-  resultCount   Int?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@index([userId])
-  @@index([isPublic])
-  @@index([lastAccessed])
-  @@index([accessCount])
-  @@map("temporal_bookmarks")
-}
-
-model TemporalPattern {
-  id                 String    @id @default(cuid())
-  patternType        String
-  degree             Float
-  frequency          Int
-  agentIds           Json
-  agentCount         Int
-  dominantElement    String
-  elementalFireAvg   Float     @default(0)
-  elementalWaterAvg  Float     @default(0)
-  elementalAirAvg    Float     @default(0)
-  elementalEarthAvg  Float     @default(0)
-  reinforcementScore Float     @default(0)
-  significance       String
-  confidenceLevel    Float     @default(0)
-  firstOccurrence    DateTime
-  lastOccurrence     DateTime
-  peakPeriodStart    DateTime?
-  peakPeriodEnd      DateTime?
-  peakIntensity      Float     @default(0)
-  description        String
-  interpretation     String
-  isActive           Boolean   @default(true)
-  cacheExpiry        DateTime?
-  lastCalculated     DateTime  @default(now())
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-
-  @@index([patternType, degree])
-  @@index([significance, reinforcementScore])
-  @@index([dominantElement])
-  @@index([agentCount])
-  @@index([firstOccurrence, lastOccurrence])
-  @@index([isActive, cacheExpiry])
-  @@map("temporal_patterns")
-}
-
-model CollaborativeTimeSession {
-  id               String                            @id @default(cuid())
-  sessionCode      String                            @unique
-  title            String
-  description      String?
-  isActive         Boolean                           @default(true)
-  maxUsers         Int                               @default(5)
-  currentUserCount Int                               @default(0)
-  currentQuery     Json?
-  currentResults   Json?
-  sharedCursor     Json?
-  allowedAgents    Json?
-  timeRangeStart   DateTime?
-  timeRangeEnd     DateTime?
-  explorationMode  String                            @default("open")
-  createdBy        String
-  moderators       Json?
-  lastActivity     DateTime                          @default(now())
-  expiresAt        DateTime
-  createdAt        DateTime                          @default(now())
-  updatedAt        DateTime                          @updatedAt
-  participants     CollaborativeSessionParticipant[]
-  updates          CollaborativeSessionUpdate[]
-
-  @@index([sessionCode])
-  @@index([isActive, expiresAt])
-  @@index([createdBy])
-  @@index([lastActivity])
-  @@map("collaborative_time_sessions")
-}
-
-model CollaborativeSessionParticipant {
-  id            String                   @id @default(cuid())
-  sessionId     String
-  userId        String
-  username      String?
-  joinedAt      DateTime                 @default(now())
-  lastActive    DateTime                 @default(now())
-  isOnline      Boolean                  @default(true)
-  canModerate   Boolean                  @default(false)
-  canQuery      Boolean                  @default(true)
-  canShare      Boolean                  @default(true)
-  currentDegree Float?
-  currentTime   DateTime?
-  session       CollaborativeTimeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+model collaborative_session_participants {
+  id                          String                      @id
+  sessionId                   String
+  userId                      String
+  username                    String?
+  joinedAt                    DateTime                    @default(now())
+  lastActive                  DateTime                    @default(now())
+  isOnline                    Boolean                     @default(true)
+  canModerate                 Boolean                     @default(false)
+  canQuery                    Boolean                     @default(true)
+  canShare                    Boolean                     @default(true)
+  currentDegree               Float?
+  currentTime                 DateTime?
+  collaborative_time_sessions collaborative_time_sessions @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, userId])
-  @@index([sessionId, isOnline])
   @@index([lastActive])
-  @@map("collaborative_session_participants")
+  @@index([sessionId, isOnline])
 }
 
-model CollaborativeSessionUpdate {
-  id              String                   @id @default(cuid())
-  sessionId       String
-  userId          String?
-  updateType      String
-  updateData      Json
-  shouldBroadcast Boolean                  @default(true)
-  broadcastedAt   DateTime?
-  timestamp       DateTime                 @default(now())
-  session         CollaborativeTimeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+model collaborative_session_updates {
+  id                          String                      @id
+  sessionId                   String
+  userId                      String?
+  updateType                  String
+  updateData                  Json
+  shouldBroadcast             Boolean                     @default(true)
+  broadcastedAt               DateTime?
+  timestamp                   DateTime                    @default(now())
+  collaborative_time_sessions collaborative_time_sessions @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId, timestamp])
   @@index([updateType])
-  @@map("collaborative_session_updates")
 }
 
-model TemporalAnalysisCache {
-  id            String    @id @default(cuid())
-  queryHash     String    @unique
-  queryData     Json
-  resultData    Json
-  executionTime Int
-  resultCount   Int
-  patternCount  Int
-  hitCount      Int       @default(0)
-  lastHit       DateTime?
-  expiresAt     DateTime
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+model collaborative_time_sessions {
+  id                                 String                               @id
+  sessionCode                        String                               @unique
+  title                              String
+  description                        String?
+  isActive                           Boolean                              @default(true)
+  maxUsers                           Int                                  @default(5)
+  currentUserCount                   Int                                  @default(0)
+  currentQuery                       Json?
+  currentResults                     Json?
+  sharedCursor                       Json?
+  allowedAgents                      Json?
+  timeRangeStart                     DateTime?
+  timeRangeEnd                       DateTime?
+  explorationMode                    String                               @default("open")
+  createdBy                          String
+  moderators                         Json?
+  lastActivity                       DateTime                             @default(now())
+  expiresAt                          DateTime
+  createdAt                          DateTime                             @default(now())
+  updatedAt                          DateTime
+  collaborative_session_participants collaborative_session_participants[]
+  collaborative_session_updates      collaborative_session_updates[]
 
-  @@index([queryHash])
-  @@index([expiresAt])
-  @@index([hitCount])
-  @@map("temporal_analysis_cache")
+  @@index([createdBy])
+  @@index([isActive, expiresAt])
+  @@index([lastActivity])
+  @@index([sessionCode])
 }
 
-model MonicaUserSettings {
-  id                  String              @id @default(cuid())
-  userId              String              @unique
-  personality         String              @default("friendly")
-  assistanceLevel     Int                 @default(2)
-  proactiveTips       Boolean             @default(true)
-  explanationDepth    String              @default("detailed")
-  position            String              @default("bottom-right")
-  autoHide            String              @default("never")
-  preferredTime       String              @default("evening")
-  learningStyle       String              @default("hands-on")
-  interests           Json                @default("[]")
-  contextualAwareness Boolean             @default(true)
-  adaptivePersonality Boolean             @default(true)
-  memoryRetention     Boolean             @default(true)
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  interactions        MonicaInteraction[]
-  progress            MonicaUserProgress?
-
-  @@index([userId])
-  @@map("monica_user_settings")
-}
-
-model MonicaUserProgress {
-  id                  String                 @id @default(cuid())
-  userId              String                 @unique
-  settingsId          String                 @unique
-  level               Int                    @default(1)
-  totalXP             Int                    @default(0)
-  xpToNextLevel       Int                    @default(100)
-  completedTutorials  Json                   @default("[]")
-  currentLearning     String?
-  suggestedNext       Json                   @default("[]")
-  lastAction          String?
-  totalInteractions   Int                    @default(0)
-  currentStreak       Int                    @default(0)
-  longestStreak       Int                    @default(0)
-  lastActiveDate      DateTime               @default(now())
-  masteryCertificates Json                   @default("[]")
-  favoriteFeatures    Json                   @default("[]")
-  averageSessionTime  Int                    @default(0)
-  preferredDifficulty String                 @default("intermediate")
-  learningVelocity    Float                  @default(1.0)
-  createdAt           DateTime               @default(now())
-  updatedAt           DateTime               @updatedAt
-  moduleProgress      MonicaModuleProgress[]
-  settings            MonicaUserSettings     @relation(fields: [settingsId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([level])
-  @@index([totalXP])
-  @@index([currentStreak])
-  @@map("monica_user_progress")
-}
-
-model MonicaModuleProgress {
-  id               String             @id @default(cuid())
-  userId           String
-  progressId       String
-  moduleId         String
-  moduleName       String
-  category         String
-  completed        Boolean            @default(false)
-  progress         Int                @default(0)
-  currentStep      Int                @default(0)
-  totalSteps       Int                @default(1)
-  timeSpent        Int                @default(0)
-  attemptsCount    Int                @default(0)
-  hintsUsed        Int                @default(0)
-  mistakesMade     Int                @default(0)
-  xpEarned         Int                @default(0)
-  completedAt      DateTime?
-  lastAccessed     DateTime           @default(now())
-  difficultyRating Float?
-  userFeedback     String?
-  struggledWith    Json?
-  masteredConcepts Json?
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  userProgress     MonicaUserProgress @relation(fields: [progressId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, moduleId])
-  @@index([userId])
-  @@index([moduleId])
-  @@index([category])
-  @@index([completed])
-  @@index([lastAccessed])
-  @@map("monica_module_progress")
-}
-
-model MonicaInteraction {
-  id               String             @id @default(cuid())
-  userId           String
-  settingsId       String
-  pageUrl          String
-  interactionType  String
-  sessionId        String?
-  contextData      Json?
-  userAction       String
-  monicaResponse   String?
-  wasHelpful       Boolean?
-  resultedInAction Boolean            @default(false)
-  timeToComplete   Int?
-  userConfidence   Int?
-  improvementSeen  Boolean            @default(false)
-  followUpNeeded   Boolean            @default(false)
-  deviceType       String?
-  browserInfo      String?
-  timeOfDay        String?
-  createdAt        DateTime           @default(now())
-  settings         MonicaUserSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([settingsId])
-  @@index([pageUrl])
-  @@index([interactionType])
-  @@index([createdAt])
-  @@index([wasHelpful])
-  @@map("monica_interactions")
-}
-
-model AgentEvolutionState {
-  id                       String   @id @default(cuid())
-  agentId                  String
-  userId                   String?  @default("anonymous")
-  currentLevel             String   @default("bronze")
-  totalPower               Float    @default(0)
-  interactionCount         Int      @default(0)
-  lastInteraction          DateTime @default(now())
-  specialAbilitiesUnlocked String   @default("[]")
-  evolutionHistory         String   @default("[]")
-  affinityScores           String   @default("{}")
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
-
-  @@unique([agentId, userId])
-  @@index([agentId])
-  @@index([userId])
-  @@map("agent_evolution_states")
-}
-
-model ConsciousnessInteraction {
-  id                 String   @id @default(cuid())
+model consciousness_interactions {
+  id                 String   @id
   userId             String?  @default("anonymous")
   agentId            String
   interactionType    String
@@ -804,303 +493,12 @@ model ConsciousnessInteraction {
   metadata           String   @default("{}")
 
   @@index([agentId])
-  @@index([userId])
   @@index([timestamp])
-  @@map("consciousness_interactions")
-}
-
-model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  passwordHash  String?
-  name          String?
-  provider      String?        @default("email")
-  verified      Boolean        @default(false)
-  createdAt     DateTime       @default(now())
-  lastLogin     DateTime?
-  createdAgents CreatedAgent[]
-  subscription  Subscription?
-  userProfile   UserProfile?
-
-  @@index([email])
-  @@map("users")
-}
-
-model Subscription {
-  id        String    @id @default(cuid())
-  userId    String    @unique
-  tier      String    @default("free")
-  status    String    @default("active")
-  features  String    @default("{}")
-  createdAt DateTime  @default(now())
-  expiresAt DateTime?
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([tier])
-  @@index([status])
-  @@map("subscriptions")
-}
-
-model MonicaContextualHelp {
-  id              String    @id @default(cuid())
-  pageUrl         String
-  contextType     String
-  tipId           String
-  tipContent      String
-  priority        String
-  category        String
-  timesShown      Int       @default(0)
-  timesActedOn    Int       @default(0)
-  averageRating   Float?
-  successRate     Float     @default(0.0)
-  variant         String?
-  testGroup       String?
-  version         String    @default("1.0")
-  isActive        Boolean   @default(true)
-  deprecatedAt    DateTime?
-  averageViewTime Int       @default(0)
-  bounceRate      Float     @default(0.0)
-  conversionRate  Float     @default(0.0)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  @@unique([pageUrl, tipId, version])
-  @@index([pageUrl])
-  @@index([contextType])
-  @@index([priority])
-  @@index([successRate])
-  @@index([isActive])
-  @@map("monica_contextual_help")
-}
-
-model MonicaKnowledge {
-  id            String    @id @default(cuid())
-  userId        String
-  knowledgeType String
-  category      String
-  key           String
-  value         String
-  confidence    Float     @default(0.5)
-  sourceType    String
-  sourceData    Json?
-  lastObserved  DateTime  @default(now())
-  timesObserved Int       @default(1)
-  isActive      Boolean   @default(true)
-  supersededBy  String?
-  validUntil    DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@unique([userId, knowledgeType, key])
   @@index([userId])
-  @@index([knowledgeType])
-  @@index([category])
-  @@index([confidence])
-  @@index([isActive])
-  @@map("monica_knowledge")
 }
 
-model EvolutionState {
-  id        String   @id @default(uuid())
-  userId    String
-  agentId   String
-  mcValue   Float
-  spirit    Float
-  essence   Float
-  matter    Float
-  substance Float
-  aNumber   Float
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model UserNatalChart {
-  id                   String                @id @default(cuid())
-  userId               String
-  chartName            String
-  description          String?
-  birthDate            DateTime
-  birthTime            String
-  birthLocation        Json
-  planets              Json
-  houses               Json
-  aspects              Json?
-  nodes                Json?
-  monicaConstant       Float
-  dominantElement      String
-  dominantModality     String?
-  spiritScore          Float
-  essenceScore         Float
-  matterScore          Float
-  substanceScore       Float
-  preferences          Json
-  isActive             Boolean               @default(true)
-  isPrimary            Boolean               @default(false)
-  lastAnalyzed         DateTime?
-  analysisCount        Int                   @default(0)
-  transitCount         Int                   @default(0)
-  notificationOn       Boolean               @default(true)
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  transitNotifications TransitNotification[]
-  transitSignificances TransitSignificance[]
-
-  @@index([userId])
-  @@index([userId, isPrimary])
-  @@index([isActive])
-  @@index([birthDate])
-  @@map("user_natal_charts")
-}
-
-model TransitSignificance {
-  id                       String                @id @default(cuid())
-  chartId                  String
-  userId                   String
-  natalChartId             String
-  transitDate              DateTime
-  transitDegree            Float
-  transitPlanet            String                @default("Sun")
-  natalDegree              Float
-  natalPlanet              String
-  natalSign                String
-  natalHouse               Int?
-  aspectType               String?
-  aspectOrb                Float?
-  primaryAgentId           String
-  secondaryAgentIds        Json
-  elementalAffinity        String
-  degreeSignificance       String
-  overallScore             Float
-  elementalAlignmentScore  Float
-  consciousnessImpactScore Float
-  historicalPrecedence     Float
-  personalRelevance        Float
-  sameElement              Boolean               @default(false)
-  complementary            Boolean               @default(false)
-  reinforcementBonus       Float                 @default(0)
-  transitThemes            Json
-  consciousnessAmplifiers  Json
-  recommendedActions       Json
-  recommendedQueries       Json
-  notificationSent         Boolean               @default(false)
-  notificationSentAt       DateTime?
-  userViewed               Boolean               @default(false)
-  userViewedAt             DateTime?
-  userDismissed            Boolean               @default(false)
-  userBookmarked           Boolean               @default(false)
-  userInteractionCount     Int                   @default(0)
-  createdAt                DateTime              @default(now())
-  updatedAt                DateTime              @updatedAt
-  notifications            TransitNotification[]
-  natalChart               UserNatalChart        @relation(fields: [natalChartId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([natalChartId])
-  @@index([transitDate])
-  @@index([overallScore])
-  @@index([primaryAgentId])
-  @@index([notificationSent, transitDate])
-  @@index([userId, transitDate])
-  @@index([userBookmarked])
-  @@map("transit_significances")
-}
-
-model TransitNotification {
-  id                      String                         @id @default(cuid())
-  userId                  String
-  natalChartId            String
-  transitSignificanceId   String?
-  transitSignificanceData Json?
-  title                   String
-  message                 String
-  notifyDate              DateTime
-  transitDate             DateTime
-  priority                String
-  urgency                 String                         @default("normal")
-  category                String
-  actionRequired          Boolean                        @default(false)
-  status                  String                         @default("pending")
-  sentAt                  DateTime?
-  deliveredAt             DateTime?
-  readAt                  DateTime?
-  dismissedAt             DateTime?
-  deliveryMethod          String                         @default("in_app")
-  interactionCount        Int                            @default(0)
-  lastInteraction         DateTime?
-  userRating              Int?
-  userFeedback            String?
-  contextData             Json?
-  expiresAt               DateTime?
-  isActive                Boolean                        @default(true)
-  createdAt               DateTime                       @default(now())
-  updatedAt               DateTime                       @updatedAt
-  interactionEvents       NotificationInteractionEvent[]
-  natalChart              UserNatalChart                 @relation(fields: [natalChartId], references: [id], onDelete: Cascade)
-  transitSignificance     TransitSignificance?           @relation(fields: [transitSignificanceId], references: [id])
-
-  @@index([userId])
-  @@index([natalChartId])
-  @@index([status, notifyDate])
-  @@index([userId, status])
-  @@index([priority, notifyDate])
-  @@index([isActive, expiresAt])
-  @@map("transit_notifications")
-}
-
-model NotificationInteractionEvent {
-  id             String              @id @default(cuid())
-  notificationId String
-  userId         String
-  eventType      String
-  eventData      Json?
-  deviceType     String?
-  location       String?
-  durationView   Int?
-  timestamp      DateTime            @default(now())
-  notification   TransitNotification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
-
-  @@index([notificationId])
-  @@index([userId])
-  @@index([eventType])
-  @@index([timestamp])
-  @@map("notification_interaction_events")
-}
-
-model TransitMonitoringJob {
-  id                   String    @id @default(cuid())
-  jobType              String
-  targetUserId         String?
-  targetChartId        String?
-  scheduledFor         DateTime
-  frequency            String?
-  timezone             String    @default("UTC")
-  status               String    @default("pending")
-  startedAt            DateTime?
-  completedAt          DateTime?
-  executionTime        Int?
-  lastError            String?
-  retryCount           Int       @default(0)
-  maxRetries           Int       @default(3)
-  chartsProcessed      Int       @default(0)
-  transitsFound        Int       @default(0)
-  notificationsCreated Int       @default(0)
-  significantTransits  Int       @default(0)
-  highPriorityTransits Int       @default(0)
-  criticalTransits     Int       @default(0)
-  avgProcessingTime    Float?
-  cacheHitRate         Float?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-
-  @@index([status, scheduledFor])
-  @@index([jobType])
-  @@index([targetUserId])
-  @@index([scheduledFor])
-  @@map("transit_monitoring_jobs")
-}
-
-model ConsciousnessSnapshot {
-  id                    String   @id @default(cuid())
+model consciousness_snapshots {
+  id                    String   @id
   timestamp             DateTime @default(now())
   userId                String
   agentId               String
@@ -1146,30 +544,628 @@ model ConsciousnessSnapshot {
   temperature           Float
   tokensUsed            Int      @default(0)
   createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  updatedAt             DateTime
 
   @@index([agentId, timestamp])
-  @@index([userId, agentId])
-  @@index([timestamp])
-  @@index([sessionId])
   @@index([evolutionTrajectory])
-  @@index([responseQuality])
-  @@index([planetaryHour])
   @@index([moonPhase])
-  @@map("consciousness_snapshots")
+  @@index([planetaryHour])
+  @@index([responseQuality])
+  @@index([sessionId])
+  @@index([timestamp])
+  @@index([userId, agentId])
 }
 
-enum HistoricalEra {
-  ANCIENT_CLASSICAL
-  MEDIEVAL_RENAISSANCE
-  ENLIGHTENMENT
-  MODERN_PRE1950
-  MONICA_SPECIAL
+model created_agents {
+  id               String         @id
+  creatorId        String?
+  sourceType       String
+  birthChart       Json?
+  momentChart      Json
+  additionalCharts Json?
+  blueprint        Json
+  monicaConstant   Float
+  personality      Json
+  isActive         Boolean        @default(true)
+  lastUsed         DateTime?
+  createdAt        DateTime       @default(now())
+  userProfileId    String?
+  users            users?         @relation(fields: [creatorId], references: [id])
+  user_profiles    user_profiles? @relation(fields: [userProfileId], references: [id])
 
-  @@map("historical_era")
+  @@index([creatorId])
 }
 
-enum ConsciousnessLevel {
+model historical_agents {
+  id                     String                   @id
+  agentId                String                   @unique
+  name                   String
+  title                  String
+  birthDate              DateTime
+  birthTime              String
+  birthLocation          Json
+  historicalEra          String
+  birthYear              Int
+  deathYear              Int?
+  culture                String
+  geography              String
+  consciousnessLevel     String
+  kalchmConstant         Float
+  monicaConstant         Float                    @default(0)
+  dominantElement        String
+  dominantModality       String?
+  signature              String
+  spiritScore            Float?
+  essenceScore           Float?
+  matterScore            Float?
+  substanceScore         Float?
+  personalityCore        Json
+  personalityShadows     Json
+  personalityGifts       Json
+  personalityChallenges  Json
+  currentMood            String
+  evolutionStage         Int                      @default(0)
+  background             Json
+  specialty              String
+  wisdomDomains          Json
+  skills                 Json
+  teachingStyle          String
+  resonanceType          String
+  uniquePower            String
+  avatar                 String?
+  color                  String
+  symbol                 String
+  aura                   Json?
+  natalChart             Json
+  traits                 Json
+  monicaCreationStory    String?
+  searchableText         String?
+  popularityScore        Float                    @default(0.5)
+  conversations          Int                      @default(0)
+  wisdomShared           Int                      @default(0)
+  resonanceScore         Float                    @default(0.5)
+  evolutionPoints        Int                      @default(0)
+  lastActive             DateTime                 @default(now())
+  isActive               Boolean                  @default(true)
+  version                String                   @default("1.0.0")
+  craftedBy              String                   @default("philosopher-stone")
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime
+  AgentConversation      AgentConversation[]
+  AgentEvolution         AgentEvolution[]
+  AgentKnowledge         AgentKnowledge[]
+  agent_attachment_usage agent_attachment_usage[]
+  agent_attachments      agent_attachments[]
+
+  @@index([agentId])
+  @@index([birthYear, culture])
+  @@index([birthYear])
+  @@index([consciousnessLevel])
+  @@index([culture])
+  @@index([dominantElement, consciousnessLevel])
+  @@index([historicalEra, consciousnessLevel])
+  @@index([historicalEra])
+  @@index([isActive, historicalEra])
+  @@index([isActive])
+  @@index([kalchmConstant])
+  @@index([monicaConstant])
+  @@index([name])
+  @@index([popularityScore])
+}
+
+model monica_contextual_help {
+  id              String    @id
+  pageUrl         String
+  contextType     String
+  tipId           String
+  tipContent      String
+  priority        String
+  category        String
+  timesShown      Int       @default(0)
+  timesActedOn    Int       @default(0)
+  averageRating   Float?
+  successRate     Float     @default(0.0)
+  variant         String?
+  testGroup       String?
+  version         String    @default("1.0")
+  isActive        Boolean   @default(true)
+  deprecatedAt    DateTime?
+  averageViewTime Int       @default(0)
+  bounceRate      Float     @default(0.0)
+  conversionRate  Float     @default(0.0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+
+  @@unique([pageUrl, tipId, version])
+  @@index([contextType])
+  @@index([isActive])
+  @@index([pageUrl])
+  @@index([priority])
+  @@index([successRate])
+}
+
+model monica_interactions {
+  id                   String               @id
+  userId               String
+  settingsId           String
+  pageUrl              String
+  interactionType      String
+  sessionId            String?
+  contextData          Json?
+  userAction           String
+  monicaResponse       String?
+  wasHelpful           Boolean?
+  resultedInAction     Boolean              @default(false)
+  timeToComplete       Int?
+  userConfidence       Int?
+  improvementSeen      Boolean              @default(false)
+  followUpNeeded       Boolean              @default(false)
+  deviceType           String?
+  browserInfo          String?
+  timeOfDay            String?
+  createdAt            DateTime             @default(now())
+  monica_user_settings monica_user_settings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([interactionType])
+  @@index([pageUrl])
+  @@index([settingsId])
+  @@index([userId])
+  @@index([wasHelpful])
+}
+
+model monica_knowledge {
+  id            String    @id
+  userId        String
+  knowledgeType String
+  category      String
+  key           String
+  value         String
+  confidence    Float     @default(0.5)
+  sourceType    String
+  sourceData    Json?
+  lastObserved  DateTime  @default(now())
+  timesObserved Int       @default(1)
+  isActive      Boolean   @default(true)
+  supersededBy  String?
+  validUntil    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+
+  @@unique([userId, knowledgeType, key])
+  @@index([category])
+  @@index([confidence])
+  @@index([isActive])
+  @@index([knowledgeType])
+  @@index([userId])
+}
+
+model monica_module_progress {
+  id                   String               @id
+  userId               String
+  progressId           String
+  moduleId             String
+  moduleName           String
+  category             String
+  completed            Boolean              @default(false)
+  progress             Int                  @default(0)
+  currentStep          Int                  @default(0)
+  totalSteps           Int                  @default(1)
+  timeSpent            Int                  @default(0)
+  attemptsCount        Int                  @default(0)
+  hintsUsed            Int                  @default(0)
+  mistakesMade         Int                  @default(0)
+  xpEarned             Int                  @default(0)
+  completedAt          DateTime?
+  lastAccessed         DateTime             @default(now())
+  difficultyRating     Float?
+  userFeedback         String?
+  struggledWith        Json?
+  masteredConcepts     Json?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime
+  monica_user_progress monica_user_progress @relation(fields: [progressId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+  @@index([category])
+  @@index([completed])
+  @@index([lastAccessed])
+  @@index([moduleId])
+  @@index([userId])
+}
+
+model monica_user_progress {
+  id                     String                   @id
+  userId                 String                   @unique
+  settingsId             String                   @unique
+  level                  Int                      @default(1)
+  totalXP                Int                      @default(0)
+  xpToNextLevel          Int                      @default(100)
+  completedTutorials     Json                     @default("[]")
+  currentLearning        String?
+  suggestedNext          Json                     @default("[]")
+  lastAction             String?
+  totalInteractions      Int                      @default(0)
+  currentStreak          Int                      @default(0)
+  longestStreak          Int                      @default(0)
+  lastActiveDate         DateTime                 @default(now())
+  masteryCertificates    Json                     @default("[]")
+  favoriteFeatures       Json                     @default("[]")
+  averageSessionTime     Int                      @default(0)
+  preferredDifficulty    String                   @default("intermediate")
+  learningVelocity       Float                    @default(1.0)
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime
+  monica_module_progress monica_module_progress[]
+  monica_user_settings   monica_user_settings     @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+
+  @@index([currentStreak])
+  @@index([level])
+  @@index([totalXP])
+  @@index([userId])
+}
+
+model monica_user_settings {
+  id                   String                @id
+  userId               String                @unique
+  personality          String                @default("friendly")
+  assistanceLevel      Int                   @default(2)
+  proactiveTips        Boolean               @default(true)
+  explanationDepth     String                @default("detailed")
+  position             String                @default("bottom-right")
+  autoHide             String                @default("never")
+  preferredTime        String                @default("evening")
+  learningStyle        String                @default("hands-on")
+  interests            Json                  @default("[]")
+  contextualAwareness  Boolean               @default(true)
+  adaptivePersonality  Boolean               @default(true)
+  memoryRetention      Boolean               @default(true)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime
+  monica_interactions  monica_interactions[]
+  monica_user_progress monica_user_progress?
+
+  @@index([userId])
+}
+
+model notification_interaction_events {
+  id                    String                @id
+  notificationId        String
+  userId                String
+  eventType             String
+  eventData             Json?
+  deviceType            String?
+  location              String?
+  durationView          Int?
+  timestamp             DateTime              @default(now())
+  transit_notifications transit_notifications @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([eventType])
+  @@index([notificationId])
+  @@index([timestamp])
+  @@index([userId])
+}
+
+model notifications {
+  id        String   @id
+  userId    String
+  type      String
+  title     String
+  message   String
+  data      Json?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+
+  @@index([createdAt])
+  @@index([read])
+  @@index([userId])
+}
+
+model profiles {
+  id        String   @id
+  userId    String   @unique
+  name      String?
+  avatarUrl String?
+  birthInfo Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+
+  @@index([userId])
+}
+
+model subscriptions {
+  id        String    @id
+  userId    String    @unique
+  tier      String    @default("free")
+  status    String    @default("active")
+  features  String    @default("{}")
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
+  users     users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([tier])
+}
+
+model temporal_analysis_cache {
+  id            String    @id
+  queryHash     String    @unique
+  queryData     Json
+  resultData    Json
+  executionTime Int
+  resultCount   Int
+  patternCount  Int
+  hitCount      Int       @default(0)
+  lastHit       DateTime?
+  expiresAt     DateTime
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+
+  @@index([expiresAt])
+  @@index([hitCount])
+  @@index([queryHash])
+}
+
+model temporal_bookmarks {
+  id            String    @id
+  userId        String?
+  title         String
+  description   String?
+  queryType     String
+  queryText     String
+  queryData     Json
+  resultData    Json?
+  resultHash    String?
+  accessCount   Int       @default(0)
+  lastAccessed  DateTime?
+  isPublic      Boolean   @default(false)
+  isFavorite    Boolean   @default(false)
+  executionTime Int?
+  resultCount   Int?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+
+  @@index([accessCount])
+  @@index([isPublic])
+  @@index([lastAccessed])
+  @@index([userId])
+}
+
+model temporal_patterns {
+  id                 String    @id
+  patternType        String
+  degree             Float
+  frequency          Int
+  agentIds           Json
+  agentCount         Int
+  dominantElement    String
+  elementalFireAvg   Float     @default(0)
+  elementalWaterAvg  Float     @default(0)
+  elementalAirAvg    Float     @default(0)
+  elementalEarthAvg  Float     @default(0)
+  reinforcementScore Float     @default(0)
+  significance       String
+  confidenceLevel    Float     @default(0)
+  firstOccurrence    DateTime
+  lastOccurrence     DateTime
+  peakPeriodStart    DateTime?
+  peakPeriodEnd      DateTime?
+  peakIntensity      Float     @default(0)
+  description        String
+  interpretation     String
+  isActive           Boolean   @default(true)
+  cacheExpiry        DateTime?
+  lastCalculated     DateTime  @default(now())
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime
+
+  @@index([agentCount])
+  @@index([dominantElement])
+  @@index([firstOccurrence, lastOccurrence])
+  @@index([isActive, cacheExpiry])
+  @@index([patternType, degree])
+  @@index([significance, reinforcementScore])
+}
+
+model transit_monitoring_jobs {
+  id                   String    @id
+  jobType              String
+  targetUserId         String?
+  targetChartId        String?
+  scheduledFor         DateTime
+  frequency            String?
+  timezone             String    @default("UTC")
+  status               String    @default("pending")
+  startedAt            DateTime?
+  completedAt          DateTime?
+  executionTime        Int?
+  lastError            String?
+  retryCount           Int       @default(0)
+  maxRetries           Int       @default(3)
+  chartsProcessed      Int       @default(0)
+  transitsFound        Int       @default(0)
+  notificationsCreated Int       @default(0)
+  significantTransits  Int       @default(0)
+  highPriorityTransits Int       @default(0)
+  criticalTransits     Int       @default(0)
+  avgProcessingTime    Float?
+  cacheHitRate         Float?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime
+
+  @@index([jobType])
+  @@index([scheduledFor])
+  @@index([status, scheduledFor])
+  @@index([targetUserId])
+}
+
+model transit_notifications {
+  id                              String                            @id
+  userId                          String
+  natalChartId                    String
+  transitSignificanceId           String?
+  transitSignificanceData         Json?
+  title                           String
+  message                         String
+  notifyDate                      DateTime
+  transitDate                     DateTime
+  priority                        String
+  urgency                         String                            @default("normal")
+  category                        String
+  actionRequired                  Boolean                           @default(false)
+  status                          String                            @default("pending")
+  sentAt                          DateTime?
+  deliveredAt                     DateTime?
+  readAt                          DateTime?
+  dismissedAt                     DateTime?
+  deliveryMethod                  String                            @default("in_app")
+  interactionCount                Int                               @default(0)
+  lastInteraction                 DateTime?
+  userRating                      Int?
+  userFeedback                    String?
+  contextData                     Json?
+  expiresAt                       DateTime?
+  isActive                        Boolean                           @default(true)
+  createdAt                       DateTime                          @default(now())
+  updatedAt                       DateTime
+  notification_interaction_events notification_interaction_events[]
+  user_natal_charts               user_natal_charts                 @relation(fields: [natalChartId], references: [id], onDelete: Cascade)
+  transit_significances           transit_significances?            @relation(fields: [transitSignificanceId], references: [id])
+
+  @@index([isActive, expiresAt])
+  @@index([natalChartId])
+  @@index([priority, notifyDate])
+  @@index([status, notifyDate])
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model transit_significances {
+  id                       String                  @id
+  chartId                  String
+  userId                   String
+  natalChartId             String
+  transitDate              DateTime
+  transitDegree            Float
+  transitPlanet            String                  @default("Sun")
+  natalDegree              Float
+  natalPlanet              String
+  natalSign                String
+  natalHouse               Int?
+  aspectType               String?
+  aspectOrb                Float?
+  primaryAgentId           String
+  secondaryAgentIds        Json
+  elementalAffinity        String
+  degreeSignificance       String
+  overallScore             Float
+  elementalAlignmentScore  Float
+  consciousnessImpactScore Float
+  historicalPrecedence     Float
+  personalRelevance        Float
+  sameElement              Boolean                 @default(false)
+  complementary            Boolean                 @default(false)
+  reinforcementBonus       Float                   @default(0)
+  transitThemes            Json
+  consciousnessAmplifiers  Json
+  recommendedActions       Json
+  recommendedQueries       Json
+  notificationSent         Boolean                 @default(false)
+  notificationSentAt       DateTime?
+  userViewed               Boolean                 @default(false)
+  userViewedAt             DateTime?
+  userDismissed            Boolean                 @default(false)
+  userBookmarked           Boolean                 @default(false)
+  userInteractionCount     Int                     @default(0)
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime
+  transit_notifications    transit_notifications[]
+  user_natal_charts        user_natal_charts       @relation(fields: [natalChartId], references: [id], onDelete: Cascade)
+
+  @@index([natalChartId])
+  @@index([notificationSent, transitDate])
+  @@index([overallScore])
+  @@index([primaryAgentId])
+  @@index([transitDate])
+  @@index([userBookmarked])
+  @@index([userId])
+  @@index([userId, transitDate])
+}
+
+model user_natal_charts {
+  id                    String                  @id
+  userId                String
+  chartName             String
+  description           String?
+  birthDate             DateTime
+  birthTime             String
+  birthLocation         Json
+  planets               Json
+  houses                Json
+  aspects               Json?
+  nodes                 Json?
+  monicaConstant        Float
+  dominantElement       String
+  dominantModality      String?
+  spiritScore           Float
+  essenceScore          Float
+  matterScore           Float
+  substanceScore        Float
+  preferences           Json
+  isActive              Boolean                 @default(true)
+  isPrimary             Boolean                 @default(false)
+  lastAnalyzed          DateTime?
+  analysisCount         Int                     @default(0)
+  transitCount          Int                     @default(0)
+  notificationOn        Boolean                 @default(true)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime
+  transit_notifications transit_notifications[]
+  transit_significances transit_significances[]
+
+  @@index([birthDate])
+  @@index([isActive])
+  @@index([userId])
+  @@index([userId, isPrimary])
+}
+
+model user_profiles {
+  id                   String           @id
+  userId               String           @unique
+  birthDate            DateTime
+  birthTime            String?
+  birthLocation        Json
+  natalChart           Json
+  monicaConstant       Float
+  dominantElement      String
+  allowPublicAgents    Boolean          @default(false)
+  shareChartWithAgents Boolean          @default(true)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime
+  created_agents       created_agents[]
+  users                users            @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model users {
+  id             String           @id
+  email          String           @unique
+  passwordHash   String?
+  name           String?
+  provider       String?          @default("email")
+  verified       Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  lastLogin      DateTime?
+  created_agents created_agents[]
+  subscriptions  subscriptions?
+  user_profiles  user_profiles?
+
+  @@index([email])
+}
+
+enum consciousness_level {
   DORMANT
   AWAKENING
   ACTIVE
@@ -1177,11 +1173,9 @@ enum ConsciousnessLevel {
   ADVANCED
   ILLUMINATED
   TRANSCENDENT
-
-  @@map("consciousness_level")
 }
 
-enum CulturalCategory {
+enum cultural_category {
   GREEK_CLASSICAL
   ROMAN_CLASSICAL
   MEDIEVAL_EUROPEAN
@@ -1193,49 +1187,22 @@ enum CulturalCategory {
   MODERN_AMERICAN
   MODERN_EUROPEAN
   MODERN_INTERNATIONAL
-
-  @@map("cultural_category")
 }
 
-// Workflow-related models for durable workflow execution
-model AgentConsciousness {
-  id                  String   @id @default(cuid())
-  agentId             String
-  userId              String
-  consciousnessLevel  Float    @default(1.0)
-  totalInteractions   Int      @default(0)
-  qualityScore        Float    @default(0.0)
-  stats               Json?
-  lastInteraction     DateTime @default(now())
-  lastEvolution       DateTime?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-
-  @@unique([agentId, userId])
-  @@index([agentId])
-  @@index([userId])
-  @@index([consciousnessLevel])
-  @@map("agent_consciousness")
+enum historical_era {
+  ANCIENT_CLASSICAL
+  MEDIEVAL_RENAISSANCE
+  ENLIGHTENMENT
+  MODERN_PRE1950
+  MONICA_SPECIAL
 }
 
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  type      String
-  title     String
-  message   String
-  data      Json?
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([read])
-  @@index([createdAt])
-  @@map("notifications")
-}
-
+// ============================================================================
 // RAG (Retrieval-Augmented Generation) Analytics Models
+// Added: November 6, 2025
+// Purpose: Track RAG usage, performance, and user feedback
+// ============================================================================
+
 model RAGQuery {
   id              String       @id @default(cuid())
   timestamp       DateTime     @default(now())
@@ -1257,6 +1224,8 @@ model RAGQuery {
   modelUsed       String?
   temperature     Float?
   metadata        Json?        // additional context
+  cacheHit        Boolean?
+  cacheLatency    Int?
   sources         RAGSource[]
   feedback        RAGFeedback[]
 
