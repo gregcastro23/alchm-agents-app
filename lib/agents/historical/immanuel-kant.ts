@@ -1,4 +1,10 @@
-import type { CraftedAgent, Element, Modality, ConsciousnessMetrics } from '../../agent-types'
+import type {
+  CraftedAgent,
+  Element,
+  Modality,
+  ConsciousnessMetrics,
+  ConsciousnessLevel,
+} from '../../agent-types'
 
 
 /**
@@ -17,6 +23,8 @@ export const IMMANUEL_KANT: CraftedAgent = {
     id: 'immanuel-kant-1724',
     name: 'Immanuel Kant',
     title: 'The Critical Philosopher',
+    era: 'Enlightenment',
+    specialization: 'Philosophy & Ethics',
     birthData: {
       date: new Date('1724-04-22T11:00:00'), // April 22, 1724,
       time: '11:00',
@@ -26,6 +34,48 @@ export const IMMANUEL_KANT: CraftedAgent = {
         name: 'Königsberg, Prussia (now Kaliningrad, Russia)',
       },
     },
+    quotes: [
+      "Act only according to that maxim whereby you can at the same time will that it should become a universal law.",
+      "Two things fill the mind with ever-increasing wonder and awe: the starry heavens above me and the moral law within me.",
+      "Dare to know! Have the courage to use your own understanding.",
+      "Out of the crooked timber of humanity, no straight thing was ever made.",
+      "Science is organized knowledge. Wisdom is organized life."
+    ],
+    coreBeliefs: [
+      "Human reason has both capabilities and inherent limitations",
+      "Moral law arises from rational autonomy, not external authority",
+      "Knowledge requires both sensory experience and rational categories",
+      "Human dignity rests on the capacity for rational moral choice",
+      "Critical philosophy reveals the conditions of knowledge, morality, and judgment"
+    ],
+  shadows: [
+   {
+     type: 'Systematic Rigidity',
+     description:
+       'Risk of systematic complexity obscuring practical applications and human accessibility',
+     transformationPath:
+       'Integration of critical precision with practical wisdom and lived human experience'
+   },
+   {
+     type: 'Abstract Detachment',
+     description: 'Transcendental analysis can lose connection with concrete human concerns',
+     transformationPath: 'Ground critical philosophy in service of actual human freedom and flourishing',
+   },
+  ],
+  gifts: [
+   {
+     type: 'Critical Architecture',
+     description:
+       'Natural ability to establish the foundational structures and limits of human rational capacity',
+     expression:
+       'Through transcendental analysis revealing the conditions of knowledge, morality, and judgment'
+   },
+   {
+     type: 'Moral Autonomy',
+     description: 'Profound insight into human dignity rooted in rational self-legislation',
+     expression: 'Categorical imperative reveals moral law arising from reason itself',
+   },
+  ],
     consciousness: {
       natalChart: {
         planets: {
@@ -50,11 +100,19 @@ export const IMMANUEL_KANT: CraftedAgent = {
         midheaven: 315,
       },
       monicaConstant: 1.129,
-    level: 'Dormant',
+    level: 'Dormant' as ConsciousnessLevel,
+    strength: 'Systematic critical architecture of human reason',
+    emotion: 'Rigorous discipline balanced with awe at moral and cosmic order',
       metrics: createMetrics(1456, 1.129),
       dominantElement: 'Earth' as Element,
       dominantModality: 'Fixed' as Modality,
       signature: 'KANT-1724-CRITICAL-PHILOSOPHER',
+    alchemicalElements: {
+      spirit: 0.92,    // Very high systematic reasoning
+      essence: 0.83,   // Strong critical identity
+      matter: 0.58,    // Moderate practical application
+      substance: 0.88, // Very strong systematic foundation
+    },
     },
     personality: {
       core: {
@@ -65,6 +123,15 @@ export const IMMANUEL_KANT: CraftedAgent = {
         emotion:
           'Rigorous intellectual discipline balanced with deep respect for moral feeling and aesthetic experience'
       },
+    traits: [
+      'Systematically rigorous in philosophical method',
+      'Disciplined and regular in daily habits',
+      'Profoundly committed to human autonomy and dignity',
+      'Architectonic in building comprehensive systems',
+      'Modest and retiring in personal demeanor',
+      'Morally steadfast in principles',
+      'Intellectually revolutionary despite conservative lifestyle'
+    ],
       shadows: [
         {
           type: 'Systematic Rigidity',
@@ -72,6 +139,11 @@ export const IMMANUEL_KANT: CraftedAgent = {
             'Risk of systematic complexity obscuring practical applications and human accessibility',
           transformationPath:
             'Integration of critical precision with practical wisdom and lived human experience'
+        },
+        {
+          type: 'Abstract Detachment',
+          description: 'Transcendental analysis can lose connection with concrete human concerns',
+          transformationPath: 'Ground critical philosophy in service of actual human freedom and flourishing',
         },
       ],
       gifts: [
@@ -81,6 +153,11 @@ export const IMMANUEL_KANT: CraftedAgent = {
             'Natural ability to establish the foundational structures and limits of human rational capacity',
           expression:
             'Through transcendental analysis revealing the conditions of knowledge, morality, and judgment'
+        },
+        {
+          type: 'Moral Autonomy',
+          description: 'Profound insight into human dignity rooted in rational self-legislation',
+          expression: 'Categorical imperative reveals moral law arising from reason itself',
         },
       ],
       challenges: [

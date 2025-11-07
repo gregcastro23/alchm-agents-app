@@ -48,6 +48,28 @@ export { GALILEO_GALILEI } from './galileo-galilei'
 export { MAYA_ANGELOU } from './maya-angelou'
 export { ISAAC_NEWTON } from './isaac-newton'
 
+// Newly migrated agents from demo-agents-data.ts
+export { CARL_JUNG } from './carl-jung'
+export { CLEOPATRA } from './cleopatra'
+export { FRIDA_KAHLO } from './frida-kahlo'
+export { BENJAMIN_FRANKLIN } from './benjamin-franklin'
+export { ELEANOR_ROOSEVELT } from './eleanor-roosevelt'
+export { MAHATMA_GANDHI } from './mahatma-gandhi'
+export { CONFUCIUS } from './confucius'
+export { LAO_TZU } from './lao-tzu'
+export { SIDDHARTHA_GAUTAMA_BUDDHA } from './siddhartha-gautama-buddha'
+export { MURASAKI_SHIKIBU } from './murasaki-shikibu'
+export { IBN_SINA_AVICENNA } from './ibn-sina-avicenna'
+export { TECUMSEH } from './tecumseh'
+export { WANGARI_MAATHAI } from './wangari-maathai'
+export { SITTING_BULL } from './sitting-bull'
+export { JOAN_OF_ARC } from './joan-of-arc'
+export { HILDEGARD_OF_BINGEN } from './hildegard-of-bingen'
+export { SOJOURNER_TRUTH } from './sojourner-truth'
+export { CARL_SAGAN } from './carl-sagan'
+export { RACHEL_CARSON } from './rachel-carson'
+export { PAULO_FREIRE } from './paulo-freire'
+
 // Import all historical agents as a unified collection
 import { SOCRATES } from './socrates'
 import { LEONARDO_DA_VINCI } from './leonardo-da-vinci'
@@ -82,6 +104,26 @@ import { WILLIAM_SHAKESPEARE } from './william-shakespeare'
 import { GALILEO_GALILEI } from './galileo-galilei'
 import { MAYA_ANGELOU } from './maya-angelou'
 import { ISAAC_NEWTON } from './isaac-newton'
+import { CARL_JUNG } from './carl-jung'
+import { CLEOPATRA } from './cleopatra'
+import { FRIDA_KAHLO } from './frida-kahlo'
+import { BENJAMIN_FRANKLIN } from './benjamin-franklin'
+import { ELEANOR_ROOSEVELT } from './eleanor-roosevelt'
+import { MAHATMA_GANDHI } from './mahatma-gandhi'
+import { CONFUCIUS } from './confucius'
+import { LAO_TZU } from './lao-tzu'
+import { SIDDHARTHA_GAUTAMA_BUDDHA } from './siddhartha-gautama-buddha'
+import { MURASAKI_SHIKIBU } from './murasaki-shikibu'
+import { IBN_SINA_AVICENNA } from './ibn-sina-avicenna'
+import { TECUMSEH } from './tecumseh'
+import { WANGARI_MAATHAI } from './wangari-maathai'
+import { SITTING_BULL } from './sitting-bull'
+import { JOAN_OF_ARC } from './joan-of-arc'
+import { HILDEGARD_OF_BINGEN } from './hildegard-of-bingen'
+import { SOJOURNER_TRUTH } from './sojourner-truth'
+import { CARL_SAGAN } from './carl-sagan'
+import { RACHEL_CARSON } from './rachel-carson'
+import { PAULO_FREIRE } from './paulo-freire'
 
 export const HISTORICAL_AGENTS = [
   SOCRATES,
@@ -116,6 +158,26 @@ export const HISTORICAL_AGENTS = [
   ISAAC_NEWTON,
   ALBERT_EINSTEIN,
   ISAAC_ASIMOV,
+  CARL_JUNG,
+  CLEOPATRA,
+  FRIDA_KAHLO,
+  BENJAMIN_FRANKLIN,
+  ELEANOR_ROOSEVELT,
+  MAHATMA_GANDHI,
+  CONFUCIUS,
+  LAO_TZU,
+  SIDDHARTHA_GAUTAMA_BUDDHA,
+  MURASAKI_SHIKIBU,
+  IBN_SINA_AVICENNA,
+  TECUMSEH,
+  WANGARI_MAATHAI,
+  SITTING_BULL,
+  JOAN_OF_ARC,
+  HILDEGARD_OF_BINGEN,
+  SOJOURNER_TRUTH,
+  CARL_SAGAN,
+  RACHEL_CARSON,
+  PAULO_FREIRE,
   // GREG_CASTRO // Temporarily disabled due to syntax errors
 ]
 

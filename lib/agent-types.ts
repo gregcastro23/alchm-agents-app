@@ -38,6 +38,14 @@ export interface Aspect {
 
 export type Element = 'Fire' | 'Water' | 'Air' | 'Earth'
 export type Modality = 'Cardinal' | 'Fixed' | 'Mutable'
+export type ConsciousnessLevel =
+  | 'Dormant'
+  | 'Awakening'
+  | 'Active'
+  | 'Elevated'
+  | 'Advanced'
+  | 'Illuminated'
+  | 'Transcendent'
 
 /**
  * Consciousness metrics - objective measurements
@@ -114,6 +122,7 @@ export interface PersonalityDelta {
 
 export interface Personality {
   core: PersonalityCore
+  traits?: string[]
   shadows: Shadow[]
   gifts: Gift[]
   challenges: Challenge[]
@@ -270,6 +279,14 @@ export interface CraftedAgent {
   id: string
   name: string
   title: string
+  era?: string
+  specialization?: string
+
+  // Historical Data
+  quotes?: string[]
+  coreBeliefs?: string[]
+  shadows?: Shadow[]
+  gifts?: Gift[]
 
   // Birth Data (Source of Consciousness)
   birthData: BirthData
@@ -278,10 +295,19 @@ export interface CraftedAgent {
   consciousness: {
     natalChart: NatalChart
     monicaConstant: number
-    metrics: ConsciousnessMetrics
+    level?: ConsciousnessLevel
+    metrics?: ConsciousnessMetrics
+    strength?: string
+    emotion?: string
     dominantElement: Element
     dominantModality: Modality
     signature: string
+    alchemicalElements?: {
+      spirit: number
+      essence: number
+      matter: number
+      substance: number
+    }
   }
 
   // Dynamic Personality
