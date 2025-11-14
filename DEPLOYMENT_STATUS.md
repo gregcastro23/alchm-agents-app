@@ -1,76 +1,67 @@
-# Deployment Status Update
+# Planetary Agents - Deployment Status
 
-## ✅ Deploy Hook Test - SUCCESSFUL
+## Database Configuration ✅
 
-**Manual test of deploy hook:**
+### Neon PostgreSQL + Prisma Accelerate
+
+**Status**: ✅ **Active and Configured**
+
+#### Connection Details
+- **Database**: Neon PostgreSQL (Serverless)
+- **Region**: AWS us-east-1
+- **Acceleration**: Prisma Accelerate (global edge caching)
+- **Schema**: 49 tables synced ✓
+
+#### Vercel Environment Variables
+
+Add these 3 variables to Vercel:
+
 ```bash
-curl -X POST 'https://api.vercel.com/v1/integrations/deploy/...'
+DATABASE_URL=prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RfaWQiOjEsInNlY3VyZV9rZXkiOiJza18td3VSbzZMendSS2tiVUNVUjl6R2QiLCJhcGlfa2V5IjoiMDFLN0dRNERENFJSQjI4QVE4U1BZRFpFVEUiLCJ0ZW5hbnRfaWQiOiI2YmI2MGYzNTUxY2Q1OGMxZDMwYWY5ZmM5YzRiM2FiOTcyZmI5ZThmY2Y3NDdjMzM4NDdjYWIxYmU5YmIzMzVjIiwiaW50ZXJuYWxfc2VjcmV0IjoiN2RlZDYwNTYtYTI5Zi00YTljLThmN2EtZWQ4MmU2YmY3MjZmIn0.CRh4PfsKi-bRJY_ixC-xN-i7WrgOa2Jrr7eblH10uTs
+
+POSTGRES_PRISMA_URL=postgresql://neondb_owner:npg_J8CabeXrf5Od@ep-mute-thunder-ahui2n87-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&pgbouncer=true&connect_timeout=15
+
+POSTGRES_URL_NON_POOLING=postgresql://neondb_owner:npg_J8CabeXrf5Od@ep-mute-thunder-ahui2n87.us-east-1.aws.neon.tech/neondb?sslmode=require
 ```
 
-**Response:**
-```json
-{
-  "job": {
-    "id": "ix6gjjfmNO4K2DiNynGm",
-    "state": "PENDING",
-    "createdAt": 1762497646677
-  }
-}
+**See**: `NEON_VERCEL_ENV.md` for complete configuration
+
+---
+
+## GitLab CI/CD Pipeline 🔧
+
+**Status**: ⚠️ **Debugging Required**
+
+### Issue
+Backend jobs failing with:
+```
+/bin/sh: cd: line 185: can't cd to backend: No such file or directory
+ERROR: Job failed: exit code 2
 ```
 
-✅ This confirms the deploy hook URL is **working correctly**!
+### Verification
+- ✅ Backend directory exists locally at `/backend`
+- ✅ Backend is tracked in git (not ignored or submodule)
+- ✅ Backend has proper package.json and source code
+- ❌ GitLab CI runner cannot find the directory
 
-## 🔍 Check Deployment Status Now
+### Fix Applied
+Updated `.gitlab-ci.yml` with debugging output
 
-### Option 1: Check Vercel Dashboard (Recommended)
-Go to: https://vercel.com/gregcastro23s-projects/planetary-agents/deployments
+**See**: `GITLAB_CI_FIX.md` for detailed troubleshooting
 
-Look for:
-- New deployment with job ID ending in `...ynGm`
-- Commit hash: `8b9d18c6`
-- Status: Building or Ready
+---
 
-### Option 2: Check GitLab Webhook Recent Events
-Go to: https://gitlab.com/xalchm/my_alchm/-/settings/webhooks
+## Immediate Action: Deploy to Vercel Now
 
-Click on: **"Vercel Deploy Hook - Main Branch"**
+```bash
+vercel --prod
+```
 
-Scroll to: **"Recent events"** section
+Make sure to add the 3 database environment variables in Vercel dashboard first.
 
-**Expected to see:**
-1. First event: From git push (8b9d18c6)
-2. Second event: From manual curl test (just now)
+---
 
-Both should show **HTTP 200** response
-
-## 📊 What's Happening
-
-1. ✅ Commit pushed to GitLab: `8b9d18c6`
-2. ✅ Deploy hook URL verified working
-3. 🔄 Deployment job created: `ix6gjjfmNO4K2DiNynGm`
-4. ⏳ Build in progress (typically 3-5 minutes)
-
-## ⚠️ If Deployment Not Visible
-
-**Possible reasons:**
-1. **Deployment is still queued** - Wait 1-2 more minutes
-2. **GitLab webhook didn't fire on push** - Check "Recent events" in webhook settings
-3. **Branch filter issue** - Webhook might be filtering wrong branch
-
-**Solution if webhook didn't fire on push:**
-
-The manual curl test worked, so the webhook URL is correct. You may need to adjust the webhook trigger settings:
-
-1. Go to webhook settings
-2. Edit the "Vercel Deploy Hook - Main Branch" webhook
-3. Under "Push events", ensure it's set to:
-   - **"All branches"** (simplest), OR
-   - **"Wildcard pattern"** with pattern: `main`
-
-## 🎯 Next Steps
-
-1. Check Vercel dashboard for deployment with commit `8b9d18c6`
-2. If not there, check GitLab webhook "Recent events"
-3. Report back what you see!
-
-The deploy hook is confirmed working - we just need to verify the GitLab push event triggered it.
+**Status**: Ready for Frontend Deployment
+**Database**: Active (Neon + Prisma Accelerate)  
+**Updated**: 2025-11-14

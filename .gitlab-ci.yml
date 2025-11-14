@@ -54,6 +54,9 @@ default:
 backend:install:
   stage: test
   script:
+    - echo "Current directory:" && pwd
+    - echo "Listing root directory:" && ls -la
+    - echo "Checking if backend exists:" && test -d backend && echo "✓ backend directory found" || echo "✗ backend directory NOT found"
     - cd backend
     - yarn install --immutable || yarn install
   artifacts:
@@ -65,6 +68,8 @@ backend:build:
   stage: test
   needs: ['backend:install']
   script:
+    - echo "Current directory:" && pwd
+    - echo "Checking backend directory:" && ls -la backend/ || echo "Cannot list backend directory"
     - cd backend
     - yarn build
   artifacts:
@@ -77,6 +82,7 @@ backend:test:unit:
   stage: test
   needs: ['backend:build']
   script:
+    - pwd && ls -la backend/
     - cd backend
     - yarn test:unit --ci
   artifacts:
