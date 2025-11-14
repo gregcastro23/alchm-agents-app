@@ -55,6 +55,15 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '2mb',
     },
+    // Turbopack configuration
+    turbo: {
+      resolveAlias: {
+        // Fix react-remove-scroll module resolution issue
+        'react-remove-scroll-bar/constants': 'react-remove-scroll-bar/dist/es2015/constants',
+      },
+      // Configure module resolution for problematic packages
+      resolveExtensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+    },
   },
 
   // Code splitting optimization
@@ -140,16 +149,6 @@ const nextConfig = {
     }
 
     return config
-  },
-
-  // Modern Turbopack configuration (moved from experimental.turbo)
-  turbopack: {
-    resolveAlias: {
-      // Fix react-remove-scroll module resolution issue
-      'react-remove-scroll-bar/constants': 'react-remove-scroll-bar/dist/es2015/constants',
-    },
-    // Configure module resolution for problematic packages
-    resolveExtensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
   },
 }
 
