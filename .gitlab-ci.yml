@@ -308,31 +308,72 @@ backend_build:
 # DEPLOY STAGE
 # =============================================================================
 
-# Deploy to Vercel via Deploy Hook
+# Deploy to Vercel via Vercel CLI
 deploy_to_vercel:
   stage: deploy
-  image: alpine:latest
+  image: node:20-alpine
+  variables:
+    VERCEL_ORG_ID: "team_eVYHTIN1tCXo7sPrkzqJbLzO"
+    VERCEL_PROJECT_ID: "prj_47jKTcJvhdXzrf3YSTbbYu9SVRTf"
   before_script:
-    - apk add --no-cache curl
+    # Install Vercel CLI globally
+    - npm install -g vercel@latest
+    - vercel --version
   script:
-    - echo "Triggering Vercel deployment via deploy hook..."
+    - echo "🚀 Deploying to Vercel Production..."
+    - echo "Project - planetary-agents"
+    - echo "Org ID - $VERCEL_ORG_ID"
+    - echo "Project ID - $VERCEL_PROJECT_ID"
     - |
-      RESPONSE=$(curl -X POST -s -w "\nHTTP_CODE:%{http_code}" \
-        https://api.vercel.com/v1/integrations/deploy/prj_47jKTcJvhdXzrf3YSTbbYu9SVRTf/jfRfGiZlr5)
-      HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE" | cut -d: -f2)
-      BODY=$(echo "$RESPONSE" | sed '/HTTP_CODE/d')
-      echo "Response: $BODY"
-      echo "HTTP Code: $HTTP_CODE"
-      if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
-        echo "✅ Vercel deployment triggered successfully!"
-        echo "$BODY" | grep -o '"id":"[^"]*"' || true
-      else
-        echo "❌ Failed to trigger Vercel deployment"
-        exit 1
-      fi
+      # Deploy to production using Vercel CLI
+      vercel deploy \
+        --token=$VERCEL_TOKEN \
+        --prod \
+        --yes \
+        --scope=team_eVYHTIN1tCXo7sPrkzqJbLzO \
+        --cwd=. \
+        > deployment-url.txt 2>&1
+    - DEPLOYMENT_URL=$(cat deployment-url.txt | tail -1)
+    - echo "✅ Deployment successful!"
+    - echo "📍 Deployment URL - $DEPLOYMENT_URL"
+  artifacts:
+    reports:
+      dotenv: deployment-url.txt
+    paths:
+      - deployment-url.txt
+    expire_in: 1 week
   only:
     - main
   when: on_success
+
+# Deploy to Vercel Preview (for non-main branches)
+deploy_to_vercel_preview:
+  stage: deploy
+  image: node:20-alpine
+  variables:
+    VERCEL_ORG_ID: "team_eVYHTIN1tCXo7sPrkzqJbLzO"
+    VERCEL_PROJECT_ID: "prj_47jKTcJvhdXzrf3YSTbbYu9SVRTf"
+  before_script:
+    - npm install -g vercel@latest
+  script:
+    - echo "🔍 Deploying Preview to Vercel..."
+    - |
+      vercel deploy \
+        --token=$VERCEL_TOKEN \
+        --yes \
+        --scope=team_eVYHTIN1tCXo7sPrkzqJbLzO \
+        --cwd=. \
+        > preview-url.txt 2>&1
+    - PREVIEW_URL=$(cat preview-url.txt | tail -1)
+    - echo "✅ Preview deployment successful!"
+    - echo "📍 Preview URL - $PREVIEW_URL"
+  artifacts:
+    paths:
+      - preview-url.txt
+    expire_in: 3 days
+  except:
+    - main
+  when: manual
 
 # Deploy to Render (Manual trigger for production)
 deploy_to_render:
