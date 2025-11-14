@@ -19,6 +19,7 @@ import {
   type RAGMetadata,
   type RAGSource,
 } from './rag-generator'
+import { logger } from '@/lib/structured-logger'
 
 export type { RAGGenerateOptions, RAGResult, RAGMetadata, RAGSource }
 
@@ -33,7 +34,10 @@ export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGR
   const ragConfig = getRAGConfig()
 
   if (!ragConfig.enabled) {
-    console.log('[RAG Wrapper] RAG is disabled via feature flags')
+    logger.debug('RAG is disabled via feature flags', {
+      system: 'rag',
+      operation: 'generate',
+    })
     return {
       text: '',
       ragMetadata: {
@@ -45,7 +49,11 @@ export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGR
 
   // Check if this query should use RAG
   if (!shouldUseRAG(options.userMessage)) {
-    console.log('[RAG Wrapper] Query does not require RAG enhancement')
+    logger.debug('Query does not require RAG enhancement', {
+      system: 'rag',
+      operation: 'generate',
+      metadata: { messageLength: options.userMessage.length },
+    })
     return {
       text: '',
       ragMetadata: {
@@ -89,12 +97,24 @@ export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGR
           },
         }))
       )
-      console.log(`[RAG Wrapper] ${summary}`)
+      logger.info('RAG generation completed', {
+        system: 'rag',
+        operation: 'generate',
+        metadata: {
+          summary,
+          sourcesCount: result.ragMetadata.sources.length,
+          retrievedDocs: result.ragMetadata.retrievedDocs,
+        },
+      })
     }
 
     return result
   } catch (error) {
-    console.error('[RAG Wrapper] RAG generation failed, falling back:', error)
+    logger.error('RAG generation failed, falling back', {
+      system: 'rag',
+      operation: 'generate',
+      metadata: { error: error instanceof Error ? error.message : String(error) },
+    })
 
     // Graceful fallback - return empty text to trigger standard generation
     return {
@@ -113,7 +133,7 @@ export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGR
  *
  * Returns information about RAG availability and configuration.
  */
-export function getRAGStatus(): {
+export async function getRAGStatus(): Promise<{
   enabled: boolean
   vectorStoreReady: boolean
   message: string
@@ -123,7 +143,7 @@ export function getRAGStatus(): {
     useReranking: boolean
     maxContextTokens: number
   }
-} {
+}> {
   const config = getRAGConfig()
 
   if (!config.enabled) {
@@ -134,18 +154,41 @@ export function getRAGStatus(): {
     }
   }
 
-  // TODO: Add actual vector store health check
-  // For now, assume ready if enabled
-  return {
-    enabled: true,
-    vectorStoreReady: true,
-    message: 'RAG is enabled and operational',
-    config: {
-      topK: config.topK,
-      threshold: config.threshold,
-      useReranking: config.useReranking,
-      maxContextTokens: config.maxContextTokens,
-    },
+  // Perform actual vector store health check
+  try {
+    const { healthCheck } = await import('@/lib/llamaindex/vector-store')
+    const health = await healthCheck()
+
+    return {
+      enabled: true,
+      vectorStoreReady: health.healthy,
+      message: health.healthy
+        ? `RAG is enabled and operational (${health.url})`
+        : `RAG enabled but vector store unavailable: ${health.message}`,
+      config: {
+        topK: config.topK,
+        threshold: config.threshold,
+        useReranking: config.useReranking,
+        maxContextTokens: config.maxContextTokens,
+      },
+    }
+  } catch (error) {
+    logger.error('RAG health check failed', {
+      system: 'rag',
+      operation: 'health_check',
+      metadata: { error: error instanceof Error ? error.message : String(error) },
+    })
+    return {
+      enabled: true,
+      vectorStoreReady: false,
+      message: `RAG enabled but health check failed: ${error instanceof Error ? error.message : String(error)}`,
+      config: {
+        topK: config.topK,
+        threshold: config.threshold,
+        useReranking: config.useReranking,
+        maxContextTokens: config.maxContextTokens,
+      },
+    }
   }
 }
 
@@ -154,10 +197,14 @@ export function getRAGStatus(): {
  */
 export async function isRAGAvailable(): Promise<boolean> {
   try {
-    const status = getRAGStatus()
+    const status = await getRAGStatus()
     return status.enabled && status.vectorStoreReady
   } catch (error) {
-    console.error('[RAG Wrapper] Error checking RAG availability:', error)
+    logger.error('Error checking RAG availability', {
+      system: 'rag',
+      operation: 'availability_check',
+      metadata: { error: error instanceof Error ? error.message : String(error) },
+    })
     return false
   }
 }
@@ -170,26 +217,43 @@ export async function warmupRAG(): Promise<boolean> {
   const config = getRAGConfig()
 
   if (!config.enabled) {
-    console.log('[RAG Wrapper] RAG is disabled, skipping warmup')
+    logger.debug('RAG is disabled, skipping warmup', {
+      system: 'rag',
+      operation: 'warmup',
+    })
     return false
   }
 
   try {
-    console.log('[RAG Wrapper] Warming up RAG system...')
+    logger.info('Warming up RAG system', {
+      system: 'rag',
+      operation: 'warmup',
+    })
 
     // Import and check vector store health
     const { healthCheck } = await import('@/lib/llamaindex/vector-store')
     const health = await healthCheck()
 
     if (!health.healthy) {
-      console.warn('[RAG Wrapper] Vector store is not healthy:', health.message)
+      logger.warn('Vector store is not healthy', {
+        system: 'rag',
+        operation: 'warmup',
+        metadata: { message: health.message },
+      })
       return false
     }
 
-    console.log('[RAG Wrapper] RAG system warmup complete')
+    logger.info('RAG system warmup complete', {
+      system: 'rag',
+      operation: 'warmup',
+    })
     return true
   } catch (error) {
-    console.error('[RAG Wrapper] RAG warmup failed:', error)
+    logger.error('RAG warmup failed', {
+      system: 'rag',
+      operation: 'warmup',
+      metadata: { error: error instanceof Error ? error.message : String(error) },
+    })
     return false
   }
 }

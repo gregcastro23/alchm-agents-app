@@ -81,6 +81,7 @@ RAG_MIN_SIMILARITY=0.6
 
 ### 3. Ingest Agent Knowledge
 
+**Option 1: Static Knowledge (Historical Agents)**
 ```bash
 # Using the API endpoint
 curl -X POST http://localhost:3000/api/vector-store/ingest \
@@ -105,6 +106,31 @@ Planetary Agents - Vector Store Ingestion
   - Failed: 0
   - Duration: 45000ms
 ```
+
+**Option 2: Dynamic Knowledge Updates ✨ NEW (January 2025)**
+
+Update agent knowledge from external web sources:
+```bash
+# Ingest from web URLs
+curl -X POST http://localhost:3000/api/knowledge-updater \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agentId": "plato",
+    "type": "web",
+    "urls": ["https://plato.stanford.edu/entries/plato/"]
+  }'
+
+# Ingest from PDF files
+curl -X POST http://localhost:3000/api/knowledge-updater \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agentId": "carl-jung",
+    "type": "pdf",
+    "filePath": "/uploads/collective-unconscious.pdf"
+  }'
+```
+
+**See:** [LANGCHAIN_USAGE_GUIDE.md](./LANGCHAIN_USAGE_GUIDE.md) for complete documentation
 
 ## Usage
 

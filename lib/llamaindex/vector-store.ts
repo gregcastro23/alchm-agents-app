@@ -6,6 +6,7 @@
  */
 
 import { ChromaClient, Collection } from 'chromadb'
+import { logger } from '@/lib/structured-logger'
 
 // Type definitions
 export interface VectorStoreConfig {
@@ -85,16 +86,31 @@ export async function initializeVectorStore(
     // Test connection with heartbeat
     await chromaClient.heartbeat()
 
-    console.log(`[VectorStore] Successfully connected to ChromaDB at ${url}`)
+    logger.info('Successfully connected to ChromaDB', {
+      system: 'vector_store',
+      operation: 'initialize',
+      metadata: { url },
+    })
     connectionRetries = 0
 
     return chromaClient
   } catch (error) {
-    console.error('[VectorStore] Failed to connect to ChromaDB:', error)
+    logger.error('Failed to connect to ChromaDB', {
+      system: 'vector_store',
+      operation: 'initialize',
+      metadata: {
+        url,
+        error: error instanceof Error ? error.message : String(error),
+      },
+    })
 
     if (connectionRetries < MAX_RETRIES) {
       connectionRetries++
-      console.log(`[VectorStore] Retrying connection (${connectionRetries}/${MAX_RETRIES})...`)
+      logger.info('Retrying ChromaDB connection', {
+        system: 'vector_store',
+        operation: 'initialize',
+        metadata: { attempt: connectionRetries, maxRetries: MAX_RETRIES },
+      })
       await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * connectionRetries))
       return initializeVectorStore(config)
     }
@@ -123,11 +139,19 @@ export async function getOrCreateCollection(
       embeddingFunction: undefined, // We handle embeddings separately
     })
 
-    console.log(`[VectorStore] Retrieved existing collection: ${name}`)
+    logger.debug('Retrieved existing collection', {
+      system: 'vector_store',
+      operation: 'get_collection',
+      metadata: { name },
+    })
     return collection
   } catch (error) {
     // Collection doesn't exist, create it
-    console.log(`[VectorStore] Creating new collection: ${name}`)
+    logger.info('Creating new collection', {
+      system: 'vector_store',
+      operation: 'create_collection',
+      metadata: { name },
+    })
 
     const collection = await client.createCollection({
       name,
@@ -198,12 +222,20 @@ export async function addDocuments(
         }
       } catch (error) {
         const errorMsg = `Failed to add batch ${i}-${batchEnd}: ${error instanceof Error ? error.message : String(error)}`
-        console.error(`[VectorStore] ${errorMsg}`)
+        logger.error('Batch add failed', {
+          system: 'vector_store',
+          operation: 'add_documents',
+          metadata: { batchStart: i, batchEnd, errorMsg },
+        })
         errors.push(errorMsg)
       }
     }
 
-    console.log(`[VectorStore] Successfully added ${completed}/${total} documents`)
+    logger.info('Documents added to collection', {
+      system: 'vector_store',
+      operation: 'add_documents',
+      metadata: { completed, total, success: errors.length === 0 },
+    })
 
     return {
       success: errors.length === 0,
@@ -211,7 +243,15 @@ export async function addDocuments(
       errors,
     }
   } catch (error) {
-    console.error('[VectorStore] Error adding documents:', error)
+    logger.error('Error adding documents', {
+      system: 'vector_store',
+      operation: 'add_documents',
+      metadata: {
+        error: error instanceof Error ? error.message : String(error),
+        completed,
+        total,
+      },
+    })
     return {
       success: false,
       documentsAdded: completed,
@@ -266,7 +306,14 @@ export async function queryCollection(
 
     return queryResults
   } catch (error) {
-    console.error('[VectorStore] Query failed:', error)
+    logger.error('Query failed', {
+      system: 'vector_store',
+      operation: 'query',
+      metadata: {
+        error: error instanceof Error ? error.message : String(error),
+        topK,
+      },
+    })
     throw new Error(`Vector store query failed: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
@@ -279,7 +326,11 @@ export async function getCollectionCount(collection: Collection): Promise<number
     const count = await collection.count()
     return count
   } catch (error) {
-    console.error('[VectorStore] Failed to get collection count:', error)
+    logger.error('Failed to get collection count', {
+      system: 'vector_store',
+      operation: 'count',
+      metadata: { error: error instanceof Error ? error.message : String(error) },
+    })
     return 0
   }
 }
@@ -291,10 +342,21 @@ export async function deleteCollection(name: string): Promise<boolean> {
   try {
     const client = await initializeVectorStore()
     await client.deleteCollection({ name })
-    console.log(`[VectorStore] Deleted collection: ${name}`)
+    logger.info('Deleted collection', {
+      system: 'vector_store',
+      operation: 'delete',
+      metadata: { name },
+    })
     return true
   } catch (error) {
-    console.error('[VectorStore] Failed to delete collection:', error)
+    logger.error('Failed to delete collection', {
+      system: 'vector_store',
+      operation: 'delete',
+      metadata: {
+        name,
+        error: error instanceof Error ? error.message : String(error),
+      },
+    })
     return false
   }
 }
@@ -308,7 +370,11 @@ export async function listCollections(): Promise<string[]> {
     const collections = await client.listCollections()
     return collections.map(c => c.name)
   } catch (error) {
-    console.error('[VectorStore] Failed to list collections:', error)
+    logger.error('Failed to list collections', {
+      system: 'vector_store',
+      operation: 'list',
+      metadata: { error: error instanceof Error ? error.message : String(error) },
+    })
     return []
   }
 }

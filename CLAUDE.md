@@ -398,6 +398,55 @@ Persistent evolution tracking with:
 - **Claude 3.5 Haiku**: Quick responses and widget interactions
 - **Enhanced Capabilities**: 200K tokens, improved reasoning
 
+## LangChain Integration
+
+### Phase 1: Document Loaders ✅ (January 2025)
+
+**Implemented Features:**
+- **CheerioWebBaseLoader**: Scrape external web content for agent knowledge updates
+- **PDFLoader**: Ingest astrological charts and research papers
+- **API Endpoint**: `/api/knowledge-updater` for dynamic knowledge management
+- **Security**: URL validation, file path sanitization, content filtering
+- **Performance**: Batch processing, caching, retry logic
+
+**Use Cases:**
+```bash
+# Update agent knowledge from web
+curl -X POST http://localhost:3000/api/knowledge-updater \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agentId": "plato",
+    "urls": ["https://plato.stanford.edu/entries/plato/"],
+    "type": "web"
+  }'
+
+# Ingest PDF documents
+curl -X POST http://localhost:3000/api/knowledge-updater \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agentId": "carl-jung",
+    "filePath": "/uploads/collective-unconscious.pdf",
+    "type": "pdf"
+  }'
+```
+
+**Files:**
+- `lib/langchain/knowledge-updater.ts` - Web content ingestion
+- `lib/langchain/pdf-loader.ts` - PDF document processing
+- `app/api/knowledge-updater/route.ts` - HTTP API endpoint
+- `__tests__/langchain/knowledge-updater.test.ts` - Unit tests
+
+**Documentation:**
+- [LANGCHAIN_USAGE_GUIDE.md](./LANGCHAIN_USAGE_GUIDE.md) - Complete usage guide
+- [LANGCHAIN_COMMUNITY_INTEGRATION_PLAN.md](./LANGCHAIN_COMMUNITY_INTEGRATION_PLAN.md) - Full roadmap
+
+### Future Phases (Planned)
+
+- **Phase 2**: MultiQueryRetriever + ContextualCompressionRetriever
+- **Phase 3**: Specialized tools (Calculator, Wikipedia, WebBrowser)
+- **Phase 4**: Hybrid search (BM25 + Vector)
+- **Phase 5**: Full LangChain agent API integration
+
 ## Important Notes
 
 - All timestamps use ISO 8601 format

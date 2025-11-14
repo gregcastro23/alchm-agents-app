@@ -24,40 +24,51 @@ describe('Monica RAG Wrapper', () => {
   })
 
   describe('getRAGStatus', () => {
-    it('should return complete status object', () => {
-      const status = getRAGStatus()
+    it('should return complete status object with health check', async () => {
+      const status = await getRAGStatus()
 
       expect(status).toBeDefined()
       expect(status).toHaveProperty('enabled')
-      expect(status).toHaveProperty('vectorSearchEnabled')
-      expect(status).toHaveProperty('maxKnowledgeChunks')
-      expect(status).toHaveProperty('minSimilarity')
+      expect(status).toHaveProperty('vectorStoreReady')
+      expect(status).toHaveProperty('message')
 
       expect(typeof status.enabled).toBe('boolean')
-      expect(typeof status.vectorSearchEnabled).toBe('boolean')
-      expect(typeof status.maxKnowledgeChunks).toBe('number')
-      expect(typeof status.minSimilarity).toBe('number')
+      expect(typeof status.vectorStoreReady).toBe('boolean')
+      expect(typeof status.message).toBe('string')
     })
 
-    it('should have reasonable default values', () => {
-      const status = getRAGStatus()
+    it('should include config when enabled', async () => {
+      const status = await getRAGStatus()
 
-      // Max chunks should be reasonable (1-10)
-      expect(status.maxKnowledgeChunks).toBeGreaterThan(0)
-      expect(status.maxKnowledgeChunks).toBeLessThanOrEqual(10)
+      if (status.enabled) {
+        expect(status.config).toBeDefined()
+        expect(status.config).toHaveProperty('topK')
+        expect(status.config).toHaveProperty('threshold')
+        expect(status.config).toHaveProperty('useReranking')
+        expect(status.config).toHaveProperty('maxContextTokens')
 
-      // Min similarity should be between 0 and 1
-      expect(status.minSimilarity).toBeGreaterThanOrEqual(0)
-      expect(status.minSimilarity).toBeLessThanOrEqual(1)
+        expect(typeof status.config.topK).toBe('number')
+        expect(typeof status.config.threshold).toBe('number')
+        expect(typeof status.config.useReranking).toBe('boolean')
+        expect(typeof status.config.maxContextTokens).toBe('number')
+      }
     })
 
-    it('should match environment variable settings', () => {
-      const status = getRAGStatus()
-      const expectedMaxChunks = parseInt(process.env.RAG_MAX_KNOWLEDGE_CHUNKS || '3')
-      const expectedMinSimilarity = parseFloat(process.env.RAG_MIN_SIMILARITY || '0.6')
+    it('should have reasonable config values when enabled', async () => {
+      const status = await getRAGStatus()
 
-      expect(status.maxKnowledgeChunks).toBe(expectedMaxChunks)
-      expect(status.minSimilarity).toBe(expectedMinSimilarity)
+      if (status.enabled && status.config) {
+        // topK should be reasonable (1-20)
+        expect(status.config.topK).toBeGreaterThan(0)
+        expect(status.config.topK).toBeLessThanOrEqual(20)
+
+        // threshold should be between 0 and 1
+        expect(status.config.threshold).toBeGreaterThanOrEqual(0)
+        expect(status.config.threshold).toBeLessThanOrEqual(1)
+
+        // maxContextTokens should be reasonable
+        expect(status.config.maxContextTokens).toBeGreaterThan(0)
+      }
     })
   })
 

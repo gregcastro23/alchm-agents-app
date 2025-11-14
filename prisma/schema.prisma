@@ -188,7 +188,7 @@ model HistoricalEvent {
   planetaryConfig  Json
   createdAt        DateTime           @default(now())
   updatedAt        DateTime
-  PlanetaryTransit PlanetaryTransit[]
+  PlanetaryTransit PlanetaryTransit[] @relation("HistoricalEventToPlanetaryTransit")
 
   @@index([date])
   @@index([eventType])
@@ -208,7 +208,7 @@ model PlanetaryMemory {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime
   AIPersonality   AIPersonality?
-  TransitPattern  TransitPattern[]
+  TransitPattern  TransitPattern[] @relation("PlanetaryMemoryToTransitPattern")
 
   @@unique([planet, sign, degree])
   @@index([planet, sign])
@@ -226,8 +226,8 @@ model PlanetaryTransit {
   historicalNote  String?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime
-  HistoricalEvent HistoricalEvent[]
-  TransitPattern  TransitPattern[]
+  HistoricalEvent HistoricalEvent[] @relation("HistoricalEventToPlanetaryTransit")
+  TransitPattern  TransitPattern[]  @relation("PlanetaryTransitToTransitPattern")
 
   @@index([dateStart, dateEnd])
   @@index([planet, dateStart])
@@ -259,8 +259,8 @@ model TransitPattern {
   reliability      Float
   createdAt        DateTime           @default(now())
   updatedAt        DateTime
-  PlanetaryMemory  PlanetaryMemory[]
-  PlanetaryTransit PlanetaryTransit[]
+  PlanetaryMemory  PlanetaryMemory[]  @relation("PlanetaryMemoryToTransitPattern")
+  PlanetaryTransit PlanetaryTransit[] @relation("PlanetaryTransitToTransitPattern")
 
   @@index([planet, patternType])
 }
@@ -1165,6 +1165,84 @@ model users {
   @@index([email])
 }
 
+model RAGQuery {
+  id               String        @id @default(cuid())
+  timestamp        DateTime      @default(now())
+  sessionId        String
+  userId           String?
+  agentId          String
+  agentName        String
+  query            String
+  queryLength      Int
+  ragUsed          Boolean
+  sourcesRetrieved Int
+  retrievalTime    Int
+  generationTime   Int?
+  totalTime        Int
+  success          Boolean
+  error            String?
+  relevanceScores  Json
+  avgRelevance     Float
+  modelUsed        String?
+  temperature      Float?
+  metadata         Json?
+  feedback         RAGFeedback[]
+  sources          RAGSource[]
+
+  @@index([agentId])
+  @@index([timestamp])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([ragUsed])
+  @@index([success])
+  @@index([agentId, timestamp])
+  @@index([userId, agentId])
+  @@map("rag_queries")
+}
+
+model RAGSource {
+  id             String   @id @default(cuid())
+  queryId        String
+  documentId     String
+  agentId        String
+  agentName      String
+  title          String
+  content        String
+  relevanceScore Float
+  era            String?
+  category       String?
+  tags           Json?
+  metadata       Json?
+  query          RAGQuery @relation(fields: [queryId], references: [id], onDelete: Cascade)
+
+  @@index([queryId])
+  @@index([documentId])
+  @@index([agentId])
+  @@index([relevanceScore])
+  @@map("rag_sources")
+}
+
+model RAGFeedback {
+  id             String   @id @default(cuid())
+  timestamp      DateTime @default(now())
+  queryId        String
+  userId         String?
+  agentId        String
+  sessionId      String
+  thumbsUp       Boolean?
+  starRating     Int?
+  sourcesHelpful Boolean?
+  comment        String?
+  query          RAGQuery @relation(fields: [queryId], references: [id], onDelete: Cascade)
+
+  @@index([queryId])
+  @@index([agentId])
+  @@index([timestamp])
+  @@index([thumbsUp])
+  @@index([starRating])
+  @@map("rag_feedback")
+}
+
 enum consciousness_level {
   DORMANT
   AWAKENING
@@ -1195,90 +1273,4 @@ enum historical_era {
   ENLIGHTENMENT
   MODERN_PRE1950
   MONICA_SPECIAL
-}
-
-// ============================================================================
-// RAG (Retrieval-Augmented Generation) Analytics Models
-// Added: November 6, 2025
-// Purpose: Track RAG usage, performance, and user feedback
-// ============================================================================
-
-model RAGQuery {
-  id              String       @id @default(cuid())
-  timestamp       DateTime     @default(now())
-  sessionId       String
-  userId          String?
-  agentId         String
-  agentName       String
-  query           String       @db.Text
-  queryLength     Int
-  ragUsed         Boolean
-  sourcesRetrieved Int
-  retrievalTime   Int          // milliseconds
-  generationTime  Int?         // milliseconds
-  totalTime       Int          // milliseconds
-  success         Boolean
-  error           String?
-  relevanceScores Json         // array of relevance scores
-  avgRelevance    Float
-  modelUsed       String?
-  temperature     Float?
-  metadata        Json?        // additional context
-  cacheHit        Boolean?
-  cacheLatency    Int?
-  sources         RAGSource[]
-  feedback        RAGFeedback[]
-
-  @@index([agentId])
-  @@index([timestamp])
-  @@index([sessionId])
-  @@index([userId])
-  @@index([ragUsed])
-  @@index([success])
-  @@index([agentId, timestamp])
-  @@index([userId, agentId])
-  @@map("rag_queries")
-}
-
-model RAGSource {
-  id              String    @id @default(cuid())
-  queryId         String
-  documentId      String
-  agentId         String
-  agentName       String
-  title           String
-  content         String    @db.Text
-  relevanceScore  Float
-  era             String?
-  category        String?
-  tags            Json?
-  metadata        Json?
-  query           RAGQuery  @relation(fields: [queryId], references: [id], onDelete: Cascade)
-
-  @@index([queryId])
-  @@index([documentId])
-  @@index([agentId])
-  @@index([relevanceScore])
-  @@map("rag_sources")
-}
-
-model RAGFeedback {
-  id              String    @id @default(cuid())
-  timestamp       DateTime  @default(now())
-  queryId         String
-  userId          String?
-  agentId         String
-  sessionId       String
-  thumbsUp        Boolean?  // true = up, false = down
-  starRating      Int?      // 1-5
-  sourcesHelpful  Boolean?
-  comment         String?   @db.Text
-  query           RAGQuery  @relation(fields: [queryId], references: [id], onDelete: Cascade)
-
-  @@index([queryId])
-  @@index([agentId])
-  @@index([timestamp])
-  @@index([thumbsUp])
-  @@index([starRating])
-  @@map("rag_feedback")
 }
