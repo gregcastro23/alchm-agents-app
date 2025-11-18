@@ -6660,6 +6660,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/yaml@npm:^1.9.7":
+  version: 1.9.7
+  resolution: "@types/yaml@npm:1.9.7"
+  dependencies:
+    yaml: "npm:*"
+  checksum: 10c0/0bbb3015ecf4e483a5431b35a8029374cd944eac67f74973814e287d7075adaa86b30aa40efc53666b4b0a462bdd0b8846a86792039ac600560f29f35821a83b
+  languageName: node
+  linkType: hard
+
 "@typescript-eslint/eslint-plugin@npm:^5.4.2 || ^6.0.0 || ^7.0.0 || ^8.0.0, @typescript-eslint/eslint-plugin@npm:^8.43.0":
   version: 8.44.1
   resolution: "@typescript-eslint/eslint-plugin@npm:8.44.1"
@@ -14164,6 +14173,7 @@ __metadata:
     "@types/react-dom": "npm:^19.1.9"
     "@types/source-map-support": "npm:^0"
     "@types/suncalc": "npm:^1"
+    "@types/yaml": "npm:^1.9.7"
     "@typescript-eslint/eslint-plugin": "npm:^8.43.0"
     "@typescript-eslint/parser": "npm:^8.43.0"
     "@vercel/speed-insights": "npm:^1.2.0"
@@ -14240,6 +14250,7 @@ __metadata:
     vitest: "npm:^3.2.4"
     web-tree-sitter: "npm:^0.24.3"
     webpack: "npm:^5.102.1"
+    yaml: "npm:^2.8.1"
     zod: "npm:^3.23.8"
   languageName: unknown
   linkType: soft
@@ -17933,7 +17944,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.2.1, yaml@npm:^2.3.4, yaml@npm:^2.8.1":
+"yaml@npm:*, yaml@npm:^2.2.1, yaml@npm:^2.3.4, yaml@npm:^2.8.1":
   version: 2.8.1
   resolution: "yaml@npm:2.8.1"
   bin:
