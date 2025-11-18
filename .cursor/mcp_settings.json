@@ -15,6 +15,12 @@
         "start",
         "${napi_2flxml1onrbpt9542z6fj3j86hgga4gni1rvb2kpxz9xp6rqf8yvtj59ha8rfdb0}"
       ]
+    },
+    "render": {
+      "url": "https://mcp.render.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${RENDER_API_KEY}"
+      }
     }
   }
 }
