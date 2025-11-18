@@ -2,13 +2,11 @@
 
 ## Current Status
 
-**Backend**: ✅ Running (PID 65313, port 8000)
-**ngrok Tunnel**: ✅ Active
-**Public URL**: https://idiodynamic-quadrilaterally-roberta.ngrok-free.dev
+**Backend**: ✅ Running (port 8000)
 
 ## Verified Endpoints
 
-✅ Health Check: https://idiodynamic-quadrilaterally-roberta.ngrok-free.dev/api/health
+✅ Health Check: http://localhost:8000/api/health
 ✅ Planetary Hours: Working
 ✅ Thermodynamics: Ready
 ✅ Token Calculations: Ready
@@ -17,9 +15,9 @@
 
 ```json
 {
-  "status": "degraded",
-  "uptime": "54s",
-  "responseTime": "1ms",
+  "status": "healthy",
+  "uptime": "...",
+  "responseTime": "...",
   "version": "1.0.0",
   "environment": "development",
   "services": {
@@ -39,17 +37,16 @@
 
 **URL**: https://v0-planetary-agents1.vercel.app
 
-The production site should now connect to the backend through ngrok!
+**Note**: For production, deploy backend to Render/Railway (see `BACKEND_DEPLOYMENT_GUIDE.md`)
 
-### Test It
+### Test It Locally
 
-1. Visit: https://v0-planetary-agents1.vercel.app/gallery
-2. Click on any agent
-3. Try chatting - you should get real AI responses now (not fallback messages)
+1. Start frontend: `yarn dev`
+2. Visit: http://localhost:3000/gallery
+3. Click on any agent
+4. Try chatting - you should get real AI responses
 
 ## Local Development
-
-If you want to test locally:
 
 ```bash
 # Start frontend (in new terminal)
@@ -58,8 +55,6 @@ yarn dev
 
 # Visit http://localhost:3000
 ```
-
-Both local and production frontends will connect to the same backend.
 
 ## Monitor Backend
 
@@ -75,10 +70,7 @@ tail -f backend/logs/backend.log
 
 ```bash
 # Stop backend
-kill 65313
-
-# Stop ngrok
-pkill ngrok
+pkill -f "tsx src/index.ts"
 ```
 
 ## Restart Services
@@ -90,6 +82,16 @@ pkill ngrok
 
 ---
 
-**🎉 Your backend is live and ready to serve both local development and production!**
+## Production Deployment
 
-The fallback message you saw earlier should now be replaced with real AI agent responses powered by the backend.
+For production, deploy backend to Render or Railway:
+
+1. See `BACKEND_DEPLOYMENT_GUIDE.md` for step-by-step instructions
+2. Set `NEXT_PUBLIC_BACKEND_URL` in Vercel environment variables
+3. Redeploy frontend
+
+---
+
+**🎉 Your backend is running and ready for local development!**
+
+For production deployment, see `BACKEND_DEPLOYMENT_GUIDE.md`.

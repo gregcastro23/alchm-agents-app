@@ -1,5 +1,5 @@
 #!/bin/bash
-# Comprehensive Backend & ngrok Monitoring Dashboard
+# Comprehensive Backend Monitoring Dashboard
 # Real-time statistics, performance metrics, and health monitoring
 
 set -e
@@ -9,7 +9,7 @@ BACKEND_DIR="$(dirname "$SCRIPT_DIR")"
 
 # Configuration
 BACKEND_PORT=8000
-NGROK_API="http://127.0.0.1:4040/api"
+BACKEND_URL="${BACKEND_URL:-http://localhost:8000}"
 REFRESH_INTERVAL=3
 
 # Colors
@@ -56,38 +56,13 @@ format_uptime() {
 
 # Function to get backend health
 get_backend_health() {
-    curl -s "http://localhost:${BACKEND_PORT}/api/health" 2>/dev/null || echo '{"status":"offline"}'
-}
-
-# Function to get ngrok tunnel info
-get_ngrok_info() {
-    curl -s "${NGROK_API}/tunnels" 2>/dev/null || echo '{"tunnels":[]}'
-}
-
-# Function to test ngrok connectivity
-test_ngrok_connectivity() {
-    local url=$1
-    if [ -z "$url" ]; then
-        echo "NO_URL"
-        return 1
-    fi
-
-    local start_time=$(date +%s%N)
-    if curl -s -f -m 5 "${url}/api/health" -o /dev/null 2>/dev/null; then
-        local end_time=$(date +%s%N)
-        local response_time=$(( (end_time - start_time) / 1000000 ))
-        echo "OK|${response_time}"
-        return 0
-    else
-        echo "FAILED"
-        return 1
-    fi
+    curl -s "${BACKEND_URL}/api/health" 2>/dev/null || echo '{"status":"offline"}'
 }
 
 # Function to display header
 display_header() {
     echo -e "${BOLD}${BLUE}╔══════════════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BOLD}${BLUE}║      PLANETARY AGENTS - PRODUCTION MONITORING DASHBOARD v1.0            ║${NC}"
+    echo -e "${BOLD}${BLUE}║      PLANETARY AGENTS - BACKEND MONITORING DASHBOARD v1.0               ║${NC}"
     echo -e "${BOLD}${BLUE}╚══════════════════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 }
@@ -106,7 +81,7 @@ display_backend_section() {
 
     # Status indicator
     case $status in
-        "healthy")
+        "healthy"|"ok")
             echo -e "${CYAN}│${NC} ${GREEN}${CHECK}${NC} ${BOLD}Status:${NC} ${GREEN}HEALTHY${NC}"
             ;;
         "degraded")
@@ -115,7 +90,8 @@ display_backend_section() {
         "offline")
             echo -e "${CYAN}│${NC} ${RED}${CROSS}${NC} ${BOLD}Status:${NC} ${RED}OFFLINE${NC}"
             echo -e "${CYAN}│${NC}"
-            echo -e "${CYAN}│${NC} ${RED}Backend is not responding on port ${BACKEND_PORT}${NC}"
+            echo -e "${CYAN}│${NC} ${RED}Backend is not responding at ${BACKEND_URL}${NC}"
+            echo -e "${CYAN}│${NC} ${DIM}Start with: ./backend/scripts/start-production.sh${NC}"
             echo -e "${CYAN}╰─${NC}"
             return
             ;;
@@ -127,7 +103,7 @@ display_backend_section() {
     esac
 
     # Basic info
-    echo -e "${CYAN}│${NC} ${DIM}Port:${NC} ${BACKEND_PORT}"
+    echo -e "${CYAN}│${NC} ${DIM}URL:${NC} ${BACKEND_URL}"
     echo -e "${CYAN}│${NC} ${DIM}Version:${NC} ${version:-N/A}"
     echo -e "${CYAN}│${NC} ${DIM}Environment:${NC} ${environment:-development}"
 
@@ -148,7 +124,7 @@ display_backend_section() {
     fi
 
     # Service status
-    local cache_type=$(echo "$health" | grep -o '"cache":{"type":"[^"]*' | cut -d'"' -f6)
+    local cache_type=$(echo "$health" | grep -o '"cache":{"type":"[^"]*' | cut -d'"' -f6 || echo "")
     if [ ! -z "$cache_type" ]; then
         echo -e "${CYAN}│${NC} ${DIM}Cache:${NC} ${cache_type}"
     fi
@@ -156,115 +132,37 @@ display_backend_section() {
     echo -e "${CYAN}╰─${NC}"
 }
 
-# Function to display ngrok section
-display_ngrok_section() {
-    local ngrok_data=$(get_ngrok_info)
-    local url=$(echo "$ngrok_data" | grep -o '"public_url":"https://[^"]*' | cut -d'"' -f4 | head -1)
-
-    echo ""
-    echo -e "${BOLD}${MAGENTA}╭─ ngrok Tunnel Status${NC}"
-    echo -e "${MAGENTA}│${NC}"
-
-    if [ -z "$url" ]; then
-        echo -e "${MAGENTA}│${NC} ${RED}${CROSS}${NC} ${BOLD}Status:${NC} ${RED}DISCONNECTED${NC}"
-        echo -e "${MAGENTA}│${NC}"
-        echo -e "${MAGENTA}│${NC} ${YELLOW}No active ngrok tunnel detected${NC}"
-        echo -e "${MAGENTA}│${NC} ${DIM}Run: ./scripts/start-ngrok-persistent.sh${NC}"
-        echo -e "${MAGENTA}╰─${NC}"
-        return
-    fi
-
-    # Test connectivity
-    local connectivity=$(test_ngrok_connectivity "$url")
-    IFS='|' read -r conn_status conn_time <<< "$connectivity"
-
-    case $conn_status in
-        "OK")
-            echo -e "${MAGENTA}│${NC} ${GREEN}${CHECK}${NC} ${BOLD}Status:${NC} ${GREEN}CONNECTED & HEALTHY${NC}"
-            echo -e "${MAGENTA}│${NC} ${DIM}Response Time:${NC} ${GREEN}${conn_time}ms${NC}"
-            ;;
-        "FAILED")
-            echo -e "${MAGENTA}│${NC} ${YELLOW}${STAR}${NC} ${BOLD}Status:${NC} ${YELLOW}CONNECTED BUT UNHEALTHY${NC}"
-            ;;
-        "NO_URL")
-            echo -e "${MAGENTA}│${NC} ${RED}${CROSS}${NC} ${BOLD}Status:${NC} ${RED}NO URL${NC}"
-            echo -e "${MAGENTA}╰─${NC}"
-            return
-            ;;
-    esac
-
-    echo -e "${MAGENTA}│${NC} ${DIM}Public URL:${NC}"
-    echo -e "${MAGENTA}│${NC}   ${GREEN}${url}${NC}"
-
-    # Connection metrics
-    local conns=$(echo "$ngrok_data" | grep -o '"count":[0-9]*' | head -1 | cut -d':' -f2)
-    local http_count=$(echo "$ngrok_data" | grep -o '"http":{"count":[0-9]*' | grep -o '[0-9]*')
-
-    if [ ! -z "$conns" ]; then
-        echo -e "${MAGENTA}│${NC} ${DIM}Total Connections:${NC} ${conns}"
-    fi
-    if [ ! -z "$http_count" ]; then
-        echo -e "${MAGENTA}│${NC} ${DIM}HTTP Requests:${NC} ${http_count}"
-    fi
-
-    echo -e "${MAGENTA}╰─${NC}"
-}
-
 # Function to display API endpoints
 display_api_endpoints() {
-    local ngrok_data=$(get_ngrok_info)
-    local url=$(echo "$ngrok_data" | grep -o '"public_url":"https://[^"]*' | cut -d'"' -f4 | head -1)
-
-    if [ -z "$url" ]; then
-        return
-    fi
-
     echo ""
     echo -e "${BOLD}${GREEN}╭─ API Endpoints${NC}"
     echo -e "${GREEN}│${NC}"
-    echo -e "${GREEN}│${NC} ${DIM}Health:${NC}         ${url}/api/health"
-    echo -e "${GREEN}│${NC} ${DIM}Planetary:${NC}      ${url}/api/planetary/current-hour"
-    echo -e "${GREEN}│${NC} ${DIM}Thermodynamics:${NC} ${url}/api/alchemy/thermodynamics"
-    echo -e "${GREEN}│${NC} ${DIM}Tokens:${NC}         ${url}/api/tokens/calculate"
-    echo -e "${GREEN}│${NC} ${DIM}Kinetics:${NC}       ${url}/api/kinetics/evolution"
+    echo -e "${GREEN}│${NC} ${DIM}Health:${NC}         ${BACKEND_URL}/api/health"
+    echo -e "${GREEN}│${NC} ${DIM}Planetary:${NC}      ${BACKEND_URL}/api/planetary/current-hour"
+    echo -e "${GREEN}│${NC} ${DIM}Thermodynamics:${NC} ${BACKEND_URL}/api/alchemy/thermodynamics"
+    echo -e "${GREEN}│${NC} ${DIM}Tokens:${NC}         ${BACKEND_URL}/api/tokens/calculate"
+    echo -e "${GREEN}│${NC} ${DIM}Kinetics:${NC}       ${BACKEND_URL}/api/kinetics/evolution"
+    echo -e "${GREEN}│${NC} ${DIM}Consciousness:${NC}   ${BACKEND_URL}/api/consciousness/live"
     echo -e "${GREEN}╰─${NC}"
 }
 
-# Function to display Vercel integration
-display_vercel_integration() {
-    local ngrok_data=$(get_ngrok_info)
-    local current_url=$(echo "$ngrok_data" | grep -o '"public_url":"https://[^"]*' | cut -d'"' -f4 | head -1)
-
+# Function to display deployment info
+display_deployment_info() {
     echo ""
-    echo -e "${BOLD}${BLUE}╭─ Vercel Integration${NC}"
+    echo -e "${BOLD}${BLUE}╭─ Deployment Information${NC}"
     echo -e "${BLUE}│${NC}"
-
-    if [ -z "$current_url" ]; then
-        echo -e "${BLUE}│${NC} ${RED}${CROSS}${NC} ${BOLD}Status:${NC} ${RED}UNAVAILABLE${NC}"
-        echo -e "${BLUE}│${NC} ${DIM}Waiting for ngrok tunnel...${NC}"
-        echo -e "${BLUE}╰─${NC}"
-        return
-    fi
-
-    # Get Vercel env var
-    local vercel_url=$(vercel env ls 2>/dev/null | grep "NEXT_PUBLIC_BACKEND_URL" | awk '{print $2}' | head -1 || echo "")
-
-    if [ "$vercel_url" == "Encrypted" ] || [ -z "$vercel_url" ]; then
-        # Try to pull from Vercel
-        echo -e "${BLUE}│${NC} ${YELLOW}${STAR}${NC} ${BOLD}Status:${NC} ${YELLOW}CHECKING...${NC}"
-    elif [ "$vercel_url" == "$current_url" ]; then
-        echo -e "${BLUE}│${NC} ${GREEN}${CHECK}${NC} ${BOLD}Status:${NC} ${GREEN}SYNCHRONIZED${NC}"
-        echo -e "${BLUE}│${NC} ${DIM}Production URL:${NC} https://v0-planetary-agents1.vercel.app"
+    
+    if [[ "$BACKEND_URL" == *"localhost"* ]] || [[ "$BACKEND_URL" == *"127.0.0.1"* ]]; then
+        echo -e "${BLUE}│${NC} ${YELLOW}${STAR}${NC} ${BOLD}Mode:${NC} ${YELLOW}LOCAL DEVELOPMENT${NC}"
+        echo -e "${BLUE}│${NC} ${DIM}For production, deploy to Render/Railway${NC}"
+        echo -e "${BLUE}│${NC} ${DIM}See: BACKEND_DEPLOYMENT_GUIDE.md${NC}"
     else
-        echo -e "${BLUE}│${NC} ${YELLOW}${STAR}${NC} ${BOLD}Status:${NC} ${YELLOW}OUT OF SYNC${NC}"
-        echo -e "${BLUE}│${NC}"
-        echo -e "${BLUE}│${NC} ${DIM}Current Tunnel:${NC}"
-        echo -e "${BLUE}│${NC}   ${current_url}"
-        echo -e "${BLUE}│${NC}"
-        echo -e "${BLUE}│${NC} ${YELLOW}Action required:${NC}"
-        echo -e "${BLUE}│${NC}   ${DIM}echo \"${current_url}\" | vercel env add NEXT_PUBLIC_BACKEND_URL production${NC}"
+        echo -e "${BLUE}│${NC} ${GREEN}${CHECK}${NC} ${BOLD}Mode:${NC} ${GREEN}PRODUCTION${NC}"
+        echo -e "${BLUE}│${NC} ${DIM}Backend URL:${NC} ${BACKEND_URL}"
     fi
-
+    
+    echo -e "${BLUE}│${NC}"
+    echo -e "${BLUE}│${NC} ${DIM}Production Site:${NC} https://v0-planetary-agents1.vercel.app"
     echo -e "${BLUE}╰─${NC}"
 }
 
@@ -283,9 +181,8 @@ display_dashboard() {
     clear
     display_header
     display_backend_section
-    display_ngrok_section
     display_api_endpoints
-    display_vercel_integration
+    display_deployment_info
     display_footer
 }
 

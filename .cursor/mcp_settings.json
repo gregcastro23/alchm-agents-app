@@ -6,6 +6,15 @@
         "Galileo-API-Key": "${GALILEO_API_KEY}",
         "Accept": "text/event-stream"
       }
+    },
+    "neon": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@neondatabase/mcp-server-neon",
+        "start",
+        "${napi_2flxml1onrbpt9542z6fj3j86hgga4gni1rvb2kpxz9xp6rqf8yvtj59ha8rfdb0}"
+      ]
     }
   }
 }

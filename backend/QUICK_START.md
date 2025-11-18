@@ -2,7 +2,7 @@
 
 ## One-Command Startup
 
-Start everything (backend + ngrok + monitoring):
+Start the backend server:
 
 ```bash
 ./backend/scripts/start-production.sh
@@ -11,10 +11,8 @@ Start everything (backend + ngrok + monitoring):
 This script will:
 
 - ✅ Start the backend on port 8000
-- ✅ Start ngrok tunnel
-- ✅ Display tunnel URL
-- ✅ Check Vercel sync status
-- ✅ Auto-restart services if they crash
+- ✅ Display backend URL
+- ✅ Auto-restart if it crashes
 - ✅ Clean shutdown with Ctrl+C
 
 ---
@@ -28,17 +26,9 @@ cd backend
 yarn dev
 ```
 
-### Start ngrok Only
+### For Production Deployment
 
-```bash
-ngrok http 8000
-```
-
-### Start ngrok with Auto-Restart
-
-```bash
-./backend/scripts/start-ngrok-persistent.sh
-```
+See `BACKEND_DEPLOYMENT_GUIDE.md` for deploying to Render or Railway.
 
 ---
 
@@ -53,16 +43,9 @@ ngrok http 8000
 Shows:
 
 - Backend service status
-- ngrok tunnel health
-- API endpoints
-- Vercel integration status
+- API endpoints health
 - Connection metrics
-
-### Health Check Only
-
-```bash
-./backend/scripts/monitor-ngrok-health.sh
-```
+- Performance statistics
 
 ### Test All Endpoints
 
@@ -70,7 +53,7 @@ Shows:
 ./backend/scripts/test-endpoints.sh
 ```
 
-Tests all 12 API endpoints and shows pass/fail results.
+Tests all API endpoints and shows pass/fail results.
 
 ---
 
@@ -78,35 +61,13 @@ Tests all 12 API endpoints and shows pass/fail results.
 
 **Live Site**: https://v0-planetary-agents1.vercel.app
 
-**Backend (via ngrok)**: Check dashboard or run:
+**Backend (Local Development)**:
+- URL: `http://localhost:8000`
+- Health: `http://localhost:8000/api/health`
 
-```bash
-curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"https://[^"]*'
-```
-
-**Health Check**:
-
-```bash
-curl -H "ngrok-skip-browser-warning: true" \
-  https://YOUR-NGROK-URL.ngrok-free.dev/api/health
-```
-
----
-
-## Update Vercel After ngrok Restart
-
-If ngrok URL changes (free tier):
-
-```bash
-# Get new URL
-NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"https://[^"]*' | cut -d'"' -f4)
-
-# Update Vercel
-echo "$NGROK_URL" | vercel env add NEXT_PUBLIC_BACKEND_URL production
-
-# Redeploy
-vercel --prod
-```
+**Backend (Production)**:
+- Deploy to Render/Railway (see `BACKEND_DEPLOYMENT_GUIDE.md`)
+- Set `NEXT_PUBLIC_BACKEND_URL` in Vercel environment variables
 
 ---
 
@@ -116,10 +77,7 @@ vercel --prod
 # Backend logs
 tail -f backend/logs/backend.log
 
-# ngrok logs
-tail -f backend/logs/ngrok.log
-
-# Both
+# All logs
 tail -f backend/logs/*.log
 ```
 
@@ -136,9 +94,6 @@ Press `Ctrl+C` in the terminal running the script.
 ```bash
 # Stop backend
 pkill -f "tsx src/index.ts"
-
-# Stop ngrok
-pkill ngrok
 ```
 
 ---
@@ -153,24 +108,25 @@ lsof -i:8000
 kill -9 <PID>
 ```
 
-### ngrok Not Connecting
+### Backend Not Starting
 
-1. Check if backend is running: `lsof -i:8000`
-2. Restart ngrok: `pkill ngrok && ngrok http 8000`
-3. Check ngrok dashboard: http://127.0.0.1:4040
+1. Check dependencies: `cd backend && yarn install`
+2. Check logs: `tail -f backend/logs/backend.log`
+3. Verify environment variables are set
 
 ### Vercel Site Not Connecting to Backend
 
-1. Verify ngrok URL matches Vercel env var
-2. Check CORS configuration in `backend/src/index.ts`
-3. Ensure backend is healthy: `curl http://localhost:8000/api/health`
+1. **For local development**: Backend must be running on `localhost:8000`
+2. **For production**: Deploy backend to Render/Railway and set `NEXT_PUBLIC_BACKEND_URL` in Vercel
+3. Check CORS configuration in `backend/src/index.ts`
+4. Ensure backend is healthy: `curl http://localhost:8000/api/health`
 
 ---
 
 ## Quick Commands Cheat Sheet
 
 ```bash
-# Start everything
+# Start backend
 ./backend/scripts/start-production.sh
 
 # Monitor dashboard
@@ -179,19 +135,24 @@ kill -9 <PID>
 # Test endpoints
 ./backend/scripts/test-endpoints.sh
 
-# Get ngrok URL
-curl -s http://127.0.0.1:4040/api/tunnels | grep public_url
-
 # Check backend health
 curl http://localhost:8000/api/health
 
 # View logs
 tail -f backend/logs/backend.log
 
-# Stop everything
-pkill -f "tsx src/index.ts" && pkill ngrok
+# Stop backend
+pkill -f "tsx src/index.ts"
 ```
 
 ---
 
-For complete documentation, see [NGROK_BACKEND_INTEGRATION_COMPLETE.md](../NGROK_BACKEND_INTEGRATION_COMPLETE.md)
+## Deployment
+
+For production deployment, see:
+- **BACKEND_DEPLOYMENT_GUIDE.md** - Step-by-step Render/Railway deployment
+- **PRODUCTION_SCALING_GUIDE.md** - Scaling and optimization guide
+
+---
+
+For complete documentation, see [BACKEND_DEPLOYMENT_GUIDE.md](../BACKEND_DEPLOYMENT_GUIDE.md)

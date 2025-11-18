@@ -91,7 +91,6 @@ const corsOptions = {
     'Content-Type',
     'Authorization',
     'X-Requested-With',
-    'ngrok-skip-browser-warning',
   ],
 }
 app.use(cors(corsOptions))

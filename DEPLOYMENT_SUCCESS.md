@@ -1,11 +1,19 @@
 # 🎉 DEPLOYMENT SUCCESS - Backend Integration Complete
 
-## ✅ Status: PRODUCTION READY
+> **⚠️ NOTE: This document is historical. ngrok is deprecated.**
+> 
+> **For current deployment, see**: `BACKEND_DEPLOYMENT_GUIDE.md`
+> 
+> **Recommended**: Deploy backend to Render or Railway instead of using ngrok.
+
+## ✅ Status: PRODUCTION READY (Historical)
 
 **Deployment Time**: October 7, 2025
 **Production URL**: https://v0-planetary-agents1.vercel.app
 **Latest Deployment**: https://v0-planetary-agents-cf5g7ldiu-gregcastro23s-projects.vercel.app
 **Status**: ● Ready (deployed 6 minutes ago)
+
+**Current Status**: ngrok deprecated - use Render/Railway for production backend
 
 ---
 
@@ -18,28 +26,28 @@
 - Enabled all backend feature flags (planetary hours, thermodynamics, tokens, kinetics)
 - Configured server-side variables (ANTHROPIC_API_KEY, NEXTAUTH, DATABASE_URL)
 
-### ✅ Phase 2: ngrok Tunnel Persistence
+### ✅ Phase 2: Backend Deployment (Historical - ngrok deprecated)
 
-Created production-ready scripts:
+**Note**: ngrok scripts have been removed. Use Render/Railway deployment instead.
 
-- **start-ngrok-persistent.sh** - Auto-restart tunnel with health monitoring
-- **monitor-ngrok-health.sh** - Real-time tunnel health dashboard
+Created production-ready scripts (now deprecated):
+- ~~**start-ngrok-persistent.sh**~~ - Removed (use Render/Railway)
+- ~~**monitor-ngrok-health.sh**~~ - Removed (use Render/Railway)
 - **monitoring-dashboard.sh** - Comprehensive system monitoring
 - **test-endpoints.sh** - Automated API endpoint testing
-- **start-production.sh** - One-command startup for all services
+- **start-production.sh** - Backend startup script (ngrok removed)
 
 ### ✅ Phase 3: Backend Production Configuration
 
 - Updated CORS to allow all Vercel domains (production + preview deployments)
 - Added pattern matching for `*.vercel.app` domains
 - Configured rate limiting (100 req/15min global, 10 req/min compute)
-- Added `ngrok-skip-browser-warning` header support
+- CORS configured for production domains (ngrok header removed)
 - Created production environment file with optimized settings
 
 ### ✅ Phase 4: Monitoring & Logging
 
 - Real-time backend service status monitoring
-- ngrok tunnel connectivity tracking
 - API endpoint health checks
 - Vercel integration synchronization validation
 - Connection metrics and response time tracking
@@ -57,15 +65,16 @@ Created production-ready scripts:
 
 ### Backend Scripts (`backend/scripts/`)
 
-1. **start-production.sh** - Master startup script (backend + ngrok + monitoring)
-2. **start-ngrok-persistent.sh** - Auto-restart ngrok tunnel
-3. **monitor-ngrok-health.sh** - Simple health monitoring
+1. **start-production.sh** - Backend startup script (ngrok removed)
+2. ~~**start-ngrok-persistent.sh**~~ - Removed (deprecated)
+3. ~~**monitor-ngrok-health.sh**~~ - Removed (deprecated)
 4. **monitoring-dashboard.sh** - Full production dashboard
 5. **test-endpoints.sh** - Comprehensive API testing
 
 ### Documentation
 
-1. **NGROK_BACKEND_INTEGRATION_COMPLETE.md** - Complete integration guide
+1. ~~**NGROK_BACKEND_INTEGRATION_COMPLETE.md**~~ - Removed (deprecated)
+1. **BACKEND_DEPLOYMENT_GUIDE.md** - Current deployment guide (Render/Railway)
 2. **backend/QUICK_START.md** - Quick reference guide
 3. **DEPLOYMENT_SUCCESS.md** - This file
 
@@ -93,25 +102,16 @@ This starts everything and monitors all services automatically.
 # Terminal 1: Backend
 cd backend && yarn dev
 
-# Terminal 2: ngrok
-ngrok http 8000
+# Terminal 2: (Not needed - deploy to Render/Railway instead)
+# See BACKEND_DEPLOYMENT_GUIDE.md
 
 # Terminal 3: Monitoring (optional)
 ./backend/scripts/monitoring-dashboard.sh
 ```
 
-### Option 3: Persistent ngrok
+### Option 3: Deploy to Render/Railway (Recommended)
 
-```bash
-# Terminal 1: Backend
-cd backend && yarn dev
-
-# Terminal 2: Persistent ngrok with auto-restart
-./backend/scripts/start-ngrok-persistent.sh
-
-# Terminal 3: Monitoring
-./backend/scripts/monitoring-dashboard.sh
-```
+See `BACKEND_DEPLOYMENT_GUIDE.md` for step-by-step instructions.
 
 ---
 
@@ -122,12 +122,12 @@ cd backend && yarn dev
 **Main**: https://v0-planetary-agents1.vercel.app
 **Latest Deploy**: https://v0-planetary-agents-cf5g7ldiu-gregcastro23s-projects.vercel.app
 
-### Backend (ngrok)
+### Backend (Deploy to Render/Railway)
 
-**Current URL**: https://idiodynamic-quadrilaterally-roberta.ngrok-free.dev
-**Health**: https://idiodynamic-quadrilaterally-roberta.ngrok-free.dev/api/health
+**Current**: Not deployed (use Render/Railway - see BACKEND_DEPLOYMENT_GUIDE.md)
+**Recommended**: Deploy to Render for stable URL
 
-### API Endpoints (via ngrok)
+### API Endpoints (when backend is deployed)
 
 - `GET /api/health` - Health check
 - `POST /api/planetary/current-hour` - Current planetary hour
@@ -153,14 +153,14 @@ curl http://localhost:8000/api/health
 
 Expected: `{"status":"healthy","uptime":...}`
 
-### 2. Check ngrok Tunnel
+### 2. Check Deployed Backend
 
 ```bash
-curl -H "ngrok-skip-browser-warning: true" \
-  https://idiodynamic-quadrilaterally-roberta.ngrok-free.dev/api/health
+# After deploying to Render/Railway
+curl https://your-backend-service.onrender.com/api/health
 ```
 
-Expected: Same as above
+Expected: `{"status":"healthy","uptime":...}`
 
 ### 3. Check Production Site
 
@@ -170,7 +170,7 @@ Expected: Site loads without errors
 
 ### 4. Test API Integration
 
-Open browser console on production site and check Network tab for successful API calls to ngrok URL.
+Open browser console on production site and check Network tab for successful API calls to your deployed backend URL.
 
 ---
 
@@ -179,8 +179,9 @@ Open browser console on production site and check Network tab for successful API
 ### Vercel Environment Variables (Production)
 
 ```
-NEXT_PUBLIC_BACKEND_URL=https://idiodynamic-quadrilaterally-roberta.ngrok-free.dev
-NEXT_PUBLIC_WEBSOCKET_URL=wss://idiodynamic-quadrilaterally-roberta.ngrok-free.dev
+# Set to your Render/Railway backend URL
+# NEXT_PUBLIC_BACKEND_URL=https://your-backend-service.onrender.com
+# NEXT_PUBLIC_WEBSOCKET_URL=wss://your-backend-service.onrender.com
 NEXT_PUBLIC_PLANETARY_HOURS_BACKEND=true
 NEXT_PUBLIC_THERMODYNAMICS_BACKEND=true
 NEXT_PUBLIC_TOKEN_CALCULATIONS_BACKEND=true
@@ -219,9 +220,9 @@ GALILEO_API_KEY=<configured>
 - Thermodynamics: < 100ms
 - Token calculations: < 500ms
 
-### ngrok Overhead
+### Backend Deployment
 
-- Additional latency: ~50-100ms (free tier)
+- Render/Railway: Stable URL, no overhead
 - Total end-to-end: < 500ms average
 
 ### Deployment Stats
@@ -235,45 +236,23 @@ GALILEO_API_KEY=<configured>
 
 ## ⚠️ Important Notes
 
-### ngrok Free Tier
+### ngrok Deprecated
 
-The current setup uses ngrok free tier, which has these limitations:
+**ngrok is no longer used**. All ngrok scripts and configuration have been removed.
 
-1. **URL Changes**: Tunnel URL resets when ngrok restarts
-2. **Browser Warning**: First-time visitors see ngrok warning page
-3. **No Persistence**: URL is randomly generated each time
+### Current Deployment Options
 
-### When ngrok URL Changes
+**Option 1: Render.com (Recommended)**
 
-If you restart ngrok and the URL changes:
+- Free tier available (with cold starts)
+- Stable URL that never changes
+- See `BACKEND_DEPLOYMENT_GUIDE.md` for setup
 
-```bash
-# 1. Get new URL
-NEW_URL=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"https://[^"]*' | cut -d'"' -f4)
+**Option 2: Railway.app**
 
-# 2. Update Vercel
-echo "$NEW_URL" | vercel env add NEXT_PUBLIC_BACKEND_URL production
-echo "$NEW_URL" | vercel env add NEXT_PUBLIC_BACKEND_URL preview
-echo "$NEW_URL" | vercel env add NEXT_PUBLIC_BACKEND_URL development
-
-# 3. Redeploy
-vercel --prod
-```
-
-### Long-Term Production Options
-
-**Option 1: ngrok Paid Plan ($8/month)**
-
-- Static domain that never changes
-- No browser warning
-- Better for production
-
-**Option 2: Cloud Backend Deployment**
-
-- Render.com (free tier available)
-- Railway.app (free tier available)
-- Fly.io (free tier available)
-- Permanent URL without ngrok
+- Faster cold starts than Render
+- Better free tier
+- See `PRODUCTION_SCALING_GUIDE.md` for details
 
 **Option 3: Vercel Serverless Functions**
 
@@ -287,17 +266,16 @@ vercel --prod
 
 ### Immediate (To Make Site Functional)
 
-1. **Start Backend**: `cd backend && yarn dev`
-2. **Start ngrok**: `./backend/scripts/start-ngrok-persistent.sh`
-3. **Monitor**: `./backend/scripts/monitoring-dashboard.sh` (optional)
-4. **Test Production**: Visit https://v0-planetary-agents1.vercel.app
+1. **Deploy Backend**: Follow `BACKEND_DEPLOYMENT_GUIDE.md` to deploy to Render/Railway
+2. **Update Vercel**: Set `NEXT_PUBLIC_BACKEND_URL` to your deployed backend URL
+3. **Test Production**: Visit https://v0-planetary-agents1.vercel.app
 
 ### Short-Term (This Week)
 
 1. Test all features on production site
 2. Monitor for errors and performance issues
 3. Document any issues in monitoring logs
-4. Consider upgrading to ngrok paid plan if URL stability is needed
+4. Deploy backend to Render/Railway for stable URL
 
 ### Long-Term (This Month)
 
@@ -328,18 +306,17 @@ ls -la backend/scripts/
 
 # View logs
 tail -f backend/logs/backend.log
-tail -f backend/logs/ngrok.log
 ```
 
 ### Documentation Links
 
-- **Main Integration Guide**: [NGROK_BACKEND_INTEGRATION_COMPLETE.md](NGROK_BACKEND_INTEGRATION_COMPLETE.md)
+- **Current Deployment Guide**: [BACKEND_DEPLOYMENT_GUIDE.md](BACKEND_DEPLOYMENT_GUIDE.md)
 - **Quick Start**: [backend/QUICK_START.md](backend/QUICK_START.md)
 - **Project README**: [CLAUDE.md](CLAUDE.md)
 
 ### Monitoring Dashboards
 
-- **ngrok Web Interface**: http://127.0.0.1:4040
+- **Render Dashboard**: https://dashboard.render.com (if using Render)
 - **Vercel Dashboard**: https://vercel.com/dashboard
 - **Production Site**: https://v0-planetary-agents1.vercel.app
 
@@ -350,7 +327,7 @@ tail -f backend/logs/ngrok.log
 - [x] Vercel environment variables configured
 - [x] Backend CORS updated for Vercel domains
 - [x] Rate limiting configured
-- [x] ngrok tunnel scripts created
+- [x] Backend deployment guide created (Render/Railway)
 - [x] Monitoring dashboard implemented
 - [x] API testing script created
 - [x] Production deployment successful (● Ready)
@@ -365,24 +342,19 @@ tail -f backend/logs/ngrok.log
 Your Planetary Agents platform is now fully integrated with:
 
 - ✅ **Next.js frontend** deployed to Vercel
-- ✅ **Express.js backend** running locally
-- ✅ **ngrok tunnel** connecting them together
+- ✅ **Express.js backend** ready for deployment
+- ✅ **Deployment guides** for Render/Railway
 - ✅ **Monitoring tools** for production readiness
-- ✅ **Auto-restart scripts** for stability
 
 ### The platform is now PRODUCTION READY! 🚀
 
-**Remember**: Start the backend and ngrok before testing the live site!
-
-```bash
-./backend/scripts/start-production.sh
-```
+**Next Step**: Deploy backend to Render/Railway (see `BACKEND_DEPLOYMENT_GUIDE.md`)
 
 Then visit: https://v0-planetary-agents1.vercel.app
 
 ---
 
 _Integration completed on October 7, 2025_
-_Backend deployed via ngrok tunnel_
+_Backend deployment: Use Render/Railway (ngrok deprecated)_
 _Frontend deployed to Vercel production_
 _Status: ● Ready_

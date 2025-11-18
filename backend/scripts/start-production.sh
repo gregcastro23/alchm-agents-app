@@ -1,6 +1,6 @@
 #!/bin/bash
 # Master Production Startup Script
-# Starts backend, ngrok tunnel, and monitoring dashboard
+# Starts backend server for local development
 
 set -e
 
@@ -17,7 +17,7 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 echo -e "${BOLD}${BLUE}╔═════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}${BLUE}║   Planetary Agents - Production Backend Startup Script    ║${NC}"
+echo -e "${BOLD}${BLUE}║   Planetary Agents - Backend Startup Script                ║${NC}"
 echo -e "${BOLD}${BLUE}╚═════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -32,6 +32,7 @@ if lsof -i:8000 -t > /dev/null 2>&1; then
         sleep 2
     else
         echo -e "${GREEN}Using existing backend${NC}"
+        exit 0
     fi
 fi
 
@@ -45,6 +46,9 @@ if ! lsof -i:8000 -t > /dev/null 2>&1; then
         echo -e "${YELLOW}Installing dependencies...${NC}"
         yarn install
     fi
+
+    # Create logs directory
+    mkdir -p logs
 
     # Start backend in background
     nohup yarn dev > logs/backend.log 2>&1 &
@@ -74,84 +78,17 @@ else
 fi
 
 echo ""
-
-# Check if ngrok is already running
-if curl -s http://127.0.0.1:4040/api/tunnels > /dev/null 2>&1; then
-    EXISTING_URL=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"https://[^"]*' | cut -d'"' -f4 | head -1)
-
-    if [ ! -z "$EXISTING_URL" ]; then
-        echo -e "${YELLOW}⚠️  ngrok tunnel is already running${NC}"
-        echo -e "${CYAN}URL: ${EXISTING_URL}${NC}"
-        read -p "Restart tunnel? (y/N): " -n 1 -r
-        echo
-
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            echo -e "${BLUE}Stopping existing ngrok...${NC}"
-            pkill ngrok || true
-            sleep 2
-        else
-            echo -e "${GREEN}Using existing tunnel${NC}"
-            NGROK_URL="$EXISTING_URL"
-        fi
-    fi
-fi
-
-# Start ngrok if not running
-if [ -z "$NGROK_URL" ]; then
-    echo -e "${BLUE}🌐 Starting ngrok tunnel...${NC}"
-
-    nohup ngrok http 8000 --log=stdout > logs/ngrok.log 2>&1 &
-    NGROK_PID=$!
-    echo $NGROK_PID > logs/ngrok.pid
-
-    echo -e "${GREEN}✅ ngrok starting (PID: $NGROK_PID)${NC}"
-    echo -e "${BLUE}⏳ Waiting for tunnel to establish...${NC}"
-
-    # Wait for tunnel
-    for i in {1..15}; do
-        NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null | grep -o '"public_url":"https://[^"]*' | cut -d'"' -f4 | head -1)
-
-        if [ ! -z "$NGROK_URL" ]; then
-            echo -e "${GREEN}✅ Tunnel established!${NC}"
-            break
-        fi
-
-        if [ $i -eq 15 ]; then
-            echo -e "${RED}❌ Failed to establish tunnel${NC}"
-            exit 1
-        fi
-
-        sleep 1
-    done
-fi
-
-echo ""
 echo -e "${BOLD}${GREEN}╔═══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}${GREEN}║              🎉 Production Backend Ready!                ║${NC}"
+echo -e "${BOLD}${GREEN}║              🎉 Backend Ready!                           ║${NC}"
 echo -e "${BOLD}${GREEN}╚═══════════════════════════════════════════════════════════╝${NC}"
 echo ""
 echo -e "${CYAN}Backend URL:${NC}    http://localhost:8000"
-echo -e "${CYAN}ngrok URL:${NC}      ${GREEN}${NGROK_URL}${NC}"
-echo -e "${CYAN}Health Check:${NC}   ${NGROK_URL}/api/health"
-echo -e "${CYAN}Vercel Site:${NC}    https://v0-planetary-agents1.vercel.app"
+echo -e "${CYAN}Health Check:${NC}   http://localhost:8000/api/health"
+echo ""
+echo -e "${YELLOW}ℹ️  For production deployment, use Render or Railway${NC}"
+echo -e "${YELLOW}   See: BACKEND_DEPLOYMENT_GUIDE.md${NC}"
 echo ""
 
-# Check if Vercel env var matches
-echo -e "${BLUE}Checking Vercel integration...${NC}"
-VERCEL_URL=$(vercel env ls 2>/dev/null | grep "NEXT_PUBLIC_BACKEND_URL" | awk '{print $2}' | head -1 || echo "")
-
-if [ "$VERCEL_URL" == "$NGROK_URL" ]; then
-    echo -e "${GREEN}✅ Vercel environment variable is synchronized${NC}"
-elif [ "$VERCEL_URL" == "Encrypted" ]; then
-    echo -e "${YELLOW}ℹ️  Vercel environment variable is encrypted (cannot verify)${NC}"
-else
-    echo -e "${YELLOW}⚠️  Vercel environment variable may be out of sync${NC}"
-    echo -e "${CYAN}Update with:${NC}"
-    echo -e "  ${DIM}echo \"${NGROK_URL}\" | vercel env add NEXT_PUBLIC_BACKEND_URL production${NC}"
-    echo -e "  ${DIM}vercel --prod${NC}"
-fi
-
-echo ""
 echo -e "${BOLD}${CYAN}Available Commands:${NC}"
 echo -e "  ${DIM}# View monitoring dashboard${NC}"
 echo -e "  ${BLUE}./backend/scripts/monitoring-dashboard.sh${NC}"
@@ -159,19 +96,16 @@ echo ""
 echo -e "  ${DIM}# Test all API endpoints${NC}"
 echo -e "  ${BLUE}./backend/scripts/test-endpoints.sh${NC}"
 echo ""
-echo -e "  ${DIM}# Start persistent ngrok (auto-restart)${NC}"
-echo -e "  ${BLUE}./backend/scripts/start-ngrok-persistent.sh${NC}"
-echo ""
 echo -e "  ${DIM}# View backend logs${NC}"
 echo -e "  ${BLUE}tail -f backend/logs/backend.log${NC}"
 echo ""
-echo -e "${BOLD}${YELLOW}Press Ctrl+C to stop all services${NC}"
+echo -e "${BOLD}${YELLOW}Press Ctrl+C to stop the backend${NC}"
 echo ""
 
 # Function to cleanup on exit
 cleanup() {
     echo ""
-    echo -e "${YELLOW}🛑 Stopping all services...${NC}"
+    echo -e "${YELLOW}🛑 Stopping backend...${NC}"
 
     # Stop backend
     if [ -f "logs/backend.pid" ]; then
@@ -183,26 +117,16 @@ cleanup() {
         rm -f logs/backend.pid
     fi
 
-    # Stop ngrok
-    if [ -f "logs/ngrok.pid" ]; then
-        NGROK_PID=$(cat logs/ngrok.pid)
-        if kill -0 $NGROK_PID 2>/dev/null; then
-            kill $NGROK_PID 2>/dev/null || true
-            echo -e "${GREEN}✅ ngrok stopped${NC}"
-        fi
-        rm -f logs/ngrok.pid
-    fi
-
     echo -e "${BLUE}👋 Goodbye!${NC}"
 }
 
 trap cleanup EXIT INT TERM
 
-# Keep script running to maintain services
-echo -e "${DIM}Services running. Press Ctrl+C to stop all services.${NC}"
+# Keep script running to maintain backend
+echo -e "${DIM}Backend running. Press Ctrl+C to stop.${NC}"
 echo ""
 
-# Monitor services
+# Monitor backend
 while true; do
     # Check backend
     if ! lsof -i:8000 -t > /dev/null 2>&1; then
@@ -210,13 +134,7 @@ while true; do
         cd "$BACKEND_DIR"
         nohup yarn dev > logs/backend.log 2>&1 &
         echo $! > logs/backend.pid
-    fi
-
-    # Check ngrok
-    if ! curl -s http://127.0.0.1:4040/api/tunnels > /dev/null 2>&1; then
-        echo -e "${RED}❌ ngrok died! Restarting...${NC}"
-        nohup ngrok http 8000 --log=stdout > logs/ngrok.log 2>&1 &
-        echo $! > logs/ngrok.pid
+        echo -e "${GREEN}✅ Backend restarted${NC}"
     fi
 
     sleep 30
