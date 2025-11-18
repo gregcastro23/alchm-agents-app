@@ -4,26 +4,39 @@
 
 This guide will help you integrate the Render MCP server into Cursor, enabling you to manage your Render infrastructure directly from Cursor using natural language prompts.
 
+The Render MCP server is hosted at `https://mcp.render.com/mcp` and provides access to:
+- Service management (create, list, query services)
+- Database operations (PostgreSQL queries, management)
+- Metrics and monitoring (CPU, memory, response times)
+- Logs and troubleshooting
+- Deploy history and details
+- Key Value (Redis) instances
+
 ## Prerequisites
 
 - Cursor IDE installed
 - Render account with API access
-- Render API Key: `rnd_l7k84fHY2Z2pdm3rpwTx1Yr500od`
+- Render API Key (create from [Account Settings](https://dashboard.render.com/settings#api-keys))
+
+<warning-block>
+
+**Render API keys are broadly scoped.** They grant access to all workspaces and services your account can access. Before proceeding, make sure you're comfortable granting these permissions to your AI app.
+
+</warning-block>
 
 ## Setup Instructions
 
-### Step 1: Locate Cursor MCP Configuration File
+### Step 1: Create an API Key
 
-The Cursor MCP configuration file is located at:
-```
-~/.cursor/mcp.json
-```
+1. Navigate to your [Render Account Settings](https://dashboard.render.com/settings#api-keys)
+2. Click "Create API Key"
+3. Copy and save the API key securely (you won't be able to see it again)
 
-If this file doesn't exist, you'll need to create it.
+### Step 2: Configure Cursor MCP
 
-### Step 2: Add Render MCP Server Configuration
+**Option A: Use Project Configuration (Recommended for this project)**
 
-Add the following configuration to `~/.cursor/mcp.json`:
+This project includes a pre-configured MCP settings file at `.cursor/mcp_settings.json`. The Render MCP server is already configured to use an environment variable:
 
 ```json
 {
@@ -31,12 +44,40 @@ Add the following configuration to `~/.cursor/mcp.json`:
     "render": {
       "url": "https://mcp.render.com/mcp",
       "headers": {
-        "Authorization": "Bearer rnd_l7k84fHY2Z2pdm3rpwTx1Yr500od"
+        "Authorization": "Bearer ${RENDER_API_KEY}"
       }
     }
   }
 }
 ```
+
+**To activate:**
+1. Set the `RENDER_API_KEY` environment variable in your shell or `.env.local`
+2. Restart Cursor completely
+
+**Option B: Use Global Cursor Configuration**
+
+The Cursor MCP configuration file is located at:
+```
+~/.cursor/mcp.json
+```
+
+If this file doesn't exist, you'll need to create it. Add the following configuration:
+
+```json
+{
+  "mcpServers": {
+    "render": {
+      "url": "https://mcp.render.com/mcp",
+      "headers": {
+        "Authorization": "Bearer <YOUR_API_KEY>"
+      }
+    }
+  }
+}
+```
+
+Replace `<YOUR_API_KEY>` with your Render API key.
 
 **If you already have other MCP servers configured**, merge the `render` configuration into your existing `mcpServers` object:
 
@@ -49,7 +90,7 @@ Add the following configuration to `~/.cursor/mcp.json`:
     "render": {
       "url": "https://mcp.render.com/mcp",
       "headers": {
-        "Authorization": "Bearer rnd_l7k84fHY2Z2pdm3rpwTx1Yr500od"
+        "Authorization": "Bearer <YOUR_API_KEY>"
       }
     }
   }
@@ -238,15 +279,42 @@ Update environment variables for my planetary-agents service
 
 ## Quick Start Checklist
 
-- [ ] Create or locate `~/.cursor/mcp.json`
-- [ ] Add Render MCP configuration with API key
+- [ ] Create Render API key from [Account Settings](https://dashboard.render.com/settings#api-keys)
+- [ ] Set `RENDER_API_KEY` environment variable (or use global config)
+- [ ] Verify configuration in `.cursor/mcp_settings.json` (project) or `~/.cursor/mcp.json` (global)
 - [ ] Restart Cursor completely
-- [ ] Set your Render workspace
+- [ ] Set your Render workspace: `Set my Render workspace to [WORKSPACE_NAME]`
 - [ ] Test with: `List my Render services`
 - [ ] Explore with natural language prompts
 
+## What is MCP?
+
+[**Model Context Protocol**](https://modelcontextprotocol.io/introduction) (**MCP**) is an open standard for connecting AI applications to external tools and data. An **MCP server** exposes a set of actions that AI apps can invoke to help fulfill relevant user prompts.
+
+The Render MCP server calls the Render API to perform platform actions, then packages the results into a standardized format for Cursor.
+
+## How It Works
+
+1. You provide a natural language prompt (e.g., "List my Render services")
+2. Cursor intelligently detects that the Render MCP server supports actions relevant to the prompt
+3. Cursor directs the MCP server to execute the appropriate tool (e.g., `list_services`)
+4. The MCP server calls the Render API and returns the results
+5. Cursor displays the information in a helpful format
+
+## Running Locally (Advanced)
+
+<info-block>
+
+**We strongly recommend using Render's hosted MCP server** instead of running it locally. The hosted server automatically updates with new capabilities as they're added.
+
+</info-block>
+
+If you need to run the MCP server locally, see the [official documentation](https://docs.render.com/mcp#running-locally) for Docker and executable setup options.
+
 ---
 
-**Setup Date**: 2025-10-29
-**API Key Status**: Active
-**Configuration File**: `~/.cursor/mcp.json`
+**Setup Date**: 2025-10-29  
+**Configuration File**: `.cursor/mcp_settings.json` (project) or `~/.cursor/mcp.json` (global)  
+**MCP Server URL**: `https://mcp.render.com/mcp`  
+**Documentation**: [Render MCP Docs](https://docs.render.com/mcp)  
+**Source Code**: [GitHub Repository](https://github.com/render-oss/render-mcp-server)
