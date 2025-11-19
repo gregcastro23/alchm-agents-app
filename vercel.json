@@ -1,6 +1,6 @@
 {
   "buildCommand": "yarn build",
-  "installCommand": "pip3 install setuptools && yarn install",
+  "installCommand": "python3 -m pip install --user setuptools && yarn install",
   "framework": "nextjs",
   "functions": {
     "app/api/**/*.ts": {
