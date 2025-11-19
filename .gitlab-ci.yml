@@ -332,21 +332,20 @@ deploy_to_vercel:
     - echo "Project ID - $VERCEL_PROJECT_ID"
     - |
       # Deploy to production using Vercel CLI
-      vercel deploy \
+      DEPLOYMENT_URL=$(vercel deploy \
         --token=$VERCEL_TOKEN \
         --prod \
         --yes \
         --scope=team_eVYHTIN1tCXo7sPrkzqJbLzO \
-        --cwd=. \
-        > deployment-url.txt 2>&1
-    - DEPLOYMENT_URL=$(cat deployment-url.txt | tail -1)
+        --cwd=. 2>&1 | tee deployment-output.txt | tail -1)
+    - echo "DEPLOYMENT_URL=$DEPLOYMENT_URL" > deployment-url.env
     - echo "✅ Deployment successful!"
     - echo "📍 Deployment URL - $DEPLOYMENT_URL"
   artifacts:
     reports:
-      dotenv: deployment-url.txt
+      dotenv: deployment-url.env
     paths:
-      - deployment-url.txt
+      - deployment-output.txt
     expire_in: 1 week
   only:
     - main
@@ -364,18 +363,19 @@ deploy_to_vercel_preview:
   script:
     - echo "🔍 Deploying Preview to Vercel..."
     - |
-      vercel deploy \
+      PREVIEW_URL=$(vercel deploy \
         --token=$VERCEL_TOKEN \
         --yes \
         --scope=team_eVYHTIN1tCXo7sPrkzqJbLzO \
-        --cwd=. \
-        > preview-url.txt 2>&1
-    - PREVIEW_URL=$(cat preview-url.txt | tail -1)
+        --cwd=. 2>&1 | tee preview-output.txt | tail -1)
+    - echo "PREVIEW_URL=$PREVIEW_URL" > preview-url.env
     - echo "✅ Preview deployment successful!"
     - echo "📍 Preview URL - $PREVIEW_URL"
   artifacts:
+    reports:
+      dotenv: preview-url.env
     paths:
-      - preview-url.txt
+      - preview-output.txt
     expire_in: 3 days
   except:
     - main
