@@ -332,16 +332,29 @@ deploy_to_vercel:
     - echo "Project ID - $VERCEL_PROJECT_ID"
     - |
       # Deploy to production using Vercel CLI
-      DEPLOYMENT_URL=$(vercel deploy \
+      set +e
+      vercel deploy \
         --token=$VERCEL_TOKEN \
         --prod \
         --yes \
         --scope=team_eVYHTIN1tCXo7sPrkzqJbLzO \
-        --cwd=. 2>&1 | tee deployment-output.txt | tail -1)
-    - echo "DEPLOYMENT_URL=$DEPLOYMENT_URL" > deployment-url.env
-    - echo "✅ Deployment successful!"
-    - echo "📍 Deployment URL - $DEPLOYMENT_URL"
+        --cwd=. 2>&1 | tee deployment-output.txt
+      DEPLOY_EXIT_CODE=$?
+      set -e
+
+      if [ $DEPLOY_EXIT_CODE -ne 0 ]; then
+        echo "❌ Vercel deployment failed with exit code $DEPLOY_EXIT_CODE"
+        echo "Full output:"
+        cat deployment-output.txt
+        exit 1
+      fi
+
+      DEPLOYMENT_URL=$(tail -1 deployment-output.txt)
+      echo "DEPLOYMENT_URL=$DEPLOYMENT_URL" > deployment-url.env
+      echo "✅ Deployment successful!"
+      echo "📍 Deployment URL - $DEPLOYMENT_URL"
   artifacts:
+    when: always
     reports:
       dotenv: deployment-url.env
     paths:
@@ -363,15 +376,29 @@ deploy_to_vercel_preview:
   script:
     - echo "🔍 Deploying Preview to Vercel..."
     - |
-      PREVIEW_URL=$(vercel deploy \
+      # Deploy preview using Vercel CLI
+      set +e
+      vercel deploy \
         --token=$VERCEL_TOKEN \
         --yes \
         --scope=team_eVYHTIN1tCXo7sPrkzqJbLzO \
-        --cwd=. 2>&1 | tee preview-output.txt | tail -1)
-    - echo "PREVIEW_URL=$PREVIEW_URL" > preview-url.env
-    - echo "✅ Preview deployment successful!"
-    - echo "📍 Preview URL - $PREVIEW_URL"
+        --cwd=. 2>&1 | tee preview-output.txt
+      DEPLOY_EXIT_CODE=$?
+      set -e
+
+      if [ $DEPLOY_EXIT_CODE -ne 0 ]; then
+        echo "❌ Vercel preview deployment failed with exit code $DEPLOY_EXIT_CODE"
+        echo "Full output:"
+        cat preview-output.txt
+        exit 1
+      fi
+
+      PREVIEW_URL=$(tail -1 preview-output.txt)
+      echo "PREVIEW_URL=$PREVIEW_URL" > preview-url.env
+      echo "✅ Preview deployment successful!"
+      echo "📍 Preview URL - $PREVIEW_URL"
   artifacts:
+    when: always
     reports:
       dotenv: preview-url.env
     paths:
