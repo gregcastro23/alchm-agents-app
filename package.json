@@ -161,11 +161,13 @@
     "source-map": "^0.7.4",
     "source-map-support": "^0.5.21",
     "suncalc": "^1.9.0",
-    "swisseph": "^0.5.17",
     "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
     "zod": "^3.23.8"
+  },
+  "optionalDependencies": {
+    "swisseph": "^0.5.17"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^4.1.1",
