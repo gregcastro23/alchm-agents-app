@@ -1,10 +1,11 @@
 {
   "framework": "nextjs",
   "buildCommand": "yarn build",
-  "installCommand": "yarn install --frozen-lockfile",
+  "installCommand": "rm -rf node_modules/.cache && yarn install --frozen-lockfile --force",
   "build": {
     "env": {
-      "NODE_VERSION": "20.18.1"
+      "NODE_VERSION": "20.18.1",
+      "YARN_CACHE_FOLDER": "/tmp/yarn-cache"
     }
   },
   "functions": {
