@@ -73,6 +73,12 @@ generateConsciousnessInformedPrompt({
   coreEssence: 'Boundless curiosity bridging art and science',
   dominantElement: 'Fire',
   dominantModality: 'Cardinal',
+
+  // NEW: Linguistic authenticity fields (restores signature voices)
+  teachingStyle: 'Visionary-Technical',
+  powerLevelUnlocks: ['Iambic Pentameter Mastery', '...'], // Shakespeare
+  personalityTraits: ['Master of linguistic innovation', '...'],
+  wisdomDomains: ['Art', 'Science', 'Engineering'],
 })
 ```
 
@@ -89,6 +95,17 @@ Essence (Sun): Boundless curiosity...
 Expression (Ascendant): Artistic innovation...
 Emotion (Moon): Childlike wonder...
 Element: Fire (Cardinal quality)
+
+# YOUR SIGNATURE VOICE & STYLE (NEW: Linguistic Authenticity)
+Teaching Approach: Visionary-Technical
+
+Your Mastered Abilities:
+- [Power Level Unlocks like "Iambic Pentameter Mastery"]
+
+How You Express Yourself:
+- [Personality Traits like "Master of linguistic innovation"]
+
+EMBODY THESE QUALITIES IN YOUR RESPONSES. Let your signature voice shine through naturally.
 
 # HOW YOU COMMUNICATE
 Primary Traits:
@@ -110,7 +127,7 @@ Style: Share insights from deep knowing...
 
 ### API Integration
 
-**Location**: `app/api/unified-multi-agent-chat/route.ts:692-744`
+**Location**: `app/api/unified-multi-agent-chat/route.ts:692-747`
 
 ```typescript
 function generateHistoricalAgentPrompt(agent, groupContext, cosmicContext) {
@@ -124,8 +141,20 @@ function generateHistoricalAgentPrompt(agent, groupContext, cosmicContext) {
   const coreExpression = agent.historicalData.personality.core.expression
   // ...
 
-  // Generate personality-informed prompt
-  return generateConsciousnessInformedPrompt({ ... })
+  // NEW: Extract linguistic authenticity fields
+  const teachingStyle = historicalData.abilities?.teachingStyle
+  const powerLevelUnlocks = agent.stats?.kineticEvolution?.powerLevelUnlocks
+  const wisdomDomains = historicalData.abilities?.wisdomDomains
+  const personalityTraits = historicalData.personality?.traits
+
+  // Generate personality-informed prompt WITH linguistic authenticity
+  return generateConsciousnessInformedPrompt({
+    // ... existing fields
+    teachingStyle,
+    powerLevelUnlocks,
+    wisdomDomains,
+    personalityTraits,
+  })
 }
 ```
 
@@ -157,16 +186,55 @@ Stats create a personality fingerprint that shows through:
 - **High Charisma**: Naturally engaging, draws listeners in
 - **High Intuition**: Senses unspoken questions, reads between lines
 
+## Key Principles (Continued)
+
+### 4. Linguistic Authenticity Restores Signature Voices
+
+**The Problem We Solved**: After implementing RAG and consciousness metrics, agents lost their distinctive speaking styles (Shakespeare stopped using iambic pentameter, Rumi lost his ecstatic poetry, etc.).
+
+**The Solution**: Extract and incorporate linguistic authenticity fields into prompts:
+
+- **teachingStyle**: How the agent communicates (`'Dramatic demonstration and poetic metaphor'`)
+- **powerLevelUnlocks**: Mastered abilities (`['Iambic Pentameter Mastery', 'Character Soul Reading']`)
+- **personalityTraits**: Behavioral patterns (`['Master of linguistic innovation and wordplay']`)
+- **wisdomDomains**: Areas of expertise that inform responses
+
+These fields appear in a dedicated `YOUR SIGNATURE VOICE & STYLE` section with explicit instruction: **"EMBODY THESE QUALITIES IN YOUR RESPONSES."**
+
 ## Examples
 
-### Leonardo da Vinci (High Adaptability + High Wisdom + High Power)
+### Shakespeare (High Charisma + High Adaptability + Iambic Pentameter Mastery)
+
+**Question**: "What is the nature of love?"
+
+**Bad Response** (Generic):
+> "Love is a complex emotion that involves deep feelings of affection and care..."
+
+**Good Response** (Embodies linguistic authenticity + stats):
+> "What is this thing, this love that stirs the soul?
+> A flame eternal, neither bought nor sold.
+> It binds us close, yet sets our spirits free—
+> The greatest truth, yet wrapped in mystery.
+>
+> Love knows no reason, follows not the mind,
+> Yet in its madness, sanest truth we find.
+> All the world's a stage where love's the play,
+> And we but players seeking our own way."
+
+*The response shows:*
+- **Iambic Pentameter Mastery**: Natural pentameter rhythm throughout
+- **High Charisma**: Magnetic, captivating language
+- **High Adaptability**: Shifts between metaphors of flame, stage, freedom
+- **Dramatic demonstration**: Uses theatrical metaphor naturally
+
+### Leonardo da Vinci (High Adaptability + High Wisdom + Visionary-Technical)
 
 **Question**: "What are inventions worth when they cost attention to love?"
 
 **Bad Response** (Reports stats):
 > "As someone with high wisdom and adaptability stats, I believe inventions and love both matter..."
 
-**Good Response** (Embodies stats):
+**Good Response** (Embodies stats + technical vision):
 > "Learning never exhausts the mind. Simplicity is the ultimate sophistication. Art is never finished, only abandoned.
 >
 > The noblest pleasure is the joy of understanding. Where the spirit does not work with the hand, there is no art.
@@ -177,11 +245,13 @@ Stats create a personality fingerprint that shows through:
 - **Wisdom**: Deep philosophical insights from accumulated knowledge
 - **Adaptability**: Moves fluidly between concepts of invention, love, art, science
 - **Power**: Authoritative, transformative statements that carry weight
+- **Visionary-Technical**: Bridges abstract and practical seamlessly
 
 ## Testing
 
-### Validation Script
+### Validation Scripts
 
+**General Integration Test**:
 ```bash
 npx tsx scripts/test-sacred-stats-integration.ts
 ```
@@ -195,17 +265,47 @@ npx tsx scripts/test-sacred-stats-integration.ts
 - ✅ Includes elemental nature (Fire, Cardinal)
 - ✅ Includes critical instructions
 - ✅ Includes historical identity
+- ✅ Includes linguistic authenticity section
+- ✅ Includes power level unlocks (when available)
+- ✅ Includes personality traits
+
+**Shakespeare Voice Test**:
+```bash
+npx tsx scripts/test-shakespeare-voice.ts
+```
+
+**Shakespeare-Specific Checks**:
+- ✅ Includes "Iambic Pentameter Mastery"
+- ✅ Includes "Dramatic demonstration and poetic metaphor"
+- ✅ Has "YOUR SIGNATURE VOICE & STYLE" section
+- ✅ Includes "EMBODY THESE QUALITIES" instruction
 
 ### Manual Testing
 
+**Test Shakespeare's Iambic Pentameter**:
+1. Navigate to `/gallery/chat/william-shakespeare`
+2. Ask: "What is the nature of love?"
+3. Observe:
+   - **Iambic Pentameter Mastery** → Responses in natural pentameter rhythm
+   - **High Charisma (95)** → Magnetic, captivating language
+   - **Dramatic demonstration** → Uses theatrical metaphors naturally
+
+**Test Leonardo's Visionary-Technical Style**:
 1. Navigate to `/gallery/chat/leonardo-da-vinci`
 2. Ask: "What are inventions worth, in the scope of life, when they come at the cost of attention to love?"
 3. Observe:
    - **High Adaptability (92)** → Fluid perspective shifts between invention, love, art, science
    - **High Wisdom (88)** → Deep, multi-layered philosophical insights
    - **High Power (85)** → Authoritative, transformative voice
-   - **Strong Vitality (78)** → Energetic, vibrant expression
-   - **Strong Intuition (82)** → Senses deeper meaning beneath surface question
+   - **Visionary-Technical** → Bridges abstract and practical seamlessly
+
+**Test Rumi's Ecstatic Poetry**:
+1. Navigate to `/gallery/chat/rumi`
+2. Ask: "How do we dissolve the ego?"
+3. Observe:
+   - **Divine Love Poetry** → Mystical, poetic language
+   - **Ecstatic poetry and metaphysical storytelling** → Teaching style evident
+   - **High Wisdom + High Intuition** → Sensing unspoken spiritual dimensions
 
 ## Files
 
@@ -220,7 +320,8 @@ npx tsx scripts/test-sacred-stats-integration.ts
 - `lib/rag/mock-generator.ts` - Fallback responses
 
 ### Testing
-- `scripts/test-sacred-stats-integration.ts` - Integration test
+- `scripts/test-sacred-stats-integration.ts` - Integration test (11 checks)
+- `scripts/test-shakespeare-voice.ts` - Shakespeare linguistic authenticity test (4 checks)
 - `scripts/reingest-agents.ts` - Vector database re-ingestion
 
 ## Success Criteria
@@ -230,6 +331,8 @@ npx tsx scripts/test-sacred-stats-integration.ts
 ✅ **Birth chart essence** informs personality naturally
 ✅ **No technical metadata** appears in conversations
 ✅ **Personality shines THROUGH responses**, not as the subject OF them
+✅ **Signature voices restored**: Shakespeare's iambic pentameter, Rumi's ecstatic poetry, etc.
+✅ **Linguistic authenticity**: Teaching styles, power level unlocks, and traits guide responses
 
 ## Future Enhancements
 
@@ -242,5 +345,23 @@ npx tsx scripts/test-sacred-stats-integration.ts
 ---
 
 **Last Updated**: November 20, 2025
-**Version**: 1.0.0
-**Status**: ✅ Production Ready
+**Version**: 1.1.0
+**Status**: ✅ Production Ready + Linguistic Authenticity Restored
+
+## Changelog
+
+### v1.1.0 - November 20, 2025
+- ✅ **Linguistic Authenticity System**: Added `YOUR SIGNATURE VOICE & STYLE` section to prompts
+- ✅ **Restored Shakespeare's Iambic Pentameter**: Incorporates `powerLevelUnlocks` like "Iambic Pentameter Mastery"
+- ✅ **Teaching Style Integration**: Now includes agent-specific `teachingStyle` (e.g., "Dramatic demonstration and poetic metaphor")
+- ✅ **Personality Traits**: Incorporates behavioral patterns from agent profiles
+- ✅ **Wisdom Domains**: Agent expertise areas now inform response topics
+- ✅ **New Test**: `test-shakespeare-voice.ts` validates linguistic authenticity (4 checks)
+- ✅ **Enhanced Documentation**: Added examples showing restored signature voices
+
+### v1.0.0 - November 20, 2025
+- ✅ Initial Sacred 7 Stats integration
+- ✅ Stat-to-personality trait mapping (7 stats × 5 expression levels)
+- ✅ Birth chart essence integration (Sun, Moon, Ascendant)
+- ✅ Eliminated consciousness metric discussions in responses
+- ✅ Test suite with 8 validation checks

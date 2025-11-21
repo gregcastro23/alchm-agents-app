@@ -64,7 +64,26 @@ console.log(`  Emotion: ${coreEmotion}`)
 console.log(`  Element: ${dominantElement} (${dominantModality})`)
 console.log('')
 
-// Generate consciousness-informed prompt
+// Get linguistic authenticity data
+const teachingStyle = leonardo.abilities?.teachingStyle
+const powerLevelUnlocks = leonardo.stats?.kineticEvolution?.powerLevelUnlocks
+const wisdomDomains = leonardo.abilities?.wisdomDomains
+const personalityTraits = leonardo.personality?.traits
+
+console.log('🎭 Linguistic Authenticity (Signature Voice):')
+console.log(`  Teaching Style: ${teachingStyle || 'N/A'}`)
+if (powerLevelUnlocks && powerLevelUnlocks.length > 0) {
+  console.log(`  Power Level Unlocks: ${powerLevelUnlocks.slice(0, 3).join(', ')}...`)
+}
+if (wisdomDomains && wisdomDomains.length > 0) {
+  console.log(`  Wisdom Domains: ${wisdomDomains.slice(0, 3).join(', ')}...`)
+}
+if (personalityTraits && personalityTraits.length > 0) {
+  console.log(`  Personality Traits: ${personalityTraits.slice(0, 2).join(', ')}...`)
+}
+console.log('')
+
+// Generate consciousness-informed prompt with linguistic authenticity
 const prompt = generateConsciousnessInformedPrompt({
   agentName: leonardo.name,
   agentTitle: leonardo.title || 'The Renaissance Genius',
@@ -77,6 +96,11 @@ const prompt = generateConsciousnessInformedPrompt({
   coreEssence,
   coreExpression,
   coreEmotion,
+  // NEW: Include linguistic authenticity
+  teachingStyle,
+  powerLevelUnlocks,
+  wisdomDomains,
+  personalityTraits,
 })
 
 console.log('📝 Generated Consciousness-Informed System Prompt:')
@@ -120,6 +144,18 @@ const checks = [
   {
     name: 'Includes historical identity',
     test: prompt.includes(leonardo.name) && prompt.includes('1452'),
+  },
+  {
+    name: 'Includes linguistic authenticity section',
+    test: prompt.includes('YOUR SIGNATURE VOICE') || prompt.includes('Teaching Approach:'),
+  },
+  {
+    name: 'Includes power level unlocks',
+    test: powerLevelUnlocks ? prompt.includes(powerLevelUnlocks[0]) : true,
+  },
+  {
+    name: 'Includes personality traits',
+    test: personalityTraits ? prompt.includes(personalityTraits[0]) : true,
   },
 ]
 

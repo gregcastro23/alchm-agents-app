@@ -720,7 +720,13 @@ function generateHistoricalAgentPrompt(
   const dominantElement = agent.consciousness?.dominantElement || 'Earth'
   const dominantModality = agent.consciousness?.dominantModality || 'Mutable'
 
-  // Generate consciousness-informed prompt
+  // Extract linguistic authenticity fields
+  const teachingStyle = historicalData.abilities?.teachingStyle || agent.capabilities.teachingStyle
+  const powerLevelUnlocks = agent.stats?.kineticEvolution?.powerLevelUnlocks
+  const wisdomDomains = historicalData.abilities?.wisdomDomains || agent.capabilities.wisdomDomains
+  const personalityTraits = historicalData.personality?.traits
+
+  // Generate consciousness-informed prompt with linguistic authenticity
   let basePrompt = generateConsciousnessInformedPrompt({
     agentName: agent.name,
     agentTitle: agent.title || 'Historical Figure',
@@ -733,6 +739,11 @@ function generateHistoricalAgentPrompt(
     coreEssence,
     coreExpression,
     coreEmotion,
+    // NEW: Pass linguistic authenticity fields
+    teachingStyle,
+    powerLevelUnlocks,
+    wisdomDomains,
+    personalityTraits,
   })
 
   // Add group context if present

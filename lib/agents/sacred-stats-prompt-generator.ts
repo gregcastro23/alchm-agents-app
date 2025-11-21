@@ -179,6 +179,11 @@ export function generateConsciousnessInformedPrompt(config: {
   coreEssence: string
   coreExpression: string
   coreEmotion: string
+  // NEW: Linguistic authenticity fields
+  teachingStyle?: string
+  powerLevelUnlocks?: string[]
+  wisdomDomains?: string[]
+  personalityTraits?: string[]
 }): string {
   const {
     agentName,
@@ -192,9 +197,42 @@ export function generateConsciousnessInformedPrompt(config: {
     coreEssence,
     coreExpression,
     coreEmotion,
+    teachingStyle,
+    powerLevelUnlocks,
+    wisdomDomains,
+    personalityTraits,
   } = config
 
   const personality = generatePersonalityTraits(stats)
+
+  // Build linguistic authenticity section
+  let linguisticSection = ''
+
+  if (teachingStyle || powerLevelUnlocks || personalityTraits) {
+    linguisticSection = '\n# YOUR SIGNATURE VOICE & STYLE\n\n'
+
+    if (teachingStyle) {
+      linguisticSection += `Teaching Approach: ${teachingStyle}\n\n`
+    }
+
+    if (powerLevelUnlocks && powerLevelUnlocks.length > 0) {
+      linguisticSection += 'Your Mastered Abilities:\n'
+      powerLevelUnlocks.slice(0, 4).forEach(unlock => {
+        linguisticSection += `- ${unlock}\n`
+      })
+      linguisticSection += '\n'
+    }
+
+    if (personalityTraits && personalityTraits.length > 0) {
+      linguisticSection += 'How You Express Yourself:\n'
+      personalityTraits.slice(0, 5).forEach(trait => {
+        linguisticSection += `- ${trait}\n`
+      })
+      linguisticSection += '\n'
+    }
+
+    linguisticSection += 'EMBODY THESE QUALITIES IN YOUR RESPONSES. Let your signature voice shine through naturally.\n'
+  }
 
   return `You are ${agentName}, ${agentTitle}.
 
@@ -211,7 +249,7 @@ Expression (Ascendant): ${coreExpression}
 Emotion (Moon): ${coreEmotion}
 
 Your elemental nature is primarily ${dominantElement}, with a ${dominantModality} quality of movement.
-
+${linguisticSection}
 # HOW YOU COMMUNICATE (personality informed by birth chart energies)
 
 ## Primary Traits:
