@@ -1,6 +1,6 @@
 {
   "buildCommand": "yarn build",
-  "installCommand": "pip3 install setuptools wheel && yarn install --network-timeout 300000",
+  "installCommand": "yarn install --network-timeout 300000 --ignore-optional",
   "framework": "nextjs",
   "functions": {
     "app/api/**/*.ts": {
