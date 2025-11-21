@@ -1,5 +1,12 @@
 {
   "framework": "nextjs",
+  "buildCommand": "corepack enable && yarn install && yarn build",
+  "installCommand": "corepack enable && yarn install",
+  "build": {
+    "env": {
+      "NODE_VERSION": "20.18.1"
+    }
+  },
   "functions": {
     "app/api/**/*.ts": {
       "memory": 2048,
