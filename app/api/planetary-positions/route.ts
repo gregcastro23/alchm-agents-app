@@ -9,6 +9,36 @@ import { trackPerformanceMetrics } from './metrics/route'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+// CORS configuration for alchm.kitchen and other allowed origins
+const ALLOWED_ORIGINS = [
+  'https://alchm.kitchen',
+  'https://www.alchm.kitchen',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
+]
+
+function getCorsHeaders(origin: string | null) {
+  // Check if origin is allowed
+  const isAllowed = origin && ALLOWED_ORIGINS.includes(origin)
+
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGINS[0],
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400', // 24 hours
+  }
+}
+
+// Handle preflight OPTIONS request
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin')
+  return new NextResponse(null, {
+    status: 204,
+    headers: getCorsHeaders(origin),
+  })
+}
+
 interface RequestBody {
   date?: string // ISO date string
   accuracy?: AccuracyLevel
@@ -18,6 +48,8 @@ interface RequestBody {
 
 export async function GET(req: NextRequest) {
   const startTime = Date.now()
+  const origin = req.headers.get('origin')
+
   try {
     const url = new URL(req.url)
     const dateParam = url.searchParams.get('date')
@@ -37,7 +69,10 @@ export async function GET(req: NextRequest) {
     if (isNaN(date.getTime())) {
       return NextResponse.json(
         { error: 'Invalid date format. Use ISO date string.' },
-        { status: 400 }
+        {
+          status: 400,
+          headers: getCorsHeaders(origin),
+        }
       )
     }
 
@@ -128,6 +163,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(planetaryData, {
       headers: {
+        ...getCorsHeaders(origin),
         'Cache-Control': `public, max-age=${cacheMaxAge}, s-maxage=${cacheMaxAge}`,
         'X-Source': planetaryData.source,
         'X-Accuracy': planetaryData.accuracy,
@@ -141,13 +177,18 @@ export async function GET(req: NextRequest) {
         error: 'Failed to fetch planetary positions',
         message: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      {
+        status: 500,
+        headers: getCorsHeaders(origin),
+      }
     )
   }
 }
 
 export async function POST(req: NextRequest) {
   const startTime = Date.now()
+  const origin = req.headers.get('origin')
+
   try {
     const body = (await req.json()) as RequestBody
     const date = body.date ? new Date(body.date) : new Date()
@@ -155,7 +196,10 @@ export async function POST(req: NextRequest) {
     if (isNaN(date.getTime())) {
       return NextResponse.json(
         { error: 'Invalid date format. Use ISO date string.' },
-        { status: 400 }
+        {
+          status: 400,
+          headers: getCorsHeaders(origin),
+        }
       )
     }
 
@@ -188,6 +232,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(planetaryData, {
       headers: {
+        ...getCorsHeaders(origin),
         'X-Source': planetaryData.source,
         'X-Accuracy': planetaryData.accuracy,
         'X-Cached': planetaryData.cached.toString(),
@@ -200,7 +245,10 @@ export async function POST(req: NextRequest) {
         error: 'Failed to fetch planetary positions',
         message: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      {
+        status: 500,
+        headers: getCorsHeaders(origin),
+      }
     )
   }
 }
