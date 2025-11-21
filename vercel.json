@@ -1,6 +1,4 @@
 {
-  "buildCommand": "yarn build",
-  "installCommand": "yarn install --network-timeout 300000 --ignore-optional",
   "framework": "nextjs",
   "functions": {
     "app/api/**/*.ts": {

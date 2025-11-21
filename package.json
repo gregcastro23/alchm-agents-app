@@ -166,9 +166,6 @@
     "vaul": "^1.1.2",
     "zod": "^3.23.8"
   },
-  "optionalDependencies": {
-    "swisseph": "^0.5.17"
-  },
   "devDependencies": {
     "@chromatic-com/storybook": "^4.1.1",
     "@eslint/js": "^9.35.0",
