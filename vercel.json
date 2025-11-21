@@ -1,6 +1,6 @@
 {
   "buildCommand": "yarn build",
-  "installCommand": "python3 -m pip install --user setuptools && yarn install",
+  "installCommand": "python3 -m pip install --user setuptools wheel && export SETUPTOOLS_USE_DISTUTILS=stdlib && yarn install --network-timeout 300000",
   "framework": "nextjs",
   "functions": {
     "app/api/**/*.ts": {
