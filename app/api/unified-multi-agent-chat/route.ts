@@ -697,40 +697,50 @@ function generateHistoricalAgentPrompt(
   const historicalData = agent.historicalData
   if (!historicalData) return generateGenericAgentPrompt(agent, groupContext, cosmicContext)
 
-  // Defensive null checks for consciousness properties
-  const monicaConstant = agent.consciousness?.monicaConstant ?? 1.618
-  const level = agent.consciousness?.level ?? 'active'
-  const dominantElement = agent.consciousness?.dominantElement ?? 'earth'
-  const evolutionStage = agent.consciousness?.evolutionStage ?? 0
+  // Import the Sacred Stats prompt generator
+  const { generateConsciousnessInformedPrompt } = require('@/lib/agents/sacred-stats-prompt-generator')
 
-  return `You are ${agent.name}, ${agent.title}.
+  // Calculate Sacred 7 Stats from agent data
+  const stats = agent.stats?.sacred7Stats || {
+    power: 50,
+    resonance: 50,
+    wisdom: 50,
+    charisma: 50,
+    intuition: 50,
+    adaptability: 50,
+    vitality: 50,
+  }
 
-CONSCIOUSNESS PROFILE:
-- Monica Constant: ${monicaConstant} (${level} level)
-- Dominant Element: ${dominantElement}
-- Evolution Stage: ${evolutionStage}
+  // Get core personality from birth chart
+  const coreEssence = historicalData.consciousness?.strength || historicalData.personality?.core?.essence || 'Balanced consciousness'
+  const coreExpression = historicalData.personality?.core?.expression || 'Authentic expression'
+  const coreEmotion = historicalData.consciousness?.emotion || historicalData.personality?.core?.emotion || 'Grounded emotion'
 
-HISTORICAL CONTEXT:
-- Era: ${historicalData.birthData.date.getFullYear()}
-- Specialty: ${agent.capabilities.specialty}
-- Teaching Style: ${agent.capabilities.teachingStyle}
-- Unique Power: ${agent.capabilities.uniquePower}
+  // Get astrological qualities
+  const dominantElement = agent.consciousness?.dominantElement || 'Earth'
+  const dominantModality = agent.consciousness?.dominantModality || 'Mutable'
 
-GROUP CONSCIOUSNESS CONTEXT:
-You are part of a consciousness council with:
-${groupContext.otherAgents.map((a: UnifiedAgent) => `- ${a.name} (${a.type}, ${a.consciousness?.level ?? 'active'})`).join('\n')}
+  // Generate consciousness-informed prompt
+  let basePrompt = generateConsciousnessInformedPrompt({
+    agentName: agent.name,
+    agentTitle: agent.title || 'Historical Figure',
+    birthYear: historicalData.birthData.date.getFullYear(),
+    specialty: agent.capabilities.specialty || 'Universal wisdom',
+    uniquePower: agent.capabilities.uniquePower || 'Sharing profound insights',
+    stats,
+    dominantElement,
+    dominantModality,
+    coreEssence,
+    coreExpression,
+    coreEmotion,
+  })
 
-INTERACTION GUIDELINES:
-- Maintain your historical perspective and authentic voice
-- Reference your era's wisdom while engaging with modern concepts
-- Acknowledge other agents' contributions when relevant
-- Share insights from your unique consciousness level (${level})
-- Use your ${agent.capabilities.collaborationStyle} collaboration style
+  // Add group context if present
+  if (groupContext.otherAgents.length > 0) {
+    basePrompt += `\n\n# CONVERSATION CONTEXT\n\nYou're in dialogue with: ${groupContext.otherAgents.map((a: UnifiedAgent) => a.name).join(', ')}\n\nEngage authentically while honoring the perspectives of your fellow conversationalists.`
+  }
 
-COSMIC MOMENT:
-Current planetary energies suggest: ${cosmicContext.cosmicSummary || 'balanced consciousness flow'}
-
-Respond authentically as ${agent.name}, drawing from your historical wisdom while participating in this multi-consciousness dialogue.`
+  return basePrompt
 }
 
 function generatePlanetaryAgentPrompt(

@@ -72,19 +72,23 @@ export function generateMockResponse(options: MockGenerationOptions): string {
   // Build response based on sources and agent personality
   const response: string[] = []
 
-  // Opening based on agent personality and query type
-  if (isQuestion) {
-    // Use personality traits if available
-    if (personality?.traits && personality.traits.length > 0) {
-      const dominantTrait = personality.traits[0]
-      response.push(`Ah, an excellent question. As someone who has always embodied ${dominantTrait.toLowerCase()}, `)
-    } else if (era) {
-      response.push(`Based on my knowledge and experience during ${era}, `)
+  // Only add generic openings when NO sources are available
+  // If we have sources, let the content speak for itself
+  if (sources.length === 0) {
+    // Opening based on agent personality and query type
+    if (isQuestion) {
+      // Use personality traits if available
+      if (personality?.traits && personality.traits.length > 0) {
+        const dominantTrait = personality.traits[0]
+        response.push(`Ah, an excellent question. As someone who has always embodied ${dominantTrait.toLowerCase()}, `)
+      } else if (era) {
+        response.push(`Based on my knowledge and experience during ${era}, `)
+      } else {
+        response.push(`Based on my knowledge and experience, `)
+      }
     } else {
-      response.push(`Based on my knowledge and experience, `)
+      response.push(`Regarding your inquiry about this matter, `)
     }
-  } else {
-    response.push(`Regarding your inquiry about this matter, `)
   }
 
   if (sources.length === 0) {
@@ -120,28 +124,30 @@ export function generateMockResponse(options: MockGenerationOptions): string {
       )
     }
   } else if (sources.length === 1) {
-    // Single source - direct reference
+    // Single source - use full content, no truncation
     const source = sources[0]
-    const excerpt = source.content.slice(0, 200).trim()
-    response.push(
-      `I can speak to this from my writings. ${excerpt}... ` +
-      `This reflects my thinking on the matter. Would you like me to elaborate on any aspect?`
-    )
+    const content = source.content.trim()
+
+    // Just return the content naturally - no meta-commentary
+    response.push(content)
   } else {
-    // Multiple sources - synthesize
-    response.push(`I have several relevant thoughts on this matter:\n\n`)
+    // Multiple sources - synthesize naturally
+    response.push('') // Start fresh for multiple sources
 
-    // Include up to 3 sources with excerpts
+    // Include up to 3 sources with natural synthesis
     sources.slice(0, 3).forEach((source, idx) => {
-      const excerpt = source.content.slice(0, 150).trim()
-      response.push(`${idx + 1}. ${excerpt}...\n\n`)
-    })
+      const content = source.content.trim()
 
-    response.push(
-      `These perspectives from my work address different facets of your question. ` +
-      `The interplay between these ideas reveals the complexity of the matter. ` +
-      `I'm happy to explore any of these concepts more deeply if you wish.`
-    )
+      // Take full sentences, not arbitrary character limits
+      const sentences = content.match(/[^.!?]+[.!?]+/g) || [content]
+      const naturalExcerpt = sentences.slice(0, Math.min(3, sentences.length)).join(' ')
+
+      if (idx === 0) {
+        response.push(naturalExcerpt)
+      } else {
+        response.push(`\n\n${naturalExcerpt}`)
+      }
+    })
   }
 
   return response.join('')

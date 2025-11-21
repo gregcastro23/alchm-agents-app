@@ -100,96 +100,95 @@ export function convertAgentToDocument(agent: CraftedAgent): AgentDocument {
 
 /**
  * Extract all meaningful text from agent for embedding
+ * PRIORITIZE wisdom, philosophy, and conversational content
+ * MINIMIZE structured metadata that shouldn't appear in responses
  */
 function extractAgentKnowledge(agent: CraftedAgent): string {
   const sections: string[] = []
 
-  // Header
-  sections.push(`# ${agent.name} - ${agent.title || 'Historical Figure'}`)
+  // === PRIMARY CONTENT: Quotes and Core Beliefs (what the agent actually SAYS) ===
 
-  // Birth information
-  if (agent.birthData) {
-    const birthDate = new Date(agent.birthData.date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-    sections.push(`\nBorn: ${birthDate} in ${agent.birthData.location.name}`)
+  // Quotes - the agent's actual voice
+  if (agent.quotes && agent.quotes.length > 0) {
+    sections.push('My philosophy and insights:')
+    for (const quote of agent.quotes) {
+      sections.push(`\n${quote}`)
+    }
+    sections.push('') // Empty line for separation
   }
 
-  // Personality core
-  if (agent.personality?.core) {
-    sections.push('\n## Core Essence')
-    sections.push(`Essence: ${agent.personality.core.essence}`)
-    sections.push(`Expression: ${agent.personality.core.expression}`)
-    sections.push(`Emotion: ${agent.personality.core.emotion}`)
+  // Core beliefs - their worldview
+  if (agent.coreBeliefs && agent.coreBeliefs.length > 0) {
+    sections.push('\nMy core beliefs and principles:')
+    for (const belief of agent.coreBeliefs) {
+      sections.push(`\n${belief}`)
+    }
+    sections.push('') // Empty line for separation
   }
 
-  // Gifts
+  // Unique Power - their primary wisdom (conversational, not metadata)
+  if (agent.abilities?.uniquePower) {
+    sections.push(`\n${agent.abilities.uniquePower}`)
+    sections.push('') // Empty line for separation
+  }
+
+  // === SECONDARY CONTENT: Gifts and wisdom expressions ===
+
+  // Gifts - expressed naturally
   if (agent.personality?.gifts && agent.personality.gifts.length > 0) {
-    sections.push('\n## Gifts and Strengths')
     for (const gift of agent.personality.gifts) {
-      sections.push(`\n**${gift.type}**: ${gift.description}`)
-      sections.push(`Expression: "${gift.expression}"`)
+      sections.push(`\n${gift.expression}`)
     }
+    sections.push('') // Empty line for separation
   }
 
-  // Shadows
-  if (agent.personality?.shadows && agent.personality.shadows.length > 0) {
-    sections.push('\n## Shadows and Growth Areas')
-    for (const shadow of agent.personality.shadows) {
-      sections.push(`\n**${shadow.type}**: ${shadow.description}`)
-      sections.push(`Transformation Path: ${shadow.transformationPath}`)
-    }
-  }
-
-  // Challenges
+  // Challenges - growth wisdom
   if (agent.personality?.challenges && agent.personality.challenges.length > 0) {
-    sections.push('\n## Challenges and Opportunities')
     for (const challenge of agent.personality.challenges) {
-      sections.push(`\n**${challenge.type}**: ${challenge.description}`)
-      sections.push(`Growth Opportunity: ${challenge.growthOpportunity}`)
+      if (challenge.growthOpportunity) {
+        sections.push(`\n${challenge.growthOpportunity}`)
+      }
+    }
+    sections.push('') // Empty line for separation
+  }
+
+  // Shadows - transformation wisdom
+  if (agent.personality?.shadows && agent.personality.shadows.length > 0) {
+    for (const shadow of agent.personality.shadows) {
+      if (shadow.transformationPath) {
+        sections.push(`\n${shadow.transformationPath}`)
+      }
+    }
+    sections.push('') // Empty line for separation
+  }
+
+  // === TERTIARY CONTENT: Personality essence (conversational tone) ===
+
+  // Core personality - natural description
+  if (agent.personality?.core) {
+    if (agent.personality.core.essence) {
+      sections.push(`\nMy essence: ${agent.personality.core.essence}`)
+    }
+    if (agent.personality.core.expression) {
+      sections.push(`My expression: ${agent.personality.core.expression}`)
     }
   }
 
-  // Abilities
-  if (agent.abilities) {
-    sections.push('\n## Abilities and Wisdom')
-    if (agent.abilities.specialty) {
-      sections.push(`Specialty: ${agent.abilities.specialty}`)
-    }
-    if (agent.abilities.wisdomDomains && agent.abilities.wisdomDomains.length > 0) {
-      sections.push(`Wisdom Domains: ${agent.abilities.wisdomDomains.join(', ')}`)
-    }
-    if (agent.abilities.teachingStyle) {
-      sections.push(`Teaching Style: ${agent.abilities.teachingStyle}`)
-    }
-    if (agent.abilities.uniquePower) {
-      sections.push(`Unique Power: ${agent.abilities.uniquePower}`)
-    }
+  // === METADATA: Minimal, only for context (not for direct retrieval) ===
+  // This goes last and is brief to avoid polluting search results
+
+  const metadataLines: string[] = []
+
+  if (agent.birthData) {
+    const birthYear = new Date(agent.birthData.date).getFullYear()
+    metadataLines.push(`[Historical context: ${agent.name}, ${birthYear}]`)
   }
 
-  // Consciousness information
-  if (agent.consciousness) {
-    sections.push('\n## Consciousness Profile')
-    sections.push(`Consciousness Level: ${agent.consciousness.level || 'Unknown'}`)
-    sections.push(`Monica Constant: ${agent.consciousness.monicaConstant?.toFixed(2) || 'N/A'}`)
-    sections.push(`Dominant Element: ${agent.consciousness.dominantElement || 'Balanced'}`)
-    sections.push(`Dominant Modality: ${agent.consciousness.dominantModality || 'Balanced'}`)
+  if (metadataLines.length > 0) {
+    sections.push('\n' + metadataLines.join(' '))
   }
 
-  // Astrological signature
-  if (agent.consciousness?.natalChart?.planets) {
-    sections.push('\n## Astrological Signature')
-    const sun = agent.consciousness.natalChart.planets.Sun
-    const moon = agent.consciousness.natalChart.planets.Moon
-    const asc = agent.consciousness.natalChart.planets.Mercury // Using Mercury as proxy
-
-    if (sun) sections.push(`Sun in ${sun.sign}`)
-    if (moon) sections.push(`Moon in ${moon.sign}`)
-  }
-
-  return sections.join('\n')
+  return sections.join('\n').trim()
 }
 
 /**

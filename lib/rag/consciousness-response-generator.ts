@@ -150,19 +150,40 @@ function synthesizeSourcesNaturally(
   sources: SearchResult[],
   uniquePower?: string
 ): string {
-  // Clean sources of markdown
+  // Clean sources of markdown and structured metadata
   const cleanSources = sources.map(source => {
     let content = source.content
-    // Remove markdown headers
+
+    // Remove ALL markdown headers (##, ###, etc.) and their content on the same line
     content = content.replace(/^#+\s+.+$/gm, '')
-    // Remove bullet points
-    content = content.replace(/^\s*[-*]\s+/gm, '')
-    // Remove key-value pairs like "Born:", "Essence:", etc
-    content = content.replace(/^[A-Z][a-z\s]+:\s*/gm, '')
+
+    // Remove metadata patterns: "Key: Value" at start of lines
+    content = content.replace(/^[A-Z][a-z\s]+:\s*.+$/gm, '')
+
+    // Remove bullet points and list markers
+    content = content.replace(/^\s*[-*•]\s+/gm, '')
+
+    // Remove numbered lists
+    content = content.replace(/^\s*\d+\.\s+/gm, '')
+
+    // Remove horizontal rules
+    content = content.replace(/^[-=]{3,}$/gm, '')
+
+    // Remove agent profile metadata patterns
+    content = content.replace(/Born:\s*.+$/gm, '')
+    content = content.replace(/Era:\s*.+$/gm, '')
+    content = content.replace(/Specialty:\s*.+$/gm, '')
+    content = content.replace(/Core Essence/gi, '')
+    content = content.replace(/Essence:\s*.+$/gm, '')
+    content = content.replace(/Expression:\s*.+$/gm, '')
+    content = content.replace(/Emotion:\s*.+$/gm, '')
+
     // Remove multiple newlines
     content = content.replace(/\n{2,}/g, ' ')
+
     // Trim and clean whitespace
     content = content.trim().replace(/\s{2,}/g, ' ')
+
     return content
   }).filter(content => content.length > 50) // Only meaningful content
 
