@@ -1,7 +1,7 @@
 {
   "framework": "nextjs",
-  "buildCommand": "yarn build",
-  "installCommand": "rm -rf node_modules/.cache && yarn install --frozen-lockfile --force",
+  "buildCommand": "bash scripts/vercel-prebuild.sh && yarn build",
+  "installCommand": "rm -rf node_modules/swisseph node_modules/.cache && yarn install --frozen-lockfile --force",
   "build": {
     "env": {
       "NODE_VERSION": "20.18.1",
