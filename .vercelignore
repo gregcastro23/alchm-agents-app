@@ -1,0 +1,31 @@
+# Vercel Build Ignore
+# Ignore test files and development-only files
+
+# Test directories
+test/
+tests/
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Development files
+.env.local
+.env.development
+*.log
+
+# Optional backend if not needed for frontend build
+backend/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# IDE
+.vscode/
+.idea/
+
+# Optional dependency native modules that fail to build
+node_modules/swisseph/
