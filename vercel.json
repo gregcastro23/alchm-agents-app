@@ -1,10 +1,11 @@
 {
   "framework": "nextjs",
   "buildCommand": "yarn build",
-  "installCommand": "yarn install --ignore-optional || yarn install --ignore-engines",
+  "installCommand": "yarn install --check-files --frozen-lockfile",
   "build": {
     "env": {
-      "NODE_VERSION": "20.18.1"
+      "NODE_VERSION": "20.18.1",
+      "NPM_FLAGS": "--ignore-optional"
     }
   },
   "functions": {

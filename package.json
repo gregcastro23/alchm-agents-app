@@ -249,6 +249,7 @@
     "rimraf": "^5.0.5",
     "@finom/zod-to-json-schema": "npm:zod-to-json-schema@^3.25.0"
   },
+  "optionalDependencies": {},
   "engines": {
     "node": "20.x"
   },
