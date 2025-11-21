@@ -1,11 +1,10 @@
 {
   "framework": "nextjs",
   "buildCommand": "yarn build",
-  "installCommand": "yarn install --check-files --frozen-lockfile",
+  "installCommand": "yarn install --frozen-lockfile",
   "build": {
     "env": {
-      "NODE_VERSION": "20.18.1",
-      "NPM_FLAGS": "--ignore-optional"
+      "NODE_VERSION": "20.18.1"
     }
   },
   "functions": {

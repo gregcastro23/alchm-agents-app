@@ -28,4 +28,4 @@ docs/
 .idea/
 
 # Optional dependency native modules that fail to build
-node_modules/swisseph/
+# swisseph-v2 should build successfully on Vercel
