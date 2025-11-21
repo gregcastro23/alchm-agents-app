@@ -5,6 +5,10 @@
 # dependencies
 /node_modules
 
+# yarn cache files
+.yarn/cache
+.yarn/install-state.gz
+
 # lock files - only use yarn.lock
 package-lock.json
 pnpm-lock.yaml
