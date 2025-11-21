@@ -8,7 +8,7 @@ import { swissEphemerisService } from '../lib/swiss-ephemeris-service'
 const testDate = new Date('2025-11-18T18:00:00Z')
 
 console.log('Testing Swiss Ephemeris for:', testDate.toISOString())
-console.log('=' .repeat(80))
+console.log('='.repeat(80))
 
 const positions = swissEphemerisService.getAllPlanetaryPositions(testDate)
 
@@ -50,7 +50,7 @@ for (const [planet, expected] of Object.entries(expectedPositions)) {
   }
 }
 
-console.log('=' .repeat(80))
+console.log('='.repeat(80))
 
 // Cleanup
 swissEphemerisService.close()
