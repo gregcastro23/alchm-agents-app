@@ -25,6 +25,7 @@ import { authMiddleware } from './middleware/auth.js'
 // Routes
 import alchemyRoutes from './routes/alchemy.js'
 import planetaryRoutes from './routes/planetary.js'
+import ephemerisRoutes from './routes/ephemeris.js'
 import tokenRoutes from './routes/tokens.js'
 import kineticsRoutes from './routes/kinetics.js'
 import consciousnessRoutes from './routes/consciousness.js'
@@ -167,6 +168,7 @@ app.use(featureFlagMiddleware)
 app.use('/api/health', healthRoutes)
 app.use('/api/alchemy', alchemyRoutes)
 app.use('/api/planetary', planetaryRoutes)
+app.use('/api/planets', ephemerisRoutes) // Swiss Ephemeris endpoints
 app.use('/api/tokens', tokenRoutes)
 
 // Apply auth before protected routes
@@ -186,6 +188,7 @@ app.get('/', (req: Request, res: Response) => {
       health: '/api/health',
       alchemy: '/api/alchemy',
       planetary: '/api/planetary',
+      planets: '/api/planets (Swiss Ephemeris)',
       tokens: '/api/tokens',
       kinetics: '/api/kinetics',
       consciousness: '/api/consciousness',

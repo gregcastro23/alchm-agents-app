@@ -143,7 +143,7 @@ export class PlanetaryPositionsService {
     try {
       const result = await swissEphemCB.exec(async () => {
         return await Promise.race([
-          Promise.resolve(swissEphemerisService.getAllPlanetaryPositions(date, 0, 0)),
+          swissEphemerisService.getAllPlanetaryPositions(date, 0, 0),
           new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Swiss Ephemeris timeout')), options.timeout)
           ),

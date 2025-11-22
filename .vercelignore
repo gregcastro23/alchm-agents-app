@@ -27,5 +27,5 @@ docs/
 .vscode/
 .idea/
 
-# Optional dependency native modules that fail to build
-# swisseph-v2 should build successfully on Vercel
+# Swiss Ephemeris now handled by backend only
+# Frontend uses API calls to backend for astronomical calculations

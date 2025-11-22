@@ -96,13 +96,11 @@ const nextConfig = {
       }
 
       // Externalize native modules from ChromaDB to prevent bundling issues
-      // swisseph is optional and gracefully handled via fallback in swiss-ephemeris-service.ts
       // pdf-parse is optional for LangChain PDF loading
       config.externals.push({
         'onnxruntime-node': 'commonjs onnxruntime-node',
         '@chroma-core/default-embed': 'commonjs @chroma-core/default-embed',
         'chromadb': 'commonjs chromadb',
-        'swisseph': 'commonjs swisseph',
         'pdf-parse': 'commonjs pdf-parse',
         'pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js': 'commonjs pdf-parse',
       })
