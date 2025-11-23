@@ -1,5 +1,5 @@
 {
-  "installCommand": "yarn install --production=false",
+  "installCommand": "mv backend backend.temp && yarn install --production=false && mv backend.temp backend || (mv backend.temp backend 2>/dev/null; exit 1)",
   "buildCommand": "yarn build",
   "framework": "nextjs",
   "regions": ["iad1"],
