@@ -1,31 +1,31 @@
-# Vercel Build Ignore
-# Ignore test files and development-only files
+# ============================================
+# Vercel Build Exclusions
+# ============================================
+# Exclude backend folder and its dependencies from Vercel builds
+# This prevents swisseph compilation errors on the frontend
 
-# Test directories
-test/
-tests/
-__tests__/
-*.test.ts
-*.test.tsx
-*.spec.ts
-*.spec.tsx
-
-# Development files
-.env.local
-.env.development
-*.log
-
-# Optional backend if not needed for frontend build
+# Backend directory (built on Render separately)
 backend/
 
-# Documentation
-docs/
-*.md
-!README.md
+# Backend dependency artifacts
+backend/node_modules/
+backend/dist/
+backend/.yarn/
 
-# IDE
-.vscode/
-.idea/
+# Yarn workspace artifacts that might include backend deps
+.yarn/cache/
+.yarn/install-state.gz
 
-# Swiss Ephemeris now handled by backend only
-# Frontend uses API calls to backend for astronomical calculations
+# Environment files (use Vercel dashboard instead)
+.env.local
+.env.*.local
+backend/.env*
+
+# Test and development files
+backend/tests/
+backend/scripts/
+backend/docker/
+
+# Documentation specific to backend
+backend/RENDER_*.txt
+backend/.env.render.*
