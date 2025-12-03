@@ -43,3 +43,9 @@ next-env.d.ts
 storybook-static
 .cache/
 .gitlab-webhook-config.txt
+
+# Remove tracked env files with secrets
+vercel-env-variables.env
+vercel-env-import.env
+render-backend.env
+render-frontend.env
