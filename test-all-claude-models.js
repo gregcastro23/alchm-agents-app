@@ -50,9 +50,12 @@ async function testModel(apiKey, modelName) {
 }
 
 async function testAllModels() {
-  const apiKey =
-    process.env.ANTHROPIC_API_KEY ||
-    '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'
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    console.error('❌ Error: ANTHROPIC_API_KEY environment variable is required')
+    console.error('   Please set it in your .env.local file')
+    process.exit(1)
+  }
 
   console.log('🔍 Testing all Claude models with your API key...\n')
 
