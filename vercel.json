@@ -1,5 +1,6 @@
 {
-  "installCommand": "./install-frontend-only.sh",
+  "installCommand": "yarn install",
+  "buildCommand": "yarn prisma generate && yarn build",
   "framework": "nextjs",
   "regions": ["iad1"],
   "git": {
@@ -7,7 +8,8 @@
   },
   "build": {
     "env": {
-      "NODE_ENV": "production"
+      "NODE_ENV": "production",
+      "NODE_VERSION": "20.x"
     }
   },
   "headers": [
