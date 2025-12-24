@@ -1,8 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Flame, Droplets, Wind, Mountain, AlertTriangle } from 'lucide-react'
+import { Flame, Droplets, Wind, Mountain, AlertTriangle, Zap } from 'lucide-react'
 import AlchmQuantitiesDisplay from '@/components/misc/alchm-quantities-display'
 import AlchmQuantitiesTrends from '@/components/misc/alchm-quantities-trends'
+import KineticsVisualization from '@/components/misc/kinetics-visualization'
 import { Suspense } from 'react'
 
 // Error banner for API connectivity issues
@@ -91,6 +92,30 @@ export default function AlchmQuantitiesPage() {
               }
             >
               <AlchmQuantitiesDisplay />
+            </Suspense>
+          </CardContent>
+        </Card>
+
+        {/* Kinetic Visualizations */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5" />
+              Kinetic Dynamics
+            </CardTitle>
+            <CardDescription>
+              Real-time kinetic calculations with orb-proximity weighted aspect modifiers
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Suspense
+              fallback={
+                <div className="flex justify-center items-center h-40">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                </div>
+              }
+            >
+              <KineticsVisualization />
             </Suspense>
           </CardContent>
         </Card>

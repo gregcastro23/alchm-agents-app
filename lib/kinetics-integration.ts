@@ -4,8 +4,9 @@ import { AlchemicalKineticsClient } from './kinetics-client'
 import { getAgentKineticProfile, calculateKineticCompatibility } from './agents/kinetic-profiles'
 import { routeTask } from './agents/router'
 import { getCurrentPlanetaryPositions } from './calculate-transits'
-import { dynamicAspectsEngine, type DynamicAspectsAnalysis } from './dynamic-aspects-engine'
+import { dynamicAspectsEngine, type DynamicAspectsAnalysis, type DynamicAspect } from './dynamic-aspects-engine'
 import type { PlanetPosition } from './astrological-pattern-recognition'
+import type { AspectType } from './astrological-pattern-recognition'
 
 // Central utilities for kinetics integration across the platform
 export class KineticsIntegration {
@@ -163,9 +164,70 @@ export class KineticsIntegration {
   }
 
   /**
-   * Compute kinetic modifiers based on applying/exact/separating aspects
-   * - Velocity: +up to 15% for applying (proximity-weighted), +25% at exact, gentle decay when separating
-   * - Power: +20% within 3 days before exact, +25% at exact
+   * Get maximum orb for aspect type (from astrological definitions)
+   */
+  private getMaxOrbForAspect(aspectType: AspectType): number {
+    const orbDefinitions: Record<AspectType, number> = {
+      conjunction: 10,
+      opposition: 10,
+      trine: 8,
+      square: 8,
+      sextile: 6,
+      quincunx: 3,
+      semisextile: 2,
+      sesquiquadrate: 2,
+      semisquare: 2,
+      quintile: 2,
+      biquintile: 2,
+    }
+    return orbDefinitions[aspectType] ?? 5
+  }
+
+  /**
+   * Calculate orb-based proximity weight (0-1 scale)
+   * Tighter orbs = higher weight
+   * Uses inverse exponential for smooth falloff
+   */
+  private calculateOrbProximityWeight(orb: number, maxOrb: number): number {
+    if (orb <= 0) return 1.0 // Exact aspect
+    if (orb >= maxOrb) return 0.0 // Out of orb range
+    
+    // Graduated scaling: closer to exact = higher weight
+    // Uses inverse exponential for smooth falloff
+    const normalizedOrb = orb / maxOrb
+    return Math.exp(-normalizedOrb * 3) // 3 = steepness factor (adjustable)
+  }
+
+  /**
+   * Calculate graduated scaling for exact aspects
+   * Provides smooth transition from exact to near-exact
+   */
+  private calculateExactAspectScaling(orb: number): number {
+    if (orb <= 0) return 1.0 // Perfect exact
+    if (orb <= 0.5) return 0.95 // Very tight
+    if (orb <= 1.0) return 0.85 // Tight
+    if (orb <= 2.0) return 0.70 // Moderate-tight
+    return 0.5 // Still considered "exact" but with reduced effect
+  }
+
+  /**
+   * Calculate orb velocity intensity factor
+   * Higher velocity = more dynamic aspect formation/separation
+   */
+  private calculateOrbVelocityIntensity(orbVelocity: number | undefined): number {
+    if (!orbVelocity || !Number.isFinite(orbVelocity)) return 0.5 // Default moderate
+    
+    const absVelocity = Math.abs(orbVelocity)
+    // Normalize to 0-1 scale (0.5 deg/day = full intensity)
+    return Math.min(1.0, absVelocity / 0.5)
+  }
+
+  /**
+   * Enhanced kinetic modifier that combines orb proximity with applying/separating status
+   * - Uses orb value to weight kinetic effects (tighter orb = stronger effect)
+   * - Combines orb proximity with applying/separating status
+   * - Includes orb velocity intensity for dynamic aspects
+   * - Provides graduated scaling for exact aspects
    */
   private computeAspectKineticModifiers(analysis: DynamicAspectsAnalysis): {
     velocityModifier: number
@@ -173,45 +235,84 @@ export class KineticsIntegration {
   } {
     const aspects = analysis.currentAspects || []
 
-    const exactAspects = aspects.filter(a => (a as any).orb !== undefined && a.orb <= 1.0)
-    const applyingAspects = aspects.filter(a => (a as any).applying)
-    const separatingAspects = aspects.filter(a => (a as any).separating)
+    if (aspects.length === 0) {
+      return { velocityModifier: 1.0, powerModifier: 1.0 }
+    }
 
-    // Defaults
+    // Calculate weighted kinetic effects based on orb + status
+    let totalVelocityWeight = 0
+    let totalPowerWeight = 0
+    let totalWeight = 0
+
+    for (const aspect of aspects) {
+      const orb = aspect.orb ?? Infinity
+      const maxOrb = this.getMaxOrbForAspect(aspect.type)
+
+      // Skip if out of orb
+      if (orb > maxOrb) continue
+
+      // Calculate orb proximity weight (0-1)
+      const orbWeight = this.calculateOrbProximityWeight(orb, maxOrb)
+
+      // Determine if aspect is exact (for graduated scaling)
+      const isExact = orb <= 1.0
+      const exactScaling = isExact ? this.calculateExactAspectScaling(orb) : 1.0
+
+      // Status multiplier based on applying/separating
+      let statusMultiplier = 1.0
+      if (isExact) {
+        // Exact aspects: maximum boost with graduated scaling
+        statusMultiplier = 1.0 + exactScaling * 0.25 // Up to 25% boost, scaled by exactness
+      } else if (aspect.applying) {
+        // Applying aspects: boost based on orb proximity
+        // Tighter orbs get stronger boost as they approach exact
+        const proximityBoost = (1.0 - orbWeight) * 0.25 // Up to 25% boost
+        statusMultiplier = 1.0 + proximityBoost
+      } else if (aspect.separating) {
+        // Separating aspects: decay based on orb proximity
+        // Tighter orbs decay slower (still have residual energy)
+        const decayFactor = orbWeight * 0.15 * Math.exp(-orb / 2) // Decay with orb distance
+        statusMultiplier = 1.0 + decayFactor
+      } else {
+        // Static aspects (shouldn't happen with motion tracker, but handle gracefully)
+        statusMultiplier = 1.0 + orbWeight * 0.1 // Small base boost
+      }
+
+      // Orb velocity intensity (how fast aspect is forming/separating)
+      const orbVelocityMagnitude = Math.abs(aspect.orbVelocity || 0)
+      const velocityIntensity = this.calculateOrbVelocityIntensity(aspect.orbVelocity)
+
+      // Combined weight: orb proximity × velocity intensity
+      // Higher velocity aspects get additional weight
+      const combinedWeight = orbWeight * (1.0 + velocityIntensity * 0.2)
+
+      // Calculate velocity modifier contribution
+      const velocityContribution = statusMultiplier * combinedWeight
+      totalVelocityWeight += velocityContribution
+
+      // Power modifier: similar but with additional boost for applying aspects
+      const powerMultiplier = aspect.applying ? statusMultiplier * 1.1 : statusMultiplier
+      const powerContribution = powerMultiplier * combinedWeight
+      totalPowerWeight += powerContribution
+
+      totalWeight += combinedWeight
+    }
+
+    // Normalize to get final modifiers
     let velocityModifier = 1.0
     let powerModifier = 1.0
 
-    if (exactAspects.length > 0) {
-      velocityModifier = 1.25
-      powerModifier = 1.25
-      return { velocityModifier, powerModifier }
+    if (totalWeight > 0) {
+      // Average weighted modifier
+      velocityModifier = 1.0 + (totalVelocityWeight / totalWeight - 1.0)
+      powerModifier = 1.0 + (totalPowerWeight / totalWeight - 1.0)
     }
 
-    if (applyingAspects.length > 0) {
-      // Proximity-weighted boost up to +15%
-      const days = applyingAspects
-        .map(a => Math.max(0, (a as any).daysToExact ?? Number.POSITIVE_INFINITY))
-        .filter(v => Number.isFinite(v))
-      const minDays = days.length > 0 ? Math.min(...days) : 7
-      const proximityBoost = Math.max(0, (7 - minDays) / 7) * 0.15
-      velocityModifier = 1.0 + proximityBoost
-
-      // Power +20% if within 3 days of exact
-      if (minDays <= 3) {
-        powerModifier = 1.2
-      }
-    } else if (separatingAspects.length > 0) {
-      // Gentle normalization with small residual boost up to +15% decaying with time
-      const avgAbsOrbVel =
-        separatingAspects.reduce((sum, a) => sum + Math.abs((a as any).orbVelocity || 0), 0) /
-        separatingAspects.length
-      const sepDays = Math.abs(avgAbsOrbVel * 30)
-      const decayFactor = Math.max(0.05, Math.exp(-sepDays / 10))
-      velocityModifier = 1.0 + 0.15 * decayFactor
-      powerModifier = 1.0 // stabilized
+    // Clamp to reasonable range (50% reduction to 200% boost)
+    return {
+      velocityModifier: Math.max(0.5, Math.min(2.0, velocityModifier)),
+      powerModifier: Math.max(0.5, Math.min(2.0, powerModifier)),
     }
-
-    return { velocityModifier, powerModifier }
   }
 
   // Find optimal agents for current kinetic conditions

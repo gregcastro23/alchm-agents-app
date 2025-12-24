@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   Flame,
   Droplets,
@@ -44,15 +44,15 @@ type AlchemyData = {
   error?: string
 }
 
-// Historical data for trends
-type HistoricalData = {
-  timestamp: string
-  quantities: AlchemyQuantities
-  heat: number
-  entropy: number
-  reactivity: number
-  energy: number
-}
+// Historical data for trends (unused but kept for potential future use)
+// type HistoricalData = {
+//   timestamp: string
+//   quantities: AlchemyQuantities
+//   heat: number
+//   entropy: number
+//   reactivity: number
+//   energy: number
+// }
 
 // Real-time update configuration
 type UpdateConfig = {
@@ -238,7 +238,8 @@ export default function AlchmQuantitiesDisplay() {
         if (data && result.quantities) {
           const hasSignificantChange = Object.entries(result.quantities).some(([key, value]) => {
             const prevValue = data.quantities[key as keyof AlchemyQuantities]
-            return Math.abs(value - prevValue) > 0.1
+            const numValue = typeof value === 'number' ? value : 0
+            return Math.abs(numValue - prevValue) > 0.1
           })
 
           if (hasSignificantChange) {
@@ -415,6 +416,12 @@ export default function AlchmQuantitiesDisplay() {
     (data.quantities.Matter + data.quantities.Substance + 1)
   ).toFixed(3)
 
+  // Extract kinetic modifiers if available
+  const kineticModifiers = (data as any).kineticModifiers
+  const aspectCount = (data as any).aspectCount || 0
+  const applyingAspects = (data as any).applyingAspects || 0
+  const separatingAspects = (data as any).separatingAspects || 0
+
   return (
     <div>
       {/* Fallback data warning */}
@@ -477,7 +484,7 @@ export default function AlchmQuantitiesDisplay() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <TokenDisplay
           value={data.quantities.Spirit}
-          previousValue={previousData?.quantities.Spirit}
+          {...(previousData?.quantities.Spirit !== undefined && { previousValue: previousData.quantities.Spirit })}
           icon={<Flame className="h-8 w-8" />}
           name="SPIRIT"
           color="red"
@@ -487,7 +494,7 @@ export default function AlchmQuantitiesDisplay() {
         />
         <TokenDisplay
           value={data.quantities.Essence}
-          previousValue={previousData?.quantities.Essence}
+          {...(previousData?.quantities.Essence !== undefined && { previousValue: previousData.quantities.Essence })}
           icon={<Droplets className="h-8 w-8" />}
           name="ESSENCE"
           color="blue"
@@ -497,7 +504,7 @@ export default function AlchmQuantitiesDisplay() {
         />
         <TokenDisplay
           value={data.quantities.Matter}
-          previousValue={previousData?.quantities.Matter}
+          {...(previousData?.quantities.Matter !== undefined && { previousValue: previousData.quantities.Matter })}
           icon={<Mountain className="h-8 w-8" />}
           name="MATTER"
           color="amber"
@@ -507,7 +514,7 @@ export default function AlchmQuantitiesDisplay() {
         />
         <TokenDisplay
           value={data.quantities.Substance}
-          previousValue={previousData?.quantities.Substance}
+          {...(previousData?.quantities.Substance !== undefined && { previousValue: previousData.quantities.Substance })}
           icon={<Wind className="h-8 w-8" />}
           name="SUBSTANCE"
           color="purple"
@@ -587,6 +594,66 @@ export default function AlchmQuantitiesDisplay() {
           </div>
         </div>
       </div>
+
+      {/* Kinetic Modifiers Display */}
+      {kineticModifiers && (
+        <div className="mb-6 p-4 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950 dark:to-purple-950 border-2 border-violet-200 dark:border-violet-800 rounded-lg">
+          <div className="flex items-center gap-2 mb-3">
+            <Zap className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+            <h3 className="text-lg font-bold text-violet-800 dark:text-violet-200">
+              Kinetic Modifiers
+            </h3>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <div className="text-xs text-violet-600 dark:text-violet-400 mb-1">Velocity Modifier</div>
+              <div className="text-2xl font-bold text-violet-900 dark:text-violet-100">
+                {kineticModifiers.velocityModifier.toFixed(2)}x
+              </div>
+              <div className="text-xs text-violet-700 dark:text-violet-300 mt-1">
+                Affects Spirit & Substance
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-violet-600 dark:text-violet-400 mb-1">Power Modifier</div>
+              <div className="text-2xl font-bold text-violet-900 dark:text-violet-100">
+                {kineticModifiers.powerModifier.toFixed(2)}x
+              </div>
+              <div className="text-xs text-violet-700 dark:text-violet-300 mt-1">
+                Affects Essence & Matter
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-violet-600 dark:text-violet-400 mb-1">Active Aspects</div>
+              <div className="text-2xl font-bold text-violet-900 dark:text-violet-100">
+                {aspectCount}
+              </div>
+              <div className="text-xs text-violet-700 dark:text-violet-300 mt-1">
+                {applyingAspects} applying, {separatingAspects} separating
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-violet-600 dark:text-violet-400 mb-1">Aspect Status</div>
+              <div className="flex gap-2 mt-1">
+                {applyingAspects > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {applyingAspects} Applying
+                  </Badge>
+                )}
+                {separatingAspects > 0 && (
+                  <Badge variant="outline" className="text-xs">
+                    {separatingAspects} Separating
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-violet-600 dark:text-violet-400 mt-3">
+            Quantities are adjusted based on orb-proximity weighted aspect modifiers. Applying aspects
+            increase kinetic effects, while separating aspects allow energy to stabilize.
+          </p>
+        </div>
+      )}
 
       <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">

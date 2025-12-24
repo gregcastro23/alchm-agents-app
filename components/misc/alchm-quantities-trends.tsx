@@ -276,6 +276,7 @@ export default function AlchmQuantitiesTrends() {
   }, [forecastDays, retryCount])
 
   // Function to calculate a quantity value for a specific day offset from today
+  // Enhanced with aspect-based kinetic modifiers
   function calculateQuantityForDay(type: string, dayOffset: number, currentValue: number): number {
     // Get the planetary influences for this quantity type
     const influences = planetaryInfluence[type as keyof typeof planetaryInfluence]
@@ -299,8 +300,28 @@ export default function AlchmQuantitiesTrends() {
       value += planetaryEffect
     }
 
+    // Apply aspect-based kinetic modifiers
+    // For future dates, we estimate aspect effects based on planetary motion
+    if (dayOffset > 0) {
+      // Estimate kinetic modifier based on day offset
+      // Applying aspects (approaching exact) increase velocity/power
+      // Separating aspects (moving away) decrease velocity/power
+      // Use a simplified model: aspects cycle every ~30 days on average
+      const aspectCycle = (dayOffset / 30) * 2 * Math.PI
+      const aspectModifier = 1.0 + Math.sin(aspectCycle) * 0.15 // ±15% variation
+
+      // Spirit and Substance are velocity-affected (Mercury principle)
+      if (type === 'Spirit' || type === 'Substance') {
+        value *= (0.85 + 0.15 * aspectModifier)
+      }
+      // Essence and Matter are power-affected (Solar principle)
+      else if (type === 'Essence' || type === 'Matter') {
+        value *= (0.85 + 0.15 * aspectModifier)
+      }
+    }
+
     // Add a very small random factor for natural variation
-    const randomFactor = (Math.random() - 0.5) * 0.1
+    const randomFactor = (Math.random() - 0.5) * 0.05 // Reduced randomness for more accurate forecasts
     value += randomFactor
 
     // Ensure the value stays within reasonable bounds (0-10)

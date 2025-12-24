@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server'
 import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
 import { logQuantitiesToGalileo, type AlchemicalMetrics } from '@/lib/galileo-logger'
 import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
-import { CharacterVectorCalculator } from '@/lib/astrological-character-vectors'
+// CharacterVectorCalculator not used in this route
+// import { CharacterVectorCalculator } from '@/lib/astrological-character-vectors'
 import { generateRealTimeSignVectorRune } from '@/lib/runes/sign-vector-runes'
+import { kinetics } from '@/lib/kinetics-integration'
+import { calculateDynamicAspects } from '@/lib/dynamic-aspects-engine'
+import type { PlanetPosition } from '@/lib/astrological-pattern-recognition'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -30,7 +34,7 @@ export async function GET() {
     }
 
     // Extract the specific Alchemy Effects that we want to return
-    const quantities = {
+    let quantities = {
       Spirit: alchmData?.['Alchemy Effects']?.['Total Spirit'] || 0,
       Essence: alchmData?.['Alchemy Effects']?.['Total Essence'] || 0,
       Matter: alchmData?.['Alchemy Effects']?.['Total Matter'] || 0,
@@ -42,6 +46,51 @@ export async function GET() {
 
     // Get current planetary positions for additional context
     const planetaryPositions = getCurrentPlanetaryPositions()
+
+    // Get kinetic modifiers from aspects
+    let kineticModifiers = { velocityModifier: 1.0, powerModifier: 1.0 }
+    let aspectAnalysis = null
+    try {
+      const location = { lat: 40.7128, lon: -74.006 } // Default location
+      const enhanced = await kinetics.getEnhancedKinetics(location, {
+        includeAgentOptimization: false,
+        includePowerPrediction: false,
+        includeResonanceMap: false,
+      })
+
+      // Build planet positions for aspect analysis
+      const planets: PlanetPosition[] = Object.entries(planetaryPositions)
+        .filter(([_, data]) => data && data.sign && typeof data.degree === 'number')
+        .map(([planet, data]) => ({
+          planet,
+          sign: data.sign || 'Aries',
+          degree: Math.max(0, Math.min(29.9999, data.degree || 0)),
+          house: 0,
+          date: new Date(),
+        }))
+
+      if (planets.length >= 2) {
+        aspectAnalysis = await calculateDynamicAspects(planets, 7)
+        
+        // Apply kinetic modifiers to quantities
+        // Spirit and Substance are more affected by velocity (Mercury principle)
+        // Essence and Matter are more affected by power (Solar principle)
+        const velocityMod = enhanced.velocity || 1.0
+        const powerMod = enhanced.currentPower || 1.0
+
+        quantities = {
+          ...quantities,
+          Spirit: quantities.Spirit * (0.5 + 0.5 * velocityMod),
+          Substance: quantities.Substance * (0.5 + 0.5 * velocityMod),
+          Essence: quantities.Essence * (0.5 + 0.5 * powerMod),
+          Matter: quantities.Matter * (0.5 + 0.5 * powerMod),
+          ANumber: quantities.Spirit + quantities.Essence + quantities.Matter + quantities.Substance,
+        }
+      }
+    } catch (kineticError) {
+      console.warn('Could not apply kinetic modifiers:', kineticError)
+      // Continue without kinetic modifiers
+    }
 
     // Generate real-time sign vector rune
     const realtimeRune = generateRealTimeSignVectorRune(planetaryPositions, { quantities })
@@ -59,6 +108,10 @@ export async function GET() {
       realtimeRune,
       planetaryPositions: Object.keys(planetaryPositions).length,
       timestamp: new Date().toISOString(),
+      kineticModifiers,
+      aspectCount: aspectAnalysis?.currentAspects?.length || 0,
+      applyingAspects: aspectAnalysis?.applyingAspects?.length || 0,
+      separatingAspects: aspectAnalysis?.separatingAspects?.length || 0,
     }
 
     // Log quantities to Galileo for dashboard tracking (null-guarded)
