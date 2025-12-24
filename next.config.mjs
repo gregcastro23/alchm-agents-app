@@ -85,10 +85,9 @@ const nextConfig = {
       }
     }
 
-    // Disable source maps in production server builds to avoid Next.js internal source-map issues
-    if (isServer && !dev) {
-      config.devtool = false
-    }
+    // Note: productionBrowserSourceMaps: false above disables client source maps
+    // Server source maps are handled automatically by Next.js
+    // DO NOT set config.devtool = false as it breaks Next.js internal modules
 
     // Configure externals for serverless functions
     if (isServer) {
