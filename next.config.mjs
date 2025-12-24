@@ -17,7 +17,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Disable source maps in production to avoid source-map module issues
+  // Disable source maps completely to avoid Next.js internal source-map module issues
   productionBrowserSourceMaps: false,
   // Explicitly set workspace root to avoid lockfile detection issues
   outputFileTracingRoot: process.env.DOCKER_BUILD
@@ -85,15 +85,14 @@ const nextConfig = {
       }
     }
 
-    // Ensure source-map is properly bundled for serverless functions
+    // Disable source maps in production server builds to avoid Next.js internal source-map issues
+    if (isServer && !dev) {
+      config.devtool = false
+    }
+
+    // Configure externals for serverless functions
     if (isServer) {
       config.externals = config.externals || []
-      // Don't externalize source-map - bundle it with the function
-      if (Array.isArray(config.externals)) {
-        config.externals = config.externals.filter(
-          (external) => typeof external !== 'string' || !external.includes('source-map')
-        )
-      }
 
       // Externalize native modules from ChromaDB to prevent bundling issues
       // pdf-parse is optional for LangChain PDF loading
