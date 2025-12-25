@@ -95,12 +95,14 @@ const nextConfig = {
 
       // Externalize native modules from ChromaDB to prevent bundling issues
       // pdf-parse is optional for LangChain PDF loading
+      // ws (WebSocket) is needed by chromadb and must be external
       config.externals.push({
         'onnxruntime-node': 'commonjs onnxruntime-node',
         '@chroma-core/default-embed': 'commonjs @chroma-core/default-embed',
         'chromadb': 'commonjs chromadb',
         'pdf-parse': 'commonjs pdf-parse',
         'pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js': 'commonjs pdf-parse',
+        'ws': 'commonjs ws',
       })
     }
 
