@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
+import { randomUUID } from 'crypto'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { ConsciousnessClient } from '@/lib/api-client/consciousness-client'
 import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
+import { planetaryAPI } from '@/lib/planetary-api-client'
 
 const InteractionSchema = z.object({
   userId: z.string().optional(),
@@ -18,7 +20,7 @@ export async function POST(request: Request) {
     const userId = payload.userId || 'anonymous'
     const agentId = payload.agentId
 
-    const agent = await prisma.historicalAgent.findUnique({
+    const agent = await prisma.historical_agents.findUnique({
       where: { agentId },
     })
 
@@ -27,7 +29,7 @@ export async function POST(request: Request) {
     }
 
     const birthChart = agent.natalChart
-    const currentMoment = await generateAlchmForCurrentMoment()
+    const currentMoment = await planetaryAPI.getAlchemicalQuantitiesLegacy()
 
     const blueprint = await consciousnessClient.createAgentOfMoment(birthChart, currentMoment)
 
@@ -47,8 +49,9 @@ export async function POST(request: Request) {
       Energy: currentMoment?.Energy || 0,
     })
 
-    await prisma.consciousnessInteraction.create({
+    await prisma.consciousness_interactions.create({
       data: {
+        id: randomUUID(),
         userId,
         agentId,
         interactionType: 'crafting',

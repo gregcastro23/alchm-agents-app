@@ -182,7 +182,7 @@ export async function POST(req: NextRequest) {
           system: 'knowledge-updater',
           operation: 'ingest',
           agentId,
-          severity: 'high',
+          metadata: { severity: 'high' },
         })
 
         return NextResponse.json(
@@ -310,7 +310,7 @@ export async function GET(req: NextRequest) {
  * Note: This would require additional ChromaDB functionality to delete
  * documents by metadata filters
  */
-export async function DELETE(req: NextRequest) {
+export async function DELETE(_req: NextRequest) {
   return NextResponse.json(
     {
       success: false,

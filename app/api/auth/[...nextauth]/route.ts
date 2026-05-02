@@ -21,9 +21,9 @@ const handler = NextAuth({
 
         try {
           // Find user in database
-          const user = await prisma.user.findUnique({
+          const user = await prisma.users.findUnique({
             where: { email: credentials.email },
-            include: { subscription: true },
+            include: { subscriptions: true },
           })
 
           if (!user || !user.passwordHash) {
@@ -37,7 +37,7 @@ const handler = NextAuth({
           }
 
           // Update last login
-          await prisma.user.update({
+          await prisma.users.update({
             where: { id: user.id },
             data: { lastLogin: new Date() },
           })
@@ -65,7 +65,6 @@ const handler = NextAuth({
   },
   pages: {
     signIn: '/auth/signin',
-    signUp: '/auth/signup',
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -76,9 +75,13 @@ const handler = NextAuth({
       return token
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string
-        ;(session.user as any).tier = token.tier
+      if (token && session.user) {
+        const sessionUser = session.user as typeof session.user & {
+          id?: string
+          tier?: unknown
+        }
+        sessionUser.id = token.id as string
+        sessionUser.tier = token.tier
       }
       return session
     },

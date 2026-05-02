@@ -10,13 +10,15 @@ async function calculateConsciousness(body: any = {}) {
   try {
     // Parse request body for birth data
     const birthData = body?.birthData
-    const birthDate = birthData?.birthDate || '1970-01-01'
-    const birthTime = birthData?.birthTime || '12:00'
     const latitude = birthData?.latitude || 0
     const longitude = birthData?.longitude || 0
 
     // Generate current moment alchemical data
-    const currentAlchm = await planetaryAPI.getAlchemicalQuantitiesLegacy(new Date(), latitude, longitude)
+    const currentAlchm = await planetaryAPI.getAlchemicalQuantitiesLegacy(
+      new Date(),
+      latitude,
+      longitude
+    )
     const alchmEffects = currentAlchm['Alchemy Effects'] || {}
 
     // Extract alchemical quantities
@@ -98,11 +100,12 @@ async function calculateConsciousness(body: any = {}) {
         consciousnessLevel,
         liveConsciousnessLevel: consciousnessLevel,
         interpretations: {
-          mcChange: mcChange > 0.1
-            ? 'Consciousness expanding'
-            : mcChange < -0.1
-              ? 'Minor contraction observed'
-              : 'Stable consciousness',
+          mcChange:
+            mcChange > 0.1
+              ? 'Consciousness expanding'
+              : mcChange < -0.1
+                ? 'Minor contraction observed'
+                : 'Stable consciousness',
           transitInfluence: `Current A# ${(currentAlchm['A-Number'] || currentAlchm.A_number || 2).toFixed(2)} - ${(currentAlchm['A-Number'] || currentAlchm.A_number || 2) > 2.5 ? 'spiritual emphasis' : (currentAlchm['A-Number'] || currentAlchm.A_number || 2) < 1.5 ? 'material emphasis' : 'balanced blend'}`,
           cosmicWeather,
         },

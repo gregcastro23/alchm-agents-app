@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { agentCache } from '@/lib/agent-cache-system'
+import { agentCache, type CacheMetrics } from '@/lib/agent-cache-system'
 
 /**
  * Agent Cache Metrics API Endpoint
  * Provides real-time cache performance statistics
  */
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Get current cache metrics
     const metrics = await agentCache.getMetrics()
@@ -127,7 +127,7 @@ function formatTimeSaved(timeMs: number): string {
 /**
  * Generate performance recommendations
  */
-function generateRecommendations(metrics: any): string[] {
+function generateRecommendations(metrics: CacheMetrics): string[] {
   const recommendations: string[] = []
 
   if (metrics.hitRate < 0.3) {

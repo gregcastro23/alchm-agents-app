@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Optional: GET endpoint to retrieve feedback statistics (admin only)
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const result = await withErrorHandling(
     async () => {
       // In a real implementation, check for admin authentication

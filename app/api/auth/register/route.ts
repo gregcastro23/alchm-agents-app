@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { randomUUID } from 'crypto'
 import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.users.findUnique({
       where: { email },
     })
 
@@ -30,8 +31,9 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Create user
-    const user = await prisma.user.create({
+    const user = await prisma.users.create({
       data: {
+        id: randomUUID(),
         email,
         passwordHash: hashedPassword,
         name,
@@ -42,8 +44,9 @@ export async function POST(req: NextRequest) {
     // Create user profile with birth data if provided
     if (birthData) {
       try {
-        await prisma.userProfile.create({
+        await prisma.user_profiles.create({
           data: {
+            id: randomUUID(),
             userId: user.id,
             birthDate: new Date(birthData.year, birthData.month, birthData.day),
             birthTime:
@@ -61,6 +64,7 @@ export async function POST(req: NextRequest) {
             natalChart: birthData, // Store full birth data as natal chart
             monicaConstant: 0, // Will be calculated later
             dominantElement: 'Fire', // Default, will be calculated
+            updatedAt: new Date(),
           },
         })
       } catch (profileError) {
@@ -70,11 +74,13 @@ export async function POST(req: NextRequest) {
 
       try {
         // Also create basic profile entry
-        await prisma.profile.create({
+        await prisma.profiles.create({
           data: {
+            id: randomUUID(),
             userId: user.id,
             name: name,
-            birthInfo: JSON.stringify(birthData),
+            birthInfo: birthData,
+            updatedAt: new Date(),
           },
         })
       } catch (basicProfileError) {
@@ -84,8 +90,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Create default Monica settings
-    await prisma.monicaUserSettings.create({
+    await prisma.monica_user_settings.create({
       data: {
+        id: randomUUID(),
         userId: user.id,
         personality: 'mixed',
         assistanceLevel: 2,
@@ -113,6 +120,7 @@ export async function POST(req: NextRequest) {
             analyticsOptOut: false,
           },
         }),
+        updatedAt: new Date(),
       },
     })
 

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 
 export async function POST() {
   try {
@@ -15,9 +14,9 @@ export async function POST() {
     return NextResponse.redirect(
       new URL('/login', process.env.NEXTAUTH_URL || 'http://localhost:3000')
     )
-  } catch (e: any) {
+  } catch (e) {
     return NextResponse.json(
-      { error: 'Logout failed', details: e?.message || String(e) },
+      { error: 'Logout failed', details: e instanceof Error ? e.message : String(e) },
       { status: 500 }
     )
   }

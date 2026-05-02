@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { agentKineticProfiles } from '@/lib/agents/kinetic-profiles'
 import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 
 interface AgentRecommendation {
@@ -17,7 +16,6 @@ interface AgentRecommendation {
  * Calculate agent compatibility based on birth chart data
  */
 function calculateAgentCompatibility(birthChart: any, agent: any): AgentRecommendation {
-  const agentProfile = agentKineticProfiles[agent.id] || {}
   let compatibilityScore = 0.5 // Base score
   const reasons: string[] = []
 
@@ -124,7 +122,7 @@ function isComplementaryElement(element1: string, element2: string): boolean {
   return complementary[element1 as keyof typeof complementary]?.includes(element2) || false
 }
 
-function calculateEvolutionPotential(birthChart: any, agent: any): number {
+function calculateEvolutionPotential(_birthChart: any, agent: any): number {
   // Higher potential for agents with diverse elemental profiles
   if (agent.consciousness?.elements) {
     const elements = Object.values(agent.consciousness.elements) as number[]
@@ -134,20 +132,20 @@ function calculateEvolutionPotential(birthChart: any, agent: any): number {
   return 0.5
 }
 
-function calculateElementalAlignment(birthChart: any, agent: any): number {
+function calculateElementalAlignment(birthChart: any, _agent: any): number {
   // Simplified alignment calculation
   const birthMonth = birthChart.month
   const seasonalBonus = [0.8, 0.9, 1.0, 1.0, 0.9, 0.8, 0.7, 0.8, 0.9, 1.0, 0.9, 0.8]
   return seasonalBonus[birthMonth - 1] || 0.8
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await auth()
     const userId = session?.user?.id || 'anonymous'
 
     // Get user's birth chart data
-    const userProfile = await prisma.profile.findUnique({
+    const userProfile = await prisma.profiles.findUnique({
       where: { userId },
     })
 
@@ -163,7 +161,10 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    const birthChart = JSON.parse(userProfile.birthInfo as string)
+    const birthChart =
+      typeof userProfile.birthInfo === 'string'
+        ? JSON.parse(userProfile.birthInfo)
+        : userProfile.birthInfo
 
     // Calculate recommendations for all available agents
     const recommendations: AgentRecommendation[] = []
@@ -180,7 +181,7 @@ export async function GET(req: NextRequest) {
     const topRecommendations = recommendations.slice(0, 5)
 
     // Get evolution states for recommended agents
-    const evolutionStates = await prisma.agentEvolutionState.findMany({
+    const evolutionStates = await prisma.agent_evolution_states.findMany({
       where: {
         userId,
         agentId: { in: topRecommendations.map(r => r.agentId) },

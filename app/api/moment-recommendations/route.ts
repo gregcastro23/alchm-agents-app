@@ -2,10 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
 import { planetaryAPI } from '@/lib/planetary-api-client'
 import { demoCraftedAgents } from '@/lib/demo-agents-data'
-import {
-  calculateEnhancedMomentScore,
-  type EnhancedMomentScore,
-} from './enhanced-scoring'
+import { calculateEnhancedMomentScore } from './enhanced-scoring'
 
 /**
  * Adapter that produces the legacy `sampleHourlyAlchm` first-sample shape
@@ -13,11 +10,7 @@ import {
  * Railway alchemical-quantities endpoint; the four `spirit/essence/matter/
  * substance` scores stand in for the old elemental `totals` map.
  */
-async function buildAlchemicalDataForMoment(
-  lat: number,
-  lon: number,
-  moment: Date
-): Promise<any> {
+async function buildAlchemicalDataForMoment(lat: number, lon: number, moment: Date): Promise<any> {
   const legacy = await planetaryAPI.getAlchemicalQuantitiesLegacy(moment, lat, lon)
   return {
     ...legacy,

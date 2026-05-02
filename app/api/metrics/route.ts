@@ -1,8 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
+interface MetricsSnapshot {
+  users: {
+    total: number
+    activeToday: number
+    retentionRate: number
+  }
+  interactions: {
+    total: number
+    lastHour: number
+    averagePerUser: number
+  }
+  evolution: {
+    total: number
+    levels: Record<string, number>
+  }
+  subscriptions: {
+    tiers: Record<string, number>
+  }
+  agents: {
+    popular: Array<{
+      agentId: string
+      interactions: number
+    }>
+  }
+  timestamp: string
+}
+
 // Prometheus-compatible metrics endpoint
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const metrics = await generateMetrics()
 
@@ -26,8 +53,8 @@ async function generateMetrics() {
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
   // User metrics
-  const totalUsers = await prisma.user.count()
-  const activeUsersToday = await prisma.user.count({
+  const totalUsers = await prisma.users.count()
+  const activeUsersToday = await prisma.users.count({
     where: {
       lastLogin: {
         gte: oneDayAgo,
@@ -36,8 +63,8 @@ async function generateMetrics() {
   })
 
   // Consciousness interaction metrics
-  const totalInteractions = await prisma.consciousnessInteraction.count()
-  const interactionsLastHour = await prisma.consciousnessInteraction.count({
+  const totalInteractions = await prisma.consciousness_interactions.count()
+  const interactionsLastHour = await prisma.consciousness_interactions.count({
     where: {
       timestamp: {
         gte: oneHourAgo,
@@ -46,20 +73,20 @@ async function generateMetrics() {
   })
 
   // Agent evolution metrics
-  const totalEvolutions = await prisma.agentEvolutionState.count()
-  const evolutionLevels = await prisma.agentEvolutionState.groupBy({
+  const totalEvolutions = await prisma.agent_evolution_states.count()
+  const evolutionLevels = await prisma.agent_evolution_states.groupBy({
     by: ['currentLevel'],
     _count: true,
   })
 
   // Subscription metrics
-  const subscriptionTiers = await prisma.subscription.groupBy({
+  const subscriptionTiers = await prisma.subscriptions.groupBy({
     by: ['tier'],
     _count: true,
   })
 
   // Popular agents
-  const popularAgents = await prisma.consciousnessInteraction.groupBy({
+  const popularAgents = await prisma.consciousness_interactions.groupBy({
     by: ['agentId'],
     _count: true,
     orderBy: {
@@ -110,7 +137,7 @@ async function generateMetrics() {
   }
 }
 
-function formatPrometheusMetrics(metrics: any): string {
+function formatPrometheusMetrics(metrics: MetricsSnapshot): string {
   const lines = []
 
   // User metrics
@@ -151,7 +178,7 @@ function formatPrometheusMetrics(metrics: any): string {
   // Popular agents
   lines.push('# HELP planetary_agents_agent_interactions Interactions per agent')
   lines.push('# TYPE planetary_agents_agent_interactions counter')
-  metrics.agents.popular.forEach((agent: any) => {
+  metrics.agents.popular.forEach(agent => {
     lines.push(
       `planetary_agents_agent_interactions{agent_id="${agent.agentId}"} ${agent.interactions}`
     )
@@ -167,6 +194,10 @@ export async function POST(req: NextRequest) {
 
     if (action === 'dashboard') {
       const metrics = await generateMetrics()
+      const backend: { status: string; responseTime: number | null } = {
+        status: 'checking...',
+        responseTime: null,
+      }
 
       // Add real-time system metrics
       const systemMetrics = {
@@ -177,17 +208,16 @@ export async function POST(req: NextRequest) {
           nodeVersion: process.version,
           platform: process.platform,
         },
-        backend: {
-          status: 'checking...',
-          responseTime: null,
-        },
+        backend,
       }
 
       // Test backend connectivity
       try {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
         const startTime = Date.now()
-        const response = await fetch(`${backendUrl}/api/health`, { timeout: 5000 })
+        const response = await fetch(`${backendUrl}/api/health`, {
+          signal: AbortSignal.timeout(5000),
+        })
         const responseTime = Date.now() - startTime
 
         systemMetrics.backend = {

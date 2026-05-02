@@ -3,12 +3,29 @@ import { prisma } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
+type HealthStatus = 'healthy' | 'degraded' | 'unhealthy' | 'unknown'
+
+interface HealthCheck {
+  status: HealthStatus
+  timestamp: string
+  service: string
+  version: string
+  environment: string
+  checks: {
+    database: { status: HealthStatus; latency: number; error: string | null }
+    backend: { status: HealthStatus; latency: number; error: string | null }
+    redis: { status: HealthStatus; error: string | null }
+    memory: { usage: number; percentage: number }
+    uptime: number
+  }
+}
+
 /**
  * Comprehensive health check endpoint for Docker monitoring
  * Returns detailed health status of all system components
  */
 export async function GET() {
-  const healthCheck = {
+  const healthCheck: HealthCheck = {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     service: 'planetary-agents-frontend',
@@ -23,7 +40,7 @@ export async function GET() {
     },
   }
 
-  let overallStatus = 'healthy'
+  let overallStatus: HealthStatus = 'healthy'
 
   // Database health check
   try {

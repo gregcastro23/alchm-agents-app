@@ -8,16 +8,16 @@ declare global {
 }
 
 // Prisma client singleton with Accelerate extension
-const createPrismaClient = () => {
+const createPrismaClient = (): PrismaClient => {
   const client = new PrismaClient()
   // Only use Accelerate extension if using Prisma Accelerate (prisma+postgres:// protocol)
   if (process.env.DATABASE_URL?.startsWith('prisma+postgres://')) {
-    return client.$extends(withAccelerate())
+    return client.$extends(withAccelerate()) as unknown as PrismaClient
   }
   return client
 }
 
-export const prisma = globalThis.__prisma || createPrismaClient()
+export const prisma: PrismaClient = globalThis.__prisma || createPrismaClient()
 
 if (process.env.NODE_ENV !== 'production') {
   globalThis.__prisma = prisma

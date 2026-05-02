@@ -139,7 +139,7 @@ function calculateAverageAge(entries: any[]): number {
 // POST endpoint for performance actions
 export async function POST(req: Request) {
   try {
-    const { action, data } = await req.json()
+    const { action } = await req.json()
 
     if (action === 'benchmark') {
       // Run a simple benchmark test

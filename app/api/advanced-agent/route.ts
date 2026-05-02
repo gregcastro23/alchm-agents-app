@@ -2,6 +2,7 @@ import { generateText, tool } from 'ai'
 import { openai } from '@ai-sdk/openai'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { resolveOpenAIModel } from '@/lib/models/registry'
 import {
   logAgentConversation,
   createConversationContext,
@@ -11,26 +12,41 @@ import {
 import { planetaryAPI } from '@/lib/planetary-api-client'
 import { ANumberCalculator } from '@/lib/core-energy-rules'
 
+const planetaryPositionInputSchema = z.object({
+  planet: z
+    .string()
+    .describe(
+      'Planet name (e.g. Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto)'
+    ),
+  date: z.string().optional().describe('ISO 8601 date/time. Defaults to current time if omitted.'),
+  latitude: z.number().optional().describe('Latitude in decimal degrees. Defaults to NYC.'),
+  longitude: z.number().optional().describe('Longitude in decimal degrees. Defaults to NYC.'),
+})
+
+type PlanetaryPositionInput = z.infer<typeof planetaryPositionInputSchema>
+
+const historicalInterpretationInputSchema = z.object({
+  planet: z.string().describe('Planet name'),
+  sign: z.string().optional().describe('Zodiac sign. If omitted, current sign is fetched.'),
+  date: z.string().optional().describe('ISO 8601 date for the lookup (defaults to now).'),
+})
+
+type HistoricalInterpretationInput = z.infer<typeof historicalInterpretationInputSchema>
+
+interface AdvancedAgentRequest {
+  query?: string
+  birthData?: unknown
+  sessionId?: string
+}
+
 // Inline replacements for the deleted `@/lib/astrological-tools` Vercel AI SDK tools.
 // Both call the Railway backend via `planetaryAPI` and adapt the new flat
 // `planetary_positions` shape into the response the agent prompt expected.
 const calculatePlanetaryPosition = tool({
   description:
     'Calculate the position of a planet (sign, degree, retrograde status, longitude) for a given UTC date/time and optional location. Use this to ground astrological interpretations in precise astronomical data.',
-  parameters: z.object({
-    planet: z
-      .string()
-      .describe(
-        'Planet name (e.g. Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto)'
-      ),
-    date: z
-      .string()
-      .optional()
-      .describe('ISO 8601 date/time. Defaults to current time if omitted.'),
-    latitude: z.number().optional().describe('Latitude in decimal degrees. Defaults to NYC.'),
-    longitude: z.number().optional().describe('Longitude in decimal degrees. Defaults to NYC.'),
-  }),
-  execute: async ({ planet, date, latitude, longitude }) => {
+  inputSchema: planetaryPositionInputSchema,
+  execute: async ({ planet, date, latitude, longitude }: PlanetaryPositionInput) => {
     const when = date ? new Date(date) : new Date()
     const raw = await planetaryAPI.getPlanetaryPositions(when, latitude, longitude)
     const positions = raw?.planetary_positions || {}
@@ -60,12 +76,8 @@ const calculatePlanetaryPosition = tool({
 const getHistoricalInterpretation = tool({
   description:
     'Get a brief historical/traditional astrological interpretation for a planet in a given zodiac sign. Pulls a basic interpretation derived from current position data; use this for narrative context, not precision claims.',
-  parameters: z.object({
-    planet: z.string().describe('Planet name'),
-    sign: z.string().optional().describe('Zodiac sign. If omitted, current sign is fetched.'),
-    date: z.string().optional().describe('ISO 8601 date for the lookup (defaults to now).'),
-  }),
-  execute: async ({ planet, sign, date }) => {
+  inputSchema: historicalInterpretationInputSchema,
+  execute: async ({ planet, sign, date }: HistoricalInterpretationInput) => {
     let resolvedSign = sign
     if (!resolvedSign) {
       const when = date ? new Date(date) : new Date()
@@ -89,7 +101,7 @@ const getHistoricalInterpretation = tool({
 
 export async function POST(req: Request) {
   try {
-    const { query, birthData, sessionId } = await req.json()
+    const { query, birthData: _birthData, sessionId }: AdvancedAgentRequest = await req.json()
 
     // Create or use existing conversation context
     let conversationContext: ConversationContext
@@ -147,7 +159,7 @@ ${
 Provide comprehensive astrological analysis that incorporates both traditional techniques and the current alchemical energy levels.`
 
     const { text } = await generateText({
-      model: openai('gpt-5.5'),
+      model: openai(resolveOpenAIModel('powerful')),
       system: systemPrompt,
       prompt: query || 'Tell me about my chart',
       tools: {

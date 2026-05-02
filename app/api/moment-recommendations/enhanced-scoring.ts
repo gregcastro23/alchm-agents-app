@@ -87,33 +87,33 @@ export function calculateEnhancedMomentScore(
       alchemicalData.totals[a[0]] > alchemicalData.totals[b[0]] ? a : b
     )[0]
 
-    const agentElements = agent.consciousness?.elements || {
-      Spirit: 0.25,
-      Essence: 0.25,
-      Matter: 0.25,
-      Substance: 0.25,
+    const agentElements = agent.consciousness?.alchemicalElements || {
+      spirit: 0.25,
+      essence: 0.25,
+      matter: 0.25,
+      substance: 0.25,
     }
 
     const elementMapping: Record<string, keyof typeof agentElements> = {
-      spirit: 'Spirit',
-      essence: 'Essence',
-      matter: 'Matter',
-      substance: 'Substance',
+      spirit: 'spirit',
+      essence: 'essence',
+      matter: 'matter',
+      substance: 'substance',
     }
 
     const mappedElement =
       elementMapping[currentDominantElement.toLowerCase() as keyof typeof elementMapping]
-    elementalResonance = mappedElement ? (agentElements[mappedElement] || 0.5) : 0.5
+    elementalResonance = mappedElement ? agentElements[mappedElement] || 0.5 : 0.5
   }
 
   // Calculate weighted final score
   const baseScore =
     powerAlignment * 0.25 +
-    kineticScore * 0.20 +
+    kineticScore * 0.2 +
     aspectSensitivity * 0.15 +
-    consciousnessScore * 0.20 +
-    mcScore * 0.10 +
-    elementalResonance * 0.10
+    consciousnessScore * 0.2 +
+    mcScore * 0.1 +
+    elementalResonance * 0.1
 
   // Diversity bonus - favor agents with unique momentum types
   const selectedMomentumTypes = selectedAgents
