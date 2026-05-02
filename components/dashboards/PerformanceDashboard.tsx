@@ -27,7 +27,7 @@ import { logger, LogLevel } from '@/lib/structured-logger'
 import { usePlanetaryPositions } from '@/hooks/usePlanetaryPositions'
 import { TokenStabilizationMonitor } from './TokenStabilizationMonitor'
 import { TokenFlowVisualization } from '@/components/visualization/token-flow-visualization'
-import { defaultAlchemicalMCPConfig } from '@/testing/alchemical-devtools/mcp-config'
+import { defaultAlchemicalMCPConfig } from '@/test/alchemical-devtools/mcp-config'
 
 interface PerformanceMetrics {
   averageResponseTime: number

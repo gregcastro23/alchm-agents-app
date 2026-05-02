@@ -1,8 +1,8 @@
 'use client'
 
 import React, { ReactNode } from 'react'
-import TarotCosmicWidget from './tarot-cosmic-widget'
-import EnhancedTarotDashboard from './enhanced-tarot-dashboard'
+import TarotCosmicWidget from '@/components/misc/tarot-cosmic-widget'
+import EnhancedTarotDashboard from '@/components/dashboards/enhanced-tarot-dashboard'
 
 interface TarotEnhancedLayoutProps {
   children: ReactNode

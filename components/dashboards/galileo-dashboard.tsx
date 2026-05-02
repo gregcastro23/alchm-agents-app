@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useGalileoLog } from '@/hooks/useGalileoLog'
-import GalileoLogger from './galileo-logger'
+import GalileoLogger from '@/components/misc/galileo-logger'
 import {
   LineChart,
   Line,
@@ -25,6 +25,17 @@ import {
   Bar,
   Legend,
 } from 'recharts'
+
+// Mock data for demo purposes - in a real app this would come from Galileo's API
+const mockMetricsData = [
+  { name: 'Day 1', requests: 24, success: 20, failure: 4, avgLatency: 850 },
+  { name: 'Day 2', requests: 32, success: 28, failure: 4, avgLatency: 720 },
+  { name: 'Day 3', requests: 18, success: 15, failure: 3, avgLatency: 910 },
+  { name: 'Day 4', requests: 45, success: 42, failure: 3, avgLatency: 650 },
+  { name: 'Day 5', requests: 38, success: 35, failure: 3, avgLatency: 680 },
+  { name: 'Day 6', requests: 52, success: 48, failure: 4, avgLatency: 740 },
+  { name: 'Day 7', requests: 61, success: 58, failure: 3, avgLatency: 610 },
+]
 
 const GALILEO_PROJECT_ID = '1e7fd4a1-3e28-4fe1-a719-744f239a13be'
 const GALILEO_LOG_STREAM_ID = '6ed50263-a348-4ad6-ab63-bd04d3a4ffdd'

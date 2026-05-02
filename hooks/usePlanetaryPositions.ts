@@ -3,7 +3,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { validateTokenEquilibrium } from '@/testing/alchemical-devtools/mcp-config'
+import { defaultAlchemicalMCPConfig, validateTokenEquilibrium } from '@/test/alchemical-devtools/mcp-config'
 
 export interface PlanetaryPosition {
   planet: string

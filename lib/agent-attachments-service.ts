@@ -2,8 +2,8 @@
 // Manages charts and runes attached to historical agents
 
 import { prisma } from './db'
-import { generateAlchmForBirthInfo } from './alchemizer'
-import type { AgentAttachment, AgentAttachmentUsage } from './generated/prisma'
+import { planetaryAPI } from './planetary-api-client'
+import type { AgentAttachment, AgentAttachmentUsage } from '@prisma/client'
 
 export interface AttachmentChart {
   date: Date
@@ -39,14 +39,11 @@ export class AgentAttachmentsService {
     description?: string
   ): Promise<AgentAttachment> {
     // Calculate the birth chart and alchemical data
-    const alchmData = await generateAlchmForBirthInfo({
-      birth_date: chartData.date.toISOString().split('T')[0],
-      birth_time: chartData.time || '12:00',
-      birth_lat: chartData.location.lat,
-      birth_lon: chartData.location.lon,
-      birth_location: chartData.location.name,
-      timezone: chartData.location.timezone || 'UTC',
-    })
+    const alchmData = await planetaryAPI.getAlchemicalQuantitiesLegacy(
+      chartData.date,
+      chartData.location.lat,
+      chartData.location.lon
+    )
 
     return await prisma.agentAttachment.create({
       data: {
@@ -75,14 +72,11 @@ export class AgentAttachmentsService {
     description?: string
   ): Promise<AgentAttachment> {
     // Calculate planetary positions and alchemical data for this moment
-    const alchmData = await generateAlchmForBirthInfo({
-      birth_date: chartData.date.toISOString().split('T')[0],
-      birth_time: chartData.time || '12:00',
-      birth_lat: chartData.location.lat,
-      birth_lon: chartData.location.lon,
-      birth_location: chartData.location.name,
-      timezone: chartData.location.timezone || 'UTC',
-    })
+    const alchmData = await planetaryAPI.getAlchemicalQuantitiesLegacy(
+      chartData.date,
+      chartData.location.lat,
+      chartData.location.lon
+    )
 
     return await prisma.agentAttachment.create({
       data: {

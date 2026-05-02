@@ -23,6 +23,10 @@ export interface PlanetaryPositionsRequest {
   latitude: number
   longitude: number
   zodiacSystem?: string
+  recipe?: any
+  kinetic_rating?: number
+  planetary_hour_ruler?: string
+  thermo_rating?: number
 }
 
 export class PlanetaryAPIClient {
@@ -51,7 +55,11 @@ export class PlanetaryAPIClient {
       minute: date.getUTCMinutes(),
       latitude: latitude || 40.7128,
       longitude: longitude || -74.0060,
-      zodiacSystem: 'tropical'
+      zodiacSystem: 'tropical',
+      recipe: {},
+      kinetic_rating: 0,
+      planetary_hour_ruler: 'Sun',
+      thermo_rating: 0,
     }
   }
 

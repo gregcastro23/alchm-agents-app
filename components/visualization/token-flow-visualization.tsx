@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { logger, LogLevel } from '@/lib/structured-logger'
+import { defaultAlchemicalMCPConfig } from '@/test/alchemical-devtools/mcp-config'
 import { Progress } from '@/components/ui/progress'
 import {
   Activity,

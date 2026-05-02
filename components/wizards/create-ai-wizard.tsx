@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { MonicaStyleCards, type StyleCards } from './monica-style-cards'
+import { MonicaStyleCards, type StyleCards } from '@/components/misc/monica-style-cards'
 
 export function CreateAIWizard() {
   const [tone, setTone] = useState<'practical' | 'poetic'>('practical')

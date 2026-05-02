@@ -23,6 +23,7 @@ import {
   Flower,
   TreePine,
 } from 'lucide-react'
+import { ErrorBoundary } from '@/components/ui/error-boundary'
 // Type imports removed to prevent circular dependency issues
 // Using inline interfaces instead
 
