@@ -4,14 +4,12 @@
 import type {
   TrainingSession,
   TrainingActivity,
-  UserSubmission,
   SubmissionProcessingResult,
   Achievement,
   TrainingStats,
 } from './training-interface-design'
 
 import { trainingDataManager } from './data-architecture'
-import { trainingOrchestrator } from './training-orchestration'
 
 // ============================================================================
 // MAIN ENGAGEMENT ENGINE - The Fun Factory
@@ -41,7 +39,7 @@ export class EngagementEngine {
 
   async celebrateActivityCompletion(
     userId: string,
-    activityId: string,
+    _activityId: string,
     qualityScore: number,
     processingResult: SubmissionProcessingResult
   ): Promise<CelebrationEvent[]> {
@@ -411,7 +409,7 @@ export class EngagementEngine {
     userId: string,
     recentSessions: TrainingSession[]
   ): Promise<MotivationalMessage> {
-    const userProfile = await trainingDataManager.getUserProfile(userId)
+    const _userProfile = await trainingDataManager.getUserProfile(userId)
     const streakInfo = await this.streakProtector.getCurrentStreak(userId)
 
     // Analyze recent performance
@@ -527,8 +525,8 @@ export class EngagementEngine {
   }
 
   private async checkForLevelUp(
-    userId: string,
-    xpGained: number
+    _userId: string,
+    _xpGained: number
   ): Promise<{ leveledUp: boolean; newLevel: number; rewards: string[] }> {
     // This would check if the XP gain caused a level up
     // Simplified implementation
@@ -568,27 +566,27 @@ export class EngagementEngine {
     return milestones.find(m => m > current) || current + 7
   }
 
-  private async getRecentAchievements(userId: string, limit: number): Promise<Achievement[]> {
+  private async getRecentAchievements(_userId: string, _limit: number): Promise<Achievement[]> {
     // Would fetch from database
     return []
   }
 
-  private async getActiveQuests(userId: string): Promise<Quest[]> {
+  private async getActiveQuests(_userId: string): Promise<Quest[]> {
     // Would fetch active quests for user
     return []
   }
 
-  private async getUpcomingRewards(userId: string): Promise<RewardPreview[]> {
+  private async getUpcomingRewards(_userId: string): Promise<RewardPreview[]> {
     // Would calculate upcoming rewards
     return []
   }
 
-  private async calculateEngagementScore(userId: string): Promise<number> {
+  private async calculateEngagementScore(_userId: string): Promise<number> {
     // Would calculate based on various engagement metrics
     return 0.75
   }
 
-  private async getAchievementById(achievementId: string): Promise<Achievement | null> {
+  private async getAchievementById(_achievementId: string): Promise<Achievement | null> {
     // Would fetch achievement from database
     return null
   }
@@ -601,8 +599,8 @@ export class EngagementEngine {
   }
 
   private async calculateSocialRewards(
-    userId: string,
-    activityResult: SubmissionProcessingResult
+    _userId: string,
+    _activityResult: SubmissionProcessingResult
   ): Promise<Reward[]> {
     // Would check for social achievements or community contributions
     return []
@@ -707,7 +705,7 @@ class StreakProtectionSystem {
 // ============================================================================
 
 class SocialEngagementFeatures {
-  async getLeaderboardPosition(userId: string): Promise<LeaderboardPosition> {
+  async getLeaderboardPosition(_userId: string): Promise<LeaderboardPosition> {
     // Would calculate user's position in various leaderboards
     return {
       weeklyXP: 42,
@@ -722,7 +720,7 @@ class SocialEngagementFeatures {
     return []
   }
 
-  async getFriendActivity(userId: string): Promise<FriendActivity[]> {
+  async getFriendActivity(_userId: string): Promise<FriendActivity[]> {
     // Would fetch activity from friends/followed users
     return []
   }
@@ -732,12 +730,12 @@ class SocialEngagementFeatures {
     return []
   }
 
-  async getSharedAchievements(userId: string): Promise<SharedAchievement[]> {
+  async getSharedAchievements(_userId: string): Promise<SharedAchievement[]> {
     // Would fetch achievements shared by the user
     return []
   }
 
-  async getMentorshipOpportunities(userId: string): Promise<MentorshipOpportunity[]> {
+  async getMentorshipOpportunities(_userId: string): Promise<MentorshipOpportunity[]> {
     // Would find mentorship opportunities
     return []
   }

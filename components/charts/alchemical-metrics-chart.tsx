@@ -17,11 +17,6 @@ import {
   Brush,
   ScatterChart,
   Scatter,
-  RadialBarChart,
-  RadialBar,
-  Cell,
-  PieChart,
-  Pie,
 } from 'recharts'
 import {
   TrendingUp,
@@ -45,10 +40,6 @@ import {
   Pause,
   RotateCcw,
   Download,
-  Settings,
-  Eye,
-  EyeOff,
-  Layers,
   Clock,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -56,18 +47,14 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import type { CelestialMoment } from '@/lib/celestial-energy-calculator'
 
 interface AlchemicalMetricsChartProps {
   data: CelestialMoment[]
   isLoading?: boolean
-  onTimeSelect?: (timestamp: Date) => void
-  onAgentActivation?: (activations: any[]) => void
   height?: number
-  enableComparison?: boolean
-  comparisonData?: CelestialMoment[]
   realTimeMode?: boolean
   onExport?: (format: 'png' | 'svg' | 'csv') => void
 }
@@ -102,11 +89,7 @@ interface PatternHighlight {
 export default function AlchemicalMetricsChart({
   data,
   isLoading = false,
-  onTimeSelect,
-  onAgentActivation,
   height = 500,
-  enableComparison = false,
-  comparisonData,
   realTimeMode = false,
   onExport,
 }: AlchemicalMetricsChartProps) {
@@ -272,8 +255,7 @@ export default function AlchemicalMetricsChart({
   const [isPlaying, setIsPlaying] = useState(false)
   const [playbackPosition, setPlaybackPosition] = useState(0)
   const [selectedTimeRange, setSelectedTimeRange] = useState<[number, number]>([0, 100])
-  const [hoveredPoint, setHoveredPoint] = useState<CelestialMoment | null>(null)
-  const [patternHighlights, setPatternHighlights] = useState<PatternHighlight[]>([])
+    const [patternHighlights, setPatternHighlights] = useState<PatternHighlight[]>([])
   const [isExpanded, setIsExpanded] = useState(false)
 
   // Process chart data
@@ -412,7 +394,7 @@ export default function AlchemicalMetricsChart({
   }, [])
 
   // Custom tooltip
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload }: any) => {
     if (!active || !payload || !payload.length) return null
 
     const data = payload[0]?.payload
@@ -822,7 +804,7 @@ export default function AlchemicalMetricsChart({
           </label>
           <Slider
             value={selectedTimeRange}
-            onValueChange={setSelectedTimeRange}
+            onValueChange={(val: number[]) => setSelectedTimeRange(val as [number, number])}
             min={0}
             max={100}
             step={1}

@@ -1,11 +1,37 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import {
-  planetaryPositionsService,
-  type PlanetaryData,
-  type AccuracyLevel,
-} from '@/lib/services/planetary-positions-service'
+
+export type AccuracyLevel = 'high' | 'medium' | 'low' | 'fallback'
+
+export interface PlanetaryPosition {
+  planet: string
+  sign: string
+  degree: number
+  retrograde?: boolean
+}
+
+export interface AlchemicalQuantities {
+  spirit: number
+  essence: number
+  matter: number
+  substance: number
+  Heat?: number
+  Entropy?: number
+  Reactivity?: number
+  Energy?: number
+}
+
+export interface PlanetaryData {
+  timestamp: string
+  planetaryPositions: PlanetaryPosition[]
+  alchmQuantities?: AlchemicalQuantities
+  monicaConstant?: number
+  source: string
+  accuracy: AccuracyLevel
+  cached: boolean
+  error?: string
+}
 
 interface UseUnifiedPlanetaryPositionsOptions {
   accuracy?: AccuracyLevel
@@ -101,22 +127,54 @@ export function useUnifiedPlanetaryPositions(
         setLoading(true)
         setError(null)
 
-        const serviceOptions = {
-          accuracy: opts.accuracy,
-          useCache: opts.useCache,
-          timeout: 15000,
-          retryAttempts: opts.retryAttempts,
+        const fetches: Promise<Response>[] = [
+          fetch('/api/astrologize', { signal: abortControllerRef.current.signal }),
+        ]
+        if (opts.includeAlchemy) {
+          fetches.push(
+            fetch('/api/alchemize?legacy=true', { signal: abortControllerRef.current.signal })
+          )
+        }
+        const responses = await Promise.all(fetches)
+        const posRes = responses[0]
+        if (!posRes.ok) throw new Error(`positions failed: ${posRes.status}`)
+        const posData = await posRes.json()
+
+        const planetaryPositions: PlanetaryPosition[] = Object.entries(
+          posData?.planetary_positions || {}
+        ).map(([name, body]: [string, any]) => ({
+          planet: name,
+          sign: body?.sign ?? '',
+          degree: typeof body?.degree === 'number' ? body.degree : 0,
+          retrograde: Boolean(body?.isRetrograde),
+        }))
+
+        let alchmQuantities: AlchemicalQuantities | undefined
+        let monicaConstant: number | undefined
+        if (opts.includeAlchemy && responses[1]) {
+          if (!responses[1].ok) throw new Error(`alchemize failed: ${responses[1].status}`)
+          const a = await responses[1].json()
+          alchmQuantities = {
+            spirit: Number(a?.spirit_score ?? 0),
+            essence: Number(a?.essence_score ?? 0),
+            matter: Number(a?.matter_score ?? 0),
+            substance: Number(a?.substance_score ?? 0),
+            Heat: Number(a?.Heat ?? 0),
+            Entropy: Number(a?.Entropy ?? 0),
+            Reactivity: Number(a?.Reactivity ?? 0),
+            Energy: Number(a?.Energy ?? 0),
+          }
+          monicaConstant = Number(a?.['A-Number'] ?? 0)
         }
 
-        let result: PlanetaryData
-
-        if (opts.includeAlchemy) {
-          result = await planetaryPositionsService.getPlanetaryPositionsWithAlchemy(
-            new Date(),
-            serviceOptions
-          )
-        } else {
-          result = await planetaryPositionsService.getPlanetaryPositions(new Date(), serviceOptions)
+        const result: PlanetaryData = {
+          timestamp: new Date().toISOString(),
+          planetaryPositions,
+          alchmQuantities,
+          monicaConstant,
+          source: 'railway-proxy',
+          accuracy: opts.accuracy,
+          cached: false,
         }
 
         // Update shared cache
@@ -167,7 +225,6 @@ export function useUnifiedPlanetaryPositions(
 
   // Clear cache function
   const clearCache = useCallback(() => {
-    planetaryPositionsService.clearCache()
     sharedCache.data = null
     sharedCache.lastFetch = 0
   }, [])

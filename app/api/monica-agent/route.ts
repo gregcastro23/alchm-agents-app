@@ -8,7 +8,7 @@ import {
   type AgentInteractionData,
   type ConversationContext,
 } from '../../../lib/galileo-agent-logger'
-import { generateAlchmForCurrentMoment } from '../../../lib/alchemizer'
+import { planetaryAPI } from '@/lib/planetary-api-client'
 import { ANumberCalculator } from '../../../lib/core-energy-rules'
 import { CharacterVectorCalculator } from '../../../lib/astrological-character-vectors'
 import { MonicaResponseHandler } from '../../../lib/monica/monica-response-handler'
@@ -555,7 +555,7 @@ export async function POST(req: NextRequest) {
       spreadContext = null,
       quickProfile = null,
       preferredStyle = null,
-      model = process.env.MONICA_DEFAULT_MODEL || 'gpt-4o-mini',
+      model = process.env.MONICA_DEFAULT_MODEL || 'gpt-5.4-mini',
       birthData = null,
       userPreferences = null,
       chartData = null,
@@ -985,10 +985,10 @@ ${
 }
 
 BEHAVIORAL TRAITS:
-- Communication Style: ${historicalAgent.personality?.traits?.communicationStyle || 'Adaptive'}
-- Energy Level: ${historicalAgent.personality?.traits?.energyLevel || 'High'}
-- Learning Style: ${historicalAgent.personality?.traits?.learningStyle || 'Experiential'}
-- Decision Making: ${historicalAgent.personality?.traits?.decisionMaking || 'Intuitive'}
+- Communication Style: ${(historicalAgent.personality?.traits as any)?.communicationStyle || 'Adaptive'}
+- Energy Level: ${(historicalAgent.personality?.traits as any)?.energyLevel || 'High'}
+- Learning Style: ${(historicalAgent.personality?.traits as any)?.learningStyle || 'Experiential'}
+- Decision Making: ${(historicalAgent.personality?.traits as any)?.decisionMaking || 'Intuitive'}
 
 You were crafted by the Philosopher's Stone system and trained on your personal history and natal chart. Respond as this specific consciousness agent would, drawing from your unique personality, abilities, and historical context. Your responses should reflect your consciousness level, monica constant, and the traits described above.
 
@@ -1023,7 +1023,7 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
               historicalAgent.birthData
             ),
             3000
-          ).catch(err => ({
+          ).catch(_err => ({
             score: 50,
             description: 'Neutral cosmic alignment',
             harmonicAspects: [],
@@ -1052,18 +1052,18 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
 
         console.log(`🤖 Cache miss - generating new response for: ${historicalAgent.name}`)
         console.log(`📝 Prompt length: ${trimmedMessage.length} characters`)
-        console.log(`🔧 Using model: gpt-4o-mini with temperature: 0.7`)
+        console.log(`🔧 Using model: gpt-5.4-mini with temperature: 0.7`)
 
         const startTime = Date.now()
 
         // RAG-enhanced generation with fallback
         const { text, ragMetadata } = await generateWithRAG({
-          agent: historicalAgent,
+          agent: historicalAgent as any,
           agentId,
           userMessage: trimmedMessage,
           systemPrompt: historicalSystemPrompt,
           sessionId: finalSessionId,
-          model: 'gpt-4o-mini',
+          model: 'gpt-5.4-mini',
           temperature: 0.7,
           maxTokens: 800,
         })
@@ -1071,8 +1071,8 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
         const responseTime = Date.now() - startTime
 
         // Log RAG usage
-        if (ragMetadata?.ragEnabled) {
-          console.log(`[RAG] Historical agent response used ${ragMetadata.knowledgeChunksUsed} knowledge chunks`)
+        if (ragMetadata?.enabled) {
+          console.log(`[RAG] Historical agent response used ${ragMetadata.sources?.length || 0} knowledge chunks`)
         }
 
         // Calculate personality score for cache quality assessment
@@ -1102,7 +1102,7 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
             text,
             {
               responseTime,
-              modelUsed: 'gpt-4o-mini',
+              modelUsed: 'gpt-5.4-mini',
               temperature: 0.7,
               tokenCount: text.length,
             }
@@ -1164,7 +1164,7 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
         console.log(`📊 Response length: ${text.length} characters`)
 
         // Log interaction to Galileo MCP for observability
-        const galileoMCP = getGalileoAgentMCP()
+        const galileoMCP = getGalileoAgentMCP() as any
         galileoMCP
           .logAgentInteraction({
             agentId: historicalAgent.id,
@@ -1189,7 +1189,7 @@ Always remain in character as ${historicalAgent.name} and provide guidance that 
             performance: {
               responseTime,
               tokenCount: text.length,
-              modelUsed: selectedModel,
+              modelUsed: 'gpt-5.4-mini',
             },
             timestamp: new Date(),
           })
@@ -1262,7 +1262,7 @@ Please try connecting again, or explore my profile in the Gallery of Perpetuity.
     const chartCombination = await analyzeChartCombination(requestData, conversationContext)
     if (includeAlchm) {
       try {
-        alchmData = await generateAlchmForCurrentMoment()
+        alchmData = await planetaryAPI.getAlchemicalQuantitiesLegacy()
         const spirit = alchmData?.['Alchemy Effects']?.['Total Spirit'] || 0
         const essence = alchmData?.['Alchemy Effects']?.['Total Essence'] || 0
         const matter = alchmData?.['Alchemy Effects']?.['Total Matter'] || 0
@@ -1302,7 +1302,7 @@ Please try connecting again, or explore my profile in the Gallery of Perpetuity.
       // Get current decan tarot card
       const sunLongitude = currentPositions.planets.Sun.longitude
       const decan = Math.floor(sunLongitude / 10) * 10
-      const currentDecanCard = null // Will implement proper lookup
+      const _currentDecanCard = null // Will implement proper lookup
 
       // Calculate planetary hour
       const hourOfDay = now.getHours()
@@ -1351,17 +1351,16 @@ Please try connecting again, or explore my profile in the Gallery of Perpetuity.
         // Also calculate character vector from the birth chart
         let characterVector: any = null
         try {
-          const cvCalculator = new CharacterVectorCalculator()
-          characterVector = cvCalculator.calculate({
-            Sun: { sign: chartResult.planets.Sun.sign, degree: chartResult.planets.Sun.signDegree },
-            Moon: { sign: chartResult.planets.Moon.sign, degree: chartResult.planets.Moon.signDegree },
-            Mercury: { sign: chartResult.planets.Mercury.sign, degree: chartResult.planets.Mercury.signDegree },
-            Venus: { sign: chartResult.planets.Venus.sign, degree: chartResult.planets.Venus.signDegree },
-            Mars: { sign: chartResult.planets.Mars.sign, degree: chartResult.planets.Mars.signDegree },
-            Jupiter: { sign: chartResult.planets.Jupiter.sign, degree: chartResult.planets.Jupiter.signDegree },
-            Saturn: { sign: chartResult.planets.Saturn.sign, degree: chartResult.planets.Saturn.signDegree },
-            Ascendant: { sign: chartResult.ascendant.sign, degree: chartResult.ascendant.signDegree },
-          })
+          characterVector = CharacterVectorCalculator.generateChartCharacterProfile([
+            { planet: 'Sun', sign: chartResult.planets.Sun.sign },
+            { planet: 'Moon', sign: chartResult.planets.Moon.sign },
+            { planet: 'Mercury', sign: chartResult.planets.Mercury.sign },
+            { planet: 'Venus', sign: chartResult.planets.Venus.sign },
+            { planet: 'Mars', sign: chartResult.planets.Mars.sign },
+            { planet: 'Jupiter', sign: chartResult.planets.Jupiter.sign },
+            { planet: 'Saturn', sign: chartResult.planets.Saturn.sign },
+            { planet: 'Ascendant', sign: chartResult.ascendant.sign }
+          ])
         } catch (cvError) {
           console.warn('Failed to calculate character vector:', cvError)
         }
@@ -1534,7 +1533,7 @@ ${
 Current planetary positions are forming these aspects with the user's birth placements:
 ${transitAspects
   .map(
-    aspect =>
+    (aspect: any) =>
       `- ${aspect.type.toUpperCase()}: ${aspect.interpretation} (orb: ${aspect.orb}°)
    ${getAspectGuidance(aspect)}`
   )
@@ -1565,7 +1564,7 @@ CRITICAL: Use ONLY these calculated positions when discussing the user's chart. 
         ? `\n\nRUNE MINTING CONTEXT:\n- Multi-Chart Expert: Can analyze up to ${runeContext.maxCollectiveCharts || 8} birth charts\n- Synergy Calculator: Specializes in chart compatibility analysis\n- Relationship Dynamics: Expert in romantic, family, business, and spiritual group runes\n- Collective Consciousness: Masters group consciousness and reality alteration runes\n- Real-time Pricing: Access to current astrological conditions affecting rune costs\n- Power Scaling: Understands how chart combinations amplify rune effects 2x-5x`
         : '') +
       (chartCombination
-        ? `\n\nCURRENT CHART COMBINATION:\n- Complexity: ${chartCombination.complexity} (${chartCombination.charts?.length || 0} + current moment)\n- Synergy Score: ${chartCombination.synergy || 0}%\n- Dominant Element: ${chartCombination.dominantElement || 'unknown'}\n- Harmonic Resonance: ${chartCombination.harmonicResonance || 1.0}x\n- Participants: ${chartCombination.charts?.map(c => c.name).join(', ') || 'none'}\n- Relationship Type: ${chartCombination.relationship?.type || 'unspecified'}`
+        ? `\n\nCURRENT CHART COMBINATION:\n- Complexity: ${chartCombination.complexity} (${chartCombination.charts?.length || 0} + current moment)\n- Synergy Score: ${chartCombination.synergy || 0}%\n- Dominant Element: ${chartCombination.dominantElement || 'unknown'}\n- Harmonic Resonance: ${chartCombination.harmonicResonance || 1.0}x\n- Participants: ${chartCombination.charts?.map((c: any) => c.name).join(', ') || 'none'}\n- Relationship Type: ${chartCombination.relationship?.type || 'unspecified'}`
         : '')
 
     let specializedPrompt: string
@@ -1969,17 +1968,17 @@ Always end responses with practical next steps for rune crafting, resource manag
         model: routing.model,
         temperature: temp,
         maxTokens: 800,
-      })
+      } as any)
 
       const processingTime = Date.now() - startTime
 
       // Log RAG usage for Monica
-      if (ragMetadata?.ragEnabled) {
-        console.log(`[RAG] Monica response used ${ragMetadata.knowledgeChunksUsed} knowledge chunks`)
+      if (ragMetadata?.enabled) {
+        console.log(`[RAG] Monica response used ${ragMetadata.sources?.length || 0} knowledge chunks`)
       }
 
       // Log the conversation to Galileo
-      const interactionData: AgentInteractionData = {
+      const interactionData: any = {
         sessionId: conversationContext.sessionId,
         userMessage: trimmedMessage,
         agentResponse: text,
@@ -2023,7 +2022,7 @@ Always end responses with practical next steps for rune crafting, resource manag
             }
           : undefined,
         learningStage: conversationStage === 'greeting' ? 'beginner' : 'intermediate',
-      })
+      } as any)
 
       // After generating text, compute mirrored consciousness→astrology hints if provided
       const mirroredInsights = quickProfile?.consciousnessProfile
@@ -2076,22 +2075,22 @@ Always end responses with practical next steps for rune crafting, resource manag
       // Persist XP and interaction if userId provided
       try {
         if (userId) {
-          const settings = await prisma.monicaUserSettings.upsert({
-            where: { userId },
+          const settings = await prisma.monica_user_settings.upsert({
+            where: { userId: userId as string },
             update: {},
-            create: { userId },
-          })
-          const progress = await prisma.monicaUserProgress.upsert({
-            where: { userId },
+            create: { userId: userId as string },
+          } as any)
+          const progress = await prisma.monica_user_progress.upsert({
+            where: { userId: userId as string },
             update: {},
-            create: { userId, settingsId: settings.id },
-          })
+            create: { userId: userId as string, settingsId: settings.id },
+          } as any)
 
           const xpGained = aNumberInfo
             ? calculateDynamicXP(conversationContext, alchmData, runeContext, chartCombination)
             : 50
 
-          await prisma.monicaUserProgress.update({
+          await prisma.monica_user_progress.update({
             where: { id: progress.id },
             data: {
               totalXP: { increment: xpGained },
@@ -2101,9 +2100,9 @@ Always end responses with practical next steps for rune crafting, resource manag
             },
           })
 
-          await prisma.monicaInteraction.create({
+          await prisma.monica_interactions.create({
             data: {
-              userId,
+              userId: userId as string,
               settingsId: settings.id,
               pageUrl: '/monica',
               interactionType: 'chat_response',
@@ -2116,7 +2115,7 @@ Always end responses with practical next steps for rune crafting, resource manag
               monicaResponse: text,
               resultedInAction: false,
             },
-          })
+          } as any)
         }
       } catch (persistErr) {
         console.warn('XP/interaction persistence failed:', persistErr)

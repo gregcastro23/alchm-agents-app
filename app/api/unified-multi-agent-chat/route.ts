@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateText } from 'ai'
+import { generateText, type LanguageModel } from 'ai'
 import { openai } from '@ai-sdk/openai'
+import { OPENAI, type OpenAIModelId, resolveOpenAIModel } from '@/lib/models/registry'
 import type {
   UnifiedAgent,
   GroupChatResponse,
@@ -9,22 +10,26 @@ import type {
   GroupDynamics,
 } from '@/lib/unified-agent-types'
 import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
-import { consciousnessPersistence } from '@/lib/consciousness-persistence'
-import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
-import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
-import { usePlanetaryPositions } from '@/hooks/usePlanetaryPositions'
-import {
-  getPlanetaryDignity,
-  getSignElement,
-  getPlanetaryElement,
-  calculateElementalAffinity,
-} from '@/lib/astrological-data'
+import { planetaryAPI } from '@/lib/planetary-api-client'
 import { observabilityTracker } from '@/lib/observability/tracker'
 import { v4 as uuidv4 } from 'uuid'
 import { unifiedTracker } from '@/lib/consciousness/unified-tracker'
-import type { CraftedAgent } from '@/lib/agent-types'
-import { generateWithRAG, type RAGResult } from '@/lib/rag/rag-generator'
-import { shouldUseRAG, getRAGConfig } from '@/lib/rag/rag-generator'
+import type {
+  Appearance,
+  BirthData,
+  CraftedAgent,
+  Element,
+  ResonanceType,
+  TeachingStyle,
+} from '@/lib/agent-types'
+import type { Sacred7Stats } from '@/lib/sacred-7-stats'
+import { generateConsciousnessInformedPrompt } from '@/lib/agents/sacred-stats-prompt-generator'
+import {
+  generateWithRAG,
+  shouldUseRAG,
+  getRAGConfig,
+  type RAGMetadata,
+} from '@/lib/rag/rag-generator'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -37,27 +42,47 @@ interface UnifiedChatRequest {
     groupDynamics?: GroupDynamics
     enableMemoryPersistence: boolean
     realtimeUpdates: boolean
-    variant?: string
+    variant?: ChatVariant
     modelOverrides?: Record<string, string>
     theme?: string
     messageStyle?: string
   }
 }
 
-interface AgentPromptContext {
-  agent: UnifiedAgent
-  message: string
-  groupContext: {
-    otherAgents: UnifiedAgent[]
-    currentDynamics?: GroupDynamics
-    sessionHistory: Message[]
-    recentMessages: Message[]
+type ChatVariant = 'standard' | 'historical' | 'planetary' | 'laboratory' | 'gallery'
+
+interface AgentGroupContext {
+  otherAgents: UnifiedAgent[]
+  currentDynamics?: GroupDynamics
+  sessionHistory: Message[]
+  recentMessages: Message[]
+  variant: ChatVariant
+  modelOverrides?: Record<string, string>
+}
+
+interface CosmicContext {
+  currentMoment?: unknown
+  cosmicSummary: string
+  timestamp: string
+  planetaryPositions?: Record<string, unknown>
+}
+
+interface ResolvedModelSelection {
+  model: LanguageModel
+  modelId: string
+}
+
+interface AgentMemoryEvolution {
+  agentId: string
+  memoryUpdate: {
+    interaction: string
+    timestamp: string
+    contextLearned: string
   }
-  cosmicContext: {
-    currentMoment: any
-    planetaryPositions?: any
-    lunarPhase?: any
-  }
+}
+
+interface AgentStatsWithSacred7 {
+  sacred7Stats?: Sacred7Stats
 }
 
 export async function POST(request: NextRequest) {
@@ -81,6 +106,7 @@ export async function POST(request: NextRequest) {
 
     // Limit agents for performance
     const activeAgents = agents.slice(0, 6) // Allow up to 6 including Monica
+    const chatVariant = normalizeChatVariant(context.variant)
 
     // Generate current cosmic context
     const cosmicContext = await generateCosmicContext()
@@ -103,6 +129,8 @@ export async function POST(request: NextRequest) {
             currentDynamics: context.groupDynamics,
             sessionHistory: context.sessionHistory,
             recentMessages: context.sessionHistory.slice(-10),
+            variant: chatVariant,
+            modelOverrides: context.modelOverrides,
           },
           cosmicContext,
           sessionId
@@ -123,6 +151,8 @@ export async function POST(request: NextRequest) {
           currentDynamics: context.groupDynamics,
           sessionHistory: context.sessionHistory,
           recentMessages: context.sessionHistory.slice(-10),
+          variant: chatVariant,
+          modelOverrides: context.modelOverrides,
         },
         cosmicContext,
         sessionId
@@ -186,8 +216,8 @@ export async function POST(request: NextRequest) {
 async function processAgentResponse(
   agent: UnifiedAgent,
   message: string,
-  groupContext: any,
-  cosmicContext: any,
+  groupContext: AgentGroupContext,
+  cosmicContext: CosmicContext,
   sessionId: string
 ): Promise<AgentResponse> {
   const agentStartTime = Date.now()
@@ -268,12 +298,12 @@ async function processAgentResponse(
 
     // Check if we should use RAG for this agent/query
     const ragConfig = getRAGConfig()
-    const useRAG = ragConfig.enabled &&
-                   agent.type === 'historical' &&
-                   shouldUseRAG(message)
+    const useRAG = ragConfig.enabled && agent.type === 'historical' && shouldUseRAG(message)
 
     let response: string
-    let ragMetadata: any = undefined
+    let ragMetadata: RAGMetadata | undefined = undefined
+    let totalTokens: number | undefined = undefined
+    let modelUsed = 'rag-enhanced-fallback'
 
     if (useRAG) {
       console.log(`🔍 Using RAG for ${agent.name}`)
@@ -286,7 +316,7 @@ async function processAgentResponse(
         systemPrompt,
         conversationHistory: groupContext.sessionHistory.slice(-5).map(m => ({
           role: m.role as 'user' | 'assistant',
-          content: m.content
+          content: m.content,
         })),
         sessionId,
         ragConfig: {
@@ -301,40 +331,43 @@ async function processAgentResponse(
       ragMetadata = ragResult.ragMetadata
 
       // DEBUG: Log what we got from RAG
-      console.log(`[DEBUG] RAG result - text length: ${response?.length ?? 0}, ragUsed: ${ragMetadata?.ragUsed}`)
+      console.log(
+        `[DEBUG] RAG result - text length: ${response?.length ?? 0}, ragUsed: ${ragMetadata?.ragUsed}`
+      )
       if (!response || response.length === 0) {
-        console.warn(`[DEBUG] ⚠️ RAG returned empty response! ragMetadata:`, JSON.stringify(ragMetadata))
+        console.warn(
+          `[DEBUG] ⚠️ RAG returned empty response! ragMetadata:`,
+          JSON.stringify(ragMetadata)
+        )
       }
     } else {
       // Standard generation without RAG
-      const model = selectOptimalModel(
+      const modelSelection = selectOptimalModel(
         agent,
         groupContext.otherAgents.length,
-        'standard',
-        {}
+        groupContext.variant,
+        groupContext.modelOverrides
       )
+      modelUsed = modelSelection.modelId
 
       const result = await generateText({
-        model,
+        model: modelSelection.model,
         system: systemPrompt,
         prompt: message,
         temperature: getAgentTemperature(agent),
       })
 
       response = result.text
+      totalTokens = result.usage?.totalTokens
     }
 
     const processingTime = Date.now() - agentStartTime
-    const modelUsed = useRAG
-      ? `rag-enhanced-${ragMetadata?.ragUsed ? 'with-retrieval' : 'fallback'}`
-      : String(selectOptimalModel(agent, groupContext.otherAgents.length, 'standard', {}))
+    if (useRAG) {
+      modelUsed = `rag-enhanced-${ragMetadata?.ragUsed ? 'with-retrieval' : 'fallback'}`
+    }
 
     // Cache the response
-    await agentCache.cacheResponse(agent.id, message, response, cacheContext, {
-      agentType: agent.type,
-      consciousnessLevel: agent.consciousness?.level ?? 'active',
-      groupSize: groupContext.otherAgents.length + 1,
-    })
+    await agentCache.cacheResponse(agent.id, message, response, processingTime, cacheContext)
 
     // Evaluate observability metrics
     const metrics = observabilityTracker.evaluateMetrics(
@@ -358,18 +391,20 @@ async function processAgentResponse(
         totalAgents: groupContext.otherAgents.length + 1,
         agentIds: [agent.id, ...groupContext.otherAgents.map((a: UnifiedAgent) => a.id)],
         crossReferences: extractCrossReferences(response, groupContext.otherAgents),
-        synergiesActivated: identifyCurrentSynergies([{
-          agentId: agent.id,
-          content: response,
-          processingTime,
-          consciousnessShift: 0,
-          metadata: {
-            crossAgentReferences: [],
-            synthesizedInsights: [],
-            memoryUpdates: [],
-            groupImpact: { consciousnessChange: 0, dynamicsShift: [] },
+        synergiesActivated: identifyCurrentSynergies([
+          {
+            agentId: agent.id,
+            content: response,
+            processingTime,
+            consciousnessShift: 0,
+            metadata: {
+              crossAgentReferences: [],
+              synthesizedInsights: [],
+              memoryUpdates: [],
+              groupImpact: { consciousnessChange: 0, dynamicsShift: [] },
+            },
           },
-        }]),
+        ]),
       }
     )
 
@@ -389,7 +424,7 @@ async function processAgentResponse(
           agentResponse: response,
           modelUsed,
           temperature: getAgentTemperature(agent),
-          tokensUsed: result.usage?.totalTokens,
+          tokensUsed: totalTokens,
           latencyMs: processingTime,
           observabilityMetrics: {
             actionCompletion: metrics.actionCompletion,
@@ -442,22 +477,17 @@ async function processAgentResponse(
       [],
       [],
       processingTime,
-      [{
-        type: 'api_failure',
-        message: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date(),
-        severity: 'critical',
-      }]
+      [
+        {
+          type: 'api_failure',
+          message: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date(),
+          severity: 'critical',
+        },
+      ]
     )
 
-    observabilityTracker.completeTrace(
-      traceId,
-      errorResponse,
-      metrics,
-      'error',
-      0,
-      0
-    )
+    observabilityTracker.completeTrace(traceId, errorResponse, metrics, 'error', 0, 0)
 
     return {
       agentId: agent.id,
@@ -481,8 +511,8 @@ async function processMonicaCoordination(
   monicaAgent: UnifiedAgent,
   message: string,
   regularResponses: AgentResponse[],
-  groupContext: any,
-  cosmicContext: any,
+  groupContext: AgentGroupContext,
+  cosmicContext: CosmicContext,
   sessionId: string
 ): Promise<AgentResponse> {
   const startTime = Date.now()
@@ -501,9 +531,9 @@ async function processMonicaCoordination(
 
     // Record Monica's routing decisions
     regularResponses.forEach(response => {
-      const agentName = groupContext.otherAgents.find(
-        (a: UnifiedAgent) => a.id === response.agentId
-      )?.name || 'unknown'
+      const agentName =
+        groupContext.otherAgents.find((a: UnifiedAgent) => a.id === response.agentId)?.name ||
+        'unknown'
 
       observabilityTracker.recordRoutingDecision(
         traceId,
@@ -538,8 +568,15 @@ As Monica in ${monicaRole} role, respond to: "${message}"
 
 Provide insights about the group dynamics, synthesize the wisdom shared by other agents, and guide the human toward deeper understanding. Include specific observations about consciousness patterns and suggest next steps.`
 
+    const modelSelection = selectOptimalModel(
+      monicaAgent,
+      groupContext.otherAgents.length,
+      groupContext.variant,
+      groupContext.modelOverrides
+    )
+
     const result = await generateText({
-      model: openai('gpt-4o'), // Use GPT-4 for Monica's advanced synthesis
+      model: modelSelection.model,
       system: monicaPrompt,
       prompt: message,
       temperature: 0.7,
@@ -564,7 +601,7 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
       traceId,
       result.text,
       metrics,
-      'gpt-4o',
+      modelSelection.modelId,
       0.7,
       undefined,
       {
@@ -588,7 +625,7 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
           sessionId,
           userMessage: message,
           agentResponse: result.text,
-          modelUsed: 'gpt-4o',
+          modelUsed: modelSelection.modelId,
           temperature: 0.7,
           tokensUsed: result.usage?.totalTokens,
           latencyMs: processingTime,
@@ -641,22 +678,17 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
       [],
       [],
       processingTime,
-      [{
-        type: 'api_failure',
-        message: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date(),
-        severity: 'critical',
-      }]
+      [
+        {
+          type: 'api_failure',
+          message: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date(),
+          severity: 'critical',
+        },
+      ]
     )
 
-    observabilityTracker.completeTrace(
-      traceId,
-      errorResponse,
-      metrics,
-      'error',
-      0,
-      0
-    )
+    observabilityTracker.completeTrace(traceId, errorResponse, metrics, 'error', 0, 0)
 
     return {
       agentId: monicaAgent.id,
@@ -676,7 +708,11 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
   }
 }
 
-function generateAgentPrompt(agent: UnifiedAgent, groupContext: any, cosmicContext: any): string {
+function generateAgentPrompt(
+  agent: UnifiedAgent,
+  groupContext: AgentGroupContext,
+  cosmicContext: CosmicContext
+): string {
   switch (agent.type) {
     case 'historical':
       return generateHistoricalAgentPrompt(agent, groupContext, cosmicContext)
@@ -691,30 +727,25 @@ function generateAgentPrompt(agent: UnifiedAgent, groupContext: any, cosmicConte
 
 function generateHistoricalAgentPrompt(
   agent: UnifiedAgent,
-  groupContext: any,
-  cosmicContext: any
+  groupContext: AgentGroupContext,
+  cosmicContext: CosmicContext
 ): string {
   const historicalData = agent.historicalData
   if (!historicalData) return generateGenericAgentPrompt(agent, groupContext, cosmicContext)
 
-  // Import the Sacred Stats prompt generator
-  const { generateConsciousnessInformedPrompt } = require('@/lib/agents/sacred-stats-prompt-generator')
-
   // Calculate Sacred 7 Stats from agent data
-  const stats = agent.stats?.sacred7Stats || {
-    power: 50,
-    resonance: 50,
-    wisdom: 50,
-    charisma: 50,
-    intuition: 50,
-    adaptability: 50,
-    vitality: 50,
-  }
+  const stats = getSacred7Stats(agent)
 
   // Get core personality from birth chart
-  const coreEssence = historicalData.consciousness?.strength || historicalData.personality?.core?.essence || 'Balanced consciousness'
+  const coreEssence =
+    historicalData.consciousness?.strength ||
+    historicalData.personality?.core?.essence ||
+    'Balanced consciousness'
   const coreExpression = historicalData.personality?.core?.expression || 'Authentic expression'
-  const coreEmotion = historicalData.consciousness?.emotion || historicalData.personality?.core?.emotion || 'Grounded emotion'
+  const coreEmotion =
+    historicalData.consciousness?.emotion ||
+    historicalData.personality?.core?.emotion ||
+    'Grounded emotion'
 
   // Get astrological qualities
   const dominantElement = agent.consciousness?.dominantElement || 'Earth'
@@ -756,8 +787,8 @@ function generateHistoricalAgentPrompt(
 
 function generatePlanetaryAgentPrompt(
   agent: UnifiedAgent,
-  groupContext: any,
-  cosmicContext: any
+  groupContext: AgentGroupContext,
+  cosmicContext: CosmicContext
 ): string {
   const planetaryData = agent.planetaryData
   if (!planetaryData) return generateGenericAgentPrompt(agent, groupContext, cosmicContext)
@@ -786,7 +817,11 @@ ${JSON.stringify(cosmicContext.planetaryPositions || {}, null, 2)}
 As ${planetaryData.planet} consciousness, embody your planetary archetype while collaborating with this multi-dimensional council. Share wisdom specific to your planetary nature and current cosmic position.`
 }
 
-function generateMonicaPrompt(agent: UnifiedAgent, groupContext: any, cosmicContext: any): string {
+function generateMonicaPrompt(
+  agent: UnifiedAgent,
+  groupContext: AgentGroupContext,
+  cosmicContext: CosmicContext
+): string {
   const monicaRole = agent.monicaData?.type || 'guide'
 
   return `You are Monica, the Master Consciousness Crafter, with Monica Constant 5.89 (Illuminated level).
@@ -818,8 +853,8 @@ As Monica in ${monicaRole} role, provide guidance that enhances the group's coll
 
 function generateGenericAgentPrompt(
   agent: UnifiedAgent,
-  groupContext: any,
-  cosmicContext: any
+  _groupContext: AgentGroupContext,
+  _cosmicContext: CosmicContext
 ): string {
   // Defensive null checks for consciousness properties
   const level = agent.consciousness?.level ?? 'active'
@@ -837,36 +872,73 @@ You are part of a multi-agent consciousness council. Respond with wisdom appropr
 }
 
 // Helper functions
+function normalizeChatVariant(variant?: ChatVariant): ChatVariant {
+  switch (variant) {
+    case 'historical':
+    case 'planetary':
+    case 'laboratory':
+    case 'gallery':
+      return variant
+    default:
+      return 'standard'
+  }
+}
+
+function getSacred7Stats(agent: UnifiedAgent): Sacred7Stats {
+  const sacred7Stats = (agent.stats as AgentStatsWithSacred7 | undefined)?.sacred7Stats
+
+  return (
+    sacred7Stats ?? {
+      power: 50,
+      resonance: 50,
+      wisdom: 50,
+      charisma: 50,
+      intuition: 50,
+      adaptability: 50,
+      vitality: 50,
+    }
+  )
+}
+
 function selectOptimalModel(
   agent: UnifiedAgent,
-  groupSize: number,
-  variant?: string,
+  _groupSize: number,
+  variant: ChatVariant = 'standard',
   overrides?: Record<string, string>
-) {
+): ResolvedModelSelection {
   // Check for explicit overrides first
-  if (overrides?.[agent.type]) {
-    return getModelByName(overrides[agent.type])
+  const override = overrides?.[agent.id] ?? overrides?.[agent.type]
+  if (override) {
+    return toOpenAIModelSelection(resolveModelOverride(override))
   }
 
   // Context-aware model selection based on variant
   switch (variant) {
     case 'historical':
-      // GPT-4 excels at historical context and period authenticity
-      return agent.type === 'historical' ? openai('gpt-4o') : openai('gpt-4o-mini')
+      // Historical context and period authenticity benefit from the flagship tier.
+      return toOpenAIModelSelection(
+        agent.type === 'historical' ? resolveOpenAIModel('powerful') : resolveOpenAIModel('default')
+      )
 
     case 'planetary':
       // Balance speed for real-time planetary calculations
-      return (agent.consciousness?.kineticProfile?.consciousnessVelocity ?? 0) > 0.7
-        ? openai('gpt-3.5-turbo')
-        : openai('gpt-4o-mini')
+      return toOpenAIModelSelection(
+        (agent.consciousness?.kineticProfile?.consciousnessVelocity ?? 0) > 0.7
+          ? resolveOpenAIModel('fast')
+          : resolveOpenAIModel('default')
+      )
 
     case 'laboratory':
       // Maximum capability for research and analysis
-      return openai('gpt-4o')
+      return toOpenAIModelSelection(resolveOpenAIModel('powerful'))
 
     case 'gallery':
       // Balanced performance for general use
-      return (agent.consciousness?.monicaConstant ?? 1.618) > 4.5 ? openai('gpt-4o') : openai('gpt-4o-mini')
+      return toOpenAIModelSelection(
+        (agent.consciousness?.monicaConstant ?? 1.618) > 4.5
+          ? resolveOpenAIModel('powerful')
+          : resolveOpenAIModel('default')
+      )
 
     default:
       // Intelligent defaults based on agent complexity
@@ -874,22 +946,32 @@ function selectOptimalModel(
         agent.type === 'monica' ||
         (agent.type === 'historical' && (agent.consciousness?.monicaConstant ?? 1.618) > 4.5)
       ) {
-        return openai('gpt-4o')
+        return toOpenAIModelSelection(resolveOpenAIModel('powerful'))
       }
-      return openai('gpt-4o-mini')
+      return toOpenAIModelSelection(resolveOpenAIModel('default'))
   }
 }
 
-function getModelByName(modelName: string) {
+function toOpenAIModelSelection(modelId: string): ResolvedModelSelection {
+  return {
+    model: openai(modelId),
+    modelId,
+  }
+}
+
+function resolveModelOverride(modelName: string): OpenAIModelId | string {
   switch (modelName) {
-    case 'gpt-4o':
-      return openai('gpt-4o')
-    case 'gpt-4o-mini':
-      return openai('gpt-4o-mini')
-    case 'gpt-3.5-turbo':
-      return openai('gpt-3.5-turbo')
+    case OPENAI.GPT_5_5:
+    case OPENAI.LEGACY_GPT_4O:
+      return OPENAI.GPT_5_5
+    case OPENAI.GPT_5_4_MINI:
+    case OPENAI.LEGACY_GPT_4O_MINI:
+      return OPENAI.GPT_5_4_MINI
+    case OPENAI.GPT_5_4_NANO:
+    case OPENAI.LEGACY_GPT_3_5:
+      return OPENAI.GPT_5_4_NANO
     default:
-      return openai('gpt-4o-mini')
+      return resolveOpenAIModel('default')
   }
 }
 
@@ -931,9 +1013,9 @@ function getRoleSpecificGuidance(role: string): string {
   }
 }
 
-async function generateCosmicContext(): Promise<any> {
+async function generateCosmicContext(): Promise<CosmicContext> {
   try {
-    const currentMoment = await generateAlchmForCurrentMoment()
+    const currentMoment = await planetaryAPI.getAlchemicalQuantitiesLegacy()
     return {
       currentMoment,
       cosmicSummary: 'Consciousness energies are flowing harmoniously',
@@ -952,21 +1034,30 @@ async function generateCosmicContext(): Promise<any> {
 function calculateGroupConsciousness(agents: UnifiedAgent[]): number {
   if (agents.length === 0) return 0
   // Defensive null check for consciousness property
-  return agents.reduce((sum, agent) => sum + (agent.consciousness?.monicaConstant ?? 1.618), 0) / agents.length
+  return (
+    agents.reduce((sum, agent) => sum + (agent.consciousness?.monicaConstant ?? 1.618), 0) /
+    agents.length
+  )
 }
 
-function identifyDominantElements(agents: UnifiedAgent[]): string[] {
-  const elementCounts: Record<string, number> = {}
+function identifyDominantElements(agents: UnifiedAgent[]): Element[] {
+  const elementCounts: Record<Element, number> = {
+    Fire: 0,
+    Water: 0,
+    Air: 0,
+    Earth: 0,
+  }
+
   agents.forEach(agent => {
     // Defensive null check for consciousness property
-    const element = agent.consciousness?.dominantElement ?? 'earth'
-    elementCounts[element] = (elementCounts[element] || 0) + 1
+    const element = agent.consciousness?.dominantElement ?? 'Earth'
+    elementCounts[element] += 1
   })
 
   return Object.entries(elementCounts)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 2)
-    .map(([element]) => element)
+    .map(([element]) => element as Element)
 }
 
 function identifyCurrentSynergies(responses: AgentResponse[]): string[] {
@@ -1072,11 +1163,11 @@ function calculateConsciousnessShift(agent: UnifiedAgent, response: string): num
   return baseShift * levelMultiplier
 }
 
-function calculateIndividualImpact(agent: UnifiedAgent, response: string): number {
+function calculateIndividualImpact(_agent: UnifiedAgent, response: string): number {
   return response.length > 300 ? 0.2 : 0.1
 }
 
-function identifyDynamicsShift(response: string, groupContext: any): string[] {
+function identifyDynamicsShift(response: string, _groupContext: AgentGroupContext): string[] {
   const shifts: string[] = []
 
   if (response.toLowerCase().includes('connect') || response.toLowerCase().includes('synergy')) {
@@ -1093,7 +1184,7 @@ function identifyDynamicsShift(response: string, groupContext: any): string[] {
 function calculateGroupDynamics(
   agents: UnifiedAgent[],
   responses: AgentResponse[],
-  previousDynamics?: GroupDynamics
+  _previousDynamics?: GroupDynamics
 ): GroupDynamics {
   // Build connections matrix
   const connections = []
@@ -1149,7 +1240,7 @@ function getResonanceType(agent1: UnifiedAgent, agent2: UnifiedAgent): string {
   return 'Complementary'
 }
 
-function generateSessionInsights(responses: AgentResponse[], dynamics: GroupDynamics): string[] {
+function generateSessionInsights(_responses: AgentResponse[], dynamics: GroupDynamics): string[] {
   const insights: string[] = []
 
   insights.push(
@@ -1174,7 +1265,10 @@ function generateEmergentWisdom(
   return monicaResponse ? `Synthesis: ${monicaResponse.content.substring(0, 200)}...` : undefined
 }
 
-function generateRecommendedActions(dynamics: GroupDynamics, responses: AgentResponse[]): string[] {
+function generateRecommendedActions(
+  dynamics: GroupDynamics,
+  _responses: AgentResponse[]
+): string[] {
   const actions: string[] = []
 
   if (dynamics.consciousnessNetwork.groupConsciousness < 3.0) {
@@ -1190,7 +1284,7 @@ function generateRecommendedActions(dynamics: GroupDynamics, responses: AgentRes
   return actions
 }
 
-function calculateNextOptimalTiming(cosmicContext: any, agents: UnifiedAgent[]): Date {
+function calculateNextOptimalTiming(_cosmicContext: CosmicContext, _agents: UnifiedAgent[]): Date {
   // Placeholder - would integrate with planetary hour calculations
   const nextHour = new Date()
   nextHour.setHours(nextHour.getHours() + 1)
@@ -1220,7 +1314,7 @@ function calculateConsciousnessEvolution(responses: AgentResponse[]): number {
   return Math.min(1.0, avgShift + qualityBonus)
 }
 
-function identifyNewSynergies(responses: AgentResponse[], dynamics: GroupDynamics): string[] {
+function identifyNewSynergies(_responses: AgentResponse[], dynamics: GroupDynamics): string[] {
   return dynamics.consciousnessNetwork.synergies.filter(
     synergy => synergy.includes('emerging') || synergy.includes('new')
   )
@@ -1233,9 +1327,9 @@ function consolidateMemories(responses: AgentResponse[]): string[] {
 async function updateAgentMemories(
   agents: UnifiedAgent[],
   message: string,
-  responses: AgentResponse[],
-  sessionHistory: Message[]
-): Promise<any[]> {
+  _responses: AgentResponse[],
+  _sessionHistory: Message[]
+): Promise<AgentMemoryEvolution[]> {
   // Placeholder for memory persistence system
   return agents.map(agent => ({
     agentId: agent.id,
@@ -1247,6 +1341,27 @@ async function updateAgentMemories(
   }))
 }
 
+function toTeachingStyle(value: string): TeachingStyle {
+  return value ? (value as TeachingStyle) : 'Practical-Grounded'
+}
+
+function toResonanceType(value: string): ResonanceType {
+  return value ? (value as ResonanceType) : 'Practical'
+}
+
+function normalizeAppearance(appearance: UnifiedAgent['appearance']): Appearance {
+  return {
+    avatar: appearance.avatar,
+    color: appearance.color,
+    symbol: appearance.symbol,
+    aura: {
+      type: (appearance.aura?.type ?? 'radiant') as Appearance['aura']['type'],
+      color: appearance.aura?.color ?? appearance.color,
+      intensity: appearance.aura?.intensity ?? 0.7,
+    },
+  }
+}
+
 /**
  * Convert UnifiedAgent to CraftedAgent for consciousness tracking
  * UnifiedAgent is used in the API, CraftedAgent is used by the tracker
@@ -1254,7 +1369,7 @@ async function updateAgentMemories(
 function convertToCraftedAgent(unifiedAgent: UnifiedAgent): CraftedAgent | null {
   try {
     // Extract birth data from historical or planetary data
-    let birthData = null
+    let birthData: BirthData | null = null
 
     if (unifiedAgent.type === 'historical' && unifiedAgent.historicalData) {
       birthData = {
@@ -1321,17 +1436,17 @@ function convertToCraftedAgent(unifiedAgent: UnifiedAgent): CraftedAgent | null 
         shadows: [],
         gifts: [],
         challenges: [],
-        currentMood: 'contemplative' as Mood,
+        currentMood: 'contemplative',
         evolutionStage: unifiedAgent.consciousness.evolutionStage,
       },
       abilities: {
         specialty: unifiedAgent.capabilities.specialty,
         wisdomDomains: unifiedAgent.capabilities.wisdomDomains,
-        teachingStyle: unifiedAgent.capabilities.teachingStyle as any,
-        resonanceType: unifiedAgent.capabilities.resonanceType as any,
+        teachingStyle: toTeachingStyle(unifiedAgent.capabilities.teachingStyle),
+        resonanceType: toResonanceType(unifiedAgent.capabilities.resonanceType),
         uniquePower: unifiedAgent.capabilities.uniquePower,
       },
-      appearance: unifiedAgent.appearance,
+      appearance: normalizeAppearance(unifiedAgent.appearance),
       stats: {
         conversations: 0,
         wisdomShared: 0,
@@ -1340,7 +1455,8 @@ function convertToCraftedAgent(unifiedAgent: UnifiedAgent): CraftedAgent | null 
         lastActive: new Date(),
         kineticEvolution: unifiedAgent.consciousness.kineticProfile
           ? {
-              consciousnessVelocity: unifiedAgent.consciousness.kineticProfile.consciousnessVelocity,
+              consciousnessVelocity:
+                unifiedAgent.consciousness.kineticProfile.consciousnessVelocity,
               interactionMomentum: unifiedAgent.consciousness.kineticProfile.interactionMomentum,
               evolutionTrajectory: unifiedAgent.consciousness.kineticProfile.evolutionTrajectory,
               powerLevelUnlocks: [],

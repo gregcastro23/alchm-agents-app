@@ -1,76 +1,62 @@
 // app/api/monica-agent/train-alchemical/route.ts
+//
+// The training pipeline (`@/lib/monica/alchemical-trainer`) was deleted as part
+// of the Railway backend migration. The route is preserved with stubbed
+// responses so the frontend's request/response contract still works; once
+// the training service is reimplemented on Railway this route should call it.
 import { NextResponse } from 'next/server'
-import {
-  trainOnAlchemicalValues,
-  todayHourlyAlchemize,
-  trainWithRetrogrades,
-} from '@/lib/monica/alchemical-trainer'
+
+const UNAVAILABLE_PAYLOAD = {
+  status: 'unavailable',
+  message: 'training migrated to Railway backend',
+}
 
 export async function POST(req: Request) {
   try {
     const body = await req.json()
     const {
       mode = 'standard', // 'standard', 'hourly', 'retrograde'
-      numSamples = 15,
-      location,
       exportFormat, // 'json', 'csv', 'summary'
     } = body
 
-    let results
-
-    switch (mode) {
-      case 'hourly':
-        results = await todayHourlyAlchemize(location)
-        break
-
-      case 'retrograde':
-        results = await trainWithRetrogrades(numSamples)
-        break
-
-      default:
-        results = await trainOnAlchemicalValues(numSamples)
+    // Build a placeholder payload that matches the legacy shape consumers
+    // already destructure (statistics/patterns/insights/samples/metadata),
+    // so the frontend renders an empty/unavailable state instead of crashing.
+    const stubResults: any = {
+      ...UNAVAILABLE_PAYLOAD,
+      metadata: { numSamples: 0, mode },
+      statistics: { averages: {} },
+      patterns: [],
+      insights: [],
+      samples: [],
     }
 
-    // Format results based on export format
-    let formattedResults = results
+    let formattedResults: any = stubResults
     if (exportFormat === 'summary') {
       formattedResults = {
+        ...UNAVAILABLE_PAYLOAD,
         mode,
         timestamp: new Date().toISOString(),
         summary: {
-          numSamples: results.metadata?.numSamples || numSamples,
-          statistics: results.statistics?.averages,
-          patterns: results.patterns,
-          topInsights: results.insights?.slice(0, 5),
+          numSamples: 0,
+          statistics: {},
+          patterns: [],
+          topInsights: [],
         },
       }
     } else if (exportFormat === 'csv') {
-      // Create CSV format for samples
-      if (results.samples && results.samples.length > 0) {
-        const headers = ['hour', 'spirit', 'essence', 'matter', 'substance', 'heat', 'entropy']
-        const rows = results.samples.map((s: any) => {
-          return [
-            s.hour || s.birthInfo?.hour || 0,
-            s.spirit || s.alchmData?.spirit || 0,
-            s.essence || s.alchmData?.essence || 0,
-            s.matter || s.alchmData?.matter || 0,
-            s.substance || s.alchmData?.substance || 0,
-            s.heat || s.alchmData?.Heat || 0,
-            s.entropy || s.alchmData?.Entropy || 0,
-          ].join(',')
-        })
-        formattedResults = {
-          csv: [headers.join(','), ...rows].join('\n'),
-          metadata: results.metadata,
-        }
+      formattedResults = {
+        ...UNAVAILABLE_PAYLOAD,
+        csv: 'hour,spirit,essence,matter,substance,heat,entropy',
+        metadata: stubResults.metadata,
       }
     }
 
     return NextResponse.json({
       success: true,
+      ...UNAVAILABLE_PAYLOAD,
       mode,
       data: formattedResults,
-      message: `Alchemical training complete - ${mode} analysis with refined insights!`,
       timestamp: new Date().toISOString(),
     })
   } catch (error: any) {
@@ -125,14 +111,15 @@ export async function GET(req: Request) {
         },
       })
     } else if (mode === 'sample') {
-      // Return a small sample for testing
-      const sampleResult = await trainOnAlchemicalValues(3)
+      // Training is unavailable post-migration; return an empty stub that
+      // mirrors the previous shape so the frontend's destructuring is safe.
       return NextResponse.json({
         success: true,
+        ...UNAVAILABLE_PAYLOAD,
         sample: {
-          statistics: sampleResult.statistics.averages,
-          firstInsight: sampleResult.insights[0],
-          patterns: sampleResult.patterns,
+          statistics: {},
+          firstInsight: null,
+          patterns: [],
         },
       })
     }

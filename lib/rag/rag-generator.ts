@@ -262,7 +262,7 @@ export async function generateWithRAG(
       // Real API generation
       try {
         const response = await generateText({
-          model: anthropic(process.env.CLAUDE_DEFAULT_MODEL || 'claude-3-sonnet-20240229'),
+          model: anthropic(process.env.CLAUDE_DEFAULT_MODEL || 'claude-sonnet-4-6'),
           system: enhancedSystemPrompt,
           messages,
           temperature: 0.7,

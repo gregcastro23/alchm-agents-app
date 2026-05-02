@@ -5,26 +5,14 @@ import {
   Clock,
   Sparkles,
   Search,
-  Users,
-  Calendar,
-  TrendingUp,
-  Moon,
-  Sun,
+    Moon,
   Star,
   Compass,
   Zap,
   Eye,
   BookOpen,
-  Share,
-  Filter,
-  Download,
-  Settings,
   RefreshCw,
   ArrowRight,
-  ChevronDown,
-  ChevronUp,
-  Play,
-  Pause,
   BarChart3,
   Plus,
 } from 'lucide-react'
@@ -32,8 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import type { TemporalQuery, TemporalAnalysisResult } from '@/lib/temporal-analysis-engine'
-import { getElementalColorScheme, getVisualEmphasis } from '@/lib/elemental-reinforcement'
+import { getElementalColorScheme } from '@/lib/elemental-reinforcement'
 
 interface TimePortal {
   id: string
@@ -79,12 +66,7 @@ export default function CosmicTimeLaboratory() {
   const [timePortals, setTimePortals] = useState<TimePortal[]>([])
   const [isExploring, setIsExploring] = useState(false)
   const [autoResonance, setAutoResonance] = useState(true)
-  const [selectedElements, setSelectedElements] = useState<string[]>([
-    'Fire',
-    'Water',
-    'Air',
-    'Earth',
-  ])
+  
   const [temporalRange, setTemporalRange] = useState<'day' | 'week' | 'month' | 'year' | 'decade'>(
     'month'
   )

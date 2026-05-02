@@ -5,9 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Eye,
   Heart,
@@ -23,8 +20,6 @@ import {
   Gem,
   Crown,
   Flame,
-  Waves,
-  Wind,
   Mountain,
   Sun,
   Moon,
@@ -277,9 +272,9 @@ export function MeditationGuidance({
   const [isCompleted, setIsCompleted] = useState(false)
   const [preparationComplete, setPreparationComplete] = useState(false)
 
-  const meditation = MEDITATION_STYLES[sigil.style]
+  const meditation = MEDITATION_STYLES[(sigil as any).style as SigilStyle]
   const currentMeditationPhase = meditation.phases[currentPhase]
-  const totalDuration = meditation.phases.reduce((sum, phase) => sum + phase.duration, 0)
+  const totalDuration = meditation.phases.reduce((sum: number, phase: any) => sum + phase.duration, 0)
 
   // Timer effect
   useEffect(() => {
@@ -293,7 +288,7 @@ export function MeditationGuidance({
           // Check if current phase is complete
           const phaseEndTime = meditation.phases
             .slice(0, currentPhase + 1)
-            .reduce((sum, phase) => sum + phase.duration, 0)
+            .reduce((sum: number, phase: any) => sum + phase.duration, 0)
 
           if (newTime >= phaseEndTime && currentPhase < meditation.phases.length - 1) {
             setCurrentPhase(prev => prev + 1)
@@ -351,7 +346,7 @@ export function MeditationGuidance({
   const getCurrentPhaseProgress = () => {
     const phaseStartTime = meditation.phases
       .slice(0, currentPhase)
-      .reduce((sum, phase) => sum + phase.duration, 0)
+      .reduce((sum: number, phase: any) => sum + phase.duration, 0)
     const phaseElapsed = timeElapsed - phaseStartTime
     const phaseProgress = Math.min(100, (phaseElapsed / currentMeditationPhase.duration) * 100)
     return Math.max(0, phaseProgress)
@@ -376,7 +371,7 @@ export function MeditationGuidance({
             <div>
               <CardTitle className="text-purple-300">{meditation.name}</CardTitle>
               <CardDescription>
-                Activate your {sigil.style} sigil through guided meditation
+                Activate your {(sigil as any).style} sigil through guided meditation
               </CardDescription>
             </div>
           </div>
@@ -393,7 +388,7 @@ export function MeditationGuidance({
             </div>
             <h3 className="text-2xl font-bold text-emerald-300">Activation Complete!</h3>
             <p className="text-emerald-200">
-              Your {sigil.style} sigil has been successfully activated and integrated into your
+              Your {(sigil as any).style} sigil has been successfully activated and integrated into your
               consciousness.
             </p>
 
@@ -408,7 +403,7 @@ export function MeditationGuidance({
               <div className="p-3 bg-purple-900/20 rounded-lg">
                 <h5 className="font-medium text-purple-300 mb-2">Benefits Activated:</h5>
                 <ul className="text-sm text-purple-100 space-y-1">
-                  {meditation.benefits.map((benefit, idx) => (
+                  {meditation.benefits.map((benefit: string, idx: number) => (
                     <li key={idx} className="flex items-center gap-2">
                       <Sparkles className="w-3 h-3 text-purple-400" />
                       {benefit}
@@ -421,7 +416,7 @@ export function MeditationGuidance({
                 <div className="text-sm text-indigo-100 space-y-1">
                   <div>Total time: {formatTime(totalDuration)}</div>
                   <div>Phases completed: {meditation.phases.length}</div>
-                  <div>Style: {sigil.style}</div>
+                  <div>Style: {(sigil as any).style}</div>
                 </div>
               </div>
             </div>
@@ -486,7 +481,7 @@ export function MeditationGuidance({
                   </div>
                   <div className="flex justify-between">
                     <span>Style:</span>
-                    <span className="capitalize">{sigil.style}</span>
+                    <span className="capitalize">{(sigil as any).style}</span>
                   </div>
                 </div>
               </div>
@@ -495,7 +490,7 @@ export function MeditationGuidance({
             <div className="p-4 bg-purple-900/20 rounded-lg border border-purple-500/30">
               <h4 className="font-semibold text-purple-300 mb-2">Before You Begin</h4>
               <p className="text-purple-100 text-sm leading-relaxed">
-                This meditation will guide you through the sacred activation of your {sigil.style}{' '}
+                This meditation will guide you through the sacred activation of your {(sigil as any).style}{' '}
                 sigil. Each phase is designed to attune your consciousness to the specific energetic
                 signature of your personalized rune. Trust the process and allow yourself to be
                 fully present with each instruction.

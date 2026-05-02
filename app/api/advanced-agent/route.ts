@@ -1,15 +1,91 @@
-import { generateText } from 'ai'
+import { generateText, tool } from 'ai'
 import { openai } from '@ai-sdk/openai'
 import { NextResponse } from 'next/server'
-import { calculatePlanetaryPosition, getHistoricalInterpretation } from '@/lib/astrological-tools'
+import { z } from 'zod'
 import {
   logAgentConversation,
   createConversationContext,
   type AgentInteractionData,
   type ConversationContext,
 } from '@/lib/galileo-agent-logger'
-import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
+import { planetaryAPI } from '@/lib/planetary-api-client'
 import { ANumberCalculator } from '@/lib/core-energy-rules'
+
+// Inline replacements for the deleted `@/lib/astrological-tools` Vercel AI SDK tools.
+// Both call the Railway backend via `planetaryAPI` and adapt the new flat
+// `planetary_positions` shape into the response the agent prompt expected.
+const calculatePlanetaryPosition = tool({
+  description:
+    'Calculate the position of a planet (sign, degree, retrograde status, longitude) for a given UTC date/time and optional location. Use this to ground astrological interpretations in precise astronomical data.',
+  parameters: z.object({
+    planet: z
+      .string()
+      .describe(
+        'Planet name (e.g. Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto)'
+      ),
+    date: z
+      .string()
+      .optional()
+      .describe('ISO 8601 date/time. Defaults to current time if omitted.'),
+    latitude: z.number().optional().describe('Latitude in decimal degrees. Defaults to NYC.'),
+    longitude: z.number().optional().describe('Longitude in decimal degrees. Defaults to NYC.'),
+  }),
+  execute: async ({ planet, date, latitude, longitude }) => {
+    const when = date ? new Date(date) : new Date()
+    const raw = await planetaryAPI.getPlanetaryPositions(when, latitude, longitude)
+    const positions = raw?.planetary_positions || {}
+    const matchKey = Object.keys(positions).find(
+      k => k.toLowerCase() === String(planet).toLowerCase()
+    )
+    if (!matchKey) {
+      return {
+        planet,
+        error: `No position returned for ${planet}`,
+        availablePlanets: Object.keys(positions),
+      }
+    }
+    const body = positions[matchKey] || {}
+    return {
+      planet: matchKey,
+      sign: body?.sign ?? null,
+      degree: typeof body?.degree === 'number' ? body.degree : null,
+      minute: typeof body?.minute === 'number' ? body.minute : null,
+      longitude: typeof body?.exactLongitude === 'number' ? body.exactLongitude : null,
+      isRetrograde: Boolean(body?.isRetrograde),
+      timestamp: when.toISOString(),
+    }
+  },
+})
+
+const getHistoricalInterpretation = tool({
+  description:
+    'Get a brief historical/traditional astrological interpretation for a planet in a given zodiac sign. Pulls a basic interpretation derived from current position data; use this for narrative context, not precision claims.',
+  parameters: z.object({
+    planet: z.string().describe('Planet name'),
+    sign: z.string().optional().describe('Zodiac sign. If omitted, current sign is fetched.'),
+    date: z.string().optional().describe('ISO 8601 date for the lookup (defaults to now).'),
+  }),
+  execute: async ({ planet, sign, date }) => {
+    let resolvedSign = sign
+    if (!resolvedSign) {
+      const when = date ? new Date(date) : new Date()
+      const raw = await planetaryAPI.getPlanetaryPositions(when)
+      const positions = raw?.planetary_positions || {}
+      const matchKey = Object.keys(positions).find(
+        k => k.toLowerCase() === String(planet).toLowerCase()
+      )
+      resolvedSign = matchKey ? positions[matchKey]?.sign : undefined
+    }
+    return {
+      planet,
+      sign: resolvedSign ?? 'unknown',
+      interpretation: resolvedSign
+        ? `${planet} in ${resolvedSign}: traditional astrology associates this placement with the qualities of ${resolvedSign}. Combine with house and aspect context for a fuller reading.`
+        : `Unable to resolve ${planet}'s sign for historical interpretation.`,
+      source: 'derived from live planetary positions (Railway backend)',
+    }
+  },
+})
 
 export async function POST(req: Request) {
   try {
@@ -38,7 +114,7 @@ export async function POST(req: Request) {
         }
       | undefined = undefined
     try {
-      const alchmData = await generateAlchmForCurrentMoment()
+      const alchmData = await planetaryAPI.getAlchemicalQuantitiesLegacy()
       const spirit = alchmData?.['Alchemy Effects']?.['Total Spirit'] || 0
       const essence = alchmData?.['Alchemy Effects']?.['Total Essence'] || 0
       const matter = alchmData?.['Alchemy Effects']?.['Total Matter'] || 0
@@ -71,7 +147,7 @@ ${
 Provide comprehensive astrological analysis that incorporates both traditional techniques and the current alchemical energy levels.`
 
     const { text } = await generateText({
-      model: openai('gpt-4o'),
+      model: openai('gpt-5.5'),
       system: systemPrompt,
       prompt: query || 'Tell me about my chart',
       tools: {

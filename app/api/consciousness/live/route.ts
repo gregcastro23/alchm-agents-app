@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
+import { planetaryAPI } from '@/lib/planetary-api-client'
 import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
 
 /**
@@ -16,7 +16,7 @@ async function calculateConsciousness(body: any = {}) {
     const longitude = birthData?.longitude || 0
 
     // Generate current moment alchemical data
-    const currentAlchm = await generateAlchmForCurrentMoment()
+    const currentAlchm = await planetaryAPI.getAlchemicalQuantitiesLegacy(new Date(), latitude, longitude)
     const alchmEffects = currentAlchm['Alchemy Effects'] || {}
 
     // Extract alchemical quantities

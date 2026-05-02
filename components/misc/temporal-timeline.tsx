@@ -4,18 +4,8 @@ import React, { useState, useMemo, useCallback } from 'react'
 import {
   Calendar,
   Clock,
-  Users,
   Zap,
-  Eye,
-  Filter,
-  Download,
-  ChevronLeft,
-  ChevronRight,
-  Maximize2,
-  Minimize2,
-  Star,
   Circle,
-  Triangle,
   Square,
   PlayCircle,
   PauseCircle,
@@ -23,7 +13,6 @@ import {
 import {
   ComposedChart,
   ScatterChart,
-  LineChart,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -31,7 +20,6 @@ import {
   Scatter,
   Line,
   Tooltip,
-  Legend,
   ReferenceLine,
   Area,
   AreaChart,
@@ -41,7 +29,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Slider } from '@/components/ui/slider'
 import type { AgentTransitEvent, TemporalPattern } from '@/lib/temporal-analysis-engine'
-import { getElementalColorScheme, getVisualEmphasis } from '@/lib/elemental-reinforcement'
+import { getElementalColorScheme } from '@/lib/elemental-reinforcement'
 
 interface TemporalTimelineProps {
   data: AgentTransitEvent[]
@@ -63,14 +51,6 @@ interface TimelineEvent extends AgentTransitEvent {
   dayOfYear: number
 }
 
-interface DegreeCluster {
-  degree: number
-  events: TimelineEvent[]
-  agentCount: number
-  significance: number
-  dominantElement: string
-  timeSpan: { start: Date; end: Date }
-}
 
 interface ViewMode {
   type: 'scatter' | 'timeline' | 'heatmap' | 'flow'
@@ -92,10 +72,10 @@ export default function TemporalTimeline({
   const [selectedAgents, setSelectedAgents] = useState<string[]>(agents)
   const [viewMode, setViewMode] = useState<ViewMode['type']>('scatter')
   const [showPatterns, setShowPatterns] = useState(true)
-  const [zoomLevel, setZoomLevel] = useState(1)
+  const [_zoomLevel, _setZoomLevel] = useState(1)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [playbackSpeed, setPlaybackSpeed] = useState(1)
-  const [selectedTimeWindow, setSelectedTimeWindow] = useState<{ start: Date; end: Date } | null>(
+  const [_playbackSpeed, _setPlaybackSpeed] = useState(1)
+  const [_selectedTimeWindow, _setSelectedTimeWindow] = useState<{ start: Date; end: Date } | null>(
     null
   )
 
@@ -125,7 +105,7 @@ export default function TemporalTimeline({
         const dominantElementIndex = elementalValues.indexOf(Math.max(...elementalValues))
         const dominantElement = ['Fire', 'Water', 'Air', 'Earth'][dominantElementIndex]
 
-        const visualWeight = reinforcementMode ? 1 + (event.reinforcementScore || 0) * 0.5 : 1
+        const visualWeight = reinforcementMode ? 1 + ((event as any).reinforcementScore || 0) * 0.5 : 1
 
         const colorScheme = getElementalColorScheme(dominantElement, event.significanceScore)
 
@@ -186,6 +166,7 @@ export default function TemporalTimeline({
     switch (viewMode) {
       case 'scatter':
         return processedData.map(event => ({
+          ...event,
           x: event.planetaryDegree,
           y: event.dayOfYear,
           timestamp: event.timestamp.getTime(),
@@ -194,18 +175,17 @@ export default function TemporalTimeline({
           agentId: event.agentId,
           significance: event.significanceScore,
           element: event.elementalDominance,
-          ...event,
         }))
 
       case 'timeline':
         return processedData.map((event, index) => ({
+          ...event,
           index,
           degree: event.planetaryDegree,
           timestamp: event.timestamp.getTime(),
           significance: event.significanceScore,
           cumulative: processedData.slice(0, index + 1).length,
           agentId: event.agentId,
-          ...event,
         }))
 
       case 'heatmap':
@@ -246,7 +226,7 @@ export default function TemporalTimeline({
   }, [processedData, viewMode])
 
   // Custom tooltip component
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, _label }: any) => {
     if (!active || !payload || !payload.length) return null
 
     const data = payload[0].payload

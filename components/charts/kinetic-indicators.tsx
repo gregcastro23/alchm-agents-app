@@ -1,12 +1,65 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { UnifiedKineticsClient } from '@/lib/kinetics-unified-client'
 // Removed server-only routeTask import - using API calls instead
 import {
   getAgentKineticProfile,
   calculateKineticCompatibility,
 } from '@/lib/agents/kinetic-profiles'
+
+// Browser-safe replacement for the removed UnifiedKineticsClient. Fetches the
+// current alchemical scores from the `/api/alchemize` proxy (legacy shape) and
+// folds them into a minimal kinetics envelope the component already understands.
+// TODO: when the backend re-emits real kinetics (timing/power/elemental), wire
+// those values back in instead of these heuristics.
+const CHALDEAN_PLANETARY_HOURS = [
+  'Saturn',
+  'Jupiter',
+  'Mars',
+  'Sun',
+  'Venus',
+  'Mercury',
+  'Moon',
+] as const
+
+async function fetchKineticsEnvelope(_loc: { lat: number; lon: number }): Promise<{
+  power: Array<{ power: number }>
+  timing: { planetaryHours: string[]; seasonalInfluence: string }
+  elemental: { totals: { Fire: number; Water: number; Air: number; Earth: number } }
+}> {
+  let power = 0.5
+  let totals = { Fire: 5, Water: 5, Air: 5, Earth: 5 }
+  try {
+    const res = await fetch('/api/alchemize?legacy=true')
+    if (res.ok) {
+      const data = await res.json()
+      const kineticVal = Number(data?.kinetic_val ?? data?.Reactivity ?? 0)
+      const thermoVal = Number(data?.thermo_val ?? data?.Heat ?? 0)
+      // Use thermo_val as a proxy for instantaneous "power" (0..1 clamped).
+      // TODO: replace with real power series once backend provides it.
+      power = Math.max(0, Math.min(1, thermoVal || kineticVal || 0.5))
+      // Map alchemical scores onto element totals as a coarse proxy.
+      totals = {
+        Fire: Number(data?.spirit_score ?? 5),
+        Water: Number(data?.essence_score ?? 5),
+        Earth: Number(data?.matter_score ?? 5),
+        Air: Number(data?.substance_score ?? 5),
+      }
+    }
+  } catch (err) {
+    console.error('kinetics envelope fetch failed:', err)
+  }
+  // Determine planetary hour by Chaldean order of the current local hour.
+  const idx = new Date().getHours() % CHALDEAN_PLANETARY_HOURS.length
+  return {
+    power: [{ power }],
+    timing: {
+      planetaryHours: [CHALDEAN_PLANETARY_HOURS[idx]],
+      seasonalInfluence: 'Neutral',
+    },
+    elemental: { totals },
+  }
+}
 
 // Types for kinetic group dynamics
 interface KineticGroupDynamics {
@@ -55,13 +108,10 @@ export function KineticIndicators({
       setLoading(true)
       setError(null)
 
-      // Fetch current kinetics
-      const kinetics = await UnifiedKineticsClient.getKinetics({
+      // Fetch current kinetics envelope via proxy
+      const kinetics = await fetchKineticsEnvelope({
         lat: userLocation.lat,
         lon: userLocation.lon,
-        date: new Date().toISOString().split('T')[0],
-        includeElemental: true,
-        includePlanetary: true,
       })
 
       // Calculate pairwise resonances

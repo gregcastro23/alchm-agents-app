@@ -15,8 +15,29 @@ import {
 import { Slider } from '@/components/ui/slider'
 import { calculateReturnPattern, identifyPlanetaryThemes } from '@/lib/transit-patterns'
 import { findLastOccurrence, findNextOccurrence } from '@/lib/historical-transits'
-import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
 // import moonData from '@/lib/planets/moon'
+
+// Fetches current planetary positions via the astrologize proxy (browser-safe).
+async function fetchCurrentPlanetaryPositions(): Promise<
+  Record<string, { sign: string; degree: string }>
+> {
+  try {
+    const res = await fetch('/api/astrologize')
+    if (!res.ok) return {}
+    const data = await res.json()
+    const planets = data?.planetary_positions || {}
+    const out: Record<string, { sign: string; degree: string }> = {}
+    Object.entries(planets).forEach(([name, body]: [string, any]) => {
+      out[name] = {
+        sign: body?.sign || '',
+        degree: typeof body?.degree === 'number' ? body.degree.toFixed(2) : String(body?.degree ?? '0'),
+      }
+    })
+    return out
+  } catch {
+    return {}
+  }
+}
 import { Moon, Calendar, History, TrendingUp, Info, Sparkles } from 'lucide-react'
 
 export default function MoonPlanetPage() {
@@ -55,22 +76,29 @@ export default function MoonPlanetPage() {
   ]
 
   useEffect(() => {
-    // Get current Moon position
-    const positions = getCurrentPlanetaryPositions()
-    if (positions['Moon']) {
-      setCurrentPosition(positions['Moon'])
-      setSelectedSign(positions['Moon'].sign)
-      setSelectedDegree(Math.floor(parseFloat(positions['Moon'].degree)))
-    }
+    let cancelled = false
+    ;(async () => {
+      const positions = await fetchCurrentPlanetaryPositions()
+      if (cancelled) return
+      if (positions['Moon']) {
+        setCurrentPosition(positions['Moon'])
+        setSelectedSign(positions['Moon'].sign)
+        setSelectedDegree(Math.floor(parseFloat(positions['Moon'].degree)))
+      }
 
-    // Calculate current moon phase
-    const moonDegree = parseFloat(positions['Moon']?.degree || '0')
-    const sunDegree = parseFloat(positions['Sun']?.degree || '0')
-    const phaseDegree = (moonDegree - sunDegree + 360) % 360
-    setMoonPhase(getPhaseFromDegree(phaseDegree))
+      // Calculate current moon phase
+      const moonDegree = parseFloat(positions['Moon']?.degree || '0')
+      const sunDegree = parseFloat(positions['Sun']?.degree || '0')
+      const phaseDegree = (moonDegree - sunDegree + 360) % 360
+      setMoonPhase(getPhaseFromDegree(phaseDegree))
+    })()
 
     // Load themes
     updateThemes(selectedSign)
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   useEffect(() => {

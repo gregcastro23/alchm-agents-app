@@ -19,10 +19,41 @@ import {
 } from '@/lib/synastry-compatibility-engine'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { usePlanetaryPositions } from '@/hooks/usePlanetaryPositions'
-import { generateAccurateHoroscope } from '@/lib/monica/horoscope-generator'
-import { alchemize } from '@/lib/alchemizer'
 import { calculateMC } from '@/lib/monica/monica-constant-validator'
-import { fetchAstrologizeWheel, fetchAlchmAlchemize } from '@/lib/astrologize'
+
+// Browser-safe wrappers around the proxy routes — replaces removed
+// `@/lib/astrologize` and `@/lib/alchemizer` modules.
+async function fetchAlchmizeForBirth(birth: {
+  year: number
+  month: number // zero-based
+  day: number
+  hour: number
+  minute: number
+  latitude: number
+  longitude: number
+}): Promise<any> {
+  const date = new Date(
+    Date.UTC(birth.year, birth.month, birth.day, birth.hour, birth.minute)
+  )
+  const res = await fetch('/api/alchemize?legacy=true', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      date: date.toISOString(),
+      latitude: birth.latitude,
+      longitude: birth.longitude,
+    }),
+  })
+  if (!res.ok) throw new Error(`alchemize proxy failed: ${res.status}`)
+  return res.json()
+}
+
+// The Railway backend no longer renders SVG natal wheels. Return an empty
+// shape so consumers that only render the SVG/imageUrl gracefully degrade.
+// TODO: restore wheel rendering when a chart-image endpoint is available.
+async function fetchWheelForBirth(_birth: any): Promise<{ svg?: string; imageUrl?: string }> {
+  return {}
+}
 
 async function loadPreviousSession(userId: string, personalityId: string) {
   const res = await fetch(
@@ -273,32 +304,39 @@ export function TemporalClient() {
           const cached = alchmCacheRef.current.get(key)
           if (cached) return cached
           try {
-            const backend = await fetchAlchmAlchemize({ ...birthInfo, name: relation.name } as any)
+            const backend = await fetchAlchmizeForBirth(birthInfo)
             const parsed = (backend as any)?.alchm || backend
             alchmCacheRef.current.set(key, parsed)
             return parsed
           } catch {
             usedBackend = false
-            const horoscope = generateAccurateHoroscope(birthInfo as any)
-            const local = alchemize(birthInfo as any, horoscope as any)
-            alchmCacheRef.current.set(key, local)
-            return local
+            // No local fallback — alchemizer module was removed. Provide a
+            // neutral structure so downstream UI keeps rendering.
+            // TODO: revisit once the backend exposes elemental decomposition.
+            const fallback = {
+              'Alchemy Effects': {
+                'Total Spirit': 0,
+                'Total Essence': 0,
+                'Total Matter': 0,
+                'Total Substance': 0,
+              },
+              'Total Effect Value': { Fire: 0, Water: 0, Air: 0, Earth: 0 },
+              Heat: 0,
+              Entropy: 0,
+              Reactivity: 0,
+              Energy: 0,
+            }
+            alchmCacheRef.current.set(key, fallback)
+            return fallback
           }
         })()
 
         const wheelPromise = (async () => {
           const cached = wheelCacheRef.current.get(key)
           if (cached) return cached
-          try {
-            const wheelResp = await fetchAstrologizeWheel({ ...birthInfo, name: relation.name })
-            const wheel = { svg: wheelResp.svg, imageUrl: wheelResp.imageUrl }
-            wheelCacheRef.current.set(key, wheel)
-            return wheel
-          } catch {
-            const empty: { svg?: string; imageUrl?: string } = {}
-            wheelCacheRef.current.set(key, empty)
-            return empty
-          }
+          const wheel = await fetchWheelForBirth({ ...birthInfo, name: relation.name })
+          wheelCacheRef.current.set(key, wheel)
+          return wheel
         })()
 
         const [alchmInfo, wheel] = await Promise.all([alchmPromise, wheelPromise])

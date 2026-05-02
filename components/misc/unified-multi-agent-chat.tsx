@@ -2,43 +2,30 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 // Dialog components removed - now using floating panel
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
-  MessageSquare,
   X,
   Send,
-  Crown,
   Sparkles,
   Users,
-  Brain,
-  Zap,
-  TrendingUp,
   Activity,
   Settings,
   Filter,
-  Plus,
-  Minus,
-  RotateCcw,
-  Download,
-  Share,
   Eye,
   EyeOff,
 } from 'lucide-react'
 
 import type {
   UnifiedAgent,
-  UnifiedAgentType,
   Message,
   GroupDynamics,
-  CouncilPreset,
   AgentFilter,
   ChatSession,
   MonicaRole,
@@ -46,7 +33,6 @@ import type {
 import type { CraftedAgent } from '@/lib/agent-types'
 import { unifiedAgentFactory } from '@/lib/unified-agent-factory'
 import { RAGToggle } from '@/components/rag'
-import { ragAnalytics } from '@/lib/rag/rag-analytics'
 
 interface ModelOverrides {
   historical?: string
@@ -104,7 +90,7 @@ export function UnifiedMultiAgentChat({
   initialAgents = [],
   maxAgents = 6,
   allowMonica = true,
-  enableAutoSync = false,
+  enableAutoSync: _enableAutoSync = false,
   isOpen,
   onClose,
   title = 'Consciousness Council',
@@ -113,15 +99,15 @@ export function UnifiedMultiAgentChat({
   messageStyle = 'default',
   modelOverrides,
   enableGroupDynamics = true,
-  enableExport = true,
-  enablePresets = true,
+  enableExport: _enableExport = true,
+  enablePresets: _enablePresets = true,
   enableMemoryPersistence = true,
-  enableEraFilters = false,
-  enableSpecializationGroups = false,
-  enableConsciousnessMetrics = false,
-  showKineticGraphs = false,
-  enableExperimentMode = false,
-  allowAgentMixing = false,
+  enableEraFilters: _enableEraFilters = false,
+  enableSpecializationGroups: _enableSpecializationGroups = false,
+  enableConsciousnessMetrics: _enableConsciousnessMetrics = false,
+  showKineticGraphs: _showKineticGraphs = false,
+  enableExperimentMode: _enableExperimentMode = false,
+  allowAgentMixing: _allowAgentMixing = false,
   customHeader,
   onSessionUpdate,
   onAgentEvolution,
@@ -135,12 +121,12 @@ export function UnifiedMultiAgentChat({
 
   // UI state
   const [showAgentSelection, setShowAgentSelection] = useState(false)
-  const [showGroupDynamics, setShowGroupDynamics] = useState(false)
+  const [_showGroupDynamics, _setShowGroupDynamics] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [viewMode, setViewMode] = useState<'chat' | 'dynamics' | 'insights'>('chat')
 
   // Filtering and search
-  const [agentFilter, setAgentFilter] = useState<AgentFilter>({})
+  const [agentFilter, _setAgentFilter] = useState<AgentFilter>({})
   const [searchQuery, setSearchQuery] = useState('')
 
   // Monica coordination
@@ -150,7 +136,7 @@ export function UnifiedMultiAgentChat({
 
   // Group dynamics
   const [groupDynamics, setGroupDynamics] = useState<GroupDynamics | null>(null)
-  const [realTimeUpdates, setRealTimeUpdates] = useState(true)
+  const [realTimeUpdates, _setRealTimeUpdates] = useState(true)
 
   // RAG (Retrieval-Augmented Generation)
   const [ragEnabled, setRagEnabled] = useState(true)

@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Star, Sparkles, Users, TrendingUp, MessageCircle, Zap, Menu, X } from 'lucide-react'
 import { DEMO_AGENTS, MONICA_AS_CRAFTED_AGENT } from '@/lib/demo-agents-data'
 import type { CraftedAgent } from '@/lib/agent-types'
-import type { PlanetaryPosition } from '@/lib/services/planetary-positions-service'
+import type { LegacyPlanetaryPosition as PlanetaryPosition } from '@/lib/planetary-api-client'
 
 const PLANET_SYMBOLS: Record<string, string> = {
   Sun: '☉',

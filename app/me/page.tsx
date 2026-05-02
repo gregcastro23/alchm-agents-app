@@ -10,8 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { calculateMC } from '@/lib/monica/monica-constant-validator'
-import alchemizerExport, { alchemize } from '@/lib/alchemizer'
-import { generateAccurateHoroscope } from '@/lib/monica/horoscope-generator'
+import { planetaryAPI } from '@/lib/planetary-api-client'
 
 export const dynamic = 'force-dynamic'
 
@@ -106,18 +105,36 @@ export default async function MePage() {
       }
     }
 
-    // birth.month expected 0-based in codebase; horoscope expects 1-12
-    const horoscope = generateAccurateHoroscope({
-      year: birth.year,
-      month: birth.month + 1,
-      day: birth.day,
-      hour: birth.hour,
-      minute: birth.minute,
-      latitude: birth.latitude ?? 0,
-      longitude: birth.longitude ?? 0,
-    })
+    // Build a Date from birth info (birth.month is 0-based in this codebase)
+    const birthDate = new Date(
+      Date.UTC(
+        birth.year,
+        birth.month,
+        birth.day,
+        birth.hour ?? 12,
+        birth.minute ?? 0
+      )
+    )
 
-    alchm = alchemize(birth, horoscope)
+    // Backend does not currently return Total Effect Value (Fire/Water/Air/Earth)
+    // or Dominant Element/Modality — populate neutral defaults so legacy UI works.
+    // TODO: backfill elemental decomposition once Railway exposes it.
+    const legacy = await planetaryAPI.getAlchemicalQuantitiesLegacy(
+      birthDate,
+      birth.latitude ?? 0,
+      birth.longitude ?? 0
+    )
+    alchm = {
+      ...legacy,
+      'Total Effect Value': {
+        Fire: 1,
+        Water: 1,
+        Air: 1,
+        Earth: 1,
+      },
+      'Dominant Element': 'Fire',
+      'Dominant Modality': 'Cardinal',
+    }
   } catch (error: any) {
     console.error('Alchemical computation error:', error)
     computationError = error?.message || 'Failed to compute alchemical data'

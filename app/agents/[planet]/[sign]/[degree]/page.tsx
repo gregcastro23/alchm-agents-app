@@ -17,13 +17,34 @@ import {
   DegreeSpecificHistoryService,
   type DegreeHistoricalData,
 } from '@/lib/degree-specific-history'
-import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
 import {
   getPlanetaryDignity,
   getSignElement,
   getPlanetaryElement,
   calculateElementalAffinity,
 } from '@/lib/astrological-data'
+
+// Fetches current planetary positions via the astrologize proxy (browser-safe).
+async function fetchCurrentPlanetaryPositions(): Promise<
+  Record<string, { sign: string; degree: number }>
+> {
+  try {
+    const res = await fetch('/api/astrologize')
+    if (!res.ok) return {}
+    const data = await res.json()
+    const planets = data?.planetary_positions || {}
+    const out: Record<string, { sign: string; degree: number }> = {}
+    Object.entries(planets).forEach(([name, body]: [string, any]) => {
+      out[name] = {
+        sign: body?.sign || '',
+        degree: typeof body?.degree === 'number' ? body.degree : 0,
+      }
+    })
+    return out
+  } catch {
+    return {}
+  }
+}
 import {
   ArrowLeft,
   Calendar,
@@ -105,9 +126,9 @@ export default function DegreeSpecificAgentPage() {
     calculateRecentTransits()
   }
 
-  const loadCurrentTransits = () => {
-    // Get current planetary positions
-    const currentPositions = getCurrentPlanetaryPositions()
+  const loadCurrentTransits = async () => {
+    // Get current planetary positions via astrologize proxy
+    const currentPositions = await fetchCurrentPlanetaryPositions()
     const currentPlanetPosition = currentPositions[planet]
 
     if (currentPlanetPosition) {

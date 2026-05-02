@@ -1,5 +1,6 @@
 import { Anthropic } from '@anthropic-ai/sdk'
 import * as dotenv from 'dotenv'
+import { CLAUDE, MODEL_TIERS, resolveClaudeModel } from './models/registry'
 
 // Load environment variables
 dotenv.config()
@@ -33,37 +34,33 @@ export const anthropic = new Anthropic({
   baseURL: aiGatewayEnabled && aiGatewayUrl ? aiGatewayUrl : undefined,
 })
 
-// Model configuration for upgraded subscription
+// ============================================================================
+// MODEL CONFIGURATION — Updated May 2026
+// ============================================================================
+
+/**
+ * @deprecated Use `CLAUDE` from `@/lib/models/registry` instead.
+ * Kept for backward compatibility with existing imports.
+ */
 export const CLAUDE_MODELS = {
-  // Claude 3.5 models (latest)
-  CLAUDE_3_5_SONNET: 'claude-3-5-sonnet-20241022',
-  CLAUDE_3_5_HAIKU: 'claude-3-5-haiku-20241022',
+  // Claude 4.x — Current (May 2026)
+  CLAUDE_OPUS_4_7:   CLAUDE.OPUS,
+  CLAUDE_SONNET_4_6: CLAUDE.SONNET,
+  CLAUDE_HAIKU_4_5:  CLAUDE.HAIKU,
 
-  // Claude 3 models
-  CLAUDE_3_OPUS: 'claude-3-opus-20240229',
-  CLAUDE_3_SONNET: 'claude-3-sonnet-20240229',
-  CLAUDE_3_HAIKU: 'claude-3-haiku-20240307',
-
-  // Legacy models (fallback)
-  CLAUDE_3_SONNET_LEGACY: 'claude-3-sonnet-20240229',
-  CLAUDE_3_HAIKU_LEGACY: 'claude-3-haiku-20240307',
+  // Legacy aliases — map old names to new models for backward compat
+  CLAUDE_3_5_SONNET: CLAUDE.SONNET,   // Was claude-3-5-sonnet → now claude-sonnet-4-6
+  CLAUDE_3_5_HAIKU:  CLAUDE.HAIKU,    // Was claude-3-5-haiku → now claude-haiku-4-5
+  CLAUDE_3_OPUS:     CLAUDE.OPUS,     // Was claude-3-opus → now claude-opus-4-7
+  CLAUDE_3_SONNET:   CLAUDE.SONNET,
+  CLAUDE_3_HAIKU:    CLAUDE.HAIKU,
+  CLAUDE_3_SONNET_LEGACY: CLAUDE.LEGACY_SONNET_3,
+  CLAUDE_3_HAIKU_LEGACY:  CLAUDE.LEGACY_HAIKU_3,
 } as const
 
 // Get model from environment or use defaults
 export function getClaudeModel(type: 'default' | 'fast' | 'powerful' = 'default'): string {
-  switch (type) {
-    case 'default':
-      // Use env var or fallback to Claude 3 Opus (most powerful available)
-      return process.env.CLAUDE_DEFAULT_MODEL || CLAUDE_MODELS.CLAUDE_3_OPUS
-    case 'fast':
-      // Use env var or fallback to Claude 3.5 Haiku (fastest available)
-      return process.env.CLAUDE_FAST_MODEL || CLAUDE_MODELS.CLAUDE_3_5_HAIKU
-    case 'powerful':
-      // Claude 3 Opus is the most powerful model available
-      return CLAUDE_MODELS.CLAUDE_3_OPUS
-    default:
-      return CLAUDE_MODELS.CLAUDE_3_OPUS
-  }
+  return resolveClaudeModel(type === 'default' ? 'default' : type === 'fast' ? 'fast' : 'powerful')
 }
 
 // Helper function to check if the API key is configured
@@ -71,22 +68,46 @@ export function isAnthropicConfigured(): boolean {
   return !!apiKey
 }
 
-// Enhanced message creation with model selection
+// ============================================================================
+// MESSAGE CREATION — Fixed signature + updated defaults
+// ============================================================================
+
+/**
+ * Enhanced message creation with model selection.
+ *
+ * Supports two calling conventions:
+ *   1. createClaudeMessage(messages, system?, modelType?, maxTokens?)
+ *   2. createClaudeMessage(messages, modelId, temperature, maxTokens) — legacy
+ */
 export async function createClaudeMessage(
   messages: any[],
-  system?: string,
-  modelType: 'default' | 'fast' | 'powerful' = 'default',
+  systemOrModel?: string,
+  modelTypeOrTemp: 'default' | 'fast' | 'powerful' | number = 'default',
   maxTokens: number = 4096
 ) {
-  const model = getClaudeModel(modelType)
+  // Determine if caller is using the legacy convention (temperature as 3rd arg)
+  const isLegacyCall = typeof modelTypeOrTemp === 'number'
+
+  let model: string
+  let system: string
+
+  if (isLegacyCall) {
+    // Legacy: createClaudeMessage(prompt, modelId, temperature, maxTokens)
+    // In this case, systemOrModel is the model ID string
+    model = systemOrModel || resolveClaudeModel('default')
+    system = 'You are a helpful AI assistant specializing in astrological and alchemical wisdom.'
+  } else {
+    // Standard: createClaudeMessage(messages, system?, modelType?, maxTokens?)
+    system = systemOrModel ||
+      'You are a helpful AI assistant specializing in astrological and alchemical wisdom.'
+    model = getClaudeModel(modelTypeOrTemp as 'default' | 'fast' | 'powerful')
+  }
 
   return await anthropic.messages.create({
     model,
     max_tokens: maxTokens,
-    system:
-      system ||
-      'You are a helpful AI assistant specializing in astrological and alchemical wisdom.',
-    messages,
+    system,
+    messages: Array.isArray(messages) ? messages : [{ role: 'user', content: String(messages) }],
   })
 }
 
@@ -137,24 +158,24 @@ export async function logToAnthropicStream(
 export function getModelInfo(modelType: 'default' | 'fast' | 'powerful' = 'default') {
   const model = getClaudeModel(modelType)
 
-  const modelInfo = {
-    [CLAUDE_MODELS.CLAUDE_3_5_SONNET]: {
-      name: 'Claude 3.5 Sonnet',
+  const modelInfo: Record<string, any> = {
+    [CLAUDE.OPUS]: {
+      name: 'Claude Opus 4.7',
       contextWindow: '200K tokens',
-      capabilities: ['Complex reasoning', 'Advanced analysis', 'Creative tasks'],
+      capabilities: ['Most capable', 'Complex reasoning', 'Agentic coding', 'Creative tasks'],
+      bestFor: 'Most complex tasks, advanced analysis, multi-step reasoning',
+    },
+    [CLAUDE.SONNET]: {
+      name: 'Claude Sonnet 4.6',
+      contextWindow: '200K tokens',
+      capabilities: ['Balanced performance', 'Professional use', 'Advanced analysis'],
       bestFor: 'Complex astrological calculations, chart interpretation',
     },
-    [CLAUDE_MODELS.CLAUDE_3_5_HAIKU]: {
-      name: 'Claude 3.5 Haiku',
+    [CLAUDE.HAIKU]: {
+      name: 'Claude Haiku 4.5',
       contextWindow: '200K tokens',
-      capabilities: ['Fast responses', 'Efficient processing', 'Simple tasks'],
+      capabilities: ['Fast responses', 'Efficient processing', 'High-volume tasks'],
       bestFor: 'Quick queries, general responses, logging',
-    },
-    [CLAUDE_MODELS.CLAUDE_3_OPUS]: {
-      name: 'Claude 3 Opus',
-      contextWindow: '200K tokens',
-      capabilities: ['Most capable', 'Advanced reasoning', 'Creative tasks'],
-      bestFor: 'Most complex tasks, advanced analysis',
     },
   }
 

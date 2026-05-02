@@ -10,6 +10,7 @@ import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { planetaryAgentTools } from './agent-tools'
 import { BufferMemory } from '@langchain/classic/memory'
 import type { BaseMessage } from '@langchain/core/messages'
+import { CLAUDE, OPENAI } from '../models/registry'
 
 export interface AgentRouterConfig {
   model?: 'openai' | 'anthropic'
@@ -54,7 +55,7 @@ export class AgentRouter {
       const llm =
         this.config.model === 'anthropic'
           ? new ChatAnthropic({
-              modelName: 'claude-3-5-sonnet-20241022',
+              modelName: CLAUDE.SONNET,
               temperature: this.config.temperature,
               anthropicApiKey: aiGatewayEnabled
                 ? process.env.AI_GATEWAY_API_KEY
@@ -63,7 +64,7 @@ export class AgentRouter {
               baseURL: aiGatewayEnabled ? process.env.AI_GATEWAY_URL : undefined,
             })
           : new ChatOpenAI({
-              modelName: 'gpt-4-turbo-preview',
+              modelName: OPENAI.GPT_5_4_MINI,
               temperature: this.config.temperature,
               openAIApiKey: aiGatewayEnabled
                 ? process.env.AI_GATEWAY_API_KEY

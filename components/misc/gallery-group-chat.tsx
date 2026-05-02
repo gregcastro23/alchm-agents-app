@@ -2,23 +2,17 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
-  MessageSquare,
-  X,
   Send,
   Crown,
-  Sparkles,
-  Users,
   Brain,
-  Zap,
   TrendingUp,
-  Activity,
 } from 'lucide-react'
 import type { CraftedAgent } from '@/lib/agent-types'
 import { KineticIndicators, MomentumIndicator } from '@/components/charts/kinetic-indicators'
@@ -27,8 +21,6 @@ import {
   CompactAspectsIndicator,
 } from '@/components/charts/dynamic-aspects-indicators'
 import { usePowerLevelIndicator } from '@/lib/hooks/use-power-monitoring'
-import { ConsciousnessMemorySystem } from '@/lib/agents/consciousness-memory'
-import { GroupConsciousnessDynamics } from '@/lib/consciousness/group-dynamics'
 import { useLiveConsciousness, type BirthChartData } from '@/hooks/useLiveConsciousness'
 
 type Message = {
@@ -70,7 +62,7 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
   const { powerIndicator, percentage } = usePowerLevelIndicator(userLocation)
 
   // Prepare birth chart data for batch live consciousness calculation
-  const agentBirthCharts: BirthChartData[] = selectedAgents.map(agent => ({
+  const agentBirthCharts: BirthChartData[] = selectedAgents.map((agent: any) => ({
     name: agent.name,
     birthDate: agent.birthDate || '1970-01-01',
     birthTime: agent.birthTime || '12:00',
@@ -82,7 +74,7 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
   const {
     multiAgentData: liveConsciousnessData,
     loading: liveLoading,
-    error: liveError,
+    // error: liveError,
   } = useLiveConsciousness(
     undefined, // No single birth chart
     {
@@ -323,7 +315,6 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                 {/* Live MC or birth MC fallback */}
                 {liveData ? (
                   <Badge
-                    size="sm"
                     className="text-xs"
                     title={`Birth MC: ${liveData.birthMC.toFixed(2)} → Live MC: ${liveData.liveMC.toFixed(2)}`}
                   >
@@ -335,7 +326,7 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                     )}
                   </Badge>
                 ) : (
-                  <Badge size="sm" className="text-xs">
+                  <Badge className="text-xs">
                     MC: {agent.consciousness.monicaConstant.toFixed(1)}
                   </Badge>
                 )}
@@ -343,7 +334,6 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                 {/* Live consciousness level */}
                 {liveData && (
                   <Badge
-                    size="sm"
                     className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
                     title={liveData.interpretations?.transitInfluence || ''}
                   >
@@ -353,7 +343,6 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
 
                 {evolutionData && (
                   <Badge
-                    size="sm"
                     className="text-xs bg-green-100 text-green-700"
                     title={`Evolution Stage: ${evolutionData.evolutionStage}`}
                   >

@@ -24,10 +24,100 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { kinetics, type EnhancedKineticData } from '@/lib/kinetics-integration'
 import { calculateDynamicAspects, type DynamicAspectsAnalysis } from '@/lib/dynamic-aspects-engine'
-import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
 import type { PlanetPosition } from '@/lib/astrological-pattern-recognition'
+
+// Minimal local replacement for the deleted `EnhancedKineticData` type.
+// Captures the subset of fields this component reads.
+// TODO: extend once a richer kinetics endpoint is restored.
+interface EnhancedKineticData {
+  velocity: number
+  currentPower: number
+  momentum: 'building' | 'sustained' | 'peak' | 'waning'
+  kinetic_val?: number
+  thermo_val?: number
+  base?: {
+    elementalVelocity?: Array<{
+      v?: { Fire?: number; Water?: number; Air?: number; Earth?: number }
+    }>
+  }
+  planetaryPositions?: Array<{ planet: string; sign: string; degree: number }>
+}
+
+// Browser-safe enhanced-kinetics fetcher — combines `/api/alchemize` (for
+// power/momentum proxies) and `/api/astrologize` (for planetary positions).
+async function fetchEnhancedKinetics(): Promise<EnhancedKineticData> {
+  let kinetic_val = 0
+  let thermo_val = 0
+  try {
+    const aRes = await fetch('/api/alchemize?legacy=true')
+    if (aRes.ok) {
+      const data = await aRes.json()
+      kinetic_val = Number(data?.kinetic_val ?? 0)
+      thermo_val = Number(data?.thermo_val ?? 0)
+    }
+  } catch (err) {
+    console.error('alchemize fetch failed:', err)
+  }
+  // velocity ≈ kinetic_val, currentPower ≈ thermo_val (clamped 0..1).
+  const velocity = Math.max(0, Math.min(1, kinetic_val || 0.5))
+  const currentPower = Math.max(0, Math.min(1, thermo_val || 0.5))
+  const momentum: EnhancedKineticData['momentum'] =
+    currentPower > 0.8
+      ? 'peak'
+      : currentPower > 0.6
+      ? 'sustained'
+      : currentPower > 0.3
+      ? 'building'
+      : 'waning'
+
+  let planetaryPositions: Array<{ planet: string; sign: string; degree: number }> = []
+  try {
+    const pRes = await fetch('/api/astrologize')
+    if (pRes.ok) {
+      const data = await pRes.json()
+      const planets = data?.planetary_positions || {}
+      planetaryPositions = Object.entries(planets).map(([planet, body]: [string, any]) => ({
+        planet,
+        sign: body?.sign || 'Aries',
+        degree: typeof body?.degree === 'number' ? body.degree : 0,
+      }))
+    }
+  } catch (err) {
+    console.error('astrologize fetch failed:', err)
+  }
+
+  return {
+    velocity,
+    currentPower,
+    momentum,
+    kinetic_val,
+    thermo_val,
+    base: { elementalVelocity: [] },
+    planetaryPositions,
+  }
+}
+
+async function fetchCurrentPlanetaryPositions(): Promise<
+  Record<string, { sign: string; degree: number }>
+> {
+  try {
+    const res = await fetch('/api/astrologize')
+    if (!res.ok) return {}
+    const data = await res.json()
+    const planets = data?.planetary_positions || {}
+    const out: Record<string, { sign: string; degree: number }> = {}
+    Object.entries(planets).forEach(([name, body]: [string, any]) => {
+      out[name] = {
+        sign: body?.sign || '',
+        degree: typeof body?.degree === 'number' ? body.degree : 0,
+      }
+    })
+    return out
+  } catch {
+    return {}
+  }
+}
 
 type KineticMetrics = {
   velocity: number
@@ -65,18 +155,11 @@ export default function KineticsVisualization() {
       if (!isMounted) return
 
       try {
-        // Get user location (default to a central location if not available)
-        const location = { lat: 40.7128, lon: -74.006 } // Default to NYC
-
-        // Fetch enhanced kinetics with aspect optimization
-        const enhanced = await kinetics.getEnhancedKinetics(location, {
-          includeAgentOptimization: false,
-          includePowerPrediction: true,
-          includeResonanceMap: false,
-        })
+        // Fetch enhanced kinetics envelope via proxy
+        const enhanced = await fetchEnhancedKinetics()
 
         // Get dynamic aspects analysis
-        const positions = getCurrentPlanetaryPositions()
+        const positions = await fetchCurrentPlanetaryPositions()
         const planets: PlanetPosition[] = Object.entries(positions)
           .filter(([_, data]) => data && data.sign && typeof data.degree === 'number')
           .map(([planet, data]) => ({

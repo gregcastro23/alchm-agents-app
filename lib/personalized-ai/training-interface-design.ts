@@ -942,7 +942,7 @@ Return only the number, no explanation.`
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5.4-nano', // Fast model for quality assessment
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: submission },

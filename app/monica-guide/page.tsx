@@ -135,8 +135,8 @@ export default function MonicaGuidePage() {
             currentInput.length > 100 ||
             currentInput.includes('6-dimensional') ||
             currentInput.includes('graphics')
-              ? 'gpt-4o'
-              : 'gpt-4o-mini',
+              ? 'gpt-5.5'
+              : 'gpt-5.4-mini',
           preferredStyle: {
             temperature: 0.7,
             currentTask: 'comprehensive guidance with detailed explanations',

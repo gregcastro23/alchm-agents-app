@@ -28,14 +28,6 @@
     "linting-campaign:progress": "echo '📈 Current Progress:' && echo 'Total errors:' $(yarn typecheck:errors 2>/dev/null) && echo 'Starting: 1065' && echo 'Resolved:' $((1065 - $(yarn typecheck:errors 2>/dev/null))) && echo 'Remaining:' $(yarn typecheck:errors 2>/dev/null)",
     "linting-campaign:report": "node scripts/linting-campaign.js report",
     "linting-campaign:patterns": "node scripts/linting-campaign.js patterns",
-    "backend:install": "cd backend && yarn install",
-    "backend:dev": "cd backend && ./scripts/start-dev.sh",
-    "backend:build": "cd backend && yarn build",
-    "backend:start": "cd backend && yarn start",
-    "backend:test": "cd backend && yarn test",
-    "backend:status": "curl -s http://localhost:8000/api/health | jq '.'",
-    "full-stack:dev": "concurrently \"yarn dev\" \"yarn backend:dev\"",
-    "full-stack:test": "yarn backend:test",
     "test:chat": "npx tsx test/chat-system/run-tests.ts",
     "test:chat:unit": "vitest run test/chat-system/unit/ --config vitest.unit.config.ts",
     "test:chat:integration": "vitest run test/chat-system/integration/",
@@ -50,7 +42,7 @@
     "test:chat:report": "npx tsx -e \"console.log(JSON.stringify(require('./test-results/latest-summary.json'), null, 2))\"",
     "test:chat:clean": "rm -rf test-results coverage .vitest",
     "test:ci:chat": "yarn test:chat:clean && yarn test:chat && yarn test:chat:report",
-    "dev:enhanced": "concurrently \"yarn dev\" \"yarn backend:dev\" \"yarn db:studio\"",
+    "dev:enhanced": "concurrently \"yarn dev\" \"yarn db:studio\"",
     "dev:debug": "NODE_OPTIONS='--inspect' yarn dev",
     "typecheck:watch": "tsc --noEmit --watch",
     "storybook": "storybook dev -p 6006",
@@ -158,7 +150,6 @@
     "redis": "^5.6.1",
     "server-only": "^0.0.1",
     "sonner": "^2.0.6",
-    "suncalc": "^1.9.0",
     "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
@@ -190,7 +181,6 @@
     "@types/pg": "^8",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
-    "@types/suncalc": "^1",
     "@types/ws": "^8.18.1",
     "@types/yaml": "^1.9.7",
     "@typescript-eslint/eslint-plugin": "^8.43.0",
@@ -249,7 +239,7 @@
     "@finom/zod-to-json-schema": "npm:zod-to-json-schema@^3.25.0"
   },
   "engines": {
-    "node": "20.x"
+    "node": ">=20.x"
   },
   "packageManager": "yarn@4.10.2+sha512.0b0e54ad5381f0a35184957bd3ea44e37f5a4fb1960b903b0fb9a3c7c2c009190455c41ef2a1977b1dbd3b72c5f152da696e9c52e2bc78a011b6adea8ee73ba3"
 }

@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Get conversations from the last 7 days
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     // Group by day for daily metrics
     const dailyMetrics = new Map<string, { requests: number; success: number; failure: number; totalLatency: number }>()
     
-    conversations.forEach(conv => {
+    conversations.forEach((conv: any) => {
       const dayKey = conv.createdAt.toISOString().split('T')[0]
       
       if (!dailyMetrics.has(dayKey)) {
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     
     // Convert to chart format
     const dailyMetricsArray = Array.from(dailyMetrics.entries())
-      .map(([date, stats], index) => ({
+      .map(([_date, stats]: any, index: number) => ({
         name: `Day ${index + 1}`,
         requests: stats.requests,
         success: stats.success,
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     // Group by agent for planetary data
     const agentMetrics = new Map<string, { requests: number; totalLatency: number }>()
     
-    conversations.forEach(conv => {
+    conversations.forEach((conv: any) => {
       if (!agentMetrics.has(conv.agentId)) {
         agentMetrics.set(conv.agentId, { requests: 0, totalLatency: 0 })
       }

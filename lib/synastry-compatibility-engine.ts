@@ -303,7 +303,7 @@ export class SynastryAnalysisEngine {
     return "To support each other's unique expression while growing in universal consciousness"
   }
 
-  private static identifyCollectiveStrengths(synastryChart: SynastryChart): string[] {
+  private static identifyCollectiveStrengths(_synastryChart: SynastryChart): string[] {
     return [
       'Complementary elemental energies create dynamic balance',
       'Shared commitment to personal and spiritual growth',
@@ -312,7 +312,7 @@ export class SynastryAnalysisEngine {
     ]
   }
 
-  private static identifySharedChallenges(synastryChart: SynastryChart): string[] {
+  private static identifySharedChallenges(_synastryChart: SynastryChart): string[] {
     return [
       'Learning to honor different pacing and processing styles',
       'Balancing individual needs with relationship harmony',
@@ -321,7 +321,7 @@ export class SynastryAnalysisEngine {
     ]
   }
 
-  private static identifyGrowthOpportunities(synastryChart: SynastryChart): string[] {
+  private static identifyGrowthOpportunities(_synastryChart: SynastryChart): string[] {
     return [
       'Developing greater emotional intelligence through relationship',
       'Learning to communicate across different elemental languages',
@@ -358,7 +358,7 @@ export class SynastryAnalysisEngine {
     }
   }
 
-  private static determineEvolutionTheme(synastryChart: SynastryChart): string {
+  private static determineEvolutionTheme(_synastryChart: SynastryChart): string {
     return 'Learning to love unconditionally while maintaining authentic self-expression'
   }
 
@@ -408,14 +408,14 @@ export class SynastryAnalysisEngine {
     return sameElement ? 90 : 70
   }
 
-  private static calculateModalCompatibility(synastryChart: SynastryChart): number {
+  private static calculateModalCompatibility(_synastryChart: SynastryChart): number {
     // This would analyze cardinal/fixed/mutable compatibility
     return 75
   }
 
   private static identifyRelationshipStrengths(
-    synastryChart: SynastryChart,
-    aspects: SynastryAspect[]
+    _synastryChart: SynastryChart,
+    _aspects: SynastryAspect[]
   ): RelationshipStrength[] {
     return [
       {
@@ -452,8 +452,8 @@ export class SynastryAnalysisEngine {
   }
 
   private static identifyRelationshipChallenges(
-    synastryChart: SynastryChart,
-    aspects: SynastryAspect[]
+    _synastryChart: SynastryChart,
+    _aspects: SynastryAspect[]
   ): RelationshipChallenge[] {
     return [
       {
@@ -480,8 +480,8 @@ export class SynastryAnalysisEngine {
   }
 
   private static generateRecommendations(
-    synastryChart: SynastryChart,
-    aspects: SynastryAspect[]
+    _synastryChart: SynastryChart,
+    _aspects: SynastryAspect[]
   ): RelationshipRecommendation[] {
     return [
       {
@@ -523,7 +523,7 @@ export class SynastryAnalysisEngine {
     ]
   }
 
-  static generateRelationshipTimeline(synastryChart: SynastryChart): RelationshipPhase[] {
+  static generateRelationshipTimeline(_synastryChart: SynastryChart): RelationshipPhase[] {
     return [
       {
         phase_name: 'Attraction and Discovery',
@@ -596,8 +596,8 @@ export class SynastryAnalysisEngine {
   }
 
   static createConsciousnessEvolutionMap(
-    synastryChart: SynastryChart,
-    compatibility: CompatibilityAnalysis
+    _synastryChart: SynastryChart,
+    _compatibility: CompatibilityAnalysis
   ): ConsciousnessEvolutionStage[] {
     return [
       {
@@ -656,8 +656,8 @@ export class SynastryAnalysisEngine {
   }
 
   static generatePracticalGuidance(
-    synastryChart: SynastryChart,
-    compatibility: CompatibilityAnalysis
+    _synastryChart: SynastryChart,
+    _compatibility: CompatibilityAnalysis
   ): PracticalRelationshipGuidance {
     return {
       daily_practices: [
@@ -745,7 +745,7 @@ export const COMPATIBILITY_INTERPRETATIONS = {
 export function getCompatibilityInterpretation(
   score: number
 ): (typeof COMPATIBILITY_INTERPRETATIONS)[keyof typeof COMPATIBILITY_INTERPRETATIONS] {
-  for (const [key, interpretation] of Object.entries(COMPATIBILITY_INTERPRETATIONS)) {
+  for (const [_key, interpretation] of Object.entries(COMPATIBILITY_INTERPRETATIONS)) {
     const [min, max] = interpretation.range
     if (score >= min && score <= max) {
       return interpretation

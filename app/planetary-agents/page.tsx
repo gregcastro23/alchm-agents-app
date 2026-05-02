@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
 import { getPlanetaryDignity } from '@/lib/astrological-data'
 import { MoonPhaseAgentChat } from '@/components/misc/moon-phase-agent-chat'
 import UnifiedMultiAgentChat from '@/components/misc/unified-multi-agent-chat'
@@ -97,9 +96,24 @@ function PlanetaryAgentsContent() {
         }
       } catch (error) {
         console.error('Error loading planetary positions:', error)
-        // Fallback to client-side calculation if API fails
-        const current = getCurrentPlanetaryPositions(Date.now())
-        setPositions(current)
+        // Fallback to astrologize proxy if primary API fails
+        try {
+          const fallback = await fetch('/api/astrologize')
+          if (fallback.ok) {
+            const data = await fallback.json()
+            const positionsMap: Record<string, { sign: string; degree: number }> = {}
+            const planets = data?.planetary_positions || {}
+            Object.entries(planets).forEach(([planet, body]: [string, any]) => {
+              positionsMap[planet] = {
+                sign: body?.sign || '',
+                degree: typeof body?.degree === 'number' ? body.degree : 0,
+              }
+            })
+            setPositions(positionsMap)
+          }
+        } catch (fallbackError) {
+          console.error('Fallback astrologize call failed:', fallbackError)
+        }
       }
     }
 

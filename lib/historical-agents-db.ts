@@ -5,11 +5,11 @@ import { prisma } from './db'
 import { DEMO_AGENTS } from './demo-agents-data'
 import type { CraftedAgent } from './agent-types'
 import type {
-  HistoricalAgent,
+  historical_agents as HistoricalAgent,
   AgentConversation,
   AgentEvolution,
   AgentKnowledge,
-} from './generated/prisma'
+} from '@prisma/client'
 
 // Enhanced agent interface with database fields
 export interface EnhancedHistoricalAgent extends HistoricalAgent {
@@ -47,7 +47,7 @@ export class HistoricalAgentsService {
     for (const agent of agents) {
       try {
         // Check if agent already exists
-        const existing = await prisma.historicalAgent.findUnique({
+        const existing = await (prisma.historical_agents as any).findUnique({
           where: { agentId: agent.id },
         })
 
@@ -56,7 +56,7 @@ export class HistoricalAgentsService {
 
         if (existing) {
           // Update existing agent with enhanced fields
-          await prisma.historicalAgent.update({
+          await (prisma.historical_agents as any).update({
             where: { agentId: agent.id },
             data: historicalAgent,
           })
@@ -64,7 +64,7 @@ export class HistoricalAgentsService {
           console.log(`↻ Updated ${agent.name} (${agent.id})`)
         } else {
           // Create new agent
-          await prisma.historicalAgent.create({
+          await (prisma.historical_agents as any).create({
             data: historicalAgent,
           })
           results.migrated++
@@ -278,7 +278,6 @@ export class HistoricalAgentsService {
   } {
     // Reverse engineer Monica Constant: MC = (Spirit × φ + Essence) / (Matter + Substance + 1)
     // For now, use reasonable defaults based on consciousness level
-    const phi = 1.618033988749895
 
     if (monicaConstant >= 5.5) {
       // Transcendent
@@ -364,15 +363,15 @@ export class HistoricalAgentsService {
         }
       : null
 
-    const agent = (await prisma.historicalAgent.findUnique({
+    const agent = (await (prisma.historical_agents as any).findUnique({
       where: { agentId },
       include,
     })) as EnhancedHistoricalAgent | null
 
     if (agent && includeRelations) {
-      agent.recentConversations = agent.agentConversations
-      agent.evolutionHistory = agent.agentEvolutions
-      agent.knowledgeBase = agent.agentKnowledge
+      agent.recentConversations = agent.agentConversations as any
+      agent.evolutionHistory = agent.agentEvolutions as any
+      agent.knowledgeBase = agent.agentKnowledge as any
     }
 
     return agent
@@ -405,7 +404,7 @@ export class HistoricalAgentsService {
     if (options.limit !== undefined) queryOptions.take = options.limit
     if (options.offset !== undefined) queryOptions.skip = options.offset
 
-    return await prisma.historicalAgent.findMany(queryOptions)
+    return await (prisma.historical_agents as any).findMany(queryOptions)
   }
 
   /**
@@ -434,7 +433,7 @@ export class HistoricalAgentsService {
 
     if (options.limit !== undefined) queryOptions.take = options.limit
 
-    return await prisma.historicalAgent.findMany(queryOptions)
+    return await (prisma.historical_agents as any).findMany(queryOptions)
   }
 
   /**
@@ -452,7 +451,7 @@ export class HistoricalAgentsService {
       }
     >
   }> {
-    const allAgents = await prisma.historicalAgent.findMany({
+    const allAgents = await (prisma.historical_agents as any).findMany({
       where: { isActive: true },
       select: {
         historicalEra: true,
@@ -528,11 +527,11 @@ export class HistoricalAgentsService {
     } = {}
   ): Promise<AgentConversation> {
     // Get current agent state
-    const agent = await prisma.historicalAgent.findUnique({
+    const agent = await (prisma.historical_agents as any).findUnique({
       where: { agentId },
     })
 
-    const conversation = await prisma.agentConversation.create({
+    const conversation = await (prisma.agentConversation as any).create({
       data: {
         agentId,
         sessionId,
@@ -554,7 +553,7 @@ export class HistoricalAgentsService {
     })
 
     // Update agent statistics
-    await prisma.historicalAgent.update({
+    await (prisma.historical_agents as any).update({
       where: { agentId },
       data: {
         conversations: { increment: 1 },
@@ -583,7 +582,7 @@ export class HistoricalAgentsService {
       xpGained?: number
     }
   ): Promise<AgentEvolution> {
-    const evolution = await prisma.agentEvolution.create({
+    const evolution = await (prisma.agentEvolution as any).create({
       data: {
         agentId,
         ...evolutionData,
@@ -593,7 +592,7 @@ export class HistoricalAgentsService {
     })
 
     // Update agent's evolution stage
-    await prisma.historicalAgent.update({
+    await (prisma.historical_agents as any).update({
       where: { agentId },
       data: {
         evolutionStage: evolutionData.toStage,
@@ -620,7 +619,7 @@ export class HistoricalAgentsService {
       relatedTopics?: any
     }
   ): Promise<AgentKnowledge> {
-    return await prisma.agentKnowledge.create({
+    return await (prisma.agentKnowledge as any).create({
       data: {
         agentId,
         ...knowledgeData,
@@ -642,7 +641,7 @@ export class HistoricalAgentsService {
       currentMood?: string
     }
   ): Promise<HistoricalAgent> {
-    return await prisma.historicalAgent.update({
+    return await (prisma.historical_agents as any).update({
       where: { agentId },
       data: updates,
     })
@@ -658,7 +657,7 @@ export class HistoricalAgentsService {
   ): Promise<AgentConversation[]> {
     const where = sessionId ? { agentId, sessionId } : { agentId }
 
-    return await prisma.agentConversation.findMany({
+    return await (prisma.agentConversation as any).findMany({
       where,
       orderBy: { createdAt: 'desc' },
       take: limit,
@@ -693,7 +692,7 @@ export class HistoricalAgentsService {
       where.isActive = criteria.isActive
     }
 
-    return await prisma.historicalAgent.findMany({
+    return await (prisma.historical_agents as any).findMany({
       where,
       orderBy: { monicaConstant: 'desc' },
     })
@@ -710,23 +709,23 @@ export class HistoricalAgentsService {
     consciousnessProgression: number
   }> {
     const [agent, conversations, evolutions, knowledge] = await Promise.all([
-      prisma.historicalAgent.findUnique({ where: { agentId } }),
-      prisma.agentConversation.findMany({ where: { agentId } }),
-      prisma.agentEvolution.findMany({
+      (prisma.historical_agents as any).findUnique({ where: { agentId } }),
+      (prisma.agentConversation as any).findMany({ where: { agentId } }),
+      (prisma.agentEvolution as any).findMany({
         where: { agentId },
         orderBy: { evolutionDate: 'asc' },
       }),
-      prisma.agentKnowledge.findMany({ where: { agentId } }),
+      (prisma.agentKnowledge as any).findMany({ where: { agentId } }),
     ])
 
     const averageResponseTime =
       conversations.length > 0
-        ? conversations.reduce((sum, conv) => sum + (conv.responseTime || 0), 0) /
+        ? conversations.reduce((sum: number, conv: any) => sum + (conv.responseTime || 0), 0) /
           conversations.length
         : null
 
     const knowledgeCategories = knowledge.reduce(
-      (acc, k) => {
+      (acc: any, k: any) => {
         acc[k.category] = (acc[k.category] || 0) + 1
         return acc
       },
@@ -749,7 +748,7 @@ export class HistoricalAgentsService {
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep)
 
-    const result = await prisma.agentConversation.deleteMany({
+    const result = await (prisma.agentConversation as any).deleteMany({
       where: {
         createdAt: { lt: cutoffDate },
       },
@@ -796,7 +795,7 @@ export class HistoricalAgentsService {
     substanceScore?: number
   }): Promise<HistoricalAgent> {
     try {
-      const newAgent = await prisma.historicalAgent.create({
+      const newAgent = await (prisma.historical_agents as any).create({
         data: {
           agentId: agentData.agentId,
           name: agentData.name,
@@ -878,7 +877,7 @@ export class HistoricalAgentsService {
     totalWisdomShared: number
     averageResonance: number
   }> {
-    const agents = await prisma.historicalAgent.findMany({
+    const agents = await (prisma.historical_agents as any).findMany({
       select: {
         conversations: true,
         wisdomShared: true,
@@ -889,15 +888,15 @@ export class HistoricalAgentsService {
 
     const totalAgents = agents.length
     const activeAgents = agents.filter(
-      agent =>
+      (agent: any) =>
         agent.lastActive &&
         new Date(agent.lastActive) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
     ).length
-    const totalConversations = agents.reduce((sum, agent) => sum + (agent.conversations || 0), 0)
-    const totalWisdomShared = agents.reduce((sum, agent) => sum + (agent.wisdomShared || 0), 0)
+    const totalConversations = agents.reduce((sum: number, agent: any) => sum + (agent.conversations || 0), 0)
+    const totalWisdomShared = agents.reduce((sum: number, agent: any) => sum + (agent.wisdomShared || 0), 0)
     const averageResonance =
       totalAgents > 0
-        ? agents.reduce((sum, agent) => sum + (agent.resonanceScore || 0), 0) / totalAgents
+        ? agents.reduce((sum: number, agent: any) => sum + (agent.resonanceScore || 0), 0) / totalAgents
         : 0
 
     return {
@@ -912,7 +911,7 @@ export class HistoricalAgentsService {
 
 // Legacy compatibility - convert database agent to CraftedAgent format
 export function dbAgentToCraftedAgent(dbAgent: HistoricalAgent): CraftedAgent {
-  return {
+  const enhancedAgent = {
     id: dbAgent.agentId,
     name: dbAgent.name,
     title: dbAgent.title,
@@ -961,5 +960,5 @@ export function dbAgentToCraftedAgent(dbAgent: HistoricalAgent): CraftedAgent {
     },
   }
 
-  return enhancedAgent
+  return enhancedAgent as unknown as CraftedAgent
 }

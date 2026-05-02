@@ -1,11 +1,38 @@
 import { NextResponse } from 'next/server'
 import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
-import { sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
+import { planetaryAPI } from '@/lib/planetary-api-client'
 import { demoCraftedAgents } from '@/lib/demo-agents-data'
 import {
   calculateEnhancedMomentScore,
   type EnhancedMomentScore,
 } from './enhanced-scoring'
+
+/**
+ * Adapter that produces the legacy `sampleHourlyAlchm` first-sample shape
+ * downstream consumers (route.ts, enhanced-scoring) read. Backed by the
+ * Railway alchemical-quantities endpoint; the four `spirit/essence/matter/
+ * substance` scores stand in for the old elemental `totals` map.
+ */
+async function buildAlchemicalDataForMoment(
+  lat: number,
+  lon: number,
+  moment: Date
+): Promise<any> {
+  const legacy = await planetaryAPI.getAlchemicalQuantitiesLegacy(moment, lat, lon)
+  return {
+    ...legacy,
+    // The deleted sampler used `totals` to expose the dominant element.
+    // The Railway backend returns spirit/essence/matter/substance scalars,
+    // so we surface those under `totals` with lowercase keys (matching the
+    // mapping enhanced-scoring already uses).
+    totals: {
+      spirit: legacy.spirit_score ?? 0,
+      essence: legacy.essence_score ?? 0,
+      matter: legacy.matter_score ?? 0,
+      substance: legacy.substance_score ?? 0,
+    },
+  }
+}
 
 // Legacy interface for backward compatibility
 interface RecommendationScore {
@@ -42,14 +69,13 @@ export async function GET(req: Request) {
 
     const currentMoment = new Date()
 
-    // Get current alchemical conditions
-    const samples = await sampleHourlyAlchm({ latitude: lat, longitude: lon }, currentMoment, {
-      hoursToSample: 1,
-      startHour: currentMoment.getHours(),
-      includePlanetaryHours: true,
-    })
-
-    const alchemicalData = samples && samples.length > 0 ? samples[0] : null
+    // Get current alchemical conditions from the Railway backend.
+    let alchemicalData: any = null
+    try {
+      alchemicalData = await buildAlchemicalDataForMoment(lat, lon, currentMoment)
+    } catch (err) {
+      console.warn('moment-recommendations: failed to fetch alchemical conditions', err)
+    }
 
     // Calculate recommendations for all agents using enhanced scoring
     const recommendations: RecommendationScore[] = []
@@ -137,14 +163,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'agentIds array is required' }, { status: 400 })
     }
 
-    // Get current alchemical conditions
-    const samples = await sampleHourlyAlchm({ latitude: lat, longitude: lon }, moment, {
-      hoursToSample: 1,
-      startHour: moment.getHours(),
-      includePlanetaryHours: true,
-    })
-
-    const alchemicalData = samples && samples.length > 0 ? samples[0] : null
+    // Get current alchemical conditions from the Railway backend.
+    let alchemicalData: any = null
+    try {
+      alchemicalData = await buildAlchemicalDataForMoment(lat, lon, moment)
+    } catch (err) {
+      console.warn('moment-recommendations POST: failed to fetch alchemical conditions', err)
+    }
 
     // Calculate detailed recommendations for specific agents using enhanced scoring
     const detailedRecommendations = []

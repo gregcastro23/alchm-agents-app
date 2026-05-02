@@ -5,17 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
-import {
-  Eye,
   Heart,
   Brain,
   Sparkles,
@@ -29,8 +19,6 @@ import {
   Gem,
   Crown,
   Flame,
-  Waves,
-  Wind,
   Mountain,
   Sun,
   Moon,
@@ -259,9 +247,9 @@ export function MobileMeditationGuidance({
   const [vibrateEnabled, setVibrateEnabled] = useState(true)
   const [showFullInstructions, setShowFullInstructions] = useState(false)
 
-  const meditation = MEDITATION_STYLES[sigil.style]
+  const meditation = MEDITATION_STYLES[(sigil as any).style as SigilStyle]
   const currentMeditationPhase = meditation.phases[currentPhase]
-  const totalDuration = meditation.phases.reduce((sum, phase) => sum + phase.duration, 0)
+  const totalDuration = meditation.phases.reduce((sum: number, phase: any) => sum + phase.duration, 0)
 
   // Timer effect with mobile vibration
   useEffect(() => {
@@ -275,7 +263,7 @@ export function MobileMeditationGuidance({
           // Check if current phase is complete
           const phaseEndTime = meditation.phases
             .slice(0, currentPhase + 1)
-            .reduce((sum, phase) => sum + phase.duration, 0)
+            .reduce((sum: number, phase: any) => sum + phase.duration, 0)
 
           if (newTime >= phaseEndTime && currentPhase < meditation.phases.length - 1) {
             // Vibrate on phase transition
@@ -340,7 +328,7 @@ export function MobileMeditationGuidance({
     if (currentPhase < meditation.phases.length - 1) {
       const nextPhaseStartTime = meditation.phases
         .slice(0, currentPhase + 1)
-        .reduce((sum, phase) => sum + phase.duration, 0)
+        .reduce((sum: number, phase: any) => sum + phase.duration, 0)
       setTimeElapsed(nextPhaseStartTime)
       setCurrentPhase(prev => prev + 1)
       if (vibrateEnabled && 'vibrate' in navigator) {
@@ -353,7 +341,7 @@ export function MobileMeditationGuidance({
     if (currentPhase > 0) {
       const prevPhaseStartTime = meditation.phases
         .slice(0, currentPhase - 1)
-        .reduce((sum, phase) => sum + phase.duration, 0)
+        .reduce((sum: number, phase: any) => sum + phase.duration, 0)
       setTimeElapsed(prevPhaseStartTime)
       setCurrentPhase(prev => prev - 1)
       if (vibrateEnabled && 'vibrate' in navigator) {
@@ -371,7 +359,7 @@ export function MobileMeditationGuidance({
   const getCurrentPhaseProgress = () => {
     const phaseStartTime = meditation.phases
       .slice(0, currentPhase)
-      .reduce((sum, phase) => sum + phase.duration, 0)
+      .reduce((sum: number, phase: any) => sum + phase.duration, 0)
     const phaseElapsed = timeElapsed - phaseStartTime
     const phaseProgress = Math.min(100, (phaseElapsed / currentMeditationPhase.duration) * 100)
     return Math.max(0, phaseProgress)
@@ -399,7 +387,7 @@ export function MobileMeditationGuidance({
             <div>
               <CardTitle className="text-purple-300 text-lg">{meditation.name}</CardTitle>
               <CardDescription className="text-sm">
-                Mobile meditation for {sigil.style} sigil
+                Mobile meditation for {(sigil as any).style} sigil
               </CardDescription>
             </div>
           </div>
@@ -416,7 +404,7 @@ export function MobileMeditationGuidance({
             </div>
             <h3 className="text-xl font-bold text-emerald-300">Activation Complete!</h3>
             <p className="text-emerald-200 text-sm">
-              Your {sigil.style} sigil has been successfully activated.
+              Your {(sigil as any).style} sigil has been successfully activated.
             </p>
 
             <div className="p-3 bg-emerald-900/20 rounded-lg border border-emerald-500/30">
@@ -429,7 +417,7 @@ export function MobileMeditationGuidance({
             <div className="p-3 bg-purple-900/20 rounded-lg">
               <h5 className="font-medium text-purple-300 mb-2 text-sm">Benefits Activated:</h5>
               <div className="grid grid-cols-2 gap-1 text-xs">
-                {meditation.benefits.map((benefit, idx) => (
+                {meditation.benefits.map((benefit: string, idx: number) => (
                   <div key={idx} className="flex items-center gap-1 text-purple-100">
                     <Sparkles className="w-3 h-3 text-purple-400" />
                     {benefit}

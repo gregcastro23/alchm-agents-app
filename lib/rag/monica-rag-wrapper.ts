@@ -284,7 +284,7 @@ export function getRAGStats(): {
       threshold: config.threshold,
       useReranking: config.useReranking,
       maxContextTokens: config.maxContextTokens,
-      embeddingsModel: process.env.EMBEDDINGS_MODEL || 'text-embedding-3-small',
+      embeddingsModel: process.env.EMBEDDINGS_MODEL || 'text-embedding-3-large',
       chromaDbUrl: process.env.CHROMADB_URL || 'http://localhost:8001',
     },
   }

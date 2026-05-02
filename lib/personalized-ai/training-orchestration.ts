@@ -5,24 +5,18 @@ import type {
   TrainingSession,
   TrainingActivity,
   TrainingSessionType,
-  ActivityType,
   TrainingPreferences,
-  TrainingDataCollection,
-  TextSample,
-  CreativeSubmission,
-  FeedbackEntry,
   PersonalityInsight,
 } from './training-interface-design'
 
 import { trainingDataManager } from './data-architecture'
 import {
   TrainingSessionManager,
-  TRAINING_ACTIVITIES,
   calculateActivityQuality,
 } from './training-interface-design'
 import { calculateXP, calculateInteractionQuality } from './xp-system'
-import { calculateLevel, checkLevelUp } from './level-system'
-import { anthropic, CLAUDE_MODELS, createClaudeMessage } from '../anthropic-client'
+import { calculateLevel } from './level-system'
+import { CLAUDE_MODELS, createClaudeMessage } from '../anthropic-client'
 import { checkAchievements } from './achievements'
 
 // ============================================================================
@@ -33,7 +27,7 @@ export class TrainingOrchestrator {
   private sessionManager: TrainingSessionManager
   private activeSessions: Map<string, ActiveSessionState>
   private aiProcessor!: AIProcessingEngine
-  private qualityMonitor!: QualityMonitoringEngine
+  private _qualityMonitor!: QualityMonitoringEngine
 
   constructor() {
     this.sessionManager = new TrainingSessionManager()
@@ -124,7 +118,7 @@ export class TrainingOrchestrator {
       return {
         success: true,
         session,
-        firstActivity,
+        firstActivity: firstActivity || undefined,
         estimatedDuration: session.userPreferences.sessionLengthPreference,
       }
     } catch (error) {
@@ -179,7 +173,7 @@ export class TrainingOrchestrator {
       return {
         success: true,
         processingResult,
-        nextActivity,
+        nextActivity: nextActivity || undefined,
         sessionProgress: updatedSession.progress,
         sessionComplete,
         recommendations: this.generateSessionRecommendations(updatedSession),
@@ -386,7 +380,7 @@ export class TrainingOrchestrator {
     }
   }
 
-  private extractContent(activity: TrainingActivity, submission: UserSubmission): string {
+  private extractContent(_activity: TrainingActivity, submission: UserSubmission): string {
     // For now, just return the main content
     // In a real implementation, this would handle different input types
     return submission.content
@@ -394,7 +388,7 @@ export class TrainingOrchestrator {
 
   private async updateSessionProgress(
     session: TrainingSession,
-    processingResult: SubmissionProcessingResult
+    _processingResult: SubmissionProcessingResult
   ): Promise<TrainingSession> {
     const updatedProgress = {
       ...session.progress,
@@ -412,7 +406,7 @@ export class TrainingOrchestrator {
     // Check for level up
     const currentLevel = calculateLevel(session.progress.completedActivities * 100)
     const newLevel = calculateLevel((session.progress.completedActivities + 1) * 100)
-    const levelUp = newLevel > currentLevel
+    const _levelUp = newLevel > currentLevel
 
     return await trainingDataManager.updateSession(session.id, {
       progress: updatedProgress,
@@ -422,7 +416,7 @@ export class TrainingOrchestrator {
 
   private calculateEngagementScore(
     submission: UserSubmission,
-    activity: TrainingActivity,
+    _activity: TrainingActivity,
     qualityScore: number
   ): number {
     // Simple engagement calculation based on submission length and quality
@@ -514,7 +508,7 @@ export class TrainingOrchestrator {
 
   private async updateUserProfile(
     session: TrainingSession,
-    metrics: SessionMetrics
+    _metrics: SessionMetrics
   ): Promise<void> {
     // Update user profile with session insights
     // This would integrate with the user profile management system
@@ -522,8 +516,8 @@ export class TrainingOrchestrator {
   }
 
   private async generateSessionInsights(
-    session: TrainingSession,
-    metrics: SessionMetrics
+    _session: TrainingSession,
+    _metrics: SessionMetrics
   ): Promise<SessionInsights> {
     return {
       strengths: ['Consistent engagement', 'Quality submissions'],
@@ -535,7 +529,7 @@ export class TrainingOrchestrator {
   }
 
   private generatePostSessionRecommendations(
-    session: TrainingSession,
+    _session: TrainingSession,
     metrics: SessionMetrics
   ): string[] {
     const recommendations: string[] = []
@@ -674,7 +668,7 @@ export class TrainingOrchestrator {
   }
 
   private updateActiveSessionMetrics(): void {
-    for (const [sessionId, state] of Array.from(this.activeSessions)) {
+    for (const [_sessionId, state] of Array.from(this.activeSessions)) {
       state.timeSpent += 5 * 60 // Add 5 minutes
     }
   }
@@ -688,7 +682,7 @@ class AIProcessingEngine {
   async analyzeSubmission(
     content: string,
     activity: TrainingActivity,
-    aiPersonality: any
+    _aiPersonality: any
   ): Promise<any> {
     try {
       // Create a comprehensive analysis prompt for Claude
@@ -737,7 +731,7 @@ Format your response as JSON with the following structure:
 
       // Call Claude for real analysis
       const response = await createClaudeMessage(
-        analysisPrompt,
+        analysisPrompt as any,
         CLAUDE_MODELS.CLAUDE_3_5_HAIKU, // Use faster model for analysis
         0.7, // Balanced creativity
         2000 // Reasonable token limit
@@ -745,7 +739,7 @@ Format your response as JSON with the following structure:
 
       // Parse the JSON response
       try {
-        const analysis = JSON.parse(response.content)
+        const analysis = JSON.parse(typeof response.content === 'string' ? response.content : JSON.stringify(response.content))
 
         // Validate and provide defaults for missing fields
         return {
@@ -823,10 +817,10 @@ Format your response as JSON with the following structure:
   }
 
   async generateInsights(
-    content: string,
-    activity: TrainingActivity,
-    session: TrainingSession,
-    aiPersonality: any
+    _content: string,
+    _activity: TrainingActivity,
+    _session: TrainingSession,
+    _aiPersonality: any
   ): Promise<PersonalityInsight[]> {
     // Generate personality insights based on content analysis
     return [

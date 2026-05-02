@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Flame,
@@ -10,7 +9,6 @@ import {
   Wind,
   Mountain,
   Star,
-  Sparkles,
   ZoomIn,
   ZoomOut,
   RotateCcw,
@@ -44,7 +42,7 @@ interface ZodiacWheelInteractiveProps {
   onAgentChat?: (agentId: string, agentName: string) => void
   size?: number
   showLabels?: boolean
-  highlightElements?: string[]
+  _highlightElements?: string[]
 }
 
 interface DegreeSegmentProps {
@@ -57,7 +55,7 @@ interface DegreeSegmentProps {
 }
 
 const DegreeSegment: React.FC<DegreeSegmentProps> = ({
-  degree,
+  /* _degree, */
   angle,
   isSelected,
   agent,
@@ -190,14 +188,13 @@ export const ZodiacWheelInteractive: React.FC<ZodiacWheelInteractiveProps> = ({
   onAgentChat,
   size = 600,
   showLabels = true,
-  highlightElements = [],
+  /* _highlightElements = [], */
 }) => {
-  const [hoveredDegree, setHoveredDegree] = useState<number | null>(null)
-  const [zoom, setZoom] = useState(1)
+    const [zoom, setZoom] = useState(1)
   const [rotation, setRotation] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const [lastTouchDistance, setLastTouchDistance] = useState(0)
+    const [lastTouchDistance, setLastTouchDistance] = useState(0)
   const [isPinching, setIsPinching] = useState(false)
+  const [hoveredDegree, _setHoveredDegree] = useState<number | null>(null)
 
   // Generate degree data with agents
   const degreeData = useMemo(() => {
@@ -401,9 +398,9 @@ export const ZodiacWheelInteractive: React.FC<ZodiacWheelInteractiveProps> = ({
               {hoveredDegree !== null && hoveredAgent && (
                 <div className="absolute top-4 right-4 bg-black/80 border border-purple-500/30 rounded-lg p-3 max-w-xs">
                   <div className="text-sm font-medium text-purple-200">
-                    Degree {hoveredDegree}° - {hoveredAgent.name}
+                    Degree {hoveredDegree}° - {(hoveredAgent as any).name}
                   </div>
-                  <div className="text-xs text-purple-400 mt-1">{hoveredAgent.description}</div>
+                  <div className="text-xs text-purple-400 mt-1">{(hoveredAgent as any).description}</div>
                 </div>
               )}
             </div>
@@ -423,11 +420,11 @@ export const ZodiacWheelInteractive: React.FC<ZodiacWheelInteractiveProps> = ({
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold text-purple-200">
-                    {selectedAgent.agent?.name || selectedAgent.name}
+                    {(selectedAgent as any).agent?.name || (selectedAgent as any).name}
                   </h3>
                   <p className="text-sm text-purple-400">
                     Degree {selectedDegree}° -{' '}
-                    {selectedAgent.config?.planetaryRuler || 'Unknown Ruler'}
+                    {(selectedAgent as any).config?.planetaryRuler || 'Unknown Ruler'}
                   </p>
                 </div>
 
@@ -435,31 +432,31 @@ export const ZodiacWheelInteractive: React.FC<ZodiacWheelInteractiveProps> = ({
                   <div>
                     <span className="text-purple-400">Element:</span>
                     <div className="text-purple-200 font-medium">
-                      {selectedAgent.config?.element || 'Unknown'}
+                      {(selectedAgent as any).config?.element || 'Unknown'}
                     </div>
                   </div>
                   <div>
                     <span className="text-purple-400">Dignity:</span>
                     <div className="text-purple-200 font-medium">
-                      {selectedAgent.config?.dignity || 'Unknown'}
+                      {(selectedAgent as any).config?.dignity || 'Unknown'}
                     </div>
                   </div>
                   <div>
                     <span className="text-purple-400">Strength:</span>
                     <div className="text-purple-200 font-medium">
-                      {selectedAgent.activationStrength || 0}%
+                      {(selectedAgent as any).activationStrength || 0}%
                     </div>
                   </div>
                   <div>
                     <span className="text-purple-400">Consciousness:</span>
                     <div className="text-purple-200 font-medium">
-                      {selectedAgent.consciousnessState?.level || 'Unknown'}
+                      {(selectedAgent as any).consciousnessState?.level || 'Unknown'}
                     </div>
                   </div>
                 </div>
 
                 <p className="text-sm text-purple-300">
-                  {selectedAgent.agent?.description || selectedAgent.description}
+                  {(selectedAgent as any).agent?.description || (selectedAgent as any).description}
                 </p>
 
                 <div className="flex gap-2">
@@ -521,3 +518,4 @@ export const ZodiacWheelInteractive: React.FC<ZodiacWheelInteractiveProps> = ({
 }
 
 export default ZodiacWheelInteractive
+

@@ -11,7 +11,7 @@ import { performanceMonitor } from '@/lib/performance-monitor'
 
 async function isAdminUser(userId: string): Promise<boolean> {
   try {
-    const user = await prisma.user.findUnique({
+    const user = await (prisma as any).user.findUnique({
       where: { id: userId },
       include: { subscription: true },
     })
@@ -26,7 +26,6 @@ async function isAdminUser(userId: string): Promise<boolean> {
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth()
     const user = await getCurrentUser(req)
     const userId = (user as any)?.id || getUserIdFromRequest(req)
 
@@ -73,10 +72,10 @@ export async function GET(req: NextRequest) {
       popularAgents,
     ] = await Promise.all([
       // Total users
-      prisma.user.count(),
+      (prisma as any).user.count(),
 
       // Active users (had interaction in timeRange)
-      prisma.consciousnessInteraction
+      (prisma as any).consciousnessInteraction
         .findMany({
           where: {
             timestamp: { gte: timeRangeStart },
@@ -84,30 +83,30 @@ export async function GET(req: NextRequest) {
           select: { userId: true },
           distinct: ['userId'],
         })
-        .then(users => users.length),
+        .then((users: any[]) => users.length),
 
       // Total interactions
-      prisma.consciousnessInteraction.count(),
+      (prisma as any).consciousnessInteraction.count(),
 
       // Recent interactions
-      prisma.consciousnessInteraction.count({
+      (prisma as any).consciousnessInteraction.count({
         where: {
           timestamp: { gte: timeRangeStart },
         },
       }),
 
       // Total agent evolutions
-      prisma.agentEvolutionState.count(),
+      (prisma as any).agentEvolutionState.count(),
 
       // Recent evolutions (level changes)
-      prisma.agentEvolutionState.count({
+      (prisma as any).agentEvolutionState.count({
         where: {
           lastInteraction: { gte: timeRangeStart },
         },
       }),
 
       // Error logs from Monica interactions
-      prisma.monicaInteraction.findMany({
+      (prisma as any).monicaInteraction.findMany({
         where: {
           createdAt: { gte: timeRangeStart },
           monicaResponse: { contains: 'error' },
@@ -123,7 +122,7 @@ export async function GET(req: NextRequest) {
       }),
 
       // Popular agents by interaction count
-      prisma.consciousnessInteraction.groupBy({
+      (prisma as any).consciousnessInteraction.groupBy({
         by: ['agentId'],
         where: {
           timestamp: { gte: timeRangeStart },
@@ -144,7 +143,7 @@ export async function GET(req: NextRequest) {
     const slowEndpoints = performanceMonitor.getSlowEndpoints(5)
 
     // User tier distribution
-    const tierDistribution = await prisma.subscription.groupBy({
+    const tierDistribution = await (prisma as any).subscription.groupBy({
       by: ['tier'],
       _count: {
         tier: true,
@@ -152,7 +151,7 @@ export async function GET(req: NextRequest) {
     })
 
     // Agent evolution level distribution
-    const evolutionLevels = await prisma.agentEvolutionState.groupBy({
+    const evolutionLevels = await (prisma as any).agentEvolutionState.groupBy({
       by: ['currentLevel'],
       _count: {
         currentLevel: true,
@@ -192,24 +191,24 @@ export async function GET(req: NextRequest) {
           systemMetrics,
         },
         users: {
-          tierDistribution: tierDistribution.map(t => ({
+          tierDistribution: tierDistribution.map((t: any) => ({
             tier: t.tier,
             count: t._count?.tier || 0,
           })),
           growthRate: activeUsers > 0 ? `${((activeUsers / totalUsers) * 100).toFixed(1)}%` : '0%',
         },
         agents: {
-          popularAgents: popularAgents.map(a => ({
+          popularAgents: popularAgents.map((a: any) => ({
             agentId: a.agentId,
             interactionCount: a._count?.agentId || 0,
           })),
-          evolutionLevels: evolutionLevels.map(l => ({
+          evolutionLevels: evolutionLevels.map((l: any) => ({
             level: l.currentLevel,
             count: l._count?.currentLevel || 0,
           })),
         },
         errors: {
-          recentErrorLogs: errorLogs.map(error => ({
+          recentErrorLogs: errorLogs.map((error: any) => ({
             id: error.id,
             timestamp: error.createdAt,
             source: error.pageUrl,
@@ -263,7 +262,7 @@ export async function POST(req: NextRequest) {
         const { message, type } = data
         try {
           // Get all users
-          const users = await prisma.user.findMany({
+          const users = await (prisma as any).user.findMany({
             select: { id: true, email: true },
           })
 
@@ -304,7 +303,7 @@ export async function POST(req: NextRequest) {
         const exportData: any = {}
 
         if (tables?.includes('users')) {
-          exportData.users = await prisma.user.findMany({
+          exportData.users = await (prisma as any).user.findMany({
             select: {
               email: true,
               name: true,
@@ -316,14 +315,14 @@ export async function POST(req: NextRequest) {
         }
 
         if (tables?.includes('interactions')) {
-          exportData.interactions = await prisma.consciousnessInteraction.findMany({
+          exportData.interactions = await (prisma as any).consciousnessInteraction.findMany({
             take: 1000, // Limit for demo
             orderBy: { timestamp: 'desc' },
           })
         }
 
         if (tables?.includes('evolutions')) {
-          exportData.evolutions = await prisma.agentEvolutionState.findMany()
+          exportData.evolutions = await (prisma as any).agentEvolutionState.findMany()
         }
 
         return NextResponse.json({

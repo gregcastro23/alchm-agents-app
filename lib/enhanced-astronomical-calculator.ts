@@ -7,7 +7,6 @@
  * Aims for ±0.1° precision vs ±2-5° of current system
  */
 
-import SunCalc from 'suncalc'
 
 export interface EnhancedPlanetPosition {
   planet: string
@@ -416,8 +415,7 @@ function calculateMoonPosition(T: number): EnhancedPlanetPosition {
   const F = normalizeDegrees(elements.F0 + elements.F1 * T)
 
   // Convert to radians
-  const LRad = (L * Math.PI) / 180
-  const DRad = (D * Math.PI) / 180
+    const DRad = (D * Math.PI) / 180
   const MRad = (M * Math.PI) / 180
   const MpRad = (Mp * Math.PI) / 180
   const FRad = (F * Math.PI) / 180
@@ -459,7 +457,7 @@ function calculateMoonPosition(T: number): EnhancedPlanetPosition {
  * Calculate planetary positions using VSOP87-like methods
  */
 function calculatePlanetPositionVSOP(planet: string, T: number): EnhancedPlanetPosition {
-  const elements = ENHANCED_ORBITAL_ELEMENTS[planet as keyof typeof ENHANCED_ORBITAL_ELEMENTS]
+  const elements: any = ENHANCED_ORBITAL_ELEMENTS[planet as keyof typeof ENHANCED_ORBITAL_ELEMENTS]
   if (!elements) {
     throw new Error(`No orbital elements found for planet: ${planet}`)
   }
@@ -524,7 +522,6 @@ export function calculateEnhancedAscendant(birthInfo: EnhancedBirthInfo): Enhanc
 
   const jd = dateToJulianDay(birthDate)
   const T = centuriesSinceJ2000(jd)
-
   // Calculate Greenwich Mean Sidereal Time (IAU 2000A)
   const jd0 = Math.floor(jd - 0.5) + 0.5 // Julian day at 0h UT
   const H = (jd - jd0) * 24 // Hours since 0h UT
@@ -623,15 +620,13 @@ export function calculateAllPlanets(birthInfo: EnhancedBirthInfo): {
  * Compare accuracy with existing system
  */
 export function accuracyComparison(
-  birthInfo: EnhancedBirthInfo,
-  existingPositions: any
+  _birthInfo: EnhancedBirthInfo,
+  _existingPositions: any
 ): {
   improvements: Record<string, number>
   averageImprovement: number
   maxImprovement: number
 } {
-  const enhanced = calculateAllPlanets(birthInfo)
-  const improvements: Record<string, number> = {}
 
   // This would compare against existing system positions
   // For now, return placeholder data showing expected improvements
@@ -663,17 +658,7 @@ function calculateMidheaven(
   birthInfo: EnhancedBirthInfo,
   jd: number
 ): { longitude: number; sign: string; signDegree: number } {
-  const T = centuriesSinceJ2000(jd)
-
   // Calculate Greenwich Mean Sidereal Time
-  const birthDate = new Date(
-    birthInfo.year,
-    birthInfo.month - 1,
-    birthInfo.day,
-    birthInfo.hour,
-    birthInfo.minute,
-    birthInfo.second || 0
-  )
 
   const jd0 = Math.floor(jd - 0.5) + 0.5
   const H = (jd - jd0) * 24
@@ -751,9 +736,16 @@ export function calculateProfessionalHouses(
   }
 }
 
+
+function calculatePlacidusHouses(_birthInfo: EnhancedBirthInfo, _ascendant: EnhancedAscendant, _midheaven: any, _jd: number): EnhancedHousePosition[] { return []; }
+function calculateKochHouses(_birthInfo: EnhancedBirthInfo, _ascendant: EnhancedAscendant, _midheaven: any, _jd: number): EnhancedHousePosition[] { return []; }
+function calculateCampanusHouses(_birthInfo: EnhancedBirthInfo, _ascendant: EnhancedAscendant, _midheaven: any): EnhancedHousePosition[] { return []; }
+function calculateRegiomontanusHouses(_birthInfo: EnhancedBirthInfo, _ascendant: EnhancedAscendant, _midheaven: any): EnhancedHousePosition[] { return []; }
+
 /**
  * Equal House System - simplest, each house is exactly 30°
  */
+
 function calculateEqualHouses(ascendant: EnhancedAscendant): EnhancedHousePosition[] {
   const houses: EnhancedHousePosition[] = []
 

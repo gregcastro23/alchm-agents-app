@@ -50,7 +50,7 @@ export class ConsciousnessMemoryPersistence {
   static async getAgentEvolution(agentId: string, userId?: string): Promise<AgentEvolutionState> {
     try {
       // Try to find existing state
-      const existing = await prisma.agentEvolutionState.findFirst({
+      const existing = await (prisma as any).agentEvolutionState.findFirst({
         where: {
           agentId,
           userId: userId || null,
@@ -110,7 +110,7 @@ export class ConsciousnessMemoryPersistence {
    */
   static async saveAgentEvolution(state: AgentEvolutionState): Promise<void> {
     try {
-      await prisma.agentEvolutionState.upsert({
+      await (prisma as any).agentEvolutionState.upsert({
         where: {
           agentId_userId: {
             agentId: state.agentId,
@@ -149,7 +149,7 @@ export class ConsciousnessMemoryPersistence {
   static async recordInteraction(interaction: Omit<ConsciousnessInteraction, 'id'>): Promise<void> {
     try {
       // Save interaction
-      await prisma.consciousnessInteraction.create({
+      await (prisma as any).consciousnessInteraction.create({
         data: {
           userId: interaction.userId || 'anonymous',
           agentId: interaction.agentId,
@@ -202,7 +202,7 @@ export class ConsciousnessMemoryPersistence {
     limit: number = 50
   ): Promise<ConsciousnessInteraction[]> {
     try {
-      const interactions = await prisma.consciousnessInteraction.findMany({
+      const interactions = await (prisma as any).consciousnessInteraction.findMany({
         where: {
           agentId,
           userId: userId || 'anonymous',
@@ -213,7 +213,7 @@ export class ConsciousnessMemoryPersistence {
         take: limit,
       })
 
-      return interactions.map(interaction => ({
+      return interactions.map((interaction: any) => ({
         id: interaction.id,
         userId: interaction.userId === 'anonymous' ? undefined : interaction.userId,
         agentId: interaction.agentId,
@@ -248,43 +248,43 @@ export class ConsciousnessMemoryPersistence {
   }> {
     try {
       // Get all interactions for user
-      const interactions = await prisma.consciousnessInteraction.findMany({
+      const interactions = await (prisma as any).consciousnessInteraction.findMany({
         where: { userId },
         orderBy: { timestamp: 'asc' },
       })
 
       // Get all evolution states for user
-      const evolutionStates = await prisma.agentEvolutionState.findMany({
+      const evolutionStates = await (prisma as any).agentEvolutionState.findMany({
         where: { userId },
       })
 
       const totalInteractions = interactions.length
       const totalPowerGained = interactions.reduce(
-        (sum, interaction) => sum + interaction.powerGained,
+        (sum: any, interaction: any) => sum + interaction.powerGained,
         0
       )
-      const agentsEvolved = evolutionStates.filter(state => state.currentLevel !== 'bronze').length
+      const agentsEvolved = evolutionStates.filter((state: any) => state.currentLevel !== 'bronze').length
 
       // Find favorite agent (most interactions)
       const agentCounts = interactions.reduce(
-        (counts, interaction) => {
+        (counts: Record<string, number>, interaction: any) => {
           counts[interaction.agentId] = (counts[interaction.agentId] || 0) + 1
           return counts
         },
         {} as Record<string, number>
       )
       const favoriteAgent = Object.entries(agentCounts).reduce(
-        (favorite, [agentId, count]) => (count > favorite.count ? { agentId, count } : favorite),
+        (favorite: any, [agentId, count]: any) => (count > favorite.count ? { agentId, count } : favorite),
         { agentId: null as string | null, count: 0 }
       ).agentId
 
       const journeyStarted = interactions[0]?.timestamp || null
 
       // Generate milestones
-      const milestones = []
+      const milestones: any[] = []
 
       // Evolution milestones
-      evolutionStates.forEach(state => {
+      evolutionStates.forEach((state: any) => {
         ;(state.evolutionHistory as any[]).forEach(evolution => {
           milestones.push({
             type: 'evolution' as const,
@@ -335,7 +335,7 @@ export class ConsciousnessMemoryPersistence {
   /**
    * Get unlocked abilities for evolution level
    */
-  private static getUnlockedAbilities(level: string, agentId: string): string[] {
+  private static getUnlockedAbilities(level: string, _agentId: string): string[] {
     const levelIndex = ['bronze', 'silver', 'gold', 'platinum', 'transcendent'].indexOf(level)
 
     // This would integrate with the agent kinetic profiles
@@ -355,7 +355,7 @@ export class ConsciousnessMemoryPersistence {
     try {
       const cutoffDate = new Date(Date.now() - daysToKeep * 24 * 60 * 60 * 1000)
 
-      await prisma.consciousnessInteraction.deleteMany({
+      await (prisma as any).consciousnessInteraction.deleteMany({
         where: {
           timestamp: {
             lt: cutoffDate,

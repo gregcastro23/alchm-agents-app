@@ -4,12 +4,10 @@
 import type {
   TrainingSession,
   TrainingActivity,
-  PersonalityInsight,
-  TrainingDataCollection,
 } from './training-interface-design'
 
 import { trainingDataManager } from './data-architecture'
-import type { UserSubmission } from './training-orchestration'
+import type { UserSubmission, SubmissionProcessingResult } from './training-orchestration'
 
 // ============================================================================
 // MAIN VALIDATION & MONITORING ENGINE
@@ -168,7 +166,7 @@ export class TrainingValidationMonitor {
   // =========================================================================
 
   trackSystemMetrics(): SystemMetrics {
-    const now = Date.now()
+    const _now = Date.now()
 
     return {
       timestamp: new Date().toISOString(),
@@ -189,7 +187,7 @@ export class TrainingValidationMonitor {
   async assessSubmissionQuality(
     submission: UserSubmission,
     activity: TrainingActivity,
-    processingResult: SubmissionProcessingResult
+    processingResult: any
   ): Promise<QualityAssessment> {
     const contentAnalysis = await this.qualityAnalyzer.analyzeContent(submission.content)
     const coherenceCheck = this.checkSubmissionCoherence(submission, activity)
@@ -349,8 +347,8 @@ export class TrainingValidationMonitor {
   // =========================================================================
 
   private async calculateBaselineMetrics(
-    userId: string,
-    startDate: string
+    _userId: string,
+    _startDate: string
   ): Promise<BaselineMetrics> {
     // Calculate metrics from period before training began
     // This would analyze historical data
@@ -461,7 +459,7 @@ export class TrainingValidationMonitor {
   private identifyMilestones(trajectory: Array<{ session: number; quality: number }>): Milestone[] {
     const milestones: Milestone[] = []
 
-    trajectory.forEach((point, index) => {
+    trajectory.forEach((point, _index) => {
       if (point.quality >= 0.9) {
         milestones.push({
           session: point.session,
@@ -475,7 +473,7 @@ export class TrainingValidationMonitor {
   }
 
   private async assessSkillDevelopment(
-    userId: string,
+    _userId: string,
     sessions: TrainingSession[]
   ): Promise<SkillDevelopment> {
     // Analyze how skills have developed over sessions
@@ -632,7 +630,7 @@ export class TrainingValidationMonitor {
       )
     }
 
-    if (analysis.effectSize > 0.1) {
+    if (analysis.effectSize !== undefined && analysis.effectSize > 0.1) {
       recommendations.push('Large effect size detected - strong potential impact')
     }
 
@@ -758,7 +756,7 @@ export class TrainingValidationMonitor {
     return 4.3 // out of 5
   }
 
-  private async getUserGrowthTrend(since: string): Promise<TrendData> {
+  private async getUserGrowthTrend(_since: string): Promise<TrendData> {
     // Would analyze user registration data
     return {
       current: 1250,
@@ -768,7 +766,7 @@ export class TrainingValidationMonitor {
     }
   }
 
-  private async getEngagementTrend(since: string): Promise<TrendData> {
+  private async getEngagementTrend(_since: string): Promise<TrendData> {
     return {
       current: 0.75,
       previous: 0.72,
@@ -777,7 +775,7 @@ export class TrainingValidationMonitor {
     }
   }
 
-  private async getQualityTrend(since: string): Promise<TrendData> {
+  private async getQualityTrend(_since: string): Promise<TrendData> {
     return {
       current: 0.82,
       previous: 0.79,
@@ -786,7 +784,7 @@ export class TrainingValidationMonitor {
     }
   }
 
-  private async getPerformanceTrend(since: string): Promise<TrendData> {
+  private async getPerformanceTrend(_since: string): Promise<TrendData> {
     return {
       current: 1200,
       previous: 1350,
@@ -795,7 +793,7 @@ export class TrainingValidationMonitor {
     }
   }
 
-  private async getTopIssues(since: string): Promise<IssueData[]> {
+  private async getTopIssues(_since: string): Promise<IssueData[]> {
     return [
       {
         issue: 'Response Time Degradation',
@@ -825,7 +823,7 @@ export class TrainingValidationMonitor {
   // =========================================================================
 
   private async calculateSkillImprovements(
-    sessions: TrainingSession[]
+    _sessions: TrainingSession[]
   ): Promise<Record<string, number>> {
     // Simplified skill improvement calculation
     return {
@@ -837,8 +835,8 @@ export class TrainingValidationMonitor {
   }
 
   private checkSubmissionCoherence(
-    submission: UserSubmission,
-    activity: TrainingActivity
+    _submission: UserSubmission,
+    _activity: TrainingActivity
   ): CoherenceCheck {
     // Check if submission aligns with activity requirements
     return {
@@ -849,16 +847,16 @@ export class TrainingValidationMonitor {
   }
 
   private async assessAuthenticity(
-    submission: UserSubmission,
-    processingResult: SubmissionProcessingResult
+    _submission: UserSubmission,
+    _processingResult: any
   ): Promise<number> {
     // Assess how authentic/genuine the submission appears
     return 0.88
   }
 
   private checkTrainingAlignment(
-    submission: UserSubmission,
-    activity: TrainingActivity
+    _submission: UserSubmission,
+    _activity: TrainingActivity
   ): AlignmentCheck {
     // Check how well submission aligns with training goals
     return {
@@ -894,7 +892,7 @@ export class TrainingValidationMonitor {
     }
   }
 
-  private identifyQualityFlags(overall: OverallQuality, breakdown: any): QualityFlag[] {
+  private identifyQualityFlags(_overall: OverallQuality, breakdown: any): QualityFlag[] {
     const flags: QualityFlag[] = []
 
     if (breakdown.authenticityScore < 0.7) {
@@ -922,7 +920,7 @@ export class TrainingValidationMonitor {
     return recommendations
   }
 
-  private analyzeEngagementPatterns(sessions: TrainingSession[]): EngagementPatterns {
+  private analyzeEngagementPatterns(_sessions: TrainingSession[]): EngagementPatterns {
     return {
       preferredTimes: [],
       activitySequences: [],
@@ -933,8 +931,8 @@ export class TrainingValidationMonitor {
   }
 
   private analyzeSatisfactionTrends(
-    userId: string,
-    sessions: TrainingSession[]
+    _userId: string,
+    _sessions: TrainingSession[]
   ): SatisfactionTrends {
     return {
       overall: 4.2,
@@ -944,7 +942,7 @@ export class TrainingValidationMonitor {
     }
   }
 
-  private analyzeDropOffPoints(sessions: TrainingSession[]): DropOffAnalysis {
+  private analyzeDropOffPoints(_sessions: TrainingSession[]): DropOffAnalysis {
     return {
       criticalPoints: [],
       reasons: [],
@@ -953,8 +951,8 @@ export class TrainingValidationMonitor {
   }
 
   private trackPreferenceEvolution(
-    userId: string,
-    sessions: TrainingSession[]
+    _userId: string,
+    _sessions: TrainingSession[]
   ): PreferenceEvolution {
     return {
       initial: {},
@@ -964,12 +962,12 @@ export class TrainingValidationMonitor {
     }
   }
 
-  private calculateExperienceScore(factors: any): number {
+  private calculateExperienceScore(_factors: any): number {
     // Calculate overall user experience score
     return 0.78
   }
 
-  private generateUXInsights(factors: any): string[] {
+  private generateUXInsights(_factors: any): string[] {
     return [
       'Users show strong engagement with creative activities',
       'Session completion rates are high for shorter activities',

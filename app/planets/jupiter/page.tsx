@@ -7,8 +7,29 @@ import { Button } from '@/components/ui/button'
 import { HistoricalTransitCard } from '@/components/misc/historical-transit-card'
 import { getTransitsByPlanet, getCurrentTransits } from '@/lib/historical-transit-data'
 import { identifyPlanetaryThemes } from '@/lib/transit-patterns'
-import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
 import Link from 'next/link'
+
+// Fetches current planetary positions via the astrologize proxy (browser-safe).
+async function fetchCurrentPlanetaryPositions(): Promise<
+  Record<string, { sign: string; degree: string }>
+> {
+  try {
+    const res = await fetch('/api/astrologize')
+    if (!res.ok) return {}
+    const data = await res.json()
+    const planets = data?.planetary_positions || {}
+    const out: Record<string, { sign: string; degree: string }> = {}
+    Object.entries(planets).forEach(([name, body]: [string, any]) => {
+      out[name] = {
+        sign: body?.sign || '',
+        degree: typeof body?.degree === 'number' ? body.degree.toFixed(2) : String(body?.degree ?? '0'),
+      }
+    })
+    return out
+  } catch {
+    return {}
+  }
+}
 import { ArrowLeft, ArrowRight, Sparkles, Calendar, TrendingUp } from 'lucide-react'
 
 export default function JupiterPage() {
@@ -22,8 +43,8 @@ export default function JupiterPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Get current Jupiter position
-        const positions = getCurrentPlanetaryPositions()
+        // Get current Jupiter position via astrologize proxy
+        const positions = await fetchCurrentPlanetaryPositions()
         if (positions['Jupiter']) {
           setCurrentPosition(positions['Jupiter'])
 

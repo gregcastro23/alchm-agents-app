@@ -2,20 +2,8 @@
 // Enhanced with Chrome DevTools MCP integration and backend API calls
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { calculateMC } from '@/lib/monica/monica-constant-validator'
-import { logPerformance } from '@/lib/structured-logger'
-import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
-import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
-import { synthesizeCharts } from '@/lib/utils'
-import {
-  defaultAlchemicalMCPConfig,
-  validateTokenEquilibrium,
-  isTokenStable,
-  calculateStabilizationAdjustment,
-  type ElementalTokens,
-} from '@/testing/alchemical-devtools/mcp-config'
-import { emergencyHandler, type AstrologicalEvent } from '@/utils/alchemical-emergency-handler'
+import { useState, useEffect, useCallback } from 'react'
+import { validateTokenEquilibrium } from '@/testing/alchemical-devtools/mcp-config'
 
 export interface PlanetaryPosition {
   planet: string
@@ -103,21 +91,44 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
     try {
       setData(prev => ({ ...prev, loading: true, error: null }))
 
-      const response = await fetch('/api/philosophers-stone/positions')
-      if (!response.ok) {
-        throw new Error(`API failed: ${response.status}`)
+      const [posRes, alchmRes] = await Promise.all([
+        fetch('/api/astrologize'),
+        fetch('/api/alchemize?legacy=true'),
+      ])
+      if (!posRes.ok) throw new Error(`positions failed: ${posRes.status}`)
+      if (!alchmRes.ok) throw new Error(`alchemize failed: ${alchmRes.status}`)
+      const posData = await posRes.json()
+      const alchmData = await alchmRes.json()
+
+      const planetaryPositions: PlanetaryPosition[] = Object.entries(
+        posData?.planetary_positions || {}
+      ).map(([name, body]: [string, any]) => ({
+        planet: name,
+        sign: body?.sign ?? '',
+        degree: typeof body?.degree === 'number' ? body.degree : 0,
+        retrograde: Boolean(body?.isRetrograde),
+      }))
+
+      const alchmQuantities: AlchemicalQuantities = {
+        spirit: Number(alchmData?.spirit_score ?? 0),
+        essence: Number(alchmData?.essence_score ?? 0),
+        matter: Number(alchmData?.matter_score ?? 0),
+        substance: Number(alchmData?.substance_score ?? 0),
+        Heat: Number(alchmData?.Heat ?? 0),
+        Entropy: Number(alchmData?.Entropy ?? 0),
+        Reactivity: Number(alchmData?.Reactivity ?? 0),
+        Energy: Number(alchmData?.Energy ?? 0),
       }
 
-      const apiData = await response.json()
-
-      const result: UnifiedPlanetaryData = {
-        ...apiData,
+      setData({
+        timestamp: new Date().toISOString(),
+        planetaryPositions,
+        alchmQuantities,
+        monicaConstant: Number(alchmData?.['A-Number'] ?? 0),
         loading: false,
         error: null,
         lastUpdated: new Date(),
-      }
-
-      setData(result)
+      })
     } catch (error) {
       console.error('usePlanetaryPositions: Error:', error)
       setData(prev => ({

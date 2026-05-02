@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,33 +10,15 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import {
-  RefreshCw,
   ZoomIn,
   ZoomOut,
   RotateCcw,
-  Eye,
-  EyeOff,
-  Settings,
   Target,
-  Zap,
-  Sun,
-  Moon,
-  Star,
-  Circle,
 } from 'lucide-react'
 
 interface ZodiacWheelProps {
@@ -239,6 +221,8 @@ export function ZodiacWheel({
       const sign = ZODIAC_SIGNS[i]
       const element = getElementForSign(sign)
       const elementColor = ELEMENT_COLORS[element as keyof typeof ELEMENT_COLORS]
+      const midAngle = (startAngle + endAngle) / 2
+      const symbolPos = getPosition(midAngle, (outerRadius + innerRadius) / 2)
 
       signs.push(
         <g key={`sign-${i}`}>
@@ -254,8 +238,6 @@ export function ZodiacWheel({
             onClick={() => onDegreeClick?.(i * 30, sign)}
           />
           {/* Sign symbol */}
-          const midAngle = (startAngle + endAngle) / 2; const symbolPos = getPosition(midAngle,
-          (outerRadius + innerRadius) / 2); signs.push(
           <text
             key={`symbol-${i}`}
             x={symbolPos.x}
@@ -268,7 +250,7 @@ export function ZodiacWheel({
           >
             {SIGN_SYMBOLS[sign]}
           </text>
-          ){/* Degree markers */}
+{/* Degree markers */}
           {Array.from({ length: 6 }, (_, degIndex) => {
             const deg = degIndex * 5
             const degreeAngle = ((i * 30 + deg) * Math.PI) / 180
@@ -297,7 +279,7 @@ export function ZodiacWheel({
 
   // Render planets
   const renderPlanets = () => {
-    const planets = []
+    const planets: any[] = []
 
     if (showNatal && natalChart?.planets) {
       natalChart.planets.forEach(planet => {
@@ -374,7 +356,7 @@ export function ZodiacWheel({
   const renderAspects = () => {
     if (!showAspects) return []
 
-    const aspects = []
+    const aspects: any[] = []
 
     activeTransits.forEach((transit, index) => {
       if (transit.aspectOrb > aspectThreshold[0]) return

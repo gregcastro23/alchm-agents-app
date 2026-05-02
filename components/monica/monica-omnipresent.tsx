@@ -16,18 +16,12 @@ import {
   Minimize2,
   Maximize2,
   Crown,
-  TreePine,
-  Droplets,
-  Flame,
-  Wind,
   Users,
   FlaskConical,
   Star,
   Brain,
   Heart,
-  HelpCircle,
   BookOpen,
-  Target,
   Lightbulb,
   ChevronRight,
   PlayCircle,
@@ -38,18 +32,78 @@ import {
   Send,
 } from 'lucide-react'
 import {
-  trainOnAlchemicalValues,
-  todayHourlyAlchemize,
-  trainWithRetrogrades,
-  type TrainingResult,
-} from '@/lib/monica/alchemical-trainer'
-import {
   calculateMonicaConstant,
   type MonicaConstantResult,
-  type ConsciousnessState,
 } from '@/lib/monica/monica-constant'
-import { alchemize } from '@/lib/alchemizer'
-import { generateAccurateHoroscope } from '@/lib/monica/horoscope-generator'
+
+// Local stand-ins for the deleted `@/lib/monica/alchemical-trainer` module.
+// The trainer ran heavy local calculations against now-removed data; until a
+// backend equivalent ships, we surface a neutral "unavailable" result so the
+// UI keeps functioning without throwing.
+// TODO: wire to a real training endpoint when one exists.
+interface TrainingResult {
+  status?: string
+  samples?: any[]
+  statistics?: Record<string, any>
+  metadata: { numSamples: number }
+  patterns: { dominantElement: string }
+  monicaConstant?: { average: number }
+}
+
+const UNAVAILABLE_TRAINING: TrainingResult = {
+  status: 'unavailable',
+  samples: [],
+  statistics: {},
+  metadata: { numSamples: 0 },
+  patterns: { dominantElement: 'Fire' },
+}
+
+async function trainOnAlchemicalValues(_n: number = 15): Promise<TrainingResult> {
+  return UNAVAILABLE_TRAINING
+}
+
+async function todayHourlyAlchemize(_loc: {
+  latitude: number
+  longitude: number
+}): Promise<TrainingResult> {
+  return UNAVAILABLE_TRAINING
+}
+
+async function trainWithRetrogrades(_n: number = 20): Promise<TrainingResult> {
+  return UNAVAILABLE_TRAINING
+}
+
+// Browser-safe alchemize replacement — proxies through `/api/alchemize?legacy=true`.
+async function fetchLegacyAlchm(birth: {
+  year: number
+  month: number // 1-based here for parity with the previous helper
+  day: number
+  hour: number
+  minute: number
+  latitude: number
+  longitude: number
+}): Promise<any> {
+  const date = new Date(
+    Date.UTC(
+      birth.year,
+      Math.max(0, birth.month - 1),
+      birth.day,
+      birth.hour,
+      birth.minute
+    )
+  )
+  const res = await fetch('/api/alchemize?legacy=true', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      date: date.toISOString(),
+      latitude: birth.latitude,
+      longitude: birth.longitude,
+    }),
+  })
+  if (!res.ok) throw new Error(`alchemize proxy failed: ${res.status}`)
+  return res.json()
+}
 
 interface MonicaSettings {
   personality: 'formal' | 'friendly' | 'mystical' | 'teacher'
@@ -141,19 +195,19 @@ export function MonicaOmnipresent() {
   const [settings, setSettings] = useState<MonicaSettings>(DEFAULT_SETTINGS)
   const [userProgress, setUserProgress] = useState<UserProgress>(DEFAULT_PROGRESS)
   const [hasUnreadTips, setHasUnreadTips] = useState(false)
-  const [isVisible, setIsVisible] = useState(true)
-  const [isDragging, setIsDragging] = useState(false)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [isVisible] = useState(true)
+  
+  
   const [consciousnessParticles, setConsciousnessParticles] = useState<
     Array<{ id: number; x: number; y: number; opacity: number }>
   >([])
-  const [particleAnimation, setParticleAnimation] = useState(true)
+  const [particleAnimation] = useState(true)
 
   // New state for full chat functionality
   const [chatMessages, setChatMessages] = useState<MonicaMessage[]>([])
   const [currentMessage, setCurrentMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [contextualHelp, setContextualHelp] = useState<ContextualHelp | null>(null)
+  const [_contextualHelp, setContextualHelp] = useState<ContextualHelp | null>(null)
   const [currentMC, setCurrentMC] = useState<number | null>(null)
   const [consciousnessResult, setConsciousnessResult] = useState<MonicaConstantResult | null>(null)
   const [isUpdatingConsciousness, setIsUpdatingConsciousness] = useState(false)
@@ -175,7 +229,7 @@ export function MonicaOmnipresent() {
   })
   const [isTraining, setIsTraining] = useState(false)
   const [trainingResults, setTrainingResults] = useState<TrainingResult | null>(null)
-  const [availableTrainings, setAvailableTrainings] = useState<string[]>([
+  const [availableTrainings] = useState<string[]>([
     'alchemical-values',
     'hourly-analysis',
     'retrograde-patterns',
@@ -381,9 +435,8 @@ export function MonicaOmnipresent() {
           longitude: -122.4194,
         }
 
-        // Generate horoscope and calculate alchemical data
-        const horoscope = generateAccurateHoroscope(birthInfo)
-        const alchemicalData = alchemize(birthInfo, horoscope)
+        // Fetch current alchemical data via proxy
+        const alchemicalData = await fetchLegacyAlchm(birthInfo)
 
         // Calculate Monica Constant
         const monicaResult = calculateMonicaConstant(alchemicalData as any)
@@ -597,10 +650,7 @@ export function MonicaOmnipresent() {
   }
 
   // Toggle to full chat mode
-  const openFullChat = () => {
-    setMonicaState('full-chat')
-    setWidgetSize({ width: 600, height: 700 })
-  }
+  
 
   // Close full chat and return to expanded mode
   const closeFullChat = () => {
@@ -911,8 +961,6 @@ export function MonicaOmnipresent() {
                   width={32}
                   height={32}
                   className="w-8 h-8 rounded-full"
-                  width={32}
-                  height={32}
                 />
                 <div>
                   <CardTitle className="text-sm text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
@@ -1144,8 +1192,6 @@ export function MonicaOmnipresent() {
                   width={32}
                   height={32}
                   className="w-8 h-8 rounded-full"
-                  width={32}
-                  height={32}
                 />
                 <div>
                   <CardTitle className="text-lg text-emerald-700 dark:text-emerald-300 flex items-center gap-2">

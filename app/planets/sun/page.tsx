@@ -22,28 +22,35 @@ import {
   findNextOccurrence,
   getPlanetCycleLength,
 } from '@/lib/historical-transits'
-import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
 import sunData from '@/lib/planets/sun'
+
+// Fetches current planetary positions via the astrologize proxy (browser-safe).
+// Returns a Record keyed by planet name with { sign, degree (string), house? }
+// to preserve the legacy shape the page consumes.
+async function fetchCurrentPlanetaryPositions(): Promise<
+  Record<string, { sign: string; degree: string; house?: any }>
+> {
+  try {
+    const res = await fetch('/api/astrologize')
+    if (!res.ok) return {}
+    const data = await res.json()
+    const planets = data?.planetary_positions || {}
+    const out: Record<string, { sign: string; degree: string; house?: any }> = {}
+    Object.entries(planets).forEach(([name, body]: [string, any]) => {
+      out[name] = {
+        sign: body?.sign || '',
+        degree: typeof body?.degree === 'number' ? body.degree.toFixed(2) : String(body?.degree ?? '0'),
+      }
+    })
+    return out
+  } catch {
+    return {}
+  }
+}
 import { Sun, Calendar, History, TrendingUp, Info } from 'lucide-react'
 
-// Helper function to get current Sun position
-function getCurrentSunPosition() {
-  try {
-    const positions = getCurrentPlanetaryPositions(Date.now())
-    const sunPosition = positions['Sun']
-    if (sunPosition) {
-      return {
-        sign: sunPosition.sign || 'Libra',
-        degree: sunPosition.degree?.toFixed(1) || '23.4',
-        house: sunPosition.house
-      }
-    }
-  } catch (error) {
-    console.warn('Unable to fetch current Sun position:', error)
-  }
-  // Fallback for October 2025
-  return { sign: 'Libra', degree: '23.4', house: null }
-}
+// Static fallback used when live data is unavailable
+const FALLBACK_SUN_POSITION = { sign: 'Libra', degree: '23.4', house: null as any }
 
 export default function SunPlanetPage() {
   const [selectedSign, setSelectedSign] = useState('Leo')
@@ -71,16 +78,24 @@ export default function SunPlanetPage() {
   ]
 
   useEffect(() => {
-    // Get current Sun position
-    const positions = getCurrentPlanetaryPositions()
-    if (positions['Sun']) {
-      setCurrentPosition(positions['Sun'])
-      setSelectedSign(positions['Sun'].sign)
-      setSelectedDegree(Math.floor(parseFloat(positions['Sun'].degree)))
-    }
+    // Get current Sun position via astrologize proxy
+    let cancelled = false
+    ;(async () => {
+      const positions = await fetchCurrentPlanetaryPositions()
+      if (cancelled) return
+      if (positions['Sun']) {
+        setCurrentPosition(positions['Sun'])
+        setSelectedSign(positions['Sun'].sign)
+        setSelectedDegree(Math.floor(parseFloat(positions['Sun'].degree)))
+      }
+    })()
 
     // Load themes and patterns
     updateHistoricalData(selectedSign, selectedDegree)
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   useEffect(() => {
@@ -415,15 +430,15 @@ export default function SunPlanetPage() {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Zodiac Sign:</span>
-                        <span className="font-medium">{getCurrentSunPosition().sign}</span>
+                        <span className="font-medium">{(currentPosition || FALLBACK_SUN_POSITION).sign}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Degree:</span>
-                        <span className="font-medium">{getCurrentSunPosition().degree}°</span>
+                        <span className="font-medium">{(currentPosition || FALLBACK_SUN_POSITION).degree}°</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">House:</span>
-                        <span className="font-medium">{getCurrentSunPosition().house || 'Varies by location'}</span>
+                        <span className="font-medium">{(currentPosition as any)?.house || FALLBACK_SUN_POSITION.house || 'Varies by location'}</span>
                       </div>
                     </div>
                   </div>

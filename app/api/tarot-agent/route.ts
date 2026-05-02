@@ -162,7 +162,7 @@ Format your response with:
       const startTime = Date.now()
 
       const { text } = await generateText({
-        model: openai('gpt-4o'),
+        model: openai('gpt-5.5'),
         system: systemPrompt,
         prompt:
           question || `Tell me about the energy and meaning of ${cardName || 'this tarot card'}`,

@@ -1,6 +1,6 @@
 import 'server-only'
 import { agentRegistry, type AgentDefinition } from './registry'
-import { AlchemicalKineticsClient } from '@/lib/kinetics-client'
+import { planetaryAPI } from '@/lib/planetary-api-client'
 import {
   agentKineticProfiles,
   calculateKineticState,
@@ -8,6 +8,26 @@ import {
   calculateKineticCompatibility,
 } from './kinetic-profiles'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
+
+const CHALDEAN_HOURS = ['Saturn', 'Jupiter', 'Mars', 'Sun', 'Venus', 'Mercury', 'Moon']
+
+async function fetchKineticsEnvelope(_lat: number, _lon: number) {
+  const alchm = await planetaryAPI.getAlchemicalQuantities(new Date(), _lat, _lon)
+  const kineticVal = Number(alchm?.kinetic_val ?? 0)
+  const thermoVal = Number(alchm?.thermo_val ?? 0)
+  const spirit = Number(alchm?.spirit_score ?? 0)
+  const essence = Number(alchm?.essence_score ?? 0)
+  const matter = Number(alchm?.matter_score ?? 0)
+  const substance = Number(alchm?.substance_score ?? 0)
+  const planetaryHour = CHALDEAN_HOURS[new Date().getUTCHours() % 7]
+  // TODO: backend does not yet return elemental totals; map alchemical scores as a stand-in.
+  return {
+    timing: { planetaryHours: [planetaryHour] },
+    elemental: { totals: { Fire: spirit, Water: essence, Earth: matter, Air: substance } },
+    power: [{ power: thermoVal }],
+    elementalVelocity: [{ magnitude: kineticVal }],
+  }
+}
 
 export type RouterTask =
   | { kind: 'alchemize'; payload: any }
@@ -112,15 +132,7 @@ async function handleKineticsTask(
   try {
     const { agentId, location = { lat: 37.7749, lon: -122.4194 } } = payload
 
-    // Get current kinetics
-    const kinetics = await AlchemicalKineticsClient.get({
-      lat: location.lat,
-      lon: location.lon,
-      date: new Date().toISOString().split('T')[0],
-      includeElemental: true,
-      includePlanetary: true,
-      validateTraditional: true,
-    })
+    const kinetics = await fetchKineticsEnvelope(location.lat, location.lon)
 
     // Get agent profile from new kinetic profiles
     const profile = agentKineticProfiles[agentId]
@@ -201,14 +213,7 @@ async function handleConsciousnessVelocityTask(
   try {
     const { agentIds, location = { lat: 37.7749, lon: -122.4194 } } = payload
 
-    // Get current kinetics
-    const kinetics = await AlchemicalKineticsClient.get({
-      lat: location.lat,
-      lon: location.lon,
-      date: new Date().toISOString().split('T')[0],
-      includeElemental: true,
-      includePlanetary: true,
-    })
+    const kinetics = await fetchKineticsEnvelope(location.lat, location.lon)
 
     const agentVelocities = agentIds
       .map(agentId => {
@@ -320,13 +325,7 @@ async function handleAgentCompatibilityTask(
   try {
     const { agent1Id, agent2Id, location = { lat: 37.7749, lon: -122.4194 } } = payload
 
-    // Get current kinetics for timing context
-    const kinetics = await AlchemicalKineticsClient.get({
-      lat: location.lat,
-      lon: location.lon,
-      date: new Date().toISOString().split('T')[0],
-      includePlanetary: true,
-    })
+    const kinetics = await fetchKineticsEnvelope(location.lat, location.lon)
 
     const compatibility = calculateKineticCompatibility(agent1Id, agent2Id)
     const agent1Profile = getAgentKineticProfile(agent1Id)

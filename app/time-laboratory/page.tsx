@@ -2,8 +2,6 @@
 
 import React, { useState, useCallback, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { Suspense } from 'react'
-
 const CosmicTimeLaboratory = dynamic(() => import('@/components/misc/cosmic-time-laboratory'), {
   loading: () => (
     <div className="flex items-center justify-center h-64">
@@ -57,7 +55,6 @@ import {
   Activity,
   Target,
   TrendingUp,
-  Eye,
   Bell,
 } from 'lucide-react'
 import { AspectPhaseWidget } from '@/components/charts/aspect-phase-indicator'
@@ -70,9 +67,7 @@ import type {
 import type {
   CelestialMoment,
   Location,
-  TimeSeriesOptions,
 } from '@/lib/celestial-energy-calculator'
-import type { DegreeActivation, AgentActivationDetail } from '@/lib/degree-agent-matcher'
 import '../cosmic-time-laboratory.css'
 
 interface TimeLabSession {
@@ -112,7 +107,7 @@ export default function TimeLaboratoryPage() {
   const [activeCelestialSession, setActiveCelestialSession] = useState<CelestialSession | null>(
     null
   )
-  const [celestialSessions, setCelestialSessions] = useState<CelestialSession[]>([])
+  const [_celestialSessions, setCelestialSessions] = useState<CelestialSession[]>([])
   const [isCelestialProcessing, setIsCelestialProcessing] = useState(false)
   const [activeView, setActiveView] = useState<
     | 'legacy'
@@ -151,8 +146,8 @@ export default function TimeLaboratoryPage() {
   const [transitData, setTransitData] = useState<any[]>([])
   const [natalChart, setNatalChart] = useState<any>(null)
   const [currentTransits, setCurrentTransits] = useState<any[]>([])
-  const [selectedTransits, setSelectedTransits] = useState<any[]>([])
-  const [chatEnabled, setChatEnabled] = useState(true)
+  const [_selectedTransits, _setSelectedTransits] = useState<any[]>([])
+  const [_chatEnabled, _setChatEnabled] = useState(true)
 
   // Planetary group chat state
   const [planetaryGroupChatOpen, setPlanetaryGroupChatOpen] = useState(false)
@@ -323,7 +318,7 @@ export default function TimeLaboratoryPage() {
   useEffect(() => {
     if (!realTimeMode) return
 
-    const interval = setInterval(() => {
+    const intervalId = window.setInterval(() => {
       if (activeView === 'celestial' && !isCelestialProcessing) {
         // Update end time to current time and refresh
         setTimeRange(prev => ({
@@ -334,7 +329,7 @@ export default function TimeLaboratoryPage() {
       }
     }, 60000) // Update every minute
 
-    return () => clearInterval(interval)
+    return () => clearInterval(intervalId)
   }, [realTimeMode, activeView, isCelestialProcessing, handleCelestialAnalysis])
 
   // Handle metric toggle
@@ -351,19 +346,19 @@ export default function TimeLaboratoryPage() {
 
   // Handle planetary agent chat initiation
   const handleChatInitiate = useCallback(
-    async (planet: string, sign: string, degree: number, context: any) => {
+    async (agentId: string, agentName: string, transitContext: any = {}) => {
       try {
         // Open chat interface with pre-filled context
         const chatData = {
-          planet,
-          sign,
-          degree,
+          planet: agentName,
+          sign: transitContext?.sign || 'Unknown',
+          degree: transitContext?.degree || 0,
           question:
-            context.context === 'planetary_agent_activation'
+            transitContext?.context === 'planetary_agent_activation'
               ? `Tell me about your influence during this transit`
               : `What wisdom do you have for me during this time?`,
           time: new Date().getHours().toString(),
-          context: context,
+          context: transitContext,
         }
 
         // For now, we'll log to console - in production this would open a chat modal
@@ -410,6 +405,7 @@ export default function TimeLaboratoryPage() {
   const loadCurrentTransits = useCallback(async () => {
     try {
       // Import the real planetary positions calculator
+      // @ts-ignore
       const { getCurrentPlanetaryPositions } = await import('@/lib/calculate-transits')
       
       // Get current positions using Swiss Ephemeris calculations
@@ -423,7 +419,7 @@ export default function TimeLaboratoryPage() {
       }
       
       // Convert to transit format with full longitude calculation
-      const transits = Object.entries(positions).map(([planet, data]) => ({
+      const transits = Object.entries(positions).map(([planet, data]: [string, any]) => ({
         planet,
         longitude: (signOffsets[data.sign] || 0) + data.degree,
         sign: data.sign,
@@ -883,8 +879,8 @@ export default function TimeLaboratoryPage() {
                         >
                           <div className="flex items-center gap-2 mb-2">
                             <Badge className="cosmic-badge">
-                              {activation.resonanceLevel != null
-                                ? (activation.resonanceLevel * 100).toFixed(0)
+                              {(activation as any).resonanceLevel != null
+                                ? ((activation as any).resonanceLevel * 100).toFixed(0)
                                 : '0'}
                               %
                             </Badge>
@@ -892,7 +888,7 @@ export default function TimeLaboratoryPage() {
                               {activation.agentName}
                             </span>
                           </div>
-                          <p className="text-sm text-purple-300 mb-2">{activation.message}</p>
+                          <p className="text-sm text-purple-300 mb-2">{(activation as any).message}</p>
                           <p className="text-xs text-purple-400">
                             Activation: {activation.activationType} • Orb:{' '}
                             {activation.orb != null ? activation.orb.toFixed(1) : '0'}°
@@ -1240,7 +1236,7 @@ export default function TimeLaboratoryPage() {
                 </CardHeader>
                 <CardContent>
                   <AspectPhaseWidget
-                    location={location}
+                    location={location as any}
                     planets={['Sun', 'Moon', 'Mercury', 'Venus', 'Mars']}
                     className="mt-2"
                   />
@@ -1346,7 +1342,7 @@ export default function TimeLaboratoryPage() {
               selectedDate={timeRange.end}
               userId="demo-user"
               onAgentChat={handleChatInitiate}
-              onGroupChat={async agents => {
+              onGroupChat={async (_agents) => {
                 // Handle group chat with planetary agents
                 try {
                   const response = await fetch('/api/moment-planetary-group-chat', {

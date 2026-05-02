@@ -1,14 +1,15 @@
 /**
  * Embeddings Service - OpenAI Text Embeddings Generation
  *
- * Generates vector embeddings for text using OpenAI's text-embedding-3-small model.
- * Includes batching, rate limiting, caching, and retry logic.
+ * Generates vector embeddings for text using OpenAI's embedding models.
+ * Model selection is centralized via lib/models/registry.ts.
  */
 
 import { OpenAI } from 'openai'
+import { resolveEmbeddingModel } from '../models/registry'
 
 // Configuration
-const EMBEDDING_MODEL = 'text-embedding-3-small'
+const EMBEDDING_MODEL = resolveEmbeddingModel()
 const EMBEDDING_DIMENSIONS = 1536
 const BATCH_SIZE = 100 // OpenAI allows up to 2048 inputs per request
 const MAX_RETRIES = 3

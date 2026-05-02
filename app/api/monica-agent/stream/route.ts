@@ -67,7 +67,7 @@ export async function POST(req: Request) {
 
   const analyzed = MonicaResponseHandler.analyzeUserMessage(userMsg)
   const routing = decideModel({
-    defaultModel: model || process.env.MONICA_DEFAULT_MODEL || 'gpt-4o-mini',
+    defaultModel: model || process.env.MONICA_DEFAULT_MODEL || 'gpt-5.4-mini',
     complexity: analyzed.topicComplexity,
   })
   const temp = clampTemperature(

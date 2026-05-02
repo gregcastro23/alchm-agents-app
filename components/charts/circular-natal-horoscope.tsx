@@ -15,8 +15,52 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react'
-import { fetchAstrologizeWheel, type AstrologizeWheelResponse } from '@/lib/astrologize'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+
+// Local type matching the proxy `/api/astrologize` response. The Railway
+// backend no longer renders an SVG/image wheel — `svg`/`imageUrl` are kept
+// optional for forward compatibility and to preserve existing render paths.
+// TODO: restore svg/imageUrl when backend exposes a chart renderer.
+interface AstrologizeWheelResponse {
+  svg?: string
+  imageUrl?: string
+  planetary_positions?: Record<string, any>
+  meta?: {
+    degraded?: boolean
+    local?: boolean
+    fallback?: boolean
+    localGenerationFailed?: boolean
+    error?: string
+  }
+}
+
+async function fetchAstrologizeWheel(input: {
+  year: number
+  month: number // zero-based
+  day: number
+  hour: number
+  minute: number
+  latitude: number
+  longitude: number
+  name?: string
+}): Promise<AstrologizeWheelResponse> {
+  const date = new Date(
+    Date.UTC(input.year, input.month, input.day, input.hour, input.minute)
+  )
+  const res = await fetch('/api/astrologize', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      date: date.toISOString(),
+      latitude: input.latitude,
+      longitude: input.longitude,
+    }),
+  })
+  if (!res.ok) {
+    throw new Error(`astrologize proxy failed: ${res.status}`)
+  }
+  return res.json()
+}
 import { useTheme } from 'next-themes'
 import KineticsChartPane from './kinetics-chart-pane'
 

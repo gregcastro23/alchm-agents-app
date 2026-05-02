@@ -26,7 +26,46 @@ import {
 } from 'lucide-react'
 import type { CraftedAgent } from '@/lib/agent-types'
 import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
-import { AlchemicalKineticsClient } from '@/lib/kinetics-client'
+
+// Browser-safe replacement for the removed AlchemicalKineticsClient. Reads
+// `/api/alchemize?legacy=true` and exposes the moment data shape this
+// component already consumes (timing.planetaryHours[0], power[].power).
+// TODO: replace with a real kinetics endpoint when restored.
+const CHALDEAN_PLANETARY_HOURS = [
+  'Saturn',
+  'Jupiter',
+  'Mars',
+  'Sun',
+  'Venus',
+  'Mercury',
+  'Moon',
+] as const
+
+async function fetchMomentEnvelope(_loc: { lat: number; lon: number }): Promise<{
+  power: Array<{ power: number }>
+  timing: { planetaryHours: string[]; seasonalInfluence: string }
+}> {
+  let power = 0.5
+  try {
+    const res = await fetch('/api/alchemize?legacy=true')
+    if (res.ok) {
+      const data = await res.json()
+      const thermoVal = Number(data?.thermo_val ?? data?.Heat ?? 0)
+      const kineticVal = Number(data?.kinetic_val ?? data?.Reactivity ?? 0)
+      power = Math.max(0, Math.min(1, thermoVal || kineticVal || 0.5))
+    }
+  } catch (err) {
+    console.error('moment envelope fetch failed:', err)
+  }
+  const idx = new Date().getHours() % CHALDEAN_PLANETARY_HOURS.length
+  return {
+    power: [{ power }],
+    timing: {
+      planetaryHours: [CHALDEAN_PLANETARY_HOURS[idx]],
+      seasonalInfluence: 'Neutral',
+    },
+  }
+}
 
 interface AgentRecommendation {
   agent: CraftedAgent
@@ -354,14 +393,10 @@ export function MomentBasedRecommendations({
       setLoading(true)
       setError(null)
 
-      // Get current kinetic data - request only 1 hour for current moment
-      const momentData = await AlchemicalKineticsClient.get({
+      // Get current kinetic moment envelope via proxy
+      const momentData = await fetchMomentEnvelope({
         lat: stableLocation.lat,
         lon: stableLocation.lon,
-        date: new Date().toISOString().split('T')[0],
-        includeElemental: true,
-        includePlanetary: true,
-        hours: 1, // Only request current hour
       })
 
       setCurrentMomentData(momentData)

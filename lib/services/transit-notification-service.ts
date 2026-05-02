@@ -7,7 +7,6 @@
  */
 
 import { PrismaClient } from '@prisma/client'
-import { calculatePlanetaryTransitSignificance } from './planetary-transit-significance-scorer'
 
 const prisma = new PrismaClient()
 
@@ -47,7 +46,7 @@ export interface NotificationPreferences {
  */
 export async function createTransitNotification(data: TransitNotificationData): Promise<any> {
   try {
-    const notification = await prisma.transitNotification.create({
+    const notification = await (prisma as any).transitNotification.create({
       data: {
         userId: data.userId,
         natalChartId: data.natalChartId,
@@ -91,7 +90,7 @@ export async function getUpcomingNotifications(
   const { limit = 50, includeRead = false, priorityFilter, categoryFilter } = options
 
   try {
-    const notifications = await prisma.transitNotification.findMany({
+    const notifications = await (prisma as any).transitNotification.findMany({
       where: {
         userId,
         isActive: true,
@@ -135,7 +134,7 @@ export async function markNotificationAsRead(
   userId: string
 ): Promise<void> {
   try {
-    await prisma.transitNotification.updateMany({
+    await (prisma as any).transitNotification.updateMany({
       where: {
         id: notificationId,
         userId, // Security: ensure user owns notification
@@ -158,7 +157,7 @@ export async function markNotificationAsRead(
  */
 export async function dismissNotification(notificationId: string, userId: string): Promise<void> {
   try {
-    await prisma.transitNotification.updateMany({
+    await (prisma as any).transitNotification.updateMany({
       where: {
         id: notificationId,
         userId, // Security: ensure user owns notification
@@ -180,7 +179,7 @@ export async function dismissNotification(notificationId: string, userId: string
  * Get user notification preferences (with defaults)
  */
 export async function getUserNotificationPreferences(
-  userId: string
+  _userId: string
 ): Promise<NotificationPreferences> {
   try {
     // For now, return sensible defaults
@@ -226,7 +225,7 @@ export async function createNotificationsForSignificantTransits(
   transits: any[]
 ): Promise<number> {
   try {
-    const chart = await prisma.userNatalChart.findUnique({
+    const chart = await (prisma as any).userNatalChart.findUnique({
       where: { id: natalChartId },
       select: { userId: true, chartName: true },
     })
@@ -303,7 +302,7 @@ export async function scheduleTransitMonitoring(): Promise<{
 
   try {
     // Get all active natal charts
-    const activeCharts = await prisma.userNatalChart.findMany({
+    const activeCharts = await (prisma as any).userNatalChart.findMany({
       where: {
         isActive: true,
         notificationOn: true,
@@ -322,11 +321,8 @@ export async function scheduleTransitMonitoring(): Promise<{
     for (const chart of activeCharts) {
       try {
         // Calculate today's transits (simplified - in real implementation would be more sophisticated)
-        const today = new Date()
-        const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000)
-
         // This is a simplified version - real implementation would use the transit calculator
-        const mockTransits = [] // In real implementation, calculate actual transits
+        const mockTransits: any[] = [] // In real implementation, calculate actual transits
 
         if (mockTransits.length > 0) {
           const notificationsCreated = await createNotificationsForSignificantTransits(
@@ -355,7 +351,7 @@ export async function scheduleTransitMonitoring(): Promise<{
  */
 export async function cleanupExpiredNotifications(): Promise<number> {
   try {
-    const result = await prisma.transitNotification.updateMany({
+    const result = await (prisma as any).transitNotification.updateMany({
       where: {
         OR: [{ expiresAt: { lt: new Date() } }, { isActive: false }],
         status: { notIn: ['read', 'dismissed'] },
@@ -385,21 +381,21 @@ export async function getNotificationStatistics(userId: string): Promise<{
 }> {
   try {
     const [total, unread, byPriority, byCategory, recentActivity] = await Promise.all([
-      prisma.transitNotification.count({ where: { userId, isActive: true } }),
-      prisma.transitNotification.count({
+      (prisma as any).transitNotification.count({ where: { userId, isActive: true } }),
+      (prisma as any).transitNotification.count({
         where: { userId, isActive: true, status: { not: 'read' } },
       }),
-      prisma.transitNotification.groupBy({
+      (prisma as any).transitNotification.groupBy({
         by: ['priority'],
         where: { userId, isActive: true },
         _count: true,
       }),
-      prisma.transitNotification.groupBy({
+      (prisma as any).transitNotification.groupBy({
         by: ['category'],
         where: { userId, isActive: true },
         _count: true,
       }),
-      prisma.transitNotification.count({
+      (prisma as any).transitNotification.count({
         where: {
           userId,
           isActive: true,
@@ -411,8 +407,8 @@ export async function getNotificationStatistics(userId: string): Promise<{
     return {
       total,
       unread,
-      byPriority: byPriority.reduce((acc, item) => ({ ...acc, [item.priority]: item._count }), {}),
-      byCategory: byCategory.reduce((acc, item) => ({ ...acc, [item.category]: item._count }), {}),
+      byPriority: byPriority.reduce((acc: any, item: any) => ({ ...acc, [item.priority]: item._count }), {}),
+      byCategory: byCategory.reduce((acc: any, item: any) => ({ ...acc, [item.category]: item._count }), {}),
       recentActivity,
     }
   } catch (error) {

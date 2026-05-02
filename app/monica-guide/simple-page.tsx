@@ -64,7 +64,7 @@ export default function SimpleMonicaPage() {
           sessionId: `monica-session-${Date.now()}`,
           includeAlchm: true,
           quickProfile: { goal: 'quick_start', mood: 'curious', topFocus: ['character_vector'] },
-          model: 'gpt-4o-mini',
+          model: 'gpt-5.4-mini',
           preferredStyle: { temperature: 0.6 },
         }),
       })

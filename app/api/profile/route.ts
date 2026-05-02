@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server'
-import { addDays, formatISO } from 'date-fns'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { generateAccurateHoroscope } from '@/lib/monica/horoscope-generator'
-import { generateAlchmForBirthInfo } from '@/lib/alchemizer'
+import { planetaryAPI } from '@/lib/planetary-api-client'
 import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
 
 export const revalidate = 0
@@ -63,10 +62,11 @@ export async function PATCH(req: Request) {
       longitude: birthInfo.longitude,
     })
 
-    const alchm = await generateAlchmForBirthInfo({
-      birthDate: formatISO(birthDate, { representation: 'date' }),
-      birthTime: `${String(birthInfo.hour).padStart(2, '0')}:${String(birthInfo.minute).padStart(2, '0')}`,
-    })
+    const alchm = await planetaryAPI.getAlchemicalQuantitiesLegacy(
+      birthDate,
+      birthInfo.latitude,
+      birthInfo.longitude
+    )
 
     const spirit = alchm?.['Alchemy Effects']?.['Total Spirit'] || 0
     const essence = alchm?.['Alchemy Effects']?.['Total Essence'] || 0

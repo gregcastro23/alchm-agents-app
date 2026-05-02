@@ -8,14 +8,11 @@ import type {
 import type {
   BirthChartData,
   BasePersonality,
-  TrainingScores,
   DualChartSystem,
 } from '../types/personalized-ai'
 import {
   generateBasePersonality,
-  generateInitialTrainingScores,
 } from '../personalized-ai/personality-generator'
-import { processSurveyResponses } from './survey-processor'
 
 export interface ConsciousnessState {
   // Core identity synthesis
@@ -141,7 +138,7 @@ export interface GrowthTrajectory {
 export async function initializeConsciousnessState(
   surveyAnalysis: SurveyAnalysis,
   dualChartSystem: DualChartSystem,
-  birthInfo: any
+  _birthInfo: any
 ): Promise<ConsciousnessState> {
   // Generate base astrological personality
   const astrologicalPersonality = generateBasePersonality(dualChartSystem.birthChart)
@@ -219,7 +216,7 @@ function synthesizePersonalities(
   )
 
   // Synthesize communication styles
-  const optimalCommunication = synthesizeCommunicationStyles(
+  synthesizeCommunicationStyles(
     surveyAnalysis.profile.communication,
     astrologicalPersonality.communicationStyle
   )
@@ -341,7 +338,7 @@ function countElementalPlanets(birthChart: BirthChartData, signs: string[]): num
  */
 function identifyPsychologicalPlanets(
   profile: ConsciousnessProfile,
-  birthChart: BirthChartData
+  _birthChart: BirthChartData
 ): string[] {
   const psychPlanets: string[] = []
 
@@ -383,7 +380,7 @@ function identifyPsychologicalPlanets(
  */
 function findConsciousnessActivationPoints(
   profile: ConsciousnessProfile,
-  birthChart: BirthChartData
+  _birthChart: BirthChartData
 ): string[] {
   const activationPoints: string[] = []
 
@@ -552,7 +549,7 @@ function calculateAstrologicalSupport(category: string, dualChartSystem: DualCha
 
 function optimizeLearningApproach(
   profile: ConsciousnessProfile,
-  enhancedPersonality: EnhancedPersonality
+  _enhancedPersonality: EnhancedPersonality
 ): PersonalizedTrainingPlan['learning_optimization'] {
   return {
     ideal_session_length:
@@ -589,7 +586,7 @@ function inferSupportNeeds(profile: ConsciousnessProfile): string[] {
 
 function generateConsciousnessExercises(
   profile: ConsciousnessProfile,
-  enhancedPersonality: EnhancedPersonality
+  _enhancedPersonality: EnhancedPersonality
 ): PersonalizedTrainingPlan['consciousness_exercises'] {
   const exercises: PersonalizedTrainingPlan['consciousness_exercises'] = []
 
@@ -628,8 +625,8 @@ function generateConsciousnessExercises(
  */
 function configureBehavioralMatrix(
   profile: ConsciousnessProfile,
-  insights: PersonalityInsights,
-  influences: any
+  _insights: PersonalityInsights,
+  _influences: any
 ): AIBehavioralMatrix {
   return {
     response_patterns: {
@@ -663,7 +660,7 @@ function configureBehavioralMatrix(
  */
 function mapGrowthTrajectory(
   surveyAnalysis: SurveyAnalysis,
-  dualChartSystem: DualChartSystem,
+  _dualChartSystem: DualChartSystem,
   enhancedPersonality: EnhancedPersonality
 ): GrowthTrajectory {
   const phases = generateGrowthPhases(surveyAnalysis.profile, enhancedPersonality)
@@ -676,8 +673,8 @@ function mapGrowthTrajectory(
 }
 
 function generateGrowthPhases(
-  profile: ConsciousnessProfile,
-  enhancedPersonality: EnhancedPersonality
+  _profile: ConsciousnessProfile,
+  _enhancedPersonality: EnhancedPersonality
 ): GrowthTrajectory['phases'] {
   return [
     {

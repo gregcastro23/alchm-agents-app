@@ -5,16 +5,21 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { routeTask } from '@/lib/agents/router'
-import { AlchemicalKineticsClient } from '@/lib/kinetics-client'
 import { agentKineticProfiles } from '@/lib/agents/kinetic-profiles'
+
+// Map clock hour to traditional planetary-hour ruler. The deleted
+// `AlchemicalKineticsClient.get(...)` returned `timing.planetaryHours[]`; we
+// reproduce just the "current planetary hour" the consumer below uses.
+function getPlanetaryHourForDate(date: Date): string {
+  const planets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']
+  return planets[date.getHours() % 7]
+}
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const agent1Id = searchParams.get('agent1')
     const agent2Id = searchParams.get('agent2')
-    const lat = parseFloat(searchParams.get('lat') || '37.7749')
-    const lon = parseFloat(searchParams.get('lon') || '-122.4194')
     const includeEvolution = searchParams.get('includeEvolution') === 'true'
 
     if (!agent1Id || !agent2Id) {
@@ -34,15 +39,11 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get current kinetic context
-    const kinetics = await AlchemicalKineticsClient.get({
-      lat,
-      lon,
-      date: new Date().toISOString().split('T')[0],
-      includePlanetary: true,
-    })
-
-    const currentHour = kinetics.timing?.planetaryHours[0] || 'Sun'
+    // The deleted AlchemicalKineticsClient returned a `timing.planetaryHours`
+    // array; we only use the current one downstream, so derive it locally.
+    // (Backend planetary positions are available via `planetaryAPI.getPlanetaryPositions(...)`
+    // if richer context is added later.)
+    const currentHour = getPlanetaryHourForDate(new Date()) || 'Sun'
 
     // Calculate basic kinetic compatibility (velocity signature compatibility)
     const velocityCompatibility = calculateVelocityCompatibility(

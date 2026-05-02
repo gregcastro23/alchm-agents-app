@@ -520,7 +520,7 @@ PLANETARY AGENTS WEBSITE - COMPLETE STRUCTURE & CAPABILITIES:
 **TECHNICAL STACK**:
 - Next.js 15.5.3 + TypeScript + React 18.3.1
 - Tailwind CSS + shadcn/ui components
-- AI SDK with OpenAI GPT-4o + Anthropic Claude 3.5
+- AI SDK with OpenAI GPT-5.5 + Anthropic Claude Sonnet 4.6
 - PostgreSQL + Prisma + Redis
 - Express.js backend gateway (port 8000)
 

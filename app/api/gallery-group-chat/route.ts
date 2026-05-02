@@ -75,7 +75,7 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
 
           // Direct AI call using OpenAI for more reliable response
           const response = await generateText({
-            model: openai('gpt-4o-mini'),
+            model: openai('gpt-5.4-mini'),
             system: systemPrompt,
             prompt: message,
             maxTokens: 1000,

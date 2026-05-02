@@ -1,47 +1,30 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   Brain,
-  Zap,
-  Heart,
   Gem,
   Activity,
   FlaskConical,
-  Atom,
-  Eye,
-  Users,
-  TrendingUp,
-  Star,
   Sliders,
-  Play,
-  Settings,
-  MessageSquare,
   Wand2,
-  Crown,
   CheckCircle,
   Calendar,
-  MapPin,
-  Clock,
   Calculator,
   Palette,
   Target,
-  Lightbulb,
   Rocket,
 } from 'lucide-react'
 import { AdvancedPersonalityTuner, type PersonalityParameters } from './advanced-personality-tuner'
 import { ConsciousnessPreview } from './consciousness-preview'
-import { synthesizeCharts, type SynthesizedChart } from '@/lib/utils'
+import { type SynthesizedChart } from '@/lib/utils'
 
 interface BirthData {
   name: string
@@ -229,8 +212,8 @@ export function AgentCreationWizard({
   const [completedSteps, setCompletedSteps] = useState<Set<WizardStep>>(new Set())
   const [birthChartData, setBirthChartData] = useState<any | null>(null)
   const [momentChartData, setMomentChartData] = useState<any | null>(null)
-  const [additionalCharts, setAdditionalCharts] = useState<any[]>([])
-  const [creationMode, setCreationMode] = useState<'selfMoment' | 'momentOnly' | 'multiChart'>(
+  const [additionalCharts, _setAdditionalCharts] = useState<any[]>([])
+  const [creationMode, _setCreationMode] = useState<'selfMoment' | 'momentOnly' | 'multiChart'>(
     'selfMoment'
   )
   const emitChartsIfReady = useMemo(
@@ -247,7 +230,7 @@ export function AgentCreationWizard({
     },
     [additionalCharts, birthChartData, creationMode, momentChartData, onChartsLoaded]
   )
-  const [creationResult, setCreationResult] = useState<{
+  const [_creationResult, setCreationResult] = useState<{
     synthesis: SynthesizedChart
     blueprint: any
     agent: any

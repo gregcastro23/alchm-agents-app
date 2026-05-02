@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Get job statistics from database
     const [
@@ -17,16 +17,16 @@ export async function GET(request: NextRequest) {
       failedJobs,
       recentJobs,
     ] = await Promise.all([
-      prisma.transitMonitoringJob.count(),
-      prisma.transitMonitoringJob.count({ where: { status: 'pending' } }),
-      prisma.transitMonitoringJob.count({ where: { status: 'running' } }),
-      prisma.transitMonitoringJob.count({ where: { status: 'completed' } }),
-      prisma.transitMonitoringJob.count({ where: { status: 'failed' } }),
-      prisma.transitMonitoringJob.findMany({
+      prisma.transit_monitoring_jobs.count(),
+      prisma.transit_monitoring_jobs.count({ where: { status: 'pending' } }),
+      prisma.transit_monitoring_jobs.count({ where: { status: 'running' } }),
+      prisma.transit_monitoring_jobs.count({ where: { status: 'completed' } }),
+      prisma.transit_monitoring_jobs.count({ where: { status: 'failed' } }),
+      prisma.transit_monitoring_jobs.findMany({
         take: 10,
         orderBy: { scheduledFor: 'desc' },
         include: {
-          user: {
+          users: {
             select: {
               name: true,
             },
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     ])
     
     // Calculate average processing time
-    const completedWithTime = await prisma.transitMonitoringJob.aggregate({
+    const completedWithTime = await prisma.transit_monitoring_jobs.aggregate({
       where: {
         status: 'completed',
         executionTime: { not: null },
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     
     // Calculate throughput (jobs per hour)
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
-    const jobsLastHour = await prisma.transitMonitoringJob.count({
+    const jobsLastHour = await prisma.transit_monitoring_jobs.count({
       where: {
         scheduledFor: { gte: oneHourAgo },
       },
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Convert recent jobs to batch job format
-    const jobs = recentJobs.map((job, index) => ({
+    const jobs = recentJobs.map((job: any, index: number) => ({
       id: job.id,
       type: 'transit_monitoring',
       priority: index < 3 ? 'high' : index < 7 ? 'medium' : 'low',

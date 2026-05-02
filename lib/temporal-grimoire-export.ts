@@ -10,10 +10,8 @@ import type {
   TemporalQuery,
   TemporalAnalysisResult,
   AgentTransitEvent,
-  TemporalPattern,
 } from './temporal-analysis-engine'
 import { analyzeElementalReinforcement } from './elemental-reinforcement'
-import { getAgentKineticProfile } from './agents/kinetic-profiles'
 
 export interface GrimoireSection {
   id: string
@@ -193,7 +191,7 @@ export class TemporalGrimoireExporter {
     sectionId: string,
     query: TemporalQuery,
     results: TemporalAnalysisResult,
-    template: GrimoireTemplate
+    _template: GrimoireTemplate
   ): Promise<GrimoireSection> {
     switch (sectionId) {
       case 'invocation':
@@ -222,45 +220,6 @@ export class TemporalGrimoireExporter {
 
       case 'abstract':
         return this.createAbstractSection(query, results)
-
-      case 'methodology':
-        return this.createMethodologySection(query, results)
-
-      case 'statistical_summary':
-        return this.createStatisticalSummarySection(results)
-
-      case 'conclusions':
-        return this.createConclusionsSection(results)
-
-      case 'personal_invocation':
-        return this.createPersonalInvocationSection(query)
-
-      case 'query_reflection':
-        return this.createQueryReflectionSection(query, results)
-
-      case 'agent_insights':
-        return this.createAgentInsightsSection(results)
-
-      case 'elemental_wisdom':
-        return this.createElementalWisdomSection(results)
-
-      case 'personal_guidance':
-        return this.createPersonalGuidanceSection(results)
-
-      case 'technical_summary':
-        return this.createTechnicalSummarySection(results)
-
-      case 'degree_analysis':
-        return this.createDegreeAnalysisSection(results)
-
-      case 'pattern_algorithms':
-        return this.createPatternAlgorithmsSection(results)
-
-      case 'reinforcement_mathematics':
-        return this.createReinforcementMathematicsSection(results)
-
-      case 'predictive_models':
-        return this.createPredictiveModelsSection(results)
 
       default:
         return this.createDefaultSection(sectionId, query, results)
@@ -676,7 +635,7 @@ through the sacred art of temporal analysis.*
 
   // Academic template sections
   private static createAbstractSection(
-    query: TemporalQuery,
+    _query: TemporalQuery,
     results: TemporalAnalysisResult
   ): GrimoireSection {
     return {
@@ -713,7 +672,7 @@ framework for future research in consciousness evolution analysis.
   private static async generatePDF(
     sections: GrimoireSection[],
     template: GrimoireTemplate,
-    options: ExportOptions
+    _options: ExportOptions
   ): Promise<Buffer> {
     // Generate PDF using jsPDF
     try {
@@ -728,7 +687,7 @@ framework for future research in consciousness evolution analysis.
       
       // Add title page
       doc.setFontSize(24)
-      doc.text(template.title, 105, 30, { align: 'center' })
+      doc.text(template.name, 105, 30, { align: 'center' })
       
       doc.setFontSize(12)
       doc.text(new Date().toLocaleDateString(), 105, 40, { align: 'center' })
@@ -776,7 +735,7 @@ framework for future research in consciousness evolution analysis.
     } catch (error) {
       console.error('[GrimoireExport] PDF generation failed:', error)
       // Fallback to HTML
-      const htmlContent = this.generateHTMLContent(sections, template, options)
+      const htmlContent = this.generateHTMLContent(sections, template, _options)
       return Buffer.from(htmlContent, 'utf-8')
     }
   }
@@ -784,14 +743,14 @@ framework for future research in consciousness evolution analysis.
   private static async generateEPUB(
     sections: GrimoireSection[],
     template: GrimoireTemplate,
-    options: ExportOptions
+    _options: ExportOptions
   ): Promise<Buffer> {
     // EPUB generation - for now, generate a structured text file
     // Full EPUB would require epub-gen library and proper formatting
     const epubContent: string[] = []
     
     // EPUB metadata (simplified)
-    epubContent.push(`Title: ${template.title}`)
+    epubContent.push(`Title: ${template.name}`)
     epubContent.push(`Generated: ${new Date().toISOString()}`)
     epubContent.push(`\n${'='.repeat(50)}\n`)
     
@@ -807,17 +766,17 @@ framework for future research in consciousness evolution analysis.
 
   private static async generateHTML(
     sections: GrimoireSection[],
-    template: GrimoireTemplate,
+    _template: GrimoireTemplate,
     options: ExportOptions
   ): Promise<Buffer> {
-    const htmlContent = this.generateHTMLContent(sections, template, options)
+    const htmlContent = this.generateHTMLContent(sections, _template, options)
     return Buffer.from(htmlContent, 'utf-8')
   }
 
   private static async generateMarkdown(
     sections: GrimoireSection[],
-    template: GrimoireTemplate,
-    options: ExportOptions
+    _template: GrimoireTemplate,
+    _options: ExportOptions
   ): Promise<Buffer> {
     const markdownContent = sections
       .map(section =>
@@ -956,7 +915,7 @@ ${section.content}
 
   private static generateElementalNarrative(
     analysis: any,
-    results: TemporalAnalysisResult
+    _results: TemporalAnalysisResult
   ): string {
     return `The elemental forces in this temporal exploration create a ${analysis.elementalHarmony > 0.7 ? 'harmonious' : 'dynamic'} interplay, with ${analysis.dominantElement} leading the manifestation. The reinforcement multiplier of ${analysis.reinforcementMultiplier.toFixed(2)}x indicates ${analysis.reinforcementMultiplier > 1.3 ? 'strong amplification' : 'moderate enhancement'} of elemental energies. This creates optimal conditions for ${this.getElementalAction(analysis.dominantElement)}.`
   }
@@ -1015,8 +974,8 @@ ${section.content}
   // Default section for unknown section IDs
   private static createDefaultSection(
     sectionId: string,
-    query: TemporalQuery,
-    results: TemporalAnalysisResult
+    _query: TemporalQuery,
+    _results: TemporalAnalysisResult
   ): GrimoireSection {
     return {
       id: sectionId,
@@ -1035,4 +994,4 @@ ${section.content}
   // (Implementation continued for brevity)
 }
 
-export type { GrimoireSection, GrimoireTemplate, ExportOptions }
+

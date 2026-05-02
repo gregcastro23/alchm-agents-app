@@ -110,7 +110,56 @@ const analyzeAspectsWithKinetics = async (samples: any[], location: any) => {
 
   return { aspects }
 }
-import { sampleHourlyAlchm } from '@/lib/alchemical-kinetics-sampler'
+// Browser-safe replacement for the deleted `sampleHourlyAlchm`. Uses the
+// `/api/astrologize/bulk` proxy to fetch planetary positions over a small
+// time window. Returns samples in the legacy shape `{ planets: { [name]: { longitude } } }`.
+// TODO: when backend resumes emitting alchm samples, augment with elemental data.
+async function sampleHourlyAlchm(
+  location: { latitude: number; longitude: number },
+  end: Date,
+  opts: { hoursToSample?: number; includePlanetaryHours?: boolean } = {}
+): Promise<Array<{ planets: Record<string, { longitude: number }> }>> {
+  const hours = opts.hoursToSample ?? 3
+  const start = new Date(end.getTime() - hours * 60 * 60 * 1000)
+  try {
+    const res = await fetch('/api/astrologize/bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+        intervalHours: 1,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      }),
+    })
+    if (!res.ok) return []
+    const data = await res.json()
+    const list: any[] = Array.isArray(data?.samples)
+      ? data.samples
+      : Array.isArray(data?.snapshots)
+      ? data.snapshots
+      : Array.isArray(data)
+      ? data
+      : []
+    // Normalise into { planets: { Name: { longitude } } } and reverse so [0] is most recent
+    const samples = list
+      .map((entry: any) => {
+        const planetsRaw = entry?.planetary_positions || entry?.planets || {}
+        const planets: Record<string, { longitude: number }> = {}
+        Object.entries(planetsRaw).forEach(([name, body]: [string, any]) => {
+          const lon = body?.exactLongitude ?? body?.longitude
+          if (typeof lon === 'number') planets[name] = { longitude: lon }
+        })
+        return { planets }
+      })
+      .reverse()
+    return samples
+  } catch (err) {
+    console.error('sampleHourlyAlchm proxy fetch failed:', err)
+    return []
+  }
+}
 
 interface AspectPhaseIndicatorProps {
   planet1: string

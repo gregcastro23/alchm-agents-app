@@ -1,31 +1,22 @@
 'use client'
 
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Slider } from '@/components/ui/slider'
 import {
-  Beaker,
-  Brain,
   Zap,
   Activity,
-  BarChart3,
-  FileDown,
-  Share2,
   Settings,
   FlaskConical,
   Microscope,
   TrendingUp,
   Users,
   Crown,
-  Sparkles,
-  Clock,
   Target,
-  Archive,
 } from 'lucide-react'
 
 import UnifiedMultiAgentChat from '@/components/misc/unified-multi-agent-chat'
@@ -33,8 +24,6 @@ import type { CraftedAgent } from '@/lib/agent-types'
 import type { ChatSession, UnifiedAgent } from '@/lib/unified-agent-types'
 import {
   MIXED_COUNCIL_PRESETS,
-  HISTORICAL_COUNCIL_PRESETS,
-  PLANETARY_COUNCIL_PRESETS,
   type MixedCouncilPreset,
 } from '@/lib/council-presets'
 import { createDefaultPlanetaryConfigs } from '@/lib/planetary-config-helper'
@@ -98,11 +87,11 @@ export function ConsciousnessLaboratoryChat({
   historicalAgents,
   defaultAgents = [],
   initialExperiment,
-  enableConsciousnessMetrics = true,
-  showKineticGraphs = true,
-  enableExperimentMode = true,
-  allowAgentMixing = true,
-  enableABTesting = true,
+  enableConsciousnessMetrics: _enableConsciousnessMetrics = true,
+  showKineticGraphs: _showKineticGraphs = true,
+  enableExperimentMode: _enableExperimentMode = true,
+  allowAgentMixing: _allowAgentMixing = true,
+  enableABTesting: _enableABTesting = true,
   title = 'Consciousness Research Laboratory',
   maxAgents = 8,
   allowMonica = true,
@@ -141,7 +130,7 @@ export function ConsciousnessLaboratoryChat({
   const planetaryConfigs = useMemo(() => createDefaultPlanetaryConfigs(), [])
 
   // Experiments library
-  const availableExperiments = useMemo(
+  const _availableExperiments = useMemo(
     () => [
       ...MIXED_COUNCIL_PRESETS,
       {
