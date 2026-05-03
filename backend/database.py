@@ -15,10 +15,21 @@ if SQLALCHEMY_DATABASE_URL.startswith("postgresql"):
          # Fix for Railway/Neon URLs that might missing the protocol part in some contexts
          pass
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    connect_args={"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
-)
+try:
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL, 
+        connect_args={"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
+    )
+    # Test connection
+    engine.connect()
+except Exception as e:
+    print(f"Warning: Failed to connect to DATABASE_URL: {e}")
+    print("Falling back to local SQLite...")
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./planetary_agents.db"
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL, 
+        connect_args={"check_same_thread": False}
+    )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

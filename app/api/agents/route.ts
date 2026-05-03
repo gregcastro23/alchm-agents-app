@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { HistoricalAgentsService } from '@/lib/historical-agents-db'
+import { backend } from '@/lib/backend'
 import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 
 interface GetAgentsResponse {
@@ -14,32 +14,16 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
     const { searchParams } = new URL(request.url)
 
     // Get query parameters
-    const includeStats = searchParams.get('includeStats') === 'true'
-    const era = searchParams.get('era') || undefined
-    const culture = searchParams.get('culture') || undefined
-    const consciousnessLevel = searchParams.get('consciousnessLevel') || undefined
     const limit = parseInt(searchParams.get('limit') || '100')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Get agents from database
-    const queryOptions: any = { includeStats, limit, offset }
-    if (era) queryOptions.era = era
-    if (culture) queryOptions.culture = culture
-    if (consciousnessLevel) queryOptions.consciousnessLevel = consciousnessLevel
+    // Get agents from Railway backend
+    const dbAgents = await backend.agents.list({ skip: offset, limit })
 
-    const dbAgents = await HistoricalAgentsService.getAllAgents(queryOptions)
+    console.log(`Railway backend returned ${dbAgents.length} agents`)
 
-    console.log(`Database returned ${dbAgents.length} agents`)
-    if (dbAgents.length > 0) {
-      console.log('First DB agent:', {
-        name: dbAgents[0].name,
-        historicalEra: dbAgents[0].historicalEra,
-        craftedBy: dbAgents[0].craftedBy,
-      })
-    }
-
-    // Convert database agents to CraftedAgent format for compatibility
-    const formattedDbAgents = dbAgents.map(agent => ({
+    // Convert backend agents to formatted format for compatibility
+    const formattedDbAgents = dbAgents.map((agent: any) => ({
       id: agent.agentId,
       name: agent.name,
       title: agent.title,
@@ -50,26 +34,26 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
       },
       consciousness: {
         natalChart: agent.natalChart,
-        monicaConstant: agent.kalchmConstant,
-        level: agent.consciousnessLevel,
-        dominantElement: agent.dominantElement,
-        dominantModality: agent.dominantModality,
-        signature: agent.signature,
+        monicaConstant: agent.monicaConstant || 0,
+        level: agent.consciousnessLevel || 'Novice',
+        dominantElement: agent.dominantElement || 'Earth',
+        dominantModality: agent.dominantModality || 'Fixed',
+        signature: agent.signature || 'Standard',
       },
       personality: {
-        core: agent.personalityCore,
-        shadows: agent.personalityShadows,
-        gifts: agent.personalityGifts,
-        challenges: agent.personalityChallenges,
-        currentMood: agent.currentMood,
-        evolutionStage: agent.evolutionStage,
+        core: agent.personalityCore || {},
+        shadows: agent.personalityShadows || [],
+        gifts: agent.personalityGifts || [],
+        challenges: agent.personalityChallenges || [],
+        currentMood: agent.currentMood || 'Neutral',
+        evolutionStage: agent.evolutionStage || 0,
       },
       abilities: {
         specialty: agent.specialty,
-        wisdomDomains: agent.wisdomDomains,
-        teachingStyle: agent.teachingStyle,
-        resonanceType: agent.resonanceType,
-        uniquePower: agent.uniquePower,
+        wisdomDomains: agent.wisdomDomains || [],
+        teachingStyle: agent.teachingStyle || 'Standard',
+        resonanceType: agent.resonanceType || 'Standard',
+        uniquePower: agent.uniquePower || '',
       },
       appearance: {
         avatar: agent.avatar,
@@ -101,23 +85,16 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
           kineticResonance: 0.5,
         },
       },
-      monicaCreationStory: agent.monicaCreationStory || undefined,
-      // Add metadata for user-created agents
       isUserCreated: agent.historicalEra === 'user_created',
       craftedBy: agent.craftedBy || 'philosopher-stone',
       historicalEra: agent.historicalEra,
     }))
 
     // Combine with demo agents for full collection
-    // Filter out demo agents that might have been migrated to database
-    const demoAgentIds = new Set(dbAgents.map(agent => agent.agentId))
+    const demoAgentIds = new Set(dbAgents.map((agent: any) => agent.agentId))
     const filteredDemoAgents = DEMO_AGENTS.filter(agent => !demoAgentIds.has(agent.id))
 
     const allAgents = [...formattedDbAgents, ...filteredDemoAgents]
-
-    console.log(
-      `Retrieved ${dbAgents.length} agents from database, ${filteredDemoAgents.length} from demo data`
-    )
 
     return NextResponse.json({
       success: true,
@@ -125,14 +102,14 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
       total: allAgents.length,
     })
   } catch (error: any) {
-    console.error('Failed to fetch agents:', error)
+    console.error('Failed to fetch agents from backend:', error)
 
-    // Fallback to demo agents if database fails
+    // Fallback to demo agents if backend fails
     return NextResponse.json({
       success: true,
       agents: DEMO_AGENTS,
       total: DEMO_AGENTS.length,
-      error: `Database error, falling back to demo data: ${error.message}`,
+      error: `Backend error, falling back to demo data: ${error.message}`,
     })
   }
 }

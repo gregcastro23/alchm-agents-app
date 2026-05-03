@@ -6,8 +6,9 @@ import uvicorn
 import httpx
 from datetime import datetime, timedelta
 import asyncio
+import anthropic
 
-import models, schemas, crud, database, utils, prompts
+import models, schemas, crud, database, utils, prompts, rag
 
 # Initialize database
 models.Base.metadata.create_all(bind=database.engine)
@@ -61,22 +62,51 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
     db_agent = crud.get_agent(db, agent_id=request.agentId)
     
     # 2. Determine System Prompt
+    context = request.context or {}
+    
     if request.agentId == "monica-001":
-        system_prompt = prompts.build_monica_prompt(request.context)
+        system_prompt = prompts.build_monica_prompt(context)
     elif db_agent:
         system_prompt = prompts.get_agent_system_prompt(db_agent.__dict__)
     else:
         raise HTTPException(status_code=404, detail="Agent not found")
         
-    # 3. Call AI (Simplified for now - using httpx for direct API calls)
-    # In a full implementation, we'd use the langchain/anthropic libs from requirements.txt
+    # 3. RAG Enhancement
+    rag_context = ""
+    try:
+        # Search agent's knowledge
+        rag_results = rag.vector_store.query(
+            collection_name="historical-agents",
+            query_text=request.message,
+            n_results=3,
+            where={"agentId": request.agentId}
+        )
+        if rag_results and rag_results.get("documents") and rag_results["documents"]:
+            rag_context = "\n\nRelevant Knowledge:\n" + "\n".join(rag_results["documents"][0])
+    except Exception as e:
+        print(f"RAG Error: {e}")
+        
+    full_system_prompt = system_prompt + rag_context
+        
+    # 4. Call AI
     text = f"Persona response for {request.agentId}: [AI Implementation Pending API Key Verification]"
     
-    if ANTHROPIC_API_KEY and "claude" in os.getenv("DEFAULT_MODEL", "claude-3-5-sonnet"):
-        # Placeholder for real Claude call
-        pass
+    if ANTHROPIC_API_KEY:
+        try:
+            client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
+            message = await client.messages.create(
+                model=os.getenv("DEFAULT_MODEL", "claude-3-5-sonnet-20241022"),
+                max_tokens=1024,
+                system=full_system_prompt,
+                messages=[
+                    {"role": "user", "content": request.message}
+                ]
+            )
+            text = message.content[0].text
+        except Exception as e:
+            text = f"Error calling Anthropic: {str(e)}"
     
-    # 4. Record Conversation
+    # 5. Record Conversation
     session_id = request.sessionId or f"session-{datetime.utcnow().timestamp()}"
     crud.create_conversation(db, schemas.ConversationCreate(
         agentId=request.agentId,
@@ -90,8 +120,35 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
         "text": text,
         "agentId": request.agentId,
         "sessionId": session_id,
-        "metadata": {"timestamp": datetime.utcnow().isoformat()}
+        "metadata": {
+            "timestamp": datetime.utcnow().isoformat(),
+            "rag_used": bool(rag_context)
+        }
     }
+
+# --- RAG Management ---
+
+@app.post("/api/rag/ingest")
+async def ingest_knowledge(agent_id: str, documents: List[str]):
+    ids = [f"{agent_id}-{i}-{datetime.utcnow().timestamp()}" for i, _ in enumerate(documents)]
+    metadatas = [{"agentId": agent_id} for _ in documents]
+    rag.vector_store.add_documents(
+        collection_name="historical-agents",
+        documents=documents,
+        metadatas=metadatas,
+        ids=ids
+    )
+    return {"success": True, "count": len(documents)}
+
+@app.get("/api/rag/search")
+async def search_knowledge(agent_id: str, query: str):
+    results = rag.vector_store.query(
+        collection_name="historical-agents",
+        query_text=query,
+        n_results=5,
+        where={"agentId": agent_id}
+    )
+    return results
 
 # --- Smart Proxy ---
 

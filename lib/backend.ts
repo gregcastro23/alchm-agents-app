@@ -444,6 +444,33 @@ export const backend = {
         body: JSON.stringify(req),
       }),
   },
+
+  agents: {
+    /** Get all agents with optional filtering */
+    list: (params: { skip?: number; limit?: number } = {}) => {
+      const q = new URLSearchParams()
+      if (params.skip !== undefined) q.set('skip', String(params.skip))
+      if (params.limit !== undefined) q.set('limit', String(params.limit))
+      return request<any[]>('/api/agents?' + q.toString(), { method: 'GET' })
+    },
+
+    /** Get a specific agent by ID */
+    get: (agentId: string) => request<any>(`/api/agents/${agentId}`, { method: 'GET' }),
+
+    /** Create a new agent */
+    create: (agent: any) =>
+      request<any>('/api/agents', {
+        method: 'POST',
+        body: JSON.stringify(agent),
+      }),
+
+    /** Chat with an agent */
+    chat: (req: { agentId: string; message: string; sessionId?: string; userId?: string; context?: any }) =>
+      request<{ text: string; agentId: string; sessionId: string; metadata: any }>('/api/chat', {
+        method: 'POST',
+        body: JSON.stringify(req),
+      }),
+  },
 }
 
 // ============================================================================
