@@ -150,6 +150,56 @@ async def search_knowledge(agent_id: str, query: str):
     )
     return results
 
+@app.get("/api/moment-recommendations")
+async def get_moment_recommendations(limit: int = 5, db: Session = Depends(database.get_db)):
+    agents = crud.get_all_agents(db)
+    if not agents:
+        return {"recommendations": [], "summary": "No agents found"}
+        
+    alchm_data = {"Alchemy Effects": {"Total Spirit": 1.0, "Total Essence": 2.0, "Total Matter": 1.5, "Total Substance": 0.5}} # Mock
+    current_planets = {} # Mock
+    
+    scored_agents = []
+    for agent in agents:
+        score = utils.calculate_enhanced_moment_score(
+            agent.agentId, 
+            current_planets, 
+            alchm_data, 
+            agent.monicaConstant if hasattr(agent, 'monicaConstant') else 0.5
+        )
+        scored_agents.append({
+            "agent": {
+                "agentId": agent.agentId,
+                "name": agent.name,
+                "title": agent.title
+            },
+            "synergy": score
+        })
+        
+    scored_agents.sort(key=lambda x: x["synergy"]["score"], reverse=True)
+    return {
+        "recommendations": scored_agents[:limit],
+        "summary": f"Analyzed {len(agents)} agents against current cosmic energies."
+    }
+
+@app.post("/api/moment-recommendations")
+async def post_moment_recommendations(request: Dict[str, Any], db: Session = Depends(database.get_db)):
+    agent_ids = request.get("agentIds", [])
+    if not agent_ids:
+        return {"scores": []}
+        
+    alchm_data = request.get("alchmData", {})
+    current_planets = request.get("currentPlanets", {})
+    
+    scores = []
+    for agent_id in agent_ids:
+        agent = crud.get_agent(db, agent_id)
+        mc = agent.monicaConstant if agent and hasattr(agent, 'monicaConstant') else 0.5
+        score = utils.calculate_enhanced_moment_score(agent_id, current_planets, alchm_data, mc)
+        scores.append(score)
+        
+    return {"scores": scores}
+
 # --- Smart Proxy ---
 
 @app.post("/api/planetary/positions")

@@ -30,11 +30,14 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   if (process.env.USE_RAG_GENERATION !== 'true') return disabled()
   const { getRecentKnowledgeUpdates } = await import('@/lib/langchain/knowledge-updater')
   try {
-    const updates = await getRecentKnowledgeUpdates()
+    const { searchParams } = new URL(req.url)
+    const agentId = searchParams.get('agentId') || 'unknown'
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const updates = await getRecentKnowledgeUpdates(agentId, limit)
     return NextResponse.json(updates)
   } catch (err: any) {
     return NextResponse.json({ error: err?.message }, { status: 500 })

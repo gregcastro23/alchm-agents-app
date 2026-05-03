@@ -83,12 +83,12 @@ export async function POST(req: Request) {
         const start = Date.now()
         // We do not have token-level streaming from ai-sdk here, so simulate chunking
         const { text } = await generateText({
-          model: openai(routing.model),
+          model: openai(routing.model) as any,
           system: sys,
           prompt: userMsg,
           maxTokens: 800,
           temperature: temp,
-        })
+        } as any)
         // naive chunking for immediate UX
         const chunks = text.match(/.{1,120}/g) || [text]
         const ttfb = Date.now() - start

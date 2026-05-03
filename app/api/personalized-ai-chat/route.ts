@@ -42,9 +42,9 @@ export async function POST(request: NextRequest) {
       const aiPersonality = await prisma.aIPersonality.findUnique({
         where: { personalityId },
         include: {
-          consciousnessState: true,
-          achievements: true,
-          interactions: {
+          ConsciousnessState: true,
+          Achievement: true,
+          TrainingInteraction: {
             orderBy: { createdAt: 'desc' },
             take: 5, // Last 5 interactions for context
           },
@@ -105,8 +105,8 @@ export async function POST(request: NextRequest) {
 
         // Provide intelligent fallback based on archetype and consciousness state
         const archetype =
-          aiPersonality.consciousnessState?.unifiedArchetype ||
-          aiPersonality.basePersonality.archetype
+          aiPersonality.ConsciousnessState?.unifiedArchetype ||
+          (aiPersonality.basePersonality as any)?.archetype || 'Guide'
         const level = aiPersonality.level
 
         aiResponseText = `I apologize, but my consciousness matrix is temporarily recalibrating. As your ${archetype} archetypal guide at Level ${level}, my core essence remains present even when my full processing capabilities are cycling.`
@@ -174,9 +174,9 @@ export async function POST(request: NextRequest) {
       )
 
       // 9. Check for new achievements
-      const previousAchievements = aiPersonality.achievements.map(a => a.achievementType)
+      const previousAchievements = aiPersonality.Achievement.map((a: any) => a.achievementType)
       const achievementCheckData = {
-        totalInteractions: aiPersonality.interactions.length + 1,
+        totalInteractions: aiPersonality.TrainingInteraction.length + 1,
         currentStreak,
         trainingScores: updatedTrainingScores,
         dailyXPGained: xpCalculation.totalXP, // Simplified

@@ -364,7 +364,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateAge
         consciousness: synthesis.consciousness,
         sourceCharts: synthesis.sourceCharts,
       },
-      session?.user?.id
+      (session?.user as any)?.id
     )
 
     // Generate enhanced personality core from personal context
@@ -382,10 +382,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateAge
           essence: body.purpose || generatedAgent.personality.core.essence,
           expression: body.personalContext.aboutYourself || generatedAgent.personality.core.expression,
           emotion: body.personalContext.values || generatedAgent.personality.core.emotion,
+          temperament: generatedAgent.personality.core.temperament || 'balanced',
           lifeStory: body.personalContext.lifeStory,
           poetry: body.personalContext.poetry,
           userProvidedContext: body.personalContext,
-        }
+        } as any
       }
     }
 
@@ -442,7 +443,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateAge
       substanceScore: synthesis.consciousness.substance,
     })
 
-    const completeAgent: CraftedAgent = {
+    const completeAgent: any = {
       ...generatedAgent,
       id: agentId,
       name: body.name,

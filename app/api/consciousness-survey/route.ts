@@ -81,6 +81,7 @@ export async function POST(request: NextRequest) {
           trainingFocus: surveyAnalysis.recommended_training_focus as any,
           conversationStarters: surveyAnalysis.initial_conversation_starters as any,
           personalitySummary: surveyAnalysis.personality_summary,
+          updatedAt: new Date(),
         },
       })
 
@@ -118,6 +119,7 @@ export async function POST(request: NextRequest) {
           level: 1,
           surveyId: survey.id,
           consciousnessProfileId: consciousnessProfile.id,
+          updatedAt: new Date(),
         },
       })
 
@@ -131,6 +133,7 @@ export async function POST(request: NextRequest) {
           trainingPlan: consciousnessState.personalized_training_plan as any,
           behavioralMatrix: consciousnessState.ai_behavioral_matrix as any,
           growthTrajectory: consciousnessState.growth_trajectory as any,
+          updatedAt: new Date(),
         },
       })
 
@@ -249,10 +252,10 @@ export async function GET(request: NextRequest) {
     const consciousnessProfile = await prisma.consciousnessProfile.findFirst({
       where: { userId },
       include: {
-        survey: true,
-        aiPersonalities: {
+        ConsciousnessSurvey: true,
+        AIPersonality: {
           include: {
-            consciousnessState: true,
+            ConsciousnessState: true,
           },
         },
       },
@@ -276,8 +279,8 @@ export async function GET(request: NextRequest) {
         personalitySummary: consciousnessProfile.personalitySummary,
         conversationStarters: consciousnessProfile.conversationStarters,
         trainingFocus: consciousnessProfile.trainingFocus,
-        survey: consciousnessProfile.survey,
-        aiPersonalities: consciousnessProfile.aiPersonalities,
+        survey: consciousnessProfile.ConsciousnessSurvey,
+        aiPersonalities: consciousnessProfile.AIPersonality,
       },
     })
   } catch (error) {

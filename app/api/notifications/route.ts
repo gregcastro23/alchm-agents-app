@@ -17,7 +17,7 @@ interface NotificationRequest {
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession()
-    const userId = session?.user?.id || 'anonymous'
+    const userId = (session?.user as any)?.id || 'anonymous'
     const { type, metadata }: NotificationRequest = await req.json()
 
     if (!type) {
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     const notification = await generateNotificationContent(type, user, metadata)
 
     // Store notification in database (for now)
-    await prisma.monicaInteraction.create({
+    await prisma.monica_interactions.create({
       data: {
         userId,
         settingsId: 'default', // TODO: Get user's actual settings ID
@@ -101,12 +101,12 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession()
-    const userId = session?.user?.id || 'anonymous'
+    const userId = (session?.user as any)?.id || 'anonymous'
     const { searchParams } = new URL(req.url)
     const type = searchParams.get('type')
 
     // Get user's recent notifications
-    const notifications = await prisma.monicaInteraction.findMany({
+    const notifications = await prisma.monica_interactions.findMany({
       where: {
         userId,
         interactionType: 'notification',
@@ -120,7 +120,7 @@ export async function GET(req: NextRequest) {
       take: 20,
     })
 
-    const formattedNotifications = notifications.map(notif => {
+    const formattedNotifications = notifications.map((notif: any) => {
       const context = JSON.parse(notif.contextData as string)
       return {
         id: notif.id,

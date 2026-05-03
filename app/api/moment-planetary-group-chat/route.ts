@@ -47,9 +47,9 @@ export async function POST(request: NextRequest) {
       element: agent.config.element as 'Fire' | 'Water' | 'Air' | 'Earth' | 'Spirit',
       consciousnessLevel: agent.consciousnessState.level,
       activationStrength: agent.activationStrength,
-      dignity: agent.config.dignity as string,
+      dignity: (agent.config as any).dignity as string,
       description:
-        agent.agent.description ||
+        (agent.agent as any).description ||
         `${agent.agent.name} planetary intelligence at ${selectedDate.toLocaleString()}`,
     }))
 

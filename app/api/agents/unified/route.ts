@@ -1,20 +1,5 @@
-/**
- * Unified Agent API
- * =================
- *
- * Consolidated endpoint for all agent operations to reduce API complexity
- * and improve maintainability for beta testing.
- */
-
 import { NextRequest, NextResponse } from 'next/server'
-import { HistoricalAgentsService } from '@/lib/historical-agents-db'
-import { DEMO_AGENTS } from '@/lib/demo-agents-data'
-import { ConsciousnessClient } from '@/lib/api-client/consciousness-client'
-import { ChartSynthesizer } from '@/lib/consciousness/chart-synthesizer'
-import { AgentGenerator } from '@/lib/consciousness/agent-generator'
-import { agentCache } from '@/lib/agent-cache-system'
-import { logger } from '@/lib/structured-logger'
-import { AgentErrorHandler } from '@/lib/error-handling'
+import { backend } from '@/lib/backend'
 
 interface UnifiedAgentRequest {
   action: string
@@ -29,71 +14,68 @@ interface UnifiedAgentResponse {
   timestamp: string
 }
 
-// Main handler for all agent operations
+// Main handler for all agent operations proxied to Railway backend
 export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAgentResponse>> {
-  const startTime = Date.now()
-
   try {
     const body: UnifiedAgentRequest = await request.json()
     const { action, parameters = {} } = body
 
-    logger.info(`Agent API action: ${action}`, {
-      system: 'api',
-      operation: 'agents_unified',
-      metadata: { action, parametersKeys: Object.keys(parameters) },
-    })
+    const timestamp = new Date().toISOString()
 
     switch (action) {
       case 'list':
-        return await handleListAgents(parameters)
+        const listData = await backend.agents.list(parameters)
+        return NextResponse.json({ success: true, data: listData, timestamp })
 
       case 'get':
-        return await handleGetAgent(parameters)
+        if (!parameters.agentId) throw new Error('Missing agentId')
+        const getData = await backend.agents.get(parameters.agentId)
+        return NextResponse.json({ success: true, data: getData, timestamp })
 
       case 'create':
-        return await handleCreateAgent(parameters)
-
-      case 'update':
-        return await handleUpdateAgent(parameters)
-
-      case 'delete':
-        return await handleDeleteAgent(parameters)
-
-      case 'stats':
-        return await handleGetStats(parameters)
-
-      case 'dashboard':
-        return await handleDashboard(parameters)
-
-      case 'search':
-        return await handleSearchAgents(parameters)
-
-      case 'evolve':
-        return await handleEvolveAgent(parameters)
+        const createData = await backend.agents.create(parameters)
+        return NextResponse.json({ success: true, data: createData, timestamp })
 
       case 'interact':
-        return await handleAgentInteraction(parameters)
+      case 'chat':
+        const chatData = await backend.agents.chat({
+          agentId: parameters.agentId,
+          message: parameters.message || parameters.userMessage,
+          sessionId: parameters.sessionId,
+          userId: parameters.userId,
+          context: parameters.context,
+        })
+        return NextResponse.json({ success: true, data: chatData, timestamp })
+
+      // Extended actions placeholder for further backend endpoints
+      case 'update':
+      case 'delete':
+      case 'stats':
+      case 'dashboard':
+      case 'search':
+      case 'evolve':
+        return NextResponse.json({
+          success: false,
+          error: `Action ${action} is pending Python backend migration.`,
+          timestamp,
+        }, { status: 501 })
 
       default:
         return NextResponse.json(
           {
             success: false,
             error: `Unknown action: ${action}`,
-            timestamp: new Date().toISOString(),
+            timestamp,
           },
           { status: 400 }
         )
     }
   } catch (error) {
-    logger.error('Unified agent API error', error, {
-      system: 'api',
-      operation: 'agents_unified',
-    })
-
+    console.error('Unified agent API proxy error', error)
     return NextResponse.json(
       {
         success: false,
-        error: 'Internal server error',
+        error: error instanceof Error ? error.message : 'Internal server error',
         timestamp: new Date().toISOString(),
       },
       { status: 500 }
@@ -101,38 +83,26 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
   }
 }
 
-// GET handler for simple operations
 export async function GET(request: NextRequest): Promise<NextResponse<UnifiedAgentResponse>> {
-  const startTime = Date.now()
   const { searchParams } = new URL(request.url)
   const action = searchParams.get('action') || 'list'
+  const timestamp = new Date().toISOString()
 
   try {
-    logger.info(`Agent API GET action: ${action}`, {
-      system: 'api',
-      operation: 'agents_unified_get',
-    })
-
     switch (action) {
       case 'list':
-        return await handleListAgents(Object.fromEntries(searchParams))
-
-      case 'stats':
-        return await handleGetStats({})
+        const listData = await backend.agents.list(Object.fromEntries(searchParams))
+        return NextResponse.json({ success: true, data: listData, timestamp })
 
       case 'health':
         return NextResponse.json({
           success: true,
           data: {
             status: 'healthy',
+            mode: 'proxy-to-backend',
             version: '2.0.0',
-            uptime: process.uptime(),
-            cache: {
-              available: agentCache.isAvailable(),
-              size: (await agentCache.getSize?.()) || 0,
-            },
           },
-          timestamp: new Date().toISOString(),
+          timestamp,
         })
 
       default:
@@ -140,618 +110,19 @@ export async function GET(request: NextRequest): Promise<NextResponse<UnifiedAge
           {
             success: false,
             error: `Unknown GET action: ${action}`,
-            timestamp: new Date().toISOString(),
+            timestamp,
           },
           { status: 400 }
         )
     }
   } catch (error) {
-    logger.error('Unified agent API GET error', error, {
-      system: 'api',
-      operation: 'agents_unified_get',
-    })
-
     return NextResponse.json(
       {
         success: false,
-        error: 'Internal server error',
-        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : 'Internal server error',
+        timestamp,
       },
       { status: 500 }
     )
   }
-}
-
-// Handler implementations
-async function handleListAgents(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
-  const {
-    includeStats = false,
-    era,
-    culture,
-    consciousnessLevel,
-    limit = 50,
-    offset = 0,
-    sortBy = 'name',
-    sortOrder = 'asc',
-  } = params
-
-  try {
-    // Get agents from database
-    const dbAgents = await HistoricalAgentsService.getAllAgents({
-      includeStats: Boolean(includeStats),
-      era,
-      culture,
-      consciousnessLevel,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    })
-
-    // Convert to consistent format
-    const formattedDbAgents = dbAgents.map(agent => ({
-      id: agent.agentId,
-      name: agent.name,
-      title: agent.title,
-      birthData: {
-        date: agent.birthDate,
-        time: agent.birthTime,
-        location: agent.birthLocation,
-      },
-      consciousness: {
-        natalChart: agent.natalChart,
-        monicaConstant: agent.kalchmConstant,
-        level: agent.consciousnessLevel,
-        dominantElement: agent.dominantElement,
-        dominantModality: agent.dominantModality,
-        signature: agent.signature,
-      },
-      personality: {
-        core: agent.personalityCore,
-        shadows: agent.personalityShadows,
-        gifts: agent.personalityGifts,
-        challenges: agent.personalityChallenges,
-        currentMood: agent.currentMood,
-        evolutionStage: agent.evolutionStage,
-      },
-      abilities: {
-        specialty: agent.specialty,
-        wisdomDomains: agent.wisdomDomains,
-        teachingStyle: agent.teachingStyle,
-        resonanceType: agent.resonanceType,
-        uniquePower: agent.uniquePower,
-      },
-      appearance: {
-        avatar: agent.avatar,
-        color: agent.color,
-        symbol: agent.symbol,
-        aura: agent.aura,
-      },
-      stats: {
-        conversations: agent.conversations,
-        wisdomShared: agent.wisdomShared,
-        resonanceScore: agent.resonanceScore,
-        evolutionPoints: agent.evolutionPoints,
-        lastActive: agent.lastActive,
-        kineticEvolution: {
-          consciousnessVelocity: 0.1,
-          interactionMomentum: 0,
-          evolutionTrajectory: 'ascending',
-          powerLevelUnlocks: [],
-          optimalInteractionHours: [],
-          aspectSensitivityGrowth: 0,
-          memoryPersistence: 0.3,
-          lastKineticUpdate: agent.lastActive,
-        },
-        qualityMetrics: {
-          averageResponseDepth: 0.5,
-          aspectInfluenceStrength: 0.4,
-          temporalAlignment: 0.5,
-          personalityEvolution: 0,
-          kineticResonance: 0.5,
-        },
-      },
-      monicaCreationStory: agent.monicaCreationStory,
-      isUserCreated: agent.historicalEra === 'user_created',
-      craftedBy: agent.craftedBy || 'philosopher-stone',
-      historicalEra: agent.historicalEra,
-    }))
-
-    // Filter out demo agents that might have been migrated
-    const demoAgentIds = new Set(dbAgents.map(agent => agent.agentId))
-    const filteredDemoAgents = DEMO_AGENTS.filter(agent => !demoAgentIds.has(agent.id))
-
-    const allAgents = [...formattedDbAgents, ...filteredDemoAgents]
-
-    // Apply sorting
-    allAgents.sort((a, b) => {
-      let aVal, bVal
-
-      switch (sortBy) {
-        case 'consciousness':
-          aVal = a.consciousness.monicaConstant
-          bVal = b.consciousness.monicaConstant
-          break
-        case 'lastActive':
-          aVal = new Date(a.stats.lastActive).getTime()
-          bVal = new Date(b.stats.lastActive).getTime()
-          break
-        case 'name':
-        default:
-          aVal = a.name.toLowerCase()
-          bVal = b.name.toLowerCase()
-          break
-      }
-
-      if (sortOrder === 'desc') {
-        return bVal > aVal ? 1 : bVal < aVal ? -1 : 0
-      } else {
-        return aVal > bVal ? 1 : aVal < bVal ? -1 : 0
-      }
-    })
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        agents: allAgents,
-        total: allAgents.length,
-        pagination: {
-          limit: parseInt(limit),
-          offset: parseInt(offset),
-          hasMore: allAgents.length === parseInt(limit),
-        },
-      },
-      timestamp: new Date().toISOString(),
-    })
-  } catch (error) {
-    logger.error('Failed to list agents', error, {
-      system: 'agents',
-      operation: 'list',
-    })
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to retrieve agents',
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 }
-    )
-  }
-}
-
-async function handleGetAgent(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
-  const { id } = params
-
-  if (!id) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Agent ID is required',
-        timestamp: new Date().toISOString(),
-      },
-      { status: 400 }
-    )
-  }
-
-  try {
-    // Try database first
-    let agent = await HistoricalAgentsService.getAgentById(id)
-
-    if (!agent) {
-      // Try demo agents
-      const demoAgent = DEMO_AGENTS.find(a => a.id === id)
-      if (demoAgent) {
-        agent = {
-          id: `demo-${demoAgent.id}`,
-          agentId: demoAgent.id,
-          name: demoAgent.name,
-          title: demoAgent.title,
-          birthDate: demoAgent.birthData?.date || new Date(),
-          birthTime: demoAgent.birthData?.time || '12:00',
-          birthLocation: (demoAgent.birthData?.location || {
-            lat: 0,
-            lon: 0,
-            name: 'Unknown',
-          }) as any,
-          historicalEra: 'modern',
-          birthYear: demoAgent.birthData?.date?.getFullYear() || 2000,
-          deathYear: null,
-          culture: 'Western',
-          geography: 'Global',
-          consciousnessLevel: demoAgent.consciousness.level,
-          kalchmConstant: demoAgent.consciousness.monicaConstant,
-          monicaConstant: demoAgent.consciousness.monicaConstant,
-          dominantElement: demoAgent.consciousness.dominantElement,
-          dominantModality: demoAgent.consciousness.dominantModality || 'Mutable',
-          signature: demoAgent.abilities.specialty,
-          spiritScore: 0,
-          essenceScore: 0,
-          matterScore: 0,
-          substanceScore: 0,
-          personalityCore: demoAgent.personality.core as any as any,
-          personalityShadows: (demoAgent.personality.shadows || []) as any,
-          personalityGifts: (demoAgent.personality.gifts || []) as any,
-          personalityChallenges: (demoAgent.personality.challenges || []) as any,
-          currentMood: demoAgent.personality.currentMood || 'contemplative',
-          evolutionStage: demoAgent.personality.evolutionStage || 0,
-          background: {
-            achievements: [],
-            influences: [],
-            legacy: demoAgent.abilities.uniquePower,
-            education: 'Self-taught through cosmic wisdom',
-          } as any,
-          specialty: demoAgent.abilities.specialty,
-          wisdomDomains: demoAgent.abilities.wisdomDomains || [],
-          skills: [] as any,
-          teachingStyle: demoAgent.abilities.teachingStyle,
-          resonanceType: demoAgent.abilities.resonanceType,
-          uniquePower: demoAgent.abilities.uniquePower,
-          avatar: demoAgent.appearance.avatar,
-          color: demoAgent.appearance?.color || "#6366f1",
-          symbol: demoAgent.appearance?.symbol || demoAgent.name.charAt(0).toUpperCase(),
-          aura: (demoAgent.appearance.aura || {}) as any,
-          natalChart: (demoAgent.consciousness.natalChart || {}) as any,
-          traits: [] as any,
-          monicaCreationStory: 'Generated from demo agent data',
-          searchableText: `${demoAgent.name} ${demoAgent.title} ${demoAgent.abilities.specialty}`,
-          popularityScore: 0,
-          conversations: demoAgent.stats?.conversations || 0,
-          wisdomShared: demoAgent.stats?.wisdomShared || 0,
-          resonanceScore: demoAgent.stats?.resonanceScore || 0,
-          evolutionPoints: demoAgent.stats?.evolutionPoints || 0,
-          lastActive: new Date(),
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }
-      }
-    }
-
-    if (!agent) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Agent not found',
-          timestamp: new Date().toISOString(),
-        },
-        { status: 404 }
-      )
-    }
-
-    // Format the agent data consistently
-    const formattedAgent = {
-      id: agent.agentId,
-      name: agent.name,
-      title: agent.title,
-      // ... format consistently like in handleListAgents
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: formattedAgent,
-      timestamp: new Date().toISOString(),
-    })
-  } catch (error) {
-    logger.error('Failed to get agent', error, {
-      system: 'agents',
-      operation: 'get',
-      metadata: { agentId: id },
-    })
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to retrieve agent',
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 }
-    )
-  }
-}
-
-interface CreateAgentParams {
-  name: string
-  birthDate: string
-  birthTime: string
-  birthLocation: string | { lat: number; lon: number; name: string }
-  preferredSpecialty?: string
-  personalityNotes?: string
-  personalityParameters?: any
-}
-
-async function handleCreateAgent(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
-  // Type assertion and validation
-  const {
-    name,
-    birthDate,
-    birthTime,
-    birthLocation,
-    preferredSpecialty,
-    personalityNotes,
-    personalityParameters,
-  }: CreateAgentParams = params
-
-  // Validation logic (reuse from existing create-agent endpoint)
-  if (!name || !birthDate || !birthTime || !birthLocation) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Missing required fields',
-        timestamp: new Date().toISOString(),
-      },
-      { status: 400 }
-    )
-  }
-
-  try {
-    // Reuse existing creation logic
-    const synthesizer = new ChartSynthesizer()
-    const generator = new AgentGenerator()
-    const consciousnessClient = new ConsciousnessClient()
-
-    // Generate birth chart
-    const birthChart = {} // Simplified - reuse existing logic
-
-    const momentChart = {} // Generate current moment chart
-    const synthesis = synthesizer.synthesize({
-      birthChart,
-      momentChart,
-      additionalCharts: [],
-    })
-
-    const backendBlueprint = await consciousnessClient.createAgentOfMoment(
-      synthesis.baseChart,
-      synthesis.momentChart,
-      []
-    )
-
-    const generatedAgent = generator.generateFromSynthesis({
-      monicaConstant: backendBlueprint.consciousness.monicaConstant,
-      consciousness: synthesis.consciousness,
-      sourceCharts: synthesis.sourceCharts,
-    })
-
-    // Add missing properties to generatedAgent for database compatibility
-    const enhancedAgent = {
-      ...generatedAgent,
-      dominantElement: generatedAgent.identity?.dominantElement || 'Fire',
-      dominantModality: 'Cardinal', // Default modality
-      signature: `${generatedAgent.identity?.name} - ${backendBlueprint.identity.title}`,
-      personalityCore: generatedAgent.personality || {},
-      personalityShadows: [],
-      personalityGifts: [],
-      personalityChallenges: [],
-      currentMood: 'contemplative',
-      evolutionStage: 1,
-      specialty: 'general consciousness',
-      wisdomDomains: generatedAgent.abilities?.wisdomDomains || [],
-      teachingStyle: 'intuitive',
-      resonanceType: 'harmonic',
-      uniquePower: 'consciousness amplification',
-      avatar: '',
-      color: '#8B5CF6',
-      symbol: '✨',
-      aura: {},
-      monicaCreationStory:
-        generatedAgent.metadata?.generationSeed?.toString() || 'Generated through cosmic synthesis',
-    }
-
-    // Save to database
-    const agentId = `agent-${Date.now()}`
-    await HistoricalAgentsService.createAgent({
-      agentId,
-      name,
-      title: backendBlueprint.identity.title,
-      birthDate: new Date(birthDate),
-      birthTime: String(birthTime),
-      birthLocation:
-        typeof birthLocation === 'string'
-          ? (JSON.parse(birthLocation) as { lat: number; lon: number; name: string })
-          : (birthLocation as { lat: number; lon: number; name: string }),
-      consciousnessLevel: backendBlueprint.consciousness.level,
-      kalchmConstant: backendBlueprint.consciousness.monicaConstant,
-      dominantElement: enhancedAgent.dominantElement,
-      dominantModality: enhancedAgent.dominantModality,
-      signature: enhancedAgent.signature,
-      personalityCore: enhancedAgent.personalityCore,
-      personalityShadows: enhancedAgent.personalityShadows,
-      personalityGifts: enhancedAgent.personalityGifts,
-      personalityChallenges: enhancedAgent.personalityChallenges,
-      currentMood: enhancedAgent.currentMood,
-      evolutionStage: enhancedAgent.evolutionStage,
-      specialty: enhancedAgent.specialty,
-      wisdomDomains: enhancedAgent.wisdomDomains,
-      teachingStyle: enhancedAgent.teachingStyle,
-      resonanceType: enhancedAgent.resonanceType,
-      uniquePower: enhancedAgent.uniquePower,
-      avatar: enhancedAgent.avatar,
-      color: enhancedAgent.color,
-      symbol: enhancedAgent.symbol,
-      aura: enhancedAgent.aura,
-      natalChart: synthesis.sourceCharts?.natal || {},
-      monicaCreationStory: enhancedAgent.monicaCreationStory,
-    })
-
-    logger.info('Agent created successfully', {
-      system: 'agents',
-      operation: 'create',
-      metadata: { agentId, name },
-    })
-
-    return NextResponse.json({
-      success: true,
-      data: generatedAgent,
-      message: `Agent ${name} created successfully`,
-      timestamp: new Date().toISOString(),
-    })
-  } catch (error) {
-    logger.error('Failed to create agent', error, {
-      system: 'agents',
-      operation: 'create',
-      metadata: { name },
-    })
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to create agent',
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 }
-    )
-  }
-}
-
-async function handleUpdateAgent(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
-  // Implementation for updating agents
-  return NextResponse.json(
-    {
-      success: false,
-      error: 'Update functionality coming soon',
-      timestamp: new Date().toISOString(),
-    },
-    { status: 501 }
-  )
-}
-
-async function handleDeleteAgent(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
-  // Implementation for deleting agents
-  return NextResponse.json(
-    {
-      success: false,
-      error: 'Delete functionality coming soon',
-      timestamp: new Date().toISOString(),
-    },
-    { status: 501 }
-  )
-}
-
-async function handleGetStats(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
-  try {
-    const dbStats = await HistoricalAgentsService.getStats()
-    const demoStats = {
-      totalAgents: DEMO_AGENTS.length,
-      totalConversations: DEMO_AGENTS.reduce(
-        (sum, agent) => sum + (agent.stats?.conversations || 0),
-        0
-      ),
-      averageMonicaConstant:
-        DEMO_AGENTS.reduce((sum, agent) => sum + agent.consciousness.monicaConstant, 0) /
-        DEMO_AGENTS.length,
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        database: dbStats,
-        demo: demoStats,
-        combined: {
-          totalAgents: (dbStats.totalAgents || 0) + demoStats.totalAgents,
-          totalConversations: (dbStats.totalConversations || 0) + demoStats.totalConversations,
-        },
-      },
-      timestamp: new Date().toISOString(),
-    })
-  } catch (error) {
-    logger.error('Failed to get agent stats', error, {
-      system: 'agents',
-      operation: 'stats',
-    })
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to retrieve stats',
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 }
-    )
-  }
-}
-
-async function handleDashboard(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
-  // Redirect to existing dashboard endpoint or consolidate here
-  return NextResponse.json(
-    {
-      success: false,
-      error: 'Use /api/agent-dashboard for dashboard functionality',
-      timestamp: new Date().toISOString(),
-    },
-    { status: 302 }
-  )
-}
-
-async function handleSearchAgents(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
-  const { query, filters = {} } = params
-
-  if (!query) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Search query is required',
-        timestamp: new Date().toISOString(),
-      },
-      { status: 400 }
-    )
-  }
-
-  try {
-    // Simple search implementation
-    const agents = await HistoricalAgentsService.getAllAgents({ limit: 1000 })
-
-    const searchResults = agents.filter(
-      agent =>
-        agent.name.toLowerCase().includes(query.toLowerCase()) ||
-        agent.title.toLowerCase().includes(query.toLowerCase()) ||
-        agent.abilities.specialty.toLowerCase().includes(query.toLowerCase())
-    )
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        query,
-        results: searchResults.slice(0, 20), // Limit results
-        total: searchResults.length,
-      },
-      timestamp: new Date().toISOString(),
-    })
-  } catch (error) {
-    logger.error('Failed to search agents', error, {
-      system: 'agents',
-      operation: 'search',
-      metadata: { query },
-    })
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Search failed',
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 }
-    )
-  }
-}
-
-async function handleEvolveAgent(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
-  // Placeholder for evolution functionality
-  return NextResponse.json(
-    {
-      success: false,
-      error: 'Evolution functionality coming soon',
-      timestamp: new Date().toISOString(),
-    },
-    { status: 501 }
-  )
-}
-
-async function handleAgentInteraction(params: any): Promise<NextResponse<UnifiedAgentResponse>> {
-  // Placeholder for interaction tracking
-  return NextResponse.json(
-    {
-      success: false,
-      error: 'Interaction tracking coming soon',
-      timestamp: new Date().toISOString(),
-    },
-    { status: 501 }
-  )
 }

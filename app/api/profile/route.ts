@@ -120,7 +120,7 @@ export async function PATCH(req: Request) {
     })
 
     if (name || avatarUrl) {
-      await prisma.profile.upsert({
+      await prisma.profiles.upsert({
         where: { userId },
         update: {
           ...(name ? { name } : {}),
@@ -181,8 +181,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const [basicProfile, detailedProfile] = await Promise.all([
-      prisma.profile.findUnique({ where: { userId: session.user.id } }),
-      prisma.userProfile.findUnique({ where: { userId: session.user.id } }),
+      prisma.profiles.findUnique({ where: { userId: session.user.id } }),
+      prisma.user_profiles.findUnique({ where: { userId: session.user.id } }),
     ])
 
     return NextResponse.json({

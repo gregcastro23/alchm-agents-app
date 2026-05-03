@@ -111,8 +111,46 @@ def detect_rune_context(alchm_data: Dict[str, Any]) -> Dict[str, Any]:
     except Exception:
         return {"active": False, "reason": "detection_error"}
 
+from . import kinetic_profiles
+
+def calculate_enhanced_moment_score(agent_id: str, current_planets: Dict[str, Any], alchm_data: Dict[str, Any], monica_constant: float) -> Dict[str, Any]:
+    profile = kinetic_profiles.get_kinetic_profile(agent_id)
+    
+    # 6-component weighted formula
+    planetary_alignment = 0.25 * 80 # Placeholder logic for planetary alignment
+    kinetic_velocity = 0.20 * (profile["components"]["consciousness_velocity"] * 100)
+    aspect_sensitivity = 0.15 * (profile["components"]["aspect_sensitivity"] * 100)
+    consciousness_score = 0.20 * 75
+    mc_bonus = 0.10 * (monica_constant * 100)
+    
+    # Simple element calculation
+    effects = alchm_data.get("Alchemy Effects", {})
+    total_elements = sum([effects.get("Total Spirit", 0), effects.get("Total Essence", 0), effects.get("Total Matter", 0), effects.get("Total Substance", 0)])
+    elemental_resonance = 0.10 * min(100, (total_elements * 20))
+    
+    diversity_bonus = 5
+    
+    score = planetary_alignment + kinetic_velocity + aspect_sensitivity + consciousness_score + mc_bonus + elemental_resonance + diversity_bonus
+    score = max(0, min(100, score))
+    
+    return {
+        "agentId": agent_id,
+        "score": score,
+        "components": {
+            "planetary": planetary_alignment,
+            "kinetic": kinetic_velocity,
+            "aspect": aspect_sensitivity,
+            "consciousness": consciousness_score,
+            "monicaConstant": mc_bonus,
+            "elemental": elemental_resonance
+        },
+        "description": "Highly Resonant" if score > 80 else "Resonant" if score > 60 else "Building Momentum",
+        "velocity_signature": profile["velocity_signature"]
+    }
+
 def calculate_moment_synergy(natal_chart: Dict[str, Any], current_planets: Dict[str, Any]) -> Dict[str, Any]:
     # Simplified synergy calculation based on signs
+
     # Real version would use longitudes and aspects
     harmonic_count = 0
     challenging_count = 0

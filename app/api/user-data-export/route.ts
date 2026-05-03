@@ -157,7 +157,7 @@ export async function GET(req: NextRequest) {
       }),
 
       // Consciousness interactions
-      prisma.consciousnessInteraction.findMany({
+      prisma.consciousness_interactions.findMany({
         where: { userId },
         select: {
           agentId: true,
@@ -190,7 +190,7 @@ export async function GET(req: NextRequest) {
       }),
 
       // Monica interactions (limited to last 100 for privacy)
-      prisma.monicaInteraction.findMany({
+      prisma.monica_interactions.findMany({
         where: { userId },
         select: {
           interactionType: true,
@@ -413,7 +413,7 @@ export async function POST(req: NextRequest) {
       // In production, this would trigger a review process
 
       // Log the deletion request
-      await prisma.monicaInteraction.create({
+      await prisma.monica_interactions.create({
         data: {
           userId,
           settingsId: 'default', // TODO: Get user's actual settings ID
@@ -455,3 +455,5 @@ export async function POST(req: NextRequest) {
     )
   }
 }
+
+

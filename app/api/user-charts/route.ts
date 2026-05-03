@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const profile = await prisma.userProfile.findUnique({ where: { userId } })
+  const profile = await prisma.user_profiles.findUnique({ where: { userId } })
   return NextResponse.json({ profile })
 }
 
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     const body = await req.json()
     const parsed = SaveChartSchema.parse(body)
 
-    const saved = await prisma.userProfile.upsert({
+    const saved = await prisma.user_profiles.upsert({
       where: { userId: parsed.userId },
       update: {
         birthDate: new Date(parsed.birthData.birthDate),
@@ -68,7 +68,7 @@ export async function PUT(req: Request) {
     const body = await req.json()
     const parsed = SaveChartSchema.parse(body)
 
-    const updated = await prisma.userProfile.update({
+    const updated = await prisma.user_profiles.update({
       where: { userId: parsed.userId },
       data: {
         birthDate: new Date(parsed.birthData.birthDate),

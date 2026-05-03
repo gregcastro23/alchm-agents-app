@@ -92,13 +92,13 @@ export async function GET(req: NextRequest) {
     }
 
     // Get Monica user settings (our current settings table)
-    const monicaSettings = await prisma.monicaUserSettings.findUnique({
+    const monicaSettings = await prisma.monica_user_settings.findUnique({
       where: { userId },
     })
 
     if (!monicaSettings) {
       // Create default settings
-      const newSettings = await prisma.monicaUserSettings.create({
+      const newSettings = await prisma.monica_user_settings.create({
         data: {
           userId,
           ...defaultSettings.interface,
@@ -237,7 +237,7 @@ export async function PUT(req: NextRequest) {
     updateData.interests = JSON.stringify(extraSettings)
 
     // Update the settings
-    const updatedSettings = await prisma.monicaUserSettings.upsert({
+    const updatedSettings = await prisma.monica_user_settings.upsert({
       where: { userId },
       update: updateData,
       create: {
@@ -313,7 +313,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Reset to default settings
-    await prisma.monicaUserSettings.upsert({
+    await prisma.monica_user_settings.upsert({
       where: { userId },
       update: {
         ...defaultSettings.interface,

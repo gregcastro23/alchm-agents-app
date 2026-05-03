@@ -470,6 +470,14 @@ export const backend = {
         method: 'POST',
         body: JSON.stringify(req),
       }),
+  moment: {
+    recommendations: (limit: number = 5) =>
+      request<{ recommendations: any[]; summary: string }>(`/api/moment-recommendations?limit=${limit}`, { method: 'GET' }),
+    detailed: (agentIds: string[], alchmData: any, currentPlanets: any) =>
+      request<{ scores: any[] }>('/api/moment-recommendations', {
+        method: 'POST',
+        body: JSON.stringify({ agentIds, alchmData, currentPlanets }),
+      }),
   },
 }
 

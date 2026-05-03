@@ -21,7 +21,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const aiPersonality = await prisma.aIPersonality.findUnique({
       where: { personalityId },
       include: {
-        achievements: true,
+        Achievement: true,
       },
     })
 
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       trainingScores: aiPersonality.trainingScores as any,
       totalXp: aiPersonality.totalXp,
       level: calculateLevel(aiPersonality.totalXp),
-      achievements: aiPersonality.achievements.map(a => ({
+      achievements: aiPersonality.Achievement.map((a: any) => ({
         id: a.id,
         personalityId: a.personalityId,
         achievementType: a.achievementType as any,
