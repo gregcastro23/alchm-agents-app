@@ -2,7 +2,7 @@
 // Manages charts and runes attached to historical agents
 
 import { prisma } from './db'
-import { planetaryAPI } from './planetary-api-client'
+import { getAlchemicalQuantitiesLegacy } from './backend'
 import type { AgentAttachment, AgentAttachmentUsage } from '@prisma/client'
 
 export interface AttachmentChart {
@@ -39,7 +39,7 @@ export class AgentAttachmentsService {
     description?: string
   ): Promise<AgentAttachment> {
     // Calculate the birth chart and alchemical data
-    const alchmData = await planetaryAPI.getAlchemicalQuantitiesLegacy(
+    const alchmData = await getAlchemicalQuantitiesLegacy(
       chartData.date,
       chartData.location.lat,
       chartData.location.lon
@@ -72,7 +72,7 @@ export class AgentAttachmentsService {
     description?: string
   ): Promise<AgentAttachment> {
     // Calculate planetary positions and alchemical data for this moment
-    const alchmData = await planetaryAPI.getAlchemicalQuantitiesLegacy(
+    const alchmData = await getAlchemicalQuantitiesLegacy(
       chartData.date,
       chartData.location.lat,
       chartData.location.lon

@@ -9,7 +9,8 @@ import { routeTask } from '@/lib/agents/router'
 import { agentKineticProfiles } from '@/lib/agents/kinetic-profiles'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
-import { planetaryAPI } from '@/lib/planetary-api-client'
+import { backend, getAlchemicalQuantitiesLegacy } from '@/lib/backend'
+import { ConsciousnessMemorySystem } from '@/lib/agents/consciousness-memory'
 
 function getCurrentPlanetaryHour(): string {
   const hours = ['sun', 'venus', 'mercury', 'moon', 'saturn', 'jupiter', 'mars']
@@ -170,7 +171,7 @@ export async function POST(request: NextRequest) {
           const targetLat = location?.lat || 37.7749
           const targetLon = location?.lon || -122.4194
 
-          const alchm = await planetaryAPI.getAlchemicalQuantities(
+          const alchm = await backend.alchemy.defaultQuantities(
             new Date(),
             targetLat,
             targetLon

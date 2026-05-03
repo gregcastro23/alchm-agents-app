@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
-import { planetaryAPI } from '@/lib/planetary-api-client'
+import { getAlchemicalQuantitiesLegacy } from '@/lib/backend'
 import { demoCraftedAgents } from '@/lib/demo-agents-data'
 import { calculateEnhancedMomentScore } from './enhanced-scoring'
 
@@ -11,7 +11,7 @@ import { calculateEnhancedMomentScore } from './enhanced-scoring'
  * substance` scores stand in for the old elemental `totals` map.
  */
 async function buildAlchemicalDataForMoment(lat: number, lon: number, moment: Date): Promise<any> {
-  const legacy = await planetaryAPI.getAlchemicalQuantitiesLegacy(moment, lat, lon)
+  const legacy = await getAlchemicalQuantitiesLegacy(moment, lat, lon)
   return {
     ...legacy,
     // The deleted sampler used `totals` to expose the dominant element.

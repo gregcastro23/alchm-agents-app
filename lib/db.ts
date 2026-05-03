@@ -1,27 +1,49 @@
 import 'server-only'
-import { PrismaClient } from '@prisma/client'
-import { withAccelerate } from '@prisma/extension-accelerate'
+import type { PrismaClient } from '@prisma/client'
 import Redis from 'ioredis'
 
 declare global {
   var __prisma: PrismaClient | undefined
 }
 
-// Prisma client singleton with Accelerate extension
-const createPrismaClient = (): PrismaClient => {
+/**
+ * Lazy Prisma client — `@prisma/client` is ~80MB resolved.
+ * The client is only materialized on first property access (e.g. `prisma.user.findMany`),
+ * not at module-import time. Routes that don't touch the DB never load the engine.
+ */
+let _prismaInstance: PrismaClient | undefined
+function materializePrisma(): PrismaClient {
+  if (globalThis.__prisma) return globalThis.__prisma
+  if (_prismaInstance) return _prismaInstance
+
+  // Synchronous require — only paid when first used
+  const { PrismaClient } = require('@prisma/client') as typeof import('@prisma/client')
   const client = new PrismaClient()
-  // Only use Accelerate extension if using Prisma Accelerate (prisma+postgres:// protocol)
+
+  // Apply Accelerate extension only when using a prisma+postgres:// URL
   if (process.env.DATABASE_URL?.startsWith('prisma+postgres://')) {
-    return client.$extends(withAccelerate()) as unknown as PrismaClient
+    const { withAccelerate } = require('@prisma/extension-accelerate') as typeof import('@prisma/extension-accelerate')
+    _prismaInstance = client.$extends(withAccelerate()) as unknown as PrismaClient
+  } else {
+    _prismaInstance = client
   }
-  return client
+
+  if (process.env.NODE_ENV !== 'production') {
+    globalThis.__prisma = _prismaInstance
+  }
+  return _prismaInstance
 }
 
-export const prisma: PrismaClient = globalThis.__prisma || createPrismaClient()
-
-if (process.env.NODE_ENV !== 'production') {
-  globalThis.__prisma = prisma
-}
+export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
+  get(_target, prop, receiver) {
+    const real = materializePrisma()
+    const value = Reflect.get(real, prop, receiver)
+    return typeof value === 'function' ? value.bind(real) : value
+  },
+  has(_t, prop) {
+    return Reflect.has(materializePrisma(), prop)
+  },
+})
 
 // Redis client singleton - optional (only when REDIS_URL is provided)
 let redis: Redis | null = null

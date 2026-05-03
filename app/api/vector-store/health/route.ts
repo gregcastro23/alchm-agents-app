@@ -1,63 +1,31 @@
 /**
- * Vector Store Health Check Endpoint
- * GET /api/vector-store/health
- *
- * Returns health status of ChromaDB and vector store system
+ * Vector Store Health Check Endpoint — gated by USE_RAG_GENERATION feature flag.
+ * When RAG is disabled, returns 503 without loading any vector-store modules.
  */
-
 import { NextResponse } from 'next/server'
-import { healthCheck, listCollections, getCollectionCount, getOrCreateCollection } from '@/lib/llamaindex'
+
+export const runtime = 'nodejs'
 
 export async function GET() {
-  try {
-    // Check ChromaDB health
-    const health = await healthCheck()
-
-    if (!health.healthy) {
-      return NextResponse.json(
-        {
-          healthy: false,
-          message: health.message,
-          timestamp: new Date().toISOString(),
-        },
-        { status: 503 }
-      )
-    }
-
-    // Get collections info
-    const collections = await listCollections()
-
-    // Get document count for main collection
-    let documentCount = 0
-    try {
-      const mainCollection = await getOrCreateCollection('historical_agents')
-      documentCount = await getCollectionCount(mainCollection)
-    } catch (error) {
-      console.warn('[Health] Could not get document count:', error)
-    }
-
-    return NextResponse.json({
-      healthy: true,
-      message: 'Vector store is operational',
-      url: health.url,
-      collections: collections.length,
-      documentCount,
-      timestamp: new Date().toISOString(),
-      features: {
-        ragGeneration: process.env.USE_RAG_GENERATION === 'true',
-        vectorSearch: process.env.USE_VECTOR_SEARCH === 'true',
-      },
-    })
-  } catch (error) {
-    console.error('[Health] Health check failed:', error)
-
+  if (process.env.USE_RAG_GENERATION !== 'true') {
     return NextResponse.json(
       {
-        healthy: false,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
+        status: 'disabled',
+        message: 'RAG features are disabled. Set USE_RAG_GENERATION=true and run `yarn install --include=optional` to enable.',
       },
       { status: 503 }
     )
+  }
+  // Dynamic import — chromadb/llamaindex stay out of the cold-start graph
+  const { healthCheck, listCollections, getCollectionCount } = await import('@/lib/llamaindex')
+  try {
+    const health = await healthCheck()
+    const collections = await listCollections()
+    const counts = await Promise.all(
+      collections.map(async (c: string) => ({ name: c, count: await getCollectionCount(c) }))
+    )
+    return NextResponse.json({ status: 'ok', health, collections: counts })
+  } catch (err: any) {
+    return NextResponse.json({ status: 'error', error: err?.message }, { status: 500 })
   }
 }

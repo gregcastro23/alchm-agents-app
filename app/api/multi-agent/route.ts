@@ -16,7 +16,7 @@ import {
 } from '@/lib/astrological-data'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 import { getCurrentUser, getUserIdFromRequest } from '@/lib/auth-helpers'
-import { planetaryAPI } from '@/lib/planetary-api-client'
+import { backend, getAlchemicalQuantitiesLegacy } from '@/lib/backend'
 import { ANumberCalculator } from '@/lib/core-energy-rules'
 import { getLunarDegreePersonality, getMoonDegree } from '@/lib/moon-phase-calculator'
 import { PlanetaryHourCalculator, SEPHIROTIC_PRIORITY } from '@/lib/planetary-hour'
@@ -243,7 +243,7 @@ export async function POST(req: NextRequest) {
       components: { spirit: number; essence: number; matter: number; substance: number }
     } | null = null
     try {
-      const alchmData = await planetaryAPI.getAlchemicalQuantitiesLegacy()
+      const alchmData = await getAlchemicalQuantitiesLegacy()
       const spirit = alchmData?.['Alchemy Effects']?.['Total Spirit'] || 0
       const essence = alchmData?.['Alchemy Effects']?.['Total Essence'] || 0
       const matter = alchmData?.['Alchemy Effects']?.['Total Matter'] || 0
@@ -333,7 +333,7 @@ export async function POST(req: NextRequest) {
 
       let forceMagnitude = 0
       try {
-        const k = await planetaryAPI.getAlchemicalQuantities(new Date())
+        const k = await backend.alchemy.defaultQuantities(new Date())
         forceMagnitude = Number(k?.kinetic_val ?? 0)
       } catch (error) {
         console.warn('Failed to fetch kinetic data for multi-agent logging:', error)

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { planetaryAPI } from '@/lib/planetary-api-client'
+import { backend, getAlchemicalQuantitiesLegacy } from '@/lib/backend'
 import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
 
 /**
@@ -14,7 +14,7 @@ async function calculateConsciousness(body: any = {}) {
     const longitude = birthData?.longitude || 0
 
     // Generate current moment alchemical data
-    const currentAlchm = await planetaryAPI.getAlchemicalQuantitiesLegacy(
+    const currentAlchm = await getAlchemicalQuantitiesLegacy(
       new Date(),
       latitude,
       longitude

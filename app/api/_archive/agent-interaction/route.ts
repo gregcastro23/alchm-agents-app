@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { ConsciousnessClient } from '@/lib/api-client/consciousness-client'
 import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
-import { planetaryAPI } from '@/lib/planetary-api-client'
+import { backend, getAlchemicalQuantitiesLegacy } from '@/lib/backend'
 
 const InteractionSchema = z.object({
   userId: z.string().optional(),
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     }
 
     const birthChart = agent.natalChart
-    const currentMoment = await planetaryAPI.getAlchemicalQuantitiesLegacy()
+    const currentMoment = await getAlchemicalQuantitiesLegacy()
 
     const blueprint = await consciousnessClient.createAgentOfMoment(birthChart, currentMoment)
 

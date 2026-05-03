@@ -12,12 +12,12 @@
 // ============================================================================
 
 export const CLAUDE = {
-  // Claude 4.x — Current Generation (May 2026)
-  OPUS:    'claude-opus-4-7',           // Flagship — complex reasoning, agentic coding
-  SONNET:  'claude-sonnet-4-6',         // Balanced — speed + intelligence for professional use
-  HAIKU:   'claude-haiku-4-5-20251001', // Fast — high-volume, cost-efficient tasks
+  // Claude 3.5/3 — Current verified production models
+  OPUS:    'claude-3-opus-20240229',        // Flagship — complex reasoning, agentic coding
+  SONNET:  'claude-3-5-sonnet-20241022',    // Balanced — speed + intelligence for professional use
+  HAIKU:   'claude-3-5-haiku-20241022',     // Fast — high-volume, cost-efficient tasks
 
-  // Claude 3.x — Legacy (available but superseded)
+  // Aliases kept for backward compat
   LEGACY_SONNET_3_5: 'claude-3-5-sonnet-20241022',
   LEGACY_HAIKU_3_5:  'claude-3-5-haiku-20241022',
   LEGACY_OPUS_3:     'claude-3-opus-20240229',
@@ -32,12 +32,12 @@ export type ClaudeModelId = (typeof CLAUDE)[keyof typeof CLAUDE]
 // ============================================================================
 
 export const OPENAI = {
-  // GPT-5.x — Current Generation (May 2026)
-  GPT_5_5:      'gpt-5.5',       // Flagship — complex reasoning, coding, agentic workflows
-  GPT_5_4_MINI: 'gpt-5.4-mini',  // Balanced — lower latency and cost
-  GPT_5_4_NANO: 'gpt-5.4-nano',  // Fastest — ultra-low latency tasks
+  // GPT-4o — Current verified production models
+  GPT_5_5:      'gpt-4o',          // Flagship — complex reasoning, coding, agentic workflows
+  GPT_5_4_MINI: 'gpt-4o-mini',     // Balanced — lower latency and cost
+  GPT_5_4_NANO: 'gpt-4o-mini',     // Fastest — maps to gpt-4o-mini
 
-  // GPT-4.x — Legacy (still available via API)
+  // Explicit aliases
   LEGACY_GPT_4O:      'gpt-4o',
   LEGACY_GPT_4O_MINI: 'gpt-4o-mini',
   LEGACY_GPT_4_TURBO: 'gpt-4-turbo-preview',
@@ -91,16 +91,12 @@ export const CLAUDE_FALLBACK_CHAIN: readonly ClaudeModelId[] = [
   CLAUDE.SONNET,
   CLAUDE.HAIKU,
   CLAUDE.OPUS,
-  CLAUDE.LEGACY_SONNET_3_5,
-  CLAUDE.LEGACY_HAIKU_3_5,
 ]
 
 export const OPENAI_FALLBACK_CHAIN: readonly OpenAIModelId[] = [
-  OPENAI.GPT_5_4_MINI,
-  OPENAI.GPT_5_4_NANO,
-  OPENAI.GPT_5_5,
-  OPENAI.LEGACY_GPT_4O_MINI,
-  OPENAI.LEGACY_GPT_4O,
+  OPENAI.GPT_5_4_MINI,   // gpt-4o-mini
+  OPENAI.GPT_5_5,        // gpt-4o
+  OPENAI.LEGACY_GPT_3_5,
 ]
 
 // ============================================================================

@@ -10,7 +10,6 @@
  */
 
 import {
-  generateWithRAG as generateWithRAGCore,
   getRAGConfig,
   shouldUseRAG,
   summarizeRetrievedContext,
@@ -19,7 +18,54 @@ import {
   type RAGMetadata,
   type RAGSource,
 } from './rag-generator'
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
+import { anthropic } from '@ai-sdk/anthropic'
 import { logger } from '@/lib/structured-logger'
+
+/**
+ * Resolve AI model provider and ID for direct (non-RAG) generation.
+ * Prefers the model passed in options; falls back to MONICA env vars and
+ * finally to safe known-good defaults.
+ */
+function resolveDirectModel(modelId?: string) {
+  const id = modelId
+    || process.env.MONICA_DEFAULT_MODEL
+    || process.env.CLAUDE_DEFAULT_MODEL
+    || 'gpt-4o-mini'
+
+  // Claude model IDs start with 'claude-'
+  if (id.startsWith('claude-')) {
+    return anthropic(id)
+  }
+  return openai(id)
+}
+
+/**
+ * Call AI directly without RAG context — used as fallback when RAG is
+ * disabled or the query doesn't require retrieval augmentation.
+ */
+async function generateDirect(options: RAGGenerateOptions): Promise<RAGResult> {
+  const model = resolveDirectModel((options as any).model)
+  const temperature = (options as any).temperature ?? 0.7
+  const maxTokens = (options as any).maxTokens ?? 800
+
+  const { text } = await generateText({
+    model,
+    system: options.systemPrompt,
+    prompt: options.userMessage,
+    temperature,
+    maxTokens,
+  })
+
+  return {
+    text,
+    ragMetadata: {
+      enabled: false,
+      ragUsed: false,
+    },
+  }
+}
 
 export type { RAGGenerateOptions, RAGResult, RAGMetadata, RAGSource }
 
@@ -34,37 +80,27 @@ export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGR
   const ragConfig = getRAGConfig()
 
   if (!ragConfig.enabled) {
-    logger.debug('RAG is disabled via feature flags', {
+    logger.debug('RAG is disabled — falling back to direct generation', {
       system: 'rag',
       operation: 'generate',
     })
-    return {
-      text: '',
-      ragMetadata: {
-        enabled: false,
-        ragUsed: false,
-      },
-    }
+    return generateDirect(options)
   }
 
   // Check if this query should use RAG
   if (!shouldUseRAG(options.userMessage)) {
-    logger.debug('Query does not require RAG enhancement', {
+    logger.debug('Query does not require RAG — falling back to direct generation', {
       system: 'rag',
       operation: 'generate',
       metadata: { messageLength: options.userMessage.length },
     })
-    return {
-      text: '',
-      ragMetadata: {
-        enabled: true,
-        ragUsed: false,
-        retrievedDocs: 0,
-      },
-    }
+    return generateDirect(options)
   }
 
   try {
+    // Dynamic import for RAG core to prevent loading heavy modules when not used
+    const { generateWithRAG: generateWithRAGCore } = await import('./rag-generator')
+
     // Merge with environment config if not explicitly provided
     const mergedOptions: RAGGenerateOptions = {
       ...options,
@@ -116,14 +152,27 @@ export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGR
       metadata: { error: error instanceof Error ? error.message : String(error) },
     })
 
-    // Graceful fallback - return empty text to trigger standard generation
-    return {
-      text: '',
-      ragMetadata: {
-        enabled: true,
-        ragUsed: false,
-        error: error instanceof Error ? error.message : String(error),
-      },
+    // Graceful fallback — RAG failed, still generate a response without it
+    logger.debug('RAG failed — falling back to direct generation', {
+      system: 'rag',
+      operation: 'generate',
+    })
+    try {
+      return await generateDirect(options)
+    } catch (directErr) {
+      logger.error('Direct generation also failed', {
+        system: 'rag',
+        operation: 'generate',
+        metadata: { error: directErr instanceof Error ? directErr.message : String(directErr) },
+      })
+      return {
+        text: '',
+        ragMetadata: {
+          enabled: true,
+          ragUsed: false,
+          error: error instanceof Error ? error.message : String(error),
+        },
+      }
     }
   }
 }

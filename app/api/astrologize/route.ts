@@ -1,35 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { planetaryAPI } from '@/lib/planetary-api-client'
+import { backend, BackendError } from '@/lib/backend'
 
 export const runtime = 'nodejs'
 
-export async function POST(req: NextRequest) {
+function parseLocation(latRaw: unknown, lonRaw: unknown) {
+  const latitude =
+    typeof latRaw === 'number' ? latRaw : latRaw != null ? Number(latRaw) || undefined : undefined
+  const longitude =
+    typeof lonRaw === 'number' ? lonRaw : lonRaw != null ? Number(lonRaw) || undefined : undefined
+  return { latitude, longitude }
+}
+
+async function handle(date: Date, latitude?: number, longitude?: number) {
   try {
-    const body = await req.json().catch(() => ({}))
-    const date = body?.date ? new Date(body.date) : new Date()
-    const latitude = typeof body?.latitude === 'number' ? body.latitude : undefined
-    const longitude = typeof body?.longitude === 'number' ? body.longitude : undefined
-    const data = await planetaryAPI.getPlanetaryPositions(date, latitude, longitude)
+    const data = await backend.planetary.positions(date, latitude, longitude)
     return NextResponse.json(data)
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || 'planetary positions failed' }, { status: 502 })
+  } catch (err) {
+    const status = err instanceof BackendError ? err.status : 502
+    const message = err instanceof Error ? err.message : 'planetary positions failed'
+    return NextResponse.json({ error: message }, { status })
   }
 }
 
+export async function POST(req: NextRequest) {
+  const body = await req.json().catch(() => ({}))
+  const date = body?.date ? new Date(body.date) : new Date()
+  const { latitude, longitude } = parseLocation(body?.latitude, body?.longitude)
+  return handle(date, latitude, longitude)
+}
+
 export async function GET(req: NextRequest) {
-  try {
-    const url = new URL(req.url)
-    const dateParam = url.searchParams.get('date')
-    const lat = url.searchParams.get('latitude')
-    const lon = url.searchParams.get('longitude')
-    const date = dateParam ? new Date(dateParam) : new Date()
-    const data = await planetaryAPI.getPlanetaryPositions(
-      date,
-      lat ? Number(lat) : undefined,
-      lon ? Number(lon) : undefined
-    )
-    return NextResponse.json(data)
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || 'planetary positions failed' }, { status: 502 })
-  }
+  const url = new URL(req.url)
+  const dateParam = url.searchParams.get('date')
+  const date = dateParam ? new Date(dateParam) : new Date()
+  const { latitude, longitude } = parseLocation(url.searchParams.get('latitude'), url.searchParams.get('longitude'))
+  return handle(date, latitude, longitude)
 }

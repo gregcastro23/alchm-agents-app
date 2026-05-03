@@ -8,7 +8,7 @@ import {
   type AgentInteractionData,
   type ConversationContext,
 } from '../../../lib/galileo-agent-logger'
-import { planetaryAPI } from '@/lib/planetary-api-client'
+import { getAlchemicalQuantitiesLegacy } from '@/lib/backend'
 import { ANumberCalculator } from '../../../lib/core-energy-rules'
 import { CharacterVectorCalculator } from '../../../lib/astrological-character-vectors'
 import { MonicaResponseHandler } from '../../../lib/monica/monica-response-handler'
@@ -1262,7 +1262,7 @@ Please try connecting again, or explore my profile in the Gallery of Perpetuity.
     const chartCombination = await analyzeChartCombination(requestData, conversationContext)
     if (includeAlchm) {
       try {
-        alchmData = await planetaryAPI.getAlchemicalQuantitiesLegacy()
+        alchmData = await getAlchemicalQuantitiesLegacy()
         const spirit = alchmData?.['Alchemy Effects']?.['Total Spirit'] || 0
         const essence = alchmData?.['Alchemy Effects']?.['Total Essence'] || 0
         const matter = alchmData?.['Alchemy Effects']?.['Total Matter'] || 0

@@ -9,7 +9,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Star, Sparkles, Users, TrendingUp, MessageCircle, Zap, Menu, X } from 'lucide-react'
 import { DEMO_AGENTS, MONICA_AS_CRAFTED_AGENT } from '@/lib/demo-agents-data'
 import type { CraftedAgent } from '@/lib/agent-types'
-import type { LegacyPlanetaryPosition as PlanetaryPosition } from '@/lib/planetary-api-client'
+import type { LegacyPlanetaryPosition as PlanetaryPosition } from '@/lib/backend'
+import { getLegacyPlanetaryPositionsAction } from '@/lib/actions/backend-actions'
 
 const PLANET_SYMBOLS: Record<string, string> = {
   Sun: '☉',
@@ -124,14 +125,15 @@ export default function HomePage() {
   }, [])
 
   useEffect(() => {
-    // Fetch current planetary positions
+    // Fetch current planetary positions via Server Action (Path C: no /api/* proxy)
     const fetchPositions = async () => {
       try {
         setLoadingPositions(true)
-        const response = await fetch('/api/planetary-positions')
-        if (response.ok) {
-          const data = await response.json()
-          setPlanetaryPositions(data.planetaryPositions || [])
+        const result = await getLegacyPlanetaryPositionsAction()
+        if ('error' in result) {
+          console.error('Failed to fetch planetary positions:', result.error)
+        } else {
+          setPlanetaryPositions(result.planetaryPositions || [])
         }
       } catch (error) {
         console.error('Failed to fetch planetary positions:', error)

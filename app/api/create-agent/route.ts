@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { generateId } from '@/lib/utils'
 import { HistoricalAgentsService } from '@/lib/historical-agents-db'
 import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
-import { planetaryAPI } from '@/lib/planetary-api-client'
+import { getAlchemicalQuantitiesLegacy } from '@/lib/backend'
 import { fetchCurrentPlanetaryPositions } from '@/lib/monica/fetch-current-positions'
 import { generateAccurateHoroscope } from '@/lib/monica/horoscope-generator'
 import { prisma } from '@/lib/db'
@@ -345,7 +345,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateAge
     const generator = new AgentGenerator()
     const consciousnessClient = new ConsciousnessClient()
 
-    const momentChart = await planetaryAPI.getAlchemicalQuantitiesLegacy(new Date(), birthInfo.latitude, birthInfo.longitude)
+    const momentChart = await getAlchemicalQuantitiesLegacy(new Date(), birthInfo.latitude, birthInfo.longitude)
     const synthesis = synthesizer.synthesize({
       birthChart,
       momentChart,

@@ -19,11 +19,6 @@ const nextConfig = {
   },
   // Disable source maps completely to avoid Next.js internal source-map module issues
   productionBrowserSourceMaps: false,
-  // Explicitly set workspace root to avoid lockfile detection issues
-  outputFileTracingRoot: process.env.DOCKER_BUILD
-    ? undefined
-    : '/Users/GregCastro/Desktop/planetary-agents',
-
   // Docker optimization - standalone output (only for production builds)
   ...(process.env.NODE_ENV === 'production' && process.env.DOCKER_BUILD
     ? {

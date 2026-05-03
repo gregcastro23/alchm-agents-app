@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { getPlanetaryPositionsAction, getAlchemicalQuantitiesAction } from '@/lib/actions/backend-actions'
 
 export type AccuracyLevel = 'high' | 'medium' | 'low' | 'fallback'
 
@@ -87,7 +88,6 @@ export function useUnifiedPlanetaryPositions(
 
   const retryCountRef = useRef(0)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  const abortControllerRef = useRef<AbortController | null>(null)
 
   const fetchPlanetaryData = useCallback(
     async (force: boolean = false): Promise<void> => {
@@ -117,31 +117,23 @@ export function useUnifiedPlanetaryPositions(
       sharedCache.currentOptions = cacheKey
 
       try {
-        // Cancel any previous request
-        if (abortControllerRef.current) {
-          abortControllerRef.current.abort()
-        }
-
-        abortControllerRef.current = new AbortController()
-
         setLoading(true)
         setError(null)
 
-        const fetches: Promise<Response>[] = [
-          fetch('/api/astrologize', { signal: abortControllerRef.current.signal }),
+        const fetches: Promise<any>[] = [
+          getPlanetaryPositionsAction(),
         ]
         if (opts.includeAlchemy) {
           fetches.push(
-            fetch('/api/alchemize?legacy=true', { signal: abortControllerRef.current.signal })
+            getAlchemicalQuantitiesAction(true)
           )
         }
-        const responses = await Promise.all(fetches)
-        const posRes = responses[0]
-        if (!posRes.ok) throw new Error(`positions failed: ${posRes.status}`)
-        const posData = await posRes.json()
+        const results = await Promise.all(fetches)
+        const posData = results[0]
+        if (posData.error) throw new Error(posData.error)
 
         const planetaryPositions: PlanetaryPosition[] = Object.entries(
-          posData?.planetary_positions || {}
+          (posData as any)?.planetary_positions || {}
         ).map(([name, body]: [string, any]) => ({
           planet: name,
           sign: body?.sign ?? '',
@@ -151,20 +143,20 @@ export function useUnifiedPlanetaryPositions(
 
         let alchmQuantities: AlchemicalQuantities | undefined
         let monicaConstant: number | undefined
-        if (opts.includeAlchemy && responses[1]) {
-          if (!responses[1].ok) throw new Error(`alchemize failed: ${responses[1].status}`)
-          const a = await responses[1].json()
+        if (opts.includeAlchemy && results[1]) {
+          const a = results[1]
+          if (a.error) throw new Error(a.error)
           alchmQuantities = {
-            spirit: Number(a?.spirit_score ?? 0),
-            essence: Number(a?.essence_score ?? 0),
-            matter: Number(a?.matter_score ?? 0),
-            substance: Number(a?.substance_score ?? 0),
-            Heat: Number(a?.Heat ?? 0),
-            Entropy: Number(a?.Entropy ?? 0),
-            Reactivity: Number(a?.Reactivity ?? 0),
-            Energy: Number(a?.Energy ?? 0),
+            spirit: Number((a as any)?.spirit_score ?? 0),
+            essence: Number((a as any)?.essence_score ?? 0),
+            matter: Number((a as any)?.matter_score ?? 0),
+            substance: Number((a as any)?.substance_score ?? 0),
+            Heat: Number((a as any)?.Heat ?? 0),
+            Entropy: Number((a as any)?.Entropy ?? 0),
+            Reactivity: Number((a as any)?.Reactivity ?? 0),
+            Energy: Number((a as any)?.Energy ?? 0),
           }
-          monicaConstant = Number(a?.['A-Number'] ?? 0)
+          monicaConstant = Number((a as any)?.['A-Number'] ?? 0)
         }
 
         const result: PlanetaryData = {
@@ -172,7 +164,7 @@ export function useUnifiedPlanetaryPositions(
           planetaryPositions,
           alchmQuantities,
           monicaConstant,
-          source: 'railway-proxy',
+          source: 'railway-action',
           accuracy: opts.accuracy,
           cached: false,
         }
@@ -188,10 +180,6 @@ export function useUnifiedPlanetaryPositions(
         setLastUpdated(new Date())
         retryCountRef.current = 0 // Reset retry count on success
       } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') {
-          return // Ignore aborted requests
-        }
-
         console.error('Error fetching unified planetary positions:', error)
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
 
@@ -261,9 +249,6 @@ export function useUnifiedPlanetaryPositions(
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
-      }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
       }
     }
   }, [fetchPlanetaryData, opts.autoRefresh, opts.refreshInterval])

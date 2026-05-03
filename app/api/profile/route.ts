@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { generateAccurateHoroscope } from '@/lib/monica/horoscope-generator'
-import { planetaryAPI } from '@/lib/planetary-api-client'
+import { getAlchemicalQuantitiesLegacy } from '@/lib/backend'
 import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
 
 export const revalidate = 0
@@ -62,7 +62,7 @@ export async function PATCH(req: Request) {
       longitude: birthInfo.longitude,
     })
 
-    const alchm = await planetaryAPI.getAlchemicalQuantitiesLegacy(
+    const alchm = await getAlchemicalQuantitiesLegacy(
       birthDate,
       birthInfo.latitude,
       birthInfo.longitude

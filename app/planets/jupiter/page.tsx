@@ -1,92 +1,45 @@
-'use client'
+/**
+ * Jupiter planet page — fully RSC.
+ *
+ * All data is either static or pre-fetched server-side; the only
+ * "client-like" action (navigate to Jupiter agent) is handled via Link.
+ */
 
-import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { HistoricalTransitCard } from '@/components/misc/historical-transit-card'
-import { getTransitsByPlanet, getCurrentTransits } from '@/lib/historical-transit-data'
+import { getTransitsByPlanet } from '@/lib/historical-transit-data'
 import { identifyPlanetaryThemes } from '@/lib/transit-patterns'
-import Link from 'next/link'
-
-// Fetches current planetary positions via the astrologize proxy (browser-safe).
-async function fetchCurrentPlanetaryPositions(): Promise<
-  Record<string, { sign: string; degree: string }>
-> {
-  try {
-    const res = await fetch('/api/astrologize')
-    if (!res.ok) return {}
-    const data = await res.json()
-    const planets = data?.planetary_positions || {}
-    const out: Record<string, { sign: string; degree: string }> = {}
-    Object.entries(planets).forEach(([name, body]: [string, any]) => {
-      out[name] = {
-        sign: body?.sign || '',
-        degree: typeof body?.degree === 'number' ? body.degree.toFixed(2) : String(body?.degree ?? '0'),
-      }
-    })
-    return out
-  } catch {
-    return {}
-  }
-}
+import { backend } from '@/lib/backend'
 import { ArrowLeft, ArrowRight, Sparkles, Calendar, TrendingUp } from 'lucide-react'
 
-export default function JupiterPage() {
-  const [currentPosition, setCurrentPosition] = useState<{ sign: string; degree: string } | null>(
-    null
-  )
-  const [jupiterTransits, setJupiterTransits] = useState<any[]>([])
-  const [currentThemes, setCurrentThemes] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Get current Jupiter position via astrologize proxy
-        const positions = await fetchCurrentPlanetaryPositions()
-        if (positions['Jupiter']) {
-          setCurrentPosition(positions['Jupiter'])
-
-          // Get themes for current position
-          const themes = identifyPlanetaryThemes('Jupiter', positions['Jupiter'].sign)
-          setCurrentThemes(themes)
-        }
-
-        // Get Jupiter's historical transits
-        const transits = getTransitsByPlanet('Jupiter')
-        setJupiterTransits(transits.slice(-10)) // Last 10 transits
-
-        setLoading(false)
-      } catch (error) {
-        console.error('Error loading Jupiter data:', error)
-        setLoading(false)
+export default async function JupiterPage() {
+  // Pre-fetch live position
+  let currentPosition: { sign: string; degree: string } | null = null
+  let currentThemes: any = null
+  try {
+    const data = await backend.planetary.positions()
+    const jupiter = (data as any)?.planetary_positions?.Jupiter
+    if (jupiter) {
+      currentPosition = {
+        sign: jupiter.sign || '',
+        degree:
+          typeof jupiter.degree === 'number'
+            ? jupiter.degree.toFixed(2)
+            : String(jupiter.degree ?? '0'),
       }
+      currentThemes = identifyPlanetaryThemes('Jupiter', jupiter.sign || '')
     }
-
-    loadData()
-  }, [])
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
+  } catch {
+    // Render without live position — static content still shows
   }
 
-  if (loading) {
-    return (
-      <div className="container py-8 max-w-7xl mx-auto">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Loading Jupiter's wisdom...</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  // Static historical data (synchronous)
+  const jupiterTransits = getTransitsByPlanet('Jupiter').slice(-10)
+
+  const agentHref = `/agents/Jupiter/${encodeURIComponent(currentPosition?.sign ?? 'Sagittarius')}/15`
 
   return (
     <div className="container py-8 max-w-7xl mx-auto">
@@ -232,22 +185,17 @@ export default function JupiterPage() {
               <CardTitle>Jupiter Returns</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="font-medium text-sm">Age 12</p>
-                <p className="text-xs text-muted-foreground">First expansion of consciousness</p>
-              </div>
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="font-medium text-sm">Age 24</p>
-                <p className="text-xs text-muted-foreground">Career and purpose clarification</p>
-              </div>
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="font-medium text-sm">Age 36</p>
-                <p className="text-xs text-muted-foreground">Professional mastery phase</p>
-              </div>
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="font-medium text-sm">Age 48</p>
-                <p className="text-xs text-muted-foreground">Wisdom teaching phase</p>
-              </div>
+              {[
+                { age: 12, label: 'First expansion of consciousness' },
+                { age: 24, label: 'Career and purpose clarification' },
+                { age: 36, label: 'Professional mastery phase' },
+                { age: 48, label: 'Wisdom teaching phase' },
+              ].map(({ age, label }) => (
+                <div key={age} className="p-3 bg-muted/50 rounded-lg">
+                  <p className="font-medium text-sm">Age {age}</p>
+                  <p className="text-xs text-muted-foreground">{label}</p>
+                </div>
+              ))}
             </CardContent>
           </Card>
 
@@ -259,14 +207,9 @@ export default function JupiterPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Connect with Jupiter's expansive wisdom
               </p>
-              <Button
-                className="w-full"
-                onClick={() =>
-                  (window.location.href = `/agents/Jupiter/${encodeURIComponent(currentPosition?.sign || 'Sagittarius')}/15`)
-                }
-              >
-                Chat with Jupiter Agent
-              </Button>
+              <Link href={agentHref} className="block">
+                <Button className="w-full">Chat with Jupiter Agent</Button>
+              </Link>
             </CardContent>
           </Card>
         </div>

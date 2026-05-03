@@ -5,7 +5,7 @@
  * with retrieved agent knowledge. Works with both Claude and GPT models.
  */
 
-import { semanticSearch, type SearchResult } from '@/lib/llamaindex/semantic-search'
+import { type SearchResult } from '@/lib/llamaindex/semantic-search'
 import { generateText } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
 import { ragCache } from '@/lib/rag/rag-cache'
@@ -34,6 +34,12 @@ export interface RAGGenerateOptions {
   systemPrompt: string
   conversationHistory?: Array<{ role: string; content: string }>
   sessionId?: string
+  /** AI model identifier — passed to the generation call when RAG is bypassed */
+  model?: string
+  /** Sampling temperature (0–2). Defaults to 0.7. */
+  temperature?: number
+  /** Maximum output tokens. Defaults to 800. */
+  maxTokens?: number
   ragConfig?: {
     enabled: boolean
     topK: number
@@ -92,6 +98,9 @@ export async function generateWithRAG(
   }
 
   try {
+    // Dynamic import for semantic search to prevent loading heavy modules when not used
+    const { semanticSearch } = await import('@/lib/llamaindex/semantic-search')
+
     console.log(`[RAG] Generating with RAG for agent ${options.agentId}`)
 
     // Stage 0: Check Cache (if enabled)

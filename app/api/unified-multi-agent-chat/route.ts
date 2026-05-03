@@ -10,7 +10,7 @@ import type {
   GroupDynamics,
 } from '@/lib/unified-agent-types'
 import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
-import { planetaryAPI } from '@/lib/planetary-api-client'
+import { getAlchemicalQuantitiesLegacy } from '@/lib/backend'
 import { observabilityTracker } from '@/lib/observability/tracker'
 import { v4 as uuidv4 } from 'uuid'
 import { unifiedTracker } from '@/lib/consciousness/unified-tracker'
@@ -1015,7 +1015,7 @@ function getRoleSpecificGuidance(role: string): string {
 
 async function generateCosmicContext(): Promise<CosmicContext> {
   try {
-    const currentMoment = await planetaryAPI.getAlchemicalQuantitiesLegacy()
+    const currentMoment = await getAlchemicalQuantitiesLegacy()
     return {
       currentMoment,
       cosmicSummary: 'Consciousness energies are flowing harmoniously',

@@ -1,6 +1,6 @@
 import 'server-only'
 import { agentRegistry, type AgentDefinition } from './registry'
-import { planetaryAPI } from '@/lib/planetary-api-client'
+import { backend } from '@/lib/backend'
 import {
   agentKineticProfiles,
   calculateKineticState,
@@ -12,7 +12,7 @@ import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 const CHALDEAN_HOURS = ['Saturn', 'Jupiter', 'Mars', 'Sun', 'Venus', 'Mercury', 'Moon']
 
 async function fetchKineticsEnvelope(_lat: number, _lon: number) {
-  const alchm = await planetaryAPI.getAlchemicalQuantities(new Date(), _lat, _lon)
+  const alchm = await backend.alchemy.defaultQuantities(new Date(), _lat, _lon)
   const kineticVal = Number(alchm?.kinetic_val ?? 0)
   const thermoVal = Number(alchm?.thermo_val ?? 0)
   const spirit = Number(alchm?.spirit_score ?? 0)

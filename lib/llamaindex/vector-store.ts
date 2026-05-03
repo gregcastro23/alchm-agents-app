@@ -5,7 +5,7 @@
  * Uses ChromaDB for efficient semantic search across historical agent knowledge.
  */
 
-import { ChromaClient, Collection } from 'chromadb'
+import type { ChromaClient, Collection } from 'chromadb'
 import { logger } from '@/lib/structured-logger'
 
 // Type definitions
@@ -58,7 +58,7 @@ export interface QueryOptions {
 }
 
 // Global client instance
-let chromaClient: ChromaClient | null = null
+let chromaClient: any | null = null
 let connectionRetries = 0
 const MAX_RETRIES = 3
 const RETRY_DELAY = 1000
@@ -78,6 +78,7 @@ export async function initializeVectorStore(
   const database = config?.database || process.env.CHROMADB_DATABASE || 'default_database'
 
   try {
+    const { ChromaClient } = await import('chromadb')
     chromaClient = new ChromaClient({
       path: url,
       auth: config?.authToken ? { provider: 'token', credentials: config.authToken } : undefined,

@@ -9,7 +9,7 @@ import {
   type AgentInteractionData,
   type ConversationContext,
 } from '@/lib/galileo-agent-logger'
-import { planetaryAPI } from '@/lib/planetary-api-client'
+import { backend, getAlchemicalQuantitiesLegacy } from '@/lib/backend'
 import { ANumberCalculator } from '@/lib/core-energy-rules'
 
 const planetaryPositionInputSchema = z.object({
@@ -48,7 +48,7 @@ const calculatePlanetaryPosition = tool({
   inputSchema: planetaryPositionInputSchema,
   execute: async ({ planet, date, latitude, longitude }: PlanetaryPositionInput) => {
     const when = date ? new Date(date) : new Date()
-    const raw = await planetaryAPI.getPlanetaryPositions(when, latitude, longitude)
+    const raw = await backend.planetary.positions(when, latitude, longitude)
     const positions = raw?.planetary_positions || {}
     const matchKey = Object.keys(positions).find(
       k => k.toLowerCase() === String(planet).toLowerCase()
@@ -81,7 +81,7 @@ const getHistoricalInterpretation = tool({
     let resolvedSign = sign
     if (!resolvedSign) {
       const when = date ? new Date(date) : new Date()
-      const raw = await planetaryAPI.getPlanetaryPositions(when)
+      const raw = await backend.planetary.positions(when)
       const positions = raw?.planetary_positions || {}
       const matchKey = Object.keys(positions).find(
         k => k.toLowerCase() === String(planet).toLowerCase()
@@ -126,7 +126,7 @@ export async function POST(req: Request) {
         }
       | undefined = undefined
     try {
-      const alchmData = await planetaryAPI.getAlchemicalQuantitiesLegacy()
+      const alchmData = await getAlchemicalQuantitiesLegacy()
       const spirit = alchmData?.['Alchemy Effects']?.['Total Spirit'] || 0
       const essence = alchmData?.['Alchemy Effects']?.['Total Essence'] || 0
       const matter = alchmData?.['Alchemy Effects']?.['Total Matter'] || 0

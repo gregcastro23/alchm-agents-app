@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { routeTask } from '@/lib/agents/router'
 import { agentKineticProfiles } from '@/lib/agents/kinetic-profiles'
+import { ConsciousnessMemorySystem } from '@/lib/agents/consciousness-memory'
 
 // Map clock hour to traditional planetary-hour ruler. The deleted
 // `AlchemicalKineticsClient.get(...)` returned `timing.planetaryHours[]`; we
@@ -41,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     // The deleted AlchemicalKineticsClient returned a `timing.planetaryHours`
     // array; we only use the current one downstream, so derive it locally.
-    // (Backend planetary positions are available via `planetaryAPI.getPlanetaryPositions(...)`
+    // (Backend planetary positions are available via `backend.planetary.positions(...)` from @/lib/backend
     // if richer context is added later.)
     const currentHour = getPlanetaryHourForDate(new Date()) || 'Sun'
 

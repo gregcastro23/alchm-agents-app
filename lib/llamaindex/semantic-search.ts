@@ -5,8 +5,7 @@
  * Includes filtering, reranking, and multi-agent search support.
  */
 
-import { getOrCreateCollection, queryCollection, type QueryResult } from './vector-store'
-import { generateQueryEmbedding } from './embeddings-service'
+import { type QueryResult } from './vector-store'
 
 // Configuration
 const COLLECTION_NAME = 'historical_agents'
@@ -65,6 +64,10 @@ export async function semanticSearch(
   const useReranking = options?.useReranking !== false
 
   try {
+    // Dynamic import for vector store and embeddings to prevent loading heavy modules
+    const { getOrCreateCollection, queryCollection } = await import('./vector-store')
+    const { generateQueryEmbedding } = await import('./embeddings-service')
+
     console.log(`[SemanticSearch] Searching for: "${query}" (topK=${topK}, threshold=${threshold})`)
 
     // Generate query embedding

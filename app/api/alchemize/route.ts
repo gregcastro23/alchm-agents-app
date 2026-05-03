@@ -1,34 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { planetaryAPI } from '@/lib/planetary-api-client'
+import { backend, getAlchemicalQuantitiesLegacy, BackendError } from '@/lib/backend'
 
 export const runtime = 'nodejs'
 
-export async function POST(req: NextRequest) {
+async function handle(legacy: boolean, date: Date, latitude?: number, longitude?: number) {
   try {
-    const url = new URL(req.url)
-    const legacy = url.searchParams.get('legacy') === 'true'
-    const body = await req.json().catch(() => ({}))
-    const date = body?.date ? new Date(body.date) : new Date()
-    const latitude = typeof body?.latitude === 'number' ? body.latitude : undefined
-    const longitude = typeof body?.longitude === 'number' ? body.longitude : undefined
     const data = legacy
-      ? await planetaryAPI.getAlchemicalQuantitiesLegacy(date, latitude, longitude)
-      : await planetaryAPI.getAlchemicalQuantities(date, latitude, longitude)
+      ? await getAlchemicalQuantitiesLegacy(date, latitude, longitude)
+      : await backend.alchemy.defaultQuantities(date, latitude, longitude)
     return NextResponse.json(data)
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || 'alchemize failed' }, { status: 502 })
+  } catch (err) {
+    const status = err instanceof BackendError ? err.status : 502
+    const message = err instanceof Error ? err.message : 'alchemize failed'
+    return NextResponse.json({ error: message }, { status })
   }
 }
 
+export async function POST(req: NextRequest) {
+  const url = new URL(req.url)
+  const legacy = url.searchParams.get('legacy') === 'true'
+  const body = await req.json().catch(() => ({}))
+  const date = body?.date ? new Date(body.date) : new Date()
+  const latitude = typeof body?.latitude === 'number' ? body.latitude : undefined
+  const longitude = typeof body?.longitude === 'number' ? body.longitude : undefined
+  return handle(legacy, date, latitude, longitude)
+}
+
 export async function GET(req: NextRequest) {
-  try {
-    const url = new URL(req.url)
-    const legacy = url.searchParams.get('legacy') === 'true'
-    const data = legacy
-      ? await planetaryAPI.getAlchemicalQuantitiesLegacy(new Date())
-      : await planetaryAPI.getAlchemicalQuantities(new Date())
-    return NextResponse.json(data)
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || 'alchemize failed' }, { status: 502 })
-  }
+  const url = new URL(req.url)
+  const legacy = url.searchParams.get('legacy') === 'true'
+  return handle(legacy, new Date())
 }

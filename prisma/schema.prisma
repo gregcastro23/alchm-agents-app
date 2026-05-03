@@ -8,7 +8,7 @@ datasource db {
 }
 
 model AIPersonality {
-  id                     String                @id
+  id                     String                @id @default(cuid())
   userId                 String
   personalityId          String                @unique
   birthChartData         Json
@@ -37,7 +37,7 @@ model AIPersonality {
 }
 
 model Achievement {
-  id              String        @id
+  id              String        @id @default(cuid())
   personalityId   String
   achievementType String
   achievementData Json
@@ -49,7 +49,7 @@ model Achievement {
 }
 
 model AgentConversation {
-  id                 String            @id
+  id                 String            @id @default(cuid())
   agentId            String
   sessionId          String
   userId             String?
@@ -73,7 +73,7 @@ model AgentConversation {
 }
 
 model AgentEvolution {
-  id                String            @id
+  id                String            @id @default(cuid())
   agentId           String
   fromStage         Int
   toStage           Int
@@ -94,7 +94,7 @@ model AgentEvolution {
 }
 
 model AgentKnowledge {
-  id                String            @id
+  id                String            @id @default(cuid())
   agentId           String
   category          String
   topic             String
@@ -117,7 +117,7 @@ model AgentKnowledge {
 }
 
 model ConsciousnessProfile {
-  id                   String              @id
+  id                   String              @id @default(cuid())
   userId               String
   surveyId             String
   profileData          Json
@@ -136,7 +136,7 @@ model ConsciousnessProfile {
 }
 
 model ConsciousnessState {
-  id                     String        @id
+  id                     String        @id @default(cuid())
   personalityId          String        @unique
   unifiedArchetype       String
   consciousnessSignature String
@@ -152,7 +152,7 @@ model ConsciousnessState {
 }
 
 model ConsciousnessSurvey {
-  id                   String                 @id
+  id                   String                 @id @default(cuid())
   userId               String
   responses            Json
   completedAt          DateTime               @default(now())
@@ -166,7 +166,7 @@ model ConsciousnessSurvey {
 }
 
 model EvolutionState {
-  id        String   @id
+  id        String   @id @default(cuid())
   userId    String
   agentId   String
   mcValue   Float
@@ -180,7 +180,7 @@ model EvolutionState {
 }
 
 model HistoricalEvent {
-  id               String             @id
+  id               String             @id @default(cuid())
   date             DateTime
   eventType        String
   description      String
@@ -195,7 +195,7 @@ model HistoricalEvent {
 }
 
 model PlanetaryMemory {
-  id              String           @id
+  id              String           @id @default(cuid())
   planet          String
   sign            String
   degree          Float
@@ -215,7 +215,7 @@ model PlanetaryMemory {
 }
 
 model PlanetaryTransit {
-  id              String            @id
+  id              String            @id @default(cuid())
   planet          String
   sign            String
   degreeStart     Float
@@ -235,7 +235,7 @@ model PlanetaryTransit {
 }
 
 model TrainingInteraction {
-  id            String        @id
+  id            String        @id @default(cuid())
   personalityId String
   userMessage   String
   aiResponse    String
@@ -250,7 +250,7 @@ model TrainingInteraction {
 }
 
 model TransitPattern {
-  id               String             @id
+  id               String             @id @default(cuid())
   planet           String
   patternType      String
   cycleLength      Float
@@ -266,7 +266,7 @@ model TransitPattern {
 }
 
 model UserSession {
-  id            String   @id
+  id            String   @id @default(cuid())
   userId        String
   personalityId String
   sessionData   Json
@@ -279,7 +279,7 @@ model UserSession {
 }
 
 model agent_attachment_usage {
-  id                String            @id
+  id                String            @id @default(cuid())
   agentId           String
   attachmentId      String
   conversationId    String?
@@ -297,7 +297,7 @@ model agent_attachment_usage {
 }
 
 model agent_attachments {
-  id                     String                   @id
+  id                     String                   @id @default(cuid())
   agentId                String
   name                   String
   description            String?
@@ -342,7 +342,7 @@ model agent_attachments {
 }
 
 model agent_consciousness {
-  id                 String    @id
+  id                 String    @id @default(cuid())
   agentId            String
   userId             String
   consciousnessLevel Float     @default(1.0)
@@ -361,7 +361,7 @@ model agent_consciousness {
 }
 
 model agent_evolution_states {
-  id                       String   @id
+  id                       String   @id @default(cuid())
   agentId                  String
   userId                   String?  @default("anonymous")
   currentLevel             String   @default("bronze")
@@ -380,7 +380,7 @@ model agent_evolution_states {
 }
 
 model agent_transit_events {
-  id                  String   @id
+  id                  String   @id @default(cuid())
   agentId             String
   timestamp           DateTime
   planetaryDegree     Float
@@ -416,7 +416,7 @@ model agent_transit_events {
 }
 
 model collaborative_session_participants {
-  id                          String                      @id
+  id                          String                      @id @default(cuid())
   sessionId                   String
   userId                      String
   username                    String?
@@ -436,7 +436,7 @@ model collaborative_session_participants {
 }
 
 model collaborative_session_updates {
-  id                          String                      @id
+  id                          String                      @id @default(cuid())
   sessionId                   String
   userId                      String?
   updateType                  String
@@ -451,7 +451,7 @@ model collaborative_session_updates {
 }
 
 model collaborative_time_sessions {
-  id                                 String                               @id
+  id                                 String                               @id @default(cuid())
   sessionCode                        String                               @unique
   title                              String
   description                        String?
@@ -481,7 +481,7 @@ model collaborative_time_sessions {
 }
 
 model consciousness_interactions {
-  id                 String   @id
+  id                 String   @id @default(cuid())
   userId             String?  @default("anonymous")
   agentId            String
   interactionType    String
@@ -498,7 +498,7 @@ model consciousness_interactions {
 }
 
 model consciousness_snapshots {
-  id                    String   @id
+  id                    String   @id @default(cuid())
   timestamp             DateTime @default(now())
   userId                String
   agentId               String
@@ -557,7 +557,7 @@ model consciousness_snapshots {
 }
 
 model created_agents {
-  id               String         @id
+  id               String         @id @default(cuid())
   creatorId        String?
   sourceType       String
   birthChart       Json?
@@ -577,7 +577,7 @@ model created_agents {
 }
 
 model historical_agents {
-  id                     String                   @id
+  id                     String                   @id @default(cuid())
   agentId                String                   @unique
   name                   String
   title                  String
@@ -654,7 +654,7 @@ model historical_agents {
 }
 
 model monica_contextual_help {
-  id              String    @id
+  id              String    @id @default(cuid())
   pageUrl         String
   contextType     String
   tipId           String
@@ -685,7 +685,7 @@ model monica_contextual_help {
 }
 
 model monica_interactions {
-  id                   String               @id
+  id                   String               @id @default(cuid())
   userId               String
   settingsId           String
   pageUrl              String
@@ -715,7 +715,7 @@ model monica_interactions {
 }
 
 model monica_knowledge {
-  id            String    @id
+  id            String    @id @default(cuid())
   userId        String
   knowledgeType String
   category      String
@@ -741,7 +741,7 @@ model monica_knowledge {
 }
 
 model monica_module_progress {
-  id                   String               @id
+  id                   String               @id @default(cuid())
   userId               String
   progressId           String
   moduleId             String
@@ -775,7 +775,7 @@ model monica_module_progress {
 }
 
 model monica_user_progress {
-  id                     String                   @id
+  id                     String                   @id @default(cuid())
   userId                 String                   @unique
   settingsId             String                   @unique
   level                  Int                      @default(1)
@@ -806,7 +806,7 @@ model monica_user_progress {
 }
 
 model monica_user_settings {
-  id                   String                @id
+  id                   String                @id @default(cuid())
   userId               String                @unique
   personality          String                @default("friendly")
   assistanceLevel      Int                   @default(2)
@@ -829,7 +829,7 @@ model monica_user_settings {
 }
 
 model notification_interaction_events {
-  id                    String                @id
+  id                    String                @id @default(cuid())
   notificationId        String
   userId                String
   eventType             String
@@ -847,7 +847,7 @@ model notification_interaction_events {
 }
 
 model notifications {
-  id        String   @id
+  id        String   @id @default(cuid())
   userId    String
   type      String
   title     String
@@ -863,7 +863,7 @@ model notifications {
 }
 
 model profiles {
-  id        String   @id
+  id        String   @id @default(cuid())
   userId    String   @unique
   name      String?
   avatarUrl String?
@@ -875,7 +875,7 @@ model profiles {
 }
 
 model subscriptions {
-  id        String    @id
+  id        String    @id @default(cuid())
   userId    String    @unique
   tier      String    @default("free")
   status    String    @default("active")
@@ -889,7 +889,7 @@ model subscriptions {
 }
 
 model temporal_analysis_cache {
-  id            String    @id
+  id            String    @id @default(cuid())
   queryHash     String    @unique
   queryData     Json
   resultData    Json
@@ -908,7 +908,7 @@ model temporal_analysis_cache {
 }
 
 model temporal_bookmarks {
-  id            String    @id
+  id            String    @id @default(cuid())
   userId        String?
   title         String
   description   String?
@@ -933,7 +933,7 @@ model temporal_bookmarks {
 }
 
 model temporal_patterns {
-  id                 String    @id
+  id                 String    @id @default(cuid())
   patternType        String
   degree             Float
   frequency          Int
@@ -969,7 +969,7 @@ model temporal_patterns {
 }
 
 model transit_monitoring_jobs {
-  id                   String    @id
+  id                   String    @id @default(cuid())
   jobType              String
   targetUserId         String?
   targetChartId        String?
@@ -1001,7 +1001,7 @@ model transit_monitoring_jobs {
 }
 
 model transit_notifications {
-  id                              String                            @id
+  id                              String                            @id @default(cuid())
   userId                          String
   natalChartId                    String
   transitSignificanceId           String?
@@ -1042,7 +1042,7 @@ model transit_notifications {
 }
 
 model transit_significances {
-  id                       String                  @id
+  id                       String                  @id @default(cuid())
   chartId                  String
   userId                   String
   natalChartId             String
@@ -1094,7 +1094,7 @@ model transit_significances {
 }
 
 model user_natal_charts {
-  id                    String                  @id
+  id                    String                  @id @default(cuid())
   userId                String
   chartName             String
   description           String?
@@ -1131,7 +1131,7 @@ model user_natal_charts {
 }
 
 model user_profiles {
-  id                   String           @id
+  id                   String           @id @default(cuid())
   userId               String           @unique
   birthDate            DateTime
   birthTime            String?
@@ -1150,7 +1150,7 @@ model user_profiles {
 }
 
 model users {
-  id             String           @id
+  id             String           @id @default(cuid())
   email          String           @unique
   passwordHash   String?
   name           String?
@@ -1244,7 +1244,7 @@ model RAGFeedback {
 }
 
 model Feedback {
-  id        String   @id
+  id        String   @id @default(cuid())
   userId    String?
   category  String
   rating    Int?

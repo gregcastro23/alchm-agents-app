@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { defaultAlchemicalMCPConfig, validateTokenEquilibrium } from '@/test/alchemical-devtools/mcp-config'
+import { getPlanetaryPositionsAction, getAlchemicalQuantitiesAction } from '@/lib/actions/backend-actions'
 
 export interface PlanetaryPosition {
   planet: string
@@ -91,17 +92,16 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
     try {
       setData(prev => ({ ...prev, loading: true, error: null }))
 
-      const [posRes, alchmRes] = await Promise.all([
-        fetch('/api/astrologize'),
-        fetch('/api/alchemize?legacy=true'),
+      const [posData, alchmData] = await Promise.all([
+        getPlanetaryPositionsAction(),
+        getAlchemicalQuantitiesAction(true),
       ])
-      if (!posRes.ok) throw new Error(`positions failed: ${posRes.status}`)
-      if (!alchmRes.ok) throw new Error(`alchemize failed: ${alchmRes.status}`)
-      const posData = await posRes.json()
-      const alchmData = await alchmRes.json()
+
+      if ((posData as any).error) throw new Error((posData as any).error)
+      if ((alchmData as any).error) throw new Error((alchmData as any).error)
 
       const planetaryPositions: PlanetaryPosition[] = Object.entries(
-        posData?.planetary_positions || {}
+        (posData as any)?.planetary_positions || {}
       ).map(([name, body]: [string, any]) => ({
         planet: name,
         sign: body?.sign ?? '',
@@ -110,21 +110,21 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
       }))
 
       const alchmQuantities: AlchemicalQuantities = {
-        spirit: Number(alchmData?.spirit_score ?? 0),
-        essence: Number(alchmData?.essence_score ?? 0),
-        matter: Number(alchmData?.matter_score ?? 0),
-        substance: Number(alchmData?.substance_score ?? 0),
-        Heat: Number(alchmData?.Heat ?? 0),
-        Entropy: Number(alchmData?.Entropy ?? 0),
-        Reactivity: Number(alchmData?.Reactivity ?? 0),
-        Energy: Number(alchmData?.Energy ?? 0),
+        spirit: Number((alchmData as any)?.spirit_score ?? 0),
+        essence: Number((alchmData as any)?.essence_score ?? 0),
+        matter: Number((alchmData as any)?.matter_score ?? 0),
+        substance: Number((alchmData as any)?.substance_score ?? 0),
+        Heat: Number((alchmData as any)?.Heat ?? 0),
+        Entropy: Number((alchmData as any)?.Entropy ?? 0),
+        Reactivity: Number((alchmData as any)?.Reactivity ?? 0),
+        Energy: Number((alchmData as any)?.Energy ?? 0),
       }
 
       setData({
         timestamp: new Date().toISOString(),
         planetaryPositions,
         alchmQuantities,
-        monicaConstant: Number(alchmData?.['A-Number'] ?? 0),
+        monicaConstant: Number((alchmData as any)?.['A-Number'] ?? 0),
         loading: false,
         error: null,
         lastUpdated: new Date(),

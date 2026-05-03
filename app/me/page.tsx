@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { calculateMC } from '@/lib/monica/monica-constant-validator'
-import { planetaryAPI } from '@/lib/planetary-api-client'
+import { getAlchemicalQuantitiesLegacy } from '@/lib/backend'
 
 export const dynamic = 'force-dynamic'
 
@@ -119,7 +119,7 @@ export default async function MePage() {
     // Backend does not currently return Total Effect Value (Fire/Water/Air/Earth)
     // or Dominant Element/Modality — populate neutral defaults so legacy UI works.
     // TODO: backfill elemental decomposition once Railway exposes it.
-    const legacy = await planetaryAPI.getAlchemicalQuantitiesLegacy(
+    const legacy = await getAlchemicalQuantitiesLegacy(
       birthDate,
       birth.latitude ?? 0,
       birth.longitude ?? 0

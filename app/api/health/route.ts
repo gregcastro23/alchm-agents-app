@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { backend } from '@/lib/backend'
 
 export const dynamic = 'force-dynamic'
 
@@ -64,29 +65,14 @@ export async function GET() {
 
   // Backend service health check
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000'
     const start = Date.now()
-
-    const response = await fetch(`${backendUrl}/api/health`, {
-      method: 'GET',
-      headers: { 'User-Agent': 'Frontend-HealthCheck/1.0' },
-      signal: AbortSignal.timeout(5000), // 5 second timeout
-    })
-
+    await backend.health()
     const latency = Date.now() - start
 
-    if (response.ok) {
-      healthCheck.checks.backend = {
-        status: 'healthy',
-        latency,
-        error: null,
-      }
-    } else {
-      healthCheck.checks.backend = {
-        status: 'degraded',
-        latency,
-        error: `Backend returned status ${response.status}`,
-      }
+    healthCheck.checks.backend = {
+      status: 'healthy',
+      latency,
+      error: null,
     }
   } catch (error) {
     healthCheck.checks.backend = {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { useUser } from '@clerk/nextjs'
+import { useSession } from 'next-auth/react'
 import type { AgentBlueprint } from '@/lib/api-client/consciousness-client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -186,7 +186,8 @@ const TemporalClient = lazy(() =>
 
 
 function PhilosophersStoneInner() {
-  const { user } = useUser()
+  const { data: session } = useSession()
+  const user = session?.user as { id?: string } | undefined
   const searchParams = useSearchParams()
   const templateAgentId = searchParams.get('template')
 
