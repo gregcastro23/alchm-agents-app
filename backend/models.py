@@ -1,9 +1,9 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, Boolean, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from datetime import datetime
+from sqlalchemy.orm import relationship, DeclarativeBase
+from datetime import datetime, timezone
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
 
 class HistoricalAgent(Base):
     __tablename__ = "historical_agents"
@@ -76,7 +76,7 @@ class HistoricalAgent(Base):
     wisdomShared = Column(Integer, default=0)
     resonanceScore = Column(Float, default=0.5)
     evolutionPoints = Column(Integer, default=0)
-    lastActive = Column(DateTime, default=datetime.utcnow)
+    lastActive = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     isActive = Column(Boolean, default=True)
     
     # Metadata
@@ -96,7 +96,7 @@ class AgentConversation(Base):
     userMessage = Column(String, nullable=False)
     agentResponse = Column(String, nullable=False)
     
-    createdAt = Column(DateTime, default=datetime.utcnow)
+    createdAt = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     contextData = Column(JSON)
     
     responseTime = Column(Float)
