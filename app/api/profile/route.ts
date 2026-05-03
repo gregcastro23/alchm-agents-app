@@ -84,7 +84,7 @@ export async function PATCH(req: Request) {
       Energy: alchm?.Energy || 0,
     })
 
-    const profile = await prisma.userProfile.upsert({
+    const profile = await prisma.user_profiles.upsert({
       where: { userId },
       update: {
         birthDate,
@@ -94,9 +94,9 @@ export async function PATCH(req: Request) {
           latitude: birthInfo.latitude,
           longitude: birthInfo.longitude,
         },
-        natalChart: horoscope,
+        natalChart: horoscope as any,
         monicaConstant: monica.value,
-        dominantElement: alchm?.['Dominant Element'] || 'Fire',
+        dominantElement: (alchm as any)?.['Dominant Element'] || 'Fire',
         ...(typeof sharing?.allowPublicAgents === 'boolean'
           ? { allowPublicAgents: sharing.allowPublicAgents }
           : {}),
@@ -113,9 +113,9 @@ export async function PATCH(req: Request) {
           latitude: birthInfo.latitude,
           longitude: birthInfo.longitude,
         },
-        natalChart: horoscope,
+        natalChart: horoscope as any,
         monicaConstant: monica.value,
-        dominantElement: alchm?.['Dominant Element'] || 'Fire',
+        dominantElement: (alchm as any)?.['Dominant Element'] || 'Fire',
       },
     })
 
@@ -161,7 +161,7 @@ export async function PATCH(req: Request) {
           essence,
           matter,
           substance,
-          dominantElement: alchm?.['Dominant Element'] || 'Fire',
+          dominantElement: (alchm as any)?.['Dominant Element'] || 'Fire',
         },
       },
     })

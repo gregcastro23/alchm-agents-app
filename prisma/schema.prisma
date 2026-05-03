@@ -21,7 +21,7 @@ model AIPersonality {
   consciousnessProfileId String?
   planetaryMemoryId      String?               @unique
   createdAt              DateTime              @default(now())
-  updatedAt              DateTime
+  updatedAt              DateTime @updatedAt
   ConsciousnessProfile   ConsciousnessProfile? @relation(fields: [consciousnessProfileId], references: [id])
   PlanetaryMemory        PlanetaryMemory?      @relation(fields: [planetaryMemoryId], references: [id])
   ConsciousnessSurvey    ConsciousnessSurvey?  @relation(fields: [surveyId], references: [id])
@@ -107,7 +107,7 @@ model AgentKnowledge {
   contextTags       Json?
   relatedTopics     Json?
   createdAt         DateTime          @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime @updatedAt
   historical_agents historical_agents @relation(fields: [agentId], references: [agentId])
 
   @@index([agentId])
@@ -127,7 +127,7 @@ model ConsciousnessProfile {
   conversationStarters Json
   personalitySummary   String
   createdAt            DateTime            @default(now())
-  updatedAt            DateTime
+  updatedAt            DateTime @updatedAt
   AIPersonality        AIPersonality[]
   ConsciousnessSurvey  ConsciousnessSurvey @relation(fields: [surveyId], references: [id])
 
@@ -145,7 +145,7 @@ model ConsciousnessState {
   behavioralMatrix       Json
   growthTrajectory       Json
   createdAt              DateTime      @default(now())
-  updatedAt              DateTime
+  updatedAt              DateTime @updatedAt
   AIPersonality          AIPersonality @relation(fields: [personalityId], references: [personalityId])
 
   @@index([personalityId])
@@ -176,7 +176,7 @@ model EvolutionState {
   substance Float
   aNumber   Float
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
 }
 
 model HistoricalEvent {
@@ -187,7 +187,7 @@ model HistoricalEvent {
   significance     Int
   planetaryConfig  Json
   createdAt        DateTime           @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime @updatedAt
   PlanetaryTransit PlanetaryTransit[] @relation("HistoricalEventToPlanetaryTransit")
 
   @@index([date])
@@ -206,7 +206,7 @@ model PlanetaryMemory {
   trainedThemes   Json
   contextualNotes String?
   createdAt       DateTime         @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime @updatedAt
   AIPersonality   AIPersonality?
   TransitPattern  TransitPattern[] @relation("PlanetaryMemoryToTransitPattern")
 
@@ -225,7 +225,7 @@ model PlanetaryTransit {
   retrograde      Boolean           @default(false)
   historicalNote  String?
   createdAt       DateTime          @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime @updatedAt
   HistoricalEvent HistoricalEvent[] @relation("HistoricalEventToPlanetaryTransit")
   TransitPattern  TransitPattern[]  @relation("PlanetaryTransitToTransitPattern")
 
@@ -258,7 +258,7 @@ model TransitPattern {
   themes           Json
   reliability      Float
   createdAt        DateTime           @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime @updatedAt
   PlanetaryMemory  PlanetaryMemory[]  @relation("PlanetaryMemoryToTransitPattern")
   PlanetaryTransit PlanetaryTransit[] @relation("PlanetaryTransitToTransitPattern")
 
@@ -326,7 +326,7 @@ model agent_attachments {
   isActive               Boolean                  @default(true)
   priority               Int                      @default(0)
   createdAt              DateTime                 @default(now())
-  updatedAt              DateTime
+  updatedAt              DateTime @updatedAt
   agent_attachment_usage agent_attachment_usage[]
   historical_agents      historical_agents        @relation(fields: [agentId], references: [agentId])
 
@@ -352,7 +352,7 @@ model agent_consciousness {
   lastInteraction    DateTime  @default(now())
   lastEvolution      DateTime?
   createdAt          DateTime  @default(now())
-  updatedAt          DateTime
+  updatedAt          DateTime @updatedAt
 
   @@unique([agentId, userId])
   @@index([agentId])
@@ -372,7 +372,7 @@ model agent_evolution_states {
   evolutionHistory         String   @default("[]")
   affinityScores           String   @default("{}")
   createdAt                DateTime @default(now())
-  updatedAt                DateTime
+  updatedAt                DateTime @updatedAt
 
   @@unique([agentId, userId])
   @@index([agentId])
@@ -403,7 +403,7 @@ model agent_transit_events {
   clusterGroup        String?
   reinforcementScore  Float    @default(0)
   createdAt           DateTime @default(now())
-  updatedAt           DateTime
+  updatedAt           DateTime @updatedAt
 
   @@index([agentId, planetaryDegree])
   @@index([agentId, timestamp])
@@ -470,7 +470,7 @@ model collaborative_time_sessions {
   lastActivity                       DateTime                             @default(now())
   expiresAt                          DateTime
   createdAt                          DateTime                             @default(now())
-  updatedAt                          DateTime
+  updatedAt                          DateTime @updatedAt
   collaborative_session_participants collaborative_session_participants[]
   collaborative_session_updates      collaborative_session_updates[]
 
@@ -544,7 +544,7 @@ model consciousness_snapshots {
   temperature           Float
   tokensUsed            Int      @default(0)
   createdAt             DateTime @default(now())
-  updatedAt             DateTime
+  updatedAt             DateTime @updatedAt
 
   @@index([agentId, timestamp])
   @@index([evolutionTrajectory])
@@ -630,7 +630,7 @@ model historical_agents {
   version                String                   @default("1.0.0")
   craftedBy              String                   @default("philosopher-stone")
   createdAt              DateTime                 @default(now())
-  updatedAt              DateTime
+  updatedAt              DateTime @updatedAt
   AgentConversation      AgentConversation[]
   AgentEvolution         AgentEvolution[]
   AgentKnowledge         AgentKnowledge[]
@@ -674,7 +674,7 @@ model monica_contextual_help {
   bounceRate      Float     @default(0.0)
   conversionRate  Float     @default(0.0)
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime @updatedAt
 
   @@unique([pageUrl, tipId, version])
   @@index([contextType])
@@ -730,7 +730,7 @@ model monica_knowledge {
   supersededBy  String?
   validUntil    DateTime?
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime @updatedAt
 
   @@unique([userId, knowledgeType, key])
   @@index([category])
@@ -763,7 +763,7 @@ model monica_module_progress {
   struggledWith        Json?
   masteredConcepts     Json?
   createdAt            DateTime             @default(now())
-  updatedAt            DateTime
+  updatedAt            DateTime @updatedAt
   monica_user_progress monica_user_progress @relation(fields: [progressId], references: [id], onDelete: Cascade)
 
   @@unique([userId, moduleId])
@@ -795,7 +795,7 @@ model monica_user_progress {
   preferredDifficulty    String                   @default("intermediate")
   learningVelocity       Float                    @default(1.0)
   createdAt              DateTime                 @default(now())
-  updatedAt              DateTime
+  updatedAt              DateTime @updatedAt
   monica_module_progress monica_module_progress[]
   monica_user_settings   monica_user_settings     @relation(fields: [settingsId], references: [id], onDelete: Cascade)
 
@@ -821,7 +821,7 @@ model monica_user_settings {
   adaptivePersonality  Boolean               @default(true)
   memoryRetention      Boolean               @default(true)
   createdAt            DateTime              @default(now())
-  updatedAt            DateTime
+  updatedAt            DateTime @updatedAt
   monica_interactions  monica_interactions[]
   monica_user_progress monica_user_progress?
 
@@ -855,7 +855,7 @@ model notifications {
   data      Json?
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
 
   @@index([createdAt])
   @@index([read])
@@ -869,7 +869,7 @@ model profiles {
   avatarUrl String?
   birthInfo Json?
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
 }
@@ -900,7 +900,7 @@ model temporal_analysis_cache {
   lastHit       DateTime?
   expiresAt     DateTime
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime @updatedAt
 
   @@index([expiresAt])
   @@index([hitCount])
@@ -924,7 +924,7 @@ model temporal_bookmarks {
   executionTime Int?
   resultCount   Int?
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime @updatedAt
 
   @@index([accessCount])
   @@index([isPublic])
@@ -958,7 +958,7 @@ model temporal_patterns {
   cacheExpiry        DateTime?
   lastCalculated     DateTime  @default(now())
   createdAt          DateTime  @default(now())
-  updatedAt          DateTime
+  updatedAt          DateTime @updatedAt
 
   @@index([agentCount])
   @@index([dominantElement])
@@ -992,7 +992,7 @@ model transit_monitoring_jobs {
   avgProcessingTime    Float?
   cacheHitRate         Float?
   createdAt            DateTime  @default(now())
-  updatedAt            DateTime
+  updatedAt            DateTime @updatedAt
 
   @@index([jobType])
   @@index([scheduledFor])
@@ -1028,7 +1028,7 @@ model transit_notifications {
   expiresAt                       DateTime?
   isActive                        Boolean                           @default(true)
   createdAt                       DateTime                          @default(now())
-  updatedAt                       DateTime
+  updatedAt                       DateTime @updatedAt
   notification_interaction_events notification_interaction_events[]
   user_natal_charts               user_natal_charts                 @relation(fields: [natalChartId], references: [id], onDelete: Cascade)
   transit_significances           transit_significances?            @relation(fields: [transitSignificanceId], references: [id])
@@ -1079,7 +1079,7 @@ model transit_significances {
   userBookmarked           Boolean                 @default(false)
   userInteractionCount     Int                     @default(0)
   createdAt                DateTime                @default(now())
-  updatedAt                DateTime
+  updatedAt                DateTime @updatedAt
   transit_notifications    transit_notifications[]
   user_natal_charts        user_natal_charts       @relation(fields: [natalChartId], references: [id], onDelete: Cascade)
 
@@ -1120,7 +1120,7 @@ model user_natal_charts {
   transitCount          Int                     @default(0)
   notificationOn        Boolean                 @default(true)
   createdAt             DateTime                @default(now())
-  updatedAt             DateTime
+  updatedAt             DateTime @updatedAt
   transit_notifications transit_notifications[]
   transit_significances transit_significances[]
 
@@ -1142,7 +1142,7 @@ model user_profiles {
   allowPublicAgents    Boolean          @default(false)
   shareChartWithAgents Boolean          @default(true)
   createdAt            DateTime         @default(now())
-  updatedAt            DateTime
+  updatedAt            DateTime @updatedAt
   created_agents       created_agents[]
   users                users            @relation(fields: [userId], references: [id])
 
@@ -1254,7 +1254,7 @@ model Feedback {
   ip        String?
   status    String   @default("new")
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
 
   @@index([category])
   @@index([createdAt])

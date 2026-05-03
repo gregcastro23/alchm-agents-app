@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth/next'
 import { backend } from '@/lib/backend'
+import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 
 interface UnifiedAgentRequest {
   action: string
@@ -37,15 +39,36 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
         return NextResponse.json({ success: true, data: createData, timestamp })
 
       case 'interact':
-      case 'chat':
+      case 'chat': {
+        const session = await getServerSession()
+        const userId = (session?.user as any)?.id
+
         const chatData = await backend.agents.chat({
           agentId: parameters.agentId,
           message: parameters.message || parameters.userMessage,
           sessionId: parameters.sessionId,
-          userId: parameters.userId,
+          userId: parameters.userId || userId,
           context: parameters.context,
         })
+
+        // Conserve interaction logging
+        if (userId && chatData.text) {
+          const powerGained = Math.max(1, Math.floor(chatData.text.length / 100))
+          consciousnessPersistence.logInteraction({
+            userId,
+            agentId: parameters.agentId,
+            interactionType: 'historical-chat',
+            powerGained,
+            planetaryInfluence: 'unknown',
+            elementalResonance: 0.5,
+            metadata: {
+              userMessage: parameters.message || parameters.userMessage,
+            },
+          }).catch(err => console.warn('Failed to log unified agent interaction:', err))
+        }
+
         return NextResponse.json({ success: true, data: chatData, timestamp })
+      }
 
       // Extended actions placeholder for further backend endpoints
       case 'update':

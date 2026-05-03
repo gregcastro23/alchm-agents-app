@@ -79,7 +79,7 @@ const defaultSettings: UserSettings = {
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession()
-    const userId = session?.user?.id
+    const userId = (session?.user as any)?.id
 
     if (!userId) {
       return NextResponse.json(
@@ -180,7 +180,7 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const session = await getServerSession()
-    const userId = session?.user?.id
+    const userId = (session?.user as any)?.id
 
     if (!userId) {
       return NextResponse.json(
@@ -300,7 +300,7 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const session = await getServerSession()
-    const userId = session?.user?.id
+    const userId = (session?.user as any)?.id
 
     if (!userId) {
       return NextResponse.json(

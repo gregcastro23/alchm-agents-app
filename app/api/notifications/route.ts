@@ -31,10 +31,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Get user data for personalization
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
       include: {
-        subscription: true,
+        subscriptions: true,
       },
     })
 
@@ -112,8 +112,9 @@ export async function GET(req: NextRequest) {
         interactionType: 'notification',
         ...(type && {
           contextData: {
-            contains: `"notificationType":"${type}"`,
-          },
+            path: ['notificationType'],
+            equals: type,
+          } as any,
         }),
       },
       orderBy: { createdAt: 'desc' },

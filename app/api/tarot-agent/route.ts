@@ -162,8 +162,7 @@ Format your response with:
       const startTime = Date.now()
 
       const { text } = await generateText({
-        model: openai('gpt-5.5'),
-        system: systemPrompt,
+        model: openai('gpt-5.5') as any,        system: systemPrompt,
         prompt:
           question || `Tell me about the energy and meaning of ${cardName || 'this tarot card'}`,
         maxTokens: 600,
@@ -178,7 +177,7 @@ Format your response with:
         agentResponse: text,
         planet: cardName || 'Tarot',
         sign: suit || readingType,
-        degree: cardInfo?.number || 0,
+        degree: (cardInfo?.number || 0).toString(),
         dignity: 'neutral', // Tarot doesn't use traditional dignity
         elementalInfo: {
           signElement: cardInfo?.element || suitInfo?.element || 'Mixed',

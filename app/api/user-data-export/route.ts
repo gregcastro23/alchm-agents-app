@@ -100,7 +100,7 @@ export async function GET(req: NextRequest) {
       monicaInteractions,
     ] = await Promise.all([
       // User basic data
-      prisma.user.findUnique({
+      prisma.users.findUnique({
         where: { id: userId },
         select: {
           id: true,
@@ -114,7 +114,7 @@ export async function GET(req: NextRequest) {
       }),
 
       // User profile with birth chart
-      prisma.profile.findUnique({
+      prisma.profiles.findUnique({
         where: { userId },
         select: {
           birthInfo: true,
@@ -124,7 +124,7 @@ export async function GET(req: NextRequest) {
       }),
 
       // Subscription data
-      prisma.subscription.findUnique({
+      prisma.subscriptions.findUnique({
         where: { userId },
         select: {
           tier: true,
@@ -136,7 +136,7 @@ export async function GET(req: NextRequest) {
       }),
 
       // User settings
-      prisma.monicaUserSettings.findUnique({
+      prisma.monica_user_settings.findUnique({
         where: { userId },
         select: {
           personality: true,
@@ -175,7 +175,7 @@ export async function GET(req: NextRequest) {
       }),
 
       // Agent evolution states
-      prisma.agentEvolutionState.findMany({
+      prisma.agent_evolution_states.findMany({
         where: { userId },
         select: {
           agentId: true,
@@ -270,14 +270,14 @@ export async function GET(req: NextRequest) {
         powerGained: interaction.powerGained,
         planetaryInfluence: interaction.planetaryInfluence,
         elementalResonance: interaction.elementalResonance,
-        createdAt: interaction.createdAt,
+        createdAt: interaction.timestamp,
         metadata: includeMetadata
           ? {
-              planetaryContext: interaction.planetaryContext
-                ? JSON.parse(interaction.planetaryContext as string)
+              planetaryContext: interaction.metadata
+                ? JSON.parse(interaction.metadata as string)
                 : null,
-              sessionMetadata: interaction.sessionMetadata
-                ? JSON.parse(interaction.sessionMetadata as string)
+              sessionMetadata: interaction.metadata
+                ? JSON.parse(interaction.metadata as string)
                 : null,
             }
           : null,
@@ -300,7 +300,7 @@ export async function GET(req: NextRequest) {
         monicaResponse: includeMetadata
           ? interaction.monicaResponse
           : '[Response redacted for privacy]',
-        createdAt: interaction.createdAt,
+        createdAt: interaction.timestamp,
         contextData:
           includeMetadata && interaction.contextData
             ? JSON.parse(interaction.contextData as string)
