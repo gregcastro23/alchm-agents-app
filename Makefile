@@ -28,7 +28,7 @@ dev-clean: ## Start development server with fresh build
 full-stack-dev: ## Start full-stack development with frontend and backend
 	concurrently \
 		"yarn dev" \
-		"cd backend && yarn dev" \
+		"cd backend && uvicorn main:app --reload --port 8000" \
 		--names "frontend,backend" \
 		--prefix-colors "cyan,magenta"
 
@@ -559,23 +559,23 @@ ha: test-historical-agents ## Shortcut for historical agents test
 # Backend Service Commands (September 2025)
 backend-install: ## Install backend dependencies
 	@echo "Installing backend dependencies..."
-	@cd backend && yarn install
+	@cd backend && pip install -r requirements.txt
 
 backend-dev: ## Start backend development server
 	@echo "Starting backend development server..."
-	@cd backend && ./scripts/start-dev.sh
+	@cd backend && uvicorn main:app --reload --port 8000
 
 backend-build: ## Build backend for production
 	@echo "Building backend..."
-	@cd backend && yarn build
+	@cd backend && ruff check . && python -m compileall .
 
 backend-start: ## Start backend production server
 	@echo "Starting backend production server..."
-	@cd backend && yarn start
+	@cd backend && uvicorn main:app --host 0.0.0.0 --port 8000
 
 backend-test: ## Run backend tests
 	@echo "Running backend tests..."
-	@cd backend && yarn test
+	@cd backend && pytest
 
 backend-status: ## Check backend service status
 	@echo "Checking backend service status..."

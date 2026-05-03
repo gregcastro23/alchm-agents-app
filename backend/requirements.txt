@@ -11,3 +11,6 @@ anthropic
 langchain
 chromadb
 galileo-sdk
+pytest
+pytest-asyncio
+ruff
