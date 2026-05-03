@@ -57,8 +57,7 @@ backend:test:
   extends: .backend_python_base
   stage: test
   script:
-    - echo "Running backend tests (placeholder)..."
-    - # pytest  # Uncomment once tests are added
+    - pytest
   only:
     changes:
       - backend/**/*
