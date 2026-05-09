@@ -30,7 +30,7 @@
     "linting-campaign:patterns": "node scripts/linting-campaign.js patterns",
     "test:chat": "npx tsx test/chat-system/run-tests.ts",
     "test:chat:unit": "vitest run test/chat-system/unit/ --config vitest.unit.config.ts",
-    "test:chat:integration": "vitest run test/chat-system/integration/",
+    "test:chat:integration": "vitest run test/chat-system/integration/ --config vitest.unit.config.ts",
     "test:chat:performance": "vitest run test/chat-system/performance/",
     "test:chat:watch": "vitest test/chat-system/unit/ test/chat-system/integration/",
     "test:chat:coverage": "vitest run --coverage test/chat-system/",
