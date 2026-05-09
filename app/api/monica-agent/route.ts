@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
-import { backend } from '@/lib/backend'
+import { backend, BackendError } from '@/lib/backend'
 import { prisma } from '@/lib/db'
 
 export async function POST(req: NextRequest) {
@@ -72,14 +72,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(response)
   } catch (error) {
     console.error('[Monica API Proxy] Error:', error)
+
+    const status = error instanceof BackendError ? 502 : 500
+
     return NextResponse.json(
       {
-        response: 'I apologize, but I encountered a technical error. Please try again.',
-        error: 'MONICA_API_ERROR',
+        error: 'MONICA_BACKEND_ERROR',
         details: error instanceof Error ? error.message : String(error),
-        monicaNote: 'My practical Taurus nature suggests checking the backend connection!',
       },
-      { status: 500 }
+      { status }
     )
   }
 }

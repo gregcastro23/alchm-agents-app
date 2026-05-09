@@ -196,7 +196,7 @@ export async function calculateEnhancedChart(
     // Generate local alchemical data as fallback or supplement
     console.log('Generating local alchemical calculations...')
     const horoscope = await generateAccurateHoroscope(birthInfo)
-    const localAlchemicalData = alchemize(birthInfo, horoscope)
+    const localAlchemicalData = await alchemize(birthInfo, horoscope)
 
     // Create planet positions from available data
     const planets: PlanetPosition[] = [

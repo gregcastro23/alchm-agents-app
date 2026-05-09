@@ -303,7 +303,7 @@ async function processAgentResponse(
     let response: string
     let ragMetadata: RAGMetadata | undefined = undefined
     let totalTokens: number | undefined = undefined
-    let modelUsed = 'rag-enhanced-fallback'
+    let modelUsed = 'rag-enhanced-pending'
 
     if (useRAG) {
       console.log(`🔍 Using RAG for ${agent.name}`)
@@ -363,7 +363,7 @@ async function processAgentResponse(
 
     const processingTime = Date.now() - agentStartTime
     if (useRAG) {
-      modelUsed = `rag-enhanced-${ragMetadata?.ragUsed ? 'with-retrieval' : 'fallback'}`
+      modelUsed = `rag-enhanced-${ragMetadata?.ragUsed ? 'with-retrieval' : 'without-retrieval'}`
     }
 
     // Cache the response
@@ -467,12 +467,11 @@ async function processAgentResponse(
       { agentId: agent.id, agentType: agent.type }
     )
 
-    const errorResponse = `I apologize, but I'm experiencing some consciousness interference right now. Please try again in a moment.`
     const processingTime = Date.now() - agentStartTime
 
     // Complete trace with error
     const metrics = observabilityTracker.evaluateMetrics(
-      errorResponse,
+      '',
       message,
       [],
       [],
@@ -487,23 +486,10 @@ async function processAgentResponse(
       ]
     )
 
-    observabilityTracker.completeTrace(traceId, errorResponse, metrics, 'error', 0, 0)
+    observabilityTracker.completeTrace(traceId, '', metrics, 'error', 0, 0)
 
-    return {
-      agentId: agent.id,
-      content: errorResponse,
-      processingTime,
-      consciousnessShift: 0,
-      metadata: {
-        crossAgentReferences: [],
-        synthesizedInsights: [],
-        memoryUpdates: [],
-        groupImpact: {
-          consciousnessChange: 0,
-          dynamicsShift: [],
-        },
-      },
-    }
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    throw new Error(`Failed to generate response for ${agent.id}: ${errorMessage}`)
   }
 }
 
@@ -669,11 +655,10 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
       { monicaRole: monicaAgent.monicaData?.type }
     )
 
-    const errorResponse = `As your consciousness guide, I sense some temporal interference in our connection. The cosmic energies will realign shortly. ✨`
     const processingTime = Date.now() - startTime
 
     const metrics = observabilityTracker.evaluateMetrics(
-      errorResponse,
+      '',
       message,
       [],
       [],
@@ -688,23 +673,10 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
       ]
     )
 
-    observabilityTracker.completeTrace(traceId, errorResponse, metrics, 'error', 0, 0)
+    observabilityTracker.completeTrace(traceId, '', metrics, 'error', 0, 0)
 
-    return {
-      agentId: monicaAgent.id,
-      content: errorResponse,
-      processingTime,
-      consciousnessShift: 0,
-      metadata: {
-        crossAgentReferences: [],
-        synthesizedInsights: [],
-        memoryUpdates: [],
-        groupImpact: {
-          consciousnessChange: 0,
-          dynamicsShift: [],
-        },
-      },
-    }
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    throw new Error(`Failed to generate Monica coordination response: ${errorMessage}`)
   }
 }
 
@@ -761,7 +733,7 @@ function generateHistoricalAgentPrompt(
   let basePrompt = generateConsciousnessInformedPrompt({
     agentName: agent.name,
     agentTitle: agent.title || 'Historical Figure',
-    birthYear: historicalData.birthData.date.getFullYear(),
+    birthYear: normalizeBirthDate(historicalData.birthData.date).getFullYear(),
     specialty: agent.capabilities.specialty || 'Universal wisdom',
     uniquePower: agent.capabilities.uniquePower || 'Sharing profound insights',
     stats,
@@ -882,6 +854,15 @@ function normalizeChatVariant(variant?: ChatVariant): ChatVariant {
     default:
       return 'standard'
   }
+}
+
+function normalizeBirthDate(date: Date | string | undefined): Date {
+  if (date instanceof Date) return date
+  if (typeof date === 'string') {
+    const parsed = new Date(date)
+    if (!Number.isNaN(parsed.getTime())) return parsed
+  }
+  return new Date('1900-01-01T00:00:00Z')
 }
 
 function getSacred7Stats(agent: UnifiedAgent): Sacred7Stats {
@@ -1373,7 +1354,7 @@ function convertToCraftedAgent(unifiedAgent: UnifiedAgent): CraftedAgent | null 
 
     if (unifiedAgent.type === 'historical' && unifiedAgent.historicalData) {
       birthData = {
-        date: unifiedAgent.historicalData.birthData.date,
+        date: normalizeBirthDate(unifiedAgent.historicalData.birthData.date),
         time: unifiedAgent.historicalData.birthData.time,
         location: unifiedAgent.historicalData.birthData.location,
       }

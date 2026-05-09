@@ -88,7 +88,7 @@ export async function createNatalChart(
   })
 
   // Calculate alchemical quantities
-  const alchmData = calculateAlchemicalQuantities(natalData.planets)
+  const alchmData = await calculateAlchemicalQuantities(natalData.planets)
 
   // Determine dominant element
   const elementCounts = { Fire: 0, Water: 0, Air: 0, Earth: 0 }
@@ -396,7 +396,7 @@ function calculateNatalChart({
 /**
  * Calculate alchemical quantities from planets data
  */
-function calculateAlchemicalQuantities(planets: any[]) {
+async function calculateAlchemicalQuantities(planets: any[]) {
   // Validate planets array
   if (!Array.isArray(planets) || planets.length === 0) {
     throw new Error('Invalid planets data: must be non-empty array')
@@ -451,7 +451,7 @@ function calculateAlchemicalQuantities(planets: any[]) {
   // Calculate alchemical quantities with error handling
   let alchmResult
   try {
-    alchmResult = alchemize(mockBirthInfo, mockHoroscope)
+    alchmResult = await alchemize(mockBirthInfo, mockHoroscope)
 
     if (!alchmResult || !alchmResult['Alchemy Effects']) {
       throw new Error('Alchemical calculation returned invalid data')

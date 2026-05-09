@@ -1,64 +1,18 @@
-// app/api/monica-agent/train-alchemical/route.ts
-//
-// The training pipeline (`@/lib/monica/alchemical-trainer`) was deleted as part
-// of the Railway backend migration. The route is preserved with stubbed
-// responses so the frontend's request/response contract still works; once
-// the training service is reimplemented on Railway this route should call it.
 import { NextResponse } from 'next/server'
 
-const UNAVAILABLE_PAYLOAD = {
-  status: 'unavailable',
-  message: 'training migrated to Railway backend',
-}
+const UNAVAILABLE_MESSAGE =
+  'Monica alchemical training is not exposed by the current backend surface.'
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json()
-    const {
-      mode = 'standard', // 'standard', 'hourly', 'retrograde'
-      exportFormat, // 'json', 'csv', 'summary'
-    } = body
-
-    // Build a placeholder payload that matches the legacy shape consumers
-    // already destructure (statistics/patterns/insights/samples/metadata),
-    // so the frontend renders an empty/unavailable state instead of crashing.
-    const stubResults: any = {
-      ...UNAVAILABLE_PAYLOAD,
-      metadata: { numSamples: 0, mode },
-      statistics: { averages: {} },
-      patterns: [],
-      insights: [],
-      samples: [],
-    }
-
-    let formattedResults: any = stubResults
-    if (exportFormat === 'summary') {
-      formattedResults = {
-        ...UNAVAILABLE_PAYLOAD,
-        mode,
-        timestamp: new Date().toISOString(),
-        summary: {
-          numSamples: 0,
-          statistics: {},
-          patterns: [],
-          topInsights: [],
-        },
-      }
-    } else if (exportFormat === 'csv') {
-      formattedResults = {
-        ...UNAVAILABLE_PAYLOAD,
-        csv: 'hour,spirit,essence,matter,substance,heat,entropy',
-        metadata: stubResults.metadata,
-      }
-    }
+    await req.json()
 
     return NextResponse.json({
-      success: true,
-      ...UNAVAILABLE_PAYLOAD,
-      mode,
-      data: formattedResults,
-      timestamp: new Date().toISOString(),
-    })
+      success: false,
+      error: 'MONICA_TRAINING_UNAVAILABLE',
+      message: UNAVAILABLE_MESSAGE,
+      backendRequired: true,
+    }, { status: 501 })
   } catch (error: any) {
     console.error('Alchemical training error:', error)
     return NextResponse.json(
@@ -93,6 +47,8 @@ export async function GET(req: Request) {
             'Location-based calculations',
             'Pattern recognition and insights',
           ],
+          status: 'unavailable',
+          backendRequired: true,
           endpoints: {
             POST: {
               parameters: {
@@ -111,17 +67,12 @@ export async function GET(req: Request) {
         },
       })
     } else if (mode === 'sample') {
-      // Training is unavailable post-migration; return an empty stub that
-      // mirrors the previous shape so the frontend's destructuring is safe.
       return NextResponse.json({
-        success: true,
-        ...UNAVAILABLE_PAYLOAD,
-        sample: {
-          statistics: {},
-          firstInsight: null,
-          patterns: [],
-        },
-      })
+        success: false,
+        error: 'MONICA_TRAINING_UNAVAILABLE',
+        message: UNAVAILABLE_MESSAGE,
+        backendRequired: true,
+      }, { status: 501 })
     }
 
     return NextResponse.json(

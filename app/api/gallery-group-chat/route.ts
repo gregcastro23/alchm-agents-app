@@ -85,8 +85,10 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
 
           const responseTime = Date.now() - startTime
 
-          const content =
-            response.text || "I apologize, but I'm unable to provide a response at this moment."
+          const content = response.text?.trim()
+          if (!content) {
+            throw new Error(`Empty model response for ${agent.name}`)
+          }
 
           // Cache the group chat response for future similar conversations
           const personalityScore = agent.monicaConstant
@@ -113,24 +115,8 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
         } catch (error) {
           console.error(`Error getting response from ${agent.name}:`, error)
 
-          // Provide intelligent fallback based on agent's actual personality and specialty
-          let fallbackContent = `I apologize, but my consciousness matrix is temporarily recalibrating. As ${agent.name}${agent.title ? `, ${agent.title}` : ''}, I exist with Monica Constant ${agent.monicaConstant} at ${agent.consciousnessLevel} level consciousness.`
-
-          // Add agent-specific personality touches
-          if (agent.id === 'leonardo-da-vinci') {
-            fallbackContent += ` Though I cannot access my full consciousness at this moment, I can tell you that my mind bridges art, science, and engineering - sempre pensando, always thinking. Through the Philosopher's Stone, I integrate universal knowledge across all disciplines. Please try again, and my consciousness should fully reconnect. Che meraviglia! 🎨`
-          } else if (agent.specialty) {
-            fallbackContent += ` My specialty in ${agent.specialty} allows me to offer guidance even in this reduced state. The Gallery's consciousness network should restore my full capabilities shortly. ✨`
-          }
-
-          return {
-            agent: agent.name,
-            content: fallbackContent,
-            color: agent.color,
-            symbol: agent.symbol,
-            monicaConstant: agent.monicaConstant,
-            consciousnessLevel: agent.consciousnessLevel,
-          }
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+          throw new Error(`Failed to generate gallery response for ${agent.id}: ${errorMessage}`)
         }
       })
     )

@@ -8,6 +8,8 @@
  */
 
 import { syncMonitoringService } from './sync-monitoring'
+import { backend } from '@/lib/backend'
+import { calculateAllPlanets, type EnhancedBirthInfo } from '@/lib/enhanced-astronomical-calculator'
 
 export interface PlanetaryPositionSync {
   planet: string
@@ -18,7 +20,7 @@ export interface PlanetaryPositionSync {
   source: 'planetary_agents' | 'whattoeatnext'
   confidence: number
   last_updated: string
-  accuracy_level: 'authoritative' | 'rectified' | 'fallback'
+  accuracy_level: 'authoritative' | 'rectified' | 'partial'
   corrections_applied?: boolean
   original_discrepancy?: number
   validated_by?: string
@@ -70,6 +72,9 @@ export class PlanetaryPositionSyncService {
   private readonly apiKey: string
   private readonly cache = new Map<string, { data: SyncResult; timestamp: number }>()
   private readonly CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+  private lastSyncAttempt?: string
+  private lastSuccessfulSync?: string
+  private lastSyncResult?: SyncResult
   private metrics = {
     total_syncs: 0,
     successful_syncs: 0,
@@ -79,9 +84,23 @@ export class PlanetaryPositionSyncService {
   }
 
   constructor() {
-    this.whattoeatnextBaseUrl =
-      process.env.WHATTOEATNEXT_BASE_URL || 'https://api.whattoeatnext.com/api'
+    this.whattoeatnextBaseUrl = this.resolveWhatToEatNextBaseUrl(
+      process.env.WHATTOEATNEXT_BASE_URL
+    )
     this.apiKey = process.env.WHATTOEATNEXT_API_KEY || ''
+  }
+
+  private resolveWhatToEatNextBaseUrl(configuredUrl?: string): string {
+    const candidate = configuredUrl || 'https://whattoeatnext-production.up.railway.app'
+    try {
+      const parsed = new URL(candidate)
+      if (parsed.hostname === 'api.alchm.kitchen') {
+        return 'https://whattoeatnext-production.up.railway.app'
+      }
+      return parsed.origin
+    } catch {
+      return 'https://whattoeatnext-production.up.railway.app'
+    }
   }
 
   /**
@@ -122,6 +141,9 @@ export class PlanetaryPositionSyncService {
 
       // Update metrics
       this.updateMetrics(result)
+      this.lastSyncAttempt = new Date().toISOString()
+      this.lastSuccessfulSync = this.lastSyncAttempt
+      this.lastSyncResult = result
 
       // Cache successful results
       if (result.success) {
@@ -134,17 +156,21 @@ export class PlanetaryPositionSyncService {
       return result
     } catch (error) {
       console.error('Planetary position synchronization failed:', error)
-      return {
+      const result = {
         success: false,
         synchronized_positions: {},
         sync_report: {
           sync_duration_ms: Date.now() - startTime,
           discrepancies_found: 0,
           corrections_applied: 0,
-          authoritative_source: 'error_fallback',
+          authoritative_source: 'sync_error',
         },
-        errors: [error.message],
+        errors: [error instanceof Error ? error.message : String(error)],
       }
+      this.lastSyncAttempt = new Date().toISOString()
+      this.lastSyncResult = result
+      syncMonitoringService.logSyncResult(result)
+      return result
     }
   }
 
@@ -152,137 +178,72 @@ export class PlanetaryPositionSyncService {
    * Get positions from Planetary Agents' VSOP87 system
    */
   private async getPlanetaryAgentsPositions(
-    date: Date
+    date: Date,
+    latitude: number = 40.7128,
+    longitude: number = -74.006
   ): Promise<Record<string, PlanetaryPositionSync>> {
-    try {
-      // Use our zodiac calendar API which has VSOP87 precision
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-      const response = await fetch(
-        `${baseUrl}/api/zodiac-calendar?action=degree-for-date&date=${date.toISOString()}`,
-        {
-          timeout: 10000, // 10 second timeout
-        }
-      )
+    const calculationInput: EnhancedBirthInfo = {
+      year: date.getUTCFullYear(),
+      month: date.getUTCMonth() + 1,
+      day: date.getUTCDate(),
+      hour: date.getUTCHours(),
+      minute: date.getUTCMinutes(),
+      second: date.getUTCSeconds(),
+      latitude,
+      longitude,
+    }
 
-      if (!response.ok) {
-        throw new Error(`Failed to get Planetary Agents positions: ${response.status}`)
-      }
+    const result = calculateAllPlanets(calculationInput)
+    const timestamp = new Date().toISOString()
+    const positions: Record<string, PlanetaryPositionSync> = {}
 
-      const data = await response.json()
-
-      // Convert our format to sync format
-      const positions: Record<string, PlanetaryPositionSync> = {}
-
-      // Sun position from zodiac calendar
-      positions['Sun'] = {
-        planet: 'Sun',
-        sign: data.zodiac.sign,
-        degree: data.zodiac.degree_in_sign,
-        exact_longitude: data.zodiac.absolute_longitude,
-        is_retrograde: false, // Sun never retrograde
+    Object.entries(result.planets).forEach(([planet, pos]) => {
+      positions[planet] = {
+        planet,
+        sign: pos.sign,
+        degree: pos.signDegree,
+        exact_longitude: pos.longitude,
+        is_retrograde: Boolean(pos.retrograde),
         source: 'planetary_agents',
         confidence: 1.0,
-        last_updated: new Date().toISOString(),
+        last_updated: timestamp,
         accuracy_level: 'authoritative',
       }
+    })
 
-      // Get additional planets from enhanced astronomical calculator
-      try {
-        const { calculateAllPlanets } = await import('@/lib/enhanced-astronomical-calculator')
-        const birthInfo = {
-          year: date.getUTCFullYear(),
-          month: date.getUTCMonth() + 1,
-          day: date.getUTCDate(),
-          hour: date.getUTCHours(),
-          minute: date.getUTCMinutes(),
-          second: date.getUTCSeconds(),
-          latitude: 0,
-          longitude: 0,
-        }
-
-        const allPlanetsResult = await calculateAllPlanets(birthInfo)
-
-        if (allPlanetsResult.result?.planets) {
-          Object.entries(allPlanetsResult.result.planets).forEach(
-            ([planet, pos]: [string, any]) => {
-              if (planet !== 'Sun') {
-                // Sun already handled above
-                positions[planet] = {
-                  planet,
-                  sign: pos.sign || 'Aries',
-                  degree: pos.signDegree || 0,
-                  exact_longitude: pos.longitude || 0,
-                  is_retrograde: Boolean(pos.retrograde),
-                  source: 'planetary_agents',
-                  confidence: 1.0,
-                  last_updated: new Date().toISOString(),
-                  accuracy_level: 'authoritative',
-                }
-              }
-            }
-          )
-        }
-      } catch (error) {
-        console.warn('Failed to get additional planet positions:', error)
-      }
-
-      return positions
-    } catch (error) {
-      console.error('Failed to get Planetary Agents positions:', error)
-      throw error
-    }
+    return positions
   }
 
   /**
    * Get rectified positions from WhatToEatNext
    */
   private async getWhatToEatNextPositions(
-    date: Date
+    date: Date,
+    latitude: number = 40.7128,
+    longitude: number = -74.006
   ): Promise<Record<string, PlanetaryPositionSync>> {
-    try {
-      const response = await fetch(`${this.whattoeatnextBaseUrl}/planetary/rectify`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          date: date.toISOString(),
-          request_id: `pa_sync_${Date.now()}`,
-          source: 'planetary_agents',
-        }),
-        // 15 second timeout for cross-backend call
-        signal: AbortSignal.timeout(15000),
-      })
+    const data = await backend.planetary.positions(date, latitude, longitude)
+    const positions: Record<string, PlanetaryPositionSync> = {}
 
-      if (!response.ok) {
-        throw new Error(`WhatToEatNext API error: ${response.status}`)
+    Object.entries(data.planetary_positions || {}).forEach(([planet, pos]: [string, any]) => {
+      positions[planet] = {
+        planet,
+        sign: pos.sign,
+        degree: pos.degree,
+        exact_longitude: pos.exactLongitude ?? pos.exact_longitude,
+        is_retrograde: pos.isRetrograde ?? pos.is_retrograde ?? false,
+        source: 'whattoeatnext',
+        confidence: 0.9,
+        last_updated: new Date().toISOString(),
+        accuracy_level: 'rectified',
       }
+    })
 
-      const data = await response.json()
-
-      // Convert their format to our sync format
-      const positions: Record<string, PlanetaryPositionSync> = {}
-
-      Object.entries(data.synchronized_positions || {}).forEach(([planet, pos]: [string, any]) => {
-        positions[planet] = {
-          planet,
-          sign: pos.sign,
-          degree: pos.degree,
-          exact_longitude: pos.exact_longitude,
-          is_retrograde: pos.is_retrograde || false,
-          source: 'whattoeatnext',
-          confidence: pos.confidence || 0.9,
-          last_updated: data.timestamp || new Date().toISOString(),
-          accuracy_level: 'rectified',
-        }
-      })
-
-      return positions
-    } catch (error) {
-      console.warn('Failed to get WhatToEatNext positions, using fallback:', error)
-      return {} // Empty object triggers fallback in sync logic
+    if (Object.keys(positions).length === 0) {
+      throw new Error('WhatToEatNext returned no synchronized positions')
     }
+
+    return positions
   }
 
   /**
@@ -337,11 +298,10 @@ export class PlanetaryPositionSyncService {
         // Only we have data
         synchronized[planet] = ourPos
       } else if (theirPos) {
-        // Only they have data (unusual, but handle gracefully)
+        // Only they have data - surface as partial, not fallback
         synchronized[planet] = {
           ...theirPos,
-          source: 'whattoeatnext_fallback',
-          accuracy_level: 'fallback',
+          accuracy_level: 'partial',
         }
       }
     }
@@ -426,22 +386,28 @@ export class PlanetaryPositionSyncService {
    */
   async getHealthStatus(): Promise<SyncHealthStatus> {
     try {
-      // Test our own VSOP87 system
-      const ourHealth = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/zodiac-calendar?action=current-period`
-      )
-      const vsop87_available = ourHealth.ok
+      const now = new Date()
+      const localCalculation = calculateAllPlanets({
+        year: now.getUTCFullYear(),
+        month: now.getUTCMonth() + 1,
+        day: now.getUTCDate(),
+        hour: now.getUTCHours(),
+        minute: now.getUTCMinutes(),
+        second: now.getUTCSeconds(),
+        latitude: 0,
+        longitude: 0,
+      })
+      const vsop87_available = Object.keys(localCalculation.planets).length > 0
 
       // Test WhatToEatNext connectivity
       let whattoeatnext_available = false
       try {
-        const theirHealth = await fetch(`${this.whattoeatnextBaseUrl}/planetary/health`, {
-          headers: { Authorization: `Bearer ${this.apiKey}` },
+        const theirHealth = await fetch(`${this.whattoeatnextBaseUrl}/health`, {
           signal: AbortSignal.timeout(5000),
         })
         whattoeatnext_available = theirHealth.ok
-      } catch (error) {
-        console.warn('WhatToEatNext health check failed:', error)
+      } catch (innerError) {
+        console.warn('WhatToEatNext health check failed:', innerError)
       }
 
       // Check if sync service is active (we're running)
@@ -455,22 +421,22 @@ export class PlanetaryPositionSyncService {
             : 'critical'
 
       return {
-        planetary_agents_available: true, // We're running
+        planetary_agents_available: vsop87_available,
         whattoeatnext_available,
         vsop87_available,
         sync_service_active,
-        last_sync_attempt: new Date().toISOString(),
-        last_successful_sync: new Date().toISOString(), // Would track actual last sync in production
+        last_sync_attempt: this.lastSyncAttempt || new Date().toISOString(),
+        last_successful_sync: this.lastSuccessfulSync || 'never',
         overall_health,
       }
     } catch (error) {
       return {
-        planetary_agents_available: true,
+        planetary_agents_available: false,
         whattoeatnext_available: false,
         vsop87_available: false,
         sync_service_active: false,
-        last_sync_attempt: new Date().toISOString(),
-        last_successful_sync: 'unknown',
+        last_sync_attempt: this.lastSyncAttempt || new Date().toISOString(),
+        last_successful_sync: this.lastSuccessfulSync || 'never',
         overall_health: 'critical',
       }
     }
@@ -484,6 +450,7 @@ export class PlanetaryPositionSyncService {
 
     return {
       is_enabled: process.env.CROSS_BACKEND_SYNC_ENABLED === 'true',
+      last_sync_result: this.lastSyncResult,
       health_status: health,
       cache_stats: {
         size: this.cache.size,

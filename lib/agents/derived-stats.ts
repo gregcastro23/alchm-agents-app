@@ -5,7 +5,6 @@
 
 import type { CraftedAgent } from '../agent-types'
 import { AlchemicalKineticsClient } from '../kinetics-client'
-import { ChartKineticIntegration } from '../chart-kinetic-integration'
 import { alchemize } from '../alchemizer'
 import { generateAccurateHoroscope } from '../monica/horoscope-generator'
 
@@ -103,13 +102,13 @@ function safeAvg(values: number[]): number {
 // ============================================================================
 
 // Calculate alchemical properties for an agent using birth data
-function calculateAlchemicalProperties(agent: CraftedAgent): {
+async function calculateAlchemicalProperties(agent: CraftedAgent): Promise<{
   spirit: number
   essence: number
   matter: number
   substance: number
   aNumber: number
-} {
+}> {
   try {
     // Convert agent birth data to format expected by alchemizer
     const birthInfo = {
@@ -126,7 +125,7 @@ function calculateAlchemicalProperties(agent: CraftedAgent): {
     const horoscope = generateAccurateHoroscope(birthInfo)
 
     // Calculate alchemical data using the core alchemizer
-    const alchmData = alchemize(birthInfo, horoscope)
+    const alchmData = await alchemize(birthInfo, horoscope)
 
     // Extract alchemical properties from the result
     const spirit = alchmData['Alchemy Effects']['Total Spirit'] || 0
@@ -398,7 +397,7 @@ export async function computeLiveStats(
   // ============================================================================
 
   // Calculate alchemical properties for this agent
-  const alchemicalProps = calculateAlchemicalProperties(agent)
+  const alchemicalProps = await calculateAlchemicalProperties(agent)
 
   // Extract elemental values from agent's natal chart
   const elementalValues = extractElementalValues(agent)

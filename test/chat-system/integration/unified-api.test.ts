@@ -3,7 +3,10 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { NextRequest } from 'next/server'
+import { generateText } from 'ai'
 import { POST } from '@/app/api/unified-multi-agent-chat/route'
+import { agentCache } from '@/lib/agent-cache-system'
+import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
 import {
   mockUnifiedAgents,
   mockMonicaAgent,
@@ -37,6 +40,37 @@ vi.mock('@/lib/consciousness-persistence', () => ({
   },
 }))
 
+vi.mock('@/lib/agents/sacred-stats-prompt-generator', () => ({
+  generateConsciousnessInformedPrompt: vi.fn(() => 'Mocked historical agent prompt'),
+}))
+
+vi.mock('@/lib/observability/tracker', () => ({
+  observabilityTracker: {
+    startTrace: vi.fn(() => 'trace-1'),
+    evaluateMetrics: vi.fn(() => ({
+      actionCompletion: 1,
+      toolSelectionQuality: 1,
+      routingAccuracy: 1,
+      contextRetention: 1,
+    })),
+    completeTrace: vi.fn(),
+    recordError: vi.fn(),
+    recordRoutingDecision: vi.fn(),
+  },
+}))
+
+vi.mock('@/lib/consciousness/unified-tracker', () => ({
+  unifiedTracker: {
+    captureSnapshot: vi.fn(),
+  },
+}))
+
+vi.mock('@/lib/rag/rag-generator', () => ({
+  generateWithRAG: vi.fn(),
+  shouldUseRAG: vi.fn(() => false),
+  getRAGConfig: vi.fn(() => ({ enabled: false })),
+}))
+
 vi.mock('@/lib/alchemizer', () => ({
   generateAlchmForCurrentMoment: vi.fn(() =>
     Promise.resolve({
@@ -53,8 +87,8 @@ describe('Unified Multi-Agent Chat API Integration', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockGenerateText = vi.mocked(require('ai').generateText)
-    mockAgentCache = vi.mocked(require('@/lib/agent-cache-system').agentCache)
+    mockGenerateText = vi.mocked(generateText)
+    mockAgentCache = vi.mocked(agentCache)
 
     // Default successful responses
     mockGenerateText.mockResolvedValue({
@@ -283,7 +317,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
 
       expect(mockGenerateText).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gpt-3.5-turbo',
+          model: 'mocked-gpt-4o-mini',
         })
       )
     })
@@ -390,12 +424,8 @@ describe('Unified Multi-Agent Chat API Integration', () => {
         mockUnifiedAgents[0].id,
         'New question for caching',
         'This is a test response from the agent.',
-        expect.any(Object),
-        expect.objectContaining({
-          agentType: 'historical',
-          consciousnessLevel: 'Advanced',
-          groupSize: 1,
-        })
+        expect.any(Number),
+        undefined
       )
     })
   })
@@ -522,7 +552,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
   })
 
   describe('Error Handling', () => {
-    it('handles AI generation failures gracefully', async () => {
+    it('surfaces AI generation failures instead of returning a synthetic agent reply', async () => {
       mockGenerateText.mockRejectedValueOnce(new Error('AI service unavailable'))
 
       const request = new NextRequest('http://localhost/api/unified-multi-agent-chat', {
@@ -541,14 +571,13 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       const response = await POST(request)
       const data = await response.json()
 
-      expect(response.status).toBe(200) // Should not crash the entire response
-      expect(data.responses[0].content).toContain('consciousness interference')
+      expect(response.status).toBe(500)
+      expect(data.error).toContain('Failed to process multi-agent conversation')
+      expect(data.details).toContain('Failed to generate response for')
     })
 
     it('handles cosmic context generation failures', async () => {
-      vi.mocked(require('@/lib/alchemizer').generateAlchmForCurrentMoment).mockRejectedValueOnce(
-        new Error('Cosmic service down')
-      )
+      vi.mocked(generateAlchmForCurrentMoment).mockRejectedValueOnce(new Error('Cosmic service down'))
 
       const request = new NextRequest('http://localhost/api/unified-multi-agent-chat', {
         method: 'POST',
