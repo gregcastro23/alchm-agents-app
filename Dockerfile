@@ -30,7 +30,7 @@ RUN corepack prepare yarn@4.10.2 --activate
 # Install dependencies with Yarn 4
 # For production, we don't need dev dependencies like tree-sitter
 # Use workspaces focus or production mode would be ideal, but for now just continue on errors
-RUN yarn install || echo "Some optional dependencies failed, continuing..."
+RUN YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install || echo "Some optional dependencies failed, continuing..."
 
 # =====================================
 # Builder Stage

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Sparkles, Mail, Lock, ArrowRight } from 'lucide-react'
+import { Sparkles, Mail, Lock, ArrowRight, Gitlab } from 'lucide-react'
 import Link from 'next/link'
 
 export default function SignInPage() {
@@ -115,6 +115,27 @@ export default function SignInPage() {
               )}
             </Button>
           </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-slate-200 dark:border-slate-800" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white dark:bg-zinc-950 px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all duration-200 text-slate-700 dark:text-slate-300"
+            onClick={() => signIn('gitlab', { callbackUrl: '/dashboard' })}
+          >
+            <Gitlab className="h-5 w-5 text-[#FC6D26]" />
+            Continue with GitLab
+          </Button>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">

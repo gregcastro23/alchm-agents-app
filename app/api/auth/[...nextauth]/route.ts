@@ -1,13 +1,16 @@
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { PrismaAdapter } from '@auth/prisma-adapter'
+import GitlabProvider from 'next-auth/providers/gitlab'
 import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 
 // Wrap NextAuth to handle database connection errors gracefully
-const handler = NextAuth({
-  adapter: PrismaAdapter(prisma) as any,
+export const authOptions: import('next-auth').NextAuthOptions = {
   providers: [
+    GitlabProvider({
+      clientId: process.env.GITLAB_CLIENT_ID || '',
+      clientSecret: process.env.GITLAB_CLIENT_SECRET || '',
+    }),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -67,9 +70,63 @@ const handler = NextAuth({
     signIn: '/auth/signin',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === 'gitlab') {
+        const email = profile?.email || user?.email
+        if (!email) {
+          console.error('GitLab login failed: No email provided')
+          return false
+        }
+
+        try {
+          // Check if user exists in db
+          let dbUser = await prisma.users.findUnique({
+            where: { email },
+          })
+
+          if (!dbUser) {
+            // Automatically create a user record
+            dbUser = await prisma.users.create({
+              data: {
+                email,
+                name: profile?.name || user?.name || email.split('@')[0],
+                provider: 'gitlab',
+                verified: true,
+              },
+            })
+          } else {
+            // Update lastLogin
+            await prisma.users.update({
+              where: { id: dbUser.id },
+              data: {
+                lastLogin: new Date(),
+              },
+            })
+          }
+          return true
+        } catch (error) {
+          console.error('Error during GitLab sign-in mapping:', error)
+          return false
+        }
+      }
+      return true
+    },
+    async jwt({ token, user, account }) {
       if (user) {
-        token.id = user.id
+        if (account?.provider === 'gitlab') {
+          try {
+            const dbUser = await prisma.users.findUnique({
+              where: { email: user.email! },
+            })
+            if (dbUser) {
+              token.id = dbUser.id
+            }
+          } catch (error) {
+            console.error('Error resolving database user ID for GitLab:', error)
+          }
+        } else {
+          token.id = user.id
+        }
         token.tier = 'master' // Ensure master tier for all authenticated users
       }
       return token
@@ -86,6 +143,8 @@ const handler = NextAuth({
       return session
     },
   },
-})
+}
+
+const handler = NextAuth(authOptions)
 
 export { handler as GET, handler as POST }

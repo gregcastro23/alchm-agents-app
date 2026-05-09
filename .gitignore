@@ -49,3 +49,22 @@ vercel-env-variables.env
 vercel-env-import.env
 render-backend.env
 render-frontend.env
+
+# Python & virtualenv
+backend/venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Databases
+backend/chroma_db/
+backend/planetary_agents.db
+*.db
+
+# Temporary Logs and Scratch files
+*.log
+scratch/
+test-import.ts
+.dev_server*
+

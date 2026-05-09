@@ -108,13 +108,17 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
     
     # 5. Record Conversation
     session_id = request.sessionId or f"session-{datetime.utcnow().timestamp()}"
-    crud.create_conversation(db, schemas.ConversationCreate(
-        agentId=request.agentId,
-        sessionId=session_id,
-        userId=request.userId,
-        userMessage=request.message,
-        agentResponse=text
-    ))
+    try:
+        crud.create_conversation(db, schemas.ConversationCreate(
+            agentId=request.agentId,
+            sessionId=session_id,
+            userId=request.userId,
+            userMessage=request.message,
+            agentResponse=text
+        ))
+    except Exception as e:
+        print(f"Warning: Failed to record conversation for {request.agentId}: {e}")
+        db.rollback()
     
     return {
         "text": text,
