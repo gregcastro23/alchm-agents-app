@@ -73,9 +73,9 @@ export class UnifiedAgentFactory implements AgentFactory {
         color: agent.appearance.color,
         symbol: agent.appearance.symbol,
         aura: {
-          type: agent.appearance.aura.type,
-          color: agent.appearance.aura.color,
-          intensity: agent.appearance.aura.intensity,
+          type: agent.appearance.aura?.type || 'shimmering',
+          color: agent.appearance.aura?.color || agent.appearance.color || '#FFFFFF',
+          intensity: agent.appearance.aura?.intensity || 0.5,
         },
       },
 

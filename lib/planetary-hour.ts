@@ -1,4 +1,40 @@
-import SunCalc from 'suncalc'
+// Inline sunrise/sunset calculation (NOAA simplified algorithm).
+// Replaces the `suncalc` package which was never added to package.json.
+const SunCalc = {
+  getTimes(
+    date: Date,
+    lat: number,
+    lon: number
+  ): { sunrise: Date | undefined; sunset: Date | undefined } {
+    const toRad = (d: number) => (d * Math.PI) / 180
+    const jd = date.getTime() / 86400000 + 2440587.5
+    const n = Math.round(jd - 2451545.0 + 0.0008)
+    const jStar = n - lon / 360
+    const M = (357.5291 + 0.98560028 * jStar) % 360
+    const C =
+      1.9148 * Math.sin(toRad(M)) +
+      0.02 * Math.sin(toRad(2 * M)) +
+      0.0003 * Math.sin(toRad(3 * M))
+    const lambda = (M + C + 180 + 102.9372) % 360
+    const jTransit =
+      2451545.0 +
+      jStar +
+      0.0053 * Math.sin(toRad(M)) -
+      0.0069 * Math.sin(toRad(2 * lambda))
+    const sinD = Math.sin(toRad(lambda)) * Math.sin(toRad(23.4397))
+    const cosD = Math.cos(Math.asin(sinD))
+    const cosOmega =
+      (Math.sin(toRad(-0.833)) - Math.sin(toRad(lat)) * sinD) /
+      (Math.cos(toRad(lat)) * cosD)
+    if (Math.abs(cosOmega) > 1) return { sunrise: undefined, sunset: undefined }
+    const omega = (Math.acos(cosOmega) * 180) / Math.PI
+    const toDate = (j: number) => new Date((j - 2440587.5) * 86400000)
+    return {
+      sunrise: toDate(jTransit - omega / 360),
+      sunset: toDate(jTransit + omega / 360),
+    }
+  },
+}
 
 export type Planet = 'Sun' | 'Moon' | 'Mars' | 'Mercury' | 'Jupiter' | 'Venus' | 'Saturn'
 

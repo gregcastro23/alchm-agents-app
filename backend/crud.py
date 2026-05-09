@@ -56,3 +56,6 @@ def get_conversations(db: Session, agent_id: str, skip: int = 0, limit: int = 50
     return db.query(models.AgentConversation).filter(
         models.AgentConversation.agentId == agent_id
     ).order_by(models.AgentConversation.createdAt.desc()).offset(skip).limit(limit).all()
+
+def get_all_agents(db: Session):
+    return db.query(models.HistoricalAgent).all()

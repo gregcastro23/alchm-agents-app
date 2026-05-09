@@ -103,19 +103,35 @@ export class HistoricalAgentsService {
     // Generate searchable text for performance
     const searchableText = this.generateSearchableText(agent)
 
+    // Sanitize invalid BCE/ancient dates
+    const isInvalidDate = isNaN(agent.birthData.date.getTime())
+    const safeBirthDate = isInvalidDate ? new Date('1970-01-01T12:00:00Z') : agent.birthData.date
+    let safeBirthYear = agent.birthData.date.getFullYear()
+    if (isNaN(safeBirthYear)) {
+      const fallbacks: Record<string, number> = {
+        socrates: -469,
+        'lao-tzu': -604,
+        confucius: -551,
+        'siddhartha-gautama-buddha': -563,
+        cleopatra: -69,
+        'marcus-aurelius': 121,
+      }
+      safeBirthYear = fallbacks[agent.id] || -500
+    }
+
     return {
       agentId: agent.id,
       name: agent.name,
       title: agent.title,
 
       // Birth data
-      birthDate: agent.birthData.date,
+      birthDate: safeBirthDate,
       birthTime: agent.birthData.time,
       birthLocation: agent.birthData.location,
 
       // Enhanced historical context
       historicalEra: eraInfo.era,
-      birthYear: agent.birthData.date.getFullYear(),
+      birthYear: safeBirthYear,
       deathYear: eraInfo.deathYear,
       culture: eraInfo.culture,
       geography: eraInfo.geography,
@@ -123,6 +139,7 @@ export class HistoricalAgentsService {
       // Enhanced consciousness profile
       consciousnessLevel: agent.consciousness.level,
       monicaConstant: agent.consciousness.monicaConstant,
+      kalchmConstant: (agent as any).consciousness.kalchmConstant || agent.consciousness.monicaConstant || 0.5,
       dominantElement: agent.consciousness.dominantElement,
       dominantModality: agent.consciousness.dominantModality || null,
       signature: agent.consciousness.signature,
@@ -905,6 +922,21 @@ export class HistoricalAgentsService {
       totalConversations,
       totalWisdomShared,
       averageResonance,
+    }
+  }
+
+  static async migrateStaticAgents(): Promise<{
+    success: boolean
+    migrated: number
+    updated: number
+    errors: string[]
+  }> {
+    const results = await this.migrateHistoricalAgents(DEMO_AGENTS)
+    return {
+      success: results.success,
+      migrated: results.migrated,
+      updated: results.updated,
+      errors: results.errors,
     }
   }
 }

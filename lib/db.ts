@@ -1,6 +1,7 @@
 import 'server-only'
 import type { PrismaClient } from '@prisma/client'
 import Redis from 'ioredis'
+import { createRequire } from 'module'
 
 declare global {
   var __prisma: PrismaClient | undefined
@@ -17,12 +18,13 @@ function materializePrisma(): PrismaClient {
   if (_prismaInstance) return _prismaInstance
 
   // Synchronous require — only paid when first used
-  const { PrismaClient } = require('@prisma/client') as typeof import('@prisma/client')
+  const req = typeof require !== 'undefined' ? require : createRequire(import.meta.url)
+  const { PrismaClient } = req('@prisma/client') as typeof import('@prisma/client')
   const client = new PrismaClient()
 
   // Apply Accelerate extension only when using a prisma+postgres:// URL
   if (process.env.DATABASE_URL?.startsWith('prisma+postgres://')) {
-    const { withAccelerate } = require('@prisma/extension-accelerate') as typeof import('@prisma/extension-accelerate')
+    const { withAccelerate } = req('@prisma/extension-accelerate') as typeof import('@prisma/extension-accelerate')
     _prismaInstance = client.$extends(withAccelerate()) as unknown as PrismaClient
   } else {
     _prismaInstance = client

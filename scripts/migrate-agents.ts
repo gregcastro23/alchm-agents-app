@@ -2,6 +2,9 @@
 // Migration script to populate database with historical agents
 // Run with: npx tsx scripts/migrate-agents.ts
 
+import dotenv from 'dotenv'
+dotenv.config({ path: '.env.local' })
+
 import { HistoricalAgentsService } from '../lib/historical-agents-db'
 
 async function main() {

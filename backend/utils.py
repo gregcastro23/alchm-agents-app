@@ -114,6 +114,8 @@ def detect_rune_context(alchm_data: Dict[str, Any]) -> Dict[str, Any]:
 import kinetic_profiles
 
 def calculate_enhanced_moment_score(agent_id: str, current_planets: Dict[str, Any], alchm_data: Dict[str, Any], monica_constant: float) -> Dict[str, Any]:
+    if monica_constant is None:
+        monica_constant = 0.5
     profile = kinetic_profiles.get_kinetic_profile(agent_id)
     
     # 6-component weighted formula

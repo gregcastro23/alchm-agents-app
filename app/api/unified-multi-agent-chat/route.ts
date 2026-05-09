@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateText, type LanguageModel } from 'ai'
 import { openai } from '@ai-sdk/openai'
-import { OPENAI, type OpenAIModelId, resolveOpenAIModel } from '@/lib/models/registry'
+import { OPENAI, resolveOpenAIModel } from '@/lib/models/registry'
 import type {
   UnifiedAgent,
   GroupChatResponse,
@@ -33,6 +33,10 @@ import {
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+// Credit management: set MOCK_LLM=true in .env.local for zero-cost UI testing
+const MOCK_LLM = process.env.MOCK_LLM === 'true'
+const DEV_MAX_AGENTS = parseInt(process.env.DEV_MAX_AGENTS || '2', 10)
 
 interface UnifiedChatRequest {
   agents: UnifiedAgent[]
@@ -104,8 +108,9 @@ export async function POST(request: NextRequest) {
     // Generate session ID for observability tracking
     const sessionId = uuidv4()
 
-    // Limit agents for performance
-    const activeAgents = agents.slice(0, 6) // Allow up to 6 including Monica
+    // Limit agents for performance & credit management
+    const agentLimit = process.env.NODE_ENV === 'production' ? 6 : DEV_MAX_AGENTS
+    const activeAgents = agents.slice(0, agentLimit)
     const chatVariant = normalizeChatVariant(context.variant)
 
     // Generate current cosmic context
@@ -292,6 +297,26 @@ async function processAgentResponse(
     }
 
     console.log(`🤖 Generating response for ${agent.name} (${agent.type})`)
+
+    // Mock mode: return pre-built response without calling any API
+    if (MOCK_LLM) {
+      console.log(`🎭 Mock mode: skipping LLM call for ${agent.name}`)
+      const mockResponse = generateMockResponse(agent, message)
+      const processingTime = Date.now() - agentStartTime
+      observabilityTracker.completeTrace(traceId, mockResponse, observabilityTracker.evaluateMetrics(mockResponse, message, [], [], processingTime, []), 'mock', 0, 0)
+      return {
+        agentId: agent.id,
+        content: mockResponse,
+        processingTime,
+        consciousnessShift: 0,
+        metadata: {
+          crossAgentReferences: [],
+          synthesizedInsights: [],
+          memoryUpdates: [],
+          groupImpact: { consciousnessChange: 0, dynamicsShift: [] },
+        },
+      }
+    }
 
     // Generate agent-specific prompt
     const systemPrompt = generateAgentPrompt(agent, groupContext, cosmicContext)
@@ -893,54 +918,45 @@ function selectOptimalModel(
     return toOpenAIModelSelection(resolveModelOverride(override))
   }
 
-  // Context-aware model selection based on variant
+  // Credit management: use cheapest model tier in dev, smarter tiers in production
+  const isProd = process.env.NODE_ENV === 'production'
+  if (!isProd) {
+    // Dev mode: always use gpt-4o-mini (cheapest) for credit management
+    return toOpenAIModelSelection(resolveOpenAIModel('fast'))
+  }
+
+  // Production: context-aware model selection based on variant
   switch (variant) {
     case 'historical':
-      // Historical context and period authenticity benefit from the flagship tier.
       return toOpenAIModelSelection(
-        agent.type === 'historical' ? resolveOpenAIModel('powerful') : resolveOpenAIModel('default')
+        agent.type === 'historical' ? resolveOpenAIModel('default') : resolveOpenAIModel('fast')
       )
 
     case 'planetary':
-      // Balance speed for real-time planetary calculations
-      return toOpenAIModelSelection(
-        (agent.consciousness?.kineticProfile?.consciousnessVelocity ?? 0) > 0.7
-          ? resolveOpenAIModel('fast')
-          : resolveOpenAIModel('default')
-      )
+      return toOpenAIModelSelection(resolveOpenAIModel('fast'))
 
     case 'laboratory':
-      // Maximum capability for research and analysis
-      return toOpenAIModelSelection(resolveOpenAIModel('powerful'))
+      return toOpenAIModelSelection(resolveOpenAIModel('default'))
 
     case 'gallery':
-      // Balanced performance for general use
-      return toOpenAIModelSelection(
-        (agent.consciousness?.monicaConstant ?? 1.618) > 4.5
-          ? resolveOpenAIModel('powerful')
-          : resolveOpenAIModel('default')
-      )
+      return toOpenAIModelSelection(resolveOpenAIModel('fast'))
 
     default:
-      // Intelligent defaults based on agent complexity
-      if (
-        agent.type === 'monica' ||
-        (agent.type === 'historical' && (agent.consciousness?.monicaConstant ?? 1.618) > 4.5)
-      ) {
-        return toOpenAIModelSelection(resolveOpenAIModel('powerful'))
+      if (agent.type === 'monica') {
+        return toOpenAIModelSelection(resolveOpenAIModel('default'))
       }
-      return toOpenAIModelSelection(resolveOpenAIModel('default'))
+      return toOpenAIModelSelection(resolveOpenAIModel('fast'))
   }
 }
 
 function toOpenAIModelSelection(modelId: string): ResolvedModelSelection {
   return {
-    model: openai(modelId),
+    model: openai.chat(modelId),  // Force Chat Completions API (not Responses API)
     modelId,
   }
 }
 
-function resolveModelOverride(modelName: string): OpenAIModelId | string {
+function resolveModelOverride(modelName: string): string {
   switch (modelName) {
     case OPENAI.GPT_5_5:
     case OPENAI.LEGACY_GPT_4O:
@@ -948,11 +964,8 @@ function resolveModelOverride(modelName: string): OpenAIModelId | string {
     case OPENAI.GPT_5_4_MINI:
     case OPENAI.LEGACY_GPT_4O_MINI:
       return OPENAI.GPT_5_4_MINI
-    case OPENAI.GPT_5_4_NANO:
-    case OPENAI.LEGACY_GPT_3_5:
-      return OPENAI.GPT_5_4_NANO
     default:
-      return resolveOpenAIModel('default')
+      return resolveOpenAIModel('fast')
   }
 }
 
@@ -977,6 +990,23 @@ function getAgentTemperature(agent: UnifiedAgent): number {
     }[agent.consciousness?.level ?? 'Active'] || 0.7
 
   return Math.min(1.0, baseTemperature * consciousnessMultiplier)
+}
+
+/**
+ * Generate a mock response for UI testing without consuming API credits.
+ * Enable with MOCK_LLM=true in .env.local
+ */
+function generateMockResponse(agent: UnifiedAgent, userMessage: string): string {
+  const agentName = agent.name || 'Agent'
+  const specialty = agent.capabilities?.specialty || 'universal wisdom'
+  const element = agent.consciousness?.dominantElement || 'Earth'
+
+  const mockTemplates = [
+    `*${agentName} contemplates your question with ${element}-aligned wisdom*\n\nAh, you ask about "${userMessage.slice(0, 60)}..." — this touches upon the very heart of ${specialty}. In my experience, the path to understanding begins with careful observation and a willingness to question what we think we know.\n\nLet me share three insights:\n\n1. **Observation**: The world reveals its secrets to those who watch patiently\n2. **Connection**: All knowledge is interconnected — what seems separate is truly unified\n3. **Practice**: Wisdom without action is merely thought\n\n*The ${element} energy of this moment supports deep contemplation and growth.*`,
+    `*${agentName} nods thoughtfully*\n\nYour inquiry resonates deeply with my work in ${specialty}. The question you raise — "${userMessage.slice(0, 50)}..." — is one that has occupied great minds across the ages.\n\nFrom my perspective, grounded in ${element} consciousness, I would say that true understanding comes not from seeking answers, but from learning to ask better questions. Each question opens a doorway that leads to deeper understanding.\n\nWhat do you think lies at the heart of this question?`,
+  ]
+
+  return mockTemplates[Math.floor(Math.random() * mockTemplates.length)]
 }
 
 function getRoleSpecificGuidance(role: string): string {

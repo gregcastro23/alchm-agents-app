@@ -165,11 +165,12 @@ async def get_moment_recommendations(limit: int = 5, db: Session = Depends(datab
     
     scored_agents = []
     for agent in agents:
+        mc = agent.monicaConstant if getattr(agent, 'monicaConstant', None) is not None else 0.5
         score = utils.calculate_enhanced_moment_score(
             agent.agentId, 
             current_planets, 
             alchm_data, 
-            agent.monicaConstant if hasattr(agent, 'monicaConstant') else 0.5
+            mc
         )
         scored_agents.append({
             "agent": {
@@ -198,13 +199,41 @@ async def post_moment_recommendations(request: Dict[str, Any], db: Session = Dep
     scores = []
     for agent_id in agent_ids:
         agent = crud.get_agent(db, agent_id)
-        mc = agent.monicaConstant if agent and hasattr(agent, 'monicaConstant') else 0.5
+        mc = agent.monicaConstant if agent and getattr(agent, 'monicaConstant', None) is not None else 0.5
         score = utils.calculate_enhanced_moment_score(agent_id, current_planets, alchm_data, mc)
         scores.append(score)
         
     return {"scores": scores}
 
-# --- Smart Proxy ---
+# --- Smart Proxy --- forwards to Railway alchm.kitchen backend
+
+@app.post("/alchemize")
+async def proxy_alchemize(request: Dict, internal_api_secret: Optional[str] = Header(None)):
+    """Proxy /alchemize to the Railway WhatToEatNext backend (alchm.kitchen)."""
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        try:
+            response = await client.post(
+                f"{ALCHM_KITCHEN_URL}/alchemize",
+                json=request,
+                headers={"INTERNAL_API_SECRET": internal_api_secret or INTERNAL_API_SECRET}
+            )
+            return response.json()
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Alchemize proxy failed: {str(e)}")
+
+@app.post("/api/alchemical/quantities")
+async def proxy_alchemical_quantities(request: Dict, internal_api_secret: Optional[str] = Header(None)):
+    """Proxy /api/alchemical/quantities to the Railway WhatToEatNext backend (alchm.kitchen)."""
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        try:
+            response = await client.post(
+                f"{ALCHM_KITCHEN_URL}/api/alchemical/quantities",
+                json=request,
+                headers={"INTERNAL_API_SECRET": internal_api_secret or INTERNAL_API_SECRET}
+            )
+            return response.json()
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Quantities proxy failed: {str(e)}")
 
 @app.post("/api/planetary/positions")
 async def get_positions(request: Dict, internal_api_secret: Optional[str] = Header(None)):

@@ -1,12 +1,17 @@
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GitlabProvider from 'next-auth/providers/gitlab'
+import GoogleProvider from 'next-auth/providers/google'
 import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 
 // Wrap NextAuth to handle database connection errors gracefully
 export const authOptions: import('next-auth').NextAuthOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.AUTH_GOOGLE_ID || '',
+      clientSecret: process.env.AUTH_GOOGLE_SECRET || '',
+    }),
     GitlabProvider({
       clientId: process.env.GITLAB_CLIENT_ID || '',
       clientSecret: process.env.GITLAB_CLIENT_SECRET || '',
@@ -62,7 +67,19 @@ export const authOptions: import('next-auth').NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 7 * 24 * 60 * 60, // 7 days
   },
-  secret: process.env.NEXTAUTH_SECRET || 'consciousness-evolution-secret-dev-only',
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production' ? '__Secure-authjs.session-token' : 'authjs.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.alchm.kitchen' : undefined,
+      },
+    },
+  },
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || 'consciousness-evolution-secret-dev-only',
   jwt: {
     maxAge: 7 * 24 * 60 * 60, // 7 days
   },
@@ -71,10 +88,10 @@ export const authOptions: import('next-auth').NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider === 'gitlab') {
+      if (account?.provider === 'gitlab' || account?.provider === 'google') {
         const email = profile?.email || user?.email
         if (!email) {
-          console.error('GitLab login failed: No email provided')
+          console.error(`${account.provider} login failed: No email provided`)
           return false
         }
 
@@ -90,7 +107,7 @@ export const authOptions: import('next-auth').NextAuthOptions = {
               data: {
                 email,
                 name: profile?.name || user?.name || email.split('@')[0],
-                provider: 'gitlab',
+                provider: account.provider,
                 verified: true,
               },
             })
@@ -105,7 +122,7 @@ export const authOptions: import('next-auth').NextAuthOptions = {
           }
           return true
         } catch (error) {
-          console.error('Error during GitLab sign-in mapping:', error)
+          console.error(`Error during ${account.provider} sign-in mapping:`, error)
           return false
         }
       }
@@ -113,7 +130,7 @@ export const authOptions: import('next-auth').NextAuthOptions = {
     },
     async jwt({ token, user, account }) {
       if (user) {
-        if (account?.provider === 'gitlab') {
+        if (account?.provider === 'gitlab' || account?.provider === 'google') {
           try {
             const dbUser = await prisma.users.findUnique({
               where: { email: user.email! },
@@ -122,7 +139,7 @@ export const authOptions: import('next-auth').NextAuthOptions = {
               token.id = dbUser.id
             }
           } catch (error) {
-            console.error('Error resolving database user ID for GitLab:', error)
+            console.error(`Error resolving database user ID for ${account.provider}:`, error)
           }
         } else {
           token.id = user.id
