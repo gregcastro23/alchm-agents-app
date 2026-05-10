@@ -103,15 +103,12 @@ backend:smoke-health:
 
 frontend:install:
   stage: test
-  image: node:20-alpine
-  before_script:
-    - corepack enable
+  image: oven/bun:1-alpine
   script:
-    - yarn install --immutable
+    - bun install --frozen-lockfile
   cache:
-    key: '${CI_COMMIT_REF_SLUG}-yarn-frontend'
+    key: '${CI_COMMIT_REF_SLUG}-bun-frontend'
     paths:
-      - .yarn/cache
       - node_modules/
   only:
     changes:
@@ -119,7 +116,7 @@ frontend:install:
       - components/**/*
       - lib/**/*
       - package.json
-      - yarn.lock
+      - bun.lock
 
 # =============================================================================
 # DEPLOY STAGE
