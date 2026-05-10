@@ -97,6 +97,7 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
     # 4. Call AI
     text = f"Persona response for {request.agentId}: [AI Implementation Pending API Key Verification]"
     
+    anthropic_failed = False
     if ANTHROPIC_API_KEY:
         try:
             client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
@@ -110,7 +111,26 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
             )
             text = message.content[0].text
         except Exception as e:
+            anthropic_failed = True
             text = f"Error calling Anthropic: {str(e)}"
+            print(text)
+            
+    # Fallback to OpenAI if Anthropic failed or key is missing
+    if (not ANTHROPIC_API_KEY or anthropic_failed) and OPENAI_API_KEY:
+        try:
+            from openai import AsyncOpenAI
+            openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+            response = await openai_client.chat.completions.create(
+                model=os.getenv("MONICA_DEFAULT_MODEL", "gpt-4o-mini"),
+                messages=[
+                    {"role": "system", "content": full_system_prompt},
+                    {"role": "user", "content": request.message}
+                ],
+                max_tokens=1024
+            )
+            text = response.choices[0].message.content
+        except Exception as e:
+            text = f"Error calling OpenAI fallback: {str(e)}\nPrevious Error: {text}"
     
     # 5. Record Conversation
     session_id = request.sessionId or f"session-{datetime.utcnow().timestamp()}"

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Star, Sparkles, Users, TrendingUp, MessageCircle, Zap, Menu, X } from 'lucide-react'
+import { Star, Sparkles, Users, TrendingUp, MessageCircle, Zap } from 'lucide-react'
 import { DEMO_AGENTS, MONICA_AS_CRAFTED_AGENT } from '@/lib/demo-agents-data'
 import type { CraftedAgent } from '@/lib/agent-types'
 import type { LegacyPlanetaryPosition as PlanetaryPosition } from '@/lib/backend'
@@ -55,7 +55,7 @@ export default function HomePage() {
   const [recommendations, setRecommendations] = useState<MomentRecommendation[]>([])
   const [planetaryPositions, setPlanetaryPositions] = useState<PlanetaryPosition[]>([])
   const [loadingPositions, setLoadingPositions] = useState(true)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
 
   useEffect(() => {
     // Fetch top 6 agents based on current moment synergy
@@ -151,154 +151,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-purple-950 dark:via-blue-950 dark:to-indigo-950">
-      {/* Navigation */}
-      <nav className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-8">
-              <Link
-                href="/"
-                className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"
-              >
-                Planetary Agents
-              </Link>
-              <div className="hidden lg:flex space-x-6">
-                <Link
-                  href="/gallery"
-                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
-                >
-                  Gallery
-                </Link>
-                <Link
-                  href="/planetary-agents"
-                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
-                >
-                  Consultations
-                </Link>
-                <Link
-                  href="/philosophers-stone"
-                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
-                >
-                  Philosopher's Stone
-                </Link>
-                <Link
-                  href="/time-laboratory"
-                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
-                >
-                  Time Lab
-                </Link>
-                <Link
-                  href="/planetary-council"
-                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
-                >
-                  Council
-                </Link>
-                <Link
-                  href="/rune-forge"
-                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
-                >
-                  Rune Forge
-                </Link>
-                <Link
-                  href="/synthesis-chamber"
-                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors"
-                >
-                  Synthesis
-                </Link>
-              </div>
-            </div>
-            
-            {/* Desktop buttons */}
-            <div className="hidden md:flex items-center space-x-4">
-              <Button
-                onClick={() => {
-                  /* Monica chat bubble is always available */
-                }}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                disabled
-              >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Monica Available
-              </Button>
-              <Link href="/gallery">
-                <Button variant="outline">Explore Agents</Button>
-              </Link>
-            </div>
-
-            {/* Mobile menu button */}
-            <div className="md:hidden flex items-center">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Toggle menu"
-              >
-                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </Button>
-            </div>
-          </div>
-
-          {/* Mobile Navigation Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden border-t py-4 space-y-2">
-              <Link
-                href="/gallery"
-                className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Gallery
-              </Link>
-              <Link
-                href="/planetary-agents"
-                className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Consultations
-              </Link>
-              <Link
-                href="/philosophers-stone"
-                className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Philosopher's Stone
-              </Link>
-              <Link
-                href="/time-laboratory"
-                className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Time Lab
-              </Link>
-              <Link
-                href="/planetary-council"
-                className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Council
-              </Link>
-              <Link
-                href="/rune-forge"
-                className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Rune Forge
-              </Link>
-              <Link
-                href="/synthesis-chamber"
-                className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Synthesis
-              </Link>
-              <div className="px-4 pt-4 border-t mt-2">
-                <Link href="/gallery" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="outline" className="w-full">Explore Agents</Button>
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
-      </nav>
 
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">

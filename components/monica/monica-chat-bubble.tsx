@@ -218,6 +218,7 @@ export function MonicaChatBubble({
         content:
           data.response ||
           data.content ||
+          data.text ||
           'I apologize, but I encountered an issue. Please try again.',
         timestamp: new Date(),
         envelope: data.structured
