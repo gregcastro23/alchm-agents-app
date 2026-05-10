@@ -1,6 +1,6 @@
 {
-  "installCommand": "yarn install",
-  "buildCommand": "yarn prisma generate && yarn build",
+  "installCommand": "bun install",
+  "buildCommand": "bun prisma generate && bun run build",
   "framework": "nextjs",
   "regions": ["iad1"],
   "git": {
