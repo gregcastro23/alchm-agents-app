@@ -84,7 +84,7 @@ export const authOptions: import('next-auth').NextAuthOptions = {
     maxAge: 7 * 24 * 60 * 60, // 7 days
   },
   pages: {
-    signIn: '/auth/signin',
+    signIn: '/',
   },
   callbacks: {
     async signIn({ user, account, profile }) {
