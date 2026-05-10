@@ -78,9 +78,9 @@ export default function LoginPage() {
         <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-0 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500" />
           <CardHeader className="text-center pb-2">
-            <CardTitle className="text-3xl">Alchemical Access</CardTitle>
+            <CardTitle className="text-3xl">Login to Alchm.kitchen</CardTitle>
             <CardDescription className="text-base mt-2">
-              Join the network to claim daily resources and synthesize new agents.
+              Join the Alchm network to claim daily resources and synthesize new agents.
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -93,7 +93,7 @@ export default function LoginPage() {
                 <Button 
                   size="lg" 
                   className="w-full text-lg h-14 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-md transition-all"
-                  onClick={() => signIn('google', { callbackUrl: '/' })}
+                  onClick={() => window.location.href = `https://alchm.kitchen/api/auth/signin/google?callbackUrl=${encodeURIComponent(window.location.origin)}`}
                   disabled={loading}
                 >
                   <svg className="w-6 h-6 mr-3" viewBox="0 0 24 24">
