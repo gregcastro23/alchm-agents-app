@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Header, Depends, Query
+from fastapi import FastAPI, HTTPException, Header, Depends
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 import os
@@ -8,7 +8,13 @@ from datetime import datetime, timedelta
 import asyncio
 import anthropic
 
-import models, schemas, crud, database, utils, prompts, rag
+import models
+import schemas
+import crud
+import database
+import utils
+import prompts
+import rag
 
 # Initialize database
 models.Base.metadata.create_all(bind=database.engine)

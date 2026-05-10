@@ -1,5 +1,4 @@
-import math
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 def calculate_monica_constant(spirit: float, essence: float, matter: float, substance: float) -> float:
     """

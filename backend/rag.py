@@ -1,6 +1,5 @@
 import os
 import chromadb
-from chromadb.config import Settings
 from typing import List, Dict, Any, Optional
 
 # Configuration
