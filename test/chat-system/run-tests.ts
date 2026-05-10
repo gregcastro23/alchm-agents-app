@@ -139,7 +139,7 @@ class ChatSystemTestRunner {
       console.log(`  Running ${suiteName}...`)
 
       // Run vitest on specific file
-      const command = `yarn vitest run ${testFile} --reporter=json --silent`
+      const command = `bun vitest run ${testFile} --reporter=json --silent`
       const output = execSync(command, { encoding: 'utf-8', maxBuffer: 1024 * 1024 * 10 })
 
       // Parse vitest JSON output

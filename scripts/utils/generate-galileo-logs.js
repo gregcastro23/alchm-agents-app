@@ -5,8 +5,6 @@
  * Creates a burst of tracking events to populate Galileo with our new structure
  */
 
-const fetch = require('node-fetch')
-
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
 async function generateGalileoLogs() {

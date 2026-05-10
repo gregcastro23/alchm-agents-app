@@ -5,8 +5,6 @@
  * Checks what data is being sent to Galileo and verifies the structure
  */
 
-const fetch = require('node-fetch')
-
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
 async function verifyGalileoLogs() {

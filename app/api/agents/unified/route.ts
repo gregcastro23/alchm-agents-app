@@ -43,6 +43,25 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
         const session = await getServerSession()
         const userId = (session?.user as any)?.id
 
+        if (!userId) {
+          return NextResponse.json(
+            { success: false, error: 'Authentication required for agent interaction.', timestamp },
+            { status: 401 }
+          )
+        }
+
+        // ESMS Token Economy: Spend resources for agent operation
+        const { EconomyService } = await import('@/lib/services/economyService')
+        const { AGENT_OPERATION_COSTS } = await import('@/lib/economy-config')
+
+        const debitResult = await EconomyService.debitOperation(userId, 'unified_chat')
+        if (!debitResult.ok) {
+          return NextResponse.json(
+            { error: 'Insufficient tokens', required: AGENT_OPERATION_COSTS.unified_chat },
+            { status: 402 }
+          )
+        }
+
         const chatData = await backend.agents.chat({
           agentId: parameters.agentId,
           message: parameters.message || parameters.userMessage,
@@ -67,7 +86,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
           }).catch(err => console.warn('Failed to log unified agent interaction:', err))
         }
 
-        return NextResponse.json({ success: true, data: chatData, timestamp })
+        return NextResponse.json({ success: true, data: chatData, balances: debitResult.balances, timestamp })
       }
 
       // Extended actions placeholder for further backend endpoints

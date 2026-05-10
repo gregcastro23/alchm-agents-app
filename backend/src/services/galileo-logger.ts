@@ -1,6 +1,6 @@
 // Updated with fixed configuration
 
-import axios, { AxiosError } from 'axios'
+
 import { logger } from '../utils/logger.js'
 
 const GALILEO_URL = 'https://console.rungalileo.io/api/logs'
@@ -40,24 +40,33 @@ async function sendLogWithRetry(level: string, message: string, metadata: any = 
 
   const retries = 3
   const backoffDelays = [1000, 2000, 4000]
-  let lastError: AxiosError | null = null
+  let lastError: any = null
 
   for (let attempt = 0; attempt < retries; attempt++) {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 5000)
     try {
-      await axios.post(GALILEO_URL, logData, {
+      const response = await fetch(GALILEO_URL, {
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${API_KEY}`,
           'Content-Type': 'application/json',
         },
-        timeout: 5000,
+        body: JSON.stringify(logData),
+        signal: controller.signal
       })
+      clearTimeout(timeout)
+      if (!response.ok) {
+        if (response.status === 422) {
+          logger.error('Galileo 422 error: Check project type/configuration')
+          break
+        }
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
       return
     } catch (error) {
-      lastError = error as AxiosError
-      if (lastError.response?.status === 422) {
-        logger.error('Galileo 422 error: Check project type/configuration')
-        break
-      }
+      clearTimeout(timeout)
+      lastError = error
       if (attempt < retries - 1) {
         await delay(backoffDelays[attempt])
       }

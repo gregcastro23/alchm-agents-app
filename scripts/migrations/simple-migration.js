@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import Database from 'better-sqlite3'
+import { Database } from 'bun:sqlite'
 import pkg from 'pg'
 const { Client } = pkg
 
@@ -24,7 +24,7 @@ async function migrateData() {
   try {
     // Migrate users
     console.log('📋 Migrating users...')
-    const users = sqliteDb.prepare('SELECT * FROM users').all()
+    const users = sqliteDb.query('SELECT * FROM users').all()
     console.log(`Found ${users.length} users`)
 
     for (const user of users) {
@@ -49,7 +49,7 @@ async function migrateData() {
 
     // Migrate profiles
     console.log('📋 Migrating profiles...')
-    const profiles = sqliteDb.prepare('SELECT * FROM profiles').all()
+    const profiles = sqliteDb.query('SELECT * FROM profiles').all()
     console.log(`Found ${profiles.length} profiles`)
 
     for (const profile of profiles) {

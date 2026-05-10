@@ -24,11 +24,16 @@ export const viewport = {
   userScalable: true,
 }
 
+import { TokenHUD } from '@/components/TokenHUD'
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <TokenHUD />
+        </Providers>
         <SpeedInsights />
       </body>
     </html>
