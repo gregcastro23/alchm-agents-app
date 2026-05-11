@@ -67,5 +67,6 @@ backend/planetary_agents.db
 scratch/
 test-import.ts
 .dev_server*
+AGENTS.md
 
 backend/node_modules/

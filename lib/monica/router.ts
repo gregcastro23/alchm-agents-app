@@ -1,7 +1,9 @@
-import { resolveOpenAIModel, OPENAI } from '../models/registry'
+import { resolveDefaultModel } from '../models/registry'
+import type { LanguageModel } from 'ai'
 
 export type RoutingDecision = {
-  model: string
+  modelId: string
+  model: LanguageModel
   reason: 'default' | 'complexity_elevate' | 'risk_elevate'
 }
 
@@ -10,12 +12,16 @@ export function decideModel(opts: {
   complexity?: 'simple' | 'moderate' | 'complex'
   hallucinationRisk?: 'low' | 'med' | 'high'
 }): RoutingDecision {
-  const base = opts.defaultModel || process.env.MONICA_DEFAULT_MODEL || resolveOpenAIModel('default')
-  let model = base
+  let tier: 'default' | 'powerful' = 'default'
   let reason: RoutingDecision['reason'] = 'default'
+
   if (opts.complexity === 'complex' || opts.hallucinationRisk === 'high') {
-    model = resolveOpenAIModel('powerful')
+    tier = 'powerful'
     reason = opts.complexity === 'complex' ? 'complexity_elevate' : 'risk_elevate'
   }
-  return { model, reason }
+
+  const model = resolveDefaultModel(tier)
+  const modelId = opts.defaultModel || process.env.MONICA_DEFAULT_MODEL || 'gemini-2.0-flash'
+
+  return { modelId, model, reason }
 }

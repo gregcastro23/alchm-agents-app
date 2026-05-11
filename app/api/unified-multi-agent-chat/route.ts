@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateText, type LanguageModel } from 'ai'
 import { openai } from '@ai-sdk/openai'
-import { OPENAI, resolveOpenAIModel } from '@/lib/models/registry'
+import { OPENAI, resolveOpenAIModel, resolveDefaultModel } from '@/lib/models/registry'
 import type {
   UnifiedAgent,
   GroupChatResponse,
@@ -915,46 +915,42 @@ function selectOptimalModel(
   // Check for explicit overrides first
   const override = overrides?.[agent.id] ?? overrides?.[agent.type]
   if (override) {
-    return toOpenAIModelSelection(resolveModelOverride(override))
+    const model = resolveDefaultModel('powerful')
+    return { model, modelId: override }
   }
 
   // Credit management: use cheapest model tier in dev, smarter tiers in production
   const isProd = process.env.NODE_ENV === 'production'
   if (!isProd) {
-    // Dev mode: always use gpt-4o-mini (cheapest) for credit management
-    return toOpenAIModelSelection(resolveOpenAIModel('fast'))
+    // Dev mode: always use free default tier (Gemini Flash)
+    return { model: resolveDefaultModel('fast'), modelId: 'fast-tier' }
   }
 
   // Production: context-aware model selection based on variant
   switch (variant) {
     case 'historical':
-      return toOpenAIModelSelection(
-        agent.type === 'historical' ? resolveOpenAIModel('default') : resolveOpenAIModel('fast')
-      )
+      return { 
+        model: agent.type === 'historical' ? resolveDefaultModel('default') : resolveDefaultModel('fast'),
+        modelId: agent.type === 'historical' ? 'default-tier' : 'fast-tier'
+      }
 
     case 'planetary':
-      return toOpenAIModelSelection(resolveOpenAIModel('fast'))
+      return { model: resolveDefaultModel('fast'), modelId: 'fast-tier' }
 
     case 'laboratory':
-      return toOpenAIModelSelection(resolveOpenAIModel('default'))
+      return { model: resolveDefaultModel('default'), modelId: 'default-tier' }
 
     case 'gallery':
-      return toOpenAIModelSelection(resolveOpenAIModel('fast'))
+      return { model: resolveDefaultModel('fast'), modelId: 'fast-tier' }
 
     default:
       if (agent.type === 'monica') {
-        return toOpenAIModelSelection(resolveOpenAIModel('default'))
+        return { model: resolveDefaultModel('default'), modelId: 'default-tier' }
       }
-      return toOpenAIModelSelection(resolveOpenAIModel('fast'))
+      return { model: resolveDefaultModel('fast'), modelId: 'fast-tier' }
   }
 }
 
-function toOpenAIModelSelection(modelId: string): ResolvedModelSelection {
-  return {
-    model: openai.chat(modelId),  // Force Chat Completions API (not Responses API)
-    modelId,
-  }
-}
 
 function resolveModelOverride(modelName: string): string {
   switch (modelName) {
@@ -965,7 +961,7 @@ function resolveModelOverride(modelName: string): string {
     case OPENAI.LEGACY_GPT_4O_MINI:
       return OPENAI.GPT_5_4_MINI
     default:
-      return resolveOpenAIModel('fast')
+      return OPENAI.GPT_5_4_MINI // Default to mini for unknown overrides
   }
 }
 

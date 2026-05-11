@@ -47,6 +47,31 @@ export const OPENAI = {
 export type OpenAIModelId = (typeof OPENAI)[keyof typeof OPENAI]
 
 // ============================================================================
+// GOOGLE (GEMINI) MODELS
+// ============================================================================
+
+export const GEMINI = {
+  // Each model has its own separate free-tier quota pool
+  FLASH_25:     'gemini-2.5-flash',          // Newest — separate quota from 2.0
+  FLASH_20:     'gemini-2.0-flash',          // Stable — 1M tokens/min free
+  FLASH_LITE:   'gemini-2.0-flash-lite',     // Lightest — highest throughput
+} as const
+
+export type GeminiModelId = (typeof GEMINI)[keyof typeof GEMINI]
+
+// ============================================================================
+// GROQ MODELS (Free tier fallback)
+// ============================================================================
+
+export const GROQ = {
+  LLAMA_70B:    'llama-3.3-70b-versatile',   // Best quality — free tier
+  LLAMA_8B:     'llama-3.1-8b-instant',      // Fastest — 131K ctx, free tier
+  MIXTRAL:      'mixtral-8x7b-32768',        // Balanced — 32K ctx, free tier
+} as const
+
+export type GroqModelId = (typeof GROQ)[keyof typeof GROQ]
+
+// ============================================================================
 // EMBEDDING MODELS
 // ============================================================================
 
@@ -64,22 +89,29 @@ export type EmbeddingModelId = (typeof EMBEDDINGS)[keyof typeof EMBEDDINGS]
 /**
  * Use these throughout the app instead of raw model IDs.
  * Each tier maps to the best available model for that purpose.
+ * Free-tier strategy: spread models across different quota pools.
  */
 export const MODEL_TIERS = {
   /** Deep reasoning, complex multi-step tasks, agentic coding */
   POWERFUL: {
     claude: CLAUDE.OPUS,
     openai: OPENAI.GPT_5_5,
+    google: GEMINI.FLASH_25,       // Newest Gemini — separate quota
+    groq:   GROQ.LLAMA_70B,        // 70B param — strongest free model
   },
   /** General-purpose, balanced speed/quality */
   DEFAULT: {
     claude: CLAUDE.SONNET,
     openai: OPENAI.GPT_5_4_MINI,
+    google: GEMINI.FLASH_20,       // Stable Gemini — separate quota from 2.5
+    groq:   GROQ.MIXTRAL,          // Balanced free model
   },
   /** Fast responses, high-volume, logging, simple queries */
   FAST: {
     claude: CLAUDE.HAIKU,
     openai: OPENAI.GPT_5_4_NANO,
+    google: GEMINI.FLASH_LITE,     // Lightest Gemini — separate quota from 2.0
+    groq:   GROQ.LLAMA_8B,         // Ultra-fast free model
   },
 } as const
 
@@ -99,41 +131,114 @@ export const OPENAI_FALLBACK_CHAIN: readonly OpenAIModelId[] = [
   OPENAI.LEGACY_GPT_3_5,
 ]
 
-// ============================================================================
-// HELPER: Resolve model from environment or default
-// ============================================================================
+import { type LanguageModel } from 'ai'
+import { gatewayOpenAI, gatewayAnthropic, gatewayGoogle, gatewayGroq, isGatewayEnabled } from './gateway'
+
+// Active provider is driven by DEFAULT_AI_PROVIDER env var.
+// Defaults to 'google' (free tier) when unset.
+const ACTIVE_PROVIDER = process.env.DEFAULT_AI_PROVIDER || 'google'
 
 /**
- * Resolve a Claude model — checks env var first, then uses the tier default.
+ * Resolve the default LanguageModel for any tier.
+ * Provider priority: google (free) → groq (free fallback) → openai → anthropic
+ * Set DEFAULT_AI_PROVIDER=openai|anthropic|groq|google in env to override.
+ */
+export function resolveDefaultModel(
+  tier: 'powerful' | 'default' | 'fast' = 'default'
+): LanguageModel {
+  switch (ACTIVE_PROVIDER) {
+    case 'openai':     return resolveOpenAIModel(tier)
+    case 'anthropic':  return resolveClaudeModel(tier)
+    case 'groq':       return resolveGroqModel(tier)
+    default:           return resolveGoogleModel(tier)  // Free tier baseline
+  }
+}
+
+/**
+ * Resolve a Groq LanguageModel — free tier fallback, blazing fast inference.
+ */
+export function resolveGroqModel(
+  tier: 'powerful' | 'default' | 'fast' = 'default'
+): LanguageModel {
+  let modelId: string
+  switch (tier) {
+    case 'powerful': modelId = MODEL_TIERS.POWERFUL.groq; break;
+    case 'fast':     modelId = MODEL_TIERS.FAST.groq; break;
+    default:         modelId = MODEL_TIERS.DEFAULT.groq; break;
+  }
+  const finalModelId = isGatewayEnabled ? `groq/${modelId}` : modelId
+  return gatewayGroq(finalModelId) as unknown as LanguageModel
+}
+
+/**
+ * Resolve a Google Gemini LanguageModel — free tier, no billing required.
+ */
+export function resolveGoogleModel(
+  tier: 'powerful' | 'default' | 'fast' = 'default'
+): LanguageModel {
+  const envModel = process.env.MONICA_DEFAULT_MODEL
+  let modelId = envModel
+
+  // Only use env override if it looks like a Gemini model
+  if (modelId && !modelId.startsWith('gemini')) modelId = undefined
+
+  if (!modelId) {
+    switch (tier) {
+      case 'powerful': modelId = MODEL_TIERS.POWERFUL.google; break;
+      case 'fast':     modelId = MODEL_TIERS.FAST.google; break;
+      default:         modelId = MODEL_TIERS.DEFAULT.google; break;
+    }
+  }
+
+  const finalModelId = isGatewayEnabled ? `google/${modelId}` : modelId
+  return gatewayGoogle(finalModelId) as unknown as LanguageModel
+}
+
+/**
+ * Resolve a Claude LanguageModel — configured with Vercel AI Gateway.
  */
 export function resolveClaudeModel(
   tier: 'powerful' | 'default' | 'fast' = 'default'
-): string {
+): LanguageModel {
   const envModel = process.env.CLAUDE_DEFAULT_MODEL
-  if (envModel) return envModel
+  let modelId = envModel
 
-  switch (tier) {
-    case 'powerful': return MODEL_TIERS.POWERFUL.claude
-    case 'fast':     return MODEL_TIERS.FAST.claude
-    default:         return MODEL_TIERS.DEFAULT.claude
+  if (!modelId) {
+    switch (tier) {
+      case 'powerful': modelId = MODEL_TIERS.POWERFUL.claude; break;
+      case 'fast':     modelId = MODEL_TIERS.FAST.claude; break;
+      default:         modelId = MODEL_TIERS.DEFAULT.claude; break;
+    }
   }
+
+  const finalModelId = isGatewayEnabled ? `anthropic/${modelId}` : modelId
+  return gatewayAnthropic(finalModelId) as unknown as LanguageModel
 }
 
 /**
- * Resolve an OpenAI model — checks env var first, then uses the tier default.
+ * Resolve an OpenAI LanguageModel — configured with Vercel AI Gateway.
  */
 export function resolveOpenAIModel(
   tier: 'powerful' | 'default' | 'fast' = 'default'
-): string {
-  const envModel = process.env.OPENAI_DEFAULT_MODEL || process.env.MONICA_DEFAULT_MODEL
-  if (envModel) return envModel
+): LanguageModel {
+  // Only use MONICA_DEFAULT_MODEL if it is an actual OpenAI model ID
+  const envModel = process.env.OPENAI_DEFAULT_MODEL
+  const monicaModel = process.env.MONICA_DEFAULT_MODEL
+  const monicaIsOpenAI = monicaModel && (monicaModel.startsWith('gpt-') || monicaModel.startsWith('o1') || monicaModel.startsWith('o3'))
+  let modelId = envModel || (monicaIsOpenAI ? monicaModel : undefined)
 
-  switch (tier) {
-    case 'powerful': return MODEL_TIERS.POWERFUL.openai
-    case 'fast':     return MODEL_TIERS.FAST.openai
-    default:         return MODEL_TIERS.DEFAULT.openai
+  if (!modelId) {
+    switch (tier) {
+      case 'powerful': modelId = MODEL_TIERS.POWERFUL.openai; break;
+      case 'fast':     modelId = MODEL_TIERS.FAST.openai; break;
+      default:         modelId = MODEL_TIERS.DEFAULT.openai; break;
+    }
   }
+
+  const finalModelId = isGatewayEnabled ? `openai/${modelId}` : modelId
+  return gatewayOpenAI(finalModelId) as unknown as LanguageModel
 }
+
 
 /**
  * Resolve embedding model from environment or default.

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { openai } from '@ai-sdk/openai'
-import { generateText } from 'ai'
+import { streamText } from 'ai'
 import { verifyApiKeys } from '../../secure-config'
 import {
   buildMonicaPrompt,
@@ -12,6 +11,7 @@ import { sanitizeUserInput, clampTemperature } from '@/lib/monica/safety'
 import { decideModel } from '@/lib/monica/router'
 import { MonicaResponseHandler } from '@/lib/monica/monica-response-handler'
 import { selectKnowledge } from '@/lib/monica/knowledge'
+import { resolveDefaultModel } from '@/lib/models/registry'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -67,12 +67,32 @@ export async function POST(req: Request) {
 
   const analyzed = MonicaResponseHandler.analyzeUserMessage(userMsg)
   const routing = decideModel({
-    defaultModel: model || process.env.MONICA_DEFAULT_MODEL || 'gpt-5.4-mini',
+    defaultModel: model || process.env.MONICA_DEFAULT_MODEL,
     complexity: analyzed.topicComplexity,
   })
+  const activeModel = routing.model
   const temp = clampTemperature(
     (preferredStyle?.temperature ?? Number(process.env.MONICA_TEMPERATURE)) || 0.4
   )
+
+  // MOCK_LLM safety: return a static response without calling any provider
+  const MOCK_LLM = process.env.MOCK_LLM === 'true'
+  if (MOCK_LLM) {
+    const mockText = `*Monica speaks in a calm, resonant tone*\n\nI perceive your inquiry: "${userMsg.slice(0, 60)}..."\n\nThe alchemical currents suggest a time of reflection and synthesis. Trust in the unfolding process, for each question is a seed planted in the fertile ground of consciousness.`
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream({
+      async start(controller) {
+        const send = (obj: any) => controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`))
+        send({ type: 'meta', ttfbMs: 0, routing: { modelId: 'mock', reason: 'default' } })
+        for (const chunk of mockText.match(/.{1,60}/g) || []) {
+          send({ type: 'token', token: chunk })
+        }
+        send({ type: 'done' })
+        controller.close()
+      }
+    })
+    return new Response(stream, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' } })
+  }
 
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
@@ -81,24 +101,30 @@ export async function POST(req: Request) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`))
       try {
         const start = Date.now()
-        // We do not have token-level streaming from ai-sdk here, so simulate chunking
-        const { text } = await generateText({
-          model: openai(routing.model) as any,
+        
+        const result = await streamText({
+          model: activeModel,
           system: sys,
           prompt: userMsg,
           maxTokens: 800,
           temperature: temp,
         } as any)
-        // naive chunking for immediate UX
-        const chunks = text.match(/.{1,120}/g) || [text]
-        const ttfb = Date.now() - start
-        send({ type: 'meta', ttfbMs: ttfb, routing })
-        for (const chunk of chunks) {
+
+        let isFirstChunk = true;
+        
+        for await (const chunk of result.textStream) {
+          if (isFirstChunk) {
+            const ttfb = Date.now() - start
+            send({ type: 'meta', ttfbMs: ttfb, routing })
+            isFirstChunk = false
+          }
           send({ type: 'token', token: chunk })
-          await new Promise(r => setTimeout(r, 10))
         }
+        
+        const fullText = await result.text;
+        
         // envelope
-        const envelope = MonicaResponseHandler.formatResponse(text, {
+        const envelope = MonicaResponseHandler.formatResponse(fullText, {
           userMessage: userMsg,
           learningStage: conversationStage === 'greeting' ? 'beginner' : 'intermediate',
         })
@@ -113,7 +139,8 @@ export async function POST(req: Request) {
         send({ type: 'done' })
         controller.close()
       } catch (e) {
-        send({ type: 'error', message: 'stream_failed' })
+        console.error('[Monica Stream] streamText error:', e)
+        send({ type: 'error', message: e instanceof Error ? e.message : 'stream_failed' })
         controller.close()
       }
     },
