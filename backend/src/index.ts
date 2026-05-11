@@ -31,6 +31,8 @@ import kineticsRoutes from './routes/kinetics.js'
 import consciousnessRoutes from './routes/consciousness.js'
 import healthRoutes from './routes/health.js'
 import agentRoutes from './routes/agents.js'
+import agentActionRoutes from './routes/agent-actions.js'
+import { astrologicalActionScheduler } from './services/astrological-action-scheduler.js'
 
 // WebSocket handlers
 import { setupWebSocketHandlers } from './websocket/handlers.js'
@@ -89,11 +91,7 @@ const corsOptions = {
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization',
-    'X-Requested-With',
-  ],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }
 app.use(cors(corsOptions))
 
@@ -172,6 +170,7 @@ app.use('/api/planetary', planetaryRoutes)
 app.use('/api/planets', ephemerisRoutes) // Swiss Ephemeris endpoints
 app.use('/api/tokens', tokenRoutes)
 app.use('/api/agents', agentRoutes)
+app.use('/api/agent-actions', agentActionRoutes)
 
 // Apply auth before protected routes
 app.use('/api/kinetics', authMiddleware)
@@ -236,6 +235,19 @@ async function startServer() {
     logger.info(`WebSocket server started on port ${wsPort}`)
   }
 
+  if (process.env.ASTRO_ACTION_ENGINE_ENABLED === 'true') {
+    try {
+      astrologicalActionScheduler.start()
+    } catch (error) {
+      logger.error('Failed to start astrological action scheduler', {
+        error: error instanceof Error ? error.message : String(error),
+      })
+      if (process.env.NODE_ENV === 'production') {
+        throw error
+      }
+    }
+  }
+
   server.listen(PORT, HOST, () => {
     logger.info(`🚀 Planetary Agents Backend started`)
     logger.info(`📍 Server: http://${HOST}:${PORT}`)
@@ -282,6 +294,12 @@ async function startServer() {
         logger.info('Cache service disconnected')
       } catch (error) {
         logger.error('Error disconnecting cache service:', error)
+      }
+
+      try {
+        astrologicalActionScheduler.stop()
+      } catch (error) {
+        logger.error('Error stopping astrological action scheduler:', error)
       }
 
       clearTimeout(shutdownTimeout)

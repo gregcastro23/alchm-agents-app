@@ -653,6 +653,29 @@ model historical_agents {
   @@index([popularityScore])
 }
 
+model agent_action_events {
+  id              String    @id @default(cuid())
+  agentId         String
+  agentEmail      String
+  eventType       String
+  triggerType     String
+  triggerSummary  String
+  metadataPayload Json
+  score           Float
+  idempotencyKey  String    @unique
+  status          String    @default("pending")
+  attempts        Int       @default(0)
+  lastError       String?
+  evaluatedAt     DateTime  @default(now())
+  postedAt        DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([agentId])
+  @@index([status])
+  @@index([evaluatedAt])
+}
+
 model monica_contextual_help {
   id              String    @id @default(cuid())
   pageUrl         String

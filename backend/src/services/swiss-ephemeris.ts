@@ -100,12 +100,10 @@ function calculatePlanetPosition(planetId: number, julianDay: number): Planetary
   // Use MOSHIER ephemeris (built-in, no external files needed)
   const flags = swisseph.SEFLG_MOSEPH | swisseph.SEFLG_SPEED
 
-  const result = swisseph.swe_calc_ut(julianDay, planetId, flags)
+  const result = swisseph.swe_calc_ut(julianDay, planetId, flags) as any
 
   if (!result || result.error || result.longitude === undefined) {
-    throw new Error(
-      `Swiss Ephemeris calculation failed: ${result?.error || 'Unknown error'}`
-    )
+    throw new Error(`Swiss Ephemeris calculation failed: ${result?.error || 'Unknown error'}`)
   }
 
   return {
@@ -155,7 +153,7 @@ export function getHouseSystem(
 ): HouseSystem {
   const julianDay = dateToJulianDay(date)
 
-  const result = swisseph.swe_houses(julianDay, latitude, longitude, houseSystem)
+  const result = swisseph.swe_houses(julianDay, latitude, longitude, houseSystem) as any
 
   if (!result || !result.house) {
     throw new Error('House system calculation failed')
