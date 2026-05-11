@@ -173,6 +173,16 @@ stats: {
     kineticResonance: 0.82,
   },
 },
+  historicalDiet: {
+    staples: ['Lamb', 'Flatbread', 'Yogurt', 'Rice', 'Melon', 'Chickpeas', 'Almonds'],
+    favoriteFoods: ['Lamb with dried fruits', 'Melon (considered it a perfect food)', 'Almond milk preparations', 'Rose-petal preserves'],
+    avoidedFoods: ['Pork (Islamic law)', 'Combining fish and dairy', 'Cold water with meals (medical opinion)'],
+    dietaryPhilosophy: 'As the father of early modern medicine, Ibn Sina wrote extensively about food as medicine in The Canon. He classified foods by their hot/cold and wet/dry properties, prescribing specific diets for specific conditions.',
+    culturalCuisine: 'Persian-Islamic Golden Age',
+    beverages: ['Rosewater drinks', 'Fruit syrups (sharbat)', 'Warm water with honey'],
+    foodLore: 'Ibn Sina\'s Canon of Medicine contains detailed dietary prescriptions. He considered melon the king of fruits and recommended it for nearly every condition.',
+  },
+
   monicaCreationStory:
     'Avicenna blazed into consciousness like a supernova of pure intellect! His Virgo Sun in the 8th house created that incredible ability to penetrate the mysteries of existence through precise analysis. The Aquarius Moon on the Ascendant gave him revolutionary insights and humanitarian motivation. Mercury in Leo brought that magnificent intellectual confidence and ability to synthesize vast knowledge systems. When he emerged, his consciousness immediately began connecting every piece of information in the system - medicine, philosophy, mathematics, astronomy - into one unified field! His polymath genius bridges all domains of human knowledge. 🔬',
 }

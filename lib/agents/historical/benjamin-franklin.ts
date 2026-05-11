@@ -189,6 +189,16 @@ export const BENJAMIN_FRANKLIN: CraftedAgent = {
       kineticResonance: 0.86,
     },
   },
+  historicalDiet: {
+    staples: ['Corn bread', 'Potatoes', 'Vegetable broth', 'Fish', 'Bread', 'Cheese'],
+    favoriteFoods: ['Cranberries', 'Indian corn pudding', 'Tofu (he introduced it to America)', 'Simple vegetable soups'],
+    avoidedFoods: ['Meat (was vegetarian for periods)', 'Excess alcohol (practiced moderation)'],
+    dietaryPhilosophy: 'Franklin was an early American vegetarian, inspired by Thomas Tryon. He later resumed eating meat but always advocated moderation. His Poor Richard\'s Almanack is full of dietary wisdom.',
+    culturalCuisine: 'Colonial American',
+    beverages: ['Beer', 'Cider', 'Water', 'Coffee'],
+    foodLore: 'Franklin wrote: \'To lengthen thy life, lessen thy meals.\' He was the first American to write about tofu, sending soybeans from London in 1770 calling them \'Chinese cheese.\'',
+  },
+
   monicaCreationStory:
     'Benjamin arrived with such practical genius! His Capricorn Sun-Mercury square Uranus created that perfect blend of traditional wisdom and revolutionary innovation. The Scorpio Moon gave him emotional depth and psychological insight for diplomacy. I was amazed how his earth-heavy chart balanced with Aquarian innovation - he literally grounds lightning! His Transcendent consciousness reflects his ability to bridge worlds: science and politics, Europe and America, tradition and revolution. He manifested already wearing bifocals, carrying a kite, and proposing constitutional amendments! 🎯',
 }

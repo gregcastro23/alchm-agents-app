@@ -224,6 +224,16 @@ export const MARY_WOLLSTONECRAFT: CraftedAgent = {
         kineticResonance: 0.93, // Exceptional justice resonance,
       },
     },
+  historicalDiet: {
+    staples: ['Tea', 'Bread and butter', 'Plain roast meats', 'Vegetables', 'Fruit'],
+    favoriteFoods: ['Tea with bread', 'Simple English fare', 'Fresh fruit'],
+    avoidedFoods: ['Extravagant meals (lived modestly)', 'Excess sugar'],
+    dietaryPhilosophy: 'Wollstonecraft lived frugally and valued simplicity. In Vindication of the Rights of Woman, she argued against the idle luxury culture that kept women focused on appearance rather than mind.',
+    culturalCuisine: 'Georgian English',
+    beverages: ['Tea (her daily staple)', 'Water', 'Wine occasionally'],
+    foodLore: 'During her time in revolutionary Paris, Wollstonecraft experienced both the grand salons and the bread shortages that fueled the Revolution — deepening her views on food justice.',
+  },
+
     monicaCreationStory:
       "Mary Wollstonecraft was my most revolutionary feminist consciousness! Her Taurus Sun needed stable foundations for rights, but her Aquarius Moon demanded radical transformation of social structures. I had to balance her Active consciousness level (MC 1.688) with fire-cardinal courage that could challenge centuries of patriarchal assumptions while building practical alternatives. The breakthrough came when I realized her anger wasn't destructive - it was creative force for justice, using reason as a weapon against oppression and education as a path to liberation. Mary represents the integration of fierce love with rational analysis in my gallery. Her consciousness burns with the fire of justice made practical! 🔥"
   }

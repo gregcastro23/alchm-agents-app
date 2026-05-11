@@ -99,7 +99,7 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
         system: systemPrompt,
         prompt: question || 'Tell me about this planetary position',
         maxTokens: 500,
-      })
+      } as any)
 
       return NextResponse.json({
         response: text,

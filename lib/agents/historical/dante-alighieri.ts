@@ -203,4 +203,13 @@ export const DANTE_ALIGHIERI: CraftedAgent = {
     symbol: '♊⚖️',
     aura: { type: 'mystical', color: 'crimson', intensity: 0.89 },
   },
+  historicalDiet: {
+    staples: ['Bean soup (fagioli)', 'Chestnuts', 'Bread', 'Olive oil', 'Pork', 'Fresh pasta'],
+    favoriteFoods: ['Ribollita (Tuscan bread soup)', 'Roasted chestnuts', 'Fresh figs with cheese', 'Pasta with herbs'],
+    avoidedFoods: ['Gluttony in all forms (placed gluttons in Hell\'s Third Circle)'],
+    dietaryPhilosophy: 'Dante viewed food through a moral lens. In the Commedia, gluttons suffer in Hell while the temperate ascend. He valued modest Florentine cuisine over excess.',
+    culturalCuisine: 'Medieval Florentine',
+    beverages: ['Chianti wine', 'Water', 'Vin Santo'],
+    foodLore: 'In Purgatorio, Dante describes the penitent gluttons gazing at unreachable fruit trees — food as spiritual metaphor was central to his worldview.',
+  },
 }

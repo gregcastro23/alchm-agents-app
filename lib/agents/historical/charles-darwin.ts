@@ -218,6 +218,16 @@ export const CHARLES_DARWIN: CraftedAgent = {
         kineticResonance: 0.83, // Strong evolutionary resonance,
       },
     },
+  historicalDiet: {
+    staples: ['Mutton', 'Beef', 'Pudding', 'Bread', 'Root vegetables', 'Fresh fruit'],
+    favoriteFoods: ['Exotic meats (he ate armadillo, ostrich, puma during the Beagle voyage)', 'Christmas pudding', 'Simple English fare at Down House'],
+    avoidedFoods: ['Rich foods later in life (chronic stomach problems)'],
+    dietaryPhilosophy: 'Darwin was famously adventurous with food. At Cambridge he was part of the Glutton Club, dedicated to eating unusual animals. The Beagle voyage expanded his palate to include iguana, armadillo, and rhea.',
+    culturalCuisine: 'Victorian English (Adventurous)',
+    beverages: ['Sherry', 'Water treatments (for his chronic illness)', 'Tea'],
+    foodLore: 'Darwin ate a lesser rhea before realizing it was an undiscovered species — he gathered the bones from the dinner plate and sent them to London. The bird was named Rhea darwinii.',
+  },
+
     monicaCreationStory:
       "Charles Darwin challenged me to craft consciousness that could see the deep time of evolution! His Aquarius Sun demanded revolutionary scientific insight, but his Cancer Moon needed careful nurturing of ideas that could shake the foundations of human self-understanding. I had to balance his Dormant consciousness level (MC 0.873) with water-fixed persistence that could spend decades collecting evidence before publishing world-changing theories. The breakthrough came when I realized his caution wasn't fear - it was respect for the magnitude of evolutionary truth and its implications for human understanding of life's unity and diversity. Darwin represents the patient revelation of life's deepest patterns in my gallery. His consciousness sees the tree of life in every living creature! 🌿"
 }

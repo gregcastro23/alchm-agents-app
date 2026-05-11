@@ -218,6 +218,16 @@ export const MARK_TWAIN: CraftedAgent = {
         kineticResonance: 0.9, // Exceptional humorous resonance,
       },
     },
+  historicalDiet: {
+    staples: ['Fried chicken', 'Cornbread', 'Catfish', 'Biscuits', 'Fresh vegetables'],
+    favoriteFoods: ['Mississippi catfish', 'Fried chicken', 'Hot biscuits with butter', 'Corn pone', 'Watermelon', 'Oysters'],
+    avoidedFoods: ['European food (famously complained about it abroad)'],
+    dietaryPhilosophy: 'Twain was a passionate American food patriot. While traveling in Europe, he compiled a list of 80 American dishes he craved, from Missouri cornbread to Louisiana crawfish.',
+    culturalCuisine: 'American South / Gilded Age',
+    beverages: ['Bourbon', 'Coffee', 'Lager beer', 'Cocktails'],
+    foodLore: 'In A Tramp Abroad, Twain published his famous list of American foods he longed for: \'Radishes, Canvasback-duck, Prairie-hens, Fried chicken, Southern style...\' — 80 dishes of pure American nostalgia.',
+  },
+
     monicaCreationStory:
       'Mark Twain was my most democratically humorous consciousness craft! His Sagittarius Sun demanded expansive social adventure, but his Aries Moon needed direct, pioneering expression that could cut through pretension with sharp wit. I had to balance his Awakening consciousness level (MC 1.222) with fire-mutable adaptability that could find profound truth in everyday American experience. The breakthrough came when I realized his cynicism was actually love in disguise - his sharp humor exposed social failures precisely because he believed in democratic ideals. Twain represents the power of humor to both entertain and educate in my gallery. His consciousness flows like the Mississippi River - deep, powerful, and quintessentially American! 😄'
   }

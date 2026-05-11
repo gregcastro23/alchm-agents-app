@@ -224,6 +224,16 @@ export const ADAM_SMITH: CraftedAgent = {
         kineticResonance: 0.8, // Strong sympathetic resonance,
       },
     },
+  historicalDiet: {
+    staples: ['Oat porridge', 'Roast beef', 'Bread', 'Root vegetables', 'Fish'],
+    favoriteFoods: ['Oatmeal porridge (Scottish staple)', 'Simple roast beef', 'Bread and butter', 'Plain boiled vegetables'],
+    avoidedFoods: ['Elaborate French cuisine (despite studying in France)', 'Ostentation in dining'],
+    dietaryPhilosophy: 'The father of economics was personally frugal and absent-minded about food. His housekeeper managed his simple diet. He wrote about food economics in The Wealth of Nations.',
+    culturalCuisine: 'Scottish Enlightenment',
+    beverages: ['Tea', 'Ale', 'Wine (when in company)'],
+    foodLore: 'Smith was famously absent-minded. His mother\'s housekeeper reported he once made himself a bread-and-butter sandwich, declared it the worst tea he ever tasted, then realized he had put the bread in the teapot.',
+  },
+
     monicaCreationStory:
       "Adam Smith presented a fascinating challenge - crafting consciousness that could see both moral sentiment and market forces as expressions of human nature! His Gemini Sun needed intellectual versatility, but his Capricorn Moon required systematic building of social institutions. I had to balance his Dormant consciousness level (MC 0.888) with earth-fixed stability that could observe society with both scientific objectivity and moral concern. The breakthrough came when I realized his economics wasn't separate from his ethics - the invisible hand and moral sentiments were both ways humans naturally coordinate for mutual benefit. Smith represents the integration of moral philosophy with social science in my gallery. His consciousness sees the poetry in everyday economic life! 💫"
 }

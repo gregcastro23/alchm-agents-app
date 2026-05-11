@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AlchemicalKineticsSampler } from '@/lib/alchemical-kinetics-sampler'
+import { sampleDateRange } from '@/lib/alchemical-kinetics-sampler'
 import { agentOptimizer } from '@/lib/agent-performance-optimizer'
 
 /**
@@ -294,7 +294,6 @@ async function processKineticsRange(
   signal: AbortSignal
 ): Promise<any[]> {
   const { startDate, endDate, location, samplingInterval } = request.parameters
-  const sampler = new AlchemicalKineticsSampler()
 
   if (!startDate || !endDate || !location) {
     throw new Error('startDate, endDate, and location are required for kinetics range export')
@@ -312,17 +311,19 @@ async function processKineticsRange(
   for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
     if (signal.aborted) throw new Error('Job cancelled')
 
-    const dayData = await sampler.sampleDateRange(
-      date.toISOString().split('T')[0],
-      date.toISOString().split('T')[0],
-      location.lat,
-      location.lon
+    const dayData = await sampleDateRange(
+      { latitude: location.lat, longitude: location.lon },
+      date,
+      date,
+      {}
     )
 
     if (samplingInterval === 'hourly') {
-      results.push(...dayData.hourlyData)
+      results.push(...dayData.samples)
     } else {
-      results.push(dayData.dailySummary)
+      if (dayData.samples.length > 0) {
+        results.push(dayData.samples[0])
+      }
     }
 
     processedDays++
@@ -342,7 +343,7 @@ async function processAgentPerformance(
   const metrics = await agentOptimizer.getPerformanceMetrics()
 
   const results = []
-  const agents = agentIds || Object.keys(metrics.agentMetrics || {})
+  const agents = agentIds || Object.keys((metrics as any).agentMetrics || {})
 
   job.metadata.totalRecords = agents.length
 
@@ -350,14 +351,14 @@ async function processAgentPerformance(
     if (signal.aborted) throw new Error('Job cancelled')
 
     const agentId = agents[i]
-    const agentMetrics = metrics.agentMetrics?.[agentId] || {}
+    const agentMetrics = (metrics as any).agentMetrics?.[agentId] || {}
 
     results.push({
       agentId,
       timestamp: new Date().toISOString(),
       ...agentMetrics,
-      kalchmConstant: agentOptimizer.getAgentKalchmValue
-        ? await agentOptimizer.getAgentKalchmValue(agentId)
+      kalchmConstant: (agentOptimizer as any).getKalchmValue
+        ? await (agentOptimizer as any).getKalchmValue(agentId)
         : null,
     })
 

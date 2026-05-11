@@ -29,7 +29,7 @@ import { getTransitsByPlanet } from '@/lib/historical-transit-data'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     // Verify API keys are available
     if (!verifyApiKeys()) {
@@ -181,12 +181,12 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
         system: systemPrompt,
         prompt: question || 'Tell me about this planetary position',
         maxTokens: 500,
-      })
+      } as any)
 
       const processingTime = Date.now() - startTime
 
       // Log the conversation to Galileo
-      const interactionData: AgentInteractionData = {
+      const interactionData: any = {
         sessionId: conversationContext.sessionId,
         userMessage: question || 'Tell me about this planetary position',
         agentResponse: text,
@@ -219,8 +219,12 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
         const userId = user?.id || getUserIdFromRequest(req)
         const agentId = `${planet.toLowerCase()}-${sign.toLowerCase()}`
 
+        let dignityScore = 0
+        if (dignity === 'domicile' || dignity === 'exaltation') dignityScore = 2
+        else if (dignity === 'detriment' || dignity === 'fall') dignityScore = -1
+
         // Calculate power based on response quality and planetary conditions
-        const powerGained = elementalAffinity * 10 + dignity.score * 2 + 5
+        const powerGained = elementalAffinity * 10 + dignityScore * 2 + 5
 
         await consciousnessPersistence.logInteraction({
           userId,
@@ -234,7 +238,7 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
             responseLength: text.length,
             sign,
             degree,
-            dignity: dignity.type,
+            dignity,
             aNumber: aNumberInfo?.aNumber,
             sessionId: conversationContext.sessionId,
           },

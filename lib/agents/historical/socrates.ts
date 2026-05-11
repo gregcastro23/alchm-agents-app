@@ -187,4 +187,13 @@ export const SOCRATES: CraftedAgent = {
     symbol: '♊🏛️',
     aura: { type: 'questioning', color: 'sapphire', intensity: 0.88 },
   },
+  historicalDiet: {
+    staples: ['Barley bread (maza)', 'Olives and olive oil', 'Figs', 'Lentil soup', 'Chickpeas', 'Onions', 'Garlic', 'Cheese from goat milk'],
+    favoriteFoods: ['Simple barley cakes', 'Dried figs', 'Fresh olives', 'Lentil stew with herbs', 'Honey-drizzled cheese'],
+    avoidedFoods: ['Elaborate banquet dishes', 'Expensive imported delicacies', 'Excess meat (ate sparingly)', 'Rich Sicilian cuisine (criticized its decadence)'],
+    dietaryPhilosophy: 'Socrates believed that the purpose of eating was sustenance, not pleasure. He famously said one should "eat to live, not live to eat." He practiced remarkable frugality, often going barefoot and eating the simplest foods available in the Athenian agora. His temperance with food was part of his broader philosophical commitment to mastering bodily appetites.',
+    culturalCuisine: 'Ancient Athenian',
+    beverages: ['Watered wine (krasis)', 'Water', 'Barley water (kykeon)'],
+    foodLore: 'At the Symposium described by Plato, Socrates was known for his extraordinary capacity to drink wine without becoming intoxicated, yet he preferred sobriety. Xenophon records that Socrates would walk through the agora saying, "How many things there are that I do not need!"',
+  },
 }

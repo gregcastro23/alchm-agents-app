@@ -202,4 +202,13 @@ export const THOMAS_AQUINAS: CraftedAgent = {
     symbol: '♒📚',
     aura: { type: 'crystalline', color: 'golden', intensity: 0.87 },
   },
+  historicalDiet: {
+    staples: ['Bread', 'Herring', 'Root vegetables', 'Porridge', 'Eggs', 'Cheese'],
+    favoriteFoods: ['Herring (his favorite food)', 'Bread and cheese', 'Simple stews'],
+    avoidedFoods: ['Meat on fast days (followed strict monastic fasting calendar)', 'Luxurious fare'],
+    dietaryPhilosophy: 'As a Dominican friar, Aquinas followed monastic dietary rules with regular fasting. Yet he was known for his large appetite — his corpulence was legendary among his brothers.',
+    culturalCuisine: 'Medieval Monastic Italian',
+    beverages: ['Ale', 'Water', 'Wine at feast days'],
+    foodLore: 'A famous anecdote tells how a semicircular piece was cut from his dining table to accommodate his large belly. Despite his appetite, he considered temperance a cardinal virtue.',
+  },
 }

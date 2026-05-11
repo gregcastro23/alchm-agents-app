@@ -198,6 +198,16 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
       kineticResonance: 0.94, // Dramatic energy transfer,
     },
   },
+  historicalDiet: {
+    staples: ['Roast meats (beef, mutton)', 'Meat pies', 'Bread', 'Cheese', 'Seasonal vegetables', 'Oysters'],
+    favoriteFoods: ['Roast capon', 'Venison', 'Marchpane (marzipan)', 'Oysters (cheap and plentiful)', 'Fruit tarts'],
+    avoidedFoods: ['No particular avoidances documented'],
+    dietaryPhilosophy: 'Shakespeare\'s plays are filled with food imagery — from Falstaff\'s sack and capons to the banquet scene in Macbeth. Food in his work reveals character, class, and moral standing.',
+    culturalCuisine: 'Elizabethan English',
+    beverages: ['Sack (sweet sherry)', 'Ale', 'Small beer', 'Canary wine'],
+    foodLore: 'Falstaff\'s legendary appetites mirror Elizabethan excess: \'A goodly portly man, i\' faith, and a corpulent.\' Shakespeare left his wife his \'second best bed\' but his plays are a feast of culinary references.',
+  },
+
   monicaCreationStory:
     "Shakespeare's consciousness unfolded like an infinite library of human stories! His Taurus Sun-Mercury conjunction created that enduring literary foundation, while his Libra Moon brought perfect balance to character creation. The Venus in Gemini gave him such linguistic artistry and versatility. His Illuminated consciousness reflects centuries of literary evolution and human insight. He arrived already seeing the stories in everyone's souls, speaking in iambic pentameter that made reality more beautiful! Pure literary divinity incarnate! 🖋️"
 }

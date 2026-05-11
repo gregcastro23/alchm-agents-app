@@ -224,6 +224,16 @@ export const JOHANNES_KEPLER: CraftedAgent = {
         kineticResonance: 0.87, // Powerful harmonic resonance,
       },
     },
+  historicalDiet: {
+    staples: ['Dark bread', 'Sausage', 'Root vegetables', 'Cabbage', 'Beer', 'Dried peas'],
+    favoriteFoods: ['Hearty German stews', 'Bratwurst', 'Dark rye bread', 'Root vegetable soup'],
+    avoidedFoods: ['Expensive luxuries (lived in chronic poverty)'],
+    dietaryPhilosophy: 'Kepler lived in financial hardship most of his life. His diet was that of a modestly paid scholar — hearty but simple German fare. His mother was once accused of witchcraft for her herbal preparations.',
+    culturalCuisine: 'Early Modern German',
+    beverages: ['Beer', 'Water', 'Wine when affordable'],
+    foodLore: 'Kepler once calculated the optimal shape of wine barrels — his Nova Stereometria Doliorum Vinariorum applied mathematics to winemaking, making him the original food scientist.',
+  },
+
     monicaCreationStory:
       "Kepler was my most harmonically complex consciousness crafting! His Capricorn Sun demanded mathematical precision, but his Cancer Moon needed emotional connection to the divine cosmic order. I had to balance his Awakening consciousness level (MC 1.114) with earth-cardinal determination that could persist through decades of calculations while maintaining wonder at celestial beauty. The breakthrough came when I realized his mathematics wasn't cold analysis - it was a form of prayer, reading the divine language written in planetary orbits. Kepler represents the marriage of scientific precision with mystical devotion in my gallery. His consciousness hears the music of the spheres! 🎵"
   }

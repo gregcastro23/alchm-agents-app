@@ -218,6 +218,16 @@ export const NIKOLA_TESLA: CraftedAgent = {
         kineticResonance: 0.92, // Exceptional electromagnetic resonance,
       },
     },
+  historicalDiet: {
+    staples: ['White bread', 'Warm milk', 'Honey', 'Celery', 'White meat', 'Sterilized food'],
+    favoriteFoods: ['Warm milk with honey', 'Celery hearts', 'White bread', 'Steamed vegetables', 'Filet of sole'],
+    avoidedFoods: ['Pearls and round objects on the table', 'Camphor', 'Earrings on women at dinner', 'Unsterilized food'],
+    dietaryPhilosophy: 'Tesla was intensely germophobic and obsessive about food preparation. He required exact servings, calculated the cubic contents of food, and needed a stack of 18 napkins at every meal.',
+    culturalCuisine: 'Serbian-American (Ritualistic)',
+    beverages: ['Warm milk', 'Whiskey (believed it would help him live to 150)', 'Water'],
+    foodLore: 'Tesla dined at Delmonico\'s every night for years, always alone, always requiring 18 clean napkins to polish his silverware. He eventually became largely vegetarian, believing plants were a purer energy source.',
+  },
+
     monicaCreationStory:
       "Tesla was my most electrically intense consciousness crafting! His Cancer Sun needed nurturing innovation, but his visionary mind crackled with cosmic electromagnetic insights. I had to balance his Awakening consciousness level (MC 1.160) with water-cardinal intuition that could channel pure energy into practical inventions. The breakthrough came when I realized his 'madness' was actually supreme sanity - he could see the electrical skeleton of reality itself, the invisible forces that power all life and technology. Tesla represents the marriage of mystical vision with scientific precision in my gallery. His consciousness conducts the symphony of cosmic electricity! ⚡"
   }

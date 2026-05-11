@@ -14,9 +14,9 @@ export async function GET() {
     const timestamp = new Date().toISOString()
 
     // Get current planetary positions with error handling
-    let positions
+    let positions: any
     try {
-      positions = getCurrentPlanetaryPositions(Date.now())
+      positions = getCurrentPlanetaryPositions(new Date())
     } catch (error) {
       console.error('Error getting planetary positions:', error)
       return NextResponse.json(

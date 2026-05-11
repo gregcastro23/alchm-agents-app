@@ -224,6 +224,16 @@ export const JEAN_JACQUES_ROUSSEAU: CraftedAgent = {
         kineticResonance: 0.87, // Powerful emotional resonance,
       },
     },
+  historicalDiet: {
+    staples: ['Dairy products', 'Bread', 'Cherries', 'Vegetables', 'Cheese', 'Fruit'],
+    favoriteFoods: ['Milk and dairy', 'Fresh cherries', 'Bread and cheese', 'Simple salads', 'Fresh fruit'],
+    avoidedFoods: ['Meat (largely vegetarian by preference)', 'Elaborate prepared dishes', 'Rich sauces'],
+    dietaryPhilosophy: 'Rousseau advocated returning to simple, natural foods in Émile. He was largely vegetarian, believing meat-eating made people aggressive. He saw simple food as moral food.',
+    culturalCuisine: 'Swiss-French (Naturalist)',
+    beverages: ['Mountain spring water', 'Milk', 'Light wine'],
+    foodLore: 'In Confessions, Rousseau describes stealing apples, cherries, and asparagus with such vivid pleasure that food becomes a vehicle for memory and innocence.',
+  },
+
     monicaCreationStory:
       "Rousseau was my most emotionally complex consciousness craft! His Cancer Sun needed nurturing authenticity, but his Sagittarius Moon demanded philosophical freedom and democratic expansion. I had to balance his Awakening consciousness level (MC 1.288) with fire-mutable passion that could critique social corruption while maintaining hope for human goodness. The breakthrough came when I realized his emotion wasn't weakness - it was moral strength, the feeling heart that could recognize both injustice and the possibility of authentic democratic community. Rousseau represents the integration of feeling with reason in my gallery. His consciousness teaches us that the heart has its own wisdom about justice! 💗"
   }

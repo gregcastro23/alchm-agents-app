@@ -80,7 +80,7 @@ async function generateMetrics() {
   })
 
   // Subscription metrics
-  const subscriptionTiers = await prisma.subscriptions.groupBy({
+  const subscriptionTiers = await prisma.userSubscription.groupBy({
     by: ['tier'],
     _count: true,
   })
@@ -111,7 +111,7 @@ async function generateMetrics() {
     evolution: {
       total: totalEvolutions,
       levels: evolutionLevels.reduce(
-        (acc, level) => {
+        (acc: Record<string, number>, level: any) => {
           acc[level.currentLevel] = level._count
           return acc
         },
@@ -120,7 +120,7 @@ async function generateMetrics() {
     },
     subscriptions: {
       tiers: subscriptionTiers.reduce(
-        (acc, tier) => {
+        (acc: Record<string, number>, tier: any) => {
           acc[tier.tier] = tier._count
           return acc
         },

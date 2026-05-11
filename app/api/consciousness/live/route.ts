@@ -42,7 +42,11 @@ async function calculateConsciousness(body: any = {}) {
       essence: birthEssence,
       matter: birthMatter,
       substance: birthSubstance,
-    })
+      Heat: currentAlchm.Heat || 0,
+      Entropy: currentAlchm.Entropy || 0,
+      Reactivity: currentAlchm.Reactivity || 0,
+      Energy: currentAlchm.Energy || 0,
+    } as any)
     const birthMC = mcResult.value
 
     // For now, live values are same as birth (until we implement transit modulation)

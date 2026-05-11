@@ -30,6 +30,7 @@ import tokenRoutes from './routes/tokens.js'
 import kineticsRoutes from './routes/kinetics.js'
 import consciousnessRoutes from './routes/consciousness.js'
 import healthRoutes from './routes/health.js'
+import agentRoutes from './routes/agents.js'
 
 // WebSocket handlers
 import { setupWebSocketHandlers } from './websocket/handlers.js'
@@ -170,6 +171,7 @@ app.use('/api/alchemy', alchemyRoutes)
 app.use('/api/planetary', planetaryRoutes)
 app.use('/api/planets', ephemerisRoutes) // Swiss Ephemeris endpoints
 app.use('/api/tokens', tokenRoutes)
+app.use('/api/agents', agentRoutes)
 
 // Apply auth before protected routes
 app.use('/api/kinetics', authMiddleware)

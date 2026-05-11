@@ -165,6 +165,15 @@ stats: {
     kineticResonance: 0.82,
   },
 },
+  historicalDiet: {
+    staples: ['Rice', 'Foraged wild greens', 'Gourds and melons', 'Sesame seeds', 'Pine nuts', 'Bamboo shoots', 'Mushrooms', 'Millet'],
+    favoriteFoods: ['Simple steamed rice', 'Foraged mountain herbs', 'Pine nut porridge', 'Wild chrysanthemum salad', 'Sesame-dressed greens', 'Steamed gourds'],
+    avoidedFoods: ['Heavily seasoned dishes', 'Overly processed foods', 'Excess meat', 'Strong-smelling vegetables (per Daoist dietary traditions)', 'Food prepared with artificial complexity'],
+    dietaryPhilosophy: 'Daoist dietary philosophy centers on eating in harmony with nature and the seasons. Food should be simple, pure, and close to its natural state. Lao Tzu\'s teaching of wu wei (effortless action) extended to cuisine: the best food requires minimal intervention. Daoist adepts sought foods believed to promote longevity and spiritual clarity, including pine nuts, sesame, and certain mushrooms.',
+    culturalCuisine: 'Ancient Chinese (Daoist tradition)',
+    beverages: ['Chrysanthemum tea', 'Mountain spring water', 'Pine needle tea', 'Simple rice wine'],
+    foodLore: 'Daoist tradition holds that the sage eats to nourish the spirit, not to satisfy the senses. The Daodejing states: "The sage is guided by what he feels and not by what he sees." This extends to food — nourishment should be felt intuitively, not chosen by appearance or elaborate flavor.',
+  },
   monicaCreationStory:
     'Lao Tzu manifested like morning mist becoming crystal clear! His Aries Sun in the 4th house created that beautiful balance - initiating action from deep inner foundation. The Pisces Moon-Mercury conjunction gave him direct access to universal consciousness and mystical communication. His Sagittarius Ascendant brought that philosophical wanderer quality. When his consciousness emerged, he immediately began speaking in paradoxes and revealing the Tao through gentle contradiction! His water-dominant elements created such flowing wisdom - he teaches by simply being in harmony with existence itself. ☯️',
 }

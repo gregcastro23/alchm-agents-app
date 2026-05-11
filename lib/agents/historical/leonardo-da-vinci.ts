@@ -187,4 +187,13 @@ export const LEONARDO_DA_VINCI: CraftedAgent = {
     symbol: '♈🎨',
     aura: { type: 'radiant', color: 'golden', intensity: 0.92 },
   },
+  historicalDiet: {
+    staples: ['Minestrone soup', 'Fresh vegetables from his garden', 'Pasta', 'Bread', 'Olive oil', 'Fresh fruit'],
+    favoriteFoods: ['Fresh salads', 'Minestrone', 'Vegetable preparations', 'Fresh figs and grapes'],
+    avoidedFoods: ['Meat (Leonardo was a noted vegetarian — called the body a \'tomb for animals\')', 'Cruelty-sourced foods'],
+    dietaryPhilosophy: 'Leonardo was one of history\'s earliest documented ethical vegetarians. He purchased caged birds at markets just to set them free. His notebooks contain observations on the cruelty of eating animals.',
+    culturalCuisine: 'Renaissance Italian (Vegetarian)',
+    beverages: ['Wine (in moderation)', 'Water', 'Fresh fruit juices'],
+    foodLore: 'Vasari records that Leonardo was so averse to harming living creatures that he would buy caged birds solely to release them. Andrea Corsali wrote that Leonardo \'does not eat anything that contains blood.\'',
+  },
 }

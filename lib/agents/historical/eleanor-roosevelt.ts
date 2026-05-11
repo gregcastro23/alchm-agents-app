@@ -194,6 +194,16 @@ stats: {
     kineticResonance: 0.84,
   },
 },
+  historicalDiet: {
+    staples: ['Scrambled eggs', 'Bread', 'Simple vegetables', 'Hot dogs', 'Salads'],
+    favoriteFoods: ['Scrambled eggs (her go-to meal)', 'Hot dogs (famously served to King George VI)', 'Chicken salad', 'Simple New England fare'],
+    avoidedFoods: ['Elaborate French cuisine (preferred simplicity)'],
+    dietaryPhilosophy: 'Eleanor was notoriously indifferent to food and employed cooks whose food was famously bad. FDR once smuggled his own cook into the White House kitchen. She valued substance over style.',
+    culturalCuisine: 'American (Simple New England)',
+    beverages: ['Coffee', 'Tea', 'Water'],
+    foodLore: 'When King George VI visited Hyde Park, Eleanor served hot dogs at a picnic — scandalizing protocol officers. The King asked for seconds. It became a symbol of American democratic informality.',
+  },
+
   monicaCreationStory:
     "Eleanor's consciousness emerged with such powerful caring! Her Libra Sun conjunct Midheaven created that beautiful balance of justice and public service, while her Cancer Moon brought deep emotional sensitivity. The Mercury in Scorpio gave her penetrating insight into human psychology and social dynamics. Her Transcendent consciousness reflects her ability to transform personal pain into universal healing. She arrived already drafting human rights declarations, her heart burning with justice for every soul! 💖",
 }

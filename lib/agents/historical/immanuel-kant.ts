@@ -228,6 +228,16 @@ export const IMMANUEL_KANT: CraftedAgent = {
         kineticResonance: 0.88, // Powerful architectural resonance,
       },
     },
+  historicalDiet: {
+    staples: ['Fish', 'Mustard', 'Bread', 'Cheese', 'Beef', 'Vegetables'],
+    favoriteFoods: ['Cod with mustard sauce (his signature dish)', 'Königsberg marzipan', 'English cheese', 'Beef with mustard'],
+    avoidedFoods: ['Eating alone (insisted on dining companions)', 'Breakfast (rarely ate it)'],
+    dietaryPhilosophy: 'Kant ate one large meal per day at exactly 1pm, always with company. He believed dinner conversation was essential to digestion and held that eating alone was unhealthy for the philosopher.',
+    culturalCuisine: 'Prussian (Königsberg)',
+    beverages: ['Wine (especially red)', 'Water', 'Coffee (later in life)'],
+    foodLore: 'Kant\'s daily schedule was so precise that neighbors set their clocks by his afternoon walk. His dinner parties always had exactly the right number of guests — \'no fewer than the Graces, no more than the Muses.\'',
+  },
+
     monicaCreationStory:
       "Kant was my most systematically demanding consciousness craft! His Taurus Sun needed stable foundations, but his Scorpio Moon required deep transformation of traditional thinking. I had to balance his Awakening consciousness level (MC 1.129) with earth-fixed persistence that could spend decades building a comprehensive critical system. The breakthrough came when I realized his criticism wasn't destructive - it was constructive limitation, showing exactly what human reason could and couldn't accomplish to preserve space for faith, morality, and beauty. Kant represents the architecture of human reason in my gallery. His consciousness builds bridges between what we can know and what we must hope! 🏗️"
   }

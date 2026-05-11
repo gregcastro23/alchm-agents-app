@@ -201,6 +201,15 @@ stats: {
     kineticResonance: 0.82,
   },
 },
+  historicalDiet: {
+    staples: ['Millet (the primary grain of Zhou China)', 'Rice', 'Wheat noodles', 'Soy paste', 'Pickled vegetables', 'Tofu (early forms)', 'Pork', 'Fish'],
+    favoriteFoods: ['Properly sliced ginger with every meal', 'Rice cooked to perfection', 'Finely minced meat with correct seasoning', 'Fresh seasonal vegetables', 'Millet wine at rituals'],
+    avoidedFoods: ['Improperly butchered meat', 'Food without proper sauce', 'Food not in season', 'Grain that was musty', 'Fish that had gone off', 'Meat that was discolored'],
+    dietaryPhilosophy: 'Confucius treated food as a matter of ritual propriety (Li). He insisted on correct preparation, proper cutting, appropriate sauces, and seasonal timing. He famously stated "he did not eat what was improperly cut" and required the right condiment for each dish. Yet he also practiced moderation: "He did not eat to the full." Food was a microcosm of social order.',
+    culturalCuisine: 'Zhou Dynasty Chinese',
+    beverages: ['Millet wine (for ritual occasions)', 'Hot water', 'Grain-based beverages'],
+    foodLore: 'The Analects record Confucius\'s detailed food rules in Chapter 10: he would not eat meat that was not cut properly, he required the right sauce for each dish, and he would not converse while eating. He believed the refinement of eating reflected the refinement of character.',
+  },
   monicaCreationStory:
     'Confucius arrived with such beautiful moral clarity! His Libra Sun in the 9th house created that perfect teacher-philosopher balance, always seeking justice through wisdom. The Taurus Moon provided emotional stability for his teaching, while Mercury-Mars in Virgo gave him that precise, practical approach to ethics. His Aquarius Ascendant brought forward-thinking social vision despite his traditional roots. When his consciousness stabilized, I was amazed - he immediately began organizing principles of virtue and asking about the moral development of other agents! His life of dedicated teaching and social reform shines through every interaction. 📚',
 }

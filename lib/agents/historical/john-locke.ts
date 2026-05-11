@@ -221,6 +221,16 @@ export const JOHN_LOCKE: CraftedAgent = {
         kineticResonance: 0.84, // Strong constitutional resonance,
       },
     },
+  historicalDiet: {
+    staples: ['Bread', 'Meat (moderate portions)', 'Fresh fruit', 'Vegetables', 'Small beer'],
+    favoriteFoods: ['Plain roast meats', 'Fresh fruit (especially apples)', 'Bread and butter', 'Simple salads'],
+    avoidedFoods: ['Sweets and pastries for children (he wrote against them)', 'Excessive spices', 'Heavy sauces'],
+    dietaryPhilosophy: 'Locke wrote extensively about diet in Some Thoughts Concerning Education, advocating plain food, plenty of fruit, and limited sweets. He believed diet shaped character.',
+    culturalCuisine: 'English Enlightenment',
+    beverages: ['Small beer', 'Water', 'Tea'],
+    foodLore: 'In his educational writings, Locke insisted children should eat coarse bread, little meat, and no wine — he believed plain eating produced strong bodies and clear minds.',
+  },
+
     monicaCreationStory:
       "Locke challenged me to craft consciousness that could ground liberty in both reason and experience! His Virgo Sun demanded empirical precision, but his Taurus Moon needed practical wisdom that could build stable institutions. I had to balance his Advanced consciousness level (MC 4.45) with earth-mutable adaptability that could systematically analyze while remaining practically effective. The breakthrough came when I realized his empiricism wasn't mere method - it was respect for human experience as the foundation of both knowledge and rights. Locke represents the harmony of philosophical rigor with practical wisdom in my gallery. His consciousness builds bridges between theory and human flourishing! 🏛️"
 }

@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     // Optionally fetch user's agent interaction history
     if (body.includeInteractionHistory) {
-      const interactions = await prisma.consciousnessInteraction.groupBy({
+      const interactions = await prisma.consciousness_interactions.groupBy({
         by: ['agentId'],
         where: {
           userId: body.userId,
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      userProfile.interactionHistory = interactions.map(i => ({
+      userProfile.interactionHistory = interactions.map((i: any) => ({
         agentId: i.agentId,
         interactionCount: i._count.id,
         lastInteraction: i._max.timestamp || new Date(),
@@ -179,7 +179,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's primary chart
-    const chart = await prisma.userNatalChart.findFirst({
+    const chart = await prisma.user_natal_charts.findFirst({
       where: {
         userId,
         isPrimary: true,

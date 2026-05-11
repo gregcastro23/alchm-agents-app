@@ -274,6 +274,27 @@ export interface AgentStats {
   }
 }
 
+/**
+ * Historically accurate diet profile for a historical figure.
+ * Documents their known foods, preferences, avoidances, and food philosophy.
+ */
+export interface HistoricalDiet {
+  /** Everyday staple foods the figure was known to consume */
+  staples: string[]
+  /** Specific dishes, preparations, or ingredients they particularly favored */
+  favoriteFoods: string[]
+  /** Foods they avoided — for religious, ethical, medical, or personal reasons */
+  avoidedFoods: string[]
+  /** Their relationship with food — philosophy, rituals, cultural context */
+  dietaryPhilosophy: string
+  /** Cultural cuisine tradition they belonged to */
+  culturalCuisine: string
+  /** Beverages they were known for consuming */
+  beverages: string[]
+  /** Notable food-related anecdotes, quotes, or lore */
+  foodLore?: string
+}
+
 export interface CraftedAgent {
   // Identity
   id: string
@@ -324,6 +345,9 @@ export interface CraftedAgent {
 
   // Monica's creation story for this agent
   monicaCreationStory?: string
+
+  // Historically accurate diet profile
+  historicalDiet?: HistoricalDiet
 
   // Additional properties used in unified agent system
   synthesis?: string

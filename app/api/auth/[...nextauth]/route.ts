@@ -31,7 +31,6 @@ export const authOptions: import('next-auth').NextAuthOptions = {
           // Find user in database
           const user = await prisma.users.findUnique({
             where: { email: credentials.email },
-            include: { subscriptions: true },
           })
 
           if (!user || !user.passwordHash) {

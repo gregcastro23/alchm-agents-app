@@ -46,6 +46,50 @@ def read_agents(skip: int = 0, limit: int = 100, db: Session = Depends(database.
     agents = crud.get_agents(db, skip=skip, limit=limit)
     return agents
 
+import json
+
+@app.get("/api/agents/diet-profiles")
+def get_diet_profiles():
+    # Navigate to root dir
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    
+    # Load recommendations
+    recs_path = os.path.join(root_dir, "scripts", "output", "agent-ingredient-recommendations.json")
+    recommendations = []
+    if os.path.exists(recs_path):
+        try:
+            with open(recs_path, "r", encoding="utf-8") as f:
+                recommendations = json.load(f)
+        except Exception as e:
+            print(f"Error loading recommendations: {e}")
+            
+    # Load diet data
+    diet_data = {}
+    for i in range(1, 4):
+        diet_path = os.path.join(root_dir, "scripts", f"diet-data-part{i}.json")
+        if os.path.exists(diet_path):
+            try:
+                with open(diet_path, "r", encoding="utf-8") as f:
+                    diet_data.update(json.load(f))
+            except Exception as e:
+                print(f"Error loading diet data {i}: {e}")
+                
+    profiles = []
+    for rec in recommendations:
+        agent_id = rec.get("agentId")
+        profiles.append({
+            "agentId": agent_id,
+            "name": rec.get("name"),
+            "title": rec.get("title", "Historical Figure"),
+            "era": rec.get("era", "Unknown"),
+            "historicalDiet": diet_data.get(agent_id),
+            "alchemicalState": rec.get("alchemicalState"),
+            "contextBlueprint": rec.get("contextBlueprint"),
+            "birthData": rec.get("birthData")
+        })
+        
+    return {"success": True, "profiles": profiles}
+
 @app.get("/api/agents/{agent_id}", response_model=schemas.Agent)
 def read_agent(agent_id: str, db: Session = Depends(database.get_db)):
     db_agent = crud.get_agent(db, agent_id=agent_id)

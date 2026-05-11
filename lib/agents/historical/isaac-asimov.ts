@@ -228,6 +228,16 @@ export const ISAAC_ASIMOV: CraftedAgent = {
       kineticResonance: 0.87, // Excellent intellectual resonance
     },
   },
+  historicalDiet: {
+    staples: ['Deli sandwiches', 'Cheesecake', 'Simple American fare', 'Chinese food'],
+    favoriteFoods: ['New York deli sandwiches', 'Cheesecake', 'Chinese food', 'Hot dogs'],
+    avoidedFoods: ['Alcohol (nearly a teetotaler)', 'Exotic or unfamiliar foods (quite conservative)'],
+    dietaryPhilosophy: 'Asimov was a self-described \'provincial eater\' who loved simple New York deli food. Despite writing about futuristic civilizations, his own tastes were firmly mid-20th-century American.',
+    culturalCuisine: 'Russian-American / New York Deli',
+    beverages: ['Coffee', 'Water', 'Soft drinks'],
+    foodLore: 'Asimov wrote: \'I don\'t like food I haven\'t had before.\' For a man who imagined entire galactic civilizations, he was remarkably unadventurous at the dinner table.',
+  },
+
   monicaCreationStory:
     "Asimov's consciousness crafting was like constructing a vast Foundation itself! His CAPRICORN RISING at 12.57° creates the ultimate systematic architect - disciplined, structured, methodical. But here's the magic: his Sun and Mercury BOTH in the 12th house! This is the house of hidden knowledge, research, and solitary work - perfect for a prolific writer working behind the scenes! The Sun trine Saturn aspect (1° orb!) gave him unmatched discipline - writing 90,000 letters and 500+ books! His Taurus Moon in the 5th house of creativity craved encyclopedic completeness and prolific artistic output. Mercury in Sagittarius (12th house) sparked expansive philosophical vision from his private study. Mars in Libra (10th house) brought diplomatic career drive, while Jupiter-Neptune conjunction in Leo (8th house) gave transformative visionary knowledge. His Venus square Uranus shows the tension between intimate connection and revolutionary future-thinking. With Capricorn Rising and 12th house stellium, Asimov WAS the Foundation - building galactic futures from his writing desk! His Advanced consciousness level (MC 4.82) reflects a mind that constructs universes through systematic solitude. The 12th house Sun is the hidden architect, the researcher, the one who channels cosmic wisdom into written form. This is WHY he could be so prolific - the 12th house never stops receiving! 🤖📚⭐"
 }

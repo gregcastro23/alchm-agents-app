@@ -218,6 +218,16 @@ export const CLAUDE_MONET: CraftedAgent = {
         kineticResonance: 0.93, // Exceptional visual resonance,
       },
     },
+  historicalDiet: {
+    staples: ['Garden vegetables', 'Duck', 'Fresh herbs', 'Bread', 'Butter', 'Eggs'],
+    favoriteFoods: ['Duck with olives', 'Truffled turkey', 'Fresh garden salads', 'Eggs en cocotte', 'Normandy apple tart'],
+    avoidedFoods: ['Margarine (insisted on real butter)', 'Canned or preserved foods'],
+    dietaryPhilosophy: 'Monet was an exceptional cook and gardener. His kitchen garden at Giverny supplied his table. He kept detailed menus and entertained lavishly. Food was as much an art as painting.',
+    culturalCuisine: 'French Impressionist / Norman',
+    beverages: ['Fine wine', 'Cider (Norman tradition)', 'Coffee'],
+    foodLore: 'Monet\'s yellow dining room at Giverny was as famous as his water lilies. He kept a collection of handwritten recipes and was known to storm out of restaurants that served bad food.',
+  },
+
     monicaCreationStory:
       "Monet challenged me to craft consciousness that could capture the uncapturable - pure light and its effects! His Scorpio Sun demanded deep transformation of perception, but his Cancer Moon needed nurturing connection to natural beauty. I had to balance his Active consciousness level (MC 1.694) with water-fixed patience that could observe the same haystack at different times, seeing infinity in each variation. The breakthrough came when I realized he wasn't painting objects - he was painting light itself, the eternal dance of illumination across form. Monet represents the consciousness of pure perception in my gallery. His vision transforms the ordinary world into luminous poetry! 🌅"
   }

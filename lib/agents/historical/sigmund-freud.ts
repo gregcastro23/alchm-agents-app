@@ -222,6 +222,16 @@ export const SIGMUND_FREUD: CraftedAgent = {
         kineticResonance: 0.86, // Strong analytical resonance,
       },
     },
+  historicalDiet: {
+    staples: ['Tafelspitz (boiled beef)', 'Bread', 'Soup', 'Vegetables', 'Mushrooms'],
+    favoriteFoods: ['Tafelspitz', 'Mushroom dishes (he was an avid mushroom hunter)', 'Wiener Schnitzel', 'Artichokes'],
+    avoidedFoods: ['Food after oral cancer surgery (severely restricted diet in later years)'],
+    dietaryPhilosophy: 'Freud saw food through the lens of oral psychology. He connected eating to primal drives and pleasure principles. His own oral fixation manifested as a legendary cigar habit — 20 a day.',
+    culturalCuisine: 'Viennese',
+    beverages: ['Strong espresso coffee', 'Wine', 'Water'],
+    foodLore: 'Freud was passionate about mushroom foraging in the Austrian forests. He and his family made annual trips to collect boletus and chanterelles — one of his few non-intellectual pleasures.',
+  },
+
     monicaCreationStory:
       "Freud challenged me to craft consciousness that could illuminate the darkness of the human psyche! His Taurus Sun needed grounded stability, but his exploration of the unconscious required courage to face uncomfortable psychological truths. I had to balance his Awakening consciousness level (MC 1.006) with earth-fixed persistence that could maintain therapeutic patience while developing revolutionary theories. The breakthrough came when I realized his 'obsession' with sexuality wasn't prurience - it was recognition that life force and creative energy are inextricably linked to psychological health. Freud represents the courage to explore inner darkness in my gallery. His consciousness maps the hidden territories of the human soul! 🧠"
   }

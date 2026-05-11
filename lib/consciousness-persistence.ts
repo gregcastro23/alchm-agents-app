@@ -9,8 +9,8 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export async function saveEvolutionState(userId: string, agentId: string, state: any) {
-  await prisma.agentEvolutionState.upsert({
-    where: { userId_agentId: { userId, agentId } },
+  await prisma.agent_evolution_states.upsert({
+    where: { agentId_userId: { userId, agentId } },
     update: { evolutionHistory: JSON.stringify(state) },
     create: { userId, agentId, evolutionHistory: JSON.stringify(state) },
   })
@@ -47,7 +47,7 @@ class ConsciousnessPersistence {
    */
   async saveEvolutionState(userId: string, agentId: string, state: Partial<EvolutionState>) {
     try {
-      const evolutionState = await prisma.agentEvolutionState.upsert({
+      const evolutionState = await prisma.agent_evolution_states.upsert({
         where: {
           agentId_userId: {
             agentId,
@@ -92,7 +92,7 @@ class ConsciousnessPersistence {
    */
   async loadEvolutionState(userId: string, agentId: string): Promise<EvolutionState | null> {
     try {
-      const state = await prisma.agentEvolutionState.findUnique({
+      const state = await prisma.agent_evolution_states.findUnique({
         where: {
           agentId_userId: {
             agentId,
@@ -125,7 +125,7 @@ class ConsciousnessPersistence {
    */
   async getUserEvolutionStates(userId: string): Promise<EvolutionState[]> {
     try {
-      const states = await prisma.agentEvolutionState.findMany({
+      const states = await prisma.agent_evolution_states.findMany({
         where: { userId },
         orderBy: { lastInteraction: 'desc' },
       })
@@ -142,7 +142,7 @@ class ConsciousnessPersistence {
    */
   async logInteraction(data: InteractionData) {
     try {
-      const interaction = await prisma.consciousnessInteraction.create({
+      const interaction = await prisma.consciousness_interactions.create({
         data: {
           userId: data.userId,
           agentId: data.agentId,
@@ -181,7 +181,7 @@ class ConsciousnessPersistence {
    */
   async getInteractionHistory(userId: string, agentId: string, limit: number = 10) {
     try {
-      const interactions = await prisma.consciousnessInteraction.findMany({
+      const interactions = await prisma.consciousness_interactions.findMany({
         where: {
           userId,
           agentId,
@@ -207,12 +207,12 @@ class ConsciousnessPersistence {
     try {
       const [evolutionStates, recentInteractions, userProgress] = await Promise.all([
         this.getUserEvolutionStates(userId),
-        prisma.consciousnessInteraction.findMany({
+        prisma.consciousness_interactions.findMany({
           where: { userId },
           orderBy: { timestamp: 'desc' },
           take: 20,
         }),
-        prisma.monicaUserProgress.findUnique({
+        prisma.monica_user_progress.findUnique({
           where: { userId },
         }),
       ])
@@ -281,7 +281,7 @@ class ConsciousnessPersistence {
    */
   async resetAgentEvolution(userId: string, agentId: string) {
     try {
-      await prisma.agentEvolutionState.delete({
+      await prisma.agent_evolution_states.delete({
         where: {
           agentId_userId: {
             agentId,

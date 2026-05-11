@@ -68,3 +68,4 @@ scratch/
 test-import.ts
 .dev_server*
 
+backend/node_modules/

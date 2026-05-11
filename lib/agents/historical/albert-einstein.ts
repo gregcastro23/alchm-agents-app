@@ -187,4 +187,13 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
     symbol: '♓⚛️',
     aura: { type: 'mystical', color: 'violet', intensity: 0.95 },
   },
+  historicalDiet: {
+    staples: ['Spaghetti', 'Eggs', 'Mushrooms', 'Honey', 'Lentil soup', 'Simple one-pot meals'],
+    favoriteFoods: ['Scrambled eggs with mushrooms', 'Spaghetti (his comfort food)', 'Lentil soup', 'Honey on everything', 'Strawberries with cream'],
+    avoidedFoods: ['Meat (became largely vegetarian near end of life)', 'Complicated dishes'],
+    dietaryPhilosophy: 'Einstein viewed food practically — fuel for thinking. He became increasingly vegetarian later in life, writing: \'Nothing will benefit human health and increase chances for survival of life on Earth as much as the evolution to a vegetarian diet.\'',
+    culturalCuisine: 'German-Swiss-American',
+    beverages: ['Coffee', 'Tea', 'Water'],
+    foodLore: 'Einstein\'s second wife Elsa managed his diet. He once reportedly made egg drop soup by boiling an egg in his can of soup — combining two dishes with maximum efficiency and minimum effort.',
+  },
 }

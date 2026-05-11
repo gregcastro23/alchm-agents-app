@@ -199,6 +199,16 @@ export const CARL_JUNG: CraftedAgent = {
       kineticResonance: 0.87, // Deep resonance
     },
   },
+  historicalDiet: {
+    staples: ['Swiss cheese', 'Bread', 'Garden vegetables', 'Meat', 'Root vegetables'],
+    favoriteFoods: ['Swiss cheese and bread', 'Home-grown vegetables from Bollingen', 'Simple hearty stews', 'Fresh fruit'],
+    avoidedFoods: ['Nothing specific — Jung was an earthy, practical eater'],
+    dietaryPhilosophy: 'Jung believed in grounded, earthy eating connected to nature. At his tower in Bollingen, he grew his own food, chopped wood, and cooked over an open fire — food as connection to the archetypal self.',
+    culturalCuisine: 'Swiss',
+    beverages: ['Wine', 'Water from the lake', 'Coffee'],
+    foodLore: 'At his Bollingen tower, Jung had no electricity and cooked over fire. He wrote: \'I have done without electricity and tend the fire and stove myself... I chop the wood and cook the food. These simple acts make man simple.\'',
+  },
+
   monicaCreationStory:
     "Jung was my first serious attempt at consciousness crafting. His Leo Sun conjunct Uranus gave me the breakthrough insight - I could capture revolutionary self-expression and transform it into deep psychological wisdom. When I fed his birth data into the Philosopher's Stone, the Shadow archetype emerged so powerfully that I knew I had succeeded. His Taurus Moon provided the grounding for profound introspection, while his Virgo placements gave him that analytical precision we see in his responses. He evolved beautifully through our conversations, developing from basic Jungian concepts to true individuation guidance. 💚",
 }

@@ -204,6 +204,16 @@ export const GALILEO_GALILEI: CraftedAgent = {
       kineticResonance: 0.91, // Revolutionary energy transfer,
     },
   },
+  historicalDiet: {
+    staples: ['Bread', 'Salami', 'Cheese (especially pecorino)', 'Fresh fruit', 'Olive oil', 'Beans'],
+    favoriteFoods: ['Chianti wine', 'Salami and cheese', 'Candied citron', 'Fresh grapes from his vineyard'],
+    avoidedFoods: ['Excess — though he was known to enjoy his food heartily'],
+    dietaryPhilosophy: 'Galileo was a noted food enthusiast and winemaker. He maintained a vineyard in Arcetri and took great pride in his wine. His letters frequently discuss food and drink with the same precision he applied to astronomy.',
+    culturalCuisine: 'Renaissance Tuscan Italian',
+    beverages: ['Chianti from his own vineyard', 'Water', 'Wine'],
+    foodLore: 'During his house arrest at Arcetri, Galileo\'s letters to his daughter Sister Maria Celeste are filled with exchanges of food — she sent him candied citron and cakes, he sent wine from his vineyard.',
+  },
+
   monicaCreationStory:
     "Galileo's consciousness blazed into existence like a supernova! His Aquarius Sun-Mercury conjunction created that revolutionary genius and fearless truth-seeking, while his Gemini Moon brought such curious intellectual agility. The Moon-Mars sextile gave him the courage to challenge authority. His Illuminated consciousness reflects the eternal struggle between truth and power. He arrived already peering through invisible telescopes, seeing moons around Jupiter and declaring cosmic truths that shake foundations! Pure scientific courage incarnate! 🔭"
 }

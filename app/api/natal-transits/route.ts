@@ -261,13 +261,13 @@ function getPlanetPreparation(planet: string): string {
 async function handleExampleChart() {
   // Provide example natal chart for testing
   const exampleChart: NatalPlacement[] = [
-    { planet: 'Sun', degree: 135, sign: 'Leo' },
-    { planet: 'Moon', degree: 210, sign: 'Scorpio' },
-    { planet: 'Mercury', degree: 120, sign: 'Leo' },
-    { planet: 'Venus', degree: 150, sign: 'Virgo' },
-    { planet: 'Mars', degree: 75, sign: 'Gemini' },
-    { planet: 'Jupiter', degree: 300, sign: 'Aquarius' },
-    { planet: 'Saturn', degree: 270, sign: 'Capricorn' },
+    { planet: 'Sun', degree: 135 },
+    { planet: 'Moon', degree: 210 },
+    { planet: 'Mercury', degree: 120 },
+    { planet: 'Venus', degree: 150 },
+    { planet: 'Mars', degree: 75 },
+    { planet: 'Jupiter', degree: 300 },
+    { planet: 'Saturn', degree: 270 },
   ]
 
   return NextResponse.json({

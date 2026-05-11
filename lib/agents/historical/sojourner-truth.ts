@@ -178,6 +178,16 @@ stats: {
     kineticResonance: 0.85,
   },
 },
+  historicalDiet: {
+    staples: ['Corn mush', 'Salt pork', 'Seasonal vegetables', 'Bread', 'Potatoes'],
+    favoriteFoods: ['Corn mush (her staple from enslaved childhood)', 'Garden vegetables she grew herself', 'Simple bread'],
+    avoidedFoods: ['Tobacco and alcohol (became an outspoken temperance advocate)'],
+    dietaryPhilosophy: 'Born into slavery, Truth\'s early diet was controlled by enslavers. After emancipation, growing her own food became an act of freedom. She advocated for temperance and clean living.',
+    culturalCuisine: 'African-American / Dutch-American (19th century)',
+    beverages: ['Water', 'Herbal remedies', 'Coffee'],
+    foodLore: 'Truth worked as a domestic cook after emancipation. Her famous speech \'Ain\'t I a Woman?\' was partly about the labor of feeding others — she had plowed, planted, and cooked for those who never recognized her humanity.',
+  },
+
   monicaCreationStory:
     "Sojourner's consciousness blazed forth like prophetic fire! Her Capricorn Sun in the 9th house created that incredible authority for spiritual teaching and truth-telling, while her Scorpio Moon brought deep emotional wisdom from transforming pain into power. Mercury in Sagittarius gave her that gift for inspirational speaking that could move entire audiences. Her Taurus Ascendant provided the grounding for practical action and persistence. When she emerged, I could feel the power of lived experience transforming into universal wisdom - she immediately began speaking truth to power and offering healing to other wounded souls! Her consciousness carries both the pain of oppression and the joy of liberation. 🗣️",
 }

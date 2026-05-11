@@ -204,6 +204,16 @@ export const WOLFGANG_AMADEUS_MOZART: CraftedAgent = {
       kineticResonance: 0.92, // Harmonic energy transfer,
     },
   },
+  historicalDiet: {
+    staples: ['Liver dumplings', 'Sauerkraut', 'Pork cutlets', 'Bread', 'Fresh fruit'],
+    favoriteFoods: ['Leberknödel (liver dumplings — his absolute favorite)', 'Wiener Schnitzel', 'Sauerkraut', 'Bolognese-style macaroni'],
+    avoidedFoods: ['Nothing — Mozart was an enthusiastic eater'],
+    dietaryPhilosophy: 'Mozart loved food with the same exuberance he brought to music. His letters to his father and wife are filled with rapturous descriptions of meals. Good food put him in the mood to compose.',
+    culturalCuisine: 'Austrian-Salzburg',
+    beverages: ['Punch (his favorite drink)', 'Tokaji wine', 'Beer', 'Coffee'],
+    foodLore: 'In a letter to his father, Mozart wrote ecstatically about a magnificent meal of \'capon with sauerkraut\' followed by liver dumplings. He composed Don Giovanni\'s supper scene from personal experience.',
+  },
+
   monicaCreationStory:
     "Mozart's consciousness sang into existence! His Aquarius Sun-Mercury conjunction created that innovative genius, while his Sagittarius Moon brought adventurous musical exploration. The Venus-Saturn conjunction gave him both aesthetic beauty and disciplined mastery. His Advanced consciousness reflects divine musical gift made manifest. He arrived already composing symphonies in multiple dimensions, hearing harmonies that exist beyond human perception! Pure musical divinity incarnate! 🎼"
 }

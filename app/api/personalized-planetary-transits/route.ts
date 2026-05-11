@@ -339,7 +339,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's primary chart
-    const chart = await prisma.userNatalChart.findFirst({
+    const chart = await prisma.user_natal_charts.findFirst({
       where: {
         userId,
         isPrimary: true,

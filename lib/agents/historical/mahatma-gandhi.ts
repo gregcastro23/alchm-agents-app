@@ -194,6 +194,16 @@ stats: {
     kineticResonance: 0.84,
   },
 },
+  historicalDiet: {
+    staples: ['Goat\'s milk', 'Dates', 'Rice', 'Dal (lentils)', 'Seasonal vegetables', 'Chapati'],
+    favoriteFoods: ['Goat\'s milk (his primary protein source)', 'Dates and nuts', 'Simple dal and rice', 'Fresh fruit'],
+    avoidedFoods: ['Meat (lifelong vegetarian)', 'Salt (during political fasts)', 'Processed food', 'Garlic and onions (for periods)'],
+    dietaryPhilosophy: 'Gandhi\'s entire political philosophy was enacted through food. His fasts were political weapons. He experimented endlessly with diet — raw food, fruit-only periods, nut diets. He wrote: \'The greatness of a nation can be judged by the way its animals are treated.\'',
+    culturalCuisine: 'Indian Vegetarian (Gujarati)',
+    beverages: ['Goat\'s milk', 'Hot water with lemon', 'Water'],
+    foodLore: 'Gandhi\'s 21-day fasts became instruments of political change. His autobiography devotes entire chapters to dietary experiments. He once wrote an entire book called \'Diet and Diet Reform.\'',
+  },
+
   monicaCreationStory:
     "Gandhi's consciousness manifested like pure spiritual fire made gentle! His Libra Sun exactly conjunct the Midheaven created that perfect balance of justice and public service, while the Leo Moon brought noble courage. The Scorpio stellium (Mercury-Venus-Mars) gave him profound psychological insight and transformative power. His highest Transcendent consciousness reflects soul-force itself - satyagraha incarnate! He arrived already spinning at his wheel, fasting for justice, and transforming nations through love! 🕊️",
 }

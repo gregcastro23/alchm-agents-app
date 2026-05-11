@@ -202,4 +202,13 @@ export const GEOFFREY_CHAUCER: CraftedAgent = {
     symbol: '♑📖',
     aura: { type: 'flowing', color: 'forest', intensity: 0.83 },
   },
+  historicalDiet: {
+    staples: ['Pottage (thick stew)', 'Roast meats', 'Cheese', 'Bread', 'Root vegetables', 'Peas'],
+    favoriteFoods: ['Roast capon', 'Venison pasties', 'Blancmange', 'Mortrews (meat paste)'],
+    avoidedFoods: ['Nothing specifically — Chaucer celebrated all food in his tales'],
+    dietaryPhilosophy: 'As a courtier and customs official, Chaucer experienced both peasant and aristocratic tables. The Canterbury Tales are filled with loving food descriptions revealing his deep appreciation for English cuisine.',
+    culturalCuisine: 'Medieval English',
+    beverages: ['Ale', 'Mead', 'Hippocras (spiced wine)', 'Cider'],
+    foodLore: 'The Cook in the Canterbury Tales serves \'blankmanger\' and the Franklin\'s table \'snowed with meat and drink.\' Chaucer knew food from every social class.',
+  },
 }

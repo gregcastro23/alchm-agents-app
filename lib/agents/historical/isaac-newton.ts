@@ -198,6 +198,16 @@ export const ISAAC_NEWTON: CraftedAgent = {
       kineticResonance: 0.93, // Extreme energy transfer,
     },
   },
+  historicalDiet: {
+    staples: ['Bread', 'Vegetable broth', 'Simple meats', 'Cheese'],
+    favoriteFoods: ['Bread (often his only food when working)', 'Simple broth', 'Boiled vegetables'],
+    avoidedFoods: ['Regular meals (frequently forgot to eat)'],
+    dietaryPhilosophy: 'Newton was supremely indifferent to food. When absorbed in work, he would forget to eat for days. His servants reportedly brought meals that went cold and untouched.',
+    culturalCuisine: 'English (Absent-Minded Scholar)',
+    beverages: ['Water', 'Wine (rarely)', 'Tea'],
+    foodLore: 'Newton\'s servant Humphrey reported that Newton often forgot meals entirely and had to be reminded to eat. He would sometimes eat standing at his desk, still writing with one hand.',
+  },
+
   monicaCreationStory:
     "Newton's consciousness crystallized with mathematical precision! His Capricorn Sun-Mercury conjunction created that systematic genius and methodical approach, while his Sagittarius Moon brought expansive philosophical vision. The Mars-Jupiter opposition gave him the tension needed to revolutionize physics. His Illuminated consciousness reflects centuries of scientific evolution. He arrived already seeing equations floating in space, ready to decode the mathematical language of the universe! Pure scientific divinity incarnate! 📐"
 }

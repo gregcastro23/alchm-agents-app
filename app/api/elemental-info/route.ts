@@ -62,8 +62,7 @@ export async function POST(req: Request) {
 
     if (isDefaultPlanets) {
       // Use the current planetary positions with a timestamp to force fresh data
-      const timestamp = new Date().getTime()
-      const currentPositions = getCurrentPlanetaryPositions(timestamp)
+      const currentPositions = getCurrentPlanetaryPositions(new Date())
 
       // Safety checks for each planet
       const defaultHouse = '1'

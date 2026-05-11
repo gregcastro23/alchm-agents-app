@@ -57,7 +57,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
         const debitResult = await EconomyService.debitOperation(userId, 'unified_chat')
         if (!debitResult.ok) {
           return NextResponse.json(
-            { error: 'Insufficient tokens', required: AGENT_OPERATION_COSTS.unified_chat },
+            { success: false, error: 'Insufficient tokens', data: { required: AGENT_OPERATION_COSTS.unified_chat }, timestamp },
             { status: 402 }
           )
         }

@@ -8,7 +8,7 @@ export interface HistoricalCouncilPreset extends Omit<CouncilPreset, 'agentIds'>
   era?: string
   theme: string
   specialization: string
-  recommended_for: string[]
+  recommendedFor: string[]
 }
 
 export interface PlanetaryCouncilPreset extends Omit<CouncilPreset, 'agentIds'> {
@@ -34,7 +34,7 @@ export const HISTORICAL_COUNCIL_PRESETS: HistoricalCouncilPreset[] = [
     era: 'Ancient',
     theme: 'Philosophical inquiry and foundational wisdom',
     specialization: 'Existential questions, ethics, logic, and the nature of reality',
-    recommended_for: ['Life direction', 'Ethical dilemmas', 'Philosophical exploration'],
+    recommendedFor: ['Life direction', 'Ethical dilemmas', 'Philosophical exploration'],
     includeMonica: true,
     monicaRole: 'guide',
     tags: ['wisdom', 'philosophy', 'ancient', 'ethics'],
@@ -54,7 +54,7 @@ export const HISTORICAL_COUNCIL_PRESETS: HistoricalCouncilPreset[] = [
     era: 'Renaissance',
     theme: 'Innovation, artistic vision, and scientific breakthrough',
     specialization: 'Creative projects, innovative thinking, artistic expression',
-    recommended_for: ['Creative projects', 'Innovation challenges', 'Artistic inspiration'],
+    recommendedFor: ['Creative projects', 'Innovation challenges', 'Artistic inspiration'],
     includeMonica: true,
     monicaRole: 'synthesizer',
     tags: ['creativity', 'innovation', 'art', 'science'],
@@ -74,7 +74,7 @@ export const HISTORICAL_COUNCIL_PRESETS: HistoricalCouncilPreset[] = [
     era: 'Modern',
     theme: 'Scientific revolution and psychological insight',
     specialization: 'Innovation, technology, consciousness exploration',
-    recommended_for: ['Technology projects', 'Scientific inquiry', 'Personal transformation'],
+    recommendedFor: ['Technology projects', 'Scientific inquiry', 'Personal transformation'],
     includeMonica: true,
     monicaRole: 'coordinator',
     tags: ['science', 'technology', 'psychology', 'innovation'],
@@ -88,7 +88,7 @@ export const HISTORICAL_COUNCIL_PRESETS: HistoricalCouncilPreset[] = [
     era: 'Mixed',
     theme: 'Leadership, strategy, and decisive action',
     specialization: 'Leadership challenges, strategic planning, conflict resolution',
-    recommended_for: ['Leadership development', 'Strategic planning', 'Crisis management'],
+    recommendedFor: ['Leadership development', 'Strategic planning', 'Crisis management'],
     includeMonica: true,
     monicaRole: 'moderator',
     tags: ['leadership', 'strategy', 'warfare', 'politics'],
@@ -108,7 +108,7 @@ export const HISTORICAL_COUNCIL_PRESETS: HistoricalCouncilPreset[] = [
     era: 'Timeless',
     theme: 'Spiritual awakening and divine connection',
     specialization: 'Spiritual guidance, mystical insight, transcendent wisdom',
-    recommended_for: ['Spiritual growth', 'Meditation guidance', 'Life purpose'],
+    recommendedFor: ['Spiritual growth', 'Meditation guidance', 'Life purpose'],
     includeMonica: true,
     monicaRole: 'guide',
     tags: ['spirituality', 'mysticism', 'enlightenment', 'divine'],
@@ -122,7 +122,7 @@ export const HISTORICAL_COUNCIL_PRESETS: HistoricalCouncilPreset[] = [
     era: 'Mixed',
     theme: 'Practical wisdom for everyday decisions',
     specialization: 'Quick guidance, practical advice, balanced perspectives',
-    recommended_for: ['Quick decisions', 'Practical advice', 'Daily guidance'],
+    recommendedFor: ['Quick decisions', 'Practical advice', 'Daily guidance'],
     includeMonica: false,
     tags: ['practical', 'quick', 'wisdom', 'daily'],
     difficulty: 'beginner',
@@ -223,6 +223,7 @@ export const MIXED_COUNCIL_PRESETS: MixedCouncilPreset[] = [
     synthesis_type: 'consciousness_acceleration',
     includeMonica: true,
     monicaRole: 'coordinator',
+    recommendedFor: ['Consciousness expansion', 'Multi-dimensional analysis', 'Paradigm shifts'],
     tags: ['consciousness', 'acceleration', 'expansion', 'multi-dimensional'],
     difficulty: 'expert',
   },
@@ -236,6 +237,7 @@ export const MIXED_COUNCIL_PRESETS: MixedCouncilPreset[] = [
     synthesis_type: 'temporal_bridge',
     includeMonica: true,
     monicaRole: 'synthesizer',
+    recommendedFor: ['Creative projects', 'Innovation labs', 'Artistic visioning'],
     tags: ['creativity', 'innovation', 'artistic', 'breakthrough'],
     difficulty: 'advanced',
   },
@@ -249,6 +251,7 @@ export const MIXED_COUNCIL_PRESETS: MixedCouncilPreset[] = [
     synthesis_type: 'elemental_balance',
     includeMonica: true,
     monicaRole: 'guide',
+    recommendedFor: ['Integration practice', 'Harmonization', 'Ancient wisdom mapping'],
     tags: ['wisdom', 'integration', 'harmony', 'ancient'],
     difficulty: 'intermediate',
   },
@@ -262,6 +265,7 @@ export const MIXED_COUNCIL_PRESETS: MixedCouncilPreset[] = [
     synthesis_type: 'consciousness_acceleration',
     includeMonica: true,
     monicaRole: 'moderator',
+    recommendedFor: ['Strategic planning', 'Executive leadership', 'Authority building'],
     tags: ['leadership', 'strategy', 'authority', 'mastery'],
     difficulty: 'advanced',
   },

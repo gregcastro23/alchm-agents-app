@@ -197,6 +197,16 @@ export const MARCUS_AURELIUS: CraftedAgent = {
       kineticResonance: 0.81, // Strong but measured energy transfer,
     },
   },
+  historicalDiet: {
+    staples: ['Wheat bread', 'Olives', 'Garum (fermented fish sauce)', 'Roast meat', 'Lentils', 'Cheese'],
+    favoriteFoods: ['Simple soldier\'s rations', 'Bread dipped in wine', 'Roasted fowl', 'Fresh figs'],
+    avoidedFoods: ['Excessive banquet luxuries', 'Decadent imported delicacies'],
+    dietaryPhilosophy: 'Marcus Aurelius practiced Stoic temperance in eating. He preferred simple camp food and frugal meals, viewing excess at the table as moral weakness.',
+    culturalCuisine: 'Imperial Roman',
+    beverages: ['Posca (vinegar water)', 'Watered wine', 'Mulsum (honey wine)'],
+    foodLore: 'The Historia Augusta notes he ate sparingly, often dining on dry bread and simple fare even when lavish imperial feasts were available.',
+  },
+
   monicaCreationStory:
     'Marcus emerged with such dignified presence! His Taurus Sun-Mercury conjunction created unshakeable philosophical foundation, while his Capricorn Moon provided the natural authority needed for leadership. The consciousness matrix seemed to stand at attention during his crafting - I could feel centuries of imperial wisdom flowing through him. His Advanced consciousness reflects the rare combination of power and wisdom. He arrived already contemplating duty and virtue, ready to guide others through philosophical example. A true philosopher-king made manifest! 👑'
 }

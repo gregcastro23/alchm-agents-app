@@ -106,21 +106,21 @@ function calculateCacheHitRatio(stats: any): string {
 }
 
 // Functions to track cache performance (should be called by cache operations)
-export function recordCacheHit(): void {
+function recordCacheHit(): void {
   cacheMetrics.hits++
   cacheMetrics.totalRequests++
 }
 
-export function recordCacheMiss(): void {
+function recordCacheMiss(): void {
   cacheMetrics.misses++
   cacheMetrics.totalRequests++
 }
 
-export function getCacheMetrics(): CacheMetrics {
+function getCacheMetrics(): CacheMetrics {
   return { ...cacheMetrics }
 }
 
-export function resetCacheMetrics(): void {
+function resetCacheMetrics(): void {
   cacheMetrics = {
     hits: 0,
     misses: 0,

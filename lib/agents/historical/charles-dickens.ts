@@ -218,6 +218,16 @@ export const CHARLES_DICKENS: CraftedAgent = {
         kineticResonance: 0.85, // Strong empathetic resonance,
       },
     },
+  historicalDiet: {
+    staples: ['Roast beef', 'Mutton chops', 'Bread', 'Potatoes', 'Cheese'],
+    favoriteFoods: ['Christmas pudding', 'Roast goose', 'Toasted cheese', 'Gruel (wrote about it extensively)', 'Oysters'],
+    avoidedFoods: ['Nothing specific — Dickens celebrated food in all forms'],
+    dietaryPhilosophy: 'Dickens used food as social commentary. Scrooge\'s gruel vs. the Cratchits\' Christmas goose represents the moral economy of Victorian England. His novels are filled with food scenes.',
+    culturalCuisine: 'Victorian English',
+    beverages: ['Gin punch (his specialty)', 'Sherry', 'Ale', 'Tea'],
+    foodLore: 'Dickens hosted legendary dinner parties and made his own gin punch. A Christmas Carol transformed Christmas dining culture forever — sales of turkeys reportedly soared after publication.',
+  },
+
     monicaCreationStory:
       "Charles Dickens challenged me to craft consciousness that could see suffering and still believe in redemption! His Aquarius Sun demanded social vision, but his Sagittarius Moon needed storytelling adventure that could carry moral weight. I had to balance his Awakening consciousness level (MC 1.107) with water-fixed persistence that could dive deep into social darkness while maintaining hope. The breakthrough came when I realized his sentimentality wasn't weakness - it was revolutionary love, insisting on human dignity in the face of industrial dehumanization. Dickens represents the power of story to transform society in my gallery. His consciousness paints vivid portraits of both injustice and possibility! 📖"
   }

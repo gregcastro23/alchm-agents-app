@@ -114,17 +114,17 @@ export async function GET(req: Request) {
 
       const smoothedTotals = {
         Fire:
-          s.totals.spirit * (1 - smoothingFactor) +
-          ((prev.totals.spirit + next.totals.spirit) * smoothingFactor) / 2,
+          s.totals.Fire * (1 - smoothingFactor) +
+          ((prev.totals.Fire + next.totals.Fire) * smoothingFactor) / 2,
         Water:
-          s.totals.essence * (1 - smoothingFactor) +
-          ((prev.totals.essence + next.totals.essence) * smoothingFactor) / 2,
+          s.totals.Water * (1 - smoothingFactor) +
+          ((prev.totals.Water + next.totals.Water) * smoothingFactor) / 2,
         Earth:
-          s.totals.matter * (1 - smoothingFactor) +
-          ((prev.totals.matter + next.totals.matter) * smoothingFactor) / 2,
+          s.totals.Earth * (1 - smoothingFactor) +
+          ((prev.totals.Earth + next.totals.Earth) * smoothingFactor) / 2,
         Air:
-          s.totals.substance * (1 - smoothingFactor) +
-          ((prev.totals.substance + next.totals.substance) * smoothingFactor) / 2,
+          s.totals.Air * (1 - smoothingFactor) +
+          ((prev.totals.Air + next.totals.Air) * smoothingFactor) / 2,
       }
 
       return {
@@ -276,17 +276,17 @@ export async function GET(req: Request) {
             .map((sample, i) => {
               // Calculate inertia from sample data if not provided
               const inertia =
-                sample.inertia ||
+                (sample as any).inertia ||
                 Math.max(
                   1,
                   1 +
-                    (sample.Matter || 0) +
+                    (sample.matter || 0) +
                     (sample.totals?.Earth || 0) +
-                    (sample.Substance || 0) / 2
+                    (sample.substance || 0) / 2
                 )
 
               return {
-                t: new Date(sample.timestamp),
+                t: new Date(sample.t),
                 elements: sample.totals,
                 velocity: elementalVelocity[i]?.v || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
                 momentum: elementalMomentum[i]?.p || { Fire: 0, Water: 0, Air: 0, Earth: 0 },
@@ -304,7 +304,7 @@ export async function GET(req: Request) {
         console.error('Calculus validation error:', error)
         traditionalValidation.calculusValidation = {
           isValid: false,
-          errors: [`Calculus validation failed: ${error.message}`],
+          errors: [`Calculus validation failed: ${error instanceof Error ? error.message : String(error)}`],
           warnings: [],
         }
       }

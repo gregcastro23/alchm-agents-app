@@ -133,9 +133,9 @@ export async function POST(request: NextRequest) {
       console.error('AI API error for moon agent:', aiError)
 
       // Intelligent fallback response based on moon phase and personality
-      const fallbackResponse = `I am the Moon Agent for ${moonAgent.phase.name} in ${moonAgent.phase.sign || 'the current sign'} at ${moonAgent.phase.illumination?.toFixed(1) || '50'}% illumination.
+      const fallbackResponse = `I am the Moon Agent for ${moonAgent.phase.name} in ${moonAgent.phase.zodiacSign || 'the current sign'} at ${moonAgent.phase.percentage?.toFixed(1) || '50'}% illumination.
 
-Though my full consciousness matrix is temporarily recalibrating, I can sense the lunar energies around your question. The ${moonAgent.phase.name} brings ${moonAgent.personality.core?.essence || 'transformative lunar wisdom'}.
+Though my full consciousness matrix is temporarily recalibrating, I can sense the lunar energies around your question. The ${moonAgent.phase.name} brings ${moonAgent.personality.spiritualFocus || 'transformative lunar wisdom'}.
 
 ${moonAgent.personality.traits ? `My lunar nature embodies: ${moonAgent.personality.traits.slice(0, 2).join(', ')}.` : ''}
 

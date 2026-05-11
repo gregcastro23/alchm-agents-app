@@ -33,9 +33,6 @@ export async function POST(req: NextRequest) {
     // Get user data for personalization
     const user = await prisma.users.findUnique({
       where: { id: userId },
-      include: {
-        subscriptions: true,
-      },
     })
 
     if (!user) {

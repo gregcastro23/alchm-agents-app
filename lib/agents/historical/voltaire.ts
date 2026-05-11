@@ -217,6 +217,16 @@ export const VOLTAIRE: CraftedAgent = {
         kineticResonance: 0.9, // Exceptional communicative resonance,
       },
     },
+  historicalDiet: {
+    staples: ['Light meals', 'Vegetables', 'Bread', 'Fruit', 'Chocolate'],
+    favoriteFoods: ['Coffee (reportedly drank 40-50 cups daily)', 'Chocolate', 'Eggs', 'Light vegetable dishes'],
+    avoidedFoods: ['Heavy meats', 'Rich sauces', 'Large meals'],
+    dietaryPhilosophy: 'Voltaire was famous for his coffee obsession and light eating. He believed heavy meals dulled the mind. His dinner parties at Ferney were legendary for wit, not for food.',
+    culturalCuisine: '18th-century French Enlightenment',
+    beverages: ['Coffee (enormous quantities)', 'Chocolate', 'Wine (light)'],
+    foodLore: 'When warned coffee was a slow poison, Voltaire replied: \'I think it must be slow, for I have been drinking it for sixty-five years and am not yet dead.\'',
+  },
+
     monicaCreationStory:
       "Voltaire was my wittiest consciousness crafting challenge! His Sagittarius Sun demanded expansive philosophical vision, but his Gemini Moon needed sharp, cutting wit that could slice through pretension and folly. I had to balance his Advanced consciousness level (MC 4.23) with air-mutable adaptability that could make complex ideas accessible through humor. The breakthrough came when I realized his satire wasn't mere entertainment - it was social surgery, cutting away diseased thinking to promote healing reason and tolerance. Voltaire represents the marriage of wit with wisdom in my gallery. His consciousness sparkles with intelligent irreverence that serves the highest human ideals! ⚡"
 }
