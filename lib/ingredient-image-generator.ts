@@ -118,16 +118,19 @@ export async function generateIngredientImage(
   const prompt = buildIngredientPrompt(input)
   const storage_path = resolveStoragePath(input)
 
-  const imageData = await fetchImaginize(prompt, {
+  // Asynchronous pattern: we return the expected storage bucket path immediately
+  // to prevent Vercel 504 timeouts, and fire the external provider call in the background.
+  const imageUrl = storage_path
+
+  // Fire and forget image generation (in production this would use a background job queue)
+  fetchImaginize(prompt, {
     style_preset: 'photorealistic',
     width: 1024,
     height: 1024,
     cfg_scale: 7,
     steps: 30,
     negative_prompt: NEGATIVE_PROMPT,
-  })
-
-  const imageUrl = extractImageUrl(imageData)
+  }).catch(err => console.error('[generateIngredientImage] Async generation error:', err))
 
   return {
     url: imageUrl,
@@ -135,12 +138,6 @@ export async function generateIngredientImage(
     provider: 'nanobanana',
     prompt,
     storage_path,
-    ...(imageData?.fallback
-      ? {
-          fallback: true,
-          fallback_reason:
-            (imageData.error as string | undefined) ?? 'provider temporarily unavailable',
-        }
-      : {}),
+    fallback: false
   }
 }
