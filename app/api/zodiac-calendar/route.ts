@@ -118,9 +118,9 @@ export async function GET(request: NextRequest) {
         const durations = getSignDurations(year)
 
         // Convert Map to array for JSON serialization
-        const degreeArray = Array.from(calendar.degreeMap.entries()).map(([degree, entry]) => ({
-          degree,
+        const degreeArray = Array.from(calendar.degreeMap.entries()).map(([mapDegree, entry]) => ({
           ...entry,
+          degree: mapDegree,
         }))
 
         return NextResponse.json({

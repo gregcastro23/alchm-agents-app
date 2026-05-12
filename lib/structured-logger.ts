@@ -363,7 +363,7 @@ class StructuredLogger {
   private sendToExternalService(entry: LogEntry): void {
     // In production, send to services like DataDog, LogRocket, or custom logging service
     // For now, this is a placeholder
-    if (process.env.LOGGING_ENDPOINT && level >= LogLevel.WARN) {
+    if (process.env.LOGGING_ENDPOINT && entry.level >= LogLevel.WARN) {
       // fetch(process.env.LOGGING_ENDPOINT, {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
@@ -418,6 +418,3 @@ export const logConsciousnessOperation = (
 export const logPerformance = (operation: string, duration: number, context?: LogContext) => {
   logger.performance(operation, duration, context)
 }
-
-// Export types
-export type { LogContext, LogEntry }

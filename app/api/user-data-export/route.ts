@@ -56,9 +56,9 @@ interface UserDataExport {
   monicaInteractions: Array<{
     interactionType: string
     pageUrl: string
-    sessionId: string
+    sessionId: string | null
     userAction: string
-    monicaResponse: string
+    monicaResponse: string | null
     createdAt: Date
     contextData: any
   }>
@@ -68,6 +68,18 @@ interface UserDataExport {
     content: string
     sentAt: Date
   }>
+}
+
+function parseJsonValue(value: unknown, fallback: any = null) {
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value)
+    } catch {
+      return fallback
+    }
+  }
+
+  return value ?? fallback
 }
 
 export async function GET(req: NextRequest) {
@@ -165,13 +177,13 @@ export async function GET(req: NextRequest) {
           powerGained: true,
           planetaryInfluence: true,
           elementalResonance: true,
-          createdAt: true,
+          timestamp: true,
+          metadata: true,
           ...(includeMetadata && {
-            planetaryContext: true,
-            sessionMetadata: true,
+            forceMagnitude: true,
           }),
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { timestamp: 'desc' },
       }),
 
       // Agent evolution states
@@ -223,7 +235,7 @@ export async function GET(req: NextRequest) {
       .filter(interaction => interaction.interactionType === 'notification')
       .map(notif => {
         const contextData =
-          includeMetadata && notif.contextData ? JSON.parse(notif.contextData as string) : {}
+          includeMetadata && notif.contextData ? parseJsonValue(notif.contextData, {}) : {}
 
         return {
           type: contextData.notificationType || 'unknown',
@@ -273,12 +285,7 @@ export async function GET(req: NextRequest) {
         createdAt: interaction.timestamp,
         metadata: includeMetadata
           ? {
-              planetaryContext: interaction.metadata
-                ? JSON.parse(interaction.metadata as string)
-                : null,
-              sessionMetadata: interaction.metadata
-                ? JSON.parse(interaction.metadata as string)
-                : null,
+              interaction: parseJsonValue(interaction.metadata, null),
             }
           : null,
       })),
@@ -288,9 +295,9 @@ export async function GET(req: NextRequest) {
         totalPower: evolution.totalPower,
         interactionCount: evolution.interactionCount,
         lastInteraction: evolution.lastInteraction,
-        specialAbilitiesUnlocked: JSON.parse(evolution.specialAbilitiesUnlocked),
-        evolutionHistory: JSON.parse(evolution.evolutionHistory),
-        affinityScores: JSON.parse(evolution.affinityScores),
+        specialAbilitiesUnlocked: parseJsonValue(evolution.specialAbilitiesUnlocked, []),
+        evolutionHistory: parseJsonValue(evolution.evolutionHistory, []),
+        affinityScores: parseJsonValue(evolution.affinityScores, {}),
       })),
       monicaInteractions: monicaInteractions.map(interaction => ({
         interactionType: interaction.interactionType,
@@ -300,10 +307,10 @@ export async function GET(req: NextRequest) {
         monicaResponse: includeMetadata
           ? interaction.monicaResponse
           : '[Response redacted for privacy]',
-        createdAt: interaction.timestamp,
+        createdAt: interaction.createdAt,
         contextData:
           includeMetadata && interaction.contextData
-            ? JSON.parse(interaction.contextData as string)
+            ? parseJsonValue(interaction.contextData, null)
             : null,
       })),
       notifications,
@@ -340,7 +347,7 @@ export async function GET(req: NextRequest) {
       // For CSV, flatten the data structure
       const csvData = {
         interactions: interactions.map(i => ({
-          date: i.createdAt.toISOString(),
+          date: i.timestamp.toISOString(),
           agent: i.agentId,
           type: i.interactionType,
           power_gained: i.powerGained,

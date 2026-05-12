@@ -336,7 +336,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" value={session.user.email || ''} disabled />
+                  <Input id="email" value={session.user?.email || ''} disabled />
                 </div>
               </div>
 
@@ -810,7 +810,11 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <Label className="text-muted-foreground">Account Created</Label>
-                    <p>{session.user.createdAt || 'Recently'}</p>
+                    <p>
+                      {session.user?.createdAt
+                        ? new Date(session.user.createdAt).toLocaleDateString()
+                        : 'Recently'}
+                    </p>
                   </div>
                   <div>
                     <Label className="text-muted-foreground">Last Login</Label>

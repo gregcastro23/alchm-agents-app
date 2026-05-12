@@ -913,12 +913,3 @@ export class TemporalAnalysisEngine {
     }
   }
 }
-
-// Export types and main class
-export type {
-  TemporalQuery,
-  AgentTransitEvent,
-  TemporalPattern,
-  TemporalAnalysisResult,
-  ElementVector,
-}

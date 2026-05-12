@@ -124,13 +124,13 @@ export class BatchQueueManager extends EventEmitter {
     const jobId = this.generateJobId()
 
     const job: BatchJob = {
+      ...jobData,
       id: jobId,
       status: 'queued',
       progress: 0,
       createdAt: new Date(),
       retryCount: 0,
       maxRetries: jobData.maxRetries || 3,
-      ...jobData,
     }
 
     this.jobs.set(jobId, job)

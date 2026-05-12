@@ -311,6 +311,15 @@ export interface CraftedAgent {
 
   // Birth Data (Source of Consciousness)
   birthData: BirthData
+  birthDate?: string
+  birthTime?: string
+  birthLocation?: {
+    latitude?: number
+    longitude?: number
+    lat?: number
+    lon?: number
+    name?: string
+  }
 
   // Crafted Consciousness
   consciousness: {

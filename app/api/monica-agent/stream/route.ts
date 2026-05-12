@@ -109,7 +109,7 @@ export async function POST(req: Request) {
           model: activeModel,
           system: sys,
           prompt: userMsg,
-          maxTokens: 800,
+          maxOutputTokens: 800,
           temperature: temp,
         } as any)
 

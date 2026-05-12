@@ -329,7 +329,8 @@ export class KineticsIntegration {
 
     const optimized: AgentRecommendation[] = []
 
-    Object.entries(profiles).forEach(([agentId, profile]) => {
+    Object.entries(profiles).forEach(([agentId, rawProfile]) => {
+      const profile = rawProfile as any
       let score = 0
 
       // Peak hour alignment
@@ -398,7 +399,7 @@ export class KineticsIntegration {
     }
 
     // Simple linear regression for trend
-    const recent = powerData.slice(-3).map(p => p.power || 0.5)
+    const recent = powerData.slice(-3).map((p: any) => p.power || 0.5)
     const trend = (recent[2] - recent[0]) / 2
     const current = recent[2]
 
@@ -540,14 +541,17 @@ export class KineticsIntegration {
     location: { lat: number; lon: number }
   ): Promise<AgentEnhancements> {
     try {
-      const profile = getAgentKineticProfile(agentId)
+      const profile = getAgentKineticProfile(agentId) as any
       if (!profile) {
         return { available: false, reason: 'No kinetic profile found' }
       }
 
       const kinetics = await this.getEnhancedKinetics(location)
 
-      const enhancements: AgentEnhancements = {
+      const enhancements: AgentEnhancements & {
+        suggestedEnhancements: string[]
+        powerBoost: number
+      } = {
         available: true,
         profile,
         currentAlignment: this.calculateCurrentAlignment(profile, kinetics),
@@ -574,7 +578,7 @@ export class KineticsIntegration {
         enhancements.suggestedEnhancements.push('conversation_continuity')
       }
 
-      if (profile.special_kinetics) {
+      if ((profile as any).special_kinetics) {
         enhancements.suggestedEnhancements.push('personality_amplification')
       }
 

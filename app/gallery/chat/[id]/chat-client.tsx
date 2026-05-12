@@ -212,7 +212,7 @@ export default function HistoricalAgentChatPage() {
           },
           // Pass sources for database persistence
           ragSources?.map(source => ({
-            documentId: source.metadata?.documentId || source.id,
+            documentId: (source.metadata as any)?.documentId || source.id,
             agentId: source.agentId,
             agentName: source.agentName,
             title: source.title,
@@ -396,7 +396,7 @@ export default function HistoricalAgentChatPage() {
                           queryId={message.queryId}
                           agentId={agent.id}
                           agentName={agent.name}
-                          sessionId={sessionId}
+                          sessionId={sessionId ?? ''}
                           sourcesCount={message.ragSources?.length || 0}
                           compact
                         />

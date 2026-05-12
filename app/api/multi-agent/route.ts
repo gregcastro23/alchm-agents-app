@@ -153,7 +153,7 @@ Keep your response concise and distinctive to your planetary nature. Speak in fi
       model: openai('gpt-5.5') as any,
       system: systemPrompt,
       prompt: question,
-      maxTokens: 300, // Shorter responses for multi-agent
+      maxOutputTokens: 300, // Shorter responses for multi-agent
     } as any)
 
     return {

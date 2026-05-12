@@ -387,6 +387,7 @@ export function ConsciousnessLaboratoryChat({
                       monicaRole: 'coordinator',
                       tags: ['custom'],
                       difficulty: 'expert',
+                      recommendedFor: ['Custom consciousness synthesis'],
                     })
                   }
                   disabled={

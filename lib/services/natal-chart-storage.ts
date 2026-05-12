@@ -5,11 +5,9 @@
  * and transit monitoring integration.
  */
 
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import { generateAccurateHoroscope } from '../monica/horoscope-generator'
 import { alchemize } from '../alchemizer'
-
-const prisma = new PrismaClient()
 
 export interface CreateNatalChartInput {
   userId: string
@@ -92,7 +90,7 @@ export async function createNatalChart(
 
   // Determine dominant element
   const elementCounts = { Fire: 0, Water: 0, Air: 0, Earth: 0 }
-  natalData.planets.forEach(p => {
+  natalData.planets.forEach((p: any) => {
     const element = getElementForSign(p.sign)
     elementCounts[element]++
   })
@@ -100,7 +98,7 @@ export async function createNatalChart(
 
   // Determine dominant modality
   const modalityCounts = { Cardinal: 0, Fixed: 0, Mutable: 0 }
-  natalData.planets.forEach(p => {
+  natalData.planets.forEach((p: any) => {
     const modality = getModalityForSign(p.sign)
     modalityCounts[modality]++
   })
@@ -356,7 +354,7 @@ function calculateNatalChart({
   }
 
   // Generate horoscope with error handling
-  let horoscope
+  let horoscope: any
   try {
     horoscope = generateAccurateHoroscope(birthInfo)
     if (!horoscope || !horoscope.tropical || !horoscope.tropical.CelestialBodies) {
@@ -370,7 +368,7 @@ function calculateNatalChart({
   }
 
   return {
-    planets: horoscope.tropical.CelestialBodies.all.map(body => ({
+    planets: horoscope.tropical.CelestialBodies.all.map((body: any) => ({
       label: body.label,
       longitude: body.ChartPosition?.Ecliptic?.ArcDegreesFormatted30 || 0,
       sign: body.Sign?.label || '',
@@ -378,7 +376,7 @@ function calculateNatalChart({
       retrograde: body.ChartPosition?.Retrograde || false,
     })),
     houses: horoscope.tropical.Houses
-      ? Object.entries(horoscope.tropical.Houses).map(([number, house]) => ({
+      ? Object.entries(horoscope.tropical.Houses).map(([number, house]: [string, any]) => ({
           number: parseInt(number),
           sign: house.sign,
           degree: house.degree,

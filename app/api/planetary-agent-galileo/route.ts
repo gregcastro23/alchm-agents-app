@@ -98,7 +98,7 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
         model: galileo(planetModel) as any,
         system: systemPrompt,
         prompt: question || 'Tell me about this planetary position',
-        maxTokens: 500,
+        maxOutputTokens: 500,
       } as any)
 
       return NextResponse.json({

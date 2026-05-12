@@ -59,6 +59,9 @@ interface ConsciousnessVelocityVisualizerProps {
   location?: { lat: number; lon: number }
 }
 
+type VelocityTimeframe = NonNullable<ConsciousnessVelocityVisualizerProps['timeframe']>
+type VelocityViewType = NonNullable<ConsciousnessVelocityVisualizerProps['viewType']>
+
 export function ConsciousnessVelocityVisualizer({
   agents,
   timeframe = '24h',
@@ -250,7 +253,10 @@ export function ConsciousnessVelocityVisualizer({
             </div>
 
             <div className="flex items-center gap-3">
-              <Select value={currentTimeframe} onValueChange={setCurrentTimeframe}>
+              <Select
+                value={currentTimeframe}
+                onValueChange={value => setCurrentTimeframe(value as VelocityTimeframe)}
+              >
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
@@ -263,7 +269,10 @@ export function ConsciousnessVelocityVisualizer({
                 </SelectContent>
               </Select>
 
-              <Select value={currentViewType} onValueChange={setCurrentViewType}>
+              <Select
+                value={currentViewType}
+                onValueChange={value => setCurrentViewType(value as VelocityViewType)}
+              >
                 <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
@@ -283,7 +292,10 @@ export function ConsciousnessVelocityVisualizer({
         </CardContent>
       </Card>
 
-      <Tabs value={currentViewType} onValueChange={setCurrentViewType}>
+      <Tabs
+        value={currentViewType}
+        onValueChange={value => setCurrentViewType(value as VelocityViewType)}
+      >
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="individual" className="flex items-center gap-2">
             <Target className="h-4 w-4" />

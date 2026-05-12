@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import {
   runTransitMonitoringJob,
   TransitMonitoringScheduler,
@@ -19,8 +19,6 @@ import {
   cancelJob,
   getActiveJobs,
 } from '@/lib/services/job-management-service'
-
-const prisma = new PrismaClient()
 
 // Global scheduler instance
 let globalScheduler: TransitMonitoringScheduler | null = null

@@ -16,9 +16,7 @@
 import type { CraftedAgent } from '../agent-types'
 import { computeLiveStats } from '../agents/derived-stats'
 import type { LiveStats } from '../agents/derived-stats'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
 
 /**
  * Unified consciousness snapshot - comprehensive state at a moment in time

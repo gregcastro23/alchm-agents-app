@@ -2,12 +2,10 @@
 // Handles input validation, encryption verification, access control, and compliance monitoring
 
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import crypto from 'crypto'
 import { z } from 'zod'
 import { performance } from 'perf_hooks'
-
-const prisma = new PrismaClient()
 
 // Security audit result types
 interface SecurityAuditResult {

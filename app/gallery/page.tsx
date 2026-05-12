@@ -433,11 +433,14 @@ function GalleryPageContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0c0319] via-[#1a0838] to-[#0c0319] text-white relative">
       {/* Starfield Background */}
-      <div className="fixed inset-0 z-0 pointer-events-none opacity-50" 
-           style={{
-             backgroundImage: 'radial-gradient(2px 2px at 15% 25%, rgba(255, 255, 255, 0.7), transparent), radial-gradient(1.5px 1.5px at 78% 12%, rgba(167, 139, 250, 0.8), transparent), radial-gradient(1px 1px at 35% 68%, rgba(255, 255, 255, 0.6), transparent)',
-             backgroundSize: '500px 500px, 400px 400px, 300px 300px'
-           }} />
+      <div
+        className="fixed inset-0 z-0 pointer-events-none opacity-50"
+        style={{
+          backgroundImage:
+            'radial-gradient(2px 2px at 15% 25%, rgba(255, 255, 255, 0.7), transparent), radial-gradient(1.5px 1.5px at 78% 12%, rgba(167, 139, 250, 0.8), transparent), radial-gradient(1px 1px at 35% 68%, rgba(255, 255, 255, 0.6), transparent)',
+          backgroundSize: '500px 500px, 400px 400px, 300px 300px',
+        }}
+      />
 
       <div className="container relative z-10 py-8 space-y-6">
         {/* Header */}
@@ -502,9 +505,7 @@ function GalleryPageContent() {
                   </div>
                   <div>
                     <h4 className="font-bold text-orange-400">Power</h4>
-                    <p className="text-xs text-orange-300/70">
-                      Potentia - Solar Principle
-                    </p>
+                    <p className="text-xs text-orange-300/70">Potentia - Solar Principle</p>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -524,9 +525,7 @@ function GalleryPageContent() {
                   </div>
                   <div>
                     <h4 className="font-bold text-purple-400">Resonance</h4>
-                    <p className="text-xs text-purple-300/70">
-                      Celeritas - Mercury Principle
-                    </p>
+                    <p className="text-xs text-purple-300/70">Celeritas - Mercury Principle</p>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -546,9 +545,7 @@ function GalleryPageContent() {
                   </div>
                   <div>
                     <h4 className="font-bold text-indigo-400">Wisdom</h4>
-                    <p className="text-xs text-indigo-300/70">
-                      Accumulated Insight
-                    </p>
+                    <p className="text-xs text-indigo-300/70">Accumulated Insight</p>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -608,9 +605,7 @@ function GalleryPageContent() {
                   </div>
                   <div>
                     <h4 className="font-bold text-teal-400">Adaptability</h4>
-                    <p className="text-xs text-teal-300/70">
-                      Impetus - Mars + Saturn
-                    </p>
+                    <p className="text-xs text-teal-300/70">Impetus - Mars + Saturn</p>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -630,9 +625,7 @@ function GalleryPageContent() {
                   </div>
                   <div>
                     <h4 className="font-bold text-green-400">Vitality</h4>
-                    <p className="text-xs text-green-300/70">
-                      Vis - Alchemical Force
-                    </p>
+                    <p className="text-xs text-green-300/70">Vis - Alchemical Force</p>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -652,9 +645,7 @@ function GalleryPageContent() {
                   </div>
                   <div>
                     <h4 className="font-bold text-amber-400">Reading Stats</h4>
-                    <p className="text-xs text-amber-300/70">
-                      Interpretation Guide
-                    </p>
+                    <p className="text-xs text-amber-300/70">Interpretation Guide</p>
                   </div>
                 </div>
                 <ul className="text-sm text-muted-foreground space-y-1">
@@ -676,10 +667,10 @@ function GalleryPageContent() {
 
             {/* Kinetics System Mapping */}
             <div className="p-4 bg-indigo-500/10 rounded-lg border border-indigo-500/30 mt-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Database className="w-5 h-5 text-indigo-600" />
-                  <h4 className="font-bold text-indigo-300">Kinetics System Mapping</h4>
-                </div>
+              <div className="flex items-center gap-2 mb-3">
+                <Database className="w-5 h-5 text-indigo-600" />
+                <h4 className="font-bold text-indigo-300">Kinetics System Mapping</h4>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
                 <div className="p-3 bg-black/40 backdrop-blur rounded border border-white/10">
                   <h5 className="font-semibold text-orange-900 dark:text-orange-100 mb-1">
@@ -722,10 +713,10 @@ function GalleryPageContent() {
 
             {/* Live Stats Dynamic Section */}
             <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/30 mt-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Clock className="w-5 h-5 text-blue-600" />
-                  <h4 className="font-bold text-blue-300">Live Stats Dynamics</h4>
-                </div>
+              <div className="flex items-center gap-2 mb-3">
+                <Clock className="w-5 h-5 text-blue-600" />
+                <h4 className="font-bold text-blue-300">Live Stats Dynamics</h4>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <h5 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">

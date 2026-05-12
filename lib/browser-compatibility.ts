@@ -347,6 +347,3 @@ export const applyBrowserFixes = (browserInfo: BrowserInfo) => {
     }
   }
 }
-
-// Export for use in components
-export { detectCSSSupport, detectPlanetaryAgentSupport, getBrowserOptimizations, applyBrowserFixes }

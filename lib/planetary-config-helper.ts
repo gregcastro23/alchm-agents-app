@@ -6,6 +6,8 @@ import type { Element } from './agent-types'
 import { getSignElement, getPlanetaryDignity } from './astrological-data'
 import { calculateMoonPhase, getMoonDegree } from './moon-phase-calculator'
 
+export type { PlanetaryConfig } from './unified-agent-types'
+
 export const PLANET_SYMBOLS: Record<string, string> = {
   Sun: '☉',
   Moon: '☽',

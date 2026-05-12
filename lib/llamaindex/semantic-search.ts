@@ -97,13 +97,13 @@ export async function semanticSearch(
       content: r.document,
       score: r.score,
       metadata: {
+        ...r.metadata,
         chunkIndex: r.metadata.chunkIndex,
         totalChunks: r.metadata.totalChunks,
         source: r.metadata.source,
         era: r.metadata.era,
         specialty: r.metadata.specialty,
         consciousnessLevel: r.metadata.consciousnessLevel,
-        ...r.metadata,
       },
     }))
 

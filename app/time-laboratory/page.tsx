@@ -21,6 +21,7 @@ import { TransitComparison } from '@/components/transit-comparison'
 import { JobMonitoringDashboard } from '@/components/job-monitoring-dashboard'
 import { PlanetaryAgentsView } from '@/components/time-laboratory/planetary-agents-view'
 import { MultiAgentConversation } from '@/components/time-laboratory/multi-agent-conversation'
+import type { AgentActivationDetail } from '@/lib/degree-agent-matcher'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -859,9 +860,6 @@ export default function TimeLaboratoryPage() {
                   height={600}
                   realTimeMode={realTimeMode}
                   onExport={handleCelestialExport}
-                  onAgentActivation={activations => {
-                    console.log('Agent activations:', activations)
-                  }}
                 />
               )}
 
@@ -1297,7 +1295,7 @@ export default function TimeLaboratoryPage() {
             <div className="space-y-6">
               <TransitDashboard
                 userId="demo-user"
-                enableChat={chatEnabled}
+                enableChat={_chatEnabled}
                 onChatInitiate={handleChatInitiate}
               />
             </div>

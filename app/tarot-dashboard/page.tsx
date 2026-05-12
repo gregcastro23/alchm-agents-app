@@ -49,14 +49,14 @@ export default function TarotDashboardPage() {
   const { alchmQuantities, loading } = usePlanetaryPositions({ useApi: true })
 
   useEffect(() => {
-    // Get current decan card
-    const decan = getCurrentDecan()
-    if (decan?.card) {
-      setCurrentDecanCard(decan.card)
-    }
+    void getCurrentDecan().then(decan => {
+      if (decan?.card) {
+        setCurrentDecanCard(decan.card)
+      }
+    })
 
     // Get planetary ruler card (simplified for dashboard)
-    const rulerCard = getPlanetaryRulerCard()
+    const rulerCard = getPlanetaryRulerCard('Sun')
     if (rulerCard) {
       setPlanetaryCard(rulerCard)
     }

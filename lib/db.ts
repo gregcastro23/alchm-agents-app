@@ -3,6 +3,40 @@ import type { PrismaClient } from '@prisma/client'
 import Redis from 'ioredis'
 import { createRequire } from 'module'
 
+type PrismaDelegateAliases = {
+  transitMonitoringJob: any
+  transitNotification: any
+  userNatalChart: any
+  profile: any
+  subscriptions: any
+  consciousnessSnapshot: any
+  consciousnessInteraction: any
+  userProfile: any
+  user: any
+  natalChart: any
+  auditLog: any
+  agentAttachment: any
+  agentAttachmentUsage: any
+}
+
+type AppPrismaClient = PrismaClient & PrismaDelegateAliases
+
+const PRISMA_DELEGATE_ALIASES: Partial<Record<keyof PrismaDelegateAliases, string>> = {
+  transitMonitoringJob: 'transit_monitoring_jobs',
+  transitNotification: 'transit_notifications',
+  userNatalChart: 'user_natal_charts',
+  profile: 'profiles',
+  subscriptions: 'userSubscription',
+  consciousnessSnapshot: 'consciousness_snapshots',
+  consciousnessInteraction: 'consciousness_interactions',
+  userProfile: 'user_profiles',
+  user: 'users',
+  natalChart: 'user_natal_charts',
+  auditLog: 'monica_interactions',
+  agentAttachment: 'agent_attachments',
+  agentAttachmentUsage: 'agent_attachment_usage',
+}
+
 declare global {
   var __prisma: PrismaClient | undefined
 }
@@ -38,13 +72,18 @@ function materializePrisma(): PrismaClient {
   return _prismaInstance
 }
 
-export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
+export const prisma: AppPrismaClient = new Proxy({} as AppPrismaClient, {
   get(_target, prop, receiver) {
     const real = materializePrisma()
-    const value = Reflect.get(real, prop, receiver)
+    const mappedProp =
+      typeof prop === 'string' && prop in PRISMA_DELEGATE_ALIASES
+        ? PRISMA_DELEGATE_ALIASES[prop as keyof PrismaDelegateAliases]!
+        : prop
+    const value = Reflect.get(real, mappedProp, receiver)
     return typeof value === 'function' ? value.bind(real) : value
   },
   has(_t, prop) {
+    if (typeof prop === 'string' && prop in PRISMA_DELEGATE_ALIASES) return true
     return Reflect.has(materializePrisma(), prop)
   },
 })

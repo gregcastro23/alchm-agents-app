@@ -6,9 +6,7 @@
  * and providing job history and statistics.
  */
 
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
 
 export interface JobHistoryEntry {
   id: string

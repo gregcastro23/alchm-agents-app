@@ -83,7 +83,7 @@ export async function PUT(
     if (body.preferences !== undefined) updates.preferences = body.preferences
     if (body.notificationOn !== undefined) updates.notificationOn = body.notificationOn
 
-    const chart = await updateNatalChart(params.chartId, userId, updates)
+    const chart = await updateNatalChart(chartId, userId, updates)
 
     return NextResponse.json({
       success: true,

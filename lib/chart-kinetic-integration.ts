@@ -570,5 +570,3 @@ export async function monitorPowerCycles(
   const integration = new ChartKineticIntegration(birthChart)
   return integration.calculatePowerCycles(agentId, interactionHistory)
 }
-
-export { ChartKineticIntegration }

@@ -106,7 +106,7 @@ export default function TransitsPage() {
         timestamp: now,
         planetaryDegrees,
         alchemical: {
-          A_number: positions['Alchemy Effects']?.['A#'] || 2.0,
+          A_number: (positions['Alchemy Effects'] as any)?.['A#'] || 2.0,
           spirit: positions['Alchemy Effects']?.['Total Spirit'] || 0.25,
           matter: positions['Alchemy Effects']?.['Total Matter'] || 0.25,
           essence: positions['Alchemy Effects']?.['Total Essence'] || 0.25,
@@ -143,7 +143,7 @@ export default function TransitsPage() {
         if (planetActivation && activation.activatedAgents.length > 0) {
           const agents = activation.activatedAgents.map(aa => ({
             agent: DEMO_AGENTS.find(a => a.id === aa.agentId)!,
-            activationStrength: aa.activationStrength,
+            activationStrength: aa.resonanceStrength,
           }))
           planetActivation.agents = agents.filter(a => a.agent)
         }

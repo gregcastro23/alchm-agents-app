@@ -82,6 +82,7 @@ export function AgentCard({
   showActions = true,
 }: AgentCardProps) {
   const [showDetails, setShowDetails] = useState(false)
+  const consciousnessLevel = agent.consciousness.level || 'Awakening'
 
   // Mini card variant for homepage showcase
   if (variant === 'mini') {
@@ -101,8 +102,8 @@ export function AgentCard({
           </div>
           <h4 className="font-semibold text-sm">{agent.name}</h4>
           <p className="text-xs text-muted-foreground line-clamp-1">{agent.title}</p>
-          <Badge size="sm" className={getConsciousnessColor(agent.consciousness.level)}>
-            {agent.consciousness.level}
+          <Badge size="sm" className={getConsciousnessColor(consciousnessLevel)}>
+            {consciousnessLevel}
           </Badge>
         </CardContent>
       </Card>
@@ -131,8 +132,8 @@ export function AgentCard({
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="font-semibold">{agent.name}</h4>
-                  <Badge className={getConsciousnessColor(agent.consciousness.level)}>
-                    {agent.consciousness.level}
+                  <Badge className={getConsciousnessColor(consciousnessLevel)}>
+                    {consciousnessLevel}
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">{agent.title}</p>
@@ -240,8 +241,8 @@ export function AgentCard({
               <p className="text-sm text-muted-foreground">{agent.title}</p>
             </div>
           </div>
-          <Badge className={getConsciousnessColor(agent.consciousness.level)}>
-            {agent.consciousness.level}
+          <Badge className={getConsciousnessColor(consciousnessLevel)}>
+            {consciousnessLevel}
           </Badge>
         </div>
       </CardHeader>
@@ -353,6 +354,8 @@ export function AgentCard({
 
 // Agent Details Modal Component
 function AgentDetailsModal({ agent }: { agent: CraftedAgent }) {
+  const consciousnessLevel = agent.consciousness.level || 'Awakening'
+
   return (
     <>
       <DialogHeader>
@@ -439,8 +442,8 @@ function AgentDetailsModal({ agent }: { agent: CraftedAgent }) {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span>Kalchm</span>
-              <Badge className={getConsciousnessColor(agent.consciousness.level)}>
-                {agent.consciousness.monicaConstant.toFixed(2)} - {agent.consciousness.level}
+              <Badge className={getConsciousnessColor(consciousnessLevel)}>
+                {agent.consciousness.monicaConstant.toFixed(2)} - {consciousnessLevel}
               </Badge>
             </div>
             <Progress

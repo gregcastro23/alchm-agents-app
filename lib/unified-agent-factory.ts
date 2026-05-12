@@ -255,7 +255,7 @@ export class UnifiedAgentFactory implements AgentFactory {
   private mapPlanetaryStyle(
     planet: string
   ): 'formal' | 'casual' | 'mystical' | 'scholarly' | 'innovative' {
-    const styles: Record<string, typeof return> = {
+    const styles: Record<string, 'formal' | 'casual' | 'mystical' | 'scholarly' | 'innovative'> = {
       Sun: 'formal',
       Moon: 'mystical',
       Mercury: 'scholarly',
@@ -273,7 +273,7 @@ export class UnifiedAgentFactory implements AgentFactory {
   private mapPlanetaryCollaboration(
     planet: string
   ): 'leader' | 'supporter' | 'synthesizer' | 'specialist' {
-    const collaboration: Record<string, typeof return> = {
+    const collaboration: Record<string, 'leader' | 'supporter' | 'synthesizer' | 'specialist'> = {
       Sun: 'leader',
       Moon: 'supporter',
       Mercury: 'synthesizer',

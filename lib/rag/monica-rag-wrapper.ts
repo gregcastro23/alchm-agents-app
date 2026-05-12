@@ -46,14 +46,14 @@ function resolveDirectModel(modelId?: string) {
 async function generateDirect(options: RAGGenerateOptions): Promise<RAGResult> {
   const model = resolveDirectModel((options as any).model)
   const temperature = (options as any).temperature ?? 0.7
-  const maxTokens = (options as any).maxTokens ?? 800
+  const maxOutputTokens = (options as any).maxTokens ?? 800
 
   const { text } = await generateText({
     model,
     system: options.systemPrompt,
     prompt: options.userMessage,
     temperature,
-    maxTokens,
+    maxOutputTokens,
   })
 
   return {

@@ -166,7 +166,7 @@ Format your response with:
         system: systemPrompt,
         prompt:
           question || `Tell me about the energy and meaning of ${cardName || 'this tarot card'}`,
-        maxTokens: 600,
+        maxOutputTokens: 600,
       })
 
       const processingTime = Date.now() - startTime

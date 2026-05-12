@@ -183,7 +183,7 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
         system: systemPrompt,
         prompt: question || 'Tell me about this planetary position',
         temperature: 0.6,
-        maxTokens: 500,
+        maxOutputTokens: 500,
       } as any)
 
       const processingTime = Date.now() - startTime

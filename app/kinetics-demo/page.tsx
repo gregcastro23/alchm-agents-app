@@ -133,7 +133,7 @@ export default function KineticsDemoPage() {
 
         {/* Group Consciousness Dynamics */}
         <GroupConsciousnessIndicator
-          selectedAgents={mockAgents}
+          selectedAgents={mockAgents as any}
           location={location}
           onOptimalSpeakerSuggestion={agentId => {
             setSelectedAgent(agentId)

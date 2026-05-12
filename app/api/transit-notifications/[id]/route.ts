@@ -6,15 +6,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import {
   markNotificationAsRead,
   dismissNotification,
   getUserNotificationPreferences,
   updateUserNotificationPreferences,
 } from '@/lib/services/transit-notification-service'
-
-const prisma = new PrismaClient()
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -133,7 +131,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const notification = await prisma.transitNotification.updateMany({
       where: {
-        id: params.id,
+        id,
         userId, // Security: ensure user owns notification
       },
       data: updatePayload,

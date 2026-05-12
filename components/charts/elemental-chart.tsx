@@ -161,7 +161,7 @@ export default function ElementalChart({ birthInfo, planets }: ElementalChartPro
     elementalData
 
   // Get the total value to calculate percentages
-  const totalElementValue = Object.values(elementalTotals).reduce(
+  const totalElementValue = Object.values(elementalTotals as Record<string, number>).reduce(
     (acc: number, val: number) => acc + val,
     0
   ) as number

@@ -6,7 +6,7 @@
  * Provides real-time consciousness activation notifications and wisdom insights
  */
 
-import { getDemoAgentByIds, type CraftedAgent } from './demo-agents-data'
+import type { CraftedAgent } from './agent-types'
 import type { CelestialMoment } from './celestial-energy-calculator'
 
 export interface AgentDegreeProfile {
@@ -914,6 +914,3 @@ export class DegreeAgentMatcher {
 
 // Export singleton instance
 export const degreeAgentMatcher = new DegreeAgentMatcher()
-
-// Export types
-export type { AgentDegreeProfile, DegreeActivation, AgentActivationDetail, DegreePattern }

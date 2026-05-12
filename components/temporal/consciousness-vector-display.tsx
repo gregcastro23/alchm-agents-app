@@ -109,12 +109,12 @@ export function ConsciousnessVectorDisplay({
 }: Props) {
   // Use live data if available, otherwise fall back to provided quantities
   const displayQuantities = liveData?.liveKalchm
-    ? {
+      ? {
+        ...alchmQuantities, // Include thermodynamic properties
         spirit: liveData.liveKalchm.spirit,
         essence: liveData.liveKalchm.essence,
         matter: liveData.liveKalchm.matter,
         substance: liveData.liveKalchm.substance,
-        ...alchmQuantities, // Include thermodynamic properties
       }
     : alchmQuantities
 

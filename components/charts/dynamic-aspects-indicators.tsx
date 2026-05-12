@@ -16,16 +16,49 @@ import {
 } from 'lucide-react'
 import type { CraftedAgent } from '@/lib/agent-types'
 
+type PlanetaryPosition = {
+  name: string
+  degree: number
+  sign: keyof typeof SIGN_DEGREES
+  retrograde: boolean
+}
+
+const SIGN_DEGREES = {
+  Aries: 0,
+  Taurus: 30,
+  Gemini: 60,
+  Cancer: 90,
+  Leo: 120,
+  Virgo: 150,
+  Libra: 180,
+  Scorpio: 210,
+  Sagittarius: 240,
+  Capricorn: 270,
+  Aquarius: 300,
+  Pisces: 330,
+} as const
+
+const CONSCIOUSNESS_LEVEL_SCORE = {
+  Dormant: 1,
+  Awakening: 2,
+  Active: 3,
+  Elevated: 4,
+  Advanced: 5,
+  Illuminated: 6,
+  Transcendent: 7,
+} as const
+
 // Helper functions for real aspect calculations
 const extractPlanetaryPositions = (agent: CraftedAgent) => {
   // Extract planetary positions from agent's birth data
-  const positions = []
-  if (agent.birthData?.planets) {
-    Object.entries(agent.birthData.planets).forEach(([name, data]) => {
+  const positions: PlanetaryPosition[] = []
+  if (agent.consciousness?.natalChart?.planets) {
+    Object.entries(agent.consciousness.natalChart.planets).forEach(([name, data]) => {
+      const sign = data.sign in SIGN_DEGREES ? (data.sign as keyof typeof SIGN_DEGREES) : 'Aries'
       positions.push({
         name,
         degree: data.degree || 0,
-        sign: data.sign || 'Aries',
+        sign,
         retrograde: data.retrograde || false,
       })
     })
@@ -34,23 +67,8 @@ const extractPlanetaryPositions = (agent: CraftedAgent) => {
 }
 
 const calculateAspectBetweenPlanets = (planet1: any, planet2: any) => {
-  const signDegrees = {
-    Aries: 0,
-    Taurus: 30,
-    Gemini: 60,
-    Cancer: 90,
-    Leo: 120,
-    Virgo: 150,
-    Libra: 180,
-    Scorpio: 210,
-    Sagittarius: 240,
-    Capricorn: 270,
-    Aquarius: 300,
-    Pisces: 330,
-  }
-
-  const pos1 = signDegrees[planet1.sign] + planet1.degree
-  const pos2 = signDegrees[planet2.sign] + planet2.degree
+  const pos1 = SIGN_DEGREES[planet1.sign as keyof typeof SIGN_DEGREES] + planet1.degree
+  const pos2 = SIGN_DEGREES[planet2.sign as keyof typeof SIGN_DEGREES] + planet2.degree
 
   let angle = Math.abs(pos1 - pos2)
   if (angle > 180) angle = 360 - angle
@@ -76,7 +94,7 @@ const calculateAspectBetweenPlanets = (planet1: any, planet2: any) => {
         orbVelocity: applying ? -0.1 : 0.1,
         daysToExact: exactness / 1.0, // Approximate days
         daysSinceExact: applying ? 0 : exactness / 1.0,
-        strength: exactness < 2 ? 'strong' : exactness < 5 ? 'moderate' : 'weak',
+        strength: exactness < 2 ? 'peak' : exactness < 5 ? 'building' : 'waning',
       }
     }
   }
@@ -111,7 +129,10 @@ const calculateEvolutionaryImpact = (
   }
 
   // Enhance based on agent consciousness levels
-  const avgConsciousness = (agent1.consciousness.level + agent2.consciousness.level) / 2
+  const avgConsciousness =
+    ((CONSCIOUSNESS_LEVEL_SCORE[agent1.consciousness.level || 'Awakening'] || 2) +
+      (CONSCIOUSNESS_LEVEL_SCORE[agent2.consciousness.level || 'Awakening'] || 2)) /
+    2
   impact += avgConsciousness * 0.001
 
   // Enhance if applying (building energy)
@@ -184,7 +205,7 @@ const calculateRealAspects = (agents: CraftedAgent[]): AgentAspectConnection[] =
               orbVelocity: aspectData.orbVelocity,
               daysToExact: aspectData.daysToExact,
               daysSinceExact: aspectData.daysSinceExact,
-              strength: aspectData.strength,
+              strength: aspectData.strength as DynamicAspect['strength'],
               evolutionaryImpact: calculateEvolutionaryImpact(aspectData, agent1, agent2),
             })
           }

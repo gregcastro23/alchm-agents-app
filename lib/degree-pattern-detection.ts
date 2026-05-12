@@ -700,5 +700,3 @@ export class DegreePatternDetection {
     return clusters.sort((a, b) => b.evolutionVelocity - a.evolutionVelocity)
   }
 }
-
-export type { DegreePattern, DegreeHotspot, ConsciousnessCluster }

@@ -3,7 +3,10 @@
 
 import { prisma } from './db'
 import { getAlchemicalQuantitiesLegacy } from './backend'
-import type { AgentAttachment, AgentAttachmentUsage } from '@prisma/client'
+import type {
+  agent_attachments as AgentAttachment,
+  agent_attachment_usage as AgentAttachmentUsage,
+} from '@prisma/client'
 
 export interface AttachmentChart {
   date: Date
@@ -214,11 +217,14 @@ export class AgentAttachmentsService {
     const totalUsages = usages.length
     const averageRelevance =
       totalUsages > 0
-        ? usages.reduce((sum, usage) => sum + usage.relevanceScore, 0) / totalUsages
+        ? usages.reduce(
+            (sum: number, usage: AgentAttachmentUsage) => sum + usage.relevanceScore,
+            0
+          ) / totalUsages
         : 0
 
     const usageTypes = usages.reduce(
-      (acc, usage) => {
+      (acc: { [key: string]: number }, usage: AgentAttachmentUsage) => {
         acc[usage.usageType] = (acc[usage.usageType] || 0) + 1
         return acc
       },

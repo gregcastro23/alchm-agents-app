@@ -411,6 +411,3 @@ export class ConsciousnessMemorySystem {
     console.log(`Evolution data reset for agent: ${agentId}`)
   }
 }
-
-// Export helper functions for integration with existing systems
-export type { ConsciousnessMemorySnapshot, AgentConsciousnessMemory }

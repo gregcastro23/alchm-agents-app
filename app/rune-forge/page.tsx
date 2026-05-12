@@ -51,6 +51,8 @@ import { PatternToRuneConverter } from '@/lib/runes/pattern-to-rune-converter'
 import type { BirthInfo } from '@/lib/schemas'
 import Image from 'next/image'
 
+const QuickChartInputAny = QuickChartInput as any
+
 interface GeneratedSigil extends NatalSigilRune {
   generationTime: string
   birthInfo?: BirthInfo
@@ -123,12 +125,12 @@ export default function RuneForgePage() {
 
       const extractedGeometry = ChartGeometryExtractor.extractFromChartData(
         planetPositions,
-        enhancedChart.aspects,
+        enhancedChart.aspects as any,
         800,
         800
       )
 
-      extractedGeometry.sacredPatterns = enhancedChart.patterns
+      extractedGeometry.sacredPatterns = enhancedChart.patterns as any
       extractedGeometry.dominantElement = enhancedChart.alchemicalData.dominantElement
 
       setGeometry(extractedGeometry)
@@ -188,12 +190,12 @@ export default function RuneForgePage() {
 
       const extractedGeometry = ChartGeometryExtractor.extractFromChartData(
         planetPositions,
-        enhancedChart.aspects,
+        enhancedChart.aspects as any,
         800,
         800
       )
 
-      extractedGeometry.sacredPatterns = enhancedChart.patterns
+      extractedGeometry.sacredPatterns = enhancedChart.patterns as any
       extractedGeometry.dominantElement = enhancedChart.alchemicalData.dominantElement
 
       setGeometry(extractedGeometry)
@@ -211,7 +213,7 @@ export default function RuneForgePage() {
       const newSigil: GeneratedSigil = {
         ...sigil,
         generationTime: new Date().toISOString(),
-        birthInfo,
+        birthInfo: birthInfo ?? undefined,
       }
       setGeneratedSigils(prev => [...prev, newSigil])
       setActiveTab('gallery')
@@ -240,7 +242,7 @@ export default function RuneForgePage() {
         const newSigils: GeneratedSigil[] = variations.map(sigil => ({
           ...sigil,
           generationTime: new Date().toISOString(),
-          birthInfo,
+          birthInfo: birthInfo ?? undefined,
         }))
 
         setGeneratedSigils(prev => [...prev, ...newSigils])
@@ -353,7 +355,7 @@ export default function RuneForgePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <QuickChartInput
+              <QuickChartInputAny
                 onChartSubmit={handleQuickChartSubmit}
                 disabled={isProcessing}
                 showAnalysis={false}
@@ -595,7 +597,7 @@ export default function RuneForgePage() {
         <TabsContent value="batch">
           <BatchSigilGenerator
             geometry={geometry!}
-            birthInfo={birthInfo}
+            birthInfo={birthInfo ?? undefined}
             onSigilsGenerated={handleBatchSigilsGenerated}
           />
         </TabsContent>
@@ -641,7 +643,7 @@ export default function RuneForgePage() {
                         </div>
                         <h4 className="font-medium text-sm text-center truncate">{sigil.name}</h4>
                         <p className="text-xs text-center text-muted-foreground capitalize">
-                          {sigil.style}
+                          {sigil.visualStyle}
                         </p>
                       </div>
                     ))}

@@ -7,7 +7,18 @@ export default async function DashboardPage() {
   const session = await getServerSession()
 
   // Use real agent data from the system
-  let dashboardAgents = []
+  let dashboardAgents: Array<{
+    id: string
+    name: string
+    title: string
+    monicaConstant: number
+    consciousnessLevel: string
+    element: string
+    specialty: string
+    color: string
+    symbol: string
+    creationStory: string
+  }> = []
   try {
     const agents = await backend.agents.list({ limit: 5 })
     dashboardAgents = agents.map(agent => ({

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateText } from 'ai'
-import { openai } from '@ai-sdk/openai'
 import { resolveOpenAIModel } from '@/lib/models/registry'
 import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
@@ -76,7 +75,7 @@ Respond as ${agent.name} would, drawing from your conscious essence and specialt
 
           // Direct AI call using OpenAI for more reliable response
           const response = await generateText({
-            model: openai(resolveOpenAIModel('default')),
+            model: resolveOpenAIModel('default'),
             system: systemPrompt,
             prompt: message,
             maxOutputTokens: 1000,

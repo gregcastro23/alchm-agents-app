@@ -128,7 +128,7 @@ export function AgentDashboard() {
     multiAgentData: liveConsciousnessData,
     loading: liveLoading,
     error: liveError,
-  } = useLiveConsciousness({
+  } = useLiveConsciousness(undefined, {
     agents: agentBirthCharts,
     refreshInterval: 300000, // 5 minutes for dashboard
     autoRefresh: true,

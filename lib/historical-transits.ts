@@ -272,6 +272,3 @@ export function findSimilarConfigurations(
     },
   ]
 }
-
-// Export types for use in other modules
-export type { HistoricalTransit, TransitOccurrence, PlanetaryReturn }

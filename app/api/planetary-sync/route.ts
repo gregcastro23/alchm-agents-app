@@ -10,6 +10,10 @@
 import { planetaryPositionSyncService } from '@/lib/services/planetary-position-sync'
 import { NextRequest, NextResponse } from 'next/server'
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
 // GET /api/planetary-sync
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -57,7 +61,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Planetary sync API error:', error)
     return NextResponse.json(
-      { error: 'Synchronization failed', message: error.message },
+      { error: 'Synchronization failed', message: getErrorMessage(error) },
       { status: 500 }
     )
   }
@@ -154,7 +158,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Planetary sync POST error:', error)
     return NextResponse.json(
-      { error: 'Request processing failed', message: error.message },
+      { error: 'Request processing failed', message: getErrorMessage(error) },
       { status: 500 }
     )
   }
@@ -183,7 +187,7 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Planetary sync PUT error:', error)
     return NextResponse.json(
-      { error: 'Configuration update failed', message: error.message },
+      { error: 'Configuration update failed', message: getErrorMessage(error) },
       { status: 500 }
     )
   }

@@ -6,7 +6,7 @@
  * and automatically create notifications for users.
  */
 
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import {
   calculatePlanetaryTransitsForDateRange,
   type NatalPlacement,
@@ -14,9 +14,8 @@ import {
 import {
   createNotificationsForSignificantTransits,
   getUserNotificationPreferences,
+  type NotificationPreferences,
 } from '@/lib/services/transit-notification-service'
-
-const prisma = new PrismaClient()
 
 export interface TransitMonitoringResult {
   jobId: string
@@ -24,6 +23,7 @@ export interface TransitMonitoringResult {
   endTime: Date
   chartsProcessed: number
   notificationsCreated: number
+  significantTransits: number
   errors: Array<{
     chartId: string
     error: string
@@ -65,6 +65,7 @@ export async function runTransitMonitoringJob(
     endTime: new Date(),
     chartsProcessed: 0,
     notificationsCreated: 0,
+    significantTransits: 0,
     errors: [],
     performance: {
       totalDuration: 0,
@@ -141,17 +142,17 @@ export async function runTransitMonitoringJob(
         )
 
         // Get user notification preferences
-        let userPreferences = {
+        let userPreferences: NotificationPreferences = {
           enabled: true,
           significanceThreshold: significanceThreshold || 0.6,
-          priorityLevels: ['medium', 'high', 'critical'] as const,
+          priorityLevels: ['medium', 'high', 'critical'],
           categories: [
             'personal_transit',
             'agent_activation',
             'consciousness_breakthrough',
-          ] as const,
-          deliveryMethods: ['in_app'] as const,
-          frequency: 'immediate' as const,
+          ],
+          deliveryMethods: ['in_app'],
+          frequency: 'immediate',
         }
 
         try {
@@ -218,21 +219,31 @@ export async function runTransitMonitoringJob(
           }
 
           // Check priority filter
-          if (priorityFilter && !priorityFilter.includes(transit.priority || 'medium')) {
+          const transitPriority = ((transit as any).priority || 'medium') as
+            | 'low'
+            | 'medium'
+            | 'high'
+            | 'critical'
+          const transitCategory = ((transit as any).category || 'personal_transit') as
+            | 'personal_transit'
+            | 'agent_activation'
+            | 'consciousness_breakthrough'
+
+          if (priorityFilter && !priorityFilter.includes(transitPriority)) {
             return false
           }
 
           // Check category filter
-          if (categoryFilter && !categoryFilter.includes(transit.category || 'personal_transit')) {
+          if (categoryFilter && !categoryFilter.includes(transitCategory)) {
             return false
           }
 
           // Check user preferences
-          if (!userPreferences.priorityLevels.includes(transit.priority || 'medium')) {
+          if (!userPreferences.priorityLevels.includes(transitPriority)) {
             return false
           }
 
-          if (!userPreferences.categories.includes(transit.category || 'personal_transit')) {
+          if (!userPreferences.categories.includes(transitCategory)) {
             return false
           }
 
@@ -242,6 +253,7 @@ export async function runTransitMonitoringJob(
         console.log(
           `✨ Found ${significantTransits.length} significant transits for chart ${chart.id}`
         )
+        result.significantTransits += significantTransits.length
 
         // Create notifications for significant transits
         if (significantTransits.length > 0) {

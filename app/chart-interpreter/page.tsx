@@ -39,6 +39,7 @@ interface AgentResponse {
 
 interface MultiAgentApiResponse {
   responses: AgentResponse[]
+  error?: string
 }
 
 interface ChartData {
@@ -49,18 +50,7 @@ interface ChartData {
   latitude?: number
   longitude?: number
   chartType: ChartType
-  planets: {
-    sun: { sign: string; degree: number; house: number }
-    moon: { sign: string; degree: number; house: number }
-    mercury: { sign: string; degree: number; house: number }
-    venus: { sign: string; degree: number; house: number }
-    mars: { sign: string; degree: number; house: number }
-    jupiter: { sign: string; degree: number; house: number }
-    saturn: { sign: string; degree: number; house: number }
-    uranus: { sign: string; degree: number; house: number }
-    neptune: { sign: string; degree: number; house: number }
-    pluto: { sign: string; degree: number; house: number }
-  }
+  planets: Record<string, { sign: string; degree: number; house: number }>
 }
 
 export default function ChartInterpreterPage() {

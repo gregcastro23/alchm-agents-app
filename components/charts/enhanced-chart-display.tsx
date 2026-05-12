@@ -25,9 +25,9 @@ interface Planet {
 }
 
 interface EnhancedChartDisplayProps {
-  planets: Record<string, { sign: string; degree: number; house: number }>
+  planets: Record<string, { sign: string; degree: number; house: number; retrograde?: boolean }>
   chartName?: string
-  onPlanetClick?: (planet: string) => void
+  onPlanetClick?: (planet: string | null) => void
   selectedPlanet?: string | null
   className?: string
 }

@@ -7,6 +7,8 @@
 
 import { AlchemicalCost, RuneEffect, Rune } from './rune-system'
 
+export type { AlchemicalCost } from './rune-system'
+
 export type ChartComplexity = 'solo' | 'dual' | 'trinity' | 'collective'
 
 export interface BirthChart {

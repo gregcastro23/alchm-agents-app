@@ -378,7 +378,12 @@ export function UnifiedMultiAgentChat({
             Select Agents ({selectedAgents.length}/{maxAgents})
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)} className="border-white/20 bg-white/5 hover:bg-white/10 text-white">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSettings(!showSettings)}
+              className="border-white/20 bg-white/5 hover:bg-white/10 text-white"
+            >
               <Settings className="w-4 h-4" />
             </Button>
             <Button
@@ -400,7 +405,11 @@ export function UnifiedMultiAgentChat({
             onChange={e => setSearchQuery(e.target.value)}
             className="flex-1 bg-black/20 border-white/20 text-white placeholder:text-purple-300/50 focus-visible:ring-purple-500/50"
           />
-          <Button variant="outline" size="sm" className="border-white/20 bg-white/5 hover:bg-white/10 text-white">
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-white/20 bg-white/5 hover:bg-white/10 text-white"
+          >
             <Filter className="w-4 h-4" />
           </Button>
         </div>
@@ -408,8 +417,14 @@ export function UnifiedMultiAgentChat({
         {/* Monica toggle */}
         {allowMonica && (
           <div className="flex items-center gap-2 mt-2 p-2 bg-purple-900/20 border border-purple-500/30 rounded-lg">
-            <Checkbox checked={monicaIncluded} onCheckedChange={handleMonicaToggle} className="border-purple-500/50 data-[state=checked]:bg-purple-600" />
-            <span className="text-sm font-medium text-purple-200">Include Monica as {monicaRole}</span>
+            <Checkbox
+              checked={monicaIncluded}
+              onCheckedChange={handleMonicaToggle}
+              className="border-purple-500/50 data-[state=checked]:bg-purple-600"
+            />
+            <span className="text-sm font-medium text-purple-200">
+              Include Monica as {monicaRole}
+            </span>
             <select
               value={monicaRole}
               onChange={e => setMonicaRole(e.target.value as MonicaRole['type'])}
@@ -472,7 +487,9 @@ export function UnifiedMultiAgentChat({
                 <div
                   key={agent.id}
                   className={`p-3 border rounded-lg cursor-pointer transition-colors hover:bg-white/5 border-white/10 ${
-                    selectedAgents.find(a => a.id === agent.id) ? 'bg-purple-500/20 border-purple-500/50' : 'bg-black/40 backdrop-blur-md'
+                    selectedAgents.find(a => a.id === agent.id)
+                      ? 'bg-purple-500/20 border-purple-500/50'
+                      : 'bg-black/40 backdrop-blur-md'
                   }`}
                   onClick={() => handleAgentSelect(agent)}
                 >
@@ -554,7 +571,9 @@ export function UnifiedMultiAgentChat({
 
               <div
                 className={`p-3 rounded-lg border backdrop-blur-md ${
-                  message.role === 'user' ? 'bg-purple-600/40 border-purple-500/30 text-white' : 'bg-black/40 border-white/10 text-purple-50'
+                  message.role === 'user'
+                    ? 'bg-purple-600/40 border-purple-500/30 text-white'
+                    : 'bg-black/40 border-white/10 text-purple-50'
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -596,7 +615,9 @@ export function UnifiedMultiAgentChat({
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <div className="text-sm font-medium mb-1 text-purple-200">Agents are responding...</div>
+              <div className="text-sm font-medium mb-1 text-purple-200">
+                Agents are responding...
+              </div>
               <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-lg p-3">
                 <div className="flex items-center gap-2">
                   <Activity className="w-4 h-4 animate-spin text-purple-400" />
@@ -663,7 +684,10 @@ export function UnifiedMultiAgentChat({
             <Users className="w-5 h-5 text-purple-400" />
             <h2 className="font-semibold text-lg">{title}</h2>
             {enableGroupDynamics && groupDynamics && (
-              <Badge variant="outline" className="ml-2 bg-purple-900/40 border-purple-500/50 text-purple-200">
+              <Badge
+                variant="outline"
+                className="ml-2 bg-purple-900/40 border-purple-500/50 text-purple-200"
+              >
                 Consciousness: {groupDynamics.consciousnessNetwork.groupConsciousness.toFixed(2)}
               </Badge>
             )}

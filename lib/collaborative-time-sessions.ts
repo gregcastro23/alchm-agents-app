@@ -630,12 +630,3 @@ export class CollaborativeTimeSessionManager {
       .sort((a, b) => b.lastActivity.getTime() - a.lastActivity.getTime())
   }
 }
-
-export type {
-  CollaborativeSession,
-  SessionParticipant,
-  SessionUpdate,
-  SessionBookmark,
-  SessionComment,
-  SessionAnalytics,
-}
