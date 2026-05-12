@@ -85,7 +85,7 @@ export async function semanticSearch(
     // Query vector store
     const results = await queryCollection(collection, queryEmbedding, {
       topK: topK * 2, // Get more results for reranking
-      filter,
+      filter: filter as any,
       includeMetadata,
     })
 

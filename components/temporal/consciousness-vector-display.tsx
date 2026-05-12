@@ -221,7 +221,7 @@ export function ConsciousnessVectorDisplay({
     // Filter out any items with invalid values
     return (
       safeConsciousnessValue(item.value, -1) >= 0 &&
-      safeConsciousnessValue(item.rawValue, NaN) !== NaN
+      !Number.isNaN(safeConsciousnessValue(item.rawValue, NaN))
     )
   })
 

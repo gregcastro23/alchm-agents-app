@@ -16,7 +16,7 @@ export function initializeSentry() {
       profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
       // Error filtering
-      beforeSend(event) {
+      beforeSend(event: any) {
         // Filter out known non-critical errors
         if (event.exception?.values?.[0]?.value?.includes('Network request failed')) {
           return null // Don't send network errors to Sentry
@@ -31,7 +31,7 @@ export function initializeSentry() {
 
       // Custom integrations - updated for newer Sentry SDK
       integrations: [
-        Sentry.httpIntegration({ tracing: true }),
+        Sentry.httpIntegration({ tracing: true } as any),
         Sentry.consoleIntegration(),
         Sentry.globalHandlersIntegration(),
       ],
@@ -60,7 +60,7 @@ export function trackConsciousnessError(
     interactionType?: string
   }
 ) {
-  Sentry.withScope(scope => {
+  Sentry.withScope((scope: any) => {
     scope.setTag('error_type', 'consciousness_evolution')
     scope.setContext('consciousness', context)
     Sentry.captureException(error)

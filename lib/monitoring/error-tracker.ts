@@ -6,7 +6,7 @@
  * for the Planetary Agent Transit System.
  */
 
-import { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 
 // Error types and categories
 export enum ErrorType {
@@ -641,7 +641,7 @@ export const withErrorTracking = <P extends object>(
       return { hasError: true }
     }
 
-    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
       const errorTracker = ErrorTrackerManager.getInstance()
       errorTracker.trackError({
         type: ErrorType.JAVASCRIPT,
@@ -658,7 +658,7 @@ export const withErrorTracking = <P extends object>(
       })
     }
 
-    render() {
+    override render() {
       if (this.state.hasError) {
         // Create error boundary JSX programmatically
         return React.createElement(

@@ -112,7 +112,7 @@ export class FeedActivationEngine {
     // A) Thermodynamic Spikes
     if (
       moment.thermodynamic.entropy > 80 &&
-      agent.personalityCore?.expression === 'revolutionary'
+      (agent.personalityCore as any)?.expression === 'revolutionary'
     ) {
       return { reason: 'high_entropy_resonance', intensity: 0.9 }
     }

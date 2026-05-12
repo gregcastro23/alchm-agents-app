@@ -4,10 +4,11 @@
 import type {
   TrainingSession,
   TrainingActivity,
-  SubmissionProcessingResult,
-  Achievement,
-  TrainingStats,
 } from './training-interface-design'
+
+import type { SubmissionProcessingResult } from './training-orchestration'
+import type { Achievement } from '../types/personalized-ai'
+import type { TrainingStats } from './data-architecture'
 
 import { trainingDataManager } from './data-architecture'
 
@@ -118,11 +119,23 @@ export class EngagementEngine {
     const streakInfo = await this.streakProtector.getCurrentStreak(userId)
     const narrativeProgress = await this.narrativeBuilder.getNarrativeProgress(userId)
 
+    const stats: TrainingStats = userProfile?.trainingStats || {
+      totalXP: 0,
+      level: 1,
+      completedActivities: 0,
+      favoriteActivityTypes: [],
+      averageSessionLength: 0,
+      completionRate: 0,
+      qualityScore: 0,
+      engagementScore: 0,
+      consistencyScore: 0,
+    }
+
     return {
-      level: userProfile?.trainingStats.level || 1,
-      xpToNextLevel: await this.calculateXPToNextLevel(userProfile?.trainingStats.level || 1),
-      currentXP: userProfile?.trainingStats.totalXP || 0,
-      levelProgress: await this.calculateLevelProgress(userProfile?.trainingStats || {}),
+      level: stats.level,
+      xpToNextLevel: await this.calculateXPToNextLevel(stats.level),
+      currentXP: stats.totalXP,
+      levelProgress: await this.calculateLevelProgress(stats),
       streak: {
         current: streakInfo.current,
         longest: streakInfo.longest,
@@ -374,7 +387,7 @@ export class EngagementEngine {
     if (activity.xpReward.achievements) {
       rewards.unlockable.push(
         ...activity.xpReward.achievements.map(achievement => ({
-          type: 'achievement',
+          type: 'achievement' as const,
           id: achievement,
           description: `Achievement available: ${achievement}`,
         }))
@@ -422,7 +435,7 @@ export class EngagementEngine {
     let messageType: 'encouragement' | 'celebration' | 'challenge' | 'reflection' = 'encouragement'
     let title = ''
     let content = ''
-    let visualTheme = 'neutral'
+    let visualTheme: 'neutral' | 'positive' | 'fiery' | 'golden' | 'calm' | 'inviting' = 'neutral'
 
     if (streakInfo.current >= 7) {
       messageType = 'celebration'
@@ -508,7 +521,7 @@ export class EngagementEngine {
       type: 'achievement',
       ...celebrations[rarityLevel],
       priority: rarityLevel === 'legendary' ? 'high' : 'medium',
-    }
+    } as CelebrationEvent
   }
 
   private getAchievementRarity(type: string): 'common' | 'rare' | 'epic' | 'legendary' {
@@ -810,7 +823,13 @@ export interface CelebrationEvent {
     | 'level_up_explosion'
     | 'crown_float'
     | 'legendary_aura'
-  soundEffect: 'coin_jingle' | 'triumph_fanfare' | 'success_chime' | 'epic_orchestral'
+  soundEffect:
+    | 'coin_jingle'
+    | 'triumph_fanfare'
+    | 'success_chime'
+    | 'epic_orchestral'
+    | 'level_up_fanfare'
+    | 'mythic_chorus'
   priority: 'low' | 'medium' | 'high'
   data?: any
 }

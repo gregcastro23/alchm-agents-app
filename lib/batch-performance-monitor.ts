@@ -535,7 +535,7 @@ export class BatchPerformanceMonitor extends EventEmitter {
     metric: string,
     timeframe: TrendAnalysis['timeframe'] = 'last_hour'
   ): TrendAnalysis | null {
-    const history = this.getMetricsHistory(timeframe)
+    const history = this.getMetricsHistory(timeframe as any)
     if (history.length < 2) return null
 
     // Extract metric values

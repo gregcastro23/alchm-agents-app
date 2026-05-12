@@ -20,7 +20,7 @@ interface NetworkNode extends d3.SimulationNodeDatum {
   element: string
   color: string
   symbol: string
-  status: 'idle' | 'thinking' | 'responding'
+  status: 'idle' | 'thinking' | 'responding' | 'background_processing'
   radius: number
   x?: number
   y?: number
@@ -237,7 +237,7 @@ export function ConsciousnessNetworkGraph({
             if (!event.active) simulation.alphaTarget(0)
             d.fx = null
             d.fy = null
-          })
+          }) as any
       )
       .on('click', (event, d) => {
         const agent = agents.find(a => a.id === d.id)

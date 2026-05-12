@@ -272,11 +272,11 @@ export function getDatesForZodiacDegree(
     exitTime.setUTCDate(exitTime.getUTCDate() + 1)
   }
 
-  const duration = (exitTime.getTime() - entryTime.getTime()) / (1000 * 60 * 60)
+  const duration = (exitTime!.getTime() - entryTime.getTime()) / (1000 * 60 * 60)
 
   return {
     start: entryTime,
-    end: exitTime,
+    end: exitTime!,
     duration_hours: duration,
   }
 }

@@ -367,7 +367,7 @@ export class SyncMonitoringService {
         }
       } catch (error) {
         console.error('Health monitoring check failed:', error)
-        this.createAlert('critical', `Health monitoring failed: ${error.message}`)
+        this.createAlert('critical', `Health monitoring failed: ${(error as Error).message}`)
       }
     }, this.HEALTH_CHECK_INTERVAL)
   }

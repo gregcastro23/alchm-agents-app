@@ -11,7 +11,7 @@ import {
   OptimalPeriod,
   dynamicAspectsEngine,
 } from './dynamic-aspects-engine'
-import { AgentKineticProfile, getAgentKineticProfile } from './agents/kinetic-profiles'
+import { agentKineticProfiles as AgentKineticProfile, getAgentKineticProfile } from './agents/kinetic-profiles'
 import { KineticsIntegration, EnhancedKineticData } from './kinetics-integration'
 import { PlanetPosition } from './astrological-pattern-recognition'
 
@@ -288,7 +288,7 @@ export class ConsciousnessAspectsIntegration {
   /**
    * Get agent's aspect sensitivity profile
    */
-  private getAgentAspectSensitivity(agentProfile: AgentKineticProfile): AspectSensitivityProfile {
+  private getAgentAspectSensitivity(agentProfile: any): AspectSensitivityProfile {
     // Determine agent archetype based on profile
     const archetype = this.determineAgentArchetype(agentProfile)
     const baseProfile =
@@ -307,7 +307,7 @@ export class ConsciousnessAspectsIntegration {
     }
   }
 
-  private determineAgentArchetype(agentProfile: AgentKineticProfile): string {
+  private determineAgentArchetype(agentProfile: any): string {
     if (agentProfile.v_creative && agentProfile.v_creative > 0.8) return 'creative'
     if (agentProfile.v_scientific && agentProfile.v_scientific > 0.8) return 'scientific'
     if (agentProfile.v_philosophical && agentProfile.v_philosophical > 0.8) return 'philosophical'

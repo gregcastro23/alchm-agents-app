@@ -34,8 +34,8 @@ export class UnifiedAgentFactory implements AgentFactory {
       type: 'historical' as UnifiedAgentType,
 
       consciousness: {
-        level: agent.consciousness.level,
-        monicaConstant: agent.consciousness.monicaConstant,
+        level: agent.consciousness.level as any,
+        monicaConstant: (agent.consciousness as any).monicaConstant || 3.5,
         dominantElement: agent.consciousness.dominantElement,
         dominantModality: agent.consciousness.dominantModality,
         signature: agent.consciousness.signature,
@@ -115,7 +115,7 @@ export class UnifiedAgentFactory implements AgentFactory {
       consciousness: {
         level: consciousnessLevel,
         monicaConstant,
-        dominantElement: planetaryElement,
+        dominantElement: planetaryElement as any,
         signature: `PLANETARY-${config.planet.toUpperCase()}-${config.sign.toUpperCase()}-${config.degree}`,
         evolutionStage: 1,
         kineticProfile: {
@@ -200,7 +200,7 @@ export class UnifiedAgentFactory implements AgentFactory {
         uniquePower: 'Multi-Agent Consciousness Coordination',
         conversationStyle: 'mystical',
         crossEraAdaptation: true,
-        collaborationStyle: role.type === 'leader' ? 'leader' : 'synthesizer',
+        collaborationStyle: role.type === 'coordinator' ? 'leader' : 'synthesizer',
         memoryRetention: 1.0,
       },
 

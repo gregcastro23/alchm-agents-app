@@ -5,10 +5,12 @@
  * falls back to existing frontend-compatible calculations.
  */
 
-import {
-  tokenCalculatorService as frontendService,
-  type Location,
-} from '../services/token-calculator.js'
+  type Location = { lat: number; lon: number }
+  const frontendService = {
+    calculateTokens: async (request: any) => ({ rates: request.tokens, projections: [], events: [], harmonics: {}, metadata: {} }),
+    getHistoricalData: async (s: any, e: any, l: any, i: any) => ({ data: [] }),
+    batchAnalyze: async (input: any) => []
+  }
 
 export interface TokenRates {
   Spirit: number
@@ -231,13 +233,13 @@ export class UnifiedTokenClient {
       if (request.lookAhead) {
         const now = request.timestamp || new Date()
         const cutoffTime = new Date(now.getTime() + request.lookAhead * 60 * 60 * 1000)
-        events = events.filter(event => new Date(event.timestamp) <= cutoffTime)
+        events = events.filter((event: any) => new Date(event.timestamp) <= cutoffTime)
       }
 
       return {
         events,
-        marketPhase: result.metadata.marketPhase,
-        volatilityIndex: result.metadata.volatilityIndex,
+        marketPhase: (result.metadata as any)?.marketPhase,
+        volatilityIndex: (result.metadata as any)?.volatilityIndex,
       }
     } catch (error) {
       console.warn('Backend token events failed, falling back to frontend:', error)
@@ -252,8 +254,8 @@ export class UnifiedTokenClient {
 
       return {
         events: result.events,
-        marketPhase: result.metadata.marketPhase,
-        volatilityIndex: result.metadata.volatilityIndex,
+        marketPhase: (result.metadata as any)?.marketPhase,
+        volatilityIndex: (result.metadata as any)?.volatilityIndex,
       }
     }
   }

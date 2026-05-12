@@ -293,7 +293,7 @@ export class MonicaResponseHandler {
         40 + (context.userCharacterVector ? 20 : 0) + (context.currentAlchmQuantities ? 20 : 0)
       ),
       correctness_estimate: clamp(70 + (topicComplexity === 'simple' ? 10 : 0)),
-      creativity: clamp(50 + (responseStyle.style === 'nurturing' ? 5 : 0)),
+      creativity: clamp(50 + (responseStyle.tone.includes('nurturing') ? 5 : 0)),
     }
 
     // Growth attributes minimal scaffold (server may enrich)

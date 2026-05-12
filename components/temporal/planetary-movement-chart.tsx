@@ -204,7 +204,7 @@ export function PlanetaryMovementChart({ delta }: Props) {
     .filter(item => {
       // Final validation pass - ensure all values are chart-ready
       const degreesValid = validateChartNumber(item.degrees, -1) >= 0
-      const accelerationValid = validateChartNumber(item.acceleration, NaN) !== NaN
+      const accelerationValid = !Number.isNaN(validateChartNumber(item.acceleration, NaN))
       const expectedSpeedValid = validateChartNumber(item.expectedSpeed, -1) > 0
       const planetValid = typeof item.planet === 'string' && item.planet !== 'Unknown'
 

@@ -34,7 +34,7 @@ export interface PlanetaryData {
   source: string
   accuracy: AccuracyLevel
   cached: boolean
-  error?: string
+  error?: string | null
 }
 
 interface UseUnifiedPlanetaryPositionsOptions {
@@ -273,7 +273,7 @@ export function usePlanetaryPositions(options: UseUnifiedPlanetaryPositionsOptio
       acc[pos.planet] = {
         sign: pos.sign,
         degree: pos.degree.toString(),
-        retrograde: pos.retrograde,
+        retrograde: !!pos.retrograde,
       }
       return acc
     },
@@ -306,7 +306,7 @@ export function usePlanetaryPositionsOnly(options: UseUnifiedPlanetaryPositionsO
       acc[pos.planet] = {
         sign: pos.sign,
         degree: pos.degree.toString(),
-        retrograde: pos.retrograde,
+        retrograde: !!pos.retrograde,
       }
       return acc
     },

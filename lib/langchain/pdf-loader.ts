@@ -281,7 +281,7 @@ export async function ingestAstrologicalPDF(
       system: 'langchain',
       operation: 'ingest_pdf',
       agentId,
-      severity: 'high',
+      metadata: { severity: 'high' },
     })
 
     throw new Error(errorMsg)

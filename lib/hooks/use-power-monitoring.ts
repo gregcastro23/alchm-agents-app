@@ -28,7 +28,7 @@ export function usePowerMonitoring(options: PowerNotificationOptions = {}) {
 
   const lastPowerLevel = useRef<number>(0)
   const lastNotificationTime = useRef<number>(0)
-  const intervalRef = useRef<NodeJS.Timeout>()
+  const intervalRef = useRef<any>(null)
 
   useEffect(() => {
     const checkPowerLevel = async () => {

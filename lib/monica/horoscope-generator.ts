@@ -91,6 +91,10 @@ export interface GeneratedHoroscope {
     generatedAt: Date
     method: string
     accuracy: string
+    synchronized?: boolean
+    julianDay?: number
+    enhancedCalculations?: boolean
+    algorithms?: string[]
   }
 }
 
@@ -591,9 +595,12 @@ export function generateProfessionalHoroscope(
       },
     }
 
-    if (options.includeAccuracyMetadata) {
+    if (options.includeAccuracyMetadata && result.metadata) {
       result.metadata = {
-        ...result.metadata,
+        generatedAt: result.metadata.generatedAt,
+        method: result.metadata.method,
+        accuracy: result.metadata.accuracy,
+        synchronized: result.metadata.synchronized,
         julianDay: enhancedResults.julianDay,
         enhancedCalculations: true,
         algorithms: [

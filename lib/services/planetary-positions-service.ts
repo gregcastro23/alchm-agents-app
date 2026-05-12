@@ -214,7 +214,7 @@ export class PlanetaryPositionsService {
         throw new Error('Enhanced calculator returned no result')
       }
 
-      const planetaryPositions: PlanetaryPosition[] = Object.entries(result.result.planets).map(
+      const planetaryPositions: PlanetaryPosition[] = Object.entries((result.result as any).planets).map(
         ([planet, pos]: [string, any]) => ({
           planet,
           sign: pos.sign || 'Aries',
@@ -248,7 +248,7 @@ export class PlanetaryPositionsService {
     try {
       const result = await basicTransitsCB.exec(async () => {
         return await Promise.race([
-          getCurrentPlanetaryPositions(date.getTime()),
+          getCurrentPlanetaryPositions(date),
           new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Basic transits timeout')), options.timeout)
           ),

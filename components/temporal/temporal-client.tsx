@@ -183,7 +183,7 @@ function createSynastryChartSkeleton(user: RelationChart, relation: RelationChar
       birth_data: {
         date: user.birthDate,
         time: user.birthTime || null,
-        location: user.location || 'Unknown',
+        location: (user as any).location || (user.latitude && user.longitude ? `${user.latitude}, ${user.longitude}` : 'Unknown'),
       },
       chart_features: [],
       planetary_placements: [],
@@ -195,7 +195,7 @@ function createSynastryChartSkeleton(user: RelationChart, relation: RelationChar
       birth_data: {
         date: relation.birthDate,
         time: relation.birthTime || null,
-        location: relation.location || 'Unknown',
+        location: (relation as any).location || (relation.latitude && relation.longitude ? `${relation.latitude}, ${relation.longitude}` : 'Unknown'),
       },
       chart_features: [],
       planetary_placements: [],

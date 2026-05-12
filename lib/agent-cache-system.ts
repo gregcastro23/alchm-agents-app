@@ -125,14 +125,14 @@ export class AgentCacheSystem {
     // Fallback to in-memory cache
     const inMemoryEntry = this.getFromInMemoryCache(exactKey)
     if (inMemoryEntry) {
-      await this.updateMetrics('hit', 'memory')
+      await this.updateMetrics('hit', 'memory' as any)
       return inMemoryEntry
     }
 
     // Try semantic match in memory
     const inMemorySemanticMatch = this.findInMemorySemanticMatch(agentId, userMessage)
     if (inMemorySemanticMatch) {
-      await this.updateMetrics('hit', 'memory-semantic')
+      await this.updateMetrics('hit', 'memory-semantic' as any)
       return inMemorySemanticMatch
     }
 

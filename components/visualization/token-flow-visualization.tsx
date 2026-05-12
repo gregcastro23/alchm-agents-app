@@ -87,7 +87,7 @@ export function TokenFlowVisualization({
   })
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const animationRef = useRef<number>()
+  const animationRef = useRef<number | null>(null)
   const particlesRef = useRef<FlowParticle[]>([])
   const lastTokensRef = useRef<ElementalTokens | null>(null)
 

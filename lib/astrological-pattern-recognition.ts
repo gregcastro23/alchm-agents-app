@@ -534,7 +534,7 @@ function detectGrandCross(planets: PlanetPosition[], aspects: Aspect[]): Pattern
 
       // Check if the four planets form a cross
       const crossPlanets = [opp1.planet1, opp1.planet2, opp2.planet1, opp2.planet2]
-      const uniquePlanets = [...new Set(crossPlanets)]
+      const uniquePlanets = Array.from(new Set(crossPlanets))
 
       if (uniquePlanets.length === 4) {
         // Verify all necessary squares exist

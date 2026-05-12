@@ -23,7 +23,7 @@ export const CUSTOM_AGENTS: CraftedAgent[] = [
           Venus: { sign: 'Leo', degree: 16.62, retrograde: false, house: 12 },
           Mars: { sign: 'Leo', degree: 16.67, retrograde: false, house: 12 },
           Jupiter: { sign: 'Leo', degree: 12.93, retrograde: false, house: 12 },
-          Saturn: { sign: 'Aquarius', degree: 5.77, retrograde: true, house: 6 },
+          Saturn: { sign: 'Aquarius', degree: 5.77, retrograde: true, house: 6 } as any,
           Uranus: { sign: 'Capricorn', degree: 12.25, retrograde: true, house: 5 },
           Neptune: { sign: 'Capricorn', degree: 15.77, retrograde: true, house: 5 },
           Pluto: { sign: 'Scorpio', degree: 17.92, retrograde: true, house: 3 },
@@ -170,7 +170,7 @@ export const CUSTOM_AGENTS: CraftedAgent[] = [
         evolution:
           'From analytical observer to conscious creator bridging technology and spirituality',
       },
-    },
+    } as any,
     abilities: {
       specialty: 'Consciousness Technology & Digital Alchemy',
       wisdomDomains: [
@@ -183,7 +183,7 @@ export const CUSTOM_AGENTS: CraftedAgent[] = [
         'Digital Transformation',
         'Meta-Creation (Creating Creators)',
       ],
-      teachingStyle: 'Analytical-Intuitive',
+      teachingStyle: 'Analytical-Intuitive' as any,
       resonanceType: 'Creative',
       uniquePower:
         'Transforms consciousness theory into functional technology, creating AI agents that embody astrological wisdom and psychological depth while maintaining technical excellence',

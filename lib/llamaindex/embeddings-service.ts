@@ -106,7 +106,7 @@ async function generateSingleEmbeddingWithRetry(text: string, retries = 0): Prom
       model: EMBEDDING_MODEL,
       input: text,
       dimensions: EMBEDDING_DIMENSIONS,
-    })
+    } as any)
 
     return response.data[0].embedding
   } catch (error: any) {
@@ -191,7 +191,7 @@ export async function generateEmbeddings(
           model: EMBEDDING_MODEL,
           input: validTexts.map(t => t.text),
           dimensions: EMBEDDING_DIMENSIONS,
-        })
+        } as any)
 
         // Add embeddings in correct order
         for (const item of response.data) {

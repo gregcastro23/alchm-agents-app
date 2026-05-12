@@ -5,7 +5,7 @@
  * Implements: Velocity, Momentum, Force, Flow States, Resonance, Temporal Pressure
  */
 
-import { logger } from '../utils/logger'
+// using console instead of logger
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -170,7 +170,7 @@ export async function calculateKinetics(
     const result: KineticsResponse = await response.json()
     return result.data
   } catch (error) {
-    logger.error('Error calling kinetics API:', error)
+    console.error('Error calling kinetics API:', error)
     throw error
   }
 }
@@ -210,7 +210,7 @@ export async function calculateKineticsTimeline(
     const result: TimelineResponse = await response.json()
     return result.data
   } catch (error) {
-    logger.error('Error calling timeline API:', error)
+    console.error('Error calling timeline API:', error)
     throw error
   }
 }
@@ -248,7 +248,7 @@ export async function getKineticsStatus(): Promise<{
     const result = await response.json()
     return result.data
   } catch (error) {
-    logger.error('Error getting kinetics status:', error)
+    console.error('Error getting kinetics status:', error)
     return {
       system: 'error',
       version: '0.0.0',

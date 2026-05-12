@@ -50,7 +50,7 @@ export async function logQuantitiesToGalileo(
 
   try {
     // Create a new Galileo logger instance
-    const logger = new GalileoLogger({
+    const logger = new (GalileoLogger as any)({
       project: GALILEO_PROJECT,
       logStream: QUANTITIES_STREAM,
     })
@@ -78,7 +78,7 @@ export async function logQuantitiesToGalileo(
     await new Promise(resolve => setTimeout(resolve, 10))
     const retrieverDuration = Number(process.hrtime.bigint() - retrieverStartTime)
 
-    logger.addSpan({
+    ;(logger as any).addSpan({
       name: 'get-planetary-positions',
       spanType: 'retriever',
       input: JSON.stringify({
@@ -98,7 +98,7 @@ export async function logQuantitiesToGalileo(
     await new Promise(resolve => setTimeout(resolve, 20))
     const quantityCalcDuration = Number(process.hrtime.bigint() - quantityCalcStartTime)
 
-    logger.addSpan({
+    ;(logger as any).addSpan({
       name: 'calculate-base-quantities',
       spanType: 'tool',
       input: JSON.stringify({
@@ -126,7 +126,7 @@ export async function logQuantitiesToGalileo(
     await new Promise(resolve => setTimeout(resolve, 15))
     const metricsCalcDuration = Number(process.hrtime.bigint() - metricsCalcStartTime)
 
-    logger.addSpan({
+    ;(logger as any).addSpan({
       name: 'calculate-alchemical-metrics',
       spanType: 'tool',
       input: JSON.stringify({
@@ -249,7 +249,7 @@ export async function testGalileoConnection(): Promise<{
 
   try {
     // Create a test logger to verify SDK works
-    const logger = new GalileoLogger({
+    const logger = new (GalileoLogger as any)({
       project: GALILEO_PROJECT,
       logStream: `${QUANTITIES_STREAM}-test`,
     })
@@ -261,7 +261,7 @@ export async function testGalileoConnection(): Promise<{
     await new Promise(resolve => setTimeout(resolve, 10))
     const duration = Number(process.hrtime.bigint() - startTime)
 
-    logger.addSpan({
+    ;(logger as any).addSpan({
       name: 'test-connection',
       spanType: 'tool',
       input: 'Testing Galileo SDK connection',

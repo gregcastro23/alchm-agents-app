@@ -185,7 +185,7 @@ export function calculatePlanetaryTransitSignificance(
         ],
         queries: [
           `${agentConfig.ruler} in ${agentConfig.sign}, what guidance do you have for me?`,
-          `How can I best work with this ${agentConfig.dignity} placement?`,
+          `How can I best work with this ${(agentConfig as any).dignity || 'powerful'} placement?`,
           `What does ${transitingPlanet} activating my ${natalPlacement.planet} mean?`,
         ],
         consciousnessWork: [

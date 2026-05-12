@@ -709,6 +709,19 @@ function generateRetrogradeRecommendations(_positions: any): string[] {
   ]
 }
 
+function formatAlchemicalData(alchmData: Record<string, any>): AlchemicalData {
+  return {
+    spirit: alchmData['Alchemy Effects']?.['Total Spirit'] || 0,
+    essence: alchmData['Alchemy Effects']?.['Total Essence'] || 0,
+    matter: alchmData['Alchemy Effects']?.['Total Matter'] || 0,
+    substance: alchmData['Alchemy Effects']?.['Total Substance'] || 0,
+    Heat: alchmData['Heat'] || 0,
+    Entropy: alchmData['Entropy'] || 0,
+    Reactivity: alchmData['Reactivity'] || 0,
+    Energy: alchmData['Energy'] || 0,
+  }
+}
+
 /**
  * Generate alchemical data using cross-backend synchronized planetary positions
  * This function provides the highest accuracy by synchronizing VSOP87 calculations
@@ -735,7 +748,7 @@ export async function generateSynchronizedAlchmForBirthInfo(
       const horoscope = await generateProfessionalHoroscope(birthInfo, {
         useLegacyFallback: true,
       })
-      return alchemize(birthInfo, horoscope)
+      return formatAlchemicalData(alchemize(birthInfo, horoscope))
     }
 
     // Generate horoscope with synchronized positions
@@ -744,7 +757,7 @@ export async function generateSynchronizedAlchmForBirthInfo(
       useLegacyFallback: true, // Keep legacy as backup
     })
 
-    const alchmData = alchemize(birthInfo, horoscope) as SynchronizedAlchemicalData
+    const alchmData = formatAlchemicalData(alchemize(birthInfo, horoscope)) as SynchronizedAlchemicalData
 
     // Add synchronization metadata
     alchmData.sync_metadata = {
@@ -763,10 +776,10 @@ export async function generateSynchronizedAlchmForBirthInfo(
       const horoscope = await generateProfessionalHoroscope(birthInfo, {
         useLegacyFallback: true,
       })
-      return alchemize(birthInfo, horoscope)
+      return formatAlchemicalData(alchemize(birthInfo, horoscope))
     } catch (fallbackError) {
       console.error('Fallback alchemical calculation also failed:', fallbackError)
-      throw new Error(`Alchemical calculation failed: ${error.message}`)
+      throw new Error(`Alchemical calculation failed: ${(error as any).message}`)
     }
   }
 }

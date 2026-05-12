@@ -335,7 +335,7 @@ export class AgentErrorHandler {
 export async function withErrorHandling<T>(
   operation: () => Promise<T>,
   context: Partial<ErrorContext>,
-  options?: FallbackOptions
+  options?: FallbackOptions & { fallbackOperation?: () => Promise<T> }
 ): Promise<T | ErrorResponse> {
   return AgentErrorHandler.executeWithFallback(operation, context, options)
 }

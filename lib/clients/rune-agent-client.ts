@@ -6,8 +6,9 @@
 
 import { generateSignVectorRune } from '@/lib/runes/sign-vector-runes'
 import { createNatalSigilRune } from '@/lib/runes/natal-sigil-runes'
+import type { CraftedAgent } from '@/lib/agent-types'
 import { demoCraftedAgents } from '@/lib/demo-agents-data'
-import type { CraftedAgent } from '@/lib/types'
+import { CharacterVectorCalculator } from '@/lib/astrological-character-vectors'
 
 // Types
 export interface RuneGenerationRequest {
@@ -279,20 +280,19 @@ export class RuneAgentClient {
     const hour = request.datetime.getHours()
     const minute = request.datetime.getMinutes()
 
-    // Create a simple chart profile for rune generation
-    const chartProfile = {
-      dominantElement: this.getDominantElementForTime(hour),
-      personality: {
-        openness: 70 + (hour % 10) * 3,
-        conscientiousness: 60 + (minute % 20) * 2,
-        extraversion: 50 + ((hour + minute) % 30),
-        agreeableness: 80 - (hour % 15) * 2,
-        neuroticism: 30 + (minute % 10) * 4,
-      },
-      elementalBalance: this.calculateElementalBalance(request.datetime, request.location),
-      aspectPatterns: [],
-      planetaryInfluences: this.getPlanetaryInfluences(hour),
-    }
+    // Generate a valid ChartCharacterProfile using CharacterVectorCalculator
+    const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+    const placements = [
+      { planet: 'sun', sign: signs[hour % 12] },
+      { planet: 'moon', sign: signs[(hour + 2) % 12] },
+      { planet: 'mercury', sign: signs[(hour + 1) % 12] },
+      { planet: 'venus', sign: signs[(hour + 3) % 12] },
+      { planet: 'mars', sign: signs[(hour + 4) % 12] },
+      { planet: 'jupiter', sign: signs[(hour + 5) % 12] },
+      { planet: 'saturn', sign: signs[(hour + 6) % 12] },
+      { planet: 'ascendant', sign: signs[(hour + 7) % 12] },
+    ]
+    const chartProfile = CharacterVectorCalculator.generateChartCharacterProfile(placements)
 
     // Use existing rune generation system
     const signVectorRune = generateSignVectorRune(chartProfile, 'moment')

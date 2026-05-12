@@ -414,6 +414,7 @@ export const useConnectionOptimization = () => {
         return () => conn.removeEventListener('change', updateConnection)
       }
     }
+    return undefined
   }, [])
 
   const getQualitySettings = useCallback(() => {

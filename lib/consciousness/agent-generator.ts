@@ -84,7 +84,7 @@ export class AgentGenerator {
     )
 
     // Get consciousness level modifiers
-    const modifiers = CONSCIOUSNESS_MODIFIERS[level]
+    const modifiers = (CONSCIOUSNESS_MODIFIERS as any)[level]
 
     // Generate personality traits based on dominant element and consciousness level
     const baseTraits = ELEMENT_TRAITS[dominantElement.name]

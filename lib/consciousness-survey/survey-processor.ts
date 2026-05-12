@@ -1055,5 +1055,5 @@ async function generateAstrologicalConsciousnessStats(
     consciousness_level:
       spiritRecognition + essenceRecognition + matterRecognition + substanceRecognition,
     alchemical_signature: `${season}-enhanced-consciousness`,
-  }
+  } as any
 }

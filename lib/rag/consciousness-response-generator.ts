@@ -36,7 +36,7 @@ export function generateConsciousnessResponse(options: ConsciousnessResponseOpti
   const abilities = historicalData?.abilities
   const shadows = historicalData?.shadows
   const gifts = historicalData?.gifts
-  const challenges = historicalData?.challenges
+  const challenges = (historicalData as any)?.challenges
   const strength = historicalData?.consciousness?.strength
   const emotion = historicalData?.consciousness?.emotion
   const uniquePower = abilities?.uniquePower

@@ -208,7 +208,7 @@ export async function fetchImaginize(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt, ...options }),
       timeout: 10000, // 10 second timeout
-    })
+    } as any)
 
     if (!res.ok) {
       const text = await res.text().catch(() => '')
@@ -229,7 +229,7 @@ export async function fetchImaginize(
     return res.json().catch(() => ({}))
   } catch (error) {
     // Network or timeout errors
-    if (error instanceof TypeError || error.message.includes('timeout')) {
+    if (error instanceof TypeError || (error as any).message.includes('timeout')) {
       return {
         imageUrl: null,
         fallback: true,

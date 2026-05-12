@@ -297,7 +297,7 @@ export function useEnhancedRecommendations(
     // Determine source breakdown from context
     const backendSources = [
       context?.tokens.metadata.source === 'backend' ? 1 : 0,
-      context?.rune && metadata?.source?.includes('backend') ? 1 : 0,
+      context?.rune && (metadata as any)?.source?.includes('backend') ? 1 : 0,
     ].reduce((sum, val) => sum + val, 0)
 
     const sourceBreakdown = {
@@ -336,6 +336,7 @@ export function useEnhancedRecommendations(
 
       return () => clearInterval(interval)
     }
+    return undefined
   }, [refreshInterval, refresh])
 
   return {

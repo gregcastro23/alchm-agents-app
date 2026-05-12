@@ -60,7 +60,13 @@ export const CLAUDE_MODELS = {
 
 // Get model from environment or use defaults
 export function getClaudeModel(type: 'default' | 'fast' | 'powerful' = 'default'): string {
-  return resolveClaudeModel(type === 'default' ? 'default' : type === 'fast' ? 'fast' : 'powerful')
+  // Map tier to actual string model IDs (not LanguageModel objects)
+  const tierMap = {
+    default: process.env.CLAUDE_DEFAULT_MODEL || 'claude-3-5-sonnet-20241022',
+    fast: 'claude-3-5-haiku-20241022',
+    powerful: 'claude-3-opus-20240229',
+  }
+  return tierMap[type] || tierMap.default
 }
 
 // Helper function to check if the API key is configured
@@ -94,7 +100,7 @@ export async function createClaudeMessage(
   if (isLegacyCall) {
     // Legacy: createClaudeMessage(prompt, modelId, temperature, maxTokens)
     // In this case, systemOrModel is the model ID string
-    model = systemOrModel || resolveClaudeModel('default')
+    model = systemOrModel || getClaudeModel('default')
     system = 'You are a helpful AI assistant specializing in astrological and alchemical wisdom.'
   } else {
     // Standard: createClaudeMessage(messages, system?, modelType?, maxTokens?)

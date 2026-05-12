@@ -83,6 +83,7 @@ export function usePlanetaryHours({ location, refreshInterval = 60000 }: UsePlan
       const interval = setInterval(fetchPlanetaryHour, refreshInterval)
       return () => clearInterval(interval)
     }
+    return undefined
   }, [location.lat, location.lon, refreshInterval])
 
   return {

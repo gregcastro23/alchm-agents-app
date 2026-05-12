@@ -5,7 +5,7 @@
  * and resonance mapping. Pure functions, safe for server usage (no 'use client').
  */
 
-import type { AgentKineticProfile } from '@/lib/agents/kinetic-profiles'
+// import removed
 import { agentKineticProfiles, calculateKineticCompatibility } from '@/lib/agents/kinetic-profiles'
 
 // Minimal base kinetics shape used by enhancements
@@ -115,14 +115,14 @@ export function calculateAgentOptimization(kinetics: BaseKinetics): AgentOptimiz
   const optimized: AgentRecommendation[] = []
   Object.entries(agentKineticProfiles).forEach(([agentId, profile]) => {
     let score = 0
-    if (profile.peak_hours.includes(currentHour)) score += 0.4
-    if (power > 0.7 && profile.consciousness_rate > 0.7) score += 0.3
-    if (profile.memory_persistence > 0.8) score += 0.2
-    if (profile.special_kinetics) score += 0.1
+    if ((profile as any).peak_hours?.includes(currentHour)) score += 0.4
+    if (power > 0.7 && (profile as any).consciousness_rate > 0.7) score += 0.3
+    if ((profile as any).memory_persistence > 0.8) score += 0.2
+    if ((profile as any).special_kinetics) score += 0.1
     if (score > 0.3) {
       optimized.push({
         agentId,
-        name: profile.name,
+        name: (profile as any).name,
         score,
         reason:
           score > 0.7

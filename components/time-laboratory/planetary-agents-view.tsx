@@ -277,11 +277,12 @@ export const PlanetaryAgentsView: React.FC<PlanetaryAgentsViewProps> = ({
           id: activatedAgent.agent.id,
           name: activatedAgent.agent.name,
           description:
-            activatedAgent.agent.description ||
+            (activatedAgent.agent as any).description ||
+            activatedAgent.agent.title ||
             `${activatedAgent.agent.name} planetary intelligence`,
         },
         strength: activatedAgent.activationStrength,
-        dignity: activatedAgent.config.dignity as any,
+        dignity: activatedAgent.config.rulerDignity as any,
         element: activatedAgent.config.element as any,
         consciousness: {
           level: activatedAgent.consciousnessState.level,

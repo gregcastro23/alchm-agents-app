@@ -5,7 +5,7 @@
  * falls back to existing frontend-compatible client logic.
  */
 
-import { AlchemicalKineticsClient, type KineticsGetParams } from '@/lib/kinetics-client'
+import { AlchemicalKineticsClient, type KineticsRequest } from '@/lib/kinetics-client'
 
 export interface EnhancedKineticsParams {
   readonly location: { readonly lat: number; readonly lon: number }
@@ -67,7 +67,7 @@ export class UnifiedKineticsClient {
   private static useBackend =
     typeof process !== 'undefined' && process.env.NEXT_PUBLIC_KINETICS_BACKEND === 'true'
 
-  static async getKinetics(params: KineticsGetParams): Promise<any> {
+  static async getKinetics(params: KineticsRequest): Promise<any> {
     try {
       if (this.useBackend) {
         // Map GET params to enhanced call as base-only

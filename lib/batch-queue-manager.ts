@@ -69,7 +69,7 @@ export class BatchQueueManager extends EventEmitter {
   private isProcessing = false
   private maxConcurrentJobs = 5
   private retryDelays = [1000, 5000, 15000, 30000, 60000] // Exponential backoff
-  private cleanupInterval: NodeJS.Timeout
+  private cleanupInterval!: NodeJS.Timeout
   private metricsInterval: NodeJS.Timeout
   private metrics: QueueMetrics
 

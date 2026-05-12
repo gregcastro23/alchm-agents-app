@@ -104,7 +104,7 @@ export function generateMockResponse(options: MockGenerationOptions): string {
     // No sources - create personality-driven response
     if (consciousness && natalChart) {
       // Reference consciousness level and astrological influences
-      const sunSign = natalChart.planets?.find(p => p.name === 'Sun')?.sign || 'the cosmos'
+      const sunSign = (natalChart.planets as any)?.find((p: any) => p.name === 'Sun')?.sign || 'the cosmos'
       const conscLevel = consciousness.level || 'active'
 
       response.push(
@@ -113,8 +113,8 @@ export function generateMockResponse(options: MockGenerationOptions): string {
       )
 
       // Add personality-specific insight
-      if (personality?.description) {
-        const personalitySnippet = personality.description.slice(0, 150)
+      if ((personality as any)?.description) {
+        const personalitySnippet = (personality as any).description.slice(0, 150)
         response.push(
           `${personalitySnippet}... ` +
             `This essence informs how I approach your inquiry. Would you like me to elaborate further?`

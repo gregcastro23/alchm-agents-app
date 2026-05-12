@@ -278,7 +278,7 @@ export class EnhancedRecommendationService {
         // Higher threshold for ingredients
         recommendations.push({
           name: ingredient.name,
-          category: ingredient.category,
+          category: ingredient.category as any,
           score: finalScore,
           reasoning: this.generateIngredientReasoning(
             ingredient,
@@ -501,9 +501,9 @@ export class EnhancedRecommendationService {
       air: ['leafy greens', 'herbs', 'light fruits'],
     }
 
-    const resonantIngredients = elementMapping[rune.element] || []
+    const resonantIngredients = elementMapping[rune.element as keyof typeof elementMapping] || []
     return resonantIngredients.some(
-      type =>
+      (type: string) =>
         ingredient.name.toLowerCase().includes(type) ||
         ingredient.category.toLowerCase().includes(type)
     )
@@ -713,8 +713,8 @@ export class EnhancedRecommendationService {
       air: ['raw', 'light cooking', 'whipping'],
     }
 
-    const alignedMethods = methodElementMapping[rune.element] || []
-    return alignedMethods.some(method => recipe.cookingMethod.toLowerCase().includes(method))
+    const alignedMethods = methodElementMapping[rune.element as keyof typeof methodElementMapping] || []
+    return alignedMethods.some((method: string) => recipe.cookingMethod.toLowerCase().includes(method))
       ? 0.3
       : 0.1
   }

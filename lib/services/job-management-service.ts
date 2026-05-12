@@ -71,7 +71,7 @@ export async function getJobHistory(
       skip: offset,
     })
 
-    return jobs.map(job => ({
+    return jobs.map((job: any) => ({
       id: job.id,
       jobType: job.jobType,
       scheduledFor: job.scheduledFor,
@@ -279,7 +279,7 @@ export async function getJobPerformanceMetrics(
       }
     >()
 
-    jobs.forEach(job => {
+    jobs.forEach((job: any) => {
       const dateKey = job.scheduledFor.toISOString().split('T')[0]
 
       if (!dailyStats.has(dateKey)) {

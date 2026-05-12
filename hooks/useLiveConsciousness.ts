@@ -32,6 +32,15 @@ export interface BirthChartData {
   birthLocation?: string
   latitude?: number
   longitude?: number
+  birthInfo?: {
+    year: number
+    month: number
+    day: number
+    hour: number
+    minute: number
+    latitude: number
+    longitude: number
+  }
 }
 
 export interface LiveConsciousnessResult {

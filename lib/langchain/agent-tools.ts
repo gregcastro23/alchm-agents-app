@@ -5,8 +5,8 @@
 
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { z } from 'zod'
-import { getSemanticSearchService } from '../llamaindex/semantic-search'
-import { getAgentDocumentLoader } from '../llamaindex/document-loader'
+import { semanticSearch, searchAgentKnowledge, findSimilarAgents } from '../llamaindex/semantic-search'
+import { DEMO_AGENTS } from '../demo-agents-data'
 import type { CraftedAgent } from '../agent-types'
 
 /**
@@ -23,8 +23,7 @@ export const semanticAgentSearchTool = new DynamicStructuredTool({
   }),
   func: async ({ concept, topK = 3 }) => {
     try {
-      const searchService = getSemanticSearchService()
-      const results = await searchService.findAgentsByConcept(concept, { topK })
+      const results = await findSimilarAgents(concept, topK)
 
       if (results.length === 0) {
         return JSON.stringify({
@@ -33,14 +32,17 @@ export const semanticAgentSearchTool = new DynamicStructuredTool({
         })
       }
 
-      const agentSummaries = results.map(result => ({
-        name: result.agent.name,
-        title: result.agent.title,
-        relevanceScore: result.relevanceScore.toFixed(3),
-        wisdomDomains: result.agent.abilities.wisdomDomains,
-        specialty: result.agent.abilities.specialty,
-        wisdomAlignment: result.wisdomAlignment,
-      }))
+      const agentSummaries = results.map(result => {
+        const agent = DEMO_AGENTS.find(a => a.id === result.agentId)
+        return {
+          name: result.agentName,
+          title: agent?.title || '',
+          relevanceScore: result.relevance.toFixed(3),
+          wisdomDomains: agent?.abilities?.wisdomDomains || [],
+          specialty: agent?.abilities?.specialty || '',
+          wisdomAlignment: 'Aligned with ' + result.agentName,
+        }
+      })
 
       return JSON.stringify({
         success: true,
@@ -72,13 +74,9 @@ export const knowledgeRetrievalTool = new DynamicStructuredTool({
   }),
   func: async ({ query, agentId, maxChunks = 3 }) => {
     try {
-      const searchService = getSemanticSearchService()
-
       const knowledge = agentId
-        ? await searchService.getRelevantKnowledge(query, agentId, { maxChunks })
-        : await searchService
-            .search(query, { topK: maxChunks })
-            .then(results => results.map(r => r.content))
+        ? await searchAgentKnowledge(agentId, query, maxChunks).then(results => results.map(r => r.content))
+        : await semanticSearch(query, { topK: maxChunks }).then(results => results.map(r => r.content))
 
       if (knowledge.length === 0) {
         return JSON.stringify({
@@ -119,8 +117,7 @@ export const consciousnessAnalysisTool = new DynamicStructuredTool({
   }),
   func: async ({ agentId, analysisType = 'synergy' }) => {
     try {
-      const loader = getAgentDocumentLoader()
-      const agent = loader.getAgentById(agentId)
+      const agent = DEMO_AGENTS.find(a => a.id === agentId)
 
       if (!agent) {
         return JSON.stringify({
@@ -149,14 +146,15 @@ export const consciousnessAnalysisTool = new DynamicStructuredTool({
           break
 
         case 'compatibility':
-          // Find similar agents for compatibility analysis
-          const searchService = getSemanticSearchService()
-          const similar = await searchService.findSimilarAgents(agentId, { topK: 3 })
-          analysis.compatibleAgents = similar.map(s => ({
-            name: s.agent.name,
-            relevance: s.relevanceScore,
-            element: s.agent.consciousness.dominantElement,
-          }))
+          const similar = await findSimilarAgents(agentId, 3)
+          analysis.compatibleAgents = similar.map(s => {
+            const similarAgent = DEMO_AGENTS.find(a => a.id === s.agentId)
+            return {
+              name: s.agentName,
+              relevance: s.relevance,
+              element: similarAgent?.consciousness?.dominantElement || '',
+            }
+          })
           break
 
         case 'synergy':
@@ -196,11 +194,8 @@ export const multiAgentCoordinatorTool = new DynamicStructuredTool({
   }),
   func: async ({ query, numAgents = 3, wisdomDomain }) => {
     try {
-      const searchService = getSemanticSearchService()
-
-      // Find relevant agents
       const searchQuery = wisdomDomain ? `${query} ${wisdomDomain}` : query
-      const results = await searchService.findAgentsByConcept(searchQuery, { topK: numAgents })
+      const results = await findSimilarAgents(searchQuery, numAgents)
 
       if (results.length === 0) {
         return JSON.stringify({
@@ -209,14 +204,17 @@ export const multiAgentCoordinatorTool = new DynamicStructuredTool({
         })
       }
 
-      const council = results.map(result => ({
-        name: result.agent.name,
-        title: result.agent.title,
-        relevance: result.relevanceScore.toFixed(3),
-        wisdomDomains: result.agent.abilities.wisdomDomains,
-        specialty: result.agent.abilities.specialty,
-        perspective: result.wisdomAlignment,
-      }))
+      const council = results.map(result => {
+        const agent = DEMO_AGENTS.find(a => a.id === result.agentId)
+        return {
+          name: result.agentName,
+          title: agent?.title || '',
+          relevance: result.relevance.toFixed(3),
+          wisdomDomains: agent?.abilities?.wisdomDomains || [],
+          specialty: agent?.abilities?.specialty || '',
+          perspective: 'Expert in ' + (agent?.abilities?.specialty || result.agentName),
+        }
+      })
 
       return JSON.stringify({
         success: true,
@@ -249,8 +247,7 @@ export const memoryRetrievalTool = new DynamicStructuredTool({
   }),
   func: async ({ agentId, query, limit = 5 }) => {
     try {
-      const loader = getAgentDocumentLoader()
-      const agent = loader.getAgentById(agentId)
+      const agent = DEMO_AGENTS.find(a => a.id === agentId)
 
       if (!agent) {
         return JSON.stringify({

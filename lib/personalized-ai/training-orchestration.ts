@@ -24,7 +24,7 @@ export class TrainingOrchestrator {
   private sessionManager: TrainingSessionManager
   private activeSessions: Map<string, ActiveSessionState>
   private aiProcessor!: AIProcessingEngine
-  private _qualityMonitor!: QualityMonitoringEngine
+  private qualityMonitor!: QualityMonitoringEngine
 
   constructor() {
     this.sessionManager = new TrainingSessionManager()
@@ -251,7 +251,7 @@ export class TrainingOrchestrator {
     const extractedContent = this.extractContent(activity, submission)
 
     // 3. Calculate quality metrics
-    const qualityScore = calculateActivityQuality(
+    const qualityScore = await calculateActivityQuality(
       extractedContent,
       activity.completionCriteria,
       activity.qualityMetrics

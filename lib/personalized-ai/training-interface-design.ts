@@ -533,14 +533,19 @@ export const TRAINING_ACTIVITIES: TrainingActivity[] = [
 
 export interface PersonalizationRule {
   condition: string // Simple condition like 'user_likes_nature' or 'high_creativity_score'
-  modification: string // What to change in the activity
-  priority: number // 1-10, higher = more important
+  modification?: string // What to change in the activity
+  priority?: number // 1-10, higher = more important
+  adjustment?: string
+  trigger?: string
 }
 
 export interface AdaptiveElement {
-  trigger: string // When to trigger this adaptation
-  adaptation: string // What to change
+  trigger?: string // When to trigger this adaptation
+  adaptation?: string // What to change
   cooldown?: number // Minutes before this can trigger again
+  elementType?: string
+  adaptationTrigger?: string
+  possibleAdjustments?: string[]
 }
 
 export interface CompletionCriteria {
@@ -558,6 +563,7 @@ export interface QualityMetric {
   description: string
   weight: number // 0-1, how much this contributes to overall quality
   evaluationMethod: 'ai_assessment' | 'user_rating' | 'completion_check' | 'peer_comparison'
+  criteria?: string[]
 }
 
 // ============================================================================
@@ -919,7 +925,8 @@ async function evaluateMetric(submission: string, metric: QualityMetric): Promis
   // Use AI analysis for quality evaluation
   try {
     // Use OpenAI for quality assessment
-    const { Configuration, OpenAIApi } = await import('openai')
+    // Dynamic import removed as it was unused and causing errors
+    // const { Configuration, OpenAIApi } = await import('openai')
 
     const systemPrompt = `You are an expert evaluator of human responses. Evaluate the following submission for "${metric.name}".
     

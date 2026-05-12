@@ -28,7 +28,7 @@ export function correlateConsciousnessToAstrology(
 
   const fireScore = normalize(
     d.assertiveness +
-      profile.creativity.creativity_level +
+      profile.creativity.writing_style.creativity_level +
       comm.directness +
       think.processing_speed ===
       'fast_decisive'
@@ -40,7 +40,7 @@ export function correlateConsciousnessToAstrology(
       comm.verbosity +
       think.detail_big_picture +
       think.analytical_intuitive +
-      (values.innovation_tradition ? values.innovation_tradition : 0)
+      (values.tradition_innovation ? values.tradition_innovation : 0)
   )
   const earthScore = normalize(
     d.conscientiousness +

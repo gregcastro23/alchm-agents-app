@@ -5,6 +5,7 @@
 
 import { ChatOpenAI } from '@langchain/openai'
 import { ChatAnthropic } from '@langchain/anthropic'
+// @ts-ignore - langchain/agents imports might not resolve types under some bundler configurations
 import { AgentExecutor, createOpenAIFunctionsAgent } from 'langchain/agents'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { planetaryAgentTools } from './agent-tools'
@@ -62,7 +63,7 @@ export class AgentRouter {
                 : process.env.ANTHROPIC_API_KEY,
               // LangChain Anthropic supports baseURL
               baseURL: aiGatewayEnabled ? process.env.AI_GATEWAY_URL : undefined,
-            })
+            } as any)
           : new ChatOpenAI({
               modelName: OPENAI.GPT_5_4_MINI,
               temperature: this.config.temperature,
@@ -70,7 +71,7 @@ export class AgentRouter {
                 ? process.env.AI_GATEWAY_API_KEY
                 : process.env.OPENAI_API_KEY,
               baseURL: aiGatewayEnabled ? process.env.AI_GATEWAY_URL : undefined,
-            })
+            } as any)
 
       // Initialize memory if enabled
       if (this.config.enableMemory) {

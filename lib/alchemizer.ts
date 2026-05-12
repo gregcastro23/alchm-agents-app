@@ -796,7 +796,7 @@ export async function generateAlchmForCurrentMoment(): Promise<Record<string, an
     for (const planet of requiredPlanets) {
       if (!currentPositions[planet]) {
         console.error(`Missing position data for ${planet}`)
-        currentPositions[planet] = { sign: 'Aries', degree: '0' } // Fallback only if absolutely necessary
+        currentPositions[planet] = { sign: 'Aries', degree: 0, retrograde: false } as any // Fallback only if absolutely necessary
       }
     }
 
@@ -808,7 +808,7 @@ export async function generateAlchmForCurrentMoment(): Promise<Record<string, an
       }
       if (data.degree === undefined) {
         console.error(`Missing degree for ${planet}, using fallback`)
-        currentPositions[planet].degree = '0' // Fallback
+        currentPositions[planet].degree = 0 // Fallback
       }
     })
 

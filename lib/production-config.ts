@@ -186,6 +186,9 @@ class ProductionConfigManager {
           monitoring: {
             ...config.monitoring,
             errorReportingLevel: 'info',
+          },
+          features: {
+            ...config.features,
             enableAdvancedMetrics: true,
           },
           security: {
@@ -211,7 +214,6 @@ class ProductionConfigManager {
           monitoring: {
             ...config.monitoring,
             errorReportingLevel: 'error', // Only errors in prod logs
-            enableAdvancedMetrics: true,
           },
           security: {
             ...config.security,

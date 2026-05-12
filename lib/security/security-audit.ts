@@ -127,7 +127,7 @@ class SecurityAuditEngine {
     console.log('Initializing Security Audit Engine...')
 
     // Perform initial security assessment
-    await this.performInitialSecurityAssessment()
+    await this.performPeriodicSecurityCheck()
 
     // Set up ongoing monitoring
     this.setupSecurityMonitoring()
@@ -577,7 +577,7 @@ class SecurityAuditEngine {
         LIMIT 1
       `
 
-      if (hasUnencryptedData && hasUnencryptedData[0]?.count > 0) {
+      if (hasUnencryptedData && (hasUnencryptedData as any)[0]?.count > 0) {
         return {
           standard: 'Data Security',
           requirement: 'Encrypt sensitive data at rest',
@@ -847,7 +847,7 @@ class SecurityAuditEngine {
       // Attach user ID to request
       ;(request as any).userId = accessCheck.userId
 
-      await next()
+      return await next()
     }
   }
 

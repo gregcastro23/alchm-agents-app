@@ -141,6 +141,7 @@ export const PLANETARY_COUNCIL_PRESETS: PlanetaryCouncilPreset[] = [
     timing_optimization: 'Fast response for personal matters',
     includeMonica: false,
     monicaRole: 'guide',
+    recommendedFor: ['Personal development', 'Self-expression', 'Daily guidance'],
     tags: ['personal', 'fast', 'individual', 'expression'],
     difficulty: 'beginner',
   },
@@ -154,6 +155,7 @@ export const PLANETARY_COUNCIL_PRESETS: PlanetaryCouncilPreset[] = [
     timing_optimization: 'Balanced depth and accessibility',
     includeMonica: true,
     monicaRole: 'guide',
+    recommendedFor: ['Astrological consultation', 'Balanced guidance', 'Traditional astrology'],
     tags: ['traditional', 'complete', 'classical', 'balanced'],
     difficulty: 'intermediate',
   },
@@ -167,6 +169,7 @@ export const PLANETARY_COUNCIL_PRESETS: PlanetaryCouncilPreset[] = [
     timing_optimization: 'Deep, contemplative responses',
     includeMonica: true,
     monicaRole: 'synthesizer',
+    recommendedFor: ['Transformation work', 'Life transitions', 'Generational patterns'],
     tags: ['transformation', 'transcendent', 'generational', 'deep'],
     difficulty: 'expert',
   },
@@ -180,6 +183,7 @@ export const PLANETARY_COUNCIL_PRESETS: PlanetaryCouncilPreset[] = [
     timing_optimization: 'Balanced energetic response',
     includeMonica: false,
     monicaRole: 'moderator',
+    recommendedFor: ['Elemental balance', 'Holistic perspective', 'Energy work'],
     tags: ['elements', 'balance', 'holistic', 'energy'],
     difficulty: 'intermediate',
   },
@@ -193,6 +197,7 @@ export const PLANETARY_COUNCIL_PRESETS: PlanetaryCouncilPreset[] = [
     timing_optimization: 'Dynamic, passionate responses',
     includeMonica: true,
     monicaRole: 'moderator',
+    recommendedFor: ['Relationship guidance', 'Creative tension', 'Passion and harmony'],
     tags: ['relationships', 'passion', 'harmony', 'creative'],
     difficulty: 'beginner',
   },
@@ -206,6 +211,7 @@ export const PLANETARY_COUNCIL_PRESETS: PlanetaryCouncilPreset[] = [
     timing_optimization: 'Clear, fundamental guidance',
     includeMonica: false,
     monicaRole: 'guide',
+    recommendedFor: ['Core polarity work', 'Will vs intuition', 'Inner balance'],
     tags: ['fundamental', 'polarity', 'intuition', 'will'],
     difficulty: 'beginner',
   },
@@ -321,7 +327,7 @@ export function getRecommendedPresets(userLevel: number, userInterests: string[]
     5: 'expert',
   }
 
-  const targetDifficulty = difficultyMap[Math.min(5, userLevel)] || 'beginner'
+  const targetDifficulty = (difficultyMap as any)[Math.min(5, userLevel)] || 'beginner'
   const levelPresets = getPresetsByDifficulty(targetDifficulty as any)
 
   // Filter by user interests if provided

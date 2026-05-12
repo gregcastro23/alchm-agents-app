@@ -295,7 +295,7 @@ class GalileoLogger {
             throw new Error(message)
           }
           // Return early for silent failure
-          return
+          return false
         }
         const message = `Galileo API error: ${response.status} ${response.statusText} - ${errorText}`
         if (GALILEO_VERBOSE_FALLBACK) console.warn(message)
@@ -303,7 +303,7 @@ class GalileoLogger {
           throw new Error(message)
         }
         // Return early for silent failure
-        return
+        return false
       }
 
       const result = await response.json()

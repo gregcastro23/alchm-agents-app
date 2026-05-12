@@ -159,7 +159,7 @@ export class CharacterVectorCalculator {
     placements: Array<{ planet: string; sign: string; dignity?: string }>
   ): SignCharacterVector {
     // Initialize all signs to 0
-    const vectors: Partial<SignCharacterVector> = {
+    const vectors: SignCharacterVector = {
       aries: 0,
       taurus: 0,
       gemini: 0,
@@ -172,6 +172,7 @@ export class CharacterVectorCalculator {
       capricorn: 0,
       aquarius: 0,
       pisces: 0,
+      total: 100,
     }
 
     let totalWeight = 0
@@ -197,18 +198,18 @@ export class CharacterVectorCalculator {
 
     // Convert to percentages
     const percentageVectors: SignCharacterVector = {
-      aries: (vectors.aries! / totalWeight) * 100,
-      taurus: (vectors.taurus! / totalWeight) * 100,
-      gemini: (vectors.gemini! / totalWeight) * 100,
-      cancer: (vectors.cancer! / totalWeight) * 100,
-      leo: (vectors.leo! / totalWeight) * 100,
-      virgo: (vectors.virgo! / totalWeight) * 100,
-      libra: (vectors.libra! / totalWeight) * 100,
-      scorpio: (vectors.scorpio! / totalWeight) * 100,
-      sagittarius: (vectors.sagittarius! / totalWeight) * 100,
-      capricorn: (vectors.capricorn! / totalWeight) * 100,
-      aquarius: (vectors.aquarius! / totalWeight) * 100,
-      pisces: (vectors.pisces! / totalWeight) * 100,
+      aries: (vectors.aries / totalWeight) * 100,
+      taurus: (vectors.taurus / totalWeight) * 100,
+      gemini: (vectors.gemini / totalWeight) * 100,
+      cancer: (vectors.cancer / totalWeight) * 100,
+      leo: (vectors.leo / totalWeight) * 100,
+      virgo: (vectors.virgo / totalWeight) * 100,
+      libra: (vectors.libra / totalWeight) * 100,
+      scorpio: (vectors.scorpio / totalWeight) * 100,
+      sagittarius: (vectors.sagittarius / totalWeight) * 100,
+      capricorn: (vectors.capricorn / totalWeight) * 100,
+      aquarius: (vectors.aquarius / totalWeight) * 100,
+      pisces: (vectors.pisces / totalWeight) * 100,
       total: 100,
     }
 

@@ -77,4 +77,42 @@ export class AlchemicalKineticsClient {
       elementalVelocity: [{ magnitude: kineticVal }],
     }
   }
+
+  static async put(request: any): Promise<any> {
+    const startTime = new Date(request['start-time'] || request.startTime || new Date())
+    const endTime = new Date(request['end-time'] || request.endTime || new Date())
+    const intervalMinutes = request['time-interval'] || request.timeInterval || 60
+    const lat = request.lat
+    const lon = request.lon
+
+    const data: any[] = []
+    const current = new Date(startTime)
+    while (current <= endTime) {
+      const targetDate = new Date(current)
+      const alchm = await backend.alchemy.defaultQuantities(targetDate, lat, lon)
+      const kineticVal = toFiniteNumber(alchm?.kinetic_val, 0.5)
+      const thermoVal = toFiniteNumber(alchm?.thermo_val, 0.5)
+      const spirit = toFiniteNumber(alchm?.spirit_score)
+      const essence = toFiniteNumber(alchm?.essence_score)
+      const matter = toFiniteNumber(alchm?.matter_score)
+      const substance = toFiniteNumber(alchm?.substance_score)
+
+      data.push({
+        Timestamp: targetDate.toISOString(),
+        Total_Spirit: spirit,
+        Total_Essence: essence,
+        Total_Matter: matter,
+        Total_Substance: substance,
+        Heat: thermoVal,
+        Entropy: kineticVal,
+      })
+
+      current.setMinutes(current.getMinutes() + intervalMinutes)
+    }
+
+    return {
+      ok: true,
+      json: async () => ({ data }),
+    }
+  }
 }

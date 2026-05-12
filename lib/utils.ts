@@ -58,7 +58,7 @@ export function synthesizeCharts({
       baseChart: null,
       momentChart,
       transits: momentChart?.transits || {},
-      activatedHouses: [...new Set(momentChart?.activatedHouses || [])],
+      activatedHouses: Array.from(new Set(momentChart?.activatedHouses || [])) as string[],
       consciousness: { spirit, essence, matter, substance },
       monicaConstant,
       dominantInfluence: 'moment-dominant',

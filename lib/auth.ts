@@ -27,8 +27,8 @@ export async function auth(): Promise<Session | null> {
   }
 }
 
-export function requireAuthOrRedirect(): SessionUser | null {
-  const c = cookies()
+export async function requireAuthOrRedirect(): Promise<SessionUser | null> {
+  const c = await cookies()
   const userId = c.get('userId')?.value
   if (!userId) return null
   const name = c.get('userName')?.value || 'Explorer'

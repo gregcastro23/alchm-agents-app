@@ -127,7 +127,7 @@ function calculatePlanetaryInfluence(datetime: Date, planetaryHour: string) {
     },
   }
 
-  const modifiers = planetaryModifiers[planetaryHour] || planetaryModifiers.Sun
+  const modifiers = planetaryModifiers[planetaryHour as keyof typeof planetaryModifiers] || planetaryModifiers.Sun
 
   return {
     spirit: Math.round((1.0 + seasonal + diurnal) * modifiers.spirit * 100) / 100,
@@ -250,7 +250,7 @@ export class UnifiedPlanetaryClient {
         forecast.push({
           datetime: new Date(current),
           planetaryHour,
-          influence: calculatePlanetaryInfluence(current, planetaryHour),
+          influence: calculatePlanetaryInfluence(current, planetaryHour.planet),
         })
         current.setMinutes(current.getMinutes() + (request.interval || 60))
       }
@@ -270,7 +270,7 @@ export class UnifiedPlanetaryClient {
         forecast.push({
           datetime: new Date(current),
           planetaryHour,
-          influence: calculatePlanetaryInfluence(current, planetaryHour),
+          influence: calculatePlanetaryInfluence(current, planetaryHour.planet),
         })
         current.setMinutes(current.getMinutes() + (request.interval || 60))
       }
@@ -286,12 +286,22 @@ export class UnifiedPlanetaryClient {
         return resp.data
       }
 
-      // Fallback to frontend calculation
-      return await frontendService.getOptimalTimes(
-        request.date,
-        request.location,
-        request.targetPlanet
-      )
+      // Fallback calculation
+      const optimalTimes = []
+      const startOfDay = new Date(request.date)
+      startOfDay.setHours(0, 0, 0, 0)
+
+      // Check each hour of the day
+      for (let hour = 0; hour < 24; hour++) {
+        const hourTime = new Date(startOfDay.getTime() + hour * 60 * 60 * 1000)
+        const planetaryHour = await calculatePlanetaryHourFallback(hourTime, request.location)
+
+        if (planetaryHour.planet === request.targetPlanet) {
+          optimalTimes.push(planetaryHour)
+        }
+      }
+
+      return optimalTimes
     } catch (error) {
       console.warn('Backend optimal times failed, falling back to frontend:', error)
 

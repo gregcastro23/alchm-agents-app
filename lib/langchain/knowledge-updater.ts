@@ -270,7 +270,7 @@ export async function updateAgentKnowledge(
       system: 'langchain',
       operation: 'update_knowledge',
       agentId,
-      severity: 'high',
+      metadata: { severity: 'high' },
     })
 
     throw new Error(errorMsg)

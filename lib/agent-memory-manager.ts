@@ -165,7 +165,7 @@ export class AgentMemoryManager {
     const nameSize = agent.name.length * 2
     const titleSize = agent.title.length * 2
     const specialtySize = agent.abilities.specialty.length * 2
-    const storySize = agent.background.creationStory?.length * 2 || 0
+    const storySize = (agent as any).background?.creationStory?.length * 2 || 0
 
     return baseSize + nameSize + titleSize + specialtySize + storySize
   }

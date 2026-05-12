@@ -206,7 +206,7 @@ export function generateThreeCardReading(
 ): TarotSpread {
   const spreadTemplate = THREE_CARD_SPREADS[spreadType]
 
-  const positions = spreadTemplate.map(pos => ({
+  const positions: SpreadPosition[] = spreadTemplate.map(pos => ({
     ...pos,
     card: getRandomTarotCard(),
   }))
@@ -294,7 +294,7 @@ function generatePositionInterpretation(
   const cardType = 'suit' in card ? 'minor' : 'major'
   const cardContext =
     cardType === 'minor'
-      ? `This ${card.suit} card of ${card.element} energy`
+      ? `This ${(card as TarotCard).suit} card of ${card.element} energy`
       : `This Major Arcana card of ${card.element} energy`
 
   return `${cardContext} in the ${positionName} position suggests ${card.meaning.toLowerCase()}. ${positionMeaning} is influenced by ${card.keywords.slice(0, 2).join(' and ')} energies. Focus on: ${card.consciousness.toLowerCase()}.`

@@ -279,7 +279,7 @@ export class MonicaRouter {
       a =>
         a.capabilities?.wisdomDomains?.includes('divination') ||
         a.capabilities?.specialty?.toLowerCase().includes('mystical') ||
-        a.stats?.intuition > 80
+        (a.stats as any)?.intuition > 80
     )
 
     if (tarotAgents.length > 0) {

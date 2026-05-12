@@ -75,10 +75,10 @@ export function activatePlanetaryAgentForDegree(
   const planetaryConfig: PlanetaryConfig = {
     planet: config.ruler,
     sign: config.sign,
-    degree: config.zodiacDegree,
+    degree: String(config.zodiacDegree),
     isDiurnal: options.currentDateTime ? isDiurnalTime(options.currentDateTime) : true,
     retrograde: false, // Would need ephemeris data for accuracy
-  }
+  } as any
 
   // Create unified agent
   const factory = new UnifiedAgentFactory()
@@ -231,12 +231,12 @@ export function createMomentPlanetaryAgents(
       sign: planetData.sign,
       degree: planetData.signDegree.toString(),
       dignity: getPlanetaryDignity(planetName, planetData.sign),
-      element: getSignElement(planetData.sign),
+      element: getSignElement(planetData.sign) as any,
       color: PLANET_COLORS[planetName as keyof typeof PLANET_COLORS] || '#8b5cf6',
       symbol: PLANET_SYMBOLS[planetName as keyof typeof PLANET_SYMBOLS] || '●',
       isDiurnal: options.currentDateTime ? isDiurnalTime(options.currentDateTime) : true,
       retrograde: planetData.retrograde || false,
-    }
+    } as any
 
     // Add lunar personality for Moon agent
     if (planetName === 'Moon') {
@@ -265,9 +265,12 @@ export function createMomentPlanetaryAgents(
         ruler: planetName,
         sign: planetData.sign,
         zodiacDegree: planetData.signDegree,
-        element: getPlanetaryElement(planetName) || getSignElement(planetData.sign),
+        degree: Number(planetData.signDegree),
+        rulerDignity: getPlanetaryDignity(planetName, planetData.sign) as any,
+        isCardinalDegree: false,
+        element: (getPlanetaryElement(planetName) || getSignElement(planetData.sign)) as any,
         powerLevel: 0.5,
-        consciousnessLevel: 'Active',
+        consciousnessLevel: 'active',
         themes: [`${planetName} energy`, `${planetData.sign} expression`],
         qualities: [`${planetName} characteristics in ${planetData.sign}`],
         modality: 'Cardinal', // Default

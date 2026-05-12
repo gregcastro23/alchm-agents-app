@@ -165,6 +165,7 @@ export function useRuneAgent(options: UseRuneAgentOptions = {}): UseRuneAgentRet
 
       return () => clearInterval(interval)
     }
+    return undefined
   }, [refreshInterval, refresh])
 
   return {

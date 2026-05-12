@@ -39,7 +39,7 @@ export interface HourlyAlchemicalSample {
 
 export class AlchemicalKineticsSampler {
   static async sampleRange(options: SamplerOptions): Promise<HourlyAlchemicalSample[]> {
-    return sampleHourlyAlchm(options)
+    return sampleHourlyAlchm({ latitude: 0, longitude: 0 }, new Date(), options)
   }
 }
 

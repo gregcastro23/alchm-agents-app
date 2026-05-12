@@ -539,10 +539,7 @@ export function generateNatalChartSVG(
         local: true,
         timestamp: new Date().toISOString(),
         method,
-        calculationEngine: method.includes('Enhanced') ? 'VSOP87-like' : 'simplified-linear',
-        accuracy: method.includes('Enhanced') ? '±0.1°' : '±2-5°',
-        enhancedCalculations: method.includes('Enhanced'),
-      },
+      } as any,
     }
   } catch (error) {
     console.error('Error generating local natal chart:', error)

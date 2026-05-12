@@ -241,7 +241,7 @@ export function generateSignVectorRune(
     id: `sign_vector_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     name: template.name.replace(/{(\w+)}/g, (_, key) => pattern[key] || key),
     symbol: template.baseSymbol,
-    element: getDominantElement(elemental_distribution),
+    element: getDominantElement(elemental_distribution) as any,
     runeType: 'cosmic',
     baseCost,
     currentCost: baseCost,
@@ -293,7 +293,7 @@ function analyzeSignPattern(
     elementalDist[a[0]] > elementalDist[b[0]] ? a : b
   )
 
-  if (maxElement[1] > 60) {
+  if ((maxElement[1] as number) > 60) {
     pattern.type = `${maxElement[0]}_dominant`
     pattern.element = maxElement[0]
     pattern.complexity = 3
@@ -323,7 +323,7 @@ function analyzeSignPattern(
 
   // Check for missing elements
   const missingElements = Object.entries(elementalDist)
-    .filter(([, value]) => value < 10)
+    .filter(([, value]) => (value as number) < 10)
     .map(([element]) => element)
 
   if (missingElements.length > 0) {
@@ -536,7 +536,7 @@ export function generateAgentCharacterRune(agentData: any): SignVectorRune {
  */
 export function generateCollectiveAgentRune(agents: any[]): SignVectorRune {
   // Combine all agent placements
-  const allPlacements = []
+  const allPlacements: any[] = []
 
   agents.forEach(agent => {
     if (agent.consciousness?.natalChart) {
@@ -555,7 +555,7 @@ export function generateCollectiveAgentRune(agents: any[]): SignVectorRune {
   const chartProfile = CharacterVectorCalculator.generateChartCharacterProfile(allPlacements)
 
   // Generate collective rune
-  const rune = generateSignVectorRune(chartProfile, 'collective')
+  const rune = generateSignVectorRune(chartProfile, 'collective' as any)
 
   // Customize for collective
   rune.name = `${agents.map(a => a.name).join(' + ')} Collective Rune`
@@ -653,7 +653,7 @@ export function generateRealTimeSignVectorRune(
           Matter: Math.round(base.Matter * costMultiplier),
           Substance: Math.round(base.Substance * costMultiplier),
         }
-      })(),
+      })() as any,
       powerLevel: Math.round(basePowerLevel * (1 + costMultiplier * 0.1)),
       effects: [
         ...baseRune.effects,
@@ -689,7 +689,7 @@ export function generateRealTimeSignVectorRune(
     name: `Cosmic Moment Rune: ${dominantElement}`,
     description: `A rune capturing the current cosmic moment with ${placements.length} planetary influences. Generated at ${new Date().toISOString()}.`,
     type: baseRune.runeType,
-    cost: toUpperCost(baseRune.currentCost ?? baseRune.baseCost),
+    cost: toUpperCost(baseRune.currentCost ?? baseRune.baseCost) as any,
     powerLevel: basePowerLevel,
     metadata: {
       generationTime: new Date().toISOString(),

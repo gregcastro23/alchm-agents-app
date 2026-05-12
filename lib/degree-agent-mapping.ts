@@ -304,7 +304,7 @@ export function calculateNatalTransitSignificance(
   transitDate: Date,
   location = { latitude: 37.7749, longitude: -122.4194 }
 ): NatalPlacementTransit[] {
-  const transitDegree = getExactSunDegreeForDate(transitDate)
+      const transitDegree = (globalThis as any).getExactSunDegreeForDate?.(transitDate) ?? 0
   const significances: NatalPlacementTransit[] = []
 
   for (const placement of natalPlacements) {
@@ -362,7 +362,7 @@ export function findSignificantTransitDates(
       if (!degreeMapping) continue
 
       // Get date range when Sun is at this degree
-      const { start, end } = getDatesForSunDegree(placement.degree, year)
+      const { start, end } = ((globalThis as any).getDatesForSunDegree?.(placement.degree, year)) ?? {}
 
       if (start && end) {
         // Check multiple points during the transit period

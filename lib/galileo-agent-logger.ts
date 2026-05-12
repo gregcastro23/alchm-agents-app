@@ -119,6 +119,8 @@ export async function logAgentConversation(
     return false
   }
 
+  let logData: any
+
   try {
     // If logging disabled by flag, short-circuit to fallback
     if (!GALILEO_LOG_ENABLED) {
@@ -127,7 +129,6 @@ export async function logAgentConversation(
       }
       return true
     }
-
     // Create workflow data structure for Galileo API
     const workflow = {
       created_at_ns: Date.now() * 1000000,
@@ -213,7 +214,7 @@ export async function logAgentConversation(
       },
     }
 
-    const logData = {
+    logData = {
       project_name: GALILEO_PROJECT,
       workflows: [workflow],
     }
@@ -263,7 +264,7 @@ export async function logAgentConversation(
         console.log('Agent Type:', interaction.agentType)
         console.log('Error:', message)
         console.log('===============================================')
-        return true
+        return false
       }
       throw new Error(message)
     }

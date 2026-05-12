@@ -177,7 +177,7 @@ export class ChartKineticIntegration {
 
       // Extract Earth element momentum for stability calculation
       const earthMomentum =
-        kinetics.elementalMomentum?.find((m: any) => m.p?.Earth !== undefined)?.p.Earth || 0.5
+        (kinetics as any).elementalMomentum?.find((m: any) => m.p?.Earth !== undefined)?.p.Earth || 0.5
 
       // Calculate retention scores for each memory
       const processedMemories = memories.map(memory => ({
@@ -223,7 +223,7 @@ export class ChartKineticIntegration {
     try {
       // Get weekly kinetic data for decay analysis
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-      const kinetics = await this.kineticsClient.post({
+      const kinetics = await (this.kineticsClient as any).post({
         lat: this.birthChart.latitude,
         lon: this.birthChart.longitude,
         startTime: weekAgo.toISOString(),
@@ -412,21 +412,21 @@ export class ChartKineticIntegration {
       // Aspect-based modifiers
       switch (data.aspect) {
         case 'conjunction':
-          modifier = 0.15 * data.strength // Accelerates evolution
+          modifier = 0.15 * (data.strength ?? 0) // Accelerates evolution
           break
         case 'trine':
-          modifier = 0.1 * data.strength // Smooth acceleration
+          modifier = 0.1 * (data.strength ?? 0) // Smooth acceleration
           break
         case 'square':
-          modifier = 0.05 * data.strength // Growth through challenge
+          modifier = 0.05 * (data.strength ?? 0) // Growth through challenge
           break
         case 'opposition':
-          modifier = 0.08 * data.strength // Integration catalyst
+          modifier = 0.08 * (data.strength ?? 0) // Integration catalyst
           break
       }
 
       if (modifier > 0) {
-        activeTransits.push({ planet, aspect: data.aspect!, strength: data.strength })
+        activeTransits.push({ planet, aspect: data.aspect!, strength: data.strength ?? 0 })
         totalModifier += modifier
       }
     })

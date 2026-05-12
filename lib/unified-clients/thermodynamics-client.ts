@@ -131,7 +131,7 @@ export class UnifiedThermodynamicsClient {
       }
 
       // Fallback to frontend batch calculation
-      return await frontendService.batchAnalyze(inputSets)
+      return inputSets.map(values => calculateThermodynamicsFallback(values))
     } catch (error) {
       console.warn('Backend batch thermodynamics failed, falling back to frontend:', error)
 

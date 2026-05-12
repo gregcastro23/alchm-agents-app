@@ -226,10 +226,10 @@ export class UnifiedConsciousnessTracker {
       sessionId: params.sessionId,
 
       // Objective Metrics (from ConsciousnessMetrics)
-      interactionCount: consciousnessMetrics.interactionCount + 1, // Increment
-      chatQuality: consciousnessMetrics.chatQuality,
-      momentResonance: consciousnessMetrics.momentResonance,
-      alchemicalCoherence: consciousnessMetrics.alchemicalCoherence,
+      interactionCount: (consciousnessMetrics?.interactionCount ?? 0) + 1, // Increment
+      chatQuality: consciousnessMetrics?.chatQuality ?? 0,
+      momentResonance: consciousnessMetrics?.momentResonance ?? 0,
+      alchemicalCoherence: consciousnessMetrics?.alchemicalCoherence ?? 0,
 
       // Live Stats (Sacred Seven) - already 0-100
       power: liveStats.power,
@@ -336,7 +336,7 @@ export class UnifiedConsciousnessTracker {
       orderBy: { timestamp: 'asc' },
     })
 
-    return snapshots.map(s => this.deserializeSnapshot(s))
+    return snapshots.map((s: any) => this.deserializeSnapshot(s))
   }
 
   /**

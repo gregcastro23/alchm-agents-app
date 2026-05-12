@@ -645,9 +645,9 @@ function extractElementalEmphasis(chartFeatures: BirthChartFeature[]): string[] 
 
   // Count elements with weights
   chartFeatures.forEach(feature => {
-    if (feature.planet && feature.sign) {
-      const element = signElements[feature.sign as keyof typeof signElements]
-      const weight = planetWeights[feature.planet as keyof typeof planetWeights] || 1
+    if ((feature as any).planet && (feature as any).sign) {
+      const element = signElements[(feature as any).sign as keyof typeof signElements]
+      const weight = planetWeights[(feature as any).planet as keyof typeof planetWeights] || 1
 
       if (element) {
         elementCounts[element as keyof typeof elementCounts] += weight

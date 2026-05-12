@@ -119,7 +119,7 @@ export class ApiResilienceSystem {
         this.handleSuccess(apiCall.name, Date.now() - startTime, circuitConfig)
         this.updateMetrics(apiCall.name, true, attempt > 0, Date.now() - startTime)
 
-        return result
+        return result as T
       } catch (error) {
         lastError = error as Error
         console.warn(

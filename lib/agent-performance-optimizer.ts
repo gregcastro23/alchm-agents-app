@@ -439,7 +439,7 @@ export class AgentPerformanceOptimizer {
           ])
 
           completed.add(request.agentId)
-          yield result
+          yield result as any
         } catch (error) {
           // Not ready yet, continue
           continue

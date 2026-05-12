@@ -86,14 +86,15 @@ export function usePerformanceMonitor(componentName: string, enabled: boolean = 
 
   // Memory monitoring (if available)
   const getMemoryUsage = useCallback(() => {
-    if (!enabled || typeof performance === 'undefined' || !performance.memory) {
+    const perf = performance as any
+    if (!enabled || typeof performance === 'undefined' || !perf.memory) {
       return undefined
     }
 
     return {
-      used: performance.memory.usedJSHeapSize,
-      total: performance.memory.totalJSHeapSize,
-      limit: performance.memory.jsHeapSizeLimit,
+      used: perf.memory.usedJSHeapSize,
+      total: perf.memory.totalJSHeapSize,
+      limit: perf.memory.jsHeapSizeLimit,
     }
   }, [enabled])
 

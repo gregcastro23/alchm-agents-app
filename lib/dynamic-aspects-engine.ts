@@ -13,7 +13,7 @@ import {
 } from './astrological-pattern-recognition'
 import { planetaryMotionTracker, PlanetaryMotion } from './planetary-motion-tracker'
 
-export interface DynamicAspect extends Aspect {
+export interface DynamicAspect extends Omit<Aspect, 'strength'> {
   // Enhanced temporal properties
   orbVelocity: number // degrees per day the orb is changing
   peakDate: Date | null // when aspect will be exact (if applying)
@@ -331,8 +331,8 @@ export class DynamicAspectsEngine {
 
   private calculateAspectStrengthPhase(aspect: Aspect): 'building' | 'peak' | 'waning' | 'fading' {
     if (aspect.orb <= 1.0) return 'peak'
-    if (aspect.applying && aspect.daysToExact <= 3) return 'building'
-    if (aspect.separating && aspect.daysSinceExact <= 3) return 'waning'
+    if (aspect.applying && (aspect.daysToExact ?? 0) <= 3) return 'building'
+    if (aspect.separating && (aspect.daysSinceExact ?? 0) <= 3) return 'waning'
     return 'fading'
   }
 

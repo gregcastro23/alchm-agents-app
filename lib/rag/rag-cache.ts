@@ -236,9 +236,9 @@ class RAGCache {
     })
 
     if (bestMatch && bestSimilarity >= this.SIMILARITY_THRESHOLD) {
-      bestMatch.cacheType = 'similar'
-      bestMatch.similarityScore = bestSimilarity
-      bestMatch.ttl = this.SIMILAR_MATCH_TTL
+      ;(bestMatch as any).cacheType = 'similar'
+      ;(bestMatch as any).similarityScore = bestSimilarity
+      ;(bestMatch as any).ttl = this.SIMILAR_MATCH_TTL
       return bestMatch
     }
 
@@ -282,8 +282,8 @@ class RAGCache {
     for (const { query, agentId } of commonQueries) {
       try {
         // Check if already cached
-        const cacheKey = this.buildCacheKey(query, agentId)
-        const existing = await this.get(cacheKey)
+        const cacheKey = query
+        const existing = await this.get(query, agentId)
 
         if (existing) {
           console.log(`[RAGCache] Query already cached: "${query.substring(0, 50)}..."`)
@@ -300,10 +300,12 @@ class RAGCache {
 
         if (results && results.length > 0) {
           // Cache the results
-          await this.set(cacheKey, {
-            results,
-            timestamp: Date.now(),
-          })
+          await this.set(query, agentId, results.map(r => ({
+            agentId: r.agentId,
+            agentName: r.agentName,
+            excerpt: r.content.substring(0, 100),
+            relevance: r.score,
+          })))
 
           warmed++
           console.log(

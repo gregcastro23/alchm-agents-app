@@ -116,8 +116,8 @@ export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGR
         const sources: RAGSource[] = cachedResult.sources.map(s => ({
           agentId: s.agentId,
           agentName: s.agentName,
-          excerpt: s.content.substring(0, 100) + (s.content.length > 100 ? '...' : ''),
-          relevance: s.relevanceScore,
+          excerpt: s.excerpt,
+          relevance: s.relevance,
         }))
 
         return {
@@ -313,13 +313,10 @@ export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGR
         options.userMessage,
         options.agentId,
         finalResults.map(r => ({
-          id: `${r.agentId}-${Date.now()}`,
           agentId: r.agentId,
           agentName: r.agentName,
-          title: (r.metadata?.title as string) || 'Historical Knowledge',
-          content: r.content,
-          relevanceScore: r.score,
-          metadata: r.metadata,
+          excerpt: r.content.substring(0, 100) + (r.content.length > 100 ? '...' : ''),
+          relevance: r.score,
         })),
         responseText
       )
