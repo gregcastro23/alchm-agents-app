@@ -1,4 +1,5 @@
 # Sacred 7 Stats Integration - Philosopher's Stone Update
+
 ## October 2025
 
 ## Summary
@@ -8,29 +9,33 @@ The Philosopher's Stone has been updated to use the **Sacred 7 Stats** system in
 ## What Changed ✅
 
 ### **Before: 8 Generic Personality Traits**
+
 ```typescript
 personality: string[]  // ['Analytical', 'Empathetic', 'Creative', etc.]
 ```
 
 User selected from:
+
 - Analytical, Empathetic, Creative, Logical, Intuitive, Visionary, Pragmatic, Philosophical
 
 ### **After: Sacred 7 Stats (0-100 sliders)**
+
 ```typescript
 stats: {
-  power: number        // ⚡ Alchemical Force
-  resonance: number    // 💫 Harmonic Frequency
-  wisdom: number       // 🔮 Accumulated Insight
-  charisma: number     // ✨ Magnetic Presence
-  intuition: number    // 👁️ Psychic Sensitivity
+  power: number // ⚡ Alchemical Force
+  resonance: number // 💫 Harmonic Frequency
+  wisdom: number // 🔮 Accumulated Insight
+  charisma: number // ✨ Magnetic Presence
+  intuition: number // 👁️ Psychic Sensitivity
   adaptability: number // 🌊 Flux Capacity
-  vitality: number     // 💚 Life Force
+  vitality: number // 💚 Life Force
 }
 ```
 
 ## Sacred 7 Stats System
 
 ### **The Seven Sacred Stats**
+
 Based on `/lib/agents/derived-stats.ts`:
 
 1. **Power** ⚡ (Yellow)
@@ -75,7 +80,7 @@ Based on `/lib/agents/derived-stats.ts`:
 ```typescript
 // Derived initial values from birth chart
 const derivedStats = {
-  power: Math.round(50 + (monicaConstant / 10) * 30),      // 50-80 range
+  power: Math.round(50 + (monicaConstant / 10) * 30), // 50-80 range
   resonance: Math.round(50 + (sunLongitude / 360) * 30),
   wisdom: Math.round(50 + (moonLongitude / 360) * 30),
   charisma: Math.round(50 + (venusLongitude / 360) * 30),
@@ -86,6 +91,7 @@ const derivedStats = {
 ```
 
 ### **Interactive Sliders**
+
 ```tsx
 <Slider
   value={[agentData.stats[stat.key]]}
@@ -102,7 +108,9 @@ const derivedStats = {
 ```
 
 ### **Visual Representation**
+
 Each stat has:
+
 - Icon (from lucide-react)
 - Color-coded label
 - Description text
@@ -111,6 +119,7 @@ Each stat has:
 - Real-time updates
 
 ### **Overall Stats Display**
+
 ```tsx
 <div className="text-sm text-slate-400 mb-2">Overall Stats Average:</div>
 <Progress
@@ -131,20 +140,24 @@ Each stat has:
 ### **New Flow**
 
 **Step 1: Birth Data** → Calculate Chart
+
 - Returns: Sun, Moon, Ascendant positions
 - Calculates: Monica Constant
 
 **Step 2: Agent Identity** → Name & Purpose
+
 - Display: Calculated chart summary
 - Input: Agent name and purpose
 
 **Step 3: Sacred 7 Stats** → Interactive Tuning
+
 - **AUTO-DERIVED** from chart positions
 - User can adjust via sliders
 - Shows average stat value
 - Visual guide for each stat
 
 **Step 4: Review & Create** → Finalize
+
 - Display: All stats with values
 - Shows: Average stat (calculated from all 7)
 - Shows: Monica Constant
@@ -167,6 +180,7 @@ You can adjust these sliders to fine-tune the consciousness!"
 ## Integration with Agent System
 
 ### **Compatibility with LiveStats Interface**
+
 The stats structure matches `/lib/agents/derived-stats.ts`:
 
 ```typescript
@@ -184,6 +198,7 @@ export interface LiveStats {
 ```
 
 ### **Agent Creation API**
+
 Updated payload:
 
 ```typescript
@@ -207,6 +222,7 @@ Updated payload:
 ## Visual Design
 
 ### **Stat Sliders**
+
 ```
 ⚡ Power                                      [68]
 ├─────────────────────────────────────────────┤
@@ -214,6 +230,7 @@ Alchemical Force - Raw consciousness power
 ```
 
 ### **Color Palette**
+
 - Power: Yellow (`text-yellow-400`)
 - Resonance: Purple (`text-purple-400`)
 - Wisdom: Blue (`text-blue-400`)
@@ -223,7 +240,9 @@ Alchemical Force - Raw consciousness power
 - Vitality: Green (`text-green-400`)
 
 ### **Stats Guide Card**
+
 Right-side panel shows:
+
 - Icon for each stat
 - Name and description
 - What it represents
@@ -246,6 +265,7 @@ Right-side panel shows:
 ## Alignment with System
 
 ### **Derived Stats Logic**
+
 From `/lib/agents/derived-stats.ts`:
 
 ```typescript
@@ -260,6 +280,7 @@ enhanced.vitality = baseValue + alchemical.matter * 0.7 + thermodynamics.heat * 
 ```
 
 Our simplified derivation for agent creation:
+
 ```typescript
 power: 50 + (monicaConstant / 10) * 30
 resonance: 50 + (sunLongitude / 360) * 30
@@ -272,22 +293,26 @@ This gives a good starting point that users can then fine-tune!
 ## Benefits
 
 ### **1. Consistency**
+
 ✅ Uses same stats as Gallery agents
 ✅ Compatible with LiveStats system
 ✅ Aligns with consciousness metrics
 
 ### **2. Astrological Accuracy**
+
 ✅ Stats derived from actual planetary positions
 ✅ Monica Constant influences Power
 ✅ Each planet contributes to specific stats
 
 ### **3. User Control**
+
 ✅ Chart provides initial values
 ✅ User can adjust via sliders
 ✅ Real-time feedback on changes
 ✅ See overall average instantly
 
 ### **4. Educational**
+
 ✅ Learn what each stat represents
 ✅ Understand chart → stats connection
 ✅ See Monica's derivation logic
@@ -323,11 +348,13 @@ CREATE → Agent "Athena" with Sacred 7 Stats!
 ## Future Enhancements
 
 ### Phase 1 (Next)
+
 1. Show stat "range bands" (0-30: Low, 31-60: Moderate, 61-100: High)
 2. Visual stat radar chart
 3. Stat recommendations based on purpose
 
 ### Phase 2 (Later)
+
 4. Advanced alchemical influence calculation
 5. Thermodynamic metrics integration
 6. Dynamic stat evolution preview

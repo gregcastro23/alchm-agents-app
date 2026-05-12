@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { getPlanetaryPositionsAction, getAlchemicalQuantitiesAction } from '@/lib/actions/backend-actions'
+import {
+  getPlanetaryPositionsAction,
+  getAlchemicalQuantitiesAction,
+} from '@/lib/actions/backend-actions'
 
 export type AccuracyLevel = 'high' | 'medium' | 'low' | 'fallback'
 
@@ -120,13 +123,9 @@ export function useUnifiedPlanetaryPositions(
         setLoading(true)
         setError(null)
 
-        const fetches: Promise<any>[] = [
-          getPlanetaryPositionsAction(),
-        ]
+        const fetches: Promise<any>[] = [getPlanetaryPositionsAction()]
         if (opts.includeAlchemy) {
-          fetches.push(
-            getAlchemicalQuantitiesAction(true)
-          )
+          fetches.push(getAlchemicalQuantitiesAction(true))
         }
         const results = await Promise.all(fetches)
         const posData = results[0]

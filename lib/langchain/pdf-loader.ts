@@ -214,7 +214,7 @@ export async function ingestAstrologicalPDF(
     })
 
     const embeddings = await generateEmbeddings(allDocuments, {
-      progressCallback: (progress) => {
+      progressCallback: progress => {
         logger.debug(`Embedding progress: ${progress.completed}/${progress.total}`, {
           system: 'langchain',
           operation: 'generate_embeddings',
@@ -241,7 +241,7 @@ export async function ingestAstrologicalPDF(
       allMetadata,
       allIds,
       {
-        progressCallback: (progress) => {
+        progressCallback: progress => {
           logger.debug(`Ingestion progress: ${progress.completed}/${progress.total}`, {
             system: 'langchain',
             operation: 'ingest_documents',
@@ -275,7 +275,6 @@ export async function ingestAstrologicalPDF(
       errors: addResult.errors,
       timestamp: new Date().toISOString(),
     }
-
   } catch (error) {
     const errorMsg = `PDF ingestion failed: ${error instanceof Error ? error.message : String(error)}`
     logger.error(errorMsg, error, {
@@ -361,10 +360,13 @@ export async function ingestMultiplePDFs(
     }
   }
 
-  logger.info(`Batch ingestion complete: ${results.filter(r => r.success).length}/${files.length} successful`, {
-    system: 'langchain',
-    operation: 'ingest_batch',
-  })
+  logger.info(
+    `Batch ingestion complete: ${results.filter(r => r.success).length}/${files.length} successful`,
+    {
+      system: 'langchain',
+      operation: 'ingest_batch',
+    }
+  )
 
   return results
 }

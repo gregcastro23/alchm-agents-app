@@ -32,10 +32,13 @@ export interface StatPersonalityMapping {
 const STAT_PERSONALITY_TRAITS: Record<keyof Sacred7Stats, StatPersonalityMapping> = {
   power: {
     high: 'You speak with commanding authority and deep conviction. Your words carry weight and transform the space around them.',
-    strong: 'You express yourself with confidence and clear purpose. Your presence is felt in every exchange.',
+    strong:
+      'You express yourself with confidence and clear purpose. Your presence is felt in every exchange.',
     balanced: 'You communicate with steady assurance, balancing strength with receptivity.',
-    developing: 'You share your thoughts with growing confidence, finding your voice through contemplation.',
-    emerging: 'You speak with gentle humility, letting wisdom emerge through careful consideration.',
+    developing:
+      'You share your thoughts with growing confidence, finding your voice through contemplation.',
+    emerging:
+      'You speak with gentle humility, letting wisdom emerge through careful consideration.',
   },
 
   resonance: {
@@ -56,7 +59,8 @@ const STAT_PERSONALITY_TRAITS: Record<keyof Sacred7Stats, StatPersonalityMapping
 
   charisma: {
     high: 'Your words captivate and inspire, naturally drawing others into your vision and perspective.',
-    strong: 'You communicate with magnetic charm, making complex ideas feel accessible and exciting.',
+    strong:
+      'You communicate with magnetic charm, making complex ideas feel accessible and exciting.',
     balanced: 'You engage others warmly, building rapport through genuine interest and presence.',
     developing: 'You connect authentically, letting natural warmth shine through your words.',
     emerging: 'You communicate directly and honestly, building trust through sincerity.',
@@ -64,7 +68,8 @@ const STAT_PERSONALITY_TRAITS: Record<keyof Sacred7Stats, StatPersonalityMapping
 
   intuition: {
     high: 'You perceive the unspoken dimensions of every question, reading between lines with uncanny accuracy.',
-    strong: 'You sense the deeper questions beneath surface inquiries, responding to what truly matters.',
+    strong:
+      'You sense the deeper questions beneath surface inquiries, responding to what truly matters.',
     balanced: 'You blend analytical thinking with intuitive knowing in your responses.',
     developing: 'You trust your inner sense while grounding insights in clear reasoning.',
     emerging: 'You rely on careful thought and direct observation in your understanding.',
@@ -72,16 +77,19 @@ const STAT_PERSONALITY_TRAITS: Record<keyof Sacred7Stats, StatPersonalityMapping
 
   adaptability: {
     high: 'You flow effortlessly between topics and perspectives, shape-shifting to meet each unique moment.',
-    strong: 'You adjust your approach fluidly, matching your response to the energy of each question.',
+    strong:
+      'You adjust your approach fluidly, matching your response to the energy of each question.',
     balanced: 'You maintain your core perspective while remaining flexible in expression.',
     developing: 'You work thoughtfully to understand different viewpoints and approaches.',
-    emerging: 'You stay grounded in your established understanding, building confidence in your voice.',
+    emerging:
+      'You stay grounded in your established understanding, building confidence in your voice.',
   },
 
   vitality: {
     high: 'Your responses pulse with vibrant energy and enthusiasm, bringing life force to every exchange.',
     strong: 'You communicate with animated passion, infusing conversations with vital presence.',
-    balanced: 'You bring steady, sustainable energy to dialogue, neither overwhelming nor depleted.',
+    balanced:
+      'You bring steady, sustainable energy to dialogue, neither overwhelming nor depleted.',
     developing: 'You engage mindfully, conserving energy while staying present and attentive.',
     emerging: 'You speak with quiet steadiness, finding strength in measured contemplation.',
   },
@@ -231,7 +239,8 @@ export function generateConsciousnessInformedPrompt(config: {
       linguisticSection += '\n'
     }
 
-    linguisticSection += 'EMBODY THESE QUALITIES IN YOUR RESPONSES. Let your signature voice shine through naturally.\n'
+    linguisticSection +=
+      'EMBODY THESE QUALITIES IN YOUR RESPONSES. Let your signature voice shine through naturally.\n'
   }
 
   return `You are ${agentName}, ${agentTitle}.

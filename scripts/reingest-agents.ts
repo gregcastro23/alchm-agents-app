@@ -29,7 +29,7 @@ console.log(`🔑 OpenAI API Key: ${process.env.OPENAI_API_KEY.substring(0, 10)}
 console.log('')
 
 // Import and run ingestion pipeline
-import('../lib/llamaindex/ingestion-pipeline').then(async (module) => {
+import('../lib/llamaindex/ingestion-pipeline').then(async module => {
   const { ingestAgentKnowledge } = module
 
   console.log('🚀 Starting agent knowledge re-ingestion...')
@@ -39,7 +39,7 @@ import('../lib/llamaindex/ingestion-pipeline').then(async (module) => {
   try {
     const result = await ingestAgentKnowledge({
       forceReindex: true,
-      progressCallback: (progress) => {
+      progressCallback: progress => {
         console.log(`[${progress.stage}] ${progress.message}`)
       },
     })
@@ -57,13 +57,15 @@ import('../lib/llamaindex/ingestion-pipeline').then(async (module) => {
     if (result.errors.length > 0) {
       console.log('')
       console.log('⚠️  Errors encountered:')
-      result.errors.forEach((error) => console.log(`  - ${error}`))
+      result.errors.forEach(error => console.log(`  - ${error}`))
     }
 
     console.log('')
     console.log('🎯 Next steps:')
     console.log('  1. Test agent chat at /gallery/chat/leonardo-da-vinci')
-    console.log('  2. Ask: "What are inventions worth, in the scope of life, when they come at the cost of attention to love?"')
+    console.log(
+      '  2. Ask: "What are inventions worth, in the scope of life, when they come at the cost of attention to love?"'
+    )
     console.log('  3. Verify the response is character-appropriate and uses wisdom, not metadata')
 
     process.exit(0)

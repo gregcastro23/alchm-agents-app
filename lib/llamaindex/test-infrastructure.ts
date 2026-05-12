@@ -56,18 +56,11 @@ async function testInfrastructure() {
     const chunkTexts = chunks.map(c => c.content)
     const totalTokens = estimateBatchTokens(chunkTexts)
     console.log(`   Total tokens for all chunks: ${totalTokens.toLocaleString()}`)
-    console.log(`   Estimated embedding cost: $${(totalTokens / 1000000 * 0.02).toFixed(4)}`)
+    console.log(`   Estimated embedding cost: $${((totalTokens / 1000000) * 0.02).toFixed(4)}`)
 
     // Test 5: Metadata Validation
     console.log('\n5️⃣ Testing Metadata Validation...')
-    const metadataFields = [
-      'agentId',
-      'agentName',
-      'era',
-      'chunkIndex',
-      'totalChunks',
-      'source',
-    ]
+    const metadataFields = ['agentId', 'agentName', 'era', 'chunkIndex', 'totalChunks', 'source']
 
     let metadataValid = true
     for (const chunk of chunks.slice(0, 10)) {

@@ -80,15 +80,7 @@ export class MonicaRouter {
         'astrology',
         'planetary',
       ],
-      historical: [
-        'what would',
-        'how did',
-        'historical',
-        'era',
-        'period',
-        'philosophy',
-        'teach',
-      ],
+      historical: ['what would', 'how did', 'historical', 'era', 'period', 'philosophy', 'teach'],
       consciousness: [
         'consciousness',
         'awareness',
@@ -188,10 +180,7 @@ export class MonicaRouter {
   /**
    * Route astrological queries
    */
-  private routeAstrological(
-    intent: any,
-    availableAgents: UnifiedAgent[]
-  ): RoutingDecision {
+  private routeAstrological(intent: any, availableAgents: UnifiedAgent[]): RoutingDecision {
     // Prefer planetary agents for astrological queries
     const planetaryAgents = availableAgents.filter(a => a.type === 'planetary')
 
@@ -227,17 +216,15 @@ export class MonicaRouter {
   /**
    * Route historical queries
    */
-  private routeHistorical(
-    intent: any,
-    availableAgents: UnifiedAgent[]
-  ): RoutingDecision {
+  private routeHistorical(intent: any, availableAgents: UnifiedAgent[]): RoutingDecision {
     // Prefer historical agents
     const historicalAgents = availableAgents.filter(a => a.type === 'historical')
 
     if (historicalAgents.length > 0) {
       // Try to match era or specialty from keywords
       const matchedAgents = historicalAgents.filter(agent => {
-        const agentInfo = `${agent.name} ${agent.title} ${agent.capabilities?.specialty}`.toLowerCase()
+        const agentInfo =
+          `${agent.name} ${agent.title} ${agent.capabilities?.specialty}`.toLowerCase()
         return intent.keywords.some((keyword: string) => agentInfo.includes(keyword))
       })
 
@@ -265,10 +252,7 @@ export class MonicaRouter {
   /**
    * Route consciousness/spiritual queries
    */
-  private routeConsciousness(
-    intent: any,
-    availableAgents: UnifiedAgent[]
-  ): RoutingDecision {
+  private routeConsciousness(intent: any, availableAgents: UnifiedAgent[]): RoutingDecision {
     // Prefer agents with high consciousness levels
     const highConsciousnessAgents = availableAgents
       .filter(a => a.consciousness.monicaConstant > 4.0)
@@ -313,10 +297,7 @@ export class MonicaRouter {
   /**
    * Route celestial queries
    */
-  private routeCelestial(
-    intent: any,
-    availableAgents: UnifiedAgent[]
-  ): RoutingDecision {
+  private routeCelestial(intent: any, availableAgents: UnifiedAgent[]): RoutingDecision {
     // Always include planetary agents for celestial queries
     const planetaryAgents = availableAgents.filter(a => a.type === 'planetary')
 
@@ -331,10 +312,7 @@ export class MonicaRouter {
   /**
    * Route temporal/timing queries
    */
-  private routeTemporal(
-    intent: any,
-    availableAgents: UnifiedAgent[]
-  ): RoutingDecision {
+  private routeTemporal(intent: any, availableAgents: UnifiedAgent[]): RoutingDecision {
     // Temporal queries benefit from multiple perspectives
     const diverseAgents = this.selectDiverseAgents(availableAgents, 3)
 
@@ -349,10 +327,7 @@ export class MonicaRouter {
   /**
    * Route synthesis/group queries
    */
-  private routeSynthesis(
-    intent: any,
-    availableAgents: UnifiedAgent[]
-  ): RoutingDecision {
+  private routeSynthesis(intent: any, availableAgents: UnifiedAgent[]): RoutingDecision {
     // User explicitly wants multiple perspectives
     return {
       selectedAgents: availableAgents,
@@ -365,10 +340,7 @@ export class MonicaRouter {
   /**
    * General routing fallback
    */
-  private routeGeneral(
-    intent: any,
-    availableAgents: UnifiedAgent[]
-  ): RoutingDecision {
+  private routeGeneral(intent: any, availableAgents: UnifiedAgent[]): RoutingDecision {
     // Select 2-3 diverse agents
     const selected = this.selectDiverseAgents(availableAgents, 3)
 
@@ -383,10 +355,7 @@ export class MonicaRouter {
   /**
    * Select diverse agents (different types, eras, elements)
    */
-  private selectDiverseAgents(
-    agents: UnifiedAgent[],
-    count: number
-  ): UnifiedAgent[] {
+  private selectDiverseAgents(agents: UnifiedAgent[], count: number): UnifiedAgent[] {
     const selected: UnifiedAgent[] = []
     const usedTypes = new Set<string>()
     const usedElements = new Set<string>()
@@ -430,8 +399,7 @@ export class MonicaRouter {
   } {
     // Simple heuristics - in production, use LLM-as-judge
     const avgResponseLength =
-      agentResponses.reduce((sum, r) => sum + r.content.length, 0) /
-      agentResponses.length
+      agentResponses.reduce((sum, r) => sum + r.content.length, 0) / agentResponses.length
 
     // Check if responses were substantial
     const wasSubstantial = avgResponseLength > 100
@@ -445,7 +413,8 @@ export class MonicaRouter {
     if (!wasSubstantial) {
       return {
         wasCorrect: false,
-        improvementSuggestion: 'Agents provided shallow responses - consider routing to higher consciousness agents',
+        improvementSuggestion:
+          'Agents provided shallow responses - consider routing to higher consciousness agents',
       }
     }
 

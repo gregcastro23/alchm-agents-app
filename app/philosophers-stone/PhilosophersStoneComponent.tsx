@@ -184,7 +184,6 @@ const TemporalClient = lazy(() =>
     })
 )
 
-
 function PhilosophersStoneInner() {
   const { data: session } = useSession()
   const user = session?.user as { id?: string } | undefined
@@ -948,7 +947,7 @@ function PhilosophersStoneInner() {
 
                   {/* The Enhanced Wizard */}
                   {(() => {
-                    const AnyWizard = DynamicAgentCreationWizard as any;
+                    const AnyWizard = DynamicAgentCreationWizard as any
                     return (
                       <AnyWizard
                         onChartsLoaded={(params: any) => {
@@ -957,7 +956,7 @@ function PhilosophersStoneInner() {
                             momentChart: wizardMomentChart,
                             additionalCharts: wizardAdditionalCharts,
                             mode,
-                          } = params;
+                          } = params
                           setBirthChart(wizardBirthChart)
                           setMomentChart(wizardMomentChart)
                           setAdditionalCharts(wizardAdditionalCharts ?? [])
@@ -982,7 +981,7 @@ function PhilosophersStoneInner() {
                         }}
                         onCancel={() => setShowCreationWizard(false)}
                       />
-                    );
+                    )
                   })()}
                 </div>
               )}
@@ -1207,7 +1206,9 @@ function PhilosophersStoneInner() {
                           <div className="flex items-start gap-3">
                             <Avatar className="w-12 h-12">
                               <AvatarImage src={agent.appearance.avatar} alt={agent.name} />
-                              <AvatarFallback>{agent.appearance?.symbol || agent.name.charAt(0).toUpperCase()}</AvatarFallback>
+                              <AvatarFallback>
+                                {agent.appearance?.symbol || agent.name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
                               <h3 className="font-semibold text-lg">{agent.name}</h3>

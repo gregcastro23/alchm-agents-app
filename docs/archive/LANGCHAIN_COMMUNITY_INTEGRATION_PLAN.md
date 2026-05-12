@@ -11,12 +11,14 @@ After comprehensive audit, discovered that **@langchain/community is installed b
 ### Current LangChain Usage
 
 **✅ Already Implemented:**
+
 - **@langchain/core** - Base interfaces and message types
 - **@langchain/openai** - GPT-4 integration for agent routing
 - **@langchain/anthropic** - Claude 3.5 Sonnet for conversations
 - **@langchain/classic/memory** - BufferMemory and ChatMessageHistory
 
 **📁 Existing Infrastructure:**
+
 ```
 lib/langchain/
 ├── agent-tools.ts       # 5 custom tools (semantic search, knowledge retrieval, etc.)
@@ -37,6 +39,7 @@ lib/langchain/
 **Use Case:** Automatically update agent knowledge with latest astrological/philosophical content
 
 **Implementation:**
+
 ```typescript
 // lib/langchain/knowledge-updater.ts
 import { CheerioWebBaseLoader } from '@langchain/community/document_loaders/web/cheerio'
@@ -74,6 +77,7 @@ export async function updateAgentKnowledge(agentId: string, urls: string[]) {
 ```
 
 **Benefits:**
+
 - Keep agent knowledge current with latest philosophical/astrological content
 - Auto-update from trusted sources (Stanford Encyclopedia, Astro.com, etc.)
 - Expand agent wisdom beyond initial training data
@@ -85,6 +89,7 @@ export async function updateAgentKnowledge(agentId: string, urls: string[]) {
 **Use Case:** Load astrological charts, birth data, research papers
 
 **Implementation:**
+
 ```typescript
 // lib/langchain/pdf-loader.ts
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
@@ -117,6 +122,7 @@ export async function ingestAstrologicalPDF(filePath: string, agentId: string) {
 ```
 
 **Use Cases:**
+
 - Upload natal chart interpretations
 - Ingest research papers on consciousness
 - Store astrological reference materials
@@ -130,6 +136,7 @@ export async function ingestAstrologicalPDF(filePath: string, agentId: string) {
 **Use Case:** Generate multiple search queries for better RAG results
 
 **Implementation:**
+
 ```typescript
 // lib/langchain/advanced-retrieval.ts
 import { MultiQueryRetriever } from '@langchain/community/retrievers/multi_query'
@@ -158,6 +165,7 @@ export async function enhancedRAGRetrieval(userQuery: string, agentId: string) {
 ```
 
 **Benefits:**
+
 - 30-50% better retrieval accuracy
 - Handles ambiguous queries better
 - Finds related concepts user didn't explicitly ask for
@@ -169,6 +177,7 @@ export async function enhancedRAGRetrieval(userQuery: string, agentId: string) {
 **Use Case:** Compress retrieved documents to most relevant sections
 
 **Implementation:**
+
 ```typescript
 // lib/langchain/compression-retrieval.ts
 import { ContextualCompressionRetriever } from 'langchain/retrievers/contextual_compression'
@@ -200,6 +209,7 @@ export async function compressedRetrieval(query: string, agentId: string) {
 ```
 
 **Benefits:**
+
 - 40-60% token reduction
 - Faster response times
 - Lower AI costs
@@ -214,6 +224,7 @@ export async function compressedRetrieval(query: string, agentId: string) {
 **Use Case:** Precise planetary calculations in agent conversations
 
 **Implementation:**
+
 ```typescript
 // lib/langchain/astrological-calculator-tool.ts
 import { Calculator } from '@langchain/community/tools/calculator'
@@ -222,7 +233,8 @@ import { z } from 'zod'
 
 export const astrologicalCalculatorTool = new DynamicStructuredTool({
   name: 'astrological_calculator',
-  description: 'Perform precise astrological calculations including aspects, orbs, house cusps, and planetary positions',
+  description:
+    'Perform precise astrological calculations including aspects, orbs, house cusps, and planetary positions',
   schema: z.object({
     calculation: z.enum(['aspect_orb', 'house_cusp', 'midpoint', 'progression']),
     params: z.record(z.number()),
@@ -244,7 +256,7 @@ export const astrologicalCalculatorTool = new DynamicStructuredTool({
 
       case 'progression':
         // Secondary progressions: 1 day = 1 year
-        const progressed = params.natal + (params.ageYears * 365.25 / 365.25)
+        const progressed = params.natal + (params.ageYears * 365.25) / 365.25
         return `Progressed position: ${progressed.toFixed(2)}°`
 
       default:
@@ -254,13 +266,11 @@ export const astrologicalCalculatorTool = new DynamicStructuredTool({
 })
 
 // Add to existing tools
-export const enhancedPlanetaryAgentTools = [
-  ...planetaryAgentTools,
-  astrologicalCalculatorTool,
-]
+export const enhancedPlanetaryAgentTools = [...planetaryAgentTools, astrologicalCalculatorTool]
 ```
 
 **Benefits:**
+
 - Agents can perform real-time calculations
 - No hardcoded placeholder values
 - Mathematical precision in responses
@@ -272,6 +282,7 @@ export const enhancedPlanetaryAgentTools = [
 **Use Case:** Agents fetch real-time biographical/historical data
 
 **Implementation:**
+
 ```typescript
 // lib/langchain/wikipedia-tool.ts
 import { WikipediaQueryRun } from '@langchain/community/tools/wikipedia_query_run'
@@ -294,6 +305,7 @@ async function enhanceHistoricalAgentContext(agentName: string) {
 ```
 
 **Benefits:**
+
 - Real-time biographical updates
 - Historical accuracy
 - No stale agent data
@@ -307,6 +319,7 @@ async function enhanceHistoricalAgentContext(agentName: string) {
 **Use Case:** Combine semantic and keyword search for best results
 
 **Implementation:**
+
 ```typescript
 // lib/langchain/hybrid-search.ts
 import { HNSWLib } from '@langchain/community/vectorstores/hnswlib'
@@ -335,6 +348,7 @@ export class HybridSearchRetriever {
 ```
 
 **Benefits:**
+
 - Best of both worlds (semantic + exact match)
 - Better for technical terms (planet names, degrees, etc.)
 - 20-30% improved retrieval accuracy
@@ -346,6 +360,7 @@ export class HybridSearchRetriever {
 **Use Case:** Automatically extract metadata filters from queries
 
 **Implementation:**
+
 ```typescript
 // lib/langchain/self-query-retriever.ts
 import { SelfQueryRetriever } from 'langchain/retrievers/self_query'
@@ -393,6 +408,7 @@ export async function intelligentAgentSearch(naturalQuery: string) {
 ```
 
 **Benefits:**
+
 - Natural language filters
 - No need for structured queries
 - Better UX
@@ -406,6 +422,7 @@ export async function intelligentAgentSearch(naturalQuery: string) {
 **Purpose:** Expose LangChain agent router to frontend
 
 **Implementation:**
+
 ```typescript
 // app/api/langchain-agent/route.ts
 import { NextRequest, NextResponse } from 'next/server'
@@ -418,10 +435,7 @@ export async function POST(req: NextRequest) {
       const { query, model, enableMemory, sessionId } = await req.json()
 
       if (!query) {
-        return NextResponse.json(
-          { error: 'Query is required' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'Query is required' }, { status: 400 })
       }
 
       // Initialize agent router
@@ -455,6 +469,7 @@ export async function POST(req: NextRequest) {
 **Purpose:** Update agent knowledge from external sources
 
 **Implementation:**
+
 ```typescript
 // app/api/knowledge-updater/route.ts
 import { NextRequest, NextResponse } from 'next/server'
@@ -495,12 +510,12 @@ export async function POST(req: NextRequest) {
 
 ### Performance Improvements
 
-| Feature | Current | With @langchain/community | Improvement |
-|---------|---------|---------------------------|-------------|
-| RAG Accuracy | 65-70% | 85-90% | +20-25% |
-| Token Usage | 100% | 40-60% | -40-60% |
-| Response Time | 2-3s | 1-2s | -33-50% |
-| Knowledge Freshness | Static | Real-time | ∞ |
+| Feature             | Current | With @langchain/community | Improvement |
+| ------------------- | ------- | ------------------------- | ----------- |
+| RAG Accuracy        | 65-70%  | 85-90%                    | +20-25%     |
+| Token Usage         | 100%    | 40-60%                    | -40-60%     |
+| Response Time       | 2-3s    | 1-2s                      | -33-50%     |
+| Knowledge Freshness | Static  | Real-time                 | ∞           |
 
 ### Feature Enhancements
 
@@ -530,30 +545,35 @@ export async function POST(req: NextRequest) {
 ## 📦 Implementation Timeline
 
 ### Week 1-2: Document Loaders
+
 - [ ] Implement CheerioWebBaseLoader
 - [ ] Implement PDFLoader
 - [ ] Create knowledge update API
 - [ ] Test with 5 agents
 
 ### Week 2-3: Advanced Retrievers
+
 - [ ] Implement MultiQueryRetriever
 - [ ] Implement ContextualCompressionRetriever
 - [ ] A/B test retrieval accuracy
 - [ ] Optimize performance
 
 ### Week 3-4: Specialized Tools
+
 - [ ] Create astrological calculator tool
 - [ ] Integrate Wikipedia tool
 - [ ] Add tools to agent router
 - [ ] Update agent prompts
 
 ### Week 4-5: Vector Store Enhancements
+
 - [ ] Implement hybrid search
 - [ ] Implement self-query retriever
 - [ ] Benchmark performance
 - [ ] Deploy to production
 
 ### Week 5-6: API Integration
+
 - [ ] Create `/api/langchain-agent` endpoint
 - [ ] Create `/api/knowledge-updater` endpoint
 - [ ] Update frontend components
@@ -564,12 +584,13 @@ export async function POST(req: NextRequest) {
 ## 🧪 Testing Strategy
 
 ### Unit Tests
+
 ```typescript
 // __tests__/langchain/knowledge-updater.test.ts
 describe('Knowledge Updater', () => {
   it('should load and chunk documents from URLs', async () => {
     const result = await updateAgentKnowledge('plato', [
-      'https://plato.stanford.edu/entries/plato/'
+      'https://plato.stanford.edu/entries/plato/',
     ])
 
     expect(result.documentsAdded).toBeGreaterThan(0)
@@ -584,6 +605,7 @@ describe('Knowledge Updater', () => {
 ```
 
 ### Integration Tests
+
 ```typescript
 // __tests__/langchain/agent-router.integration.test.ts
 describe('LangChain Agent Router', () => {
@@ -598,6 +620,7 @@ describe('LangChain Agent Router', () => {
 ```
 
 ### Performance Tests
+
 ```typescript
 // __tests__/langchain/performance.test.ts
 describe('RAG Performance', () => {
@@ -616,17 +639,20 @@ describe('RAG Performance', () => {
 ## 💰 Cost-Benefit Analysis
 
 ### Costs
+
 - **Development Time:** 6 weeks (1 developer)
 - **Infrastructure:** ChromaDB hosting (free for <1GB)
 - **API Costs:** -40% reduction due to token compression
 
 ### Benefits
+
 - **User Experience:** 20-30% better response quality
 - **Maintenance:** Auto-updating knowledge reduces manual work
 - **Scalability:** Better retrieval = can handle more complex queries
 - **Future-Proof:** Foundation for advanced AI features
 
 ### ROI
+
 - **Break-even:** Week 3 (improved user retention)
 - **Long-term:** 10x value from reduced maintenance + better UX
 
@@ -679,12 +705,12 @@ curl -X POST http://localhost:3000/api/knowledge-updater \
 
 ## ✅ Decision Matrix
 
-| Option | Pros | Cons | Recommendation |
-|--------|------|------|----------------|
-| **Remove Package** | Clean dependencies | Lose future potential | ❌ Not recommended |
-| **Keep Unused** | No effort | Wasted dependency, warnings | ❌ Not recommended |
-| **Minimal Integration** | Quick wins, 2-3 hours | Limited benefits | ⚠️ OK for now |
-| **Full Integration** | Maximum value, production-ready | 6 weeks effort | ✅ **RECOMMENDED** |
+| Option                  | Pros                            | Cons                        | Recommendation     |
+| ----------------------- | ------------------------------- | --------------------------- | ------------------ |
+| **Remove Package**      | Clean dependencies              | Lose future potential       | ❌ Not recommended |
+| **Keep Unused**         | No effort                       | Wasted dependency, warnings | ❌ Not recommended |
+| **Minimal Integration** | Quick wins, 2-3 hours           | Limited benefits            | ⚠️ OK for now      |
+| **Full Integration**    | Maximum value, production-ready | 6 weeks effort              | ✅ **RECOMMENDED** |
 
 ---
 
@@ -693,12 +719,14 @@ curl -X POST http://localhost:3000/api/knowledge-updater \
 **Implement Phase 1A this week (2-3 hours) for immediate value, then full 6-week rollout.**
 
 ### Immediate Action (Today)
+
 1. ✅ Keep @langchain/community installed
 2. ✅ Implement CheerioWebBaseLoader (1 hour)
 3. ✅ Create knowledge updater API (30 min)
 4. ✅ Test with Plato agent (30 min)
 
 ### Next Sprint (Weeks 1-6)
+
 1. Complete all 5 phases
 2. Comprehensive testing
 3. Production deployment

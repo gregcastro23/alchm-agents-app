@@ -229,10 +229,7 @@ export function extractMetadata(agent: CraftedAgent): DocumentMetadata {
 /**
  * Chunk a document into smaller pieces for embedding
  */
-export function chunkDocument(
-  doc: AgentDocument,
-  options?: ChunkingOptions
-): DocumentChunk[] {
+export function chunkDocument(doc: AgentDocument, options?: ChunkingOptions): DocumentChunk[] {
   const chunkSize = (options?.chunkSize || DEFAULT_CHUNK_SIZE) * CHARS_PER_TOKEN
   const overlap = (options?.overlap || DEFAULT_OVERLAP) * CHARS_PER_TOKEN
   const preserveSentences = options?.preserveSentences !== false
@@ -242,15 +239,17 @@ export function chunkDocument(
 
   if (text.length <= chunkSize) {
     // Document fits in one chunk
-    return [{
-      id: `${doc.agentId}-chunk-0000`,
-      agentId: doc.agentId,
-      agentName: doc.agentName,
-      content: text,
-      metadata: { ...doc.metadata, chunkIndex: 0, totalChunks: 1 },
-      chunkIndex: 0,
-      totalChunks: 1,
-    }]
+    return [
+      {
+        id: `${doc.agentId}-chunk-0000`,
+        agentId: doc.agentId,
+        agentName: doc.agentName,
+        content: text,
+        metadata: { ...doc.metadata, chunkIndex: 0, totalChunks: 1 },
+        chunkIndex: 0,
+        totalChunks: 1,
+      },
+    ]
   }
 
   // Split into chunks with overlap
@@ -320,10 +319,7 @@ export function chunkDocument(
 /**
  * Chunk multiple documents
  */
-export function chunkDocuments(
-  docs: AgentDocument[],
-  options?: ChunkingOptions
-): DocumentChunk[] {
+export function chunkDocuments(docs: AgentDocument[], options?: ChunkingOptions): DocumentChunk[] {
   const allChunks: DocumentChunk[] = []
 
   for (const doc of docs) {
@@ -331,7 +327,9 @@ export function chunkDocuments(
     allChunks.push(...chunks)
   }
 
-  console.log(`[DocumentLoader] Created ${allChunks.length} total chunks from ${docs.length} documents`)
+  console.log(
+    `[DocumentLoader] Created ${allChunks.length} total chunks from ${docs.length} documents`
+  )
 
   return allChunks
 }

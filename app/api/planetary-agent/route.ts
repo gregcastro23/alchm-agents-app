@@ -1,7 +1,7 @@
 import { generateText } from 'ai'
-import { openai } from '@ai-sdk/openai'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { verifyApiKeys } from '../secure-config'
+import { resolveDefaultModel } from '@/lib/models/registry'
 import {
   logAgentConversation,
   createConversationContext,
@@ -175,11 +175,14 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
 
     try {
       const startTime = Date.now()
+      const model = resolveDefaultModel('fast')
+      const modelUsed = 'fast-tier'
 
       const { text } = await generateText({
-        model: openai('gpt-4o'),
+        model,
         system: systemPrompt,
         prompt: question || 'Tell me about this planetary position',
+        temperature: 0.6,
         maxTokens: 500,
       } as any)
 
@@ -204,6 +207,7 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
         historicalContext,
         processingTimeMs: processingTime,
         agentType: 'planetary',
+        modelUsed,
       }
 
       conversationContext.conversationCount += 1
@@ -250,6 +254,7 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
 
       return NextResponse.json({
         response: text,
+        modelUsed,
         sessionId: conversationContext.sessionId,
         elementalInfo: {
           signElement,

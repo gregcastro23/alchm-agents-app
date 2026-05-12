@@ -12,6 +12,7 @@ The Planetary Positions API provides accurate, real-time planetary position calc
 ## CORS Configuration
 
 The following origins are whitelisted:
+
 - `https://alchm.kitchen`
 - `https://www.alchm.kitchen`
 - `http://localhost:3000`
@@ -26,20 +27,20 @@ Fetch current or historical planetary positions.
 
 #### Query Parameters
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `date` | ISO 8601 string | Current time | The date/time for position calculation |
-| `accuracy` | `high` \| `medium` \| `low` \| `fallback` | `high` | Accuracy level for calculations |
-| `includeAlchemy` | boolean | `false` | Include alchemical quantities in response |
-| `useCache` | boolean | `true` | Use cached results if available |
+| Parameter        | Type                                      | Default      | Description                               |
+| ---------------- | ----------------------------------------- | ------------ | ----------------------------------------- |
+| `date`           | ISO 8601 string                           | Current time | The date/time for position calculation    |
+| `accuracy`       | `high` \| `medium` \| `low` \| `fallback` | `high`       | Accuracy level for calculations           |
+| `includeAlchemy` | boolean                                   | `false`      | Include alchemical quantities in response |
+| `useCache`       | boolean                                   | `true`       | Use cached results if available           |
 
 #### Example Request
 
 ```javascript
 // From alchm.kitchen
-const response = await fetch('https://your-domain.com/api/planetary-positions?includeAlchemy=true');
-const data = await response.json();
-console.log(data);
+const response = await fetch('https://your-domain.com/api/planetary-positions?includeAlchemy=true')
+const data = await response.json()
+console.log(data)
 ```
 
 ```bash
@@ -114,9 +115,9 @@ const response = await fetch('https://your-domain.com/api/planetary-positions', 
     includeAlchemy: true,
     accuracy: 'high',
   }),
-});
+})
 
-const data = await response.json();
+const data = await response.json()
 ```
 
 ## Usage Examples
@@ -127,26 +128,26 @@ const data = await response.json();
 // Fetch current planetary positions
 async function getCurrentPositions() {
   try {
-    const response = await fetch('https://your-domain.com/api/planetary-positions');
+    const response = await fetch('https://your-domain.com/api/planetary-positions')
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json();
+    const data = await response.json()
 
     // Access planetary positions
     data.planetaryPositions.forEach(planet => {
-      console.log(`${planet.planet}: ${planet.sign} ${planet.degree.toFixed(2)}°`);
+      console.log(`${planet.planet}: ${planet.sign} ${planet.degree.toFixed(2)}°`)
       if (planet.retrograde) {
-        console.log(`  (Retrograde)`);
+        console.log(`  (Retrograde)`)
       }
-    });
+    })
 
-    return data;
+    return data
   } catch (error) {
-    console.error('Error fetching planetary positions:', error);
-    throw error;
+    console.error('Error fetching planetary positions:', error)
+    throw error
   }
 }
 
@@ -154,13 +155,13 @@ async function getCurrentPositions() {
 async function getPositionsWithAlchemy() {
   const response = await fetch(
     'https://your-domain.com/api/planetary-positions?includeAlchemy=true'
-  );
-  const data = await response.json();
+  )
+  const data = await response.json()
 
-  console.log('Alchemical Quantities:', data.alchmQuantities);
-  console.log('Monica Constant:', data.monicaConstant);
+  console.log('Alchemical Quantities:', data.alchmQuantities)
+  console.log('Monica Constant:', data.monicaConstant)
 
-  return data;
+  return data
 }
 
 // Fetch positions for a specific date
@@ -172,9 +173,9 @@ async function getHistoricalPositions(dateString: string) {
       date: dateString,
       accuracy: 'high',
     }),
-  });
+  })
 
-  return await response.json();
+  return await response.json()
 }
 ```
 
@@ -279,23 +280,23 @@ function PlanetaryDisplay() {
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue'
 
-const positions = ref([]);
-const loading = ref(true);
-const error = ref(null);
+const positions = ref([])
+const loading = ref(true)
+const error = ref(null)
 
 onMounted(async () => {
   try {
-    const response = await fetch('https://your-domain.com/api/planetary-positions');
-    const data = await response.json();
-    positions.value = data.planetaryPositions;
+    const response = await fetch('https://your-domain.com/api/planetary-positions')
+    const data = await response.json()
+    positions.value = data.planetaryPositions
   } catch (err) {
-    error.value = err;
+    error.value = err
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-});
+})
 </script>
 ```
 
@@ -303,12 +304,12 @@ onMounted(async () => {
 
 The API uses intelligent caching based on accuracy level:
 
-| Accuracy | Cache Duration | Use Case |
-|----------|---------------|----------|
-| `high` | 5 minutes | Real-time applications |
-| `medium` | 15 minutes | General purpose |
-| `low` | 1 hour | Historical analysis |
-| `fallback` | 24 hours | Backup calculations |
+| Accuracy   | Cache Duration | Use Case               |
+| ---------- | -------------- | ---------------------- |
+| `high`     | 5 minutes      | Real-time applications |
+| `medium`   | 15 minutes     | General purpose        |
+| `low`      | 1 hour         | Historical analysis    |
+| `fallback` | 24 hours       | Backup calculations    |
 
 ## Calculation Sources (Fallback Hierarchy)
 
@@ -336,36 +337,36 @@ The API uses intelligent caching based on accuracy level:
 
 ### Common Errors
 
-| Status Code | Meaning | Solution |
-|-------------|---------|----------|
-| 400 | Invalid date format | Use ISO 8601 format (e.g., `2025-11-21T00:00:00Z`) |
-| 500 | Calculation failure | Retry with `accuracy=medium` or `accuracy=low` |
+| Status Code | Meaning             | Solution                                           |
+| ----------- | ------------------- | -------------------------------------------------- |
+| 400         | Invalid date format | Use ISO 8601 format (e.g., `2025-11-21T00:00:00Z`) |
+| 500         | Calculation failure | Retry with `accuracy=medium` or `accuracy=low`     |
 
 ### Error Handling Example
 
 ```typescript
 async function fetchWithErrorHandling() {
   try {
-    const response = await fetch('https://your-domain.com/api/planetary-positions');
+    const response = await fetch('https://your-domain.com/api/planetary-positions')
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to fetch positions');
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Failed to fetch positions')
     }
 
-    return await response.json();
+    return await response.json()
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('API Error:', error)
 
     // Fallback to lower accuracy
     try {
       const fallbackResponse = await fetch(
         'https://your-domain.com/api/planetary-positions?accuracy=medium'
-      );
-      return await fallbackResponse.json();
+      )
+      return await fallbackResponse.json()
     } catch (fallbackError) {
-      console.error('Fallback failed:', fallbackError);
-      throw fallbackError;
+      console.error('Fallback failed:', fallbackError)
+      throw fallbackError
     }
   }
 }

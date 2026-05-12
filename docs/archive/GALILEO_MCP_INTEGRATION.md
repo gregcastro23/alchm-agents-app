@@ -173,24 +173,28 @@ await galileoMCP.logCouncilInteraction({
 In your Galileo dashboard, you can visualize:
 
 ### Agent Performance
+
 - Response time distribution by agent
 - Synergy score trends over time
 - Most active agents
 - Consciousness level distribution
 
 ### User Engagement
+
 - Message volume by hour/day
 - Average conversation length
 - Most discussed topics
 - Session duration patterns
 
 ### Quality Metrics
+
 - High synergy interactions (>80%)
 - Low synergy interactions (<50%)
 - Error rates and types
 - Model performance comparison
 
 ### Cosmic Correlations
+
 - Synergy scores vs. planetary positions
 - Elemental influence on interactions
 - Aspect patterns and their effects
@@ -201,26 +205,31 @@ In your Galileo dashboard, you can visualize:
 The Galileo MCP server provides these tools:
 
 ### Dataset Management
+
 - `create_dataset` - Create training datasets from logs
 - `check_dataset_status` - Monitor dataset processing
 - `export_dataset` - Download processed datasets
 
 ### Prompt Engineering
+
 - `create_prompt_template` - Design reusable prompts
 - `test_prompt` - Validate prompt effectiveness
 - `optimize_prompt` - Improve prompt performance
 
 ### Experimentation
+
 - `setup_experiment` - Configure A/B tests
 - `track_experiment` - Monitor experiment metrics
 - `analyze_results` - Compare experiment outcomes
 
 ### Log Analysis
+
 - `get_log_insights` - AI-powered log analysis
 - `search_logs` - Query historical data
 - `aggregate_metrics` - Compute statistics
 
 ### Integration
+
 - `generate_openai_code` - OpenAI integration snippets
 - `generate_langchain_code` - LangChain integration
 - `export_traces` - Download trace data

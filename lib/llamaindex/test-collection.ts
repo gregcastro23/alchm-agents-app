@@ -67,7 +67,9 @@ async function testCollection() {
 
     console.log(`✅ Found ${philosophyResults.length} results`)
     for (const result of philosophyResults) {
-      console.log(`  - ${result.metadata.agentName}: ${(result.score * 100).toFixed(1)}% (distance: ${result.distance.toFixed(4)})`)
+      console.log(
+        `  - ${result.metadata.agentName}: ${(result.score * 100).toFixed(1)}% (distance: ${result.distance.toFixed(4)})`
+      )
     }
 
     console.log('\n━'.repeat(60))

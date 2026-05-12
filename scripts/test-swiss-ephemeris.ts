@@ -35,13 +35,18 @@ for (const [planet, expected] of Object.entries(expectedPositions)) {
   if (actual) {
     const degreeMatch = Math.abs(actual.degree - expected.degree) < 1.0
     const signMatch = actual.sign === expected.sign
-    const retrogradeMatch = expected.retrograde === undefined || actual.retrograde === expected.retrograde
+    const retrogradeMatch =
+      expected.retrograde === undefined || actual.retrograde === expected.retrograde
 
     const status = degreeMatch && signMatch && retrogradeMatch ? '✅' : '❌'
 
     console.log(`${status} ${planet}:`)
-    console.log(`   Expected: ${expected.sign} ${expected.degree.toFixed(2)}°${expected.retrograde ? ' (R)' : ''}`)
-    console.log(`   Actual:   ${actual.sign} ${actual.degree.toFixed(2)}°${actual.retrograde ? ' (R)' : ''}`)
+    console.log(
+      `   Expected: ${expected.sign} ${expected.degree.toFixed(2)}°${expected.retrograde ? ' (R)' : ''}`
+    )
+    console.log(
+      `   Actual:   ${actual.sign} ${actual.degree.toFixed(2)}°${actual.retrograde ? ' (R)' : ''}`
+    )
     console.log(`   Diff:     ${(actual.degree - expected.degree).toFixed(4)}°`)
     console.log()
   } else {

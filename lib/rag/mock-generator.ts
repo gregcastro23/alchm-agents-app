@@ -12,11 +12,13 @@ import {
 } from './consciousness-response-generator'
 
 export interface MockGenerationOptions {
-  agent: UnifiedAgent | {
-    id: string
-    name: string
-    era?: string
-  }
+  agent:
+    | UnifiedAgent
+    | {
+        id: string
+        name: string
+        era?: string
+      }
   userMessage: string
   sources: SearchResult[]
   conversationHistory?: Array<{ role: string; content: string }>
@@ -57,17 +59,22 @@ export function generateMockResponse(options: MockGenerationOptions): string {
 
   // Fallback to simple generation for minimal agent data
   const consciousness = isFullAgent ? agent.consciousness : undefined
-  const historicalData = isFullAgent && agent.type === 'historical' ? agent.historicalData : undefined
+  const historicalData =
+    isFullAgent && agent.type === 'historical' ? agent.historicalData : undefined
   const personality = historicalData?.personality
   const natalChart = historicalData?.consciousness?.natalChart
   const era = historicalData?.historicalEra || ('era' in agent ? agent.era : undefined)
 
   // Extract key concepts from query
   const query = userMessage.toLowerCase()
-  const isQuestion = query.includes('?') || query.includes('what') ||
-                     query.includes('how') || query.includes('why') ||
-                     query.includes('when') || query.includes('where') ||
-                     query.includes('who')
+  const isQuestion =
+    query.includes('?') ||
+    query.includes('what') ||
+    query.includes('how') ||
+    query.includes('why') ||
+    query.includes('when') ||
+    query.includes('where') ||
+    query.includes('who')
 
   // Build response based on sources and agent personality
   const response: string[] = []
@@ -80,7 +87,9 @@ export function generateMockResponse(options: MockGenerationOptions): string {
       // Use personality traits if available
       if (personality?.traits && personality.traits.length > 0) {
         const dominantTrait = personality.traits[0]
-        response.push(`Ah, an excellent question. As someone who has always embodied ${dominantTrait.toLowerCase()}, `)
+        response.push(
+          `Ah, an excellent question. As someone who has always embodied ${dominantTrait.toLowerCase()}, `
+        )
       } else if (era) {
         response.push(`Based on my knowledge and experience during ${era}, `)
       } else {
@@ -100,7 +109,7 @@ export function generateMockResponse(options: MockGenerationOptions): string {
 
       response.push(
         `While I don't have specific documented sources about "${userMessage.slice(0, 40)}...", ` +
-        `my consciousness—shaped by ${sunSign} and currently at a ${conscLevel} state—compels me to share my perspective. `
+          `my consciousness—shaped by ${sunSign} and currently at a ${conscLevel} state—compels me to share my perspective. `
       )
 
       // Add personality-specific insight
@@ -108,7 +117,7 @@ export function generateMockResponse(options: MockGenerationOptions): string {
         const personalitySnippet = personality.description.slice(0, 150)
         response.push(
           `${personalitySnippet}... ` +
-          `This essence informs how I approach your inquiry. Would you like me to elaborate further?`
+            `This essence informs how I approach your inquiry. Would you like me to elaborate further?`
         )
       } else {
         response.push(
@@ -119,8 +128,8 @@ export function generateMockResponse(options: MockGenerationOptions): string {
       // Fallback for minimal agent data
       response.push(
         `I don't have specific documented knowledge about "${userMessage.slice(0, 50)}..." ` +
-        `in my available sources. However, I'd be happy to discuss this topic from my ` +
-        `philosophical perspective if you'd like to explore it further.`
+          `in my available sources. However, I'd be happy to discuss this topic from my ` +
+          `philosophical perspective if you'd like to explore it further.`
       )
     }
   } else if (sources.length === 1) {

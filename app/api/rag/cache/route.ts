@@ -23,9 +23,7 @@ export async function GET(request: NextRequest) {
       stats: {
         ...stats,
         // Add computed metrics
-        avgHitsPerEntry: stats.cacheSize > 0
-          ? stats.totalHits / stats.cacheSize
-          : 0,
+        avgHitsPerEntry: stats.cacheSize > 0 ? stats.totalHits / stats.cacheSize : 0,
         memoryUsageEstimate: `~${Math.round(stats.cacheSize * 2)}KB`, // Rough estimate
       },
     })
@@ -82,10 +80,13 @@ export async function POST(request: NextRequest) {
     // Support invalidating by agent or query pattern
     if (body.agentId) {
       // This would require implementing an invalidateByAgent method
-      return NextResponse.json({
-        success: false,
-        error: 'Agent-specific invalidation not yet implemented',
-      }, { status: 501 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Agent-specific invalidation not yet implemented',
+        },
+        { status: 501 }
+      )
     }
 
     if (body.clearAll) {
@@ -96,10 +97,13 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    return NextResponse.json({
-      success: false,
-      error: 'Invalid request: provide agentId or clearAll=true',
-    }, { status: 400 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Invalid request: provide agentId or clearAll=true',
+      },
+      { status: 400 }
+    )
   } catch (error) {
     console.error('[RAG Cache API] Failed to invalidate cache:', error)
     return NextResponse.json(

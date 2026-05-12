@@ -7,11 +7,13 @@ Isaac Asimov's agent profile has been updated with his **accurate birth time** a
 ## Corrected Birth Data
 
 **Previous (Estimated):**
+
 - Birth Time: 00:00 (midnight) - estimated
 - Rising Sign: Estimated as Capricorn (unconfirmed)
 - House placements: Estimated
 
 **Current (Accurate):**
+
 - **Birth Time: 15:35 (3:35 PM)** - confirmed
 - **Rising Sign: ♑ Capricorn at 12.57°** - calculated
 - **Ascendant: 282.57°**
@@ -21,12 +23,15 @@ Isaac Asimov's agent profile has been updated with his **accurate birth time** a
 ## Key Astrological Discoveries
 
 ### 1. Capricorn Rising (12.57°)
+
 The calculation confirms Capricorn Rising, which perfectly matches Asimov's systematic, disciplined, and methodical nature. This is the ultimate "architect" rising sign.
 
 ### 2. 12th House Stellium (Sun & Mercury)
+
 **This is THE revelation that explains Asimov's genius:**
 
 The corrected birth time places BOTH his Sun (10.67° Capricorn) and Mercury (21.60° Sagittarius) in the **12th House** - the house of:
+
 - Hidden work and research
 - Solitude and private study
 - Channeling from the collective unconscious
@@ -34,6 +39,7 @@ The corrected birth time places BOTH his Sun (10.67° Capricorn) and Mercury (21
 - Behind-the-scenes brilliance
 
 **Why This Matters:**
+
 - **12th house writers** are the most prolific because they channel directly from the unconscious
 - They work best alone, processing vast information into written form
 - The 12th house "never stops receiving" - ideas flow endlessly
@@ -41,22 +47,23 @@ The corrected birth time places BOTH his Sun (10.67° Capricorn) and Mercury (21
 
 ### 3. Recalculated House Placements
 
-| Planet | Sign | Degree | House | Significance |
-|--------|------|--------|-------|--------------|
-| ☉ Sun | Capricorn | 10.67° | 12th | Hidden genius, researcher |
-| ☽ Moon | Taurus | 21.88° | 5th | Creative prolific output |
-| ☿ Mercury | Sagittarius | 21.60° | 12th | Philosophical writing in solitude |
-| ♀ Venus | Scorpio | 27.63° | 11th | Future-focused relationships |
-| ♂ Mars | Libra | 17.17° | 10th | Diplomatic career drive |
-| ♃ Jupiter | Leo ℞ | 16.88° | 8th | Transformative knowledge |
-| ♄ Saturn | Virgo ℞ | 11.58° | 9th | Disciplined philosophy |
-| ♅ Uranus | Aquarius | 29.02° | 2nd | Revolutionary values |
-| ♆ Neptune | Leo ℞ | 10.92° | 8th | Visionary transformation |
-| ♇ Pluto | Cancer ℞ | 6.65° | 7th | Deep partnerships |
+| Planet    | Sign        | Degree | House | Significance                      |
+| --------- | ----------- | ------ | ----- | --------------------------------- |
+| ☉ Sun     | Capricorn   | 10.67° | 12th  | Hidden genius, researcher         |
+| ☽ Moon    | Taurus      | 21.88° | 5th   | Creative prolific output          |
+| ☿ Mercury | Sagittarius | 21.60° | 12th  | Philosophical writing in solitude |
+| ♀ Venus   | Scorpio     | 27.63° | 11th  | Future-focused relationships      |
+| ♂ Mars    | Libra       | 17.17° | 10th  | Diplomatic career drive           |
+| ♃ Jupiter | Leo ℞       | 16.88° | 8th   | Transformative knowledge          |
+| ♄ Saturn  | Virgo ℞     | 11.58° | 9th   | Disciplined philosophy            |
+| ♅ Uranus  | Aquarius    | 29.02° | 2nd   | Revolutionary values              |
+| ♆ Neptune | Leo ℞       | 10.92° | 8th   | Visionary transformation          |
+| ♇ Pluto   | Cancer ℞    | 6.65°  | 7th   | Deep partnerships                 |
 
 ## Chart Pattern Analysis
 
 **The Asimov Formula:**
+
 ```
 Capricorn Rising (Discipline & Structure)
     +
@@ -72,12 +79,14 @@ Sun Trine Saturn (Legendary Work Ethic)
 ## Personality Insights from Rising Sign
 
 **Capricorn Rising Creates:**
+
 1. **Public Persona:** Serious, professional, authoritative
 2. **Life Approach:** Methodical, step-by-step, systematic
 3. **Career Focus:** Building lasting structures (Foundation series!)
 4. **Saturn Rulership:** Chart ruler in Virgo 9th house = disciplined teaching and philosophy
 
 **12th House Sun/Mercury Creates:**
+
 1. **Work Style:** Best alone, in private study
 2. **Information Processing:** Direct channel from unconscious
 3. **Productivity:** Endless flow of ideas
@@ -119,6 +128,7 @@ The 12th house placement is especially significant - this is the house of the co
 ## Technical Details
 
 **Calculation Method:** IAU 2000A Sidereal Time Formula
+
 - Used enhanced astronomical calculator
 - Greenwich Mean Sidereal Time calculated
 - Local Sidereal Time derived from longitude
@@ -126,6 +136,7 @@ The 12th house placement is especially significant - this is the house of the co
 - Result: 282.57° = 12.57° Capricorn
 
 **Verification:**
+
 - Birth: January 2, 1920, 15:35
 - Location: 55°N, 32°E
 - Julian Day calculated
@@ -149,4 +160,4 @@ This is not just adding a data point - it's unlocking the astrological KEY to un
 
 The Foundation Architect now stands complete with his true cosmic blueprint! 🤖📚⭐♑
 
-*"The most exciting phrase to hear in science, the one that heralds new discoveries, is not 'Eureka!' but 'That's funny...'"* - Isaac Asimov
+_"The most exciting phrase to hear in science, the one that heralds new discoveries, is not 'Eureka!' but 'That's funny...'"_ - Isaac Asimov

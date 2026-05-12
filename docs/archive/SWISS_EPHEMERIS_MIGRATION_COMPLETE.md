@@ -12,11 +12,13 @@ Successfully migrated Swiss Ephemeris from frontend (Vercel) to backend-only arc
 ## What Was Done
 
 ### Phase 1: Audit ✅
+
 - Identified all Swiss Ephemeris usage in codebase
 - Found 3 key files using swisseph directly
 - Documented 10+ files indirectly depending on swisseph
 
 ### Phase 2: Frontend Cleanup ✅
+
 - **Removed**: `swisseph-v2` from `package.json`
 - **Updated**: `vercel.json` (removed prebuild script, simplified install)
 - **Deleted**: `scripts/vercel-prebuild.sh`
@@ -24,6 +26,7 @@ Successfully migrated Swiss Ephemeris from frontend (Vercel) to backend-only arc
 - **Updated**: `.vercelignore` (documented new architecture)
 
 ### Phase 3: Backend API Endpoints ✅
+
 - **Created**: `backend/src/services/swiss-ephemeris.ts` (250 lines)
   - Full Swiss Ephemeris wrapper with alchemical correspondences
   - Uses swisseph v0.5.17 (latest stable)
@@ -44,6 +47,7 @@ Successfully migrated Swiss Ephemeris from frontend (Vercel) to backend-only arc
   - Added `swisseph: ^0.5.17`
 
 ### Phase 4: Frontend API Client ✅
+
 - **Created**: `lib/planetary-api-client.ts` (250 lines)
   - `PlanetaryAPIClient` class
   - Methods for all backend endpoints
@@ -52,6 +56,7 @@ Successfully migrated Swiss Ephemeris from frontend (Vercel) to backend-only arc
   - Singleton export for easy use
 
 ### Phase 5: Frontend Facade ✅
+
 - **Replaced**: `lib/swiss-ephemeris-service.ts` (200 lines)
   - Now acts as a facade/adapter
   - Maintains exact same interface as before
@@ -60,6 +65,7 @@ Successfully migrated Swiss Ephemeris from frontend (Vercel) to backend-only arc
   - Async-compatible (returns Promises)
 
 ### Phase 6: Environment Variables ✅
+
 - **Updated**: `.env.example`
   - Documented `NEXT_PUBLIC_BACKEND_URL` as REQUIRED
   - Added notes about Swiss Ephemeris dependency
@@ -69,15 +75,18 @@ Successfully migrated Swiss Ephemeris from frontend (Vercel) to backend-only arc
   - Points to Render backend
 
 ### Phase 7: Backend Dependencies ✅
+
 - **Updated**: `backend/package.json` with correct swisseph version
 - **Running**: `npm install` in backend directory
 - **Status**: Installing swisseph and dependencies
 
 ### Phase 8: Frontend Dependencies 🔄
+
 - **Pending**: Remove old `node_modules` and reinstall
 - **Pending**: Verify no swisseph-v2 remnants
 
 ### Phase 9: Documentation ✅
+
 - **Created**: `SWISS_EPHEMERIS_ARCHITECTURE.md` (comprehensive guide)
   - Architecture diagrams
   - API endpoint documentation
@@ -87,6 +96,7 @@ Successfully migrated Swiss Ephemeris from frontend (Vercel) to backend-only arc
   - Troubleshooting guide
 
 ### Phase 10: Deployment Summary ✅
+
 - **Created**: This file
 
 ## Files Created
@@ -117,24 +127,28 @@ Successfully migrated Swiss Ephemeris from frontend (Vercel) to backend-only arc
 ### Immediate (Before Deployment)
 
 1. **Complete Backend Install:**
+
    ```bash
    cd backend
    npm install  # Currently running
    ```
 
 2. **Clean Frontend Dependencies:**
+
    ```bash
    rm -rf node_modules .next
    yarn install --frozen-lockfile
    ```
 
 3. **Test Backend Locally:**
+
    ```bash
    cd backend
    npm run dev
    ```
 
 4. **Test Backend API:**
+
    ```bash
    curl -X POST http://localhost:8000/api/planets/positions \
      -H "Content-Type: application/json" \
@@ -171,6 +185,7 @@ git push
 ```
 
 **Render Configuration:**
+
 - Build Command: `npm install && npm run build`
 - Start Command: `npm start`
 - Environment Variables:
@@ -212,16 +227,19 @@ git push
 ```
 
 **Vercel Environment Variables:**
+
 - `NEXT_PUBLIC_BACKEND_URL=https://your-backend.onrender.com`
 
 ### Verification
 
 1. **Backend Health Check:**
+
    ```bash
    curl https://your-backend.onrender.com/api/health
    ```
 
 2. **Backend Ephemeris Test:**
+
    ```bash
    curl -X POST https://your-backend.onrender.com/api/planets/positions \
      -H "Content-Type: application/json" \
@@ -295,6 +313,7 @@ git push
 If issues arise, rollback is straightforward:
 
 1. **Revert Frontend:**
+
    ```bash
    git revert HEAD
    # Re-add swisseph-v2 to package.json

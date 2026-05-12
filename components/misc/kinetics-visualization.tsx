@@ -13,13 +13,7 @@ import {
   BarChart,
   Bar,
 } from 'recharts'
-import {
-  Zap,
-  Gauge,
-  TrendingUp,
-  ArrowUp,
-  ArrowDown,
-} from 'lucide-react'
+import { Zap, Gauge, TrendingUp, ArrowUp, ArrowDown } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -66,10 +60,10 @@ async function fetchEnhancedKinetics(): Promise<EnhancedKineticData> {
     currentPower > 0.8
       ? 'peak'
       : currentPower > 0.6
-      ? 'sustained'
-      : currentPower > 0.3
-      ? 'building'
-      : 'waning'
+        ? 'sustained'
+        : currentPower > 0.3
+          ? 'building'
+          : 'waning'
 
   let planetaryPositions: Array<{ planet: string; sign: string; degree: number }> = []
   try {
@@ -242,7 +236,7 @@ export default function KineticsVisualization() {
         } else if (aspect.separating) {
           kineticImpact *= 0.8 // Separating aspects have lower impact
         }
-        kineticImpact *= (1.0 + velocityIntensity * 0.2)
+        kineticImpact *= 1.0 + velocityIntensity * 0.2
 
         return {
           planet1: aspect.planet1,
@@ -322,9 +316,7 @@ export default function KineticsVisualization() {
                   {(kineticData.currentPower * 100).toFixed(1)}%
                 </div>
                 <Progress value={kineticData.currentPower * 100} className="h-2" />
-                <p className="text-xs text-muted-foreground mt-2">
-                  Energy capacity for work
-                </p>
+                <p className="text-xs text-muted-foreground mt-2">Energy capacity for work</p>
               </CardContent>
             </Card>
 
@@ -337,9 +329,7 @@ export default function KineticsVisualization() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold mb-2 capitalize">
-                  {kineticData.momentum}
-                </div>
+                <div className="text-3xl font-bold mb-2 capitalize">{kineticData.momentum}</div>
                 <Badge
                   variant={
                     kineticData.momentum === 'peak'
@@ -352,9 +342,7 @@ export default function KineticsVisualization() {
                 >
                   {getMomentumDescription(kineticData.momentum)}
                 </Badge>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Sustained force of change
-                </p>
+                <p className="text-xs text-muted-foreground mt-2">Sustained force of change</p>
               </CardContent>
             </Card>
           </div>
@@ -364,9 +352,7 @@ export default function KineticsVisualization() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium">Aspect Kinetic Modifiers</CardTitle>
-                <CardDescription>
-                  Current aspects affecting kinetic calculations
-                </CardDescription>
+                <CardDescription>Current aspects affecting kinetic calculations</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
@@ -424,7 +410,9 @@ export default function KineticsVisualization() {
                       </div>
                       <div>
                         <div className="text-xs text-muted-foreground mb-1">Proximity Weight</div>
-                        <div className="text-lg font-bold">{(aspect.proximityWeight * 100).toFixed(1)}%</div>
+                        <div className="text-lg font-bold">
+                          {(aspect.proximityWeight * 100).toFixed(1)}%
+                        </div>
                       </div>
                       <div>
                         <div className="text-xs text-muted-foreground mb-1">Orb Velocity</div>
@@ -435,7 +423,9 @@ export default function KineticsVisualization() {
                       </div>
                       <div>
                         <div className="text-xs text-muted-foreground mb-1">Kinetic Impact</div>
-                        <div className="text-lg font-bold">{(aspect.kineticImpact * 100).toFixed(1)}%</div>
+                        <div className="text-lg font-bold">
+                          {(aspect.kineticImpact * 100).toFixed(1)}%
+                        </div>
                       </div>
                     </div>
 
@@ -470,15 +460,28 @@ export default function KineticsVisualization() {
               <CardDescription>Rate of change per element</CardDescription>
             </CardHeader>
             <CardContent>
-              {kineticData.base?.elementalVelocity && kineticData.base.elementalVelocity.length > 0 ? (
+              {kineticData.base?.elementalVelocity &&
+              kineticData.base.elementalVelocity.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart
                     data={[
                       {
-                        Fire: kineticData.base.elementalVelocity[kineticData.base.elementalVelocity.length - 1]?.v?.Fire || 0,
-                        Water: kineticData.base.elementalVelocity[kineticData.base.elementalVelocity.length - 1]?.v?.Water || 0,
-                        Air: kineticData.base.elementalVelocity[kineticData.base.elementalVelocity.length - 1]?.v?.Air || 0,
-                        Earth: kineticData.base.elementalVelocity[kineticData.base.elementalVelocity.length - 1]?.v?.Earth || 0,
+                        Fire:
+                          kineticData.base.elementalVelocity[
+                            kineticData.base.elementalVelocity.length - 1
+                          ]?.v?.Fire || 0,
+                        Water:
+                          kineticData.base.elementalVelocity[
+                            kineticData.base.elementalVelocity.length - 1
+                          ]?.v?.Water || 0,
+                        Air:
+                          kineticData.base.elementalVelocity[
+                            kineticData.base.elementalVelocity.length - 1
+                          ]?.v?.Air || 0,
+                        Earth:
+                          kineticData.base.elementalVelocity[
+                            kineticData.base.elementalVelocity.length - 1
+                          ]?.v?.Earth || 0,
                       },
                     ]}
                   >
@@ -513,12 +516,10 @@ export default function KineticsVisualization() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                       dataKey="timestamp"
-                      tickFormatter={(value) => new Date(value).toLocaleTimeString()}
+                      tickFormatter={value => new Date(value).toLocaleTimeString()}
                     />
                     <YAxis />
-                    <Tooltip
-                      labelFormatter={(value) => new Date(value).toLocaleString()}
-                    />
+                    <Tooltip labelFormatter={value => new Date(value).toLocaleString()} />
                     <Legend />
                     <Line
                       type="monotone"
@@ -659,4 +660,3 @@ function calculatePowerModifier(analysis: DynamicAspectsAnalysis): number {
 
   return totalWeight > 0 ? totalModifier / totalWeight : 1.0
 }
-

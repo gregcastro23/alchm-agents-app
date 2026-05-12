@@ -190,9 +190,9 @@ export const ZodiacWheelInteractive: React.FC<ZodiacWheelInteractiveProps> = ({
   showLabels = true,
   /* _highlightElements = [], */
 }) => {
-    const [zoom, setZoom] = useState(1)
+  const [zoom, setZoom] = useState(1)
   const [rotation, setRotation] = useState(0)
-    const [lastTouchDistance, setLastTouchDistance] = useState(0)
+  const [lastTouchDistance, setLastTouchDistance] = useState(0)
   const [isPinching, setIsPinching] = useState(false)
   const [hoveredDegree, _setHoveredDegree] = useState<number | null>(null)
 
@@ -400,7 +400,9 @@ export const ZodiacWheelInteractive: React.FC<ZodiacWheelInteractiveProps> = ({
                   <div className="text-sm font-medium text-purple-200">
                     Degree {hoveredDegree}° - {(hoveredAgent as any).name}
                   </div>
-                  <div className="text-xs text-purple-400 mt-1">{(hoveredAgent as any).description}</div>
+                  <div className="text-xs text-purple-400 mt-1">
+                    {(hoveredAgent as any).description}
+                  </div>
                 </div>
               )}
             </div>
@@ -518,4 +520,3 @@ export const ZodiacWheelInteractive: React.FC<ZodiacWheelInteractiveProps> = ({
 }
 
 export default ZodiacWheelInteractive
-

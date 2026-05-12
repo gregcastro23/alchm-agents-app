@@ -107,7 +107,7 @@ function auditAgent(agent: any): AuditResult {
     agentName: agent.name || 'UNKNOWN',
     issues,
     warnings,
-    isComplete: issues.length === 0
+    isComplete: issues.length === 0,
   }
 }
 
@@ -133,7 +133,7 @@ for (const agent of DEMO_AGENTS) {
 }
 
 // Report results
-console.log('=' .repeat(80))
+console.log('='.repeat(80))
 console.log('AUDIT SUMMARY')
 console.log('='.repeat(80))
 console.log(`Total Agents: ${DEMO_AGENTS.length}`)
@@ -203,11 +203,8 @@ const auditReport = {
   incompleteAgents: DEMO_AGENTS.length - completeAgents,
   totalIssues,
   totalWarnings,
-  results
+  results,
 }
 
 console.log('\n📝 Detailed results exported to: audit-report.json')
-require('fs').writeFileSync(
-  'audit-report.json',
-  JSON.stringify(auditReport, null, 2)
-)
+require('fs').writeFileSync('audit-report.json', JSON.stringify(auditReport, null, 2))

@@ -209,7 +209,7 @@ Be thoughtful, precise, and leverage the tools effectively.`,
     if (!intermediateSteps) return []
 
     return intermediateSteps
-      .map((step) => {
+      .map(step => {
         if (step.action && step.action.tool) {
           return step.action.tool
         }

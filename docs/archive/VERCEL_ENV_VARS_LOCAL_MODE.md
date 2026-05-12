@@ -1,4 +1,5 @@
 # Vercel Environment Variables - Local Calculation Mode
+
 **Mode**: Frontend-only (no backend dependency)
 **Updated**: November 14, 2025
 
@@ -105,6 +106,7 @@ NEXTAUTH_SECRET=<GENERATE_NEW_SECRET>
 ```
 
 **To generate NEXTAUTH_SECRET:**
+
 ```bash
 openssl rand -base64 32
 ```
@@ -178,17 +180,17 @@ curl https://planetary-agents.vercel.app/api/health
 
 ## 📊 Variable Count
 
-| Category | Count | Required |
-|----------|-------|----------|
-| Database | 3 | ✅ Yes |
-| AI APIs | 5 | ✅ Yes |
-| Claude | 2 | ✅ Yes |
-| Monica | 2 | ✅ Yes |
-| Feature Flags | 5 | ✅ Yes |
-| RAG | 3 | ✅ Yes |
-| Next.js | 2 | ✅ Yes |
-| Auth | 2 | ✅ Yes |
-| **Total** | **24** | **All required** |
+| Category      | Count  | Required         |
+| ------------- | ------ | ---------------- |
+| Database      | 3      | ✅ Yes           |
+| AI APIs       | 5      | ✅ Yes           |
+| Claude        | 2      | ✅ Yes           |
+| Monica        | 2      | ✅ Yes           |
+| Feature Flags | 5      | ✅ Yes           |
+| RAG           | 3      | ✅ Yes           |
+| Next.js       | 2      | ✅ Yes           |
+| Auth          | 2      | ✅ Yes           |
+| **Total**     | **24** | **All required** |
 
 ---
 

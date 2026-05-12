@@ -5,10 +5,12 @@
 ### Timeline of Fixes
 
 **Attempt 1:** Next.js 15.5.6 → 15.5.3
+
 - Result: ❌ Still returned 500 errors
 - Error: Same source-map module missing
 
 **Attempt 2:** Next.js 15.5.3 → 15.0.3 (CURRENT)
+
 - Result: 🔄 Deploying now
 - Confidence: ✅ HIGH - Git history proves this version works
 
@@ -17,10 +19,11 @@
 **Commit:** `91d83158` - Pushed to GitLab ✅
 
 **Changes:**
+
 ```json
 {
   "dependencies": {
-    "next": "15.0.3"  // was 15.5.3
+    "next": "15.0.3" // was 15.5.3
   },
   "devDependencies": {
     "@next/bundle-analyzer": "15.0.3",
@@ -36,23 +39,27 @@
 ### Why This WILL Work
 
 **Git History Evidence:**
+
 ```bash
 Commit 23ccb5ee: "fix: Downgrade Next.js to 15.0.3 to resolve Vercel source-map error"
 ↑ This commit successfully fixed the EXACT same error we're seeing now
 ```
 
 **Version Comparison:**
+
 - **15.0.3**: ✅ Proven working (git history)
 - **15.5.3**: ❌ Failed (just tested)
 - **15.5.6**: ❌ Failed (original logs)
 
 **Trade-off:**
+
 - May see `work-unit-async-storage` warning (non-critical)
 - But ALL endpoints will work (critical)
 
 ### Deployment Status
 
 **Git Push:** ✅ Complete
+
 ```bash
 To gitlab.com:xalchm/my_alchm.git
    4b73e6c6..91d83158  main -> main
@@ -67,6 +74,7 @@ Monitor: https://vercel.com/gregcastro23s-projects/planetary-agents
 After deployment completes (10-15 min):
 
 ✅ **All endpoints return 200**:
+
 ```bash
 # Test these - should all work
 curl https://planetary-agents.vercel.app/api/planetary-positions
@@ -105,16 +113,19 @@ curl -I https://planetary-agents.vercel.app/gallery/chat/marie-curie-1867
 ### What We Learned
 
 **Root Cause:**
+
 - Next.js 15.5.x versions have persistent bugs with source-map module bundling
 - This affects Vercel serverless functions specifically
 - Issue has been recurring across multiple releases
 
 **Solution Pattern:**
+
 - When Next.js has Vercel-specific bugs, downgrade to last known working version
 - Git history is invaluable for identifying working versions
 - Version 15.0.3 is the stable baseline for this project
 
 **Best Practice:**
+
 - Pin Next.js versions in package.json (don't use caret `^`)
 - Test major/minor upgrades thoroughly on Vercel before deploying
 - Keep git history of working configurations
@@ -135,6 +146,7 @@ Once Vercel deployment completes:
 ### Confidence Level
 
 **98% Confident** this will work because:
+
 1. ✅ Exact same version that worked before (commit 23ccb5ee)
 2. ✅ Exact same error pattern we're fixing
 3. ✅ Git history proves this configuration works on Vercel
@@ -143,6 +155,7 @@ Once Vercel deployment completes:
 ### Documentation
 
 **Related Files:**
+
 - `NEXT_JS_DOWNGRADE_FIX.md` - Previous 15.5.3 attempt
 - `DEPLOYMENT_FIX_SUMMARY.md` - Initial diagnosis
 - `VERCEL_DEPLOYMENT_FIX.md` - Comprehensive troubleshooting

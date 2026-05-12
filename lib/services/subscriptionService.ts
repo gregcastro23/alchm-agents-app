@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/db'
 
 export class SubscriptionService {
   /**
@@ -9,14 +9,14 @@ export class SubscriptionService {
     try {
       const subscription = await prisma.userSubscription.findUnique({
         where: { userId },
-      });
+      })
 
-      if (!subscription) return false;
+      if (!subscription) return false
 
-      return subscription.tier === 'premium' && subscription.status === 'active';
+      return subscription.tier === 'premium' && subscription.status === 'active'
     } catch (error) {
-      console.error('Error checking premium status:', error);
-      return false;
+      console.error('Error checking premium status:', error)
+      return false
     }
   }
 
@@ -27,14 +27,14 @@ export class SubscriptionService {
     try {
       const subscription = await prisma.userSubscription.findUnique({
         where: { userId },
-      });
+      })
 
-      if (!subscription || subscription.status !== 'active') return 'free';
+      if (!subscription || subscription.status !== 'active') return 'free'
 
-      return subscription.tier;
+      return subscription.tier
     } catch (error) {
-      console.error('Error getting subscription tier:', error);
-      return 'free';
+      console.error('Error getting subscription tier:', error)
+      return 'free'
     }
   }
 }

@@ -7,6 +7,7 @@
 ### What I Did
 
 Next.js 15.5.6 has a **CONFIRMED BUG** with Vercel serverless functions:
+
 ```
 Cannot find module 'next/dist/compiled/source-map'
 ```
@@ -50,6 +51,7 @@ Once build completes (green checkmark):
 ## 🔍 If It's STILL Broken
 
 Then we have a **different issue** (not Next.js). I'll check:
+
 1. Vercel function logs (real error message)
 2. API key configuration in Vercel dashboard
 3. Environment variable values

@@ -61,12 +61,7 @@ export function getMonicaContextPrompt(context: {
   currentAlchmQuantities?: any
   userConsciousnessProfile?: any
   currentCosmicWeather?: any
-  conversationStage?:
-    | 'greeting'
-    | 'teaching'
-    | 'supporting'
-    | 'concluding'
-    | 'agent_creation'
+  conversationStage?: 'greeting' | 'teaching' | 'supporting' | 'concluding' | 'agent_creation'
   birthData?: any
   userPreferences?: any
 }): string {

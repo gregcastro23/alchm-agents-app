@@ -10,7 +10,7 @@ export async function GET(_request: NextRequest) {
   try {
     // Get conversations from the last 7 days
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-    
+
     const conversations = await prisma.agentConversation.findMany({
       where: {
         createdAt: {
@@ -27,23 +27,26 @@ export async function GET(_request: NextRequest) {
         createdAt: 'asc',
       },
     })
-    
+
     // Group by day for daily metrics
-    const dailyMetrics = new Map<string, { requests: number; success: number; failure: number; totalLatency: number }>()
-    
+    const dailyMetrics = new Map<
+      string,
+      { requests: number; success: number; failure: number; totalLatency: number }
+    >()
+
     conversations.forEach((conv: any) => {
       const dayKey = conv.createdAt.toISOString().split('T')[0]
-      
+
       if (!dailyMetrics.has(dayKey)) {
         dailyMetrics.set(dayKey, { requests: 0, success: 0, failure: 0, totalLatency: 0 })
       }
-      
+
       const day = dailyMetrics.get(dayKey)!
       day.requests++
       day.success++ // Count all as success for now (no failure tracking yet)
       day.totalLatency += conv.responseTime || 800
     })
-    
+
     // Convert to chart format
     const dailyMetricsArray = Array.from(dailyMetrics.entries())
       .map(([_date, stats]: any, index: number) => ({
@@ -54,30 +57,33 @@ export async function GET(_request: NextRequest) {
         avgLatency: stats.requests > 0 ? Math.round(stats.totalLatency / stats.requests) : 800,
       }))
       .slice(-7) // Last 7 days
-    
+
     // Group by agent for planetary data
     const agentMetrics = new Map<string, { requests: number; totalLatency: number }>()
-    
+
     conversations.forEach((conv: any) => {
       if (!agentMetrics.has(conv.agentId)) {
         agentMetrics.set(conv.agentId, { requests: 0, totalLatency: 0 })
       }
-      
+
       const agent = agentMetrics.get(conv.agentId)!
       agent.requests++
       agent.totalLatency += conv.responseTime || 800
     })
-    
+
     // Convert to chart format and get top agents
     const agentMetricsArray = Array.from(agentMetrics.entries())
       .map(([agentId, stats]) => ({
-        name: agentId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+        name: agentId
+          .split('-')
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' '),
         requests: stats.requests,
         avgLatency: stats.requests > 0 ? Math.round(stats.totalLatency / stats.requests) : 800,
       }))
       .sort((a, b) => b.requests - a.requests)
       .slice(0, 10) // Top 10 agents
-    
+
     return NextResponse.json({
       success: true,
       dailyMetrics: dailyMetricsArray,
@@ -85,10 +91,9 @@ export async function GET(_request: NextRequest) {
       totalConversations: conversations.length,
       timestamp: new Date().toISOString(),
     })
-    
   } catch (error) {
     console.error('[Conversation Metrics API] Error:', error)
-    
+
     // Return empty metrics on error
     return NextResponse.json({
       success: true,
@@ -99,4 +104,3 @@ export async function GET(_request: NextRequest) {
     })
   }
 }
-

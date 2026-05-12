@@ -249,7 +249,10 @@ export function MobileMeditationGuidance({
 
   const meditation = MEDITATION_STYLES[(sigil as any).style as SigilStyle]
   const currentMeditationPhase = meditation.phases[currentPhase]
-  const totalDuration = meditation.phases.reduce((sum: number, phase: any) => sum + phase.duration, 0)
+  const totalDuration = meditation.phases.reduce(
+    (sum: number, phase: any) => sum + phase.duration,
+    0
+  )
 
   // Timer effect with mobile vibration
   useEffect(() => {

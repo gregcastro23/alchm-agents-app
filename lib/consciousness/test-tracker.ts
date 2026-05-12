@@ -130,9 +130,7 @@ async function testTracker() {
     console.log(`   - Moon Phase: ${snapshot.moonPhase}`)
     console.log(`   - Evolution: ${snapshot.evolutionTrajectory}`)
     console.log(`   - Response Quality: ${(snapshot.responseQuality * 100).toFixed(0)}%`)
-    console.log(
-      `   - Action Completion: ${(snapshot.actionCompletion * 100).toFixed(0)}%`
-    )
+    console.log(`   - Action Completion: ${(snapshot.actionCompletion * 100).toFixed(0)}%`)
 
     if (snapshot.specialStates.length > 0) {
       console.log(`   - Special States: ${snapshot.specialStates.map(s => s.name).join(', ')}`)
@@ -160,28 +158,20 @@ async function testTracker() {
 
     console.log('✅ Evolution metrics calculated!')
     console.log(`   - Total Interactions: ${evolutionMetrics.totalInteractions}`)
-    console.log(
-      `   - Avg Chat Quality: ${(evolutionMetrics.avgChatQuality * 100).toFixed(0)}%`
-    )
+    console.log(`   - Avg Chat Quality: ${(evolutionMetrics.avgChatQuality * 100).toFixed(0)}%`)
     console.log(
       `   - Avg Action Completion: ${(evolutionMetrics.avgActionCompletion * 100).toFixed(0)}%`
     )
-    console.log(
-      `   - Avg Response Time: ${evolutionMetrics.avgResponseTime.toFixed(0)}ms`
-    )
+    console.log(`   - Avg Response Time: ${evolutionMetrics.avgResponseTime.toFixed(0)}ms`)
     console.log(`   - Velocity Trend: ${evolutionMetrics.velocityTrend}`)
     console.log(`   - Momentum Trend: ${evolutionMetrics.momentumTrend}`)
 
     if (evolutionMetrics.specialStatesAchieved.length > 0) {
-      console.log(
-        `   - Special States: ${evolutionMetrics.specialStatesAchieved.join(', ')}`
-      )
+      console.log(`   - Special States: ${evolutionMetrics.specialStatesAchieved.join(', ')}`)
     }
 
     if (evolutionMetrics.optimalPlanetaryHours.length > 0) {
-      console.log(
-        `   - Optimal Hours: ${evolutionMetrics.optimalPlanetaryHours.join(', ')}`
-      )
+      console.log(`   - Optimal Hours: ${evolutionMetrics.optimalPlanetaryHours.join(', ')}`)
     }
 
     console.log('\n✨ All tests passed! Unified Consciousness Tracker is operational.')

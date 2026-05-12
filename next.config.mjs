@@ -4,7 +4,7 @@ const bundleAnalyzer =
     ? (await import('@next/bundle-analyzer')).default({
         enabled: true,
       })
-    : (config) => config
+    : config => config
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -61,6 +61,16 @@ const nextConfig = {
     },
   },
 
+  async redirects() {
+    return [
+      {
+        source: '/login',
+        destination: '/auth/signin',
+        permanent: true,
+      },
+    ]
+  },
+
   // Code splitting optimization
   webpack: (config, { dev, isServer }) => {
     // Only apply webpack config when not using turbopack
@@ -94,10 +104,10 @@ const nextConfig = {
       config.externals.push({
         'onnxruntime-node': 'commonjs onnxruntime-node',
         '@chroma-core/default-embed': 'commonjs @chroma-core/default-embed',
-        'chromadb': 'commonjs chromadb',
+        chromadb: 'commonjs chromadb',
         'pdf-parse': 'commonjs pdf-parse',
         'pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js': 'commonjs pdf-parse',
-        'ws': 'commonjs ws',
+        ws: 'commonjs ws',
       })
     }
 

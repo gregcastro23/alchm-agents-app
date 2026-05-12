@@ -81,6 +81,7 @@ npx tsx lib/llamaindex/test-rag-generation.ts
 ```
 
 Expected output:
+
 ```
 ✅ RAG Response Generated:
    RAG Used: true
@@ -95,12 +96,14 @@ Expected output:
 ### Issue: ChromaDB Connection Failed
 
 **Symptoms:**
+
 ```
 [VectorStore] Failed to connect to ChromaDB
 ECONNREFUSED 127.0.0.1:8001
 ```
 
 **Solution:**
+
 ```bash
 # Start ChromaDB server
 docker-compose up -d chromadb
@@ -109,6 +112,7 @@ python -m chromadb.server --port 8001
 ```
 
 **Verify:**
+
 ```bash
 curl http://localhost:8001/api/v1/heartbeat
 # Expected: {"nanosecond heartbeat": <number>}
@@ -119,18 +123,21 @@ curl http://localhost:8001/api/v1/heartbeat
 ### Issue: No Documents in Collection
 
 **Symptoms:**
+
 ```
 [SemanticSearch] Found 0 results
 Collection has 0 documents
 ```
 
 **Solution:**
+
 ```bash
 # Re-ingest agent biographies
 npx tsx lib/llamaindex/ingestion-pipeline.ts
 ```
 
 **Verify:**
+
 ```bash
 curl http://localhost:8001/api/v1/collections/historical_agents
 # Should show count: 33
@@ -141,17 +148,20 @@ curl http://localhost:8001/api/v1/collections/historical_agents
 ### Issue: Low Relevance Scores
 
 **Symptoms:**
+
 ```
 [SemanticSearch] Found 3 results (avg score: 0.25)
 All results below threshold 0.35
 ```
 
 **Possible Causes:**
+
 1. Query too vague or general
 2. No relevant content in collection
 3. Embedding model mismatch
 
 **Solution:**
+
 ```typescript
 // Lower threshold temporarily
 const ragConfig = {
@@ -162,6 +172,7 @@ const ragConfig = {
 
 **Better Approach:**
 Improve query specificity:
+
 - ❌ "Tell me about science"
 - ✅ "What was Marie Curie's approach to radioactivity research?"
 
@@ -173,6 +184,7 @@ Improve query specificity:
 RAG toggle resets to default on page reload
 
 **Solution:**
+
 ```typescript
 // Check browser localStorage
 localStorage.getItem('rag-enabled') // Should return "true" or "false"
@@ -189,11 +201,13 @@ localStorage.removeItem('rag-enabled')
 Admin dashboard shows 0 queries despite RAG usage
 
 **Possible Causes:**
+
 1. Analytics not being logged
 2. LocalStorage quota exceeded
 3. Browser privacy settings blocking localStorage
 
 **Solution:**
+
 ```typescript
 // Manually verify logging
 import { ragAnalytics } from '@/lib/rag/rag-analytics'
@@ -213,12 +227,14 @@ ragAnalytics.clearLogs()
 RAG retrieves sources but SourceCitations component doesn't render
 
 **Checklist:**
+
 1. ✅ Check `ragMetadata.sources` exists
 2. ✅ Verify `sources` array is not empty
 3. ✅ Ensure component is imported correctly
 4. ✅ Check console for React errors
 
 **Debug:**
+
 ```typescript
 console.log('RAG Metadata:', ragMetadata)
 console.log('Sources:', ragMetadata?.sources)
@@ -233,11 +249,13 @@ console.log('Sources length:', ragMetadata?.sources?.length)
 Retrieval time >1000ms, previously <500ms
 
 **Possible Causes:**
+
 1. ChromaDB memory pressure
 2. Large query batch
 3. Network latency
 
 **Solution:**
+
 ```bash
 # Restart ChromaDB
 docker-compose restart chromadb
@@ -250,6 +268,7 @@ docker stats chromadb
 ```
 
 **Optimize:**
+
 ```typescript
 // Reduce topK to limit results
 const ragConfig = {
@@ -309,13 +328,13 @@ ls -la app/admin/rag-analytics/
 
 ## Error Codes Reference
 
-| Error Code | Meaning | Solution |
-|------------|---------|----------|
-| 404 | Model not found | Contact Anthropic for model access |
-| 401 | Invalid API key | Check ANTHROPIC_API_KEY in .env.local |
-| 429 | Rate limit exceeded | Implement request throttling |
-| 500 | Server error | Check ChromaDB logs |
-| ECONNREFUSED | Connection refused | Start ChromaDB server |
+| Error Code   | Meaning             | Solution                              |
+| ------------ | ------------------- | ------------------------------------- |
+| 404          | Model not found     | Contact Anthropic for model access    |
+| 401          | Invalid API key     | Check ANTHROPIC_API_KEY in .env.local |
+| 429          | Rate limit exceeded | Implement request throttling          |
+| 500          | Server error        | Check ChromaDB logs                   |
+| ECONNREFUSED | Connection refused  | Start ChromaDB server                 |
 
 ---
 
@@ -323,12 +342,12 @@ ls -la app/admin/rag-analytics/
 
 Expected performance metrics:
 
-| Metric | Target | Acceptable | Poor |
-|--------|--------|------------|------|
-| Retrieval Time | <300ms | <500ms | >1000ms |
-| Generation Time | <2000ms | <3000ms | >5000ms |
-| Relevance Score | >0.6 | >0.4 | <0.3 |
-| Success Rate | >95% | >85% | <70% |
+| Metric          | Target  | Acceptable | Poor    |
+| --------------- | ------- | ---------- | ------- |
+| Retrieval Time  | <300ms  | <500ms     | >1000ms |
+| Generation Time | <2000ms | <3000ms    | >5000ms |
+| Relevance Score | >0.6    | >0.4       | <0.3    |
+| Success Rate    | >95%    | >85%       | <70%    |
 
 ---
 

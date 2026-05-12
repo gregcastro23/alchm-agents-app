@@ -5,12 +5,14 @@
 Following traditional alchemical principles of **Separation of Vessels**, this platform separates astronomical calculations by their elemental nature:
 
 ### Earth Element - Backend (Render)
+
 - **Heavy, stable computational work**
 - Native module compilation (Swiss Ephemeris)
 - Persistent calculations
 - RESTful API for planetary data
 
 ### Air Element - Frontend (Vercel)
+
 - **Light, distributed visualization**
 - Pure JavaScript/TypeScript
 - React components
@@ -64,6 +66,7 @@ Following traditional alchemical principles of **Separation of Vessels**, this p
 Get planetary positions for a given moment in time.
 
 **Request:**
+
 ```typescript
 {
   "date": "2025-11-22T18:37:50Z",  // ISO 8601 format
@@ -75,6 +78,7 @@ Get planetary positions for a given moment in time.
 ```
 
 **Response:**
+
 ```typescript
 {
   "success": true,
@@ -96,6 +100,7 @@ Get planetary positions for a given moment in time.
 Calculate house system for a birth chart.
 
 **Request:**
+
 ```typescript
 {
   "date": "2025-11-22T18:37:50Z",
@@ -106,6 +111,7 @@ Calculate house system for a birth chart.
 ```
 
 **Response:**
+
 ```typescript
 {
   "success": true,
@@ -126,6 +132,7 @@ Calculate house system for a birth chart.
 Calculate consciousness parameters from planetary positions.
 
 **Request:**
+
 ```typescript
 {
   "birthData": {
@@ -138,6 +145,7 @@ Calculate consciousness parameters from planetary positions.
 ```
 
 **Response:**
+
 ```typescript
 {
   "success": true,
@@ -161,6 +169,7 @@ Calculate consciousness parameters from planetary positions.
 Get list of available planets and their alchemical properties.
 
 **Response:**
+
 ```typescript
 {
   "success": true,
@@ -186,8 +195,8 @@ import { planetaryAPI } from '@/lib/planetary-api-client'
 // Get planetary positions
 const positions = await planetaryAPI.getPlanetaryPositions(
   new Date(),
-  40.8681,  // latitude
-  -73.9176  // longitude
+  40.8681, // latitude
+  -73.9176 // longitude
 )
 
 // Get house system
@@ -195,14 +204,14 @@ const houses = await planetaryAPI.getHouseSystem(
   new Date(),
   40.8681,
   -73.9176,
-  'P'  // Placidus
+  'P' // Placidus
 )
 
 // Calculate consciousness
 const consciousness = await planetaryAPI.calculateConsciousness(
-  new Date('1990-05-15T12:00:00Z'),  // birth date
-  40.8681,   // birth latitude
-  -73.9176,  // birth longitude
+  new Date('1990-05-15T12:00:00Z'), // birth date
+  40.8681, // birth latitude
+  -73.9176, // birth longitude
   new Date() // current date (optional)
 )
 ```
@@ -238,10 +247,11 @@ By honoring each element's natural domain, we create a harmonious system that op
 ### Monica Constant Formula
 
 ```typescript
-MC = φ * (1 + E/T) * (1 + C/10)
+MC = φ * (1 + E / T) * (1 + C / 10)
 ```
 
 Where:
+
 - **φ** = Golden Ratio (1.618033988749895)
 - **E** = Elemental Balance (Spirit + Essence)
 - **T** = Total Elemental Weight (Spirit + Essence + Matter + Substance)
@@ -252,7 +262,7 @@ Where:
 Each planet carries specific alchemical energies:
 
 | Planet  | Spirit | Essence | Matter | Substance | Element |
-|---------|--------|---------|--------|-----------|---------|
+| ------- | ------ | ------- | ------ | --------- | ------- |
 | Sun     | 1      | 0       | 0      | 0         | Fire    |
 | Moon    | 0      | 1       | 1      | 0         | Water   |
 | Mercury | 1      | 0       | 0      | 1         | Air     |
@@ -290,11 +300,13 @@ CORS_ORIGIN=https://planetary-agents.vercel.app
 ### Backend Deployment (Render)
 
 1. **Build Command:**
+
    ```bash
    npm install && npm run build
    ```
 
 2. **Start Command:**
+
    ```bash
    npm start
    ```
@@ -307,11 +319,13 @@ CORS_ORIGIN=https://planetary-agents.vercel.app
 ### Frontend Deployment (Vercel)
 
 1. **Build Command:**
+
    ```bash
    yarn build
    ```
 
 2. **Install Command:**
+
    ```bash
    yarn install --frozen-lockfile
    ```
@@ -403,6 +417,7 @@ curl -X POST http://localhost:8000/api/planets/positions \
 ## Support
 
 For issues or questions:
+
 - Backend architecture: Check `backend/src/services/swiss-ephemeris.ts`
 - Frontend client: Check `lib/planetary-api-client.ts`
 - API routes: Check `backend/src/routes/ephemeris.ts`

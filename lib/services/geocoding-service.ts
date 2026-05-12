@@ -1,6 +1,6 @@
 /**
  * Geocoding Service - Location to Coordinates Conversion
- * 
+ *
  * Uses OpenStreetMap Nominatim API (free, no API key required)
  * Falls back to mock data if service is unavailable
  */
@@ -21,78 +21,78 @@ let lastRequestTime = 0
 
 // Mock fallback data for common cities
 const FALLBACK_COORDINATES: Record<string, GeocodeResult> = {
-  'new york': { 
-    latitude: 40.7128, 
-    longitude: -74.006, 
+  'new york': {
+    latitude: 40.7128,
+    longitude: -74.006,
     formattedName: 'New York, NY, USA',
     city: 'New York',
     state: 'NY',
-    country: 'USA'
+    country: 'USA',
   },
-  'london': { 
-    latitude: 51.5074, 
-    longitude: -0.1278, 
+  london: {
+    latitude: 51.5074,
+    longitude: -0.1278,
     formattedName: 'London, England, UK',
     city: 'London',
-    country: 'United Kingdom'
+    country: 'United Kingdom',
   },
-  'paris': { 
-    latitude: 48.8566, 
-    longitude: 2.3522, 
+  paris: {
+    latitude: 48.8566,
+    longitude: 2.3522,
     formattedName: 'Paris, France',
     city: 'Paris',
-    country: 'France'
+    country: 'France',
   },
-  'tokyo': { 
-    latitude: 35.6762, 
-    longitude: 139.6503, 
+  tokyo: {
+    latitude: 35.6762,
+    longitude: 139.6503,
     formattedName: 'Tokyo, Japan',
     city: 'Tokyo',
-    country: 'Japan'
+    country: 'Japan',
   },
-  'sydney': { 
-    latitude: -33.8688, 
-    longitude: 151.2093, 
+  sydney: {
+    latitude: -33.8688,
+    longitude: 151.2093,
     formattedName: 'Sydney, Australia',
     city: 'Sydney',
-    country: 'Australia'
+    country: 'Australia',
   },
-  'los angeles': { 
-    latitude: 34.0522, 
-    longitude: -118.2437, 
+  'los angeles': {
+    latitude: 34.0522,
+    longitude: -118.2437,
     formattedName: 'Los Angeles, CA, USA',
     city: 'Los Angeles',
     state: 'CA',
-    country: 'USA'
+    country: 'USA',
   },
-  'chicago': { 
-    latitude: 41.8781, 
-    longitude: -87.6298, 
+  chicago: {
+    latitude: 41.8781,
+    longitude: -87.6298,
     formattedName: 'Chicago, IL, USA',
     city: 'Chicago',
     state: 'IL',
-    country: 'USA'
+    country: 'USA',
   },
-  'toronto': { 
-    latitude: 43.6532, 
-    longitude: -79.3832, 
+  toronto: {
+    latitude: 43.6532,
+    longitude: -79.3832,
     formattedName: 'Toronto, Canada',
     city: 'Toronto',
-    country: 'Canada'
+    country: 'Canada',
   },
-  'berlin': { 
-    latitude: 52.52, 
-    longitude: 13.405, 
+  berlin: {
+    latitude: 52.52,
+    longitude: 13.405,
     formattedName: 'Berlin, Germany',
     city: 'Berlin',
-    country: 'Germany'
+    country: 'Germany',
   },
-  'rome': { 
-    latitude: 41.9028, 
-    longitude: 12.4964, 
+  rome: {
+    latitude: 41.9028,
+    longitude: 12.4964,
     formattedName: 'Rome, Italy',
     city: 'Rome',
-    country: 'Italy'
+    country: 'Italy',
   },
 }
 
@@ -100,9 +100,7 @@ const FALLBACK_COORDINATES: Record<string, GeocodeResult> = {
  * Geocode a location string to coordinates using Nominatim API
  * Falls back to mock data if API fails
  */
-export async function geocodeLocation(
-  location: string
-): Promise<GeocodeResult | null> {
+export async function geocodeLocation(location: string): Promise<GeocodeResult | null> {
   if (!location || location.trim().length === 0) {
     return null
   }
@@ -121,9 +119,7 @@ export async function geocodeLocation(
     const now = Date.now()
     const timeSinceLastRequest = now - lastRequestTime
     if (timeSinceLastRequest < REQUEST_DELAY) {
-      await new Promise(resolve => 
-        setTimeout(resolve, REQUEST_DELAY - timeSinceLastRequest)
-      )
+      await new Promise(resolve => setTimeout(resolve, REQUEST_DELAY - timeSinceLastRequest))
     }
 
     // Query Nominatim API
@@ -167,10 +163,9 @@ export async function geocodeLocation(
 
     console.log('[Geocoding] Found:', geocodeResult.formattedName)
     return geocodeResult
-
   } catch (error) {
     console.error('[Geocoding] Error:', error)
-    
+
     // Fallback to mock data
     const fallback = getFallbackCoordinates(normalizedLocation)
     if (fallback) {
@@ -216,18 +211,13 @@ export async function geocodeLocations(
 /**
  * Reverse geocode coordinates to location name
  */
-export async function reverseGeocode(
-  latitude: number,
-  longitude: number
-): Promise<string | null> {
+export async function reverseGeocode(latitude: number, longitude: number): Promise<string | null> {
   try {
     // Rate limiting
     const now = Date.now()
     const timeSinceLastRequest = now - lastRequestTime
     if (timeSinceLastRequest < REQUEST_DELAY) {
-      await new Promise(resolve => 
-        setTimeout(resolve, REQUEST_DELAY - timeSinceLastRequest)
-      )
+      await new Promise(resolve => setTimeout(resolve, REQUEST_DELAY - timeSinceLastRequest))
     }
 
     const url = new URL(`${NOMINATIM_BASE_URL}/reverse`)
@@ -250,10 +240,8 @@ export async function reverseGeocode(
 
     const data = await response.json()
     return data.display_name || null
-
   } catch (error) {
     console.error('[Geocoding] Reverse geocode error:', error)
     return null
   }
 }
-

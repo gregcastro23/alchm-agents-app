@@ -121,7 +121,7 @@ export default function ModernPhilosophersStone() {
     } catch (error) {
       console.error('Chart calculation error:', error)
       addMonicaMessage(
-        "I encountered an issue calculating the chart. Please verify the birth data is correct and try again."
+        'I encountered an issue calculating the chart. Please verify the birth data is correct and try again.'
       )
     } finally {
       setIsCalculating(false)
@@ -498,7 +498,9 @@ export default function ModernPhilosophersStone() {
                     }`}
                   >
                     <div className="flex items-start gap-2">
-                      {msg.role === 'monica' && <Sparkles className="w-4 h-4 text-purple-400 mt-1" />}
+                      {msg.role === 'monica' && (
+                        <Sparkles className="w-4 h-4 text-purple-400 mt-1" />
+                      )}
                       <p className="text-sm flex-1">{msg.content}</p>
                     </div>
                   </div>

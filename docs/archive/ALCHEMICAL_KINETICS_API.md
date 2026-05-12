@@ -27,6 +27,7 @@ Calculate complete alchemical kinetics for a given consciousness state.
 **Endpoint:** `POST /api/kinetics/alchemical`
 
 **Request Body:**
+
 ```json
 {
   "current": {
@@ -57,12 +58,13 @@ Calculate complete alchemical kinetics for a given consciousness state.
   },
   "location": {
     "lat": 40.7128,
-    "lon": -74.0060
+    "lon": -74.006
   }
 }
 ```
 
 **Parameters:**
+
 - `current` (required): Current alchemical state
   - `spirit`, `essence`, `matter`, `substance`: 0-1 range
   - `elementals`: Fire, Water, Air, Earth values (typically 0-10 range)
@@ -71,6 +73,7 @@ Calculate complete alchemical kinetics for a given consciousness state.
 - `location` (required): Latitude and longitude for planetary calculations
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -138,12 +141,14 @@ Calculate complete alchemical kinetics for a given consciousness state.
 ```
 
 **Validation Rules:**
+
 - All numeric values must be valid numbers
 - Timestamp must be valid ISO 8601 format
 - Latitude: -90 to 90
 - Longitude: -180 to 180
 
 **Status Codes:**
+
 - `200 OK`: Success
 - `400 Bad Request`: Validation failed
 - `503 Service Unavailable`: Kinetics backend disabled
@@ -157,25 +162,28 @@ Calculate alchemical kinetics over a time range.
 **Endpoint:** `POST /api/kinetics/alchemical-timeline`
 
 **Request Body:**
+
 ```json
 {
   "startDate": "2025-01-15T00:00:00Z",
   "endDate": "2025-01-15T23:59:59Z",
   "location": {
     "lat": 40.7128,
-    "lon": -74.0060
+    "lon": -74.006
   },
   "intervalHours": 1
 }
 ```
 
 **Parameters:**
+
 - `startDate` (required): ISO 8601 start timestamp
 - `endDate` (required): ISO 8601 end timestamp (max 7 days from start)
 - `location` (required): Latitude and longitude
 - `intervalHours` (optional): Hours between data points (1-24, default: 1)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -183,11 +191,34 @@ Calculate alchemical kinetics over a time range.
     {
       "velocity": { "Fire": 1.0, "Water": 0.8, "Air": 1.2, "Earth": 0.9, "magnitude": 2.1 },
       "momentum": { "Fire": 6.0, "Water": 4.8, "Air": 7.2, "Earth": 5.4, "magnitude": 12.3 },
-      "force": { "Fire": 0.3, "Water": 0.2, "Air": 0.4, "Earth": 0.25, "magnitude": 0.65, "type": "accelerating" },
-      "flowState": { "expansion": 0.7, "contraction": 0.2, "balance": 0.8, "type": "expanding", "description": "..." },
+      "force": {
+        "Fire": 0.3,
+        "Water": 0.2,
+        "Air": 0.4,
+        "Earth": 0.25,
+        "magnitude": 0.65,
+        "type": "accelerating"
+      },
+      "flowState": {
+        "expansion": 0.7,
+        "contraction": 0.2,
+        "balance": 0.8,
+        "type": "expanding",
+        "description": "..."
+      },
       "resonance": { "harmonic": 0.8, "discord": 0.2, "purity": 0.8, "quality": "pure" },
-      "temporalPressure": { "solarity": 0.1, "lunarity": 0.9, "pressure": 0.8, "rhythm": "nocturnal" },
-      "metadata": { "timestamp": "2025-01-15T00:00:00Z", "previousTimestamp": null, "timeInterval": 1, "planetaryHour": "Moon" }
+      "temporalPressure": {
+        "solarity": 0.1,
+        "lunarity": 0.9,
+        "pressure": 0.8,
+        "rhythm": "nocturnal"
+      },
+      "metadata": {
+        "timestamp": "2025-01-15T00:00:00Z",
+        "previousTimestamp": null,
+        "timeInterval": 1,
+        "planetaryHour": "Moon"
+      }
     }
     // ... more data points
   ],
@@ -214,15 +245,18 @@ Calculate alchemical kinetics over a time range.
 ```
 
 **Validation Rules:**
+
 - Date range cannot exceed 7 days (168 hours)
 - `endDate` must be after `startDate`
 - `intervalHours` must be 1-24
 
 **Caching:**
+
 - Results cached for 5 minutes
 - Cache key includes all request parameters
 
 **Status Codes:**
+
 - `200 OK`: Success
 - `400 Bad Request`: Validation failed or invalid date range
 - `503 Service Unavailable`: Kinetics backend disabled
@@ -236,6 +270,7 @@ Get system status and available features.
 **Endpoint:** `GET /api/kinetics/status`
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -268,6 +303,7 @@ Get system status and available features.
 ## Formulas Reference
 
 ### 1. Elemental Velocity (Celeritas)
+
 **Mercury Principle - Rate of Transformation**
 
 ```typescript
@@ -276,6 +312,7 @@ modifiedVelocity = velocity * getPlanetaryVelocityModifier(planetaryHour, elemen
 ```
 
 **Planetary Modifiers:**
+
 - Mercury hours: +10% global boost
 - Fire: +20% during Sun/Mars hours
 - Water: +15% during Moon/Venus hours
@@ -283,6 +320,7 @@ modifiedVelocity = velocity * getPlanetaryVelocityModifier(planetaryHour, elemen
 - Earth: +10% during Saturn hours
 
 ### 2. Elemental Momentum (Impetus)
+
 **Mars + Saturn Synthesis - Sustained Force**
 
 ```typescript
@@ -291,9 +329,11 @@ modifiedMomentum = momentum * getPlanetaryMomentumModifier(planetaryHour)
 ```
 
 **Planetary Modifiers:**
+
 - Mars/Saturn hours: +15% momentum boost
 
 ### 3. Elemental Force (Vis)
+
 **Classical Force Principle**
 
 ```typescript
@@ -307,17 +347,21 @@ else forceType = 'sustained'
 ```
 
 ### 4. Flow States
+
 **Jupiter (Expansion) vs Saturn (Contraction)**
 
 ```typescript
 totalChange = (currentTotal - previousTotal) / timeInterval
 
-if (totalChange > 0.05) type = 'expanding'      // Jupiter-dominated
-else if (totalChange < -0.05) type = 'contracting'  // Saturn-dominated
+if (totalChange > 0.05)
+  type = 'expanding' // Jupiter-dominated
+else if (totalChange < -0.05)
+  type = 'contracting' // Saturn-dominated
 else type = 'balanced'
 ```
 
 ### 5. Resonance Field
+
 **Venus + Neptune Principle**
 
 ```typescript
@@ -334,6 +378,7 @@ else quality = 'chaotic'
 ```
 
 ### 6. Temporal Pressure
+
 **Sun (Diurnal) vs Moon (Nocturnal)**
 
 ```typescript
@@ -361,19 +406,19 @@ import AlchemicalKineticsClient from '@/lib/unified-clients/alchemical-kinetics-
 
 // Create alchemical state
 const currentState = AlchemicalKineticsClient.createAlchemicalState(
-  0.7,  // spirit
-  0.6,  // essence
-  0.5,  // matter
-  0.4,  // substance
-  { Fire: 6.5, Water: 5.2, Air: 7.1, Earth: 4.8 },  // elementals
-  new Date()  // timestamp
+  0.7, // spirit
+  0.6, // essence
+  0.5, // matter
+  0.4, // substance
+  { Fire: 6.5, Water: 5.2, Air: 7.1, Earth: 4.8 }, // elementals
+  new Date() // timestamp
 )
 
 // Calculate kinetics
 const kinetics = await AlchemicalKineticsClient.calculateKinetics(
   currentState,
-  previousState,  // or null for first calculation
-  { lat: 40.7128, lon: -74.0060 }
+  previousState, // or null for first calculation
+  { lat: 40.7128, lon: -74.006 }
 )
 
 // Analyze kinetics for insights
@@ -384,16 +429,17 @@ console.log(analysis.recommendations)
 
 // Calculate timeline
 const timeline = await AlchemicalKineticsClient.calculateKineticsTimeline(
-  '2025-01-15T00:00:00Z',  // startDate
-  '2025-01-15T23:59:59Z',  // endDate
-  { lat: 40.7128, lon: -74.0060 },
-  1  // intervalHours
+  '2025-01-15T00:00:00Z', // startDate
+  '2025-01-15T23:59:59Z', // endDate
+  { lat: 40.7128, lon: -74.006 },
+  1 // intervalHours
 )
 ```
 
 ### cURL Examples
 
 **Calculate kinetics:**
+
 ```bash
 curl -X POST http://localhost:8000/api/kinetics/alchemical \
   -H "Content-Type: application/json" \
@@ -411,6 +457,7 @@ curl -X POST http://localhost:8000/api/kinetics/alchemical \
 ```
 
 **Get timeline:**
+
 ```bash
 curl -X POST http://localhost:8000/api/kinetics/alchemical-timeline \
   -H "Content-Type: application/json" \
@@ -464,6 +511,7 @@ All endpoints follow consistent error format:
 ```
 
 **Common Error Codes:**
+
 - `400`: Validation error or invalid input
 - `429`: Rate limit exceeded
 - `500`: Internal server error
@@ -491,6 +539,7 @@ chmod +x scripts/test-alchemical-kinetics.sh
 ```
 
 This will test:
+
 1. Status endpoint
 2. Single state kinetics calculation
 3. Kinetics with previous state

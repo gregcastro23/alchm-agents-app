@@ -5,6 +5,7 @@
 ### Step 1: Choose a Provider (Recommended: Cloudflare)
 
 **Cloudflare AI Gateway** - Easiest setup, great for beginners
+
 - Sign up: https://developers.cloudflare.com/workers-ai/
 - Free tier: $0.01 per 1M requests
 - Dashboard: https://dash.cloudflare.com/
@@ -39,6 +40,7 @@ yarn dev
 Visit: http://localhost:3000/api/ai-gateway/health
 
 You should see:
+
 ```json
 {
   "status": {
@@ -51,11 +53,13 @@ You should see:
 ## Expected Results
 
 ### Immediate Benefits
+
 - ✅ All AI requests cached intelligently
 - ✅ 30-70% reduction in API costs
 - ✅ Automatic rate limiting
 
 ### After 24 Hours
+
 - Check your Cloudflare dashboard for:
   - **Cache hit rate** (aim for 50-70%)
   - **Cost savings** (should see 30-70% reduction)
@@ -64,16 +68,20 @@ You should see:
 ## Troubleshooting
 
 ### "Invalid credentials"
+
 - Make sure you're using the **Gateway API key**, not your provider API key
 - Gateway key is different from OPENAI_API_KEY and ANTHROPIC_API_KEY
 
 ### Not seeing cost savings
+
 - First requests don't hit cache (normal)
 - Wait 24 hours for cache to build up
 - Check cache hit rate in dashboard (aim for >50%)
 
 ### How to disable
+
 Simply set:
+
 ```bash
 AI_GATEWAY_ENABLED=false
 ```
@@ -81,6 +89,7 @@ AI_GATEWAY_ENABLED=false
 ## Cost Estimate
 
 For typical usage:
+
 - **Without Gateway:** $300/month
 - **With Gateway (50% cache hit):** $150/month
 - **Savings:** $150/month = $1,800/year
@@ -94,4 +103,5 @@ For typical usage:
 📊 Monitor costs: Your gateway provider dashboard
 
 ---
+
 **Need help?** Check AI_GATEWAY_SETUP.md or open a GitHub issue.

@@ -33,7 +33,7 @@ export const semanticAgentSearchTool = new DynamicStructuredTool({
         })
       }
 
-      const agentSummaries = results.map((result) => ({
+      const agentSummaries = results.map(result => ({
         name: result.agent.name,
         title: result.agent.title,
         relevanceScore: result.relevanceScore.toFixed(3),
@@ -78,7 +78,7 @@ export const knowledgeRetrievalTool = new DynamicStructuredTool({
         ? await searchService.getRelevantKnowledge(query, agentId, { maxChunks })
         : await searchService
             .search(query, { topK: maxChunks })
-            .then((results) => results.map((r) => r.content))
+            .then(results => results.map(r => r.content))
 
       if (knowledge.length === 0) {
         return JSON.stringify({
@@ -152,7 +152,7 @@ export const consciousnessAnalysisTool = new DynamicStructuredTool({
           // Find similar agents for compatibility analysis
           const searchService = getSemanticSearchService()
           const similar = await searchService.findSimilarAgents(agentId, { topK: 3 })
-          analysis.compatibleAgents = similar.map((s) => ({
+          analysis.compatibleAgents = similar.map(s => ({
             name: s.agent.name,
             relevance: s.relevanceScore,
             element: s.agent.consciousness.dominantElement,
@@ -209,7 +209,7 @@ export const multiAgentCoordinatorTool = new DynamicStructuredTool({
         })
       }
 
-      const council = results.map((result) => ({
+      const council = results.map(result => ({
         name: result.agent.name,
         title: result.agent.title,
         relevance: result.relevanceScore.toFixed(3),
@@ -223,7 +223,7 @@ export const multiAgentCoordinatorTool = new DynamicStructuredTool({
         query,
         councilSize: council.length,
         council,
-        recommendation: `These ${council.length} agents form an ideal council for this query, bringing diverse wisdom from: ${Array.from(new Set(council.flatMap((c) => c.wisdomDomains))).join(', ')}`,
+        recommendation: `These ${council.length} agents form an ideal council for this query, bringing diverse wisdom from: ${Array.from(new Set(council.flatMap(c => c.wisdomDomains))).join(', ')}`,
       })
     } catch (error) {
       return JSON.stringify({
@@ -299,14 +299,14 @@ export const planetaryAgentTools = [
  * Get tool by name
  */
 export function getToolByName(name: string) {
-  return planetaryAgentTools.find((tool) => tool.name === name)
+  return planetaryAgentTools.find(tool => tool.name === name)
 }
 
 /**
  * Get all tool descriptions
  */
 export function getToolDescriptions() {
-  return planetaryAgentTools.map((tool) => ({
+  return planetaryAgentTools.map(tool => ({
     name: tool.name,
     description: tool.description,
   }))

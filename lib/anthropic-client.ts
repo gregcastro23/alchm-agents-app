@@ -44,18 +44,18 @@ export const anthropic = new Anthropic({
  */
 export const CLAUDE_MODELS = {
   // Claude 4.x — Current (May 2026)
-  CLAUDE_OPUS_4_7:   CLAUDE.OPUS,
+  CLAUDE_OPUS_4_7: CLAUDE.OPUS,
   CLAUDE_SONNET_4_6: CLAUDE.SONNET,
-  CLAUDE_HAIKU_4_5:  CLAUDE.HAIKU,
+  CLAUDE_HAIKU_4_5: CLAUDE.HAIKU,
 
   // Legacy aliases — map old names to new models for backward compat
-  CLAUDE_3_5_SONNET: CLAUDE.SONNET,   // Was claude-3-5-sonnet → now claude-sonnet-4-6
-  CLAUDE_3_5_HAIKU:  CLAUDE.HAIKU,    // Was claude-3-5-haiku → now claude-haiku-4-5
-  CLAUDE_3_OPUS:     CLAUDE.OPUS,     // Was claude-3-opus → now claude-opus-4-7
-  CLAUDE_3_SONNET:   CLAUDE.SONNET,
-  CLAUDE_3_HAIKU:    CLAUDE.HAIKU,
+  CLAUDE_3_5_SONNET: CLAUDE.SONNET, // Was claude-3-5-sonnet → now claude-sonnet-4-6
+  CLAUDE_3_5_HAIKU: CLAUDE.HAIKU, // Was claude-3-5-haiku → now claude-haiku-4-5
+  CLAUDE_3_OPUS: CLAUDE.OPUS, // Was claude-3-opus → now claude-opus-4-7
+  CLAUDE_3_SONNET: CLAUDE.SONNET,
+  CLAUDE_3_HAIKU: CLAUDE.HAIKU,
   CLAUDE_3_SONNET_LEGACY: CLAUDE.LEGACY_SONNET_3,
-  CLAUDE_3_HAIKU_LEGACY:  CLAUDE.LEGACY_HAIKU_3,
+  CLAUDE_3_HAIKU_LEGACY: CLAUDE.LEGACY_HAIKU_3,
 } as const
 
 // Get model from environment or use defaults
@@ -98,7 +98,8 @@ export async function createClaudeMessage(
     system = 'You are a helpful AI assistant specializing in astrological and alchemical wisdom.'
   } else {
     // Standard: createClaudeMessage(messages, system?, modelType?, maxTokens?)
-    system = systemOrModel ||
+    system =
+      systemOrModel ||
       'You are a helpful AI assistant specializing in astrological and alchemical wisdom.'
     model = getClaudeModel(modelTypeOrTemp as 'default' | 'fast' | 'powerful')
   }

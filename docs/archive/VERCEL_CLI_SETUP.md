@@ -5,6 +5,7 @@ Complete guide to set up Vercel CLI authentication for automated deployments fro
 ## Overview
 
 This project uses Vercel CLI in GitLab CI pipelines for:
+
 - **Production deployments** (automatic on `main` branch)
 - **Preview deployments** (manual for feature branches)
 
@@ -71,6 +72,7 @@ This project uses Vercel CLI in GitLab CI pipelines for:
 ### Verify Variable is Added
 
 You should see:
+
 ```
 Key: VERCEL_TOKEN
 Value: ********* (masked)
@@ -89,8 +91,8 @@ deploy_to_vercel:
   stage: deploy
   image: node:20-alpine
   variables:
-    VERCEL_ORG_ID: "team_eVYHTIN1tCXo7sPrkzqJbLzO"
-    VERCEL_PROJECT_ID: "prj_47jKTcJvhdXzrf3YSTbbYu9SVRTf"
+    VERCEL_ORG_ID: 'team_eVYHTIN1tCXo7sPrkzqJbLzO'
+    VERCEL_PROJECT_ID: 'prj_47jKTcJvhdXzrf3YSTbbYu9SVRTf'
   script:
     - vercel deploy --token=$VERCEL_TOKEN --prod --yes
   only:
@@ -114,6 +116,7 @@ deploy_to_vercel_preview:
 ### Test Production Deployment
 
 1. **Push to main branch**:
+
    ```bash
    git checkout main
    git commit --allow-empty -m "test: Verify Vercel CLI deployment"
@@ -133,6 +136,7 @@ deploy_to_vercel_preview:
 ### Test Preview Deployment (Optional)
 
 1. **Create a feature branch**:
+
    ```bash
    git checkout -b feature/test-preview
    git commit --allow-empty -m "test: Preview deployment"
@@ -155,6 +159,7 @@ deploy_to_vercel_preview:
 **Cause**: `VERCEL_TOKEN` not set or incorrect
 
 **Solution**:
+
 1. Verify token is added in GitLab CI/CD Variables
 2. Ensure token is not expired
 3. Check token has correct scope/permissions
@@ -164,6 +169,7 @@ deploy_to_vercel_preview:
 **Cause**: Wrong project ID or org ID
 
 **Solution**:
+
 1. Verify `.vercel/project.json` has correct IDs:
    ```json
    {
@@ -178,6 +184,7 @@ deploy_to_vercel_preview:
 **Cause**: Token doesn't have permission to deploy
 
 **Solution**:
+
 1. Regenerate token with correct team scope
 2. Ensure you're a member of the Vercel team
 3. Check project permissions
@@ -187,6 +194,7 @@ deploy_to_vercel_preview:
 **Cause**: Vercel CLI waiting for input
 
 **Solution**:
+
 - Ensure `--yes` flag is used (already included)
 - Check `.vercel/project.json` exists and is valid
 - Verify all required flags are passed
@@ -210,15 +218,15 @@ deploy_to_vercel_preview:
 
 ## Benefits of Vercel CLI vs Deploy Hooks
 
-| Feature | Deploy Hook | Vercel CLI |
-|---------|-------------|------------|
-| Deployment control | Limited | Full |
-| Deployment visibility | External | In GitLab logs |
-| Preview deployments | No | Yes |
-| Deployment URL in artifacts | No | Yes |
-| Build configuration | Via Vercel UI | Via CLI flags |
-| Debugging | Difficult | Easy (full logs) |
-| Programmatic control | No | Yes |
+| Feature                     | Deploy Hook   | Vercel CLI       |
+| --------------------------- | ------------- | ---------------- |
+| Deployment control          | Limited       | Full             |
+| Deployment visibility       | External      | In GitLab logs   |
+| Preview deployments         | No            | Yes              |
+| Deployment URL in artifacts | No            | Yes              |
+| Build configuration         | Via Vercel UI | Via CLI flags    |
+| Debugging                   | Difficult     | Easy (full logs) |
+| Programmatic control        | No            | Yes              |
 
 ## Additional Resources
 

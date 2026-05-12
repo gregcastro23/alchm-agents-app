@@ -10,7 +10,11 @@ import {
 /**
  * Server Action for planetary positions - replaces /api/astrologize proxy
  */
-export async function getPlanetaryPositionsAction(date?: string, latitude?: number, longitude?: number) {
+export async function getPlanetaryPositionsAction(
+  date?: string,
+  latitude?: number,
+  longitude?: number
+) {
   try {
     const d = date ? new Date(date) : new Date()
     return await backend.planetary.positions(d, latitude, longitude)

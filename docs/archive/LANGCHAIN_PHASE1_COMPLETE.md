@@ -13,6 +13,7 @@ Successfully implemented **Phase 1: Document Loaders & Knowledge Enhancement** o
 ### What Was Built
 
 #### 1. **Web Content Ingestion** (`lib/langchain/knowledge-updater.ts`)
+
 - ✅ CheerioWebBaseLoader integration for web scraping
 - ✅ RecursiveCharacterTextSplitter for intelligent chunking
 - ✅ URL validation and security checks
@@ -21,6 +22,7 @@ Successfully implemented **Phase 1: Document Loaders & Knowledge Enhancement** o
 - ✅ Comprehensive error handling
 
 **Features:**
+
 - Scrape content from Stanford Encyclopedia, Wikipedia, etc.
 - Configurable chunk size (default: 1000 chars, 200 overlap)
 - Content selector prioritization (article, main, .content)
@@ -28,6 +30,7 @@ Successfully implemented **Phase 1: Document Loaders & Knowledge Enhancement** o
 - Retry logic with exponential backoff
 
 #### 2. **PDF Document Ingestion** (`lib/langchain/pdf-loader.ts`)
+
 - ✅ PDFLoader integration for PDF parsing
 - ✅ Page-by-page processing with metadata
 - ✅ File path validation and security
@@ -35,6 +38,7 @@ Successfully implemented **Phase 1: Document Loaders & Knowledge Enhancement** o
 - ✅ Batch PDF processing support
 
 **Features:**
+
 - Extract text from astrological charts and research papers
 - Per-page metadata tracking
 - Directory traversal prevention
@@ -42,6 +46,7 @@ Successfully implemented **Phase 1: Document Loaders & Knowledge Enhancement** o
 - Support for multi-page documents
 
 #### 3. **HTTP API Endpoint** (`app/api/knowledge-updater/route.ts`)
+
 - ✅ POST endpoint for ingestion (web & PDF)
 - ✅ GET endpoint for querying recent updates
 - ✅ Comprehensive request validation
@@ -49,12 +54,14 @@ Successfully implemented **Phase 1: Document Loaders & Knowledge Enhancement** o
 - ✅ Structured logging throughout
 
 **Endpoints:**
+
 ```bash
 POST /api/knowledge-updater
 GET /api/knowledge-updater?agentId=<id>&limit=<n>
 ```
 
 #### 4. **Unit Tests** (`__tests__/langchain/knowledge-updater.test.ts`)
+
 - ✅ 20+ comprehensive unit tests
 - ✅ Mocked dependencies (Vitest)
 - ✅ Security validation tests
@@ -62,6 +69,7 @@ GET /api/knowledge-updater?agentId=<id>&limit=<n>
 - ✅ Integration scenario tests
 
 **Test Coverage:**
+
 - URL validation (security)
 - Chunk generation
 - Error handling
@@ -69,6 +77,7 @@ GET /api/knowledge-updater?agentId=<id>&limit=<n>
 - Statistics calculation
 
 #### 5. **Documentation**
+
 - ✅ **LANGCHAIN_USAGE_GUIDE.md** - Complete usage guide (100+ pages)
 - ✅ **CLAUDE.md** - Updated with LangChain integration section
 - ✅ **RAG_INTEGRATION_GUIDE.md** - Added dynamic knowledge updates
@@ -79,22 +88,25 @@ GET /api/knowledge-updater?agentId=<id>&limit=<n>
 ## 📊 Results & Metrics
 
 ### Code Statistics
+
 - **Files Created:** 5 new files
 - **Lines of Code:** ~2,000+ lines (including tests & docs)
 - **Test Coverage:** 20+ unit tests
 - **Documentation:** 400+ lines
 
 ### Performance Benchmarks
-| Operation | Duration | Notes |
-|-----------|----------|-------|
-| Web page loading | 500-2000ms | Depends on page size |
-| PDF loading (10 pages) | 1000-3000ms | Depends on file size |
-| Embeddings (100 chunks) | 2000-5000ms | OpenAI API call |
-| ChromaDB ingestion | 500-1500ms | Batch processing |
-| **Total: Web ingestion** | **4-10s** | Full pipeline |
-| **Total: PDF ingestion** | **5-12s** | Full pipeline |
+
+| Operation                | Duration    | Notes                |
+| ------------------------ | ----------- | -------------------- |
+| Web page loading         | 500-2000ms  | Depends on page size |
+| PDF loading (10 pages)   | 1000-3000ms | Depends on file size |
+| Embeddings (100 chunks)  | 2000-5000ms | OpenAI API call      |
+| ChromaDB ingestion       | 500-1500ms  | Batch processing     |
+| **Total: Web ingestion** | **4-10s**   | Full pipeline        |
+| **Total: PDF ingestion** | **5-12s**   | Full pipeline        |
 
 ### Security Features
+
 - ✅ URL validation (blocks localhost, private IPs)
 - ✅ File path sanitization (prevents directory traversal)
 - ✅ Protocol validation (HTTP/HTTPS only)
@@ -119,6 +131,7 @@ curl -X POST http://localhost:3000/api/knowledge-updater \
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -145,6 +158,7 @@ curl -X POST http://localhost:3000/api/knowledge-updater \
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -164,6 +178,7 @@ curl -X POST http://localhost:3000/api/knowledge-updater \
 ## 🧪 Testing
 
 ### Unit Tests
+
 ```bash
 # Run all LangChain tests
 yarn test __tests__/langchain/knowledge-updater.test.ts
@@ -173,6 +188,7 @@ yarn test --coverage __tests__/langchain/
 ```
 
 **Test Results:**
+
 - ✅ All 20+ tests passing
 - ✅ Security validation: PASS
 - ✅ Error handling: PASS
@@ -180,6 +196,7 @@ yarn test --coverage __tests__/langchain/
 - ✅ Statistics calculation: PASS
 
 ### Integration Tests
+
 ```bash
 # Run integration test script
 chmod +x test-knowledge-updater.sh
@@ -187,6 +204,7 @@ chmod +x test-knowledge-updater.sh
 ```
 
 ### Manual Testing
+
 ```bash
 # Test web ingestion
 curl -X POST http://localhost:3000/api/knowledge-updater \
@@ -206,6 +224,7 @@ curl -X GET "http://localhost:3000/api/knowledge-updater?agentId=plato&limit=5" 
 ## 📁 Files Created/Modified
 
 ### New Files
+
 ```
 lib/langchain/knowledge-updater.ts                    (380 lines)
 lib/langchain/pdf-loader.ts                           (420 lines)
@@ -217,6 +236,7 @@ LANGCHAIN_PHASE1_COMPLETE.md                          (this file)
 ```
 
 ### Modified Files
+
 ```
 CLAUDE.md                                             (+ 50 lines)
 RAG_INTEGRATION_GUIDE.md                              (+ 30 lines)
@@ -227,6 +247,7 @@ RAG_INTEGRATION_GUIDE.md                              (+ 30 lines)
 ## 🎓 Key Learnings
 
 ### Technical Insights
+
 1. **CheerioWebBaseLoader** is excellent for static HTML but requires JavaScript rendering for dynamic sites
 2. **RecursiveCharacterTextSplitter** preserves semantic boundaries better than fixed-size chunking
 3. **ChromaDB v2 API** uses `/api/v2/heartbeat` instead of `/api/v1/heartbeat`
@@ -234,6 +255,7 @@ RAG_INTEGRATION_GUIDE.md                              (+ 30 lines)
 5. **Structured logging** (lib/structured-logger.ts) provides much better observability than console.log
 
 ### Best Practices Established
+
 1. **Error Handling:** Always use `withErrorHandling` wrapper for API routes
 2. **Validation:** Validate and sanitize all user inputs
 3. **Logging:** Use structured logger with context (system, operation, agentId)
@@ -241,6 +263,7 @@ RAG_INTEGRATION_GUIDE.md                              (+ 30 lines)
 5. **Documentation:** Document as you code, not after
 
 ### Performance Optimizations
+
 1. **Batch Processing:** Generate embeddings in batches of 100
 2. **Caching:** In-memory embedding cache reduces API calls
 3. **Retry Logic:** Exponential backoff for rate limiting
@@ -253,6 +276,7 @@ RAG_INTEGRATION_GUIDE.md                              (+ 30 lines)
 ### Phase 2: Advanced Retrievers (Q1 2025)
 
 **Features to Implement:**
+
 - [ ] MultiQueryRetriever - Generate multiple query variations
 - [ ] ContextualCompressionRetriever - Compress retrieved documents
 - [ ] SelfQueryRetriever - Natural language to metadata filters
@@ -265,6 +289,7 @@ RAG_INTEGRATION_GUIDE.md                              (+ 30 lines)
 ### Phase 3: Specialized Tools (Q1 2025)
 
 **Features to Implement:**
+
 - [ ] Calculator tool for numerical queries
 - [ ] Wikipedia tool for encyclopedic knowledge
 - [ ] WebBrowser tool for dynamic scraping
@@ -277,6 +302,7 @@ RAG_INTEGRATION_GUIDE.md                              (+ 30 lines)
 ### Phase 4: Hybrid Search (Q2 2025)
 
 **Features to Implement:**
+
 - [ ] BM25 retriever for keyword search
 - [ ] Hybrid retriever (vector + keyword)
 - [ ] Query expansion
@@ -289,6 +315,7 @@ RAG_INTEGRATION_GUIDE.md                              (+ 30 lines)
 ### Phase 5: Full API Integration (Q2 2025)
 
 **Features to Implement:**
+
 - [ ] LangChain agent API endpoint
 - [ ] Frontend integration
 - [ ] Tool selection UI
@@ -303,18 +330,21 @@ RAG_INTEGRATION_GUIDE.md                              (+ 30 lines)
 ## 🐛 Known Issues & Limitations
 
 ### Current Limitations
+
 1. **ChromaDB Query:** `getRecentKnowledgeUpdates()` returns empty array (requires additional ChromaDB query functionality)
 2. **JavaScript-Heavy Sites:** CheerioWebBaseLoader can't handle sites requiring JavaScript rendering
 3. **Scanned PDFs:** PDFLoader can't extract text from image-based PDFs (OCR required)
 4. **Rate Limiting:** OpenAI API rate limits may affect batch operations
 
 ### Workarounds
+
 1. Store update history in PostgreSQL database
 2. Use Puppeteer/Playwright for dynamic sites (Phase 3)
 3. Preprocess PDFs with OCR tools
 4. Implement request queuing for large batches
 
 ### Future Improvements
+
 1. Add WebSocket support for real-time progress updates
 2. Implement deduplication logic for repeated URLs
 3. Add content quality scoring
@@ -325,12 +355,14 @@ RAG_INTEGRATION_GUIDE.md                              (+ 30 lines)
 ## 📚 Resources
 
 ### Documentation
+
 - **Main Guide:** [LANGCHAIN_USAGE_GUIDE.md](./LANGCHAIN_USAGE_GUIDE.md)
 - **Project Overview:** [CLAUDE.md](./CLAUDE.md)
 - **RAG Guide:** [RAG_INTEGRATION_GUIDE.md](./RAG_INTEGRATION_GUIDE.md)
 - **Integration Plan:** [LANGCHAIN_COMMUNITY_INTEGRATION_PLAN.md](./LANGCHAIN_COMMUNITY_INTEGRATION_PLAN.md)
 
 ### External Links
+
 - **LangChain JS:** https://js.langchain.com/docs/
 - **LangChain Community:** https://js.langchain.com/docs/integrations/platforms/
 - **CheerioWebBaseLoader:** https://js.langchain.com/docs/integrations/document_loaders/web_loaders/web_cheerio
@@ -339,10 +371,11 @@ RAG_INTEGRATION_GUIDE.md                              (+ 30 lines)
 - **OpenAI Embeddings:** https://platform.openai.com/docs/guides/embeddings
 
 ### Code References
+
 - **Knowledge Updater:** [lib/langchain/knowledge-updater.ts](./lib/langchain/knowledge-updater.ts)
 - **PDF Loader:** [lib/langchain/pdf-loader.ts](./lib/langchain/pdf-loader.ts)
 - **API Endpoint:** [app/api/knowledge-updater/route.ts](./app/api/knowledge-updater/route.ts)
-- **Unit Tests:** [__tests__/langchain/knowledge-updater.test.ts](./__tests__/langchain/knowledge-updater.test.ts)
+- **Unit Tests:** [**tests**/langchain/knowledge-updater.test.ts](./__tests__/langchain/knowledge-updater.test.ts)
 - **Test Script:** [test-knowledge-updater.sh](./test-knowledge-updater.sh)
 
 ---
@@ -350,6 +383,7 @@ RAG_INTEGRATION_GUIDE.md                              (+ 30 lines)
 ## 🎉 Success Criteria - All Met ✅
 
 ### Technical Success
+
 - ✅ CheerioWebBaseLoader successfully integrated
 - ✅ PDFLoader successfully integrated
 - ✅ API endpoint created and functional
@@ -359,6 +393,7 @@ RAG_INTEGRATION_GUIDE.md                              (+ 30 lines)
 - ✅ Security validation implemented
 
 ### Functional Success
+
 - ✅ Can update agent knowledge from web URLs
 - ✅ Can ingest PDF documents
 - ✅ API endpoint returns correct responses
@@ -366,6 +401,7 @@ RAG_INTEGRATION_GUIDE.md                              (+ 30 lines)
 - ✅ No breaking changes to existing functionality
 
 ### Quality Success
+
 - ✅ Code follows project conventions
 - ✅ Proper error handling throughout
 - ✅ Structured logging (no console.log)
@@ -425,6 +461,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## 🙏 Acknowledgments
 
 **Tools Used:**
+
 - Claude Code (Anthropic)
 - @langchain/community (LangChain)
 - ChromaDB (Vector Store)
@@ -433,6 +470,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - Next.js 15 (Framework)
 
 **References:**
+
 - Stanford Encyclopedia of Philosophy
 - LangChain JS Documentation
 - ChromaDB Documentation

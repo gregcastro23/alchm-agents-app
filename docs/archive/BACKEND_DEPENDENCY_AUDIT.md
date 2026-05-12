@@ -1,4 +1,5 @@
 # Backend Dependency Audit Report
+
 **Date**: November 14, 2025
 **Status**: ✅ Self-Contained System Ready
 
@@ -15,6 +16,7 @@ The Planetary Agents frontend is now **fully self-contained** and can operate in
 **File**: `lib/services/planetary-positions-service.ts`
 
 **Before** (Line 368):
+
 ```typescript
 // Made internal fetch call to /api/philosophers-stone/positions
 const response = await fetch('/api/philosophers-stone/positions', {
@@ -24,6 +26,7 @@ const response = await fetch('/api/philosophers-stone/positions', {
 ```
 
 **After**:
+
 ```typescript
 // Uses local calculation functions directly
 const { generateAlchmForCurrentMoment } = await import('@/lib/alchemizer')
@@ -40,19 +43,20 @@ const alchm = await generateAlchmForCurrentMoment()
 ### ✅ No Action Needed - Feature-Flagged Backend Calls
 
 These files reference `BACKEND_URL` but are **safe** because they:
+
 1. Check feature flags before calling backend
 2. Have graceful fallbacks to local calculations
 3. Won't break if backend is unavailable
 
-| File | Backend Feature Flag | Fallback Behavior |
-|------|---------------------|-------------------|
-| `lib/hooks/usePlanetaryHours.ts` | `NEXT_PUBLIC_PLANETARY_HOURS_BACKEND` | Local planetary hour calculation |
-| `lib/clients/tokens-client.ts` | `NEXT_PUBLIC_TOKENS_BACKEND` | `RealAlchemizeService` local calculation |
-| `lib/unified-clients/planetary-client.ts` | `NEXT_PUBLIC_PLANETARY_HOURS_BACKEND` | Simplified frontend calculation |
-| `lib/unified-clients/thermodynamics-client.ts` | `NEXT_PUBLIC_THERMODYNAMICS_BACKEND` | Local thermodynamic calculations |
-| `lib/unified-clients/token-client.ts` | `NEXT_PUBLIC_TOKENS_BACKEND` | Local token rate calculation |
-| `lib/clients/rune-agent-client.ts` | `NEXT_PUBLIC_RUNE_AGENT_BACKEND` | Local rune generation |
-| `lib/api-client/consciousness-client.ts` | Feature-flagged | Local consciousness tracking |
+| File                                           | Backend Feature Flag                  | Fallback Behavior                        |
+| ---------------------------------------------- | ------------------------------------- | ---------------------------------------- |
+| `lib/hooks/usePlanetaryHours.ts`               | `NEXT_PUBLIC_PLANETARY_HOURS_BACKEND` | Local planetary hour calculation         |
+| `lib/clients/tokens-client.ts`                 | `NEXT_PUBLIC_TOKENS_BACKEND`          | `RealAlchemizeService` local calculation |
+| `lib/unified-clients/planetary-client.ts`      | `NEXT_PUBLIC_PLANETARY_HOURS_BACKEND` | Simplified frontend calculation          |
+| `lib/unified-clients/thermodynamics-client.ts` | `NEXT_PUBLIC_THERMODYNAMICS_BACKEND`  | Local thermodynamic calculations         |
+| `lib/unified-clients/token-client.ts`          | `NEXT_PUBLIC_TOKENS_BACKEND`          | Local token rate calculation             |
+| `lib/clients/rune-agent-client.ts`             | `NEXT_PUBLIC_RUNE_AGENT_BACKEND`      | Local rune generation                    |
+| `lib/api-client/consciousness-client.ts`       | Feature-flagged                       | Local consciousness tracking             |
 
 **Default Behavior**: All feature flags default to `undefined`, so all clients use **local calculations** by default.
 
@@ -74,14 +78,14 @@ The frontend has **complete calculation capabilities** without any backend:
 
 ### Core Calculations (lib/)
 
-| Module | Capability | Used By |
-|--------|-----------|---------|
-| `lib/alchemizer.ts` | `generateAlchmForCurrentMoment()` | Alchemical transformations |
-| `lib/calculate-transits.ts` | `getCurrentPlanetaryPositions()` | Planetary positions |
-| `lib/enhanced-astronomical-calculator.ts` | `calculateAllPlanets()` | High-accuracy ephemeris |
-| `lib/monica/monica-constant-validator.ts` | `calculateMC()` | Monica Constant |
-| `lib/services/planetary-positions-service.ts` | Full fallback hierarchy | All planetary APIs |
-| `lib/services/real-alchemize-service.ts` | Complete horoscope generation | Token calculations |
+| Module                                        | Capability                        | Used By                    |
+| --------------------------------------------- | --------------------------------- | -------------------------- |
+| `lib/alchemizer.ts`                           | `generateAlchmForCurrentMoment()` | Alchemical transformations |
+| `lib/calculate-transits.ts`                   | `getCurrentPlanetaryPositions()`  | Planetary positions        |
+| `lib/enhanced-astronomical-calculator.ts`     | `calculateAllPlanets()`           | High-accuracy ephemeris    |
+| `lib/monica/monica-constant-validator.ts`     | `calculateMC()`                   | Monica Constant            |
+| `lib/services/planetary-positions-service.ts` | Full fallback hierarchy           | All planetary APIs         |
+| `lib/services/real-alchemize-service.ts`      | Complete horoscope generation     | Token calculations         |
 
 ### Fallback Hierarchy
 
@@ -117,6 +121,7 @@ The Express.js backend at port 8000 provides **optional enhancements** only:
 ```
 
 **Key Insight**: The backend mostly provides:
+
 1. **More accurate planetary hours** (with real sunrise/sunset times)
 2. **Performance optimization** (caching, Redis, etc.)
 3. **Advanced features** (kinetics, consciousness tracking)
@@ -134,6 +139,7 @@ The Express.js backend at port 8000 provides **optional enhancements** only:
 **Problem**: This URL serves a **completely different application** (BTC/USD crypto trading analysis).
 
 **Evidence**:
+
 ```bash
 $ curl https://alchm-backend.onrender.com/
 <!DOCTYPE html>
@@ -147,6 +153,7 @@ $ curl https://alchm-backend.onrender.com/
 ```
 
 **Conclusion**: Either:
+
 1. Wrong backend URL is configured
 2. Wrong application deployed to this URL
 3. This is someone else's Render service
@@ -261,6 +268,7 @@ If you decide to deploy the backend later:
 
 1. **Deploy the actual backend code** from `backend/` directory
 2. **Configure environment variables** on Render:
+
    ```bash
    NODE_ENV=production
    PORT=8000
@@ -271,6 +279,7 @@ If you decide to deploy the backend later:
    ```
 
 3. **Update Vercel environment variables**:
+
    ```bash
    NEXT_PUBLIC_BACKEND_URL=https://<your-backend>.onrender.com
    BACKEND_URL=https://<your-backend>.onrender.com
@@ -349,6 +358,7 @@ If you decide to deploy the backend later:
 **Status**: ✅ **READY FOR DEPLOYMENT**
 
 The Planetary Agents frontend is now a **fully self-contained system** that:
+
 - ✅ Performs all calculations locally
 - ✅ Has no critical backend dependencies
 - ✅ Gracefully handles backend absence
@@ -356,6 +366,7 @@ The Planetary Agents frontend is now a **fully self-contained system** that:
 - ✅ Can optionally use backend for enhanced features
 
 **Next Steps**:
+
 1. Deploy to Vercel with environment variables from section above
 2. Test all API endpoints
 3. Monitor for any errors

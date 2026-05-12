@@ -15,6 +15,7 @@ Error: Cannot find module 'next/dist/compiled/source-map'
 ### Root Cause
 
 Next.js 15.5.6 upgrade (commit d92bdd03) introduced dependency inconsistency:
+
 - `next@15.5.6` in dependencies
 - `@next/swc-darwin-arm64@15.5.3` in optionalDependencies (mismatch!)
 - Missing internal `source-map` module in Vercel serverless build
@@ -24,6 +25,7 @@ Next.js 15.5.6 upgrade (commit d92bdd03) introduced dependency inconsistency:
 **Commit**: `35d79fba` - "fix: Resolve Next.js source-map module error on Vercel"
 
 **Changes**:
+
 1. ✅ Aligned @next/swc-darwin-arm64 to 15.5.6
 2. ✅ Added source-map@^0.7.4 as explicit dependency
 3. ✅ Created vercel.json with optimized build configuration
@@ -31,6 +33,7 @@ Next.js 15.5.6 upgrade (commit d92bdd03) introduced dependency inconsistency:
 5. ✅ Added comprehensive documentation
 
 **Files Modified**:
+
 - `package.json` - Fixed version consistency + added source-map
 - `vercel.json` - New configuration for clean builds
 - `yarn.lock` - Updated dependencies
@@ -40,6 +43,7 @@ Next.js 15.5.6 upgrade (commit d92bdd03) introduced dependency inconsistency:
 ## Deployment Status
 
 **Git Push**: ✅ Successful
+
 ```
 To gitlab.com:xalchm/my_alchm.git
    4d284113..35d79fba  main -> main
@@ -52,9 +56,11 @@ To gitlab.com:xalchm/my_alchm.git
 ### 1. Monitor Vercel Deployment (5-10 minutes)
 
 Go to your Vercel dashboard and watch the deployment:
+
 - https://vercel.com/gregcastro23s-projects/planetary-agents
 
 Look for:
+
 - ✅ Build status: "Building..." → "Ready"
 - ✅ No errors in build logs
 - ✅ Deployment URL generated
@@ -107,12 +113,14 @@ git push origin main
 Once the build succeeds, ensure these are set in Vercel:
 
 **Required**:
+
 ```
 OPENAI_API_KEY=sk-proj-...
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 **Optional (for enhanced features)**:
+
 ```
 NEXTAUTH_SECRET=<generate with: openssl rand -base64 32>
 NEXTAUTH_URL=https://planetary-agents.vercel.app
@@ -126,6 +134,7 @@ NEXT_PUBLIC_BACKEND_URL=https://your-backend.onrender.com
 ### My Initial Diagnosis (Incorrect)
 
 ❌ I initially thought the errors were from:
+
 - Missing environment variables
 - External API failures
 - Cold start timeouts
@@ -133,6 +142,7 @@ NEXT_PUBLIC_BACKEND_URL=https://your-backend.onrender.com
 ### The Real Problem (Correct)
 
 ✅ The CSV logs revealed the truth:
+
 - ALL endpoints failing with identical error
 - Missing `next/dist/compiled/source-map` module
 - Next.js version mismatch (15.5.6 vs 15.5.3)
@@ -141,12 +151,14 @@ NEXT_PUBLIC_BACKEND_URL=https://your-backend.onrender.com
 ## Timeline of All Fixes
 
 ### Session 1: API Streamlining
+
 - Fixed `/api/consciousness/live` 405 error (added GET handler)
 - Removed broken external API call for planetary positions
 - Created architecture documentation
 - **Status**: Code fixes correct, but production still failing
 
 ### Session 2: Root Cause Discovery
+
 - Analyzed production CSV logs
 - Discovered Next.js source-map module error
 - Realized all previous fixes were correct but couldn't deploy
@@ -158,6 +170,7 @@ NEXT_PUBLIC_BACKEND_URL=https://your-backend.onrender.com
 After this deployment:
 
 ✅ **All API Routes Work**:
+
 - `/api/planetary-positions` - 200 OK
 - `/api/moment-recommendations` - 200 OK
 - `/api/consciousness/live` - 200 OK (GET and POST)
@@ -165,12 +178,14 @@ After this deployment:
 - `/api/auth/session` - 200 OK (if NEXTAUTH_SECRET set)
 
 ✅ **All Pages Load**:
+
 - `/gallery` - 200 OK
 - `/gallery/chat/[agent-id]` - 200 OK
 - `/time-laboratory` - 200 OK
 - `/planetary-agents` - 200 OK
 
 ✅ **Performance**:
+
 - API response times: <500ms
 - Page loads: <2s
 - No more module errors
@@ -201,6 +216,7 @@ If you still see errors after deployment:
 ## Documentation Created
 
 All details available in these files:
+
 - `VERCEL_DEPLOYMENT_FIX.md` - Comprehensive fix guide
 - `DEPLOYMENT_FIX_SUMMARY.md` - This summary
 - `FULL_FUNCTIONALITY_CONFIRMED.md` - Architecture verification
@@ -210,6 +226,7 @@ All details available in these files:
 ## Support
 
 If you encounter any issues after deployment:
+
 1. Export Vercel logs and share them
 2. Check browser console for specific errors
 3. Verify network requests in browser DevTools

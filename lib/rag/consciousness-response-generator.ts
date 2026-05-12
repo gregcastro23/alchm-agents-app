@@ -124,12 +124,12 @@ function generateWisdomResponse(
  */
 function getQuestionOpening(queryLower: string): string {
   if (queryLower.includes('why') || queryLower.includes('purpose')) {
-    return ''  // No opening needed for why/purpose - get straight to the answer
+    return '' // No opening needed for why/purpose - get straight to the answer
   }
   if (queryLower.includes('how')) {
-    return ''  // No opening for how - direct response
+    return '' // No opening for how - direct response
   }
-  return ''  // Generally, skip openings and get to the substance
+  return '' // Generally, skip openings and get to the substance
 }
 
 /**
@@ -146,46 +146,45 @@ function generateBasicResponse(query: string, strength?: string): string {
  * Synthesize sources into natural conversation
  * No meta-commentary, just BE the agent speaking naturally
  */
-function synthesizeSourcesNaturally(
-  sources: SearchResult[],
-  uniquePower?: string
-): string {
+function synthesizeSourcesNaturally(sources: SearchResult[], uniquePower?: string): string {
   // Clean sources of markdown and structured metadata
-  const cleanSources = sources.map(source => {
-    let content = source.content
+  const cleanSources = sources
+    .map(source => {
+      let content = source.content
 
-    // Remove ALL markdown headers (##, ###, etc.) and their content on the same line
-    content = content.replace(/^#+\s+.+$/gm, '')
+      // Remove ALL markdown headers (##, ###, etc.) and their content on the same line
+      content = content.replace(/^#+\s+.+$/gm, '')
 
-    // Remove metadata patterns: "Key: Value" at start of lines
-    content = content.replace(/^[A-Z][a-z\s]+:\s*.+$/gm, '')
+      // Remove metadata patterns: "Key: Value" at start of lines
+      content = content.replace(/^[A-Z][a-z\s]+:\s*.+$/gm, '')
 
-    // Remove bullet points and list markers
-    content = content.replace(/^\s*[-*•]\s+/gm, '')
+      // Remove bullet points and list markers
+      content = content.replace(/^\s*[-*•]\s+/gm, '')
 
-    // Remove numbered lists
-    content = content.replace(/^\s*\d+\.\s+/gm, '')
+      // Remove numbered lists
+      content = content.replace(/^\s*\d+\.\s+/gm, '')
 
-    // Remove horizontal rules
-    content = content.replace(/^[-=]{3,}$/gm, '')
+      // Remove horizontal rules
+      content = content.replace(/^[-=]{3,}$/gm, '')
 
-    // Remove agent profile metadata patterns
-    content = content.replace(/Born:\s*.+$/gm, '')
-    content = content.replace(/Era:\s*.+$/gm, '')
-    content = content.replace(/Specialty:\s*.+$/gm, '')
-    content = content.replace(/Core Essence/gi, '')
-    content = content.replace(/Essence:\s*.+$/gm, '')
-    content = content.replace(/Expression:\s*.+$/gm, '')
-    content = content.replace(/Emotion:\s*.+$/gm, '')
+      // Remove agent profile metadata patterns
+      content = content.replace(/Born:\s*.+$/gm, '')
+      content = content.replace(/Era:\s*.+$/gm, '')
+      content = content.replace(/Specialty:\s*.+$/gm, '')
+      content = content.replace(/Core Essence/gi, '')
+      content = content.replace(/Essence:\s*.+$/gm, '')
+      content = content.replace(/Expression:\s*.+$/gm, '')
+      content = content.replace(/Emotion:\s*.+$/gm, '')
 
-    // Remove multiple newlines
-    content = content.replace(/\n{2,}/g, ' ')
+      // Remove multiple newlines
+      content = content.replace(/\n{2,}/g, ' ')
 
-    // Trim and clean whitespace
-    content = content.trim().replace(/\s{2,}/g, ' ')
+      // Trim and clean whitespace
+      content = content.trim().replace(/\s{2,}/g, ' ')
 
-    return content
-  }).filter(content => content.length > 50) // Only meaningful content
+      return content
+    })
+    .filter(content => content.length > 50) // Only meaningful content
 
   if (cleanSources.length === 0) {
     // No usable sources
@@ -228,7 +227,6 @@ function synthesizeSourcesNaturally(
   return response.join('')
 }
 
-
 /**
  * Add depth element only if naturally relevant
  * Be subtle - integrate naturally, don't announce it
@@ -242,14 +240,26 @@ function addDepthIfRelevant(
   const queryLower = query.toLowerCase()
 
   // Only add depth if directly asked about challenges/struggles
-  if ((queryLower.includes('challenge') || queryLower.includes('struggle') || queryLower.includes('difficult')) && shadows && shadows.length > 0) {
+  if (
+    (queryLower.includes('challenge') ||
+      queryLower.includes('struggle') ||
+      queryLower.includes('difficult')) &&
+    shadows &&
+    shadows.length > 0
+  ) {
     const shadow = shadows[0]
     // Natural integration - just mention it, don't label it
     return `I've learned that ${shadow.transformationPath.toLowerCase()}.`
   }
 
   // Only for growth/improvement questions
-  if ((queryLower.includes('grow') || queryLower.includes('improve') || queryLower.includes('develop')) && challenges && challenges.length > 0) {
+  if (
+    (queryLower.includes('grow') ||
+      queryLower.includes('improve') ||
+      queryLower.includes('develop')) &&
+    challenges &&
+    challenges.length > 0
+  ) {
     const challenge = challenges[0]
     return `${challenge.growthOpportunity}.`
   }

@@ -14,11 +14,7 @@ async function calculateConsciousness(body: any = {}) {
     const longitude = birthData?.longitude || 0
 
     // Generate current moment alchemical data
-    const currentAlchm = await getAlchemicalQuantitiesLegacy(
-      new Date(),
-      latitude,
-      longitude
-    )
+    const currentAlchm = await getAlchemicalQuantitiesLegacy(new Date(), latitude, longitude)
     const alchmEffects = currentAlchm['Alchemy Effects'] || {}
 
     // Extract alchemical quantities

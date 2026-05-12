@@ -7,11 +7,13 @@ Your Neon database is now configured with **Prisma Accelerate** for global edge 
 ## What Changed
 
 ### Before
+
 ```bash
 DATABASE_URL=postgresql://neondb_owner:...@ep-mute-thunder-ahui2n87-pooler.c-3.us-east-1.aws.neon.tech/neondb
 ```
 
 ### After (Prisma Accelerate)
+
 ```bash
 DATABASE_URL=prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
@@ -19,6 +21,7 @@ DATABASE_URL=prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIU
 ## ✅ Already Installed
 
 Your project already has the required dependencies:
+
 - `@prisma/client`: ^6.17.1 ✓
 - `@prisma/extension-accelerate`: ^2.0.2 ✓
 
@@ -69,7 +72,7 @@ const prisma = new PrismaClient().$extends(withAccelerate())
 
 // Cache this query for 60 seconds
 const agents = await prisma.historical_agents.findMany({
-  cacheStrategy: { ttl: 60, swr: 120 }
+  cacheStrategy: { ttl: 60, swr: 120 },
 })
 ```
 

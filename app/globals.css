@@ -93,6 +93,12 @@ body {
   }
 }
 
+/* Suppress global cosmic layers when a page provides its own (e.g. /me zodiac theme) */
+body:has(.me-page)::before,
+body:has(.me-page)::after {
+  display: none !important;
+}
+
 /* Enhanced cosmic background with multiple layers */
 body::before {
   content: '';

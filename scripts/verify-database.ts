@@ -84,7 +84,7 @@ async function verifyDatabase() {
     await prisma.rAGQuery.delete({ where: { id: testQuery.id } })
     console.log(`   ✅ Delete successful\n`)
 
-    console.log('=' .repeat(60))
+    console.log('='.repeat(60))
     console.log('✅ Database Verification Complete!\n')
     console.log('All RAG tables are operational:')
     console.log('  - RAGQuery: Stores query metadata')
@@ -94,7 +94,6 @@ async function verifyDatabase() {
     console.log('  - Start dev server: npm run dev')
     console.log('  - Test end-to-end: npm run test-rag')
     console.log('  - View data: npx prisma studio')
-
   } catch (error) {
     console.error('\n❌ Database Verification Failed\n')
     console.error('Error:', error)

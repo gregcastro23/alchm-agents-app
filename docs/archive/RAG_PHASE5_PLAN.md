@@ -25,12 +25,14 @@
 **Goal:** Add RAG toggle and source citations to existing chat pages
 
 **Components to Integrate:**
+
 1. Gallery Historical Agent Chat (`app/gallery/chat/[id]/chat-client.tsx`)
 2. Unified Multi-Agent Chat (`components/misc/unified-multi-agent-chat.tsx`)
 3. Historical Council Chat (`components/misc/historical-council-chat.tsx`)
 4. Planetary Wisdom Chat (`components/misc/planetary-wisdom-chat.tsx`)
 
 **Changes Required:**
+
 - Add RAGToggle to chat headers
 - Add SourceCitations display after agent responses
 - Update API calls to include RAG config
@@ -104,6 +106,7 @@ model RAGSource {
 ```
 
 **Migration Steps:**
+
 1. Add schema to `prisma/schema.prisma`
 2. Generate migration: `npx prisma migrate dev --name add-rag-analytics`
 3. Update analytics manager to use Prisma
@@ -118,6 +121,7 @@ model RAGSource {
 **Goal:** Add charts and graphs to admin dashboard
 
 **Libraries:**
+
 - Recharts (lightweight, React-friendly)
 - Or shadcn/ui chart component (already installed)
 
@@ -181,12 +185,14 @@ class RAGCache {
 ```
 
 **Caching Strategy:**
+
 - Cache key: Query hash + agent ID
 - TTL: 1 hour for exact matches
 - Similarity threshold: 0.95 cosine similarity for query embeddings
 - Invalidation: When agent biography is updated
 
 **Expected Improvement:**
+
 - Cache hit rate: 30-40%
 - Response time reduction: 80-90% for cache hits
 - Cost savings: Reduced embedding/generation API calls
@@ -250,6 +256,7 @@ model RAGFeedback {
 **Goal:** Filter analytics by multiple criteria
 
 **Filters to Add:**
+
 - Date range picker
 - Agent selector (multi-select)
 - Success/error toggle
@@ -259,6 +266,7 @@ model RAGFeedback {
 - Session ID search
 
 **Implementation:**
+
 - Server-side filtering via Prisma queries
 - URL params for shareable filtered views
 - Export filtered data
@@ -300,42 +308,49 @@ model RAGFeedback {
 ## Success Criteria
 
 ### 5.1: Live Integration
+
 - ✅ RAG toggle visible in all chat interfaces
 - ✅ Source citations display after RAG responses
 - ✅ Analytics logging for 100% of queries
 - ✅ No UI regressions or errors
 
 ### 5.2: Database Persistence
+
 - ✅ All queries logged to PostgreSQL
 - ✅ Zero data loss
 - ✅ Query performance <100ms
 - ✅ Automatic cleanup of old data (90 days retention)
 
 ### 5.3: Data Visualization
+
 - ✅ 5+ interactive charts in dashboard
 - ✅ Charts render <500ms
 - ✅ Responsive on mobile/tablet/desktop
 - ✅ Export chart data to CSV/PNG
 
 ### 5.4: Caching Layer
+
 - ✅ Cache hit rate >30%
 - ✅ Response time reduction >80% for cache hits
 - ✅ No stale data issues
 - ✅ Graceful Redis fallback
 
 ### 5.5: User Feedback
+
 - ✅ Feedback widget in all RAG responses
 - ✅ Feedback stored in database
 - ✅ Analytics dashboard shows feedback metrics
 - ✅ Privacy-compliant (no PII in feedback)
 
 ### 5.6: Advanced Filtering
+
 - ✅ 6+ filter options in dashboard
 - ✅ Filters applied in <200ms
 - ✅ Shareable filtered URLs
 - ✅ Export filtered data
 
 ### 5.7: Production Optimization
+
 - ✅ Bundle size reduction >20%
 - ✅ LCP <2.5s
 - ✅ FID <100ms
@@ -346,14 +361,17 @@ model RAGFeedback {
 ## Risk Assessment
 
 ### High Risk
+
 - **Database migration** - Could affect existing data
   - Mitigation: Test on staging first, backup production DB
 
 ### Medium Risk
+
 - **Caching complexity** - Cache invalidation is hard
   - Mitigation: Conservative TTLs, manual invalidation endpoint
 
 ### Low Risk
+
 - **UI integration** - Well-defined components
 - **Visualization** - Using battle-tested libraries
 
@@ -362,16 +380,19 @@ model RAGFeedback {
 ## Timeline
 
 **Week 1 (Nov 5-11):**
+
 - ✅ 5.1: Live Chat Integration (Day 1-2)
 - ✅ 5.2: Database Schema & Migrations (Day 2-3)
 - ✅ 5.3: Data Visualization (Day 3-5)
 
 **Week 2 (Nov 12-18):**
+
 - 5.4: Caching Layer (Day 1-2)
 - 5.5: User Feedback System (Day 3-4)
 - 5.6: Advanced Filtering (Day 5)
 
 **Week 3 (Nov 19-25):**
+
 - 5.7: Production Optimization (Day 1-2)
 - Testing & QA (Day 3-4)
 - Documentation & Deployment (Day 5)

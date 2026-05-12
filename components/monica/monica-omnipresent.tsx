@@ -31,10 +31,7 @@ import {
   Stars,
   Send,
 } from 'lucide-react'
-import {
-  calculateMonicaConstant,
-  type MonicaConstantResult,
-} from '@/lib/monica/monica-constant'
+import { calculateMonicaConstant, type MonicaConstantResult } from '@/lib/monica/monica-constant'
 
 // Local stand-ins for the deleted `@/lib/monica/alchemical-trainer` module.
 // The trainer ran heavy local calculations against now-removed data; until a
@@ -84,13 +81,7 @@ async function fetchLegacyAlchm(birth: {
   longitude: number
 }): Promise<any> {
   const date = new Date(
-    Date.UTC(
-      birth.year,
-      Math.max(0, birth.month - 1),
-      birth.day,
-      birth.hour,
-      birth.minute
-    )
+    Date.UTC(birth.year, Math.max(0, birth.month - 1), birth.day, birth.hour, birth.minute)
   )
   const res = await fetch('/api/alchemize?legacy=true', {
     method: 'POST',
@@ -196,8 +187,7 @@ export function MonicaOmnipresent() {
   const [userProgress, setUserProgress] = useState<UserProgress>(DEFAULT_PROGRESS)
   const [hasUnreadTips, setHasUnreadTips] = useState(false)
   const [isVisible] = useState(true)
-  
-  
+
   const [consciousnessParticles, setConsciousnessParticles] = useState<
     Array<{ id: number; x: number; y: number; opacity: number }>
   >([])
@@ -650,7 +640,6 @@ export function MonicaOmnipresent() {
   }
 
   // Toggle to full chat mode
-  
 
   // Close full chat and return to expanded mode
   const closeFullChat = () => {

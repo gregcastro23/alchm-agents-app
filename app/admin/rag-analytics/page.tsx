@@ -159,9 +159,7 @@ export default function RAGAnalyticsPage() {
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
               <div className="flex-1">
-                <h4 className="font-semibold text-sm mb-1">
-                  Known Issue: Anthropic Model Access
-                </h4>
+                <h4 className="font-semibold text-sm mb-1">Known Issue: Anthropic Model Access</h4>
                 <p className="text-xs text-muted-foreground mb-3">
                   RAG retrieval is working perfectly (finding documents with 60-65% relevance in
                   sub-500ms), but text generation is currently blocked. The Anthropic API key
@@ -461,9 +459,7 @@ export default function RAGAnalyticsPage() {
                   <div className="text-3xl font-bold">
                     {analytics ? analytics.avgCacheLatency.toFixed(1) : 0}ms
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Cache overhead per query
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">Cache overhead per query</p>
                 </div>
               </CardContent>
             </Card>
@@ -486,9 +482,10 @@ export default function RAGAnalyticsPage() {
                       <div
                         className="h-full bg-green-500"
                         style={{
-                          width: analytics && analytics.avgUncachedResponseTime > 0
-                            ? `${Math.min((analytics.avgCachedResponseTime / analytics.avgUncachedResponseTime) * 100, 100)}%`
-                            : '0%',
+                          width:
+                            analytics && analytics.avgUncachedResponseTime > 0
+                              ? `${Math.min((analytics.avgCachedResponseTime / analytics.avgUncachedResponseTime) * 100, 100)}%`
+                              : '0%',
                         }}
                       />
                     </div>
@@ -507,8 +504,12 @@ export default function RAGAnalyticsPage() {
                   {analytics && analytics.avgUncachedResponseTime > 0 && (
                     <div className="text-center pt-2 border-t">
                       <p className="text-xs font-semibold text-blue-600">
-                        {((1 - analytics.avgCachedResponseTime / analytics.avgUncachedResponseTime) * 100).toFixed(0)}%
-                        faster with cache
+                        {(
+                          (1 -
+                            analytics.avgCachedResponseTime / analytics.avgUncachedResponseTime) *
+                          100
+                        ).toFixed(0)}
+                        % faster with cache
                       </p>
                     </div>
                   )}
@@ -663,12 +664,7 @@ export default function RAGAnalyticsPage() {
                       }}
                       cursor={{ fill: 'hsl(var(--muted))' }}
                     />
-                    <Bar
-                      dataKey="queryCount"
-                      fill="#06b6d4"
-                      radius={[0, 8, 8, 0]}
-                      name="Queries"
-                    />
+                    <Bar dataKey="queryCount" fill="#06b6d4" radius={[0, 8, 8, 0]} name="Queries" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -705,9 +701,7 @@ export default function RAGAnalyticsPage() {
                         <TableCell>
                           <div>
                             <div className="font-medium">{agent.agentName}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {agent.agentId}
-                            </div>
+                            <div className="text-xs text-muted-foreground">{agent.agentId}</div>
                           </div>
                         </TableCell>
                         <TableCell className="text-right font-semibold">
@@ -822,9 +816,7 @@ export default function RAGAnalyticsPage() {
                             {formatTimestamp(log.timestamp)}
                           </TableCell>
                           <TableCell className="text-sm">{log.agentName}</TableCell>
-                          <TableCell className="max-w-md truncate text-sm">
-                            {log.query}
-                          </TableCell>
+                          <TableCell className="max-w-md truncate text-sm">{log.query}</TableCell>
                           <TableCell className="text-center">
                             {log.ragUsed ? (
                               <Badge variant="default" className="text-xs">
@@ -854,10 +846,7 @@ export default function RAGAnalyticsPage() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell
-                          colSpan={8}
-                          className="text-center text-muted-foreground py-8"
-                        >
+                        <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                           No query logs available yet
                         </TableCell>
                       </TableRow>

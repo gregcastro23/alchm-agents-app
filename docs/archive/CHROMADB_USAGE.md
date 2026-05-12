@@ -5,6 +5,7 @@
 ChromaDB is your **vector database** for semantic search and RAG (Retrieval-Augmented Generation). It stores embeddings of historical agent knowledge, enabling AI-powered agents to retrieve relevant information based on meaning, not just keywords.
 
 ### Current Status ⚠️ **NEEDS RESYNC**
+
 - **Database**: ChromaDB v2
 - **Port**: 8001 (default: `http://localhost:8001`)
 - **Collection**: `historical_agents`
@@ -32,6 +33,7 @@ ChromaDB is your **vector database** for semantic search and RAG (Retrieval-Augm
 - **Astrological Signature** - Sun, Moon, and other planetary placements
 
 **Agents Indexed** (32 total):
+
 1. Adam Smith
 2. Albert Einstein
 3. Charles Darwin
@@ -66,6 +68,7 @@ ChromaDB is your **vector database** for semantic search and RAG (Retrieval-Augm
 32. Wolfgang Amadeus Mozart
 
 **Metadata Stored**:
+
 - `agentId`: Unique agent identifier
 - `agentName`: Display name
 - `era`: Historical era (Ancient, Medieval, Renaissance, etc.)
@@ -74,6 +77,7 @@ ChromaDB is your **vector database** for semantic search and RAG (Retrieval-Augm
 - `source`: Source file or origin
 
 **Chunking Strategy**:
+
 - **Chunk Size**: 512 tokens (~2048 characters)
 - **Overlap**: 50 tokens (~200 characters)
 - **Boundary Preservation**: Sentence-aware chunking
@@ -215,13 +219,13 @@ Enhanced Agent Response with Sources
 
 ### Performance Metrics
 
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| Search Latency | <500ms | ~400ms | ✅ |
-| Cached Response | <50ms | ~30ms | ✅ |
-| Retrieval Relevance | 60-65% | 60-65% | ✅ |
-| Cache Hit Rate | 30-50% | 30-50% | ✅ |
-| Success Rate | >95% | 98%+ | ✅ |
+| Metric              | Target | Actual | Status |
+| ------------------- | ------ | ------ | ------ |
+| Search Latency      | <500ms | ~400ms | ✅     |
+| Cached Response     | <50ms  | ~30ms  | ✅     |
+| Retrieval Relevance | 60-65% | 60-65% | ✅     |
+| Cache Hit Rate      | 30-50% | 30-50% | ✅     |
+| Success Rate        | >95%   | 98%+   | ✅     |
 
 ---
 
@@ -230,6 +234,7 @@ Enhanced Agent Response with Sources
 ### Local Development
 
 1. **Start ChromaDB**:
+
 ```bash
 # Option 1: Docker (Recommended)
 docker run -d -p 8001:8000 chromadb/chroma
@@ -240,6 +245,7 @@ chroma run --host localhost --port 8001
 ```
 
 2. **Environment Variables** (`.env.local`):
+
 ```bash
 # ChromaDB Configuration
 CHROMADB_URL=http://localhost:8001
@@ -257,6 +263,7 @@ RAG_MIN_SIMILARITY=0.6
 ```
 
 3. **Ingest Agent Knowledge**:
+
 ```bash
 # Using API endpoint
 curl -X POST http://localhost:3000/api/vector-store/ingest \
@@ -268,6 +275,7 @@ npx tsx lib/llamaindex/ingestion-pipeline.ts
 ```
 
 4. **Verify Setup**:
+
 ```bash
 # Check ChromaDB health
 npx tsx scripts/verify-chromadb.ts
@@ -286,6 +294,7 @@ curl -X POST http://localhost:3000/api/vector-store/query \
    - Configure authentication if needed
 
 2. **Update Environment Variables**:
+
    ```bash
    CHROMADB_URL=https://your-chromadb-instance.com
    CHROMADB_AUTH_TOKEN=your_auth_token  # If using auth
@@ -324,9 +333,11 @@ curl -X POST http://localhost:3000/api/vector-store/query \
 ### Collection Management
 
 **Current Collections**:
+
 - `historical_agents` (primary, 33 documents)
 
 **Future Collections** (planned):
+
 - `monica_insights` - Monica assistant knowledge
 - `planetary_wisdom` - Astrological knowledge
 - `user_knowledge` - User-specific knowledge bases
@@ -343,13 +354,13 @@ import { semanticSearch } from '@/lib/llamaindex/semantic-search'
 // Search across all agents
 const results = await semanticSearch('What is creativity?', {
   topK: 5,
-  threshold: 0.35
+  threshold: 0.35,
 })
 
 // Search specific agent
 const agentResults = await semanticSearch('Tell me about science', {
   topK: 3,
-  agentIds: ['isaac-newton', 'albert-einstein']
+  agentIds: ['isaac-newton', 'albert-einstein'],
 })
 ```
 
@@ -380,12 +391,14 @@ GET /api/vector-store/health
 ## 🎯 ChromaDB vs Neon PostgreSQL
 
 ### ChromaDB (Vector Database)
+
 - **Purpose**: Semantic search, similarity matching
 - **Data**: Vector embeddings, document chunks
 - **Queries**: "Find similar concepts", "What is wisdom?"
 - **Use Case**: RAG, knowledge retrieval, AI context
 
 ### Neon PostgreSQL (Relational Database)
+
 - **Purpose**: Structured data, transactions, analytics
 - **Data**: User accounts, conversations, metrics
 - **Queries**: "Get user by ID", "Count conversations"
@@ -431,6 +444,7 @@ curl http://localhost:8001/api/v2/collections/{collection_id}/count
 ### Troubleshooting
 
 **ChromaDB Not Running**:
+
 ```bash
 # Check if running
 docker ps | grep chroma
@@ -440,12 +454,14 @@ docker run -d -p 8001:8000 chromadb/chroma
 ```
 
 **No Results from Search**:
+
 1. Verify collection has documents
 2. Check embedding model is correct
 3. Lower similarity threshold
 4. Verify query embedding generation
 
 **Slow Search Performance**:
+
 1. Check ChromaDB resource usage
 2. Reduce topK parameter
 3. Enable caching
@@ -456,6 +472,7 @@ docker run -d -p 8001:8000 chromadb/chroma
 ## 📊 Current Statistics
 
 ### Data Volume
+
 - **Documents**: 33 chunks
 - **Agents**: 32 historical figures
 - **Total Tokens**: 13,459
@@ -463,12 +480,14 @@ docker run -d -p 8001:8000 chromadb/chroma
 - **Storage**: ~5-10 MB (estimated)
 
 ### Performance
+
 - **Search Latency**: ~400ms (uncached)
 - **Search Latency**: ~30ms (cached)
 - **Relevance**: 60-65% average
 - **Success Rate**: 98%+
 
 ### Cost
+
 - **Embedding Generation**: ~$0.005 (one-time)
 - **Query Embeddings**: ~$0.0001 per query
 - **Storage**: Minimal (vector data is small)
@@ -534,5 +553,3 @@ ChromaDB is your **semantic search engine** for the Planetary Agents platform:
 **Status**: ⚠️ **Needs Resync** - Contains stale data
 **Collection**: `historical_agents` (76 documents from 57 agents)
 **Action Required**: See `CHROMADB_UPDATE.md` for resync instructions
-
-

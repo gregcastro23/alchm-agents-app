@@ -5,7 +5,7 @@
  * See: https://workflow.dev/docs
  */
 
-import { defineConfig } from "workflow";
+import { defineConfig } from 'workflow'
 
 export default defineConfig({
   // Workflow runtime settings
@@ -17,7 +17,7 @@ export default defineConfig({
     // Retry configuration for failed steps
     retry: {
       maxAttempts: 3,
-      backoff: "exponential", // exponential, linear, or fixed
+      backoff: 'exponential', // exponential, linear, or fixed
       initialDelay: 1000, // 1 second
       maxDelay: 60000, // 1 minute
     },
@@ -32,7 +32,7 @@ export default defineConfig({
     metrics: true,
 
     // Log level (debug, info, warn, error)
-    logLevel: "info",
+    logLevel: 'info',
   },
 
   // Step configuration
@@ -43,7 +43,7 @@ export default defineConfig({
     // Retry configuration for steps
     retry: {
       maxAttempts: 3,
-      backoff: "exponential",
+      backoff: 'exponential',
       initialDelay: 1000,
       maxDelay: 30000,
     },
@@ -53,12 +53,12 @@ export default defineConfig({
   storage: {
     // For development, use in-memory storage
     // For production, use a persistent store (Redis, PostgreSQL, etc.)
-    type: process.env.NODE_ENV === "production" ? "redis" : "memory",
+    type: process.env.NODE_ENV === 'production' ? 'redis' : 'memory',
 
     // Redis configuration (if using Redis storage)
     redis: {
-      url: process.env.REDIS_URL || "redis://localhost:6379",
-      keyPrefix: "workflow:",
+      url: process.env.REDIS_URL || 'redis://localhost:6379',
+      keyPrefix: 'workflow:',
     },
   },
 
@@ -75,8 +75,8 @@ export default defineConfig({
       // Retry configuration
       retry: {
         maxAttempts: 5,
-        backoff: "exponential",
+        backoff: 'exponential',
       },
     },
   },
-});
+})

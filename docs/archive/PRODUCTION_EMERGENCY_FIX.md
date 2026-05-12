@@ -7,11 +7,13 @@
 ## 🔍 Diagnosis
 
 ### What's Working
+
 - ✅ **Local**: Chat works perfectly (Joan of Arc responds)
 - ✅ **Code**: All fixes committed and pushed to GitLab
 - ✅ **API Keys**: Configured correctly in all .env files
 
 ### What's Broken
+
 - ❌ **Production**: Old version deployed (no Philosopher's Stone = old build)
 - ❌ **Vercel Build**: Deployments failing or not triggering
 - ❌ **All Chat**: Returning error for all agents
@@ -27,13 +29,14 @@ Last successful build was OLD version (before our fixes).
 ### Action 1: Check Vercel Dashboard NOW
 
 1. Go to: https://vercel.com/dashboard
-2. Find project: **planetary-agents**  
+2. Find project: **planetary-agents**
 3. Look at deployments tab
 4. Check latest deployment status
 
 **Look for:**
+
 - ❌ Red X = Build failed
-- ⏳ Yellow = Build in progress  
+- ⏳ Yellow = Build in progress
 - ✅ Green = Build succeeded
 
 ### Action 2: Check Build Logs
@@ -41,6 +44,7 @@ Last successful build was OLD version (before our fixes).
 If build failed, click on it and look for errors:
 
 **Common Issues:**
+
 ```
 ❌ Error: Cannot find module 'autoprefixer'
 ❌ Error: Cannot find module '@ai-sdk/anthropic'
@@ -75,6 +79,7 @@ DATABASE_URL
 ```
 
 **Test the keys:**
+
 1. Anthropic: https://console.anthropic.com/settings/keys
    - Click on your key
    - Verify it's active (not expired/revoked)
@@ -119,6 +124,7 @@ curl -I https://planetary-agents.vercel.app/api/health
 ## 📊 Timeline
 
 **Commits pushed**:
+
 - 08c666a3 (mobile fixes) - ~6 min ago
 - c54538a0 (Anthropic fallback) - ~3 min ago
 
@@ -126,6 +132,7 @@ curl -I https://planetary-agents.vercel.app/api/health
 **Current status**: Still showing old version
 
 **This means:**
+
 - ⏳ Build might still be running (wait 2 more minutes)
 - ❌ Build might have failed (check Vercel NOW)
 - ❌ Build might not have triggered (check GitLab webhook)
@@ -143,11 +150,13 @@ curl -I https://planetary-agents.vercel.app/api/health
 If you need chat working IMMEDIATELY while we debug:
 
 **Option A**: Use the local version
+
 - Works perfectly on http://localhost:3000
 - All features functional
 - Can demo from local machine
 
 **Option B**: Quick Vercel fix
+
 - Delete the project from Vercel
 - Re-import from GitLab
 - Add environment variables again
@@ -156,9 +165,9 @@ If you need chat working IMMEDIATELY while we debug:
 ---
 
 **PLEASE:**
+
 1. Check Vercel dashboard NOW
 2. Tell me what status the latest deployment shows
 3. Share any error messages from build logs
 
 This will help me fix it immediately! 🚀
-

@@ -920,7 +920,7 @@ async function evaluateMetric(submission: string, metric: QualityMetric): Promis
   try {
     // Use OpenAI for quality assessment
     const { Configuration, OpenAIApi } = await import('openai')
-    
+
     const systemPrompt = `You are an expert evaluator of human responses. Evaluate the following submission for "${metric.name}".
     
 Metric Description: ${metric.description}
@@ -939,7 +939,7 @@ Return only the number, no explanation.`
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
         model: 'gpt-5.4-nano', // Fast model for quality assessment
@@ -951,39 +951,56 @@ Return only the number, no explanation.`
         max_tokens: 10,
       }),
     })
-    
+
     if (!response.ok) {
       throw new Error(`OpenAI API error: ${response.status}`)
     }
-    
+
     const data = await response.json()
     const scoreText = data.choices[0]?.message?.content?.trim()
     const score = parseFloat(scoreText || '0.7')
-    
+
     return isNaN(score) ? 0.7 : Math.max(0, Math.min(1, score))
-    
   } catch (error) {
     console.error('[QualityEvaluation] AI analysis failed:', error)
-    
+
     // Fallback to enhanced keyword analysis
     const lowerSubmission = submission.toLowerCase()
-    
+
     switch (metric.name) {
       case 'authenticity':
-        const authenticityMarkers = ['i feel', 'my experience', 'personally', 'i believe', 'in my view']
-        const authenticityScore = authenticityMarkers.filter(m => lowerSubmission.includes(m)).length / 3
+        const authenticityMarkers = [
+          'i feel',
+          'my experience',
+          'personally',
+          'i believe',
+          'in my view',
+        ]
+        const authenticityScore =
+          authenticityMarkers.filter(m => lowerSubmission.includes(m)).length / 3
         return Math.min(authenticityScore, 1) || 0.5
-        
+
       case 'creativity':
         const creativityMarkers = ['imagine', 'dream', 'create', 'innovative', 'unique', 'original']
-        const creativityScore = creativityMarkers.filter(m => lowerSubmission.includes(m)).length / 3
+        const creativityScore =
+          creativityMarkers.filter(m => lowerSubmission.includes(m)).length / 3
         return Math.min(creativityScore, 1) || 0.6
-        
+
       case 'emotional_depth':
-        const emotionWords = ['feel', 'emotion', 'heart', 'sad', 'happy', 'angry', 'love', 'joy', 'fear']
+        const emotionWords = [
+          'feel',
+          'emotion',
+          'heart',
+          'sad',
+          'happy',
+          'angry',
+          'love',
+          'joy',
+          'fear',
+        ]
         const emotionCount = emotionWords.filter(word => lowerSubmission.includes(word)).length
         return Math.min(emotionCount / 4, 1) || 0.5
-        
+
       default:
         // Default heuristic based on length and complexity
         const wordCount = submission.split(/\s+/).length

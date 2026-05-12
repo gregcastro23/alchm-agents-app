@@ -61,7 +61,7 @@ If you don't have a database yet:
 ### Option 3: Other Cloud Databases
 
 - **Neon**: https://neon.tech (Free tier available)
-- **Supabase**: https://supabase.com (Free tier available)  
+- **Supabase**: https://supabase.com (Free tier available)
 - **Railway**: https://railway.app (Free tier available)
 
 ## 📋 Next Steps After Getting the URL
@@ -84,4 +84,3 @@ If you're not sure if you have a database on Render:
 3. If empty, you'll need to create one (see Option 1 above)
 
 The Render API key suggests you have services there - your database should be visible in the dashboard!
-

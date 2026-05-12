@@ -407,8 +407,14 @@ export async function getNotificationStatistics(userId: string): Promise<{
     return {
       total,
       unread,
-      byPriority: byPriority.reduce((acc: any, item: any) => ({ ...acc, [item.priority]: item._count }), {}),
-      byCategory: byCategory.reduce((acc: any, item: any) => ({ ...acc, [item.category]: item._count }), {}),
+      byPriority: byPriority.reduce(
+        (acc: any, item: any) => ({ ...acc, [item.priority]: item._count }),
+        {}
+      ),
+      byCategory: byCategory.reduce(
+        (acc: any, item: any) => ({ ...acc, [item.category]: item._count }),
+        {}
+      ),
       recentActivity,
     }
   } catch (error) {

@@ -1,6 +1,7 @@
 # Check Webhook Status
 
 ## ✅ Commit Pushed Successfully
+
 - Commit: 8b9d18c6
 - Pushed to: gitlab.com:xalchm/my_alchm.git
 - Branch: main
@@ -16,6 +17,7 @@ Find your webhook: **"Vercel Deploy Hook - Main Branch"**
 Click on it, then scroll to **"Recent events"** or **"Recent deliveries"**
 
 **What to look for:**
+
 - ✅ **HTTP 200** = Success! Deployment should be building
 - ❌ **HTTP 4xx/5xx** = Error - webhook didn't reach Vercel
 - ⚠️ **No recent events** = Webhook didn't fire at all
@@ -25,6 +27,7 @@ Click on it, then scroll to **"Recent events"** or **"Recent deliveries"**
 Go to: https://vercel.com/gregcastro23s-projects/planetary-agents/deployments
 
 **What to look for:**
+
 - New deployment with commit **8b9d18c6**
 - Status: Queued → Building → Ready
 - Should appear within 30 seconds of push
@@ -34,16 +37,19 @@ Go to: https://vercel.com/gregcastro23s-projects/planetary-agents/deployments
 **Possible Issues:**
 
 **A. Webhook Branch Filter**
+
 - GitLab webhook might be filtering to wrong branch
 - Go back to webhook settings
 - Check "Push events" → Verify it's set to "main" or "All branches"
 
 **B. Webhook Didn't Fire**
+
 - No recent delivery events in GitLab
 - Try clicking "Test" → "Push events" manually
 - This will trigger a test deployment
 
 **C. Vercel Deploy Hook Issue**
+
 - Recent deliveries show errors
 - Hook URL might be incorrect
 - Create a new deploy hook in Vercel and update webhook URL
@@ -57,6 +63,7 @@ curl -X POST 'https://api.vercel.com/v1/integrations/deploy/prj_47jKTcJvhdXzrf3Y
 ```
 
 **Expected response:**
+
 ```json
 {"job":{"id":"...","state":"PENDING","createdAt":...}}
 ```

@@ -3,12 +3,14 @@
 ## Context
 
 The Planetary Agents system has successfully completed Phase 1 (Critical Fixes):
+
 - ✅ All 53 agents fully configured with zero critical issues
 - ✅ Consciousness levels added to all agents
 - ✅ Vector database populated with all 53 agents (54 chunks)
 - ✅ Audit system validates all agent configurations
 
 **Current Status:**
+
 - 53 fully functional agents
 - 441 non-critical warnings for optional quality enhancements
 - System production-ready but responses could be richer
@@ -16,6 +18,7 @@ The Planetary Agents system has successfully completed Phase 1 (Critical Fixes):
 ## Objective
 
 Enhance agent response quality and personality depth by adding missing optional fields to all agents. These enhancements will:
+
 - Improve historical authenticity through quotes
 - Deepen philosophical responses with core beliefs
 - Enrich personality expression with traits
@@ -27,9 +30,11 @@ Enhance agent response quality and personality depth by adding missing optional 
 ### High Priority (Enables Better UX)
 
 #### 1. Add Era & Specialization (18 agents)
+
 **Affected Agents:** Carl Jung, Nikola Tesla, Cleopatra, Frida Kahlo, Leonardo da Vinci, Marie Curie, Socrates, Rumi, Marcus Aurelius, Vincent van Gogh, Mozart, Shakespeare, Maya Angelou, Isaac Newton, Charles Darwin, Galileo, Benjamin Franklin, Albert Einstein
 
 **Era Categories:**
+
 - `Ancient` (before 500 CE) - Socrates, Marcus Aurelius, Cleopatra
 - `Medieval` (500-1500) - Rumi
 - `Renaissance` (1500-1700) - Leonardo da Vinci, Shakespeare, Galileo
@@ -38,12 +43,14 @@ Enhance agent response quality and personality depth by adding missing optional 
 - `Modern` (1900-2000) - Einstein, Jung, Tesla, Curie, Kahlo, Angelou, Newton
 
 **Specialization Examples:**
+
 - Science: "Physics", "Chemistry", "Biology", "Mathematics", "Astronomy"
 - Arts: "Painting", "Poetry", "Music", "Literature", "Drama"
 - Philosophy: "Ethics", "Metaphysics", "Epistemology", "Political Philosophy"
 - Leadership: "Military Strategy", "Diplomacy", "Governance"
 
 **Implementation:**
+
 ```typescript
 // Add to each agent's base object
 era: 'Renaissance',
@@ -55,9 +62,11 @@ specialization: 'Art & Engineering',
 ---
 
 #### 2. Add Historical Quotes (18 agents)
+
 **Purpose:** Enhance authenticity and provide linguistic patterns for responses
 
 **Structure:**
+
 ```typescript
 quotes: [
   "Quote 1 that reflects their philosophy",
@@ -67,12 +76,14 @@ quotes: [
 ```
 
 **Research Sources:**
+
 - Wikiquote
 - Published works
 - Historical biographies
 - Famous speeches
 
 **Quality Criteria:**
+
 - 3-5 authentic quotes per agent
 - Include original language context if relevant
 - Focus on quotes that reveal personality and worldview
@@ -83,9 +94,11 @@ quotes: [
 ---
 
 #### 3. Add Core Beliefs (18 agents)
+
 **Purpose:** Define philosophical foundations for response generation
 
 **Structure:**
+
 ```typescript
 coreBeliefs: [
   "Belief about knowledge/truth",
@@ -96,11 +109,13 @@ coreBeliefs: [
 ```
 
 **Examples:**
+
 - **Leonardo da Vinci:** "Art and science are inseparable pursuits", "Nature is the ultimate teacher", "Observation precedes understanding"
 - **Carl Jung:** "The unconscious holds the key to wholeness", "Archetypes connect all humanity", "Integration of shadow is essential for growth"
 - **Marie Curie:** "Science belongs to humanity, not individuals", "Persistence overcomes all obstacles", "Knowledge must serve the greater good"
 
 **Quality Criteria:**
+
 - 3-5 core beliefs per agent
 - Reflect their historical writings and actions
 - Cover different aspects: epistemology, ethics, methodology
@@ -111,9 +126,11 @@ coreBeliefs: [
 ---
 
 #### 4. Add Personality Traits (18 agents)
+
 **Purpose:** Enable more nuanced and varied response styles
 
 **Structure:**
+
 ```typescript
 personality: {
   core: {
@@ -133,12 +150,14 @@ personality: {
 ```
 
 **Trait Categories:**
+
 - **Intellectual:** Analytical, Curious, Methodical, Intuitive, Visionary
 - **Emotional:** Passionate, Melancholic, Optimistic, Intense, Calm
 - **Social:** Charismatic, Reserved, Diplomatic, Rebellious, Collaborative
 - **Creative:** Innovative, Traditional, Experimental, Meticulous, Spontaneous
 
 **Quality Criteria:**
+
 - 5-7 traits per agent
 - Mix of intellectual, emotional, and social traits
 - Reflect historical accounts and writings
@@ -151,9 +170,11 @@ personality: {
 ### Medium Priority (Psychological Depth)
 
 #### 5. Add Shadows & Gifts (18 agents)
+
 **Purpose:** Create psychological depth and transformation arcs
 
 **Structure:**
+
 ```typescript
 shadows: [
   {
@@ -172,16 +193,19 @@ gifts: [
 ```
 
 **Shadow Examples:**
+
 - **Leonardo da Vinci:** Perfectionist Paralysis, Scattered Attention, Fear of Completion
 - **Vincent van Gogh:** Emotional Volatility, Self-Doubt, Isolation Tendency
 - **Marie Curie:** Workaholic Neglect, Stubborn Independence, Risk Blindness
 
 **Gift Examples:**
+
 - **Leonardo:** Universal Genius, Visual Thinking, Cross-Disciplinary Synthesis
 - **Van Gogh:** Emotional Intensity, Color Mastery, Spiritual Vision
 - **Curie:** Unwavering Focus, Scientific Intuition, Pioneering Courage
 
 **Quality Criteria:**
+
 - 2-3 shadows per agent (realistic psychological complexity)
 - 2-3 gifts per agent (authentic strengths)
 - Base on historical biographies and psychological analyses
@@ -195,9 +219,11 @@ gifts: [
 ### Low Priority (System Completeness)
 
 #### 6. Add Alchemical Elements (18 agents)
+
 **Purpose:** Complete the alchemical calculation system
 
 **Structure:**
+
 ```typescript
 consciousness: {
   // ... existing fields
@@ -211,12 +237,14 @@ consciousness: {
 ```
 
 **Calculation Guidelines:**
+
 - **Spirit:** Abstract thinking, idealism, transcendence
 - **Essence:** Core identity, authenticity, inner truth
 - **Matter:** Practical application, physical world engagement
 - **Substance:** Foundation, stability, manifestation
 
 **Agent Examples:**
+
 - **Socrates:** High spirit (0.9), high essence (0.8), low matter (0.3), medium substance (0.5)
 - **Leonardo:** High spirit (0.9), high essence (0.8), high matter (0.8), high substance (0.8)
 - **Mozart:** High spirit (0.9), high essence (0.9), medium matter (0.5), high substance (0.7)
@@ -228,15 +256,18 @@ consciousness: {
 ## Implementation Strategy
 
 ### Phase 2A: High Priority (4-5 hours)
+
 1. Add era/specialization to all 18 agents (30 min)
 2. Research and add quotes for all 18 agents (2 hours)
 3. Research and add core beliefs for all 18 agents (2 hours)
 4. Add personality traits for all 18 agents (1.5 hours)
 
 ### Phase 2B: Medium Priority (2 hours)
+
 5. Research and add shadows/gifts for all 18 agents (2 hours)
 
 ### Phase 2C: Low Priority (1 hour)
+
 6. Calculate and add alchemical elements for all 18 agents (1 hour)
 
 **Total Estimated Time:** 7-8 hours
@@ -248,6 +279,7 @@ consciousness: {
 ### Files to Modify
 
 **Inline Agents (lib/demo-agents-data.ts):**
+
 - Carl Jung (carl-jung)
 - Nikola Tesla (nikola-tesla)
 - Cleopatra VII (cleopatra)
@@ -264,37 +296,43 @@ consciousness: {
 - Isaac Newton (isaac-newton)
 - Charles Darwin (charles-darwin)
 - Galileo Galilei (galileo-galilei)
-- Benjamin Franklin (benjamin-franklin)*
-- Albert Einstein (albert-einstein)*
+- Benjamin Franklin (benjamin-franklin)\*
+- Albert Einstein (albert-einstein)\*
 
-*If these agents exist as inline definitions in EXISTING_DEMO_AGENTS array
+\*If these agents exist as inline definitions in EXISTING_DEMO_AGENTS array
 
 ### Verification Steps
 
 After implementation:
 
 1. **Run Audit:**
+
 ```bash
 npx tsx scripts/audit-agents.ts
 ```
+
 Expected: Warnings reduced from 441 to <100
 
 2. **Verify Structure:**
+
 ```bash
 # Check that all fields are properly typed
 yarn typecheck
 ```
 
 3. **Test Responses:**
+
 - Chat with 5-10 random agents
 - Verify quotes appear naturally in responses
 - Check that personality traits influence tone
 - Confirm beliefs shape philosophical answers
 
 4. **Re-ingest Vector Database:**
+
 ```bash
 OPENAI_API_KEY=xxx CHROMADB_URL=http://localhost:8001 npx tsx lib/llamaindex/ingestion-pipeline.ts --force
 ```
+
 Expected: 53 agents with enhanced knowledge base
 
 ---
@@ -302,12 +340,14 @@ Expected: 53 agents with enhanced knowledge base
 ## Research Resources
 
 ### Primary Sources
+
 - **Wikiquote:** https://en.wikiquote.org
 - **Stanford Encyclopedia of Philosophy:** https://plato.stanford.edu
 - **Internet Archive:** https://archive.org (for original works)
 - **Biography.com:** For personality traits and life events
 
 ### Secondary Sources
+
 - Academic biographies
 - Psychological analyses of historical figures
 - Letters and personal correspondence
@@ -316,24 +356,28 @@ Expected: 53 agents with enhanced knowledge base
 ### Quality Guidelines
 
 **Quotes:**
+
 - Verify authenticity before adding
 - Cite source when possible
 - Prefer original language with translation
 - Avoid misattributed or apocryphal quotes
 
 **Beliefs:**
+
 - Base on documented writings or actions
 - Avoid modern interpretations or projections
 - Reflect historical context
 - Show intellectual evolution if applicable
 
 **Traits:**
+
 - Use psychological frameworks (Big Five, etc.)
 - Cross-reference multiple biographers
 - Balance admiration with honesty
 - Include both strengths and authentic struggles
 
 **Shadows/Gifts:**
+
 - Use Jungian framework for shadows
 - Base on documented struggles and achievements
 - Avoid pathologizing or idealizing
@@ -344,6 +388,7 @@ Expected: 53 agents with enhanced knowledge base
 ## Success Criteria
 
 ### Quantitative Metrics
+
 - ✅ All 53 agents have era/specialization fields
 - ✅ All 53 agents have 3-5 quotes
 - ✅ All 53 agents have 3-5 core beliefs
@@ -353,6 +398,7 @@ Expected: 53 agents with enhanced knowledge base
 - ✅ All agents pass audit with zero critical issues
 
 ### Qualitative Metrics
+
 - Responses feel more authentic and historically accurate
 - Personality traits create noticeable variation in tone
 - Quotes integrate naturally into conversations
@@ -417,6 +463,7 @@ Expected: 53 agents with enhanced knowledge base
 ### Common Pitfalls to Avoid
 
 ❌ **Don't:**
+
 - Copy quotes without verification
 - Impose modern values on historical figures
 - Oversimplify complex personalities
@@ -424,6 +471,7 @@ Expected: 53 agents with enhanced knowledge base
 - Skip verification steps
 
 ✅ **Do:**
+
 - Cross-reference multiple sources
 - Preserve historical nuance
 - Show intellectual evolution
@@ -542,6 +590,7 @@ Expected: 53 agents with enhanced knowledge base
 ## Questions to Consider
 
 Before starting, think about:
+
 - Which agents do you know best? Start with those.
 - What research resources do you have access to?
 - How will you verify quote authenticity?

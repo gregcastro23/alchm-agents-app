@@ -3,6 +3,7 @@
 ## Problem
 
 GitLab CI jobs are failing with:
+
 ```
 /bin/sh: cd: line 185: can't cd to backend: No such file or directory
 ERROR: Job failed: exit code 2
@@ -72,7 +73,7 @@ If you want to deploy frontend-only while fixing backend:
 backend:install:
   stage: test
   rules:
-    - when: manual  # Only run when manually triggered
+    - when: manual # Only run when manually triggered
   script:
     - cd backend
     - yarn install
@@ -86,6 +87,7 @@ backend:install:
    - What files are in the root directory
 
 2. **Verify Git Configuration**:
+
    ```bash
    # Check for submodules
    cat .gitmodules
@@ -97,7 +99,6 @@ backend:install:
 3. **Alternative Deployment Strategy**:
 
    Since you're using **Vercel for frontend** and **Neon for database**, consider:
-
    - Deploy backend separately (Render, Railway, Fly.io)
    - Or integrate backend into Next.js API routes
    - Or use GitLab CI only for frontend, manual backend deploy
@@ -105,15 +106,18 @@ backend:install:
 ## Current Status
 
 ### ✅ Working Locally
+
 - Backend directory exists at `/Users/GregCastro/Desktop/planetary-agents/backend/`
 - Has package.json, src/, and all source files
 - Is tracked in git
 
 ### ❌ Failing in GitLab CI
+
 - Runner cannot find backend directory
 - Needs debugging output to diagnose
 
 ### 🔄 Neon Database
+
 - ✅ Connection verified
 - ✅ Schema synced
 - ✅ Prisma Accelerate configured
@@ -134,6 +138,7 @@ Disable backend jobs temporarily:
 ```
 
 Then deploy to Vercel:
+
 ```bash
 vercel --prod
 ```

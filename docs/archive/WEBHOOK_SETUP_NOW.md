@@ -7,6 +7,7 @@
 **Click:** "Add new webhook"
 
 **Fill in:**
+
 - **URL:**
   ```
   https://api.vercel.com/v1/integrations/deploy/prj_47jKTcJvhdXzrf3YSTbbYu9SVRTf/jfRfGiZlr5
@@ -25,6 +26,7 @@ After adding, you'll see the webhook in the list.
 **Click:** "Test" button → Select "Push events"
 
 **Expected result:**
+
 - ✅ "Hook executed successfully: HTTP 200"
 - A new deployment should appear in Vercel dashboard
 
@@ -51,10 +53,12 @@ This will trigger an automatic deployment via the webhook!
 After pushing, check:
 
 **GitLab:**
+
 - Settings → Webhooks → Recent Deliveries
 - Should show HTTP 200 response
 
 **Vercel:**
+
 - https://vercel.com/gregcastro23s-projects/planetary-agents/deployments
 - New deployment should appear with commit 8b9d18c6
 
@@ -65,6 +69,7 @@ After pushing, check:
 Tell me when you've added the webhook to GitLab, and I'll push the commit to test it!
 
 The commit is ready:
+
 - Commit: 8b9d18c6
 - Message: "docs: Add Vercel deployment troubleshooting and deploy hook setup"
 - Files: 4 new deployment documentation files

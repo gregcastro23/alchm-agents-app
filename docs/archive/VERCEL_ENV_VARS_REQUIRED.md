@@ -9,11 +9,13 @@ But more importantly: **Your environment variables might not be configured in Ve
 ## ⚡ DO THIS RIGHT NOW - 5 MINUTE FIX
 
 ### Step 1: Go to Vercel Dashboard
+
 ```
 https://vercel.com/dashboard
 ```
 
 ### Step 2: Click Your Project
+
 Find: **planetary-agents**
 
 ### Step 3: Go to Settings → Environment Variables
@@ -27,6 +29,7 @@ Click **"Environment Variables"** in the left sidebar
 ---
 
 **Variable 1:**
+
 ```
 Name: DATABASE_URL
 Value: postgresql://neondb_owner:npg_J8CabeXrf5Od@ep-mute-thunder-a8hui2n87-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require
@@ -34,6 +37,7 @@ Environments: ✅ Production ✅ Preview ✅ Development
 ```
 
 **Variable 2:**
+
 ```
 Name: ANTHROPIC_API_KEY
 Value: sk-ant-api03-ZXNzb2xhdG8zMDIzLWEyMDIzLTA5LTE4VDA2OjQ5OjEuOTA3WjpjbGF1ZGUtY29kZS1hcGktYWNjZXNz
@@ -41,6 +45,7 @@ Environments: ✅ Production ✅ Preview ✅ Development
 ```
 
 **Variable 3:**
+
 ```
 Name: OPENAI_API_KEY
 Value: sk-uK4InAHNJcUjL3pgiKtrIQsMeLUyroFs1K9lezjkk4T3BlbkFJob35hofh3OUmSXK6-K7TOP3aQcgun80De-aabI-ZgA
@@ -48,6 +53,7 @@ Environments: ✅ Production ✅ Preview ✅ Development
 ```
 
 **Variable 4 (Optional):**
+
 ```
 Name: GALILEO_API_KEY
 Value: q01AM1oNTjbStxEaiHx44gKLg0FUCd-yzmk4hV55pjU
@@ -66,6 +72,7 @@ Environments: ✅ Production ✅ Preview ✅ Development
 ### Step 6: Test
 
 Once redeployed, go to:
+
 ```
 https://planetary-agents.vercel.app/gallery/chat/carl-jung
 ```
@@ -86,7 +93,7 @@ After adding, you should see:
 
 ```
 ANTHROPIC_API_KEY    sk-ant-api03-ZX... ⚙️ Production Preview Development
-OPENAI_API_KEY       sk-uK4InAHNJcU... ⚙️ Production Preview Development  
+OPENAI_API_KEY       sk-uK4InAHNJcU... ⚙️ Production Preview Development
 DATABASE_URL         postgresql://... ⚙️ Production Preview Development
 GALILEO_API_KEY      q01AM1oNTjbSt... ⚙️ Production Preview Development
 ```
@@ -110,4 +117,3 @@ All with green checkmarks on all three environments.
 - ✅ Everything functional
 
 **This is the FINAL fix! Add these environment variables to Vercel NOW!** 🔑
-

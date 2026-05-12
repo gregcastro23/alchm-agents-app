@@ -86,7 +86,7 @@ Open browser console on `alchm.kitchen` and run:
 fetch('https://your-production-domain.com/api/planetary-positions')
   .then(response => response.json())
   .then(data => console.log('Planetary positions:', data))
-  .catch(error => console.error('Error:', error));
+  .catch(error => console.error('Error:', error))
 ```
 
 ## Adding New Origins
@@ -97,7 +97,7 @@ To allow additional domains, update the `ALLOWED_ORIGINS` array in `app/api/plan
 const ALLOWED_ORIGINS = [
   'https://alchm.kitchen',
   'https://www.alchm.kitchen',
-  'https://new-domain.com',  // Add new origins here
+  'https://new-domain.com', // Add new origins here
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3002',
@@ -120,12 +120,12 @@ const ALLOWED_ORIGINS = [
 
 ```javascript
 // Simple GET request
-const response = await fetch('https://your-domain.com/api/planetary-positions');
-const data = await response.json();
+const response = await fetch('https://your-domain.com/api/planetary-positions')
+const data = await response.json()
 
 // With alchemy data
-const response = await fetch('https://your-domain.com/api/planetary-positions?includeAlchemy=true');
-const data = await response.json();
+const response = await fetch('https://your-domain.com/api/planetary-positions?includeAlchemy=true')
+const data = await response.json()
 
 // POST with specific date
 const response = await fetch('https://your-domain.com/api/planetary-positions', {
@@ -135,8 +135,8 @@ const response = await fetch('https://your-domain.com/api/planetary-positions', 
     date: '2025-11-21T00:00:00Z',
     includeAlchemy: true,
   }),
-});
-const data = await response.json();
+})
+const data = await response.json()
 ```
 
 ## Troubleshooting

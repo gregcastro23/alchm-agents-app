@@ -21,11 +21,7 @@ async function testMigration() {
   console.log('Test 1: Planetary Positions')
   try {
     const testDate = new Date('2025-11-22T18:00:00Z')
-    const positions = await planetaryAPI.getPlanetaryPositions(
-      testDate,
-      40.8681,
-      -73.9176
-    )
+    const positions = await planetaryAPI.getPlanetaryPositions(testDate, 40.8681, -73.9176)
 
     console.log('✅ Planetary positions retrieved')
     console.log('Sun longitude:', positions.sun?.longitude.toFixed(6))
@@ -50,12 +46,7 @@ async function testMigration() {
   console.log('Test 2: House System')
   try {
     const testDate = new Date('2025-11-22T18:00:00Z')
-    const houses = await planetaryAPI.getHouseSystem(
-      testDate,
-      40.8681,
-      -73.9176,
-      'P'
-    )
+    const houses = await planetaryAPI.getHouseSystem(testDate, 40.8681, -73.9176, 'P')
 
     console.log('✅ House system retrieved')
     console.log('Ascendant:', houses.ascendant.toFixed(6))
@@ -86,11 +77,7 @@ async function testMigration() {
   console.log('Test 3: Consciousness Parameters')
   try {
     const birthDate = new Date('1990-05-15T12:00:00Z')
-    const consciousness = await planetaryAPI.calculateConsciousness(
-      birthDate,
-      40.8681,
-      -73.9176
-    )
+    const consciousness = await planetaryAPI.calculateConsciousness(birthDate, 40.8681, -73.9176)
 
     console.log('✅ Consciousness parameters calculated')
     console.log('Spirit:', consciousness.spirit.toFixed(4))
@@ -154,7 +141,13 @@ async function testMigration() {
 
     console.log('✅ API health check passed')
     console.log(`Available planets: ${availablePlanets.length}`)
-    console.log('Sample:', availablePlanets.slice(0, 5).map(p => p.name).join(', '))
+    console.log(
+      'Sample:',
+      availablePlanets
+        .slice(0, 5)
+        .map(p => p.name)
+        .join(', ')
+    )
 
     if (availablePlanets.length < 10) {
       throw new Error('Expected at least 10 planets')
@@ -191,7 +184,7 @@ async function testMigration() {
 }
 
 // Run the test
-testMigration().catch((error) => {
+testMigration().catch(error => {
   console.error('\n💥 Fatal error during testing:', error)
   process.exit(1)
 })

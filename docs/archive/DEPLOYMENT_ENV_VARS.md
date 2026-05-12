@@ -30,12 +30,12 @@ LOG_LEVEL=info
 
 ### Render Build Configuration
 
-| Setting | Value |
-|---------|-------|
-| **Build Command** | `cd backend && yarn install && yarn build` |
-| **Start Command** | `cd backend && yarn start` |
-| **Root Directory** | (leave empty) |
-| **Health Check Path** | `/api/health` |
+| Setting               | Value                                      |
+| --------------------- | ------------------------------------------ |
+| **Build Command**     | `cd backend && yarn install && yarn build` |
+| **Start Command**     | `cd backend && yarn start`                 |
+| **Root Directory**    | (leave empty)                              |
+| **Health Check Path** | `/api/health`                              |
 
 ---
 
@@ -147,12 +147,12 @@ fetch(window.NEXT_PUBLIC_BACKEND_URL || 'https://your-backend.onrender.com/api/p
   .then(r => r.json())
   .then(data => {
     if (data.success) {
-      console.log('✅ Backend connected!', data.data.length, 'planets available');
+      console.log('✅ Backend connected!', data.data.length, 'planets available')
     } else {
-      console.error('❌ Backend error:', data);
+      console.error('❌ Backend error:', data)
     }
   })
-  .catch(err => console.error('❌ Connection failed:', err));
+  .catch(err => console.error('❌ Connection failed:', err))
 
 // Test planetary positions
 fetch('https://your-backend.onrender.com/api/planets/positions', {
@@ -162,17 +162,17 @@ fetch('https://your-backend.onrender.com/api/planets/positions', {
     date: new Date().toISOString(),
     latitude: 40.8681,
     longitude: -73.9176,
-    planets: ['sun', 'moon', 'mars']
-  })
+    planets: ['sun', 'moon', 'mars'],
+  }),
 })
   .then(r => r.json())
   .then(data => {
     if (data.success) {
-      console.log('✅ Planetary positions:', data.data);
+      console.log('✅ Planetary positions:', data.data)
     } else {
-      console.error('❌ API error:', data);
+      console.error('❌ API error:', data)
     }
-  });
+  })
 ```
 
 ---
@@ -184,6 +184,7 @@ fetch('https://your-backend.onrender.com/api/planets/positions', {
 **Error**: `swisseph compilation failed`
 
 **Solution**:
+
 - Verify `NODE_VERSION=20.11.0` is set
 - Check that build command is: `cd backend && yarn install && yarn build`
 - Review Render build logs for specific error
@@ -194,6 +195,7 @@ fetch('https://your-backend.onrender.com/api/planets/positions', {
 **Error**: `Service unhealthy` or `Failed to bind to port`
 
 **Solution**:
+
 - Verify `PORT=8000` and `HOST=0.0.0.0` are set
 - Check start command is: `cd backend && yarn start`
 - Review logs for import errors
@@ -204,6 +206,7 @@ fetch('https://your-backend.onrender.com/api/planets/positions', {
 **Error**: `Access-Control-Allow-Origin` in browser console
 
 **Solution**:
+
 - Add your Vercel URL to `CORS_ORIGINS` in Render
 - Include wildcard: `https://*.vercel.app`
 - Restart Render service after updating
@@ -214,6 +217,7 @@ fetch('https://your-backend.onrender.com/api/planets/positions', {
 **Error**: `Failed to fetch` or `Network error`
 
 **Solution**:
+
 - Verify `NEXT_PUBLIC_BACKEND_URL` in Vercel matches your Render URL
 - Check Render service is running (not sleeping)
 - Test backend directly: `curl https://your-backend.onrender.com/api/health`
@@ -227,6 +231,7 @@ fetch('https://your-backend.onrender.com/api/planets/positions', {
 **Cause**: Free tier service is sleeping
 
 **Solution**:
+
 - Wait 30-60 seconds for service to wake up
 - First request after sleep will be slow
 - Subsequent requests will be fast
@@ -237,6 +242,7 @@ fetch('https://your-backend.onrender.com/api/planets/positions', {
 ## 📊 Success Criteria
 
 ✅ **Backend Deployed Successfully**:
+
 - Build completes without errors
 - Logs show: "swisseph@npm:0.5.17 must be built"
 - Logs show: "Planetary Agents Backend started"
@@ -244,12 +250,14 @@ fetch('https://your-backend.onrender.com/api/planets/positions', {
 - `/api/planets/available` returns 12 planets
 
 ✅ **Frontend Deployed Successfully**:
+
 - Build completes without swisseph errors
 - No node-gyp compilation attempts
 - "Compiled successfully" message
 - Build time under 5 minutes
 
 ✅ **Integration Working**:
+
 - Frontend makes successful API calls to backend
 - Planetary data displays correctly
 - No CORS errors in console
@@ -261,15 +269,18 @@ fetch('https://your-backend.onrender.com/api/planets/positions', {
 ## 📞 Support
 
 **Documentation**:
+
 - `SWISS_EPHEMERIS_ARCHITECTURE.md` - Full architecture guide
 - `SWISS_EPHEMERIS_MIGRATION_COMPLETE.md` - Migration details
 - `backend/.env.render.swiss-ephemeris` - Detailed env var docs
 
 **Testing**:
+
 - `scripts/test-swiss-ephemeris-migration.ts` - Integration tests
 - Run locally: `npx tsx scripts/test-swiss-ephemeris-migration.ts`
 
 **External Resources**:
+
 - [Render Documentation](https://render.com/docs)
 - [Vercel Documentation](https://vercel.com/docs)
 - [Swiss Ephemeris](https://www.astro.com/swisseph/)

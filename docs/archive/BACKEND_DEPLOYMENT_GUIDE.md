@@ -3,6 +3,7 @@
 ## 🚨 Current Problem
 
 You're using **ngrok** to expose your local backend, which is causing issues:
+
 - ❌ ngrok tunnel is down/expired
 - ❌ URLs change on every restart (free tier)
 - ❌ Not reliable for production
@@ -36,6 +37,7 @@ git push origin main
 ### Step 3: Configure Service Settings
 
 **Basic Settings:**
+
 - **Name**: `planetary-agents-backend`
 - **Region**: `Oregon` (or closest to your users)
 - **Branch**: `main`
@@ -45,6 +47,7 @@ git push origin main
 - **Start Command**: `yarn start`
 
 **OR use the automated render.yaml** (recommended):
+
 - Render will auto-detect `render.yaml` in your repo
 - It's already configured at the root level
 - Just select "Apply Render Blueprint" when prompted
@@ -99,6 +102,7 @@ ALCHM_BACKEND_TIMEOUT=30000
 ### Step 6: Get Your Backend URL
 
 After deployment, Render will give you a URL like:
+
 ```
 https://planetary-agents-backend.onrender.com
 ```
@@ -114,16 +118,19 @@ https://planetary-agents-backend.onrender.com
 Go to Vercel Dashboard → Your Project → Settings → Environment Variables
 
 **Remove old ngrok variables:**
+
 - Delete `NEXT_PUBLIC_BACKEND_URL` (if pointing to ngrok)
 - Delete `NEXT_PUBLIC_WEBSOCKET_URL` (if pointing to ngrok)
 
 **Add new Render backend URL:**
+
 ```bash
 NEXT_PUBLIC_BACKEND_URL=https://planetary-agents-backend.onrender.com
 NEXT_PUBLIC_WEBSOCKET_URL=wss://planetary-agents-backend.onrender.com
 ```
 
 **Keep feature flags enabled:**
+
 ```bash
 NEXT_PUBLIC_PLANETARY_HOURS_BACKEND=true
 NEXT_PUBLIC_THERMODYNAMICS_BACKEND=true
@@ -192,12 +199,14 @@ railway up
 ```
 
 **Advantages:**
+
 - ✅ Faster cold starts
 - ✅ Better free tier
 - ✅ Automatic HTTPS
 - ✅ Built-in Redis/PostgreSQL
 
 **Configuration:**
+
 - Uses `backend/deploy/railway.toml` (if exists)
 - Or auto-detects from `package.json`
 
@@ -206,6 +215,7 @@ railway up
 ## 📊 Render Free Tier Limitations
 
 **What to expect:**
+
 - ⚠️ **Cold starts**: First request after 15min inactivity takes ~30-60s
 - ⚠️ **Sleep mode**: Service sleeps after 15min of inactivity
 - ⚠️ **Bandwidth**: 100GB/month free
@@ -213,6 +223,7 @@ railway up
 - ✅ **HTTPS**: Automatic SSL
 
 **Solutions:**
+
 1. **Upgrade to paid tier** ($7/month) - no sleep, faster
 2. **Use Railway** - better free tier
 3. **Keep-alive ping** - ping `/api/health` every 10min (not recommended)
@@ -224,10 +235,12 @@ railway up
 ### Backend Not Starting
 
 **Check Render Logs:**
+
 1. Go to Render dashboard → Your service → Logs
 2. Look for errors in build/start process
 
 **Common Issues:**
+
 - **Build fails**: Check `yarn build` works locally
 - **Port error**: Ensure `PORT` env var is set
 - **Database error**: Verify `DATABASE_URL` is correct
@@ -237,6 +250,7 @@ railway up
 **Error**: `Access-Control-Allow-Origin` blocked
 
 **Fix**: Update `CORS_ORIGINS` in Render:
+
 ```bash
 CORS_ORIGINS=https://v0-planetary-agents1.vercel.app,https://*.vercel.app
 ```
@@ -245,7 +259,8 @@ CORS_ORIGINS=https://v0-planetary-agents1.vercel.app,https://*.vercel.app
 
 **Cause**: Service is sleeping (free tier)
 
-**Fix**: 
+**Fix**:
+
 1. Wait 30-60 seconds for wake-up
 2. Or upgrade to paid tier
 3. Or use Railway (better free tier)
@@ -253,6 +268,7 @@ CORS_ORIGINS=https://v0-planetary-agents1.vercel.app,https://*.vercel.app
 ### Backend URL Not Working
 
 **Check:**
+
 1. Service is deployed and running
 2. URL is correct (no typos)
 3. Health endpoint responds: `/api/health`
@@ -289,6 +305,7 @@ CORS_ORIGINS=https://v0-planetary-agents1.vercel.app,https://*.vercel.app
 ## 📋 Deployment Checklist
 
 ### Backend (Render)
+
 - [ ] Repository pushed to GitHub
 - [ ] Render service created
 - [ ] Environment variables set
@@ -297,6 +314,7 @@ CORS_ORIGINS=https://v0-planetary-agents1.vercel.app,https://*.vercel.app
 - [ ] Backend URL saved
 
 ### Frontend (Vercel)
+
 - [ ] Old ngrok variables removed
 - [ ] New Render backend URL added
 - [ ] Feature flags enabled
@@ -304,6 +322,7 @@ CORS_ORIGINS=https://v0-planetary-agents1.vercel.app,https://*.vercel.app
 - [ ] Tested from production site
 
 ### Verification
+
 - [ ] Backend responds to health check
 - [ ] Frontend can call backend APIs
 - [ ] No CORS errors in console
@@ -336,10 +355,12 @@ CORS_ORIGINS=https://v0-planetary-agents1.vercel.app,https://*.vercel.app
 ## 📞 Support
 
 **Render Issues:**
+
 - Render Docs: https://render.com/docs
 - Render Support: support@render.com
 
 **Backend Issues:**
+
 - Check logs in Render dashboard
 - Test locally: `cd backend && yarn dev`
 - Verify environment variables
@@ -352,4 +373,3 @@ Your backend will have a stable URL like:
 `https://planetary-agents-backend.onrender.com`
 
 No more ngrok! No more changing URLs! No more keeping your computer on 24/7!
-

@@ -1,4 +1,5 @@
 # Infrastructure Status Report
+
 **Date**: November 14, 2025
 **Scope**: Neon Database, ngrok, Local Docker, Vercel
 
@@ -13,6 +14,7 @@
 **Status**: Active and verified
 
 **Connection Details**:
+
 ```bash
 Host: ep-mute-thunder-ahui2n87-pooler.c-3.us-east-1.aws.neon.tech
 Database: neondb
@@ -23,16 +25,20 @@ SSL Mode: Required
 **Connection Strings**:
 
 1. **Prisma Accelerate** (Recommended for Production - Global Edge Caching):
+
    ```
    prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
    ```
+
    - Features: Global edge caching, connection pooling, query acceleration
    - Best for: Vercel serverless functions, API routes
 
 2. **Pooled Connection** (Alternative):
+
    ```
    postgresql://neondb_owner:npg_J8CabeXrf5Od@ep-mute-thunder-ahui2n87-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&pgbouncer=true
    ```
+
    - Features: PgBouncer connection pooling
    - Best for: Direct database access without Accelerate
 
@@ -40,16 +46,19 @@ SSL Mode: Required
    ```
    postgresql://neondb_owner:npg_J8CabeXrf5Od@ep-mute-thunder-ahui2n87.us-east-1.aws.neon.tech/neondb?sslmode=require
    ```
+
    - Features: Direct connection without pooling
    - Best for: Prisma migrations, schema changes
 
 **Current Usage** (as of Nov 14, 2025):
+
 - Compute: 0.09 CU-hrs
 - Storage: 34.64 MB
 - Data Transfer: 537.27 kB
 - Status: Well within free tier limits ✅
 
 **Auto-Sleep**:
+
 - Neon compute auto-sleeps after inactivity
 - Wakes in ~1-2 seconds on first request
 - Normal behavior for free tier
@@ -64,6 +73,7 @@ SSL Mode: Required
 **Port**: `localhost:5433` → `5432`
 
 **Connection String**:
+
 ```bash
 DATABASE_URL="postgresql://planetary:consciousness@localhost:5433/planetary_agents_dev"
 ```
@@ -84,17 +94,20 @@ DATABASE_URL="postgresql://planetary:consciousness@localhost:5433/planetary_agen
 ### Deployment Options
 
 **Option 1: Deploy to Render** (Recommended)
+
 - See `BACKEND_DEPLOYMENT_GUIDE.md` for step-by-step instructions
 - Uses `backend/render.yaml` for automatic configuration
 - Free tier available (with cold starts)
 - Stable URL: `https://your-service.onrender.com`
 
 **Option 2: Deploy to Railway**
+
 - Faster cold starts than Render
 - Better free tier
 - See `PRODUCTION_SCALING_GUIDE.md` for details
 
 **Option 3: Local Development Only**
+
 - Backend runs on `localhost:8000`
 - Use `backend/scripts/start-production.sh` to start
 - For testing only, not production
@@ -102,10 +115,12 @@ DATABASE_URL="postgresql://planetary:consciousness@localhost:5433/planetary_agen
 ### Current Vercel Configuration
 
 **Backend URL**: Not set (optional)
+
 - Frontend uses local calculations when backend URL is not set
 - All features work without backend (with reduced accuracy)
 
 **To enable backend features**:
+
 1. Deploy backend to Render/Railway
 2. Set `NEXT_PUBLIC_BACKEND_URL` in Vercel environment variables
 3. Optionally enable feature flags:
@@ -118,16 +133,16 @@ DATABASE_URL="postgresql://planetary:consciousness@localhost:5433/planetary_agen
 
 ## 📊 Infrastructure Comparison
 
-| Component | Local Dev | Vercel (Current) | Vercel (Recommended) | Vercel + Render |
-|-----------|-----------|------------------|---------------------|-----------------|
-| **Frontend** | localhost:3000 | ✅ Deployed | ✅ Deployed | ✅ Deployed |
-| **Backend** | localhost:8000 | ❌ ngrok (down) | ❌ Not needed | ✅ render.com |
-| **Database** | Docker (local) | ✅ Neon | ✅ Neon | ✅ Neon |
-| **Cache** | Local memory | Local memory | Local memory | Redis (Render) |
-| **Calculations** | Local | ❌ Tries backend | ✅ Local | ✅ Backend |
-| **Uptime** | Dev only | ❌ Fails | ✅ 100% | ✅ 99%+ |
-| **Cost** | Free | Free | Free | Free tier |
-| **Complexity** | Medium | ❌ Complex | ✅ Simple | Medium |
+| Component        | Local Dev      | Vercel (Current) | Vercel (Recommended) | Vercel + Render |
+| ---------------- | -------------- | ---------------- | -------------------- | --------------- |
+| **Frontend**     | localhost:3000 | ✅ Deployed      | ✅ Deployed          | ✅ Deployed     |
+| **Backend**      | localhost:8000 | ❌ ngrok (down)  | ❌ Not needed        | ✅ render.com   |
+| **Database**     | Docker (local) | ✅ Neon          | ✅ Neon              | ✅ Neon         |
+| **Cache**        | Local memory   | Local memory     | Local memory         | Redis (Render)  |
+| **Calculations** | Local          | ❌ Tries backend | ✅ Local             | ✅ Backend      |
+| **Uptime**       | Dev only       | ❌ Fails         | ✅ 100%              | ✅ 99%+         |
+| **Cost**         | Free           | Free             | Free                 | Free tier       |
+| **Complexity**   | Medium         | ❌ Complex       | ✅ Simple            | Medium          |
 
 ---
 
@@ -136,6 +151,7 @@ DATABASE_URL="postgresql://planetary:consciousness@localhost:5433/planetary_agen
 ### For Your Current Situation: **Option 1** (Remove Backend)
 
 **Why**:
+
 1. Your backend at `alchm-backend.onrender.com` is **wrong** (crypto trading app)
 2. Your ngrok tunnel is **down** and unreliable for production
 3. Your Fix #2 implementation makes backend **optional**
@@ -168,6 +184,7 @@ curl https://planetary-agents.vercel.app/api/philosophers-stone/positions
 ### For Future Production: **Option 2** (Deploy Backend to Render)
 
 **When**: After beta testing, when you need:
+
 - More accurate planetary hours
 - Agent consciousness tracking
 - Better performance at scale
@@ -183,6 +200,7 @@ curl https://planetary-agents.vercel.app/api/philosophers-stone/positions
 **Status**: ✅ Ready for use
 
 **Verification Commands**:
+
 ```bash
 # Test Neon connection (from local)
 DATABASE_URL='postgresql://neondb_owner:npg_J8CabeXrf5Od@ep-mute-thunder-ahui2n87-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require' npx prisma db pull
@@ -201,6 +219,7 @@ DATABASE_URL='postgresql://neondb_owner:npg_J8CabeXrf5Od@ep-mute-thunder-ahui2n8
 ### Critical Issue
 
 Your Vercel production currently has:
+
 - ❌ Backend URL pointing to dead ngrok tunnel
 - ❌ Backend feature flags enabled
 - ❌ **API routes will return 500 errors**
@@ -208,6 +227,7 @@ Your Vercel production currently has:
 ### Quick Fix (5 minutes)
 
 **Via Vercel Dashboard**:
+
 1. Go to: https://vercel.com/your-project/settings/environment-variables
 2. Find `NEXT_PUBLIC_BACKEND_URL` → Delete
 3. Find `NEXT_PUBLIC_PLANETARY_HOURS_BACKEND` → Delete
@@ -217,6 +237,7 @@ Your Vercel production currently has:
 7. Redeploy: Go to Deployments → Click "..." → "Redeploy"
 
 **Via Vercel CLI** (faster):
+
 ```bash
 vercel env rm NEXT_PUBLIC_BACKEND_URL production
 vercel env rm NEXT_PUBLIC_PLANETARY_HOURS_BACKEND production
@@ -230,14 +251,14 @@ vercel --prod
 
 ## 📊 Summary
 
-| Component | Status | Action Needed |
-|-----------|--------|---------------|
-| **Neon Database** | ✅ Active | Set DATABASE_URL in Vercel |
-| **Local PostgreSQL** | ✅ Running | Dev only, no action |
-| **ngrok Tunnel** | ❌ Down | Remove from Vercel config |
-| **Backend on Render** | ❌ Wrong app | Don't use for now |
-| **Vercel Frontend** | ✅ Deployed | Remove backend env vars |
-| **Fix #2** | ✅ Complete | Ready to deploy |
+| Component             | Status       | Action Needed              |
+| --------------------- | ------------ | -------------------------- |
+| **Neon Database**     | ✅ Active    | Set DATABASE_URL in Vercel |
+| **Local PostgreSQL**  | ✅ Running   | Dev only, no action        |
+| **ngrok Tunnel**      | ❌ Down      | Remove from Vercel config  |
+| **Backend on Render** | ❌ Wrong app | Don't use for now          |
+| **Vercel Frontend**   | ✅ Deployed  | Remove backend env vars    |
+| **Fix #2**            | ✅ Complete  | Ready to deploy            |
 
 ---
 

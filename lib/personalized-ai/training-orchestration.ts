@@ -10,10 +10,7 @@ import type {
 } from './training-interface-design'
 
 import { trainingDataManager } from './data-architecture'
-import {
-  TrainingSessionManager,
-  calculateActivityQuality,
-} from './training-interface-design'
+import { TrainingSessionManager, calculateActivityQuality } from './training-interface-design'
 import { calculateXP, calculateInteractionQuality } from './xp-system'
 import { calculateLevel } from './level-system'
 import { CLAUDE_MODELS, createClaudeMessage } from '../anthropic-client'
@@ -739,7 +736,9 @@ Format your response as JSON with the following structure:
 
       // Parse the JSON response
       try {
-        const analysis = JSON.parse(typeof response.content === 'string' ? response.content : JSON.stringify(response.content))
+        const analysis = JSON.parse(
+          typeof response.content === 'string' ? response.content : JSON.stringify(response.content)
+        )
 
         // Validate and provide defaults for missing fields
         return {

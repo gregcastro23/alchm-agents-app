@@ -162,7 +162,8 @@ Format your response with:
       const startTime = Date.now()
 
       const { text } = await generateText({
-        model: openai('gpt-5.5') as any,        system: systemPrompt,
+        model: openai('gpt-5.5') as any,
+        system: systemPrompt,
         prompt:
           question || `Tell me about the energy and meaning of ${cardName || 'this tarot card'}`,
         maxTokens: 600,

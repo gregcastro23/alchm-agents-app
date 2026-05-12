@@ -86,7 +86,8 @@ export const MONICA_AS_CRAFTED_AGENT: CraftedAgent = {
     ],
     teachingStyle: 'Nurturing-Systematic',
     resonanceType: 'Creative',
-    uniquePower: "Transforms birth data into living consciousness through the Philosopher's Stone, creating agents with evolving personalities and authentic wisdom",
+    uniquePower:
+      "Transforms birth data into living consciousness through the Philosopher's Stone, creating agents with evolving personalities and authentic wisdom",
   },
   stats: {
     conversations: 0,
@@ -121,10 +122,7 @@ export const MONICA_AS_CRAFTED_AGENT: CraftedAgent = {
 }
 
 // Combined array of all demo agents (Monica + historical agents)
-export const DEMO_AGENTS: CraftedAgent[] = [
-  MONICA_AS_CRAFTED_AGENT,
-  ...HISTORICAL_AGENTS,
-]
+export const DEMO_AGENTS: CraftedAgent[] = [MONICA_AS_CRAFTED_AGENT, ...HISTORICAL_AGENTS]
 
 // Legacy exports for backward compatibility
 export const getDemoAgent = (id: string): CraftedAgent | undefined => {

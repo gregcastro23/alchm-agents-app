@@ -27,9 +27,7 @@ async function testAISDK() {
 
     const result = await generateText({
       model: anthropic('claude-3-5-sonnet-20240620'), // Use older model version for compatibility
-      messages: [
-        { role: 'user', content: 'Say hello in exactly 3 words.' }
-      ],
+      messages: [{ role: 'user', content: 'Say hello in exactly 3 words.' }],
       maxTokens: 50,
     })
 

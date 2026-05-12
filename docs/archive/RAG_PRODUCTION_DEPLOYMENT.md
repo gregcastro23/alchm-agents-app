@@ -20,7 +20,7 @@
 # Database
 DATABASE_URL=postgresql://user:password@prod-host:5432/planetary_agents
 
-# NextAuth  
+# NextAuth
 NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
 NEXTAUTH_URL=https://your-production-domain.com
 
@@ -60,17 +60,21 @@ GALILEO_LOG_ENABLED=true
 ChromaDB must be deployed separately before the main app.
 
 #### Option A: Railway
+
 ```bash
 railway up chromadb/chroma:latest
 ```
 
 #### Option B: Render
+
 Create web service with:
+
 - Docker image: `chromadb/chroma:latest`
 - Port: 8000
 - Persistent disk: `/chroma/chroma`
 
 #### Option C: Self-Hosted VPS
+
 ```bash
 docker run -d \
   --name chromadb \
@@ -117,7 +121,7 @@ npx prisma db pull
 ### 5. Ingest Data to Production ChromaDB
 
 ```bash
-# Set production credentials  
+# Set production credentials
 export OPENAI_API_KEY="sk-..."
 export CHROMA_URL="https://your-production-chromadb.com:8000"
 
@@ -146,14 +150,14 @@ open https://your-domain.com/admin/rag-analytics
 
 ## Performance Targets
 
-| Metric | Target | Alert Threshold |
-|--------|--------|-----------------|
-| Cache hit rate | 30-50% | <20% |
-| Cached response | <50ms | >100ms |
-| Uncached response | <500ms | >1000ms |
-| Retrieval accuracy | 60-65% | <50% |
-| Error rate | <1% | >5% |
-| Uptime | 99.9% | <99% |
+| Metric             | Target | Alert Threshold |
+| ------------------ | ------ | --------------- |
+| Cache hit rate     | 30-50% | <20%            |
+| Cached response    | <50ms  | >100ms          |
+| Uncached response  | <500ms | >1000ms         |
+| Retrieval accuracy | 60-65% | <50%            |
+| Error rate         | <1%    | >5%             |
+| Uptime             | 99.9%  | <99%            |
 
 ## Monitoring Setup
 
@@ -173,6 +177,7 @@ https://your-domain.com/api/rag/analytics
 ### Configure Alerts
 
 Set up monitoring for:
+
 - Cache hit rate drops below 20%
 - Response time exceeds 1000ms
 - Error rate exceeds 5%
@@ -183,8 +188,9 @@ Set up monitoring for:
 Access: `https://your-domain.com/admin/rag-analytics`
 
 Monitor daily:
+
 - Query volume trends
-- Cache performance  
+- Cache performance
 - Relevance scores
 - Top performing agents
 
@@ -223,6 +229,7 @@ docker cp chromadb:/tmp/chroma-backup.tar.gz ./backups/
 ### Issue: 404 Model Not Found
 
 **Solution:** Use older Claude models:
+
 ```bash
 CLAUDE_DEFAULT_MODEL=claude-3-sonnet-20240229
 ```
@@ -230,6 +237,7 @@ CLAUDE_DEFAULT_MODEL=claude-3-sonnet-20240229
 ### Issue: ChromaDB Connection Failed
 
 **Solutions:**
+
 1. Verify ChromaDB is running: `curl ${CHROMA_URL}/api/v1/heartbeat`
 2. Check firewall rules allow traffic on port 8000
 3. Verify CHROMA_URL includes protocol: `https://` not `http://`
@@ -237,6 +245,7 @@ CLAUDE_DEFAULT_MODEL=claude-3-sonnet-20240229
 ### Issue: No Search Results
 
 **Solutions:**
+
 1. Verify data ingestion: `curl ${CHROMA_URL}/api/v1/collections`
 2. Lower threshold: `RAG_RELEVANCE_THRESHOLD=0.5`
 3. Re-run ingestion with `--force` flag
@@ -244,18 +253,21 @@ CLAUDE_DEFAULT_MODEL=claude-3-sonnet-20240229
 ## Post-Deployment Tasks
 
 ### Week 1
+
 - [ ] Monitor error rates daily
-- [ ] Check cache hit rates  
+- [ ] Check cache hit rates
 - [ ] Review first user feedback
 - [ ] Tune relevance threshold
 
 ### Month 1
+
 - [ ] Analyze query patterns
 - [ ] Optimize slow queries
 - [ ] Update agent knowledge
 - [ ] Review backup integrity
 
 ### Quarterly
+
 - [ ] Security audit
 - [ ] Performance review
 - [ ] Dependency updates

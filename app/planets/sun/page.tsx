@@ -9,8 +9,7 @@ export default async function SunPage() {
     if (sun) {
       sunPosition = {
         sign: sun.sign || '',
-        degree:
-          typeof sun.degree === 'number' ? sun.degree.toFixed(2) : String(sun.degree ?? '0'),
+        degree: typeof sun.degree === 'number' ? sun.degree.toFixed(2) : String(sun.degree ?? '0'),
       }
     }
   } catch {

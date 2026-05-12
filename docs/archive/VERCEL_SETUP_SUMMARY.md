@@ -4,13 +4,13 @@
 
 You have **5 critical variables** to set up in your Vercel dashboard:
 
-| Variable | Value | Status |
-|----------|-------|--------|
-| `DATABASE_URL` | Your PostgreSQL/Prisma Accelerate URL | ⚠️ **Need to retrieve** |
-| `NEXTAUTH_URL` | `https://v0-planetary-agents.vercel.app` | ✅ Ready |
-| `NEXTAUTH_SECRET` | `BwPncOutL5ZNLFCPR3BU8DzD86PYIK1gm3UjzQThEg0=` | ✅ Generated |
-| `OPENAI_API_KEY` | Your OpenAI key | ✅ Ready (from existing setup) |
-| `NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS` | `true` | ✅ Ready |
+| Variable                             | Value                                          | Status                         |
+| ------------------------------------ | ---------------------------------------------- | ------------------------------ |
+| `DATABASE_URL`                       | Your PostgreSQL/Prisma Accelerate URL          | ⚠️ **Need to retrieve**        |
+| `NEXTAUTH_URL`                       | `https://v0-planetary-agents.vercel.app`       | ✅ Ready                       |
+| `NEXTAUTH_SECRET`                    | `BwPncOutL5ZNLFCPR3BU8DzD86PYIK1gm3UjzQThEg0=` | ✅ Generated                   |
+| `OPENAI_API_KEY`                     | Your OpenAI key                                | ✅ Ready (from existing setup) |
+| `NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS` | `true`                                         | ✅ Ready                       |
 
 ---
 
@@ -52,6 +52,7 @@ If you have a database on Render or elsewhere:
 ---
 
 ### Variable 1: DATABASE_URL
+
 ```
 Key: DATABASE_URL
 Value: [Your database connection string]
@@ -61,6 +62,7 @@ Environments: ☑ Production ☑ Preview ☑ Development
 ---
 
 ### Variable 2: NEXTAUTH_URL
+
 ```
 Key: NEXTAUTH_URL
 Value: https://v0-planetary-agents.vercel.app
@@ -70,6 +72,7 @@ Environments: ☑ Production only
 ---
 
 ### Variable 3: NEXTAUTH_SECRET
+
 ```
 Key: NEXTAUTH_SECRET
 Value: BwPncOutL5ZNLFCPR3BU8DzD86PYIK1gm3UjzQThEg0=
@@ -81,6 +84,7 @@ Environments: ☑ Production ☑ Preview ☑ Development
 ---
 
 ### Variable 4: OPENAI_API_KEY
+
 ```
 Key: OPENAI_API_KEY
 Value: [Your existing OpenAI API key]
@@ -88,12 +92,14 @@ Environments: ☑ Production ☑ Preview ☑ Development
 ```
 
 **How to find it:**
+
 - Check your existing Vercel environment variables
 - Or get it from: https://platform.openai.com/api-keys
 
 ---
 
 ### Variable 5: NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS
+
 ```
 Key: NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS
 Value: true
@@ -143,21 +149,25 @@ For reference, here are ALL the variables your application uses. You can add the
 ## 🆘 Common Issues & Solutions
 
 ### "Cannot connect to database"
+
 - Verify DATABASE_URL is correct
 - Ensure database is accessible from Vercel
 - If using a managed service, check firewall rules
 
 ### "NextAuth error"
+
 - Verify NEXTAUTH_URL matches your domain exactly
 - Ensure NEXTAUTH_SECRET is set
 - Redeploy after changing these values
 
 ### "API key invalid"
+
 - Check API key in OpenAI dashboard
 - Ensure no extra spaces in the value
 - Verify you have API credits
 
 ### "Elemental logic not working"
+
 - Ensure NEXT_PUB一路 ADDITIVE_ONLY_ELEMENTS is set to `true`
 - Check browser console for errors
 - Clear cache and hard refresh
@@ -179,6 +189,7 @@ openssl rand -base64 32
 Once all 5 variables are set and you've redeployed, your application should be fully functional!
 
 **Files Updated:**
+
 - ✅ `vercel-env-variables.env` (updated with new NEXTAUTH_SECRET)
 - ✅ `VERCEL_ENV_SETUP_GUIDE.md` (detailed guide created)
 - ✅ `VERCEL_SETUP_SUMMARY.md` (this file)
@@ -188,4 +199,3 @@ Once all 5 variables are set and you've redeployed, your application should be f
 ---
 
 Generated: 2025-09-19
-

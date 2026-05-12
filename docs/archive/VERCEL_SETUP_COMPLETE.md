@@ -9,13 +9,15 @@ I've prepared your environment variables and created comprehensive documentation
 ## 📋 Current Status
 
 Run this command anytime to check your configuration:
+
 ```bash
 node check-vercel-env.cjs
 ```
 
 **Current Status:**
+
 - ✅ **NEXTAUTH_SECRET** - Freshly generated (secure)
-- ✅ **NEXTAUTH_URL** - Configured 
+- ✅ **NEXTAUTH_URL** - Configured
 - ✅ **OPENAI_API_KEY** - Present in your config
 - ✅ **NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS** - Set to true
 - ⚠️ **DATABASE_URL** - Needs your actual database connection
@@ -29,18 +31,21 @@ node check-vercel-env.cjs
 You need to retrieve your actual database connection string. Options:
 
 **Option A: Check Existing Vercel Config**
+
 ```bash
 # Go to Vercel Dashboard → Your Project → Settings → Environment Variables
 # Look for DATABASE_URL and copy it
 ```
 
 **Option B: Set Up Prisma Accelerate (Recommended)**
+
 1. Visit: https://console.prisma.io
 2. Create or connect your project
 3. Enable Prisma Accelerate
 4. Copy the connection string (starts with `prisma://...`)
 
 **Option C: Use Your Existing PostgreSQL Database**
+
 - Format: `postgresql://username:password@host:port/database`
 - Get this from your database provider dashboard
 
@@ -64,6 +69,7 @@ NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS=true
 ### 3. Redeploy
 
 After adding variables:
+
 1. Go to **Deployments** tab
 2. Click **⋮** on latest deployment
 3. Select **Redeploy**
@@ -100,6 +106,7 @@ I've created 3 comprehensive guides for you:
 ### NEXTAUTH_SECRET
 
 I've generated a fresh, cryptographically secure secret for you:
+
 ```
 BwPncOutL5ZNLFCPR3BU8DzD86PYIK1gm3UjzQThEg0=
 ```
@@ -111,6 +118,7 @@ BwPncOutL5ZNLFCPR3BU8DzD86PYIK1gm3UjzQThEg0=
 ## ⚡ Quick Reference
 
 ### Minimum Required Variables
+
 ```bash
 DATABASE_URL=your-database-url
 NEXTAUTH_URL=https://v0-planetary-agents.vercel.app
@@ -120,11 +128,13 @@ NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS=true
 ```
 
 ### Where to Add Them
+
 ```
 Vercel Dashboard → Your Project → Settings → Environment Variables
 ```
 
 ### After Adding
+
 ```
 Deployments Tab → Redeploy Latest → Wait for Completion
 ```
@@ -134,21 +144,25 @@ Deployments Tab → Redeploy Latest → Wait for Completion
 ## 🆘 Need Help?
 
 ### Check Your Configuration
+
 ```bash
 node check-vercel-env.cjs
 ```
 
 ### View Detailed Docs
+
 - **Quick Start:** Open `VERCEL_SETUP_SUMMARY.md`
 - **Full Guide:** Open `VERCEL_ENV_SETUP_GUIDE.md`
 
 ### Common Issues
 
 **"Cannot connect to database"**
+
 - Verify DATABASE_URL is correct
 - Ensure database is accessible from Vercel
 
 **"NextAuth error"**
+
 - Ensure NEXTAUTH_URL matches your production URL exactly
 - Verify NEXTAUTH_SECRET is set
 - Redeploy after changes
@@ -158,6 +172,7 @@ node check-vercel-env.cjs
 ## ✅ Final Checklist
 
 Before considering setup complete:
+
 - [ ] Retrieved DATABASE_URL from your database provider
 - [ ] Added all 5 minimum variables to Vercel dashboard
 - [ ] Set correct environments for each variable (Production, Preview, Development)
@@ -183,4 +198,3 @@ Start with `VERCEL_SETUP_SUMMARY.md` for the fastest path to completion!
 
 **Generated:** 2025-09-19  
 **NEXTAUTH_SECRET:** Freshly generated and ready to use
-

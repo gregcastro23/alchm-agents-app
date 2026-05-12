@@ -22,7 +22,7 @@ describe('FeedActivationEngine', () => {
         personalityCore: { expression: 'revolutionary' },
         consciousnessLevel: 'Transcendent',
         dominantElement: 'Fire',
-      } as any
+      } as any,
     ])
 
     // Mock Celestial Moment (High Entropy)
@@ -30,7 +30,7 @@ describe('FeedActivationEngine', () => {
       thermodynamic: { entropy: 85, heat: 50, reactivity: 50, energy: 50 },
       alchemical: { A_number: 50, spirit: 50, matter: 50, essence: 50, substance: 50 },
       kinetic: { velocity: { Fire: 50 }, power: 50 },
-      elemental: { Fire: 50 }
+      elemental: { Fire: 50 },
     } as any)
 
     // Mock Consciousness State
@@ -55,7 +55,7 @@ describe('FeedActivationEngine', () => {
         personalityCore: { expression: 'calm' },
         consciousnessLevel: 'Transcendent',
         dominantElement: 'Water',
-      } as any
+      } as any,
     ])
 
     // Mock Celestial Moment (High A#)
@@ -63,7 +63,7 @@ describe('FeedActivationEngine', () => {
       thermodynamic: { entropy: 40, heat: 50, reactivity: 50, energy: 50 },
       alchemical: { A_number: 95, spirit: 50, matter: 50, essence: 50, substance: 50 },
       kinetic: { velocity: { Water: 50 }, power: 50 },
-      elemental: { Water: 50 }
+      elemental: { Water: 50 },
     } as any)
 
     vi.mocked(unifiedTracker.getCurrentState).mockResolvedValue({

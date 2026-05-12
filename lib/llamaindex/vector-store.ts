@@ -66,9 +66,7 @@ const RETRY_DELAY = 1000
 /**
  * Initialize ChromaDB client with configuration from environment
  */
-export async function initializeVectorStore(
-  config?: VectorStoreConfig
-): Promise<ChromaClient> {
+export async function initializeVectorStore(config?: VectorStoreConfig): Promise<ChromaClient> {
   if (chromaClient) {
     return chromaClient
   }
@@ -118,8 +116,8 @@ export async function initializeVectorStore(
 
     throw new Error(
       `Failed to connect to ChromaDB after ${MAX_RETRIES} attempts. ` +
-      `Please ensure ChromaDB is running at ${url}. ` +
-      `Run: docker run -d -p 8001:8000 chromadb/chroma`
+        `Please ensure ChromaDB is running at ${url}. ` +
+        `Run: docker run -d -p 8001:8000 chromadb/chroma`
     )
   }
 }
@@ -184,7 +182,11 @@ export async function addDocuments(
   let completed = 0
   const errors: string[] = []
 
-  if (documents.length !== embeddings.length || documents.length !== ids.length || documents.length !== metadatas.length) {
+  if (
+    documents.length !== embeddings.length ||
+    documents.length !== ids.length ||
+    documents.length !== metadatas.length
+  ) {
     throw new Error('Documents, embeddings, metadatas, and ids arrays must have the same length')
   }
 
@@ -277,7 +279,9 @@ export async function queryCollection(
       queryEmbeddings: [queryEmbedding],
       nResults: topK,
       where: options?.filter,
-      include: includeMetadata ? ['documents', 'metadatas', 'distances'] : ['documents', 'distances'],
+      include: includeMetadata
+        ? ['documents', 'metadatas', 'distances']
+        : ['documents', 'distances'],
     })
 
     // Transform results to QueryResult format
@@ -287,7 +291,8 @@ export async function queryCollection(
       for (let i = 0; i < results.ids[0].length; i++) {
         const id = results.ids[0][i]
         const document = results.documents?.[0]?.[i] || ''
-        const metadata = (results.metadatas?.[0]?.[i] as DocumentMetadata) || {} as DocumentMetadata
+        const metadata =
+          (results.metadatas?.[0]?.[i] as DocumentMetadata) || ({} as DocumentMetadata)
         const distance = results.distances?.[0]?.[i] || 1.0
 
         // Convert distance to similarity score
@@ -315,7 +320,9 @@ export async function queryCollection(
         topK,
       },
     })
-    throw new Error(`Vector store query failed: ${error instanceof Error ? error.message : String(error)}`)
+    throw new Error(
+      `Vector store query failed: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
 }
 

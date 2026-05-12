@@ -3,6 +3,7 @@
 ## Current Status
 
 ✅ **Completed:**
+
 - Backend code with Swiss Ephemeris routes committed (commit e347d722)
 - Environment variable files created for Render and Vercel
 - Integration tests passing locally (5/5 tests)
@@ -26,6 +27,7 @@
 ### Step 1: Trigger Render Deployment
 
 **Option A: Manual Redeploy**
+
 1. Go to Render Dashboard: https://dashboard.render.com
 2. Find your backend service: `alchm-backend` or `planetary-agents-backend`
 3. Click **"Manual Deploy"** → **"Deploy latest commit"**
@@ -38,6 +40,7 @@
 
 **Option B: Git Push Trigger**
 If auto-deploy is enabled on GitLab integration:
+
 1. Check if Render is already deploying (Deployments tab)
 2. If not, trigger with empty commit:
    ```bash
@@ -83,6 +86,7 @@ curl -X POST https://alchm-backend.onrender.com/api/planets/positions \
 ```
 
 **Success Criteria:**
+
 - ✅ All 3 endpoints return `"success": true`
 - ✅ No 404 or 500 errors
 - ✅ Response times < 500ms (when warm)
@@ -101,6 +105,7 @@ curl -X POST https://alchm-backend.onrender.com/api/planets/positions \
    - Click **Environment Variables** in sidebar
 
 3. **Add the new variable:**
+
    ```
    Variable Name: NEXT_PUBLIC_BACKEND_URL
    Value: https://alchm-backend.onrender.com
@@ -130,6 +135,7 @@ Once Vercel redeploy completes (~2-3 minutes):
    - Should NOT see: swisseph, node-gyp, or Python errors
 
 2. **Test production site:**
+
    ```bash
    # Visit in browser
    open https://planetary-agents.vercel.app
@@ -143,6 +149,7 @@ Once Vercel redeploy completes (~2-3 minutes):
      - ❌ `/api/moment-recommendations` (should now work)
 
 4. **Test backend connectivity from browser console:**
+
    ```javascript
    // Run this in browser DevTools console:
    fetch('https://alchm-backend.onrender.com/api/planets/available')
@@ -178,6 +185,7 @@ Test the full stack working together:
 ### Render Build Fails
 
 **Error: "swisseph compilation error"**
+
 ```bash
 # Solution: Verify environment variables set correctly
 # Check: NODE_VERSION=20.11.0
@@ -185,6 +193,7 @@ Test the full stack working together:
 ```
 
 **Error: "Cannot find module 'swisseph'"**
+
 ```bash
 # Solution: Ensure package.json has swisseph dependency
 # Check: backend/package.json includes "swisseph": "^0.5.17"
@@ -195,6 +204,7 @@ Test the full stack working together:
 **Symptom:** `/api/planets/available` returns `Cannot GET /api/planets/available`
 
 **Causes:**
+
 1. Deployment didn't complete - check Render dashboard
 2. Build succeeded but service didn't restart - manual redeploy
 3. Routes not registered in index.ts - verify backend/src/index.ts:171
@@ -204,6 +214,7 @@ Test the full stack working together:
 ### Vercel Build Fails
 
 **Error: "Cannot find module 'swisseph'"**
+
 ```bash
 # This means swisseph wasn't fully removed from frontend
 # Solution:
@@ -214,6 +225,7 @@ yarn build
 ```
 
 **Error: "node-gyp rebuild failed"**
+
 ```bash
 # This means swisseph is still being compiled on frontend
 # Solution:
@@ -227,12 +239,14 @@ yarn build
 **After adding NEXT_PUBLIC_BACKEND_URL:**
 
 1. **Verify environment variable is set:**
+
    ```bash
    # In Vercel build logs, should see:
    # NEXT_PUBLIC_BACKEND_URL: https://alchm-backend.onrender.com
    ```
 
 2. **Check backend is responding:**
+
    ```bash
    curl https://alchm-backend.onrender.com/api/planets/available
    # Should return JSON with 12 planets
@@ -248,11 +262,13 @@ yarn build
 **Symptom:** `Access-Control-Allow-Origin` errors in console
 
 **Solution:** Verify Render environment variable:
+
 ```bash
 CORS_ORIGINS=https://planetary-agents.vercel.app,https://planetary-agents-frontend.onrender.com,https://*.vercel.app
 ```
 
 If still failing:
+
 1. Check Render logs for CORS middleware initialization
 2. Verify frontend URL matches exactly (no trailing slash)
 3. Test with curl to see if CORS headers are present
@@ -262,11 +278,13 @@ If still failing:
 **Symptom:** First request takes 30-60 seconds
 
 **This is expected on Render free tier:**
+
 - Service sleeps after 15 minutes of inactivity
 - First request wakes it up (cold start)
 - Subsequent requests are fast (< 500ms)
 
 **Solutions:**
+
 1. Keep service warm with health checks (costs money)
 2. Upgrade to paid tier ($7/month for always-on)
 3. Accept cold starts (inform users: "First load may be slow")
@@ -274,6 +292,7 @@ If still failing:
 ## Deployment Checklist
 
 ### Backend (Render)
+
 - [ ] Code pushed to GitLab (commit e347d722)
 - [ ] Render environment variables updated
 - [ ] Manual deployment triggered
@@ -284,6 +303,7 @@ If still failing:
 - [ ] Positions endpoint works: `/api/planets/positions`
 
 ### Frontend (Vercel)
+
 - [ ] `NEXT_PUBLIC_BACKEND_URL` added to all environments
 - [ ] Redeployment triggered
 - [ ] Build succeeds with no swisseph errors
@@ -293,6 +313,7 @@ If still failing:
 - [ ] Planetary features work correctly
 
 ### Integration
+
 - [ ] Gallery displays agent data
 - [ ] Time Laboratory calculates correctly
 - [ ] Birth charts render properly
@@ -305,18 +326,21 @@ If still failing:
 When migration is complete, you should see:
 
 ✅ **Backend (Render):**
+
 - Build time: 3-5 minutes (includes swisseph compilation)
 - Response time: 50-200ms (warm), 30-60s (cold start)
 - Memory usage: ~200-300MB (within free tier 512MB limit)
 - All 3 endpoints returning `"success": true`
 
 ✅ **Frontend (Vercel):**
+
 - Build time: 2-3 minutes (NO swisseph compilation)
 - No node-gyp errors in build logs
 - Clean console (no 500 errors)
 - Successful API calls to backend
 
 ✅ **User Experience:**
+
 - Planetary data displays correctly
 - Birth charts render accurately
 - Consciousness calculations work
@@ -349,18 +373,21 @@ git push origin main
 ## Timeline Estimate
 
 **Best case scenario:**
+
 - Render deployment: 5 minutes
 - Vercel env var + redeploy: 3 minutes
 - Testing: 2 minutes
 - **Total: ~10 minutes**
 
 **Realistic scenario:**
+
 - Render deployment: 10 minutes (including troubleshooting)
 - Vercel env var + redeploy: 5 minutes
 - Testing and verification: 5 minutes
 - **Total: ~20 minutes**
 
 **Worst case scenario:**
+
 - Render build issues: 30 minutes
 - Vercel cache clearing: 10 minutes
 - CORS troubleshooting: 10 minutes
@@ -387,6 +414,7 @@ git push origin main
 ---
 
 **Files Created for Reference:**
+
 - `backend/.env.render.swiss-ephemeris` - Comprehensive env var guide (550+ lines)
 - `backend/RENDER_ENV_PASTE.txt` - Copy-paste format for Render
 - `backend/RENDER_CHANGES_ONLY.txt` - Just the new variables
@@ -394,11 +422,13 @@ git push origin main
 - `DEPLOYMENT_NEXT_STEPS.md` - This file
 
 **Test Script:**
+
 - `scripts/test-swiss-ephemeris-migration.ts` - Run locally to verify
 
 **Git Commits:**
+
 - `e347d722` - Swiss Ephemeris migration (backend implementation)
 - `2566bd65` - Environment configuration files
 
 🔮 **Alchemical Principle Applied:**
-*Separation of Vessels - Air (Vercel) carries light, Earth (Render) bears weight, Fire (API) transforms between*
+_Separation of Vessels - Air (Vercel) carries light, Earth (Render) bears weight, Fire (API) transforms between_

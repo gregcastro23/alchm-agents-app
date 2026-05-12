@@ -50,14 +50,22 @@ export default function HistoricalAgentChatPage() {
   // Static agent mapping to avoid server-side imports
   useEffect(() => {
     const agentMap: Record<string, { name: string; title: string; symbol: string }> = {
-      'leonardo-da-vinci': { name: 'Leonardo da Vinci', title: 'The Renaissance Genius', symbol: '🎨' },
+      'leonardo-da-vinci': {
+        name: 'Leonardo da Vinci',
+        title: 'The Renaissance Genius',
+        symbol: '🎨',
+      },
       'carl-jung': { name: 'Carl Jung', title: 'The Shadow Explorer', symbol: '🔮' },
       'marie-curie': { name: 'Marie Curie', title: 'The Radiant Pioneer', symbol: '⚗️' },
       'albert-einstein': { name: 'Albert Einstein', title: 'The Cosmic Thinker', symbol: '🌌' },
       'nikola-tesla': { name: 'Nikola Tesla', title: 'The Electric Visionary', symbol: '⚡' },
-      'william-shakespeare': { name: 'William Shakespeare', title: 'The Bard of Avon', symbol: '🎭' },
-      'cleopatra': { name: 'Cleopatra VII', title: 'The Last Pharaoh', symbol: '👑' },
-      'aristotle': { name: 'Aristotle', title: 'The First Scientist', symbol: '📚' },
+      'william-shakespeare': {
+        name: 'William Shakespeare',
+        title: 'The Bard of Avon',
+        symbol: '🎭',
+      },
+      cleopatra: { name: 'Cleopatra VII', title: 'The Last Pharaoh', symbol: '👑' },
+      aristotle: { name: 'Aristotle', title: 'The First Scientist', symbol: '📚' },
       'sigmund-freud': { name: 'Sigmund Freud', title: 'The Unconscious Explorer', symbol: '🧠' },
       'mark-twain': { name: 'Mark Twain', title: 'The American Humorist', symbol: '📝' },
       'vincent-van-gogh': { name: 'Vincent van Gogh', title: 'The Starry Visionary', symbol: '🌟' },
@@ -313,7 +321,9 @@ export default function HistoricalAgentChatPage() {
             <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 rounded-lg border border-purple-200 dark:border-purple-800">
               <Sparkles className="h-4 w-4 text-purple-600" />
               <span className="text-sm font-medium">Moment Synergy:</span>
-              <span className={`text-lg font-bold ${momentSynergy.score >= 75 ? 'text-green-600' : momentSynergy.score >= 50 ? 'text-blue-600' : 'text-orange-600'}`}>
+              <span
+                className={`text-lg font-bold ${momentSynergy.score >= 75 ? 'text-green-600' : momentSynergy.score >= 50 ? 'text-blue-600' : 'text-orange-600'}`}
+              >
                 {momentSynergy.score}%
               </span>
             </div>
@@ -322,7 +332,9 @@ export default function HistoricalAgentChatPage() {
             </div>
             <div className="flex gap-2 text-xs">
               <span className="text-green-600">✓ {momentSynergy.harmonicCount} harmonic</span>
-              <span className="text-orange-600">⚠ {momentSynergy.challengingCount} challenging</span>
+              <span className="text-orange-600">
+                ⚠ {momentSynergy.challengingCount} challenging
+              </span>
             </div>
           </div>
         )}
@@ -369,11 +381,13 @@ export default function HistoricalAgentChatPage() {
                     </div>
 
                     {/* Show source citations for agent messages with RAG sources */}
-                    {message.role === 'agent' && message.ragSources && message.ragSources.length > 0 && (
-                      <div className="mt-2 mr-8">
-                        <SourceCitations sources={message.ragSources} variant="detailed" />
-                      </div>
-                    )}
+                    {message.role === 'agent' &&
+                      message.ragSources &&
+                      message.ragSources.length > 0 && (
+                        <div className="mt-2 mr-8">
+                          <SourceCitations sources={message.ragSources} variant="detailed" />
+                        </div>
+                      )}
 
                     {/* Show feedback widget for agent messages with queryId */}
                     {message.role === 'agent' && message.queryId && (

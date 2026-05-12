@@ -84,9 +84,7 @@ export class PlanetaryPositionSyncService {
   }
 
   constructor() {
-    this.whattoeatnextBaseUrl = this.resolveWhatToEatNextBaseUrl(
-      process.env.WHATTOEATNEXT_BASE_URL
-    )
+    this.whattoeatnextBaseUrl = this.resolveWhatToEatNextBaseUrl(process.env.WHATTOEATNEXT_BASE_URL)
     this.apiKey = process.env.WHATTOEATNEXT_API_KEY || ''
   }
 

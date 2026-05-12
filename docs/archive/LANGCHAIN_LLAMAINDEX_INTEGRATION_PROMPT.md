@@ -3,6 +3,7 @@
 ## Context & Current State
 
 We have a fully functional Planetary Agents application with:
+
 - 34 historical consciousness agents (Leonardo da Vinci, Carl Jung, Marie Curie, etc.)
 - Real-time moment synergy calculation (birth chart × current cosmic moment)
 - Galileo MCP server integration for observability
@@ -11,6 +12,7 @@ We have a fully functional Planetary Agents application with:
 - Tech stack: Next.js 15.5.4, TypeScript, OpenAI SDK, Anthropic Claude
 
 **Current Limitations:**
+
 - Agent responses are generated fresh each time (no knowledge base)
 - No semantic search across agent wisdom
 - Limited context awareness beyond current conversation
@@ -32,12 +34,14 @@ Implement comprehensive LangChain and LlamaIndex integration to transform our ag
 ### Phase 1: LlamaIndex Knowledge Base Setup
 
 **1.1 Install Dependencies**
+
 ```bash
 yarn add llamaindex @llamaindex/openai @llamaindex/core @llamaindex/env
 yarn add -D @types/node
 ```
 
 **1.2 Create Vector Store Infrastructure**
+
 - Set up vector database (Pinecone, Weaviate, or ChromaDB)
 - Configure embeddings provider (OpenAI text-embedding-3-small)
 - Create `lib/llamaindex-vector-store.ts` with:
@@ -47,6 +51,7 @@ yarn add -D @types/node
   - Metadata filtering (by agent, topic, time period)
 
 **1.3 Agent Knowledge Ingestion**
+
 - Extract all 34 agent personalities from `lib/agents/historical/`
 - Parse agent data: name, title, abilities, wisdom domains, personality traits
 - Create document chunks with metadata:
@@ -65,6 +70,7 @@ yarn add -D @types/node
 - Store embeddings in vector database
 
 **1.4 Conversation History Storage**
+
 - Create conversation document structure
 - Index past interactions with embeddings
 - Enable temporal search (recent vs historical conversations)
@@ -73,6 +79,7 @@ yarn add -D @types/node
 ### Phase 2: LangChain Agent Tools Integration
 
 **2.1 Install LangChain**
+
 ```bash
 yarn add langchain @langchain/openai @langchain/core @langchain/community
 yarn add @langchain/anthropic
@@ -82,30 +89,35 @@ yarn add @langchain/anthropic
 Create `lib/langchain-agent-tools.ts` with:
 
 **Tool 1: Semantic Agent Search**
+
 - Input: User query/topic
 - Function: Search vector store for most relevant agents
 - Output: Top 3 agents with similarity scores
 - Metadata: Wisdom domains, synergy compatibility
 
 **Tool 2: Knowledge Retrieval**
+
 - Input: Topic/question + agent context
 - Function: Retrieve relevant knowledge chunks from vector store
 - Output: Context-enriched information for generation
 - Filters: By agent, time period, wisdom domain
 
 **Tool 3: Consciousness Analysis**
+
 - Input: User profile, current moment
 - Function: Calculate synergy scores across all agents
 - Output: Ranked agents by cosmic compatibility
 - Integration: Existing `calculateCurrentMomentSynergy` function
 
 **Tool 4: Multi-Agent Coordinator**
+
 - Input: Complex question requiring multiple perspectives
 - Function: Orchestrate council of relevant agents
 - Output: Coordinated multi-agent response
 - Integration: Existing council chat functionality
 
 **Tool 5: Memory Retrieval**
+
 - Input: Session ID, user ID, agent ID
 - Function: Fetch relevant conversation history
 - Output: Context from past interactions
@@ -113,6 +125,7 @@ Create `lib/langchain-agent-tools.ts` with:
 
 **2.3 LangChain Agent Router**
 Create `lib/langchain-agent-router.ts`:
+
 - Define agent executor with tools
 - Implement ReAct pattern for reasoning
 - Add conversation memory buffer
@@ -151,6 +164,7 @@ class RAGAgentGenerator {
 
 **3.2 Integration with Existing API**
 Modify `/app/api/monica-agent/route.ts`:
+
 - Import RAGAgentGenerator
 - Replace direct LLM calls with RAG pipeline
 - Maintain backward compatibility
@@ -158,6 +172,7 @@ Modify `/app/api/monica-agent/route.ts`:
 - Log RAG metrics to Galileo MCP
 
 **3.3 Streaming Support**
+
 - Implement streaming RAG responses
 - Update chat UI for real-time display
 - Handle partial context updates
@@ -167,18 +182,21 @@ Modify `/app/api/monica-agent/route.ts`:
 
 **4.1 Agent Similarity Search**
 Create `/api/agents/semantic-search` endpoint:
+
 - Input: Concept/query (e.g., "creativity and innovation")
 - Process: Vector similarity search across agent embeddings
 - Output: Ranked agents by semantic relevance
 - UI: New search interface in gallery page
 
 **4.2 Wisdom Domain Navigation**
+
 - Create wisdom domain embeddings
 - Enable navigation by abstract concepts
 - Visualize agent relationships in concept space
 - Interactive knowledge graph
 
 **4.3 Temporal Context Awareness**
+
 - Index conversations with temporal metadata
 - Enable queries like "what did Carl Jung say last week?"
 - Track consciousness evolution over time
@@ -187,24 +205,28 @@ Create `/api/agents/semantic-search` endpoint:
 ### Phase 5: Advanced Features
 
 **5.1 Multi-Agent RAG Orchestration**
+
 - Coordinate multiple agents for complex queries
 - Merge context from different agent perspectives
 - Synthesize coherent multi-viewpoint responses
 - Track inter-agent knowledge sharing
 
 **5.2 Adaptive Context Window**
+
 - Dynamically adjust retrieved context based on query complexity
 - Optimize token usage vs. relevance
 - Implement context compression
 - Smart context ranking
 
 **5.3 Consciousness-Aware Embeddings**
+
 - Custom embedding model fine-tuned on agent personalities
 - Encode astrological/alchemical concepts
 - Synergy-weighted similarity scoring
 - Dimensional consciousness vectors
 
 **5.4 Knowledge Graph Integration**
+
 - Build knowledge graph of agent relationships
 - Connect concepts across agents
 - Enable graph-based reasoning
@@ -213,18 +235,21 @@ Create `/api/agents/semantic-search` endpoint:
 ### Phase 6: Performance & Optimization
 
 **6.1 Caching Strategy**
+
 - Cache frequent queries and embeddings
 - Implement Redis-backed vector cache
 - TTL-based invalidation
 - Cache warming for popular agents
 
 **6.2 Batch Processing**
+
 - Batch embedding generation
 - Parallel context retrieval
 - Async tool execution
 - Queue management for heavy queries
 
 **6.3 Monitoring & Analytics**
+
 - Log RAG pipeline performance to Galileo
 - Track retrieval quality metrics
 - Monitor context relevance scores
@@ -275,6 +300,7 @@ components/
 ## Environment Variables Needed
 
 Add to `.env.local`:
+
 ```bash
 # Vector Database
 PINECONE_API_KEY=your_pinecone_key
@@ -302,6 +328,7 @@ ENABLE_MULTI_AGENT_RAG=true
 ## Testing Strategy
 
 **Unit Tests:**
+
 - Test vector store CRUD operations
 - Test embedding generation
 - Test semantic search accuracy
@@ -309,12 +336,14 @@ ENABLE_MULTI_AGENT_RAG=true
 - Test RAG pipeline components
 
 **Integration Tests:**
+
 - Test end-to-end RAG generation
 - Test multi-agent orchestration
 - Test memory persistence
 - Test context retrieval quality
 
 **Performance Tests:**
+
 - Benchmark vector search latency
 - Measure RAG vs. direct generation quality
 - Test under concurrent load
@@ -323,6 +352,7 @@ ENABLE_MULTI_AGENT_RAG=true
 ## Success Metrics
 
 **Quantitative:**
+
 - Response relevance score > 0.85
 - Context retrieval latency < 100ms
 - End-to-end RAG generation < 2s
@@ -330,6 +360,7 @@ ENABLE_MULTI_AGENT_RAG=true
 - Memory hit rate > 70%
 
 **Qualitative:**
+
 - More contextually aware responses
 - Better knowledge consistency across sessions
 - Improved multi-agent coordination
@@ -338,18 +369,21 @@ ENABLE_MULTI_AGENT_RAG=true
 ## Migration Strategy
 
 **Phase 1: Parallel Operation**
+
 - Run RAG alongside existing system
 - Feature flag for gradual rollout
 - A/B testing with user segments
 - Compare response quality
 
 **Phase 2: Gradual Rollout**
+
 - Enable RAG for 10% of traffic
 - Monitor performance and errors
 - Collect user feedback
 - Iterate based on metrics
 
 **Phase 3: Full Migration**
+
 - Enable RAG for all users
 - Deprecate direct generation
 - Optimize based on production data
@@ -358,6 +392,7 @@ ENABLE_MULTI_AGENT_RAG=true
 ## Documentation Requirements
 
 Create comprehensive docs:
+
 - `LLAMAINDEX_SETUP.md` - Vector store setup guide
 - `LANGCHAIN_INTEGRATION.md` - Agent tools documentation
 - `RAG_ARCHITECTURE.md` - System design documentation
@@ -367,40 +402,48 @@ Create comprehensive docs:
 ## Known Challenges & Solutions
 
 **Challenge 1: Token Limits**
+
 - Solution: Smart context compression, relevance ranking
 - Implementation: Sliding window with priority scoring
 
 **Challenge 2: Embedding Costs**
+
 - Solution: Cache embeddings, batch processing
 - Implementation: Redis cache + async job queue
 
 **Challenge 3: Context Relevance**
+
 - Solution: Multi-stage retrieval with re-ranking
 - Implementation: Coarse search → fine-grained scoring
 
 **Challenge 4: Real-time Synergy**
+
 - Solution: Pre-compute synergy embeddings
 - Implementation: Periodic batch updates with TTL cache
 
 **Challenge 5: Multi-Agent Coordination**
+
 - Solution: Hierarchical agent structure with coordinator
 - Implementation: Supervisor agent pattern from LangChain
 
 ## Integration with Existing Features
 
 **Galileo MCP Logging:**
+
 - Log RAG pipeline stages as structured traces
 - Track context retrieval quality
 - Monitor embedding generation performance
 - Dashboard for RAG metrics
 
 **Moment Synergy:**
+
 - Use synergy scores to weight context retrieval
 - Prioritize agents with high cosmic compatibility
 - Temporal filtering by astrological moments
 - Enhance RAG prompts with synergy context
 
 **Consciousness Evolution:**
+
 - Update agent embeddings as consciousness evolves
 - Track knowledge accumulation over time
 - Adaptive learning from interactions
@@ -418,21 +461,25 @@ Create comprehensive docs:
 ## Resources & References
 
 **LlamaIndex:**
+
 - Docs: https://docs.llamaindex.ai/
 - GitHub: https://github.com/run-llama/llama_index
 - Examples: https://docs.llamaindex.ai/en/stable/examples/
 
 **LangChain:**
+
 - Docs: https://python.langchain.com/docs/
 - JS/TS: https://js.langchain.com/docs/
 - Tools: https://js.langchain.com/docs/modules/agents/tools/
 
 **Vector Databases:**
+
 - Pinecone: https://www.pinecone.io/
 - ChromaDB: https://www.trychroma.com/
 - Weaviate: https://weaviate.io/
 
 **RAG Patterns:**
+
 - https://github.com/langchain-ai/rag-from-scratch
 - https://docs.llamaindex.ai/en/stable/optimizing/production_rag/
 

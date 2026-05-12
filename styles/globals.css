@@ -94,13 +94,13 @@ body {
 
   /* Optimize layout shifts with CSS containment */
   .card,
-  [class*="card-"],
+  [class*='card-'],
   [data-radix-collection-item] {
     contain: layout style;
   }
 
   /* Prevent layout shifts in animations */
-  [class*="animate-"],
+  [class*='animate-'],
   .transition-all {
     will-change: transform, opacity;
   }

@@ -507,11 +507,17 @@ export function MonicaChatBubble({
                   </div>
                   {currentMC && (
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="outline" className="text-xs bg-purple-900/50 border-purple-400/50 text-purple-200">
+                      <Badge
+                        variant="outline"
+                        className="text-xs bg-purple-900/50 border-purple-400/50 text-purple-200"
+                      >
                         MC {currentMC.toFixed(2)}
                       </Badge>
                       {consciousnessLevel && (
-                        <Badge variant="outline" className="text-xs bg-emerald-900/50 border-emerald-400/50 text-emerald-200">
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-emerald-900/50 border-emerald-400/50 text-emerald-200"
+                        >
                           {consciousnessLevel}
                         </Badge>
                       )}

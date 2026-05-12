@@ -1,7 +1,8 @@
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient({
-  datasourceUrl: 'postgresql://postgres:PsVTYtMbsWtMhykqZbzgzJUpMmrzKKoD@tramway.proxy.rlwy.net:35670/alchm_kitchen'
-});
+  datasourceUrl:
+    'postgresql://postgres:PsVTYtMbsWtMhykqZbzgzJUpMmrzKKoD@tramway.proxy.rlwy.net:35670/alchm_kitchen',
+})
 
 async function main() {
   try {
@@ -9,13 +10,13 @@ async function main() {
       SELECT table_name 
       FROM information_schema.tables 
       WHERE table_schema = 'public'
-    `);
-    console.log("Tables in alchm_kitchen:", tables);
+    `)
+    console.log('Tables in alchm_kitchen:', tables)
   } catch (e) {
-    console.error("Error executing query:", e);
+    console.error('Error executing query:', e)
   } finally {
-    await prisma.$disconnect();
+    await prisma.$disconnect()
   }
 }
 
-main();
+main()

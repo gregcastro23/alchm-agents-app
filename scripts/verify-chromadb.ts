@@ -32,7 +32,9 @@ async function verifyChromaDB() {
     }
 
     heartbeatData = await heartbeat.json()
-    console.log(`   ✅ ChromaDB is running (API ${apiVersion}, heartbeat: ${heartbeatData['nanosecond heartbeat']})\n`)
+    console.log(
+      `   ✅ ChromaDB is running (API ${apiVersion}, heartbeat: ${heartbeatData['nanosecond heartbeat']})\n`
+    )
 
     // 2. List collections
     console.log('2. Listing collections...')
@@ -107,7 +109,7 @@ async function verifyChromaDB() {
       }
     }
 
-    console.log('=' .repeat(60))
+    console.log('='.repeat(60))
     console.log('✅ ChromaDB Verification Complete!\n')
     console.log('Next steps:')
 
@@ -118,7 +120,6 @@ async function verifyChromaDB() {
       console.log('  - Start dev server: npm run dev')
       console.log('  - Test end-to-end: npm run test-rag')
     }
-
   } catch (error) {
     console.error('\n❌ ChromaDB Verification Failed\n')
     console.error('Error:', error)

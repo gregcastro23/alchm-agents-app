@@ -13,13 +13,13 @@
 
 export interface Sacred7Stats {
   // The Seven Sacred Stats - Living Vital Signs of Consciousness
-  power: number        // ⚡ Alchemical Force - Raw consciousness power (0-100)
-  resonance: number    // 💫 Harmonic Frequency - Connection to cosmic rhythms (0-100)
-  wisdom: number       // 🔮 Accumulated Insight - Knowledge depth (0-100)
-  charisma: number     // ✨ Magnetic Presence - Influence ability (0-100)
-  intuition: number    // 👁️ Psychic Sensitivity - Inner knowing (0-100)
+  power: number // ⚡ Alchemical Force - Raw consciousness power (0-100)
+  resonance: number // 💫 Harmonic Frequency - Connection to cosmic rhythms (0-100)
+  wisdom: number // 🔮 Accumulated Insight - Knowledge depth (0-100)
+  charisma: number // ✨ Magnetic Presence - Influence ability (0-100)
+  intuition: number // 👁️ Psychic Sensitivity - Inner knowing (0-100)
   adaptability: number // 🌊 Flux Capacity - Handles change (0-100)
-  vitality: number     // 💚 Life Force - Energy and stamina (0-100)
+  vitality: number // 💚 Life Force - Energy and stamina (0-100)
 }
 
 // ============================================================================
@@ -155,21 +155,13 @@ export function enhanceWithAlchemy(
   }
 ): Sacred7Stats {
   return {
-    power: clamp(
-      baseStats.power + alchemical.aNumber * 0.5 + thermodynamics.energy * 10,
-      0,
-      100
-    ),
+    power: clamp(baseStats.power + alchemical.aNumber * 0.5 + thermodynamics.energy * 10, 0, 100),
     resonance: clamp(
       baseStats.resonance + thermodynamics.heat * 15 + alchemical.spirit * 0.8,
       0,
       100
     ),
-    wisdom: clamp(
-      baseStats.wisdom + alchemical.essence * 0.7 + thermodynamics.entropy * 8,
-      0,
-      100
-    ),
+    wisdom: clamp(baseStats.wisdom + alchemical.essence * 0.7 + thermodynamics.entropy * 8, 0, 100),
     charisma: clamp(
       baseStats.charisma + alchemical.spirit * 0.6 + thermodynamics.heat * 12,
       0,
@@ -185,11 +177,7 @@ export function enhanceWithAlchemy(
       0,
       100
     ),
-    vitality: clamp(
-      baseStats.vitality + alchemical.matter * 0.7 + thermodynamics.heat * 5,
-      0,
-      100
-    ),
+    vitality: clamp(baseStats.vitality + alchemical.matter * 0.7 + thermodynamics.heat * 5, 0, 100),
   }
 }
 

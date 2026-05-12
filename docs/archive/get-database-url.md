@@ -17,12 +17,14 @@
 ### Construct the DATABASE_URL
 
 The format is:
+
 ```
 postgresql://USERNAME:PASSWORD@HOST:PORT/DATABASE
 ```
 
 **Example:**
 If your connection details are:
+
 - Host: `localhost`
 - Port: `5432`
 - Database: `planetary_agents`
@@ -30,6 +32,7 @@ If your connection details are:
 - Password: `your_password`
 
 Your DATABASE_URL would be:
+
 ```
 postgresql://postgres:your_password@localhost:5432/planetary_agents
 ```
@@ -37,10 +40,12 @@ postgresql://postgres:your_password@localhost:5432/planetary_agents
 ### Special Considerations
 
 **If using localhost** (development only):
+
 - Vercel **cannot** connect to `localhost` databases
 - You'll need a **publicly accessible** database URL for production
 
 **If using a managed service** (Production ready):
+
 - Render, Railway, Neon, Supabase, etc. provide connection strings
 - These are already publicly accessible
 - Use those connection strings directly
@@ -53,7 +58,6 @@ You need a **publicly accessible** database, not localhost. Options:
    - Go to your Render dashboard
    - Select your PostgreSQL database
    - Copy the "Internal Database URL"
-   
 2. **Use Prisma Accelerate** (best for serverless)
    - Go to https://console.prisma.io
    - Enable Accelerate on your database
@@ -66,7 +70,7 @@ You need a **publicly accessible** database, not localhost. Options:
 ### Security Note
 
 ⚠️ **IMPORTANT:** The password in the connection string will be visible in pgAdmin.
+
 - For production, regenerate strong passwords
 - Consider using connection pooling (Prisma Accelerate)
 - Never commit these credentials to git
-

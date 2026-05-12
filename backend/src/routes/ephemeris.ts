@@ -24,10 +24,7 @@ router.post(
     body('date').isISO8601().withMessage('date must be valid ISO8601 string'),
     body('latitude').optional().isFloat({ min: -90, max: 90 }),
     body('longitude').optional().isFloat({ min: -180, max: 180 }),
-    body('planets')
-      .optional()
-      .isArray()
-      .withMessage('planets must be an array of planet names'),
+    body('planets').optional().isArray().withMessage('planets must be an array of planet names'),
   ],
   asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req)
@@ -137,9 +134,7 @@ router.post(
 router.post(
   '/calculate',
   [
-    body('birthData.date')
-      .isISO8601()
-      .withMessage('birthData.date must be valid ISO8601 string'),
+    body('birthData.date').isISO8601().withMessage('birthData.date must be valid ISO8601 string'),
     body('birthData.latitude')
       .optional()
       .isFloat({ min: -90, max: 90 })

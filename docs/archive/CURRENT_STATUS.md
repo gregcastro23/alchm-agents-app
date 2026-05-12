@@ -3,6 +3,7 @@
 ## ✅ CONFIRMED: API Keys ARE in Vercel
 
 You just confirmed:
+
 - ✅ ANTHROPIC_API_KEY exists in Vercel (Production, Preview, Development)
 - ✅ OPENAI_API_KEY exists in Vercel (Production, Preview, Development)
 
@@ -27,6 +28,7 @@ All serverless functions crash immediately when they try to load because Next.js
 **Commit**: `a667cce1` (pushed 2 minutes ago)
 
 **What it does:**
+
 - Disables production source maps entirely (`productionBrowserSourceMaps: false`)
 - Removes source-map from external packages
 - Forces Next.js to not try loading source-map module
@@ -38,6 +40,7 @@ All serverless functions crash immediately when they try to load because Next.js
 ### Wait 2 More Minutes
 
 Then go to:
+
 ```
 https://planetary-agents.vercel.app/gallery/chat/carl-jung
 ```
@@ -45,6 +48,7 @@ https://planetary-agents.vercel.app/gallery/chat/carl-jung
 Type: "Are politics important?"
 
 **Expected Result:**
+
 - ✅ Page loads (no 500 error)
 - ✅ Carl Jung responds with wisdom
 - ✅ Chat works!
@@ -52,6 +56,7 @@ Type: "Are politics important?"
 ### Alternative Test
 
 Check if APIs work:
+
 ```bash
 curl https://planetary-agents.vercel.app/api/moment-recommendations?limit=6
 ```
@@ -62,16 +67,19 @@ curl https://planetary-agents.vercel.app/api/moment-recommendations?limit=6
 ## 📊 Summary
 
 **What was wrong:**
+
 - ❌ Next.js looking for source-map module in serverless functions
 - ❌ Module not bundled properly by Vercel
 - ❌ All APIs crash on startup
 
 **What we're fixing:**
+
 - ✅ Disable source maps (don't need them in production anyway)
 - ✅ Prevent Next.js from trying to load the module
 - ✅ APIs will start successfully
 
 **What you had right all along:**
+
 - ✅ API keys in Vercel
 - ✅ Database configured
 - ✅ All other env vars set
@@ -86,6 +94,7 @@ curl https://planetary-agents.vercel.app/api/moment-recommendations?limit=6
 ## 🎊 Expected Outcome
 
 In 2 minutes:
+
 - ✅ All APIs work
 - ✅ All agents respond
 - ✅ Mobile navigation works

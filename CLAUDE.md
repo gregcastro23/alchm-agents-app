@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ### Frontend (Next.js)
+
 ```bash
 yarn dev          # Start dev server (NODE_OPTIONS max-old-space-size=4096)
 yarn build        # Production build
@@ -16,6 +17,7 @@ yarn check        # lint + format:check + typecheck combined
 ```
 
 ### Testing
+
 ```bash
 # Integration & unit tests (vitest, jsdom)
 vitest run test/                        # All tests in test/
@@ -33,6 +35,7 @@ cd backend && ruff check .             # Lint
 ```
 
 ### Database & Data Sync
+
 ```bash
 npx prisma studio                      # Prisma DB browser
 npx prisma migrate dev                 # Run migrations locally
@@ -43,12 +46,14 @@ yarn verify-db                         # Verify Prisma connection
 ```
 
 ### Backend (Python FastAPI)
+
 ```bash
 cd backend && uvicorn main:app --reload --port 8000
 cd backend && pip install -r requirements.txt
 ```
 
 ### Storybook
+
 ```bash
 yarn storybook        # Dev on port 6006
 yarn build-storybook  # Static build
@@ -79,6 +84,7 @@ Conversations, evolution states, attachments, and consciousness snapshots all re
 ### Planetary Calculations
 
 Planetary positions flow through a fallback hierarchy:
+
 1. Railway backend API (`/api/planetary/rectify`)
 2. `lib/enhanced-astronomical-calculator.ts` (VSOP87, ±0.1° accuracy)
 3. Basic transit calculations
@@ -101,6 +107,7 @@ import { CLAUDE, MODEL_TIERS, resolveClaudeModel } from '@/lib/models/registry'
 ```
 
 Current default models (May 2026):
+
 - Claude SONNET: `claude-3-5-sonnet-20241022`
 - Claude HAIKU: `claude-3-5-haiku-20241022`
 - OpenAI default: `gpt-4o-mini` (Monica)
@@ -115,13 +122,13 @@ Agent knowledge is stored in ChromaDB (optional, Docker: `docker run -p 8000:800
 
 ### Feature Flags (env vars)
 
-| Variable | Effect |
-|---|---|
-| `NEXT_PUBLIC_KINETICS_BACKEND` | Use Railway for kinetics calculations (vs. local) |
-| `NEXT_PUBLIC_PLANETARY_HOURS_BACKEND` | Use Railway for planetary hour calculations |
-| `NEXT_PUBLIC_THERMODYNAMICS_BACKEND` | Use Railway for thermodynamics engine |
-| `CROSS_BACKEND_SYNC_ENABLED` | Sync planetary positions across backends |
-| `AI_GATEWAY_ENABLED` | Route Anthropic calls through an AI Gateway |
+| Variable                              | Effect                                            |
+| ------------------------------------- | ------------------------------------------------- |
+| `NEXT_PUBLIC_KINETICS_BACKEND`        | Use Railway for kinetics calculations (vs. local) |
+| `NEXT_PUBLIC_PLANETARY_HOURS_BACKEND` | Use Railway for planetary hour calculations       |
+| `NEXT_PUBLIC_THERMODYNAMICS_BACKEND`  | Use Railway for thermodynamics engine             |
+| `CROSS_BACKEND_SYNC_ENABLED`          | Sync planetary positions across backends          |
+| `AI_GATEWAY_ENABLED`                  | Route Anthropic calls through an AI Gateway       |
 
 ### TypeScript Errors
 

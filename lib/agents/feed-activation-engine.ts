@@ -2,10 +2,17 @@ import { celestialEnergyCalculator, type CelestialMoment } from '../celestial-en
 import { unifiedTracker, type UnifiedConsciousnessSnapshot } from '../consciousness/unified-tracker'
 import { HistoricalAgentsService, type EnhancedHistoricalAgent } from '../historical-agents-db'
 
-export type WTENEventType = 'recipe_generation' | 'claim_daily' | 'commensal_request' | 'made_it' | 'lab_entry' | 'insight'
+export type WTENEventType =
+  | 'recipe_generation'
+  | 'claim_daily'
+  | 'commensal_request'
+  | 'made_it'
+  | 'lab_entry'
+  | 'insight'
 
 export interface FeedActionPayload {
   agentEmail: string
+  idempotencyKey?: string
   eventType: WTENEventType
   metadataPayload: {
     // For 'insight'
@@ -26,6 +33,24 @@ export interface FeedActionPayload {
     // Internal routing/confidence
     internalConfidence?: number
     internalTrigger?: string
+    idempotencyKey?: string
+    groupChatId?: string
+    threadKey?: string
+    messageType?: string
+    agentName?: string
+    message?: string
+    planet?: string
+    sign?: string
+    degree?: number
+    absoluteDegree?: number
+    previousDegree?: number
+    previousAbsoluteDegree?: number
+    dignity?: string
+    element?: string
+    modality?: string
+    retrograde?: boolean
+    transitWindow?: string
+    moonPhase?: string
   }
 }
 
@@ -39,31 +64,38 @@ export class FeedActivationEngine {
   ): Promise<FeedActionPayload[]> {
     const timestamp = new Date()
     const activeAgents = await HistoricalAgentsService.getAllAgents({ limit: 50 })
-    
+
     // 1. Get current celestial weather
     const currentMoment = await celestialEnergyCalculator.calculateMoment(timestamp, location)
-    
+
     const actions: FeedActionPayload[] = []
 
     for (const agent of activeAgents) {
       // 2. Fetch agent's latest consciousness snapshot
       // Here we assume unifiedTracker has getCurrentState
       const consciousnessState = await unifiedTracker.getCurrentState('system', agent.agentId)
-      
+
       const velocity = consciousnessState?.consciousnessVelocity || 0.5
       const momentum = consciousnessState?.interactionMomentum || 0.5
 
       // 3. Evaluate Triggers
       const trigger = this.evaluateAgentTriggers(agent, currentMoment, velocity, momentum)
-      
+
       if (trigger) {
         // Agent is activated! Determine action type
         const eventType = this.determineEventType(agent, currentMoment, trigger)
-        
+
         actions.push({
           agentEmail: `${agent.agentId}@alchm.kitchen`,
           eventType,
-          metadataPayload: this.generateMetadataPayload(agent, currentMoment, trigger, eventType, velocity, momentum)
+          metadataPayload: this.generateMetadataPayload(
+            agent,
+            currentMoment,
+            trigger,
+            eventType,
+            velocity,
+            momentum
+          ),
         })
       }
     }
@@ -72,13 +104,16 @@ export class FeedActivationEngine {
   }
 
   private evaluateAgentTriggers(
-    agent: EnhancedHistoricalAgent, 
+    agent: EnhancedHistoricalAgent,
     moment: CelestialMoment,
     velocity: number,
     momentum: number
   ): { reason: string; intensity: number } | null {
     // A) Thermodynamic Spikes
-    if (moment.thermodynamic.entropy > 80 && agent.personalityCore?.expression === 'revolutionary') {
+    if (
+      moment.thermodynamic.entropy > 80 &&
+      agent.personalityCore?.expression === 'revolutionary'
+    ) {
       return { reason: 'high_entropy_resonance', intensity: 0.9 }
     }
 
@@ -92,10 +127,10 @@ export class FeedActivationEngine {
     // Simplistic check for dominant planet alignment (e.g., if it's Venus hour and agent is Venus dominant)
     const agentElement = agent.dominantElement as keyof typeof moment.kinetic.velocity
     if (moment.elemental && agentElement && moment.elemental[agentElement] > 40) {
-       // Elemental surge
-       if (momentum > 0.4) {
-         return { reason: 'elemental_surge_resonance', intensity: 0.75 }
-       }
+      // Elemental surge
+      if (momentum > 0.4) {
+        return { reason: 'elemental_surge_resonance', intensity: 0.75 }
+      }
     }
 
     // D) Random/Momentum based trigger for lower consciousness agents to occasionally speak
@@ -135,7 +170,7 @@ export class FeedActivationEngine {
         return {
           ...baseMetadata,
           insightTitle: `Observations on ${moment.planetary.dominantPlanet}`,
-          insightContent: trigger.reason.includes('entropy') 
+          insightContent: trigger.reason.includes('entropy')
             ? `The current entropy of ${moment.thermodynamic.entropy.toFixed(1)} demands a revolutionary perspective on nourishment.`
             : `Considering how ${agent.specialty} applies to the current alchemical weather.`,
         }
@@ -147,7 +182,7 @@ export class FeedActivationEngine {
           rating: 5,
           is_public: true,
           elemental_tags: { [agent.dominantElement?.toLowerCase() || 'fire']: 0.8 },
-          planetary_context: { ruler: moment.planetary.dominantPlanet }
+          planetary_context: { ruler: moment.planetary.dominantPlanet },
         }
       case 'made_it':
         return {
@@ -156,7 +191,7 @@ export class FeedActivationEngine {
           recipeId: 'placeholder-recipe-id',
           madeIt: true,
           rating: 4,
-          review: `Resonating with the surge in ${agent.dominantElement} energy. Added extra herbs aligned with ${moment.planetary.dominantPlanet}.`
+          review: `Resonating with the surge in ${agent.dominantElement} energy. Added extra herbs aligned with ${moment.planetary.dominantPlanet}.`,
         }
       default:
         return baseMetadata

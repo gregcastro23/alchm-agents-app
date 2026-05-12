@@ -68,17 +68,17 @@ async function testAllModels() {
   console.log('SUMMARY')
   console.log('='.repeat(80))
 
-  const working = results.filter((r) => r.available)
-  const notWorking = results.filter((r) => !r.available)
+  const working = results.filter(r => r.available)
+  const notWorking = results.filter(r => !r.available)
 
   if (working.length > 0) {
     console.log('\n✅ AVAILABLE MODELS:')
-    working.forEach((r) => console.log(`   • ${r.model}`))
+    working.forEach(r => console.log(`   • ${r.model}`))
   }
 
   if (notWorking.length > 0) {
     console.log('\n❌ UNAVAILABLE MODELS:')
-    notWorking.forEach((r) => console.log(`   • ${r.model} (${r.error || 'not_found'})`))
+    notWorking.forEach(r => console.log(`   • ${r.model} (${r.error || 'not_found'})`))
   }
 
   if (working.length > 0) {
@@ -100,4 +100,3 @@ async function testAllModels() {
 }
 
 testAllModels()
-

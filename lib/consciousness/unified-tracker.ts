@@ -376,21 +376,17 @@ export class UnifiedConsciousnessTracker {
     }
 
     // Calculate averages
-    const avgChatQuality =
-      snapshots.reduce((sum, s) => sum + s.chatQuality, 0) / snapshots.length
+    const avgChatQuality = snapshots.reduce((sum, s) => sum + s.chatQuality, 0) / snapshots.length
     const avgActionCompletion =
       snapshots.reduce((sum, s) => sum + s.actionCompletion, 0) / snapshots.length
-    const avgResponseTime =
-      snapshots.reduce((sum, s) => sum + s.latencyMs, 0) / snapshots.length
+    const avgResponseTime = snapshots.reduce((sum, s) => sum + s.latencyMs, 0) / snapshots.length
 
     // Calculate quality improvement (first half vs second half)
     const midpoint = Math.floor(snapshots.length / 2)
     const firstHalfQuality =
       snapshots.slice(0, midpoint).reduce((sum, s) => sum + s.chatQuality, 0) / midpoint
     const secondHalfQuality =
-      snapshots
-        .slice(midpoint)
-        .reduce((sum, s) => sum + s.chatQuality, 0) /
+      snapshots.slice(midpoint).reduce((sum, s) => sum + s.chatQuality, 0) /
       (snapshots.length - midpoint)
     const qualityImprovement = secondHalfQuality - firstHalfQuality
 
@@ -478,19 +474,14 @@ export class UnifiedConsciousnessTracker {
 
     // Tool usage factor
     if (toolInvocations.length > 0) {
-      const successRate =
-        toolInvocations.filter(t => t.success).length / toolInvocations.length
+      const successRate = toolInvocations.filter(t => t.success).length / toolInvocations.length
       quality += successRate * 0.2
     }
 
     // Engagement factor (questions, thoughtfulness)
     if (response.includes('?')) quality += 0.05
     if (response.includes('consider') || response.includes('reflect')) quality += 0.05
-    if (
-      response.includes('because') ||
-      response.includes('therefore') ||
-      response.includes('thus')
-    )
+    if (response.includes('because') || response.includes('therefore') || response.includes('thus'))
       quality += 0.05
 
     return Math.min(1.0, quality)
@@ -537,8 +528,7 @@ export class UnifiedConsciousnessTracker {
    */
   private estimateActionCompletion(response: string): number {
     if (response.length < 20) return 0.3
-    if (response.includes("I apologize") || response.includes("I'm sorry"))
-      return 0.5
+    if (response.includes('I apologize') || response.includes("I'm sorry")) return 0.5
     if (response.length > 100 && !response.includes("I don't know")) return 0.9
     return 0.7
   }
@@ -550,8 +540,7 @@ export class UnifiedConsciousnessTracker {
     toolInvocations: Array<{ toolName: string; success: boolean }>
   ): number {
     if (toolInvocations.length === 0) return 1.0 // No tools needed
-    const successRate =
-      toolInvocations.filter(t => t.success).length / toolInvocations.length
+    const successRate = toolInvocations.filter(t => t.success).length / toolInvocations.length
     return successRate
   }
 

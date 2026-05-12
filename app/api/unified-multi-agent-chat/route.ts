@@ -303,7 +303,14 @@ async function processAgentResponse(
       console.log(`🎭 Mock mode: skipping LLM call for ${agent.name}`)
       const mockResponse = generateMockResponse(agent, message)
       const processingTime = Date.now() - agentStartTime
-      observabilityTracker.completeTrace(traceId, mockResponse, observabilityTracker.evaluateMetrics(mockResponse, message, [], [], processingTime, []), 'mock', 0, 0)
+      observabilityTracker.completeTrace(
+        traceId,
+        mockResponse,
+        observabilityTracker.evaluateMetrics(mockResponse, message, [], [], processingTime, []),
+        'mock',
+        0,
+        0
+      )
       return {
         agentId: agent.id,
         content: mockResponse,
@@ -495,21 +502,14 @@ async function processAgentResponse(
     const processingTime = Date.now() - agentStartTime
 
     // Complete trace with error
-    const metrics = observabilityTracker.evaluateMetrics(
-      '',
-      message,
-      [],
-      [],
-      processingTime,
-      [
-        {
-          type: 'api_failure',
-          message: error instanceof Error ? error.message : 'Unknown error',
-          timestamp: new Date(),
-          severity: 'critical',
-        },
-      ]
-    )
+    const metrics = observabilityTracker.evaluateMetrics('', message, [], [], processingTime, [
+      {
+        type: 'api_failure',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date(),
+        severity: 'critical',
+      },
+    ])
 
     observabilityTracker.completeTrace(traceId, '', metrics, 'error', 0, 0)
 
@@ -682,21 +682,14 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
 
     const processingTime = Date.now() - startTime
 
-    const metrics = observabilityTracker.evaluateMetrics(
-      '',
-      message,
-      [],
-      [],
-      processingTime,
-      [
-        {
-          type: 'api_failure',
-          message: error instanceof Error ? error.message : 'Unknown error',
-          timestamp: new Date(),
-          severity: 'critical',
-        },
-      ]
-    )
+    const metrics = observabilityTracker.evaluateMetrics('', message, [], [], processingTime, [
+      {
+        type: 'api_failure',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date(),
+        severity: 'critical',
+      },
+    ])
 
     observabilityTracker.completeTrace(traceId, '', metrics, 'error', 0, 0)
 
@@ -929,9 +922,12 @@ function selectOptimalModel(
   // Production: context-aware model selection based on variant
   switch (variant) {
     case 'historical':
-      return { 
-        model: agent.type === 'historical' ? resolveDefaultModel('default') : resolveDefaultModel('fast'),
-        modelId: agent.type === 'historical' ? 'default-tier' : 'fast-tier'
+      return {
+        model:
+          agent.type === 'historical'
+            ? resolveDefaultModel('default')
+            : resolveDefaultModel('fast'),
+        modelId: agent.type === 'historical' ? 'default-tier' : 'fast-tier',
       }
 
     case 'planetary':
@@ -950,7 +946,6 @@ function selectOptimalModel(
       return { model: resolveDefaultModel('fast'), modelId: 'fast-tier' }
   }
 }
-
 
 function resolveModelOverride(modelName: string): string {
   switch (modelName) {

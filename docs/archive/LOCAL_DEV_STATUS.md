@@ -37,6 +37,7 @@
 ## Quick Commands
 
 ### View Running Services
+
 ```bash
 # Check all containers
 docker ps
@@ -70,6 +71,7 @@ docker stop planetary-postgres-dev planetary-redis
 **Frontend**: http://localhost:3000
 
 Available pages for testing:
+
 - `/` - Home
 - `/gallery` - Browse 35 historical agents
 - `/gallery/chat/[agent-id]` - Chat with specific agent
@@ -83,6 +85,7 @@ Available pages for testing:
 ## Database Schema
 
 The database has been migrated with the complete Prisma schema including:
+
 - ✅ 50+ models
 - ✅ Historical agents
 - ✅ User profiles
@@ -94,6 +97,7 @@ The database has been migrated with the complete Prisma schema including:
 ## Next Steps
 
 ### To Start Backend (Optional)
+
 The backend provides additional API endpoints but isn't required for UI testing:
 
 ```bash
@@ -108,6 +112,7 @@ yarn dev
 ### To Add API Keys
 
 Edit your `.env.local` file and add:
+
 ```bash
 ANTHROPIC_API_KEY="your-key-here"
 OPENAI_API_KEY="your-key-here"
@@ -118,6 +123,7 @@ Then restart the frontend.
 ### Troubleshooting
 
 **Frontend won't start**:
+
 ```bash
 # Kill existing processes
 pkill -f "next dev"
@@ -128,6 +134,7 @@ yarn dev
 ```
 
 **Database connection issues**:
+
 ```bash
 # Restart PostgreSQL
 docker restart planetary-postgres-dev
@@ -136,6 +143,7 @@ docker logs planetary-postgres-dev
 ```
 
 **Redis connection issues**:
+
 ```bash
 # Restart Redis
 docker restart planetary-redis
@@ -162,12 +170,12 @@ docker logs planetary-redis
 ## What to Test
 
 Focus on testing these areas locally:
+
 1. **UI/UX** - Navigate all pages, check layouts, interactions
-2. **Component rendering** - Verify all components display correctly  
+2. **Component rendering** - Verify all components display correctly
 3. **Client-side logic** - Test state management, hooks, utilities
 4. **Page routing** - Ensure all routes work
 5. **Styling** - Check Tailwind CSS, responsive design
 6. **Forms** - Test input validation, form submissions (will need backend for persistence)
 
 The platform is ready for comprehensive local UI testing! 🎉
-

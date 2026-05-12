@@ -57,7 +57,10 @@ export const ZODIAC_SIGNS = [
   { name: 'Pisces', element: 'Water', modality: 'Mutable', start: 330, end: 360 },
 ] as const
 
-export function calculateMoonPhase(date: Date = new Date(), moonPosition?: { sign: string; degree: number }): MoonPhase {
+export function calculateMoonPhase(
+  date: Date = new Date(),
+  moonPosition?: { sign: string; degree: number }
+): MoonPhase {
   const LUNAR_MONTH = 29.53058867
   const KNOWN_NEW_MOON = new Date('2000-01-06T18:14:00Z')
 

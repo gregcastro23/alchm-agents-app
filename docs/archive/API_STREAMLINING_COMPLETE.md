@@ -11,11 +11,13 @@ Streamlined all API endpoints to use reliable local calculations and your Render
 **File**: `lib/services/planetary-positions-service.ts`
 
 **Problem**:
+
 - The service was trying to call `fetchAlchmize()` as the first fallback method
 - This external API call **always returned null** for planetary positions (it only provides chart SVG)
 - This wasted time and caused potential timeouts in production
 
 **Solution**:
+
 - Removed the external API call from the fallback cascade
 - Now starts directly with **Enhanced Calculator** (local, fast, reliable)
 - Fallback order is now:
@@ -24,6 +26,7 @@ Streamlined all API endpoints to use reliable local calculations and your Render
   3. Static Fallback (always works) ✅
 
 **Result**:
+
 ```json
 {
   "source": "enhanced-calculator",
@@ -37,6 +40,7 @@ Streamlined all API endpoints to use reliable local calculations and your Render
 **File**: `app/api/moment-recommendations/route.ts`
 
 **Status**: No changes needed - already using reliable local calculations
+
 - Uses `sampleHourlyAlchm()` which is fully local
 - Uses `demoCraftedAgents` which is local data
 - No external API calls
@@ -46,6 +50,7 @@ Streamlined all API endpoints to use reliable local calculations and your Render
 **File**: `app/api/alchm-kinetics/route.ts`
 
 **Status**: No changes needed - already using reliable local calculations
+
 - Uses `sampleHourlyAlchm()` which is fully local
 - All kinetic calculations are computed locally
 - No external API dependencies
@@ -55,6 +60,7 @@ Streamlined all API endpoints to use reliable local calculations and your Render
 **File**: `app/api/consciousness/live/route.ts`
 
 **Status**: Already fixed in previous commit
+
 - Added GET handler (was returning 405)
 - Uses local alchemizer for current moment calculations
 - No external dependencies
@@ -64,12 +70,14 @@ Streamlined all API endpoints to use reliable local calculations and your Render
 ### What Services You Have on Render
 
 Your `alchm-backend.onrender.com` provides:
+
 - `/astrologize` - Chart wheel generation
 - `/alchemize` - Alchemical calculations
 
 ### What Your Backend Gateway (Port 8000) Provides
 
 Your Express backend on port 8000 provides:
+
 - `/api/alchemy/calculate` - Calls alchm-backend
 - `/api/alchemy/thermodynamics` - Local thermodynamics
 - `/api/planetary/current-hour` - Local planetary hours
@@ -80,13 +88,13 @@ Your Express backend on port 8000 provides:
 
 After streamlining, here's what each API uses:
 
-| API Endpoint | Data Source | Reliability |
-|--------------|-------------|-------------|
-| `/api/planetary-positions` | Enhanced Calculator (local) | ✅ High |
-| `/api/moment-recommendations` | Local calculations | ✅ High |
-| `/api/alchm-kinetics` | Local calculations | ✅ High |
-| `/api/consciousness/live` | Local alchemizer | ✅ High |
-| `/api/alchmize` | Render backend OR local fallback | ✅ High |
+| API Endpoint                  | Data Source                      | Reliability |
+| ----------------------------- | -------------------------------- | ----------- |
+| `/api/planetary-positions`    | Enhanced Calculator (local)      | ✅ High     |
+| `/api/moment-recommendations` | Local calculations               | ✅ High     |
+| `/api/alchm-kinetics`         | Local calculations               | ✅ High     |
+| `/api/consciousness/live`     | Local alchemizer                 | ✅ High     |
+| `/api/alchmize`               | Render backend OR local fallback | ✅ High     |
 
 ## Testing Results
 
@@ -113,6 +121,7 @@ curl 'http://localhost:3000/api/consciousness/live'
 ## Performance Improvements
 
 ### Before Streamlining
+
 ```
 1. Try external API (10s timeout) → FAIL → waste 10 seconds
 2. Try enhanced calculator → SUCCESS
@@ -120,6 +129,7 @@ Total: 10+ seconds for first request
 ```
 
 ### After Streamlining
+
 ```
 1. Try enhanced calculator → SUCCESS
 Total: <500ms for first request
@@ -168,12 +178,14 @@ Your architecture is designed to use:
 ## Environment Variables for Production
 
 ### Required (Core Functionality)
+
 ```bash
 OPENAI_API_KEY=sk-proj-...
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 ### Optional (Enhanced Features)
+
 ```bash
 # Backend services (optional)
 NEXT_PUBLIC_BACKEND_URL=https://your-backend.onrender.com
@@ -204,11 +216,13 @@ REDIS_URL=redis://...
 ## Code Quality Improvements
 
 ### Removed Code
+
 - Removed unused `fetchAlchmize` import from planetary-positions-service
 - Removed unused `externalApiCB` circuit breaker
 - Removed broken `fetchFromExternalAPI()` method
 
 ### Added Documentation
+
 - Clear comments explaining why external API was removed
 - Documentation of reliable fallback hierarchy
 - Testing results and performance metrics
@@ -216,6 +230,7 @@ REDIS_URL=redis://...
 ## Next Steps
 
 1. **Deploy these changes**:
+
    ```bash
    git add .
    git commit -m "Streamline APIs: Remove broken external API calls, improve reliability"

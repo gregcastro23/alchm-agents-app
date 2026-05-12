@@ -484,7 +484,9 @@ export default function AlchmQuantitiesDisplay() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <TokenDisplay
           value={data.quantities.Spirit}
-          {...(previousData?.quantities.Spirit !== undefined && { previousValue: previousData.quantities.Spirit })}
+          {...(previousData?.quantities.Spirit !== undefined && {
+            previousValue: previousData.quantities.Spirit,
+          })}
           icon={<Flame className="h-8 w-8" />}
           name="SPIRIT"
           color="red"
@@ -494,7 +496,9 @@ export default function AlchmQuantitiesDisplay() {
         />
         <TokenDisplay
           value={data.quantities.Essence}
-          {...(previousData?.quantities.Essence !== undefined && { previousValue: previousData.quantities.Essence })}
+          {...(previousData?.quantities.Essence !== undefined && {
+            previousValue: previousData.quantities.Essence,
+          })}
           icon={<Droplets className="h-8 w-8" />}
           name="ESSENCE"
           color="blue"
@@ -504,7 +508,9 @@ export default function AlchmQuantitiesDisplay() {
         />
         <TokenDisplay
           value={data.quantities.Matter}
-          {...(previousData?.quantities.Matter !== undefined && { previousValue: previousData.quantities.Matter })}
+          {...(previousData?.quantities.Matter !== undefined && {
+            previousValue: previousData.quantities.Matter,
+          })}
           icon={<Mountain className="h-8 w-8" />}
           name="MATTER"
           color="amber"
@@ -514,7 +520,9 @@ export default function AlchmQuantitiesDisplay() {
         />
         <TokenDisplay
           value={data.quantities.Substance}
-          {...(previousData?.quantities.Substance !== undefined && { previousValue: previousData.quantities.Substance })}
+          {...(previousData?.quantities.Substance !== undefined && {
+            previousValue: previousData.quantities.Substance,
+          })}
           icon={<Wind className="h-8 w-8" />}
           name="SUBSTANCE"
           color="purple"
@@ -606,7 +614,9 @@ export default function AlchmQuantitiesDisplay() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <div className="text-xs text-violet-600 dark:text-violet-400 mb-1">Velocity Modifier</div>
+              <div className="text-xs text-violet-600 dark:text-violet-400 mb-1">
+                Velocity Modifier
+              </div>
               <div className="text-2xl font-bold text-violet-900 dark:text-violet-100">
                 {kineticModifiers.velocityModifier.toFixed(2)}x
               </div>
@@ -615,7 +625,9 @@ export default function AlchmQuantitiesDisplay() {
               </div>
             </div>
             <div>
-              <div className="text-xs text-violet-600 dark:text-violet-400 mb-1">Power Modifier</div>
+              <div className="text-xs text-violet-600 dark:text-violet-400 mb-1">
+                Power Modifier
+              </div>
               <div className="text-2xl font-bold text-violet-900 dark:text-violet-100">
                 {kineticModifiers.powerModifier.toFixed(2)}x
               </div>
@@ -624,7 +636,9 @@ export default function AlchmQuantitiesDisplay() {
               </div>
             </div>
             <div>
-              <div className="text-xs text-violet-600 dark:text-violet-400 mb-1">Active Aspects</div>
+              <div className="text-xs text-violet-600 dark:text-violet-400 mb-1">
+                Active Aspects
+              </div>
               <div className="text-2xl font-bold text-violet-900 dark:text-violet-100">
                 {aspectCount}
               </div>
@@ -649,8 +663,8 @@ export default function AlchmQuantitiesDisplay() {
             </div>
           </div>
           <p className="text-xs text-violet-600 dark:text-violet-400 mt-3">
-            Quantities are adjusted based on orb-proximity weighted aspect modifiers. Applying aspects
-            increase kinetic effects, while separating aspects allow energy to stabilize.
+            Quantities are adjusted based on orb-proximity weighted aspect modifiers. Applying
+            aspects increase kinetic effects, while separating aspects allow energy to stabilize.
           </p>
         </div>
       )}

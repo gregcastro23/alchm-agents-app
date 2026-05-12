@@ -23,10 +23,7 @@ export async function GET(request: NextRequest) {
     const endDateParam = searchParams.get('endDate')
 
     if (!userId || !agentId) {
-      return NextResponse.json(
-        { error: 'userId and agentId are required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'userId and agentId are required' }, { status: 400 })
     }
 
     // Parse dates
@@ -42,15 +39,19 @@ export async function GET(request: NextRequest) {
     })
 
     // Calculate summary statistics
-    const summary = snapshots.length > 0 ? {
-      totalInteractions: snapshots.length,
-      avgPower: snapshots.reduce((sum, s) => sum + s.power, 0) / snapshots.length,
-      avgWisdom: snapshots.reduce((sum, s) => sum + s.wisdom, 0) / snapshots.length,
-      avgOverall: snapshots.reduce((sum, s) => sum + s.overall, 0) / snapshots.length,
-      avgChatQuality: snapshots.reduce((sum, s) => sum + s.chatQuality, 0) / snapshots.length,
-      avgActionCompletion: snapshots.reduce((sum, s) => sum + s.actionCompletion, 0) / snapshots.length,
-      avgLatency: snapshots.reduce((sum, s) => sum + s.latencyMs, 0) / snapshots.length,
-    } : null
+    const summary =
+      snapshots.length > 0
+        ? {
+            totalInteractions: snapshots.length,
+            avgPower: snapshots.reduce((sum, s) => sum + s.power, 0) / snapshots.length,
+            avgWisdom: snapshots.reduce((sum, s) => sum + s.wisdom, 0) / snapshots.length,
+            avgOverall: snapshots.reduce((sum, s) => sum + s.overall, 0) / snapshots.length,
+            avgChatQuality: snapshots.reduce((sum, s) => sum + s.chatQuality, 0) / snapshots.length,
+            avgActionCompletion:
+              snapshots.reduce((sum, s) => sum + s.actionCompletion, 0) / snapshots.length,
+            avgLatency: snapshots.reduce((sum, s) => sum + s.latencyMs, 0) / snapshots.length,
+          }
+        : null
 
     return NextResponse.json({
       snapshots,

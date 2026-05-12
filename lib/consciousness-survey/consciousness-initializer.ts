@@ -5,14 +5,8 @@ import type {
   SurveyAnalysis,
   PersonalityInsights,
 } from '../types/consciousness-survey'
-import type {
-  BirthChartData,
-  BasePersonality,
-  DualChartSystem,
-} from '../types/personalized-ai'
-import {
-  generateBasePersonality,
-} from '../personalized-ai/personality-generator'
+import type { BirthChartData, BasePersonality, DualChartSystem } from '../types/personalized-ai'
+import { generateBasePersonality } from '../personalized-ai/personality-generator'
 
 export interface ConsciousnessState {
   // Core identity synthesis

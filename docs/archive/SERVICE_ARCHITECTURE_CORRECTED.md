@@ -12,6 +12,7 @@ After reviewing the codebase and streamlining efforts, here's the **correct** un
 **Purpose**: Main user interface and API orchestration
 
 **What It Should Do**:
+
 - Serve the React UI
 - Orchestrate calls to various backends
 - Provide frontend API routes that aggregate data
@@ -24,6 +25,7 @@ After reviewing the codebase and streamlining efforts, here's the **correct** un
 **Purpose**: Backend microservice for advanced calculations
 
 **Endpoints Provided**:
+
 ```
 POST /api/planetary/current-hour     - Planetary hour calculations
 POST /api/planetary/forecast          - Planetary forecasts
@@ -44,6 +46,7 @@ POST /api/kinetics/token              - Token kinetics
 **Owner**: External service (possibly yours on different Render account)
 
 **Endpoints**:
+
 ```
 POST /astrologize  - Chart wheel generation (SVG/images)
 POST /alchemize    - Alchemical quantities calculation
@@ -59,10 +62,12 @@ POST /imaginize    - AI-generated sigil images
 **Problem**: Was trying to call `fetchAlchmize()` to get planetary positions
 
 **Why It Failed**: The external Render backend `/alchemize` endpoint returns:
+
 - spirit, essence, matter, substance (alchemical quantities)
 - NOT planetary positions (degrees, signs, retrogrades)
 
 **Correct Approach**: ✅ Use local astronomical calculators
+
 - Enhanced Calculator (uses Swiss Ephemeris algorithms)
 - Basic Transits (simpler calculations)
 - These are mathematical, don't need external services
@@ -72,6 +77,7 @@ POST /imaginize    - AI-generated sigil images
 **Misunderstanding**: Thinking external APIs should provide everything
 
 **Reality**:
+
 - **Planetary Positions**: Pure mathematics → Local calculators ✅
 - **Alchemical Calculations**: Complex domain logic → Render backend PRIMARY ✅
 - **Chart Generation**: SVG rendering → Render backend PRIMARY ✅
@@ -174,6 +180,7 @@ POST /imaginize    - AI-generated sigil images
 **External Render Backend**: alchm-backend.onrender.com (running)
 
 **What Works**:
+
 - ✅ Planetary positions (local calculators)
 - ✅ Moment recommendations (local)
 - ✅ Kinetics (local simplified)
@@ -183,6 +190,7 @@ POST /imaginize    - AI-generated sigil images
 - ✅ Sigils (external Render backend)
 
 **Required ENV Vars**:
+
 ```bash
 OPENAI_API_KEY=...
 ANTHROPIC_API_KEY=...
@@ -192,16 +200,19 @@ ASTROLOGIZE_API_BASE=https://alchm-backend.onrender.com
 ### Option 2: Full Stack (Maximum Features)
 
 **Deploy**:
+
 1. Next.js app to Vercel
 2. Backend gateway to Render (separate service)
 
 **What Works**: Everything from Option 1, PLUS:
+
 - ✅ Advanced consciousness calculations
 - ✅ Complex kinetics
 - ✅ Thermodynamic analysis
 - ✅ WebSocket updates
 
 **Required ENV Vars**:
+
 ```bash
 # Frontend
 OPENAI_API_KEY=...
@@ -220,6 +231,7 @@ DATABASE_URL=postgresql://...
 **For Production**: Start with **Option 1** (Vercel frontend only)
 
 **Why**:
+
 1. Simpler deployment
 2. Lower cost (one service vs two)
 3. Frontend works without backend gateway
@@ -227,6 +239,7 @@ DATABASE_URL=postgresql://...
 5. Can add backend gateway later if needed
 
 **When to Add Backend Gateway**:
+
 - Need advanced consciousness calculations
 - Want WebSocket real-time updates
 - Require complex thermodynamic analysis
@@ -264,11 +277,11 @@ curl 'http://localhost:3000/api/consciousness/live'
 
 ### Service Roles (Correct Understanding)
 
-| Service | Role | When Used |
-|---------|------|-----------|
-| **Local Calculators** | Planetary positions, basic calculations | Always PRIMARY |
-| **Render Backend** (alchm-backend) | Alchemy, charts, AI images | PRIMARY for domain logic |
-| **Backend Gateway** (port 8000) | Advanced features, caching, WebSocket | OPTIONAL enhancement |
+| Service                            | Role                                    | When Used                |
+| ---------------------------------- | --------------------------------------- | ------------------------ |
+| **Local Calculators**              | Planetary positions, basic calculations | Always PRIMARY           |
+| **Render Backend** (alchm-backend) | Alchemy, charts, AI images              | PRIMARY for domain logic |
+| **Backend Gateway** (port 8000)    | Advanced features, caching, WebSocket   | OPTIONAL enhancement     |
 
 ### What We Fixed
 

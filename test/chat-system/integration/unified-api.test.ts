@@ -577,7 +577,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
     })
 
     it('handles cosmic context generation failures', async () => {
-      vi.mocked(generateAlchmForCurrentMoment).mockRejectedValueOnce(new Error('Cosmic service down'))
+      vi.mocked(generateAlchmForCurrentMoment).mockRejectedValueOnce(
+        new Error('Cosmic service down')
+      )
 
       const request = new NextRequest('http://localhost/api/unified-multi-agent-chat', {
         method: 'POST',

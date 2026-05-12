@@ -118,7 +118,9 @@ class RAGCache {
           this.stats.totalResponseTime += Date.now() - startTime
           this.stats.responseCount++
 
-          console.log(`[RAGCache] Exact match for query "${query.slice(0, 50)}..." (hits: ${exactMatch.hits})`)
+          console.log(
+            `[RAGCache] Exact match for query "${query.slice(0, 50)}..." (hits: ${exactMatch.hits})`
+          )
           return exactMatch
         } else {
           // Expired, remove from cache
@@ -202,7 +204,9 @@ class RAGCache {
         }
       }
 
-      console.log(`[RAGCache] Cached result for query "${query.slice(0, 50)}..." (${sources.length} sources)`)
+      console.log(
+        `[RAGCache] Cached result for query "${query.slice(0, 50)}..." (${sources.length} sources)`
+      )
     } catch (error) {
       console.error('[RAGCache] Error setting cache:', error)
     }
@@ -211,10 +215,7 @@ class RAGCache {
   /**
    * Find similar cached query using embedding similarity
    */
-  async findSimilar(
-    queryEmbedding: number[],
-    agentId: string
-  ): Promise<CachedRAGResult | null> {
+  async findSimilar(queryEmbedding: number[], agentId: string): Promise<CachedRAGResult | null> {
     let bestMatch: CachedRAGResult | null = null
     let bestSimilarity = 0
 
@@ -274,21 +275,21 @@ class RAGCache {
    */
   async warm(commonQueries: Array<{ query: string; agentId: string }>): Promise<void> {
     console.log(`[RAGCache] Warming cache with ${commonQueries.length} common queries...`)
-    
+
     let warmed = 0
     let failed = 0
-    
+
     for (const { query, agentId } of commonQueries) {
       try {
         // Check if already cached
         const cacheKey = this.buildCacheKey(query, agentId)
         const existing = await this.get(cacheKey)
-        
+
         if (existing) {
           console.log(`[RAGCache] Query already cached: "${query.substring(0, 50)}..."`)
           continue
         }
-        
+
         // Execute the query to populate cache
         // Note: This requires the RAG system to be available
         const { semanticSearch } = await import('../llamaindex/semantic-search')
@@ -296,27 +297,28 @@ class RAGCache {
           agentIds: [agentId],
           topK: 5,
         })
-        
+
         if (results && results.length > 0) {
           // Cache the results
           await this.set(cacheKey, {
             results,
             timestamp: Date.now(),
           })
-          
+
           warmed++
-          console.log(`[RAGCache] Warmed cache for: "${query.substring(0, 50)}..." (${results.length} results)`)
+          console.log(
+            `[RAGCache] Warmed cache for: "${query.substring(0, 50)}..." (${results.length} results)`
+          )
         }
-        
+
         // Small delay to avoid overwhelming the system
         await new Promise(resolve => setTimeout(resolve, 100))
-        
       } catch (error) {
         failed++
         console.error(`[RAGCache] Failed to warm query "${query.substring(0, 50)}...":`, error)
       }
     }
-    
+
     console.log(`[RAGCache] Cache warming complete: ${warmed} warmed, ${failed} failed`)
   }
 
@@ -327,9 +329,7 @@ class RAGCache {
     const totalRequests = this.stats.hits + this.stats.misses
     const hitRate = totalRequests > 0 ? this.stats.hits / totalRequests : 0
     const avgResponseTime =
-      this.stats.responseCount > 0
-        ? this.stats.totalResponseTime / this.stats.responseCount
-        : 0
+      this.stats.responseCount > 0 ? this.stats.totalResponseTime / this.stats.responseCount : 0
 
     // Estimate memory size (rough approximation)
     let memorySizeBytes = 0
@@ -377,9 +377,12 @@ class RAGCache {
    * Start automatic cleanup interval
    */
   startCleanupInterval(intervalMinutes: number = 5): NodeJS.Timeout {
-    return setInterval(() => {
-      this.cleanup()
-    }, intervalMinutes * 60 * 1000)
+    return setInterval(
+      () => {
+        this.cleanup()
+      },
+      intervalMinutes * 60 * 1000
+    )
   }
 }
 

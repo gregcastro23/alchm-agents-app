@@ -1,9 +1,11 @@
 # Vercel Deploy Hook Rate Limit Issue
 
 ## Problem Identified
+
 **Deploy hook triggers per hour: 60 requests maximum**
 
 We hit this limit because:
+
 1. Multiple manual curl tests (~3-4 times)
 2. GitLab CI/CD job attempts (~2-3 times)
 3. Possibly the GitLab webhook firing (if it worked)
@@ -11,6 +13,7 @@ We hit this limit because:
 **Total**: ~5-10 requests in a short period
 
 ## Rate Limit Details
+
 - **Limit**: 60 deploy hook triggers per hour
 - **Duration**: 3600 seconds (1 hour)
 - **Scope**: Owner (your account)
@@ -20,6 +23,7 @@ We hit this limit because:
 ## Immediate Solutions
 
 ### Option 1: Wait for Rate Limit Reset (Recommended)
+
 Simply wait ~30-60 minutes, then trigger deployment again:
 
 ```bash
@@ -28,6 +32,7 @@ curl -X POST 'https://api.vercel.com/v1/integrations/deploy/prj_47jKTcJvhdXzrf3Y
 ```
 
 ### Option 2: Manual Redeploy from Vercel Dashboard (Works Now!)
+
 This doesn't count against the deploy hook limit:
 
 1. Go to: https://vercel.com/gregcastro23s-projects/planetary-agents/deployments
@@ -39,6 +44,7 @@ This doesn't count against the deploy hook limit:
 This will redeploy with your latest `main` branch code (commit `7b46f830`)!
 
 ### Option 3: Use Vercel CLI (Alternative)
+
 The CLI doesn't use the deploy hook, so it has separate limits:
 
 ```bash
@@ -50,7 +56,9 @@ However, we know the CLI has been hanging, so this might not work.
 ## Long-Term Solution: Optimize CI/CD Pipeline
 
 ### Problem with Current Approach
+
 Every push to `main` triggers the deploy hook, which could hit the 60/hour limit if:
+
 - Multiple team members push frequently
 - Rapid iteration/debugging
 - Automated systems push commits
@@ -70,11 +78,12 @@ deploy_to_vercel:
     - curl -X POST "$VERCEL_DEPLOY_HOOK" || echo "Deploy hook trigger failed (might be rate limited)"
   only:
     - main
-  when: manual  # ← Make it manual instead of automatic
-  allow_failure: true  # ← Don't fail pipeline if rate limited
+  when: manual # ← Make it manual instead of automatic
+  allow_failure: true # ← Don't fail pipeline if rate limited
 ```
 
 **Benefits:**
+
 - ✅ Won't automatically trigger on every push (saves rate limit)
 - ✅ You manually trigger when ready to deploy
 - ✅ Pipeline doesn't fail if rate limited
@@ -100,6 +109,7 @@ deploy_to_vercel:
 ```
 
 **Requires:**
+
 - Vercel API token stored in GitLab CI/CD variables
 - More control over deployment
 - Doesn't hit deploy hook rate limits
@@ -118,6 +128,7 @@ deploy_to_vercel:
 4. **Confirm redeploy**
 
 This will:
+
 - ✅ Deploy your latest `main` branch code (7b46f830)
 - ✅ Not count against deploy hook rate limit
 - ✅ Work immediately
@@ -161,10 +172,12 @@ deploy_to_vercel:
 ## Summary
 
 **Right now:**
+
 - ✅ Use Vercel dashboard "Redeploy" button (works immediately)
 - ⏰ Or wait 30-60 minutes for rate limit to reset
 
 **Going forward:**
+
 - ✅ Make CI/CD deployment manual (not automatic)
 - ✅ Use Vercel dashboard for quick redeploys
 - ✅ Be mindful of 60/hour deploy hook limit

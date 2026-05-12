@@ -1,6 +1,7 @@
 # Deploy Hook Setup Guide
 
 ## Issue
+
 GitLab pushes are not automatically triggering Vercel deployments. The Git integration shows "No Active Branches" and deployments are not appearing in the Vercel dashboard.
 
 ## Solution: Create Deploy Hook + GitLab Webhook
@@ -34,11 +35,13 @@ GitLab pushes are not automatically triggering Vercel deployments. The Git integ
 After adding the webhook, you can test it:
 
 **Option A: Test from GitLab UI**
+
 1. In GitLab webhook settings, click "Test" → "Push events"
 2. Should trigger a Vercel deployment
 3. Check Vercel dashboard for new deployment
 
 **Option B: Test with a commit**
+
 ```bash
 # Make a trivial change
 echo "" >> DEPLOY_HOOK_SETUP.md
@@ -48,6 +51,7 @@ git push origin main
 ```
 
 Watch for:
+
 - GitLab webhook shows successful delivery (green checkmark)
 - Vercel dashboard shows new deployment starting
 - Deployment appears in "Deployments" tab
@@ -55,6 +59,7 @@ Watch for:
 ### Step 4: Verify Deployment
 
 After pushing, check:
+
 1. **GitLab**: Settings → Webhooks → Recent Deliveries
    - Should show HTTP 200 response
 2. **Vercel**: Deployments tab
@@ -64,6 +69,7 @@ After pushing, check:
 ## Deploy Hook vs Git Integration
 
 **Deploy Hook (Webhook)**:
+
 - ✅ Simple and reliable
 - ✅ Works with any Git provider
 - ✅ No OAuth permissions needed
@@ -72,6 +78,7 @@ After pushing, check:
 - ❌ Manual webhook configuration
 
 **Git Integration (OAuth)**:
+
 - ✅ Shows branch info and commit details
 - ✅ Auto-configures webhooks
 - ✅ Better dashboard UX
@@ -84,6 +91,7 @@ After pushing, check:
 ## Webhook Payload
 
 When GitLab sends a push event, Vercel receives:
+
 ```json
 {
   "ref": "refs/heads/main",
@@ -99,18 +107,21 @@ Vercel extracts the branch name and triggers a deployment.
 ## Troubleshooting
 
 ### Webhook Not Firing
+
 1. Check GitLab webhook "Recent Deliveries"
 2. Look for error messages or failed deliveries
 3. Verify URL is exactly as provided by Vercel
 4. Ensure "Push events" trigger is enabled
 
 ### Deployment Not Starting
+
 1. Verify deploy hook URL is correct
 2. Check if hook is enabled in Vercel settings
 3. Verify branch name matches (`main`)
 4. Check Vercel project isn't paused or suspended
 
 ### Build Failures
+
 1. Check deployment logs in Vercel dashboard
 2. Verify environment variables are set
 3. Ensure `vercel.json` configuration is valid

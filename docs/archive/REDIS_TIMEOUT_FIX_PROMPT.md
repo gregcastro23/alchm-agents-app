@@ -18,6 +18,7 @@ Backend integration tests are timing out during the `beforeAll()` hook when tryi
 ## Test Execution Results
 
 ### Individual Test Files (Work Fine)
+
 ```bash
 # Works when run individually
 npx jest tests/integration/routes/alchemy.integration.test.ts --testTimeout=60000
@@ -28,6 +29,7 @@ npx jest tests/integration/services/planetary-hours.integration.test.ts --testTi
 ```
 
 ### Full Integration Suite (Times Out)
+
 ```bash
 # Times out during setup
 npx jest --config jest.config.integration.js --ci
@@ -152,17 +154,20 @@ git push origin main
 ## Additional Context
 
 **Recent Changes (Just Completed)**:
+
 - ✅ Fixed 5 integration test failures (validation & edge cases)
 - ✅ All targeted tests now passing individually
 - ✅ Commit: `7b04964d` - "Fix 5 integration test failures - validation & edge cases"
 
 **Cache Service Behavior**:
+
 - Redis connection retries with exponential backoff (2s, 4s, 8s, 16s, ...)
 - During tests, this causes 30+ second delays in `beforeAll()` hooks
 - Memory cache fallback works perfectly once Redis connection fails
 - Need to fail fast and fallback immediately for test environments
 
 **Current Test Status**:
+
 - alchemy.integration.test.ts: 14/15 passing (1 flaky cache timing test)
 - planetary-hours.integration.test.ts: 11/12 passing (1 flaky cache timing test)
 - cache.integration.test.ts: Unknown (times out during setup)
@@ -180,6 +185,7 @@ git push origin main
 **Recommended**: Start with Option 1 (Quick Connection Timeout) as it's the least invasive and most robust solution. If Redis is truly unavailable, it will fail within 3 seconds and fallback to memory cache.
 
 **Test First**: Before implementing, verify the hypothesis by setting NO_REDIS=true:
+
 ```bash
 NO_REDIS=true npx jest --config jest.config.integration.js --ci
 ```

@@ -24,7 +24,8 @@ async function testRAGGeneration() {
       agent: { name: 'Test User' },
       agentId: 'test-user',
       userMessage: 'What is the essence of Socratic wisdom?',
-      systemPrompt: 'You are a helpful assistant that provides insightful answers based on historical knowledge.',
+      systemPrompt:
+        'You are a helpful assistant that provides insightful answers based on historical knowledge.',
       ragConfig: {
         enabled: true,
         topK: 5,
@@ -42,7 +43,9 @@ async function testRAGGeneration() {
     if (result1.ragMetadata.sources && result1.ragMetadata.sources.length > 0) {
       console.log('   Top sources:')
       result1.ragMetadata.sources.slice(0, 3).forEach((source, i) => {
-        console.log(`   ${i + 1}. ${source.agentName} (${(source.relevance * 100).toFixed(1)}% relevant)`)
+        console.log(
+          `   ${i + 1}. ${source.agentName} (${(source.relevance * 100).toFixed(1)}% relevant)`
+        )
       })
     }
 
@@ -54,7 +57,8 @@ async function testRAGGeneration() {
       agent: { name: 'Test User' },
       agentId: 'marie-curie-1867',
       userMessage: 'How did Marie Curie approach scientific research?',
-      systemPrompt: 'You are a helpful assistant that provides insightful answers based on historical knowledge.',
+      systemPrompt:
+        'You are a helpful assistant that provides insightful answers based on historical knowledge.',
       ragConfig: {
         enabled: true,
         topK: 5,
@@ -72,7 +76,9 @@ async function testRAGGeneration() {
     if (result2.ragMetadata.sources && result2.ragMetadata.sources.length > 0) {
       console.log('   Top sources:')
       result2.ragMetadata.sources.slice(0, 3).forEach((source, i) => {
-        console.log(`   ${i + 1}. ${source.agentName} (${(source.relevance * 100).toFixed(1)}% relevant)`)
+        console.log(
+          `   ${i + 1}. ${source.agentName} (${(source.relevance * 100).toFixed(1)}% relevant)`
+        )
       })
     }
 
@@ -84,7 +90,8 @@ async function testRAGGeneration() {
       agent: { name: 'Test User' },
       agentId: 'leonardo-da-vinci',
       userMessage: 'What can we learn from Leonardo da Vinci about creativity?',
-      systemPrompt: 'You are a helpful assistant that provides insightful answers based on historical knowledge.',
+      systemPrompt:
+        'You are a helpful assistant that provides insightful answers based on historical knowledge.',
       ragConfig: {
         enabled: true,
         topK: 5,
@@ -102,7 +109,9 @@ async function testRAGGeneration() {
     if (result3.ragMetadata.sources && result3.ragMetadata.sources.length > 0) {
       console.log('   Top sources:')
       result3.ragMetadata.sources.slice(0, 3).forEach((source, i) => {
-        console.log(`   ${i + 1}. ${source.agentName} (${(source.relevance * 100).toFixed(1)}% relevant)`)
+        console.log(
+          `   ${i + 1}. ${source.agentName} (${(source.relevance * 100).toFixed(1)}% relevant)`
+        )
       })
     }
 
@@ -110,9 +119,15 @@ async function testRAGGeneration() {
     console.log('\n━'.repeat(60))
     console.log('✅ All RAG Generation Tests Passed!\n')
     console.log('Summary:')
-    console.log(`  Test 1: ${result1.ragMetadata.sources?.length || 0} sources, ${result1.text.length} chars`)
-    console.log(`  Test 2: ${result2.ragMetadata.sources?.length || 0} sources, ${result2.text.length} chars`)
-    console.log(`  Test 3: ${result3.ragMetadata.sources?.length || 0} sources, ${result3.text.length} chars`)
+    console.log(
+      `  Test 1: ${result1.ragMetadata.sources?.length || 0} sources, ${result1.text.length} chars`
+    )
+    console.log(
+      `  Test 2: ${result2.ragMetadata.sources?.length || 0} sources, ${result2.text.length} chars`
+    )
+    console.log(
+      `  Test 3: ${result3.ragMetadata.sources?.length || 0} sources, ${result3.text.length} chars`
+    )
     console.log('')
 
     return true

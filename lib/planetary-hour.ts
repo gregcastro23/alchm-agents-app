@@ -12,20 +12,14 @@ const SunCalc = {
     const jStar = n - lon / 360
     const M = (357.5291 + 0.98560028 * jStar) % 360
     const C =
-      1.9148 * Math.sin(toRad(M)) +
-      0.02 * Math.sin(toRad(2 * M)) +
-      0.0003 * Math.sin(toRad(3 * M))
+      1.9148 * Math.sin(toRad(M)) + 0.02 * Math.sin(toRad(2 * M)) + 0.0003 * Math.sin(toRad(3 * M))
     const lambda = (M + C + 180 + 102.9372) % 360
     const jTransit =
-      2451545.0 +
-      jStar +
-      0.0053 * Math.sin(toRad(M)) -
-      0.0069 * Math.sin(toRad(2 * lambda))
+      2451545.0 + jStar + 0.0053 * Math.sin(toRad(M)) - 0.0069 * Math.sin(toRad(2 * lambda))
     const sinD = Math.sin(toRad(lambda)) * Math.sin(toRad(23.4397))
     const cosD = Math.cos(Math.asin(sinD))
     const cosOmega =
-      (Math.sin(toRad(-0.833)) - Math.sin(toRad(lat)) * sinD) /
-      (Math.cos(toRad(lat)) * cosD)
+      (Math.sin(toRad(-0.833)) - Math.sin(toRad(lat)) * sinD) / (Math.cos(toRad(lat)) * cosD)
     if (Math.abs(cosOmega) > 1) return { sunrise: undefined, sunset: undefined }
     const omega = (Math.acos(cosOmega) * 180) / Math.PI
     const toDate = (j: number) => new Date((j - 2440587.5) * 86400000)

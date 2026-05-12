@@ -732,10 +732,10 @@ async function alchemizeFullImplementation(birthInfo: any, horoscopeDict: any): 
   // - Aspect effects
   // - Alchemy values (Spirit, Essence, Matter, Substance)
   // - Thermodynamic properties (Heat, Entropy, Reactivity, Energy)
-  
+
   try {
     const alchmInfo = alchemizeCore(birthInfo, horoscopeDict)
-    
+
     logger.info('Alchemical calculation complete', {
       spirit: alchmInfo['Alchemy Effects']['Total Spirit'],
       essence: alchmInfo['Alchemy Effects']['Total Essence'],
@@ -748,7 +748,7 @@ async function alchemizeFullImplementation(birthInfo: any, horoscopeDict: any): 
       reactivity: alchmInfo['Reactivity'],
       energy: alchmInfo['Energy'],
     })
-    
+
     return alchmInfo
   } catch (error) {
     logger.error('Alchemize error:', error)

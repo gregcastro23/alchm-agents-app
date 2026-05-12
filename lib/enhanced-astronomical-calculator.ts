@@ -7,7 +7,6 @@
  * Aims for ±0.1° precision vs ±2-5° of current system
  */
 
-
 export interface EnhancedPlanetPosition {
   planet: string
   longitude: number // 0-360 degrees absolute longitude
@@ -415,7 +414,7 @@ function calculateMoonPosition(T: number): EnhancedPlanetPosition {
   const F = normalizeDegrees(elements.F0 + elements.F1 * T)
 
   // Convert to radians
-    const DRad = (D * Math.PI) / 180
+  const DRad = (D * Math.PI) / 180
   const MRad = (M * Math.PI) / 180
   const MpRad = (Mp * Math.PI) / 180
   const FRad = (F * Math.PI) / 180
@@ -627,7 +626,6 @@ export function accuracyComparison(
   averageImprovement: number
   maxImprovement: number
 } {
-
   // This would compare against existing system positions
   // For now, return placeholder data showing expected improvements
 
@@ -736,11 +734,36 @@ export function calculateProfessionalHouses(
   }
 }
 
-
-function calculatePlacidusHouses(_birthInfo: EnhancedBirthInfo, _ascendant: EnhancedAscendant, _midheaven: any, _jd: number): EnhancedHousePosition[] { return []; }
-function calculateKochHouses(_birthInfo: EnhancedBirthInfo, _ascendant: EnhancedAscendant, _midheaven: any, _jd: number): EnhancedHousePosition[] { return []; }
-function calculateCampanusHouses(_birthInfo: EnhancedBirthInfo, _ascendant: EnhancedAscendant, _midheaven: any): EnhancedHousePosition[] { return []; }
-function calculateRegiomontanusHouses(_birthInfo: EnhancedBirthInfo, _ascendant: EnhancedAscendant, _midheaven: any): EnhancedHousePosition[] { return []; }
+function calculatePlacidusHouses(
+  _birthInfo: EnhancedBirthInfo,
+  _ascendant: EnhancedAscendant,
+  _midheaven: any,
+  _jd: number
+): EnhancedHousePosition[] {
+  return []
+}
+function calculateKochHouses(
+  _birthInfo: EnhancedBirthInfo,
+  _ascendant: EnhancedAscendant,
+  _midheaven: any,
+  _jd: number
+): EnhancedHousePosition[] {
+  return []
+}
+function calculateCampanusHouses(
+  _birthInfo: EnhancedBirthInfo,
+  _ascendant: EnhancedAscendant,
+  _midheaven: any
+): EnhancedHousePosition[] {
+  return []
+}
+function calculateRegiomontanusHouses(
+  _birthInfo: EnhancedBirthInfo,
+  _ascendant: EnhancedAscendant,
+  _midheaven: any
+): EnhancedHousePosition[] {
+  return []
+}
 
 /**
  * Equal House System - simplest, each house is exactly 30°

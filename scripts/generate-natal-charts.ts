@@ -12,12 +12,12 @@ const BIRTH_DATA: Record<string, { date: string; location?: string }> = {
   // Existing agents
   'carl-jung': { date: '1875-07-26', location: 'Switzerland' },
   'nikola-tesla': { date: '1856-07-10', location: 'Croatia' },
-  'cleopatra': { date: '-0069-01-01', location: 'Egypt' }, // Approximate
+  cleopatra: { date: '-0069-01-01', location: 'Egypt' }, // Approximate
   'frida-kahlo': { date: '1907-07-06', location: 'Mexico' },
   'leonardo-da-vinci': { date: '1452-04-15', location: 'Italy' },
   'marie-curie': { date: '1867-11-07', location: 'Poland' },
-  'socrates': { date: '-0470-01-01', location: 'Greece' }, // Approximate
-  'rumi': { date: '1207-09-30', location: 'Afghanistan' },
+  socrates: { date: '-0470-01-01', location: 'Greece' }, // Approximate
+  rumi: { date: '1207-09-30', location: 'Afghanistan' },
   'marcus-aurelius': { date: '0121-04-26', location: 'Rome' },
   'vincent-van-gogh': { date: '1853-03-30', location: 'Netherlands' },
   'wolfgang-mozart': { date: '1756-01-27', location: 'Austria' },
@@ -88,8 +88,20 @@ function generateNatalChart(birthDate: string) {
   // This is simplified - real moon moves faster
   const moonOffset = (day * 13) % 360
   const moonSignIndex = Math.floor(moonOffset / 30)
-  const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-                 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+  const signs = [
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
+  ]
   const moonSign = signs[moonSignIndex]
   const moonDegree = moonOffset % 30
 
@@ -125,11 +137,13 @@ for (const agent of DEMO_AGENTS) {
       chartsGenerated.push({
         id: agent.id,
         name: agent.name,
-        chart
+        chart,
       })
       console.log(`✅ Generated chart for ${agent.name} (${agent.id})`)
       console.log(`   Sun: ${chart.sun.sign} ${chart.sun.degree}° (House ${chart.sun.house})`)
-      console.log(`   Moon: ${chart.moon.sign} ${chart.moon.degree.toFixed(2)}° (House ${chart.moon.house})`)
+      console.log(
+        `   Moon: ${chart.moon.sign} ${chart.moon.degree.toFixed(2)}° (House ${chart.moon.house})`
+      )
       console.log(`   Ascendant: ${chart.ascendant.sign} ${chart.ascendant.degree.toFixed(2)}°`)
       console.log()
     } else {

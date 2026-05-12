@@ -1166,6 +1166,7 @@ model users {
   passwordHash   String?
   name           String?
   provider       String?          @default("email")
+  role           String           @default("user")
   verified       Boolean          @default(false)
   createdAt      DateTime         @default(now())
   lastLogin      DateTime?

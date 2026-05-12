@@ -4,7 +4,11 @@ import { AlchemicalKineticsClient } from './kinetics-client'
 import { getAgentKineticProfile, calculateKineticCompatibility } from './agents/kinetic-profiles'
 import { routeTask } from './agents/router'
 import { getCurrentPlanetaryPositions } from './calculate-transits'
-import { dynamicAspectsEngine, type DynamicAspectsAnalysis, type DynamicAspect } from './dynamic-aspects-engine'
+import {
+  dynamicAspectsEngine,
+  type DynamicAspectsAnalysis,
+  type DynamicAspect,
+} from './dynamic-aspects-engine'
 import type { PlanetPosition } from './astrological-pattern-recognition'
 import type { AspectType } from './astrological-pattern-recognition'
 
@@ -191,7 +195,7 @@ export class KineticsIntegration {
   private calculateOrbProximityWeight(orb: number, maxOrb: number): number {
     if (orb <= 0) return 1.0 // Exact aspect
     if (orb >= maxOrb) return 0.0 // Out of orb range
-    
+
     // Graduated scaling: closer to exact = higher weight
     // Uses inverse exponential for smooth falloff
     const normalizedOrb = orb / maxOrb
@@ -206,7 +210,7 @@ export class KineticsIntegration {
     if (orb <= 0) return 1.0 // Perfect exact
     if (orb <= 0.5) return 0.95 // Very tight
     if (orb <= 1.0) return 0.85 // Tight
-    if (orb <= 2.0) return 0.70 // Moderate-tight
+    if (orb <= 2.0) return 0.7 // Moderate-tight
     return 0.5 // Still considered "exact" but with reduced effect
   }
 
@@ -216,7 +220,7 @@ export class KineticsIntegration {
    */
   private calculateOrbVelocityIntensity(orbVelocity: number | undefined): number {
     if (!orbVelocity || !Number.isFinite(orbVelocity)) return 0.5 // Default moderate
-    
+
     const absVelocity = Math.abs(orbVelocity)
     // Normalize to 0-1 scale (0.5 deg/day = full intensity)
     return Math.min(1.0, absVelocity / 0.5)

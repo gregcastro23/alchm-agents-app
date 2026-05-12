@@ -5,6 +5,7 @@
 This guide will help you integrate the Render MCP server into Cursor, enabling you to manage your Render infrastructure directly from Cursor using natural language prompts.
 
 The Render MCP server is hosted at `https://mcp.render.com/mcp` and provides access to:
+
 - Service management (create, list, query services)
 - Database operations (PostgreSQL queries, management)
 - Metrics and monitoring (CPU, memory, response times)
@@ -52,12 +53,14 @@ This project includes a pre-configured MCP settings file at `.cursor/mcp_setting
 ```
 
 **To activate:**
+
 1. Set the `RENDER_API_KEY` environment variable in your shell or `.env.local`
 2. Restart Cursor completely
 
 **Option B: Use Global Cursor Configuration**
 
 The Cursor MCP configuration file is located at:
+
 ```
 ~/.cursor/mcp.json
 ```
@@ -110,6 +113,7 @@ Set my Render workspace to [YOUR_WORKSPACE_NAME]
 ```
 
 If you don't know your workspace name, you can ask:
+
 ```
 List all my Render workspaces
 ```
@@ -164,25 +168,30 @@ Show current environment variables for my API service
 The Render MCP server supports the following operations:
 
 ### ✅ Workspaces
+
 - List all workspaces
 - Set current workspace
 - Fetch workspace details
 
 ### ✅ Services
+
 - Create web services and static sites
 - List all services
 - Retrieve service details
 - Update environment variables
 
 ### ✅ Deploys
+
 - List deploy history
 - Get deploy details
 
 ### ✅ Logs
+
 - List logs with filters
 - List log label values
 
 ### ✅ Metrics
+
 - CPU/memory usage
 - Instance count
 - Database connections
@@ -191,12 +200,14 @@ The Render MCP server supports the following operations:
 - Outbound bandwidth
 
 ### ✅ PostgreSQL Databases
+
 - Create databases
 - List databases
 - Get database details
 - Run read-only SQL queries
 
 ### ✅ Key Value (Redis)
+
 - List Key Value instances
 - Get instance details
 - Create new instances
@@ -227,6 +238,7 @@ The Render MCP server supports the following operations:
 ### API Key Issues
 
 If you get authentication errors:
+
 1. Verify the API key is correct
 2. Check that the key hasn't been revoked in your Render dashboard
 3. Ensure there are no extra spaces or characters in the key
@@ -234,6 +246,7 @@ If you get authentication errors:
 ### Workspace Not Set
 
 If you get "workspace not set" errors:
+
 1. Always set your workspace first: `Set my Render workspace to [name]`
 2. You can list available workspaces: `List all my Render workspaces`
 
@@ -256,12 +269,15 @@ If you get "workspace not set" errors:
 This Planetary Agents project currently has services deployed on Render:
 
 ### Current Deployment
+
 - **Frontend**: Next.js application
 - **Database**: Neon PostgreSQL (connection string in `.env.local`)
 - **Potential Render Services**: Backend gateway, API services
 
 ### Environment Variables to Consider
+
 When creating or updating Render services for this project, ensure these variables are set:
+
 - `OPENAI_API_KEY`
 - `ANTHROPIC_API_KEY`
 - `DATABASE_URL` (Neon PostgreSQL)

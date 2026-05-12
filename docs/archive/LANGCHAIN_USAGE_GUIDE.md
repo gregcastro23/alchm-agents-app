@@ -24,6 +24,7 @@ Planetary Agents uses LangChain for advanced RAG capabilities, agent orchestrati
 ### ✅ Phase 1: Document Loaders (COMPLETE)
 
 **Implemented Features:**
+
 - [x] CheerioWebBaseLoader for web scraping
 - [x] PDFLoader for PDF ingestion
 - [x] API endpoint: `/api/knowledge-updater`
@@ -33,6 +34,7 @@ Planetary Agents uses LangChain for advanced RAG capabilities, agent orchestrati
 - [x] Unit tests with Vitest
 
 **Files Created:**
+
 - `lib/langchain/knowledge-updater.ts` - Web content ingestion
 - `lib/langchain/pdf-loader.ts` - PDF document ingestion
 - `app/api/knowledge-updater/route.ts` - HTTP API endpoint
@@ -55,29 +57,28 @@ Planetary Agents uses LangChain for advanced RAG capabilities, agent orchestrati
 Extract and ingest knowledge from web pages using CheerioWebBaseLoader.
 
 **Use Cases:**
+
 - Update agent knowledge from Stanford Encyclopedia of Philosophy
 - Ingest Wikipedia articles
 - Add philosophical texts and research papers
 - Enhance agent responses with current information
 
 **Implementation:**
+
 ```typescript
 import { updateAgentKnowledge } from '@/lib/langchain/knowledge-updater'
 
-const result = await updateAgentKnowledge(
-  'plato',
-  ['https://plato.stanford.edu/entries/plato/'],
-  {
-    chunkSize: 1000,
-    chunkOverlap: 200,
-    contentSelector: 'article, main, .content'
-  }
-)
+const result = await updateAgentKnowledge('plato', ['https://plato.stanford.edu/entries/plato/'], {
+  chunkSize: 1000,
+  chunkOverlap: 200,
+  contentSelector: 'article, main, .content',
+})
 
 console.log(`Added ${result.documentsAdded} documents from ${result.urls} URLs`)
 ```
 
 **Security Features:**
+
 - ✅ URL validation (only HTTP/HTTPS)
 - ✅ Blocks localhost and private IPs
 - ✅ Prevents directory traversal
@@ -88,33 +89,32 @@ console.log(`Added ${result.documentsAdded} documents from ${result.urls} URLs`)
 Extract text from PDF files for astrological charts and research papers.
 
 **Use Cases:**
+
 - Ingest natal chart interpretations
 - Add research papers on consciousness
 - Store astrological reference materials
 - Upload historical documents
 
 **Implementation:**
+
 ```typescript
 import { ingestAstrologicalPDF } from '@/lib/langchain/pdf-loader'
 
-const result = await ingestAstrologicalPDF(
-  '/path/to/chart.pdf',
-  'carl-jung',
-  {
-    chunkSize: 1000,
-    chunkOverlap: 200,
-    splitPages: true,
-    metadata: {
-      category: 'research',
-      tags: ['psychology', 'collective-unconscious']
-    }
-  }
-)
+const result = await ingestAstrologicalPDF('/path/to/chart.pdf', 'carl-jung', {
+  chunkSize: 1000,
+  chunkOverlap: 200,
+  splitPages: true,
+  metadata: {
+    category: 'research',
+    tags: ['psychology', 'collective-unconscious'],
+  },
+})
 
 console.log(`Processed ${result.pagesProcessed} pages`)
 ```
 
 **Security Features:**
+
 - ✅ File path validation
 - ✅ File extension check (.pdf only)
 - ✅ File size limit (50MB max)
@@ -129,6 +129,7 @@ HTTP endpoints for dynamic knowledge management.
 Ingest knowledge from web URLs or PDF files.
 
 **Request Body (Web):**
+
 ```json
 {
   "agentId": "plato",
@@ -143,6 +144,7 @@ Ingest knowledge from web URLs or PDF files.
 ```
 
 **Request Body (PDF):**
+
 ```json
 {
   "agentId": "carl-jung",
@@ -159,6 +161,7 @@ Ingest knowledge from web URLs or PDF files.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -177,11 +180,13 @@ Ingest knowledge from web URLs or PDF files.
 Query recent knowledge updates for an agent.
 
 **Request:**
+
 ```bash
 GET /api/knowledge-updater?agentId=plato&limit=10
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -211,6 +216,7 @@ curl -X POST http://localhost:3000/api/knowledge-updater \
 ```
 
 **Expected Output:**
+
 ```json
 {
   "success": true,
@@ -238,6 +244,7 @@ curl -X POST http://localhost:3000/api/knowledge-updater \
 ```
 
 **Expected Output:**
+
 ```json
 {
   "success": true,
@@ -322,12 +329,12 @@ const DEFAULT_COLLECTION_NAME = 'historical-agents'
 
 **Recommended Settings:**
 
-| Content Type | Chunk Size | Overlap | Rationale |
-|-------------|-----------|---------|-----------|
-| Philosophical texts | 1000 | 200 | Preserve argument flow |
-| Research papers | 800 | 150 | Dense technical content |
-| General articles | 1200 | 250 | Broader context needed |
-| Natal charts | 500 | 100 | Structured data |
+| Content Type        | Chunk Size | Overlap | Rationale               |
+| ------------------- | ---------- | ------- | ----------------------- |
+| Philosophical texts | 1000       | 200     | Preserve argument flow  |
+| Research papers     | 800        | 150     | Dense technical content |
+| General articles    | 1200       | 250     | Broader context needed  |
+| Natal charts        | 500        | 100     | Structured data         |
 
 ### Content Selectors
 
@@ -335,12 +342,12 @@ For web scraping, prioritize these HTML elements:
 
 ```typescript
 const CONTENT_SELECTORS = [
-  'article',      // Primary article content
-  'main',         // Main content area
-  '.content',     // Common content class
+  'article', // Primary article content
+  'main', // Main content area
+  '.content', // Common content class
   '.entry-content', // WordPress articles
-  '#content',     // Content by ID
-  'p',            // Fallback to paragraphs
+  '#content', // Content by ID
+  'p', // Fallback to paragraphs
 ]
 ```
 
@@ -353,11 +360,13 @@ const CONTENT_SELECTORS = [
 #### 1. ChromaDB Connection Failed
 
 **Error:**
+
 ```
 Failed to connect to ChromaDB after 3 attempts
 ```
 
 **Solution:**
+
 ```bash
 # Start ChromaDB
 docker run -d -p 8001:8000 chromadb/chroma
@@ -369,6 +378,7 @@ curl http://localhost:8001/api/v2/heartbeat
 #### 2. URL Blocked (Security)
 
 **Error:**
+
 ```
 Blocked private URL: http://localhost:3000
 ```
@@ -379,11 +389,13 @@ Only use public URLs. Private IPs and localhost are blocked for security.
 #### 3. PDF Parsing Failed
 
 **Error:**
+
 ```
 No text content could be extracted from PDF
 ```
 
 **Solutions:**
+
 - Ensure PDF is text-based (not scanned image)
 - Try OCR preprocessing if needed
 - Check file is not corrupted
@@ -391,6 +403,7 @@ No text content could be extracted from PDF
 #### 4. Rate Limiting
 
 **Error:**
+
 ```
 Rate limited, retrying in 2000ms...
 ```
@@ -401,12 +414,14 @@ The system automatically retries with exponential backoff. Wait for completion.
 #### 5. Invalid File Path
 
 **Error:**
+
 ```
 Directory traversal detected in file path
 ```
 
 **Solution:**
 Use absolute paths without `..` traversal:
+
 ```typescript
 // ✅ Good
 '/uploads/chart.pdf'
@@ -423,14 +438,14 @@ Use absolute paths without `..` traversal:
 
 Typical performance metrics:
 
-| Operation | Duration | Notes |
-|-----------|----------|-------|
-| Load web page | 500-2000ms | Depends on page size |
-| Load PDF (10 pages) | 1000-3000ms | Depends on file size |
-| Generate embeddings (100 chunks) | 2000-5000ms | OpenAI API call |
-| Ingest to ChromaDB (100 docs) | 500-1500ms | Batch processing |
-| **Total: Web ingestion** | **4-10s** | Full pipeline |
-| **Total: PDF ingestion** | **5-12s** | Full pipeline |
+| Operation                        | Duration    | Notes                |
+| -------------------------------- | ----------- | -------------------- |
+| Load web page                    | 500-2000ms  | Depends on page size |
+| Load PDF (10 pages)              | 1000-3000ms | Depends on file size |
+| Generate embeddings (100 chunks) | 2000-5000ms | OpenAI API call      |
+| Ingest to ChromaDB (100 docs)    | 500-1500ms  | Batch processing     |
+| **Total: Web ingestion**         | **4-10s**   | Full pipeline        |
+| **Total: PDF ingestion**         | **5-12s**   | Full pipeline        |
 
 ### Optimization Tips
 
@@ -492,12 +507,14 @@ curl -X GET "http://localhost:3000/api/knowledge-updater?agentId=plato&limit=5" 
 ### 1. URL Selection
 
 ✅ **Good URLs:**
+
 - Stanford Encyclopedia of Philosophy
 - Wikipedia articles (stable versions)
 - Academic journals (open access)
 - Official documentation sites
 
 ❌ **Avoid:**
+
 - Paywalled content
 - Dynamic/JavaScript-heavy pages
 - Sites with aggressive anti-scraping
@@ -544,17 +561,17 @@ curl -X GET "http://localhost:3000/api/knowledge-updater?agentId=plato&limit=5" 
 const retriever = new MultiQueryRetriever({
   vectorStore,
   llm: new ChatOpenAI(),
-  numQueries: 3
+  numQueries: 3,
 })
 
 // ContextualCompressionRetriever - Compress retrieved documents
 const compressor = new LLMChainExtractor({
-  llm: new ChatOpenAI()
+  llm: new ChatOpenAI(),
 })
 
 const compressionRetriever = new ContextualCompressionRetriever({
   baseCompressor: compressor,
-  baseRetriever: vectorStoreRetriever
+  baseRetriever: vectorStoreRetriever,
 })
 ```
 
@@ -580,7 +597,7 @@ import { BM25Retriever } from '@langchain/community/retrievers/bm25'
 const hybridRetriever = new HybridRetriever({
   vectorRetriever,
   bm25Retriever,
-  weights: { vector: 0.7, bm25: 0.3 }
+  weights: { vector: 0.7, bm25: 0.3 },
 })
 ```
 
@@ -660,7 +677,7 @@ yarn dev
 - **Knowledge Updater:** [lib/langchain/knowledge-updater.ts](./lib/langchain/knowledge-updater.ts)
 - **PDF Loader:** [lib/langchain/pdf-loader.ts](./lib/langchain/pdf-loader.ts)
 - **API Endpoint:** [app/api/knowledge-updater/route.ts](./app/api/knowledge-updater/route.ts)
-- **Unit Tests:** [__tests__/langchain/knowledge-updater.test.ts](./__tests__/langchain/knowledge-updater.test.ts)
+- **Unit Tests:** [**tests**/langchain/knowledge-updater.test.ts](./__tests__/langchain/knowledge-updater.test.ts)
 
 ### External Documentation
 
@@ -675,6 +692,7 @@ yarn dev
 ### Phase 1 - January 21, 2025
 
 **Added:**
+
 - ✅ CheerioWebBaseLoader for web scraping
 - ✅ PDFLoader for PDF document ingestion
 - ✅ `/api/knowledge-updater` HTTP endpoint (POST, GET)
@@ -686,12 +704,14 @@ yarn dev
 - ✅ Documentation (this file)
 
 **Security:**
+
 - ✅ URL validation (blocks localhost, private IPs)
 - ✅ File path sanitization (prevents directory traversal)
 - ✅ File type validation (.pdf only)
 - ✅ File size limits (50MB max)
 
 **Performance:**
+
 - ✅ Batch processing for embeddings
 - ✅ In-memory caching for embeddings
 - ✅ Retry logic with exponential backoff

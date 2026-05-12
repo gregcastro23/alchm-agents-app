@@ -34,9 +34,7 @@ async function testSemanticSearch() {
   })
   console.log(`Found ${agentResults.length} agents:`)
   agentResults.forEach((r, i) => {
-    console.log(
-      `  ${i + 1}. ${r.agent.name} (Relevance: ${r.relevanceScore.toFixed(3)})`,
-    )
+    console.log(`  ${i + 1}. ${r.agent.name} (Relevance: ${r.relevanceScore.toFixed(3)})`)
     console.log(`     Specialty: ${r.agent.abilities.specialty}`)
   })
 
@@ -45,7 +43,7 @@ async function testSemanticSearch() {
   const knowledge = await service.getRelevantKnowledge(
     'Tell me about consciousness and enlightenment',
     'leonardo-da-vinci',
-    { maxChunks: 3 },
+    { maxChunks: 3 }
   )
   console.log(`Retrieved ${knowledge.length} knowledge chunks:`)
   knowledge.forEach((chunk, i) => {

@@ -94,7 +94,9 @@ describe('Knowledge Updater', () => {
 
   describe('updateAgentKnowledge', () => {
     it('should successfully load and chunk documents from URLs', async () => {
-      const result = await updateAgentKnowledge('plato', ['https://plato.stanford.edu/entries/plato/'])
+      const result = await updateAgentKnowledge('plato', [
+        'https://plato.stanford.edu/entries/plato/',
+      ])
 
       expect(result.success).toBe(true)
       expect(result.agentId).toBe('plato')
@@ -118,11 +120,15 @@ describe('Knowledge Updater', () => {
     })
 
     it('should reject empty agent ID', async () => {
-      await expect(updateAgentKnowledge('', ['https://example.com'])).rejects.toThrow('Agent ID is required')
+      await expect(updateAgentKnowledge('', ['https://example.com'])).rejects.toThrow(
+        'Agent ID is required'
+      )
     })
 
     it('should reject empty URL array', async () => {
-      await expect(updateAgentKnowledge('plato', [])).rejects.toThrow('At least one URL is required')
+      await expect(updateAgentKnowledge('plato', [])).rejects.toThrow(
+        'At least one URL is required'
+      )
     })
 
     it('should block localhost URLs', async () => {
@@ -292,7 +298,9 @@ describe('Knowledge Updater', () => {
 
     it('should throw error if embeddings generation fails', async () => {
       const { generateEmbeddings } = await import('@/lib/llamaindex/embeddings-service')
-      ;(generateEmbeddings as any).mockRejectedValueOnce(new Error('Embeddings service unavailable'))
+      ;(generateEmbeddings as any).mockRejectedValueOnce(
+        new Error('Embeddings service unavailable')
+      )
 
       await expect(updateAgentKnowledge('plato', ['https://example.com'])).rejects.toThrow()
     })
@@ -316,7 +324,9 @@ describe('Knowledge Updater', () => {
         'The physical world is merely a shadow of this higher reality.',
       ])
 
-      const result = await updateAgentKnowledge('plato', ['https://plato.stanford.edu/entries/plato/'])
+      const result = await updateAgentKnowledge('plato', [
+        'https://plato.stanford.edu/entries/plato/',
+      ])
 
       expect(result.success).toBe(true)
       expect(result.agentId).toBe('plato')
@@ -326,7 +336,8 @@ describe('Knowledge Updater', () => {
     it('should handle Wikipedia URL', async () => {
       mockLoad.mockResolvedValueOnce([
         {
-          pageContent: 'Carl Jung was a Swiss psychiatrist and psychoanalyst who founded analytical psychology.',
+          pageContent:
+            'Carl Jung was a Swiss psychiatrist and psychoanalyst who founded analytical psychology.',
           metadata: { source: 'https://en.wikipedia.org/wiki/Carl_Jung' },
         },
       ])
@@ -335,7 +346,9 @@ describe('Knowledge Updater', () => {
         'Carl Jung was a Swiss psychiatrist and psychoanalyst who founded analytical psychology.',
       ])
 
-      const result = await updateAgentKnowledge('carl-jung', ['https://en.wikipedia.org/wiki/Carl_Jung'])
+      const result = await updateAgentKnowledge('carl-jung', [
+        'https://en.wikipedia.org/wiki/Carl_Jung',
+      ])
 
       expect(result.success).toBe(true)
       expect(result.agentId).toBe('carl-jung')

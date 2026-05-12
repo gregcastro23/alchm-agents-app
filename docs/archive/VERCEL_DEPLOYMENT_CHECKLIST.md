@@ -6,6 +6,7 @@
 ## ⚠️ Current Issue
 
 Production site (https://planetary-agents.vercel.app/) is showing:
+
 - ❌ 500 Internal Server Error on API endpoints
 - ❌ Chat not working ("error channeling consciousness")
 - ❌ Old version deployed (no Philosopher's Stone, no mobile menu)
@@ -13,6 +14,7 @@ Production site (https://planetary-agents.vercel.app/) is showing:
 ## 🔧 Root Cause
 
 Previous build **FAILED** due to autoprefixer issue:
+
 ```
 Error: Cannot find module 'autoprefixer'
 ```
@@ -21,7 +23,7 @@ Error: Cannot find module 'autoprefixer'
 
 1. **Removed autoprefixer** from postcss.config.mjs (Next.js handles it)
 2. **Added mobile navigation** with hamburger menu
-3. **Fixed viewport** configuration  
+3. **Fixed viewport** configuration
 4. **Fixed N/A synergy** scores
 5. **Fixed Isaac Asimov** name (removed year)
 
@@ -37,6 +39,7 @@ Error: Cannot find module 'autoprefixer'
 ### Step 2: Expected Build Output
 
 The build should:
+
 - ✅ Install dependencies (yarn install)
 - ✅ Generate Prisma Client
 - ✅ Push database schema
@@ -51,6 +54,7 @@ The build should:
 Go to: **Project Settings → Environment Variables**
 
 Required variables:
+
 ```bash
 ✅ ANTHROPIC_API_KEY=sk-ant-api03-...
 ✅ OPENAI_API_KEY=sk-...
@@ -58,6 +62,7 @@ Required variables:
 ```
 
 Optional but recommended:
+
 ```bash
 GALILEO_API_KEY=...
 GALILEO_PROJECT=...
@@ -79,6 +84,7 @@ OPENAI_API_KEY=sk-uK4InAHNJcUjL3pgiKtrIQsMeLUyroFs1K9lezjkk4T3BlbkFJob35hofh3OUm
 ```
 
 **Note**: These keys look unusual. Verify they're valid:
+
 - **Anthropic Console**: https://console.anthropic.com/settings/keys
 - **OpenAI Dashboard**: https://platform.openai.com/api-keys
 
@@ -89,26 +95,32 @@ If they're expired/invalid, generate new ones and update Vercel.
 Once build succeeds (should take 2-3 minutes):
 
 ### Test 1: Homepage
+
 ```
 https://planetary-agents.vercel.app/
 ```
+
 - ✅ Should see "Philosopher's Stone" in navigation
 - ✅ Mobile hamburger menu should appear
 - ✅ All styling should work
 - ✅ No 500 errors
 
 ### Test 2: Chat with Joan of Arc
+
 ```
 https://planetary-agents.vercel.app/gallery/chat/joan-of-arc
 ```
+
 - ✅ Should load agent page
 - ✅ Type a message
 - ✅ Should get response (not error)
 
 ### Test 3: API Health
+
 ```bash
 curl https://planetary-agents.vercel.app/api/galileo-config
 ```
+
 - ✅ Should return JSON (not 500 error)
 
 ## 🔍 If Build Still Fails
@@ -116,15 +128,19 @@ curl https://planetary-agents.vercel.app/api/galileo-config
 ### Check Build Logs for:
 
 1. **Missing Dependencies**
+
    ```
    Error: Cannot find module 'X'
    ```
+
    → Add to package.json dependencies
 
 2. **Database Connection**
+
    ```
    Error connecting to database
    ```
+
    → Verify DATABASE_URL in Vercel env vars
 
 3. **API Keys**
@@ -136,6 +152,7 @@ curl https://planetary-agents.vercel.app/api/galileo-config
 ### Quick Fix: Redeploy from Vercel
 
 If needed, you can manually trigger redeploy:
+
 1. Go to Vercel dashboard
 2. Find latest deployment
 3. Click "..." menu → "Redeploy"
@@ -151,6 +168,7 @@ If needed, you can manually trigger redeploy:
 ## ✅ Success Criteria
 
 When deployment succeeds, you should see:
+
 - ✅ Chat working with all agents
 - ✅ Mobile navigation functional
 - ✅ Philosopher's Stone in menu
@@ -160,6 +178,7 @@ When deployment succeeds, you should see:
 ## 📞 If Problems Persist
 
 Check these in order:
+
 1. Vercel build logs (any red errors?)
 2. Environment variables (all keys set?)
 3. API keys validity (expired?)
@@ -174,4 +193,3 @@ Check these in order:
 - **Anthropic Console**: https://console.anthropic.com/
 - **OpenAI Platform**: https://platform.openai.com/
 - **Neon Dashboard**: https://console.neon.tech/
-

@@ -1,4 +1,3 @@
-
 import { logger } from '../utils/logger.js'
 import CircuitBreaker from '../utils/circuit-breaker.js'
 import { cacheService } from './cache.js'
@@ -12,37 +11,37 @@ const ALCHM_BACKEND_URL = process.env.ALCHM_BACKEND_URL || 'https://alchm-backen
 
 const apiClient = {
   async get(endpoint: string) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 7000);
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 7000)
     try {
       const response = await fetch(`${ALCHM_BACKEND_URL}${endpoint}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      return { status: response.status };
+        signal: controller.signal,
+      })
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      return { status: response.status }
     } finally {
-      clearTimeout(timeout);
+      clearTimeout(timeout)
     }
   },
   async post(endpoint: string, data: any) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 7000);
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 7000)
     try {
       const response = await fetch(`${ALCHM_BACKEND_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-        signal: controller.signal
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const responseData = await response.json();
-      return { data: responseData };
+        signal: controller.signal,
+      })
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      const responseData = await response.json()
+      return { data: responseData }
     } finally {
-      clearTimeout(timeout);
+      clearTimeout(timeout)
     }
-  }
+  },
 }
 
 // Simple stable stringify to generate deterministic cache keys

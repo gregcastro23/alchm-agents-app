@@ -67,6 +67,7 @@ Select environments: ✅ Production ✅ Preview ✅ Development
 #### After Adding Variables
 
 ⚠️ **CRITICAL**: After adding/modifying environment variables, you MUST:
+
 - [ ] Trigger a new deployment (click "Redeploy" button)
 - [ ] Environment variables only take effect after redeployment
 
@@ -82,10 +83,12 @@ Select environments: ✅ Production ✅ Preview ✅ Development
 If using authentication with OAuth providers (Google, GitHub, etc.):
 
 #### Google Cloud Console
+
 - [ ] **Authorized JavaScript origins**: `https://planetary-agents.vercel.app`
 - [ ] **Authorized redirect URIs**: `https://planetary-agents.vercel.app/api/auth/callback/google`
 
 #### GitHub OAuth App
+
 - [ ] **Homepage URL**: `https://planetary-agents.vercel.app`
 - [ ] **Authorization callback URL**: `https://planetary-agents.vercel.app/api/auth/callback/github`
 
@@ -134,6 +137,7 @@ vercel logs https://planetary-agents.vercel.app --follow
 ```
 
 Look for:
+
 - [ ] No missing environment variable errors
 - [ ] No database connection errors
 - [ ] No 500/405 errors in function logs
@@ -155,12 +159,14 @@ Look for:
 **Symptom**: Deployment fails during build phase
 
 **Check**:
+
 1. Node version is 20.x in Vercel dashboard
 2. `yarn.lock` is committed (not `package-lock.json`)
 3. Build logs for specific error messages
 4. TypeScript errors locally: `yarn typecheck`
 
 **Solution**:
+
 ```bash
 # Fix locally first
 yarn build
@@ -174,12 +180,14 @@ yarn build
 **Symptom**: API routes return 500 Internal Server Error
 
 **Check**:
+
 1. Function Logs in Vercel dashboard
 2. All required environment variables are set
 3. Database connection is working
 4. No CORS issues
 
 **Solution**:
+
 ```bash
 # Check function logs for actual error
 # Vercel Dashboard → Deployments → Functions → View Logs
@@ -195,12 +203,14 @@ yarn build
 **Symptom**: `SyntaxError: Unexpected token '<', "<!DOCTYPE"... is not valid JSON`
 
 **Check**:
+
 1. `NEXTAUTH_SECRET` is set in environment variables
 2. NextAuth file is at: `app/api/auth/[...nextauth]/route.ts`
 3. File correctly exports: `export { handler as GET, handler as POST }`
 4. OAuth redirect URIs match deployment URL
 
 **Solution**:
+
 ```bash
 # Generate new secret
 openssl rand -base64 32
@@ -214,11 +224,13 @@ openssl rand -base64 32
 **Symptom**: API route returns 405 error
 
 **Check**:
+
 1. Route file exports the correct HTTP method (GET, POST, etc.)
 2. For App Router: Named exports like `export async function GET()`
 3. No `output: 'export'` in `next.config.js`
 
 **Solution**:
+
 - Verify route file structure matches App Router pattern
 - Check if route should support multiple methods
 
@@ -227,11 +239,13 @@ openssl rand -base64 32
 **Symptom**: API routes return HTML error pages
 
 **Check**:
+
 1. Deployment Protection is disabled
 2. No authentication middleware catching API routes
 3. Route file is correctly structured
 
 **Solution**:
+
 - Disable Deployment Protection
 - Verify API route structure
 - Check for middleware interfering with API routes
@@ -241,12 +255,14 @@ openssl rand -base64 32
 **Symptom**: `P1001: Can't reach database server`
 
 **Check**:
+
 1. DATABASE_URL is correct
 2. Database allows connections from Vercel IPs
 3. Connection string includes `?sslmode=require` for PostgreSQL
 4. Database service is running
 
 **Solution**:
+
 - Verify connection string format
 - Check database provider's firewall settings
 - Test connection from a different tool
@@ -256,11 +272,13 @@ openssl rand -base64 32
 **Symptom**: Errors mentioning undefined environment variables
 
 **Check**:
+
 1. All required variables from `.env.example` are in Vercel
 2. Variables are set for all environments (Production, Preview, Development)
 3. Deployment was triggered AFTER adding variables
 
 **Solution**:
+
 - Add missing variables in Vercel dashboard
 - **MUST** redeploy after adding variables
 - Use `.env.example` as reference

@@ -138,6 +138,6 @@ export async function generateIngredientImage(
     provider: 'nanobanana',
     prompt,
     storage_path,
-    fallback: false
+    fallback: false,
   }
 }

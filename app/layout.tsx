@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import './navigation.css'
 import { Providers } from './providers'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 
@@ -33,9 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} flex flex-col min-h-screen`}>
         <Providers>
           <Navigation />
-          <main className="flex-1">
-            {children}
-          </main>
+          <main className="flex-1">{children}</main>
           <TokenHUD />
         </Providers>
         <SpeedInsights />

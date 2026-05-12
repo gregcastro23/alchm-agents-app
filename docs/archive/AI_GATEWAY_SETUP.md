@@ -11,13 +11,14 @@ The Planetary Agents platform now supports AI Gateway routing for cost optimizat
 ✅ **Centralized monitoring and analytics**  
 ✅ **Easy cost tracking** per user/session  
 ✅ **Automatic retries and fallbacks**  
-✅ **Multi-provider load balancing**  
+✅ **Multi-provider load balancing**
 
 ## Supported Gateway Providers
 
 ### 1. Cloudflare AI Gateway (Recommended)
 
 **Setup:**
+
 ```bash
 AI_GATEWAY_ENABLED=true
 AI_GATEWAY_URL=https://gateway.ai.cloudflare.com/v1
@@ -25,6 +26,7 @@ AI_GATEWAY_API_KEY=your_cloudflare_key
 ```
 
 **Features:**
+
 - Automatic caching and cost optimization
 - Built-in rate limiting
 - Request analytics dashboard
@@ -35,6 +37,7 @@ AI_GATEWAY_API_KEY=your_cloudflare_key
 ### 2. Portkey
 
 **Setup:**
+
 ```bash
 AI_GATEWAY_ENABLED=true
 AI_GATEWAY_URL=https://api.portkey.ai/v1
@@ -42,6 +45,7 @@ AI_GATEWAY_API_KEY=your_portkey_key
 ```
 
 **Features:**
+
 - Observability and monitoring
 - Load balancing across providers
 - Fallback configurations
@@ -52,6 +56,7 @@ AI_GATEWAY_API_KEY=your_portkey_key
 ### 3. Helicone
 
 **Setup:**
+
 ```bash
 AI_GATEWAY_ENABLED=true
 AI_GATEWAY_URL=https://oai.helicone.ai/v1
@@ -59,6 +64,7 @@ AI_GATEWAY_API_KEY=your_helicone_key
 ```
 
 **Features:**
+
 - Request observability
 - Cost tracking and analytics
 - Rate limiting
@@ -69,6 +75,7 @@ AI_GATEWAY_API_KEY=your_helicone_key
 ### 4. Custom Gateway
 
 **Setup:**
+
 ```bash
 AI_GATEWAY_ENABLED=true
 AI_GATEWAY_URL=https://your-gateway.example.com/v1
@@ -136,6 +143,7 @@ AI Gateway is **disabled by default** (`AI_GATEWAY_ENABLED=false`). You can:
 ### Models Supported
 
 All current models are supported:
+
 - ✅ GPT-4, GPT-4 Turbo, GPT-4o
 - ✅ Claude 3.5 Sonnet, Claude 3.5 Haiku
 - ✅ LangChain agents
@@ -201,6 +209,7 @@ Look for: `[AI Gateway] Routing through gateway: true`
 ### Cost Tracking
 
 Track costs per:
+
 - User/session
 - API endpoint
 - Model used
@@ -215,6 +224,7 @@ Track costs per:
 ### Dashboard Access
 
 Access your gateway dashboard:
+
 - **Cloudflare:** https://dash.cloudflare.com/
 - **Portkey:** https://app.portkey.ai/
 - **Helicone:** https://helicone.ai/
@@ -228,6 +238,7 @@ Access your gateway dashboard:
 ### Issue: Requests not going through gateway
 
 **Check:**
+
 1. `AI_GATEWAY_ENABLED=true` is set
 2. `AI_GATEWAY_URL` is correct (ends with `/v1`)
 3. `AI_GATEWAY_API_KEY` is valid
@@ -240,6 +251,7 @@ Access your gateway dashboard:
 ### Issue: Cache not working
 
 **Check:**
+
 1. Gateway provider supports caching for your model
 2. Request parameters are consistent (same prompt = cache hit)
 3. Cache settings in gateway dashboard
@@ -249,10 +261,12 @@ Access your gateway dashboard:
 ### Example Savings
 
 **Before (Direct API):**
+
 - 1,000 requests/day × 2,000 tokens avg = 2M tokens
 - Cost: $20/day = $600/month
 
 **After (With AI Gateway, 50% cache hit):**
+
 - 500 requests hit cache (FREE)
 - 500 requests to API = 1M tokens
 - Cost: $10/day = $300/month
@@ -261,6 +275,7 @@ Access your gateway dashboard:
 ### ROI Calculation
 
 For a platform with:
+
 - **10,000 requests/day**
 - **Average: 3,000 tokens/request**
 - **50% cacheable requests**
@@ -276,19 +291,21 @@ You can disable gateway for specific endpoints:
 
 ```typescript
 // In your API route
-const useGateway = process.env.AI_GATEWAY_ENABLED === 'true' && 
-                   endpoint !== '/api/sensitive-endpoint'
+const useGateway =
+  process.env.AI_GATEWAY_ENABLED === 'true' && endpoint !== '/api/sensitive-endpoint'
 ```
 
 ### Custom Cache TTL
 
 Configure in your gateway dashboard:
+
 - **Short-lived cache:** 1 hour (for dynamic content)
 - **Long-lived cache:** 24 hours (for static content)
 
 ### Fallback Strategy
 
 If gateway fails, the system automatically:
+
 1. Retries the gateway (up to 3 times)
 2. Falls back to direct API calls
 3. Logs the issue for monitoring

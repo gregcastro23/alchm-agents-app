@@ -105,7 +105,10 @@ export interface AlchemicalKinetics {
 /**
  * Get planetary velocity modifier based on current planetary hour and element
  */
-function getPlanetaryVelocityModifier(planetaryHour: string, element: keyof ElementalValues): number {
+function getPlanetaryVelocityModifier(
+  planetaryHour: string,
+  element: keyof ElementalValues
+): number {
   let modifier = 1.0
 
   // Mercury hours: +10% global velocity boost
@@ -434,11 +437,7 @@ export async function calculateAlchemicalKinetics(
     )
 
     // Calculate momentum
-    const momentum = calculateElementalMomentum(
-      current.elementals,
-      velocity,
-      planetaryHour
-    )
+    const momentum = calculateElementalMomentum(current.elementals, velocity, planetaryHour)
 
     // Calculate previous momentum if we have previous state
     let previousMomentum: ElementalMomentum | null = null
@@ -457,19 +456,10 @@ export async function calculateAlchemicalKinetics(
     }
 
     // Calculate force
-    const force = calculateElementalForce(
-      momentum,
-      previousMomentum,
-      timeInterval,
-      planetaryHour
-    )
+    const force = calculateElementalForce(momentum, previousMomentum, timeInterval, planetaryHour)
 
     // Calculate flow state
-    const flowState = calculateFlowState(
-      current.elementals,
-      prevState.elementals,
-      timeInterval
-    )
+    const flowState = calculateFlowState(current.elementals, prevState.elementals, timeInterval)
 
     // Calculate resonance
     const resonance = calculateResonanceField(velocity, momentum)
@@ -517,7 +507,7 @@ export async function calculateKineticsTimeline(
       const hour = currentDate.getHours()
       const dayOfYear = Math.floor(
         (currentDate.getTime() - new Date(currentDate.getFullYear(), 0, 0).getTime()) /
-        (1000 * 60 * 60 * 24)
+          (1000 * 60 * 60 * 24)
       )
 
       const seasonalModifier = 0.1 * Math.sin((dayOfYear * 2 * Math.PI) / 365)

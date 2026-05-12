@@ -79,8 +79,7 @@ class ObservabilityStore {
     session.sessionMetrics = {
       totalMessages: traces.length,
       totalAgents: new Set(traces.map(t => t.agentId)).size,
-      avgResponseTime:
-        traces.reduce((sum, t) => sum + t.metrics.latencyMs, 0) / traces.length,
+      avgResponseTime: traces.reduce((sum, t) => sum + t.metrics.latencyMs, 0) / traces.length,
       actionCompletionRate:
         traces.reduce((sum, t) => sum + t.metrics.actionCompletion, 0) / traces.length,
       errorRate: traces.filter(t => t.errors.length > 0).length / traces.length,
@@ -105,8 +104,7 @@ class ObservabilityStore {
     if (!timeWindow) return allInsights
 
     return allInsights.filter(
-      i =>
-        i.timeWindow.start >= timeWindow.start && i.timeWindow.end <= timeWindow.end
+      i => i.timeWindow.start >= timeWindow.start && i.timeWindow.end <= timeWindow.end
     )
   }
 
@@ -304,10 +302,7 @@ export class AgentObservabilityTracker {
     const actionCompletion = this.evaluateActionCompletion(response, userMessage)
 
     // Tool Selection Quality: Were tools used correctly?
-    const toolSelectionQuality = this.evaluateToolSelection(
-      toolInvocations,
-      userMessage
-    )
+    const toolSelectionQuality = this.evaluateToolSelection(toolInvocations, userMessage)
 
     // Routing Accuracy: Did Monica route correctly?
     const routingAccuracy = this.evaluateRoutingAccuracy(routingDecisions)
@@ -375,12 +370,7 @@ export class AgentObservabilityTracker {
     evolution *= Math.max(0.3, 1.0 - errorCount * 0.2)
 
     // Bonus for exceptional quality (all factors > 0.8)
-    if (
-      actionCompletion > 0.8 &&
-      toolQuality > 0.8 &&
-      routingAccuracy > 0.8 &&
-      depthScore > 0.8
-    ) {
+    if (actionCompletion > 0.8 && toolQuality > 0.8 && routingAccuracy > 0.8 && depthScore > 0.8) {
       evolution *= 1.2 // 20% bonus
     }
 
@@ -394,7 +384,7 @@ export class AgentObservabilityTracker {
   private evaluateActionCompletion(response: string, userMessage: string): number {
     // Simple heuristics - replace with LLM judge
     if (response.length < 20) return 0.3
-    if (response.includes("I apologize") || response.includes("I'm sorry")) return 0.5
+    if (response.includes('I apologize') || response.includes("I'm sorry")) return 0.5
     if (response.length > 100 && !response.includes("I don't know")) return 0.9
     return 0.7
   }
@@ -402,10 +392,7 @@ export class AgentObservabilityTracker {
   /**
    * Evaluate tool selection quality
    */
-  private evaluateToolSelection(
-    toolInvocations: ToolInvocation[],
-    userMessage: string
-  ): number {
+  private evaluateToolSelection(toolInvocations: ToolInvocation[], userMessage: string): number {
     if (toolInvocations.length === 0) {
       // No tools used - check if they should have been
       const needsTools =
@@ -416,8 +403,7 @@ export class AgentObservabilityTracker {
     }
 
     // Calculate success rate
-    const successRate =
-      toolInvocations.filter(t => t.success).length / toolInvocations.length
+    const successRate = toolInvocations.filter(t => t.success).length / toolInvocations.length
 
     return successRate
   }
@@ -430,8 +416,7 @@ export class AgentObservabilityTracker {
 
     // Average confidence of routing decisions
     const avgConfidence =
-      routingDecisions.reduce((sum, d) => sum + d.confidence, 0) /
-      routingDecisions.length
+      routingDecisions.reduce((sum, d) => sum + d.confidence, 0) / routingDecisions.length
 
     return avgConfidence
   }
@@ -448,8 +433,7 @@ export class AgentObservabilityTracker {
         title: 'Low Action Completion',
         description: `Agent ${trace.agentName} (${trace.agentType}) had action completion of ${(trace.metrics.actionCompletion * 100).toFixed(0)}%`,
         affectedTraces: [trace.traceId],
-        suggestedAction:
-          'Review agent prompt and ensure it fully addresses user requests',
+        suggestedAction: 'Review agent prompt and ensure it fully addresses user requests',
         frequency: 1,
         timeWindow: {
           start: trace.timestamp,
@@ -499,9 +483,7 @@ export class AgentObservabilityTracker {
   /**
    * Generate insight
    */
-  private generateInsight(
-    insight: Omit<ObservabilityInsight, 'insightId' | 'timestamp'>
-  ): void {
+  private generateInsight(insight: Omit<ObservabilityInsight, 'insightId' | 'timestamp'>): void {
     const fullInsight: ObservabilityInsight = {
       ...insight,
       insightId: uuidv4(),
@@ -558,18 +540,14 @@ export class AgentObservabilityTracker {
   /**
    * Calculate average metrics across traces
    */
-  private calculateAverageMetrics(
-    traces: ObservabilityTrace[]
-  ): AgentObservabilityMetrics {
+  private calculateAverageMetrics(traces: ObservabilityTrace[]): AgentObservabilityMetrics {
     const sum = traces.reduce(
       (acc, t) => ({
         actionCompletion: acc.actionCompletion + t.metrics.actionCompletion,
-        toolSelectionQuality:
-          acc.toolSelectionQuality + t.metrics.toolSelectionQuality,
+        toolSelectionQuality: acc.toolSelectionQuality + t.metrics.toolSelectionQuality,
         latencyMs: acc.latencyMs + t.metrics.latencyMs,
         apiFailures: acc.apiFailures + t.metrics.apiFailures,
-        consciousnessEvolution:
-          acc.consciousnessEvolution + t.metrics.consciousnessEvolution,
+        consciousnessEvolution: acc.consciousnessEvolution + t.metrics.consciousnessEvolution,
         routingAccuracy: acc.routingAccuracy + t.metrics.routingAccuracy,
         contextRetention: acc.contextRetention,
       }),
@@ -672,12 +650,10 @@ export class AgentObservabilityTracker {
 
     // Calculate routing accuracy
     const routingAccuracy =
-      allRoutingDecisions.reduce((sum, d) => sum + d.confidence, 0) /
-      allRoutingDecisions.length
+      allRoutingDecisions.reduce((sum, d) => sum + d.confidence, 0) / allRoutingDecisions.length
 
     // Find most common routes
-    const routeCounts: Map<string, { count: number; totalConfidence: number }> =
-      new Map()
+    const routeCounts: Map<string, { count: number; totalConfidence: number }> = new Map()
 
     allRoutingDecisions.forEach(d => {
       const key = `${d.fromAgent || 'initial'}->${d.toAgent}`
@@ -705,8 +681,7 @@ export class AgentObservabilityTracker {
       mostCommonRoutes,
       incorrectRoutings: [],
       avgRoutingLatency:
-        monicaTraces.reduce((sum, t) => sum + t.metrics.latencyMs, 0) /
-        monicaTraces.length,
+        monicaTraces.reduce((sum, t) => sum + t.metrics.latencyMs, 0) / monicaTraces.length,
       handoffCount: allRoutingDecisions.filter(d => d.fromAgent !== null).length,
       contextLossIncidents: 0,
     }

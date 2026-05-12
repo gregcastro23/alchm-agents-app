@@ -51,4 +51,3 @@ volumes:
     name: planetary_postgres_local
   redis_local_data:
     name: planetary_redis_local
-

@@ -5,7 +5,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const limit = parseInt(searchParams.get('limit') || '5', 10)
-    
+
     const data = await backend.moment.recommendations(limit)
     return NextResponse.json(data)
   } catch (error) {
@@ -18,11 +18,11 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const { agentIds, alchmData, currentPlanets } = body
-    
+
     if (!agentIds || !Array.isArray(agentIds)) {
       return NextResponse.json({ error: 'agentIds array is required' }, { status: 400 })
     }
-    
+
     const data = await backend.moment.detailed(agentIds, alchmData || {}, currentPlanets || {})
     return NextResponse.json(data)
   } catch (error) {

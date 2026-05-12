@@ -1,28 +1,35 @@
 # Deployment Failure Analysis
 
 ## Issue
+
 GitLab CI/CD pipeline's `deploy_to_vercel` job failed.
 
 ## Possible Causes
 
 ### 1. Deploy Hook URL Exposure Issue
+
 The deploy hook URL is hardcoded in `.gitlab-ci.yml` which is committed to the repository. While this is technically okay (deploy hooks are meant to be used this way), Vercel might have rate limits or other restrictions.
 
 ### 2. Curl Command Format
+
 The curl command in the CI/CD script might have formatting issues when running in the GitLab runner environment.
 
 ### 3. Network/Connectivity Issue
+
 GitLab runner might have had a temporary network issue reaching Vercel's API.
 
 ### 4. Vercel API Rate Limiting
+
 Multiple manual triggers plus the CI/CD trigger might have hit rate limits.
 
 ## Solutions to Try
 
 ### Solution 1: Use GitLab CI/CD Variables (Recommended)
+
 Store the deploy hook URL as a protected CI/CD variable instead of hardcoding it.
 
 **Steps:**
+
 1. Go to: https://gitlab.com/xalchm/my_alchm/-/settings/ci_cd
 2. Expand "Variables" section
 3. Add new variable:
@@ -33,6 +40,7 @@ Store the deploy hook URL as a protected CI/CD variable instead of hardcoding it
    - **Mask variable**: ☑ (optional - hides in logs)
 
 Then update `.gitlab-ci.yml`:
+
 ```yaml
 deploy_to_vercel:
   script:
@@ -40,9 +48,11 @@ deploy_to_vercel:
 ```
 
 ### Solution 2: Simplify Curl Command
+
 The current script has complex response parsing that might fail in CI environment.
 
 **Simplified version:**
+
 ```yaml
 deploy_to_vercel:
   stage: deploy
@@ -58,7 +68,9 @@ deploy_to_vercel:
 ```
 
 ### Solution 3: Check GitLab Runner Logs
+
 The pipeline logs will show the exact error. Need to check:
+
 - What HTTP status code was returned
 - Any error messages from curl
 - Network connectivity issues
@@ -66,12 +78,14 @@ The pipeline logs will show the exact error. Need to check:
 ## Immediate Action Required
 
 **Check the failed job logs:**
+
 1. Go to: https://gitlab.com/xalchm/my_alchm/-/pipelines
 2. Click on the failed pipeline (red X)
 3. Click on the `deploy_to_vercel` job
 4. Read the error output
 
 **Common error patterns to look for:**
+
 - `curl: (6) Could not resolve host` = DNS issue
 - `curl: (7) Failed to connect` = Network issue
 - `HTTP 401` = Authentication issue (shouldn't happen with deploy hooks)
@@ -84,11 +98,13 @@ The pipeline logs will show the exact error. Need to check:
 While debugging, you can manually trigger deployments:
 
 **Option 1: Manual curl from local**
+
 ```bash
 curl -X POST 'https://api.vercel.com/v1/integrations/deploy/prj_47jKTcJvhdXzrf3YSTbbYu9SVRTf/jfRfGiZlr5'
 ```
 
 **Option 2: Redeploy from Vercel Dashboard**
+
 1. Go to Vercel deployments
 2. Find commit `7b46f830`
 3. Click "Redeploy"

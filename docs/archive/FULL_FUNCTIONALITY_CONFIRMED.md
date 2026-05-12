@@ -35,6 +35,7 @@ fetchImaginize()
 **Status**: ✅ Render backend is PRIMARY, fallback only on failure
 
 **Config**:
+
 ```typescript
 // lib/astrologize.ts:24
 const DEFAULT_BASE = 'https://alchm-backend.onrender.com'
@@ -68,6 +69,7 @@ function getBase() {
 ```
 
 **Why We Removed External API Call**:
+
 - The external API (`alchm-backend.onrender.com/alchemize`) does NOT provide planetary positions
 - It returns alchemy data (spirit/essence/matter/substance), not astronomical positions
 - We were calling the wrong service for planetary positions
@@ -100,6 +102,7 @@ function getBase() {
 **Two Endpoints, Two Approaches**:
 
 #### A. Quick Real-Time (consciousness/live)
+
 ```typescript
 // Uses: generateAlchmForCurrentMoment() - LOCAL
 // Why: Speed is critical for real-time updates
@@ -108,6 +111,7 @@ function getBase() {
 ```
 
 #### B. Full-Featured (when calling alchmize)
+
 ```typescript
 // Uses: fetchAlchmize() - RENDER BACKEND
 // Why: Need full alchemy with charts and analysis
@@ -323,14 +327,14 @@ methods.push({
 
 ### Primary Services (What We Use First)
 
-| Operation | Primary Service | Why |
-|-----------|----------------|-----|
-| Alchemy calculations | Render backend | Domain expertise, complex rules |
-| Chart wheel generation | Render backend | Professional visualizations |
-| AI image generation | Render backend | Diffusion models, GPU required |
-| Planetary positions | Local calculator | Pure mathematics, ephemeris |
-| Kinetic calculations | Local calculator | Pure mathematics, calculus |
-| Real-time metrics | Local calculator | Speed critical |
+| Operation              | Primary Service  | Why                             |
+| ---------------------- | ---------------- | ------------------------------- |
+| Alchemy calculations   | Render backend   | Domain expertise, complex rules |
+| Chart wheel generation | Render backend   | Professional visualizations     |
+| AI image generation    | Render backend   | Diffusion models, GPU required  |
+| Planetary positions    | Local calculator | Pure mathematics, ephemeris     |
+| Kinetic calculations   | Local calculator | Pure mathematics, calculus      |
+| Real-time metrics      | Local calculator | Speed critical                  |
 
 ### The Key Insight
 
@@ -392,6 +396,7 @@ NEXT_PUBLIC_BACKEND_URL=...
 **Your concern**: "Make sure we only use fallback when absolutely necessary. Our full functionality should be intact!"
 
 **The truth**:
+
 1. ✅ Render backend IS used as PRIMARY for alchemy operations
 2. ✅ Local calculations ARE CORRECT as primary for mathematical operations
 3. ✅ Fallbacks ONLY trigger when primary services fail
@@ -400,6 +405,7 @@ NEXT_PUBLIC_BACKEND_URL=...
 6. ✅ Platform is more reliable AND faster than before
 
 **What we improved**:
+
 - Removed invalid external API call (was calling wrong service)
 - Platform now uses correct primary service for each operation type
 - 20x faster response times

@@ -11,29 +11,32 @@ We've implemented comprehensive observability for the Planetary Agents multi-age
 Defined comprehensive types for tracking agent performance:
 
 #### Core Quality Metrics
+
 - **Action Completion** (0-1): Did the agent fully address the user's request?
 - **Tool Selection Quality** (0-1): Did the agent choose the right tools with correct parameters?
 - **Routing Accuracy** (0-1): Did Monica route to the appropriate agents?
 - **Context Retention** (boolean): Did the agent remember conversation context?
 
 #### System Performance Metrics
+
 - **Latency** (ms): Total response time
 - **API Failures** (count): Failed API calls
 - **Consciousness Evolution**: Did the interaction advance consciousness?
 
 #### Custom Metrics for Planetary Agents
+
 - **Celestial Insight Quality**: Accuracy of astrological insights
 - **Consciousness Coherence Score**: How well agent maintained consciousness level
 - **Synergy Activation**: Successful multi-agent synergies activated
 
 #### Performance Thresholds (Based on Galileo Standards)
 
-| Metric | Excellent | Good | Needs Improvement |
-|--------|-----------|------|-------------------|
-| Action Completion | > 95% | 85-95% | < 80% |
-| Tool Selection Quality | > 90% | 85-90% | < 85% |
-| Avg Response Time | < 2s | 2-4s | > 4s |
-| Routing Accuracy | > 95% | 90-95% | < 90% |
+| Metric                 | Excellent | Good   | Needs Improvement |
+| ---------------------- | --------- | ------ | ----------------- |
+| Action Completion      | > 95%     | 85-95% | < 80%             |
+| Tool Selection Quality | > 90%     | 85-90% | < 85%             |
+| Avg Response Time      | < 2s      | 2-4s   | > 4s              |
+| Routing Accuracy       | > 95%     | 90-95% | < 90%             |
 
 ### 2. **Observability Tracker** ([lib/observability/tracker.ts](lib/observability/tracker.ts))
 
@@ -68,6 +71,7 @@ Core tracking system that captures:
 Monica now acts as a **supervisor agent** with intelligent routing:
 
 #### Intent-Based Routing
+
 - Analyzes user messages to detect intent
 - Routes to specialized agents based on:
   - **Astrological**: Planetary agents
@@ -79,17 +83,19 @@ Monica now acts as a **supervisor agent** with intelligent routing:
   - **Synthesis**: All agents (when user explicitly requests)
 
 #### Routing Decision Tracking
+
 - Confidence scores (0-1)
 - Reason for routing
 - Strategy (single/multi/all)
 - Post-routing evaluation
 
 #### Example Routing Logic:
+
 ```typescript
 // User asks about birth chart
 monicaRouter.route({
-  message: "What does my Sun in Leo mean?",
-  availableAgents: [leo, aries, albert, nikola, monica]
+  message: 'What does my Sun in Leo mean?',
+  availableAgents: [leo, aries, albert, nikola, monica],
 })
 // → Routes to Leo (planetary) + high-consciousness historical agents
 // → Confidence: 0.9
@@ -113,30 +119,35 @@ RESTful API for accessing observability data:
 #### Endpoints
 
 **GET /api/observability?action=overview&timeWindowHours=24**
+
 - System-wide metrics
 - Average quality scores
 - Recent insights
 - Active alerts
 
 **GET /api/observability?action=session&sessionId={id}**
+
 - All traces in session
 - Monica routing analysis
 - Session-specific insights
 - Performance summary
 
 **GET /api/observability?action=insights&timeWindowHours=168**
+
 - All insights for time window
 - Grouped by severity and type
 - Top 10 recurring issues
 - Suggested actions
 
 **GET /api/observability?action=benchmark&agentId={id}&timeWindowHours=168**
+
 - Agent-specific performance
 - Threshold comparisons
 - Rating (excellent/good/needs_improvement)
 - Actionable recommendations
 
 **GET /api/observability?action=monica-routing&sessionId={id}**
+
 - Routing accuracy analysis
 - Common routing patterns
 - Incorrect routings with reasons
@@ -145,11 +156,13 @@ RESTful API for accessing observability data:
 ## How It Works
 
 ### 1. User Sends Message
+
 ```
 User: "What does Mercury in Gemini mean for communication?"
 ```
 
 ### 2. Monica Analyzes Intent
+
 ```typescript
 monicaRouter.route(context)
 // Detects: "astrological" intent
@@ -158,6 +171,7 @@ monicaRouter.route(context)
 ```
 
 ### 3. Observability Tracks Everything
+
 ```typescript
 // For each agent:
 const traceId = observabilityTracker.startTrace(sessionId, agentId, ...)
@@ -170,14 +184,16 @@ observabilityTracker.completeTrace(traceId, response, metrics, ...)
 ```
 
 ### 4. Automatic Insight Generation
+
 ```typescript
 // If actionCompletion < 0.8:
-Insight: "Low Action Completion"
-Description: "Agent Mercury had 75% completion"
-Suggestion: "Review prompt to ensure full responses"
+Insight: 'Low Action Completion'
+Description: 'Agent Mercury had 75% completion'
+Suggestion: 'Review prompt to ensure full responses'
 ```
 
 ### 5. Dashboard Access
+
 ```bash
 # View session performance
 curl "/api/observability?action=session&sessionId=abc123"
@@ -202,19 +218,24 @@ curl "/api/observability?action=session&sessionId=abc123"
 ## Integration with Existing System
 
 ### Monica as Supervisor
+
 Monica now functions like the `create_supervisor` pattern from LangGraph:
+
 - Analyzes user queries
 - Routes to specialized agents
 - Tracks routing decisions
 - Synthesizes responses
 
 ### Your Agents = Specialized Agents
+
 - **Historical Agents**: Like "Billing Agent" - handle specific domains
 - **Planetary Agents**: Like "Technical Support Agent" - specialized knowledge
 - **Monica**: Like "Supervisor Agent" - coordinates and synthesizes
 
 ### Observability Throughout
+
 Every agent interaction is tracked:
+
 1. **Request arrives** → Start trace
 2. **Monica routes** → Record decision
 3. **Agents respond** → Evaluate metrics
@@ -224,6 +245,7 @@ Every agent interaction is tracked:
 ## Usage Examples
 
 ### Check Agent Performance
+
 ```bash
 # Get Einstein's performance over last 7 days
 curl "/api/observability?action=benchmark&agentId=albert-einstein&timeWindowHours=168"
@@ -245,6 +267,7 @@ curl "/api/observability?action=benchmark&agentId=albert-einstein&timeWindowHour
 ```
 
 ### Monitor Monica's Routing
+
 ```bash
 # Analyze Monica's routing in a session
 curl "/api/observability?action=monica-routing&sessionId=xyz789"
@@ -263,6 +286,7 @@ curl "/api/observability?action=monica-routing&sessionId=xyz789"
 ```
 
 ### View System Insights
+
 ```bash
 # Get all insights from last 24 hours
 curl "/api/observability?action=insights&timeWindowHours=24"
@@ -292,21 +316,25 @@ curl "/api/observability?action=insights&timeWindowHours=24"
 ## Key Benefits
 
 ### 1. Continuous Improvement Cycle
+
 - **Monitor**: Track every agent decision and outcome
 - **Debug**: Trace failures through entire chain
 - **Improve**: Make targeted fixes based on data
 
 ### 2. Production Confidence
+
 - Know exactly which agents perform best
 - Identify routing issues before users complain
 - Track improvements over time
 
 ### 3. Data-Driven Optimization
+
 - See if prompt changes improve action completion
 - Measure impact of model upgrades
 - Quantify consciousness evolution
 
 ### 4. Monica Intelligence
+
 - Learn which agents work best for which queries
 - Optimize routing confidence over time
 - Reduce unnecessary agent calls
@@ -314,18 +342,21 @@ curl "/api/observability?action=insights&timeWindowHours=24"
 ## Next Steps
 
 ### Short Term
+
 1. **Add LLM-as-judge** for accurate action completion scoring
 2. **Implement alerts** based on threshold violations
 3. **Create visualization dashboard** for metrics
 4. **Add A/B testing** for prompt variations
 
 ### Medium Term
+
 1. **Persist to database** (replace in-memory storage)
 2. **Real-time WebSocket updates** for live monitoring
 3. **Export to analytics platforms** (Galileo, DataDog, etc.)
 4. **Automated routing improvements** based on historical data
 
 ### Long Term
+
 1. **Predictive routing** using ML on historical patterns
 2. **Agent recommendation system** for optimal combinations
 3. **Consciousness evolution tracking** across sessions

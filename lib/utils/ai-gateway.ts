@@ -83,8 +83,8 @@ export function getAIGatewayStatus() {
     recommendation: !config.enabled
       ? 'AI Gateway is disabled. Enable it to reduce costs by 30-70% through caching.'
       : !validation.valid
-      ? 'AI Gateway is enabled but misconfigured. Check environment variables.'
-      : 'AI Gateway is properly configured and ready to use.',
+        ? 'AI Gateway is enabled but misconfigured. Check environment variables.'
+        : 'AI Gateway is properly configured and ready to use.',
   }
 }
 
@@ -169,7 +169,7 @@ export function logAIGatewayStatus(): void {
 
   console.log('\n🤖 AI Gateway Status:')
   console.log(recommendation)
-  
+
   if (status.enabled && status.configured) {
     console.log('\n💡 Tip: Monitor your cache hit rate in the gateway dashboard')
     console.log('   Typical cache hit rates: 40-70% for production applications')

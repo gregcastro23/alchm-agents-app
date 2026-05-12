@@ -3,8 +3,8 @@ import { feedPusherService } from '@/lib/agents/feed-pusher'
 
 /**
  * POST /api/cron/push-feed
- * 
- * Cron endpoint to trigger the evaluation of agentic feed actions and 
+ *
+ * Cron endpoint to trigger the evaluation of agentic feed actions and
  * push them to the WTEN ingestion endpoint.
  */
 export async function POST(request: Request) {
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     }
 
     const result = await feedPusherService.evaluateAndPush()
-    
+
     return NextResponse.json({
       success: result.success,
       pushedCount: result.pushedCount,
@@ -29,9 +29,6 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error('Error executing cron push-feed:', error)
-    return NextResponse.json(
-      { success: false, error: 'Internal Server Error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 })
   }
 }

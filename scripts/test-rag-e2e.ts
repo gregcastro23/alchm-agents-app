@@ -11,7 +11,7 @@
 
 async function testRAGEndToEnd() {
   console.log('🧪 RAG End-to-End Test\n')
-  console.log('=' .repeat(60) + '\n')
+  console.log('='.repeat(60) + '\n')
 
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
   const testQuery = 'What is the meaning of virtue?'
@@ -28,11 +28,13 @@ async function testRAGEndToEnd() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        agents: [{
-          id: agentId,
-          name: 'Socrates',
-          type: 'historical',
-        }],
+        agents: [
+          {
+            id: agentId,
+            name: 'Socrates',
+            type: 'historical',
+          },
+        ],
         message: testQuery,
         context: {
           enableRAG: true,
@@ -149,7 +151,7 @@ async function testRAGEndToEnd() {
       console.log('')
     }
 
-    console.log('=' .repeat(60))
+    console.log('='.repeat(60))
     console.log('✅ All Tests Passed!')
     console.log('')
     console.log('Next Steps:')
@@ -165,7 +167,6 @@ async function testRAGEndToEnd() {
     console.log('  ✅ Cache operational')
     console.log('  ✅ Analytics tracking')
     console.log('  ✅ Feedback collection')
-
   } catch (error) {
     console.error('\n❌ Test failed:', error)
     console.log('\nTroubleshooting:')

@@ -30,6 +30,7 @@ Cannot find module 'next/dist/compiled/source-map'
 ## ✅ The Fix (Just Deployed)
 
 **Commit e7f609f3** (should be building now):
+
 - Removed `source-map` package completely
 - Already disabled production source maps
 - Webpack configured to not externalize it
@@ -47,6 +48,7 @@ Cannot find module 'next/dist/compiled/source-map'
 Once the deployment from commit `e7f609f3` is live:
 
 ### Test API:
+
 ```bash
 curl https://planetary-agents.vercel.app/api/moment-recommendations?limit=1
 ```
@@ -55,6 +57,7 @@ curl https://planetary-agents.vercel.app/api/moment-recommendations?limit=1
 **After**: JSON response with agent data ✅
 
 ### Test Chat:
+
 ```
 https://planetary-agents.vercel.app/gallery/chat/carl-jung
 ```
@@ -68,6 +71,7 @@ Type: "Are politics important?"
 If the source-map error STILL appears after removing the dependency, then it's something deeper in Next.js 15 + Vercel compatibility.
 
 **Workaround options:**
+
 1. **Downgrade Next.js** to 15.0.0 (from 15.5.6)
 2. **Switch to Render** or **Railway** instead of Vercel
 3. **Use local for now** (works perfectly)
@@ -99,4 +103,3 @@ If the source-map error STILL appears after removing the dependency, then it's s
 15. ✅ 20+ commits pushed to GitLab
 
 **Just waiting for final deployment...** 🎊
-

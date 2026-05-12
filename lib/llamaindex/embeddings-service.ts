@@ -98,10 +98,7 @@ function storeInCache(text: string, embedding: number[]): void {
 /**
  * Generate embedding for a single text with retry logic
  */
-async function generateSingleEmbeddingWithRetry(
-  text: string,
-  retries = 0
-): Promise<number[]> {
+async function generateSingleEmbeddingWithRetry(text: string, retries = 0): Promise<number[]> {
   const client = getOpenAIClient()
 
   try {
@@ -116,7 +113,9 @@ async function generateSingleEmbeddingWithRetry(
     // Handle rate limiting
     if (error?.status === 429 && retries < MAX_RETRIES) {
       const delay = RETRY_DELAY * Math.pow(2, retries) // Exponential backoff
-      console.log(`[Embeddings] Rate limited, retrying in ${delay}ms... (attempt ${retries + 1}/${MAX_RETRIES})`)
+      console.log(
+        `[Embeddings] Rate limited, retrying in ${delay}ms... (attempt ${retries + 1}/${MAX_RETRIES})`
+      )
       await new Promise(resolve => setTimeout(resolve, delay))
       return generateSingleEmbeddingWithRetry(text, retries + 1)
     }
@@ -146,7 +145,9 @@ export async function generateQueryEmbedding(query: string): Promise<number[]> {
     return embedding
   } catch (error) {
     console.error('[Embeddings] Failed to generate query embedding:', error)
-    throw new Error(`Failed to generate query embedding: ${error instanceof Error ? error.message : String(error)}`)
+    throw new Error(
+      `Failed to generate query embedding: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
 }
 
@@ -226,7 +227,9 @@ export async function generateEmbeddings(
     return embeddings
   } catch (error) {
     console.error('[Embeddings] Failed to generate embeddings:', error)
-    throw new Error(`Failed to generate embeddings: ${error instanceof Error ? error.message : String(error)}`)
+    throw new Error(
+      `Failed to generate embeddings: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
 }
 

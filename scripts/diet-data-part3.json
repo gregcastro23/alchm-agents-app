@@ -1,7 +1,13 @@
 {
   "charles-dickens": {
     "staples": ["Roast beef", "Mutton chops", "Bread", "Potatoes", "Cheese"],
-    "favoriteFoods": ["Christmas pudding", "Roast goose", "Toasted cheese", "Gruel (wrote about it extensively)", "Oysters"],
+    "favoriteFoods": [
+      "Christmas pudding",
+      "Roast goose",
+      "Toasted cheese",
+      "Gruel (wrote about it extensively)",
+      "Oysters"
+    ],
     "avoidedFoods": ["Nothing specific — Dickens celebrated food in all forms"],
     "dietaryPhilosophy": "Dickens used food as social commentary. Scrooge's gruel vs. the Cratchits' Christmas goose represents the moral economy of Victorian England. His novels are filled with food scenes.",
     "culturalCuisine": "Victorian English",
@@ -10,7 +16,11 @@
   },
   "edgar-allan-poe": {
     "staples": ["Bread", "Crackers", "Simple meals", "Whatever was affordable"],
-    "favoriteFoods": ["Bread and molasses", "Simple crackers", "Occasional restaurant meals when flush"],
+    "favoriteFoods": [
+      "Bread and molasses",
+      "Simple crackers",
+      "Occasional restaurant meals when flush"
+    ],
     "avoidedFoods": ["Could not avoid foods — often could not afford to eat at all"],
     "dietaryPhilosophy": "Poe's relationship with food was marked by poverty. He frequently went hungry, which likely exacerbated his health problems. Food scarcity is a recurring theme in his tales of deprivation.",
     "culturalCuisine": "19th-century American (impoverished)",
@@ -19,7 +29,11 @@
   },
   "charles-darwin": {
     "staples": ["Mutton", "Beef", "Pudding", "Bread", "Root vegetables", "Fresh fruit"],
-    "favoriteFoods": ["Exotic meats (he ate armadillo, ostrich, puma during the Beagle voyage)", "Christmas pudding", "Simple English fare at Down House"],
+    "favoriteFoods": [
+      "Exotic meats (he ate armadillo, ostrich, puma during the Beagle voyage)",
+      "Christmas pudding",
+      "Simple English fare at Down House"
+    ],
     "avoidedFoods": ["Rich foods later in life (chronic stomach problems)"],
     "dietaryPhilosophy": "Darwin was famously adventurous with food. At Cambridge he was part of the Glutton Club, dedicated to eating unusual animals. The Beagle voyage expanded his palate to include iguana, armadillo, and rhea.",
     "culturalCuisine": "Victorian English (Adventurous)",
@@ -28,7 +42,14 @@
   },
   "mark-twain": {
     "staples": ["Fried chicken", "Cornbread", "Catfish", "Biscuits", "Fresh vegetables"],
-    "favoriteFoods": ["Mississippi catfish", "Fried chicken", "Hot biscuits with butter", "Corn pone", "Watermelon", "Oysters"],
+    "favoriteFoods": [
+      "Mississippi catfish",
+      "Fried chicken",
+      "Hot biscuits with butter",
+      "Corn pone",
+      "Watermelon",
+      "Oysters"
+    ],
     "avoidedFoods": ["European food (famously complained about it abroad)"],
     "dietaryPhilosophy": "Twain was a passionate American food patriot. While traveling in Europe, he compiled a list of 80 American dishes he craved, from Missouri cornbread to Louisiana crawfish.",
     "culturalCuisine": "American South / Gilded Age",
@@ -37,7 +58,13 @@
   },
   "claude-monet": {
     "staples": ["Garden vegetables", "Duck", "Fresh herbs", "Bread", "Butter", "Eggs"],
-    "favoriteFoods": ["Duck with olives", "Truffled turkey", "Fresh garden salads", "Eggs en cocotte", "Normandy apple tart"],
+    "favoriteFoods": [
+      "Duck with olives",
+      "Truffled turkey",
+      "Fresh garden salads",
+      "Eggs en cocotte",
+      "Normandy apple tart"
+    ],
     "avoidedFoods": ["Margarine (insisted on real butter)", "Canned or preserved foods"],
     "dietaryPhilosophy": "Monet was an exceptional cook and gardener. His kitchen garden at Giverny supplied his table. He kept detailed menus and entertained lavishly. Food was as much an art as painting.",
     "culturalCuisine": "French Impressionist / Norman",
@@ -46,8 +73,16 @@
   },
   "vincent-van-gogh": {
     "staples": ["Bread", "Coffee", "Potatoes", "Cheese", "Simple peasant fare"],
-    "favoriteFoods": ["Bread and coffee (his daily mainstay)", "Potato stew", "Fried potatoes", "Dutch cheese"],
-    "avoidedFoods": ["Expensive foods (lived in poverty)", "Often skipped meals entirely to buy paint"],
+    "favoriteFoods": [
+      "Bread and coffee (his daily mainstay)",
+      "Potato stew",
+      "Fried potatoes",
+      "Dutch cheese"
+    ],
+    "avoidedFoods": [
+      "Expensive foods (lived in poverty)",
+      "Often skipped meals entirely to buy paint"
+    ],
     "dietaryPhilosophy": "Van Gogh frequently sacrificed food for art supplies. His painting The Potato Eaters celebrates the humble dignity of peasant food. He often subsisted on bread and coffee alone.",
     "culturalCuisine": "Dutch-French (Impoverished artist)",
     "beverages": ["Coffee (black, often his only 'meal')", "Absinthe", "Wine"],
@@ -55,8 +90,19 @@
   },
   "nikola-tesla": {
     "staples": ["White bread", "Warm milk", "Honey", "Celery", "White meat", "Sterilized food"],
-    "favoriteFoods": ["Warm milk with honey", "Celery hearts", "White bread", "Steamed vegetables", "Filet of sole"],
-    "avoidedFoods": ["Pearls and round objects on the table", "Camphor", "Earrings on women at dinner", "Unsterilized food"],
+    "favoriteFoods": [
+      "Warm milk with honey",
+      "Celery hearts",
+      "White bread",
+      "Steamed vegetables",
+      "Filet of sole"
+    ],
+    "avoidedFoods": [
+      "Pearls and round objects on the table",
+      "Camphor",
+      "Earrings on women at dinner",
+      "Unsterilized food"
+    ],
     "dietaryPhilosophy": "Tesla was intensely germophobic and obsessive about food preparation. He required exact servings, calculated the cubic contents of food, and needed a stack of 18 napkins at every meal.",
     "culturalCuisine": "Serbian-American (Ritualistic)",
     "beverages": ["Warm milk", "Whiskey (believed it would help him live to 150)", "Water"],
@@ -64,8 +110,16 @@
   },
   "marie-curie": {
     "staples": ["Bread", "Butter", "Eggs", "Simple soups", "Tea", "Chocolate"],
-    "favoriteFoods": ["Polish beet soup (borscht)", "Bread and butter", "Simple French dishes", "Chocolate"],
-    "avoidedFoods": ["Elaborate meals (too focused on work to bother)", "Anything time-consuming to prepare"],
+    "favoriteFoods": [
+      "Polish beet soup (borscht)",
+      "Bread and butter",
+      "Simple French dishes",
+      "Chocolate"
+    ],
+    "avoidedFoods": [
+      "Elaborate meals (too focused on work to bother)",
+      "Anything time-consuming to prepare"
+    ],
     "dietaryPhilosophy": "Curie was famously indifferent to food, sometimes forgetting to eat entirely while absorbed in research. As a student in Paris she survived on bread, chocolate, and tea.",
     "culturalCuisine": "Polish-French (Spartan Academic)",
     "beverages": ["Tea", "Water", "Occasional wine"],
@@ -73,7 +127,12 @@
   },
   "sigmund-freud": {
     "staples": ["Tafelspitz (boiled beef)", "Bread", "Soup", "Vegetables", "Mushrooms"],
-    "favoriteFoods": ["Tafelspitz", "Mushroom dishes (he was an avid mushroom hunter)", "Wiener Schnitzel", "Artichokes"],
+    "favoriteFoods": [
+      "Tafelspitz",
+      "Mushroom dishes (he was an avid mushroom hunter)",
+      "Wiener Schnitzel",
+      "Artichokes"
+    ],
     "avoidedFoods": ["Food after oral cancer surgery (severely restricted diet in later years)"],
     "dietaryPhilosophy": "Freud saw food through the lens of oral psychology. He connected eating to primal drives and pleasure principles. His own oral fixation manifested as a legendary cigar habit — 20 a day.",
     "culturalCuisine": "Viennese",
@@ -82,7 +141,13 @@
   },
   "albert-einstein": {
     "staples": ["Spaghetti", "Eggs", "Mushrooms", "Honey", "Lentil soup", "Simple one-pot meals"],
-    "favoriteFoods": ["Scrambled eggs with mushrooms", "Spaghetti (his comfort food)", "Lentil soup", "Honey on everything", "Strawberries with cream"],
+    "favoriteFoods": [
+      "Scrambled eggs with mushrooms",
+      "Spaghetti (his comfort food)",
+      "Lentil soup",
+      "Honey on everything",
+      "Strawberries with cream"
+    ],
     "avoidedFoods": ["Meat (became largely vegetarian near end of life)", "Complicated dishes"],
     "dietaryPhilosophy": "Einstein viewed food practically — fuel for thinking. He became increasingly vegetarian later in life, writing: 'Nothing will benefit human health and increase chances for survival of life on Earth as much as the evolution to a vegetarian diet.'",
     "culturalCuisine": "German-Swiss-American",
@@ -91,7 +156,12 @@
   },
   "carl-jung": {
     "staples": ["Swiss cheese", "Bread", "Garden vegetables", "Meat", "Root vegetables"],
-    "favoriteFoods": ["Swiss cheese and bread", "Home-grown vegetables from Bollingen", "Simple hearty stews", "Fresh fruit"],
+    "favoriteFoods": [
+      "Swiss cheese and bread",
+      "Home-grown vegetables from Bollingen",
+      "Simple hearty stews",
+      "Fresh fruit"
+    ],
     "avoidedFoods": ["Nothing specific — Jung was an earthy, practical eater"],
     "dietaryPhilosophy": "Jung believed in grounded, earthy eating connected to nature. At his tower in Bollingen, he grew his own food, chopped wood, and cooked over an open fire — food as connection to the archetypal self.",
     "culturalCuisine": "Swiss",
@@ -100,7 +170,13 @@
   },
   "frida-kahlo": {
     "staples": ["Mole", "Tamales", "Tortillas", "Rice", "Beans", "Tropical fruits", "Chiles"],
-    "favoriteFoods": ["Mole negro", "Tamales", "Fresh mangoes and papayas", "Chiles en nogada", "Amaranth skulls"],
+    "favoriteFoods": [
+      "Mole negro",
+      "Tamales",
+      "Fresh mangoes and papayas",
+      "Chiles en nogada",
+      "Amaranth skulls"
+    ],
     "avoidedFoods": ["Bland food (craved intense flavors)", "American processed food"],
     "dietaryPhilosophy": "Kahlo's Casa Azul kitchen was a riot of color and Mexican tradition. She hosted legendary dinner parties where food was art, ritual, and political statement — celebrating pre-Columbian Mexican cuisine.",
     "culturalCuisine": "Mexican (Traditional and Revolutionary)",
@@ -109,7 +185,12 @@
   },
   "eleanor-roosevelt": {
     "staples": ["Scrambled eggs", "Bread", "Simple vegetables", "Hot dogs", "Salads"],
-    "favoriteFoods": ["Scrambled eggs (her go-to meal)", "Hot dogs (famously served to King George VI)", "Chicken salad", "Simple New England fare"],
+    "favoriteFoods": [
+      "Scrambled eggs (her go-to meal)",
+      "Hot dogs (famously served to King George VI)",
+      "Chicken salad",
+      "Simple New England fare"
+    ],
     "avoidedFoods": ["Elaborate French cuisine (preferred simplicity)"],
     "dietaryPhilosophy": "Eleanor was notoriously indifferent to food and employed cooks whose food was famously bad. FDR once smuggled his own cook into the White House kitchen. She valued substance over style.",
     "culturalCuisine": "American (Simple New England)",
@@ -118,8 +199,18 @@
   },
   "mahatma-gandhi": {
     "staples": ["Goat's milk", "Dates", "Rice", "Dal (lentils)", "Seasonal vegetables", "Chapati"],
-    "favoriteFoods": ["Goat's milk (his primary protein source)", "Dates and nuts", "Simple dal and rice", "Fresh fruit"],
-    "avoidedFoods": ["Meat (lifelong vegetarian)", "Salt (during political fasts)", "Processed food", "Garlic and onions (for periods)"],
+    "favoriteFoods": [
+      "Goat's milk (his primary protein source)",
+      "Dates and nuts",
+      "Simple dal and rice",
+      "Fresh fruit"
+    ],
+    "avoidedFoods": [
+      "Meat (lifelong vegetarian)",
+      "Salt (during political fasts)",
+      "Processed food",
+      "Garlic and onions (for periods)"
+    ],
     "dietaryPhilosophy": "Gandhi's entire political philosophy was enacted through food. His fasts were political weapons. He experimented endlessly with diet — raw food, fruit-only periods, nut diets. He wrote: 'The greatness of a nation can be judged by the way its animals are treated.'",
     "culturalCuisine": "Indian Vegetarian (Gujarati)",
     "beverages": ["Goat's milk", "Hot water with lemon", "Water"],
@@ -127,7 +218,13 @@
   },
   "maya-angelou": {
     "staples": ["Fried chicken", "Red beans and rice", "Cornbread", "Greens", "Fresh vegetables"],
-    "favoriteFoods": ["Fried chicken", "Smothered pork chops", "Peach cobbler", "Red beans and rice", "Caramel cake"],
+    "favoriteFoods": [
+      "Fried chicken",
+      "Smothered pork chops",
+      "Peach cobbler",
+      "Red beans and rice",
+      "Caramel cake"
+    ],
     "avoidedFoods": ["Nothing — Angelou celebrated all food traditions"],
     "dietaryPhilosophy": "Angelou was a magnificent cook and food lover. She saw cooking as an act of love and community. Her memoir describes food as inseparable from memory, identity, and belonging.",
     "culturalCuisine": "Southern American / African-American",
@@ -136,7 +233,11 @@
   },
   "isaac-newton": {
     "staples": ["Bread", "Vegetable broth", "Simple meats", "Cheese"],
-    "favoriteFoods": ["Bread (often his only food when working)", "Simple broth", "Boiled vegetables"],
+    "favoriteFoods": [
+      "Bread (often his only food when working)",
+      "Simple broth",
+      "Boiled vegetables"
+    ],
     "avoidedFoods": ["Regular meals (frequently forgot to eat)"],
     "dietaryPhilosophy": "Newton was supremely indifferent to food. When absorbed in work, he would forget to eat for days. His servants reportedly brought meals that went cold and untouched.",
     "culturalCuisine": "English (Absent-Minded Scholar)",
@@ -146,7 +247,10 @@
   "isaac-asimov": {
     "staples": ["Deli sandwiches", "Cheesecake", "Simple American fare", "Chinese food"],
     "favoriteFoods": ["New York deli sandwiches", "Cheesecake", "Chinese food", "Hot dogs"],
-    "avoidedFoods": ["Alcohol (nearly a teetotaler)", "Exotic or unfamiliar foods (quite conservative)"],
+    "avoidedFoods": [
+      "Alcohol (nearly a teetotaler)",
+      "Exotic or unfamiliar foods (quite conservative)"
+    ],
     "dietaryPhilosophy": "Asimov was a self-described 'provincial eater' who loved simple New York deli food. Despite writing about futuristic civilizations, his own tastes were firmly mid-20th-century American.",
     "culturalCuisine": "Russian-American / New York Deli",
     "beverages": ["Coffee", "Water", "Soft drinks"],
@@ -162,7 +266,13 @@
     "foodLore": "Sagan famously said: 'If you wish to make an apple pie from scratch, you must first invent the universe.' — connecting the simplest food to the grandest cosmic perspective."
   },
   "rachel-carson": {
-    "staples": ["New England seafood", "Garden vegetables", "Fish", "Fresh herbs", "Simple home cooking"],
+    "staples": [
+      "New England seafood",
+      "Garden vegetables",
+      "Fish",
+      "Fresh herbs",
+      "Simple home cooking"
+    ],
     "favoriteFoods": ["Fresh-caught fish", "Clam chowder", "Garden salads", "Berries"],
     "avoidedFoods": ["Pesticide-laden foods (her life's work)", "Non-organic produce"],
     "dietaryPhilosophy": "Carson's Silent Spring awakened the world to pesticides in the food chain. She advocated for clean, natural food — her work directly led to the organic food movement.",
@@ -171,8 +281,20 @@
     "foodLore": "Carson wrote: 'For the first time in the history of the world, every human being is now subjected to contact with dangerous chemicals, from the moment of conception until death.' She changed how we think about food safety."
   },
   "paulo-freire": {
-    "staples": ["Rice and beans", "Farofa (toasted cassava flour)", "Tropical fruit", "Bread", "Coffee"],
-    "favoriteFoods": ["Feijoada (black bean stew)", "Rice and beans", "Fresh tropical fruit", "Tapioca", "Coxinha"],
+    "staples": [
+      "Rice and beans",
+      "Farofa (toasted cassava flour)",
+      "Tropical fruit",
+      "Bread",
+      "Coffee"
+    ],
+    "favoriteFoods": [
+      "Feijoada (black bean stew)",
+      "Rice and beans",
+      "Fresh tropical fruit",
+      "Tapioca",
+      "Coxinha"
+    ],
     "avoidedFoods": ["Nothing specific — Freire valued food as community"],
     "dietaryPhilosophy": "For Freire, sharing food was pedagogy itself — a communion of equals. He grew up in hunger during the Great Depression in Recife, Brazil, and food justice was central to his educational philosophy.",
     "culturalCuisine": "Brazilian (Northeastern)",
@@ -180,8 +302,21 @@
     "foodLore": "Freire wrote about childhood hunger in Recife shaping his educational philosophy: 'I didn't understand anything because of my hunger. I wasn't dumb. It was just that hunger didn't allow me to learn.'"
   },
   "tecumseh": {
-    "staples": ["Venison", "Corn (maize)", "Squash", "Beans (Three Sisters)", "Wild rice", "Maple sugar"],
-    "favoriteFoods": ["Venison stew", "Corn bread", "Succotash (corn and bean stew)", "Maple-sweetened dishes", "Smoked fish"],
+    "staples": [
+      "Venison",
+      "Corn (maize)",
+      "Squash",
+      "Beans (Three Sisters)",
+      "Wild rice",
+      "Maple sugar"
+    ],
+    "favoriteFoods": [
+      "Venison stew",
+      "Corn bread",
+      "Succotash (corn and bean stew)",
+      "Maple-sweetened dishes",
+      "Smoked fish"
+    ],
     "avoidedFoods": ["European-processed foods", "Alcohol (strongly opposed it for his people)"],
     "dietaryPhilosophy": "Tecumseh's diet reflected Shawnee agricultural and hunting traditions. He advocated for preserving indigenous foodways against European encroachment. Food sovereignty was part of his political vision.",
     "culturalCuisine": "Shawnee / Eastern Woodlands Indigenous",
@@ -189,9 +324,23 @@
     "foodLore": "Tecumseh vehemently opposed alcohol, seeing it as a tool of colonial destruction. He worked to revive traditional Shawnee food practices as part of his pan-Indian resistance movement."
   },
   "sitting-bull": {
-    "staples": ["Buffalo (bison) meat", "Wild turnips (tipsinna)", "Chokecherries", "Pemmican", "Wild roots"],
-    "favoriteFoods": ["Buffalo hump roast", "Pemmican (dried meat with berries and fat)", "Wild berry preparations", "Roasted buffalo tongue"],
-    "avoidedFoods": ["Reservation rations (rejected them as degrading)", "Government-issued flour and salt pork"],
+    "staples": [
+      "Buffalo (bison) meat",
+      "Wild turnips (tipsinna)",
+      "Chokecherries",
+      "Pemmican",
+      "Wild roots"
+    ],
+    "favoriteFoods": [
+      "Buffalo hump roast",
+      "Pemmican (dried meat with berries and fat)",
+      "Wild berry preparations",
+      "Roasted buffalo tongue"
+    ],
+    "avoidedFoods": [
+      "Reservation rations (rejected them as degrading)",
+      "Government-issued flour and salt pork"
+    ],
     "dietaryPhilosophy": "For Sitting Bull, food was inseparable from Lakota spiritual practice and the relationship with the buffalo. The destruction of buffalo herds was genocide against both the animal and the Lakota people.",
     "culturalCuisine": "Lakota / Plains Indigenous",
     "beverages": ["Spring water", "Herbal teas from prairie plants"],
@@ -199,7 +348,11 @@
   },
   "sojourner-truth": {
     "staples": ["Corn mush", "Salt pork", "Seasonal vegetables", "Bread", "Potatoes"],
-    "favoriteFoods": ["Corn mush (her staple from enslaved childhood)", "Garden vegetables she grew herself", "Simple bread"],
+    "favoriteFoods": [
+      "Corn mush (her staple from enslaved childhood)",
+      "Garden vegetables she grew herself",
+      "Simple bread"
+    ],
     "avoidedFoods": ["Tobacco and alcohol (became an outspoken temperance advocate)"],
     "dietaryPhilosophy": "Born into slavery, Truth's early diet was controlled by enslavers. After emancipation, growing her own food became an act of freedom. She advocated for temperance and clean living.",
     "culturalCuisine": "African-American / Dutch-American (19th century)",
@@ -207,8 +360,19 @@
     "foodLore": "Truth worked as a domestic cook after emancipation. Her famous speech 'Ain't I a Woman?' was partly about the labor of feeding others — she had plowed, planted, and cooked for those who never recognized her humanity."
   },
   "wangari-maathai": {
-    "staples": ["Ugali (cornmeal porridge)", "Sukuma wiki (collard greens)", "Beans", "Sweet potatoes", "Bananas"],
-    "favoriteFoods": ["Nyama choma (grilled meat)", "Ugali with sukuma wiki", "Fresh tropical fruits", "Githeri (corn and beans)"],
+    "staples": [
+      "Ugali (cornmeal porridge)",
+      "Sukuma wiki (collard greens)",
+      "Beans",
+      "Sweet potatoes",
+      "Bananas"
+    ],
+    "favoriteFoods": [
+      "Nyama choma (grilled meat)",
+      "Ugali with sukuma wiki",
+      "Fresh tropical fruits",
+      "Githeri (corn and beans)"
+    ],
     "avoidedFoods": ["Processed Western food (advocated for indigenous crops)"],
     "dietaryPhilosophy": "Maathai connected food directly to environmental stewardship. The Green Belt Movement planted trees to combat deforestation, protect watersheds, and ensure food security for rural Kenyan women.",
     "culturalCuisine": "Kenyan (Kikuyu)",

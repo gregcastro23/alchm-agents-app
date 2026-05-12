@@ -62,11 +62,9 @@
     sans-serif;
   background: linear-gradient(
     135deg,
-    var(--cosmic-deep-space) 0%,
-    var(--cosmic-nebula-purple) 25%,
-    var(--cosmic-stellar-blue) 50%,
-    var(--cosmic-nebula-purple) 75%,
-    var(--cosmic-deep-space) 100%
+    #0c0319 0%,
+    #1a0838 50%,
+    #0c0319 100%
   );
   min-height: 100vh;
   color: var(--cosmic-starlight-lavender);
@@ -83,16 +81,15 @@
   width: 100%;
   height: 100%;
   background-image:
-    radial-gradient(2px 2px at 20px 30px, var(--cosmic-gold), transparent),
-    radial-gradient(2px 2px at 40px 70px, var(--cosmic-silver), transparent),
-    radial-gradient(1px 1px at 90px 40px, var(--cosmic-gold), transparent),
-    radial-gradient(1px 1px at 130px 80px, var(--cosmic-silver), transparent),
-    radial-gradient(2px 2px at 160px 30px, var(--cosmic-gold), transparent);
-  background-repeat: repeat;
-  background-size: 200px 100px;
-  animation: cosmic-starfield var(--cosmic-float-duration) linear infinite;
-  opacity: 0.3;
+    radial-gradient(2px 2px at 15% 25%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 78% 12%, rgba(34, 211, 238, 0.8), transparent), /* Cyan */
+    radial-gradient(1px 1px at 35% 68%, rgba(251, 191, 36, 0.8), transparent), /* Gold */
+    radial-gradient(2px 2px at 85% 75%, rgba(255, 255, 255, 0.6), transparent);
+  background-size: 500px 500px, 400px 400px, 300px 300px, 450px 450px;
+  animation: cosmic-float var(--cosmic-float-duration) linear infinite alternate;
+  opacity: 0.5;
   z-index: 0;
+  pointer-events: none;
 }
 
 @keyframes cosmic-starfield {
@@ -106,11 +103,11 @@
 
 /* Cosmic Glass Morphism */
 .cosmic-glass {
-  background: rgba(10, 1, 24, 0.6);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(124, 58, 237, 0.2);
-  box-shadow: var(--cosmic-shadow-mystical);
+  border: 1px solid rgba(34, 211, 238, 0.2); /* Cyan accent */
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.1);
   border-radius: var(--cosmic-border-radius);
   position: relative;
   overflow: hidden;
@@ -141,11 +138,11 @@
 
 /* Enhanced Glass for Important Elements */
 .cosmic-glass-ethereal {
-  background: rgba(124, 58, 237, 0.15);
+  background: rgba(34, 211, 238, 0.05); /* Cyan */
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  box-shadow: var(--cosmic-shadow-ethereal);
+  border: 1px solid rgba(251, 191, 36, 0.4); /* Gold accent */
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.15);
   border-radius: var(--cosmic-border-radius-large);
 }
 
@@ -171,8 +168,8 @@
   background: linear-gradient(
     135deg,
     var(--cosmic-gold) 0%,
-    var(--cosmic-celestial-purple) 50%,
-    #60a5fa 100%
+    #22d3ee 50%, /* Cyan */
+    #818cf8 100%
   );
   background-clip: text;
   -webkit-background-clip: text;
@@ -183,10 +180,10 @@
 .cosmic-button {
   background: linear-gradient(
     135deg,
-    var(--cosmic-ethereal-violet) 0%,
-    var(--cosmic-mystical-indigo) 100%
+    rgba(34, 211, 238, 0.2) 0%, /* Cyan */
+    rgba(251, 191, 36, 0.2) 100% /* Gold */
   );
-  border: 1px solid rgba(251, 191, 36, 0.3);
+  border: 1px solid rgba(34, 211, 238, 0.4);
   color: white;
   padding: 0.75rem 1.5rem;
   border-radius: var(--cosmic-border-radius);
@@ -194,17 +191,18 @@
   transition: all var(--cosmic-transition-normal) ease;
   position: relative;
   overflow: hidden;
-  box-shadow: var(--cosmic-shadow-mystical);
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.1);
 }
 
 .cosmic-button:hover {
   background: linear-gradient(
     135deg,
-    var(--cosmic-celestial-purple) 0%,
-    var(--cosmic-ethereal-violet) 100%
+    rgba(34, 211, 238, 0.3) 0%,
+    rgba(251, 191, 36, 0.3) 100%
   );
-  box-shadow: var(--cosmic-shadow-ethereal);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
   transform: translateY(-2px);
+  border-color: rgba(251, 191, 36, 0.6);
 }
 
 .cosmic-button:active {
@@ -228,12 +226,12 @@
 
 /* Cosmic Cards */
 .cosmic-card {
-  background: rgba(10, 1, 24, 0.8);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(124, 58, 237, 0.3);
+  border: 1px solid rgba(34, 211, 238, 0.2);
   border-radius: var(--cosmic-border-radius-large);
-  box-shadow: var(--cosmic-shadow-mystical);
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.1);
   transition: all var(--cosmic-transition-normal) ease;
   position: relative;
   overflow: hidden;
@@ -448,13 +446,13 @@
 
 /* Cosmic Tooltips */
 .cosmic-tooltip {
-  background: rgba(10, 1, 24, 0.95);
+  background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(251, 191, 36, 0.4);
+  border: 1px solid rgba(34, 211, 238, 0.4);
   border-radius: var(--cosmic-border-radius);
-  box-shadow: var(--cosmic-shadow-ethereal);
-  color: var(--cosmic-starlight-lavender);
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+  color: white;
   font-size: 0.875rem;
   position: relative;
 }

@@ -123,22 +123,21 @@ export const PerformanceDashboard: React.FC = () => {
       try {
         // Fetch real metrics from API
         const response = await fetch(`/api/admin/performance-metrics?timeRange=${timeRange}`)
-        
+
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`)
         }
-        
+
         const apiData = await response.json()
-        
+
         if (apiData.success && apiData.metrics) {
           setData({
             timeRange,
-            ...apiData.metrics
+            ...apiData.metrics,
           })
         } else {
           console.error('[Dashboard] Invalid API response:', apiData)
         }
-        
       } catch (error) {
         console.error('[Dashboard] Failed to fetch metrics:', error)
         // Keep existing data on error, don't clear it

@@ -9,6 +9,7 @@ Unified consciousness visualization and tracking components for the Planetary Ag
 Real-time consciousness state dashboard with comprehensive metrics.
 
 **Features:**
+
 - Sacred Seven stats with temporal modifiers
 - Special states and power unlocks
 - Evolution velocity and momentum tracking
@@ -22,7 +23,7 @@ Real-time consciousness state dashboard with comprehensive metrics.
 ```tsx
 import { ConsciousnessDashboard } from '@/components/consciousness'
 
-<ConsciousnessDashboard
+;<ConsciousnessDashboard
   agentId="leonardo-da-vinci"
   userId="user-123"
   showCompact={false}
@@ -31,6 +32,7 @@ import { ConsciousnessDashboard } from '@/components/consciousness'
 ```
 
 **Props:**
+
 - `agentId` (required): Agent identifier
 - `userId` (required): User identifier
 - `currentSnapshot` (optional): Pre-fetched snapshot data
@@ -39,6 +41,7 @@ import { ConsciousnessDashboard } from '@/components/consciousness'
 - `className` (optional): Additional CSS classes
 
 **Tabs:**
+
 1. **Sacred Seven**: Power, Resonance, Wisdom, Charisma, Intuition, Adaptability, Vitality
 2. **Alchemical**: Spirit, Essence, Matter, Substance, A# calculation
 3. **Temporal**: Planetary hour, moon phase, active modifiers
@@ -50,6 +53,7 @@ import { ConsciousnessDashboard } from '@/components/consciousness'
 Historical evolution timeline with trends and analytics.
 
 **Features:**
+
 - Activity by day visualization
 - Sacred Seven trends
 - Quality metrics trends
@@ -61,21 +65,18 @@ Historical evolution timeline with trends and analytics.
 ```tsx
 import { ConsciousnessTimeline } from '@/components/consciousness'
 
-<ConsciousnessTimeline
-  agentId="leonardo-da-vinci"
-  userId="user-123"
-  days={30}
-  className="mt-4"
-/>
+;<ConsciousnessTimeline agentId="leonardo-da-vinci" userId="user-123" days={30} className="mt-4" />
 ```
 
 **Props:**
+
 - `agentId` (required): Agent identifier
 - `userId` (required): User identifier
 - `days` (optional): Days of history to show (default: 30)
 - `className` (optional): Additional CSS classes
 
 **Tabs:**
+
 1. **Overview**: Summary stats and activity by day
 2. **Stats**: Sacred Seven trends (Power, Wisdom, Charisma)
 3. **Quality**: Quality metrics trends
@@ -88,11 +89,13 @@ import { ConsciousnessTimeline } from '@/components/consciousness'
 Fetch current consciousness state and evolution metrics.
 
 **Query Parameters:**
+
 - `userId` (required): User identifier
 - `agentId` (required): Agent identifier
 - `days` (optional): Days of history for evolution metrics (default: 30)
 
 **Response:**
+
 ```json
 {
   "snapshot": {
@@ -119,12 +122,14 @@ Fetch current consciousness state and evolution metrics.
 Fetch historical consciousness timeline data.
 
 **Query Parameters:**
+
 - `userId` (required): User identifier
 - `agentId` (required): Agent identifier
 - `startDate` (optional): ISO date string (default: 30 days ago)
 - `endDate` (optional): ISO date string (default: now)
 
 **Response:**
+
 ```json
 {
   "snapshots": [...],
@@ -154,15 +159,9 @@ import { ConsciousnessDashboard } from '@/components/consciousness'
 function ChatInterface({ agentId, userId }) {
   return (
     <div className="grid grid-cols-3 gap-4">
-      <div className="col-span-2">
-        {/* Chat messages */}
-      </div>
+      <div className="col-span-2">{/* Chat messages */}</div>
       <div>
-        <ConsciousnessDashboard
-          agentId={agentId}
-          userId={userId}
-          showCompact={true}
-        />
+        <ConsciousnessDashboard agentId={agentId} userId={userId} showCompact={true} />
       </div>
     </div>
   )
@@ -181,16 +180,9 @@ function AgentProfile({ agentId, userId }) {
     <div className="space-y-6">
       {/* Agent info */}
 
-      <ConsciousnessDashboard
-        agentId={agentId}
-        userId={userId}
-      />
+      <ConsciousnessDashboard agentId={agentId} userId={userId} />
 
-      <ConsciousnessTimeline
-        agentId={agentId}
-        userId={userId}
-        days={90}
-      />
+      <ConsciousnessTimeline agentId={agentId} userId={userId} days={90} />
     </div>
   )
 }
@@ -208,10 +200,7 @@ function ConsciousnessModal({ open, onClose, agentId, userId }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <ConsciousnessDashboard
-          agentId={agentId}
-          userId={userId}
-        />
+        <ConsciousnessDashboard agentId={agentId} userId={userId} />
       </DialogContent>
     </Dialog>
   )
@@ -248,6 +237,7 @@ Render visualizations
 ## Styling
 
 All components use:
+
 - Tailwind CSS for styling
 - shadcn/ui components for consistency
 - Lucide React icons

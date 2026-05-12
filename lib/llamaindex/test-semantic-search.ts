@@ -3,7 +3,12 @@
  * Quick tests to verify semantic search is working correctly
  */
 
-import { semanticSearch, searchAgentKnowledge, findSimilarAgents, getSearchStats } from './semantic-search'
+import {
+  semanticSearch,
+  searchAgentKnowledge,
+  findSimilarAgents,
+  getSearchStats,
+} from './semantic-search'
 
 async function testSemanticSearch() {
   console.log('🔍 Testing Semantic Search System\n')

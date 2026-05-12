@@ -412,7 +412,8 @@ function checkDegreeAlignment(planetaryDegrees: Record<string, number>, agent: a
 
   for (const [planet, degree] of Object.entries(planetaryDegrees)) {
     // Calculate consistent degree from agent ID hash (deterministic, not random)
-    const agentDegree = agent.id.split('').reduce((sum: number, char: string) => sum + char.charCodeAt(0), 0) % 360
+    const agentDegree =
+      agent.id.split('').reduce((sum: number, char: string) => sum + char.charCodeAt(0), 0) % 360
 
     const difference = Math.abs(degree - agentDegree)
     const orb = Math.min(difference, 360 - difference)

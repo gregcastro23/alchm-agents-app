@@ -1,13 +1,27 @@
 import { backend } from '@/lib/backend'
 import { identifyPlanetaryThemes, findHistoricalPatterns } from '@/lib/transit-patterns'
-import { findLastOccurrence, findNextOccurrence, getPlanetCycleLength } from '@/lib/historical-transits'
+import {
+  findLastOccurrence,
+  findNextOccurrence,
+  getPlanetCycleLength,
+} from '@/lib/historical-transits'
 import { DegreeSpecificHistoryService } from '@/lib/degree-specific-history'
 import DegreeAgentClient from './degree-agent-client'
 
 const OUTER_PLANETS = ['Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']
 const SIGN_ORDER = [
-  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+  'Aries',
+  'Taurus',
+  'Gemini',
+  'Cancer',
+  'Leo',
+  'Virgo',
+  'Libra',
+  'Scorpio',
+  'Sagittarius',
+  'Capricorn',
+  'Aquarius',
+  'Pisces',
 ]
 
 export default async function DegreeAgentPage({
@@ -33,17 +47,19 @@ export default async function DegreeAgentPage({
   const historicalData = {
     lastOccurrence: lastOccurrenceRaw
       ? {
-          date: lastOccurrenceRaw.date instanceof Date
-            ? lastOccurrenceRaw.date.toISOString()
-            : String(lastOccurrenceRaw.date ?? ''),
+          date:
+            lastOccurrenceRaw.date instanceof Date
+              ? lastOccurrenceRaw.date.toISOString()
+              : String(lastOccurrenceRaw.date ?? ''),
           historicalContext: lastOccurrenceRaw.historicalContext,
         }
       : null,
     nextOccurrence: nextOccurrenceRaw
       ? {
-          date: nextOccurrenceRaw.date instanceof Date
-            ? nextOccurrenceRaw.date.toISOString()
-            : String(nextOccurrenceRaw.date ?? ''),
+          date:
+            nextOccurrenceRaw.date instanceof Date
+              ? nextOccurrenceRaw.date.toISOString()
+              : String(nextOccurrenceRaw.date ?? ''),
           historicalContext: nextOccurrenceRaw.historicalContext,
         }
       : null,
@@ -65,7 +81,7 @@ export default async function DegreeAgentPage({
             nextOccurrence:
               raw.nextOccurrence instanceof Date
                 ? raw.nextOccurrence.toISOString()
-                : raw.nextOccurrence ?? null,
+                : (raw.nextOccurrence ?? null),
           }
         : null
     } catch {

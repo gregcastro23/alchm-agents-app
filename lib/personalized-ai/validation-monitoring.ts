@@ -1,10 +1,7 @@
 // Comprehensive Validation & Monitoring System for Personalized AI Training
 // Ensuring Training Effectiveness, System Performance, and User Experience Quality
 
-import type {
-  TrainingSession,
-  TrainingActivity,
-} from './training-interface-design'
+import type { TrainingSession, TrainingActivity } from './training-interface-design'
 
 import { trainingDataManager } from './data-architecture'
 import type { UserSubmission, SubmissionProcessingResult } from './training-orchestration'

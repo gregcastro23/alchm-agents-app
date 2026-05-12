@@ -15,6 +15,7 @@ yarn add workflow  # Already done
 ## What is a Workflow?
 
 Workflows are long-running processes that can:
+
 - **Suspend and resume** without losing state
 - **Retry failed steps** automatically
 - **Pause for days/weeks** without consuming resources
@@ -27,6 +28,7 @@ Workflows are long-running processes that can:
 Located at [lib/workflows/consciousness-evolution.ts](lib/workflows/consciousness-evolution.ts)
 
 This workflow:
+
 - Tracks agent consciousness evolution over time
 - Checks consciousness level every 7 days (configurable)
 - Updates agent stats when evolution occurs
@@ -78,6 +80,7 @@ export async function initializeAgentConsciousness(params: {...}) {
 ```
 
 Available steps:
+
 - `initializeAgentConsciousness` - Set up tracking
 - `trackAgentInteraction` - Query interaction history
 - `assessConsciousnessLevel` - Calculate new consciousness level
@@ -90,6 +93,7 @@ Available steps:
 Located at [app/api/workflows/consciousness-evolution/route.ts](app/api/workflows/consciousness-evolution/route.ts)
 
 **Start a workflow:**
+
 ```bash
 curl -X POST http://localhost:3000/api/workflows/consciousness-evolution \
   -H "Content-Type: application/json" \
@@ -102,6 +106,7 @@ curl -X POST http://localhost:3000/api/workflows/consciousness-evolution \
 ```
 
 **Check workflow status:**
+
 ```bash
 curl http://localhost:3000/api/workflows/consciousness-evolution?workflowId=consciousness-leonardo-da-vinci-user123-1234567890
 ```
@@ -115,20 +120,20 @@ Key configuration options:
 ```typescript
 export default defineConfig({
   runtime: {
-    maxDuration: 24 * 60 * 60 * 1000,  // 24 hours
+    maxDuration: 24 * 60 * 60 * 1000, // 24 hours
     retry: {
       maxAttempts: 3,
-      backoff: "exponential",
+      backoff: 'exponential',
     },
   },
   storage: {
-    type: process.env.NODE_ENV === "production" ? "redis" : "memory",
+    type: process.env.NODE_ENV === 'production' ? 'redis' : 'memory',
     redis: {
       url: process.env.REDIS_URL,
-      keyPrefix: "workflow:",
+      keyPrefix: 'workflow:',
     },
   },
-});
+})
 ```
 
 ## Database Schema
@@ -162,6 +167,7 @@ model Notification {
 ```
 
 **Run migrations:**
+
 ```bash
 npx prisma migrate dev --name add_workflow_models
 npx prisma generate
@@ -170,21 +176,25 @@ npx prisma generate
 ## How It Works
 
 ### 1. Durable State
+
 - Workflow state is persisted to Redis (production) or memory (development)
 - If the server crashes, workflows resume from last checkpoint
 - No progress is lost
 
 ### 2. Sleep Without Resources
+
 - `await sleep("7 days")` pauses the workflow without consuming server resources
 - Workflow wakes up automatically after the sleep period
 - Perfect for scheduled tasks
 
 ### 3. Automatic Retries
+
 - Steps retry automatically on failure (configurable)
 - Exponential backoff prevents overwhelming services
 - Fatal errors can be thrown to stop retries
 
 ### 4. Observability
+
 - View workflow execution traces
 - Monitor step-by-step progress
 - Track failures and retries
@@ -193,9 +203,11 @@ npx prisma generate
 ## Use Cases in Planetary Agents
 
 ### Current Implementation
+
 - **Consciousness Evolution**: Track agent growth over time
 
 ### Future Possibilities
+
 - **User Onboarding**: Multi-step onboarding with delays
 - **Celestial Events**: Schedule notifications for planetary events
 - **Agent Training**: Long-running training processes
@@ -206,45 +218,51 @@ npx prisma generate
 ## Best Practices
 
 ### 1. Mark Long-Running Functions
+
 ```typescript
 export async function myWorkflow() {
-  "use workflow";  // Add this directive
+  'use workflow' // Add this directive
   // Workflow implementation...
 }
 ```
 
 ### 2. Make Steps Retriable
+
 ```typescript
 export async function myStep() {
-  "use step";  // Add this directive
+  'use step' // Add this directive
   // Step implementation...
 }
 ```
 
 ### 3. Handle Failures Gracefully
+
 ```typescript
-import { FatalError } from "workflow";
+import { FatalError } from 'workflow'
 
 // Throw FatalError to prevent retries
 if (criticalError) {
-  throw new FatalError("Cannot proceed");
+  throw new FatalError('Cannot proceed')
 }
 
 // Regular errors will be retried
-throw new Error("Temporary failure");
+throw new Error('Temporary failure')
 ```
 
 ### 4. Use Sleep for Delays
+
 ```typescript
 // Don't do this:
-await new Promise(resolve => setTimeout(resolve, 7 * 24 * 60 * 60 * 1000));
+await new Promise(resolve => setTimeout(resolve, 7 * 24 * 60 * 60 * 1000))
 
 // Do this instead:
-await sleep("7 days");
+await sleep('7 days')
 ```
 
 ### 5. Keep Steps Idempotent
+
 Steps should be safe to retry:
+
 ```typescript
 export async function createRecord(params) {
   "use step";
@@ -261,6 +279,7 @@ export async function createRecord(params) {
 ## Testing Workflows
 
 ### Local Development
+
 ```bash
 # Start the dev server
 yarn dev
@@ -277,6 +296,7 @@ curl -X POST http://localhost:3000/api/workflows/consciousness-evolution \
 ```
 
 ### Production
+
 - Set `REDIS_URL` in environment variables
 - Workflows persist across deployments
 - Monitor via workflow observability dashboard
@@ -284,17 +304,20 @@ curl -X POST http://localhost:3000/api/workflows/consciousness-evolution \
 ## Troubleshooting
 
 ### Workflow Not Starting
+
 - Check that workflow directive is present: `"use workflow"`
 - Verify API endpoint is accessible
 - Check server logs for errors
 
 ### Step Failing
+
 - Review step implementation for errors
 - Check database connectivity
 - Verify external service availability
 - Look for FatalError throws
 
 ### Workflow Not Resuming
+
 - Ensure Redis is configured in production
 - Check Redis connectivity
 - Verify workflow storage configuration

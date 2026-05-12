@@ -5,6 +5,7 @@
 You are implementing the Retrieval-Augmented Generation (RAG) system for Planetary Agents, an astrological AI platform combining celestial wisdom with modern AI. The RAG system was previously removed due to compatibility issues with llamaindex, and stub functions were created to maintain API compatibility.
 
 **Current State:**
+
 - RAG is **disabled** by default (`USE_RAG_GENERATION=false`)
 - Stub functions exist in `lib/rag/monica-rag-wrapper.ts`
 - RAG is integrated into the Monica agent at `app/api/monica-agent/route.ts`
@@ -12,6 +13,7 @@ You are implementing the Retrieval-Augmented Generation (RAG) system for Planeta
 - 35+ historical agents with rich personality data available in `lib/agents/historical/`
 
 **Tech Stack:**
+
 - Next.js 15.0.3 + TypeScript 5.2.2
 - Vector Store: ChromaDB 3.0.17
 - RAG Framework: LlamaIndex 0.12.0 + LangChain 1.0.1
@@ -98,6 +100,7 @@ Implement a production-ready RAG system that:
 **Purpose:** Manage ChromaDB connection and collections
 
 **Key Functions:**
+
 ```typescript
 /**
  * Initialize ChromaDB client
@@ -142,6 +145,7 @@ export async function queryCollection(
 ```
 
 **Technical Details:**
+
 - Use ChromaDB JavaScript client from `chromadb` package
 - Implement connection pooling with retry logic
 - Add health check endpoint: `/api/vector-store/health`
@@ -149,6 +153,7 @@ export async function queryCollection(
 - Handle ChromaDB port conflicts (default 8000 conflicts with backend)
 
 **Environment Variables:**
+
 ```env
 CHROMADB_URL=http://localhost:8001  # Use 8001 to avoid backend conflict
 CHROMADB_TENANT=default_tenant
@@ -160,6 +165,7 @@ CHROMADB_DATABASE=default_database
 **Purpose:** Generate embeddings using OpenAI
 
 **Key Functions:**
+
 ```typescript
 /**
  * Generate embeddings for text
@@ -167,21 +173,18 @@ CHROMADB_DATABASE=default_database
  * - Batch size: 100 texts per request
  * - Rate limiting: 3000 RPM
  */
-export async function generateEmbeddings(
-  texts: string[]
-): Promise<number[][]>
+export async function generateEmbeddings(texts: string[]): Promise<number[][]>
 
 /**
  * Generate single embedding
  * - For query embedding
  * - Cache results (5-minute TTL)
  */
-export async function generateQueryEmbedding(
-  query: string
-): Promise<number[]>
+export async function generateQueryEmbedding(query: string): Promise<number[]>
 ```
 
 **Technical Details:**
+
 - Use `@llamaindex/openai` package
 - Implement exponential backoff for rate limits
 - Add Redis caching for frequently queried embeddings
@@ -192,6 +195,7 @@ export async function generateQueryEmbedding(
 **Purpose:** Extract and chunk agent knowledge
 
 **Key Functions:**
+
 ```typescript
 /**
  * Load all historical agents
@@ -224,11 +228,12 @@ export function extractMetadata(agent: any): DocumentMetadata
 ```
 
 **Data Structure:**
+
 ```typescript
 interface AgentDocument {
   agentId: string
   name: string
-  content: string  // Bio + personality + wisdom combined
+  content: string // Bio + personality + wisdom combined
   metadata: {
     era: string
     birthDate: string
@@ -239,7 +244,7 @@ interface AgentDocument {
 }
 
 interface DocumentChunk {
-  id: string  // agentId-chunk-0001
+  id: string // agentId-chunk-0001
   agentId: string
   content: string
   metadata: DocumentMetadata
@@ -253,6 +258,7 @@ interface DocumentChunk {
 **Purpose:** Orchestrate document processing and vectorization
 
 **Key Functions:**
+
 ```typescript
 /**
  * Main ingestion pipeline
@@ -262,13 +268,11 @@ interface DocumentChunk {
  * 4. Store in ChromaDB
  * 5. Track progress and errors
  */
-export async function ingestAgentKnowledge(
-  options?: {
-    forceReindex?: boolean
-    agentIds?: string[]  // Selective ingestion
-    progressCallback?: (progress: Progress) => void
-  }
-): Promise<IngestionResult>
+export async function ingestAgentKnowledge(options?: {
+  forceReindex?: boolean
+  agentIds?: string[] // Selective ingestion
+  progressCallback?: (progress: Progress) => void
+}): Promise<IngestionResult>
 
 /**
  * Incremental update
@@ -287,6 +291,7 @@ export async function validateIngestion(): Promise<ValidationResult>
 ```
 
 **Progress Tracking:**
+
 ```typescript
 interface Progress {
   stage: 'loading' | 'chunking' | 'embedding' | 'storing'
@@ -302,6 +307,7 @@ interface Progress {
 **Purpose:** Query vector store and retrieve relevant context
 
 **Key Functions:**
+
 ```typescript
 /**
  * Semantic search across all agents
@@ -313,9 +319,9 @@ interface Progress {
 export async function semanticSearch(
   query: string,
   options?: {
-    topK?: number  // Default: 5
-    threshold?: number  // Minimum relevance: 0.7
-    agentIds?: string[]  // Filter by specific agents
+    topK?: number // Default: 5
+    threshold?: number // Minimum relevance: 0.7
+    agentIds?: string[] // Filter by specific agents
     includeMetadata?: boolean
   }
 ): Promise<SearchResult[]>
@@ -345,13 +351,14 @@ export async function multiAgentSearch(
 ```
 
 **Data Structures:**
+
 ```typescript
 interface SearchResult {
   id: string
   agentId: string
   agentName: string
   content: string
-  score: number  // Cosine similarity (0-1)
+  score: number // Cosine similarity (0-1)
   metadata: {
     chunkIndex: number
     source: string
@@ -374,6 +381,7 @@ interface GroupedSearchResults {
 **Purpose:** Integrate retrieved context with AI generation
 
 **Key Functions:**
+
 ```typescript
 /**
  * Generate with RAG enhancement
@@ -382,12 +390,10 @@ interface GroupedSearchResults {
  * - Generate with Claude/GPT
  * - Return response + metadata
  */
-export async function generateWithRAG(
-  options: RAGGenerateOptions
-): Promise<RAGResult>
+export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGResult>
 
 interface RAGGenerateOptions {
-  agent: any  // Historical or planetary agent
+  agent: any // Historical or planetary agent
   agentId: string
   userMessage: string
   systemPrompt: string
@@ -402,7 +408,7 @@ interface RAGGenerateOptions {
 }
 
 interface RAGResult {
-  text: string  // AI-generated response (empty if RAG used)
+  text: string // AI-generated response (empty if RAG used)
   ragMetadata: {
     enabled: boolean
     ragUsed: boolean
@@ -413,14 +419,15 @@ interface RAGResult {
       excerpt: string
       relevance: number
     }[]
-    queryTime: number  // ms
-    totalTime: number  // ms
+    queryTime: number // ms
+    totalTime: number // ms
   }
 }
 ```
 
 **Context Building Strategy:**
-```typescript
+
+````typescript
 /**
  * Build enhanced context from search results
  *
@@ -437,38 +444,35 @@ interface RAGResult {
  * [Relevance: 0.85]
  * ```
  */
-function buildEnhancedContext(
-  results: SearchResult[],
-  maxTokens: number = 1500
-): string
-```
+function buildEnhancedContext(results: SearchResult[], maxTokens: number = 1500): string
+````
 
 #### 3.2 Monica RAG Wrapper (`lib/rag/monica-rag-wrapper.ts`)
 
 **Purpose:** Replace stub with full implementation
 
 **Requirements:**
+
 - Maintain existing interface for backward compatibility
 - Feature flag check: `USE_RAG_GENERATION`
 - Fallback to non-RAG generation if disabled or errored
 - Integrate with Galileo observability if enabled
 
 **Enhanced Implementation:**
+
 ```typescript
 import { semanticSearch } from '@/lib/llamaindex/semantic-search'
 import { generateText } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
 
-export async function generateWithRAG(
-  options: RAGGenerateOptions
-): Promise<RAGResult> {
+export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGResult> {
   const startTime = Date.now()
 
   // Check feature flag
   if (!process.env.USE_RAG_GENERATION || process.env.USE_RAG_GENERATION === 'false') {
     return {
       text: '',
-      ragMetadata: { enabled: false, ragUsed: false }
+      ragMetadata: { enabled: false, ragUsed: false },
     }
   }
 
@@ -478,7 +482,7 @@ export async function generateWithRAG(
       topK: options.ragConfig?.topK || 5,
       threshold: options.ragConfig?.threshold || 0.7,
       agentIds: options.agentId ? [options.agentId] : undefined,
-      includeMetadata: true
+      includeMetadata: true,
     })
 
     // 2. Build enhanced context
@@ -498,9 +502,9 @@ Use the above context to enhance your response, but maintain your unique persona
       system: enhancedSystemPrompt,
       messages: [
         ...(options.conversationHistory || []),
-        { role: 'user', content: options.userMessage }
+        { role: 'user', content: options.userMessage },
       ],
-      temperature: 0.7
+      temperature: 0.7,
     })
 
     // 4. Track metrics
@@ -516,13 +520,12 @@ Use the above context to enhance your response, but maintain your unique persona
           agentId: r.agentId,
           agentName: r.agentName,
           excerpt: r.content.substring(0, 100) + '...',
-          relevance: r.score
+          relevance: r.score,
         })),
         queryTime: totalTime,
-        totalTime
-      }
+        totalTime,
+      },
     }
-
   } catch (error) {
     console.error('RAG generation failed, falling back to standard generation:', error)
 
@@ -532,8 +535,8 @@ Use the above context to enhance your response, but maintain your unique persona
       ragMetadata: {
         enabled: true,
         ragUsed: false,
-        error: error.message
-      }
+        error: error.message,
+      },
     }
   }
 }
@@ -543,10 +546,10 @@ export function getRAGStatus() {
 
   return {
     enabled,
-    vectorStoreReady: enabled,  // TODO: Add actual health check
+    vectorStoreReady: enabled, // TODO: Add actual health check
     message: enabled
       ? 'RAG is enabled and operational'
-      : 'RAG is disabled (set USE_RAG_GENERATION=true)'
+      : 'RAG is disabled (set USE_RAG_GENERATION=true)',
   }
 }
 ```
@@ -626,7 +629,7 @@ export async function POST(request: Request) {
       topK: topK || 5,
       threshold: threshold || 0.7,
       agentIds,
-      includeMetadata: true
+      includeMetadata: true,
     })
 
     return Response.json({
@@ -636,16 +639,18 @@ export async function POST(request: Request) {
         agentName: r.agentName,
         content: r.content,
         relevance: r.score,
-        metadata: r.metadata
+        metadata: r.metadata,
       })),
-      count: results.length
+      count: results.length,
     })
-
   } catch (error) {
     console.error('Search failed:', error)
-    return Response.json({
-      error: error.message
-    }, { status: 500 })
+    return Response.json(
+      {
+        error: error.message,
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -688,18 +693,20 @@ export async function POST(request: Request) {
       // Multi-agent search
       results = await multiAgentSearch(concept, agentIds, topK || 3)
     } else {
-      return Response.json({
-        error: 'Either agentId or agentIds must be provided'
-      }, { status: 400 })
+      return Response.json(
+        {
+          error: 'Either agentId or agentIds must be provided',
+        },
+        { status: 400 }
+      )
     }
 
     return Response.json({
       concept,
       results,
       agentId,
-      agentIds
+      agentIds,
     })
-
   } catch (error) {
     console.error('Agent semantic search failed:', error)
     return Response.json({ error: error.message }, { status: 500 })
@@ -802,8 +809,8 @@ await logToGalileo({
     topScore: searchResults[0]?.score,
     queryTime,
     totalTime,
-    ragUsed: true
-  }
+    ragUsed: true,
+  },
 })
 ```
 
@@ -894,21 +901,25 @@ RAG_EMBEDDING_CACHE_TTL=3600  # 1 hour
 ## Implementation Order
 
 ### Week 1: Core Infrastructure
+
 - [ ] Day 1-2: Vector store manager + embeddings service
 - [ ] Day 3-4: Document loader + ingestion pipeline
 - [ ] Day 5: Testing and validation
 
 ### Week 2: Semantic Search
+
 - [ ] Day 1-2: Semantic search implementation
 - [ ] Day 3: Agent-specific search
 - [ ] Day 4-5: Multi-agent search and testing
 
 ### Week 3: RAG Integration
+
 - [ ] Day 1-2: RAG generator
 - [ ] Day 3: Monica RAG wrapper
 - [ ] Day 4-5: API endpoints
 
 ### Week 4: Testing & Optimization
+
 - [ ] Day 1-2: Comprehensive testing
 - [ ] Day 3: Performance optimization
 - [ ] Day 4: Observability integration
@@ -920,7 +931,7 @@ RAG_EMBEDDING_CACHE_TTL=3600  # 1 hour
 - [ ] Semantic search returns relevant results (>0.7 relevance)
 - [ ] RAG enhances Monica responses with agent knowledge
 - [ ] Sub-500ms total RAG response time
-- [ ] >90% uptime with graceful degradation
+- [ ] > 90% uptime with graceful degradation
 - [ ] Zero breaking changes to existing Monica API
 - [ ] Comprehensive test coverage (>80%)
 - [ ] Production deployment with monitoring
@@ -950,18 +961,22 @@ curl -X POST http://localhost:3000/api/vector-store/query \
 ## Common Issues & Solutions
 
 ### Issue 1: ChromaDB Port Conflict
+
 **Problem:** Port 8000 conflicts with Express backend
 **Solution:** Use port 8001 for ChromaDB
 
 ### Issue 2: LlamaIndex Module Errors
+
 **Problem:** `Can't resolve '../agent/dist/index.js'`
 **Solution:** Use LangChain instead or import from correct paths
 
 ### Issue 3: Embedding Rate Limits
+
 **Problem:** OpenAI rate limiting (3000 RPM)
 **Solution:** Implement batch processing with exponential backoff
 
 ### Issue 4: Large Context Windows
+
 **Problem:** Too much retrieved context exceeds token limits
 **Solution:** Limit context to 1500 tokens, summarize if needed
 

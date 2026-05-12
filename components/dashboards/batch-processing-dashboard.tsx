@@ -99,13 +99,13 @@ export default function BatchProcessingDashboard() {
   const fetchRealData = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/batch-metrics')
-      
+
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`)
       }
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
         setMetrics(data.metrics)
         setJobs(data.jobs)

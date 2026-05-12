@@ -95,21 +95,25 @@ export function createElementObject(): Record<string, number> {
 Each zodiac sign is associated with one of the four elements:
 
 ### Fire Signs (Spirit-Oriented)
+
 - **Aries** (Cardinal Fire)
 - **Leo** (Fixed Fire)
 - **Sagittarius** (Mutable Fire)
 
 ### Water Signs (Essence-Oriented)
+
 - **Cancer** (Cardinal Water)
 - **Scorpio** (Fixed Water)
 - **Pisces** (Mutable Water)
 
 ### Earth Signs (Matter-Oriented)
+
 - **Taurus** (Fixed Earth)
 - **Virgo** (Mutable Earth)
 - **Capricorn** (Cardinal Earth)
 
 ### Air Signs (Substance-Oriented)
+
 - **Gemini** (Mutable Air)
 - **Libra** (Cardinal Air)
 - **Aquarius** (Fixed Air)
@@ -119,51 +123,61 @@ Each zodiac sign is associated with one of the four elements:
 Each planet has **Diurnal** and **Nocturnal** elemental associations that determine how it interacts with zodiac signs:
 
 ### Sun
+
 - **Diurnal Element**: Fire
 - **Nocturnal Element**: Fire
 - **Alchemical Nature**: Pure Spirit (S:1, E:0, M:0, B:0)
 
 ### Moon
+
 - **Diurnal Element**: Water
 - **Nocturnal Element**: Water
 - **Alchemical Nature**: Essence/Matter (S:0, E:1, M:1, B:0)
 
 ### Mercury
+
 - **Diurnal Element**: Air
 - **Nocturnal Element**: Earth
 - **Alchemical Nature**: Spirit/Substance (S:1, E:0, M:0, B:1)
 
 ### Venus
+
 - **Diurnal Element**: Water
 - **Nocturnal Element**: Earth
 - **Alchemical Nature**: Essence/Matter (S:0, E:1, M:1, B:0)
 
 ### Mars
+
 - **Diurnal Element**: Fire
 - **Nocturnal Element**: Water
 - **Alchemical Nature**: Matter/Substance (S:0, E:0, M:1, B:1)
 
 ### Jupiter
+
 - **Diurnal Element**: Air
 - **Nocturnal Element**: Fire
 - **Alchemical Nature**: Spirit/Essence (S:1, E:1, M:0, B:0)
 
 ### Saturn
+
 - **Diurnal Element**: Air
 - **Nocturnal Element**: Earth
 - **Alchemical Nature**: Spirit/Matter (S:1, E:0, M:1, B:0)
 
 ### Uranus
+
 - **Diurnal Element**: Water
 - **Nocturnal Element**: Air
 - **Alchemical Nature**: Essence/Matter (S:0, E:1, M:1, B:0)
 
 ### Neptune
+
 - **Diurnal Element**: Water
 - **Nocturnal Element**: Water
 - **Alchemical Nature**: Essence/Substance (S:0, E:1, M:0, B:1)
 
 ### Pluto
+
 - **Diurnal Element**: Earth
 - **Nocturnal Element**: Water
 - **Alchemical Nature**: Essence/Matter (S:0, E:1, M:1, B:0)
@@ -185,6 +199,7 @@ Each planet in a zodiac sign contributes **+1** to that sign's element:
 The planet's elemental nature interacts with the sign's element:
 
 #### For Sun and Moon (Time-Based)
+
 - Uses **Diurnal Element** if birth time is 5:00-17:59
 - Uses **Nocturnal Element** if birth time is before 5:00 or after 17:59
 - If planet element matches sign element: **+1**
@@ -204,6 +219,7 @@ The planet's elemental nature interacts with the sign's element:
 ```
 
 #### For Other Planets (Dual Element Check)
+
 - Checks both **Diurnal** and **Nocturnal** elements
 - If either matches sign element: **+1**
 - If neither matches:
@@ -337,6 +353,7 @@ Elements are used to calculate thermodynamic metrics:
 ```
 
 These values contribute to:
+
 - **Heat**: (Spirit² + Fire²) / (Substance + Essence + Matter + Water + Air + Earth)²
 - **Entropy**: (Spirit² + Substance² + Fire² + Air²) / (Essence + Matter + Earth + Water)²
 - **Reactivity**: (Spirit² + Substance² + Essence² + Fire² + Air² + Water²) / (Matter + Earth)²
@@ -345,24 +362,28 @@ These values contribute to:
 ## Elemental Philosophy
 
 ### Fire (Spirit-Oriented)
+
 - **Nature**: Active, transformative, energetic
 - **Qualities**: Initiative, courage, passion, creativity
 - **Alchemical Role**: Connected to Spirit in the alchemical system
 - **Zodiac Signs**: Aries, Leo, Sagittarius
 
 ### Water (Essence-Oriented)
+
 - **Nature**: Emotional, flowing, intuitive
 - **Qualities**: Sensitivity, depth, empathy, adaptability
 - **Alchemical Role**: Connected to Essence in the alchemical system
 - **Zodiac Signs**: Cancer, Scorpio, Pisces
 
 ### Earth (Matter-Oriented)
+
 - **Nature**: Stable, material, practical
 - **Qualities**: Groundedness, persistence, reliability, manifestation
 - **Alchemical Role**: Connected to Matter in the alchemical system
 - **Zodiac Signs**: Taurus, Virgo, Capricorn
 
 ### Air (Substance-Oriented)
+
 - **Nature**: Intellectual, communicative, mobile
 - **Qualities**: Curiosity, versatility, connection, learning
 - **Alchemical Role**: Connected to Substance in the alchemical system
@@ -380,6 +401,7 @@ These values contribute to:
 ## Summary
 
 Fire, Water, Earth, and Air are the four fundamental quantities that:
+
 - Represent the energetic building blocks of consciousness
 - Are calculated from planetary positions and zodiac sign associations
 - Contribute to alchemical values (Spirit, Essence, Matter, Substance)
@@ -388,4 +410,3 @@ Fire, Water, Earth, and Air are the four fundamental quantities that:
 - Each element is individually valuable and contributes uniquely
 
 The elemental system is the foundation of the alchemical calculations that transform astrological data into consciousness metrics and alchemical properties.
-

@@ -9,6 +9,7 @@
 ## Overview
 
 Phase 4 transforms the RAG system from backend infrastructure into a complete production feature with:
+
 - User-facing controls and toggles
 - Real-time analytics and monitoring
 - Performance optimization
@@ -22,25 +23,31 @@ Phase 4 transforms the RAG system from backend infrastructure into a complete pr
 ### 1. UI/UX Features (User-Facing)
 
 #### A. RAG Toggle Component
+
 **Purpose:** Let users enable/disable RAG per conversation
 **Location:** Chat interface settings panel
 **Features:**
+
 - ✅ Per-agent RAG toggle
 - ✅ Visual indicator when RAG is active
 - ✅ Persistent user preferences
 - ✅ Real-time toggle without page refresh
 
 #### B. Source Citation Display
+
 **Purpose:** Show which historical documents informed the response
 **Features:**
+
 - ✅ Inline source badges
 - ✅ Relevance scores displayed
 - ✅ Click to expand full source text
 - ✅ Agent attribution per source
 
 #### C. RAG Performance Indicator
+
 **Purpose:** Visual feedback on RAG quality
 **Features:**
+
 - ✅ Loading states for RAG retrieval
 - ✅ Relevance confidence meter
 - ✅ Number of sources used badge
@@ -51,21 +58,27 @@ Phase 4 transforms the RAG system from backend infrastructure into a complete pr
 ### 2. Analytics & Monitoring (Backend)
 
 #### A. RAG Usage Tracking
+
 **Metrics:**
+
 - RAG requests per agent
 - RAG success/fallback rate
 - Average relevance scores
 - User preference distribution
 
 #### B. Performance Monitoring
+
 **Metrics:**
+
 - Query latency (p50, p95, p99)
 - Document retrieval time
 - Generation time with/without RAG
 - Cache hit rates
 
 #### C. Quality Metrics
+
 **Metrics:**
+
 - User feedback on RAG responses
 - Source relevance distribution
 - Conversation length with/without RAG
@@ -76,18 +89,21 @@ Phase 4 transforms the RAG system from backend infrastructure into a complete pr
 ### 3. Production Optimization
 
 #### A. Caching Strategy
+
 - Redis integration for embeddings
 - Query result caching (5-minute TTL)
 - Conversation context caching
 - Warm-up cache for popular queries
 
 #### B. Performance Tuning
+
 - Parallel query execution
 - Batch embedding generation
 - Connection pooling
 - Query result pagination
 
 #### C. Error Handling
+
 - Graceful degradation
 - Retry logic with exponential backoff
 - Circuit breaker for ChromaDB
@@ -98,7 +114,9 @@ Phase 4 transforms the RAG system from backend infrastructure into a complete pr
 ### 4. Admin Features
 
 #### A. RAG Dashboard
+
 **Sections:**
+
 - System health overview
 - Real-time query monitoring
 - Performance graphs (latency, relevance)
@@ -106,14 +124,18 @@ Phase 4 transforms the RAG system from backend infrastructure into a complete pr
 - Error logs
 
 #### B. Configuration Panel
+
 **Controls:**
+
 - Feature flag management
 - Threshold adjustments
 - Cache TTL settings
 - Debug mode toggle
 
 #### C. Analytics Reports
+
 **Reports:**
+
 - Daily/weekly RAG usage summary
 - Top performing agents
 - Query type distribution
@@ -124,24 +146,28 @@ Phase 4 transforms the RAG system from backend infrastructure into a complete pr
 ## Implementation Plan
 
 ### Week 1: UI/UX (Days 1-3)
+
 - [ ] RAG toggle component
 - [ ] Source citation display
 - [ ] Performance indicators
 - [ ] User preference storage
 
 ### Week 1: Analytics (Days 4-5)
+
 - [ ] Usage tracking system
 - [ ] Performance monitoring
 - [ ] Analytics API endpoints
 - [ ] Database schema for metrics
 
 ### Week 2: Optimization (Days 6-8)
+
 - [ ] Redis caching integration
 - [ ] Query optimization
 - [ ] Connection pooling
 - [ ] Load testing
 
 ### Week 2: Admin (Days 9-10)
+
 - [ ] Admin dashboard UI
 - [ ] Configuration panel
 - [ ] Analytics reports
@@ -152,24 +178,28 @@ Phase 4 transforms the RAG system from backend infrastructure into a complete pr
 ## Success Criteria
 
 ### UI/UX
+
 - ✅ RAG toggle accessible in <2 clicks
 - ✅ Source citations visible and readable
 - ✅ Loading states < 100ms
 - ✅ User preferences persist across sessions
 
 ### Performance
+
 - ✅ P95 latency < 500ms
 - ✅ Cache hit rate > 60%
 - ✅ RAG success rate > 95%
 - ✅ Error rate < 1%
 
 ### Analytics
+
 - ✅ 100% request tracking
 - ✅ Real-time metrics (< 5s delay)
 - ✅ Historical data retention (90 days)
 - ✅ Export capabilities (CSV, JSON)
 
 ### Production
+
 - ✅ Zero downtime deployment
 - ✅ Automatic health checks
 - ✅ Alert system for failures
@@ -180,6 +210,7 @@ Phase 4 transforms the RAG system from backend infrastructure into a complete pr
 ## Technology Stack
 
 ### Frontend
+
 - React 18.3.1
 - TypeScript
 - Tailwind CSS
@@ -187,12 +218,14 @@ Phase 4 transforms the RAG system from backend infrastructure into a complete pr
 - Recharts for analytics
 
 ### Backend
+
 - Next.js 15.0.3 API routes
 - Prisma for metrics storage
 - Redis for caching
 - ChromaDB for vectors
 
 ### Monitoring
+
 - Custom analytics system
 - Performance observability
 - Error tracking
@@ -203,6 +236,7 @@ Phase 4 transforms the RAG system from backend infrastructure into a complete pr
 ## Deliverables
 
 ### Code
+
 1. `components/rag/rag-toggle.tsx` - RAG enable/disable
 2. `components/rag/source-citation.tsx` - Source display
 3. `components/rag/performance-indicator.tsx` - Visual feedback
@@ -211,12 +245,14 @@ Phase 4 transforms the RAG system from backend infrastructure into a complete pr
 6. `app/admin/rag-dashboard/page.tsx` - Admin UI
 
 ### Documentation
+
 1. User guide for RAG features
 2. Admin dashboard documentation
 3. Analytics API reference
 4. Performance optimization guide
 
 ### Testing
+
 1. E2E tests for UI components
 2. Integration tests for analytics
 3. Load tests for caching
@@ -227,16 +263,19 @@ Phase 4 transforms the RAG system from backend infrastructure into a complete pr
 ## Risk Mitigation
 
 ### Performance Risks
+
 - **Risk:** RAG adds latency
 - **Mitigation:** Aggressive caching, parallel queries
 - **Fallback:** Disable RAG for slow queries
 
 ### Quality Risks
+
 - **Risk:** Irrelevant sources shown
 - **Mitigation:** Reranking, user feedback loop
 - **Fallback:** Hide sources below threshold
 
 ### Adoption Risks
+
 - **Risk:** Users don't enable RAG
 - **Mitigation:** Smart defaults, clear value prop
 - **Fallback:** A/B testing to optimize

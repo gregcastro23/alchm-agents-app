@@ -1,9 +1,9 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // Files to combine
 const agentFiles = [
@@ -11,51 +11,59 @@ const agentFiles = [
   'lib/agents/ancient-agents.ts',
   'lib/agents/medieval-agents.ts',
   'lib/agents/enlightenment-agents.ts',
-  'lib/agents/modern-agents.ts'
-];
+  'lib/agents/modern-agents.ts',
+]
 
-let allAgents = [];
+let allAgents = []
 
 // Extract agents from each file
 for (const filePath of agentFiles) {
-  const fullPath = path.join(__dirname, filePath);
-  if (!fs.existsSync(fullPath)) continue;
+  const fullPath = path.join(__dirname, filePath)
+  if (!fs.existsSync(fullPath)) continue
 
-  const content = fs.readFileSync(fullPath, 'utf8');
-  console.log(`Processing ${filePath}...`);
+  const content = fs.readFileSync(fullPath, 'utf8')
+  console.log(`Processing ${filePath}...`)
 
   // Look for agent arrays
-  const arrayMatches = content.match(/export const \w+_AGENTS: CraftedAgent\[\] = \[([\s\S]*?)\];/g);
+  const arrayMatches = content.match(/export const \w+_AGENTS: CraftedAgent\[\] = \[([\s\S]*?)\];/g)
   if (arrayMatches) {
     for (const match of arrayMatches) {
-      const agentsContent = match.replace(/export const \w+_AGENTS: CraftedAgent\[\] = /, '').replace(/;$/, '');
+      const agentsContent = match
+        .replace(/export const \w+_AGENTS: CraftedAgent\[\] = /, '')
+        .replace(/;$/, '')
       try {
         // This is tricky because we need to parse JavaScript, but let's try a simpler approach
-        const agentObjects = agentsContent.match(/\{\s*id: '[^']+',\s*name: '[^']+',\s*title: '[^']+',[\s\S]*?\},?/g);
+        const agentObjects = agentsContent.match(
+          /\{\s*id: '[^']+',\s*name: '[^']+',\s*title: '[^']+',[\s\S]*?\},?/g
+        )
         if (agentObjects) {
           for (const agent of agentObjects) {
             if (agent.trim()) {
-              allAgents.push(agent.trim().replace(/,$/, ''));
+              allAgents.push(agent.trim().replace(/,$/, ''))
             }
           }
         }
       } catch (e) {
-        console.log(`Error parsing ${filePath}:`, e.message);
+        console.log(`Error parsing ${filePath}:`, e.message)
       }
     }
   }
 
   // Look for individual agent exports
-  const individualMatches = content.match(/export const [A-Z_]+_AS_CRAFTED_AGENT: CraftedAgent = \{[\s\S]*?\};/g);
+  const individualMatches = content.match(
+    /export const [A-Z_]+_AS_CRAFTED_AGENT: CraftedAgent = \{[\s\S]*?\};/g
+  )
   if (individualMatches) {
     for (const match of individualMatches) {
-      const agentContent = match.replace(/export const [A-Z_]+_AS_CRAFTED_AGENT: CraftedAgent = /, '').replace(/;$/, '');
-      allAgents.push(agentContent);
+      const agentContent = match
+        .replace(/export const [A-Z_]+_AS_CRAFTED_AGENT: CraftedAgent = /, '')
+        .replace(/;$/, '')
+      allAgents.push(agentContent)
     }
   }
 }
 
-console.log(`Found ${allAgents.length} agents total`);
+console.log(`Found ${allAgents.length} agents total`)
 
 // Now create the consolidated file
 const consolidatedContent = `// Demo Agents - Streamlined Historical Consciousness Showcase
@@ -85,7 +93,7 @@ export const getAllDemoAgents = (): CraftedAgent[] => {
 export const getMonicaAgent = (): CraftedAgent => {
   return MONICA_AS_CRAFTED_AGENT
 }
-`;
+`
 
-fs.writeFileSync(path.join(__dirname, 'lib/demo-agents.ts'), consolidatedContent);
-console.log('Created consolidated demo-agents.ts file');
+fs.writeFileSync(path.join(__dirname, 'lib/demo-agents.ts'), consolidatedContent)
+console.log('Created consolidated demo-agents.ts file')

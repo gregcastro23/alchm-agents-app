@@ -191,7 +191,5 @@ export const getAllHistoricalAgents = () => {
 }
 
 export const getHistoricalAgentByName = (name: string) => {
-  return HISTORICAL_AGENTS.find(agent =>
-    agent.name.toLowerCase() === name.toLowerCase()
-  )
+  return HISTORICAL_AGENTS.find(agent => agent.name.toLowerCase() === name.toLowerCase())
 }

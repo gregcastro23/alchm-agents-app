@@ -82,16 +82,19 @@ export async function POST(req: Request) {
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
       async start(controller) {
-        const send = (obj: any) => controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`))
+        const send = (obj: any) =>
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`))
         send({ type: 'meta', ttfbMs: 0, routing: { modelId: 'mock', reason: 'default' } })
         for (const chunk of mockText.match(/.{1,60}/g) || []) {
           send({ type: 'token', token: chunk })
         }
         send({ type: 'done' })
         controller.close()
-      }
+      },
     })
-    return new Response(stream, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' } })
+    return new Response(stream, {
+      headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
+    })
   }
 
   const encoder = new TextEncoder()
@@ -101,7 +104,7 @@ export async function POST(req: Request) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`))
       try {
         const start = Date.now()
-        
+
         const result = await streamText({
           model: activeModel,
           system: sys,
@@ -110,8 +113,8 @@ export async function POST(req: Request) {
           temperature: temp,
         } as any)
 
-        let isFirstChunk = true;
-        
+        let isFirstChunk = true
+
         for await (const chunk of result.textStream) {
           if (isFirstChunk) {
             const ttfb = Date.now() - start
@@ -120,9 +123,9 @@ export async function POST(req: Request) {
           }
           send({ type: 'token', token: chunk })
         }
-        
-        const fullText = await result.text;
-        
+
+        const fullText = await result.text
+
         // envelope
         const envelope = MonicaResponseHandler.formatResponse(fullText, {
           userMessage: userMsg,

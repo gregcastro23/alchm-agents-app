@@ -5,6 +5,7 @@
 ### Problem Analysis
 
 **Error from Logs:**
+
 ```
 Cannot find module 'next/dist/compiled/source-map'
 Require stack:
@@ -13,6 +14,7 @@ Require stack:
 ```
 
 **Affected Endpoints (ALL returning 500):**
+
 - `/api/monica-agent`
 - `/api/planetary-positions`
 - `/api/moment-recommendations`
@@ -22,12 +24,14 @@ Require stack:
 - `/gallery/chat/[id]` (dynamic routes)
 
 **Working (prerendered static only):**
+
 - `/gallery/chat/socrates` - 200
 - `/gallery/chat/leonardo-da-vinci` - 200
 
 ### Root Cause
 
 **Version History:**
+
 1. **Next.js 15.0.3**: ✅ source-map works, ❌ work-unit-async-storage error
 2. **Next.js 15.5.6**: ❌ source-map broken, ✅ work-unit-async-storage fixed
 3. **Next.js 15.5.3**: 🎯 Target version (middle ground)
@@ -35,6 +39,7 @@ Require stack:
 **Issue:** Next.js 15.5.6 has a critical bug where the internal `next/dist/compiled/source-map` module is not properly bundled in Vercel's serverless functions.
 
 **Git History Shows:**
+
 - This is a **recurring issue** (7+ previous fix attempts)
 - Commit 23ccb5ee: "Downgrade Next.js to 15.0.3 to resolve source-map error" (worked!)
 - Commit d92bdd03: "Upgrade to 15.5.6 to resolve work-unit-async-storage" (broke source-map again!)
@@ -44,23 +49,25 @@ Require stack:
 **Commit:** `4b73e6c6` - "fix: Downgrade Next.js to 15.5.3 to resolve source-map module error"
 
 **Changes Applied:**
+
 ```json
 {
   "dependencies": {
-    "next": "15.5.3"  // was 15.5.6
+    "next": "15.5.3" // was 15.5.6
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "15.5.3",  // was 15.5.6
-    "@next/eslint-plugin-next": "15.5.3",  // was 15.5.6
-    "eslint-config-next": "15.5.3"  // was 15.5.6
+    "@next/bundle-analyzer": "15.5.3", // was 15.5.6
+    "@next/eslint-plugin-next": "15.5.3", // was 15.5.6
+    "eslint-config-next": "15.5.3" // was 15.5.6
   },
   "optionalDependencies": {
-    "@next/swc-darwin-arm64": "15.5.3"  // was 15.5.6
+    "@next/swc-darwin-arm64": "15.5.3" // was 15.5.6
   }
 }
 ```
 
 **Files Modified:**
+
 - `package.json` - All Next.js packages downgraded to 15.5.3
 - `yarn.lock` - Updated with consistent versions
 - `.yarn/install-state.gz` - Yarn cache updated
@@ -68,6 +75,7 @@ Require stack:
 ### Deployment Status
 
 **Git Push:** ✅ Complete
+
 ```bash
 To gitlab.com:xalchm/my_alchm.git
    ca108497..4b73e6c6  main -> main
@@ -78,6 +86,7 @@ To gitlab.com:xalchm/my_alchm.git
 ### Why 15.5.3?
 
 **Rationale:**
+
 - **15.0.3**: Known working for source-map, but has other issues
 - **15.5.6**: Latest, but broken source-map bundling
 - **15.5.3**: Middle-ground version likely to have:
@@ -125,6 +134,7 @@ curl -I https://planetary-agents.vercel.app/gallery/chat/marie-curie-1867
 **Fallback Options:**
 
 1. **Try Next.js 15.1.3** (intermediate version):
+
    ```bash
    # Edit package.json: change all 15.5.3 → 15.1.3
    yarn install
@@ -133,6 +143,7 @@ curl -I https://planetary-agents.vercel.app/gallery/chat/marie-curie-1867
    ```
 
 2. **Downgrade to 15.0.3** (known working):
+
    ```bash
    # Edit package.json: change all 15.5.3 → 15.0.3
    yarn install
@@ -151,11 +162,13 @@ curl -I https://planetary-agents.vercel.app/gallery/chat/marie-curie-1867
 ### Monitoring
 
 **Check Vercel Dashboard:**
+
 - https://vercel.com/gregcastro23s-projects/planetary-agents
 - Watch for "Building..." → "Ready" status
 - Check deployment logs for errors
 
 **What to Look For:**
+
 - ✅ Build completes without errors
 - ✅ No "Cannot find module" errors in logs
 - ✅ Function output shows 200 responses
@@ -164,12 +177,14 @@ curl -I https://planetary-agents.vercel.app/gallery/chat/marie-curie-1867
 ### Additional Context
 
 **Previous Fix Attempts (all failed with 15.5.6):**
+
 1. Added `source-map` as npm dependency
 2. Disabled production source maps in config
 3. Added webpack config to prevent externalization
 4. Created optimized vercel.json
 
 **Why This Should Work:**
+
 - Version 15.5.3 is a stable release between 15.0.3 (working) and 15.5.6 (broken)
 - Should have source-map fixes from early 15.x releases
 - Should not have 15.5.6's regression bugs

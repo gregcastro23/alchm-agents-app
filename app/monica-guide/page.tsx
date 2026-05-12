@@ -450,7 +450,7 @@ export default function MonicaGuidePage() {
                     <div className="flex items-center gap-2 w-full">
                       <div
                         className="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white font-bold"
-                        style={{ backgroundColor: agent.appearance?.color || "#6366f1" }}
+                        style={{ backgroundColor: agent.appearance?.color || '#6366f1' }}
                       >
                         {agent.appearance?.symbol || agent.name.charAt(0).toUpperCase().charAt(0)}
                       </div>
@@ -731,7 +731,7 @@ export default function MonicaGuidePage() {
                       <div className="text-center space-y-2">
                         <div
                           className="w-12 h-12 rounded-full mx-auto flex items-center justify-center text-white font-bold text-lg"
-                          style={{ backgroundColor: agent.appearance?.color || "#6366f1" }}
+                          style={{ backgroundColor: agent.appearance?.color || '#6366f1' }}
                         >
                           {agent.appearance?.symbol || agent.name.charAt(0).toUpperCase()}
                         </div>

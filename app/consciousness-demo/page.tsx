@@ -36,10 +36,10 @@ export default function ConsciousnessDemoPage() {
             <div className="space-y-2">
               <h3 className="font-semibold">About Consciousness Tracking</h3>
               <p className="text-sm text-muted-foreground">
-                This dashboard demonstrates our unified consciousness tracking system, which combines 7
-                measurement systems into comprehensive snapshots. All metrics are objective and
-                educational - designed to show how the alchm system (astrology + AI) works, not to
-                rank agents hierarchically.
+                This dashboard demonstrates our unified consciousness tracking system, which
+                combines 7 measurement systems into comprehensive snapshots. All metrics are
+                objective and educational - designed to show how the alchm system (astrology + AI)
+                works, not to rank agents hierarchically.
               </p>
               <div className="flex flex-wrap gap-2 mt-3">
                 <Badge variant="outline">48 Parameters</Badge>
@@ -61,20 +61,13 @@ export default function ConsciousnessDemoPage() {
             Live Data
           </Badge>
         </div>
-        <ConsciousnessDashboard
-          agentId={demoAgentId}
-          userId={demoUserId}
-        />
+        <ConsciousnessDashboard agentId={demoAgentId} userId={demoUserId} />
       </div>
 
       {/* Timeline */}
       <div className="space-y-4">
         <h2 className="text-2xl font-bold">Evolution Timeline</h2>
-        <ConsciousnessTimeline
-          agentId={demoAgentId}
-          userId={demoUserId}
-          days={30}
-        />
+        <ConsciousnessTimeline agentId={demoAgentId} userId={demoUserId} days={30} />
       </div>
 
       {/* Compact Mode Demo */}
@@ -97,11 +90,7 @@ export default function ConsciousnessDemoPage() {
             </Card>
           </div>
           <div>
-            <ConsciousnessDashboard
-              agentId={demoAgentId}
-              userId={demoUserId}
-              showCompact={true}
-            />
+            <ConsciousnessDashboard agentId={demoAgentId} userId={demoUserId} showCompact={true} />
           </div>
         </div>
       </div>

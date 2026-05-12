@@ -22,10 +22,7 @@ import {
 import UnifiedMultiAgentChat from '@/components/misc/unified-multi-agent-chat'
 import type { CraftedAgent } from '@/lib/agent-types'
 import type { ChatSession, UnifiedAgent } from '@/lib/unified-agent-types'
-import {
-  MIXED_COUNCIL_PRESETS,
-  type MixedCouncilPreset,
-} from '@/lib/council-presets'
+import { MIXED_COUNCIL_PRESETS, type MixedCouncilPreset } from '@/lib/council-presets'
 import { createDefaultPlanetaryConfigs } from '@/lib/planetary-config-helper'
 
 interface ConsciousnessLabChatProps {

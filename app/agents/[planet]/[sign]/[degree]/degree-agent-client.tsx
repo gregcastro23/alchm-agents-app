@@ -247,7 +247,9 @@ export default function DegreeAgentClient({
           {/* Current Transit Status */}
           {currentTransitData && (
             <Card
-              className={currentTransitData.isAtRequestedPosition ? 'border-green-500 border-2' : ''}
+              className={
+                currentTransitData.isAtRequestedPosition ? 'border-green-500 border-2' : ''
+              }
             >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

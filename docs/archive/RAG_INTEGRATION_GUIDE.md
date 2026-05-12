@@ -29,6 +29,7 @@ This guide covers the complete Retrieval-Augmented Generation (RAG) system integ
 ## Installation
 
 Dependencies are already installed:
+
 ```json
 {
   "llamaindex": "^0.12.0",
@@ -60,6 +61,7 @@ chroma run --host localhost --port 8000
 ### 2. Configure Environment
 
 Add to `.env.local`:
+
 ```bash
 # Vector Database
 CHROMADB_URL=http://localhost:8000
@@ -82,6 +84,7 @@ RAG_MIN_SIMILARITY=0.6
 ### 3. Ingest Agent Knowledge
 
 **Option 1: Static Knowledge (Historical Agents)**
+
 ```bash
 # Using the API endpoint
 curl -X POST http://localhost:3000/api/vector-store/ingest \
@@ -93,6 +96,7 @@ npx tsx lib/llamaindex/ingestion-pipeline.ts
 ```
 
 Expected output:
+
 ```
 Planetary Agents - Vector Store Ingestion
 ============================================================
@@ -110,6 +114,7 @@ Planetary Agents - Vector Store Ingestion
 **Option 2: Dynamic Knowledge Updates ✨ NEW (January 2025)**
 
 Update agent knowledge from external web sources:
+
 ```bash
 # Ingest from web URLs
 curl -X POST http://localhost:3000/api/knowledge-updater \
@@ -143,7 +148,7 @@ import { searchAgentsByConcept } from '@/lib/llamaindex/semantic-search'
 
 const results = await searchAgentsByConcept('creativity and innovation', {
   topK: 3,
-  minRelevance: 0.6
+  minRelevance: 0.6,
 })
 
 // Results:
@@ -158,6 +163,7 @@ const results = await searchAgentsByConcept('creativity and innovation', {
 ```
 
 **API Endpoint:**
+
 ```bash
 curl -X POST http://localhost:3000/api/agents/semantic-search \
   -H "Content-Type: application/json" \
@@ -201,7 +207,7 @@ const response = await generateRAGResponse({
   includeMemory: true,
   maxKnowledgeChunks: 3,
   model: 'openai',
-  temperature: 0.7
+  temperature: 0.7,
 })
 
 console.log(response.response)
@@ -252,26 +258,31 @@ curl -X POST http://localhost:3000/api/vector-store/query \
 ## LangChain Tools
 
 ### 1. Semantic Agent Search Tool
+
 - **Name:** `semantic_agent_search`
 - **Purpose:** Find agents by concept/topic
 - **Input:** `{ concept: string, topK?: number }`
 
 ### 2. Knowledge Retrieval Tool
+
 - **Name:** `knowledge_retrieval`
 - **Purpose:** Retrieve knowledge chunks for RAG
 - **Input:** `{ query: string, agentId?: string, maxChunks?: number }`
 
 ### 3. Consciousness Analysis Tool
+
 - **Name:** `consciousness_analysis`
 - **Purpose:** Analyze agent consciousness and synergy
 - **Input:** `{ agentId: string, analysisType?: 'synergy' | 'compatibility' | 'consciousness_metrics' }`
 
 ### 4. Multi-Agent Coordinator Tool
+
 - **Name:** `multi_agent_coordinator`
 - **Purpose:** Assemble agent councils for complex queries
 - **Input:** `{ query: string, numAgents?: number, wisdomDomain?: string }`
 
 ### 5. Memory Retrieval Tool
+
 - **Name:** `memory_retrieval`
 - **Purpose:** Access conversation history
 - **Input:** `{ agentId: string, query?: string, limit?: number }`
@@ -279,36 +290,43 @@ curl -X POST http://localhost:3000/api/vector-store/query \
 ## RAG Pipeline Stages
 
 ### Stage 1: Query Analysis
+
 - Intent detection
 - Topic extraction
 - Query understanding
 
 ### Stage 2: Context Retrieval
+
 - Semantic search through vector store
 - Metadata filtering
 - Relevance ranking
 
 ### Stage 3: Synergy Enhancement
+
 - Cosmic moment alignment (optional)
 - Astrological compatibility
 - Elemental synergy
 
 ### Stage 4: Memory Integration
+
 - Conversation history retrieval
 - Context window management
 - Temporal awareness
 
 ### Stage 5: Prompt Construction
+
 - Agent personality integration
 - Knowledge contextualization
 - Memory incorporation
 
 ### Stage 6: Generation
+
 - LLM invocation (OpenAI or Anthropic)
 - Temperature control
 - Token management
 
 ### Stage 7: Response Enrichment
+
 - Post-processing
 - Citation addition
 - Format optimization
@@ -316,19 +334,24 @@ curl -X POST http://localhost:3000/api/vector-store/query \
 ## Performance Optimization
 
 ### Caching
+
 - Embedding cache in `EmbeddingsService`
 - Vector query caching (2-min TTL recommended)
 - Memory buffer caching
 
 ### Batch Processing
+
 ```typescript
 import { generateBatchEmbeddings } from '@/lib/llamaindex/embeddings-service'
 
-const texts = [/* array of texts */]
+const texts = [
+  /* array of texts */
+]
 const embeddings = await generateBatchEmbeddings(texts, 20) // batch size 20
 ```
 
 ### Vector Store Statistics
+
 ```typescript
 import { vectorStoreManager } from '@/lib/llamaindex/vector-store'
 
@@ -340,6 +363,7 @@ console.log(stats)
 ## Maintenance
 
 ### Reindex Single Agent
+
 ```bash
 curl -X POST http://localhost:3000/api/vector-store/ingest \
   -H "Content-Type: application/json" \
@@ -347,6 +371,7 @@ curl -X POST http://localhost:3000/api/vector-store/ingest \
 ```
 
 ### Rebuild Entire Index
+
 ```bash
 curl -X POST http://localhost:3000/api/vector-store/ingest \
   -H "Content-Type: application/json" \
@@ -354,6 +379,7 @@ curl -X POST http://localhost:3000/api/vector-store/ingest \
 ```
 
 ### Clear Memory
+
 ```typescript
 import { getMemoryManager } from '@/lib/langchain/memory-manager'
 
@@ -364,13 +390,16 @@ await manager.clearMemory('session-123', 'leonardo-da-vinci')
 ## Monitoring
 
 ### Galileo Integration
+
 All RAG operations log to Galileo MCP for observability:
+
 - Context retrieval quality
 - Embedding generation performance
 - Response generation latency
 - Tool execution traces
 
 ### Metrics to Track
+
 - Response relevance score (target: >0.85)
 - Context retrieval latency (target: <100ms)
 - End-to-end generation time (target: <2s)
@@ -380,19 +409,25 @@ All RAG operations log to Galileo MCP for observability:
 ## Troubleshooting
 
 ### ChromaDB Connection Error
+
 ```
 Error: Vector store not initialized
 ```
+
 **Solution:** Ensure ChromaDB is running on port 8000
+
 ```bash
 docker run -p 8000:8000 chromadb/chroma
 ```
 
 ### No Search Results
+
 ```
 No agents found for concept: creativity
 ```
+
 **Solution:** Verify index is populated
+
 ```bash
 curl http://localhost:3000/api/vector-store/ingest -X POST \
   -H "Content-Type: application/json" \
@@ -400,10 +435,13 @@ curl http://localhost:3000/api/vector-store/ingest -X POST \
 ```
 
 ### Memory Errors
+
 ```
 Agent router not initialized
 ```
+
 **Solution:** Initialize router before use
+
 ```typescript
 import { getAgentRouter } from '@/lib/langchain/agent-router'
 
@@ -414,35 +452,38 @@ const router = await getAgentRouter()
 ## Advanced Features
 
 ### Custom Embeddings
+
 ```typescript
 import { EmbeddingsService } from '@/lib/llamaindex/embeddings-service'
 
 const service = new EmbeddingsService({
   model: 'text-embedding-3-large',
-  dimensions: 3072
+  dimensions: 3072,
 })
 
 const embedding = await service.generateEmbedding('custom text')
 ```
 
 ### Streaming RAG
+
 ```typescript
 import { getRAGGenerator } from '@/lib/rag/rag-generator'
 
 const generator = getRAGGenerator()
-await generator.generateStream(options, (token) => {
+await generator.generateStream(options, token => {
   console.log(token) // Stream tokens as they arrive
 })
 ```
 
 ### Multi-Agent Orchestration
+
 ```typescript
 import { multiAgentCoordinatorTool } from '@/lib/langchain/agent-tools'
 
 const result = await multiAgentCoordinatorTool.invoke({
   query: 'How do we understand the nature of reality?',
   numAgents: 5,
-  wisdomDomain: 'Philosophy'
+  wisdomDomain: 'Philosophy',
 })
 ```
 
@@ -464,6 +505,7 @@ const result = await multiAgentCoordinatorTool.invoke({
 ## Support
 
 For issues or questions:
+
 1. Check troubleshooting section
 2. Review Galileo MCP logs
 3. Open GitHub issue with reproduction steps

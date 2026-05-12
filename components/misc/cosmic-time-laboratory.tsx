@@ -5,7 +5,7 @@ import {
   Clock,
   Sparkles,
   Search,
-    Moon,
+  Moon,
   Star,
   Compass,
   Zap,
@@ -66,7 +66,7 @@ export default function CosmicTimeLaboratory() {
   const [timePortals, setTimePortals] = useState<TimePortal[]>([])
   const [isExploring, setIsExploring] = useState(false)
   const [autoResonance, setAutoResonance] = useState(true)
-  
+
   const [temporalRange, setTemporalRange] = useState<'day' | 'week' | 'month' | 'year' | 'decade'>(
     'month'
   )

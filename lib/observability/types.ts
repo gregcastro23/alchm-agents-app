@@ -194,10 +194,10 @@ export const PERFORMANCE_THRESHOLDS = {
   actionCompletion: {
     excellent: 0.95,
     good: 0.85,
-    needsImprovement: 0.80,
+    needsImprovement: 0.8,
   },
   toolSelectionQuality: {
-    excellent: 0.90,
+    excellent: 0.9,
     good: 0.85,
     needsImprovement: 0.85,
   },
@@ -208,8 +208,8 @@ export const PERFORMANCE_THRESHOLDS = {
   },
   routingAccuracy: {
     excellent: 0.95,
-    good: 0.90,
-    needsImprovement: 0.90,
+    good: 0.9,
+    needsImprovement: 0.9,
   },
 } as const
 
@@ -227,7 +227,7 @@ export interface AlertConfig {
 export const DEFAULT_ALERTS: AlertConfig[] = [
   {
     metric: 'actionCompletion',
-    threshold: 0.90,
+    threshold: 0.9,
     comparison: 'less_than',
     severity: 'critical',
     message: 'Action completion dropped below 90% - agents not fully addressing requests',
@@ -248,7 +248,7 @@ export const DEFAULT_ALERTS: AlertConfig[] = [
   },
   {
     metric: 'routingAccuracy',
-    threshold: 0.90,
+    threshold: 0.9,
     comparison: 'less_than',
     severity: 'critical',
     message: 'Monica routing accuracy dropped - review routing logic',

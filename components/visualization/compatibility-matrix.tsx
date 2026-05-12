@@ -225,9 +225,11 @@ export function CompatibilityMatrix({
           <div
             key={`header-${agent.id}`}
             className="text-xs font-medium text-center p-1 transform -rotate-45 origin-center"
-            style={{ color: agent.appearance?.color || "#6366f1" }}
+            style={{ color: agent.appearance?.color || '#6366f1' }}
           >
-            {showLabels ? agent.name.split(' ')[0] : agent.appearance?.symbol || agent.name.charAt(0).toUpperCase()}
+            {showLabels
+              ? agent.name.split(' ')[0]
+              : agent.appearance?.symbol || agent.name.charAt(0).toUpperCase()}
           </div>
         ))}
 
@@ -237,9 +239,11 @@ export function CompatibilityMatrix({
             {/* Row header */}
             <div
               className="text-xs font-medium p-1 flex items-center"
-              style={{ color: agent1.appearance?.color || "#6366f1" }}
+              style={{ color: agent1.appearance?.color || '#6366f1' }}
             >
-              {showLabels ? agent1.name.split(' ')[0] : agent1.appearance?.symbol || agent1.name.charAt(0).toUpperCase()}
+              {showLabels
+                ? agent1.name.split(' ')[0]
+                : agent1.appearance?.symbol || agent1.name.charAt(0).toUpperCase()}
             </div>
 
             {/* Compatibility cells */}
@@ -348,12 +352,16 @@ export function CompatibilityMatrix({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <span style={{ color: agent1.appearance?.color || "#6366f1" }}>{agent1.appearance?.symbol || agent1.name.charAt(0).toUpperCase()}</span>
+                  <span style={{ color: agent1.appearance?.color || '#6366f1' }}>
+                    {agent1.appearance?.symbol || agent1.name.charAt(0).toUpperCase()}
+                  </span>
                   <span className="font-medium">{agent1.name}</span>
                 </div>
                 <span className="text-gray-400">↔</span>
                 <div className="flex items-center gap-2">
-                  <span style={{ color: agent2.appearance?.color || "#6366f1" }}>{agent2.appearance?.symbol || agent2.name.charAt(0).toUpperCase()}</span>
+                  <span style={{ color: agent2.appearance?.color || '#6366f1' }}>
+                    {agent2.appearance?.symbol || agent2.name.charAt(0).toUpperCase()}
+                  </span>
                   <span className="font-medium">{agent2.name}</span>
                 </div>
               </div>

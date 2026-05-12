@@ -111,11 +111,13 @@ curl -X DELETE http://localhost:3000/api/rag/cache
 ### 6. Performance Testing ✅
 
 **Target Response Times:**
+
 - Cached: <50ms ✅
 - Uncached with RAG: <500ms ✅
 - No RAG: <200ms ✅
 
 **Test procedure:**
+
 ```bash
 # Use browser dev tools Network tab
 1. Ask first query → Note time (should be ~400-500ms)
@@ -131,11 +133,11 @@ curl -X DELETE http://localhost:3000/api/rag/cache
 Create: `lib/rag/__tests__/rag-quality.test.ts`
 
 ```typescript
-import { 
-  rerankResults, 
-  filterLowQualitySources, 
+import {
+  rerankResults,
+  filterLowQualitySources,
   detectAmbiguousQuery,
-  calculateQueryQuality 
+  calculateQueryQuality,
 } from '../rag-quality'
 
 describe('RAG Quality Improvements', () => {
@@ -143,7 +145,7 @@ describe('RAG Quality Improvements', () => {
     it('should rerank with quality signals', () => {
       const mockResults = [
         { agentId: 'socrates', score: 0.7, content: '...', agentName: 'Socrates' },
-        { agentId: 'plato', score: 0.8, content: '...', agentName: 'Plato' }
+        { agentId: 'plato', score: 0.8, content: '...', agentName: 'Plato' },
       ]
       const reranked = rerankResults(mockResults, 'test query')
       expect(reranked.length).toBe(2)
@@ -155,8 +157,8 @@ describe('RAG Quality Improvements', () => {
     it('should filter below threshold', () => {
       const mockResults = [
         { score: 0.8 },
-        { score: 0.3 },  // Below threshold
-        { score: 0.6 }
+        { score: 0.3 }, // Below threshold
+        { score: 0.6 },
       ]
       const filtered = filterLowQualitySources(mockResults, { threshold: 0.35 })
       expect(filtered.length).toBe(2)
@@ -165,9 +167,9 @@ describe('RAG Quality Improvements', () => {
 
     it('should keep minimum results', () => {
       const mockResults = [{ score: 0.1 }, { score: 0.2 }]
-      const filtered = filterLowQualitySources(mockResults, { 
-        threshold: 0.5, 
-        minResults: 2 
+      const filtered = filterLowQualitySources(mockResults, {
+        threshold: 0.5,
+        minResults: 2,
       })
       expect(filtered.length).toBe(2)
     })
@@ -188,7 +190,7 @@ describe('RAG Quality Improvements', () => {
 
   describe('calculateQueryQuality', () => {
     it('should score high-quality queries highly', () => {
-      const result = calculateQueryQuality('How did Socrates define justice in Plato\'s Republic?')
+      const result = calculateQueryQuality("How did Socrates define justice in Plato's Republic?")
       expect(result.score).toBeGreaterThan(0.7)
     })
 
@@ -201,6 +203,7 @@ describe('RAG Quality Improvements', () => {
 ```
 
 Run tests:
+
 ```bash
 yarn test lib/rag/__tests__/rag-quality.test.ts
 ```
@@ -264,6 +267,7 @@ autocannon -c 10 -d 30 -m POST \
 ```
 
 **Expected results:**
+
 - Requests/sec: 20-50
 - Latency p50: <500ms
 - Latency p99: <1000ms
@@ -292,6 +296,7 @@ autocannon -c 10 -d 30 -m POST \
 ## Troubleshooting Test Failures
 
 ### Cache not working
+
 ```bash
 # Check if USE_RAG_CACHE is enabled
 echo $USE_RAG_CACHE  # Should be "true"
@@ -301,6 +306,7 @@ curl http://localhost:3000/api/rag/cache
 ```
 
 ### No search results
+
 ```bash
 # Verify ChromaDB is running
 curl http://localhost:8001/api/v1/heartbeat
@@ -313,6 +319,7 @@ RAG_RELEVANCE_THRESHOLD=0.5 yarn dev
 ```
 
 ### Feedback not saving
+
 ```bash
 # Check database connection
 npx prisma studio

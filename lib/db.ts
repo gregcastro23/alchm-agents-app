@@ -24,7 +24,9 @@ function materializePrisma(): PrismaClient {
 
   // Apply Accelerate extension only when using a prisma+postgres:// URL
   if (process.env.DATABASE_URL?.startsWith('prisma+postgres://')) {
-    const { withAccelerate } = req('@prisma/extension-accelerate') as typeof import('@prisma/extension-accelerate')
+    const { withAccelerate } = req(
+      '@prisma/extension-accelerate'
+    ) as typeof import('@prisma/extension-accelerate')
     _prismaInstance = client.$extends(withAccelerate()) as unknown as PrismaClient
   } else {
     _prismaInstance = client

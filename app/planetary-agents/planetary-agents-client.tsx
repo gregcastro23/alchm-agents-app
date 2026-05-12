@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { getPlanetaryDignity } from '@/lib/astrological-data'
 import { MoonPhaseAgentChat } from '@/components/misc/moon-phase-agent-chat'
 import UnifiedMultiAgentChat from '@/components/misc/unified-multi-agent-chat'
-import { SiteNavigation } from '@/components/misc/site-navigation'
+
 import { createDefaultPlanetaryConfigs } from '@/lib/planetary-config-helper'
 import { PLANETARY_COUNCIL_PRESETS, type PlanetaryCouncilPreset } from '@/lib/council-presets'
 import { Users, Moon as MoonIcon, Sparkles, Crown, Star, X } from 'lucide-react'
@@ -156,7 +156,7 @@ function PlanetaryAgentsContent({ initialPositions }: PlanetaryAgentsClientProps
 
   return (
     <>
-      <SiteNavigation />
+
 
       <div className="container py-8">
         <h1 className="text-3xl font-bold text-center mb-2">Planetary Wisdom Agents</h1>

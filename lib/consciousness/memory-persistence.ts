@@ -263,7 +263,9 @@ export class ConsciousnessMemoryPersistence {
         (sum: any, interaction: any) => sum + interaction.powerGained,
         0
       )
-      const agentsEvolved = evolutionStates.filter((state: any) => state.currentLevel !== 'bronze').length
+      const agentsEvolved = evolutionStates.filter(
+        (state: any) => state.currentLevel !== 'bronze'
+      ).length
 
       // Find favorite agent (most interactions)
       const agentCounts = interactions.reduce(
@@ -274,7 +276,8 @@ export class ConsciousnessMemoryPersistence {
         {} as Record<string, number>
       )
       const favoriteAgent = Object.entries(agentCounts).reduce(
-        (favorite: any, [agentId, count]: any) => (count > favorite.count ? { agentId, count } : favorite),
+        (favorite: any, [agentId, count]: any) =>
+          count > favorite.count ? { agentId, count } : favorite,
         { agentId: null as string | null, count: 0 }
       ).agentId
 

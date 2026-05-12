@@ -304,7 +304,9 @@ export async function GET(req: Request) {
         console.error('Calculus validation error:', error)
         traditionalValidation.calculusValidation = {
           isValid: false,
-          errors: [`Calculus validation failed: ${error instanceof Error ? error.message : String(error)}`],
+          errors: [
+            `Calculus validation failed: ${error instanceof Error ? error.message : String(error)}`,
+          ],
           warnings: [],
         }
       }

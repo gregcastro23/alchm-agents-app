@@ -32,9 +32,7 @@ async function fetchAlchmizeForBirth(birth: {
   latitude: number
   longitude: number
 }): Promise<any> {
-  const date = new Date(
-    Date.UTC(birth.year, birth.month, birth.day, birth.hour, birth.minute)
-  )
+  const date = new Date(Date.UTC(birth.year, birth.month, birth.day, birth.hour, birth.minute))
   const res = await fetch('/api/alchemize?legacy=true', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -79,24 +77,45 @@ function calculateElementalProfile(birthDate: string): ElementalProfile {
   const date = new Date(birthDate)
   const month = date.getMonth() + 1
   const day = date.getDate()
-  
+
   // Simple calculation based on Sun sign for basic profile
   // In a full implementation, this would calculate from full chart
   const signElements: Record<number, string> = {
-    1: 'capricorn', 2: 'aquarius', 3: 'pisces', 4: 'aries', 5: 'taurus', 6: 'gemini',
-    7: 'cancer', 8: 'leo', 9: 'virgo', 10: 'libra', 11: 'scorpio', 12: 'sagittarius'
+    1: 'capricorn',
+    2: 'aquarius',
+    3: 'pisces',
+    4: 'aries',
+    5: 'taurus',
+    6: 'gemini',
+    7: 'cancer',
+    8: 'leo',
+    9: 'virgo',
+    10: 'libra',
+    11: 'scorpio',
+    12: 'sagittarius',
   }
-  
-  const elementMap: Record<string, keyof Omit<ElementalProfile, 'dominant_element' | 'secondary_element'>> = {
-    'aries': 'fire', 'leo': 'fire', 'sagittarius': 'fire',
-    'taurus': 'earth', 'virgo': 'earth', 'capricorn': 'earth',
-    'gemini': 'air', 'libra': 'air', 'aquarius': 'air',
-    'cancer': 'water', 'scorpio': 'water', 'pisces': 'water'
+
+  const elementMap: Record<
+    string,
+    keyof Omit<ElementalProfile, 'dominant_element' | 'secondary_element'>
+  > = {
+    aries: 'fire',
+    leo: 'fire',
+    sagittarius: 'fire',
+    taurus: 'earth',
+    virgo: 'earth',
+    capricorn: 'earth',
+    gemini: 'air',
+    libra: 'air',
+    aquarius: 'air',
+    cancer: 'water',
+    scorpio: 'water',
+    pisces: 'water',
   }
-  
+
   const sign = signElements[month]?.toLowerCase()
   const primaryElement = elementMap[sign as keyof typeof elementMap] || 'fire'
-  
+
   // Create balanced profile with primary element emphasized
   const profile: ElementalProfile = {
     fire: primaryElement === 'fire' ? 40 : 20,
@@ -104,27 +123,41 @@ function calculateElementalProfile(birthDate: string): ElementalProfile {
     air: primaryElement === 'air' ? 40 : 20,
     water: primaryElement === 'water' ? 40 : 20,
     dominant_element: primaryElement,
-    secondary_element: primaryElement === 'fire' ? 'air' : 
-                       primaryElement === 'earth' ? 'water' :
-                       primaryElement === 'air' ? 'fire' : 'earth',
+    secondary_element:
+      primaryElement === 'fire'
+        ? 'air'
+        : primaryElement === 'earth'
+          ? 'water'
+          : primaryElement === 'air'
+            ? 'fire'
+            : 'earth',
   }
-  
+
   return profile
 }
 
 function calculateModalProfile(birthDate: string): ModalProfile {
   const date = new Date(birthDate)
   const month = date.getMonth() + 1
-  
+
   // Modality mapping by month (simplified by Sun sign)
   const modalityMap: Record<number, 'cardinal' | 'fixed' | 'mutable'> = {
-    1: 'cardinal', 2: 'fixed', 3: 'mutable', 4: 'cardinal',
-    5: 'fixed', 6: 'mutable', 7: 'cardinal', 8: 'fixed',
-    9: 'mutable', 10: 'cardinal', 11: 'fixed', 12: 'mutable'
+    1: 'cardinal',
+    2: 'fixed',
+    3: 'mutable',
+    4: 'cardinal',
+    5: 'fixed',
+    6: 'mutable',
+    7: 'cardinal',
+    8: 'fixed',
+    9: 'mutable',
+    10: 'cardinal',
+    11: 'fixed',
+    12: 'mutable',
   }
-  
+
   const dominantMode = modalityMap[month] || 'mutable'
-  
+
   // Create profile with dominant modality
   const profile: ModalProfile = {
     cardinal: dominantMode === 'cardinal' ? 50 : 25,
@@ -132,7 +165,7 @@ function calculateModalProfile(birthDate: string): ModalProfile {
     mutable: dominantMode === 'mutable' ? 50 : 25,
     dominant_mode: dominantMode,
   }
-  
+
   return profile
 }
 

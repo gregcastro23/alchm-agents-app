@@ -139,7 +139,8 @@ export class HistoricalAgentsService {
       // Enhanced consciousness profile
       consciousnessLevel: agent.consciousness.level,
       monicaConstant: agent.consciousness.monicaConstant,
-      kalchmConstant: (agent as any).consciousness.kalchmConstant || agent.consciousness.monicaConstant || 0.5,
+      kalchmConstant:
+        (agent as any).consciousness.kalchmConstant || agent.consciousness.monicaConstant || 0.5,
       dominantElement: agent.consciousness.dominantElement,
       dominantModality: agent.consciousness.dominantModality || null,
       signature: agent.consciousness.signature,
@@ -909,11 +910,18 @@ export class HistoricalAgentsService {
         agent.lastActive &&
         new Date(agent.lastActive) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
     ).length
-    const totalConversations = agents.reduce((sum: number, agent: any) => sum + (agent.conversations || 0), 0)
-    const totalWisdomShared = agents.reduce((sum: number, agent: any) => sum + (agent.wisdomShared || 0), 0)
+    const totalConversations = agents.reduce(
+      (sum: number, agent: any) => sum + (agent.conversations || 0),
+      0
+    )
+    const totalWisdomShared = agents.reduce(
+      (sum: number, agent: any) => sum + (agent.wisdomShared || 0),
+      0
+    )
     const averageResonance =
       totalAgents > 0
-        ? agents.reduce((sum: number, agent: any) => sum + (agent.resonanceScore || 0), 0) / totalAgents
+        ? agents.reduce((sum: number, agent: any) => sum + (agent.resonanceScore || 0), 0) /
+          totalAgents
         : 0
 
     return {

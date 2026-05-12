@@ -8,12 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import {
-  Send,
-  Crown,
-  Brain,
-  TrendingUp,
-} from 'lucide-react'
+import { Send, Crown, Brain, TrendingUp } from 'lucide-react'
 import type { CraftedAgent } from '@/lib/agent-types'
 import { KineticIndicators, MomentumIndicator } from '@/components/charts/kinetic-indicators'
 import {
@@ -393,7 +388,7 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
                     <div className="flex items-center gap-2 mb-2">
                       <div
                         className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: agent.appearance?.color || "#6366f1" }}
+                        style={{ backgroundColor: agent.appearance?.color || '#6366f1' }}
                       />
                       <span className="font-medium text-xs">{agent.name}</span>
                     </div>

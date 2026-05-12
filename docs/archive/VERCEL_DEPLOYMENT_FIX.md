@@ -17,6 +17,7 @@ This clears Vercel's cache and forces a fresh build.
 **Steps**:
 
 1. **Add vercel.json to force clean builds**:
+
 ```json
 {
   "buildCommand": "yarn install --frozen-lockfile && next build",
@@ -31,6 +32,7 @@ This clears Vercel's cache and forces a fresh build.
    - Click "Clear Build Cache"
 
 3. **Redeploy**:
+
 ```bash
 git commit --allow-empty -m "chore: Force Vercel rebuild to fix source-map error"
 git push origin main
@@ -46,12 +48,13 @@ git push origin main
     "next": "15.5.6"
   },
   "optionalDependencies": {
-    "@next/swc-darwin-arm64": "15.5.6"  // Changed from 15.5.3
+    "@next/swc-darwin-arm64": "15.5.6" // Changed from 15.5.3
   }
 }
 ```
 
 Then:
+
 ```bash
 yarn install
 git add package.json yarn.lock
@@ -100,15 +103,18 @@ curl https://planetary-agents.vercel.app/api/consciousness/live
 Ensure your Vercel project has these settings:
 
 **Build & Development Settings**:
+
 - Framework Preset: Next.js
 - Build Command: `next build` (default)
 - Output Directory: `.next` (default)
 - Install Command: `yarn install` (default)
 
 **Node.js Version**:
+
 - Set to `20.x` (recommended for Next.js 15)
 
 **Environment Variables** (set these in Vercel dashboard):
+
 ```bash
 OPENAI_API_KEY=your_key
 ANTHROPIC_API_KEY=your_key
@@ -126,6 +132,7 @@ yarn add -D @next/eslint-plugin-next@15.0.3 eslint-config-next@15.0.3 @next/bund
 ```
 
 Your commit history shows 15.0.3 was stable:
+
 ```
 23ccb5ee - fix: Downgrade Next.js to 15.0.3 to resolve Vercel source-map error
 ```

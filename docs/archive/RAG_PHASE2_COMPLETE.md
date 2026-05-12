@@ -9,6 +9,7 @@ Phase 2 implementation adds semantic search, RAG generation, and API endpoints t
 ### 1. Semantic Search Module (`lib/llamaindex/semantic-search.ts`)
 
 **Functions:**
+
 - `semanticSearch()` - Search across all agents with filtering and reranking
 - `searchAgentKnowledge()` - Search within a specific agent's knowledge
 - `multiAgentSearch()` - Search across multiple agents with grouping
@@ -18,6 +19,7 @@ Phase 2 implementation adds semantic search, RAG generation, and API endpoints t
 - `getSearchStats()` - Get search statistics and metrics
 
 **Features:**
+
 - Query embedding generation via OpenAI
 - Cosine similarity search through ChromaDB
 - Relevance score thresholding (default: 0.7)
@@ -27,6 +29,7 @@ Phase 2 implementation adds semantic search, RAG generation, and API endpoints t
 ### 2. RAG Generator (`lib/rag/rag-generator.ts`)
 
 **Core Functions:**
+
 - `generateWithRAG()` - Main RAG generation pipeline
 - `buildEnhancedContext()` - Format retrieved knowledge for prompts
 - `buildEnhancedPrompt()` - Construct system prompt with context
@@ -34,6 +37,7 @@ Phase 2 implementation adds semantic search, RAG generation, and API endpoints t
 - `getRAGConfig()` - Environment-based configuration
 
 **Features:**
+
 - Semantic search integration
 - Context building with token limits (1500 tokens default)
 - Claude Sonnet 3.5 generation
@@ -44,6 +48,7 @@ Phase 2 implementation adds semantic search, RAG generation, and API endpoints t
 ### 3. Monica RAG Wrapper (`lib/rag/monica-rag-wrapper.ts`)
 
 **Full Implementation Includes:**
+
 - Feature flag management (USE_RAG_GENERATION, USE_VECTOR_SEARCH)
 - RAG availability checking
 - System warmup for better performance
@@ -51,6 +56,7 @@ Phase 2 implementation adds semantic search, RAG generation, and API endpoints t
 - Backward compatibility with existing stub interface
 
 **New Functions:**
+
 - `isRAGAvailable()` - Check system availability
 - `warmupRAG()` - Preload collections on startup
 - `getRAGStats()` - Get configuration and usage stats
@@ -58,21 +64,25 @@ Phase 2 implementation adds semantic search, RAG generation, and API endpoints t
 ### 4. API Endpoints
 
 #### Health Check (`/api/vector-store/health`)
+
 - **GET** - Check ChromaDB connection status
 - Returns: health status, document count, collections, features enabled
 
 #### Ingestion (`/api/vector-store/ingest`)
+
 - **POST** - Trigger agent knowledge ingestion
 - **GET** - Get ingestion status
 - Supports: selective agent ingestion, force reindex
 - Max duration: 5 minutes
 
 #### Query (`/api/vector-store/query`)
+
 - **POST/GET** - Semantic search via vector store
 - Parameters: query, topK, threshold, agentIds
 - Returns: ranked results with relevance scores
 
 #### Semantic Search (`/api/agents/semantic-search`)
+
 - **POST/GET** - Agent-focused semantic search
 - Modes:
   - `standard` - Basic semantic search
@@ -206,11 +216,13 @@ app/api/agents/
 ### Prerequisites
 
 1. Start ChromaDB:
+
 ```bash
 docker run -d -p 8001:8000 chromadb/chroma
 ```
 
 2. Set environment variables:
+
 ```bash
 USE_RAG_GENERATION=true
 USE_VECTOR_SEARCH=true
@@ -218,6 +230,7 @@ CHROMADB_URL=http://localhost:8001
 ```
 
 3. Run ingestion:
+
 ```bash
 yarn rag:ingest
 ```
@@ -249,24 +262,28 @@ curl -X POST http://localhost:3000/api/agents/semantic-search \
 ## Key Features
 
 ✅ **Semantic Search**
+
 - Multi-agent search with grouping
 - Relevance filtering and reranking
 - Diverse results across agents
 - Metadata filtering (era, specialty, etc.)
 
 ✅ **RAG Generation**
+
 - Context-aware responses
 - Source attribution
 - Token limit management
 - Graceful fallback
 
 ✅ **API Endpoints**
+
 - Health monitoring
 - Ingestion control
 - Query interfaces
 - Multiple search modes
 
 ✅ **Production Ready**
+
 - Error handling
 - Logging and monitoring
 - Feature flags
@@ -318,6 +335,7 @@ The RAG system is ready for integration with Monica and other agents, with featu
 ## Test Execution Summary
 
 ### ✅ Phase 1: Infrastructure Tests
+
 ```
 ✅ ChromaDB Connection: Successful (http://localhost:8001)
 ✅ Document Loading: 32 agents, 33 chunks
@@ -327,7 +345,9 @@ The RAG system is ready for integration with Monica and other agents, with featu
 ```
 
 ### ✅ Phase 2: Semantic Search Tests
+
 **Test Results:**
+
 1. **Basic Search** - "creativity and innovation"
    - ✅ 3 results: Leonardo da Vinci (52.6%), Nikola Tesla (47.6%), Claude Monet (44.0%)
 
@@ -347,6 +367,7 @@ The RAG system is ready for integration with Monica and other agents, with featu
 ### ✅ Phase 3: API Endpoint Tests
 
 **Health Endpoint:** `/api/vector-store/health`
+
 ```json
 {
   "healthy": true,
@@ -361,21 +382,25 @@ The RAG system is ready for integration with Monica and other agents, with featu
 ```
 
 **Semantic Search Endpoint:** `/api/agents/semantic-search`
+
 - ✅ Standard mode: Philosophy query returned Kant (54.8%), Marcus Aurelius (54.6%), Socrates (54.4%)
 - ✅ Similar-agents mode: Creativity query returned da Vinci (53.6%), Mozart (49.1%), Van Gogh (43.6%)
 - ✅ Stats mode: Science query found Asimov (2 matches), Curie, Darwin
 
 **Query Endpoint:** `/api/vector-store/query`
+
 - ✅ "scientific discovery" returned da Vinci (46%), Darwin (46%), Curie (45%)
 
 ### ⚠️ Phase 4: RAG Generation Tests
 
 **Retrieval Results:**
+
 - Test 1: Socratic wisdom - 0 results (agent filter for non-existent agent)
 - Test 2: Marie Curie research - ✅ 1 result (62.4% relevance)
 - Test 3: Leonardo creativity - ✅ 1 result (65.4% relevance)
 
 **Generation Issue:**
+
 ```
 Error: UnsupportedModelVersionError
 AI SDK 4 only supports models that implement specification version "v1".
@@ -383,44 +408,51 @@ Please upgrade to AI SDK 5 to use this model.
 ```
 
 **Current Versions:**
+
 - ai: ^4.3.15 (needs ^5.0.0)
 - @ai-sdk/anthropic: ^2.0.40 (needs ^3.0.0)
 
 ## Critical Fixes Applied
 
 ### 1. L2 Distance Scoring Fix
+
 **Problem:** Score calculation using cosine formula (1 - distance) produced negative scores
 **Solution:** Changed to L2 formula: `score = 1 / (1 + distance)`
 **Files Updated:**
+
 - `lib/llamaindex/vector-store.ts:255`
 - Updated DEFAULT_THRESHOLD from 0.7 to 0.35 across all files
 
 ### 2. Threshold Updates for L2 Distance
+
 Updated thresholds in:
+
 - `lib/llamaindex/semantic-search.ts` (8 locations: 0.6-0.7 → 0.35-0.4)
 - `app/api/agents/semantic-search/route.ts` (2 locations: 0.7 → 0.35)
 - `app/api/vector-store/query/route.ts` (2 locations: 0.7 → 0.35)
 - `lib/llamaindex/test-semantic-search.ts` (1 location: 0.7 → 0.35)
 
 ### 3. Metadata Sanitization
+
 **Problem:** ChromaDB rejected arrays in metadata
 **Solution:** Convert all metadata values to strings
 **Location:** `lib/llamaindex/vector-store.ts:176-185`
 
 ### 4. Webpack Native Module Externalization
+
 **Problem:** Next.js trying to bundle native binaries (onnxruntime-node)
 **Solution:** Added webpack externals configuration
 **Location:** `next.config.mjs:89-94`
 
 ## Performance Metrics
 
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| Ingestion Speed | - | 19 docs/sec | ✅ Excellent |
-| Query Latency | <500ms | 170-522ms | ✅ Good |
-| Average Query | <300ms | 304ms | ✅ Good |
-| Relevance Scores | 40-70% | 43-65% | ✅ Optimal |
-| Document Storage | 30+ | 33 | ✅ Complete |
+| Metric           | Target | Actual      | Status       |
+| ---------------- | ------ | ----------- | ------------ |
+| Ingestion Speed  | -      | 19 docs/sec | ✅ Excellent |
+| Query Latency    | <500ms | 170-522ms   | ✅ Good      |
+| Average Query    | <300ms | 304ms       | ✅ Good      |
+| Relevance Scores | 40-70% | 43-65%      | ✅ Optimal   |
+| Document Storage | 30+    | 33          | ✅ Complete  |
 
 ## Production Readiness Checklist
 
@@ -438,6 +470,7 @@ Updated thresholds in:
 ## Deployment Notes
 
 ### Environment Variables Required
+
 ```bash
 # .env.local
 CHROMADB_URL=http://localhost:8001
@@ -448,6 +481,7 @@ USE_VECTOR_SEARCH=true
 ```
 
 ### Docker Commands
+
 ```bash
 # Start ChromaDB
 docker run -d -p 8001:8000 --name chromadb chromadb/chroma
@@ -457,6 +491,7 @@ curl http://localhost:8001/api/v1/heartbeat
 ```
 
 ### Ingestion Command
+
 ```bash
 OPENAI_API_KEY="..." CHROMADB_URL=http://localhost:8001 \
   npx tsx lib/llamaindex/ingestion-pipeline.ts --force
@@ -465,6 +500,7 @@ OPENAI_API_KEY="..." CHROMADB_URL=http://localhost:8001 \
 ## Next Actions
 
 ### Immediate (Blocking Production)
+
 1. **Upgrade AI SDK to v5**
    ```bash
    yarn upgrade ai@^5.0.0
@@ -475,12 +511,14 @@ OPENAI_API_KEY="..." CHROMADB_URL=http://localhost:8001 \
 4. Update Claude model version if needed
 
 ### Short-term Enhancements
+
 1. Add Redis caching for embeddings
 2. Implement usage analytics
 3. Add RAG quality metrics
 4. Create admin UI for vector store management
 
 ### Long-term Improvements
+
 1. Expand to 100+ historical agents
 2. Implement hybrid search (BM25 + semantic)
 3. Add cross-encoder reranking (Cohere)
@@ -508,15 +546,18 @@ The RAG system is **production-ready for semantic search and retrieval**. All co
 ## ✅ Completed Tasks
 
 ### 1. AI SDK v5 Upgrade
+
 **Status:** ✅ SUCCESSFUL
 
 **Changes:**
+
 - Upgraded `ai` from ^4.3.15 to ^5.0.87
 - Upgraded `@ai-sdk/anthropic` from ^2.0.40 to ^2.0.41
 - Upgraded `@ai-sdk/openai` from ^1.3.24 to ^2.0.63
 - Upgraded `@ai-sdk/provider-utils` to ^3.0.16
 
 **Verification:**
+
 - ✅ Next.js dev server starts successfully
 - ✅ No build errors or warnings
 - ✅ AI SDK v5 API calls execute (authentication separate issue)
@@ -526,9 +567,11 @@ The RAG system is **production-ready for semantic search and retrieval**. All co
 ## ⚠️ Configuration Required
 
 ### Anthropic API Key
+
 The current API key in `.env.local` appears to be a Claude Code access key, not an Anthropic platform API key.
 
 **Required Action:**
+
 1. Obtain a valid API key from https://console.anthropic.com
 2. Update `.env.local` with the new key:
    ```bash
@@ -537,9 +580,9 @@ The current API key in `.env.local` appears to be a Claude Code access key, not 
 3. Restart the dev server
 
 **Current Status:**
+
 - ✅ AI SDK v5 properly making API calls
 - ⚠️ Authentication failing (401: invalid x-api-key)
 - ✅ Code changes complete, awaiting valid API key
 
 Once the API key is updated, RAG generation will work immediately.
-

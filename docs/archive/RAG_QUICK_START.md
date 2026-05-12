@@ -140,19 +140,20 @@ curl -X POST http://localhost:3000/api/monica-agent \
 
 ## Key Files Summary
 
-| File | Purpose | Critical Functions |
-|------|---------|-------------------|
-| `lib/llamaindex/vector-store.ts` | ChromaDB operations | initializeVectorStore, queryCollection |
-| `lib/llamaindex/embeddings-service.ts` | OpenAI embeddings | generateEmbeddings |
-| `lib/llamaindex/document-loader.ts` | Load agent data | loadHistoricalAgents, chunkDocument |
-| `lib/llamaindex/ingestion-pipeline.ts` | Orchestration | ingestAgentKnowledge |
-| `lib/llamaindex/semantic-search.ts` | Search logic | semanticSearch |
-| `lib/rag/rag-generator.ts` | RAG generation | generateWithRAG |
-| `lib/rag/monica-rag-wrapper.ts` | Monica integration | generateWithRAG, getRAGStatus |
+| File                                   | Purpose             | Critical Functions                     |
+| -------------------------------------- | ------------------- | -------------------------------------- |
+| `lib/llamaindex/vector-store.ts`       | ChromaDB operations | initializeVectorStore, queryCollection |
+| `lib/llamaindex/embeddings-service.ts` | OpenAI embeddings   | generateEmbeddings                     |
+| `lib/llamaindex/document-loader.ts`    | Load agent data     | loadHistoricalAgents, chunkDocument    |
+| `lib/llamaindex/ingestion-pipeline.ts` | Orchestration       | ingestAgentKnowledge                   |
+| `lib/llamaindex/semantic-search.ts`    | Search logic        | semanticSearch                         |
+| `lib/rag/rag-generator.ts`             | RAG generation      | generateWithRAG                        |
+| `lib/rag/monica-rag-wrapper.ts`        | Monica integration  | generateWithRAG, getRAGStatus          |
 
 ## Common Errors
 
 ### "ChromaDB connection failed"
+
 ```bash
 # Check if ChromaDB is running
 curl http://localhost:8001/api/v1/heartbeat
@@ -162,12 +163,14 @@ docker restart <container-id>
 ```
 
 ### "Module not found: llamaindex"
+
 ```bash
 # Reinstall dependencies
 yarn install --check-files
 ```
 
 ### "Embedding rate limit exceeded"
+
 ```typescript
 // In embeddings-service.ts, add retry logic:
 await exponentialBackoff(async () => {
@@ -176,6 +179,7 @@ await exponentialBackoff(async () => {
 ```
 
 ### "Build fails with llamaindex errors"
+
 ```typescript
 // Use specific imports instead of barrel exports
 import { Document } from 'llamaindex/Document'
@@ -184,13 +188,13 @@ import { Document } from 'llamaindex/Document'
 
 ## Performance Targets
 
-| Metric | Target | Critical? |
-|--------|--------|-----------|
-| Ingestion time (35 agents) | < 60s | ❌ |
-| Query time | < 200ms | ✅ |
-| Total RAG time | < 500ms | ✅ |
-| Cache hit rate | > 80% | ❌ |
-| Error rate | < 1% | ✅ |
+| Metric                     | Target  | Critical? |
+| -------------------------- | ------- | --------- |
+| Ingestion time (35 agents) | < 60s   | ❌        |
+| Query time                 | < 200ms | ✅        |
+| Total RAG time             | < 500ms | ✅        |
+| Cache hit rate             | > 80%   | ❌        |
+| Error rate                 | < 1%    | ✅        |
 
 ## Next Steps After Implementation
 

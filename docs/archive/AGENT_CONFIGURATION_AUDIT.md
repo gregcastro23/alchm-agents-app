@@ -19,6 +19,7 @@ Comprehensive audit of all 53 agents in the Planetary Agents system revealed:
 ### 1. Missing Natal Chart Data (35 agents) - RESOLVED ✅
 
 **Impact:** Without natal charts (sun/moon positions), agents cannot:
+
 - Calculate accurate astrological influences
 - Generate consciousness-aware responses
 - Use natal chart data in personality generation
@@ -26,12 +27,14 @@ Comprehensive audit of all 53 agents in the Planetary Agents system revealed:
 **Status:** ✅ RESOLVED - All 35 natal charts have been generated
 
 **Generated Charts Include:**
+
 - Sun sign, degree, and house placement
 - Moon sign, degree, and house placement
 - Ascendant sign and degree
 - All based on actual historical birth dates
 
 **Agents Fixed:**
+
 - Carl Jung, Nikola Tesla, Cleopatra, Frida Kahlo
 - Leonardo da Vinci, Marie Curie, Socrates, Rumi
 - Marcus Aurelius, Vincent van Gogh, Mozart, Shakespeare
@@ -41,11 +44,13 @@ Comprehensive audit of all 53 agents in the Planetary Agents system revealed:
 ### 2. Missing Consciousness Levels (18 agents) - NEEDS FIX ⚠️
 
 **Impact:** Without consciousness levels, agents cannot:
+
 - Display proper consciousness state in UI
 - Use consciousness-based response generation
 - Participate in consciousness evolution tracking
 
 **Affected Agents:**
+
 - All Enlightenment era agents with year suffixes:
   - rene-descartes-1596, voltaire-1694, john-locke-1632
   - david-hume-1711, johannes-kepler-1571, immanuel-kant-1724
@@ -62,11 +67,13 @@ Add `consciousness.level` field (e.g., "Transcendent", "Illuminated", "Advanced"
 ### 3. Missing Era/Specialization (18 agents) - NEEDS FIX ⚠️
 
 **Impact:** These fields are used for:
+
 - Agent filtering and categorization in UI
 - Historical context in responses
 - Gallery organization and navigation
 
 **Affected Agents:**
+
 - benjamin-franklin, eleanor-roosevelt, mahatma-gandhi
 - confucius, lao-tzu, siddhartha-gautama-buddha
 - murasaki-shikibu, ibn-sina-avicenna, tecumseh
@@ -89,12 +96,14 @@ These don't block functionality but reduce response quality:
 ## Action Plan
 
 ### Immediate (Critical) ✅
+
 1. ✅ **Generate natal charts for 35 agents** - COMPLETE
    - All charts generated with sun/moon/ascendant
    - Based on actual historical birth dates
    - Ready for integration into demo-agents-data.ts
 
 ### High Priority (Required for Full Functionality)
+
 2. ⚠️ **Add consciousness levels for 18 agents**
    - Calculate Monica Constant based on natal chart
    - Assign appropriate consciousness level
@@ -106,12 +115,14 @@ These don't block functionality but reduce response quality:
    - Estimated time: 30 minutes
 
 ### Medium Priority (Quality Improvements)
+
 4. **Add quotes, beliefs, and personality traits**
    - Enhances response authenticity
    - Improves user experience
    - Estimated time: 2-3 hours
 
 ### Low Priority (Optional Enhancements)
+
 5. **Add shadows and gifts for all agents**
    - Deepens psychological profiles
    - Enables more nuanced responses
@@ -124,6 +135,7 @@ These don't block functionality but reduce response quality:
 **Missing from Vector DB:** 21 agents (likely the Enlightenment era additions)
 
 **Impact:** These 21 agents will:
+
 - Have no knowledge base to search
 - Return generic placeholder responses
 - Not benefit from RAG system
@@ -133,28 +145,35 @@ These don't block functionality but reduce response quality:
 ## Integration Steps
 
 ### 1. Apply Generated Natal Charts
+
 The file `natal-charts-generated.txt` contains JSON data for all 35 natal charts.
 
 **Process:**
+
 1. Parse the JSON output from the generation script
 2. Update each agent in `lib/demo-agents-data.ts`
 3. Add the natal chart data to `consciousness.natalChart`
 4. Verify no syntax errors
 
 ### 2. Add Missing Consciousness Levels
+
 For the 18 Enlightenment agents:
+
 1. Use `calculateMonicaConstant()` based on their new natal charts
 2. Use `getConsciousnessLevel()` to determine level
 3. Add to `consciousness.level` field
 
 ### 3. Add Era and Specialization
+
 Quick reference guide:
+
 - Ancient (before 500 CE): Confucius, Lao Tzu, Buddha
 - Medieval (500-1500): Murasaki Shikibu, Ibn Sina, Hildegard
 - Renaissance (1500-1700): Many Enlightenment agents
 - Modern (1700+): Franklin, Roosevelt, Gandhi, etc.
 
 ### 4. Re-Ingest Vector Database
+
 ```bash
 npx tsx lib/llamaindex/ingestion-pipeline.ts --force
 ```
@@ -200,13 +219,13 @@ After fixes are applied:
 
 ## Current Status Summary
 
-| Category | Count | Status |
-|----------|-------|--------|
-| Total Agents | 53 | - |
-| Fully Complete | 18 | ✅ |
-| Missing Natal Charts | 35 | ✅ FIXED |
-| Missing Consciousness Level | 18 | ⚠️ TODO |
-| Missing Era/Specialization | 18 | ⚠️ TODO |
-| In Vector Database | 32 | ⚠️ 21 missing |
+| Category                    | Count | Status        |
+| --------------------------- | ----- | ------------- |
+| Total Agents                | 53    | -             |
+| Fully Complete              | 18    | ✅            |
+| Missing Natal Charts        | 35    | ✅ FIXED      |
+| Missing Consciousness Level | 18    | ⚠️ TODO       |
+| Missing Era/Specialization  | 18    | ⚠️ TODO       |
+| In Vector Database          | 32    | ⚠️ 21 missing |
 
 **Next Step:** Apply the 35 generated natal charts to demo-agents-data.ts, then fix consciousness levels and era/specialization.

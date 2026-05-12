@@ -22,7 +22,10 @@ export async function GET() {
     })
 
     // Generate alchemical data for the current moment with timeout
-    const alchmData = await Promise.race([generateAlchmForCurrentMoment(), timeoutPromise]) as Record<string, any>
+    const alchmData = (await Promise.race([
+      generateAlchmForCurrentMoment(),
+      timeoutPromise,
+    ])) as Record<string, any>
 
     // Validate the response data
     if (!alchmData || typeof alchmData !== 'object') {
@@ -71,7 +74,7 @@ export async function GET() {
 
       if (planets.length >= 2) {
         aspectAnalysis = await calculateDynamicAspects(planets, 7)
-        
+
         // Apply kinetic modifiers to quantities
         // Spirit and Substance are more affected by velocity (Mercury principle)
         // Essence and Matter are more affected by power (Solar principle)
@@ -84,7 +87,8 @@ export async function GET() {
           Substance: quantities.Substance * (0.5 + 0.5 * velocityMod),
           Essence: quantities.Essence * (0.5 + 0.5 * powerMod),
           Matter: quantities.Matter * (0.5 + 0.5 * powerMod),
-          ANumber: quantities.Spirit + quantities.Essence + quantities.Matter + quantities.Substance,
+          ANumber:
+            quantities.Spirit + quantities.Essence + quantities.Matter + quantities.Substance,
         }
       }
     } catch (kineticError) {
@@ -172,8 +176,9 @@ export async function GET() {
 
     // Determine dominant element based on calculations
     const elements = { Fire: spirit, Water: essence, Air: matter, Earth: substance }
-    const dominantElement = Object.entries(elements).reduce((a: [string, number], b: [string, number]) =>
-      elements[a[0] as keyof typeof elements] > elements[b[0] as keyof typeof elements] ? a : b
+    const dominantElement = Object.entries(elements).reduce(
+      (a: [string, number], b: [string, number]) =>
+        elements[a[0] as keyof typeof elements] > elements[b[0] as keyof typeof elements] ? a : b
     )[0]
 
     const fallbackData = {

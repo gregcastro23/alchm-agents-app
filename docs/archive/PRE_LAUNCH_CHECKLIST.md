@@ -31,12 +31,14 @@ cp .env.example .env.local
 ```
 
 **Verification:**
+
 ```bash
 # Check critical variables are set
 cat .env.local | grep -E "(DATABASE_URL|USE_MOCK_GENERATION|CHROMA_URL)"
 ```
 
 **Expected:**
+
 ```
 DATABASE_URL=postgresql://...
 USE_MOCK_GENERATION=true
@@ -62,6 +64,7 @@ yarn verify-db
 ```
 
 **Expected Output:**
+
 ```
 ✅ Database connected successfully
 ✅ RAGQueryLog table: X records
@@ -79,11 +82,13 @@ yarn verify-db
 ### Start ChromaDB (if not running)
 
 **Option A: Docker (Recommended)**
+
 ```bash
 docker run -d --name chromadb -p 8001:8000 chromadb/chroma
 ```
 
 **Option B: Local Installation**
+
 ```bash
 pip install chromadb
 chroma run --host localhost --port 8001
@@ -96,6 +101,7 @@ yarn verify-chromadb
 ```
 
 **Expected Output:**
+
 ```
 ✅ ChromaDB is running
 ✅ Found X collection(s)
@@ -127,6 +133,7 @@ yarn rag:ingest
 ```
 
 **Expected Output:**
+
 ```
 Processing agent: Socrates...
 Processing agent: Plato...
@@ -136,10 +143,12 @@ Processing agent: Plato...
 ```
 
 **Requirements:**
+
 - Valid `OPENAI_API_KEY` in `.env.local`
 - ChromaDB running and accessible
 
 **Verify ingestion:**
+
 ```bash
 yarn verify-chromadb
 # Should now show collections with documents
@@ -155,6 +164,7 @@ yarn build
 ```
 
 **Expected Output:**
+
 ```
 ✓ Compiled successfully
 ✓ Linting and checking validity of types
@@ -173,6 +183,7 @@ yarn dev
 ```
 
 **Expected Output:**
+
 ```
 > planetary-agents@0.1.0 dev
 > next dev
@@ -199,6 +210,7 @@ yarn test-rag
 ```
 
 **Expected Output:**
+
 ```
 🧪 RAG End-to-End Test
 
@@ -246,6 +258,7 @@ Test 4: Cache Statistics
 5. **[ ] Send message:** "What is virtue?"
 
 **Expected Results:**
+
 - [ ] Response appears after 1-2 seconds
 - [ ] "Sources" section appears below response
 - [ ] Shows 3-5 source excerpts with relevance scores
@@ -274,6 +287,7 @@ Test 4: Cache Statistics
 **Open browser DevTools → Console**
 
 Look for RAG pipeline logs:
+
 ```
 [RAG] Generating with RAG for agent socrates
 [RAG] ⚠️ Using mock generation (Anthropic API unavailable)
@@ -355,6 +369,7 @@ curl -X POST http://localhost:3000/api/rag/feedback \
 ```
 
 **Verify in database:**
+
 ```bash
 npx prisma studio
 # Visit http://localhost:5555
@@ -397,6 +412,7 @@ npx prisma studio
 Send 10 queries and measure response times:
 
 ### Test Cache Misses (Different Queries)
+
 ```
 Query 1: "What is justice?" → ~400-600ms
 Query 2: "How should I live?" → ~400-600ms
@@ -404,6 +420,7 @@ Query 3: "What is knowledge?" → ~400-600ms
 ```
 
 ### Test Cache Hits (Repeat Queries)
+
 ```
 Query 1 again: "What is justice?" → <100ms ✅
 Query 2 again: "How should I live?" → <100ms ✅
@@ -415,6 +432,7 @@ Query 3 again: "What is knowledge?" → <100ms ✅
 **[ ] Visit** `/admin/rag-analytics`
 
 **Expected Metrics:**
+
 - Cache hit rate: ~30-50%
 - Avg cached response: <100ms
 - Avg uncached response: 400-600ms
@@ -450,6 +468,7 @@ Query 3 again: "What is knowledge?" → <100ms ✅
 ### Issue: "ChromaDB connection refused"
 
 **Solution:**
+
 ```bash
 # Check if ChromaDB is running
 docker ps | grep chroma
@@ -464,6 +483,7 @@ curl http://localhost:8001/api/v1/heartbeat
 ### Issue: "No sources returned"
 
 **Solution:**
+
 ```bash
 # Check if data was ingested
 yarn verify-chromadb
@@ -477,6 +497,7 @@ yarn rag:ingest
 ### Issue: "Database error"
 
 **Solution:**
+
 ```bash
 # Check DATABASE_URL in .env.local
 cat .env.local | grep DATABASE_URL
@@ -491,6 +512,7 @@ yarn verify-db
 ### Issue: "Build errors"
 
 **Solution:**
+
 ```bash
 # Clear cache
 rm -rf .next
@@ -506,6 +528,7 @@ yarn build
 ### Issue: "Mock generation not working"
 
 **Solution:**
+
 ```bash
 # Verify environment variable
 cat .env.local | grep USE_MOCK_GENERATION

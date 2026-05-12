@@ -6,8 +6,8 @@ async function main() {
   console.log('Seeding local Python backend on port 8000...')
   for (const agent of DEMO_AGENTS) {
     // Sanitize birth date
-    const birthDateStr = isNaN(agent.birthData.date.getTime()) 
-      ? new Date('1970-01-01T12:00:00Z').toISOString() 
+    const birthDateStr = isNaN(agent.birthData.date.getTime())
+      ? new Date('1970-01-01T12:00:00Z').toISOString()
       : agent.birthData.date.toISOString()
 
     const payload = {

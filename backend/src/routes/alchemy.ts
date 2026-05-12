@@ -320,15 +320,11 @@ router.post(
   '/token-equilibrium',
   authMiddleware,
   [
-    body('tokens.spirit')
-      .isFloat({ min: 0, max: 1 })
-      .withMessage('spirit must be between 0 and 1'),
+    body('tokens.spirit').isFloat({ min: 0, max: 1 }).withMessage('spirit must be between 0 and 1'),
     body('tokens.essence')
       .isFloat({ min: 0, max: 1 })
       .withMessage('essence must be between 0 and 1'),
-    body('tokens.matter')
-      .isFloat({ min: 0, max: 1 })
-      .withMessage('matter must be between 0 and 1'),
+    body('tokens.matter').isFloat({ min: 0, max: 1 }).withMessage('matter must be between 0 and 1'),
     body('tokens.substance')
       .isFloat({ min: 0, max: 1 })
       .withMessage('substance must be between 0 and 1'),

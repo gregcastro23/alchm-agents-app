@@ -1,7 +1,9 @@
 # How to Get Access to Better Claude Models
 
 ## Current Situation
+
 Your API key has access to:
+
 - ✅ **Claude 3 Opus** (very powerful, second-best available)
 - ✅ **Claude 3.5 Haiku** (latest fast model)
 - ❌ **Claude 3.5 Sonnet** (best model - NOT available)
@@ -9,18 +11,22 @@ Your API key has access to:
 ## Option 1: Request Access from Anthropic (Recommended)
 
 ### Step 1: Check Your Console
+
 1. Go to https://console.anthropic.com/
 2. Log in with your account
 3. Click on **Settings** → **Plan & Billing**
 4. Check your current tier
 
 ### Step 2: Upgrade Your Plan
+
 If you're on a free or limited tier:
+
 - Click **Upgrade Plan**
 - Choose a paid tier (Build or Scale)
 - **Build Tier** ($15/month) usually includes Claude 3.5 Sonnet access
 
 ### Step 3: Contact Support (If Upgrade Doesn't Work)
+
 Email: support@anthropic.com
 
 Subject: "Request Access to Claude 3.5 Sonnet"
@@ -28,8 +34,8 @@ Subject: "Request Access to Claude 3.5 Sonnet"
 ```
 Hello,
 
-I have an Anthropic API key but I'm getting 404 errors when trying to use 
-claude-3-5-sonnet-20241022. My key works fine with Claude 3 Opus and 
+I have an Anthropic API key but I'm getting 404 errors when trying to use
+claude-3-5-sonnet-20241022. My key works fine with Claude 3 Opus and
 Claude 3.5 Haiku.
 
 API Key prefix: sk-ant-api03-7tdpI31...
@@ -44,6 +50,7 @@ Response time: Usually 24-48 hours
 ## Option 2: Use What You Have (Current Setup)
 
 **Claude 3 Opus is excellent!** It's:
+
 - More powerful than GPT-4
 - Has 200K context window
 - Great for complex reasoning
@@ -68,12 +75,12 @@ The app will automatically fall back to OpenAI when needed.
 
 ## Model Comparison
 
-| Model | Power | Speed | Context | Your Access |
-|-------|-------|-------|---------|-------------|
-| Claude 3.5 Sonnet | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 200K | ❌ |
-| Claude 3 Opus | ⭐⭐⭐⭐ | ⭐⭐⭐ | 200K | ✅ |
-| Claude 3.5 Haiku | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 200K | ✅ |
-| GPT-4o | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 128K | ? |
+| Model             | Power      | Speed      | Context | Your Access |
+| ----------------- | ---------- | ---------- | ------- | ----------- |
+| Claude 3.5 Sonnet | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐   | 200K    | ❌          |
+| Claude 3 Opus     | ⭐⭐⭐⭐   | ⭐⭐⭐     | 200K    | ✅          |
+| Claude 3.5 Haiku  | ⭐⭐⭐     | ⭐⭐⭐⭐⭐ | 200K    | ✅          |
+| GPT-4o            | ⭐⭐⭐⭐   | ⭐⭐⭐⭐   | 128K    | ?           |
 
 ## Verify Your Access Again
 
@@ -94,7 +101,6 @@ yarn dev
 
 ## Bottom Line
 
-**You're already using the best models available to you!** Claude 3 Opus is excellent 
-and will handle 95% of tasks just as well as 3.5 Sonnet. If you need the absolute 
+**You're already using the best models available to you!** Claude 3 Opus is excellent
+and will handle 95% of tasks just as well as 3.5 Sonnet. If you need the absolute
 best, upgrade your Anthropic plan or add OpenAI as a backup.
-

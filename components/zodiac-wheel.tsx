@@ -14,12 +14,7 @@ import {
 import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import {
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
-  Target,
-} from 'lucide-react'
+import { ZoomIn, ZoomOut, RotateCcw, Target } from 'lucide-react'
 
 interface ZodiacWheelProps {
   natalChart?: {
@@ -250,7 +245,7 @@ export function ZodiacWheel({
           >
             {SIGN_SYMBOLS[sign]}
           </text>
-{/* Degree markers */}
+          {/* Degree markers */}
           {Array.from({ length: 6 }, (_, degIndex) => {
             const deg = degIndex * 5
             const degreeAngle = ((i * 30 + deg) * Math.PI) / 180

@@ -1,6 +1,7 @@
 # Agent Enhancement Implementation - Continuation Context
 
 ## Session Objective
+
 Enhance all crafted historical agents in the Planetary Agents system by adding missing optional fields to improve response quality, personality depth, and historical authenticity.
 
 ## What We've Accomplished So Far
@@ -27,11 +28,13 @@ Enhance all crafted historical agents in the Planetary Agents system by adding m
    - **Research Method:** Mixed approach (AI-assisted for lesser-known, primary sources for well-documented)
 
 ## Current Status
+
 We just started a comprehensive search to uncover all crafted historical agents. This search was in progress when the session ended.
 
 ## Next Steps
 
 ### Phase 1: Complete Agent Discovery
+
 1. **Finish comprehensive agent search:**
    - Search all files in `lib/agents/historical/` for agent definitions
    - Check `lib/demo-agents-data.ts` for inline agents
@@ -44,6 +47,7 @@ We just started a comprehensive search to uncover all crafted historical agents.
    - Identify which agents need migration to external files
 
 ### Phase 2: File Migration (if needed)
+
 1. **Migrate inline agents to external files:**
    - Create individual `.ts` files in `lib/agents/historical/`
    - Follow existing external file patterns
@@ -55,29 +59,34 @@ We just started a comprehensive search to uncover all crafted historical agents.
 **Work in batches by enhancement type across ALL agents:**
 
 #### Batch 1: Era & Specialization (30 min)
+
 - Add `era` field to all agents (Ancient/Medieval/Renaissance/Enlightenment/Industrial/Modern)
 - Add `specialization` field to all agents (Science/Arts/Philosophy/Leadership/etc.)
 - Run audit to verify
 
 #### Batch 2: Historical Quotes (2-3 hours)
+
 - Research 3-5 authentic quotes per agent
 - Use mixed approach: AI suggestions + verification against Wikiquote/primary sources
 - Focus on quotes that reveal personality and worldview
 - Add to all agents, run audit
 
 #### Batch 3: Core Beliefs (2-3 hours)
+
 - Research 3-5 core philosophical beliefs per agent
 - Base on documented writings and historical actions
 - Cover epistemology, ethics, methodology
 - Add to all agents, run audit
 
 #### Batch 4: Personality Traits (1-2 hours)
+
 - Add 5-7 traits per agent
 - Use categories: Intellectual, Emotional, Social, Creative
 - Mix of positive traits with authentic complexity
 - Add to all agents, run audit
 
 #### Batch 5: Expand Shadows & Gifts (2 hours)
+
 - Add 1-2 more shadows per agent (target: 2-3 total)
 - Add 1-2 more gifts per agent (target: 2-3 total)
 - Include transformation paths for shadows
@@ -85,19 +94,24 @@ We just started a comprehensive search to uncover all crafted historical agents.
 - Add to all agents, run audit
 
 #### Batch 6: Alchemical Elements (1-2 hours)
+
 - Calculate spirit, essence, matter, substance (0-1 scale) for each agent
 - Based on their historical work and personality
 - Add to all agents, run audit
 
 ### Phase 4: Verification
+
 1. **Run final audit:**
+
    ```bash
    npx tsx scripts/audit-agents.ts
    ```
+
    - Target: <100 warnings (down from 441)
    - Zero critical issues
 
 2. **TypeScript validation:**
+
    ```bash
    yarn typecheck
    ```
@@ -108,6 +122,7 @@ We just started a comprehensive search to uncover all crafted historical agents.
    - Confirm beliefs shape responses
 
 4. **Re-ingest vector database:**
+
    ```bash
    OPENAI_API_KEY=xxx CHROMADB_URL=http://localhost:8001 npx tsx lib/llamaindex/ingestion-pipeline.ts --force
    ```
@@ -121,24 +136,29 @@ We just started a comprehensive search to uncover all crafted historical agents.
 ## Key Files to Work With
 
 ### Agent Configuration Files
+
 - `lib/demo-agents-data.ts` - Contains 35 inline agents
 - `lib/agents/historical/*.ts` - Individual agent files (18 currently)
 - `lib/agents/historical/index.ts` - Export hub
 
 ### Type Definitions
+
 - `lib/types/agent-types.ts` - CraftedAgent interface
 
 ### Validation & Testing
+
 - `scripts/audit-agents.ts` - Agent validation tool
 - `lib/llamaindex/ingestion-pipeline.ts` - Vector DB ingestion
 
 ### Supporting Files
+
 - `lib/agents/EXISTING_DEMO_AGENTS.ts` - Agent list export
 - `lib/unified-agent-factory.ts` - Agent conversion logic
 
 ## Quality Standards
 
 ### Quotes Pattern
+
 ```typescript
 quotes: [
   "Authentic quote 1 that reflects philosophy",
@@ -148,6 +168,7 @@ quotes: [
 ```
 
 ### Core Beliefs Pattern
+
 ```typescript
 coreBeliefs: [
   "Belief about knowledge/truth",
@@ -158,6 +179,7 @@ coreBeliefs: [
 ```
 
 ### Personality Traits Pattern
+
 ```typescript
 personality: {
   core: { /* existing */ },
@@ -174,6 +196,7 @@ personality: {
 ```
 
 ### Alchemical Elements Pattern
+
 ```typescript
 consciousness: {
   // ... existing fields
@@ -189,12 +212,14 @@ consciousness: {
 ## Research Resources
 
 ### Primary Sources
+
 - **Wikiquote:** https://en.wikiquote.org
 - **Stanford Encyclopedia of Philosophy:** https://plato.stanford.edu
 - **Internet Archive:** https://archive.org
 - **Biography.com:** For personality traits
 
 ### Quality Guidelines
+
 - Verify quote authenticity before adding
 - Base beliefs on documented writings/actions
 - Use psychological frameworks for traits
@@ -203,6 +228,7 @@ consciousness: {
 ## Success Criteria
 
 ### Quantitative
+
 - All agents have era/specialization fields ✅
 - All agents have 3-5 quotes ✅
 - All agents have 3-5 core beliefs ✅
@@ -212,6 +238,7 @@ consciousness: {
 - Zero critical issues maintained ✅
 
 ### Qualitative
+
 - Responses feel more authentic
 - Personality traits create tone variation
 - Quotes integrate naturally
@@ -269,6 +296,7 @@ OPENAI_API_KEY=xxx CHROMADB_URL=http://localhost:8001 npx tsx lib/llamaindex/ing
 ---
 
 ## Notes
+
 - Current audit warnings: 441
 - Target audit warnings: <100
 - Estimated time: 7-8 hours total

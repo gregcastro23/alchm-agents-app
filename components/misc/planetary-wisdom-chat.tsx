@@ -190,7 +190,7 @@ export function PlanetaryWisdomChat({
         {PLANETARY_COUNCIL_PRESETS.map(preset => (
           <Card
             key={preset.id}
-            className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50"
+            className="cursor-pointer transition-all hover:shadow-[0_0_20px_rgba(139,92,246,0.2)] bg-black/40 backdrop-blur-md border-white/10 hover:border-purple-500/50 text-white"
             onClick={() => handlePresetSelect(preset)}
           >
             <CardHeader className="pb-3">
@@ -208,14 +208,14 @@ export function PlanetaryWisdomChat({
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-3">{preset.description}</p>
+              <p className="text-sm text-purple-200/70 mb-3">{preset.description}</p>
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4 text-amber-500" />
                   <span className="text-sm font-medium">Focus:</span>
                 </div>
-                <p className="text-sm text-muted-foreground ml-6">{preset.astrological_focus}</p>
+                <p className="text-sm text-purple-200/70 ml-6">{preset.astrological_focus}</p>
               </div>
 
               <div className="flex flex-wrap gap-2 mt-3">
@@ -251,14 +251,14 @@ export function PlanetaryWisdomChat({
 
       {/* Custom Council Option */}
       <Card
-        className="cursor-pointer transition-all hover:shadow-lg border-dashed border-2"
+        className="cursor-pointer transition-all hover:shadow-[0_0_20px_rgba(139,92,246,0.2)] border-dashed border-2 bg-black/40 backdrop-blur-md border-white/20 hover:border-purple-500/50 text-white"
         onClick={handleCreateCustomCouncil}
       >
         <CardContent className="flex items-center justify-center py-8">
           <div className="text-center">
             <Sparkles className="w-8 h-8 text-primary mx-auto mb-2" />
             <h3 className="font-semibold mb-1">Create Custom Council</h3>
-            <p className="text-sm text-muted-foreground">Select your own planetary combination</p>
+            <p className="text-sm text-purple-200/70">Select your own planetary combination</p>
           </div>
         </CardContent>
       </Card>
@@ -267,7 +267,7 @@ export function PlanetaryWisdomChat({
 
   // Render live sky status
   const renderLiveSkyStatus = () => (
-    <Card className="mb-4">
+    <Card className="mb-4 bg-black/40 backdrop-blur-md border-white/10 text-white shadow-[0_0_20px_rgba(139,92,246,0.05)]">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -296,7 +296,7 @@ export function PlanetaryWisdomChat({
               <div className={autoSyncEnabled ? 'text-green-600' : 'text-gray-500'}>
                 {autoSyncEnabled ? 'Live' : 'Manual'}
               </div>
-              <div className="text-muted-foreground">Last: {lastSyncTime.toLocaleTimeString()}</div>
+              <div className="text-purple-300/70">Last: {lastSyncTime.toLocaleTimeString()}</div>
             </div>
           </div>
 
@@ -336,7 +336,7 @@ export function PlanetaryWisdomChat({
 
         {/* Active Council */}
         {activePlanetIds.length > 0 && (
-          <div className="mt-4 pt-4 border-t">
+          <div className="mt-4 pt-4 border-t border-white/10">
             <div className="flex items-center gap-2 mb-2">
               <Users className="w-4 h-4" />
               <span className="font-medium">Active Council</span>
@@ -347,7 +347,7 @@ export function PlanetaryWisdomChat({
                 <div key={config.planet} className="flex items-center gap-1 text-sm">
                   <span style={{ color: config.color }}>{config.symbol}</span>
                   <span>{config.planet}</span>
-                  <span className="text-muted-foreground">in {config.sign}</span>
+                  <span className="text-purple-300/70">in {config.sign}</span>
                 </div>
               ))}
               {selectedPreset?.includeMonica && (
@@ -367,8 +367,8 @@ export function PlanetaryWisdomChat({
     <>
       {/* Preset Selection Modal */}
       {showPresetSelection && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-background rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden">
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-[#0c0319] border border-purple-500/30 shadow-[0_0_50px_rgba(139,92,246,0.15)] rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden text-white">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold">Select Planetary Council</h2>

@@ -3,6 +3,7 @@
 ## 🔍 Current Database Found
 
 I found your database on Render:
+
 - **Name:** `planetary-agents-prod`
 - **Status:** ⚠️ **SUSPENDED** (due to billing)
 - **Region:** Oregon
@@ -17,6 +18,7 @@ I found your database on Render:
 ## 🚨 The Problem
 
 Your database is suspended, which means:
+
 - ❌ Vercel cannot connect to it
 - ❌ Your app won't work without a database
 - ❌ You need to either reactivate it or use a different database
@@ -28,6 +30,7 @@ Your database is suspended, which means:
 ### Option 1: Reactivate Your Render Database (Recommended)
 
 **Steps:**
+
 1. Go to https://dashboard.render.com/d/dpg-d38qm01r0fns73875h6g-a
 2. Click **"Unsuspend"** or **"Reactivate"**
 3. Update your billing information if needed
@@ -41,6 +44,7 @@ Your database is suspended, which means:
 ### Option 2: Create a New Free Database on Render
 
 **Steps:**
+
 1. Go to Render Dashboard
 2. Click **"New +"** → **"PostgreSQL"**
 3. Select **FREE** tier
@@ -66,6 +70,7 @@ Your database is suspended, which means:
 6. Use the Accelerate connection string
 
 **Benefits:**
+
 - Optimized for serverless (Vercel)
 - Connection pooling
 - Better performance
@@ -84,6 +89,7 @@ Your database is suspended, which means:
 5. Use it with Vercel
 
 **Benefits:**
+
 - Generous free tier
 - No credit card required
 - Serverless PostgreSQL
@@ -102,6 +108,7 @@ Your database is suspended, which means:
 5. Copy the connection string
 
 **Benefits:**
+
 - Free tier available
 - Easy to use
 - Built-in features (auth, storage, etc.)
@@ -129,6 +136,7 @@ Your database is suspended, which means:
 ### For Production (When Ready):
 
 Either:
+
 - **Reactivate your Render database** (if you want to stick with Render)
 - **Set up Prisma Accelerate** (best for serverless performance)
 
@@ -154,6 +162,7 @@ Once you have the DATABASE_URL, add it to Vercel:
 After setting up your database:
 
 1. Run migrations:
+
    ```bash
    npx prisma migrate deploy
    ```
@@ -175,4 +184,3 @@ After setting up your database:
 ---
 
 **Next Steps:** Choose an option above and let me know which one you want to proceed with!
-

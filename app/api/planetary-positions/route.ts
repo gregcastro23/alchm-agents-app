@@ -117,20 +117,17 @@ export async function GET(req: NextRequest) {
             entropy: planetaryData.alchmQuantities.Entropy,
             reactivity: planetaryData.alchmQuantities.Reactivity,
             energy: planetaryData.alchmQuantities.Energy,
-            sunSign: planetaryData.planetaryPositions.find((p) => p.planet === 'Sun')?.sign || '',
+            sunSign: planetaryData.planetaryPositions.find(p => p.planet === 'Sun')?.sign || '',
             chartRuler: '',
             timestamp: planetaryData.timestamp,
-            planetaryPositions: planetaryData.planetaryPositions.reduce(
-              (acc, pos) => {
-                acc[pos.planet] = {
-                  sign: pos.sign,
-                  degree: pos.degree.toString(),
-                  retrograde: pos.retrograde,
-                }
-                return acc
-              },
-              {} as any
-            ),
+            planetaryPositions: planetaryData.planetaryPositions.reduce((acc, pos) => {
+              acc[pos.planet] = {
+                sign: pos.sign,
+                degree: pos.degree.toString(),
+                retrograde: pos.retrograde,
+              }
+              return acc
+            }, {} as any),
           },
           {
             api_endpoint: '/api/planetary-positions',

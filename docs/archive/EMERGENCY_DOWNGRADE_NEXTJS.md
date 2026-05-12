@@ -3,11 +3,13 @@
 ## The Problem
 
 Next.js 15.5.6 has a known incompatibility with Vercel serverless functions causing:
+
 ```
 Cannot find module 'next/dist/compiled/source-map'
 ```
 
 This has persisted through ALL our fixes:
+
 - ❌ Adding source-map dependency
 - ❌ Configuring webpack
 - ❌ Disabling source maps
@@ -37,4 +39,3 @@ This is the nuclear option - going back to a stable Next.js version that's prove
 Local will still work (same code), and production will finally work too!
 
 **Implementing now...**
-

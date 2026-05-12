@@ -8,7 +8,7 @@ import {
 
 /**
  * GET /api/ai-gateway/health
- * 
+ *
  * Health check endpoint for AI Gateway configuration
  * Returns status, validation, and recommendations
  */

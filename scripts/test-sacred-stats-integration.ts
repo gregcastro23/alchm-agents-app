@@ -13,7 +13,7 @@ import { generateConsciousnessInformedPrompt } from '@/lib/agents/sacred-stats-p
 import type { Sacred7Stats } from '@/lib/sacred-7-stats'
 
 console.log('🔮 Sacred 7 Stats Integration Test')
-console.log('=' .repeat(80))
+console.log('='.repeat(80))
 console.log('')
 
 // Test with Leonardo da Vinci
@@ -31,13 +31,13 @@ console.log('')
 
 // Extract Sacred 7 Stats from agent
 const stats: Sacred7Stats = leonardo.stats?.sacred7Stats || {
-  power: 85,        // High - Leonardo's commanding intellect
-  resonance: 75,    // Strong - Connection to universal patterns
-  wisdom: 88,       // High - Deep accumulated knowledge
-  charisma: 70,     // Strong - Magnetic presence
-  intuition: 82,    // High - Visionary insight
+  power: 85, // High - Leonardo's commanding intellect
+  resonance: 75, // Strong - Connection to universal patterns
+  wisdom: 88, // High - Deep accumulated knowledge
+  charisma: 70, // Strong - Magnetic presence
+  intuition: 82, // High - Visionary insight
   adaptability: 92, // Exceptional - Mastery across domains
-  vitality: 78,     // Strong - Vibrant creative energy
+  vitality: 78, // Strong - Vibrant creative energy
 }
 
 console.log('📊 Sacred 7 Stats (Birth Chart-Derived):')
@@ -51,8 +51,10 @@ console.log(`  💚 Vitality: ${stats.vitality}/100 (Life Force)`)
 console.log('')
 
 // Get core personality data
-const coreEssence = leonardo.consciousness?.strength || 'Boundless curiosity bridging art and science'
-const coreExpression = leonardo.personality?.core?.expression || 'Artistic innovation fused with scientific inquiry'
+const coreEssence =
+  leonardo.consciousness?.strength || 'Boundless curiosity bridging art and science'
+const coreExpression =
+  leonardo.personality?.core?.expression || 'Artistic innovation fused with scientific inquiry'
 const coreEmotion = leonardo.consciousness?.emotion || 'Childlike wonder at infinite possibilities'
 const dominantElement = leonardo.consciousness?.dominantElement || 'Fire'
 const dominantModality = leonardo.consciousness?.dominantModality || 'Cardinal'
@@ -89,7 +91,8 @@ const prompt = generateConsciousnessInformedPrompt({
   agentTitle: leonardo.title || 'The Renaissance Genius',
   birthYear: leonardo.birthData.date.getFullYear(),
   specialty: leonardo.abilities?.specialty || 'Renaissance Innovation',
-  uniquePower: leonardo.abilities?.uniquePower || 'Can see connections between disciplines others miss',
+  uniquePower:
+    leonardo.abilities?.uniquePower || 'Can see connections between disciplines others miss',
   stats,
   dominantElement,
   dominantModality,
@@ -119,7 +122,8 @@ const checks = [
   },
   {
     name: 'No explicit stat value mentions',
-    test: !prompt.includes('Power: 85') && !prompt.includes('stats.power') && !prompt.includes(': 88'),
+    test:
+      !prompt.includes('Power: 85') && !prompt.includes('stats.power') && !prompt.includes(': 88'),
   },
   {
     name: 'No consciousness metrics',
@@ -181,7 +185,9 @@ if (passed === checks.length) {
   console.log('')
   console.log('Next Steps:')
   console.log('  1. Test in actual chat: /gallery/chat/leonardo-da-vinci')
-  console.log('  2. Ask: "What are inventions worth, in the scope of life, when they come at the cost of attention to love?"')
+  console.log(
+    '  2. Ask: "What are inventions worth, in the scope of life, when they come at the cost of attention to love?"'
+  )
   console.log('  3. Observe: High Adaptability → fluid perspective shifts')
   console.log('             High Wisdom → deep, multi-layered insights')
   console.log('             High Power → authoritative, transformative voice')

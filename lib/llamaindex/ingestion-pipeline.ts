@@ -38,7 +38,14 @@ export interface IngestionOptions {
 }
 
 export interface IngestionProgress {
-  stage: 'initializing' | 'loading' | 'chunking' | 'embedding' | 'storing' | 'validating' | 'complete'
+  stage:
+    | 'initializing'
+    | 'loading'
+    | 'chunking'
+    | 'embedding'
+    | 'storing'
+    | 'validating'
+    | 'complete'
   currentAgent?: string
   completed: number
   total: number
@@ -65,9 +72,7 @@ export interface IngestionResult {
 /**
  * Main ingestion pipeline - Process and store all agent knowledge
  */
-export async function ingestAgentKnowledge(
-  options?: IngestionOptions
-): Promise<IngestionResult> {
+export async function ingestAgentKnowledge(options?: IngestionOptions): Promise<IngestionResult> {
   const startTime = Date.now()
   const errors: string[] = []
   let agentsProcessed = 0
@@ -190,7 +195,7 @@ export async function ingestAgentKnowledge(
     const chunkTexts = chunks.map(c => c.content)
     const embeddings = await generateEmbeddings(chunkTexts, {
       batchSize: EMBEDDING_BATCH_SIZE,
-      progressCallback: (embProgress) => {
+      progressCallback: embProgress => {
         reportProgress({
           completed: embProgress.completed,
           total: embProgress.total,
@@ -219,23 +224,16 @@ export async function ingestAgentKnowledge(
     const ids = chunks.map(c => c.id)
     const metadatas = chunks.map(c => c.metadata)
 
-    const addResult = await addDocuments(
-      collection,
-      chunkTexts,
-      embeddings,
-      metadatas,
-      ids,
-      {
-        batchSize: 100,
-        progressCallback: (storeProgress) => {
-          reportProgress({
-            completed: storeProgress.completed,
-            total: storeProgress.total,
-            message: `Storing documents: ${storeProgress.completed}/${storeProgress.total}`,
-          })
-        },
-      }
-    )
+    const addResult = await addDocuments(collection, chunkTexts, embeddings, metadatas, ids, {
+      batchSize: 100,
+      progressCallback: storeProgress => {
+        reportProgress({
+          completed: storeProgress.completed,
+          total: storeProgress.total,
+          message: `Storing documents: ${storeProgress.completed}/${storeProgress.total}`,
+        })
+      },
+    })
 
     documentsStored = addResult.documentsAdded
 
@@ -312,9 +310,7 @@ export async function ingestAgentKnowledge(
  * Incremental update - Only ingest new or modified agents
  * (Simplified version - full implementation would track timestamps)
  */
-export async function incrementalUpdate(
-  agentIds: string[]
-): Promise<IngestionResult> {
+export async function incrementalUpdate(agentIds: string[]): Promise<IngestionResult> {
   console.log('[Ingestion] Running incremental update for agents:', agentIds)
 
   return ingestAgentKnowledge({
@@ -394,9 +390,10 @@ export async function getIngestionStatus(): Promise<{
       ready: documentCount > 0,
       collectionName: COLLECTION_NAME,
       documentCount,
-      message: documentCount > 0
-        ? `Ready with ${documentCount} documents`
-        : 'Collection is empty - run ingestion',
+      message:
+        documentCount > 0
+          ? `Ready with ${documentCount} documents`
+          : 'Collection is empty - run ingestion',
     }
   } catch (error) {
     return {
@@ -416,14 +413,14 @@ if (isMainModule) {
 
   ingestAgentKnowledge({
     forceReindex: process.argv.includes('--force'),
-    progressCallback: (progress) => {
+    progressCallback: progress => {
       console.log(`[${progress.stage}] ${progress.message}`)
       if (progress.errors.length > 0) {
         console.error('Errors:', progress.errors)
       }
     },
   })
-    .then((result) => {
+    .then(result => {
       console.log('\n✅ Ingestion Complete!')
       console.log('━'.repeat(60))
       console.log(`Agents Processed: ${result.agentsProcessed}`)
@@ -440,7 +437,7 @@ if (isMainModule) {
 
       process.exit(result.success ? 0 : 1)
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('\n❌ Ingestion Failed:', error)
       process.exit(1)
     })

@@ -61,7 +61,9 @@ async function testPersistence() {
   })
   console.log(`✓ Found ${results1.length} results before reload`)
   results1.forEach((r, i) => {
-    console.log(`  ${i + 1}. ${r.agentName} - ${r.metadata.documentType} (${r.similarity.toFixed(3)})`)
+    console.log(
+      `  ${i + 1}. ${r.agentName} - ${r.metadata.documentType} (${r.similarity.toFixed(3)})`
+    )
   })
 
   // Test 2: Clear and reload from persistence
@@ -73,8 +75,9 @@ async function testPersistence() {
   VectorStoreManagerClass.instance = null
 
   // Import again to get fresh instance
-  const { vectorStoreManager: freshManager, initializeVectorStore: freshInit } =
-    await import('./lib/llamaindex/vector-store.js?t=' + Date.now())
+  const { vectorStoreManager: freshManager, initializeVectorStore: freshInit } = await import(
+    './lib/llamaindex/vector-store.js?t=' + Date.now()
+  )
 
   await freshInit()
   console.log('✓ Initialized fresh vector store instance')
@@ -96,7 +99,9 @@ async function testPersistence() {
   })
   console.log(`✓ Found ${results2.length} results after reload`)
   results2.forEach((r, i) => {
-    console.log(`  ${i + 1}. ${r.agentName} - ${r.metadata.documentType} (${r.similarity.toFixed(3)})`)
+    console.log(
+      `  ${i + 1}. ${r.agentName} - ${r.metadata.documentType} (${r.similarity.toFixed(3)})`
+    )
   })
 
   // Compare results
@@ -106,9 +111,7 @@ async function testPersistence() {
   if (stats2.documentCount === stats1.documentCount) {
     console.log(`✓ Document count matches: ${stats2.documentCount}`)
   } else {
-    console.log(
-      `✗ Document count mismatch: ${stats1.documentCount} → ${stats2.documentCount}`,
-    )
+    console.log(`✗ Document count mismatch: ${stats1.documentCount} → ${stats2.documentCount}`)
   }
 
   if (results2.length === results1.length) {
@@ -122,9 +125,7 @@ async function testPersistence() {
     if (results1[0].agentId === results2[0].agentId) {
       console.log(`✓ Top search result matches: ${results1[0].agentName}`)
     } else {
-      console.log(
-        `✗ Top result mismatch: ${results1[0].agentName} → ${results2[0].agentName}`,
-      )
+      console.log(`✗ Top result mismatch: ${results1[0].agentName} → ${results2[0].agentName}`)
     }
   }
 
@@ -135,7 +136,7 @@ async function testPersistence() {
   console.log('\n')
 }
 
-testPersistence().catch((error) => {
+testPersistence().catch(error => {
   console.error('\n❌ Test failed:', error)
   process.exit(1)
 })

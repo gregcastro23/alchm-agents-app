@@ -5,12 +5,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, Database, Info } from 'lucide-react'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface RAGToggleProps {
   enabled: boolean
@@ -19,12 +14,7 @@ interface RAGToggleProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
-export function RAGToggle({
-  enabled,
-  onToggle,
-  showStatus = true,
-  size = 'md',
-}: RAGToggleProps) {
+export function RAGToggle({ enabled, onToggle, showStatus = true, size = 'md' }: RAGToggleProps) {
   const [isEnabled, setIsEnabled] = useState(enabled)
 
   useEffect(() => {
@@ -73,8 +63,8 @@ export function RAGToggle({
               <strong>Retrieval-Augmented Generation (RAG)</strong>
             </p>
             <p className="text-xs mt-1 text-muted-foreground">
-              When enabled, the AI retrieves relevant historical knowledge from agent
-              biographies and writings to provide more accurate, source-backed responses.
+              When enabled, the AI retrieves relevant historical knowledge from agent biographies
+              and writings to provide more accurate, source-backed responses.
             </p>
           </TooltipContent>
         </Tooltip>
@@ -84,9 +74,7 @@ export function RAGToggle({
         <Badge
           variant={isEnabled ? 'default' : 'outline'}
           className={`${sizeClasses[size]} ${
-            isEnabled
-              ? 'bg-purple-600 text-white border-purple-700'
-              : 'text-muted-foreground'
+            isEnabled ? 'bg-purple-600 text-white border-purple-700' : 'text-muted-foreground'
           }`}
         >
           {isEnabled ? (

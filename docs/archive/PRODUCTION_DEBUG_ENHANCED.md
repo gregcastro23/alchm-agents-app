@@ -7,6 +7,7 @@
 **File**: `lib/rag/monica-rag-wrapper.ts`
 
 Added detailed logging at every step:
+
 - ✅ Log when attempting OpenAI generation
 - ✅ Log success with response length
 - ✅ Log detailed error information (name, message, stack)
@@ -19,6 +20,7 @@ Added detailed logging at every step:
 **File**: `app/api/secure-config.ts`
 
 Now logs:
+
 - ✅ Whether each key is present
 - ✅ First 10 characters of each key (safe to log)
 - ✅ All environment variables containing "API" or "KEY"
@@ -28,13 +30,15 @@ Now logs:
 
 When you test Carl Jung chat again in production, the Vercel function logs will now show:
 
-1. **Which API keys are present**: 
+1. **Which API keys are present**:
+
    ```
    [API Keys] OpenAI present: true (starts with sk-proj-ab...)
    [API Keys] Anthropic present: true (starts with sk-ant-api...)
    ```
 
 2. **Exact error from AI providers**:
+
    ```
    [AI] OpenAI generation failed with error: 401 Unauthorized
    [AI] Error details: { name: 'APIError', message: 'Invalid API key' }
@@ -57,10 +61,10 @@ When you test Carl Jung chat again in production, the Vercel function logs will 
 ## What We'll Learn
 
 The logs will tell us if:
+
 - API keys are missing/incorrect in Vercel
 - There's a network/timeout issue
 - There's a Next.js 15.5.6 compatibility issue
 - Something else entirely
 
 **Ready to push!** This will definitively diagnose the issue.
-

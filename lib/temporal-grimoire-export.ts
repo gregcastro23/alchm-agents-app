@@ -678,25 +678,25 @@ framework for future research in consciousness evolution analysis.
     try {
       // Dynamic import for browser compatibility
       const { jsPDF } = await import('jspdf')
-      
+
       const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
       })
-      
+
       // Add title page
       doc.setFontSize(24)
       doc.text(template.name, 105, 30, { align: 'center' })
-      
+
       doc.setFontSize(12)
       doc.text(new Date().toLocaleDateString(), 105, 40, { align: 'center' })
-      
+
       let y = 60
       const pageHeight = 297 // A4 height in mm
       const margin = 20
       const maxWidth = 170 // A4 width minus margins
-      
+
       // Add sections
       for (const section of sections) {
         // Check if we need a new page
@@ -704,17 +704,17 @@ framework for future research in consciousness evolution analysis.
           doc.addPage()
           y = margin
         }
-        
+
         // Section title
         doc.setFontSize(16)
         doc.setFont('helvetica', 'bold')
         doc.text(section.title, margin, y)
         y += 10
-        
+
         // Section content
         doc.setFontSize(11)
         doc.setFont('helvetica', 'normal')
-        
+
         const lines = doc.splitTextToSize(section.content, maxWidth)
         for (const line of lines) {
           if (y > pageHeight - 30) {
@@ -724,14 +724,13 @@ framework for future research in consciousness evolution analysis.
           doc.text(line, margin, y)
           y += 6
         }
-        
+
         y += 10 // Space between sections
       }
-      
+
       // Generate buffer
       const pdfOutput = doc.output('arraybuffer')
       return Buffer.from(pdfOutput)
-      
     } catch (error) {
       console.error('[GrimoireExport] PDF generation failed:', error)
       // Fallback to HTML
@@ -748,19 +747,19 @@ framework for future research in consciousness evolution analysis.
     // EPUB generation - for now, generate a structured text file
     // Full EPUB would require epub-gen library and proper formatting
     const epubContent: string[] = []
-    
+
     // EPUB metadata (simplified)
     epubContent.push(`Title: ${template.name}`)
     epubContent.push(`Generated: ${new Date().toISOString()}`)
     epubContent.push(`\n${'='.repeat(50)}\n`)
-    
+
     // Add sections
     sections.forEach(section => {
       epubContent.push(`\n## ${section.title}\n`)
       epubContent.push(section.content)
       epubContent.push(`\n${'-'.repeat(50)}\n`)
     })
-    
+
     return Buffer.from(epubContent.join('\n'), 'utf-8')
   }
 
@@ -993,5 +992,3 @@ ${section.content}
   // Continue with other academic, journal, and codex sections...
   // (Implementation continued for brevity)
 }
-
-

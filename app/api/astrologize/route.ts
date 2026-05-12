@@ -33,6 +33,9 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url)
   const dateParam = url.searchParams.get('date')
   const date = dateParam ? new Date(dateParam) : new Date()
-  const { latitude, longitude } = parseLocation(url.searchParams.get('latitude'), url.searchParams.get('longitude'))
+  const { latitude, longitude } = parseLocation(
+    url.searchParams.get('latitude'),
+    url.searchParams.get('longitude')
+  )
   return handle(date, latitude, longitude)
 }

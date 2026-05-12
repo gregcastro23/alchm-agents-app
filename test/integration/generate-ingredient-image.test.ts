@@ -97,28 +97,27 @@ describe('buildIngredientPrompt', () => {
 // ---------------------------------------------------------------------------
 describe('resolveStoragePath', () => {
   it('prefers slug over ingredient_id and name', () => {
-    expect(resolveStoragePath({ slug: 'fresh-basil', ingredient_id: 'id-1', name: 'Basil' }))
-      .toBe('ingredients/fresh-basil.png')
+    expect(resolveStoragePath({ slug: 'fresh-basil', ingredient_id: 'id-1', name: 'Basil' })).toBe(
+      'ingredients/fresh-basil.png'
+    )
   })
 
   it('falls back to ingredient_id when no slug', () => {
-    expect(resolveStoragePath({ ingredient_id: 'ing-42', name: 'Basil' }))
-      .toBe('ingredients/ing-42.png')
+    expect(resolveStoragePath({ ingredient_id: 'ing-42', name: 'Basil' })).toBe(
+      'ingredients/ing-42.png'
+    )
   })
 
   it('normalizes name to kebab-case when no slug or id', () => {
-    expect(resolveStoragePath({ name: 'Black Truffle' }))
-      .toBe('ingredients/black-truffle.png')
+    expect(resolveStoragePath({ name: 'Black Truffle' })).toBe('ingredients/black-truffle.png')
   })
 
   it('strips leading and trailing hyphens from normalized name', () => {
-    expect(resolveStoragePath({ name: '---weird---' }))
-      .toBe('ingredients/weird.png')
+    expect(resolveStoragePath({ name: '---weird---' })).toBe('ingredients/weird.png')
   })
 
   it('collapses consecutive special chars into one hyphen', () => {
-    expect(resolveStoragePath({ name: 'Star   Anise!!!' }))
-      .toBe('ingredients/star-anise.png')
+    expect(resolveStoragePath({ name: 'Star   Anise!!!' })).toBe('ingredients/star-anise.png')
   })
 })
 

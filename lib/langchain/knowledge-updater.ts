@@ -20,14 +20,7 @@ const DEFAULT_CHUNK_OVERLAP = 200 // characters
 const DEFAULT_COLLECTION_NAME = 'historical-agents'
 
 // Selectors for content extraction (prioritize main content)
-const CONTENT_SELECTORS = [
-  'article',
-  'main',
-  '.content',
-  '.entry-content',
-  '#content',
-  'p',
-]
+const CONTENT_SELECTORS = ['article', 'main', '.content', '.entry-content', '#content', 'p']
 
 /**
  * Result type for knowledge update operations
@@ -176,7 +169,6 @@ export async function updateAgentKnowledge(
 
         totalChunks += chunks.length
         successfulUrls++
-
       } catch (error) {
         const errorMsg = `Failed to process ${url}: ${error instanceof Error ? error.message : String(error)}`
         logger.error(errorMsg, error, {
@@ -215,7 +207,7 @@ export async function updateAgentKnowledge(
     })
 
     const embeddings = await generateEmbeddings(allDocuments, {
-      progressCallback: (progress) => {
+      progressCallback: progress => {
         logger.debug(`Embedding progress: ${progress.completed}/${progress.total}`, {
           system: 'langchain',
           operation: 'generate_embeddings',
@@ -242,7 +234,7 @@ export async function updateAgentKnowledge(
       allMetadata,
       allIds,
       {
-        progressCallback: (progress) => {
+        progressCallback: progress => {
           logger.debug(`Ingestion progress: ${progress.completed}/${progress.total}`, {
             system: 'langchain',
             operation: 'ingest_documents',
@@ -272,7 +264,6 @@ export async function updateAgentKnowledge(
       errors: [...addResult.errors, ...errors],
       timestamp: new Date().toISOString(),
     }
-
   } catch (error) {
     const errorMsg = `Knowledge update failed: ${error instanceof Error ? error.message : String(error)}`
     logger.error(errorMsg, error, {
@@ -365,7 +356,6 @@ export async function getRecentKnowledgeUpdates(
     // For now, return empty array - this would require additional
     // ChromaDB query functionality to list documents by metadata
     return []
-
   } catch (error) {
     logger.error('Failed to get recent updates', error, {
       system: 'langchain',

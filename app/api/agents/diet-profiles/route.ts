@@ -7,9 +7,14 @@ export async function GET() {
   try {
     let alchmData: any[] = []
     let dietData: Record<string, any> = {}
-    
+
     try {
-      const filePath = path.join(process.cwd(), 'scripts', 'output', 'agent-ingredient-recommendations.json')
+      const filePath = path.join(
+        process.cwd(),
+        'scripts',
+        'output',
+        'agent-ingredient-recommendations.json'
+      )
       if (fs.existsSync(filePath)) {
         alchmData = JSON.parse(fs.readFileSync(filePath, 'utf8'))
       }
@@ -35,7 +40,7 @@ export async function GET() {
     const dietProfiles = DEMO_AGENTS.map(agent => {
       const agentAlchm = alchmData.find((a: any) => a.agentId === agent.id) || {}
       const historicalDiet = dietData[agent.id] || null
-      
+
       return {
         agentId: agent.id,
         name: agent.name,
@@ -51,13 +56,10 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       total: dietProfiles.length,
-      profiles: dietProfiles
+      profiles: dietProfiles,
     })
   } catch (error: any) {
     console.error('Failed to serve diet profiles:', error)
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    )
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }

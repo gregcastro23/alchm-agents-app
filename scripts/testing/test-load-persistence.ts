@@ -23,7 +23,9 @@ async function testLoadFromPersistence() {
   })
   console.log(`✓ Found ${results1.length} results:`)
   results1.forEach((r, i) => {
-    console.log(`  ${i + 1}. ${r.agentName} - ${r.metadata.documentType} (${r.similarity.toFixed(3)})`)
+    console.log(
+      `  ${i + 1}. ${r.agentName} - ${r.metadata.documentType} (${r.similarity.toFixed(3)})`
+    )
   })
 
   // Test 2: Agent concept search
@@ -43,7 +45,7 @@ async function testLoadFromPersistence() {
   const knowledge = await service.getRelevantKnowledge(
     'scientific discoveries and innovation',
     'leonardo-da-vinci',
-    { maxChunks: 3, minSimilarity: 0.35 },
+    { maxChunks: 3, minSimilarity: 0.35 }
   )
   console.log(`✓ Retrieved ${knowledge.length} knowledge chunks:`)
   knowledge.forEach((k, i) => {
@@ -66,7 +68,7 @@ async function testLoadFromPersistence() {
   console.log('\n')
 }
 
-testLoadFromPersistence().catch((error) => {
+testLoadFromPersistence().catch(error => {
   console.error('\n❌ Test failed:', error)
   process.exit(1)
 })

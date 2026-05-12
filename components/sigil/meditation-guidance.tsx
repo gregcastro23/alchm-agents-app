@@ -274,7 +274,10 @@ export function MeditationGuidance({
 
   const meditation = MEDITATION_STYLES[(sigil as any).style as SigilStyle]
   const currentMeditationPhase = meditation.phases[currentPhase]
-  const totalDuration = meditation.phases.reduce((sum: number, phase: any) => sum + phase.duration, 0)
+  const totalDuration = meditation.phases.reduce(
+    (sum: number, phase: any) => sum + phase.duration,
+    0
+  )
 
   // Timer effect
   useEffect(() => {
@@ -388,8 +391,8 @@ export function MeditationGuidance({
             </div>
             <h3 className="text-2xl font-bold text-emerald-300">Activation Complete!</h3>
             <p className="text-emerald-200">
-              Your {(sigil as any).style} sigil has been successfully activated and integrated into your
-              consciousness.
+              Your {(sigil as any).style} sigil has been successfully activated and integrated into
+              your consciousness.
             </p>
 
             <div className="p-4 bg-emerald-900/20 rounded-lg border border-emerald-500/30">
@@ -490,10 +493,10 @@ export function MeditationGuidance({
             <div className="p-4 bg-purple-900/20 rounded-lg border border-purple-500/30">
               <h4 className="font-semibold text-purple-300 mb-2">Before You Begin</h4>
               <p className="text-purple-100 text-sm leading-relaxed">
-                This meditation will guide you through the sacred activation of your {(sigil as any).style}{' '}
-                sigil. Each phase is designed to attune your consciousness to the specific energetic
-                signature of your personalized rune. Trust the process and allow yourself to be
-                fully present with each instruction.
+                This meditation will guide you through the sacred activation of your{' '}
+                {(sigil as any).style} sigil. Each phase is designed to attune your consciousness to
+                the specific energetic signature of your personalized rune. Trust the process and
+                allow yourself to be fully present with each instruction.
               </p>
             </div>
 

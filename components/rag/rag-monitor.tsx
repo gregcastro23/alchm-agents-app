@@ -72,9 +72,7 @@ export function RAGMonitor({
         </div>
         <div className="flex items-center gap-1.5">
           <Database className="w-4 h-4 text-blue-600" />
-          <span className="font-medium">
-            {analytics.avgSourcesPerQuery.toFixed(1)}
-          </span>
+          <span className="font-medium">{analytics.avgSourcesPerQuery.toFixed(1)}</span>
           <span className="text-muted-foreground">avg sources</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -186,9 +184,7 @@ export function RAGMonitor({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Avg Total</span>
-              <span className="text-sm font-semibold">
-                {analytics.avgTotalTime.toFixed(0)}ms
-              </span>
+              <span className="text-sm font-semibold">{analytics.avgTotalTime.toFixed(0)}ms</span>
             </div>
           </div>
         </CardContent>
@@ -235,10 +231,10 @@ export function RAGMonitor({
               <div className="flex-1">
                 <h4 className="font-semibold text-sm mb-1">Known Issue: Model Access</h4>
                 <p className="text-xs text-muted-foreground">
-                  RAG retrieval is working perfectly (finding documents with 60-65% relevance
-                  in sub-500ms), but text generation is currently blocked due to Anthropic API
-                  key not having model access configured. Contact Anthropic support to enable
-                  Claude model access for this API key.
+                  RAG retrieval is working perfectly (finding documents with 60-65% relevance in
+                  sub-500ms), but text generation is currently blocked due to Anthropic API key not
+                  having model access configured. Contact Anthropic support to enable Claude model
+                  access for this API key.
                 </p>
               </div>
             </div>

@@ -34,6 +34,7 @@ Regardless of whether the chat works or fails, check the logs:
 5. Look for these new log messages:
 
 ### If API Keys Are Missing:
+
 ```
 [API Keys] OpenAI present: false
 [API Keys] Anthropic present: false
@@ -41,6 +42,7 @@ Regardless of whether the chat works or fails, check the logs:
 ```
 
 ### If Keys Are Present But Invalid:
+
 ```
 [API Keys] OpenAI present: true (starts with sk-proj-...)
 [AI] Attempting OpenAI generation with model: gpt-4o-mini
@@ -49,6 +51,7 @@ Regardless of whether the chat works or fails, check the logs:
 ```
 
 ### If It's Working:
+
 ```
 [API Keys] OpenAI present: true (starts with sk-proj-...)
 [AI] Attempting OpenAI generation with model: gpt-4o-mini
@@ -60,11 +63,13 @@ Regardless of whether the chat works or fails, check the logs:
 ## 🔍 STEP 3: Send Me the Logs
 
 **Copy and paste** the relevant log lines from Vercel, especially:
+
 - `[API Keys]` lines
 - `[AI]` lines
 - Any error messages
 
 This will tell us:
+
 1. Are the API keys present in Vercel?
 2. Are they valid?
 3. What exact error is being thrown?
@@ -88,4 +93,3 @@ Based on what the logs show, I'll know exactly what to fix:
 **ETA for testing**: ~12:06 AM
 
 Let me know what the logs say! 🔍
-

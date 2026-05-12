@@ -55,8 +55,9 @@ export function rerankResults(
     for (let i = 0; i < index; i++) {
       const prevContent = results[i].content.toLowerCase()
       // Simple overlap check (in production, use embeddings)
-      const overlapWords = content.split(' ').filter(w => prevContent.includes(w) && w.length > 4)
-        .length
+      const overlapWords = content
+        .split(' ')
+        .filter(w => prevContent.includes(w) && w.length > 4).length
       if (overlapWords > 10) {
         diversityScore -= 0.2
       }
@@ -280,10 +281,7 @@ export function calculateQueryQuality(query: string): {
  *
  * Provides actionable suggestions to improve query quality
  */
-export function generateQuerySuggestions(
-  query: string,
-  qualityScore: number
-): string[] {
+export function generateQuerySuggestions(query: string, qualityScore: number): string[] {
   const suggestions: string[] = []
 
   if (qualityScore < 0.5) {

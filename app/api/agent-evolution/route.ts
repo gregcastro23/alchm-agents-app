@@ -171,11 +171,7 @@ export async function POST(request: NextRequest) {
           const targetLat = location?.lat || 37.7749
           const targetLon = location?.lon || -122.4194
 
-          const alchm = await backend.alchemy.defaultQuantities(
-            new Date(),
-            targetLat,
-            targetLon
-          )
+          const alchm = await backend.alchemy.defaultQuantities(new Date(), targetLat, targetLon)
           forceMagnitude = Number(alchm?.kinetic_val ?? 0)
         } catch (error) {
           console.warn('Failed to compute force data for interaction logging:', error)

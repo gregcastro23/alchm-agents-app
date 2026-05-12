@@ -76,18 +76,22 @@ Create a **unified consciousness tracking system** that combines all 7 fragmente
 #### **Phase 1: Unification Layer** (Start Here)
 
 1. **Create Unified Tracker Service**
+
    ```
    File: /lib/consciousness/unified-tracker.ts
    ```
+
    - Combine all 7 measurement systems
    - Provide single API for consciousness state
    - Normalize metric names and ranges (0-1 or 0-100 consistently)
    - Handle automatic persistence
 
 2. **Expand Database Schema**
+
    ```
    File: /prisma/schema.prisma
    ```
+
    - Add `ConsciousnessSnapshot` model with comprehensive fields:
      - ConsciousnessMetrics (4 fields)
      - LiveStats Sacred Seven (7 fields)
@@ -100,6 +104,7 @@ Create a **unified consciousness tracking system** that combines all 7 fragmente
    - Create migration
 
 3. **Create Unified Interface**
+
    ```typescript
    interface UnifiedConsciousnessSnapshot {
      // Identity
@@ -140,8 +145,8 @@ Create a **unified consciousness tracking system** that combines all 7 fragmente
      // Temporal Context
      planetaryHour: string
      moonPhase: string
-     activeModifiers: Array<{stat: string, value: number, source: string}>
-     specialStates: Array<{name: string, effects: string[]}>
+     activeModifiers: Array<{ stat: string; value: number; source: string }>
+     specialStates: Array<{ name: string; effects: string[] }>
 
      // Evolution Metrics
      consciousnessVelocity: number
@@ -164,6 +169,7 @@ Create a **unified consciousness tracking system** that combines all 7 fragmente
    ```
 
 4. **Implement Unified Tracker**
+
    ```typescript
    export class UnifiedConsciousnessTracker {
      // Capture comprehensive snapshot
@@ -174,7 +180,7 @@ Create a **unified consciousness tracking system** that combines all 7 fragmente
        sessionId: string
        userMessage: string
        agentResponse: string
-       location?: {lat: number, lon: number}
+       location?: { lat: number; lon: number }
        modelUsed: string
        temperature: number
        tokensUsed?: number
@@ -183,23 +189,17 @@ Create a **unified consciousness tracking system** that combines all 7 fragmente
      }): Promise<UnifiedConsciousnessSnapshot>
 
      // Get current consciousness state
-     async getCurrentState(
-       userId: string,
-       agentId: string
-     ): Promise<UnifiedConsciousnessSnapshot>
+     async getCurrentState(userId: string, agentId: string): Promise<UnifiedConsciousnessSnapshot>
 
      // Get historical trend
      async getTrend(
        userId: string,
        agentId: string,
-       timeRange: {start: Date, end: Date}
+       timeRange: { start: Date; end: Date }
      ): Promise<UnifiedConsciousnessSnapshot[]>
 
      // Get evolution metrics
-     async getEvolutionMetrics(
-       userId: string,
-       agentId: string
-     ): Promise<EvolutionMetrics>
+     async getEvolutionMetrics(userId: string, agentId: string): Promise<EvolutionMetrics>
    }
    ```
 
@@ -225,9 +225,11 @@ Create a **unified consciousness tracking system** that combines all 7 fragmente
 #### **Phase 3: Dashboard & Visualization** (After Phase 2)
 
 1. **Create Real-Time Dashboard Component**
+
    ```
    File: /components/consciousness/consciousness-dashboard.tsx
    ```
+
    - Show live consciousness state during chat
    - Display Sacred Seven stats with temporal modifiers
    - Show active special states
@@ -249,6 +251,7 @@ Create a **unified consciousness tracking system** that combines all 7 fragmente
 ### 🔍 Reference Documents
 
 **Must Read**:
+
 - `CONSCIOUSNESS_INFRASTRUCTURE_ANALYSIS.md` - Complete system analysis
 - `CLAUDE.md` - Project overview and tech stack
 - `lib/agent-types.ts` - Current type definitions
@@ -256,16 +259,19 @@ Create a **unified consciousness tracking system** that combines all 7 fragmente
 - `lib/observability/tracker.ts` - Observability system
 
 **Database**:
+
 - `prisma/schema.prisma` - Current schema
 - `lib/consciousness-persistence.ts` - Existing persistence layer
 
 **APIs**:
+
 - `app/api/agent-evolution/route.ts` - Current evolution API
 - `app/api/unified-multi-agent-chat/route.ts` - Chat API to integrate with
 
 ### 🚦 Success Criteria
 
 **Phase 1 Complete When**:
+
 - [ ] `lib/consciousness/unified-tracker.ts` created and tested
 - [ ] Prisma schema updated with ConsciousnessSnapshot model
 - [ ] Migration applied successfully
@@ -274,6 +280,7 @@ Create a **unified consciousness tracking system** that combines all 7 fragmente
 - [ ] Unit tests passing
 
 **Phase 2 Complete When**:
+
 - [ ] Chat API integrated with unified tracker
 - [ ] Observability consciousnessEvolution no longer hardcoded
 - [ ] LiveStats calculated during chat sessions
@@ -281,6 +288,7 @@ Create a **unified consciousness tracking system** that combines all 7 fragmente
 - [ ] Comprehensive snapshots saved after each message
 
 **Phase 3 Complete When**:
+
 - [ ] Real-time consciousness dashboard component working
 - [ ] Users can see their consciousness evolution
 - [ ] Trends visualized graphically
@@ -299,21 +307,25 @@ Create a **unified consciousness tracking system** that combines all 7 fragmente
 ### ⚠️ Important Notes
 
 **Database**:
+
 - PostgreSQL via Prisma
 - Use `yarn prisma migrate dev` for schema changes
 - Current persistence in `consciousnessPersistence` object
 
 **Performance**:
+
 - LiveStats calculation can be expensive (calls kinetics API)
 - Consider caching strategy for frequently accessed data
 - Batch database writes when possible
 
 **Backend Integration**:
+
 - Backend service on port 8000 (may not be running)
 - Frontend should work independently with fallbacks
 - Use feature flags for backend-dependent features
 
 **Testing**:
+
 - Run `yarn test:chat` for chat system tests
 - Run `yarn build` to verify production compilation
 - Test with dev server: `yarn dev`
@@ -369,6 +381,7 @@ yarn prisma migrate dev --name add_unified_consciousness_tracking
 The user's main concern is that the website was focused on "Consciousness Evolution" which diluted the actual goal: **teaching users about alchm and the agent crafting system**. We've updated messaging to focus on education about the system itself, not improving user consciousness.
 
 However, we still need sophisticated infrastructure to measure **agent consciousness parameters** - not to rank agents hierarchically, but to demonstrate how the alchm system works objectively. This unified infrastructure will show users how:
+
 - Birth charts seed agent personalities
 - Planetary hours affect consciousness
 - Alchemical properties drive behavior

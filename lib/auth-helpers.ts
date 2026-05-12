@@ -10,7 +10,7 @@ export async function getCurrentUser(req?: NextRequest) {
   try {
     // Try NextAuth session first
     const session = await getServerSession()
-    
+
     if (session?.user) {
       return {
         id: (session.user as any).id || session.user.email,
@@ -19,13 +19,13 @@ export async function getCurrentUser(req?: NextRequest) {
         tier: (session.user as any).tier || 'free',
       }
     }
-    
+
     // Fallback to cookie-based auth for demo/development
     try {
       const cookieStore = await cookies()
       const userId = cookieStore.get('userId')?.value
       const userName = cookieStore.get('userName')?.value
-      
+
       if (userId) {
         return {
           id: userId,
@@ -37,7 +37,7 @@ export async function getCurrentUser(req?: NextRequest) {
     } catch (cookieError) {
       // Cookies not available (e.g., in API routes without request context)
     }
-    
+
     // No authentication found
     return null
   } catch (error) {
@@ -59,7 +59,7 @@ export function getUserIdFromRequest(req: NextRequest): string {
       return userIdMatch[1]
     }
   }
-  
+
   // Fallback to anonymous for development
   // In production, consider throwing an error or redirecting to login
   return 'anonymous'
@@ -71,10 +71,10 @@ export function getUserIdFromRequest(req: NextRequest): string {
  */
 export async function requireAuth(req?: NextRequest) {
   const user = await getCurrentUser(req)
-  
+
   if (!user) {
     throw new Error('Authentication required')
   }
-  
+
   return user
 }

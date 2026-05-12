@@ -116,9 +116,7 @@ export function SourceCitations({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <FileText className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" />
-                            <span className="font-medium text-sm truncate">
-                              {source.agentName}
-                            </span>
+                            <span className="font-medium text-sm truncate">{source.agentName}</span>
                           </div>
                           <p className="text-xs text-muted-foreground line-clamp-2">
                             {source.title}
@@ -158,11 +156,7 @@ export function SourceCitations({
                             </Badge>
                           )}
                           {source.metadata.tags?.map(tag => (
-                            <Badge
-                              key={tag}
-                              variant="outline"
-                              className="text-xs bg-purple-50"
-                            >
+                            <Badge key={tag} variant="outline" className="text-xs bg-purple-50">
                               {tag}
                             </Badge>
                           ))}

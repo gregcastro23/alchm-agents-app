@@ -56,9 +56,9 @@ async function testAnthropicKey() {
     if (response.status === 404) {
       console.error('❌ 404 Error: Model not found or no access')
       console.log('\n🔧 Common causes:')
-      console.log('1. Your API key doesn\'t have access to Claude 3.5 Sonnet')
+      console.log("1. Your API key doesn't have access to Claude 3.5 Sonnet")
       console.log('2. You need to request model access from Anthropic')
-      console.log('3. Your organization hasn\'t been granted access yet')
+      console.log("3. Your organization hasn't been granted access yet")
       console.log('\n📝 Solution:')
       console.log('• Contact Anthropic support: support@anthropic.com')
       console.log('• Request access to Claude 3.5 models')
@@ -83,4 +83,3 @@ async function testAnthropicKey() {
 }
 
 testAnthropicKey()
-

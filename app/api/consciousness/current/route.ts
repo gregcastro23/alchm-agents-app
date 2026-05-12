@@ -21,10 +21,7 @@ export async function GET(request: NextRequest) {
     const days = parseInt(searchParams.get('days') || '30', 10)
 
     if (!userId || !agentId) {
-      return NextResponse.json(
-        { error: 'userId and agentId are required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'userId and agentId are required' }, { status: 400 })
     }
 
     // Fetch current state

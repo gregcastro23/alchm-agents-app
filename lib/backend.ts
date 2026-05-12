@@ -210,10 +210,7 @@ class BackendError extends Error {
   }
 }
 
-async function request<T>(
-  path: string,
-  init: RequestInit & { auth?: boolean } = {}
-): Promise<T> {
+async function request<T>(path: string, init: RequestInit & { auth?: boolean } = {}): Promise<T> {
   const { auth, headers, ...rest } = init
   const url = `${BACKEND_URL}${path}`
 
@@ -251,7 +248,11 @@ async function request<T>(
 
 export const backend = {
   /** Health check — public endpoint */
-  health: () => request<{ status: string; database: string; service: string }>('/health', { method: 'GET', auth: false }),
+  health: () =>
+    request<{ status: string; database: string; service: string }>('/health', {
+      method: 'GET',
+      auth: false,
+    }),
 
   planetary: {
     /** Calculate planetary positions via Swiss Ephemeris */
@@ -262,8 +263,7 @@ export const backend = {
       }),
 
     /** Current planetary positions (no params, fast) */
-    current: () =>
-      request<PlanetaryPositionsResponse>('/planetary/current', { method: 'GET' }),
+    current: () => request<PlanetaryPositionsResponse>('/planetary/current', { method: 'GET' }),
 
     /**
      * Bulk planetary positions over a date range.
@@ -382,7 +382,9 @@ export const backend = {
       }),
 
     /** Cuisine recommendations for current moment */
-    cuisinesForNow: (params: { zodiacSign?: string; season?: string; mealType?: string; limit?: number } = {}) => {
+    cuisinesForNow: (
+      params: { zodiacSign?: string; season?: string; mealType?: string; limit?: number } = {}
+    ) => {
       const q = new URLSearchParams()
       if (params.zodiacSign) q.set('zodiac_sign', params.zodiacSign)
       if (params.season) q.set('season', params.season)
@@ -394,7 +396,8 @@ export const backend = {
 
   catalog: {
     cuisines: () => request<unknown[]>('/api/v1/cuisines', { method: 'GET' }),
-    cuisine: (id: string) => request<unknown>(`/api/v1/cuisines/${encodeURIComponent(id)}`, { method: 'GET' }),
+    cuisine: (id: string) =>
+      request<unknown>(`/api/v1/cuisines/${encodeURIComponent(id)}`, { method: 'GET' }),
     sauces: () => request<unknown[]>('/api/v1/sauces', { method: 'GET' }),
     ingredients: () => request<unknown[]>('/api/v1/ingredients', { method: 'GET' }),
   },
@@ -465,7 +468,13 @@ export const backend = {
       }),
 
     /** Chat with an agent */
-    chat: (req: { agentId: string; message: string; sessionId?: string; userId?: string; context?: any }) =>
+    chat: (req: {
+      agentId: string
+      message: string
+      sessionId?: string
+      userId?: string
+      context?: any
+    }) =>
       request<{ text: string; agentId: string; sessionId: string; metadata: any }>('/api/chat', {
         method: 'POST',
         body: JSON.stringify(req),
@@ -473,7 +482,10 @@ export const backend = {
   },
   moment: {
     recommendations: (limit: number = 5) =>
-      request<{ recommendations: any[]; summary: string }>(`/api/moment-recommendations?limit=${limit}`, { method: 'GET' }),
+      request<{ recommendations: any[]; summary: string }>(
+        `/api/moment-recommendations?limit=${limit}`,
+        { method: 'GET' }
+      ),
     detailed: (agentIds: string[], alchmData: any, currentPlanets: any) =>
       request<{ scores: any[] }>('/api/moment-recommendations', {
         method: 'POST',

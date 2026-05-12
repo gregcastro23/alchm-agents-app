@@ -1,9 +1,9 @@
 /**
  * Centralized AI Model Registry
- * 
+ *
  * Single source of truth for all AI model identifiers used across the project.
  * Updated May 2026 to reflect the current model landscape.
- * 
+ *
  * When models are deprecated or new ones released, update ONLY this file.
  */
 
@@ -13,16 +13,16 @@
 
 export const CLAUDE = {
   // Claude 3.5/3 — Current verified production models
-  OPUS:    'claude-3-opus-20240229',        // Flagship — complex reasoning, agentic coding
-  SONNET:  'claude-3-5-sonnet-20241022',    // Balanced — speed + intelligence for professional use
-  HAIKU:   'claude-3-5-haiku-20241022',     // Fast — high-volume, cost-efficient tasks
+  OPUS: 'claude-3-opus-20240229', // Flagship — complex reasoning, agentic coding
+  SONNET: 'claude-3-5-sonnet-20241022', // Balanced — speed + intelligence for professional use
+  HAIKU: 'claude-3-5-haiku-20241022', // Fast — high-volume, cost-efficient tasks
 
   // Aliases kept for backward compat
   LEGACY_SONNET_3_5: 'claude-3-5-sonnet-20241022',
-  LEGACY_HAIKU_3_5:  'claude-3-5-haiku-20241022',
-  LEGACY_OPUS_3:     'claude-3-opus-20240229',
-  LEGACY_SONNET_3:   'claude-3-sonnet-20240229',
-  LEGACY_HAIKU_3:    'claude-3-haiku-20240307',
+  LEGACY_HAIKU_3_5: 'claude-3-5-haiku-20241022',
+  LEGACY_OPUS_3: 'claude-3-opus-20240229',
+  LEGACY_SONNET_3: 'claude-3-sonnet-20240229',
+  LEGACY_HAIKU_3: 'claude-3-haiku-20240307',
 } as const
 
 export type ClaudeModelId = (typeof CLAUDE)[keyof typeof CLAUDE]
@@ -33,15 +33,15 @@ export type ClaudeModelId = (typeof CLAUDE)[keyof typeof CLAUDE]
 
 export const OPENAI = {
   // GPT-4o — Current verified production models
-  GPT_5_5:      'gpt-4o',          // Flagship — complex reasoning, coding, agentic workflows
-  GPT_5_4_MINI: 'gpt-4o-mini',     // Balanced — lower latency and cost
-  GPT_5_4_NANO: 'gpt-4o-mini',     // Fastest — maps to gpt-4o-mini
+  GPT_5_5: 'gpt-4o', // Flagship — complex reasoning, coding, agentic workflows
+  GPT_5_4_MINI: 'gpt-4o-mini', // Balanced — lower latency and cost
+  GPT_5_4_NANO: 'gpt-4o-mini', // Fastest — maps to gpt-4o-mini
 
   // Explicit aliases
-  LEGACY_GPT_4O:      'gpt-4o',
+  LEGACY_GPT_4O: 'gpt-4o',
   LEGACY_GPT_4O_MINI: 'gpt-4o-mini',
   LEGACY_GPT_4_TURBO: 'gpt-4-turbo-preview',
-  LEGACY_GPT_3_5:     'gpt-3.5-turbo',
+  LEGACY_GPT_3_5: 'gpt-3.5-turbo',
 } as const
 
 export type OpenAIModelId = (typeof OPENAI)[keyof typeof OPENAI]
@@ -52,9 +52,9 @@ export type OpenAIModelId = (typeof OPENAI)[keyof typeof OPENAI]
 
 export const GEMINI = {
   // Each model has its own separate free-tier quota pool
-  FLASH_25:     'gemini-2.5-flash',          // Newest — separate quota from 2.0
-  FLASH_20:     'gemini-2.0-flash',          // Stable — 1M tokens/min free
-  FLASH_LITE:   'gemini-2.0-flash-lite',     // Lightest — highest throughput
+  FLASH_25: 'gemini-2.5-flash', // Newest — separate quota from 2.0
+  FLASH_20: 'gemini-2.0-flash', // Stable — 1M tokens/min free
+  FLASH_LITE: 'gemini-2.0-flash-lite', // Lightest — highest throughput
 } as const
 
 export type GeminiModelId = (typeof GEMINI)[keyof typeof GEMINI]
@@ -64,9 +64,9 @@ export type GeminiModelId = (typeof GEMINI)[keyof typeof GEMINI]
 // ============================================================================
 
 export const GROQ = {
-  LLAMA_70B:    'llama-3.3-70b-versatile',   // Best quality — free tier
-  LLAMA_8B:     'llama-3.1-8b-instant',      // Fastest — 131K ctx, free tier
-  MIXTRAL:      'mixtral-8x7b-32768',        // Balanced — 32K ctx, free tier
+  LLAMA_70B: 'llama-3.3-70b-versatile', // Best quality — free tier
+  LLAMA_8B: 'llama-3.1-8b-instant', // Fastest — 131K ctx, free tier
+  MIXTRAL: 'mixtral-8x7b-32768', // Balanced — 32K ctx, free tier
 } as const
 
 export type GroqModelId = (typeof GROQ)[keyof typeof GROQ]
@@ -77,7 +77,7 @@ export type GroqModelId = (typeof GROQ)[keyof typeof GROQ]
 
 export const EMBEDDINGS = {
   OPENAI_LARGE: 'text-embedding-3-large',
-  OPENAI_SMALL: 'text-embedding-3-small',  // Legacy default
+  OPENAI_SMALL: 'text-embedding-3-small', // Legacy default
 } as const
 
 export type EmbeddingModelId = (typeof EMBEDDINGS)[keyof typeof EMBEDDINGS]
@@ -96,22 +96,22 @@ export const MODEL_TIERS = {
   POWERFUL: {
     claude: CLAUDE.OPUS,
     openai: OPENAI.GPT_5_5,
-    google: GEMINI.FLASH_25,       // Newest Gemini — separate quota
-    groq:   GROQ.LLAMA_70B,        // 70B param — strongest free model
+    google: GEMINI.FLASH_25, // Newest Gemini — separate quota
+    groq: GROQ.LLAMA_70B, // 70B param — strongest free model
   },
   /** General-purpose, balanced speed/quality */
   DEFAULT: {
     claude: CLAUDE.SONNET,
     openai: OPENAI.GPT_5_4_MINI,
-    google: GEMINI.FLASH_20,       // Stable Gemini — separate quota from 2.5
-    groq:   GROQ.MIXTRAL,          // Balanced free model
+    google: GEMINI.FLASH_20, // Stable Gemini — separate quota from 2.5
+    groq: GROQ.MIXTRAL, // Balanced free model
   },
   /** Fast responses, high-volume, logging, simple queries */
   FAST: {
     claude: CLAUDE.HAIKU,
     openai: OPENAI.GPT_5_4_NANO,
-    google: GEMINI.FLASH_LITE,     // Lightest Gemini — separate quota from 2.0
-    groq:   GROQ.LLAMA_8B,         // Ultra-fast free model
+    google: GEMINI.FLASH_LITE, // Lightest Gemini — separate quota from 2.0
+    groq: GROQ.LLAMA_8B, // Ultra-fast free model
   },
 } as const
 
@@ -126,13 +126,19 @@ export const CLAUDE_FALLBACK_CHAIN: readonly ClaudeModelId[] = [
 ]
 
 export const OPENAI_FALLBACK_CHAIN: readonly OpenAIModelId[] = [
-  OPENAI.GPT_5_4_MINI,   // gpt-4o-mini
-  OPENAI.GPT_5_5,        // gpt-4o
+  OPENAI.GPT_5_4_MINI, // gpt-4o-mini
+  OPENAI.GPT_5_5, // gpt-4o
   OPENAI.LEGACY_GPT_3_5,
 ]
 
 import { type LanguageModel } from 'ai'
-import { gatewayOpenAI, gatewayAnthropic, gatewayGoogle, gatewayGroq, isGatewayEnabled } from './gateway'
+import {
+  gatewayOpenAI,
+  gatewayAnthropic,
+  gatewayGoogle,
+  gatewayGroq,
+  isGatewayEnabled,
+} from './gateway'
 
 // Active provider is driven by DEFAULT_AI_PROVIDER env var.
 // Defaults to 'google' (free tier) when unset.
@@ -147,24 +153,32 @@ export function resolveDefaultModel(
   tier: 'powerful' | 'default' | 'fast' = 'default'
 ): LanguageModel {
   switch (ACTIVE_PROVIDER) {
-    case 'openai':     return resolveOpenAIModel(tier)
-    case 'anthropic':  return resolveClaudeModel(tier)
-    case 'groq':       return resolveGroqModel(tier)
-    default:           return resolveGoogleModel(tier)  // Free tier baseline
+    case 'openai':
+      return resolveOpenAIModel(tier)
+    case 'anthropic':
+      return resolveClaudeModel(tier)
+    case 'groq':
+      return resolveGroqModel(tier)
+    default:
+      return resolveGoogleModel(tier) // Free tier baseline
   }
 }
 
 /**
  * Resolve a Groq LanguageModel — free tier fallback, blazing fast inference.
  */
-export function resolveGroqModel(
-  tier: 'powerful' | 'default' | 'fast' = 'default'
-): LanguageModel {
+export function resolveGroqModel(tier: 'powerful' | 'default' | 'fast' = 'default'): LanguageModel {
   let modelId: string
   switch (tier) {
-    case 'powerful': modelId = MODEL_TIERS.POWERFUL.groq; break;
-    case 'fast':     modelId = MODEL_TIERS.FAST.groq; break;
-    default:         modelId = MODEL_TIERS.DEFAULT.groq; break;
+    case 'powerful':
+      modelId = MODEL_TIERS.POWERFUL.groq
+      break
+    case 'fast':
+      modelId = MODEL_TIERS.FAST.groq
+      break
+    default:
+      modelId = MODEL_TIERS.DEFAULT.groq
+      break
   }
   const finalModelId = isGatewayEnabled ? `groq/${modelId}` : modelId
   return gatewayGroq(finalModelId) as unknown as LanguageModel
@@ -184,9 +198,15 @@ export function resolveGoogleModel(
 
   if (!modelId) {
     switch (tier) {
-      case 'powerful': modelId = MODEL_TIERS.POWERFUL.google; break;
-      case 'fast':     modelId = MODEL_TIERS.FAST.google; break;
-      default:         modelId = MODEL_TIERS.DEFAULT.google; break;
+      case 'powerful':
+        modelId = MODEL_TIERS.POWERFUL.google
+        break
+      case 'fast':
+        modelId = MODEL_TIERS.FAST.google
+        break
+      default:
+        modelId = MODEL_TIERS.DEFAULT.google
+        break
     }
   }
 
@@ -205,9 +225,15 @@ export function resolveClaudeModel(
 
   if (!modelId) {
     switch (tier) {
-      case 'powerful': modelId = MODEL_TIERS.POWERFUL.claude; break;
-      case 'fast':     modelId = MODEL_TIERS.FAST.claude; break;
-      default:         modelId = MODEL_TIERS.DEFAULT.claude; break;
+      case 'powerful':
+        modelId = MODEL_TIERS.POWERFUL.claude
+        break
+      case 'fast':
+        modelId = MODEL_TIERS.FAST.claude
+        break
+      default:
+        modelId = MODEL_TIERS.DEFAULT.claude
+        break
     }
   }
 
@@ -224,21 +250,28 @@ export function resolveOpenAIModel(
   // Only use MONICA_DEFAULT_MODEL if it is an actual OpenAI model ID
   const envModel = process.env.OPENAI_DEFAULT_MODEL
   const monicaModel = process.env.MONICA_DEFAULT_MODEL
-  const monicaIsOpenAI = monicaModel && (monicaModel.startsWith('gpt-') || monicaModel.startsWith('o1') || monicaModel.startsWith('o3'))
+  const monicaIsOpenAI =
+    monicaModel &&
+    (monicaModel.startsWith('gpt-') || monicaModel.startsWith('o1') || monicaModel.startsWith('o3'))
   let modelId = envModel || (monicaIsOpenAI ? monicaModel : undefined)
 
   if (!modelId) {
     switch (tier) {
-      case 'powerful': modelId = MODEL_TIERS.POWERFUL.openai; break;
-      case 'fast':     modelId = MODEL_TIERS.FAST.openai; break;
-      default:         modelId = MODEL_TIERS.DEFAULT.openai; break;
+      case 'powerful':
+        modelId = MODEL_TIERS.POWERFUL.openai
+        break
+      case 'fast':
+        modelId = MODEL_TIERS.FAST.openai
+        break
+      default:
+        modelId = MODEL_TIERS.DEFAULT.openai
+        break
     }
   }
 
   const finalModelId = isGatewayEnabled ? `openai/${modelId}` : modelId
   return gatewayOpenAI(finalModelId) as unknown as LanguageModel
 }
-
 
 /**
  * Resolve embedding model from environment or default.

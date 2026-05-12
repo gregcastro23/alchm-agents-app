@@ -345,7 +345,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateAge
     const generator = new AgentGenerator()
     const consciousnessClient = new ConsciousnessClient()
 
-    const momentChart = await getAlchemicalQuantitiesLegacy(new Date(), birthInfo.latitude, birthInfo.longitude)
+    const momentChart = await getAlchemicalQuantitiesLegacy(
+      new Date(),
+      birthInfo.latitude,
+      birthInfo.longitude
+    )
     const synthesis = synthesizer.synthesize({
       birthChart,
       momentChart,
@@ -380,7 +384,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateAge
       if (contextPieces.length > 0) {
         enhancedPersonalityCore = {
           essence: body.purpose || generatedAgent.personality.core.essence,
-          expression: body.personalContext.aboutYourself || generatedAgent.personality.core.expression,
+          expression:
+            body.personalContext.aboutYourself || generatedAgent.personality.core.expression,
           emotion: body.personalContext.values || generatedAgent.personality.core.emotion,
           temperament: generatedAgent.personality.core.temperament || 'balanced',
           lifeStory: body.personalContext.lifeStory,

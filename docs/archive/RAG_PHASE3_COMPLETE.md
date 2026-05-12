@@ -14,25 +14,28 @@ Phase 3 successfully integrates the RAG (Retrieval-Augmented Generation) system 
 ### 1. AI SDK v5 Upgrade
 
 **Previous State:**
+
 - `ai`: ^4.3.15
 - `@ai-sdk/anthropic`: ^2.0.40
 - `@ai-sdk/openai`: ^1.3.24
 - UnsupportedModelVersionError blocking RAG generation
 
 **Current State:**
+
 - `ai`: ^5.0.87 ✅
 - `@ai-sdk/anthropic`: ^2.0.41 ✅
 - `@ai-sdk/openai`: ^2.0.63 ✅
 - `@ai-sdk/provider-utils`: ^3.0.16 ✅
 
 **API Changes Implemented:**
+
 ```typescript
 // Before (AI SDK v4)
 const result = await generateText({
   model,
   system: systemPrompt,
   prompt: message,
-  maxTokens: 800,  // ❌ Deprecated in v5
+  maxTokens: 800, // ❌ Deprecated in v5
   temperature: 0.7,
 })
 
@@ -41,11 +44,12 @@ const result = await generateText({
   model,
   system: systemPrompt,
   prompt: message,
-  temperature: 0.7,  // ✅ maxTokens handled by provider
+  temperature: 0.7, // ✅ maxTokens handled by provider
 })
 ```
 
 **Verification:**
+
 - ✅ Next.js builds successfully
 - ✅ Dev server starts without errors
 - ✅ API endpoints respond correctly
@@ -60,10 +64,9 @@ const result = await generateText({
 **Key Features Implemented:**
 
 #### A. Intelligent RAG Routing
+
 ```typescript
-const useRAG = ragConfig.enabled &&
-               agent.type === 'historical' &&
-               shouldUseRAG(message)
+const useRAG = ragConfig.enabled && agent.type === 'historical' && shouldUseRAG(message)
 ```
 
 - ✅ Automatically enabled for historical agents
@@ -72,10 +75,11 @@ const useRAG = ragConfig.enabled &&
 - ✅ Graceful fallback to standard generation
 
 #### B. Enhanced Context Building
+
 ```typescript
 conversationHistory: groupContext.sessionHistory.slice(-5).map(m => ({
   role: m.role as 'user' | 'assistant',
-  content: m.content
+  content: m.content,
 }))
 ```
 
@@ -84,6 +88,7 @@ conversationHistory: groupContext.sessionHistory.slice(-5).map(m => ({
 - ✅ Maintains conversation continuity
 
 #### C. RAG Configuration
+
 ```typescript
 ragConfig: {
   enabled: true,
@@ -94,6 +99,7 @@ ragConfig: {
 ```
 
 #### D. Response Metadata Enhancement
+
 ```typescript
 const modelUsed = useRAG
   ? `rag-enhanced-${ragMetadata?.ragUsed ? 'with-retrieval' : 'fallback'}`
@@ -109,6 +115,7 @@ const modelUsed = useRAG
 ### 3. Production Testing Results
 
 **Health Check:**
+
 ```json
 {
   "healthy": true,
@@ -116,13 +123,14 @@ const modelUsed = useRAG
   "collections": 1,
   "documentCount": 33,
   "features": {
-    "ragGeneration": true,   // ✅ Enabled
-    "vectorSearch": true      // ✅ Enabled
+    "ragGeneration": true, // ✅ Enabled
+    "vectorSearch": true // ✅ Enabled
   }
 }
 ```
 
 **Semantic Search Performance:**
+
 ```
 Query: "philosophy and wisdom"
 Results: Kant (54.8%), Marcus Aurelius (54.6%), Socrates (54.4%)
@@ -138,6 +146,7 @@ Latency: 229ms ✅
 ```
 
 **RAG Retrieval Testing:**
+
 ```
 Test 1: "What is the essence of Socratic wisdom?"
 - Agent filter: test-user
@@ -231,12 +240,12 @@ RAG_THRESHOLD=0.35
 
 ### Feature Flags Status
 
-| Flag | Status | Purpose |
-|------|--------|---------|
-| `USE_RAG_GENERATION` | ✅ Enabled | RAG text generation |
-| `USE_VECTOR_SEARCH` | ✅ Enabled | Semantic search |
-| `ragConfig.enabled` | ✅ True | Per-request RAG toggle |
-| `ragConfig.useReranking` | ✅ True | Relevance boosting |
+| Flag                     | Status     | Purpose                |
+| ------------------------ | ---------- | ---------------------- |
+| `USE_RAG_GENERATION`     | ✅ Enabled | RAG text generation    |
+| `USE_VECTOR_SEARCH`      | ✅ Enabled | Semantic search        |
+| `ragConfig.enabled`      | ✅ True    | Per-request RAG toggle |
+| `ragConfig.useReranking` | ✅ True    | Relevance boosting     |
 
 ---
 
@@ -245,6 +254,7 @@ RAG_THRESHOLD=0.35
 ### 1. Anthropic API Key Required
 
 **Current Issue:**
+
 ```
 Error: invalid x-api-key
 Status: 401 Unauthorized
@@ -254,6 +264,7 @@ Status: 401 Unauthorized
 The API key in `.env.local` is a Claude Code access token, not an Anthropic platform API key.
 
 **Resolution Steps:**
+
 1. Obtain API key from https://console.anthropic.com
 2. Update `.env.local`:
    ```bash
@@ -263,6 +274,7 @@ The API key in `.env.local` is a Claude Code access token, not an Anthropic plat
 4. Test RAG generation: `npx tsx lib/llamaindex/test-rag-generation.ts`
 
 **Expected Result After Fix:**
+
 ```
 ✅ RAG Response Generated:
    RAG Used: true
@@ -279,30 +291,30 @@ The API key in `.env.local` is a Claude Code access token, not an Anthropic plat
 
 ### Latency Benchmarks
 
-| Operation | Target | Actual | Status |
-|-----------|--------|--------|--------|
-| Semantic Search | <500ms | 181-592ms | ✅ Good |
-| Document Retrieval | <200ms | 172-343ms | ✅ Excellent |
-| Embedding Generation | <1s | ~500ms/100 texts | ✅ Good |
-| Full RAG Pipeline | <2s | Pending API key | ⏳ |
+| Operation            | Target | Actual           | Status       |
+| -------------------- | ------ | ---------------- | ------------ |
+| Semantic Search      | <500ms | 181-592ms        | ✅ Good      |
+| Document Retrieval   | <200ms | 172-343ms        | ✅ Excellent |
+| Embedding Generation | <1s    | ~500ms/100 texts | ✅ Good      |
+| Full RAG Pipeline    | <2s    | Pending API key  | ⏳           |
 
 ### Relevance Quality
 
-| Query Type | Relevance Range | Target | Status |
-|------------|----------------|--------|--------|
-| Exact Match | 50-65% | >40% | ✅ Excellent |
-| Semantic Match | 40-55% | >35% | ✅ Good |
-| Broad Query | 35-45% | >30% | ✅ Acceptable |
-| Threshold | 35% | 30-40% | ✅ Optimized |
+| Query Type     | Relevance Range | Target | Status        |
+| -------------- | --------------- | ------ | ------------- |
+| Exact Match    | 50-65%          | >40%   | ✅ Excellent  |
+| Semantic Match | 40-55%          | >35%   | ✅ Good       |
+| Broad Query    | 35-45%          | >30%   | ✅ Acceptable |
+| Threshold      | 35%             | 30-40% | ✅ Optimized  |
 
 ### Resource Usage
 
-| Resource | Usage | Limit | Status |
-|----------|-------|-------|--------|
-| ChromaDB Memory | <50MB | 500MB | ✅ Efficient |
-| Embedding Cache | ~20MB | 100MB | ✅ Good |
-| Vector Store Size | ~5MB | 1GB | ✅ Minimal |
-| Query Concurrency | 1-5 | 10 | ✅ Ready |
+| Resource          | Usage | Limit | Status       |
+| ----------------- | ----- | ----- | ------------ |
+| ChromaDB Memory   | <50MB | 500MB | ✅ Efficient |
+| Embedding Cache   | ~20MB | 100MB | ✅ Good      |
+| Vector Store Size | ~5MB  | 1GB   | ✅ Minimal   |
+| Query Concurrency | 1-5   | 10    | ✅ Ready     |
 
 ---
 
@@ -326,12 +338,14 @@ The API key in `.env.local` is a Claude Code access token, not an Anthropic plat
 ### Production Deployment Steps
 
 1. **Update API Key** (Required)
+
    ```bash
    # In .env.local
    ANTHROPIC_API_KEY=sk-ant-api03-your-actual-key
    ```
 
 2. **Verify RAG Generation**
+
    ```bash
    npx tsx lib/llamaindex/test-rag-generation.ts
    ```
@@ -359,6 +373,7 @@ The API key in `.env.local` is a Claude Code access token, not an Anthropic plat
 ### New Files Created
 
 **Core RAG Infrastructure:**
+
 - `lib/llamaindex/vector-store.ts` (349 lines)
 - `lib/llamaindex/embeddings-service.ts` (292 lines)
 - `lib/llamaindex/document-loader.ts` (403 lines)
@@ -366,16 +381,19 @@ The API key in `.env.local` is a Claude Code access token, not an Anthropic plat
 - `lib/llamaindex/semantic-search.ts` (389 lines)
 
 **RAG Generation:**
+
 - `lib/rag/rag-generator.ts` (242 lines)
 - `lib/rag/monica-rag-wrapper.ts` (227 lines)
 
 **API Endpoints:**
+
 - `app/api/vector-store/health/route.ts`
 - `app/api/vector-store/query/route.ts`
 - `app/api/vector-store/ingest/route.ts`
 - `app/api/agents/semantic-search/route.ts`
 
 **Test Suite:**
+
 - `lib/llamaindex/test-infrastructure.ts`
 - `lib/llamaindex/test-collection.ts`
 - `lib/llamaindex/test-semantic-search.ts`
@@ -383,15 +401,18 @@ The API key in `.env.local` is a Claude Code access token, not an Anthropic plat
 - `lib/llamaindex/test-ai-sdk-v5.ts`
 
 **Documentation:**
+
 - `RAG_PHASE2_COMPLETE.md` (comprehensive Phase 2 results)
 - `RAG_PHASE3_COMPLETE.md` (this document)
 
 ### Modified Files
 
 **Integration:**
+
 - `app/api/unified-multi-agent-chat/route.ts` (+50 lines RAG integration)
 
 **Configuration:**
+
 - `next.config.mjs` (webpack externals for native modules)
 - `package.json` (AI SDK v5 dependencies)
 - `.env.example` (RAG configuration section)
@@ -401,12 +422,14 @@ The API key in `.env.local` is a Claude Code access token, not an Anthropic plat
 ## 🎯 Next Steps
 
 ### Immediate (Blocking)
+
 1. **Update Anthropic API Key**
    - Obtain from https://console.anthropic.com
    - Replace in `.env.local`
    - Restart development server
 
 ### Short-term (This Sprint)
+
 2. **Add RAG Toggle to Chat UI**
    - Settings panel in chat interface
    - Per-agent RAG enable/disable
@@ -423,6 +446,7 @@ The API key in `.env.local` is a Claude Code access token, not an Anthropic plat
    - Edge case handling
 
 ### Medium-term (Next Sprint)
+
 5. **UI Enhancements**
    - Source citation display
    - Relevance score visualization
@@ -444,14 +468,14 @@ The API key in `.env.local` is a Claude Code access token, not an Anthropic plat
 
 ### Phase 3 Objectives
 
-| Objective | Target | Actual | Status |
-|-----------|--------|--------|--------|
-| AI SDK v5 Upgrade | No errors | ✅ Clean | ✅ Complete |
-| RAG Integration | Unified chat | ✅ Implemented | ✅ Complete |
-| API Compatibility | 100% working | ✅ All endpoints | ✅ Complete |
-| Performance | <500ms queries | ✅ 181-592ms | ✅ Excellent |
-| Error Handling | Graceful fallbacks | ✅ Implemented | ✅ Complete |
-| Documentation | Comprehensive | ✅ Complete | ✅ Complete |
+| Objective         | Target             | Actual           | Status       |
+| ----------------- | ------------------ | ---------------- | ------------ |
+| AI SDK v5 Upgrade | No errors          | ✅ Clean         | ✅ Complete  |
+| RAG Integration   | Unified chat       | ✅ Implemented   | ✅ Complete  |
+| API Compatibility | 100% working       | ✅ All endpoints | ✅ Complete  |
+| Performance       | <500ms queries     | ✅ 181-592ms     | ✅ Excellent |
+| Error Handling    | Graceful fallbacks | ✅ Implemented   | ✅ Complete  |
+| Documentation     | Comprehensive      | ✅ Complete      | ✅ Complete  |
 
 ### Quality Metrics
 
@@ -503,4 +527,4 @@ The RAG system is fully integrated with Planetary Agents' production chat infras
 
 ---
 
-*For Phase 1 & 2 details, see `RAG_PHASE2_COMPLETE.md`*
+_For Phase 1 & 2 details, see `RAG_PHASE2_COMPLETE.md`_

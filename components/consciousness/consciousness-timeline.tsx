@@ -180,8 +180,18 @@ function TimelineSummary({ data }: { data: TimelineData }) {
     { icon: Zap, label: 'Avg Power', value: data.summary.avgPower, suffix: '/100' },
     { icon: Brain, label: 'Avg Wisdom', value: data.summary.avgWisdom, suffix: '/100' },
     { icon: Star, label: 'Avg Overall', value: data.summary.avgOverall, suffix: '/100' },
-    { icon: Activity, label: 'Chat Quality', value: data.summary.avgChatQuality * 100, suffix: '%' },
-    { icon: TrendingUp, label: 'Completion', value: data.summary.avgActionCompletion * 100, suffix: '%' },
+    {
+      icon: Activity,
+      label: 'Chat Quality',
+      value: data.summary.avgChatQuality * 100,
+      suffix: '%',
+    },
+    {
+      icon: TrendingUp,
+      label: 'Completion',
+      value: data.summary.avgActionCompletion * 100,
+      suffix: '%',
+    },
     { icon: Clock, label: 'Avg Latency', value: data.summary.avgLatency, suffix: 'ms' },
   ]
 
@@ -225,7 +235,8 @@ function SimpleTimeline({ snapshots }: { snapshots: UnifiedConsciousnessSnapshot
       <div className="space-y-2 max-h-96 overflow-y-auto">
         {days.map(day => {
           const daySnapshots = byDay[day]
-          const avgOverall = daySnapshots.reduce((sum, s) => sum + s.overall, 0) / daySnapshots.length
+          const avgOverall =
+            daySnapshots.reduce((sum, s) => sum + s.overall, 0) / daySnapshots.length
 
           return (
             <div key={day} className="p-3 border rounded-lg hover:bg-accent/50 transition-colors">
@@ -267,7 +278,9 @@ function StatsTrends({ snapshots }: { snapshots: UnifiedConsciousnessSnapshot[] 
     <div className="space-y-4">
       <h3 className="text-sm font-medium">Sacred Seven Trends</h3>
       {stats.map(stat => {
-        const values = snapshots.map(s => s[stat.key as keyof UnifiedConsciousnessSnapshot] as number)
+        const values = snapshots.map(
+          s => s[stat.key as keyof UnifiedConsciousnessSnapshot] as number
+        )
         const avg = values.reduce((sum, v) => sum + v, 0) / values.length
         const min = Math.min(...values)
         const max = Math.max(...values)
@@ -322,7 +335,9 @@ function QualityTrends({ snapshots }: { snapshots: UnifiedConsciousnessSnapshot[
     <div className="space-y-4">
       <h3 className="text-sm font-medium">Quality Metrics Trends</h3>
       {metrics.map(metric => {
-        const values = snapshots.map(s => (s[metric.key as keyof UnifiedConsciousnessSnapshot] as number) * 100)
+        const values = snapshots.map(
+          s => (s[metric.key as keyof UnifiedConsciousnessSnapshot] as number) * 100
+        )
         const avg = values.reduce((sum, v) => sum + v, 0) / values.length
 
         return (
@@ -389,7 +404,9 @@ function PerformanceTrends({ snapshots }: { snapshots: UnifiedConsciousnessSnaps
             { label: '2-5s', range: [2000, 5000] },
             { label: '> 5s', range: [5000, Infinity] },
           ].map(({ label, range }) => {
-            const count = snapshots.filter(s => s.latencyMs >= range[0] && s.latencyMs < range[1]).length
+            const count = snapshots.filter(
+              s => s.latencyMs >= range[0] && s.latencyMs < range[1]
+            ).length
             const percent = (count / snapshots.length) * 100
 
             return (

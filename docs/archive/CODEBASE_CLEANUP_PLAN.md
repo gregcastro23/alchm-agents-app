@@ -21,22 +21,26 @@ This report identifies **critical areas** for code streamlining, placeholder rep
 ### 1. **domexception@4.0.0 Deprecation Warning**
 
 **Warning:**
+
 ```
 warning domexception@4.0.0: Use your platform's native DOMException instead
 ```
 
 **Analysis:**
+
 - Used indirectly via `fetch-blob@4.0.0`
 - fetch-blob is a polyfill for older Node.js versions
 - Node.js 20+ (our target) has native DOMException support
 
 **Resolution:**
+
 ```bash
 # Remove the resolutions that force old versions
 # Update package.json resolutions to use native APIs
 ```
 
 **package.json Changes:**
+
 ```json
 "resolutions": {
   "node-domexception": "npm:domexception@^4.0.0",  // REMOVE
@@ -52,6 +56,7 @@ warning domexception@4.0.0: Use your platform's native DOMException instead
 ### 2. **@langchain/community Unmet Peer Dependencies**
 
 **Warnings:**
+
 ```
 warning " > @langchain/community@1.0.0" has unmet peer dependency "@browserbasehq/stagehand@^1.0.0"
 warning " > @langchain/community@1.0.0" has unmet peer dependency "@ibm-cloud/watsonx-ai@*"
@@ -59,11 +64,13 @@ warning " > @langchain/community@1.0.0" has unmet peer dependency "ibm-cloud-sdk
 ```
 
 **Analysis:**
+
 - Searched entire codebase: **@langchain/community is NOT USED anywhere**
 - Listed in package.json but never imported
 - Peer dependencies are for optional integrations (Stagehand browser automation, IBM Watson)
 
 **Resolution:**
+
 ```bash
 yarn remove @langchain/community
 ```
@@ -75,12 +82,14 @@ yarn remove @langchain/community
 ### 3. **llamaindex tree-sitter Peer Dependencies**
 
 **Warnings:**
+
 ```
 warning "llamaindex > @llamaindex/node-parser@2.0.22" has incorrect peer dependency "tree-sitter@^0.22.0"
 warning "llamaindex > @llamaindex/node-parser@2.0.22" has incorrect peer dependency "web-tree-sitter@^0.24.3"
 ```
 
 **Analysis:**
+
 - Both `tree-sitter@0.22.4` and `web-tree-sitter@0.24.7` ARE installed
 - Versions match peer dependency requirements
 - Warning appears to be incorrect/false positive
@@ -92,17 +101,20 @@ warning "llamaindex > @llamaindex/node-parser@2.0.22" has incorrect peer depende
 ### 4. **workflow Package Svelte Dependencies**
 
 **Warnings:**
+
 ```
 warning "workflow > @workflow/sveltekit > @sveltejs/kit@2.48.4" has unmet peer dependency "@sveltejs/vite-plugin-svelte@^3.0.0..."
 warning "workflow > @workflow/sveltekit > @sveltejs/kit@2.48.4" has unmet peer dependency "svelte@^4.0.0..."
 ```
 
 **Analysis:**
+
 - `workflow` package is NOT in package.json dependencies
 - NOT found with `yarn why workflow` - doesn't exist
 - Likely phantom from old yarn.lock or transitive dependency
 
 **Resolution:**
+
 ```bash
 # Clean cache and reinstall
 rm -rf node_modules yarn.lock
@@ -116,6 +128,7 @@ yarn install
 ### Priority 1: Database Integration (2 TODOs)
 
 #### **app/api/notifications/route.ts:58**
+
 ```typescript
 settingsId: 'default', // TODO: Get user's actual settings ID
 ```
@@ -123,17 +136,20 @@ settingsId: 'default', // TODO: Get user's actual settings ID
 **Issue:** Hardcoded settings ID prevents per-user notification preferences
 
 **Fix:**
+
 ```typescript
 // Get or create user settings
-const settings = await prisma.monicaSettings.findFirst({
-  where: { userId },
-}) || await prisma.monicaSettings.create({
-  data: {
-    userId,
-    enableNotifications: true,
-    enableOmnipresent: true,
-  },
-})
+const settings =
+  (await prisma.monicaSettings.findFirst({
+    where: { userId },
+  })) ||
+  (await prisma.monicaSettings.create({
+    data: {
+      userId,
+      enableNotifications: true,
+      enableOmnipresent: true,
+    },
+  }))
 
 await prisma.monicaInteraction.create({
   data: {
@@ -145,6 +161,7 @@ await prisma.monicaInteraction.create({
 ```
 
 #### **app/api/notifications/route.ts:131**
+
 ```typescript
 read: false, // TODO: Add read status tracking
 ```
@@ -152,6 +169,7 @@ read: false, // TODO: Add read status tracking
 **Issue:** All notifications appear as unread
 
 **Fix:**
+
 ```typescript
 // Add 'read' field to monicaInteraction schema or create separate notificationStatus table
 const formattedNotifications = notifications.map(notif => {
@@ -172,6 +190,7 @@ const formattedNotifications = notifications.map(notif => {
 ### Priority 2: RAG System (2 TODOs)
 
 #### **lib/rag/monica-rag-wrapper.ts:137**
+
 ```typescript
 // TODO: Add actual vector store health check
 // For now, assume ready if enabled
@@ -180,6 +199,7 @@ const formattedNotifications = notifications.map(notif => {
 **Issue:** No real health check for ChromaDB availability
 
 **Fix:**
+
 ```typescript
 export function getRAGStatus(): {
   enabled: boolean
@@ -224,6 +244,7 @@ export function getRAGStatus(): {
 ```
 
 #### **hooks/useLiveConsciousness.ts:468**
+
 ```typescript
 // TODO: Add batch endpoint to frontend proxy
 ```
@@ -231,6 +252,7 @@ export function getRAGStatus(): {
 **Issue:** Processing agents individually is slow
 
 **Fix:**
+
 ```typescript
 // Create new API route: app/api/consciousness/batch/route.ts
 export async function POST(request: NextRequest) {
@@ -238,7 +260,7 @@ export async function POST(request: NextRequest) {
 
   // Process in parallel with Promise.all
   const results = await Promise.all(
-    agents.map(async (agent) => {
+    agents.map(async agent => {
       const data = await calculateLiveConsciousness(agent)
       return [agent.name, data]
     })
@@ -274,6 +296,7 @@ async function fetchBatchLiveConsciousness(
 ### Priority 3: Temporary Placeholders (2 Items)
 
 #### **lib/services/transit-significance-scorer.ts:89**
+
 ```typescript
 const transitDegree = 15 // Temporary placeholder
 ```
@@ -281,6 +304,7 @@ const transitDegree = 15 // Temporary placeholder
 **Issue:** Hardcoded degree prevents accurate transit calculations
 
 **Fix:**
+
 ```typescript
 import { calculatePlanetaryPosition } from '@/lib/enhanced-astronomical-calculator'
 
@@ -304,6 +328,7 @@ export async function scoreSunTransitToNatal(
 ```
 
 #### **lib/services/planetary-transit-significance-scorer.ts:118**
+
 Same fix as above.
 
 ---
@@ -311,6 +336,7 @@ Same fix as above.
 ### Priority 4: Feedback System (1 TODO)
 
 #### **app/api/feedback/route.ts:82**
+
 ```typescript
 // TODO: Save to database
 console.log('Feedback received:', feedbackEntry)
@@ -319,6 +345,7 @@ console.log('Feedback received:', feedbackEntry)
 **Issue:** Feedback only logged to console, not persisted
 
 **Fix:**
+
 ```typescript
 // Create Prisma schema for feedback
 model Feedback {
@@ -364,6 +391,7 @@ return NextResponse.json({
 ### Analysis
 
 Found **1,185 instances** across 320 files of:
+
 - `@ts-ignore` / `@ts-expect-error`
 - `any` type usage
 - `as any` type assertions
@@ -381,14 +409,17 @@ Found **1,185 instances** across 320 files of:
 **Phased cleanup approach:**
 
 **Phase 1:** Critical paths (authentication, payments, user data)
+
 - Convert `any` to proper types in user-facing API routes
 - Add proper error handling types
 
 **Phase 2:** Core features (agents, calculations, RAG)
+
 - Add TypeScript definitions for agent configurations
 - Create proper types for astronomical calculations
 
 **Phase 3:** UI components
+
 - Add proper component prop types
 - Remove `as any` assertions
 
@@ -399,9 +430,11 @@ Found **1,185 instances** across 320 files of:
 ## 📊 Console.log Cleanup (50+ files)
 
 ### Issue
+
 Development logging statements (`console.log/warn/error`) still present in production code.
 
 ### Affected Areas
+
 - Performance monitoring
 - RAG system
 - Agent interactions
@@ -412,6 +445,7 @@ Development logging statements (`console.log/warn/error`) still present in produ
 **Already implemented:** `lib/structured-logger.ts` with proper logging levels
 
 **Action Required:**
+
 ```bash
 # Replace console.log with structured logging
 sed -i '' 's/console\.log/logger.info/g' lib/**/*.ts
@@ -420,6 +454,7 @@ sed -i '' 's/console\.error/logger.error/g' lib/**/*.ts
 ```
 
 **Manual review needed for:**
+
 - Debug logging (should be logger.debug)
 - Error stack traces (preserve for debugging)
 - User-facing messages (may need different handling)
@@ -449,6 +484,7 @@ function generatePlaceholderSection(sectionId: string): GrimoireSection {
 **Issue:** Incomplete grimoire generation system shows placeholder text to users
 
 **Fix:** Either complete the implementation or hide unimplemented sections:
+
 ```typescript
 // Option 1: Filter out unimplemented sections
 export async function generateGrimoire(options: ExportOptions) {
@@ -476,6 +512,7 @@ export async function generateGrimoire(options: ExportOptions) {
 ### Immediate (This Week)
 
 1. ✅ **Remove unused dependency**
+
    ```bash
    yarn remove @langchain/community
    ```
@@ -532,6 +569,7 @@ export async function generateGrimoire(options: ExportOptions) {
 ## 🎯 Success Metrics
 
 **Before:**
+
 - 1,185 TypeScript suppressions
 - 12 TODO items in production code
 - 5 peer dependency warnings
@@ -539,6 +577,7 @@ export async function generateGrimoire(options: ExportOptions) {
 - 3 critical placeholders
 
 **After:**
+
 - <500 TypeScript suppressions (57% reduction)
 - 0 TODO items in user-facing features
 - 0 actionable peer dependency warnings
@@ -549,18 +588,18 @@ export async function generateGrimoire(options: ExportOptions) {
 
 ## 🚀 Implementation Priority Matrix
 
-| Priority | Item | Impact | Effort | Timeline |
-|----------|------|--------|--------|----------|
-| 🔴 P0 | Remove @langchain/community | High | 5 min | Now |
-| 🔴 P0 | Fix notifications DB | High | 30 min | Today |
-| 🔴 P0 | Fix feedback persistence | High | 1 hour | Today |
-| 🟡 P1 | Fix transit placeholders | Medium | 1 hour | This week |
-| 🟡 P1 | RAG health checks | Medium | 2 hours | This week |
-| 🟡 P1 | Console.log cleanup | Low | 4 hours | This week |
-| 🟢 P2 | TypeScript critical paths | High | 1 week | Next sprint |
-| 🟢 P2 | Complete grimoire | Medium | 1 week | Next sprint |
-| 🔵 P3 | Full TypeScript cleanup | Medium | 3 weeks | Q1 2025 |
-| 🔵 P3 | Dependency modernization | Low | 1 week | Q1 2025 |
+| Priority | Item                        | Impact | Effort  | Timeline    |
+| -------- | --------------------------- | ------ | ------- | ----------- |
+| 🔴 P0    | Remove @langchain/community | High   | 5 min   | Now         |
+| 🔴 P0    | Fix notifications DB        | High   | 30 min  | Today       |
+| 🔴 P0    | Fix feedback persistence    | High   | 1 hour  | Today       |
+| 🟡 P1    | Fix transit placeholders    | Medium | 1 hour  | This week   |
+| 🟡 P1    | RAG health checks           | Medium | 2 hours | This week   |
+| 🟡 P1    | Console.log cleanup         | Low    | 4 hours | This week   |
+| 🟢 P2    | TypeScript critical paths   | High   | 1 week  | Next sprint |
+| 🟢 P2    | Complete grimoire           | Medium | 1 week  | Next sprint |
+| 🔵 P3    | Full TypeScript cleanup     | Medium | 3 weeks | Q1 2025     |
+| 🔵 P3    | Dependency modernization    | Low    | 1 week  | Q1 2025     |
 
 ---
 

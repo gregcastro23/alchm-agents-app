@@ -11,7 +11,8 @@ export async function GET() {
     return NextResponse.json(
       {
         status: 'disabled',
-        message: 'RAG features are disabled. Set USE_RAG_GENERATION=true and run `yarn install --include=optional` to enable.',
+        message:
+          'RAG features are disabled. Set USE_RAG_GENERATION=true and run `yarn install --include=optional` to enable.',
       },
       { status: 503 }
     )

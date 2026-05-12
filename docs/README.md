@@ -5,6 +5,7 @@ Complete documentation for the Planetary Agents platform - combining astrologica
 ## 📚 Documentation Structure
 
 ### 🏗️ [Architecture](./architecture/)
+
 System architecture, technical design, and infrastructure documentation.
 
 - [Consciousness Infrastructure Analysis](./architecture/consciousness-infrastructure-analysis.md)
@@ -13,6 +14,7 @@ System architecture, technical design, and infrastructure documentation.
 - [Backend Integration Guide](./architecture/backend-integration-guide.md)
 
 ### ✨ [Features](./features/)
+
 Feature documentation, implementation guides, and system overviews.
 
 - [Complete Planetary Agent System](./features/complete-planetary-agent-system.md)
@@ -21,6 +23,7 @@ Feature documentation, implementation guides, and system overviews.
 - [Applying/Separating Aspects](./features/applying-separating-aspects.md)
 
 ### 🧠 [Consciousness System](./consciousness/)
+
 Unified consciousness tracking infrastructure documentation.
 
 - **[Phase 1: Unification Layer](./consciousness/phase-1-unification-layer.md)**
@@ -39,6 +42,7 @@ Unified consciousness tracking infrastructure documentation.
   - API endpoints
 
 ### 🔧 [Development](./development/)
+
 Development guides, API documentation, and component integration.
 
 - [API Documentation](./development/api-documentation.md)
@@ -47,6 +51,7 @@ Development guides, API documentation, and component integration.
 - [Agent Enhancement Report](./development/agent-enhancement-report.md)
 
 ### 🚀 [Deployment](./deployment/)
+
 Deployment guides, optimization, and production setup.
 
 - [Beta Launch Strategy](./deployment/beta-launch-strategy.md)
@@ -54,6 +59,7 @@ Deployment guides, optimization, and production setup.
 - [Current Status](./deployment/current-status.md)
 
 ### 📖 [User Guides](./guides/)
+
 User-facing documentation and tutorials.
 
 - [Planetary Agents User Guide](./guides/planetary-agents-user-guide.md)

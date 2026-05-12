@@ -14,11 +14,16 @@ router.get(
   asyncHandler(async (req: Request, res: Response) => {
     // Navigate to the project root directory where 'scripts' is located
     const rootDir = path.resolve(process.cwd(), '..')
-    
+
     // 1. Read agent-ingredient-recommendations.json
     let recommendations: any[] = []
     try {
-      const recommendationsPath = path.join(rootDir, 'scripts', 'output', 'agent-ingredient-recommendations.json')
+      const recommendationsPath = path.join(
+        rootDir,
+        'scripts',
+        'output',
+        'agent-ingredient-recommendations.json'
+      )
       if (fs.existsSync(recommendationsPath)) {
         const fileData = fs.readFileSync(recommendationsPath, 'utf8')
         recommendations = JSON.parse(fileData)
@@ -50,23 +55,23 @@ router.get(
     const profiles = recommendations.map(rec => {
       const agentId = rec.agentId
       const historicalDiet = dietData[agentId] || null
-      
+
       return {
         agentId: rec.agentId,
         name: rec.name,
         // Since we can't easily import HISTORICAL_AGENTS, we provide sensible defaults if missing
-        title: rec.title || 'Historical Figure', 
+        title: rec.title || 'Historical Figure',
         era: rec.era || 'Unknown',
         historicalDiet,
         alchemicalState: rec.alchemicalState || null,
         contextBlueprint: rec.contextBlueprint || null,
-        birthData: rec.birthData || null
+        birthData: rec.birthData || null,
       }
     })
 
     res.json({
       success: true,
-      profiles
+      profiles,
     })
   })
 )

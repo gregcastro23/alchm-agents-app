@@ -23,6 +23,7 @@ All critical agent configuration issues have been resolved. The Planetary Agents
 **Problem:** Audit script was checking for `chart.sun` and `chart.moon` (flat structure) but all agents use `chart.planets.Sun` and `chart.planets.Moon` (nested structure).
 
 **Solution:** Updated audit script to check both structures:
+
 ```typescript
 // Check for nested planets structure (correct format)
 if (!chart.planets?.Sun && !chart.sun) issues.push('Missing natal chart sun')
@@ -38,6 +39,7 @@ if (!chart.planets?.Moon && !chart.moon) issues.push('Missing natal chart moon')
 ### 2. Missing Consciousness Levels - FIXED ✅
 
 **Problem:** 19 agents were missing the `consciousness.level` field, which is required for:
+
 - Displaying consciousness state in UI
 - Consciousness-based response generation
 - Consciousness evolution tracking
@@ -45,6 +47,7 @@ if (!chart.planets?.Moon && !chart.moon) issues.push('Missing natal chart moon')
 **Solution:** Created automated script to add consciousness levels based on Monica Constant values:
 
 **Consciousness Level Ranges:**
+
 - MC >= 6.0: 'Transcendent'
 - MC >= 5.5: 'Illuminated'
 - MC >= 4.5: 'Advanced'
@@ -54,6 +57,7 @@ if (!chart.planets?.Moon && !chart.moon) issues.push('Missing natal chart moon')
 - MC < 1.5: 'Dormant'
 
 **Agents Fixed (19 total):**
+
 - René Descartes (MC 4.78) → 'Advanced'
 - Voltaire (MC 4.23) → 'Elevated'
 - John Locke (MC 4.45) → 'Elevated'
@@ -85,6 +89,7 @@ if (!chart.planets?.Moon && !chart.moon) issues.push('Missing natal chart moon')
 ### 3. Incomplete Vector Database - FIXED ✅
 
 **Problem:** Only 32 of 53 agents were ingested in the vector database, causing:
+
 - 21 agents returning placeholder responses
 - Missing knowledge base for RAG system
 - Incomplete gallery functionality
@@ -92,6 +97,7 @@ if (!chart.planets?.Moon && !chart.moon) issues.push('Missing natal chart moon')
 **Root Cause:** Document loader was using `HISTORICAL_AGENTS` (32 agents from individual files) instead of `DEMO_AGENTS` (53 total agents including inline definitions)
 
 **Solution:** Updated document loader to use `DEMO_AGENTS`:
+
 ```typescript
 // Before:
 import { HISTORICAL_AGENTS } from '@/lib/agents/historical'
@@ -103,11 +109,13 @@ import { DEMO_AGENTS } from '@/lib/demo-agents-data'
 **File Modified:** `lib/llamaindex/document-loader.ts`
 
 **Result:**
+
 - **53 agents** now ingested (21 new agents added)
 - **54 document chunks** in vector database
 - **54 embeddings** generated with OpenAI text-embedding-3-small
 
 **Ingestion Stats:**
+
 ```
 Agents Processed: 53
 Chunks Created: 54
@@ -123,43 +131,45 @@ Collection Size: 54
 
 ### Agent Configuration ✅
 
-| Category | Count | Status |
-|----------|-------|--------|
-| Total Agents | 53 | ✅ All configured |
-| Complete Agents | 53 | ✅ 100% |
-| Missing Consciousness Levels | 0 | ✅ All fixed |
-| Missing Natal Charts | 0 | ✅ All have complete charts |
-| Critical Issues | 0 | ✅ Zero issues |
+| Category                     | Count | Status                      |
+| ---------------------------- | ----- | --------------------------- |
+| Total Agents                 | 53    | ✅ All configured           |
+| Complete Agents              | 53    | ✅ 100%                     |
+| Missing Consciousness Levels | 0     | ✅ All fixed                |
+| Missing Natal Charts         | 0     | ✅ All have complete charts |
+| Critical Issues              | 0     | ✅ Zero issues              |
 
 ### Vector Database ✅
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| Agents in Database | 53 | ✅ Complete |
-| Document Chunks | 54 | ✅ Optimal |
-| Embeddings | 54 | ✅ All generated |
-| Collection Status | Active | ✅ Verified |
+| Metric             | Value  | Status           |
+| ------------------ | ------ | ---------------- |
+| Agents in Database | 53     | ✅ Complete      |
+| Document Chunks    | 54     | ✅ Optimal       |
+| Embeddings         | 54     | ✅ All generated |
+| Collection Status  | Active | ✅ Verified      |
 
 ### Consciousness Level Distribution
 
-| Level | Count | Agents |
-|-------|-------|---------|
-| **Advanced** (MC >= 4.5) | 2 | René Descartes, Isaac Asimov |
-| **Elevated** (MC >= 3.5) | 2 | Voltaire, John Locke |
-| **Awakening** (MC >= 1.5) | 4 | Mary Wollstonecraft, Claude Monet, Vincent van Gogh, Edgar Allan Poe |
-| **Dormant** (MC < 1.5) | 11 | David Hume, Johannes Kepler, Immanuel Kant, Adam Smith, Jean-Jacques Rousseau, Charles Dickens, Nikola Tesla, Marie Curie, Sigmund Freud, Mark Twain, Charles Darwin |
-| **Pre-configured** | 34 | All original inline agents |
+| Level                     | Count | Agents                                                                                                                                                               |
+| ------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Advanced** (MC >= 4.5)  | 2     | René Descartes, Isaac Asimov                                                                                                                                         |
+| **Elevated** (MC >= 3.5)  | 2     | Voltaire, John Locke                                                                                                                                                 |
+| **Awakening** (MC >= 1.5) | 4     | Mary Wollstonecraft, Claude Monet, Vincent van Gogh, Edgar Allan Poe                                                                                                 |
+| **Dormant** (MC < 1.5)    | 11    | David Hume, Johannes Kepler, Immanuel Kant, Adam Smith, Jean-Jacques Rousseau, Charles Dickens, Nikola Tesla, Marie Curie, Sigmund Freud, Mark Twain, Charles Darwin |
+| **Pre-configured**        | 34    | All original inline agents                                                                                                                                           |
 
 ---
 
 ## Files Modified
 
 ### Scripts Created/Modified
+
 1. `scripts/audit-agents.ts` - Fixed natal chart structure checking
 2. `scripts/add-consciousness-levels.ts` - Automated consciousness level assignment
 3. `scripts/verify-collection.ts` - Vector database verification
 
 ### Core System Files
+
 1. `lib/llamaindex/document-loader.ts` - Updated to use DEMO_AGENTS
 2. `lib/agents/historical/*.ts` - Added consciousness levels to 19 agent files
 
@@ -168,11 +178,13 @@ Collection Size: 54
 ## Testing & Verification
 
 ### Audit Results
+
 ```bash
 npx tsx scripts/audit-agents.ts
 ```
 
 **Output:**
+
 ```
 ✅ Complete Agents: 53
 ❌ Incomplete Agents: 0
@@ -181,22 +193,26 @@ npx tsx scripts/audit-agents.ts
 ```
 
 ### Vector Database Verification
+
 ```bash
 npx tsx scripts/verify-collection.ts
 ```
 
 **Output:**
+
 ```
 ✅ Collection 'historical_agents' found
 📊 Document count: 54
 ```
 
 ### Ingestion Verification
+
 ```bash
 OPENAI_API_KEY=xxx CHROMADB_URL=http://localhost:8001 npx tsx lib/llamaindex/ingestion-pipeline.ts --force
 ```
 
 **Output:**
+
 ```
 ✅ Ingestion Complete!
 Agents Processed: 53
@@ -212,6 +228,7 @@ Collection Size: 54
 ## Warnings Remaining (Non-Critical)
 
 **441 warnings** across agents for optional fields:
+
 - Missing era/specialization (metadata for filtering)
 - Missing consciousness strength/emotion (optional enhancements)
 - Missing alchemical elements (optional enhancements)
@@ -227,11 +244,13 @@ Collection Size: 54
 ## Next Steps (Optional Enhancements)
 
 ### Medium Priority
+
 1. **Add Era & Specialization** - Enables better filtering in gallery
 2. **Add Quotes & Beliefs** - Enhances historical authenticity
 3. **Add Personality Traits** - Improves personality richness
 
 ### Low Priority
+
 1. **Add Shadows & Gifts** - Deepens psychological profiles
 2. **Add Alchemical Elements** - Complete elemental calculations
 

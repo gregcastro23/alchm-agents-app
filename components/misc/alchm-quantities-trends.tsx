@@ -312,11 +312,11 @@ export default function AlchmQuantitiesTrends() {
 
       // Spirit and Substance are velocity-affected (Mercury principle)
       if (type === 'Spirit' || type === 'Substance') {
-        value *= (0.85 + 0.15 * aspectModifier)
+        value *= 0.85 + 0.15 * aspectModifier
       }
       // Essence and Matter are power-affected (Solar principle)
       else if (type === 'Essence' || type === 'Matter') {
-        value *= (0.85 + 0.15 * aspectModifier)
+        value *= 0.85 + 0.15 * aspectModifier
       }
     }
 

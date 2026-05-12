@@ -7,12 +7,15 @@ export async function POST(req: Request) {
   try {
     await req.json()
 
-    return NextResponse.json({
-      success: false,
-      error: 'MONICA_TRAINING_UNAVAILABLE',
-      message: UNAVAILABLE_MESSAGE,
-      backendRequired: true,
-    }, { status: 501 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'MONICA_TRAINING_UNAVAILABLE',
+        message: UNAVAILABLE_MESSAGE,
+        backendRequired: true,
+      },
+      { status: 501 }
+    )
   } catch (error: any) {
     console.error('Alchemical training error:', error)
     return NextResponse.json(
@@ -67,12 +70,15 @@ export async function GET(req: Request) {
         },
       })
     } else if (mode === 'sample') {
-      return NextResponse.json({
-        success: false,
-        error: 'MONICA_TRAINING_UNAVAILABLE',
-        message: UNAVAILABLE_MESSAGE,
-        backendRequired: true,
-      }, { status: 501 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'MONICA_TRAINING_UNAVAILABLE',
+          message: UNAVAILABLE_MESSAGE,
+          backendRequired: true,
+        },
+        { status: 501 }
+      )
     }
 
     return NextResponse.json(

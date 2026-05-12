@@ -204,8 +204,7 @@ class RAGAnalyticsManager {
 
     const relevanceTrend = dailyStats.map(({ date, logs }) => ({
       date,
-      avgRelevance:
-        logs.reduce((sum, log) => sum + log.averageRelevance, 0) / logs.length,
+      avgRelevance: logs.reduce((sum, log) => sum + log.averageRelevance, 0) / logs.length,
     }))
 
     return {

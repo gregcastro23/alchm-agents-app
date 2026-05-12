@@ -28,10 +28,9 @@ export async function GET(request: NextRequest) {
       // Fetch actual Moon position from planetary positions API
       let moonPosition: { sign: string; degree: number } | undefined
       try {
-        const positionsResponse = await fetch(
-          `${request.nextUrl.origin}/api/planetary-positions`,
-          { cache: 'no-store' }
-        )
+        const positionsResponse = await fetch(`${request.nextUrl.origin}/api/planetary-positions`, {
+          cache: 'no-store',
+        })
         if (positionsResponse.ok) {
           const positionsData = await positionsResponse.json()
           const moonData = positionsData.planetaryPositions?.find((p: any) => p.planet === 'Moon')
@@ -82,10 +81,9 @@ export async function POST(request: NextRequest) {
       // Fetch actual Moon position from planetary positions API
       let moonPosition: { sign: string; degree: number } | undefined
       try {
-        const positionsResponse = await fetch(
-          `${request.nextUrl.origin}/api/planetary-positions`,
-          { cache: 'no-store' }
-        )
+        const positionsResponse = await fetch(`${request.nextUrl.origin}/api/planetary-positions`, {
+          cache: 'no-store',
+        })
         if (positionsResponse.ok) {
           const positionsData = await positionsResponse.json()
           const moonData = positionsData.planetaryPositions?.find((p: any) => p.planet === 'Moon')

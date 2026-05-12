@@ -12,17 +12,20 @@ This report identifies **12 major areas** where mocks and placeholders exist tha
 ## 🔴 High Priority - Core Functionality
 
 ### 1. Mock Geocoding Service
+
 **File:** `components/charts/quick-chart-input.tsx`  
 **Lines:** 25-61  
 **Current State:** Uses `mockGeocode()` with hardcoded coordinates for ~10 cities  
 **Impact:** Users cannot create charts for locations not in the mock list  
 **Replacement:** Integrate real geocoding service:
+
 - **Option A:** Google Maps Geocoding API
-- **Option B:** Mapbox Geocoding API  
+- **Option B:** Mapbox Geocoding API
 - **Option C:** OpenStreetMap Nominatim (free, no API key)
 - **Recommendation:** Start with Nominatim, upgrade to Mapbox for production
 
 **Code Location:**
+
 ```25:61:planetary-agents/components/charts/quick-chart-input.tsx
 // Mock geocoding function - in production, use a real geocoding service
 const mockGeocode = async (
@@ -43,6 +46,7 @@ const mockGeocode = async (
 ---
 
 ### 2. Incomplete Alchemize Function
+
 **File:** `backend/src/services/alchemizer-service.ts`  
 **Lines:** 725-754  
 **Current State:** Function skeleton with placeholder return values (all zeros)  
@@ -50,6 +54,7 @@ const mockGeocode = async (
 **Replacement:** Implement full alchemize logic from workspace rules
 
 **Code Location:**
+
 ```725:754:planetary-agents/backend/src/services/alchemizer-service.ts
 async function alchemizeFullPlaceholder(birthInfo: any, horoscopeDict: any): Promise<any> {
   // ... (full alchemize logic from workspace rules, adapted to TS)
@@ -74,6 +79,7 @@ async function alchemizeFullPlaceholder(birthInfo: any, horoscopeDict: any): Pro
 ---
 
 ### 3. Mock Planetary Transits
+
 **File:** `app/time-laboratory/page.tsx`  
 **Lines:** 410-424  
 **Current State:** Hardcoded planetary positions  
@@ -81,6 +87,7 @@ async function alchemizeFullPlaceholder(birthInfo: any, horoscopeDict: any): Pro
 **Replacement:** Integrate Swiss Ephemeris or astronomical calculation library
 
 **Code Location:**
+
 ```410:424:planetary-agents/app/time-laboratory/page.tsx
 const loadCurrentTransits = useCallback(async () => {
   try {
@@ -106,17 +113,20 @@ const loadCurrentTransits = useCallback(async () => {
 ## 🟡 Medium Priority - Analytics & Monitoring
 
 ### 4. Performance Dashboard Mock Data
+
 **File:** `components/admin/performance-dashboard.tsx`  
 **Lines:** 118-214  
 **Current State:** Simulated data with hardcoded metrics  
 **Impact:** Dashboard shows fake metrics instead of real system performance  
 **Replacement:** Create API endpoints to collect:
+
 - Real-time system metrics (CPU, memory, response times)
 - User analytics from database/logs
 - Agent analytics from chat system
 - Performance metrics from monitoring tools
 
 **Code Location:**
+
 ```118:214:planetary-agents/components/admin/performance-dashboard.tsx
 // Simulate data fetching
 useEffect(() => {
@@ -141,7 +151,8 @@ useEffect(() => {
 }, [timeRange, autoRefresh])
 ```
 
-**Action Required:** 
+**Action Required:**
+
 1. Create `/api/admin/performance-metrics` endpoint
 2. Integrate with existing monitoring/logging systems
 3. Query database for user/agent analytics
@@ -150,6 +161,7 @@ useEffect(() => {
 ---
 
 ### 5. Batch Processing Dashboard Mock Data
+
 **File:** `components/dashboards/batch-processing-dashboard.tsx`  
 **Lines:** 98-195  
 **Current State:** Mock job queue metrics and batch jobs  
@@ -157,6 +169,7 @@ useEffect(() => {
 **Replacement:** Connect to actual job queue system (Redis/BullMQ) or database
 
 **Code Location:**
+
 ```98:195:planetary-agents/components/dashboards/batch-processing-dashboard.tsx
 // Mock data for demonstration
 const initializeMockData = useCallback(() => {
@@ -170,7 +183,8 @@ const initializeMockData = useCallback(() => {
 }, [])
 ```
 
-**Action Required:** 
+**Action Required:**
+
 1. Create `/api/admin/batch-metrics` endpoint
 2. Query job queue for real metrics
 3. Replace mock data initialization
@@ -178,6 +192,7 @@ const initializeMockData = useCallback(() => {
 ---
 
 ### 6. Galileo Dashboard Mock Data
+
 **File:** `components/dashboards/galileo-dashboard.tsx`  
 **Lines:** 32-51, 71-83  
 **Current State:** Hardcoded metrics data  
@@ -185,6 +200,7 @@ const initializeMockData = useCallback(() => {
 **Replacement:** Integrate with Galileo API to fetch real metrics
 
 **Code Location:**
+
 ```32:51:planetary-agents/components/dashboards/galileo-dashboard.tsx
 // Mock data for demo purposes - in a real app this would come from Galileo's API
 const mockMetricsData = [
@@ -208,6 +224,7 @@ const refreshData = async () => {
 ## 🟢 Lower Priority - Feature Enhancements
 
 ### 7. PDF/EPUB Export Placeholders
+
 **File:** `lib/temporal-grimoire-export.ts`  
 **Lines:** 713-731  
 **Current State:** Returns placeholder buffers instead of real PDF/EPUB files  
@@ -215,6 +232,7 @@ const refreshData = async () => {
 **Replacement:** Implement real PDF/EPUB generation
 
 **Code Location:**
+
 ```713:731:planetary-agents/lib/temporal-grimoire-export.ts
 private static async generatePDF(
   sections: GrimoireSection[],
@@ -238,12 +256,14 @@ private static async generateEPUB(
 ```
 
 **Action Required:**
+
 - **PDF:** Use `puppeteer` (server-side) or `jsPDF` (client-side)
 - **EPUB:** Use `epub-gen` library
 
 ---
 
 ### 8. Quality Evaluation Placeholder
+
 **File:** `lib/personalized-ai/training-interface-design.ts`  
 **Lines:** 919-935  
 **Current State:** Simple keyword matching instead of AI analysis  
@@ -251,6 +271,7 @@ private static async generateEPUB(
 **Replacement:** Use OpenAI/Anthropic API for real quality evaluation
 
 **Code Location:**
+
 ```919:935:planetary-agents/lib/personalized-ai/training-interface-design.ts
 function evaluateMetric(submission: string, metric: QualityMetric): number {
   // Simplified placeholder - would use AI analysis in real implementation
@@ -269,6 +290,7 @@ function evaluateMetric(submission: string, metric: QualityMetric): number {
 ---
 
 ### 9. RAG Cache Warming Placeholder
+
 **File:** `lib/rag/rag-cache.ts`  
 **Lines:** 274-278  
 **Current State:** Function exists but doesn't actually warm cache  
@@ -276,6 +298,7 @@ function evaluateMetric(submission: string, metric: QualityMetric): number {
 **Replacement:** Implement cache pre-population logic
 
 **Code Location:**
+
 ```274:278:planetary-agents/lib/rag/rag-cache.ts
 async warm(commonQueries: Array<{ query: string; agentId: string }>): Promise<void> {
   console.log(`[RAGCache] Warming cache with ${commonQueries.length} common queries...`)
@@ -289,6 +312,7 @@ async warm(commonQueries: Array<{ query: string; agentId: string }>): Promise<vo
 ---
 
 ### 10. Authentication Placeholders
+
 **File:** `lib/auth-helpers.ts`  
 **Lines:** 4-20  
 **Current State:** Returns null/anonymous for development  
@@ -296,6 +320,7 @@ async warm(commonQueries: Array<{ query: string; agentId: string }>): Promise<vo
 **Replacement:** Implement NextAuth.js or similar
 
 **Code Location:**
+
 ```4:20:planetary-agents/lib/auth-helpers.ts
 export async function getCurrentUser(req?: NextRequest) {
   try {
@@ -316,7 +341,8 @@ export function getUserIdFromRequest(req: NextRequest): string {
 }
 ```
 
-**Action Required:** 
+**Action Required:**
+
 1. Configure NextAuth.js properly
 2. Implement real session management
 3. Update functions to use real user data
@@ -324,6 +350,7 @@ export function getUserIdFromRequest(req: NextRequest): string {
 ---
 
 ### 11. Mock Synastry Chart Creation
+
 **File:** `components/temporal/temporal-client.tsx`  
 **Lines:** 45-88  
 **Current State:** Uses mock elemental/modal profiles (all 25% or 33%)  
@@ -331,6 +358,7 @@ export function getUserIdFromRequest(req: NextRequest): string {
 **Replacement:** Calculate real elemental/modal profiles from birth charts
 
 **Code Location:**
+
 ```45:88:planetary-agents/components/temporal/temporal-client.tsx
 // Mock function to convert RelationChart to SynastryChart format
 function createSynastryChartSkeleton(user: RelationChart, relation: RelationChart): SynastryChart {
@@ -368,16 +396,19 @@ function createSynastryChartSkeleton(user: RelationChart, relation: RelationChar
 ## Implementation Recommendations
 
 ### Phase 1: Core Functionality (Week 1)
+
 1. ✅ Replace mock geocoding with real service
 2. ✅ Complete alchemize function implementation
 3. ✅ Replace mock planetary transits
 
 ### Phase 2: Analytics (Week 2)
+
 4. ✅ Performance dashboard real data
 5. ✅ Batch processing dashboard real data
 6. ✅ Galileo dashboard real data
 
 ### Phase 3: Features (Week 3-4)
+
 7. ✅ PDF/EPUB export implementation
 8. ✅ Quality evaluation AI integration
 9. ✅ RAG cache warming
@@ -392,4 +423,3 @@ function createSynastryChartSkeleton(user: RelationChart, relation: RelationChar
 - Consider feature flags for gradual rollout of real implementations
 - Test thoroughly after each replacement
 - Monitor performance impact of real implementations
-

@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     const userId = (session?.user as any)?.id
-    
+
     const body = await req.json()
     const { message, context, sessionId } = body
 
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
             totalInteractions: 1,
             lastAction: 'monica_chat',
             lastActiveDate: new Date(),
-            settingsId: 'default'
+            settingsId: 'default',
           },
         }),
         prisma.monica_interactions.create({

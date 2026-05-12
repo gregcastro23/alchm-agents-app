@@ -10,17 +10,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 // Dialog components removed - now using floating panel
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  X,
-  Send,
-  Sparkles,
-  Users,
-  Activity,
-  Settings,
-  Filter,
-  Eye,
-  EyeOff,
-} from 'lucide-react'
+import { X, Send, Sparkles, Users, Activity, Settings, Filter, Eye, EyeOff } from 'lucide-react'
 
 import type {
   UnifiedAgent,
@@ -171,7 +161,6 @@ export function UnifiedMultiAgentChat({
       }
     }
     // Only run when availableAgents is populated and initialAgents changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [availableAgents.length, initialAgents?.join(',')])
 
   // Auto-scroll to bottom
@@ -382,20 +371,21 @@ export function UnifiedMultiAgentChat({
 
   // Render agent selection panel
   const renderAgentSelection = () => (
-    <Card className="mb-4">
+    <Card className="mb-4 bg-black/40 backdrop-blur-md border-white/10 text-white">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">
+          <CardTitle className="text-lg text-white">
             Select Agents ({selectedAgents.length}/{maxAgents})
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)}>
+            <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)} className="border-white/20 bg-white/5 hover:bg-white/10 text-white">
               <Settings className="w-4 h-4" />
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowAgentSelection(!showAgentSelection)}
+              className="border-white/20 bg-white/5 hover:bg-white/10 text-white"
             >
               {showAgentSelection ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </Button>
@@ -408,22 +398,22 @@ export function UnifiedMultiAgentChat({
             placeholder="Search agents..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="flex-1"
+            className="flex-1 bg-black/20 border-white/20 text-white placeholder:text-purple-300/50 focus-visible:ring-purple-500/50"
           />
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="border-white/20 bg-white/5 hover:bg-white/10 text-white">
             <Filter className="w-4 h-4" />
           </Button>
         </div>
 
         {/* Monica toggle */}
         {allowMonica && (
-          <div className="flex items-center gap-2 mt-2 p-2 bg-violet-50 rounded-lg">
-            <Checkbox checked={monicaIncluded} onCheckedChange={handleMonicaToggle} />
-            <span className="text-sm font-medium">Include Monica as {monicaRole}</span>
+          <div className="flex items-center gap-2 mt-2 p-2 bg-purple-900/20 border border-purple-500/30 rounded-lg">
+            <Checkbox checked={monicaIncluded} onCheckedChange={handleMonicaToggle} className="border-purple-500/50 data-[state=checked]:bg-purple-600" />
+            <span className="text-sm font-medium text-purple-200">Include Monica as {monicaRole}</span>
             <select
               value={monicaRole}
               onChange={e => setMonicaRole(e.target.value as MonicaRole['type'])}
-              className="ml-auto text-xs bg-white border rounded px-2 py-1"
+              className="ml-auto text-xs bg-black/40 border border-purple-500/30 rounded px-2 py-1 text-white"
             >
               <option value="guide">Guide</option>
               <option value="moderator">Moderator</option>
@@ -444,11 +434,14 @@ export function UnifiedMultiAgentChat({
                 {selectedAgents.map(agent => (
                   <div
                     key={agent.id}
-                    className="flex items-center gap-2 bg-white border rounded-lg px-3 py-2"
+                    className="flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-white"
                   >
                     <Avatar className="w-6 h-6">
                       <AvatarFallback
-                        style={{ backgroundColor: agent.appearance?.color || '#6366f1', color: 'white' }}
+                        style={{
+                          backgroundColor: agent.appearance?.color || '#6366f1',
+                          color: 'white',
+                        }}
                       >
                         {agent.appearance?.symbol || agent.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
@@ -461,7 +454,7 @@ export function UnifiedMultiAgentChat({
                       variant="ghost"
                       size="sm"
                       onClick={() => handleAgentRemove(agent.id)}
-                      className="h-auto p-1"
+                      className="h-auto p-1 text-purple-300 hover:text-white hover:bg-white/10"
                     >
                       <X className="w-3 h-3" />
                     </Button>
@@ -478,22 +471,25 @@ export function UnifiedMultiAgentChat({
               {filteredAgents.map(agent => (
                 <div
                   key={agent.id}
-                  className={`p-3 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
-                    selectedAgents.find(a => a.id === agent.id) ? 'bg-gray-100 border-gray-300' : ''
+                  className={`p-3 border rounded-lg cursor-pointer transition-colors hover:bg-white/5 border-white/10 ${
+                    selectedAgents.find(a => a.id === agent.id) ? 'bg-purple-500/20 border-purple-500/50' : 'bg-black/40 backdrop-blur-md'
                   }`}
                   onClick={() => handleAgentSelect(agent)}
                 >
                   <div className="flex items-center gap-2">
                     <Avatar className="w-8 h-8">
                       <AvatarFallback
-                        style={{ backgroundColor: agent.appearance?.color || '#6366f1', color: 'white' }}
+                        style={{
+                          backgroundColor: agent.appearance?.color || '#6366f1',
+                          color: 'white',
+                        }}
                       >
                         {agent.appearance?.symbol || agent.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">{agent.name}</div>
-                      <div className="text-xs text-gray-500 truncate">{agent.title}</div>
+                      <div className="text-sm font-medium truncate text-white">{agent.name}</div>
+                      <div className="text-xs text-purple-300/70 truncate">{agent.title}</div>
                       <div className="flex items-center gap-1 mt-1">
                         <Badge variant="outline" className="text-xs">
                           {agent.type}
@@ -551,23 +547,23 @@ export function UnifiedMultiAgentChat({
                     </Badge>
                   )}
                   {message.processingTime && (
-                    <span className="text-xs text-gray-500">({message.processingTime}ms)</span>
+                    <span className="text-xs text-purple-300/50">({message.processingTime}ms)</span>
                   )}
                 </div>
               )}
 
               <div
-                className={`p-3 rounded-lg ${
-                  message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'
+                className={`p-3 rounded-lg border backdrop-blur-md ${
+                  message.role === 'user' ? 'bg-purple-600/40 border-purple-500/30 text-white' : 'bg-black/40 border-white/10 text-purple-50'
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
 
                 {message.metadata?.synthesizedInsights &&
                   message.metadata.synthesizedInsights.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
-                      <div className="text-xs font-medium text-gray-600 mb-1">Insights:</div>
-                      <ul className="text-xs text-gray-600 space-y-1">
+                    <div className="mt-2 pt-2 border-t border-white/10">
+                      <div className="text-xs font-medium text-purple-300/70 mb-1">Insights:</div>
+                      <ul className="text-xs text-purple-200/80 space-y-1">
                         {message.metadata.synthesizedInsights.map((insight, idx) => (
                           <li key={idx} className="flex items-start gap-1">
                             <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0" />
@@ -579,7 +575,7 @@ export function UnifiedMultiAgentChat({
                   )}
               </div>
 
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-purple-300/50 mt-1">
                 {message.timestamp.toLocaleTimeString()}
               </div>
             </div>
@@ -600,11 +596,11 @@ export function UnifiedMultiAgentChat({
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <div className="text-sm font-medium mb-1">Agents are responding...</div>
-              <div className="bg-gray-100 rounded-lg p-3">
+              <div className="text-sm font-medium mb-1 text-purple-200">Agents are responding...</div>
+              <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-lg p-3">
                 <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 animate-spin" />
-                  <span className="text-sm text-gray-600">
+                  <Activity className="w-4 h-4 animate-spin text-purple-400" />
+                  <span className="text-sm text-purple-300/70">
                     Processing consciousness patterns...
                   </span>
                 </div>
@@ -620,7 +616,7 @@ export function UnifiedMultiAgentChat({
 
   // Render input area
   const renderInput = () => (
-    <div className="border-t p-4">
+    <div className="border-t border-white/10 p-4 bg-black/20">
       <div className="flex gap-2">
         <Input
           value={inputMessage}
@@ -632,18 +628,19 @@ export function UnifiedMultiAgentChat({
           }
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
           disabled={selectedAgents.length === 0 || isLoading}
-          className="flex-1"
+          className="flex-1 bg-black/40 border-white/20 text-white placeholder:text-purple-300/50 focus-visible:ring-purple-500/50"
         />
         <Button
           onClick={handleSendMessage}
           disabled={!inputMessage.trim() || selectedAgents.length === 0 || isLoading}
+          className="bg-purple-600 hover:bg-purple-700 text-white border border-purple-500/50 shadow-[0_0_15px_rgba(139,92,246,0.3)]"
         >
           <Send className="w-4 h-4" />
         </Button>
       </div>
 
       {selectedAgents.length > 0 && (
-        <div className="mt-2 text-xs text-gray-500">
+        <div className="mt-2 text-xs text-purple-300/50">
           Active: {selectedAgents.map(a => a.name).join(', ')}
           {monicaAgent && ` + Monica (${monicaRole})`}
         </div>
@@ -656,20 +653,17 @@ export function UnifiedMultiAgentChat({
   return (
     <>
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/50 z-[200] backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 bg-black/50 z-[200] backdrop-blur-sm" onClick={onClose} />
 
       {/* Floating Left Panel */}
-      <div className="fixed left-0 top-0 bottom-0 w-full max-w-2xl z-[201] flex flex-col bg-background shadow-2xl border-r animate-in slide-in-from-left duration-300">
+      <div className="fixed left-0 top-0 bottom-0 w-full max-w-2xl z-[201] flex flex-col bg-[#0c0319]/95 backdrop-blur-xl shadow-[5px_0_30px_rgba(139,92,246,0.15)] border-r border-purple-500/30 text-white animate-in slide-in-from-left duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-emerald-50/50 via-green-50/50 to-cyan-50/50 dark:from-emerald-950/50 dark:via-green-950/50 dark:to-cyan-950/50">
+        <div className="flex items-center justify-between p-4 border-b border-purple-500/30 bg-black/40">
           <div className="flex items-center gap-3">
-            <Users className="w-5 h-5 text-emerald-600" />
+            <Users className="w-5 h-5 text-purple-400" />
             <h2 className="font-semibold text-lg">{title}</h2>
             {enableGroupDynamics && groupDynamics && (
-              <Badge variant="outline" className="ml-2 bg-purple-100 dark:bg-purple-900">
+              <Badge variant="outline" className="ml-2 bg-purple-900/40 border-purple-500/50 text-purple-200">
                 Consciousness: {groupDynamics.consciousnessNetwork.groupConsciousness.toFixed(2)}
               </Badge>
             )}
@@ -680,7 +674,7 @@ export function UnifiedMultiAgentChat({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="hover:bg-red-100 dark:hover:bg-red-900"
+              className="hover:bg-red-900/50 text-white hover:text-red-200 transition-colors"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -706,7 +700,7 @@ export function UnifiedMultiAgentChat({
             <TabsContent value="chat" className="flex-1 flex flex-col mt-4">
               {renderAgentSelection()}
 
-              <Card className="flex-1 flex flex-col">
+              <Card className="flex-1 flex flex-col bg-black/20 backdrop-blur-sm border-white/10 text-white overflow-hidden">
                 {renderMessages()}
                 {renderInput()}
               </Card>

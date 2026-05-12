@@ -57,7 +57,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
         const debitResult = await EconomyService.debitOperation(userId, 'unified_chat')
         if (!debitResult.ok) {
           return NextResponse.json(
-            { success: false, error: 'Insufficient tokens', data: { required: AGENT_OPERATION_COSTS.unified_chat }, timestamp },
+            {
+              success: false,
+              error: 'Insufficient tokens',
+              data: { required: AGENT_OPERATION_COSTS.unified_chat },
+              timestamp,
+            },
             { status: 402 }
           )
         }
@@ -73,20 +78,27 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
         // Conserve interaction logging
         if (userId && chatData.text) {
           const powerGained = Math.max(1, Math.floor(chatData.text.length / 100))
-          consciousnessPersistence.logInteraction({
-            userId,
-            agentId: parameters.agentId,
-            interactionType: 'historical-chat',
-            powerGained,
-            planetaryInfluence: 'unknown',
-            elementalResonance: 0.5,
-            metadata: {
-              userMessage: parameters.message || parameters.userMessage,
-            },
-          }).catch(err => console.warn('Failed to log unified agent interaction:', err))
+          consciousnessPersistence
+            .logInteraction({
+              userId,
+              agentId: parameters.agentId,
+              interactionType: 'historical-chat',
+              powerGained,
+              planetaryInfluence: 'unknown',
+              elementalResonance: 0.5,
+              metadata: {
+                userMessage: parameters.message || parameters.userMessage,
+              },
+            })
+            .catch(err => console.warn('Failed to log unified agent interaction:', err))
         }
 
-        return NextResponse.json({ success: true, data: chatData, balances: debitResult.balances, timestamp })
+        return NextResponse.json({
+          success: true,
+          data: chatData,
+          balances: debitResult.balances,
+          timestamp,
+        })
       }
 
       // Extended actions placeholder for further backend endpoints
@@ -96,11 +108,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
       case 'dashboard':
       case 'search':
       case 'evolve':
-        return NextResponse.json({
-          success: false,
-          error: `Action ${action} is pending Python backend migration.`,
-          timestamp,
-        }, { status: 501 })
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Action ${action} is pending Python backend migration.`,
+            timestamp,
+          },
+          { status: 501 }
+        )
 
       default:
         return NextResponse.json(

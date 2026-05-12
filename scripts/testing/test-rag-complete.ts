@@ -35,7 +35,7 @@ async function testRAGComplete() {
   console.log(`Found ${results1.length} results:`)
   results1.forEach((r, i) => {
     console.log(
-      `  ${i + 1}. ${r.agentName} - ${r.metadata.documentType} (${r.similarity.toFixed(3)})`,
+      `  ${i + 1}. ${r.agentName} - ${r.metadata.documentType} (${r.similarity.toFixed(3)})`
     )
   })
 
@@ -48,7 +48,7 @@ async function testRAGComplete() {
   console.log(`Found ${agentResults.length} agents:`)
   agentResults.forEach((r, i) => {
     console.log(
-      `  ${i + 1}. ${r.agent.name} (${r.relevanceScore.toFixed(3)}) - ${r.agent.abilities.specialty}`,
+      `  ${i + 1}. ${r.agent.name} (${r.relevanceScore.toFixed(3)}) - ${r.agent.abilities.specialty}`
     )
   })
 
@@ -57,7 +57,7 @@ async function testRAGComplete() {
   const knowledge = await service.getRelevantKnowledge(
     'Tell me about scientific discovery and innovation',
     'leonardo-da-vinci',
-    { maxChunks: 3, minSimilarity: 0.4 },
+    { maxChunks: 3, minSimilarity: 0.4 }
   )
   console.log(`Retrieved ${knowledge.length} knowledge chunks:`)
   knowledge.forEach((chunk, i) => {
@@ -72,7 +72,7 @@ async function testRAGComplete() {
   console.log('\n')
 }
 
-testRAGComplete().catch((error) => {
+testRAGComplete().catch(error => {
   console.error('\n❌ Test failed:', error)
   process.exit(1)
 })

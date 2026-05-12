@@ -51,11 +51,11 @@ export default function GalileoDashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       setIsLoading(true)
-      
+
       try {
         // Fetch real conversation metrics from database
         const response = await fetch('/api/admin/conversation-metrics')
-        
+
         if (response.ok) {
           const data = await response.json()
           if (data.success) {
@@ -63,7 +63,7 @@ export default function GalileoDashboard() {
             setPlanetaryData(data.agentMetrics || [])
           }
         }
-        
+
         await log('Dashboard viewed', {
           metadata: {
             component: 'GalileoDashboard',
@@ -76,17 +76,17 @@ export default function GalileoDashboard() {
         setIsLoading(false)
       }
     }
-    
+
     fetchDashboardData()
   }, [log])
 
   const refreshData = async () => {
     setIsLoading(true)
-    
+
     try {
       // Fetch updated metrics
       const response = await fetch('/api/admin/conversation-metrics')
-      
+
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
@@ -94,7 +94,7 @@ export default function GalileoDashboard() {
           setPlanetaryData(data.agentMetrics || [])
         }
       }
-      
+
       await log('Dashboard refreshed', {
         metadata: {
           component: 'GalileoDashboard',

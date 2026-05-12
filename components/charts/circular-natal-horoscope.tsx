@@ -44,9 +44,7 @@ async function fetchAstrologizeWheel(input: {
   longitude: number
   name?: string
 }): Promise<AstrologizeWheelResponse> {
-  const date = new Date(
-    Date.UTC(input.year, input.month, input.day, input.hour, input.minute)
-  )
+  const date = new Date(Date.UTC(input.year, input.month, input.day, input.hour, input.minute))
   const res = await fetch('/api/astrologize', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -126,9 +126,7 @@ export function RAGFeedbackWidget({
             disabled={isSubmitting}
             className="h-7 px-2"
           >
-            <ThumbsUp
-              className={cn('w-3.5 h-3.5', thumbsUp === true && 'fill-current')}
-            />
+            <ThumbsUp className={cn('w-3.5 h-3.5', thumbsUp === true && 'fill-current')} />
           </Button>
           <Button
             variant={thumbsUp === false ? 'destructive' : 'ghost'}
@@ -137,9 +135,7 @@ export function RAGFeedbackWidget({
             disabled={isSubmitting}
             className="h-7 px-2"
           >
-            <ThumbsDown
-              className={cn('w-3.5 h-3.5', thumbsUp === false && 'fill-current')}
-            />
+            <ThumbsDown className={cn('w-3.5 h-3.5', thumbsUp === false && 'fill-current')} />
           </Button>
         </div>
 
@@ -205,7 +201,8 @@ export function RAGFeedbackWidget({
                 htmlFor={`sources-helpful-${queryId}`}
                 className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                The {sourcesCount} source{sourcesCount !== 1 ? 's' : ''} {sourcesCount !== 1 ? 'were' : 'was'} helpful
+                The {sourcesCount} source{sourcesCount !== 1 ? 's' : ''}{' '}
+                {sourcesCount !== 1 ? 'were' : 'was'} helpful
               </label>
             </div>
           )}
@@ -224,9 +221,7 @@ export function RAGFeedbackWidget({
               maxLength={500}
             />
             {comment.length > 0 && (
-              <p className="text-xs text-muted-foreground text-right">
-                {comment.length}/500
-              </p>
+              <p className="text-xs text-muted-foreground text-right">{comment.length}/500</p>
             )}
           </div>
 

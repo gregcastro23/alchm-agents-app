@@ -67,9 +67,9 @@ backend:smoke-health:
   extends: .backend_python_base
   stage: build
   variables:
-    PORT: "8000"
-    DATABASE_URL: "sqlite:///./test.db"
-    ALCHM_KITCHEN_URL: "https://whattoeatnext-production.up.railway.app"
+    PORT: '8000'
+    DATABASE_URL: 'sqlite:///./test.db'
+    ALCHM_KITCHEN_URL: 'https://whattoeatnext-production.up.railway.app'
   script:
     - uvicorn main:app --host 0.0.0.0 --port 8000 &
     - BACK_PID=$!
@@ -126,8 +126,8 @@ deploy_to_vercel:
   stage: deploy
   image: node:20-alpine
   variables:
-    VERCEL_ORG_ID: "team_eVYHTIN1tCXo7sPrkzqJbLzO"
-    VERCEL_PROJECT_ID: "prj_47jKTcJvhdXzrf3YSTbbYu9SVRTf"
+    VERCEL_ORG_ID: 'team_eVYHTIN1tCXo7sPrkzqJbLzO'
+    VERCEL_PROJECT_ID: 'prj_47jKTcJvhdXzrf3YSTbbYu9SVRTf'
   before_script:
     - npm install -g vercel@latest
   script:

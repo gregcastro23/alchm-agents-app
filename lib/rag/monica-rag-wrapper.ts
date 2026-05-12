@@ -29,10 +29,8 @@ import { logger } from '@/lib/structured-logger'
  * finally to safe known-good defaults.
  */
 function resolveDirectModel(modelId?: string) {
-  const id = modelId
-    || process.env.MONICA_DEFAULT_MODEL
-    || process.env.CLAUDE_DEFAULT_MODEL
-    || 'gpt-4o-mini'
+  const id =
+    modelId || process.env.MONICA_DEFAULT_MODEL || process.env.CLAUDE_DEFAULT_MODEL || 'gpt-4o-mini'
 
   // Claude model IDs start with 'claude-'
   if (id.startsWith('claude-')) {

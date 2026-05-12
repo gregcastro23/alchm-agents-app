@@ -240,10 +240,18 @@ router.post(
     body('current.essence').isNumeric().withMessage('current.essence must be numeric'),
     body('current.matter').isNumeric().withMessage('current.matter must be numeric'),
     body('current.substance').isNumeric().withMessage('current.substance must be numeric'),
-    body('current.elementals.Fire').isNumeric().withMessage('current.elementals.Fire must be numeric'),
-    body('current.elementals.Water').isNumeric().withMessage('current.elementals.Water must be numeric'),
-    body('current.elementals.Air').isNumeric().withMessage('current.elementals.Air must be numeric'),
-    body('current.elementals.Earth').isNumeric().withMessage('current.elementals.Earth must be numeric'),
+    body('current.elementals.Fire')
+      .isNumeric()
+      .withMessage('current.elementals.Fire must be numeric'),
+    body('current.elementals.Water')
+      .isNumeric()
+      .withMessage('current.elementals.Water must be numeric'),
+    body('current.elementals.Air')
+      .isNumeric()
+      .withMessage('current.elementals.Air must be numeric'),
+    body('current.elementals.Earth')
+      .isNumeric()
+      .withMessage('current.elementals.Earth must be numeric'),
     body('current.timestamp').isISO8601().withMessage('current.timestamp must be valid ISO8601'),
     body('previous').optional().isObject(),
     body('location.lat')
@@ -369,10 +377,8 @@ router.post(
     const computeTime = Date.now() - startTime
 
     // Calculate timeline statistics
-    const avgVelocity =
-      timeline.reduce((sum, k) => sum + k.velocity.magnitude, 0) / timeline.length
-    const avgMomentum =
-      timeline.reduce((sum, k) => sum + k.momentum.magnitude, 0) / timeline.length
+    const avgVelocity = timeline.reduce((sum, k) => sum + k.velocity.magnitude, 0) / timeline.length
+    const avgMomentum = timeline.reduce((sum, k) => sum + k.momentum.magnitude, 0) / timeline.length
     const avgForce = timeline.reduce((sum, k) => sum + k.force.magnitude, 0) / timeline.length
 
     // Count flow state types

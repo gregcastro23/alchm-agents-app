@@ -3,6 +3,7 @@
 ## ✅ API Keys Are Configured
 
 I've added all your API keys to `.env.local`:
+
 - ✅ Anthropic Claude API (Primary)
 - ✅ OpenAI GPT API (Backup)
 - ✅ Galileo API (Observability)
@@ -70,6 +71,7 @@ curl -X POST http://localhost:3000/api/unified-multi-agent-chat \
 ### If Chat Doesn't Work:
 
 1. **Check API Keys Are Loaded**:
+
 ```bash
 # In dev terminal, you should see:
 # - No errors about missing API keys
@@ -83,6 +85,7 @@ curl -X POST http://localhost:3000/api/unified-multi-agent-chat \
    - Report them if you see any
 
 3. **Restart Dev Server**:
+
 ```bash
 pkill -f "next dev"
 cd /Users/GregCastro/Desktop/planetary-agents
@@ -90,6 +93,7 @@ yarn dev
 ```
 
 4. **Check Environment Variables**:
+
 ```bash
 cat .env.local | grep API_KEY
 # Should show your Anthropic and OpenAI keys
@@ -98,6 +102,7 @@ cat .env.local | grep API_KEY
 ## ✅ Expected Behavior
 
 ### Working Chat Should:
+
 - ✅ Respond within 2-10 seconds
 - ✅ Give personality-appropriate responses
 - ✅ Remember conversation context
@@ -106,15 +111,15 @@ cat .env.local | grep API_KEY
 
 ### Common Issues:
 
-1. **"Please configure API keys"**: 
+1. **"Please configure API keys"**:
    - Server needs restart
    - Run: `pkill -f "next dev" && yarn dev`
 
-2. **Error 500**: 
+2. **Error 500**:
    - Check console logs
    - Verify agent exists in DEMO_AGENTS
 
-3. **No response**: 
+3. **No response**:
    - API rate limit hit
    - Try different agent or wait 1 minute
 
@@ -127,6 +132,7 @@ cat .env.local | grep API_KEY
 ## 🎯 Next Steps After Testing
 
 If everything works:
+
 1. ✅ Mark this as complete
 2. ✅ Document any issues found
 3. ✅ Test all 35+ agents if desired
@@ -134,4 +140,3 @@ If everything works:
 5. ✅ Test planetary group chats
 
 **Let me know what you find when you test!** 🚀
-

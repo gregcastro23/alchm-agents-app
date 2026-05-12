@@ -77,9 +77,10 @@ export async function semanticSearch(
     const collection = await getOrCreateCollection(COLLECTION_NAME)
 
     // Build filter for agent IDs if provided
-    const filter = options?.agentIds && options.agentIds.length > 0
-      ? { agentId: { $in: options.agentIds } }
-      : undefined
+    const filter =
+      options?.agentIds && options.agentIds.length > 0
+        ? { agentId: { $in: options.agentIds } }
+        : undefined
 
     // Query vector store
     const results = await queryCollection(collection, queryEmbedding, {
@@ -120,13 +121,15 @@ export async function semanticSearch(
     const elapsed = Date.now() - startTime
     console.log(
       `[SemanticSearch] Found ${searchResults.length} results in ${elapsed}ms ` +
-      `(avg score: ${searchResults.length > 0 ? (searchResults.reduce((sum, r) => sum + r.score, 0) / searchResults.length).toFixed(3) : 'N/A'})`
+        `(avg score: ${searchResults.length > 0 ? (searchResults.reduce((sum, r) => sum + r.score, 0) / searchResults.length).toFixed(3) : 'N/A'})`
     )
 
     return searchResults
   } catch (error) {
     console.error('[SemanticSearch] Search failed:', error)
-    throw new Error(`Semantic search failed: ${error instanceof Error ? error.message : String(error)}`)
+    throw new Error(
+      `Semantic search failed: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
 }
 
@@ -200,43 +203,45 @@ function rerankResults(results: SearchResult[], query: string): SearchResult[] {
   const queryLower = query.toLowerCase()
   const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3)
 
-  return results.map(result => {
-    let boostedScore = result.score
+  return results
+    .map(result => {
+      let boostedScore = result.score
 
-    // Boost if content contains exact query
-    if (result.content.toLowerCase().includes(queryLower)) {
-      boostedScore *= 1.1
-    }
-
-    // Boost for keyword matches
-    const contentLower = result.content.toLowerCase()
-    let keywordMatches = 0
-    for (const word of queryWords) {
-      if (contentLower.includes(word)) {
-        keywordMatches++
+      // Boost if content contains exact query
+      if (result.content.toLowerCase().includes(queryLower)) {
+        boostedScore *= 1.1
       }
-    }
 
-    if (keywordMatches > 0) {
-      boostedScore *= 1 + (keywordMatches * 0.05)
-    }
-
-    // Boost for certain metadata
-    if (result.metadata.specialty) {
-      const specialtyLower = String(result.metadata.specialty).toLowerCase()
-      if (queryWords.some(word => specialtyLower.includes(word))) {
-        boostedScore *= 1.05
+      // Boost for keyword matches
+      const contentLower = result.content.toLowerCase()
+      let keywordMatches = 0
+      for (const word of queryWords) {
+        if (contentLower.includes(word)) {
+          keywordMatches++
+        }
       }
-    }
 
-    // Cap score at 1.0
-    boostedScore = Math.min(1.0, boostedScore)
+      if (keywordMatches > 0) {
+        boostedScore *= 1 + keywordMatches * 0.05
+      }
 
-    return {
-      ...result,
-      score: boostedScore,
-    }
-  }).sort((a, b) => b.score - a.score)
+      // Boost for certain metadata
+      if (result.metadata.specialty) {
+        const specialtyLower = String(result.metadata.specialty).toLowerCase()
+        if (queryWords.some(word => specialtyLower.includes(word))) {
+          boostedScore *= 1.05
+        }
+      }
+
+      // Cap score at 1.0
+      boostedScore = Math.min(1.0, boostedScore)
+
+      return {
+        ...result,
+        score: boostedScore,
+      }
+    })
+    .sort((a, b) => b.score - a.score)
 }
 
 /**
@@ -277,10 +282,7 @@ export async function findSimilarAgents(
 /**
  * Get diverse results - ensures variety across different agents
  */
-export async function diverseSearch(
-  query: string,
-  topK?: number
-): Promise<SearchResult[]> {
+export async function diverseSearch(query: string, topK?: number): Promise<SearchResult[]> {
   const results = await semanticSearch(query, {
     topK: (topK || 5) * 3, // Get more results
     threshold: 0.35, // L2 distance threshold
@@ -369,9 +371,8 @@ export async function getSearchStats(query: string): Promise<{
     }
   }
 
-  const averageScore = results.length > 0
-    ? results.reduce((sum, r) => sum + r.score, 0) / results.length
-    : 0
+  const averageScore =
+    results.length > 0 ? results.reduce((sum, r) => sum + r.score, 0) / results.length : 0
 
   const topAgents = Array.from(agentMatches.entries())
     .map(([agentId, data]) => ({

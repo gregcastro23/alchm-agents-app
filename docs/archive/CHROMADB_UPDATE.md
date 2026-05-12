@@ -38,6 +38,7 @@
 ## Data Inconsistencies Found
 
 ### ChromaDB Contains:
+
 - 57 agents (some with duplicate/conflicting data)
 - Old consciousness levels (some agents appear twice with different levels)
 - Metadata from previous schema versions
@@ -47,6 +48,7 @@
   - Nikola Tesla: 2 entries (Dormant + Illuminated)
 
 ### Should Contain:
+
 - 52 agents from `lib/agents/historical/*.ts`
 - Current agent definitions with updated:
   - Consciousness levels
@@ -64,6 +66,7 @@
 **Current Blocker**: Agent TypeScript files use complex date formats including BCE dates (e.g., Socrates: `-0469-06-20`) that can't be directly parsed by JavaScript `Date` objects.
 
 **Solutions**:
+
 1. **Create manual seed data** with simplified date handling
 2. **Update agent definitions** to use `birthYear` instead of full dates for ancient agents
 3. **Create migration script** that handles BCE dates properly
@@ -149,13 +152,15 @@ ChromaDB (Vector Embeddings)
 ## Files Created/Modified
 
 ### New Scripts:
+
 - ✅ `scripts/check-chromadb.ts` - Check ChromaDB collections and status
 - ✅ `scripts/list-chromadb-agents.ts` - List all agents in ChromaDB
 - ✅ `scripts/check-db-agents.ts` - Check Neon database agents
 - ✅ `scripts/check-all-agents.ts` - Count agents in database
-- ⚠️  `scripts/seed-historical-agents.ts` - Seed agents (needs BCE date fix)
+- ⚠️ `scripts/seed-historical-agents.ts` - Seed agents (needs BCE date fix)
 
 ### Documentation:
+
 - ✅ `CHROMADB_UPDATE.md` - This file
 - 🔄 `CHROMADB_USAGE.md` - Needs update with current status
 
@@ -168,6 +173,7 @@ Based on `scripts/list-chromadb-agents.ts` output:
 **Total**: 57 unique agents (76 document chunks)
 
 ### By Era:
+
 - Industrial: 18 agents
 - Medieval: 12 agents
 - Enlightenment: 10 agents
@@ -177,29 +183,33 @@ Based on `scripts/list-chromadb-agents.ts` output:
 - Contemporary: 1 agent
 
 ### Sample Agents:
+
 1. Adam Smith (2 chunks)
 2. Albert Einstein (1 chunk)
 3. Benjamin Franklin (1 chunk)
 4. Carl Jung (1 chunk)
 5. Cleopatra VII (1 chunk)
-... (52 more)
+   ... (52 more)
 
 ---
 
 ## Next Steps
 
 ### Immediate (This Session):
+
 1. ✅ Document current state (this file)
 2. ⏳ Update CHROMADB_USAGE.md with current status
 3. ⏳ Create issue tracker for seed script fix
 
 ### Short Term (Next 1-2 Days):
+
 1. Fix BCE date handling in seed script
 2. Populate Neon database with all 52 agents
 3. Clear and re-ingest ChromaDB
 4. Verify data consistency
 
 ### Medium Term (Next Week):
+
 1. Create validation scripts
 2. Add automated tests
 3. Create admin UI for agent management
@@ -210,6 +220,7 @@ Based on `scripts/list-chromadb-agents.ts` output:
 ## Technical Details
 
 ### ChromaDB Connection:
+
 ```
 URL: http://localhost:8001
 Docker Container: planetary-chroma (running)
@@ -218,6 +229,7 @@ API: v2 (v1 deprecated)
 ```
 
 ### Neon Database:
+
 ```
 Host: ep-mute-thunder-ahui2n87-pooler.c-3.us-east-1.aws.neon.tech
 Database: neondb
@@ -226,6 +238,7 @@ Records: 0 (empty)
 ```
 
 ### Agent Source Files:
+
 ```
 Location: lib/agents/historical/*.ts
 Count: 52 files

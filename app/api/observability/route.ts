@@ -112,17 +112,16 @@ async function handleSession(sessionId: string) {
 
   return NextResponse.json({
     session,
-    insights: insights.filter(i => i.affectedTraces.some(t =>
-      session.traces.some(trace => trace.traceId === t)
-    )),
+    insights: insights.filter(i =>
+      i.affectedTraces.some(t => session.traces.some(trace => trace.traceId === t))
+    ),
     monicaAnalysis,
     performanceSummary: {
       avgActionCompletion:
         session.traces.reduce((sum, t) => sum + t.metrics.actionCompletion, 0) /
         session.traces.length,
       avgLatency:
-        session.traces.reduce((sum, t) => sum + t.metrics.latencyMs, 0) /
-        session.traces.length,
+        session.traces.reduce((sum, t) => sum + t.metrics.latencyMs, 0) / session.traces.length,
       errorCount: session.traces.reduce((sum, t) => sum + t.errors.length, 0),
     },
   })
@@ -192,9 +191,9 @@ async function handleBenchmark(agentId: string, startTime: Date, endTime: Date) 
         PERFORMANCE_THRESHOLDS.actionCompletion.excellent
           ? 'excellent'
           : benchmark.averageMetrics.actionCompletion >=
-            PERFORMANCE_THRESHOLDS.actionCompletion.good
-          ? 'good'
-          : 'needs_improvement',
+              PERFORMANCE_THRESHOLDS.actionCompletion.good
+            ? 'good'
+            : 'needs_improvement',
       threshold: PERFORMANCE_THRESHOLDS.actionCompletion,
     },
     toolSelectionQuality: {
@@ -204,9 +203,9 @@ async function handleBenchmark(agentId: string, startTime: Date, endTime: Date) 
         PERFORMANCE_THRESHOLDS.toolSelectionQuality.excellent
           ? 'excellent'
           : benchmark.averageMetrics.toolSelectionQuality >=
-            PERFORMANCE_THRESHOLDS.toolSelectionQuality.good
-          ? 'good'
-          : 'needs_improvement',
+              PERFORMANCE_THRESHOLDS.toolSelectionQuality.good
+            ? 'good'
+            : 'needs_improvement',
       threshold: PERFORMANCE_THRESHOLDS.toolSelectionQuality,
     },
     latency: {
@@ -215,20 +214,18 @@ async function handleBenchmark(agentId: string, startTime: Date, endTime: Date) 
         benchmark.averageMetrics.latencyMs <= PERFORMANCE_THRESHOLDS.latencyMs.excellent
           ? 'excellent'
           : benchmark.averageMetrics.latencyMs <= PERFORMANCE_THRESHOLDS.latencyMs.good
-          ? 'good'
-          : 'needs_improvement',
+            ? 'good'
+            : 'needs_improvement',
       threshold: PERFORMANCE_THRESHOLDS.latencyMs,
     },
     routingAccuracy: {
       value: benchmark.averageMetrics.routingAccuracy,
       rating:
-        benchmark.averageMetrics.routingAccuracy >=
-        PERFORMANCE_THRESHOLDS.routingAccuracy.excellent
+        benchmark.averageMetrics.routingAccuracy >= PERFORMANCE_THRESHOLDS.routingAccuracy.excellent
           ? 'excellent'
-          : benchmark.averageMetrics.routingAccuracy >=
-            PERFORMANCE_THRESHOLDS.routingAccuracy.good
-          ? 'good'
-          : 'needs_improvement',
+          : benchmark.averageMetrics.routingAccuracy >= PERFORMANCE_THRESHOLDS.routingAccuracy.good
+            ? 'good'
+            : 'needs_improvement',
       threshold: PERFORMANCE_THRESHOLDS.routingAccuracy,
     },
   }
@@ -259,10 +256,7 @@ async function handleMonicaRouting(sessionId: string) {
 /**
  * Generate recommendations based on benchmark data
  */
-function generateRecommendations(
-  benchmark: any,
-  thresholdComparison: any
-): string[] {
+function generateRecommendations(benchmark: any, thresholdComparison: any): string[] {
   const recommendations: string[] = []
 
   // Action completion recommendations

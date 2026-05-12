@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
       { status: 503 }
     )
   }
-  const { searchAgentKnowledge, multiAgentSearch, findSimilarAgents } = await import('@/lib/llamaindex')
+  const { searchAgentKnowledge, multiAgentSearch, findSimilarAgents } =
+    await import('@/lib/llamaindex')
   try {
     const body = await req.json().catch(() => ({}))
     const { mode = 'single', concept, agentId, agentIds, options } = body

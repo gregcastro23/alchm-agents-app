@@ -22,6 +22,7 @@ cp .env.example .env.local
 Edit `.env.local` and set:
 
 #### Critical (Must Have)
+
 ```bash
 # Database
 DATABASE_URL=postgresql://user:password@host:5432/planetary_agents
@@ -42,6 +43,7 @@ USE_RAG_CACHE=true
 ```
 
 #### Optional (Recommended)
+
 ```bash
 # Redis for production caching
 REDIS_URL=redis://localhost:6379
@@ -144,11 +146,13 @@ curl http://localhost:3000/api/rag/feedback
 ### 2. Visit Admin Dashboard
 
 Open in browser:
+
 ```
 http://localhost:3000/admin/rag-analytics
 ```
 
 Should see:
+
 - ✅ System health monitor
 - ✅ 9 interactive charts
 - ✅ Query logs table
@@ -180,6 +184,7 @@ Should see:
 ### Issue 1: Anthropic Model Access (404 Error)
 
 **Symptom:**
+
 ```
 Error: 404 - model_not_found
 The model 'claude-3-5-sonnet-latest' is not available
@@ -188,18 +193,21 @@ The model 'claude-3-5-sonnet-latest' is not available
 **Cause:** Organization lacks model access permissions
 
 **Solution:**
+
 1. Contact Anthropic support: support@anthropic.com
 2. Provide Organization ID: `ac71abc6-daa2-4aa9-a0a5-acc52a3c1bd6`
 3. Request access to: `claude-3-sonnet-20240229`, `claude-3-opus-20240229`
 
 **Workaround:**
 Use older model IDs in `.env.local`:
+
 ```bash
 CLAUDE_DEFAULT_MODEL=claude-3-sonnet-20240229
 CLAUDE_FAST_MODEL=claude-3-haiku-20240307
 ```
 
 **Status:**
+
 - ✅ Vector search: Working perfectly (60-65% relevance)
 - ✅ Document retrieval: Operational
 - ❌ Text generation: Blocked by API access
@@ -207,17 +215,21 @@ CLAUDE_FAST_MODEL=claude-3-haiku-20240307
 ### Issue 2: ChromaDB Connection Failed
 
 **Symptom:**
+
 ```
 Error: connect ECONNREFUSED 127.0.0.1:8001
 ```
 
 **Solutions:**
+
 1. Verify ChromaDB is running:
+
    ```bash
    curl http://localhost:8001/api/v1/heartbeat
    ```
 
 2. Check Docker container status:
+
    ```bash
    docker ps | grep chromadb
    ```
@@ -230,18 +242,22 @@ Error: connect ECONNREFUSED 127.0.0.1:8001
 ### Issue 3: No Search Results
 
 **Symptom:**
+
 ```
 [RAG] No relevant documents found
 ```
 
 **Solutions:**
+
 1. Verify data ingestion completed:
+
    ```bash
    curl http://localhost:8001/api/v1/collections
    # Should show "historical-agents" collection
    ```
 
 2. Re-run ingestion:
+
    ```bash
    npx tsx lib/llamaindex/ingestion-pipeline.ts --force
    ```
@@ -254,17 +270,21 @@ Error: connect ECONNREFUSED 127.0.0.1:8001
 ### Issue 4: Slow Response Times
 
 **Solutions:**
+
 1. Enable caching (should be default):
+
    ```bash
    USE_RAG_CACHE=true
    ```
 
 2. Reduce context size:
+
    ```bash
    RAG_MAX_CONTEXT_TOKENS=1000  # Default: 1500
    ```
 
 3. Limit top-K results:
+
    ```bash
    RAG_TOP_K=3  # Default: 5
    ```
@@ -278,13 +298,13 @@ Error: connect ECONNREFUSED 127.0.0.1:8001
 
 After setup, you should see:
 
-| Metric | Expected Value |
-|--------|---------------|
-| Cache hit rate | 30-50% (after warmup) |
-| Cached response | <50ms |
-| Uncached response | <500ms |
-| Retrieval accuracy | 60-65% |
-| Database write | <100ms |
+| Metric             | Expected Value        |
+| ------------------ | --------------------- |
+| Cache hit rate     | 30-50% (after warmup) |
+| Cached response    | <50ms                 |
+| Uncached response  | <500ms                |
+| Retrieval accuracy | 60-65%                |
+| Database write     | <100ms                |
 
 ## Troubleshooting Commands
 

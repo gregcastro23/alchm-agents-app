@@ -403,6 +403,7 @@ Persistent evolution tracking with:
 ### Phase 1: Document Loaders ✅ (January 2025)
 
 **Implemented Features:**
+
 - **CheerioWebBaseLoader**: Scrape external web content for agent knowledge updates
 - **PDFLoader**: Ingest astrological charts and research papers
 - **API Endpoint**: `/api/knowledge-updater` for dynamic knowledge management
@@ -410,6 +411,7 @@ Persistent evolution tracking with:
 - **Performance**: Batch processing, caching, retry logic
 
 **Use Cases:**
+
 ```bash
 # Update agent knowledge from web
 curl -X POST http://localhost:3000/api/knowledge-updater \
@@ -431,12 +433,14 @@ curl -X POST http://localhost:3000/api/knowledge-updater \
 ```
 
 **Files:**
+
 - `lib/langchain/knowledge-updater.ts` - Web content ingestion
 - `lib/langchain/pdf-loader.ts` - PDF document processing
 - `app/api/knowledge-updater/route.ts` - HTTP API endpoint
 - `__tests__/langchain/knowledge-updater.test.ts` - Unit tests
 
 **Documentation:**
+
 - [LANGCHAIN_USAGE_GUIDE.md](./LANGCHAIN_USAGE_GUIDE.md) - Complete usage guide
 - [LANGCHAIN_COMMUNITY_INTEGRATION_PLAN.md](./LANGCHAIN_COMMUNITY_INTEGRATION_PLAN.md) - Full roadmap
 

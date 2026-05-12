@@ -1,6 +1,5 @@
 // Updated with fixed configuration
 
-
 import { logger } from '../utils/logger.js'
 
 const GALILEO_URL = 'https://console.rungalileo.io/api/logs'
@@ -53,7 +52,7 @@ async function sendLogWithRetry(level: string, message: string, metadata: any = 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(logData),
-        signal: controller.signal
+        signal: controller.signal,
       })
       clearTimeout(timeout)
       if (!response.ok) {

@@ -69,15 +69,12 @@ import { PAULO_FREIRE } from './agents/historical/paulo-freire'
  * Helper to create objective consciousness metrics based on agent characteristics
  * No hierarchical levels - just measurable parameters
  */
-function createMetrics(
-  interactionCount: number,
-  monicaConstant: number
-): ConsciousnessMetrics {
+function createMetrics(interactionCount: number, monicaConstant: number): ConsciousnessMetrics {
   // Derive objective metrics from interaction data and alchemical constant
   return {
     interactionCount,
     chatQuality: Math.min(1, monicaConstant / 7), // Scale MC to 0-1
-    momentResonance: Math.min(1, (monicaConstant * 0.15) + 0.3), // Varied based on MC
+    momentResonance: Math.min(1, monicaConstant * 0.15 + 0.3), // Varied based on MC
     alchemicalCoherence: Math.min(1, (monicaConstant / 6) * 0.9), // Coherence with birth chart
   }
 }

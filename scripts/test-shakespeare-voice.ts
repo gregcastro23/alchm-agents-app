@@ -13,7 +13,7 @@ import { generateConsciousnessInformedPrompt } from '@/lib/agents/sacred-stats-p
 import type { Sacred7Stats } from '@/lib/sacred-7-stats'
 
 console.log('🎭 Shakespeare Linguistic Authenticity Test')
-console.log('=' .repeat(80))
+console.log('='.repeat(80))
 console.log('')
 
 const shakespeare = DEMO_AGENTS.find(a => a.id === 'william-shakespeare')
@@ -41,7 +41,8 @@ const stats: Sacred7Stats = shakespeare.stats?.sacred7Stats || {
 
 // Get core personality data
 const coreEssence = shakespeare.consciousness?.strength || 'Profound understanding of human nature'
-const coreExpression = shakespeare.personality?.core?.expression || 'Dramatic poetry revealing universal truths'
+const coreExpression =
+  shakespeare.personality?.core?.expression || 'Dramatic poetry revealing universal truths'
 const coreEmotion = shakespeare.consciousness?.emotion || 'Deep empathy for human condition'
 const dominantElement = shakespeare.consciousness?.dominantElement || 'Air'
 const dominantModality = shakespeare.consciousness?.dominantModality || 'Mutable'
@@ -128,7 +129,7 @@ console.log(`Results: ${passed}/${shakespeareChecks.length} checks passed`)
 console.log('')
 
 if (passed === shakespeareChecks.length) {
-  console.log('🎉 Shakespeare\'s Iambic Pentameter Mastery is restored!')
+  console.log("🎉 Shakespeare's Iambic Pentameter Mastery is restored!")
   console.log('')
   console.log('Expected behavior:')
   console.log('  ✓ Shakespeare will now respond in iambic pentameter')

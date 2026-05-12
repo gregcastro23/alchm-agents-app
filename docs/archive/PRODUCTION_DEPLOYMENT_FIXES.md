@@ -13,6 +13,7 @@ Your Planetary Agents application is experiencing multiple API failures in produ
 ### 2. Working Locally: All API Endpoints
 
 Tested locally and confirmed all endpoints are functioning correctly:
+
 - ✅ `/api/planetary-positions` - Returns planetary data
 - ✅ `/api/moment-recommendations` - Returns agent recommendations
 - ✅ `/api/alchm-kinetics` - Returns kinetic calculations
@@ -23,6 +24,7 @@ Tested locally and confirmed all endpoints are functioning correctly:
 The 500 errors in production are likely due to:
 
 #### A. Missing Environment Variables
+
 Your Vercel deployment needs these environment variables set:
 
 ```bash
@@ -48,7 +50,9 @@ NEXT_PUBLIC_ADDITIVE_ONLY_ELEMENTS=false
 ```
 
 #### B. External API Failures
+
 Your app depends on external astrological APIs that may:
+
 - Have rate limits
 - Experience downtime
 - Require API keys
@@ -56,6 +60,7 @@ Your app depends on external astrological APIs that may:
 The code has fallback mechanisms, but they may not be catching all edge cases.
 
 #### C. Cold Start Timeouts
+
 Vercel serverless functions have a 10-second timeout on the free tier. Complex calculations might exceed this.
 
 ## Immediate Actions Required
@@ -117,6 +122,7 @@ npx prisma db push
 ```
 
 You may need to set up a PostgreSQL database on:
+
 - Neon (free tier): https://neon.tech
 - Supabase (free tier): https://supabase.com
 - Vercel Postgres (paid): https://vercel.com/storage/postgres
@@ -139,6 +145,7 @@ This means the auth API is returning HTML (likely an error page) instead of JSON
 3. Check if you need to configure OAuth providers
 
 If you're not using authentication yet, you can disable it temporarily by:
+
 1. Removing auth-related API calls from your components
 2. Or setting up a basic NextAuth configuration
 
@@ -172,6 +179,7 @@ curl 'https://your-domain.vercel.app/api/moment-recommendations?limit=6'
 ## Architecture Notes
 
 Your application has excellent fallback mechanisms:
+
 - `planetary-positions-service.ts` has 4-tier fallback (external API → enhanced calculator → basic transits → static fallback)
 - All endpoints have try-catch blocks
 - Caching is implemented for performance
@@ -181,6 +189,7 @@ The issues are environmental (missing vars, external API failures) rather than c
 ## Monitoring Recommendations
 
 For production stability, consider:
+
 1. **Sentry** or **LogRocket** for error tracking
 2. **Vercel Analytics** for performance monitoring
 3. **Uptime monitoring** (UptimeRobot, Pingdom)

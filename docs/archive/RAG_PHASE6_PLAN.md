@@ -44,12 +44,14 @@ interface RAGFeedbackWidgetProps {
 ```
 
 **UI Placement:**
+
 - Below source citations in chat messages
 - Collapsed by default (thumbs up/down visible)
 - Expands to show full form on interaction
 - Shows "Thank you" confirmation after submission
 
 **Analytics Integration:**
+
 - Display feedback metrics in admin dashboard
 - Filter queries by feedback rating
 - Show correlation between relevance score and user rating
@@ -94,17 +96,20 @@ class RAGCache {
 ```
 
 **Caching Strategy:**
+
 - **Exact Match:** Hash-based lookup (query + agentId)
 - **Similar Queries:** Cosine similarity >0.95 on embeddings
 - **TTL:** 1 hour for exact, 30 min for similar
 - **Invalidation:** Manual via admin dashboard or when agent bio updates
 
 **Performance Targets:**
+
 - Cache hit rate: >30%
 - Cached response time: <50ms (vs ~400ms uncached)
 - Cost savings: ~60-70% on embedding/generation calls
 
 **Cache Warming:** Pre-populate with common queries:
+
 - "Tell me about your life"
 - "What are your greatest achievements?"
 - "What wisdom do you have for modern times?"
@@ -118,6 +123,7 @@ class RAGCache {
 **Goal:** Chain multiple RAG retrievals for complex, multi-faceted queries
 
 **Use Cases:**
+
 - "Compare Leonardo da Vinci and Michelangelo's views on art"
   → Retrieve from both agents, synthesize comparison
 - "What would Einstein say about quantum computing based on his work?"
@@ -152,6 +158,7 @@ async function executeMultiStepRAG(
 ```
 
 **Algorithm:**
+
 1. **Query Analysis:** Identify if query requires multi-step reasoning
 2. **Decomposition:** Break complex query into sub-queries
 3. **Parallel Retrieval:** Fetch sources for each sub-query
@@ -159,6 +166,7 @@ async function executeMultiStepRAG(
 5. **Quality Check:** Verify coherence and completeness
 
 **UI Updates:**
+
 - Show "Analyzing query..." step-by-step progress
 - Display sources grouped by reasoning step
 - Expandable sections for each step's sources
@@ -214,6 +222,7 @@ model CustomDocument {
 ```
 
 **Security:**
+
 - File size limit: 10MB
 - Allowed types: PDF, TXT, MD only
 - Virus scanning on upload
@@ -259,6 +268,7 @@ model CustomDocument {
    - Clarify ambiguous terms
 
 **A/B Testing:**
+
 - Track relevance improvements with user feedback
 - Compare old vs new retrieval strategies
 - Measure impact on response quality
@@ -290,12 +300,14 @@ async function* streamRAGResponse(query: string, agentId: string) {
 ```
 
 **UI Updates:**
+
 - Source citations appear as retrieved (progressive)
 - Response streams word-by-word (better UX)
 - Progress indicators for each step
 - WebSocket or Server-Sent Events
 
 **Benefits:**
+
 - Perceived performance improvement
 - Better user engagement
 - Early feedback on retrieval quality
@@ -309,6 +321,7 @@ async function* streamRAGResponse(query: string, agentId: string) {
 **Goal:** Combine knowledge from multiple agents for richer responses
 
 **Use Cases:**
+
 - "What would a council of Einstein, Da Vinci, and Tesla say about AI?"
 - "Compare Renaissance and Enlightenment views on human potential"
 - "Synthesize ancient and modern wisdom on meditation"
@@ -332,13 +345,11 @@ interface SynthesisResult {
   conflicts?: string
 }
 
-async function synthesizeAcrossAgents(
-  query: string,
-  agentIds: string[]
-): Promise<SynthesisResult>
+async function synthesizeAcrossAgents(query: string, agentIds: string[]): Promise<SynthesisResult>
 ```
 
 **Algorithm:**
+
 1. **Parallel Retrieval:** Query all agents simultaneously
 2. **Perspective Extraction:** Identify each agent's viewpoint
 3. **Consensus Detection:** Find common themes
@@ -346,6 +357,7 @@ async function synthesizeAcrossAgents(
 5. **Synthesis:** Weave perspectives into coherent response
 
 **UI Display:**
+
 - Tabbed view: Synthesis | Individual Perspectives | Sources
 - Visual consensus meter
 - Highlighted agreements/conflicts
@@ -358,42 +370,49 @@ async function synthesizeAcrossAgents(
 ## Success Criteria
 
 ### 6.1: User Feedback Widget
+
 - ✅ Widget visible in all RAG-enhanced messages
 - ✅ Feedback submission <200ms
 - ✅ Feedback appears in admin analytics
 - ✅ >20% feedback participation rate
 
 ### 6.2: Caching Layer
+
 - ✅ Cache hit rate >30%
 - ✅ Cached response time <50ms
 - ✅ Zero stale data issues
 - ✅ Redis fallback working
 
 ### 6.3: Multi-Step RAG
+
 - ✅ Correctly identifies complex queries
 - ✅ Response quality improvement >25%
 - ✅ Step-by-step UI clear and helpful
 - ✅ No performance regression
 
 ### 6.4: Custom Knowledge
+
 - ✅ Document upload works for PDF/TXT/MD
 - ✅ Embeddings generated in <30s
 - ✅ Custom documents appear in RAG results
 - ✅ No security vulnerabilities
 
 ### 6.5: Quality Improvements
+
 - ✅ Relevance score improvement >15%
 - ✅ User feedback rating improvement
 - ✅ Reduced "no relevant sources" cases
 - ✅ A/B test shows statistical significance
 
 ### 6.6: Real-Time Streaming
+
 - ✅ Sources stream progressively
 - ✅ Text generation streams smoothly
 - ✅ No connection drops
 - ✅ Mobile-compatible
 
 ### 6.7: Cross-Agent Synthesis
+
 - ✅ Accurate perspective extraction
 - ✅ Consensus detection >80% accuracy
 - ✅ Synthesis coherent and insightful
@@ -404,16 +423,19 @@ async function synthesizeAcrossAgents(
 ## Timeline
 
 **Week 1 (Nov 6-12):**
+
 - Day 1-2: 6.1 User Feedback Widget
 - Day 2-3: 6.2 Caching Layer
 - Day 4-5: 6.3 Multi-Step RAG (part 1)
 
 **Week 2 (Nov 13-19):**
+
 - Day 1-2: 6.3 Multi-Step RAG (part 2)
 - Day 3-4: 6.4 Custom Knowledge Injection
 - Day 5: 6.5 Quality Improvements (part 1)
 
 **Week 3 (Nov 20-26):**
+
 - Day 1-2: 6.5 Quality Improvements (part 2)
 - Day 3: 6.6 Real-Time Streaming
 - Day 4-5: 6.7 Cross-Agent Synthesis
@@ -447,19 +469,22 @@ async function synthesizeAcrossAgents(
 ## Risks & Mitigations
 
 **High Risk:**
+
 - **Caching complexity:** Cache invalidation edge cases
-  - *Mitigation:* Conservative TTLs, manual invalidation controls
+  - _Mitigation:_ Conservative TTLs, manual invalidation controls
 
 **Medium Risk:**
+
 - **Multi-step reasoning accuracy:** May produce incorrect synthesis
-  - *Mitigation:* Add confidence scores, show reasoning steps, allow feedback
+  - _Mitigation:_ Add confidence scores, show reasoning steps, allow feedback
 
 - **Custom document quality:** User uploads may be low-quality
-  - *Mitigation:* Content guidelines, quality scoring, moderation
+  - _Mitigation:_ Content guidelines, quality scoring, moderation
 
 **Low Risk:**
+
 - **Streaming implementation:** WebSocket complexity
-  - *Mitigation:* Fallback to polling, comprehensive error handling
+  - _Mitigation:_ Fallback to polling, comprehensive error handling
 
 ---
 

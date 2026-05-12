@@ -40,10 +40,7 @@ export async function POST(request: NextRequest) {
     // Validate star rating if provided
     if (body.starRating !== undefined && body.starRating !== null) {
       if (body.starRating < 1 || body.starRating > 5) {
-        return NextResponse.json(
-          { error: 'Star rating must be between 1 and 5' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'Star rating must be between 1 and 5' }, { status: 400 })
       }
     }
 

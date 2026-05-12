@@ -78,13 +78,12 @@ export interface RAGResult {
  * Generate with RAG enhancement
  * Performs semantic search, builds context, and generates response
  */
-export async function generateWithRAG(
-  options: RAGGenerateOptions
-): Promise<RAGResult> {
+export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGResult> {
   const startTime = Date.now()
 
   // Check if RAG is enabled
-  const ragEnabled = options.ragConfig?.enabled !== false &&
+  const ragEnabled =
+    options.ragConfig?.enabled !== false &&
     (process.env.USE_RAG_GENERATION === 'true' || process.env.USE_VECTOR_SEARCH === 'true')
 
   if (!ragEnabled) {
@@ -241,10 +240,10 @@ export async function generateWithRAG(
     )
 
     const messages = [
-      ...((options.conversationHistory || []).map(m => ({
+      ...(options.conversationHistory || []).map(m => ({
         role: m.role as 'user' | 'assistant',
         content: m.content,
-      }))),
+      })),
       { role: 'user' as const, content: options.userMessage },
     ]
 
@@ -382,7 +381,9 @@ export function buildEnhancedContext(
     currentLength += agentSection.length
   }
 
-  sections.push('\nUse the above context to enhance your response, but maintain your unique personality and voice.')
+  sections.push(
+    '\nUse the above context to enhance your response, but maintain your unique personality and voice.'
+  )
 
   return sections.join('')
 }
@@ -409,7 +410,7 @@ export function buildEnhancedPrompt(
   sections.push('## Guidance for Using Retrieved Context\n')
   sections.push('1. Use the retrieved knowledge to provide deeper, more informed responses')
   sections.push('2. Cite or reference other agents when their wisdom is relevant')
-  sections.push('3. Maintain your unique personality - don\'t simply parrot the retrieved content')
+  sections.push("3. Maintain your unique personality - don't simply parrot the retrieved content")
   sections.push('4. Synthesize insights from multiple sources when applicable')
   sections.push('5. If retrieved context contradicts your perspective, acknowledge it thoughtfully')
 
@@ -427,8 +428,10 @@ export function summarizeRetrievedContext(results: SearchResult[]): string {
   const agentNames = [...new Set(results.map(r => r.agentName))]
   const avgRelevance = results.reduce((sum, r) => sum + r.score, 0) / results.length
 
-  return `Retrieved ${results.length} passages from ${agentNames.length} agent(s): ${agentNames.join(', ')} ` +
+  return (
+    `Retrieved ${results.length} passages from ${agentNames.length} agent(s): ${agentNames.join(', ')} ` +
     `(avg relevance: ${(avgRelevance * 100).toFixed(0)}%)`
+  )
 }
 
 /**

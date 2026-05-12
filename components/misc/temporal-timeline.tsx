@@ -1,15 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useCallback } from 'react'
-import {
-  Calendar,
-  Clock,
-  Zap,
-  Circle,
-  Square,
-  PlayCircle,
-  PauseCircle,
-} from 'lucide-react'
+import { Calendar, Clock, Zap, Circle, Square, PlayCircle, PauseCircle } from 'lucide-react'
 import {
   ComposedChart,
   ScatterChart,
@@ -50,7 +42,6 @@ interface TimelineEvent extends AgentTransitEvent {
   formattedTime: string
   dayOfYear: number
 }
-
 
 interface ViewMode {
   type: 'scatter' | 'timeline' | 'heatmap' | 'flow'
@@ -105,7 +96,9 @@ export default function TemporalTimeline({
         const dominantElementIndex = elementalValues.indexOf(Math.max(...elementalValues))
         const dominantElement = ['Fire', 'Water', 'Air', 'Earth'][dominantElementIndex]
 
-        const visualWeight = reinforcementMode ? 1 + ((event as any).reinforcementScore || 0) * 0.5 : 1
+        const visualWeight = reinforcementMode
+          ? 1 + ((event as any).reinforcementScore || 0) * 0.5
+          : 1
 
         const colorScheme = getElementalColorScheme(dominantElement, event.significanceScore)
 

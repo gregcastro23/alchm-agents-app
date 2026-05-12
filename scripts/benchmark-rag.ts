@@ -53,7 +53,7 @@ async function benchmark() {
     const data1 = await res1.json()
 
     // Small delay to ensure cache is written
-    await new Promise((resolve) => setTimeout(resolve, 100))
+    await new Promise(resolve => setTimeout(resolve, 100))
 
     // Second attempt (cache hit)
     const start2 = Date.now()
@@ -82,21 +82,15 @@ async function benchmark() {
     console.log(`   Cache miss: ${time1}ms, Cache hit: ${time2}ms (${improvement} faster)\n`)
   }
 
-  console.log('=' .repeat(70))
+  console.log('='.repeat(70))
   console.log('📊 Performance Summary\n')
 
-  const avgCacheMiss = Math.round(
-    results.reduce((sum, r) => sum + r.cacheMiss, 0) / results.length
-  )
-  const avgCacheHit = Math.round(
-    results.reduce((sum, r) => sum + r.cacheHit, 0) / results.length
-  )
+  const avgCacheMiss = Math.round(results.reduce((sum, r) => sum + r.cacheMiss, 0) / results.length)
+  const avgCacheHit = Math.round(results.reduce((sum, r) => sum + r.cacheHit, 0) / results.length)
   const avgImprovement = Math.round(
     (results.reduce((sum, r) => sum + (1 - r.cacheHit / r.cacheMiss), 0) / results.length) * 100
   )
-  const avgSources = Math.round(
-    results.reduce((sum, r) => sum + r.sources, 0) / results.length
-  )
+  const avgSources = Math.round(results.reduce((sum, r) => sum + r.sources, 0) / results.length)
 
   console.log('Queries tested:', results.length)
   console.log('Avg cache miss:', avgCacheMiss + 'ms')
@@ -112,7 +106,7 @@ async function benchmark() {
   console.log('  Sources: 3-5', avgSources >= 3 && avgSources <= 5 ? '✅' : '⚠️')
   console.log('')
 
-  console.log('=' .repeat(70))
+  console.log('='.repeat(70))
   console.log('✅ Benchmark Complete!')
   console.log('')
   console.log('Next steps:')
@@ -122,7 +116,7 @@ async function benchmark() {
 }
 
 // Run benchmark
-benchmark().catch((error) => {
+benchmark().catch(error => {
   console.error('\n❌ Benchmark failed:', error)
   console.log('\nMake sure:')
   console.log('  1. Dev server is running: yarn dev')

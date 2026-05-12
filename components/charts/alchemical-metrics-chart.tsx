@@ -255,7 +255,7 @@ export default function AlchemicalMetricsChart({
   const [isPlaying, setIsPlaying] = useState(false)
   const [playbackPosition, setPlaybackPosition] = useState(0)
   const [selectedTimeRange, setSelectedTimeRange] = useState<[number, number]>([0, 100])
-    const [patternHighlights, setPatternHighlights] = useState<PatternHighlight[]>([])
+  const [patternHighlights, setPatternHighlights] = useState<PatternHighlight[]>([])
   const [isExpanded, setIsExpanded] = useState(false)
 
   // Process chart data

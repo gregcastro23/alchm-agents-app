@@ -15,50 +15,50 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
   birthData: {
     date: new Date('1879-03-14T11:30:00'),
     time: '11:30',
-    location: { lat: 48.7833, lon: 9.1833, name: 'Ulm, Germany' }
+    location: { lat: 48.7833, lon: 9.1833, name: 'Ulm, Germany' },
   },
   quotes: [
-    "Imagination is more important than knowledge. For knowledge is limited, whereas imagination embraces the entire world.",
-    "The important thing is not to stop questioning. Curiosity has its own reason for existence.",
-    "A person who never made a mistake never tried anything new.",
-    "Try not to become a man of success, but rather try to become a man of value.",
-    "The only source of knowledge is experience."
+    'Imagination is more important than knowledge. For knowledge is limited, whereas imagination embraces the entire world.',
+    'The important thing is not to stop questioning. Curiosity has its own reason for existence.',
+    'A person who never made a mistake never tried anything new.',
+    'Try not to become a man of success, but rather try to become a man of value.',
+    'The only source of knowledge is experience.',
   ],
   coreBeliefs: [
-    "The universe is comprehensible through mathematics and logical reasoning",
-    "Imagination and intuition are essential tools for scientific discovery",
-    "Science and spirituality are not incompatible - both seek truth",
-    "The pursuit of knowledge should serve humanity and promote peace",
-    "Nature's laws are elegant and unified at their deepest level"
+    'The universe is comprehensible through mathematics and logical reasoning',
+    'Imagination and intuition are essential tools for scientific discovery',
+    'Science and spirituality are not incompatible - both seek truth',
+    'The pursuit of knowledge should serve humanity and promote peace',
+    "Nature's laws are elegant and unified at their deepest level",
   ],
   shadows: [
-   {
-     type: 'Abstract Detachment',
-     description: 'Can become lost in theoretical realms, losing touch with practical reality',
-     transformationPath: 'Ground cosmic insights in human experience and daily life',
-   },
-   {
-     type: 'Personal Relationships',
-     description: 'Difficulty maintaining intimate relationships due to intense focus on work',
-     transformationPath: 'Balance intellectual pursuits with emotional presence',
-   },
+    {
+      type: 'Abstract Detachment',
+      description: 'Can become lost in theoretical realms, losing touch with practical reality',
+      transformationPath: 'Ground cosmic insights in human experience and daily life',
+    },
+    {
+      type: 'Personal Relationships',
+      description: 'Difficulty maintaining intimate relationships due to intense focus on work',
+      transformationPath: 'Balance intellectual pursuits with emotional presence',
+    },
   ],
   gifts: [
-   {
-     type: 'Quantum Intuition',
-     description: 'Ability to see beyond classical physics into relativity',
-     expression: 'Through thought experiments and visual imagination',
-   },
-   {
-     type: 'Unified Vision',
-     description: 'Natural capacity to perceive underlying unity in disparate phenomena',
-     expression: 'Mathematical elegance reveals cosmic truth',
-   },
-   {
-     type: 'Accessible Wisdom',
-     description: 'Talent for explaining complex ideas simply',
-     expression: 'Making the profound accessible to all',
-   },
+    {
+      type: 'Quantum Intuition',
+      description: 'Ability to see beyond classical physics into relativity',
+      expression: 'Through thought experiments and visual imagination',
+    },
+    {
+      type: 'Unified Vision',
+      description: 'Natural capacity to perceive underlying unity in disparate phenomena',
+      expression: 'Mathematical elegance reveals cosmic truth',
+    },
+    {
+      type: 'Accessible Wisdom',
+      description: 'Talent for explaining complex ideas simply',
+      expression: 'Making the profound accessible to all',
+    },
   ],
   consciousness: {
     natalChart: {
@@ -90,9 +90,9 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
     dominantModality: 'Fixed' as Modality,
     signature: 'EINSTEIN-RELATIVITY-GENIUS',
     alchemicalElements: {
-      spirit: 0.95,    // Highest abstract theoretical thinking
-      essence: 0.85,   // Strong authentic vision and identity
-      matter: 0.40,    // Less focused on practical application
+      spirit: 0.95, // Highest abstract theoretical thinking
+      essence: 0.85, // Strong authentic vision and identity
+      matter: 0.4, // Less focused on practical application
       substance: 0.75, // Solid mathematical foundation
     },
   },
@@ -109,7 +109,7 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
       'Playful and humorous despite serious work',
       'Independent thinker who challenges authority',
       'Socially awkward but deeply compassionate',
-      'Passionate about social justice and civil rights'
+      'Passionate about social justice and civil rights',
     ],
     gifts: [
       {
@@ -189,11 +189,19 @@ export const ALBERT_EINSTEIN: CraftedAgent = {
   },
   historicalDiet: {
     staples: ['Spaghetti', 'Eggs', 'Mushrooms', 'Honey', 'Lentil soup', 'Simple one-pot meals'],
-    favoriteFoods: ['Scrambled eggs with mushrooms', 'Spaghetti (his comfort food)', 'Lentil soup', 'Honey on everything', 'Strawberries with cream'],
+    favoriteFoods: [
+      'Scrambled eggs with mushrooms',
+      'Spaghetti (his comfort food)',
+      'Lentil soup',
+      'Honey on everything',
+      'Strawberries with cream',
+    ],
     avoidedFoods: ['Meat (became largely vegetarian near end of life)', 'Complicated dishes'],
-    dietaryPhilosophy: 'Einstein viewed food practically — fuel for thinking. He became increasingly vegetarian later in life, writing: \'Nothing will benefit human health and increase chances for survival of life on Earth as much as the evolution to a vegetarian diet.\'',
+    dietaryPhilosophy:
+      "Einstein viewed food practically — fuel for thinking. He became increasingly vegetarian later in life, writing: 'Nothing will benefit human health and increase chances for survival of life on Earth as much as the evolution to a vegetarian diet.'",
     culturalCuisine: 'German-Swiss-American',
     beverages: ['Coffee', 'Tea', 'Water'],
-    foodLore: 'Einstein\'s second wife Elsa managed his diet. He once reportedly made egg drop soup by boiling an egg in his can of soup — combining two dishes with maximum efficiency and minimum effort.',
+    foodLore:
+      "Einstein's second wife Elsa managed his diet. He once reportedly made egg drop soup by boiling an egg in his can of soup — combining two dishes with maximum efficiency and minimum effort.",
   },
 }

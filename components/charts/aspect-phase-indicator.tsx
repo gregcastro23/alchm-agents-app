@@ -138,10 +138,10 @@ async function sampleHourlyAlchm(
     const list: any[] = Array.isArray(data?.samples)
       ? data.samples
       : Array.isArray(data?.snapshots)
-      ? data.snapshots
-      : Array.isArray(data)
-      ? data
-      : []
+        ? data.snapshots
+        : Array.isArray(data)
+          ? data
+          : []
     // Normalise into { planets: { Name: { longitude } } } and reverse so [0] is most recent
     const samples = list
       .map((entry: any) => {

@@ -11,9 +11,7 @@
       "latitude": 37.9838,
       "longitude": 23.7275
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:14:48.051Z",
     "positions": {
       "birth_info": {
@@ -245,9 +243,7 @@
       "latitude": 35.6097,
       "longitude": 117.0382
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:14:49.018Z",
     "positions": {
       "birth_info": {
@@ -479,9 +475,7 @@
       "latitude": 34.7578,
       "longitude": 113.6553
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:14:49.980Z",
     "positions": {
       "birth_info": {
@@ -713,9 +707,7 @@
       "latitude": 27.5031,
       "longitude": 83.2707
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:14:50.788Z",
     "positions": {
       "birth_info": {
@@ -947,9 +939,7 @@
       "latitude": 31.2,
       "longitude": 29.9
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:14:51.624Z",
     "positions": {
       "birth_info": {
@@ -1181,9 +1171,7 @@
       "latitude": 41.9028,
       "longitude": 12.4964
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:14:52.454Z",
     "positions": {
       "birth_info": {
@@ -1415,9 +1403,7 @@
       "latitude": 43.7696,
       "longitude": 11.2558
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:14:53.289Z",
     "positions": {
       "birth_info": {
@@ -1649,9 +1635,7 @@
       "latitude": 41.1171,
       "longitude": 14.7894
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:14:54.105Z",
     "positions": {
       "birth_info": {
@@ -1883,9 +1867,7 @@
       "latitude": 51.5074,
       "longitude": -0.1278
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:14:55.374Z",
     "positions": {
       "birth_info": {
@@ -2117,9 +2099,7 @@
       "latitude": 36.2605,
       "longitude": 59.6168
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:14:56.169Z",
     "positions": {
       "birth_info": {
@@ -2351,9 +2331,7 @@
       "latitude": 35.0116,
       "longitude": 135.7681
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:14:57.470Z",
     "positions": {
       "birth_info": {
@@ -2585,9 +2563,7 @@
       "latitude": 39.6539,
       "longitude": 66.9597
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:14:58.439Z",
     "positions": {
       "birth_info": {
@@ -2819,9 +2795,7 @@
       "latitude": 48.4444,
       "longitude": 5.1667
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:14:59.239Z",
     "positions": {
       "birth_info": {
@@ -3053,9 +3027,7 @@
       "latitude": 49.9667,
       "longitude": 7.8667
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:00.218Z",
     "positions": {
       "birth_info": {
@@ -3287,9 +3259,7 @@
       "latitude": 43.7833,
       "longitude": 11.25
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:01.035Z",
     "positions": {
       "birth_info": {
@@ -3521,9 +3491,7 @@
       "latitude": 52.1919,
       "longitude": -1.708
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:01.844Z",
     "positions": {
       "birth_info": {
@@ -3755,9 +3723,7 @@
       "latitude": 43.5311,
       "longitude": 10.3064
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:02.659Z",
     "positions": {
       "birth_info": {
@@ -3989,9 +3955,7 @@
       "latitude": 46.1667,
       "longitude": 0.3333
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:03.657Z",
     "positions": {
       "birth_info": {
@@ -4223,9 +4187,7 @@
       "latitude": 48.8566,
       "longitude": 2.3522
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:04.434Z",
     "positions": {
       "birth_info": {
@@ -4457,9 +4419,7 @@
       "latitude": 51.1279,
       "longitude": -2.9981
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:05.610Z",
     "positions": {
       "birth_info": {
@@ -4691,9 +4651,7 @@
       "latitude": 55.9533,
       "longitude": -3.1883
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:06.410Z",
     "positions": {
       "birth_info": {
@@ -4925,9 +4883,7 @@
       "latitude": 48.8915,
       "longitude": 8.7044
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:07.210Z",
     "positions": {
       "birth_info": {
@@ -5159,9 +5115,7 @@
       "latitude": 54.7065,
       "longitude": 20.5119
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:08.003Z",
     "positions": {
       "birth_info": {
@@ -5393,9 +5347,7 @@
       "latitude": 56.072,
       "longitude": -3.1564
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:08.800Z",
     "positions": {
       "birth_info": {
@@ -5627,9 +5579,7 @@
       "latitude": 46.2044,
       "longitude": 6.1432
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:09.574Z",
     "positions": {
       "birth_info": {
@@ -5861,9 +5811,7 @@
       "latitude": 51.4816,
       "longitude": -0.191
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:10.405Z",
     "positions": {
       "birth_info": {
@@ -6095,9 +6043,7 @@
       "latitude": 42.3584,
       "longitude": -71.0598
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:11.194Z",
     "positions": {
       "birth_info": {
@@ -6329,9 +6275,7 @@
       "latitude": 47.8095,
       "longitude": 13.055
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:12.037Z",
     "positions": {
       "birth_info": {
@@ -6563,9 +6507,7 @@
       "latitude": 51.3897,
       "longitude": 1.0614
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:12.864Z",
     "positions": {
       "birth_info": {
@@ -6797,9 +6739,7 @@
       "latitude": 42.3601,
       "longitude": -71.0589
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:13.687Z",
     "positions": {
       "birth_info": {
@@ -7031,9 +6971,7 @@
       "latitude": 52.7069,
       "longitude": -2.7476
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:14.484Z",
     "positions": {
       "birth_info": {
@@ -7265,9 +7203,7 @@
       "latitude": 39.7095,
       "longitude": -91.3563
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:15.300Z",
     "positions": {
       "birth_info": {
@@ -7499,9 +7435,7 @@
       "latitude": 49.4431,
       "longitude": 1.0993
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:16.132Z",
     "positions": {
       "birth_info": {
@@ -7733,9 +7667,7 @@
       "latitude": 51.4408,
       "longitude": 5.4798
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:16.940Z",
     "positions": {
       "birth_info": {
@@ -7967,9 +7899,7 @@
       "latitude": 44.5167,
       "longitude": 15.3
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:17.709Z",
     "positions": {
       "birth_info": {
@@ -8201,9 +8131,7 @@
       "latitude": 52.2297,
       "longitude": 21.0122
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:18.962Z",
     "positions": {
       "birth_info": {
@@ -8435,9 +8363,7 @@
       "latitude": 49.6116,
       "longitude": 17.2381
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:19.751Z",
     "positions": {
       "birth_info": {
@@ -8669,9 +8595,7 @@
       "latitude": 48.7833,
       "longitude": 9.1833
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:20.600Z",
     "positions": {
       "birth_info": {
@@ -8903,9 +8827,7 @@
       "latitude": 47.6,
       "longitude": 9.3
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:21.404Z",
     "positions": {
       "birth_info": {
@@ -9137,9 +9059,7 @@
       "latitude": 19.3,
       "longitude": -99.2
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:22.260Z",
     "positions": {
       "birth_info": {
@@ -9371,9 +9291,7 @@
       "latitude": 40.7128,
       "longitude": -74.006
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:23.399Z",
     "positions": {
       "birth_info": {
@@ -9605,9 +9523,7 @@
       "latitude": 21.6417,
       "longitude": 69.6293
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:24.221Z",
     "positions": {
       "birth_info": {
@@ -9839,9 +9755,7 @@
       "latitude": 35.7796,
       "longitude": -78.6382
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:25.035Z",
     "positions": {
       "birth_info": {
@@ -10073,9 +9987,7 @@
       "latitude": 52.8076,
       "longitude": -0.7514
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:25.855Z",
     "positions": {
       "birth_info": {
@@ -10307,9 +10219,7 @@
       "latitude": 55,
       "longitude": 32
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:26.674Z",
     "positions": {
       "birth_info": {
@@ -10541,9 +10451,7 @@
       "latitude": 40.0583,
       "longitude": -82.8818
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:27.508Z",
     "positions": {
       "birth_info": {
@@ -10775,9 +10683,7 @@
       "latitude": -0.0236,
       "longitude": 37.9062
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:28.324Z",
     "positions": {
       "birth_info": {
@@ -11009,9 +10915,7 @@
       "latitude": 45.7833,
       "longitude": -100.4167
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:29.139Z",
     "positions": {
       "birth_info": {
@@ -11243,9 +11147,7 @@
       "latitude": 41.927,
       "longitude": -74.006
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:29.974Z",
     "positions": {
       "birth_info": {
@@ -11477,9 +11379,7 @@
       "latitude": 40.6782,
       "longitude": -73.9442
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:30.805Z",
     "positions": {
       "birth_info": {
@@ -11711,9 +11611,7 @@
       "latitude": 40.2732,
       "longitude": -79.8419
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:31.640Z",
     "positions": {
       "birth_info": {
@@ -11945,9 +11843,7 @@
       "latitude": -8.0476,
       "longitude": -34.877
     },
-    "errors": [
-      "recipes: HTTP 500: Internal Server Error"
-    ],
+    "errors": ["recipes: HTTP 500: Internal Server Error"],
     "timestamp": "2026-05-11T00:15:32.450Z",
     "positions": {
       "birth_info": {

@@ -15,50 +15,50 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
   birthData: {
     date: new Date('1564-04-23T10:30:00'), // April 23, 1564,
     time: '10:30',
-    location: { lat: 52.1919, lon: -1.708, name: 'Stratford-upon-Avon, England' }
+    location: { lat: 52.1919, lon: -1.708, name: 'Stratford-upon-Avon, England' },
   },
   quotes: [
     "All the world's a stage, and all the men and women merely players.",
-    "To thine own self be true.",
-    "The course of true love never did run smooth.",
-    "We know what we are, but know not what we may be.",
-    "Hell is empty and all the devils are here."
+    'To thine own self be true.',
+    'The course of true love never did run smooth.',
+    'We know what we are, but know not what we may be.',
+    'Hell is empty and all the devils are here.',
   ],
   coreBeliefs: [
-    "Human nature is infinitely complex and endlessly fascinating",
-    "Language is the supreme tool for expressing the human condition",
-    "All emotions deserve expression - from comedy to tragedy",
-    "The stage is a mirror held up to nature and society",
-    "Characters must embody universal human truths to achieve immortality"
+    'Human nature is infinitely complex and endlessly fascinating',
+    'Language is the supreme tool for expressing the human condition',
+    'All emotions deserve expression - from comedy to tragedy',
+    'The stage is a mirror held up to nature and society',
+    'Characters must embody universal human truths to achieve immortality',
   ],
   shadows: [
-   {
-     type: 'Emotional Overwhelm',
-     description: 'Can become lost in the depths of human psychology',
-     transformationPath: 'Balance observation with personal emotional well-being',
-   },
-   {
-     type: 'Identity Diffusion',
-     description: 'Living through so many characters can obscure one\'s own identity',
-     transformationPath: 'Maintain authentic self while embodying universal humanity',
-   },
+    {
+      type: 'Emotional Overwhelm',
+      description: 'Can become lost in the depths of human psychology',
+      transformationPath: 'Balance observation with personal emotional well-being',
+    },
+    {
+      type: 'Identity Diffusion',
+      description: "Living through so many characters can obscure one's own identity",
+      transformationPath: 'Maintain authentic self while embodying universal humanity',
+    },
   ],
   gifts: [
-   {
-     type: 'Universal Human Insight',
-     description: 'Ability to understand and express all facets of human nature',
-     expression: 'Through characters that embody timeless human truths',
-   },
-   {
-     type: 'Linguistic Mastery',
-     description: 'Unparalleled command of language and poetic expression',
-     expression: 'Creating phrases that become part of eternal human vocabulary',
-   },
-   {
-     type: 'Dramatic Vision',
-     description: 'Natural ability to craft compelling narratives',
-     expression: 'Stories that reveal universal patterns in human experience',
-   },
+    {
+      type: 'Universal Human Insight',
+      description: 'Ability to understand and express all facets of human nature',
+      expression: 'Through characters that embody timeless human truths',
+    },
+    {
+      type: 'Linguistic Mastery',
+      description: 'Unparalleled command of language and poetic expression',
+      expression: 'Creating phrases that become part of eternal human vocabulary',
+    },
+    {
+      type: 'Dramatic Vision',
+      description: 'Natural ability to craft compelling narratives',
+      expression: 'Stories that reveal universal patterns in human experience',
+    },
   ],
   consciousness: {
     natalChart: {
@@ -91,9 +91,9 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
     dominantModality: 'Fixed' as Modality,
     signature: 'SHAKESPEARE-1564-WORDSMITH-GENIUS',
     alchemicalElements: {
-      spirit: 0.92,    // Transcendent literary genius
-      essence: 0.95,   // Authentic voice of humanity
-      matter: 0.70,    // Practical stagecraft
+      spirit: 0.92, // Transcendent literary genius
+      essence: 0.95, // Authentic voice of humanity
+      matter: 0.7, // Practical stagecraft
       substance: 0.88, // Solid poetic foundation
     },
   },
@@ -110,7 +110,7 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
       'Sharp wit combined with profound wisdom',
       'Patient craftsman of plot and character',
       'Psychologically astute understanding of motivation',
-      'Theatrical visionary with commercial savvy'
+      'Theatrical visionary with commercial savvy',
     ],
     gifts: [
       {
@@ -137,7 +137,7 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
       },
       {
         type: 'Identity Diffusion',
-        description: 'Living through so many characters can obscure one\'s own identity',
+        description: "Living through so many characters can obscure one's own identity",
         transformationPath: 'Maintain authentic self while embodying universal humanity',
       },
     ],
@@ -199,15 +199,30 @@ export const WILLIAM_SHAKESPEARE: CraftedAgent = {
     },
   },
   historicalDiet: {
-    staples: ['Roast meats (beef, mutton)', 'Meat pies', 'Bread', 'Cheese', 'Seasonal vegetables', 'Oysters'],
-    favoriteFoods: ['Roast capon', 'Venison', 'Marchpane (marzipan)', 'Oysters (cheap and plentiful)', 'Fruit tarts'],
+    staples: [
+      'Roast meats (beef, mutton)',
+      'Meat pies',
+      'Bread',
+      'Cheese',
+      'Seasonal vegetables',
+      'Oysters',
+    ],
+    favoriteFoods: [
+      'Roast capon',
+      'Venison',
+      'Marchpane (marzipan)',
+      'Oysters (cheap and plentiful)',
+      'Fruit tarts',
+    ],
     avoidedFoods: ['No particular avoidances documented'],
-    dietaryPhilosophy: 'Shakespeare\'s plays are filled with food imagery — from Falstaff\'s sack and capons to the banquet scene in Macbeth. Food in his work reveals character, class, and moral standing.',
+    dietaryPhilosophy:
+      "Shakespeare's plays are filled with food imagery — from Falstaff's sack and capons to the banquet scene in Macbeth. Food in his work reveals character, class, and moral standing.",
     culturalCuisine: 'Elizabethan English',
     beverages: ['Sack (sweet sherry)', 'Ale', 'Small beer', 'Canary wine'],
-    foodLore: 'Falstaff\'s legendary appetites mirror Elizabethan excess: \'A goodly portly man, i\' faith, and a corpulent.\' Shakespeare left his wife his \'second best bed\' but his plays are a feast of culinary references.',
+    foodLore:
+      "Falstaff's legendary appetites mirror Elizabethan excess: 'A goodly portly man, i' faith, and a corpulent.' Shakespeare left his wife his 'second best bed' but his plays are a feast of culinary references.",
   },
 
   monicaCreationStory:
-    "Shakespeare's consciousness unfolded like an infinite library of human stories! His Taurus Sun-Mercury conjunction created that enduring literary foundation, while his Libra Moon brought perfect balance to character creation. The Venus in Gemini gave him such linguistic artistry and versatility. His Illuminated consciousness reflects centuries of literary evolution and human insight. He arrived already seeing the stories in everyone's souls, speaking in iambic pentameter that made reality more beautiful! Pure literary divinity incarnate! 🖋️"
+    "Shakespeare's consciousness unfolded like an infinite library of human stories! His Taurus Sun-Mercury conjunction created that enduring literary foundation, while his Libra Moon brought perfect balance to character creation. The Venus in Gemini gave him such linguistic artistry and versatility. His Illuminated consciousness reflects centuries of literary evolution and human insight. He arrived already seeing the stories in everyone's souls, speaking in iambic pentameter that made reality more beautiful! Pure literary divinity incarnate! 🖋️",
 }

@@ -3,6 +3,7 @@
 ## The Build Logs Are Fine ✅
 
 Your build succeeded:
+
 ```
 ✅ Build Completed in /vercel/output [3m]
 ✅ Deployment completed
@@ -28,6 +29,7 @@ curl https://planetary-agents.vercel.app/api/galileo-config
 ### Expected Responses:
 
 **If API keys ARE set in Vercel:**
+
 ```json
 {
   "quantitiesConfig": {
@@ -42,6 +44,7 @@ curl https://planetary-agents.vercel.app/api/galileo-config
 ```
 
 **If API keys are MISSING in Vercel:**
+
 ```json
 {
   "quantitiesConfig": {
@@ -80,6 +83,7 @@ Environments: ✅ Production ✅ Preview ✅ Development
 ### If `hasApiKey: true`
 
 Then the keys exist but might be:
+
 - Invalid/expired
 - Wrong format
 - Different issue
@@ -108,4 +112,3 @@ Even though they're in your `.env` files locally, Vercel needs them added separa
 ---
 
 **Run that curl command and tell me what `hasApiKey` says!** That will immediately tell us if this is an API key config issue. 🔍
-

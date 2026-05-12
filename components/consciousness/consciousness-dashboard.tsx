@@ -59,7 +59,9 @@ export function ConsciousnessDashboard({
   showCompact = false,
   className = '',
 }: ConsciousnessDashboardProps) {
-  const [snapshot, setSnapshot] = useState<UnifiedConsciousnessSnapshot | undefined>(currentSnapshot)
+  const [snapshot, setSnapshot] = useState<UnifiedConsciousnessSnapshot | undefined>(
+    currentSnapshot
+  )
   const [metrics, setMetrics] = useState<EvolutionMetrics | undefined>(evolutionMetrics)
   const [loading, setLoading] = useState(!currentSnapshot)
   const [error, setError] = useState<string | null>(null)
@@ -108,9 +110,7 @@ export function ConsciousnessDashboard({
       <Card className={className}>
         <CardContent className="pt-6">
           <div className="text-center py-8">
-            <p className="text-muted-foreground">
-              {error || 'No consciousness data available'}
-            </p>
+            <p className="text-muted-foreground">{error || 'No consciousness data available'}</p>
             <button
               onClick={fetchCurrentState}
               className="mt-4 text-sm text-purple-500 hover:text-purple-600"
@@ -257,7 +257,12 @@ function SacredSevenStats({ snapshot }: { snapshot: UnifiedConsciousnessSnapshot
       description: '💫 Harmonic Frequency',
     },
     { icon: Brain, label: 'Wisdom', value: snapshot.wisdom, description: '🔮 Accumulated Insight' },
-    { icon: Star, label: 'Charisma', value: snapshot.charisma, description: '✨ Magnetic Presence' },
+    {
+      icon: Star,
+      label: 'Charisma',
+      value: snapshot.charisma,
+      description: '✨ Magnetic Presence',
+    },
     {
       icon: Eye,
       label: 'Intuition',
@@ -369,7 +374,13 @@ function AlchemicalFoundation({ snapshot }: { snapshot: UnifiedConsciousnessSnap
       color: 'text-blue-500',
       emoji: '💧',
     },
-    { icon: Mountain, label: 'Matter', value: snapshot.matter, color: 'text-green-500', emoji: '🌍' },
+    {
+      icon: Mountain,
+      label: 'Matter',
+      value: snapshot.matter,
+      color: 'text-green-500',
+      emoji: '🌍',
+    },
     {
       icon: Wind,
       label: 'Substance',
@@ -540,9 +551,7 @@ function SpecialStatesDisplay({
         {specialStates.map((state, i) => (
           <div key={i} className="p-2 bg-background rounded border">
             <div className="font-medium text-sm">{state.name}</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {state.effects.join(' • ')}
-            </div>
+            <div className="text-xs text-muted-foreground mt-1">{state.effects.join(' • ')}</div>
           </div>
         ))}
       </div>
@@ -572,7 +581,9 @@ function EvolutionMetricsDisplay({
         <div className="p-4 border rounded-lg">
           <div className="text-sm text-muted-foreground mb-1">Consciousness Velocity</div>
           <div className="flex items-center gap-2">
-            <div className="text-2xl font-bold">{(snapshot.consciousnessVelocity * 100).toFixed(0)}%</div>
+            <div className="text-2xl font-bold">
+              {(snapshot.consciousnessVelocity * 100).toFixed(0)}%
+            </div>
             {metrics && <TrendBadge trend={metrics.velocityTrend} />}
           </div>
           <Progress value={snapshot.consciousnessVelocity * 100} className="mt-2 h-2" />
@@ -762,7 +773,11 @@ function EvolutionTrajectoryBadge({
     },
   }
 
-  const { icon: Icon, label, className } = config[trajectory as keyof typeof config] || config.stable
+  const {
+    icon: Icon,
+    label,
+    className,
+  } = config[trajectory as keyof typeof config] || config.stable
 
   return (
     <Badge variant="outline" className={`gap-1 ${className} ${size === 'sm' ? 'text-xs' : ''}`}>

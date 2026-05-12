@@ -28,9 +28,11 @@
 ## Monitor Progress
 
 ### GitLab Pipeline
+
 Watch the pipeline at: https://gitlab.com/xalchm/my_alchm/-/pipelines
 
 **Expected timeline:**
+
 - Security: ~2 minutes
 - Test: ~3-4 minutes
 - Build: ~2 minutes
@@ -38,9 +40,11 @@ Watch the pipeline at: https://gitlab.com/xalchm/my_alchm/-/pipelines
 - **Total**: ~7-8 minutes
 
 ### Vercel Deployment
+
 Once GitLab deploy stage runs, check: https://vercel.com/gregcastro23s-projects/planetary-agents/deployments
 
 **Expected:**
+
 - New deployment will appear within 30 seconds of deploy stage
 - Commit: `7b46f830`
 - Build time: ~3-5 minutes
@@ -76,6 +80,7 @@ deploy_to_vercel:
 ```
 
 **Benefits:**
+
 - ✅ Automatic deployment on every push to main
 - ✅ Only deploys if tests pass
 - ✅ Works even if GitLab webhook isn't configured
@@ -85,6 +90,7 @@ deploy_to_vercel:
 ## Verification Checklist
 
 ### 1. GitLab Pipeline (Now)
+
 - [ ] Check pipeline started: https://gitlab.com/xalchm/my_alchm/-/pipelines
 - [ ] Security stage passes
 - [ ] Test stage passes
@@ -92,12 +98,14 @@ deploy_to_vercel:
 - [ ] Deploy stage runs successfully
 
 ### 2. Vercel Deployment (After ~7-8 minutes)
+
 - [ ] New deployment appears in Vercel dashboard
 - [ ] Commit matches: `7b46f830`
 - [ ] Build completes successfully
 - [ ] Site is live with latest changes
 
 ### 3. Live Site (After ~12-15 minutes total)
+
 - [ ] Visit: https://planetary-agents.vercel.app
 - [ ] Verify latest changes are deployed
 - [ ] Test a few pages to ensure everything works
@@ -113,17 +121,20 @@ deploy_to_vercel:
 ## If Something Fails
 
 ### GitLab Pipeline Fails
+
 - Check the failed stage in GitLab pipeline view
 - Read the job logs for error details
 - Common issues: Test failures, build errors
 
 ### Vercel Deployment Doesn't Appear
+
 - Check deploy_to_vercel job logs in GitLab
 - Look for the curl response
 - Should see: `{"job":{"id":"...","state":"PENDING",...}}`
 - If error, deploy hook URL might need updating
 
 ### Vercel Build Fails
+
 - Check build logs in Vercel dashboard
 - Common issues: Missing env vars, build errors
 - Can redeploy from Vercel dashboard
@@ -133,6 +144,7 @@ deploy_to_vercel:
 From now on, every push to `main` that passes tests will automatically deploy to Vercel!
 
 **Workflow:**
+
 1. Make changes locally
 2. Commit and push to `main`
 3. GitLab runs tests

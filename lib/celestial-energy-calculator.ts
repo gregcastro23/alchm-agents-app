@@ -8,34 +8,42 @@
 
 import { generateAccurateHoroscope, type HoroscopeData } from './monica/horoscope-generator'
 
-
 export interface ElementVector {
-  Fire: number;
-  Water: number;
-  Air: number;
-  Earth: number;
+  Fire: number
+  Water: number
+  Air: number
+  Earth: number
 }
 export interface MetricVector {
-  Heat: number;
-  Entropy: number;
-  Reactivity: number;
-  Energy: number;
+  Heat: number
+  Entropy: number
+  Reactivity: number
+  Energy: number
 }
-export type ElementKey = keyof ElementVector;
+export type ElementKey = keyof ElementVector
 
-function computeInertia(_elements: ElementVector): number { return 0; }
-
+function computeInertia(_elements: ElementVector): number {
+  return 0
+}
 
 async function sampleHourlyAlchm(
   _location: Location,
   _timestamp: Date,
   _options: any
 ): Promise<any[]> {
-  return [{
-    spirit: 50, matter: 50, essence: 50, substance: 50,
-    Heat: 50, Entropy: 50, Reactivity: 50, Energy: 50,
-    totals: { Fire: 25, Water: 25, Air: 25, Earth: 25 }
-  }];
+  return [
+    {
+      spirit: 50,
+      matter: 50,
+      essence: 50,
+      substance: 50,
+      Heat: 50,
+      Entropy: 50,
+      Reactivity: 50,
+      Energy: 50,
+      totals: { Fire: 25, Water: 25, Air: 25, Earth: 25 },
+    },
+  ]
 }
 
 export interface Location {
@@ -719,4 +727,3 @@ export class CelestialEnergyCalculator {
 export const celestialEnergyCalculator = new CelestialEnergyCalculator()
 
 // Export types
-

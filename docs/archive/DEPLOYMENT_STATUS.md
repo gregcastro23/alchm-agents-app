@@ -7,6 +7,7 @@
 **Status**: ✅ **Active and Configured**
 
 #### Connection Details
+
 - **Database**: Neon PostgreSQL (Serverless)
 - **Region**: AWS us-east-1
 - **Acceleration**: Prisma Accelerate (global edge caching)
@@ -33,19 +34,23 @@ POSTGRES_URL_NON_POOLING=postgresql://neondb_owner:npg_J8CabeXrf5Od@ep-mute-thun
 **Status**: ⚠️ **Debugging Required**
 
 ### Issue
+
 Backend jobs failing with:
+
 ```
 /bin/sh: cd: line 185: can't cd to backend: No such file or directory
 ERROR: Job failed: exit code 2
 ```
 
 ### Verification
+
 - ✅ Backend directory exists locally at `/backend`
 - ✅ Backend is tracked in git (not ignored or submodule)
 - ✅ Backend has proper package.json and source code
 - ❌ GitLab CI runner cannot find the directory
 
 ### Fix Applied
+
 Updated `.gitlab-ci.yml` with debugging output
 
 **See**: `GITLAB_CI_FIX.md` for detailed troubleshooting
