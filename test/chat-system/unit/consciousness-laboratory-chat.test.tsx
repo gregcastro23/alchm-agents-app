@@ -2,7 +2,7 @@
 // Tests experimental protocols, mixed agent selection, and research features
 
 // Mock the unified multi-agent chat component
-vi.mock('@/components/unified-multi-agent-chat', () => ({
+vi.mock('@/components/misc/unified-multi-agent-chat', () => ({
   default: ({
     isOpen,
     onClose,
@@ -22,16 +22,22 @@ vi.mock('@/components/unified-multi-agent-chat', () => ({
 }))
 
 // Mock council presets
-vi.mock('@/lib/council-presets', () => ({
-  MIXED_COUNCIL_PRESETS: [],
-  HISTORICAL_COUNCIL_PRESETS: [],
-  PLANETARY_COUNCIL_PRESETS: [],
-}))
+vi.mock('@/lib/council-presets', async () => {
+  const actual = await vi.importActual('../fixtures/mock-data')
+  return {
+    MIXED_COUNCIL_PRESETS: (actual as any).mockMixedPresets,
+    HISTORICAL_COUNCIL_PRESETS: [],
+    PLANETARY_COUNCIL_PRESETS: [],
+  }
+})
 
 // Mock planetary config helper
-vi.mock('@/lib/planetary-config-helper', () => ({
-  createDefaultPlanetaryConfigs: vi.fn(() => []),
-}))
+vi.mock('@/lib/planetary-config-helper', async () => {
+  const actual = await vi.importActual('../fixtures/mock-data')
+  return {
+    createDefaultPlanetaryConfigs: vi.fn(() => (actual as any).mockPlanetaryConfigs),
+  }
+})
 
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
@@ -72,7 +78,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
     it('renders experiment selection when no initial experiment is provided', () => {
       render(<ConsciousnessLaboratoryChat {...defaultProps} />)
 
-      expect(screen.getByText('Consciousness Research Laboratory')).toBeInTheDocument()
+      expect(screen.getAllByText('Consciousness Research Laboratory')[0]).toBeInTheDocument()
       expect(
         screen.getByText('Design and conduct consciousness interaction experiments')
       ).toBeInTheDocument()
@@ -404,7 +410,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
       fireEvent.click(changeButton)
 
       await waitFor(() => {
-        expect(screen.getByText('Consciousness Research Laboratory')).toBeInTheDocument()
+        expect(screen.getAllByText('Consciousness Research Laboratory')[0]).toBeInTheDocument()
       })
     })
 
@@ -487,7 +493,7 @@ describe('ConsciousnessLaboratoryChat Component', () => {
       )
 
       // Should fall back to experiment selection
-      expect(screen.getByText('Consciousness Research Laboratory')).toBeInTheDocument()
+      expect(screen.getAllByText('Consciousness Research Laboratory')[0]).toBeInTheDocument()
     })
 
     it('handles empty agent lists', () => {

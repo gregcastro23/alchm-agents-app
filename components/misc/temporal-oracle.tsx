@@ -150,6 +150,7 @@ export default function TemporalOracle({
       const timer = setTimeout(() => setOracleWisdom(null), 5000)
       return () => clearTimeout(timer)
     }
+    return undefined
   }, [query])
 
   useEffect(() => {

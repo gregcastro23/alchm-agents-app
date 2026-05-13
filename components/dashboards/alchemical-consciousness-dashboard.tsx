@@ -68,6 +68,7 @@ export function AlchemicalConsciousnessDashboard({
       }, 2000)
       return () => clearInterval(interval)
     }
+    return undefined
   }, [realTimeUpdates])
 
   const state = currentStats.current_alchemical_state
@@ -386,7 +387,8 @@ export function AlchemicalConsciousnessDashboard({
               <CardDescription>Trainable abilities based on alchemical processes</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(consciousParameters.alchemical_pillars).map(([key, value]) => {
+              {Object.entries((consciousnessStats as any).alchemical_pillars).map(([key, val]) => {
+                const value = val as number
                 const level =
                   value < 30
                     ? 'Novice'

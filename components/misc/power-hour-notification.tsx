@@ -50,6 +50,7 @@ export function PowerHourNotification({
 
       return () => clearTimeout(timer)
     }
+    return undefined
   }, [planetaryHour, agentId, loading, hasShown])
 
   const handleDismiss = () => {

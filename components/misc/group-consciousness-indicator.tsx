@@ -252,12 +252,16 @@ export function GroupConsciousnessIndicator({
 
               {/* Elemental Balance Visualization */}
               <div className="grid grid-cols-4 gap-1 mt-3">
-                {Object.entries(momentumFlow.elementalBalance).map(([element, value]) => (
-                  <div key={element} className="text-center">
-                    <div className="text-xs font-medium">{element}</div>
-                    <div className="text-xs text-muted-foreground">{(value * 100).toFixed(0)}%</div>
-                  </div>
-                ))}
+                {Object.entries(momentumFlow.elementalBalance).map(
+                  ([element, value]: [string, any]) => (
+                    <div key={element} className="text-center">
+                      <div className="text-xs font-medium">{element}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {(value * 100).toFixed(0)}%
+                      </div>
+                    </div>
+                  )
+                )}
               </div>
             </div>
           </div>

@@ -175,16 +175,18 @@ export function TokenStabilizationMonitor() {
     }
   }, [])
 
-  // Convert alchemical quantities to elemental tokens
-  const currentTokens: ElementalTokens = {
-    spirit: alchmQuantities.spirit,
-    essence: alchmQuantities.essence,
-    matter: alchmQuantities.matter,
-    substance: alchmQuantities.substance,
-  }
+  const [currentEquilibrium, setCurrentEquilibrium] = useState<TokenEquilibrium>({
+    goldenRatio: 0,
+    elementalHarmony: 0,
+    planetaryDignity: 0,
+    overallHealth: 0,
+  })
 
-  // Calculate current equilibrium status
-  const currentEquilibrium = await validateTokenEquilibriumAPI(currentTokens)
+  useEffect(() => {
+    validateTokenEquilibriumAPI(currentTokens).then(result => {
+      if (result && Object.keys(result).length > 0) setCurrentEquilibrium(result)
+    })
+  }, [currentTokens, validateTokenEquilibriumAPI])
 
   // Determine stability status based on hermetic principles
   const getStabilityStatus = (equilibrium: TokenEquilibrium): 'stable' | 'warning' | 'critical' => {
@@ -228,7 +230,7 @@ export function TokenStabilizationMonitor() {
       )
 
       if (Object.keys(changes).length > 0) {
-        logger.log(LogLevel.INFO, 'Token fluctuation detected', {
+        logger.info('Token fluctuation detected', {
           operation: 'token_monitoring',
           metadata: {
             changes,
@@ -266,7 +268,7 @@ export function TokenStabilizationMonitor() {
 
     // Update stabilization metrics
     setStabilizationMetrics(prev => {
-      const stabilityScores = fluctuationHistory.map(f => f.equilibrium.hermeticBalance)
+      const stabilityScores = fluctuationHistory.map(f => f.equilibrium.elementalHarmony)
       const averageStability =
         stabilityScores.length > 0
           ? stabilityScores.reduce((a, b) => a + b, 0) / stabilityScores.length
@@ -302,7 +304,7 @@ export function TokenStabilizationMonitor() {
 
     // Log performance if calculation is slow
     if (calculationTime > defaultAlchemicalMCPConfig.performanceThresholds.maxCalculationTime) {
-      logger.log(LogLevel.WARNING, 'Token calculation performance degradation', {
+      logger.warn('Token calculation performance degradation', {
         operation: 'performance_monitoring',
         metadata: {
           calculationTime,
@@ -330,7 +332,7 @@ export function TokenStabilizationMonitor() {
         // For now, we'll simulate screenshot capture
         screenshotCountRef.current++
 
-        logger.log(LogLevel.INFO, 'Screenshot captured during token transition', {
+        logger.info('Screenshot captured during token transition', {
           operation: 'screenshot_capture',
           metadata: {
             filename,
@@ -353,7 +355,7 @@ export function TokenStabilizationMonitor() {
     if (!isTokenStable(currentTokens, defaultAlchemicalMCPConfig)) {
       const adjustment = await calculateStabilizationAPI(currentTokens)
 
-      logger.log(LogLevel.INFO, 'Token stabilization applied', {
+      logger.info('Token stabilization applied', {
         operation: 'token_stabilization',
         metadata: {
           originalTokens: currentTokens,

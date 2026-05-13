@@ -193,7 +193,8 @@ export function SurveyQuestionComponent({
   // Rank Question
   if (question.type === 'rank' && question.options) {
     const currentRanking = Array.isArray(value) ? value : []
-    const unrankedOptions = question.options.filter(option => !currentRanking.includes(option))
+    const unrankedOptions =
+      question.options?.filter(option => !currentRanking.includes(option)) || []
 
     const handleRankSelection = (option: string, rank: number) => {
       const newRanking = [...currentRanking]
@@ -205,7 +206,7 @@ export function SurveyQuestionComponent({
       // Insert at new position (rank - 1 since we're 0-indexed)
       newRanking.splice(rank - 1, 0, option)
       // Trim to max options length
-      const finalRanking = newRanking.slice(0, question.options.length)
+      const finalRanking = newRanking.slice(0, question.options?.length || 0)
       handleValueChange(finalRanking)
     }
 
@@ -260,7 +261,7 @@ export function SurveyQuestionComponent({
                   <div className="flex items-center justify-between">
                     <span className="flex-1 text-sm">{option}</span>
                     <div className="flex gap-1">
-                      {[1, 2, 3, 4].slice(0, question.options.length).map(rank => (
+                      {[1, 2, 3, 4].slice(0, question.options?.length || 0).map(rank => (
                         <Button
                           key={rank}
                           variant="outline"

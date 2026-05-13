@@ -98,7 +98,7 @@ export default function RealtimeRuneDisplay({
       } else {
         throw new Error(data.error || 'Failed to generate rune')
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching realtime rune:', err)
 
       let errorMessage = 'Unknown error'
@@ -126,6 +126,7 @@ export default function RealtimeRuneDisplay({
       const interval = setInterval(fetchRealtimeRune, refreshInterval)
       return () => clearInterval(interval)
     }
+    return undefined
   }, [autoRefresh, refreshInterval])
 
   const getRarityColor = (rarity: string) => {

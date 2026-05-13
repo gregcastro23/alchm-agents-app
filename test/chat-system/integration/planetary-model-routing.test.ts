@@ -20,6 +20,7 @@ vi.mock('@/lib/models/registry', () => ({
 
 vi.mock('@ai-sdk/openai', () => ({
   openai: vi.fn((model: string) => `direct-openai-${model}`),
+  createOpenAI: vi.fn(() => vi.fn((model: string) => `mocked-${model}`)),
 }))
 
 vi.mock('@/lib/agent-cache-system', () => ({

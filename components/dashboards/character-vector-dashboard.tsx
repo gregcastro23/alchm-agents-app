@@ -350,7 +350,7 @@ export function CharacterVectorDashboard({
       {/* Navigation Tabs */}
       <Tabs
         value={activeTab}
-        onValueChange={(value: string) => setActiveTab(value)}
+        onValueChange={(value: string) => setActiveTab(value as any)}
         className="w-full"
       >
         <TabsList className="grid w-full grid-cols-5">

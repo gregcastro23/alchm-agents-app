@@ -133,7 +133,7 @@ export function RealTimeConsciousnessPreview({
     const elements = { spirit, essence, matter, substance }
     const elementNames = { spirit: 'Fire', essence: 'Water', matter: 'Air', substance: 'Earth' }
     const dominantKey = Object.keys(elements).reduce((a, b) =>
-      elements[a] > elements[b] ? a : b
+      elements[a as keyof typeof elements] > elements[b as keyof typeof elements] ? a : b
     ) as keyof typeof elements
     const dominantElement = elementNames[dominantKey]
 
@@ -216,7 +216,7 @@ export function RealTimeConsciousnessPreview({
                   ? 'Awakening'
                   : 'Dormant'
 
-    return `${levelModifiers[consciousnessLevel]} ${baseEssences[element]}`
+    return `${levelModifiers[consciousnessLevel]} ${baseEssences[element as keyof typeof baseEssences]}`
   }
 
   const generateExpression = (spirit: number, matter: number): string => {
@@ -260,7 +260,7 @@ export function RealTimeConsciousnessPreview({
       Earth: ['Practice', 'Manifestation', 'Stability'],
     }
 
-    const domains = [...baseDomains[element]]
+    const domains = [...baseDomains[element as keyof typeof baseDomains]]
     if (mc > 4.0) domains.push('Consciousness Studies')
     if (mc > 5.0) domains.push('Transcendental Wisdom')
 

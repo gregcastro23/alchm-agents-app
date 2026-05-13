@@ -1,5 +1,4 @@
-// Integration tests for bridge components
-import { describe, it, expect } from '@jest/globals'
+import { describe, it, expect } from 'vitest'
 import { calculateMC, classifyMC, batchCalculateMC } from '../lib/monica/monica-constant-validator'
 import { getTarotRecommendations } from '../lib/thermodynamics-to-tarot'
 import { getCouncilRecommendations } from '../components/HarmonicAnalysisBridge'

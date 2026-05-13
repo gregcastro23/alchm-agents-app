@@ -349,6 +349,7 @@ export function ChartTransformVisualization({
       const interval = setInterval(fetchTransformData, 300000) // 5 minutes
       return () => clearInterval(interval)
     }
+    return undefined
   }, [agent, userLocation, autoUpdate, fetchTransformData])
 
   const getAspectColor = (type: string): string => {

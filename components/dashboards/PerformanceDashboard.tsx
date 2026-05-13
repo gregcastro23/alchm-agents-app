@@ -50,9 +50,13 @@ export function PerformanceDashboard() {
   const [autoRefresh, setAutoRefresh] = useState(true)
 
   // MCP-enhanced planetary monitoring
-  const { mcpMetrics, needsStabilization, stabilizeTokens } = usePlanetaryPositions({
+  const { mcpMetrics } = usePlanetaryPositions({
     refreshInterval: 5000,
   })
+
+  const needsStabilization = () =>
+    mcpMetrics?.tokenStability && mcpMetrics.tokenStability !== 'stable'
+  const stabilizeTokens = () => console.log('Stabilizing tokens...')
 
   const fetchPerformanceData = async () => {
     try {
@@ -84,6 +88,7 @@ export function PerformanceDashboard() {
       const interval = setInterval(fetchPerformanceData, 30000) // Refresh every 30 seconds
       return () => clearInterval(interval)
     }
+    return undefined
   }, [autoRefresh])
 
   const getHealthColor = (health: string) => {

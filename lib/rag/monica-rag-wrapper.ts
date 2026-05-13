@@ -66,6 +66,7 @@ async function generateDirect(options: RAGGenerateOptions): Promise<RAGResult> {
 }
 
 export type { RAGGenerateOptions, RAGResult, RAGMetadata, RAGSource }
+export { shouldUseRAG }
 
 /**
  * Generate with RAG enhancement (main entry point)

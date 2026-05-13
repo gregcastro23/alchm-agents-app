@@ -227,12 +227,12 @@ export function BatchSigilGenerator({
               // Simulate API call for sigil generation
               await new Promise(resolve => setTimeout(resolve, 800))
 
-              const sigil: GeneratedSigil = {
+              const sigil: any = {
                 id: `batch-${Date.now()}-${currentStepIndex}`,
                 name: `${style} Sigil ${variation > 0 ? `v${variation}` : ''}`,
                 style,
                 description: `${STYLE_DESCRIPTIONS[style].description} with ${powerLevel} power and ${elementalFocus} focus`,
-                runeStrokes: geometry.aspectLines.map(line => ({
+                runeStrokes: geometry.aspectLines.map((line: any) => ({
                   startX: line.x1,
                   startY: line.y1,
                   endX: line.x2,
@@ -257,7 +257,10 @@ export function BatchSigilGenerator({
                   matter: Math.floor(Math.random() * 50) + 25,
                   substance: Math.floor(Math.random() * 50) + 25,
                 },
-                effects: [`Enhanced ${elementalFocus} energy`, `${powerLevel} power activation`],
+                effects: [
+                  `Enhanced ${elementalFocus} energy` as any,
+                  `${powerLevel} power activation` as any,
+                ],
                 activationInstructions: `Meditate on this sigil for ${powerLevel === 'minor' ? '5-10' : powerLevel === 'standard' ? '10-15' : powerLevel === 'major' ? '15-25' : '30+'} minutes to activate its ${elementalFocus} properties.`,
                 generatedImageUrl: `/api/sigil-generation?style=${style}&power=${powerLevel}&element=${elementalFocus}`,
                 generationTime: new Date().toISOString(),

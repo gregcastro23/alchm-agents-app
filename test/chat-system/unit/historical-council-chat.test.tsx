@@ -14,25 +14,29 @@ import {
 } from '../fixtures/mock-data'
 
 // Mock the unified multi-agent chat component
-vi.mock('@/components/unified-multi-agent-chat', () => ({
-  default: ({ isOpen, onClose, title, historicalAgents, customHeader }: any) => (
+vi.mock('@/components/misc/unified-multi-agent-chat', () => ({
+  default: ({ isOpen, onClose, title, historicalAgents, initialAgents, customHeader }: any) => (
     <div data-testid="unified-chat" data-open={isOpen}>
       <div data-testid="chat-title">{title}</div>
-      <div data-testid="historical-agents-count">{historicalAgents.length}</div>
+      <div data-testid="historical-agents-count">{initialAgents.length}</div>
       {customHeader}
     </div>
   ),
 }))
 
 // Mock council presets
-vi.mock('@/lib/council-presets', () => ({
-  HISTORICAL_COUNCIL_PRESETS: mockHistoricalPresets,
-  getPresetsByDifficulty: vi.fn((difficulty: string) =>
-    mockHistoricalPresets.filter(p => p.difficulty === difficulty)
-  ),
-  getPresetsByTag: vi.fn((tag: string) => mockHistoricalPresets.filter(p => p.tags.includes(tag))),
-  getOptimalMonicaRole: vi.fn(() => 'synthesizer'),
-}))
+vi.mock('@/lib/council-presets', async () => {
+  const actual = await vi.importActual('../fixtures/mock-data')
+  const presets = (actual as any).mockHistoricalPresets
+  return {
+    HISTORICAL_COUNCIL_PRESETS: presets,
+    getPresetsByDifficulty: vi.fn((difficulty: string) =>
+      presets.filter((p: any) => p.difficulty === difficulty)
+    ),
+    getPresetsByTag: vi.fn((tag: string) => presets.filter((p: any) => p.tags.includes(tag))),
+    getOptimalMonicaRole: vi.fn(() => 'synthesizer'),
+  }
+})
 
 describe('HistoricalCouncilChat Component', () => {
   const defaultProps = {
@@ -120,7 +124,7 @@ describe('HistoricalCouncilChat Component', () => {
       render(<HistoricalCouncilChat {...defaultProps} />)
 
       // Check for era badge
-      expect(screen.getByText('Renaissance')).toBeInTheDocument()
+      expect(screen.getAllByText('Renaissance')[0]).toBeInTheDocument()
 
       // Check for difficulty badge
       expect(screen.getByText('intermediate')).toBeInTheDocument()
@@ -137,7 +141,7 @@ describe('HistoricalCouncilChat Component', () => {
     it('selects a preset and closes selection modal', async () => {
       render(<HistoricalCouncilChat {...defaultProps} />)
 
-      const presetCard = screen.getByText('Test Renaissance Council').closest('div')
+      const presetCard = screen.getByText('Test Renaissance Council').closest('.cursor-pointer')
       expect(presetCard).toBeInTheDocument()
 
       fireEvent.click(presetCard!)
@@ -230,7 +234,7 @@ describe('HistoricalCouncilChat Component', () => {
     it('handles changing council selection', async () => {
       render(<HistoricalCouncilChat {...defaultProps} initialCouncil="test-renaissance-masters" />)
 
-      const changeButton = screen.getByText('Change Council')
+      const changeButton = screen.getAllByText('Change Council')[0]
       fireEvent.click(changeButton)
 
       await waitFor(() => {
@@ -321,7 +325,7 @@ describe('HistoricalCouncilChat Component', () => {
     it('supports keyboard navigation', () => {
       render(<HistoricalCouncilChat {...defaultProps} />)
 
-      const presetCard = screen.getByText('Test Renaissance Council').closest('div')
+      const presetCard = screen.getByText('Test Renaissance Council').closest('.cursor-pointer')
       expect(presetCard).toBeInTheDocument()
 
       // Should be focusable

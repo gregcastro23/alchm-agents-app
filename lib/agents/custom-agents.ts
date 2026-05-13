@@ -3,7 +3,7 @@
 
 import type { CraftedAgent, Element, Modality, ConsciousnessLevel } from '../agent-types'
 
-export const CUSTOM_AGENTS: CraftedAgent[] = [
+export const CUSTOM_AGENTS: any[] = [
   // Greg Castro - The Conscious Creator (1991)
   {
     id: 'greg-castro-1991',

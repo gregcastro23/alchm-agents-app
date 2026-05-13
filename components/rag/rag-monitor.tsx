@@ -50,6 +50,7 @@ export function RAGMonitor({
       const interval = setInterval(updateAnalytics, refreshInterval)
       return () => clearInterval(interval)
     }
+    return undefined
   }, [autoRefresh, refreshInterval])
 
   if (isLoading || !analytics) {
@@ -113,8 +114,7 @@ export function RAGMonitor({
               </div>
               <Progress
                 value={analytics.successRate * 100}
-                className="h-2"
-                indicatorClassName={`bg-${healthStatus.color}-600`}
+                className={`h-2 [&>div]:bg-${healthStatus.color}-600`}
               />
             </div>
             <Badge

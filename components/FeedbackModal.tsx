@@ -262,7 +262,7 @@ export function FeedbackModal({ trigger, onSubmit }: FeedbackModalProps) {
                 className="mt-2 min-h-[100px]"
                 required
                 aria-describedby="message-help"
-                aria-invalid={!feedback.message.trim() && feedback.category}
+                aria-invalid={!feedback.message.trim() && feedback.category ? 'true' : undefined}
               />
               <p id="message-help" className="text-sm text-muted-foreground mt-1">
                 Provide as much detail as possible to help us understand your feedback.

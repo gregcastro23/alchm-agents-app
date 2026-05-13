@@ -413,7 +413,7 @@ export function MomentBasedRecommendations({
         .slice(0, maxRecommendations)
 
       // Group by recommendation type
-      const categories: RecommendationCategory[] = [
+      const categories: any[] = [
         {
           type: 'optimal_timing',
           title: 'Perfect Timing',
@@ -478,6 +478,7 @@ export function MomentBasedRecommendations({
       const interval = setInterval(fetchRecommendations, 300000)
       return () => clearInterval(interval)
     }
+    return undefined
   }, [stableAgents, stableSelected, stableLocation.lat, stableLocation.lon, maxRecommendations])
 
   const getElementIcon = (element: string) => {

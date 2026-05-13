@@ -165,7 +165,7 @@ export function UnifiedMultiAgentChat({
 
   // Auto-scroll to bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    messagesEndRef.current?.scrollIntoView?.({ behavior: 'smooth' })
   }, [messages])
 
   // Initialize Monica if allowed

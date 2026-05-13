@@ -275,7 +275,7 @@ export default function MonicaChatInterface({
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4">
       {/* Chat Messages */}
-      <ErrorBoundary fallback={<div>Error in chat interface. Please refresh.</div>}>
+      <ErrorBoundary fallback={() => <div>Error in chat interface. Please refresh.</div>}>
         <Card className="min-h-[350px] max-h-[80vh]">
           <CardContent className="p-0 h-[50vh] md:h-[60vh] lg:h-[70vh]">
             <ScrollArea className="h-full p-4" ref={scrollAreaRef}>

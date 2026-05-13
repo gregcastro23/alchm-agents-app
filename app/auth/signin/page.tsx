@@ -7,7 +7,8 @@ import './signin.css'
 export default function SignInPage() {
   const [loading, setLoading] = useState(false)
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = (e: React.MouseEvent) => {
+    e.preventDefault()
     setLoading(true)
     signIn('google', { callbackUrl: '/me' })
   }
@@ -32,6 +33,7 @@ export default function SignInPage() {
           <div className="signin-divider" />
 
           <button
+            type="button"
             className="signin-google-btn"
             onClick={handleGoogleSignIn}
             disabled={loading}
@@ -62,8 +64,8 @@ export default function SignInPage() {
           </button>
 
           <p className="signin-note">
-            Sign in to access your personalized cosmic dashboard,
-            chat with AI agents, and track your consciousness evolution.
+            Sign in to access your personalized cosmic dashboard, chat with AI agents, and track
+            your consciousness evolution.
           </p>
 
           <div className="signin-footer">

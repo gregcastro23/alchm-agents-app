@@ -83,7 +83,12 @@ export function HistoricalCouncilChat({
   const [customAgents, setCustomAgents] = useState<string[]>(
     filterBySelectedAgents.length > 0 ? filterBySelectedAgents : initialAgents
   )
-  const [showPresetSelection, setShowPresetSelection] = useState(false)
+  const [showPresetSelection, setShowPresetSelection] = useState(() => {
+    if (initialCouncil) {
+      return !HISTORICAL_COUNCIL_PRESETS.some(p => p.id === initialCouncil)
+    }
+    return initialAgents.length === 0 && filterBySelectedAgents.length === 0
+  })
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all')
   const [tagFilter, setTagFilter] = useState<string>('all')
 
@@ -92,14 +97,14 @@ export function HistoricalCouncilChat({
     let presets = HISTORICAL_COUNCIL_PRESETS
 
     if (difficultyFilter !== 'all') {
-      presets = getPresetsByDifficulty(difficultyFilter as any)
+      presets = getPresetsByDifficulty(difficultyFilter as any) as HistoricalCouncilPreset[]
     }
 
     if (tagFilter !== 'all') {
-      presets = getPresetsByTag(tagFilter)
+      presets = getPresetsByTag(tagFilter) as HistoricalCouncilPreset[]
     }
 
-    return presets
+    return presets as HistoricalCouncilPreset[]
   }, [difficultyFilter, tagFilter])
 
   // Get unique tags and difficulties for filters
@@ -132,12 +137,17 @@ export function HistoricalCouncilChat({
     return customAgents
   }, [selectedPreset, customAgents])
 
+  // Filter to only include agents that exist in historicalAgents
+  const validAgentIds = useMemo(() => {
+    return finalAgentIds.filter(id => historicalAgents.some(agent => agent.id === id))
+  }, [finalAgentIds, historicalAgents])
+
   // Get era information from selected agents
   const selectedAgentData = useMemo(() => {
-    return finalAgentIds
+    return validAgentIds
       .map(id => historicalAgents.find(agent => agent.id === id))
       .filter(Boolean) as CraftedAgent[]
-  }, [finalAgentIds, historicalAgents])
+  }, [validAgentIds, historicalAgents])
 
   const erasRepresented = useMemo(() => {
     const eras = new Set<string>()
@@ -153,7 +163,7 @@ export function HistoricalCouncilChat({
       if (year == null) return
       if (year < 500) eras.add('Ancient')
       else if (year < 1000) eras.add('Classical')
-      else if (year < 1500) eras.add('Medieval')
+      else if (year < 1400) eras.add('Medieval')
       else if (year < 1800) eras.add('Renaissance')
       else if (year < 1900) eras.add('Enlightenment')
       else eras.add('Modern')
@@ -175,8 +185,11 @@ export function HistoricalCouncilChat({
       {/* Filters */}
       <div className="flex gap-4 justify-center">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Difficulty:</span>
+          <label htmlFor="difficulty-filter" className="text-sm font-medium">
+            Difficulty:
+          </label>
           <select
+            id="difficulty-filter"
             value={difficultyFilter}
             onChange={e => setDifficultyFilter(e.target.value)}
             className="px-3 py-1 border rounded text-sm"
@@ -191,8 +204,11 @@ export function HistoricalCouncilChat({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Focus:</span>
+          <label htmlFor="tag-filter" className="text-sm font-medium">
+            Focus:
+          </label>
           <select
+            id="tag-filter"
             value={tagFilter}
             onChange={e => setTagFilter(e.target.value)}
             className="px-3 py-1 border rounded text-sm"
@@ -214,7 +230,15 @@ export function HistoricalCouncilChat({
             key={preset.id}
             className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50"
             onClick={() => handlePresetSelect(preset)}
+            tabIndex={0}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                handlePresetSelect(preset)
+              }
+            }}
           >
+            {' '}
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div>
@@ -294,18 +318,23 @@ export function HistoricalCouncilChat({
 
   // Render council info panel
   const renderCouncilInfo = () => {
-    if (!selectedPreset && finalAgentIds.length === 0) return null
+    if (!selectedPreset && validAgentIds.length === 0) return null
 
     return (
       <Card className="mb-4">
         <CardHeader className="pb-3">
-          <div>
-            <CardTitle className="text-lg">
-              {selectedPreset ? selectedPreset.name : 'Custom Council'}
-            </CardTitle>
-            {selectedPreset && (
-              <p className="text-sm text-muted-foreground mt-1">{selectedPreset.description}</p>
-            )}
+          <div className="flex justify-between items-center w-full">
+            <div>
+              <CardTitle className="text-lg">
+                {selectedPreset ? selectedPreset.name : 'Custom Council'}
+              </CardTitle>
+              {selectedPreset && (
+                <p className="text-sm text-muted-foreground mt-1">{selectedPreset.description}</p>
+              )}
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setShowPresetSelection(true)}>
+              Change Council
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -400,7 +429,7 @@ export function HistoricalCouncilChat({
         // Agent configuration
         historicalAgents={historicalAgents}
         planetaryConfigs={[]}
-        initialAgents={finalAgentIds}
+        initialAgents={validAgentIds}
         maxAgents={maxAgents}
         allowMonica={selectedPreset?.includeMonica || allowMonica}
         // Historical-specific features

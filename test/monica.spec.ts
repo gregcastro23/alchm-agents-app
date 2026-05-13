@@ -1,4 +1,4 @@
-import { describe, it, expect } from '@jest/globals'
+import { describe, it, expect } from 'vitest'
 
 describe('Monica streaming and envelopes', () => {
   it('renders structured envelope shape', () => {

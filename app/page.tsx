@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { useSession, signIn } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import {
   Sparkles,
@@ -109,8 +109,8 @@ export default function LoginPage() {
               Welcome Back, {session?.user?.name || 'Explorer'}
             </h3>
             <p className="text-sm text-purple-200/60 mb-8">
-              Your alchemical reservoirs await. Claim your daily yield to fund your agent
-              operations and crafting.
+              Your alchemical reservoirs await. Claim your daily yield to fund your agent operations
+              and crafting.
             </p>
 
             {balances ? (
@@ -150,19 +150,29 @@ export default function LoginPage() {
                 {claiming ? 'Claiming...' : 'Claim Daily Cosmic Yield'}
               </button>
             ) : (
-              <Button disabled variant="outline" className="w-full opacity-50 mb-6 border-white/10 text-white">
+              <Button
+                disabled
+                variant="outline"
+                className="w-full opacity-50 mb-6 border-white/10 text-white"
+              >
                 Yield Claimed for Today. Return Tomorrow.
               </Button>
             )}
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="landing-secondary-btn flex-1" onClick={() => router.push('/dashboard')}>
+              <button
+                className="landing-secondary-btn flex-1"
+                onClick={() => router.push('/dashboard')}
+              >
                 Dashboard
               </button>
               <button className="landing-secondary-btn flex-1" onClick={() => router.push('/me')}>
                 Profile
               </button>
-              <button className="landing-secondary-btn flex-1" onClick={() => router.push('/gallery')}>
+              <button
+                className="landing-secondary-btn flex-1"
+                onClick={() => router.push('/gallery')}
+              >
                 Explore
               </button>
             </div>
@@ -185,8 +195,8 @@ export default function LoginPage() {
             <h3 className="landing-feature-title">Planetary Agents</h3>
             <p className="landing-feature-desc">
               Engage with 360 unique agents, each representing a specific degree of the zodiac.
-              These entities embody the pure archetypal energies of the planets across the
-              celestial sphere.
+              These entities embody the pure archetypal energies of the planets across the celestial
+              sphere.
             </p>
           </div>
 
@@ -217,9 +227,7 @@ export default function LoginPage() {
         <div className="landing-glass-card mt-24 p-8 md:p-12">
           <div className="md:flex items-center gap-16">
             <div className="md:w-1/2 mb-12 md:mb-0">
-              <h3 className="text-3xl font-bold mb-6 text-white">
-                The Alchemical Economy
-              </h3>
+              <h3 className="text-3xl font-bold mb-6 text-white">The Alchemical Economy</h3>
               <p className="text-purple-200/70 mb-8 text-lg">
                 To craft and interact with agents, you must spend fundamental cosmic resources.
                 Claim these daily from the dashboard above.
@@ -231,7 +239,9 @@ export default function LoginPage() {
                   </div>
                   <div>
                     <strong className="text-white block mb-1">Spirit (Fire)</strong>
-                    <span className="text-purple-200/60 text-sm">Fuels agent inspiration, creativity, and drive.</span>
+                    <span className="text-purple-200/60 text-sm">
+                      Fuels agent inspiration, creativity, and drive.
+                    </span>
                   </div>
                 </li>
                 <li className="flex items-start gap-4">
@@ -240,7 +250,9 @@ export default function LoginPage() {
                   </div>
                   <div>
                     <strong className="text-white block mb-1">Essence (Air)</strong>
-                    <span className="text-purple-200/60 text-sm">Enhances intellect, communication, and processing speed.</span>
+                    <span className="text-purple-200/60 text-sm">
+                      Enhances intellect, communication, and processing speed.
+                    </span>
                   </div>
                 </li>
                 <li className="flex items-start gap-4">
@@ -249,7 +261,9 @@ export default function LoginPage() {
                   </div>
                   <div>
                     <strong className="text-white block mb-1">Matter (Earth)</strong>
-                    <span className="text-purple-200/60 text-sm">Solidifies knowledge and improves memory retention.</span>
+                    <span className="text-purple-200/60 text-sm">
+                      Solidifies knowledge and improves memory retention.
+                    </span>
                   </div>
                 </li>
                 <li className="flex items-start gap-4">
@@ -258,7 +272,9 @@ export default function LoginPage() {
                   </div>
                   <div>
                     <strong className="text-white block mb-1">Substance (Water)</strong>
-                    <span className="text-purple-200/60 text-sm">Deepens empathy, emotional intelligence, and intuition.</span>
+                    <span className="text-purple-200/60 text-sm">
+                      Deepens empathy, emotional intelligence, and intuition.
+                    </span>
                   </div>
                 </li>
               </ul>

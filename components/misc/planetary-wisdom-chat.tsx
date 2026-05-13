@@ -90,7 +90,7 @@ export function PlanetaryWisdomChat({
   const [transitAlerts, setTransitAlerts] = useState<string[]>([])
 
   // Live planetary data
-  const { data: planetaryPositions, isLoading: positionsLoading } = usePlanetaryPositions()
+  const { planetaryPositions, loading: positionsLoading } = usePlanetaryPositions()
 
   // Base planetary configurations
   const [planetaryConfigs, setPlanetaryConfigs] = useState<PlanetaryConfig[]>(
@@ -137,7 +137,7 @@ export function PlanetaryWisdomChat({
   const currentAstroInfo = useMemo(() => {
     if (!planetaryPositions) return null
 
-    const aspects = [] // TODO: Calculate current aspects
+    const aspects: any[] = [] // TODO: Calculate current aspects
     const retrogrades = Object.entries(planetaryPositions)
       .filter(([planet, data]) => data.retrograde)
       .map(([planet]) => planet)
@@ -147,7 +147,8 @@ export function PlanetaryWisdomChat({
       majorAspects: aspects,
       retrogradeCount: retrogrades.length,
       retrogradePlanets: retrogrades,
-      lunarPhase: planetaryPositions.moon?.phase || 'Unknown',
+      lunarPhase:
+        (planetaryPositions.find((p: any) => p.planet === 'Moon') as any)?.phase || 'Unknown',
     }
   }, [planetaryPositions])
 

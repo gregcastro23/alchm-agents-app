@@ -113,6 +113,7 @@ export default function KineticsChartPane({
       const interval = setInterval(fetchKineticData, 2 * 60 * 1000) // 2 minutes
       return () => clearInterval(interval)
     }
+    return undefined
   }, [birthInfo, realTimeMode])
 
   const getTrendIcon = (value: number, threshold: number = 0.5) => {

@@ -107,7 +107,7 @@ const SpreadCard: React.FC<{
           <h4 className="font-bold text-purple-800">{card.name}</h4>
           {cardType === 'minor' && 'number' in card && (
             <p className="text-xs text-purple-600">
-              {card.number} of {card.suit}
+              {card.number} of {(card as any).suit}
             </p>
           )}
         </div>

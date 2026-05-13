@@ -152,6 +152,7 @@ export const PerformanceDashboard: React.FC = () => {
       const interval = setInterval(fetchDashboardData, 30000) // Refresh every 30 seconds
       return () => clearInterval(interval)
     }
+    return undefined
   }, [timeRange, autoRefresh])
 
   const formatNumber = (num: number): string => {

@@ -412,7 +412,7 @@ export function TransitComparison({
               {Object.entries(distributions.elements).map(([element, count]) => (
                 <div key={element} className="flex justify-between items-center">
                   <span className="text-sm">{element}</span>
-                  <Badge variant="secondary">{count}</Badge>
+                  <Badge variant="secondary">{count as number}</Badge>
                 </div>
               ))}
             </div>

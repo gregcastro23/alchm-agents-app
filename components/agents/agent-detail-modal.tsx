@@ -144,7 +144,7 @@ export function AgentDetailModal({ agent, trigger, open, onOpenChange }: AgentDe
               {agent.consciousness.monicaConstant > 5.0 && (
                 <Crown className="w-6 h-6 text-yellow-500" />
               )}
-              <Badge className={getConsciousnessColor(agent.consciousness.level)}>
+              <Badge className={getConsciousnessColor(agent.consciousness.level || '')}>
                 {agent.consciousness.level}
               </Badge>
             </div>
@@ -471,7 +471,7 @@ export function AgentDetailModal({ agent, trigger, open, onOpenChange }: AgentDe
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="font-medium">Current Level</span>
-                  <Badge className={getConsciousnessColor(agent.consciousness.level)}>
+                  <Badge className={getConsciousnessColor(agent.consciousness.level || '')}>
                     {agent.consciousness.level}
                   </Badge>
                 </div>
@@ -485,7 +485,9 @@ export function AgentDetailModal({ agent, trigger, open, onOpenChange }: AgentDe
               </div>
 
               <div className="bg-muted/50 p-4 rounded-lg">
-                <p className="text-sm">{getConsciousnessDescription(agent.consciousness.level)}</p>
+                <p className="text-sm">
+                  {getConsciousnessDescription(agent.consciousness.level || '')}
+                </p>
               </div>
             </CardContent>
           </Card>

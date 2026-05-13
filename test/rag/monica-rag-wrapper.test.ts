@@ -3,8 +3,23 @@
  * Tests for the RAG wrapper integration
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { shouldUseRAG, getRAGStatus } from '@/lib/rag/monica-rag-wrapper'
+
+const originalEnv = { ...process.env }
+
+beforeAll(() => {
+  process.env.USE_RAG_GENERATION = 'true'
+  process.env.USE_VECTOR_SEARCH = 'true'
+  process.env.RAG_MAX_KNOWLEDGE_CHUNKS = '10'
+  process.env.RAG_MIN_SIMILARITY = '0.7'
+  process.env.CHROMADB_URL = 'http://localhost:8001'
+  process.env.OPENAI_API_KEY = 'test-openai-key'
+})
+
+afterAll(() => {
+  process.env = originalEnv
+})
 
 describe('Monica RAG Wrapper', () => {
   describe('shouldUseRAG', () => {

@@ -258,29 +258,18 @@ export function AgentCreationWizard({
     try {
       if (currentStep === 'activation_ritual') {
         // Final step - create the actual agent via API
-        if (!onRunCreation) {
-          onComplete(agentPreview)
-          return
+        if (agentPreview) onComplete(agentPreview)
+
+        if (onRunCreation) {
+          const result = await onRunCreation({
+            birthChart: creationMode === 'momentOnly' ? null : birthChartData,
+            momentChart: momentChartData,
+            additionalCharts: creationMode === 'multiChart' ? additionalCharts : [],
+          })
+
+          setCreationResult(result)
+          if (result?.agent) onComplete(result.agent)
         }
-
-        if (!birthChartData && creationMode !== 'momentOnly') {
-          onComplete(agentPreview)
-          return
-        }
-
-        if (!momentChartData) {
-          onComplete(agentPreview)
-          return
-        }
-
-        const result = await onRunCreation({
-          birthChart: creationMode === 'momentOnly' ? null : birthChartData,
-          momentChart: momentChartData,
-          additionalCharts: creationMode === 'multiChart' ? additionalCharts : [],
-        })
-
-        setCreationResult(result)
-        onComplete(result.agent)
       } else {
         // For other steps, simulate processing and proceed with real calculations where applicable
         if (

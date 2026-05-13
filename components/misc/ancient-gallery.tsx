@@ -176,7 +176,7 @@ export function AncientGallery({
     agents = [...agents].sort((a, b) => {
       let aValue: any, bValue: any
 
-      switch (sortBy) {
+      switch (sortBy as string) {
         case 'consciousness':
           aValue = a.consciousness.monicaConstant
           bValue = b.consciousness.monicaConstant

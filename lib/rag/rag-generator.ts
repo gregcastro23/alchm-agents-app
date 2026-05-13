@@ -436,6 +436,7 @@ export function summarizeRetrievedContext(results: SearchResult[]): string {
  * Some queries might not benefit from RAG (e.g., greetings)
  */
 export function shouldUseRAG(userMessage: string): boolean {
+  if (!userMessage) return false
   const message = userMessage.toLowerCase().trim()
 
   // Skip RAG for simple greetings

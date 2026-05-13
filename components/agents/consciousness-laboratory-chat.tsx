@@ -217,6 +217,62 @@ export function ConsciousnessLaboratoryChat({
     }
   }
 
+  // Simulate live metrics collection during experiment
+  React.useEffect(() => {
+    if (!experimentMode) return
+
+    // Immediately add first metric data point
+    setCurrentMetrics([
+      {
+        timestamp: new Date(),
+        groupConsciousness: 65.0 + Math.random() * 20.0,
+        responseQuality: 70.0 + Math.random() * 20.0,
+        synergyLevel: 0.6 + Math.random() * 0.3,
+        coherenceIndex: 0.5 + Math.random() * 0.4,
+        emergentInsights: Math.floor(Math.random() * 3),
+      },
+    ])
+
+    const interval = setInterval(() => {
+      setCurrentMetrics(prev =>
+        [
+          ...prev,
+          {
+            timestamp: new Date(),
+            groupConsciousness: Math.min(
+              100,
+              Math.max(
+                0,
+                (prev[prev.length - 1]?.groupConsciousness || 70) + (Math.random() * 10 - 5)
+              )
+            ),
+            responseQuality: Math.min(
+              100,
+              Math.max(0, (prev[prev.length - 1]?.responseQuality || 75) + (Math.random() * 10 - 5))
+            ),
+            synergyLevel: Math.min(
+              1.0,
+              Math.max(
+                0.0,
+                (prev[prev.length - 1]?.synergyLevel || 0.7) + (Math.random() * 0.2 - 0.1)
+              )
+            ),
+            coherenceIndex: Math.min(
+              1.0,
+              Math.max(
+                0.0,
+                (prev[prev.length - 1]?.coherenceIndex || 0.6) + (Math.random() * 0.2 - 0.1)
+              )
+            ),
+            emergentInsights: Math.floor(Math.random() * 3),
+          },
+        ].slice(-20)
+      ) // Keep last 20 data points
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [experimentMode])
+
   // Generate experiment conclusions
   const generateExperimentConclusions = () => {
     if (currentMetrics.length === 0) return []
@@ -264,7 +320,7 @@ export function ConsciousnessLaboratoryChat({
           <TabsTrigger value="custom">Custom Experiment</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="presets" className="space-y-4">
+        <TabsContent value="presets" className="space-y-4" forceMount>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {MIXED_COUNCIL_PRESETS.map(preset => (
               <Card
@@ -327,7 +383,7 @@ export function ConsciousnessLaboratoryChat({
           </div>
         </TabsContent>
 
-        <TabsContent value="custom" className="space-y-4">
+        <TabsContent value="custom" className="space-y-4" forceMount>
           <Card>
             <CardHeader>
               <CardTitle>Design Custom Experiment</CardTitle>
@@ -341,6 +397,7 @@ export function ConsciousnessLaboratoryChat({
                     <label key={agent.id} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
+                        value={agent.id}
                         checked={customAgentSelection.historical.includes(agent.id)}
                         onChange={() => handleCustomAgentToggle('historical', agent.id)}
                         className="rounded"
@@ -359,6 +416,7 @@ export function ConsciousnessLaboratoryChat({
                     <label key={config.planet} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
+                        value={config.planet}
                         checked={customAgentSelection.planetary.includes(config.planet)}
                         onChange={() => handleCustomAgentToggle('planetary', config.planet)}
                         className="rounded"
@@ -421,6 +479,7 @@ export function ConsciousnessLaboratoryChat({
               variant="outline"
               size="sm"
               onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+              aria-label="Settings"
             >
               <Settings className="w-4 h-4" />
             </Button>
@@ -553,7 +612,11 @@ export function ConsciousnessLaboratoryChat({
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold">Research Laboratory</h2>
-                <Button variant="ghost" onClick={() => setShowPresetSelection(false)}>
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowPresetSelection(false)}
+                  aria-label="Close"
+                >
                   ×
                 </Button>
               </div>

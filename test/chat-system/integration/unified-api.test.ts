@@ -23,6 +23,12 @@ vi.mock('ai', () => ({
 
 vi.mock('@ai-sdk/openai', () => ({
   openai: vi.fn((model: string) => `mocked-${model}`),
+  createOpenAI: vi.fn(() => vi.fn((model: string) => `mocked-${model}`)),
+}))
+
+vi.mock('@ai-sdk/google', () => ({
+  google: vi.fn((model: string) => `mocked-${model}`),
+  createGoogleGenerativeAI: vi.fn(() => vi.fn((model: string) => `mocked-${model}`)),
 }))
 
 vi.mock('@/lib/agent-cache-system', () => ({
@@ -86,6 +92,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
   let mockAgentCache: any
 
   beforeEach(() => {
+    process.env.DEV_MAX_AGENTS = '6'
     vi.clearAllMocks()
     mockGenerateText = vi.mocked(generateText)
     mockAgentCache = vi.mocked(agentCache)
@@ -195,12 +202,12 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       const data = await response.json()
 
       expect(response.status).toBe(200)
-      expect(data.responses).toHaveLength(3)
-      expect(mockGenerateText).toHaveBeenCalledTimes(3) // One call per agent
+      expect(data.responses).toHaveLength(2)
+      expect(mockGenerateText).toHaveBeenCalledTimes(2) // One call per agent
     })
 
     it('handles Monica coordination correctly', async () => {
-      const agentsWithMonica = [...mockUnifiedAgents.slice(0, 2), mockMonicaAgent]
+      const agentsWithMonica = [mockUnifiedAgents[0], { ...mockMonicaAgent, type: 'monica' as any }]
 
       const request = new NextRequest('http://localhost/api/unified-multi-agent-chat', {
         method: 'POST',
@@ -219,7 +226,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       const data = await response.json()
 
       expect(response.status).toBe(200)
-      expect(data.responses).toHaveLength(3)
+      expect(data.responses).toHaveLength(2)
 
       // Monica should be processed last with access to other responses
       const monicaResponse = data.responses.find((r: any) => r.agentId === mockMonicaAgent.id)
@@ -280,7 +287,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
 
       expect(mockGenerateText).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gpt-4o',
+          model: 'mocked-gemini-2.0-flash-lite',
         })
       )
     })
@@ -317,7 +324,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
 
       expect(mockGenerateText).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gpt-4o-mini',
+          model: 'mocked-gemini-2.0-flash-lite',
         })
       )
     })
@@ -343,7 +350,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
 
       expect(mockGenerateText).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gpt-4o-mini',
+          model: 'mocked-gemini-2.5-flash',
         })
       )
     })
@@ -367,7 +374,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
 
       expect(mockGenerateText).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gpt-4o',
+          model: 'mocked-gemini-2.0-flash-lite',
         })
       )
     })

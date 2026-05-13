@@ -352,7 +352,7 @@ export function UniverseConnectionDashboard({
         <TabsContent value="learning">
           <InteractiveChartTeacher
             userChartFeatures={userProfile.chartFeatures}
-            currentModule={currentModule}
+            currentModule={currentModule || undefined}
             progress={progress}
             onModuleSelect={handleModuleSelect}
             onExerciseComplete={handleExerciseComplete}

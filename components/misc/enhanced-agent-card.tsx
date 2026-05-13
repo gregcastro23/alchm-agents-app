@@ -459,7 +459,9 @@ export function EnhancedAgentCard({
   const cardContent = (
     <Card
       className={`cursor-pointer transition-all hover:shadow-lg border bg-black/40 backdrop-blur-md text-white ${
-        isSelected ? 'border-primary shadow-[0_0_20px_rgba(139,92,246,0.3)]' : 'border-purple-500/20'
+        isSelected
+          ? 'border-primary shadow-[0_0_20px_rgba(139,92,246,0.3)]'
+          : 'border-purple-500/20'
       }`}
       onClick={handleCardClick}
     >
@@ -813,7 +815,9 @@ export function EnhancedAgentCard({
                             </div>
                             <div className="flex justify-between">
                               <span>Level:</span>
-                              <Badge className={getConsciousnessColor(agent.consciousness.level)}>
+                              <Badge
+                                className={getConsciousnessColor(agent.consciousness.level || '')}
+                              >
                                 {agent.consciousness.level}
                               </Badge>
                             </div>
@@ -1110,7 +1114,7 @@ export function EnhancedAgentCard({
                                 <div>
                                   <span className="text-sm font-medium">Peak Hours:</span>
                                   <div className="flex flex-wrap gap-1 mt-1">
-                                    {currentKinetics.peakHours.map(hour => (
+                                    {currentKinetics.peakHours.map((hour: string) => (
                                       <Badge key={hour} variant="secondary" className="text-xs">
                                         {hour}
                                       </Badge>
