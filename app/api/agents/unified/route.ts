@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { backend } from '@/lib/backend'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
 
       case 'interact':
       case 'chat': {
-        const session = await getServerSession()
+        const session = await getServerSession(authOptions)
         const userId = (session?.user as any)?.id
 
         if (!userId) {

@@ -1,10 +1,11 @@
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { DashboardClient } from './DashboardClient'
 import { backend } from '@/lib/backend'
 
 export default async function DashboardPage() {
-  const session = await getServerSession()
+  const session = await getServerSession(authOptions)
 
   // Use real agent data from the system
   let dashboardAgents: Array<{
@@ -37,12 +38,13 @@ export default async function DashboardPage() {
     console.error('Failed to fetch dashboard agents from backend:', err)
   }
 
-  const user = session?.user
+  const sessionUser = session?.user as any
+  const user = sessionUser
     ? {
-        id: (session.user as any).id,
-        email: session.user.email!,
-        name: session.user.name || 'Explorer',
-        tier: 'master' as const, // All authenticated users get master tier for testing
+        id: sessionUser.id,
+        email: sessionUser.email!,
+        name: sessionUser.name || 'Explorer',
+        tier: (sessionUser.tier || 'master') as 'free' | 'alchemist' | 'master',
       }
     : {
         id: 'guest',

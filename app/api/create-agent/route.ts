@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { generateId } from '@/lib/utils'
 import { HistoricalAgentsService } from '@/lib/historical-agents-db'
 import { calculateMonicaConstant } from '@/lib/monica/monica-constant'
@@ -278,7 +279,7 @@ function enhancePersonalityWithParameters(
 
 export async function POST(request: NextRequest): Promise<NextResponse<CreateAgentResponse>> {
   try {
-    const session = await getServerSession()
+    const session = await getServerSession(authOptions)
     const body: CreateAgentRequest = await request.json()
 
     // Enhanced validation

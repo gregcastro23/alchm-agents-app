@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { prisma } from '@/lib/db'
 
 interface NotificationRequest {
@@ -16,7 +17,7 @@ interface NotificationRequest {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession()
+    const session = await getServerSession(authOptions)
     const userId = (session?.user as any)?.id || 'anonymous'
     const { type, metadata }: NotificationRequest = await req.json()
 
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession()
+    const session = await getServerSession(authOptions)
     const userId = (session?.user as any)?.id || 'anonymous'
     const { searchParams } = new URL(req.url)
     const type = searchParams.get('type')
