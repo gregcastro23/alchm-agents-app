@@ -347,7 +347,7 @@ const PlanetaryPositionsMonitor: React.FC = () => {
                         metrics.health.externalApiStatus === 'healthy' ? 'default' : 'destructive'
                       }
                     >
-                      {metrics.health.externalApiStatus}
+                      Railway Backend
                     </Badge>
                   </div>
                 </CardContent>

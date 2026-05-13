@@ -217,18 +217,15 @@ async function checkServiceHealth() {
     lastHealthCheck: new Date().toISOString(),
   }
 
+  const backendUrl =
+    process.env.BACKEND_URL ||
+    process.env.NEXT_PUBLIC_BACKEND_URL ||
+    'https://whattoeatnext-production.up.railway.app'
+
   try {
-    // Check external API connectivity
-    const testResponse = await fetch('https://api.astrologize.com/planets', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        date: new Date().toISOString(),
-        accuracy: 'high',
-      }),
+    const testResponse = await fetch(`${backendUrl}/health`, {
       signal: AbortSignal.timeout(5000),
     })
-
     healthStatus.externalApiStatus = testResponse.ok ? 'healthy' : 'degraded'
   } catch (error) {
     healthStatus.externalApiStatus = 'offline'
