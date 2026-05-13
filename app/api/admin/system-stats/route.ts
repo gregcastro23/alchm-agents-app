@@ -11,14 +11,17 @@ import { performanceMonitor } from '@/lib/performance-monitor'
 
 async function isAdminUser(userId: string): Promise<boolean> {
   try {
-    const user = await (prisma as any).user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
-      include: { subscription: true },
     })
 
-    // Admin check: either email is admin or subscription tier is master
-    const adminEmails = ['admin@planetaryagents.com', 'support@planetaryagents.com']
-    return adminEmails.includes(user?.email || '') || user?.subscription?.tier === 'master'
+    // Admin check: DB role === 'admin' or email in admin list
+    const adminEmails = [
+      'admin@planetaryagents.com',
+      'support@planetaryagents.com',
+      'gregcastro23@gmail.com',
+    ]
+    return user?.role === 'admin' || adminEmails.includes(user?.email || '')
   } catch (error) {
     return false
   }

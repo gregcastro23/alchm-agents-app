@@ -79,10 +79,8 @@ export const authOptions: import('next-auth').NextAuthOptions = {
           console.error('Error resolving database user ID for Google:', error)
         }
       }
-      // Default tier for all authenticated users
-      if (!token.tier) {
-        token.tier = 'master'
-      }
+      // Tier based on role: admin gets premium_pro, others get master
+      token.tier = token.role === 'admin' ? 'premium_pro' : 'master'
       return token
     },
     async session({ session, token }) {

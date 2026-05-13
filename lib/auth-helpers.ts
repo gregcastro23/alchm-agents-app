@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 /**
  * Get the current authenticated user from NextAuth session
@@ -9,7 +10,7 @@ import { cookies } from 'next/headers'
 export async function getCurrentUser(req?: NextRequest) {
   try {
     // Try NextAuth session first
-    const session = await getServerSession()
+    const session = await getServerSession(authOptions)
 
     if (session?.user) {
       return {
