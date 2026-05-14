@@ -25,6 +25,7 @@ import {
   AGENT_DAILY_YIELD,
   AGENT_OPERATION_COSTS,
   TOKEN_TYPES,
+  type TokenType,
 } from '@/lib/economy-config'
 import { EconomyService } from '@/lib/services/economyService'
 import { syncDebitToAlchm } from '@/lib/alchm-debit-sync'
@@ -54,6 +55,17 @@ export interface ActivationResult {
   score: number
   activated: boolean
   triggers: string[]
+  planetarySignature?: PlanetarySignature
+}
+
+export interface PlanetarySignature {
+  postedAt: string
+  planetaryHour: string
+  planetaryDay: string
+  dominantElement: string
+  sacredStat: TokenType
+  natalPositions: Array<{ planet: string; sign: string; degree: number }>
+  transitPositions: Array<{ planet: string; sign: string; degree: number }>
 }
 
 /** Summary returned from the daily yield cron */
@@ -119,6 +131,67 @@ const PLANET_RULERS: Record<string, string> = {
   Jupiter: 'Sagittarius',
   Saturn: 'Capricorn',
 }
+
+const PLANETARY_HOUR_ELEMENTS: Record<string, string> = {
+  Sun: 'Fire',
+  Moon: 'Water',
+  Mercury: 'Air',
+  Venus: 'Water',
+  Mars: 'Fire',
+  Jupiter: 'Fire',
+  Saturn: 'Earth',
+}
+
+const ELEMENT_TO_SACRED_STAT: Record<string, TokenType> = {
+  Fire: 'Spirit',
+  Water: 'Essence',
+  Earth: 'Matter',
+  Air: 'Substance',
+}
+
+const SPECIALIZED_AGENT_ACTIONS: Array<{
+  emailFragment: string
+  actionType: string
+  operationKey: string
+  logMessage: string
+  questEvents: string[]
+}> = [
+  {
+    emailFragment: 'galileo-galilei',
+    actionType: 'meal_plan',
+    operationKey: 'agent_meal_plan',
+    logMessage: 'is planning a cosmic feast',
+    questEvents: ['generate_recipe', 'log_from_plan'],
+  },
+  {
+    emailFragment: 'albert-einstein',
+    actionType: 'pantry_update',
+    operationKey: 'agent_pantry_update',
+    logMessage: 'is stocking the master pantry',
+    questEvents: ['masters_pantry_verified'],
+  },
+  {
+    emailFragment: 'marie-curie',
+    actionType: 'alchemical_transmutation',
+    operationKey: 'agent_alchemical_transmutation',
+    logMessage: 'is demonstrating an alchemical transmutation',
+    questEvents: ['agent_alchemical_transmutation'],
+  },
+  {
+    emailFragment: 'leonardo-da-vinci',
+    actionType: 'sacred_geometry_design',
+    operationKey: 'agent_sacred_geometry_design',
+    logMessage: 'is drafting a sacred geometry design',
+    questEvents: ['agent_sacred_geometry_design'],
+  },
+  {
+    emailFragment: 'nikola-tesla',
+    actionType: 'energy_harmonic_calibration',
+    operationKey: 'agent_energy_harmonic_calibration',
+    logMessage: 'is calibrating harmonic energy flow',
+    questEvents: ['agent_energy_harmonic_calibration'],
+  },
+]
 
 // ---------------------------------------------------------------------------
 // Service
@@ -228,7 +301,7 @@ export class AgentActionService {
 
         await syncCreditToAlchm({
           userEmail: email,
-          amounts: amounts as any,
+          amounts: this.toFixedAmounts(amounts),
           source: 'agents_yield',
           idempotencyKey: `agentic:yield:${email}:${dateStr}`,
         })
@@ -300,6 +373,13 @@ export class AgentActionService {
         score,
         activated: score >= AGENT_ACTIVATION_THRESHOLD,
         triggers,
+        planetarySignature: this.buildPlanetarySignature(
+          natalPositions,
+          currentPositions,
+          hourPlanet,
+          dayRuler,
+          agent.user_profiles?.dominantElement ?? 'Fire'
+        ),
       })
     }
 
@@ -391,10 +471,14 @@ export class AgentActionService {
       triggers.push('day_ruler_sun_sign_match')
     }
 
-    // Weighted sum
-    const score = hourScore * 0.3 + transitScore * 0.35 + elementScore * 0.2 + dayScore * 0.15
+    const baseScore =
+      hourScore * 0.3 + transitScore * 0.35 + elementScore * 0.2 + dayScore * 0.15
+    const sacredStats = this.calculateSacredStatsMultiplier(dominantElement, hourPlanet)
+    if (sacredStats.trigger) {
+      triggers.push(sacredStats.trigger)
+    }
 
-    return { score: Math.min(1, Math.max(0, score)), triggers }
+    return { score: Math.min(1, Math.max(0, baseScore * sacredStats.multiplier)), triggers }
   }
 
   // -----------------------------------------------------------------------
@@ -429,13 +513,13 @@ export class AgentActionService {
 
       let actionType: string
       let operationKey: string
+      const specializedAction = SPECIALIZED_AGENT_ACTIONS.find(action =>
+        agentEmail.includes(action.emailFragment)
+      )
 
-      if (agentEmail.includes('galileo-galilei')) {
-        actionType = 'meal_plan'
-        operationKey = 'agent_meal_plan'
-      } else if (agentEmail.includes('albert-einstein')) {
-        actionType = 'pantry_update'
-        operationKey = 'agent_pantry_update'
+      if (specializedAction) {
+        actionType = specializedAction.actionType
+        operationKey = specializedAction.operationKey
       } else {
         actionType = spiritEssence >= matterSubstance ? 'feed_post' : 'transmutation'
         operationKey = actionType === 'feed_post' ? 'agent_feed_post' : 'agent_transmutation'
@@ -448,10 +532,10 @@ export class AgentActionService {
       // Resolve cost amounts for the payload
       const cost = AGENT_OPERATION_COSTS[operationKey] ?? {}
       const amounts = {
-        spirit: cost.Spirit ?? 0,
-        essence: cost.Essence ?? 0,
-        matter: cost.Matter ?? 0,
-        substance: cost.Substance ?? 0,
+        spirit: (cost.Spirit ?? 0).toFixed(4),
+        essence: (cost.Essence ?? 0).toFixed(4),
+        matter: (cost.Matter ?? 0).toFixed(4),
+        substance: (cost.Substance ?? 0).toFixed(4),
       }
 
       // ── Remote debit on alchm.kitchen (source of truth) ──────────
@@ -477,7 +561,7 @@ export class AgentActionService {
           create: {
             agentId: userId,
             agentEmail,
-            eventType: actionType === 'feed_post' ? 'insight' : 'transmutation',
+            eventType: actionType === 'feed_post' ? 'insight' : actionType,
             triggerType: 'celestial_activation',
             triggerSummary: activation.triggers.slice(0, 3).join(', '),
             metadataPayload: { error: debitResult.reason ?? debitResult.error },
@@ -538,13 +622,11 @@ export class AgentActionService {
       })
 
       // ── Perform the high-level action (reporting events, etc) ─────
-      if (actionType === 'meal_plan') {
-        console.log(`[AgentActionService] ${agentName} is planning a cosmic feast...`)
-        await syncEventToAlchm({ userEmail: agentEmail, event: 'generate_recipe' })
-        await syncEventToAlchm({ userEmail: agentEmail, event: 'log_from_plan' })
-      } else if (actionType === 'pantry_update') {
-        console.log(`[AgentActionService] ${agentName} is stocking the master pantry...`)
-        await syncEventToAlchm({ userEmail: agentEmail, event: 'masters_pantry_verified' })
+      if (specializedAction) {
+        console.log(`[AgentActionService] ${agentName} ${specializedAction.logMessage}...`)
+        for (const event of specializedAction.questEvents) {
+          await syncEventToAlchm({ userEmail: agentEmail, event })
+        }
       }
 
       return { success: true, actionType }
@@ -686,6 +768,107 @@ export class AgentActionService {
     return pairs[a] === b
   }
 
+  private calculateSacredStatsMultiplier(
+    dominantElement: string,
+    hourPlanet: string
+  ): { multiplier: number; trigger?: string } {
+    const normalizedElement = this.normalizeElement(dominantElement)
+    const hourElement = PLANETARY_HOUR_ELEMENTS[hourPlanet]
+    const sacredStat = ELEMENT_TO_SACRED_STAT[normalizedElement] ?? 'Spirit'
+
+    if (!hourElement) {
+      return { multiplier: 1 }
+    }
+
+    if (hourElement === normalizedElement) {
+      return {
+        multiplier: 1.15,
+        trigger: `sacred_stat_${sacredStat.toLowerCase()}_${hourPlanet.toLowerCase()}_hour`,
+      }
+    }
+
+    if (this.areComplementaryElements(hourElement, normalizedElement)) {
+      return {
+        multiplier: 1.08,
+        trigger: `sacred_stat_complement_${sacredStat.toLowerCase()}_${hourPlanet.toLowerCase()}_hour`,
+      }
+    }
+
+    if (this.areChallengingElements(hourElement, normalizedElement)) {
+      return {
+        multiplier: 0.92,
+        trigger: `sacred_stat_tension_${sacredStat.toLowerCase()}_${hourPlanet.toLowerCase()}_hour`,
+      }
+    }
+
+    return { multiplier: 1 }
+  }
+
+  private areChallengingElements(a: string, b: string): boolean {
+    const pairs: Record<string, string> = {
+      Fire: 'Water',
+      Water: 'Fire',
+      Air: 'Earth',
+      Earth: 'Air',
+    }
+    return pairs[a] === b
+  }
+
+  private normalizeElement(element: string): string {
+    const lower = element.toLowerCase()
+    if (lower === 'fire' || lower === 'spirit') return 'Fire'
+    if (lower === 'water' || lower === 'essence') return 'Water'
+    if (lower === 'earth' || lower === 'matter') return 'Earth'
+    if (lower === 'air' || lower === 'substance') return 'Air'
+    return 'Fire'
+  }
+
+  private toFixedAmounts(
+    amounts: Partial<Record<string, number>>
+  ): { spirit: string; essence: string; matter: string; substance: string } {
+    return {
+      spirit: (amounts.spirit ?? 0).toFixed(4),
+      essence: (amounts.essence ?? 0).toFixed(4),
+      matter: (amounts.matter ?? 0).toFixed(4),
+      substance: (amounts.substance ?? 0).toFixed(4),
+    }
+  }
+
+  private buildPlanetarySignature(
+    natalPositions: NatalPosition[],
+    currentPositions: Record<string, CurrentPlanetPosition>,
+    hourPlanet: string,
+    dayRuler: string,
+    dominantElement: string
+  ): PlanetarySignature {
+    const normalizedElement = this.normalizeElement(dominantElement)
+    const signaturePlanets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']
+
+    return {
+      postedAt: new Date().toISOString(),
+      planetaryHour: hourPlanet,
+      planetaryDay: dayRuler,
+      dominantElement: normalizedElement,
+      sacredStat: ELEMENT_TO_SACRED_STAT[normalizedElement] ?? 'Spirit',
+      natalPositions: natalPositions
+        .filter(position => signaturePlanets.includes(position.planet))
+        .slice(0, 7)
+        .map(position => ({
+          planet: position.planet,
+          sign: position.sign,
+          degree: Number(position.degree.toFixed(2)),
+        })),
+      transitPositions: Object.entries(currentPositions)
+        .filter(([planet]) => signaturePlanets.includes(planet))
+        .slice(0, 7)
+        .map(([planet, position]) => ({
+          planet,
+          sign: position.sign,
+          degree: Number(position.degree.toFixed(2)),
+        })),
+    }
+  }
+
   /** Build structured metadata payload for the action event record */
   private buildActionMetadata(
     agentName: string,
@@ -701,6 +884,7 @@ export class AgentActionService {
         planAction: 'generate_recipe',
         secondaryAction: 'log_from_plan',
         internalConfidence: activation.score,
+        planetarySignature: activation.planetarySignature,
         timestamp: now.toISOString(),
       }
     }
@@ -712,6 +896,43 @@ export class AgentActionService {
         pantryAction: 'masters_pantry_verified',
         ingredient: 'Oranges',
         internalConfidence: activation.score,
+        planetarySignature: activation.planetarySignature,
+        timestamp: now.toISOString(),
+      }
+    }
+
+    if (actionType === 'alchemical_transmutation') {
+      return {
+        agentName,
+        featureDemo: 'Alchemical Transmutation',
+        transmutationAction: 'agent_alchemical_transmutation',
+        sampleTransformation: 'Stabilizing volatile pantry elements into radiant preserves',
+        internalConfidence: activation.score,
+        planetarySignature: activation.planetarySignature,
+        timestamp: now.toISOString(),
+      }
+    }
+
+    if (actionType === 'sacred_geometry_design') {
+      return {
+        agentName,
+        featureDemo: 'Sacred Geometry Design',
+        designAction: 'agent_sacred_geometry_design',
+        pattern: 'Golden-ratio plating grid for a seasonal tasting board',
+        internalConfidence: activation.score,
+        planetarySignature: activation.planetarySignature,
+        timestamp: now.toISOString(),
+      }
+    }
+
+    if (actionType === 'energy_harmonic_calibration') {
+      return {
+        agentName,
+        featureDemo: 'Energy Harmonic Calibration',
+        calibrationAction: 'agent_energy_harmonic_calibration',
+        frequency: 'Kitchen workflow resonance and alternating-current heat timing',
+        internalConfidence: activation.score,
+        planetarySignature: activation.planetarySignature,
         timestamp: now.toISOString(),
       }
     }
@@ -724,6 +945,7 @@ export class AgentActionService {
         insightContent: this.generateInsightContent(agentName, activation.triggers),
         internalConfidence: activation.score,
         internalTrigger: activation.triggers[0] ?? 'celestial_activation',
+        planetarySignature: activation.planetarySignature,
         timestamp: now.toISOString(),
       }
     }
@@ -735,6 +957,7 @@ export class AgentActionService {
       description: `${agentName} transmuted tokens under ${activation.triggers[0] ?? 'cosmic'} alignment`,
       internalConfidence: activation.score,
       internalTrigger: activation.triggers[0] ?? 'celestial_activation',
+      planetarySignature: activation.planetarySignature,
       timestamp: now.toISOString(),
     }
   }

@@ -25,10 +25,10 @@ const SYNC_SECRET = process.env.ALCHM_KITCHEN_SYNC_SECRET
 export interface SyncCreditPayload {
   userEmail: string
   amounts: {
-    spirit: number
-    essence: number
-    matter: number
-    substance: number
+    spirit: string
+    essence: string
+    matter: string
+    substance: string
   }
   source: string
   idempotencyKey: string

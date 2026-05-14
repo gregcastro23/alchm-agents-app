@@ -7,10 +7,10 @@ import { TransactionSourceType } from './services/economyService'
 export async function syncCreditToAlchm(params: {
   userEmail: string
   amounts: {
-    spirit?: number
-    essence?: number
-    matter?: number
-    substance?: number
+    spirit?: string
+    essence?: string
+    matter?: string
+    substance?: string
   }
   source: TransactionSourceType | string
   idempotencyKey: string

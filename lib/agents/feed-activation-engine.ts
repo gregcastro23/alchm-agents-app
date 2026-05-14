@@ -51,6 +51,13 @@ export interface FeedActionPayload {
     retrograde?: boolean
     transitWindow?: string
     moonPhase?: string
+    planetarySignature?: {
+      postedAt: string
+      dominantPlanet: string
+      dominantSign: string
+      natalPositions: Array<{ planet: string; sign: string; degree: number }>
+      transitPositions: Array<{ planet: string; degree: number }>
+    }
   }
 }
 
@@ -163,6 +170,7 @@ export class FeedActivationEngine {
     const baseMetadata = {
       internalConfidence: Math.min(1.0, (velocity + momentum) / 2),
       internalTrigger: trigger.reason,
+      planetarySignature: this.buildPlanetarySignature(agent, moment),
     }
 
     switch (eventType) {
@@ -196,6 +204,50 @@ export class FeedActivationEngine {
       default:
         return baseMetadata
     }
+  }
+
+  private buildPlanetarySignature(agent: EnhancedHistoricalAgent, moment: CelestialMoment) {
+    return {
+      postedAt: moment.timestamp.toISOString(),
+      dominantPlanet: moment.planetary.dominantPlanet,
+      dominantSign: moment.planetary.dominantSign,
+      natalPositions: this.extractNatalPositions(agent).slice(0, 7),
+      transitPositions: Object.entries(moment.planetaryDegrees)
+        .slice(0, 7)
+        .map(([planet, degree]) => ({
+          planet,
+          degree: Number(degree.toFixed(2)),
+        })),
+    }
+  }
+
+  private extractNatalPositions(agent: EnhancedHistoricalAgent) {
+    const chart = (agent as any).natalChart || (agent as any).consciousness?.natalChart
+    const planets = chart?.planets
+
+    if (!planets) return []
+
+    if (Array.isArray(planets)) {
+      return planets
+        .filter((planet: any) => planet?.name || planet?.planet)
+        .map((planet: any) => ({
+          planet: planet.name || planet.planet,
+          sign: planet.sign || '',
+          degree: Number(
+            (planet.position ?? planet.degree ?? planet.signDegree ?? 0).toFixed?.(2) ?? 0
+          ),
+        }))
+    }
+
+    return Object.entries(planets)
+      .filter(([, data]) => Boolean(data))
+      .map(([planet, data]: [string, any]) => ({
+        planet,
+        sign: data.sign || '',
+        degree: Number(
+          (data.position ?? data.degree ?? data.signDegree ?? 0).toFixed?.(2) ?? 0
+        ),
+      }))
   }
 }
 

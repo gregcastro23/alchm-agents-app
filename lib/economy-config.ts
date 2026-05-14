@@ -25,4 +25,7 @@ export const AGENT_OPERATION_COSTS: Record<string, Partial<Record<TokenType, num
   agent_transmutation: { Matter: 3, Substance: 2 },
   agent_meal_plan: { Spirit: 4, Substance: 2 },
   agent_pantry_update: { Matter: 2, Essence: 1 },
+  agent_alchemical_transmutation: { Spirit: 1, Matter: 2, Substance: 3 },
+  agent_sacred_geometry_design: { Essence: 2, Substance: 3 },
+  agent_energy_harmonic_calibration: { Spirit: 3, Matter: 2 },
 }

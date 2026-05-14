@@ -20,10 +20,10 @@ async function main() {
     const result = await syncCreditToAlchm({
       userEmail: email,
       amounts: {
-        spirit: 10,
-        essence: 10,
-        matter: 10,
-        substance: 10
+        spirit: '10.0000',
+        essence: '10.0000',
+        matter: '10.0000',
+        substance: '10.0000'
       },
       source: 'initial_grant',
       idempotencyKey: `init_grant_v3_${agent.agentId}`

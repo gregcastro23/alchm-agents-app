@@ -69,8 +69,8 @@ async function main() {
       const actionType = 'feed_post' as const
       const operationKey = actionType === 'feed_post' ? 'agent_feed_post' : 'agent_transmutation'
       const costs = actionType === 'feed_post'
-        ? { spirit: 2, essence: 1, matter: 0, substance: 0 }
-        : { spirit: 0, essence: 0, matter: 3, substance: 2 }
+        ? { spirit: '2.0000', essence: '1.0000', matter: '0.0000', substance: '0.0000' }
+        : { spirit: '0.0000', essence: '0.0000', matter: '3.0000', substance: '2.0000' }
 
       const hourKey = now.toISOString().slice(0, 13)
       const idKey = `agent_action:${agent.id}:${hourKey}`

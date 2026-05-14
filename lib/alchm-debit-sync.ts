@@ -38,12 +38,12 @@ const SYNC_SECRET = process.env.ALCHM_KITCHEN_SYNC_SECRET
 export interface SyncDebitPayload {
   userEmail: string
   amounts: {
-    spirit: number
-    essence: number
-    matter: number
-    substance: number
+    spirit: string
+    essence: string
+    matter: string
+    substance: string
   }
-  operationType: string // 'agent_feed_post' | 'agent_transmutation'
+  operationType: string
   source: string // 'planetary_agents_action_engine'
   idempotencyKey: string // 'agent_action:{userId}:{hourKey}'
   metadata: {
