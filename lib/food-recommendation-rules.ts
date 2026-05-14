@@ -201,7 +201,8 @@ export class KalchmFoodAnalyzer {
     alchemical: AlchemicalProperties,
     elemental: ElementalProperties,
     thermodynamics: ThermodynamicMetrics,
-    constants: AdvancedConstants
+    constants: AdvancedConstants,
+    dietaryPreferences?: any
   ): FoodRecommendations {
     const { kalchmConstant, monicaConstant } = constants
     const { energy } = thermodynamics
@@ -244,7 +245,35 @@ export class KalchmFoodAnalyzer {
         'High Monica constant supports dynamic transformation - catalytic foods beneficial. '
     }
 
-    return this.generateRecommendations(primaryStrategy, elemental, reasoning, constants)
+    const recommendations = this.generateRecommendations(
+      primaryStrategy,
+      elemental,
+      reasoning,
+      constants
+    )
+
+    // Apply dietary preferences if provided
+    if (dietaryPreferences?.restrictions) {
+      const restrictions = Array.isArray(dietaryPreferences.restrictions)
+        ? dietaryPreferences.restrictions.map((r: string) => r.toLowerCase())
+        : []
+
+      if (restrictions.includes('vegan')) {
+        recommendations.primaryFoods = recommendations.primaryFoods.filter(
+          f => !f.toLowerCase().includes('protein') || f.toLowerCase().includes('fish') === false
+        )
+        recommendations.avoidFoods.push('Meat', 'Dairy', 'Eggs')
+      }
+      
+      if (restrictions.includes('gluten-free')) {
+        recommendations.primaryFoods = recommendations.primaryFoods.filter(
+          f => !f.toLowerCase().includes('grain')
+        )
+        recommendations.avoidFoods.push('Gluten', 'Wheat', 'Barley', 'Rye')
+      }
+    }
+
+    return recommendations
   }
 
   private static generateRecommendations(

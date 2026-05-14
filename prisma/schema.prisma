@@ -1151,6 +1151,7 @@ model user_profiles {
   natalPositions       Json?
   monicaConstant       Float
   dominantElement      String
+  dietaryPreferences   Json?            @map("dietary_preferences")
   allowPublicAgents    Boolean          @default(false)
   shareChartWithAgents Boolean          @default(true)
   createdAt            DateTime         @default(now())

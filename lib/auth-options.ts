@@ -1,5 +1,6 @@
 import GoogleProvider from 'next-auth/providers/google'
 import { prisma } from '@/lib/db'
+import { randomUUID } from 'crypto'
 
 const DB_TIMEOUT_MS = 5000
 
@@ -41,34 +42,80 @@ export const authOptions: import('next-auth').NextAuthOptions = {
         }
 
         try {
-          let dbUser = await withTimeout(
-            prisma.users.findUnique({ where: { email } }),
-            DB_TIMEOUT_MS
-          )
+          // Use a transaction to ensure atomicity
+          await prisma.$transaction(async (tx) => {
+            let dbUser = await tx.users.findUnique({
+              where: { email },
+              include: { user_profiles: true },
+            })
 
-          if (!dbUser) {
-            dbUser = await withTimeout(
-              prisma.users.create({
+            if (!dbUser) {
+              // New user - create all required rows
+              const userId = randomUUID()
+              const name = profile?.name || user?.name || email.split('@')[0]
+              
+              await tx.users.create({
                 data: {
+                  id: userId,
                   email,
-                  name: profile?.name || user?.name || email.split('@')[0],
+                  name,
                   provider: 'google',
                   verified: true,
+                  lastLogin: new Date(),
                 },
-              }),
-              DB_TIMEOUT_MS
-            )
-          } else {
-            await withTimeout(
-              prisma.users.update({ where: { id: dbUser.id }, data: { lastLogin: new Date() } }),
-              DB_TIMEOUT_MS
-            ).catch(() => {})
-          }
+              })
+
+              await tx.user_profiles.create({
+                data: {
+                  userId,
+                  birthDate: new Date(0), // Placeholder
+                  birthLocation: { name: 'Pending Onboarding', latitude: 0, longitude: 0 },
+                  natalChart: {},
+                  monicaConstant: 0,
+                  dominantElement: 'Fire',
+                },
+              })
+
+              await tx.profiles.create({
+                data: {
+                  userId,
+                  name,
+                },
+              })
+
+              await tx.monica_user_settings.create({
+                data: {
+                  userId,
+                  interests: '[]',
+                },
+              })
+            } else {
+              // Existing user - update last login
+              await tx.users.update({
+                where: { id: dbUser.id },
+                data: { lastLogin: new Date() },
+              })
+
+              // Ensure profile exists (migration for legacy users)
+              if (!dbUser.user_profiles) {
+                await tx.user_profiles.create({
+                  data: {
+                    userId: dbUser.id,
+                    birthDate: new Date(0),
+                    birthLocation: { name: 'Pending Onboarding', latitude: 0, longitude: 0 },
+                    natalChart: {},
+                    monicaConstant: 0,
+                    dominantElement: 'Fire',
+                  },
+                })
+              }
+            }
+          })
           return true
         } catch (error) {
-          console.error('Error during Google sign-in mapping:', error)
-          // Allow sign-in even if DB is unreachable — profile can be created later
-          return true
+          console.error('Error during Google sign-in transaction:', error)
+          // Crucial: return false to prevent ghost sessions if DB fails
+          return false
         }
       }
       return true

@@ -32,6 +32,7 @@ export async function PATCH(req: Request) {
     const avatarUrl = typeof body?.avatarUrl === 'string' ? body.avatarUrl : undefined
     const rawBirthInfo = body?.birthInfo
     const sharing = body?.sharingPreferences
+    const dietaryPreferences = body?.dietaryPreferences || body?.dietary_preferences
 
     if (!rawBirthInfo) {
       return NextResponse.json({ error: 'Missing birthInfo' }, { status: 400 })
@@ -103,6 +104,7 @@ export async function PATCH(req: Request) {
         ...(typeof sharing?.shareChartWithAgents === 'boolean'
           ? { shareChartWithAgents: sharing.shareChartWithAgents }
           : {}),
+        ...(dietaryPreferences ? { dietaryPreferences } : {}),
       },
       create: {
         userId,
@@ -116,6 +118,7 @@ export async function PATCH(req: Request) {
         natalChart: horoscope as any,
         monicaConstant: monica.value,
         dominantElement: (alchm as any)?.['Dominant Element'] || 'Fire',
+        dietaryPreferences: dietaryPreferences || null,
       },
     })
 
