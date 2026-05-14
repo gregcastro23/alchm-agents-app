@@ -376,7 +376,7 @@ export function CharacterVectorDashboard({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-80">
+                <div className="h-80" style={{ minWidth: 100, minHeight: 320 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -390,6 +390,7 @@ export function CharacterVectorDashboard({
                         outerRadius={80}
                         fill="#8884d8"
                         dataKey="percentage"
+                        isAnimationActive={false}
                       >
                         {signVectorData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -849,7 +850,7 @@ export function CharacterVectorDashboard({
                 <CardDescription>Based on your astrological character vectors</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-80">
+                <div className="h-80" style={{ minWidth: 100, minHeight: 320 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <RadarChart data={interactionRadarData}>
                       <PolarGrid />
@@ -866,6 +867,7 @@ export function CharacterVectorDashboard({
                         stroke="#8884d8"
                         fill="#8884d8"
                         fillOpacity={0.3}
+                        isAnimationActive={false}
                       />
                       <Tooltip />
                     </RadarChart>

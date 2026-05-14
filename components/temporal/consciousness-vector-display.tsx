@@ -107,6 +107,12 @@ export function ConsciousnessVectorDisplay({
   liveData,
   showLiveComparison = true,
 }: Props) {
+  const [isMounted, setIsMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   // Use live data if available, otherwise fall back to provided quantities
   const displayQuantities = liveData?.liveKalchm
       ? {
@@ -400,25 +406,28 @@ export function ConsciousnessVectorDisplay({
                 <BarChart3 className="w-4 h-4" />
                 Field Composition
               </h4>
-              {pieData.length > 0 && (
-                <ResponsiveContainer width="100%" height={120}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={20}
-                      outerRadius={50}
-                      paddingAngle={2}
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: number) => [`${value.toFixed(2)}`, 'Value']} />
-                  </PieChart>
-                </ResponsiveContainer>
+              {isMounted && pieData.length > 0 && (
+                <div style={{ width: '100%', height: 120, minWidth: 100, minHeight: 120 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={20}
+                        outerRadius={50}
+                        paddingAngle={2}
+                        dataKey="value"
+                        isAnimationActive={false}
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: number) => [`${value.toFixed(2)}`, 'Value']} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               )}
               <div className="text-xs text-muted-foreground">
                 Total:{' '}
@@ -446,41 +455,46 @@ export function ConsciousnessVectorDisplay({
           </p>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <RadarChart
-              data={alchemicalData.slice(0, 4)}
-              margin={{ top: 20, right: 30, bottom: 20, left: 30 }}
-            >
-              <PolarGrid gridType="polygon" />
-              <PolarAngleAxis dataKey="axis" fontSize={12} />
-              <PolarRadiusAxis
-                angle={90}
-                domain={[0, 100]}
-                fontSize={10}
-                tickFormatter={value => `${value}%`}
-              />
-              <Radar
-                name="Alchemical State"
-                dataKey="value"
-                stroke="#3b82f6"
-                fill="#3b82f6"
-                fillOpacity={0.2}
-                strokeWidth={2}
-                dot={{ r: 4, fill: '#3b82f6' }}
-              />
-              <Tooltip
-                formatter={(value: number, name: string, props: any) => [
-                  `${value.toFixed(1)}%`,
-                  name,
-                ]}
-                labelFormatter={(label: string, payload: any[]) => {
-                  const data = payload[0]?.payload
-                  return data ? `${label}: ${data.rawValue?.toFixed(3) || 'N/A'}` : label
-                }}
-              />
-              <Legend />
-            </RadarChart>
-          </ResponsiveContainer>
+          <div className="h-[300px] w-full" style={{ minWidth: 100, minHeight: 300 }}>
+            {isMounted && (
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart
+                  data={alchemicalData.slice(0, 4)}
+                  margin={{ top: 20, right: 30, bottom: 20, left: 30 }}
+                >
+                  <PolarGrid gridType="polygon" />
+                  <PolarAngleAxis dataKey="axis" fontSize={12} />
+                  <PolarRadiusAxis
+                    angle={90}
+                    domain={[0, 100]}
+                    fontSize={10}
+                    tickFormatter={value => `${value}%`}
+                  />
+                  <Radar
+                    name="Alchemical State"
+                    dataKey="value"
+                    stroke="#3b82f6"
+                    fill="#3b82f6"
+                    fillOpacity={0.2}
+                    strokeWidth={2}
+                    dot={{ r: 4, fill: '#3b82f6' }}
+                    isAnimationActive={false}
+                  />
+                  <Tooltip
+                    formatter={(value: number, name: string, props: any) => [
+                      `${value.toFixed(1)}%`,
+                      name,
+                    ]}
+                    labelFormatter={(label: string, payload: any[]) => {
+                      const data = payload[0]?.payload
+                      return data ? `${label}: ${data.rawValue?.toFixed(3) || 'N/A'}` : label
+                    }}
+                  />
+                  <Legend />
+                </RadarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -497,47 +511,52 @@ export function ConsciousnessVectorDisplay({
             </p>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <AreaChart data={thermoWaveData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip formatter={(value: number) => [value.toFixed(3), 'Intensity']} />
-                <Area
-                  type="monotone"
-                  dataKey="Heat"
-                  stackId="1"
-                  stroke={ELEMENT_COLORS.Heat}
-                  fill={ELEMENT_COLORS.Heat}
-                  fillOpacity={0.6}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="Entropy"
-                  stackId="1"
-                  stroke={ELEMENT_COLORS.Entropy}
-                  fill={ELEMENT_COLORS.Entropy}
-                  fillOpacity={0.6}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="Reactivity"
-                  stackId="1"
-                  stroke={ELEMENT_COLORS.Reactivity}
-                  fill={ELEMENT_COLORS.Reactivity}
-                  fillOpacity={0.6}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="Energy"
-                  stackId="1"
-                  stroke={ELEMENT_COLORS.Energy}
-                  fill={ELEMENT_COLORS.Energy}
-                  fillOpacity={0.6}
-                />
-                <Legend />
-              </AreaChart>
-            </ResponsiveContainer>
+            <div className="h-[250px] w-full" style={{ minWidth: 100, minHeight: 250 }}>
+              {isMounted && (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={thermoWaveData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value: number) => [value.toFixed(3), 'Intensity']} />
+                    <Area
+                      type="monotone"
+                      dataKey="Heat"
+                      stackId="1"
+                      stroke={ELEMENT_COLORS.Heat}
+                      fill={ELEMENT_COLORS.Heat}
+                      fillOpacity={0.6}
+                      isAnimationActive={false}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="Entropy"
+                      stackId="1"
+                      stroke={ELEMENT_COLORS.Entropy}
+                      fill={ELEMENT_COLORS.Entropy}
+                      fillOpacity={0.6}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="Reactivity"
+                      stackId="1"
+                      stroke={ELEMENT_COLORS.Reactivity}
+                      fill={ELEMENT_COLORS.Reactivity}
+                      fillOpacity={0.6}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="Energy"
+                      stackId="1"
+                      stroke={ELEMENT_COLORS.Energy}
+                      fill={ELEMENT_COLORS.Energy}
+                      fillOpacity={0.6}
+                    />
+                    <Legend />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </div>
           </CardContent>
         </Card>
       }

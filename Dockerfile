@@ -66,8 +66,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV DOCKER_BUILD=1
 
-# Generate Prisma client
-RUN npx prisma generate
+# Generate Prisma client without bundling the engine binary
+RUN npx prisma generate --no-engine
 
 # Build the application
 # Increase memory limit for build process

@@ -22,8 +22,15 @@ import {
   Globe,
   TrendingUp,
   Activity,
+  Zap,
+  Heart,
+  Eye,
+  Brain,
+  Compass,
+  Flame,
 } from 'lucide-react'
 import Link from 'next/link'
+import { getPlanetaryAgentStats } from '@/lib/agents/planetary-agent-stats'
 
 interface Message {
   role: 'user' | 'agent'
@@ -151,52 +158,57 @@ export default function DegreeAgentClient({
       day: 'numeric',
     })
   }
+  const stats = getPlanetaryAgentStats(planet, sign, degree)
 
   return (
-    <div className="container py-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Link href="/planetary-agents">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Agents
-            </Button>
-          </Link>
-          <div className="flex items-center gap-3">
-            <div className="text-4xl">{PLANET_EMOJIS[planet] || '●'}</div>
-            <div>
-              <h1 className="text-3xl font-bold">
-                {planet} at {degree}° {sign}
-              </h1>
-              <p className="text-muted-foreground">Degree-Specific Planetary Consciousness</p>
+    <div className="min-h-screen bg-gradient-to-br from-[#0c0319] via-[#1a0838] to-[#0c0319] text-white selection:bg-purple-500/30">
+      <div className="container py-8 max-w-7xl mx-auto relative z-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Link href="/planetary-agents">
+              <Button variant="outline" size="sm" className="bg-white/5 border-white/10 hover:bg-white/10 text-white">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Agents
+              </Button>
+            </Link>
+            <div className="flex items-center gap-4">
+              <div className="text-5xl drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] relative">
+                {PLANET_EMOJIS[planet] || '●'}
+                <div className="absolute inset-0 border border-white/20 rounded-full animate-spin-slow" style={{ padding: '4px', margin: '-4px' }}></div>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
+                  {planet} at {degree}° {sign}
+                </h1>
+                <p className="text-white/60 font-light">Degree-Specific Planetary Consciousness</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Chat Area */}
         <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className="h-5 w-5" />
+          <Card className="bg-black/40 backdrop-blur-md border-white/10">
+            <CardHeader className="border-b border-white/5 pb-4">
+              <CardTitle className="flex items-center gap-2 text-white">
+                <MessageCircle className="h-5 w-5 text-purple-400" />
                 Consultation with {planet} at {degree}° {sign}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-white/60">
                 Channel the wisdom of this specific planetary degree
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-[500px] overflow-y-auto border rounded-lg p-4 mb-4 bg-muted/20">
+            <CardContent className="pt-6">
+              <div className="h-[500px] overflow-y-auto border border-white/10 rounded-xl p-4 mb-4 bg-black/20 shadow-inner custom-scrollbar">
                 {messages.length === 0 ? (
-                  <div className="text-center text-muted-foreground h-full flex flex-col items-center justify-center">
-                    <div className="text-6xl mb-4">{PLANET_EMOJIS[planet] || '●'}</div>
-                    <h3 className="text-lg font-semibold mb-2">
+                  <div className="text-center text-white/50 h-full flex flex-col items-center justify-center">
+                    <div className="text-6xl mb-4 drop-shadow-md animate-pulse">{PLANET_EMOJIS[planet] || '●'}</div>
+                    <h3 className="text-lg font-semibold mb-2 text-white/80">
                       {planet} at {degree}° {sign}
                     </h3>
-                    <p className="text-sm">
+                    <p className="text-sm font-light">
                       Ask this specific degree of planetary consciousness for guidance
                     </p>
                   </div>
@@ -205,17 +217,17 @@ export default function DegreeAgentClient({
                     {messages.map((message, index) => (
                       <div
                         key={index}
-                        className={`p-4 rounded-lg ${
-                          message.role === 'user' ? 'bg-primary/10 ml-8' : 'bg-secondary/10 mr-8'
+                        className={`p-4 rounded-xl ${
+                          message.role === 'user' ? 'bg-purple-500/10 border border-purple-500/20 ml-8' : 'bg-white/5 border border-white/10 mr-8'
                         }`}
                       >
                         <div className="flex items-start gap-3">
-                          <div className="text-sm text-muted-foreground min-w-0">
-                            {message.role === 'user' ? 'You' : `${planet} Agent`}
+                          <div className="text-sm text-purple-300 min-w-0 font-medium">
+                            {message.role === 'user' ? 'You' : `${planet}`}
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm leading-relaxed">{message.content}</p>
-                            <p className="text-xs text-muted-foreground mt-2">
+                            <p className="text-sm leading-relaxed text-white/90">{message.content}</p>
+                            <p className="text-[10px] text-white/40 mt-2 uppercase tracking-wider">
                               {message.timestamp.toLocaleTimeString()}
                             </p>
                           </div>
@@ -232,10 +244,15 @@ export default function DegreeAgentClient({
                   onChange={e => setInput(e.target.value)}
                   placeholder={`Ask ${planet} at ${degree}° ${sign} for guidance...`}
                   disabled={loading}
-                  className="flex-1"
+                  className="flex-1 bg-black/40 border-white/10 focus-visible:ring-purple-500/50 text-white placeholder:text-white/40"
                 />
-                <Button type="submit" disabled={loading || !input.trim()}>
-                  {loading ? 'Channeling...' : 'Send'}
+                <Button type="submit" disabled={loading || !input.trim()} className="bg-purple-600 hover:bg-purple-700 text-white border-none">
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      Channeling...
+                    </div>
+                  ) : 'Send'}
                 </Button>
               </form>
             </CardContent>
@@ -244,16 +261,75 @@ export default function DegreeAgentClient({
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Sacred Stats */}
+          <Card className="bg-black/40 backdrop-blur-md border-white/10 overflow-hidden relative group">
+            <div className="absolute -top-12 -right-12 w-32 h-32 border border-white/5 rounded-full"></div>
+            <CardHeader className="pb-3 border-b border-white/5">
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Activity className="h-5 w-5 text-amber-400" />
+                Sacred Profile
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-4">
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between text-xs mb-1 text-white/80">
+                    <span className="flex items-center gap-1.5"><Zap className="w-3 h-3 text-amber-400" /> Power</span>
+                    <span>{stats.power}</span>
+                  </div>
+                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-amber-400/80 rounded-full" style={{width: `${stats.power}%`}}></div></div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1 text-white/80">
+                    <span className="flex items-center gap-1.5"><Brain className="w-3 h-3 text-purple-400" /> Wisdom</span>
+                    <span>{stats.wisdom}</span>
+                  </div>
+                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-purple-400/80 rounded-full" style={{width: `${stats.wisdom}%`}}></div></div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1 text-white/80">
+                    <span className="flex items-center gap-1.5"><Heart className="w-3 h-3 text-pink-400" /> Charisma</span>
+                    <span>{stats.charisma}</span>
+                  </div>
+                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-pink-400/80 rounded-full" style={{width: `${stats.charisma}%`}}></div></div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1 text-white/80">
+                    <span className="flex items-center gap-1.5"><Eye className="w-3 h-3 text-blue-400" /> Intuition</span>
+                    <span>{stats.intuition}</span>
+                  </div>
+                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-blue-400/80 rounded-full" style={{width: `${stats.intuition}%`}}></div></div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1 text-white/80">
+                    <span className="flex items-center gap-1.5"><Compass className="w-3 h-3 text-emerald-400" /> Adaptability</span>
+                    <span>{stats.adaptability}</span>
+                  </div>
+                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-emerald-400/80 rounded-full" style={{width: `${stats.adaptability}%`}}></div></div>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-white/10">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-white/60">Dominant Alchemical</span>
+                  <Badge variant="secondary" className="text-[10px] uppercase tracking-wider bg-black/50 border-white/10 flex items-center gap-1">
+                    <Flame className="w-3 h-3 text-orange-400" />
+                    {stats.dominantAlchemical}
+                  </Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
           {/* Current Transit Status */}
           {currentTransitData && (
             <Card
-              className={
-                currentTransitData.isAtRequestedPosition ? 'border-green-500 border-2' : ''
-              }
+              className={`bg-black/40 backdrop-blur-md border-white/10 ${
+                currentTransitData.isAtRequestedPosition ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : ''
+              }`}
             >
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
+              <CardHeader className="pb-3 border-b border-white/5">
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Globe className="h-5 w-5 text-blue-400" />
                   Current Transit Status
                 </CardTitle>
               </CardHeader>
@@ -291,14 +367,14 @@ export default function DegreeAgentClient({
           )}
 
           {/* Position Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5" />
+          <Card className="bg-black/40 backdrop-blur-md border-white/10">
+            <CardHeader className="pb-3 border-b border-white/5">
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Star className="h-5 w-5 text-yellow-400" />
                 Position Details
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 pt-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Planet:</span>
                 <Badge variant="default">{planet}</Badge>
@@ -365,17 +441,17 @@ export default function DegreeAgentClient({
 
           {/* Recent Transit History */}
           {recentTransits.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
+            <Card className="bg-black/40 backdrop-blur-md border-white/10">
+              <CardHeader className="pb-3 border-b border-white/5">
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <TrendingUp className="h-5 w-5 text-green-400" />
                   Recent Transit History
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-white/60">
                   Previous times {planet} was at {degree}° {sign}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-4">
                 <div className="space-y-2">
                   {recentTransits.slice(0, 3).map((transit, index) => (
                     <div key={index} className="p-3 bg-muted/30 rounded-lg">
@@ -398,17 +474,17 @@ export default function DegreeAgentClient({
 
           {/* Enhanced Historical Occurrences */}
           {degreeHistoricalData && degreeHistoricalData.occurrences?.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <History className="h-5 w-5" />
+            <Card className="bg-black/40 backdrop-blur-md border-white/10">
+              <CardHeader className="pb-3 border-b border-white/5">
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <History className="h-5 w-5 text-amber-600" />
                   Historical Occurrences
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-white/60">
                   When {planet} was at {degree}° {sign} in history
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-4">
                 <div className="space-y-4">
                   {degreeHistoricalData.occurrences.map((occurrence: any, index: number) => (
                     <div key={index} className="p-4 border rounded-lg space-y-3 bg-muted/20">
@@ -467,14 +543,14 @@ export default function DegreeAgentClient({
           )}
 
           {/* Cycle Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
+          <Card className="bg-black/40 backdrop-blur-md border-white/10">
+            <CardHeader className="pb-3 border-b border-white/5">
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Clock className="h-5 w-5 text-indigo-400" />
                 Cycle Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 pt-4">
               {historicalData.lastOccurrence && (
                 <div className="p-3 bg-muted/50 rounded-lg">
                   <p className="text-sm font-semibold mb-1">Last Occurrence</p>
@@ -495,27 +571,28 @@ export default function DegreeAgentClient({
           </Card>
 
           {/* Quick Navigation */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5" />
+          <Card className="bg-black/40 backdrop-blur-md border-white/10">
+            <CardHeader className="pb-3 border-b border-white/5">
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Compass className="h-5 w-5 text-rose-400" />
                 Explore More
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-2 pt-4">
               <Link href={`/planets/${planet.toLowerCase()}`} className="block">
-                <Button variant="outline" size="sm" className="w-full justify-start">
+                <Button variant="outline" size="sm" className="w-full justify-start bg-white/5 border-white/10 hover:bg-white/10 text-white">
                   {planet} Overview
                 </Button>
               </Link>
               <Link href="/planetary-council" className="block">
-                <Button variant="outline" size="sm" className="w-full justify-start">
+                <Button variant="outline" size="sm" className="w-full justify-start bg-white/5 border-white/10 hover:bg-white/10 text-white">
                   Planetary Council
                 </Button>
               </Link>
             </CardContent>
           </Card>
         </div>
+      </div>
       </div>
     </div>
   )

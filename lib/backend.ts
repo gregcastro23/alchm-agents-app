@@ -211,7 +211,10 @@ class BackendError extends Error {
 }
 
 async function request<T>(path: string, init: RequestInit & { auth?: boolean } = {}): Promise<T> {
-  const { auth, headers, ...rest } = init
+  const { auth, headers, signal: callerSignal, ...rest } = init as RequestInit & {
+    auth?: boolean
+    signal?: AbortSignal
+  }
   const url = `${BACKEND_URL}${path}`
 
   const finalHeaders: Record<string, string> = {
@@ -220,15 +223,22 @@ async function request<T>(path: string, init: RequestInit & { auth?: boolean } =
     ...((headers as Record<string, string>) || {}),
   }
 
-  // Strip auth header if not needed (some endpoints reject extra headers)
   if (auth === false) delete finalHeaders.INTERNAL_API_SECRET
 
-  const res = await fetch(url, {
-    ...rest,
-    headers: finalHeaders,
-    // Server Components can opt into Next.js fetch caching with revalidate
-    // Caller can override via init.cache or init.next
-  })
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 10_000)
+  if (callerSignal) callerSignal.addEventListener('abort', () => controller.abort())
+
+  let res: Response
+  try {
+    res = await fetch(url, {
+      ...rest,
+      headers: finalHeaders,
+      signal: controller.signal,
+    })
+  } finally {
+    clearTimeout(timeoutId)
+  }
 
   if (!res.ok) {
     let msg = res.statusText

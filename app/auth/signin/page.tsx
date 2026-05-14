@@ -7,10 +7,14 @@ import './signin.css'
 export default function SignInPage() {
   const [loading, setLoading] = useState(false)
 
-  const handleGoogleSignIn = (e: React.MouseEvent) => {
+  const handleGoogleSignIn = async (e: React.MouseEvent) => {
     e.preventDefault()
     setLoading(true)
-    signIn('google', { callbackUrl: '/me' })
+    try {
+      await signIn('google', { callbackUrl: '/me' })
+    } catch {
+      setLoading(false)
+    }
   }
 
   return (

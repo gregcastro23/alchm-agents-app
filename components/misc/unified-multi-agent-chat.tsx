@@ -22,8 +22,6 @@ import type {
 } from '@/lib/unified-agent-types'
 import type { CraftedAgent } from '@/lib/agent-types'
 import { unifiedAgentFactory } from '@/lib/unified-agent-factory'
-import { RAGToggle } from '@/components/rag'
-
 interface ModelOverrides {
   historical?: string
   planetary?: string
@@ -128,8 +126,8 @@ export function UnifiedMultiAgentChat({
   const [groupDynamics, setGroupDynamics] = useState<GroupDynamics | null>(null)
   const [realTimeUpdates, _setRealTimeUpdates] = useState(true)
 
-  // RAG (Retrieval-Augmented Generation)
-  const [ragEnabled, setRagEnabled] = useState(true)
+  // RAG (Retrieval-Augmented Generation) - Always enabled for this component
+  const ragEnabled = true
 
   // Session management
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null)
@@ -155,7 +153,11 @@ export function UnifiedMultiAgentChat({
   // Initialize selected agents from initialAgents prop - separate effect to avoid dependency size warning
   useEffect(() => {
     if (initialAgents && initialAgents.length > 0 && availableAgents.length > 0) {
-      const preselected = availableAgents.filter(agent => initialAgents.includes(agent.id))
+      const preselected = availableAgents.filter(
+        agent =>
+          initialAgents.includes(agent.id) ||
+          (agent.planetaryData && initialAgents.includes(agent.planetaryData.planet))
+      )
       if (preselected.length > 0) {
         setSelectedAgents(preselected)
       }
@@ -693,7 +695,7 @@ export function UnifiedMultiAgentChat({
             )}
           </div>
           <div className="flex items-center gap-3">
-            <RAGToggle enabled={ragEnabled} onToggle={setRagEnabled} size="sm" showStatus />
+            <div className="text-xs bg-primary/10 text-primary px-2 py-1 rounded border border-primary/20">RAG Active</div>
             <Button
               variant="ghost"
               size="sm"

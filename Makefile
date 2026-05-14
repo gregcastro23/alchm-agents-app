@@ -398,7 +398,7 @@ db-studio: ## Open Prisma Studio
 	yarn prisma studio
 
 db-generate: ## Generate Prisma client
-	yarn prisma generate
+	bun run prisma:generate
 
 db-migrate: ## Run database migrations
 	yarn prisma migrate dev

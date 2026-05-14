@@ -20,8 +20,8 @@ RUN yarn install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate || echo "Prisma generation skipped"
+# Generate Prisma client without bundling the engine binary
+RUN npx prisma generate --no-engine || echo "Prisma generation skipped"
 
 # Set development environment
 ENV NODE_ENV=development

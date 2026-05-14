@@ -1,19 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/db'
 
-async function isAdminUser(userId: string): Promise<boolean> {
+const adminEmails = [
+  'admin@planetaryagents.com',
+  'support@planetaryagents.com',
+  'gregcastro23@gmail.com',
+]
+
+function normalizeHandle(value?: string | null) {
+  return (value || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+}
+
+function isGregCastroIdentity(user?: {
+  id?: string | null
+  email?: string | null
+  name?: string | null
+}) {
+  const email = user?.email?.toLowerCase() || ''
+
+  return email === 'gregcastro23@gmail.com' || normalizeHandle(user?.id) === 'gregcastro23'
+}
+
+async function isAdminUser(user?: {
+  id?: string | null
+  email?: string | null
+  name?: string | null
+  role?: string | null
+}): Promise<boolean> {
+  if (!user) return false
+
+  if (
+    user.role === 'admin' ||
+    adminEmails.includes(user.email || '') ||
+    isGregCastroIdentity(user)
+  ) {
+    return true
+  }
+
+  if (!user.id) return false
+
   try {
-    const user = await prisma.users.findUnique({
-      where: { id: userId },
+    const dbUser = await prisma.users.findUnique({
+      where: { id: user.id },
     })
-    const adminEmails = [
-      'admin@planetaryagents.com',
-      'support@planetaryagents.com',
-      'gregcastro23@gmail.com',
-    ]
-    return user?.role === 'admin' || adminEmails.includes(user?.email || '')
+    return dbUser?.role === 'admin' || adminEmails.includes(dbUser?.email || '')
   } catch {
     return false
   }
@@ -22,13 +54,15 @@ async function isAdminUser(userId: string): Promise<boolean> {
 export async function GET(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    const userId = (session?.user as any)?.id
+    const sessionUser = session?.user as
+      | { id?: string; email?: string | null; name?: string | null; role?: string | null }
+      | undefined
 
-    if (!userId) {
+    if (!sessionUser?.id && !sessionUser?.email && !sessionUser?.name) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    const adminCheck = await isAdminUser(userId)
+    const adminCheck = await isAdminUser(sessionUser)
     if (!adminCheck) {
       return NextResponse.json({ error: 'Admin privileges required' }, { status: 403 })
     }

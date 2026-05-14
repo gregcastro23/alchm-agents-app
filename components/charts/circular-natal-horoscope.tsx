@@ -55,7 +55,7 @@ async function fetchAstrologizeWheel(input: {
     }),
   })
   if (!res.ok) {
-    throw new Error(`astrologize proxy failed: ${res.status}`)
+    return { meta: { degraded: true, fallback: true, error: `astrologize proxy failed: ${res.status}` } }
   }
   return res.json()
 }
@@ -119,9 +119,9 @@ export default function CircularNatalHoroscope({
         const result = await fetchAstrologizeWheel(input as any)
         setHoroscope(result)
         setError(null)
-      } catch (err) {
-        console.error('Error fetching horoscope:', err)
-        setError(err instanceof Error ? err.message : 'Failed to fetch horoscope')
+      } catch {
+        // Backend unavailable — show degraded state instead of error UI
+        setHoroscope({ meta: { degraded: true, fallback: true } })
       } finally {
         setLoading(false)
       }

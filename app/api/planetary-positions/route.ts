@@ -4,7 +4,7 @@ import {
   type AccuracyLevel,
 } from '@/lib/services/planetary-positions-service'
 import { logQuantitiesToGalileo } from '@/lib/galileo-logger'
-import { trackPerformanceMetrics } from './metrics/route'
+import { trackPerformanceMetrics } from '@/lib/metrics/planetary-metrics-storage'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

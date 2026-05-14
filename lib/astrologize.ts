@@ -99,39 +99,8 @@ export async function fetchAstrologizeWheel(birth: BirthInfo): Promise<Astrologi
     return execResult.result
   }
 
-  // External API failed or returned empty result, try local generation with enhanced calculations
-  console.log(
-    'External chart API unavailable, generating local chart with enhanced calculations...'
-  )
-  try {
-    const localChart = generateNatalChartSVG(birth, { useEnhancedCalculations: true })
-    const result = {
-      svg: localChart.svg,
-      meta: {
-        ...localChart.meta,
-        fallback: true,
-        externalApiDegraded: !execResult.result,
-        enhancedLocalGeneration: true,
-      },
-    }
-
-    // Cache the local result as well
-    chartCache.set(birth, result, isCurrentMoment)
-
-    return result
-  } catch (localError) {
-    console.error('Local chart generation failed:', localError)
-
-    // Final fallback - return empty result with clear error indication
-    return {
-      meta: {
-        degraded: true,
-        fallback: true,
-        localGenerationFailed: true,
-        error: localError instanceof Error ? localError.message : 'Unknown error',
-      },
-    }
-  }
+  // External API failed or returned empty result, throw error directly since fallbacks are removed
+  throw new Error('External chart API unavailable and fallbacks have been disabled.')
 }
 
 export type AlchmResponse = {
@@ -178,14 +147,7 @@ export async function fetchAlchmAlchemize(birth: BirthInfo): Promise<AlchmRespon
   })
 
   if (!execResult.result) {
-    // Return fallback data when API is degraded
-    return {
-      spirit: 1.0,
-      essence: 1.0,
-      matter: 1.0,
-      substance: 1.0,
-      meta: { degraded: true, fallback: true },
-    }
+    throw new Error('Alchemize API unavailable and fallbacks have been disabled.')
   }
   if ((execResult as any).degraded) {
     ;(execResult.result as any).meta = {

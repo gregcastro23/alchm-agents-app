@@ -71,92 +71,92 @@ export function TokenDashboardKinetics({
         const backendEnabled = process.env.NEXT_PUBLIC_TOKEN_CALCULATIONS_BACKEND === 'true'
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
 
+        let backendDataLoaded = false
+
         if (backendEnabled) {
-          // Fetch current rates
-          const ratesResponse = await fetch(`${backendUrl}/api/tokens/calculate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              tokens: { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 },
-              location,
-            }),
-          })
+          try {
+            const ratesResponse = await fetch(`${backendUrl}/api/tokens/calculate`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                tokens: { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 },
+                location,
+              }),
+            })
 
-          if (ratesResponse.ok) {
-            const ratesData = await ratesResponse.json()
-            if (ratesData.success) {
-              setCurrentRates(ratesData.data.rates)
-              setMarketPhase(ratesData.data.metadata.marketPhase)
-              setVolatilityIndex(ratesData.data.metadata.volatilityIndex)
-            }
-          }
-
-          // Fetch 24-hour forecast
-          const forecastResponse = await fetch(`${backendUrl}/api/tokens/projections`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location,
-              timeframe: 'nearTerm',
-            }),
-          })
-
-          if (forecastResponse.ok) {
-            const forecastData = await forecastResponse.json()
-            if (forecastData.success) {
-              // Generate 24-hour forecast data points
-              const forecastPoints: TokenForecastPoint[] = []
-              const now = new Date()
-
-              for (let hour = 0; hour < 24; hour++) {
-                const time = new Date(now.getTime() + hour * 60 * 60 * 1000)
-                const timeString = time.toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
-
-                // Apply hourly variations to current rates
-                const hourlyMultiplier = 1 + 0.2 * Math.sin((hour * Math.PI) / 12)
-                const planetaryHours = [
-                  'Sun',
-                  'Moon',
-                  'Mars',
-                  'Mercury',
-                  'Jupiter',
-                  'Venus',
-                  'Saturn',
-                ]
-                const planetaryHour = planetaryHours[hour % 7]
-
-                forecastPoints.push({
-                  time: timeString,
-                  hour,
-                  Spirit:
-                    (currentRates?.Spirit || 1.0) * hourlyMultiplier * (1 + Math.random() * 0.1),
-                  Essence:
-                    (currentRates?.Essence || 0.8) * hourlyMultiplier * (1 + Math.random() * 0.08),
-                  Matter:
-                    (currentRates?.Matter || 0.6) * hourlyMultiplier * (1 + Math.random() * 0.06),
-                  Substance:
-                    (currentRates?.Substance || 0.4) *
-                    hourlyMultiplier *
-                    (1 + Math.random() * 0.05),
-                  planetaryHour,
-                  powerLevel: Math.random() * 0.4 + 0.3,
-                })
+            if (ratesResponse.ok) {
+              const ratesData = await ratesResponse.json()
+              if (ratesData.success) {
+                setCurrentRates(ratesData.data.rates)
+                setMarketPhase(ratesData.data.metadata.marketPhase)
+                setVolatilityIndex(ratesData.data.metadata.volatilityIndex)
+                backendDataLoaded = true
               }
-
-              setForecast(forecastPoints)
-
-              // Find next optimal window (highest power level)
-              const optimalPoint = forecastPoints.reduce((best, point) =>
-                point.powerLevel > best.powerLevel ? point : best
-              )
-              setNextOptimalWindow(new Date(now.getTime() + optimalPoint.hour * 60 * 60 * 1000))
             }
+
+            const forecastResponse = await fetch(`${backendUrl}/api/tokens/projections`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ location, timeframe: 'nearTerm' }),
+            })
+
+            if (forecastResponse.ok) {
+              const forecastData = await forecastResponse.json()
+              if (forecastData.success) {
+                const forecastPoints: TokenForecastPoint[] = []
+                const now = new Date()
+
+                for (let hour = 0; hour < 24; hour++) {
+                  const time = new Date(now.getTime() + hour * 60 * 60 * 1000)
+                  const timeString = time.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                  const hourlyMultiplier = 1 + 0.2 * Math.sin((hour * Math.PI) / 12)
+                  const planetaryHours = [
+                    'Sun',
+                    'Moon',
+                    'Mars',
+                    'Mercury',
+                    'Jupiter',
+                    'Venus',
+                    'Saturn',
+                  ]
+                  forecastPoints.push({
+                    time: timeString,
+                    hour,
+                    Spirit:
+                      (currentRates?.Spirit || 1.0) * hourlyMultiplier * (1 + Math.random() * 0.1),
+                    Essence:
+                      (currentRates?.Essence || 0.8) *
+                      hourlyMultiplier *
+                      (1 + Math.random() * 0.08),
+                    Matter:
+                      (currentRates?.Matter || 0.6) * hourlyMultiplier * (1 + Math.random() * 0.06),
+                    Substance:
+                      (currentRates?.Substance || 0.4) *
+                      hourlyMultiplier *
+                      (1 + Math.random() * 0.05),
+                    planetaryHour: planetaryHours[hour % 7],
+                    powerLevel: Math.random() * 0.4 + 0.3,
+                  })
+                }
+
+                setForecast(forecastPoints)
+                const optimalPoint = forecastPoints.reduce((best, point) =>
+                  point.powerLevel > best.powerLevel ? point : best
+                )
+                setNextOptimalWindow(
+                  new Date(now.getTime() + optimalPoint.hour * 60 * 60 * 1000)
+                )
+              }
+            }
+          } catch {
+            // Backend unavailable — fall through to mock data
           }
-        } else {
-          // Fallback to mock data
+        }
+
+        if (!backendDataLoaded) {
           setCurrentRates({ Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 })
           setMarketPhase('Development Mode')
           setVolatilityIndex(0.3)

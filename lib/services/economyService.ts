@@ -8,6 +8,8 @@ import {
   AGENT_OPERATION_COSTS,
 } from '@/lib/economy-config'
 
+export type TransactionSourceType = 'agents_yield' | 'agents_daily_yield' | 'agents_operation'
+
 export interface TokenBalances {
   spirit: number
   essence: number
@@ -18,27 +20,44 @@ export interface TokenBalances {
 }
 
 export class EconomyService {
-  static async getBalances(userId: string): Promise<TokenBalances> {
-    const balances = await prisma.tokenBalance.upsert({
-      where: { userId },
-      create: {
-        userId,
-        spirit: 0,
-        essence: 0,
-        matter: 0,
-        substance: 0,
-        updatedAt: new Date(),
-      },
-      update: {},
-    })
+  static readonly ZERO_BALANCES: TokenBalances = {
+    spirit: 0,
+    essence: 0,
+    matter: 0,
+    substance: 0,
+    lastDailyClaimAt: null,
+    lastDailyClaimAgentsAt: null,
+  }
 
-    return {
-      spirit: Number(balances.spirit),
-      essence: Number(balances.essence),
-      matter: Number(balances.matter),
-      substance: Number(balances.substance),
-      lastDailyClaimAt: balances.lastDailyClaimAt?.toISOString() || null,
-      lastDailyClaimAgentsAt: balances.lastDailyClaimAgentsAt?.toISOString() || null,
+  static async getBalances(userId: string): Promise<TokenBalances> {
+    try {
+      const balances = await prisma.tokenBalance.upsert({
+        where: { userId },
+        create: {
+          userId,
+          spirit: 0,
+          essence: 0,
+          matter: 0,
+          substance: 0,
+          updatedAt: new Date(),
+        },
+        update: {},
+      })
+
+      return {
+        spirit: Number(balances.spirit),
+        essence: Number(balances.essence),
+        matter: Number(balances.matter),
+        substance: Number(balances.substance),
+        lastDailyClaimAt: balances.lastDailyClaimAt?.toISOString() || null,
+        lastDailyClaimAgentsAt: balances.lastDailyClaimAgentsAt?.toISOString() || null,
+      }
+    } catch (err: any) {
+      // userId is a CUID but token_balances.user_id is a UUID column — pending migration.
+      if (err?.code === 'P2023' || err?.message?.includes('UUID')) {
+        return this.ZERO_BALANCES
+      }
+      throw err
     }
   }
 
@@ -151,10 +170,10 @@ export class EconomyService {
             matter = matter - $3,
             substance = substance - $4,
             updated_at = NOW()
-        WHERE user_id = $5::uuid 
-          AND spirit >= $1 
-          AND essence >= $2 
-          AND matter >= $3 
+        WHERE user_id = $5
+          AND spirit >= $1
+          AND essence >= $2
+          AND matter >= $3
           AND substance >= $4
         RETURNING *
       )
@@ -182,7 +201,7 @@ export class EconomyService {
         INSERT INTO token_transactions (
           transaction_group_id, user_id, token_type, amount, source_type, created_at
         ) VALUES (
-          $1::uuid, $2::uuid, $3, $4, $5, NOW()
+          $1, $2, $3, $4, $5, NOW()
         )
       `,
         transactionGroupId,

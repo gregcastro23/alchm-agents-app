@@ -398,8 +398,8 @@ cp .env.local.example .env.local
 # Add your API keys and database URLs
 
 # Database setup
+bun run prisma:generate
 yarn prisma migrate dev
-yarn prisma generate
 
 # Development server
 yarn dev

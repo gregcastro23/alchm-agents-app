@@ -21,6 +21,16 @@ models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Planetary Agents Core")
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Configuration
 ALCHM_KITCHEN_URL = os.getenv("ALCHM_KITCHEN_URL", "https://whattoeatnext-production.up.railway.app")
 INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", "882133EA-3D06-4DF2-A63C-F4114AB4EFBC")
@@ -291,6 +301,20 @@ async def proxy_alchemize(request: Dict, internal_api_secret: Optional[str] = He
         except Exception as e:
             raise HTTPException(status_code=502, detail=f"Alchemize proxy failed: {str(e)}")
 
+@app.post("/astrologize")
+async def proxy_astrologize(request: Dict, internal_api_secret: Optional[str] = Header(None)):
+    """Proxy /astrologize to the Railway WhatToEatNext backend (alchm.kitchen)."""
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        try:
+            response = await client.post(
+                f"{ALCHM_KITCHEN_URL}/astrologize",
+                json=request,
+                headers={"INTERNAL_API_SECRET": internal_api_secret or INTERNAL_API_SECRET}
+            )
+            return response.json()
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Astrologize proxy failed: {str(e)}")
+
 @app.post("/api/alchemical/quantities")
 async def proxy_alchemical_quantities(request: Dict, internal_api_secret: Optional[str] = Header(None)):
     """Proxy /api/alchemical/quantities to the Railway WhatToEatNext backend (alchm.kitchen)."""
@@ -317,6 +341,45 @@ async def get_positions(request: Dict, internal_api_secret: Optional[str] = Head
             return response.json()
         except Exception as e:
             raise HTTPException(status_code=502, detail=str(e))
+
+@app.post("/api/planetary/current-hour")
+async def proxy_planetary_current_hour(request: Dict, internal_api_secret: Optional[str] = Header(None)):
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        try:
+            response = await client.post(
+                f"{ALCHM_KITCHEN_URL}/api/planetary/current-hour",
+                json=request,
+                headers={"INTERNAL_API_SECRET": internal_api_secret or INTERNAL_API_SECRET}
+            )
+            return response.json()
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Current hour proxy failed: {str(e)}")
+
+@app.post("/api/tokens/calculate")
+async def proxy_tokens_calculate(request: Dict, internal_api_secret: Optional[str] = Header(None)):
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        try:
+            response = await client.post(
+                f"{ALCHM_KITCHEN_URL}/api/tokens/calculate",
+                json=request,
+                headers={"INTERNAL_API_SECRET": internal_api_secret or INTERNAL_API_SECRET}
+            )
+            return response.json()
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Tokens calculate proxy failed: {str(e)}")
+
+@app.post("/api/tokens/projections")
+async def proxy_tokens_projections(request: Dict, internal_api_secret: Optional[str] = Header(None)):
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        try:
+            response = await client.post(
+                f"{ALCHM_KITCHEN_URL}/api/tokens/projections",
+                json=request,
+                headers={"INTERNAL_API_SECRET": internal_api_secret or INTERNAL_API_SECRET}
+            )
+            return response.json()
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Tokens projections proxy failed: {str(e)}")
 
 @app.post("/api/planetary/positions/bulk", response_model=schemas.BulkPositionsResponse)
 async def get_bulk_positions(request: schemas.BulkPositionsRequest, internal_api_secret: Optional[str] = Header(None)):

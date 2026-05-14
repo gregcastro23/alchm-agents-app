@@ -57,11 +57,14 @@ export default function LoginPage() {
       const res = await fetch('/api/economy/yield', { method: 'POST' })
       if (res.ok) {
         await fetchBalances()
+      } else if (res.status === 409) {
+        // Already claimed, just update UI state to reflect this
+        await fetchBalances()
       } else {
-        console.error('Failed to claim yield')
+        console.warn('Failed to claim yield, status:', res.status)
       }
     } catch (e) {
-      console.error('Error claiming yield', e)
+      console.warn('Error claiming yield', e)
     } finally {
       setClaiming(false)
     }

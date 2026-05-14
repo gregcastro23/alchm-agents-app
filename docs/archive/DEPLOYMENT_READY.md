@@ -153,7 +153,7 @@ NEXT_PUBLIC_ENVIRONMENT=production
 ```bash
 # Frontend build and deploy
 yarn install
-npx prisma generate
+bun run prisma:generate
 npx prisma db push  # Run migrations
 yarn build
 # Vercel auto-deploys from Git

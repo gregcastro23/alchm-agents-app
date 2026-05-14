@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { usePathname } from 'next/navigation'
 import { MonicaChatBubble } from '@/components/monica/monica-chat-bubble'
 import { usePlanetaryPositions } from '@/hooks/usePlanetaryPositions'
+import { FloatingAdminPanel } from '@/components/admin/FloatingAdminPanel'
 
 function MonicaWrapper() {
   const pathname = usePathname()
@@ -26,6 +27,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <SessionProvider>
       {children}
       <Toaster />
+      <FloatingAdminPanel />
       <MonicaWrapper />
     </SessionProvider>
   )

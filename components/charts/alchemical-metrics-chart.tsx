@@ -104,6 +104,11 @@ export default function AlchemicalMetricsChart({
     animationSpeed: 1000,
   })
 
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   const [metricToggles, setMetricToggles] = useState<MetricToggle[]>([
     // Alchemical metrics
     {
@@ -265,28 +270,33 @@ export default function AlchemicalMetricsChart({
     return data.map((moment, index) => {
       const timestampDate =
         moment.timestamp instanceof Date ? moment.timestamp : new Date(moment.timestamp)
+      const safeNum = (val: any) => {
+        if (val === null || val === undefined || Number.isNaN(Number(val))) return 0
+        return Number(val)
+      }
+
       const processedMoment: any = {
         index,
         timestamp: timestampDate.getTime(),
         formattedTime: timestampDate.toLocaleTimeString(),
         formattedDate: timestampDate.toLocaleDateString(),
-        A_number: moment.alchemical?.A_number ?? 0,
-        spirit: moment.alchemical?.spirit ?? 0,
-        matter: moment.alchemical?.matter ?? 0,
-        essence: moment.alchemical?.essence ?? 0,
-        substance: moment.alchemical?.substance ?? 0,
-        power: moment.kinetic?.power ?? 0,
-        inertia: moment.kinetic?.inertia ?? 0,
-        heat: moment.thermodynamic?.heat ?? 0,
-        entropy: moment.thermodynamic?.entropy ?? 0,
-        reactivity: moment.thermodynamic?.reactivity ?? 0,
-        energy: moment.thermodynamic?.energy ?? 0,
-        Fire: moment.elemental?.Fire ?? 0,
-        Water: moment.elemental?.Water ?? 0,
-        Air: moment.elemental?.Air ?? 0,
-        Earth: moment.elemental?.Earth ?? 0,
-        resonanceLevel: (moment.consciousness?.resonanceLevel ?? 0) * 100,
-        spiritualAmplitude: moment.consciousness?.spiritualAmplitude ?? 0,
+        A_number: safeNum(moment.alchemical?.A_number),
+        spirit: safeNum(moment.alchemical?.spirit),
+        matter: safeNum(moment.alchemical?.matter),
+        essence: safeNum(moment.alchemical?.essence),
+        substance: safeNum(moment.alchemical?.substance),
+        power: safeNum(moment.kinetic?.power),
+        inertia: safeNum(moment.kinetic?.inertia),
+        heat: safeNum(moment.thermodynamic?.heat),
+        entropy: safeNum(moment.thermodynamic?.entropy),
+        reactivity: safeNum(moment.thermodynamic?.reactivity),
+        energy: safeNum(moment.thermodynamic?.energy),
+        Fire: safeNum(moment.elemental?.Fire),
+        Water: safeNum(moment.elemental?.Water),
+        Air: safeNum(moment.elemental?.Air),
+        Earth: safeNum(moment.elemental?.Earth),
+        resonanceLevel: safeNum(moment.consciousness?.resonanceLevel) * 100,
+        spiritualAmplitude: safeNum(moment.consciousness?.spiritualAmplitude),
         evolutionPhase: moment.consciousness?.evolutionPhase ?? 'dormant',
         dominantPlanet: moment.planetary?.dominantPlanet ?? 'Unknown',
       }
@@ -783,9 +793,13 @@ export default function AlchemicalMetricsChart({
         {/* Chart */}
         <div className="relative">
           {filteredData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={isExpanded ? 600 : height}>
-              {renderChart()}
-            </ResponsiveContainer>
+            <div className="w-full" style={{ height: isExpanded ? 600 : height, minWidth: 100 }}>
+              {isMounted && (
+                <ResponsiveContainer width="100%" height="100%">
+                  {renderChart()}
+                </ResponsiveContainer>
+              )}
+            </div>
           ) : (
             <div className="flex items-center justify-center h-64">
               <div className="text-center text-purple-400">

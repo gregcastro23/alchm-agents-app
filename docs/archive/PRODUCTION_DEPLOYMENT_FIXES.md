@@ -115,7 +115,7 @@ If you're seeing database errors:
 
 ```bash
 # Generate Prisma client
-npx prisma generate
+bun run prisma:generate
 
 # Push schema to database
 npx prisma db push

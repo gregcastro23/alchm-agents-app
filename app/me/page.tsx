@@ -56,7 +56,7 @@ export default async function MePage() {
 
   // ── Onboarding (no birth info yet) ──────────────────────────────────
   const userId = session.user.id
-  const profile = await prisma.profile.findUnique({ where: { userId } })
+  const profile = await prisma.profiles.findUnique({ where: { userId } })
 
   if (!profile?.birthInfo) {
     return (

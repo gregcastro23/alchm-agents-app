@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth-options'
 
 /**
  * Get the current authenticated user from NextAuth session

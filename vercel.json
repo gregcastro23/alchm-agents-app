@@ -1,6 +1,6 @@
 {
   "installCommand": "bun install",
-  "buildCommand": "bun prisma generate && bun run build",
+  "buildCommand": "bun run prisma:generate && bun run build",
   "framework": "nextjs",
   "regions": ["iad1"],
   "git": {
@@ -12,6 +12,20 @@
       "NODE_VERSION": "20.x"
     }
   },
+  "crons": [
+    {
+      "path": "/api/cron/agents/claim-yield",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/agents/tick",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/push-feed",
+      "schedule": "*/30 * * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/api/(.*)",

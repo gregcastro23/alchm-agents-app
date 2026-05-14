@@ -38,6 +38,7 @@ cd backend && ruff check .             # Lint
 
 ```bash
 npx prisma studio                      # Prisma DB browser
+bun run prisma:generate                # Generate Prisma client without engine
 npx prisma migrate dev                 # Run migrations locally
 npx tsx scripts/seed-historical-agents.ts   # Seed agent data
 yarn sync:all                          # Sync DB + ChromaDB
