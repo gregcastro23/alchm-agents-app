@@ -72,7 +72,7 @@ export function AgentDetailModal({ agent, trigger, open, onOpenChange }: AgentDe
     }
   }
 
-  const getConsciousnessColor = (level: string) => {
+  const getConsciousnessColor = (level?: string) => {
     switch (level) {
       case 'Transcendent':
         return 'bg-purple-600 text-white'
@@ -95,7 +95,7 @@ export function AgentDetailModal({ agent, trigger, open, onOpenChange }: AgentDe
     return `${location.name} (${location.lat.toFixed(1)}°, ${location.lon.toFixed(1)}°)`
   }
 
-  const getConsciousnessDescription = (level: string) => {
+  const getConsciousnessDescription = (level?: string) => {
     switch (level) {
       case 'Transcendent':
         return 'Beyond individual consciousness - unified with cosmic awareness'

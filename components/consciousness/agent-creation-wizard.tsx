@@ -258,7 +258,7 @@ export function AgentCreationWizard({
     try {
       if (currentStep === 'activation_ritual') {
         // Final step - create the actual agent via API
-        if (agentPreview) onComplete(agentPreview)
+        if (agentPreview) onComplete(agentPreview as AgentPreview)
 
         if (onRunCreation) {
           const result = await onRunCreation({
@@ -268,7 +268,7 @@ export function AgentCreationWizard({
           })
 
           setCreationResult(result)
-          if (result?.agent) onComplete(result.agent)
+          if (result?.agent) onComplete(result.agent as AgentPreview)
         }
       } else {
         // For other steps, simulate processing and proceed with real calculations where applicable
@@ -389,7 +389,7 @@ export function AgentCreationWizard({
       console.error('Error in wizard step:', error)
       // Continue with next step or fallback behavior
       if (currentStep === 'activation_ritual' && agentPreview) {
-        onComplete(agentPreview)
+        onComplete(agentPreview as AgentPreview)
       } else {
         nextStep()
       }

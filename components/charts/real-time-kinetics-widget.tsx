@@ -254,7 +254,7 @@ export function RealTimeKineticsWidget({
   // Get optimal agent types based on current conditions
   const getOptimalAgentTypes = (
     planetaryHour: string,
-    alchemical: NonNullable<typeof kineticData>['alchemicalLevels']
+    alchemical: Record<string, number>
   ): string[] => {
     const types = []
 

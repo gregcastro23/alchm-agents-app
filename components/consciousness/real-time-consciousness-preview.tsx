@@ -132,9 +132,9 @@ export function RealTimeConsciousnessPreview({
     // Determine dominant element
     const elements = { spirit, essence, matter, substance }
     const elementNames = { spirit: 'Fire', essence: 'Water', matter: 'Air', substance: 'Earth' }
-    const dominantKey = Object.keys(elements).reduce((a, b) =>
-      elements[a as keyof typeof elements] > elements[b as keyof typeof elements] ? a : b
-    ) as keyof typeof elements
+    const dominantKey = (Object.keys(elements) as Array<keyof typeof elements>).reduce((a, b) =>
+      elements[a] > elements[b] ? a : b
+    )
     const dominantElement = elementNames[dominantKey]
 
     // Calculate additional metrics
