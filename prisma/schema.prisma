@@ -1148,6 +1148,7 @@ model user_profiles {
   birthTime            String?
   birthLocation        Json
   natalChart           Json
+  natalPositions       Json?
   monicaConstant       Float
   dominantElement      String
   allowPublicAgents    Boolean          @default(false)
@@ -1161,19 +1162,23 @@ model user_profiles {
 }
 
 model users {
-  id             String           @id @default(cuid())
-  email          String           @unique
-  passwordHash   String?
-  name           String?
-  provider       String?          @default("email")
-  role           String           @default("user")
-  verified       Boolean          @default(false)
-  createdAt      DateTime         @default(now())
-  lastLogin      DateTime?
-  created_agents created_agents[]
-  user_profiles  user_profiles?
+  id              String           @id @default(cuid())
+  email           String           @unique
+  passwordHash    String?
+  name            String?
+  provider        String?          @default("email")
+  role            String           @default("user")
+  isAgentic       Boolean          @default(false)
+  verified        Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  lastLogin       DateTime?
+  lastActivationAt DateTime?
+  activationCount  Int             @default(0)
+  created_agents  created_agents[]
+  user_profiles   user_profiles?
 
   @@index([email])
+  @@index([isAgentic])
 }
 
 model RAGQuery {
@@ -1306,8 +1311,8 @@ enum historical_era {
 }
 
 model UserSubscription {
-  id                   String   @id @db.Uuid
-  userId               String   @unique @map("user_id") @db.Uuid
+  id                   String   @id
+  userId               String   @unique @map("user_id")
   tier                 String
   status               String
   stripeCustomerId     String?  @map("stripe_customer_id")
@@ -1321,7 +1326,7 @@ model UserSubscription {
 }
 
 model TokenBalance {
-  userId                   String    @id @map("user_id") @db.Uuid
+  userId                   String    @id @map("user_id")
   spirit                   Decimal   @db.Decimal(12, 4)
   essence                  Decimal   @db.Decimal(12, 4)
   matter                   Decimal   @db.Decimal(12, 4)
@@ -1334,8 +1339,8 @@ model TokenBalance {
 
 model TokenTransaction {
   id                 BigInt   @id @default(autoincrement())
-  transactionGroupId String   @map("transaction_group_id") @db.Uuid
-  userId             String   @map("user_id") @db.Uuid
+  transactionGroupId String   @map("transaction_group_id")
+  userId             String   @map("user_id")
   tokenType          String   @map("token_type") @db.VarChar(20)
   amount             Decimal  @db.Decimal(12, 4)
   sourceType         String   @map("source_type") @db.VarChar(50)
