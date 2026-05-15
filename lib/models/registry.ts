@@ -12,12 +12,17 @@
 // ============================================================================
 
 export const CLAUDE = {
-  // Claude 3.5/3 — Current verified production models
-  OPUS: 'claude-3-opus-20240229', // Flagship — complex reasoning, agentic coding
-  SONNET: 'claude-3-5-sonnet-20241022', // Balanced — speed + intelligence for professional use
-  HAIKU: 'claude-3-5-haiku-20241022', // Fast — high-volume, cost-efficient tasks
+  // Claude 4.x — current cutting-edge family (as of May 2026)
+  OPUS_4_7: 'claude-opus-4-7', // Most capable — extended thinking, reflective work
+  SONNET_4_6: 'claude-sonnet-4-6', // Balanced — primary default for substantive chat
+  HAIKU_4_5: 'claude-haiku-4-5-20251001', // Fast, cheap — default for historical agent chat
 
-  // Aliases kept for backward compat
+  // Aliases — point semantic names at the modern family
+  OPUS: 'claude-opus-4-7',
+  SONNET: 'claude-sonnet-4-6',
+  HAIKU: 'claude-haiku-4-5-20251001',
+
+  // Legacy IDs kept for backward compatibility with any hardcoded callers
   LEGACY_SONNET_3_5: 'claude-3-5-sonnet-20241022',
   LEGACY_HAIKU_3_5: 'claude-3-5-haiku-20241022',
   LEGACY_OPUS_3: 'claude-3-opus-20240229',
@@ -114,6 +119,30 @@ export const MODEL_TIERS = {
     groq: GROQ.LLAMA_8B, // Ultra-fast free model
   },
 } as const
+
+/**
+ * Cost-aware tiers for historical agent chat.
+ *
+ * The Python backend (/api/chat) resolves these tier names to concrete models.
+ * `cheap_fast` is the runtime default. Free tier falls back automatically when
+ * Anthropic returns quota/billing errors.
+ *
+ * Set `HISTORICAL_AGENT_DEFAULT_TIER` and `HISTORICAL_AGENT_MAX_TIER` env vars
+ * on the backend to override defaults / cap the ceiling.
+ */
+export const HISTORICAL_AGENT_TIERS = {
+  /** Groq Llama 3.3 — free tier, used as fallback or for autonomous bulk ops */
+  FREE: { provider: 'groq', model: GROQ.LLAMA_70B },
+  /** Haiku 4.5 — fast, cheap, strong persona-following. DEFAULT. */
+  CHEAP_FAST: { provider: 'anthropic', model: CLAUDE.HAIKU_4_5 },
+  /** Sonnet 4.6 — substantive chat, opt-in via modelTier param */
+  PRIMARY: { provider: 'anthropic', model: CLAUDE.SONNET_4_6 },
+  /** Opus 4.7 — rare reflective/extended-thinking turns */
+  REFLECTIVE: { provider: 'anthropic', model: CLAUDE.OPUS_4_7 },
+} as const
+
+export type HistoricalAgentTier = keyof typeof HISTORICAL_AGENT_TIERS
+export type HistoricalAgentTierLower = Lowercase<HistoricalAgentTier>
 
 // ============================================================================
 // FALLBACK CHAINS — Graceful degradation if a model is unavailable

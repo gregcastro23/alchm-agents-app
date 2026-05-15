@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth-options'
 import { backend } from '@/lib/backend'
+import { buildAgentContext } from '@/lib/agents/persona/build-agent-context'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
 
 interface UnifiedAgentRequest {
@@ -68,12 +69,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
           )
         }
 
+        const personaCtx = parameters.agentId ? buildAgentContext(parameters.agentId) : null
+
         const chatData = await backend.agents.chat({
           agentId: parameters.agentId,
           message: parameters.message || parameters.userMessage,
           sessionId: parameters.sessionId,
           userId: parameters.userId || userId,
           context: parameters.context,
+          systemPromptOverride: personaCtx?.personaBlock,
+          personaCacheKey: personaCtx?.cacheKey,
+          modelTier: parameters.modelTier,
         })
 
         // Conserve interaction logging

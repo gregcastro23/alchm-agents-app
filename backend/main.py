@@ -36,6 +36,64 @@ ALCHM_KITCHEN_URL = os.getenv("ALCHM_KITCHEN_URL", "https://whattoeatnext-produc
 INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", "882133EA-3D06-4DF2-A63C-F4114AB4EFBC")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+# Cost-tiered model selection for historical agent chat.
+# CHEAP_FAST is the default — Haiku 4.5 is markedly cheaper than Sonnet
+# while staying strong at persona following.
+MODEL_TIER_MAP = {
+    "free":       {"provider": "groq",      "model": "llama-3.3-70b-versatile"},
+    "cheap_fast": {"provider": "anthropic", "model": "claude-haiku-4-5-20251001"},
+    "primary":    {"provider": "anthropic", "model": "claude-sonnet-4-6"},
+    "reflective": {"provider": "anthropic", "model": "claude-opus-4-7"},
+}
+DEFAULT_TIER = os.getenv("HISTORICAL_AGENT_DEFAULT_TIER", "cheap_fast")
+MAX_TIER = os.getenv("HISTORICAL_AGENT_MAX_TIER", "primary")
+TIER_ORDER = ["free", "cheap_fast", "primary", "reflective"]
+RAG_MIN_SIMILARITY = float(os.getenv("RAG_MIN_SIMILARITY", "0.0"))
+
+
+def _resolve_tier(requested: Optional[str]) -> str:
+    """Pick a tier, clamped to MAX_TIER and falling back to DEFAULT_TIER."""
+    tier = (requested or DEFAULT_TIER).lower()
+    if tier not in MODEL_TIER_MAP:
+        tier = DEFAULT_TIER
+    if TIER_ORDER.index(tier) > TIER_ORDER.index(MAX_TIER):
+        tier = MAX_TIER
+    return tier
+
+
+def _format_rag_block(documents, distances=None) -> str:
+    """
+    Wrap retrieved chunks as labeled reference material so the model treats
+    them as facts to recall, not voice to mimic. Returns empty string if no
+    useful chunks survive the similarity threshold.
+    """
+    if not documents:
+        return ""
+
+    keep = []
+    for i, doc in enumerate(documents):
+        if not doc:
+            continue
+        if distances and i < len(distances):
+            # Chroma returns distance (lower is closer). Convert to a similarity.
+            sim = max(0.0, 1.0 - float(distances[i]))
+            if sim < RAG_MIN_SIMILARITY:
+                continue
+        keep.append(doc)
+
+    if not keep:
+        return ""
+
+    body = "\n\n---\n\n".join(keep)
+    return (
+        "<reference_material>\n"
+        "These are excerpts that may help you recall specific knowledge.\n"
+        "Speak in your own voice. Do not quote these verbatim unless asked.\n\n"
+        f"{body}\n"
+        "</reference_material>"
+    )
 
 @app.get("/health", response_model=schemas.HealthResponse)
 async def health():
@@ -118,75 +176,132 @@ def create_agent(agent: schemas.AgentCreate, db: Session = Depends(database.get_
 
 @app.post("/api/chat", response_model=schemas.ChatResponse)
 async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_db)):
-    # 1. Get Agent Data
+    # 1. Resolve agent (still needed for RAG filter and DB recording)
     db_agent = crud.get_agent(db, agent_id=request.agentId)
-    
-    # 2. Determine System Prompt
+
+    # 2. Build persona block.
+    # Priority: caller-supplied override (canonical TS builder) > Monica template > enriched Python fallback.
     context = request.context or {}
-    
-    if request.agentId == "monica-001":
-        system_prompt = prompts.build_monica_prompt(context)
+    if request.systemPromptOverride:
+        persona_block = request.systemPromptOverride
+    elif request.agentId == "monica-001":
+        persona_block = prompts.build_monica_prompt(context)
     elif db_agent:
-        system_prompt = prompts.get_agent_system_prompt(db_agent.__dict__)
+        persona_block = prompts.get_agent_system_prompt(db_agent.__dict__)
     else:
         raise HTTPException(status_code=404, detail="Agent not found")
-        
-    # 3. RAG Enhancement
-    rag_context = ""
+
+    # 3. RAG — labeled reference material, augments persona without dominating.
+    rag_block = ""
     try:
-        # Search agent's knowledge
         rag_results = rag.vector_store.query(
             collection_name="historical-agents",
             query_text=request.message,
             n_results=3,
-            where={"agentId": request.agentId}
+            where={"agentId": request.agentId},
         )
         if rag_results and rag_results.get("documents") and rag_results["documents"]:
-            rag_context = "\n\nRelevant Knowledge:\n" + "\n".join(rag_results["documents"][0])
+            distances = (rag_results.get("distances") or [[]])[0]
+            rag_block = _format_rag_block(rag_results["documents"][0], distances)
     except Exception as e:
         print(f"RAG Error: {e}")
-        
-    full_system_prompt = system_prompt + rag_context
-        
-    # 4. Call AI
+
+    # 4. Pick tier and model.
+    tier = _resolve_tier(request.modelTier)
+    tier_cfg = MODEL_TIER_MAP[tier]
+
+    # 5. Call AI with tier-aware routing.
     text = f"Persona response for {request.agentId}: [AI Implementation Pending API Key Verification]"
-    
+    used_provider = None
+    used_model = None
+    cache_hit = None
     anthropic_failed = False
-    if ANTHROPIC_API_KEY:
+
+    if tier_cfg["provider"] == "anthropic" and ANTHROPIC_API_KEY:
         try:
             client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
+            # Anthropic prompt caching: cache the (large, stable) persona block.
+            # The RAG block changes per query, so it's a separate uncached segment.
+            system_blocks = [
+                {
+                    "type": "text",
+                    "text": persona_block,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ]
+            if rag_block:
+                system_blocks.append({"type": "text", "text": rag_block})
+
             message = await client.messages.create(
-                model=os.getenv("DEFAULT_MODEL", "claude-3-5-sonnet-20241022"),
+                model=tier_cfg["model"],
                 max_tokens=1024,
-                system=full_system_prompt,
-                messages=[
-                    {"role": "user", "content": request.message}
-                ]
+                system=system_blocks,
+                messages=[{"role": "user", "content": request.message}],
             )
             text = message.content[0].text
+            used_provider = "anthropic"
+            used_model = tier_cfg["model"]
+            usage = getattr(message, "usage", None)
+            if usage is not None:
+                cached_read = getattr(usage, "cache_read_input_tokens", 0) or 0
+                cached_write = getattr(usage, "cache_creation_input_tokens", 0) or 0
+                cache_hit = {"read": cached_read, "write": cached_write}
         except Exception as e:
             anthropic_failed = True
-            text = f"Error calling Anthropic: {str(e)}"
-            print(text)
-            
-    # Fallback to OpenAI if Anthropic failed or key is missing
-    if (not ANTHROPIC_API_KEY or anthropic_failed) and OPENAI_API_KEY:
+            err_str = str(e).lower()
+            quota_error = any(s in err_str for s in ("429", "quota", "rate", "billing", "insufficient"))
+            print(f"Anthropic error (quota={quota_error}): {e}")
+
+    # 6. Fallback chain.
+    # Free fallback (Groq) when explicitly requested OR when Anthropic hit quota/billing limits.
+    need_free_fallback = (
+        tier_cfg["provider"] == "groq"
+        or (anthropic_failed and GROQ_API_KEY)
+    )
+    if used_provider is None and need_free_fallback and GROQ_API_KEY:
+        try:
+            from openai import AsyncOpenAI as _AsyncOpenAI
+            groq_client = _AsyncOpenAI(
+                api_key=GROQ_API_KEY,
+                base_url="https://api.groq.com/openai/v1",
+            )
+            full_system = persona_block + ("\n\n" + rag_block if rag_block else "")
+            response = await groq_client.chat.completions.create(
+                model=MODEL_TIER_MAP["free"]["model"],
+                messages=[
+                    {"role": "system", "content": full_system},
+                    {"role": "user", "content": request.message},
+                ],
+                max_tokens=1024,
+            )
+            text = response.choices[0].message.content
+            used_provider = "groq"
+            used_model = MODEL_TIER_MAP["free"]["model"]
+        except Exception as e:
+            print(f"Groq fallback error: {e}")
+
+    # OpenAI as last-ditch fallback if both Anthropic and Groq are unavailable.
+    if used_provider is None and OPENAI_API_KEY:
         try:
             from openai import AsyncOpenAI
             openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+            full_system = persona_block + ("\n\n" + rag_block if rag_block else "")
             response = await openai_client.chat.completions.create(
                 model=os.getenv("MONICA_DEFAULT_MODEL", "gpt-4o-mini"),
                 messages=[
-                    {"role": "system", "content": full_system_prompt},
-                    {"role": "user", "content": request.message}
+                    {"role": "system", "content": full_system},
+                    {"role": "user", "content": request.message},
                 ],
-                max_tokens=1024
+                max_tokens=1024,
             )
             text = response.choices[0].message.content
+            used_provider = "openai"
+            used_model = os.getenv("MONICA_DEFAULT_MODEL", "gpt-4o-mini")
         except Exception as e:
-            text = f"Error calling OpenAI fallback: {str(e)}\nPrevious Error: {text}"
-    
-    # 5. Record Conversation
+            text = f"Error calling OpenAI fallback: {str(e)}"
+            print(text)
+
+    # 7. Record Conversation
     session_id = request.sessionId or f"session-{datetime.utcnow().timestamp()}"
     try:
         crud.create_conversation(db, schemas.ConversationCreate(
@@ -194,20 +309,27 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
             sessionId=session_id,
             userId=request.userId,
             userMessage=request.message,
-            agentResponse=text
+            agentResponse=text,
+            modelUsed=used_model,
         ))
     except Exception as e:
         print(f"Warning: Failed to record conversation for {request.agentId}: {e}")
         db.rollback()
-    
+
     return {
         "text": text,
         "agentId": request.agentId,
         "sessionId": session_id,
         "metadata": {
             "timestamp": datetime.utcnow().isoformat(),
-            "rag_used": bool(rag_context)
-        }
+            "rag_used": bool(rag_block),
+            "tier": tier,
+            "provider": used_provider,
+            "model": used_model,
+            "persona_source": "override" if request.systemPromptOverride else "python_template",
+            "persona_cache_key": request.personaCacheKey,
+            "cache": cache_hit,
+        },
     }
 
 # --- RAG Management ---

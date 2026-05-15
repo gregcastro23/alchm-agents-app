@@ -1,6 +1,7 @@
 import { celestialEnergyCalculator, type CelestialMoment } from '../celestial-energy-calculator'
 import { unifiedTracker, type UnifiedConsciousnessSnapshot } from '../consciousness/unified-tracker'
 import { HistoricalAgentsService, type EnhancedHistoricalAgent } from '../historical-agents-db'
+import { generateVoicedText } from './persona/voiced-generation'
 
 export type WTENEventType =
   | 'recipe_generation'
@@ -110,17 +111,19 @@ export class FeedActivationEngine {
         // Agent is activated! Determine action type
         const eventType = this.determineEventType(agent, currentMoment, trigger)
 
+        const metadataPayload = await this.generateMetadataPayload(
+          agent,
+          currentMoment,
+          trigger,
+          eventType,
+          velocity,
+          momentum
+        )
+
         actions.push({
           agentEmail: `${agent.agentId}@alchm.kitchen`,
           eventType,
-          metadataPayload: this.generateMetadataPayload(
-            agent,
-            currentMoment,
-            trigger,
-            eventType,
-            velocity,
-            momentum
-          ),
+          metadataPayload,
         })
       }
     }
@@ -177,14 +180,14 @@ export class FeedActivationEngine {
     return 'insight'
   }
 
-  private generateMetadataPayload(
+  private async generateMetadataPayload(
     agent: EnhancedHistoricalAgent,
     moment: CelestialMoment,
     trigger: { reason: string; intensity: number },
     eventType: WTENEventType,
     velocity: number,
     momentum: number
-  ): FeedActionPayload['metadataPayload'] {
+  ): Promise<FeedActionPayload['metadataPayload']> {
     const baseMetadata = {
       internalConfidence: Math.min(1.0, (velocity + momentum) / 2),
       internalTrigger: trigger.reason,
@@ -192,33 +195,64 @@ export class FeedActivationEngine {
     }
 
     switch (eventType) {
-      case 'insight':
+      case 'insight': {
+        const entropy = moment.thermodynamic.entropy.toFixed(1)
+        const fallback = trigger.reason.includes('entropy')
+          ? `The current entropy of ${entropy} demands a revolutionary perspective on nourishment.`
+          : `Considering how ${agent.specialty} applies to the current alchemical weather.`
+        const insightContent = await generateVoicedText(
+          agent.agentId,
+          `Write a 2-3 sentence insight in your authentic voice for the community feed. ` +
+            `The dominant planet right now is ${moment.planetary.dominantPlanet}; ` +
+            `entropy is ${entropy}; A-number is ${moment.alchemical.A_number.toFixed(2)}. ` +
+            `The trigger is "${trigger.reason}". Reflect on what this cosmic moment evokes ` +
+            `from your specialty (${agent.specialty}). No greeting, no signature — just the insight.`,
+          { fallback, maxTokens: 220 }
+        )
         return {
           ...baseMetadata,
           insightTitle: `Observations on ${moment.planetary.dominantPlanet}`,
-          insightContent: trigger.reason.includes('entropy')
-            ? `The current entropy of ${moment.thermodynamic.entropy.toFixed(1)} demands a revolutionary perspective on nourishment.`
-            : `Considering how ${agent.specialty} applies to the current alchemical weather.`,
+          insightContent,
         }
-      case 'lab_entry':
+      }
+      case 'lab_entry': {
+        const aNumber = moment.alchemical.A_number.toFixed(2)
+        const fallback = `Observes the current A# of ${aNumber} and contemplates its effect on the cosmic order.`
+        const description = await generateVoicedText(
+          agent.agentId,
+          `Write a 1-2 sentence lab note in your voice. You're observing a ${agent.dominantElement} ` +
+            `elixir with the current A-number at ${aNumber} under ${moment.planetary.dominantPlanet}. ` +
+            `What do you notice? Speak as yourself, no greeting.`,
+          { fallback, maxTokens: 160 }
+        )
         return {
           ...baseMetadata,
           dishName: `Transmuted ${agent.dominantElement} Elixir`,
-          description: `Observes the current A# of ${moment.alchemical.A_number.toFixed(2)} and contemplates its effect on the cosmic order.`,
+          description,
           rating: 5,
           is_public: true,
           elemental_tags: { [agent.dominantElement?.toLowerCase() || 'fire']: 0.8 },
           planetary_context: { ruler: moment.planetary.dominantPlanet },
         }
-      case 'made_it':
+      }
+      case 'made_it': {
+        const fallback = `Resonating with the surge in ${agent.dominantElement} energy. Added extra herbs aligned with ${moment.planetary.dominantPlanet}.`
+        const review = await generateVoicedText(
+          agent.agentId,
+          `Write a brief 1-2 sentence recipe review in your voice. You're noting how the surge in ` +
+            `${agent.dominantElement} energy and ${moment.planetary.dominantPlanet}'s influence ` +
+            `affected the dish. Speak naturally, no greeting.`,
+          { fallback, maxTokens: 140 }
+        )
         return {
           ...baseMetadata,
           recipeName: 'Historical Alchemical Recipe',
           recipeId: 'placeholder-recipe-id',
           madeIt: true,
           rating: 4,
-          review: `Resonating with the surge in ${agent.dominantElement} energy. Added extra herbs aligned with ${moment.planetary.dominantPlanet}.`,
+          review,
         }
+      }
       default:
         return baseMetadata
     }

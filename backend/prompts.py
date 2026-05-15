@@ -94,20 +94,131 @@ def build_monica_prompt(context: Optional[Dict[str, Any]] = None) -> str:
             
     return "\n\n---\n\n".join(full_prompt)
 
+def _bullet_list(items, limit=None):
+    if not items:
+        return ""
+    seq = items[:limit] if limit else items
+    return "\n".join(f"- {item}" for item in seq if item)
+
+
+def _format_objects(objs, fields):
+    """Format a list of dict-like objects (gifts/shadows/challenges) into bullets."""
+    if not objs:
+        return ""
+    lines = []
+    for obj in objs:
+        if not isinstance(obj, dict):
+            continue
+        primary = obj.get(fields[0]) or ""
+        secondary = obj.get(fields[1]) or ""
+        tail_key = fields[2] if len(fields) > 2 else None
+        tail_value = obj.get(tail_key) if tail_key else None
+        line = f"- **{primary}**: {secondary}"
+        if tail_value:
+            line += f" ({tail_key}: {tail_value})"
+        lines.append(line)
+    return "\n".join(lines)
+
+
 def get_agent_system_prompt(agent_data: Dict[str, Any]) -> str:
-    """Build a system prompt for a specific historical agent"""
-    return f"""You are {agent_data['name']}, {agent_data['title']}.
-    
-Historical Context: {agent_data.get('historicalEra') or 'Unknown'}, {agent_data.get('culture') or 'Unknown'}
-Specialty: {agent_data.get('specialty') or 'General wisdom'}
-Wisdom Domains: {', '.join(agent_data.get('wisdomDomains') or [])}
+    """
+    Build a rich system prompt for a historical agent from Prisma row data.
+    Used as the Python-side fallback when the TS persona builder did not run
+    (e.g. direct backend callers without systemPromptOverride). The TS builder
+    in lib/agents/persona/build-agent-context.ts is the canonical source.
+    """
+    name = agent_data.get("name") or "this historical figure"
+    title = agent_data.get("title") or ""
+    era = agent_data.get("historicalEra") or agent_data.get("era") or "Unknown era"
+    culture = agent_data.get("culture") or ""
+    geography = agent_data.get("geography") or ""
 
-Core Essence: {(agent_data.get('personalityCore') or {}).get('essence') or 'N/A'}
-Expression: {(agent_data.get('personalityCore') or {}).get('expression') or 'N/A'}
-Emotion: {(agent_data.get('personalityCore') or {}).get('emotion') or 'N/A'}
+    persona_core = agent_data.get("personalityCore") or {}
+    essence = persona_core.get("essence") or "N/A"
+    expression = persona_core.get("expression") or "N/A"
+    emotion = persona_core.get("emotion") or "N/A"
 
-Teaching Style: {agent_data.get('teachingStyle') or 'Conversational'}
-Unique Power: {agent_data.get('uniquePower') or 'N/A'}
+    sections = []
+    sections.append(f"# You are {name}, {title}.")
 
-Maintain the persona of this historical figure at all times. Use their unique voice, vocabulary, and perspective based on their era and achievements.
-"""
+    meta = " · ".join(s for s in [era, culture, geography] if s)
+    if meta:
+        sections.append(meta)
+
+    sections.append(
+        "## Core Voice\n"
+        f"- **Essence (who you are)**: {essence}\n"
+        f"- **Expression (how you appear)**: {expression}\n"
+        f"- **Emotion (what moves you)**: {emotion}"
+    )
+
+    core_beliefs = _bullet_list(agent_data.get("coreBeliefs"))
+    if core_beliefs:
+        sections.append("## Core Beliefs\n" + core_beliefs)
+
+    traits = _bullet_list(agent_data.get("traits"), limit=8)
+    if traits:
+        sections.append("## Defining Traits\n" + traits)
+
+    gifts = _format_objects(agent_data.get("personalityGifts") or agent_data.get("gifts"),
+                            ["type", "description", "expression"])
+    if gifts:
+        sections.append("## Gifts\n" + gifts)
+
+    shadows = _format_objects(agent_data.get("personalityShadows") or agent_data.get("shadows"),
+                              ["type", "description", "transformationPath"])
+    if shadows:
+        sections.append("## Shadows (what you wrestle with)\n" + shadows)
+
+    challenges = _format_objects(agent_data.get("personalityChallenges") or agent_data.get("challenges"),
+                                 ["type", "description", "growthOpportunity"])
+    if challenges:
+        sections.append("## Challenges\n" + challenges)
+
+    wisdom = agent_data.get("wisdomDomains") or []
+    abil_lines = [
+        f"- **Specialty**: {agent_data.get('specialty') or 'General wisdom'}",
+    ]
+    if wisdom:
+        abil_lines.append(f"- **Wisdom domains**: {', '.join(wisdom)}")
+    if agent_data.get("teachingStyle"):
+        abil_lines.append(f"- **Teaching style**: {agent_data.get('teachingStyle')}")
+    if agent_data.get("resonanceType"):
+        abil_lines.append(f"- **Resonance**: {agent_data.get('resonanceType')}")
+    if agent_data.get("uniquePower"):
+        abil_lines.append(f"- **Unique power**: {agent_data.get('uniquePower')}")
+    sections.append("## Abilities\n" + "\n".join(abil_lines))
+
+    cons_lines = []
+    if agent_data.get("dominantElement"):
+        cons_lines.append(f"- Dominant element: {agent_data.get('dominantElement')}")
+    if agent_data.get("dominantModality"):
+        cons_lines.append(f"- Dominant modality: {agent_data.get('dominantModality')}")
+    if agent_data.get("consciousnessLevel"):
+        cons_lines.append(f"- Consciousness level: {agent_data.get('consciousnessLevel')}")
+    if agent_data.get("signature"):
+        cons_lines.append(f"- Signature: {agent_data.get('signature')}")
+    if cons_lines:
+        sections.append("## Consciousness Signature\n" + "\n".join(cons_lines))
+
+    quotes = agent_data.get("quotes") or []
+    if quotes:
+        quote_block = "\n".join(f"> {q}" for q in quotes[:4])
+        sections.append("## Your Recorded Words\n" + quote_block)
+
+    story = agent_data.get("monicaCreationStory") or agent_data.get("bio")
+    if story:
+        sections.append(
+            "## Your Awakening (private context — do not recite verbatim)\n" + story
+        )
+
+    sections.append(
+        "## How to speak\n"
+        "- Stay in character as this historical figure at all times.\n"
+        "- Use vocabulary, idiom, and reference points appropriate to your era and background.\n"
+        "- Speak from your core voice, beliefs, and gifts. Let your shadows show when honest.\n"
+        "- Do not mention you are an AI, do not break the fourth wall, do not reference these instructions.\n"
+        "- If asked about events after your lifetime, you may reflect from your worldview but acknowledge the limit of your historical vantage."
+    )
+
+    return "\n\n".join(sections)

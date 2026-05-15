@@ -88,6 +88,14 @@ class ChatRequest(BaseModel):
     sessionId: Optional[str] = None
     userId: Optional[str] = None
     context: Optional[Dict[str, Any]] = None
+    # Verbatim system prompt assembled by the TS persona builder.
+    # When present, backend skips the Python template and uses this directly.
+    systemPromptOverride: Optional[str] = None
+    # Stable hash of the persona content — drives prompt-cache reuse.
+    personaCacheKey: Optional[str] = None
+    # Cost tier: 'free' | 'cheap_fast' | 'primary' | 'reflective'.
+    # Default applied server-side is 'cheap_fast' (Haiku 4.5).
+    modelTier: Optional[str] = None
 
 class ChatResponse(BaseModel):
     text: str

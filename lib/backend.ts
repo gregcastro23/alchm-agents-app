@@ -211,7 +211,12 @@ class BackendError extends Error {
 }
 
 async function request<T>(path: string, init: RequestInit & { auth?: boolean } = {}): Promise<T> {
-  const { auth, headers, signal: callerSignal, ...rest } = init as RequestInit & {
+  const {
+    auth,
+    headers,
+    signal: callerSignal,
+    ...rest
+  } = init as RequestInit & {
     auth?: boolean
     signal?: AbortSignal
   }
@@ -484,6 +489,21 @@ export const backend = {
       sessionId?: string
       userId?: string
       context?: any
+      /**
+       * Verbatim system prompt to use in place of the backend's template.
+       * When present, the FastAPI backend skips its `get_agent_system_prompt`
+       * template and uses this string directly. RAG augmentation still runs
+       * on top.
+       */
+      systemPromptOverride?: string
+      /**
+       * Stable hash of the persona content. Used by the backend as a
+       * prompt-cache breakpoint key so identical personas across turns
+       * share an Anthropic prompt-cache slot.
+       */
+      personaCacheKey?: string
+      /** Preferred model tier. Defaults to cheap_fast on the backend. */
+      modelTier?: 'free' | 'cheap_fast' | 'primary' | 'reflective'
     }) =>
       request<{ text: string; agentId: string; sessionId: string; metadata: any }>('/api/chat', {
         method: 'POST',
