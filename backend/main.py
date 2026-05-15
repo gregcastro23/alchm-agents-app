@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Header, Depends
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 import os
+import threading
 import uvicorn
 import httpx
 from datetime import datetime, timedelta
@@ -15,6 +16,7 @@ import utils
 import prompts
 import rag
 import providers
+import ingest
 
 # Initialize database
 models.Base.metadata.create_all(bind=database.engine)
@@ -30,6 +32,25 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def _startup_rag_ingest() -> None:
+    """Populate ChromaDB from PostgreSQL in the background on startup.
+
+    Runs in a daemon thread so Railway's health check passes immediately.
+    RAG becomes available once ingest completes (~30-60 s on first deploy).
+    Subsequent restarts skip the ingest because the collection is already
+    populated (PersistentClient stores to ./chroma_db on disk).
+    """
+    def _run() -> None:
+        try:
+            ingest.run_ingest(force=False)
+        except Exception as exc:
+            print(f"[startup] RAG ingest error: {exc}", flush=True)
+
+    threading.Thread(target=_run, daemon=True, name="rag-ingest").start()
+
 
 # Configuration
 ALCHM_KITCHEN_URL = os.getenv("ALCHM_KITCHEN_URL", "https://whattoeatnext-production.up.railway.app")
@@ -302,6 +323,28 @@ async def search_knowledge(agent_id: str, query: str):
         where={"agentId": agent_id}
     )
     return results
+
+
+@app.post("/api/rag/rebuild")
+async def rebuild_rag(x_internal_secret: Optional[str] = Header(None)):
+    """Force a full re-ingest of all agent knowledge into ChromaDB.
+
+    Use this after seeding new agents without redeploying.
+    Requires X-Internal-Secret header matching INTERNAL_API_SECRET.
+    The rebuild runs in the background; the endpoint returns immediately.
+    """
+    if x_internal_secret != INTERNAL_API_SECRET:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    def _run() -> None:
+        try:
+            ingest.run_ingest(force=True)
+        except Exception as exc:
+            print(f"[rag/rebuild] Error: {exc}", flush=True)
+
+    threading.Thread(target=_run, daemon=True, name="rag-rebuild").start()
+    return {"status": "rebuilding", "message": "Re-ingestion started in background. Check Railway logs for progress."}
+
 
 @app.get("/api/moment-recommendations")
 async def get_moment_recommendations(limit: int = 5, db: Session = Depends(database.get_db)):
