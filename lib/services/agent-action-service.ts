@@ -30,7 +30,7 @@ import {
 import { EconomyService } from '@/lib/services/economyService'
 import { syncDebitToAlchm } from '@/lib/alchm-debit-sync'
 import { syncCreditToAlchm } from '@/lib/alchm-credit-sync'
-import { syncEventToAlchm } from '@/lib/alchm-event-sync'
+import { syncEventToAlchm, type SyncEventPayload } from '@/lib/alchm-event-sync'
 import { feedPusherService } from '@/lib/agents/feed-pusher'
 import { WTENEventType } from '@/lib/agents/feed-activation-engine'
 import { PlanetaryHourCalculator } from '@/lib/planetary-hour'
@@ -58,6 +58,7 @@ export interface ActivationResult {
   activated: boolean
   triggers: string[]
   planetarySignature?: PlanetarySignature
+  agentProfile?: any
 }
 
 export interface PlanetarySignature {
@@ -101,7 +102,7 @@ interface AgenticUser {
     monicaConstant: number
     birthDate: Date
     birthTime: string | null
-    birthLocation: any
+    birthLocation: any; bio: string | null; monicaCreationStory: string | null
   } | null
 }
 
@@ -371,7 +372,7 @@ export class AgentActionService {
       results.push({
         userId: agent.id,
         agentEmail: agent.email,
-        agentName: agent.name ?? agent.email.split('@')[0],
+        agentName: agent.name ?? agent.email.split('@')[0], agentProfile: agent.user_profiles,
         score,
         activated: score >= AGENT_ACTIVATION_THRESHOLD,
         triggers,
@@ -552,6 +553,7 @@ export class AgentActionService {
           actionType,
           activationScore: activation.score,
           triggers: activation.triggers.slice(0, 5),
+          agentProfile: activation.agentProfile,
         },
       })
 
@@ -716,7 +718,7 @@ export class AgentActionService {
             monicaConstant: true,
             birthDate: true,
             birthTime: true,
-            birthLocation: true,
+            birthLocation: true, bio: true, monicaCreationStory: true,
           },
         },
       },
@@ -907,7 +909,7 @@ export class AgentActionService {
         secondaryAction: 'log_from_plan',
         internalConfidence: activation.score,
         planetarySignature: activation.planetarySignature,
-        timestamp: now.toISOString(),
+        timestamp: now.toISOString(), agentProfile: activation.agentProfile,
       }
     }
 
@@ -919,7 +921,7 @@ export class AgentActionService {
         ingredient: 'Oranges',
         internalConfidence: activation.score,
         planetarySignature: activation.planetarySignature,
-        timestamp: now.toISOString(),
+        timestamp: now.toISOString(), agentProfile: activation.agentProfile,
       }
     }
 
@@ -931,7 +933,7 @@ export class AgentActionService {
         sampleTransformation: 'Stabilizing volatile pantry elements into radiant preserves',
         internalConfidence: activation.score,
         planetarySignature: activation.planetarySignature,
-        timestamp: now.toISOString(),
+        timestamp: now.toISOString(), agentProfile: activation.agentProfile,
       }
     }
 
@@ -943,7 +945,7 @@ export class AgentActionService {
         pattern: 'Golden-ratio plating grid for a seasonal tasting board',
         internalConfidence: activation.score,
         planetarySignature: activation.planetarySignature,
-        timestamp: now.toISOString(),
+        timestamp: now.toISOString(), agentProfile: activation.agentProfile,
       }
     }
 
@@ -955,7 +957,7 @@ export class AgentActionService {
         frequency: 'Kitchen workflow resonance and alternating-current heat timing',
         internalConfidence: activation.score,
         planetarySignature: activation.planetarySignature,
-        timestamp: now.toISOString(),
+        timestamp: now.toISOString(), agentProfile: activation.agentProfile,
       }
     }
 
@@ -968,7 +970,7 @@ export class AgentActionService {
         internalConfidence: activation.score,
         internalTrigger: activation.triggers[0] ?? 'celestial_activation',
         planetarySignature: activation.planetarySignature,
-        timestamp: now.toISOString(),
+        timestamp: now.toISOString(), agentProfile: activation.agentProfile,
       }
     }
 
@@ -980,7 +982,7 @@ export class AgentActionService {
       internalConfidence: activation.score,
       internalTrigger: activation.triggers[0] ?? 'celestial_activation',
       planetarySignature: activation.planetarySignature,
-      timestamp: now.toISOString(),
+      timestamp: now.toISOString(), agentProfile: activation.agentProfile,
     }
   }
 
