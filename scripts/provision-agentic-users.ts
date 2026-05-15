@@ -22,6 +22,35 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+const WTEN_BASE = (
+  process.env.WTEN_API_BASE_URL ?? 'https://whattoeatnext-production.up.railway.app'
+).replace(/\/$/, '')
+const WTEN_SECRET = process.env.ALCHM_KITCHEN_SYNC_SECRET ?? ''
+
+async function syncToWten(userId: string, email: string, displayName: string): Promise<void> {
+  if (!WTEN_SECRET) return
+  try {
+    const res = await fetch(`${WTEN_BASE}/api/internal/agent-sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Sync-Secret': WTEN_SECRET },
+      body: JSON.stringify({ email, displayName }),
+    })
+    if (!res.ok) {
+      console.warn(`  ⚠ WTEN sync failed for ${email}: HTTP ${res.status}`)
+      return
+    }
+    const data = (await res.json()) as { ok: boolean; wtenUserId?: string }
+    if (data.ok && data.wtenUserId) {
+      await prisma.users.update({
+        where: { id: userId },
+        data: { alchmKitchenUserId: data.wtenUserId } as any,
+      })
+    }
+  } catch (err) {
+    console.warn(`  ⚠ WTEN sync error for ${email}:`, err)
+  }
+}
+
 interface ProvisionResult {
   created: number
   skipped: number
@@ -77,7 +106,7 @@ async function provisionAgenticUsers(): Promise<ProvisionResult> {
       const natalPositions = extractNatalPositions(agent.natalChart)
 
       // Create user + profile in a transaction
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async tx => {
         const user = await tx.users.create({
           data: {
             email,
@@ -117,6 +146,7 @@ async function provisionAgenticUsers(): Promise<ProvisionResult> {
         })
 
         console.log(`  ✓ Provisioned ${agent.name} → ${email} (${user.id})`)
+        await syncToWten(user.id, email, agent.name)
       })
 
       result.created++
@@ -181,14 +211,14 @@ async function main() {
 
   if (result.errors.length > 0) {
     console.log('\nErrors:')
-    result.errors.forEach((e) => console.log(`  - ${e}`))
+    result.errors.forEach(e => console.log(`  - ${e}`))
   }
 
   await prisma.$disconnect()
   process.exit(result.errors.length > 0 ? 1 : 0)
 }
 
-main().catch(async (err) => {
+main().catch(async err => {
   console.error('Fatal error:', err)
   await prisma.$disconnect()
   process.exit(1)
