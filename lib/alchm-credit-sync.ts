@@ -1,3 +1,4 @@
+import { loadAlchmSyncConfig } from './alchmSyncConfig'
 import { TransactionSourceType } from './services/economyService'
 
 /**
@@ -29,20 +30,25 @@ export async function syncCreditToAlchm(params: {
     }
   }
 }): Promise<{ ok: boolean; error?: string; balances?: any }> {
-  const syncUrl = process.env.ALCHM_KITCHEN_SYNC_URL
-  const syncSecret = process.env.ALCHM_KITCHEN_SYNC_SECRET
-
-  if (!syncUrl || !syncSecret) {
+  const alchmConfig = (() => {
+    try {
+      return loadAlchmSyncConfig()
+    } catch {
+      return null
+    }
+  })()
+  if (!alchmConfig) {
     console.error('[alchm-credit-sync] Missing ALCHM_KITCHEN_SYNC_URL or ALCHM_KITCHEN_SYNC_SECRET')
     return { ok: false, error: 'Internal configuration error' }
   }
+  const { baseUrl, secret } = alchmConfig
 
   try {
-    const response = await fetch(`${syncUrl}/api/economy/sync-credit`, {
+    const response = await fetch(`${baseUrl}/api/economy/sync-credit`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Sync-Secret': syncSecret,
+        'X-Sync-Secret': secret,
       },
       body: JSON.stringify(params),
     })

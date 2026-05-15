@@ -13,7 +13,7 @@ export const SOCRATES: CraftedAgent = {
   era: 'Ancient',
   specialization: 'Philosophy & Dialectic Method',
   birthData: {
-    date: new Date('-0469-06-20T12:00:00'),
+    date: new Date('-000469-06-20T12:00:00'),
     time: '12:00',
     location: { lat: 37.9838, lon: 23.7275, name: 'Athens, Greece' },
   },

@@ -26,8 +26,7 @@
  * first call — no pre-seeding required on the alchm.kitchen side.
  */
 
-const SYNC_URL = process.env.ALCHM_KITCHEN_SYNC_URL || process.env.ALCHM_KITCHEN_API_BASE_URL
-const SYNC_SECRET = process.env.ALCHM_KITCHEN_SYNC_SECRET
+import { loadAlchmSyncConfig } from './alchmSyncConfig'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -111,7 +110,14 @@ export interface SyncDebitResult {
  * This function NEVER throws. All failures are returned in the result.
  */
 export async function syncDebitToAlchm(payload: SyncDebitPayload): Promise<SyncDebitResult> {
-  if (!SYNC_URL || !SYNC_SECRET) {
+  const alchmConfig = (() => {
+    try {
+      return loadAlchmSyncConfig()
+    } catch {
+      return null
+    }
+  })()
+  if (!alchmConfig) {
     console.warn(
       '[alchm-debit-sync] ALCHM_KITCHEN_SYNC_URL or SYNC_SECRET not set — skipping debit sync'
     )
@@ -121,16 +127,17 @@ export async function syncDebitToAlchm(payload: SyncDebitPayload): Promise<SyncD
       error: 'ALCHM_KITCHEN_SYNC_URL or SYNC_SECRET not set',
     }
   }
+  const { baseUrl, secret } = alchmConfig
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 10_000) // 10s timeout
 
   try {
-    const res = await fetch(`${SYNC_URL}/api/economy/sync-debit`, {
+    const res = await fetch(`${baseUrl}/api/economy/sync-debit`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Sync-Secret': SYNC_SECRET,
+        'X-Sync-Secret': secret,
       },
       body: JSON.stringify(payload),
       signal: controller.signal,

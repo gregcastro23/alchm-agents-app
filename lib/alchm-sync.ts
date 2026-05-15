@@ -19,8 +19,7 @@
  *   Response 409: { ok: false, reason: "already_applied" }   // idempotency hit
  */
 
-const SYNC_URL = process.env.ALCHM_KITCHEN_SYNC_URL
-const SYNC_SECRET = process.env.ALCHM_KITCHEN_SYNC_SECRET
+import { loadAlchmSyncConfig } from './alchmSyncConfig'
 
 export interface SyncCreditPayload {
   userEmail: string
@@ -42,19 +41,27 @@ export interface SyncCreditResult {
 }
 
 export async function syncCreditToAlchm(payload: SyncCreditPayload): Promise<SyncCreditResult> {
-  if (!SYNC_URL || !SYNC_SECRET) {
+  const alchmConfig = (() => {
+    try {
+      return loadAlchmSyncConfig()
+    } catch {
+      return null
+    }
+  })()
+  if (!alchmConfig) {
     return { ok: false, skipped: true, error: 'ALCHM_KITCHEN_SYNC_URL or SYNC_SECRET not set' }
   }
+  const { baseUrl, secret } = alchmConfig
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 8_000)
 
   try {
-    const res = await fetch(`${SYNC_URL}/api/economy/sync-credit`, {
+    const res = await fetch(`${baseUrl}/api/economy/sync-credit`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Sync-Secret': SYNC_SECRET,
+        'X-Sync-Secret': secret,
       },
       body: JSON.stringify(payload),
       signal: controller.signal,
