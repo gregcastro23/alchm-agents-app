@@ -502,7 +502,7 @@ export const backend = {
        * share an Anthropic prompt-cache slot.
        */
       personaCacheKey?: string
-      /** Preferred model tier. Defaults to cheap_fast on the backend. */
+      /** Preferred model tier. Server default is `free` (Groq → Cerebras → Gemini → OpenRouter → OpenAI last-ditch). */
       modelTier?: 'free' | 'cheap_fast' | 'primary' | 'reflective'
     }) =>
       request<{ text: string; agentId: string; sessionId: string; metadata: any }>('/api/chat', {

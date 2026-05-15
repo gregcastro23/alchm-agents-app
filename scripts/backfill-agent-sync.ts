@@ -1,101 +1,86 @@
 /**
  * scripts/backfill-agent-sync.ts
  *
- * One-shot backfill: push every isAgentic=true user through the WhatToEatNext
- * /api/internal/agent-sync endpoint, then write the returned wtenUserId back
- * into users.alchmKitchenUserId.
+ * One-shot backfill: push every isAgentic=true user that lacks an
+ * alchmKitchenUserId through WTEN's /api/internal/agent-sync endpoint
+ * and persist the returned wtenUserId.
  *
- * Required env vars:
- *   ALCHM_KITCHEN_SYNC_SECRET  — shared secret for the WTEN sync endpoint
- *   WTEN_API_BASE_URL          — e.g. https://whattoeatnext-production.up.railway.app
+ * Required env:
+ *   ALCHM_KITCHEN_SYNC_SECRET   (validated lazily by lib/wtenClient)
+ *   WTEN_API_BASE_URL           (optional; defaults to the prod URL)
  *
  * Run:
- *   ALCHM_KITCHEN_SYNC_SECRET=... WTEN_API_BASE_URL=... bun run scripts/backfill-agent-sync.ts
+ *   bun run scripts/backfill-agent-sync.ts
  */
 
 import { PrismaClient } from '@prisma/client'
+import { syncAgentToWten } from '@/lib/wtenClient'
+
+const CONCURRENCY = 10
 
 const prisma = new PrismaClient()
 
-const WTEN_SECRET = process.env.ALCHM_KITCHEN_SYNC_SECRET
-const WTEN_BASE = (process.env.WTEN_API_BASE_URL ?? '').replace(/\/$/, '')
+interface BackfillRow {
+  id: string
+  email: string
+  name: string | null
+}
 
-if (!WTEN_SECRET || !WTEN_BASE) {
-  console.error('Missing required env vars: ALCHM_KITCHEN_SYNC_SECRET, WTEN_API_BASE_URL')
-  process.exit(1)
+interface BackfillTotals {
+  synced: number
+  skipped: number
+  failed: number
+}
+
+async function syncOne(agent: BackfillRow): Promise<'synced' | 'failed'> {
+  const t0 = Date.now()
+  try {
+    const { wtenUserId, created } = await syncAgentToWten(agent.email, agent.name)
+    await prisma.users.update({
+      where: { id: agent.id },
+      data: { alchmKitchenUserId: wtenUserId },
+    })
+    console.log(
+      `OK email=${agent.email} wtenUserId=${wtenUserId} created=${created} elapsed_ms=${Date.now() - t0}`
+    )
+    return 'synced'
+  } catch (err: any) {
+    console.error(`FAIL ${agent.email}: ${err?.message ?? err}`)
+    return 'failed'
+  }
 }
 
 async function main() {
+  // The DB filter does the skip-already-linked work; no need to re-check
+  // per-row. Idempotent or not, the round-trip is wasted bandwidth.
   const agents = await prisma.users.findMany({
-    where: { isAgentic: true },
-    select: { id: true, email: true, name: true, alchmKitchenUserId: true },
+    where: { isAgentic: true, alchmKitchenUserId: null } as any,
+    select: { id: true, email: true, name: true },
     orderBy: { email: 'asc' },
   })
 
-  console.log(`Found ${agents.length} agentic users to sync.`)
+  const totalAgentic = await prisma.users.count({ where: { isAgentic: true } })
+  console.log(
+    `Found ${agents.length} unlinked agentic users to sync (of ${totalAgentic} total agentic).`
+  )
 
-  let synced = 0
-  let skipped = 0
-  let failed = 0
+  const totals: BackfillTotals = { synced: 0, skipped: totalAgentic - agents.length, failed: 0 }
 
-  for (const agent of agents) {
-    if (agent.alchmKitchenUserId) {
-      console.log(`SKIP already linked: ${agent.email} → ${agent.alchmKitchenUserId}`)
-      skipped++
-      continue
+  for (let i = 0; i < agents.length; i += CONCURRENCY) {
+    const batch = agents.slice(i, i + CONCURRENCY)
+    const outcomes = await Promise.all(batch.map(syncOne))
+    for (const outcome of outcomes) {
+      totals[outcome]++
     }
-
-    const t0 = Date.now()
-    let resp: Response
-    try {
-      resp = await fetch(`${WTEN_BASE}/api/internal/agent-sync`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Sync-Secret': WTEN_SECRET,
-        },
-        body: JSON.stringify({
-          email: agent.email,
-          displayName: agent.name ?? undefined,
-        }),
-      })
-    } catch (fetchErr) {
-      console.error(`FAIL network error for ${agent.email}:`, fetchErr)
-      failed++
-      continue
-    }
-
-    const elapsed = Date.now() - t0
-
-    if (!resp.ok) {
-      const text = await resp.text().catch(() => '(unreadable)')
-      console.error(`FAIL HTTP ${resp.status} for ${agent.email}: ${text}`)
-      failed++
-      continue
-    }
-
-    const data = (await resp.json()) as { ok: boolean; wtenUserId?: string; created?: boolean }
-
-    if (!data.ok || !data.wtenUserId) {
-      console.error(`FAIL bad response for ${agent.email}:`, JSON.stringify(data))
-      failed++
-      continue
-    }
-
-    await prisma.users.update({
-      where: { id: agent.id },
-      data: { alchmKitchenUserId: data.wtenUserId },
-    })
-
-    console.log(
-      `OK email=${agent.email} wtenUserId=${data.wtenUserId} created=${data.created} elapsed_ms=${elapsed}`
-    )
-    synced++
   }
 
-  console.log(`\nBackfill complete — synced: ${synced}, skipped: ${skipped}, failed: ${failed}`)
-  if (failed > 0) {
-    console.error(`${failed} agents still have no alchmKitchenUserId — review errors above.`)
+  console.log(
+    `\nBackfill complete — synced: ${totals.synced}, already-linked: ${totals.skipped}, failed: ${totals.failed}`
+  )
+  if (totals.failed > 0) {
+    console.error(
+      `${totals.failed} agents still have no alchmKitchenUserId — see FAIL lines above.`
+    )
     process.exitCode = 1
   }
 }

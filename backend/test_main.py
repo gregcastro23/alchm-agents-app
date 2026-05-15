@@ -1,14 +1,193 @@
+import pytest
 from fastapi.testclient import TestClient
+
 from main import app
+import providers
 
 client = TestClient(app)
+
 
 def test_read_main():
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == {"message": "Planetary Agents Core API is operational"}
 
+
 def test_health_check():
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json()["status"] == "healthy"
+
+
+# --- Provider fallback chain rotation tests --------------------------------
+#
+# Five scenarios, walking the chain Anthropic → Groq → Cerebras → Gemini →
+# OpenRouter → OpenAI. Each scenario marks N providers as rate-limited and
+# asserts run_chain settles on the first survivor. We mock at
+# providers.call_provider so the test never touches a real network client.
+
+
+@pytest.fixture
+def all_keys_set(monkeypatch):
+    """Wire keys for every provider so build_chain emits all six."""
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "ak")
+    monkeypatch.setenv("GROQ_API_KEY", "gk")
+    monkeypatch.setenv("CEREBRAS_API_KEY", "ck")
+    monkeypatch.setenv("GEMINI_API_KEY", "gmk")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "ork")
+    monkeypatch.setenv("OPENAI_API_KEY", "oak")
+
+
+def _selective_failure(failing_names):
+    async def fake_call(cfg, persona_block, rag_block, user_message):
+        if cfg.name in failing_names:
+            raise Exception("429 rate limit exceeded")
+        return providers.CallResult(
+            text=f"hello from {cfg.name}",
+            provider=cfg.name,
+            model=cfg.model,
+        )
+
+    return fake_call
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("failing", "expected_provider"),
+    [
+        # Scenario 1 — anthropic fails, groq succeeds.
+        (["anthropic"], "groq"),
+        # Scenario 2 — anthropic + groq fail, cerebras succeeds.
+        (["anthropic", "groq"], "cerebras"),
+        # Scenario 3 — anthropic + groq + cerebras fail, gemini succeeds.
+        (["anthropic", "groq", "cerebras"], "gemini"),
+        # Scenario 4 — only openrouter survives.
+        (["anthropic", "groq", "cerebras", "gemini"], "openrouter"),
+        # Scenario 5 — every free provider rate-limited; paid OpenAI catches.
+        (["anthropic", "groq", "cerebras", "gemini", "openrouter"], "openai"),
+    ],
+)
+async def test_chain_walks_to_first_survivor(
+    all_keys_set, monkeypatch, failing, expected_provider
+):
+    monkeypatch.setattr(providers, "call_provider", _selective_failure(failing))
+    chain = providers.build_chain("cheap_fast", "claude-haiku-4-5-20251001")
+    result = await providers.run_chain(
+        chain=chain,
+        persona_block="PERSONA",
+        rag_block="",
+        user_message="hi",
+        agent_id="test-agent",
+        tier="cheap_fast",
+        persona_cache_key="abcd1234",
+    )
+    assert result is not None
+    assert result.provider == expected_provider
+
+
+@pytest.mark.asyncio
+async def test_chain_returns_none_when_every_provider_fails(all_keys_set, monkeypatch):
+    """Last-line: total outage → run_chain returns None (handler emits a stub)."""
+    every_provider = ["anthropic", "groq", "cerebras", "gemini", "openrouter", "openai"]
+    monkeypatch.setattr(providers, "call_provider", _selective_failure(every_provider))
+    chain = providers.build_chain("cheap_fast", "claude-haiku-4-5-20251001")
+    result = await providers.run_chain(
+        chain=chain,
+        persona_block="P",
+        rag_block="",
+        user_message="hi",
+        agent_id="t",
+        tier="cheap_fast",
+    )
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_free_tier_skips_anthropic_entirely(all_keys_set, monkeypatch):
+    """tier=='free' must not include anthropic in the chain at all."""
+    monkeypatch.setattr(providers, "call_provider", _selective_failure([]))
+    chain = providers.build_chain("free", anthropic_model=None)
+    assert "anthropic" not in [c.name for c in chain]
+    result = await providers.run_chain(
+        chain=chain,
+        persona_block="P",
+        rag_block="",
+        user_message="hi",
+        agent_id="t",
+        tier="free",
+    )
+    assert result is not None
+    assert result.provider == "groq"
+
+
+@pytest.mark.asyncio
+async def test_chain_skips_providers_with_missing_keys(monkeypatch):
+    """If GROQ_API_KEY is unset, chain should jump straight to cerebras."""
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "ak")
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+    monkeypatch.setenv("CEREBRAS_API_KEY", "ck")
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setattr(providers, "call_provider", _selective_failure(["anthropic"]))
+    chain = providers.build_chain("cheap_fast", "claude-haiku-4-5-20251001")
+    result = await providers.run_chain(
+        chain=chain,
+        persona_block="P",
+        rag_block="",
+        user_message="hi",
+        agent_id="t",
+        tier="cheap_fast",
+    )
+    assert result is not None
+    assert result.provider == "cerebras"
+
+
+@pytest.mark.asyncio
+async def test_paid_fallback_emits_alert_event(all_keys_set, monkeypatch, capsys):
+    """When OpenAI catches the request, an alert_event log line must fire."""
+    every_free = ["anthropic", "groq", "cerebras", "gemini", "openrouter"]
+    monkeypatch.setattr(providers, "call_provider", _selective_failure(every_free))
+    chain = providers.build_chain("cheap_fast", "claude-haiku-4-5-20251001")
+    await providers.run_chain(
+        chain=chain,
+        persona_block="P",
+        rag_block="",
+        user_message="hi",
+        agent_id="t",
+        tier="cheap_fast",
+    )
+    captured = capsys.readouterr()
+    assert "alert_event reason=paid_fallback provider=openai" in captured.out
+
+
+@pytest.mark.asyncio
+async def test_no_alert_when_free_provider_succeeds(all_keys_set, monkeypatch, capsys):
+    """Successful free-tier provider must NOT emit the paid-fallback alert."""
+    monkeypatch.setattr(providers, "call_provider", _selective_failure([]))
+    chain = providers.build_chain("free", anthropic_model=None)
+    await providers.run_chain(
+        chain=chain,
+        persona_block="P",
+        rag_block="",
+        user_message="hi",
+        agent_id="t",
+        tier="free",
+    )
+    captured = capsys.readouterr()
+    assert "alert_event" not in captured.out
+
+
+def test_is_quota_error_recognises_common_phrasings():
+    samples = [
+        "Error code: 429 - rate limit",
+        "Insufficient credit balance",
+        "You have exceeded your monthly quota",
+        "billing issue with your account",
+    ]
+    for s in samples:
+        assert providers.is_quota_error(Exception(s)), s
+
+    # Non-quota errors must NOT trip the heuristic.
+    assert not providers.is_quota_error(Exception("Connection refused"))
+    assert not providers.is_quota_error(Exception("Invalid JSON"))

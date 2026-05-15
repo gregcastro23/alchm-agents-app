@@ -6,7 +6,6 @@ import uvicorn
 import httpx
 from datetime import datetime, timedelta
 import asyncio
-import anthropic
 
 import models
 import schemas
@@ -15,6 +14,7 @@ import database
 import utils
 import prompts
 import rag
+import providers
 
 # Initialize database
 models.Base.metadata.create_all(bind=database.engine)
@@ -34,20 +34,19 @@ app.add_middleware(
 # Configuration
 ALCHM_KITCHEN_URL = os.getenv("ALCHM_KITCHEN_URL", "https://whattoeatnext-production.up.railway.app")
 INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", "882133EA-3D06-4DF2-A63C-F4114AB4EFBC")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # Cost-tiered model selection for historical agent chat.
-# CHEAP_FAST is the default — Haiku 4.5 is markedly cheaper than Sonnet
-# while staying strong at persona following.
-MODEL_TIER_MAP = {
-    "free":       {"provider": "groq",      "model": "llama-3.3-70b-versatile"},
-    "cheap_fast": {"provider": "anthropic", "model": "claude-haiku-4-5-20251001"},
-    "primary":    {"provider": "anthropic", "model": "claude-sonnet-4-6"},
-    "reflective": {"provider": "anthropic", "model": "claude-opus-4-7"},
+# Tier maps to the model the *first* provider in the chain will try.
+# `free` skips Anthropic entirely and starts at Groq (see providers.build_chain).
+ANTHROPIC_TIER_MODEL = {
+    "cheap_fast": "claude-haiku-4-5-20251001",
+    "primary":    "claude-sonnet-4-6",
+    "reflective": "claude-opus-4-7",
 }
-DEFAULT_TIER = os.getenv("HISTORICAL_AGENT_DEFAULT_TIER", "cheap_fast")
+# Default tier is `free` — the user has not topped up Anthropic credits and we
+# want every chat to start on the free chain. Override via env var to flip back
+# to a paid Anthropic-first chain (e.g. cheap_fast → Haiku 4.5).
+DEFAULT_TIER = os.getenv("HISTORICAL_AGENT_DEFAULT_TIER", "free")
 MAX_TIER = os.getenv("HISTORICAL_AGENT_MAX_TIER", "primary")
 TIER_ORDER = ["free", "cheap_fast", "primary", "reflective"]
 RAG_MIN_SIMILARITY = float(os.getenv("RAG_MIN_SIMILARITY", "0.0"))
@@ -56,7 +55,7 @@ RAG_MIN_SIMILARITY = float(os.getenv("RAG_MIN_SIMILARITY", "0.0"))
 def _resolve_tier(requested: Optional[str]) -> str:
     """Pick a tier, clamped to MAX_TIER and falling back to DEFAULT_TIER."""
     tier = (requested or DEFAULT_TIER).lower()
-    if tier not in MODEL_TIER_MAP:
+    if tier not in TIER_ORDER:
         tier = DEFAULT_TIER
     if TIER_ORDER.index(tier) > TIER_ORDER.index(MAX_TIER):
         tier = MAX_TIER
@@ -106,6 +105,22 @@ async def health():
 @app.get("/")
 async def root():
     return {"message": "Planetary Agents Core API is operational"}
+
+@app.get("/api/providers/health")
+async def providers_health():
+    """
+    Ping every known LLM provider with a 1-token "hi" prompt.
+    Returns {provider: {ok, latency_ms, error, model}} for each.
+    Useful as a debug primitive when chat is misbehaving.
+    """
+    pings = await asyncio.gather(
+        *(providers.health_check(cfg) for cfg in providers.all_known_providers()),
+        return_exceptions=False,
+    )
+    return {
+        cfg.name: result
+        for cfg, result in zip(providers.all_known_providers(), pings)
+    }
 
 # --- Agent Management ---
 
@@ -206,113 +221,32 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
     except Exception as e:
         print(f"RAG Error: {e}")
 
-    # 4. Pick tier and model.
+    # 4. Pick tier and build the provider fallback chain.
     tier = _resolve_tier(request.modelTier)
-    tier_cfg = MODEL_TIER_MAP[tier]
+    anthropic_model = ANTHROPIC_TIER_MODEL.get(tier)  # None for tier=="free"
+    chain = providers.build_chain(tier, anthropic_model)
 
-    # 5. Call AI with tier-aware routing.
-    text = f"Persona response for {request.agentId}: [AI Implementation Pending API Key Verification]"
-    used_provider = None
-    used_model = None
-    cache_hit = None
-    anthropic_failed = False
-
-    if tier_cfg["provider"] == "anthropic" and ANTHROPIC_API_KEY:
-        try:
-            client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
-            # Anthropic prompt caching: cache the (large, stable) persona block.
-            # The RAG block changes per query, so it's a separate uncached segment.
-            system_blocks = [
-                {
-                    "type": "text",
-                    "text": persona_block,
-                    "cache_control": {"type": "ephemeral"},
-                }
-            ]
-            if rag_block:
-                system_blocks.append({"type": "text", "text": rag_block})
-
-            message = await client.messages.create(
-                model=tier_cfg["model"],
-                max_tokens=1024,
-                system=system_blocks,
-                messages=[{"role": "user", "content": request.message}],
-            )
-            text = message.content[0].text
-            used_provider = "anthropic"
-            used_model = tier_cfg["model"]
-            usage = getattr(message, "usage", None)
-            if usage is not None:
-                cached_read = getattr(usage, "cache_read_input_tokens", 0) or 0
-                cached_write = getattr(usage, "cache_creation_input_tokens", 0) or 0
-                input_tokens = getattr(usage, "input_tokens", 0) or 0
-                output_tokens = getattr(usage, "output_tokens", 0) or 0
-                cache_hit = {"read": cached_read, "write": cached_write}
-                # Structured log line — grep for "cache_metric" in Railway deploy logs
-                # to compute read-hit ratio = read / (read + write).
-                cached_total = cached_read + cached_write
-                read_ratio = (cached_read / cached_total) if cached_total > 0 else 0.0
-                print(
-                    f"cache_metric agentId={request.agentId} tier={tier} model={tier_cfg['model']} "
-                    f"cache_read={cached_read} cache_write={cached_write} "
-                    f"input_tokens={input_tokens} output_tokens={output_tokens} "
-                    f"read_ratio={read_ratio:.3f} persona_cache_key={request.personaCacheKey}",
-                    flush=True,
-                )
-        except Exception as e:
-            anthropic_failed = True
-            err_str = str(e).lower()
-            quota_error = any(s in err_str for s in ("429", "quota", "rate", "billing", "insufficient"))
-            print(f"Anthropic error (quota={quota_error}): {e}")
-
-    # 6. Fallback chain.
-    # Free fallback (Groq) when explicitly requested OR when Anthropic hit quota/billing limits.
-    need_free_fallback = (
-        tier_cfg["provider"] == "groq"
-        or (anthropic_failed and GROQ_API_KEY)
+    # 5. Walk the chain. First successful provider wins; failures cascade with
+    # a `fallback_event` log line (grep "fallback_event" in Railway logs).
+    result = await providers.run_chain(
+        chain=chain,
+        persona_block=persona_block,
+        rag_block=rag_block,
+        user_message=request.message,
+        agent_id=request.agentId,
+        tier=tier,
+        persona_cache_key=request.personaCacheKey,
     )
-    if used_provider is None and need_free_fallback and GROQ_API_KEY:
-        try:
-            from openai import AsyncOpenAI as _AsyncOpenAI
-            groq_client = _AsyncOpenAI(
-                api_key=GROQ_API_KEY,
-                base_url="https://api.groq.com/openai/v1",
-            )
-            full_system = persona_block + ("\n\n" + rag_block if rag_block else "")
-            response = await groq_client.chat.completions.create(
-                model=MODEL_TIER_MAP["free"]["model"],
-                messages=[
-                    {"role": "system", "content": full_system},
-                    {"role": "user", "content": request.message},
-                ],
-                max_tokens=1024,
-            )
-            text = response.choices[0].message.content
-            used_provider = "groq"
-            used_model = MODEL_TIER_MAP["free"]["model"]
-        except Exception as e:
-            print(f"Groq fallback error: {e}")
-
-    # OpenAI as last-ditch fallback if both Anthropic and Groq are unavailable.
-    if used_provider is None and OPENAI_API_KEY:
-        try:
-            from openai import AsyncOpenAI
-            openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
-            full_system = persona_block + ("\n\n" + rag_block if rag_block else "")
-            response = await openai_client.chat.completions.create(
-                model=os.getenv("MONICA_DEFAULT_MODEL", "gpt-4o-mini"),
-                messages=[
-                    {"role": "system", "content": full_system},
-                    {"role": "user", "content": request.message},
-                ],
-                max_tokens=1024,
-            )
-            text = response.choices[0].message.content
-            used_provider = "openai"
-            used_model = os.getenv("MONICA_DEFAULT_MODEL", "gpt-4o-mini")
-        except Exception as e:
-            text = f"Error calling OpenAI fallback: {str(e)}"
-            print(text)
+    if result is None:
+        text = f"Persona response for {request.agentId}: [All providers unavailable]"
+        used_provider = None
+        used_model = None
+        cache_hit = None
+    else:
+        text = result.text
+        used_provider = result.provider
+        used_model = result.model
+        cache_hit = result.cache
 
     # 7. Record Conversation
     session_id = request.sessionId or f"session-{datetime.utcnow().timestamp()}"

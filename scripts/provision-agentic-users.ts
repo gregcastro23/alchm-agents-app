@@ -11,56 +11,35 @@
  *  - A `user_profiles` row with natal chart data extracted from the
  *    `historical_agents` table (including natalPositions for DailyYieldService)
  *  - A zero-balance `token_balances` row so yield claims work immediately
+ *  - A linked WTEN user (`alchmKitchenUserId`) via /api/internal/agent-sync
+ *
+ * Atomicity contract:
+ *   The DB writes (users + user_profiles + token_balances) commit in one
+ *   transaction. The WTEN sync runs AFTER the transaction commits, in a
+ *   separate try/catch — a network failure leaves the local row intact for
+ *   `scripts/backfill-agent-sync.ts` to pick up later. The previous version
+ *   ran the sync INSIDE the transaction, which both held DB locks across a
+ *   network call and could orphan the WTEN row if the tx rolled back.
  *
  * Usage:
- *   npx tsx scripts/provision-agentic-users.ts
- *   # or
- *   yarn tsx scripts/provision-agentic-users.ts
+ *   bun run scripts/provision-agentic-users.ts
  */
 
 import { PrismaClient } from '@prisma/client'
+import { syncAgentToWten } from '@/lib/wtenClient'
 
 const prisma = new PrismaClient()
-
-const WTEN_BASE = (
-  process.env.WTEN_API_BASE_URL ?? 'https://whattoeatnext-production.up.railway.app'
-).replace(/\/$/, '')
-const WTEN_SECRET = process.env.ALCHM_KITCHEN_SYNC_SECRET ?? ''
-
-async function syncToWten(userId: string, email: string, displayName: string): Promise<void> {
-  if (!WTEN_SECRET) return
-  try {
-    const res = await fetch(`${WTEN_BASE}/api/internal/agent-sync`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Sync-Secret': WTEN_SECRET },
-      body: JSON.stringify({ email, displayName }),
-    })
-    if (!res.ok) {
-      console.warn(`  ⚠ WTEN sync failed for ${email}: HTTP ${res.status}`)
-      return
-    }
-    const data = (await res.json()) as { ok: boolean; wtenUserId?: string }
-    if (data.ok && data.wtenUserId) {
-      await prisma.users.update({
-        where: { id: userId },
-        data: { alchmKitchenUserId: data.wtenUserId } as any,
-      })
-    }
-  } catch (err) {
-    console.warn(`  ⚠ WTEN sync error for ${email}:`, err)
-  }
-}
 
 interface ProvisionResult {
   created: number
   skipped: number
+  syncFailed: number
   errors: string[]
 }
 
 async function provisionAgenticUsers(): Promise<ProvisionResult> {
-  const result: ProvisionResult = { created: 0, skipped: 0, errors: [] }
+  const result: ProvisionResult = { created: 0, skipped: 0, syncFailed: 0, errors: [] }
 
-  // Fetch all active historical agents
   const historicalAgents = await prisma.historical_agents.findMany({
     where: { isActive: true },
     select: {
@@ -81,15 +60,23 @@ async function provisionAgenticUsers(): Promise<ProvisionResult> {
 
   console.log(`Found ${historicalAgents.length} historical agents to provision`)
 
+  // Bulk existence lookup — one query instead of N findUnique calls inside the loop.
+  const expectedEmails = historicalAgents.map(a => `${a.agentId}@agentic.alchm.kitchen`)
+  const existingUsers = await prisma.users.findMany({
+    where: { email: { in: expectedEmails } },
+    select: { id: true, email: true, isAgentic: true, alchmKitchenUserId: true } as any,
+  })
+  const existingByEmail = new Map(existingUsers.map(u => [u.email, u]))
+
   for (const agent of historicalAgents) {
     const email = `${agent.agentId}@agentic.alchm.kitchen`
+    const existing = existingByEmail.get(email) as
+      | { id: string; isAgentic: boolean; alchmKitchenUserId: string | null }
+      | undefined
 
     try {
-      // Check if user already exists
-      const existing = await prisma.users.findUnique({ where: { email } })
       if (existing) {
-        // Ensure isAgentic flag is set
-        if (!(existing as any).isAgentic) {
+        if (!existing.isAgentic) {
           await prisma.users.update({
             where: { id: existing.id },
             data: { isAgentic: true } as any,
@@ -99,14 +86,17 @@ async function provisionAgenticUsers(): Promise<ProvisionResult> {
           console.log(`  ⊘ Skipped ${agent.name} (already provisioned)`)
         }
         result.skipped++
+        // Still try to repair an unlinked existing user if WTEN ID is missing.
+        if (!existing.alchmKitchenUserId) {
+          await syncAndPersist(existing.id, email, agent.name, result)
+        }
         continue
       }
 
-      // Extract natalPositions array from natalChart JSON
       const natalPositions = extractNatalPositions(agent.natalChart)
 
-      // Create user + profile in a transaction
-      await prisma.$transaction(async tx => {
+      // Tx scope: local writes only. WTEN sync runs after commit.
+      const newUserId = await prisma.$transaction(async tx => {
         const user = await tx.users.create({
           data: {
             email,
@@ -131,7 +121,6 @@ async function provisionAgenticUsers(): Promise<ProvisionResult> {
           },
         })
 
-        // Seed zero-balance token row so yield claims don't fail
         await tx.tokenBalance.upsert({
           where: { userId: user.id },
           create: {
@@ -145,11 +134,13 @@ async function provisionAgenticUsers(): Promise<ProvisionResult> {
           update: {},
         })
 
-        console.log(`  ✓ Provisioned ${agent.name} → ${email} (${user.id})`)
-        await syncToWten(user.id, email, agent.name)
+        return user.id
       })
 
+      console.log(`  ✓ Provisioned ${agent.name} → ${email} (${newUserId})`)
       result.created++
+
+      await syncAndPersist(newUserId, email, agent.name, result)
     } catch (err: any) {
       const msg = `Failed to provision ${agent.name}: ${err?.message ?? err}`
       console.error(`  ✗ ${msg}`)
@@ -161,6 +152,29 @@ async function provisionAgenticUsers(): Promise<ProvisionResult> {
 }
 
 /**
+ * Push the agent to WTEN, then persist the returned wtenUserId locally.
+ * Soft-fails: a network error logs and bumps `syncFailed`, but does not
+ * abort the run — the row remains for the backfill script to retry.
+ */
+async function syncAndPersist(
+  userId: string,
+  email: string,
+  displayName: string | null,
+  result: ProvisionResult
+): Promise<void> {
+  try {
+    const { wtenUserId } = await syncAgentToWten(email, displayName)
+    await prisma.users.update({
+      where: { id: userId },
+      data: { alchmKitchenUserId: wtenUserId } as any,
+    })
+  } catch (err: any) {
+    console.warn(`  ⚠ WTEN sync failed for ${email}: ${err?.message ?? err}`)
+    result.syncFailed++
+  }
+}
+
+/**
  * Extract a flat NatalPosition[] array from whatever shape the
  * natalChart JSON might be in.
  */
@@ -168,7 +182,6 @@ function extractNatalPositions(natalChart: any): any[] {
   if (!natalChart) return []
 
   try {
-    // Shape: { planets: { Sun: { sign, signDegree, longitude, ... }, ... } }
     if (natalChart.planets && typeof natalChart.planets === 'object') {
       return Object.entries(natalChart.planets).map(([planet, data]: [string, any]) => ({
         planet,
@@ -178,7 +191,6 @@ function extractNatalPositions(natalChart: any): any[] {
       }))
     }
 
-    // Shape: [ { planet, sign, degree, longitude } ]
     if (Array.isArray(natalChart)) {
       return natalChart.map((p: any) => ({
         planet: p.planet ?? p.label ?? '',
@@ -194,8 +206,6 @@ function extractNatalPositions(natalChart: any): any[] {
   return []
 }
 
-// ─── Main ────────────────────────────────────────────────────────────────
-
 async function main() {
   console.log('═══════════════════════════════════════════════════')
   console.log('  Agentic User Provisioning')
@@ -204,9 +214,10 @@ async function main() {
   const result = await provisionAgenticUsers()
 
   console.log('\n═══════════════════════════════════════════════════')
-  console.log(`  Created: ${result.created}`)
-  console.log(`  Skipped: ${result.skipped}`)
-  console.log(`  Errors:  ${result.errors.length}`)
+  console.log(`  Created:      ${result.created}`)
+  console.log(`  Skipped:      ${result.skipped}`)
+  console.log(`  Sync failed:  ${result.syncFailed}  (run backfill-agent-sync.ts to retry)`)
+  console.log(`  Errors:       ${result.errors.length}`)
   console.log('═══════════════════════════════════════════════════')
 
   if (result.errors.length > 0) {
