@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
+import { useSession } from 'next-auth/react'
 import { Sparkles, Zap, Box, Droplets } from 'lucide-react'
 import { TokenBalances } from '@/lib/services/economyService'
 
 export function TokenHUD() {
+  const { data: session, status } = useSession()
   const [balances, setBalances] = useState<
     (TokenBalances & { canClaimAgentsYield?: boolean }) | null
   >(null)
@@ -16,11 +18,19 @@ export function TokenHUD() {
   const { toast } = useToast()
 
   const fetchBalances = async () => {
+    if (status !== 'authenticated') {
+      setLoading(false)
+      return
+    }
+
     try {
       const res = await fetch('/api/economy/balances')
       if (res.ok) {
         const data = await res.json()
         setBalances(data)
+      } else if (res.status === 401) {
+        // Silently handle 401 - might be session expiration
+        setBalances(null)
       }
     } catch (error) {
       console.error('Failed to fetch balances:', error)
@@ -31,10 +41,15 @@ export function TokenHUD() {
 
   useEffect(() => {
     fetchBalances()
-    // Refresh periodically
-    const interval = setInterval(fetchBalances, 60000)
-    return () => clearInterval(interval)
-  }, [])
+    // Refresh periodically if authenticated
+    let interval: NodeJS.Timeout | null = null
+    if (status === 'authenticated') {
+      interval = setInterval(fetchBalances, 60000)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [status])
 
   const handleClaimYield = async () => {
     setClaiming(true)

@@ -3,6 +3,7 @@ import { agentActionService } from '@/lib/services/agent-action-service'
 
 /**
  * POST /api/cron/agents/tick
+ * GET /api/cron/agents/tick (Vercel Cron)
  *
  * Hourly (or per-planetary-hour) cron endpoint that:
  *  1. Evaluates every agentic user's natal chart against the current
@@ -14,15 +15,30 @@ import { agentActionService } from '@/lib/services/agent-action-service'
  * Vercel Cron schedule: `0 * * * *` (every hour)
  */
 export async function POST(request: Request) {
+  return handleTick(request)
+}
+
+export async function GET(request: Request) {
+  return handleTick(request)
+}
+
+async function handleTick(request: Request) {
   try {
     const authHeader = request.headers.get('authorization')
     const cronSecret = process.env.CRON_SECRET
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'production') {
+      if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+        console.error(
+          '[cron/agents/tick] Unauthorized attempt or missing CRON_SECRET in production'
+        )
         return new NextResponse('Unauthorized', { status: 401 })
       }
-      console.warn('[cron/agents/tick] Missing or invalid CRON_SECRET (dev mode, continuing)')
+    } else {
+      // In development, only warn if a secret is provided but incorrect
+      if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+        console.warn('[cron/agents/tick] Invalid CRON_SECRET provided')
+      }
     }
 
     const summary = await agentActionService.runTick()
@@ -34,9 +50,6 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error('[cron/agents/tick] Fatal error:', error)
-    return NextResponse.json(
-      { success: false, error: 'Internal Server Error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 })
   }
 }

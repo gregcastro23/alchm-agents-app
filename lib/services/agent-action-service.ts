@@ -323,7 +323,7 @@ export class AgentActionService {
           amounts: this.toFixedAmounts(amounts),
           source: 'agents_yield',
           idempotencyKey: `agentic:yield:${email}:${dateStr}`,
-          metadata: { agentName: agent.name ?? email.split('@')[0] },
+          metadata: { agentName: `${agent.name ?? email.split('@')[0]} ` },
         })
       }
 
@@ -389,7 +389,7 @@ export class AgentActionService {
       results.push({
         userId: agent.id,
         agentEmail: agent.email,
-        agentName: agent.name ?? agent.email.split('@')[0],
+        agentName: `${agent.name ?? agent.email.split('@')[0]} `,
         agentProfile: agent.user_profiles,
         score,
         activated: score >= AGENT_ACTIVATION_THRESHOLD,

@@ -32,6 +32,18 @@ export const authOptions: import('next-auth').NextAuthOptions = {
   pages: {
     signIn: '/auth/signin',
   },
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.VERCEL_ENV === 'production' ? '.alchm.kitchen' : undefined,
+      },
+    },
+  },
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === 'google') {
@@ -43,7 +55,7 @@ export const authOptions: import('next-auth').NextAuthOptions = {
 
         try {
           // Use a transaction to ensure atomicity
-          await prisma.$transaction(async (tx) => {
+          await prisma.$transaction(async tx => {
             let dbUser = await tx.users.findUnique({
               where: { email },
               include: { user_profiles: true },
@@ -53,7 +65,7 @@ export const authOptions: import('next-auth').NextAuthOptions = {
               // New user - create all required rows
               const userId = randomUUID()
               const name = profile?.name || user?.name || email.split('@')[0]
-              
+
               await tx.users.create({
                 data: {
                   id: userId,
@@ -121,6 +133,7 @@ export const authOptions: import('next-auth').NextAuthOptions = {
       return true
     },
     async jwt({ token, user, account }) {
+      // Initial sign-in
       if (user && account?.provider === 'google') {
         try {
           const dbUser = await withTimeout(
@@ -132,12 +145,31 @@ export const authOptions: import('next-auth').NextAuthOptions = {
             token.role = dbUser.role || 'user'
           }
         } catch (error) {
-          console.error('Error resolving database user ID for Google:', error)
+          console.error('Error resolving database user ID for Google (initial):', error)
         }
       }
+
+      // Fallback: if token.id is missing but we have an email, try to resolve it
+      if (!token.id && token.email) {
+        try {
+          const dbUser = await withTimeout(
+            prisma.users.findUnique({ where: { email: token.email } }),
+            DB_TIMEOUT_MS
+          )
+          if (dbUser) {
+            token.id = dbUser.id
+            token.role = dbUser.role || 'user'
+          }
+        } catch (error) {
+          // Only log once to avoid spamming logs if DB is down
+          console.error('Error resolving database user ID for Google (fallback):', error)
+        }
+      }
+
       token.tier = token.role === 'admin' ? 'premium_pro' : 'master'
       return token
     },
+
     async session({ session, token }) {
       if (token && session.user) {
         const sessionUser = session.user as typeof session.user & {

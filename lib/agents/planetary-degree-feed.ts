@@ -9,6 +9,7 @@ import {
   planetaryPositionsService,
   type PlanetaryPosition,
 } from '@/lib/services/planetary-positions-service'
+import { PlanetaryHourCalculator } from '../planetary-hour'
 import type { FeedActionPayload } from './feed-activation-engine'
 
 const TRACKED_PLANETS = [
@@ -78,6 +79,7 @@ export interface PlanetaryDegreeFeedMessage {
 
 export class PlanetaryDegreeFeedService {
   private recentEmissions = new Map<string, number>()
+  private hourCalc = new PlanetaryHourCalculator()
 
   async evaluateDegreeChanges(
     options: PlanetaryDegreeFeedOptions = {}
@@ -259,6 +261,17 @@ export class PlanetaryDegreeFeedService {
           planetElement,
           retrograde: String(input.position.retrograde),
         },
+        planetarySignature: this.buildPlanetarySignature(
+          input.planet,
+          input.position.sign,
+          degree,
+          input.date
+        ),
+        agentProfile: {
+          bio: `The consciousness of ${input.planet} transiting through ${input.position.sign}.`,
+          dominantElement: element,
+          monicaConstant: dignity === 'domicile' ? 5.5 : 4.0,
+        },
       },
     }
 
@@ -347,6 +360,17 @@ export class PlanetaryDegreeFeedService {
         idempotencyKey,
         internalConfidence: 0.85,
         internalTrigger: 'moon_degree_changed',
+        planetarySignature: this.buildPlanetarySignature(
+          'Moon',
+          input.position.sign,
+          degree,
+          input.date
+        ),
+        agentProfile: {
+          bio: `The lunar consciousness in its ${phase.name} phase.`,
+          dominantElement: phase.element,
+          monicaConstant: 5.0,
+        },
       },
     }
 
@@ -429,6 +453,30 @@ export class PlanetaryDegreeFeedService {
 
   private getAgentEmail(planet: string, sign: string, degree: number): string {
     return `${planet.toLowerCase()}-${sign.toLowerCase()}-${degree}@alchm.kitchen`
+  }
+
+  private buildPlanetarySignature(planet: string, sign: string, degree: number, date: Date) {
+    const { planet: planetaryHour } = this.hourCalc.getPlanetaryHour(date)
+    const planetaryDay = this.hourCalc.getPlanetaryDay(date)
+    const dominantElement = getSignElement(sign)
+
+    const ELEMENT_TO_SACRED_STAT: Record<string, string> = {
+      Fire: 'Spirit',
+      Water: 'Essence',
+      Earth: 'Matter',
+      Air: 'Substance',
+    }
+
+    return {
+      postedAt: date.toISOString(),
+      dominantPlanet: planet,
+      dominantSign: sign,
+      dominantElement,
+      planetaryHour,
+      planetaryDay,
+      sacredStat: ELEMENT_TO_SACRED_STAT[dominantElement] || 'Spirit',
+      natalPositions: [], // Transits don't have natal charts in this context
+    }
   }
 
   private getGuidanceForPlanet(

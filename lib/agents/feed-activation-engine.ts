@@ -2,6 +2,7 @@ import { celestialEnergyCalculator, type CelestialMoment } from '../celestial-en
 import { unifiedTracker, type UnifiedConsciousnessSnapshot } from '../consciousness/unified-tracker'
 import { HistoricalAgentsService, type EnhancedHistoricalAgent } from '../historical-agents-db'
 import { generateVoicedText } from './persona/voiced-generation'
+import { PlanetaryHourCalculator } from '../planetary-hour'
 
 export type WTENEventType =
   | 'recipe_generation'
@@ -81,6 +82,8 @@ export interface FeedActionPayload {
 }
 
 export class FeedActivationEngine {
+  private hourCalc = new PlanetaryHourCalculator()
+
   /**
    * Evaluates all active historical agents against current celestial weather
    * to determine if they should generate an action for the feed.
@@ -192,6 +195,21 @@ export class FeedActivationEngine {
       internalConfidence: Math.min(1.0, (velocity + momentum) / 2),
       internalTrigger: trigger.reason,
       planetarySignature: this.buildPlanetarySignature(agent, moment),
+      agentName: `${agent.name} `,
+      agentProfile: {
+        bio: (agent as any).background?.legacy || agent.specialty,
+        monicaCreationStory: (agent as any).monicaCreationStory || null,
+        natalChart: agent.natalChart,
+        dominantElement: agent.dominantElement,
+        monicaConstant: agent.monicaConstant,
+        birthDate: agent.birthDate?.toISOString(),
+        birthTime: agent.birthTime,
+        birthLocation: agent.birthLocation
+          ? typeof agent.birthLocation === 'string'
+            ? agent.birthLocation
+            : JSON.stringify(agent.birthLocation)
+          : undefined,
+      },
     }
 
     switch (eventType) {
@@ -259,10 +277,25 @@ export class FeedActivationEngine {
   }
 
   private buildPlanetarySignature(agent: EnhancedHistoricalAgent, moment: CelestialMoment) {
+    const { planet: planetaryHour } = this.hourCalc.getPlanetaryHour(moment.timestamp)
+    const planetaryDay = this.hourCalc.getPlanetaryDay(moment.timestamp)
+    const dominantElement = agent.dominantElement || 'Fire'
+
+    const ELEMENT_TO_SACRED_STAT: Record<string, string> = {
+      Fire: 'Spirit',
+      Water: 'Essence',
+      Earth: 'Matter',
+      Air: 'Substance',
+    }
+
     return {
       postedAt: moment.timestamp.toISOString(),
       dominantPlanet: moment.planetary.dominantPlanet,
       dominantSign: moment.planetary.dominantSign,
+      dominantElement,
+      planetaryHour,
+      planetaryDay,
+      sacredStat: ELEMENT_TO_SACRED_STAT[dominantElement] || 'Spirit',
       natalPositions: this.extractNatalPositions(agent).slice(0, 7),
       transitPositions: Object.entries(moment.planetaryDegrees)
         .slice(0, 7)

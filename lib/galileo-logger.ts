@@ -371,6 +371,8 @@ export async function logQuantitiesToGalileo(
   metrics: AlchemicalMetrics,
   context: Record<string, any> = {}
 ): Promise<boolean> {
+  if (!GALILEO_API_KEY) return false
+
   try {
     // Start a session for this calculation
     const sessionId = galileoLogger.startSession('alchemical-quantities-calculation', {
