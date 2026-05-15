@@ -3,6 +3,11 @@ import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 import React from 'react'
 
+// Next.js `server-only` is a sentinel module that throws on client import.
+// In vitest (jsdom) it always trips, so replace with a no-op. Any code path
+// reaching this still runs in tests — it just no longer asserts server-context.
+vi.mock('server-only', () => ({}))
+
 // Mock Next.js router
 vi.mock('next/router', () => ({
   useRouter: () => ({

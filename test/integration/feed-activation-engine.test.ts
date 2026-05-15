@@ -8,6 +8,20 @@ vi.mock('@/lib/celestial-energy-calculator')
 vi.mock('@/lib/historical-agents-db')
 vi.mock('@/lib/consciousness/unified-tracker')
 
+const PLANETARY_FIXTURE = {
+  timestamp: new Date('2026-05-14T12:00:00Z'),
+  planetary: { dominantPlanet: 'Mars', dominantSign: 'Aries' },
+  planetaryDegrees: {
+    Sun: 23.5,
+    Moon: 14.2,
+    Mercury: 8.7,
+    Venus: 17.9,
+    Mars: 3.1,
+    Jupiter: 28.6,
+    Saturn: 11.4,
+  },
+}
+
 describe('FeedActivationEngine', () => {
   beforeEach(() => {
     vi.resetAllMocks()
@@ -27,6 +41,7 @@ describe('FeedActivationEngine', () => {
 
     // Mock Celestial Moment (High Entropy)
     vi.mocked(celestialEnergyCalculator.calculateMoment).mockResolvedValue({
+      ...PLANETARY_FIXTURE,
       thermodynamic: { entropy: 85, heat: 50, reactivity: 50, energy: 50 },
       alchemical: { A_number: 50, spirit: 50, matter: 50, essence: 50, substance: 50 },
       kinetic: { velocity: { Fire: 50 }, power: 50 },
@@ -60,6 +75,7 @@ describe('FeedActivationEngine', () => {
 
     // Mock Celestial Moment (High A#)
     vi.mocked(celestialEnergyCalculator.calculateMoment).mockResolvedValue({
+      ...PLANETARY_FIXTURE,
       thermodynamic: { entropy: 40, heat: 50, reactivity: 50, energy: 50 },
       alchemical: { A_number: 95, spirit: 50, matter: 50, essence: 50, substance: 50 },
       kinetic: { velocity: { Water: 50 }, power: 50 },
