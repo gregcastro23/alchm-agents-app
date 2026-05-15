@@ -44,10 +44,11 @@ async function main() {
       continue
     }
 
-    await (prisma as any).user_profiles.update({
-      where: { id: user.user_profiles.id },
-      data: { bio: agent.monicaCreationStory },
-    })
+    await prisma.$executeRawUnsafe(
+      `UPDATE "user_profiles" SET "bio" = $1 WHERE "id" = $2`,
+      agent.monicaCreationStory,
+      user.user_profiles.id
+    )
 
     console.log(`  ✓ Backfilled bio for ${agent.name}`)
     updated++

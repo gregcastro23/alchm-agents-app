@@ -70,3 +70,4 @@ test-import.ts
 AGENTS.md
 
 backend/node_modules/
+.env*.local
