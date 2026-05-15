@@ -8,7 +8,10 @@ import {
 function getWtenApiUrl(): string {
   if (process.env.WTEN_API_URL) return process.env.WTEN_API_URL
 
-  const baseUrl = process.env.WHATTOEATNEXT_URL || process.env.ALCHM_KITCHEN_URL
+  const baseUrl =
+    process.env.WHATTOEATNEXT_URL ||
+    process.env.ALCHM_KITCHEN_URL ||
+    process.env.WHATTOEATNEXT_BASE_URL
   if (baseUrl) {
     return `${baseUrl.replace(/\/$/, '')}/api/feed`
   }
@@ -17,7 +20,8 @@ function getWtenApiUrl(): string {
 }
 
 const WTEN_API_URL = getWtenApiUrl()
-const INTERNAL_API_SECRET = process.env.INTERNAL_API_SECRET || 'dev_secret'
+const INTERNAL_API_SECRET =
+  process.env.INTERNAL_API_SECRET || process.env.WHATTOEATNEXT_API_KEY || 'dev_secret'
 
 interface PushResult {
   success: boolean

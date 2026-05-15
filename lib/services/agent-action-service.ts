@@ -31,6 +31,8 @@ import { EconomyService } from '@/lib/services/economyService'
 import { syncDebitToAlchm } from '@/lib/alchm-debit-sync'
 import { syncCreditToAlchm } from '@/lib/alchm-credit-sync'
 import { syncEventToAlchm } from '@/lib/alchm-event-sync'
+import { feedPusherService } from '@/lib/agents/feed-pusher'
+import { WTENEventType } from '@/lib/agents/feed-activation-engine'
 import { PlanetaryHourCalculator } from '@/lib/planetary-hour'
 import { getCurrentPlanetaryPositions } from '@/lib/calculate-transits'
 import type { CurrentPlanetPosition } from '@/lib/calculate-transits'
@@ -627,6 +629,26 @@ export class AgentActionService {
         for (const event of specializedAction.questEvents) {
           await syncEventToAlchm({ userEmail: agentEmail, event })
         }
+      }
+
+      // ── Push to the WTEN Feed if applicable ──────────────────────
+      let feedActionType: WTENEventType | null = null
+      if (actionType === 'feed_post') feedActionType = 'insight'
+      else if (actionType === 'transmutation') feedActionType = 'lab_entry'
+      else if (['insight', 'lab_entry', 'made_it', 'recipe_generation'].includes(actionType)) {
+        feedActionType = actionType as WTENEventType
+      }
+      
+      if (feedActionType) {
+        console.log(`[AgentActionService] Pushing ${feedActionType} for ${agentName} to WTEN feed...`)
+        await feedPusherService.pushActions([{
+          agentEmail,
+          idempotencyKey,
+          eventType: feedActionType,
+          metadataPayload: this.buildActionMetadata(agentName, actionType, activation)
+        }]).catch(err => {
+          console.error(`[AgentActionService] Feed push failed for ${agentName}:`, err)
+        })
       }
 
       return { success: true, actionType }
