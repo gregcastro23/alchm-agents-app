@@ -5,6 +5,20 @@
 export async function syncEventToAlchm(params: {
   userEmail: string
   event: string
+  metadata?: {
+    agentName?: string
+    agentProfile?: {
+      bio?: string | null
+      monicaCreationStory?: string | null
+      natalChart?: any
+      natalPositions?: Array<{ planet: string; sign: string; degree: number }>
+      dominantElement?: string
+      monicaConstant?: number
+      birthDate?: string
+      birthTime?: string | null
+      birthLocation?: string
+    }
+  }
 }): Promise<{ ok: boolean; error?: string; completed?: any[] }> {
   const syncUrl = process.env.ALCHM_KITCHEN_SYNC_URL
   const syncSecret = process.env.ALCHM_KITCHEN_SYNC_SECRET

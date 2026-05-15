@@ -52,7 +52,9 @@ pre_deployment_checks() {
     docker login "$DOCKER_REGISTRY" >/dev/null 2>&1 || { log_error "Unable to authenticate with Docker registry."; exit 1; }
 
     # Validate environment variables
-    required_vars=("DATABASE_URL" "NEXTAUTH_SECRET" "CLERK_SECRET_KEY" "REDIS_URL")
+    # DIRECT_URL is the non-pooled connection used by prisma migrate deploy.
+    # DATABASE_URL must remain the Accelerate proxy URL for all runtime queries.
+    required_vars=("DATABASE_URL" "DIRECT_URL" "NEXTAUTH_SECRET" "CLERK_SECRET_KEY" "REDIS_URL")
     for var in "${required_vars[@]}"; do
         if [[ -z "${!var:-}" ]]; then
             log_error "Required environment variable $var is not set."

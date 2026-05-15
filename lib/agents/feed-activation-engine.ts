@@ -19,17 +19,32 @@ export interface FeedActionPayload {
     insightTitle?: string
     insightContent?: string
     // For 'lab_entry'
-    dish_name?: string
+    dishName?: string
     description?: string
     rating?: number
     is_public?: boolean
     elemental_tags?: Record<string, number>
     planetary_context?: Record<string, string>
-    // For 'made_it'
+    // For 'made_it' and 'recipe_generation'
     recipeName?: string
     recipeId?: string
     review?: string
     madeIt?: boolean
+    // For 'commensal_request'
+    targetName?: string
+    // Agent identity — used by alchm.kitchen to render the profile chip
+    agentName?: string
+    agentProfile?: {
+      bio?: string | null
+      monicaCreationStory?: string | null
+      natalChart?: any
+      natalPositions?: Array<{ planet: string; sign: string; degree: number }>
+      dominantElement?: string
+      monicaConstant?: number
+      birthDate?: string
+      birthTime?: string | null
+      birthLocation?: string
+    }
     // Internal routing/confidence
     internalConfidence?: number
     internalTrigger?: string
@@ -37,7 +52,6 @@ export interface FeedActionPayload {
     groupChatId?: string
     threadKey?: string
     messageType?: string
-    agentName?: string
     message?: string
     planet?: string
     sign?: string
@@ -55,6 +69,10 @@ export interface FeedActionPayload {
       postedAt: string
       dominantPlanet: string
       dominantSign: string
+      dominantElement?: string
+      sacredStat?: string
+      planetaryHour?: string
+      planetaryDay?: string
       natalPositions: Array<{ planet: string; sign: string; degree: number }>
       transitPositions: Array<{ planet: string; degree: number }>
     }
@@ -185,7 +203,7 @@ export class FeedActivationEngine {
       case 'lab_entry':
         return {
           ...baseMetadata,
-          dish_name: `Transmuted ${agent.dominantElement} Elixir`,
+          dishName: `Transmuted ${agent.dominantElement} Elixir`,
           description: `Observes the current A# of ${moment.alchemical.A_number.toFixed(2)} and contemplates its effect on the cosmic order.`,
           rating: 5,
           is_public: true,
@@ -244,9 +262,7 @@ export class FeedActivationEngine {
       .map(([planet, data]: [string, any]) => ({
         planet,
         sign: data.sign || '',
-        degree: Number(
-          (data.position ?? data.degree ?? data.signDegree ?? 0).toFixed?.(2) ?? 0
-        ),
+        degree: Number((data.position ?? data.degree ?? data.signDegree ?? 0).toFixed?.(2) ?? 0),
       }))
   }
 }

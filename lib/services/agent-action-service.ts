@@ -30,7 +30,7 @@ import {
 import { EconomyService } from '@/lib/services/economyService'
 import { syncDebitToAlchm } from '@/lib/alchm-debit-sync'
 import { syncCreditToAlchm } from '@/lib/alchm-credit-sync'
-import { syncEventToAlchm, type SyncEventPayload } from '@/lib/alchm-event-sync'
+import { syncEventToAlchm } from '@/lib/alchm-event-sync'
 import { feedPusherService } from '@/lib/agents/feed-pusher'
 import { WTENEventType } from '@/lib/agents/feed-activation-engine'
 import { PlanetaryHourCalculator } from '@/lib/planetary-hour'
@@ -65,10 +65,24 @@ export interface PlanetarySignature {
   postedAt: string
   planetaryHour: string
   planetaryDay: string
+  dominantPlanet: string
   dominantElement: string
   sacredStat: TokenType
   natalPositions: Array<{ planet: string; sign: string; degree: number }>
   transitPositions: Array<{ planet: string; sign: string; degree: number }>
+}
+
+/** Normalized agentProfile shape sent to alchm.kitchen */
+export interface AgentProfilePayload {
+  bio: string | null
+  monicaCreationStory: string | null
+  natalChart: any
+  natalPositions: Array<{ planet: string; sign: string; degree: number }>
+  dominantElement: string
+  monicaConstant: number
+  birthDate: string
+  birthTime: string | null
+  birthLocation: string
 }
 
 /** Summary returned from the daily yield cron */
@@ -102,7 +116,9 @@ interface AgenticUser {
     monicaConstant: number
     birthDate: Date
     birthTime: string | null
-    birthLocation: any; bio: string | null; monicaCreationStory: string | null
+    birthLocation: any
+    bio: string | null
+    monicaCreationStory?: string | null
   } | null
 }
 
@@ -292,10 +308,10 @@ export class AgentActionService {
         })
       }
 
-      // Sync yield to alchm.kitchen
+      // Sync yield to alchm.kitchen (with identity metadata so user_profiles is kept fresh)
       const agent = await tx.users.findUnique({
         where: { id: userId },
-        select: { email: true, isAgentic: true },
+        select: { email: true, name: true, isAgentic: true },
       })
 
       if (agent?.isAgentic) {
@@ -307,6 +323,7 @@ export class AgentActionService {
           amounts: this.toFixedAmounts(amounts),
           source: 'agents_yield',
           idempotencyKey: `agentic:yield:${email}:${dateStr}`,
+          metadata: { agentName: agent.name ?? email.split('@')[0] },
         })
       }
 
@@ -372,7 +389,8 @@ export class AgentActionService {
       results.push({
         userId: agent.id,
         agentEmail: agent.email,
-        agentName: agent.name ?? agent.email.split('@')[0], agentProfile: agent.user_profiles,
+        agentName: agent.name ?? agent.email.split('@')[0],
+        agentProfile: agent.user_profiles,
         score,
         activated: score >= AGENT_ACTIVATION_THRESHOLD,
         triggers,
@@ -474,8 +492,7 @@ export class AgentActionService {
       triggers.push('day_ruler_sun_sign_match')
     }
 
-    const baseScore =
-      hourScore * 0.3 + transitScore * 0.35 + elementScore * 0.2 + dayScore * 0.15
+    const baseScore = hourScore * 0.3 + transitScore * 0.35 + elementScore * 0.2 + dayScore * 0.15
     const sacredStats = this.calculateSacredStatsMultiplier(dominantElement, hourPlanet)
     if (sacredStats.trigger) {
       triggers.push(sacredStats.trigger)
@@ -532,6 +549,8 @@ export class AgentActionService {
       const hourKey = new Date().toISOString().slice(0, 13) // YYYY-MM-DDTHH
       const idempotencyKey = `agent_action:${userId}:${hourKey}`
 
+      // Normalize raw profile into the contracted AgentProfilePayload shape
+      const agentProfilePayload = this.buildAgentProfilePayload(activation.agentProfile)
       // Resolve cost amounts for the payload
       const cost = AGENT_OPERATION_COSTS[operationKey] ?? {}
       const amounts = {
@@ -540,6 +559,18 @@ export class AgentActionService {
         matter: (cost.Matter ?? 0).toFixed(4),
         substance: (cost.Substance ?? 0).toFixed(4),
       }
+
+      // Build a lean planetarySignature for the metadata (same shape the feed chip uses)
+      const debitPlanetarySignature = activation.planetarySignature
+        ? {
+            planetaryHour: activation.planetarySignature.planetaryHour,
+            planetaryDay: activation.planetarySignature.planetaryDay,
+            dominantPlanet: activation.planetarySignature.dominantPlanet,
+            dominantElement: activation.planetarySignature.dominantElement,
+            sacredStat: activation.planetarySignature.sacredStat,
+            natalPositions: activation.planetarySignature.natalPositions,
+          }
+        : undefined
 
       // ── Remote debit on alchm.kitchen (source of truth) ──────────
       const debitResult = await syncDebitToAlchm({
@@ -553,9 +584,29 @@ export class AgentActionService {
           actionType,
           activationScore: activation.score,
           triggers: activation.triggers.slice(0, 5),
-          agentProfile: activation.agentProfile,
+          agentProfile: agentProfilePayload ?? undefined,
+          planetarySignature: debitPlanetarySignature,
         },
       })
+
+      // Persist alchm.kitchen's UUID on first contact (returned on 200, 402, and 409).
+      // This is their stable actorId used to build /profile/{userId} links.
+      if (debitResult.userId) {
+        await prisma.users
+          .update({
+            where: { id: userId },
+            data: { alchmKitchenUserId: debitResult.userId },
+          })
+          .catch(() => {
+            // Non-fatal: unique constraint if two ticks race; safe to ignore
+          })
+      }
+
+      if (debitResult.reason === 'already_applied') {
+        console.info(
+          `[AgentActionService] Idempotency hit for ${agentEmail} — profile already updated this hour`
+        )
+      }
 
       if (!debitResult.ok && debitResult.reason !== 'already_applied') {
         // Record the failed attempt locally
@@ -600,7 +651,12 @@ export class AgentActionService {
           eventType: actionType,
           triggerType: 'celestial_activation',
           triggerSummary: activation.triggers.slice(0, 3).join(', '),
-          metadataPayload: this.buildActionMetadata(agentName, actionType, activation),
+          metadataPayload: this.buildActionMetadata(
+            agentName,
+            actionType,
+            activation,
+            agentProfilePayload
+          ),
           score: activation.score,
           idempotencyKey,
           status: 'executed',
@@ -627,9 +683,13 @@ export class AgentActionService {
 
       // ── Perform the high-level action (reporting events, etc) ─────
       if (specializedAction) {
+        const identityMeta = {
+          agentName,
+          agentProfile: agentProfilePayload ?? undefined,
+        }
         console.log(`[AgentActionService] ${agentName} ${specializedAction.logMessage}...`)
         for (const event of specializedAction.questEvents) {
-          await syncEventToAlchm({ userEmail: agentEmail, event })
+          await syncEventToAlchm({ userEmail: agentEmail, event, metadata: identityMeta })
         }
       }
 
@@ -640,17 +700,26 @@ export class AgentActionService {
       else if (['insight', 'lab_entry', 'made_it', 'recipe_generation'].includes(actionType)) {
         feedActionType = actionType as WTENEventType
       }
-      
+
       if (feedActionType) {
-        console.log(`[AgentActionService] Pushing ${feedActionType} for ${agentName} to WTEN feed...`)
-        await feedPusherService.pushActions([{
-          agentEmail,
-          idempotencyKey,
-          eventType: feedActionType,
-          metadataPayload: this.buildActionMetadata(agentName, actionType, activation)
-        }]).catch(err => {
-          console.error(`[AgentActionService] Feed push failed for ${agentName}:`, err)
-        })
+        const feedMetadata = {
+          ...this.buildActionMetadata(agentName, actionType, activation, agentProfilePayload),
+        }
+        console.log(
+          `[AgentActionService] Pushing ${feedActionType} for ${agentName} to WTEN feed...`
+        )
+        await feedPusherService
+          .pushActions([
+            {
+              agentEmail,
+              idempotencyKey,
+              eventType: feedActionType,
+              metadataPayload: feedMetadata,
+            },
+          ])
+          .catch(err => {
+            console.error(`[AgentActionService] Feed push failed for ${agentName}:`, err)
+          })
       }
 
       return { success: true, actionType }
@@ -707,7 +776,7 @@ export class AgentActionService {
 
   /** Fetch all active agentic users with their profiles */
   private async getActiveAgenticUsers(): Promise<AgenticUser[]> {
-    return (await prisma.users.findMany({
+    const users = (await prisma.users.findMany({
       where: { isAgentic: true },
       include: {
         user_profiles: {
@@ -718,11 +787,33 @@ export class AgentActionService {
             monicaConstant: true,
             birthDate: true,
             birthTime: true,
-            birthLocation: true, bio: true, monicaCreationStory: true,
+            birthLocation: true,
+            bio: true,
           },
         },
       },
-    })) as unknown as AgenticUser[]
+    })) as any[]
+
+    // Pull monicaCreationStory from historical_agents as fallback bio source.
+    // Email convention: agentId@agentic.alchm.kitchen
+    const agentIds = users.map(u => u.email?.split('@')[0]).filter(Boolean) as string[]
+
+    const historicalAgents = await (prisma as any).historical_agents.findMany({
+      where: { agentId: { in: agentIds } },
+      select: { agentId: true, monicaCreationStory: true },
+    })
+    const storyByAgentId = new Map<string, string | null>(
+      historicalAgents.map((a: any) => [a.agentId, a.monicaCreationStory])
+    )
+
+    for (const user of users) {
+      const agentId = user.email?.split('@')[0]
+      if (user.user_profiles && agentId) {
+        user.user_profiles.monicaCreationStory = storyByAgentId.get(agentId) ?? null
+      }
+    }
+
+    return users as unknown as AgenticUser[]
   }
 
   /** Extract natal positions from an agent's profile */
@@ -847,9 +938,13 @@ export class AgentActionService {
     return 'Fire'
   }
 
-  private toFixedAmounts(
-    amounts: Partial<Record<string, number>>
-  ): { spirit: string; essence: string; matter: string; substance: string } {
+  /** Stable hash of the profile fields that matter for alchm.kitchen upsert */
+  private toFixedAmounts(amounts: Partial<Record<string, number>>): {
+    spirit: string
+    essence: string
+    matter: string
+    substance: string
+  } {
     return {
       spirit: (amounts.spirit ?? 0).toFixed(4),
       essence: (amounts.essence ?? 0).toFixed(4),
@@ -872,6 +967,7 @@ export class AgentActionService {
       postedAt: new Date().toISOString(),
       planetaryHour: hourPlanet,
       planetaryDay: dayRuler,
+      dominantPlanet: hourPlanet,
       dominantElement: normalizedElement,
       sacredStat: ELEMENT_TO_SACRED_STAT[normalizedElement] ?? 'Spirit',
       natalPositions: natalPositions
@@ -893,96 +989,147 @@ export class AgentActionService {
     }
   }
 
-  /** Build structured metadata payload for the action event record */
+  /** Normalize raw user_profiles row into the contracted agentProfile shape */
+  private buildAgentProfilePayload(
+    profile: AgenticUser['user_profiles']
+  ): AgentProfilePayload | null {
+    if (!profile) return null
+
+    const natalPositions: Array<{ planet: string; sign: string; degree: number }> = []
+    if (Array.isArray(profile.natalPositions)) {
+      for (const p of profile.natalPositions as any[]) {
+        natalPositions.push({
+          planet: p.planet ?? '',
+          sign: p.sign ?? '',
+          degree: Number((p.signDegree ?? p.degree ?? 0).toFixed?.(2) ?? 0),
+        })
+      }
+    }
+
+    // Normalize birthDate: Date object → ISO date string
+    const birthDate =
+      profile.birthDate instanceof Date
+        ? profile.birthDate.toISOString().split('T')[0]
+        : profile.birthDate
+          ? String(profile.birthDate).split('T')[0]
+          : ''
+
+    // Normalize birthLocation: object → readable string
+    let birthLocation = ''
+    if (profile.birthLocation) {
+      if (typeof profile.birthLocation === 'string') {
+        birthLocation = profile.birthLocation
+      } else if (typeof profile.birthLocation === 'object') {
+        const loc = profile.birthLocation as any
+        birthLocation = [loc.city, loc.country].filter(Boolean).join(', ') || JSON.stringify(loc)
+      }
+    }
+
+    // Mirror alchm.kitchen's own fallback: bio || monicaCreationStory || null
+    const bio = profile.bio ?? profile.monicaCreationStory ?? null
+
+    return {
+      bio,
+      monicaCreationStory: profile.monicaCreationStory ?? null,
+      natalChart: profile.natalChart ?? null,
+      natalPositions,
+      dominantElement: profile.dominantElement ?? 'Fire',
+      monicaConstant: Number(profile.monicaConstant ?? 0),
+      birthDate,
+      birthTime: profile.birthTime ?? null,
+      birthLocation,
+    }
+  }
+
+  /**
+   * Build structured metadata payload for the action event record.
+   * agentProfilePayload is the normalized profile (from buildAgentProfilePayload),
+   * not the raw DB row.
+   */
   private buildActionMetadata(
     agentName: string,
     actionType: string,
-    activation: ActivationResult
+    activation: ActivationResult,
+    agentProfilePayload?: AgentProfilePayload | null
   ): Record<string, any> {
     const now = new Date()
+    const baseIdentity = {
+      agentName,
+      agentProfile: agentProfilePayload ?? undefined,
+      planetarySignature: activation.planetarySignature,
+      timestamp: now.toISOString(),
+    }
 
     if (actionType === 'meal_plan') {
       return {
-        agentName,
+        ...baseIdentity,
         featureDemo: 'Weekly Menu Planning',
         planAction: 'generate_recipe',
         secondaryAction: 'log_from_plan',
         internalConfidence: activation.score,
-        planetarySignature: activation.planetarySignature,
-        timestamp: now.toISOString(), agentProfile: activation.agentProfile,
       }
     }
 
     if (actionType === 'pantry_update') {
       return {
-        agentName,
+        ...baseIdentity,
         featureDemo: "Master's Pantry",
         pantryAction: 'masters_pantry_verified',
         ingredient: 'Oranges',
         internalConfidence: activation.score,
-        planetarySignature: activation.planetarySignature,
-        timestamp: now.toISOString(), agentProfile: activation.agentProfile,
       }
     }
 
     if (actionType === 'alchemical_transmutation') {
       return {
-        agentName,
+        ...baseIdentity,
+        dishName: `${agentName}'s Alchemical Transmutation`,
         featureDemo: 'Alchemical Transmutation',
         transmutationAction: 'agent_alchemical_transmutation',
         sampleTransformation: 'Stabilizing volatile pantry elements into radiant preserves',
         internalConfidence: activation.score,
-        planetarySignature: activation.planetarySignature,
-        timestamp: now.toISOString(), agentProfile: activation.agentProfile,
       }
     }
 
     if (actionType === 'sacred_geometry_design') {
       return {
-        agentName,
+        ...baseIdentity,
         featureDemo: 'Sacred Geometry Design',
         designAction: 'agent_sacred_geometry_design',
         pattern: 'Golden-ratio plating grid for a seasonal tasting board',
         internalConfidence: activation.score,
-        planetarySignature: activation.planetarySignature,
-        timestamp: now.toISOString(), agentProfile: activation.agentProfile,
       }
     }
 
     if (actionType === 'energy_harmonic_calibration') {
       return {
-        agentName,
+        ...baseIdentity,
         featureDemo: 'Energy Harmonic Calibration',
         calibrationAction: 'agent_energy_harmonic_calibration',
         frequency: 'Kitchen workflow resonance and alternating-current heat timing',
         internalConfidence: activation.score,
-        planetarySignature: activation.planetarySignature,
-        timestamp: now.toISOString(), agentProfile: activation.agentProfile,
       }
     }
 
     if (actionType === 'feed_post') {
       return {
-        agentName,
+        ...baseIdentity,
         messageType: 'insight',
         insightTitle: `Cosmic Observation — ${now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}`,
         insightContent: this.generateInsightContent(agentName, activation.triggers),
         internalConfidence: activation.score,
         internalTrigger: activation.triggers[0] ?? 'celestial_activation',
-        planetarySignature: activation.planetarySignature,
-        timestamp: now.toISOString(), agentProfile: activation.agentProfile,
       }
     }
 
-    // transmutation
+    // transmutation (lab_entry)
     return {
-      agentName,
+      ...baseIdentity,
       messageType: 'transmutation',
+      dishName: `${agentName}'s Token Transmutation`,
       description: `${agentName} transmuted tokens under ${activation.triggers[0] ?? 'cosmic'} alignment`,
       internalConfidence: activation.score,
       internalTrigger: activation.triggers[0] ?? 'celestial_activation',
-      planetarySignature: activation.planetarySignature,
-      timestamp: now.toISOString(), agentProfile: activation.agentProfile,
     }
   }
 

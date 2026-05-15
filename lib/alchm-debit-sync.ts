@@ -26,9 +26,7 @@
  * first call — no pre-seeding required on the alchm.kitchen side.
  */
 
-const SYNC_URL =
-  process.env.ALCHM_KITCHEN_SYNC_URL ||
-  process.env.ALCHM_KITCHEN_API_BASE_URL
+const SYNC_URL = process.env.ALCHM_KITCHEN_SYNC_URL || process.env.ALCHM_KITCHEN_API_BASE_URL
 const SYNC_SECRET = process.env.ALCHM_KITCHEN_SYNC_SECRET
 
 // ---------------------------------------------------------------------------
@@ -51,11 +49,32 @@ export interface SyncDebitPayload {
     actionType: string
     activationScore: number
     triggers: string[]
+    agentProfile?: {
+      bio?: string | null
+      monicaCreationStory?: string | null
+      natalChart?: any
+      natalPositions?: Array<{ planet: string; sign: string; degree: number }>
+      dominantElement?: string
+      monicaConstant?: number
+      birthDate?: string
+      birthTime?: string | null
+      birthLocation?: string
+    }
+    planetarySignature?: {
+      planetaryHour: string
+      planetaryDay: string
+      dominantPlanet: string
+      dominantElement: string
+      sacredStat: string
+      natalPositions: Array<{ planet: string; sign: string; degree: number }>
+    }
   }
 }
 
 export interface SyncDebitResult {
   ok: boolean
+  /** alchm.kitchen's own UUID for this agent — present on 200, 402, and 409. Use to build /profile/{userId} links. */
+  userId?: string
   transactionGroupId?: string
   balances?: {
     spirit: number
@@ -63,7 +82,12 @@ export interface SyncDebitResult {
     matter: number
     substance: number
   }
-  reason?: 'insufficient_funds' | 'already_applied' | 'user_not_found' | 'invalid_request' | 'internal_error'
+  reason?:
+    | 'insufficient_funds'
+    | 'already_applied'
+    | 'user_not_found'
+    | 'invalid_request'
+    | 'internal_error'
   message?: string
   error?: string
   /** True when env vars are missing and the call was skipped */
@@ -86,9 +110,7 @@ export interface SyncDebitResult {
  *
  * This function NEVER throws. All failures are returned in the result.
  */
-export async function syncDebitToAlchm(
-  payload: SyncDebitPayload
-): Promise<SyncDebitResult> {
+export async function syncDebitToAlchm(payload: SyncDebitPayload): Promise<SyncDebitResult> {
   if (!SYNC_URL || !SYNC_SECRET) {
     console.warn(
       '[alchm-debit-sync] ALCHM_KITCHEN_SYNC_URL or SYNC_SECRET not set — skipping debit sync'
@@ -116,24 +138,25 @@ export async function syncDebitToAlchm(
 
     clearTimeout(timeout)
 
-    // 409 — idempotency hit: the debit was already applied, treat as success
+    const data = await res.json().catch(() => null)
+
+    // 409 — idempotency hit: profile was already updated, debit already applied
     if (res.status === 409) {
       console.info(
         `[alchm-debit-sync] Idempotency hit for ${payload.userEmail} (key: ${payload.idempotencyKey})`
       )
-      return { ok: true, reason: 'already_applied' }
+      return { ok: true, reason: 'already_applied', userId: data?.userId }
     }
-
-    const data = await res.json().catch(() => null)
 
     // 200 — success
     if (res.ok && data?.ok) {
       console.info(
         `[alchm-debit-sync] Debit applied for ${payload.userEmail}: ` +
-          `${payload.operationType} (txn: ${data.transactionGroupId})`
+          `${payload.operationType} (txn: ${data.transactionGroupId}, userId: ${data.userId})`
       )
       return {
         ok: true,
+        userId: data.userId,
         transactionGroupId: data.transactionGroupId,
         balances: data.balances,
       }
@@ -148,15 +171,14 @@ export async function syncDebitToAlchm(
       return {
         ok: false,
         reason: 'insufficient_funds',
+        userId: data?.userId,
         balances: data?.balances,
       }
     }
 
     // 404 — user not found (non-agentic emails only; agentic are auto-provisioned)
     if (res.status === 404) {
-      console.warn(
-        `[alchm-debit-sync] User not found on alchm.kitchen: ${payload.userEmail}`
-      )
+      console.warn(`[alchm-debit-sync] User not found on alchm.kitchen: ${payload.userEmail}`)
       return { ok: false, reason: 'user_not_found' }
     }
 
@@ -168,9 +190,7 @@ export async function syncDebitToAlchm(
 
     // 400 — invalid request
     if (res.status === 400) {
-      console.error(
-        `[alchm-debit-sync] Invalid request: ${data?.message || res.statusText}`
-      )
+      console.error(`[alchm-debit-sync] Invalid request: ${data?.message || res.statusText}`)
       return {
         ok: false,
         reason: 'invalid_request',
@@ -180,16 +200,11 @@ export async function syncDebitToAlchm(
 
     // Any other error
     const errorText = data?.message || data?.error || res.statusText
-    console.error(
-      `[alchm-debit-sync] Unexpected response ${res.status}: ${errorText}`
-    )
+    console.error(`[alchm-debit-sync] Unexpected response ${res.status}: ${errorText}`)
     return { ok: false, error: `${res.status}: ${errorText}` }
   } catch (err: any) {
     clearTimeout(timeout)
-    const msg =
-      err?.name === 'AbortError'
-        ? 'timeout (10s)'
-        : (err?.message ?? String(err))
+    const msg = err?.name === 'AbortError' ? 'timeout (10s)' : (err?.message ?? String(err))
     console.error(`[alchm-debit-sync] Network error: ${msg}`)
     return { ok: false, error: msg }
   }

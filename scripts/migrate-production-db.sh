@@ -27,7 +27,7 @@ if [ ! -f .env.vercel ]; then
   echo ""
 fi
 
-# Check if DATABASE_URL is set
+# Check required env vars
 if grep -q "DATABASE_URL=" .env.vercel 2>/dev/null; then
   echo "✅ DATABASE_URL found in .env.vercel"
 else
@@ -37,7 +37,26 @@ else
   echo "1. Go to: https://vercel.com/dashboard"
   echo "2. Select project: planetary-agents"
   echo "3. Go to: Settings → Environment Variables"
-  echo "4. Add: DATABASE_URL=your_connection_string"
+  echo "4. Add: DATABASE_URL=prisma+postgres://accelerate.prisma-data.net/..."
+  echo ""
+  exit 1
+fi
+
+if grep -q "DIRECT_URL=" .env.vercel 2>/dev/null; then
+  echo "✅ DIRECT_URL found in .env.vercel"
+else
+  echo "❌ DIRECT_URL not found in .env.vercel"
+  echo ""
+  echo "DIRECT_URL is required for migrations (prisma migrate deploy bypasses the Accelerate proxy)."
+  echo "Add it to your Vercel project:"
+  echo "1. Go to: https://vercel.com/dashboard"
+  echo "2. Select project: planetary-agents"
+  echo "3. Go to: Settings → Environment Variables"
+  echo "4. Add: DIRECT_URL=postgresql://user:pass@host:5432/dbname"
+  echo "   (Get the direct connection string from console.prisma.io → your project → Connection string)"
+  echo ""
+  echo "⚠️  Keep DIRECT_URL out of runtime services — it bypasses Accelerate's connection pooler."
+  echo "   Runtime queries must use DATABASE_URL (the prisma+postgres:// URL)."
   echo ""
   exit 1
 fi
