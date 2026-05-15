@@ -245,7 +245,20 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
             if usage is not None:
                 cached_read = getattr(usage, "cache_read_input_tokens", 0) or 0
                 cached_write = getattr(usage, "cache_creation_input_tokens", 0) or 0
+                input_tokens = getattr(usage, "input_tokens", 0) or 0
+                output_tokens = getattr(usage, "output_tokens", 0) or 0
                 cache_hit = {"read": cached_read, "write": cached_write}
+                # Structured log line — grep for "cache_metric" in Railway deploy logs
+                # to compute read-hit ratio = read / (read + write).
+                cached_total = cached_read + cached_write
+                read_ratio = (cached_read / cached_total) if cached_total > 0 else 0.0
+                print(
+                    f"cache_metric agentId={request.agentId} tier={tier} model={tier_cfg['model']} "
+                    f"cache_read={cached_read} cache_write={cached_write} "
+                    f"input_tokens={input_tokens} output_tokens={output_tokens} "
+                    f"read_ratio={read_ratio:.3f} persona_cache_key={request.personaCacheKey}",
+                    flush=True,
+                )
         except Exception as e:
             anthropic_failed = True
             err_str = str(e).lower()
