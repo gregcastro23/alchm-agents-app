@@ -476,6 +476,7 @@ export class PlanetaryDegreeFeedService {
       planetaryDay,
       sacredStat: ELEMENT_TO_SACRED_STAT[dominantElement] || 'Spirit',
       natalPositions: [], // Transits don't have natal charts in this context
+      transitPositions: [{ planet, degree }],
     }
   }
 

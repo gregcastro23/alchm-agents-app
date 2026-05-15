@@ -103,9 +103,9 @@ The chat flow for historical agents was rectified in commit `0608fc0a` to fix Oc
 4. **Backend** (`backend/main.py`):
    - Uses the override verbatim when present; falls back to enriched `backend/prompts.py:get_agent_system_prompt` otherwise.
    - Queries ChromaDB for top-3 RAG chunks, wraps them in `<reference_material>` with voice-preserving instructions.
-   - Resolves model from tier (default `cheap_fast` → Haiku 4.5).
-   - Calls Anthropic with `cache_control: ephemeral` on the persona block (~85–95% cache hit rate after turn 1).
-   - On quota/billing errors → Groq Llama 3.3 fallback. Last-ditch → OpenAI `gpt-4o-mini`.
+   - Resolves model from tier (default `free` → Groq Llama 3.3 70b — Anthropic credits are reserved for development).
+   - When tier is Anthropic-based, calls with `cache_control: ephemeral` on the persona block (~85–95% cache hit rate after turn 1).
+   - Walks the provider chain on quota/billing errors: Anthropic → Groq → Cerebras → Gemini → OpenRouter → OpenAI (paid last-ditch). Each transition emits a `fallback_event` log line; OpenAI catches emit `alert_event reason=paid_fallback`.
    - Returns metadata: `{tier, provider, model, cache, persona_source, rag_used}`.
 
 **Key files:**
@@ -164,14 +164,14 @@ import {
 
 **Cost tiers for historical agent chat** (resolved server-side by `backend/main.py`):
 
-| Tier         | Model                          | When                                          |
-| ------------ | ------------------------------ | --------------------------------------------- |
-| `free`       | `groq/llama-3.3-70b-versatile` | Quota fallback, autonomous feed posts         |
-| `cheap_fast` | `claude-haiku-4-5`             | **Default** — strong persona-following, cheap |
-| `primary`    | `claude-sonnet-4-6`            | Opt-in via `modelTier` request param          |
-| `reflective` | `claude-opus-4-7`              | Rare; explicit only                           |
+| Tier         | First-choice model             | When                                                                |
+| ------------ | ------------------------------ | ------------------------------------------------------------------- |
+| `free`       | `groq/llama-3.3-70b-versatile` | **Default** — skips Anthropic and starts the free chain             |
+| `cheap_fast` | `claude-haiku-4-5`             | Opt-in; cheap Anthropic with strong persona-following + cache reuse |
+| `primary`    | `claude-sonnet-4-6`            | Opt-in via `modelTier` request param                                |
+| `reflective` | `claude-opus-4-7`              | Rare; explicit only                                                 |
 
-Tier is selectable per request and capped by env var `HISTORICAL_AGENT_MAX_TIER`.
+Tier is selectable per request and capped by env var `HISTORICAL_AGENT_MAX_TIER`. **Free chain order:** Groq → Cerebras (`gpt-oss-120b`) → Gemini (`gemini-flash-latest`) → OpenRouter (`deepseek/deepseek-v4-flash:free`) → OpenAI `gpt-4o-mini` (paid last-ditch). Skip happens automatically per missing env var. `GET /api/providers/health` pings every configured provider with a 1-token "hi" for debug visibility.
 
 ### Observability (Galileo)
 
@@ -187,17 +187,18 @@ Agent knowledge is stored in ChromaDB (optional, Docker: `docker run -p 8000:800
 
 ### Feature Flags (env vars)
 
-| Variable                              | Effect                                                              |
-| ------------------------------------- | ------------------------------------------------------------------- |
-| `NEXT_PUBLIC_KINETICS_BACKEND`        | Use Railway for kinetics calculations (vs. local)                   |
-| `NEXT_PUBLIC_PLANETARY_HOURS_BACKEND` | Use Railway for planetary hour calculations                         |
-| `NEXT_PUBLIC_THERMODYNAMICS_BACKEND`  | Use Railway for thermodynamics engine                               |
-| `CROSS_BACKEND_SYNC_ENABLED`          | Sync planetary positions across backends                            |
-| `AI_GATEWAY_ENABLED`                  | Route Anthropic calls through an AI Gateway                         |
-| `HISTORICAL_AGENT_DEFAULT_TIER`       | Default tier for historical chat (`cheap_fast` if unset)            |
-| `HISTORICAL_AGENT_MAX_TIER`           | Ceiling tier (`primary` if unset) — caps requested tier             |
-| `RAG_MIN_SIMILARITY`                  | 0.0–1.0 threshold below which RAG chunks are dropped (0.0 default)  |
-| `GROQ_API_KEY`                        | Enables free-tier Groq fallback when Anthropic returns quota errors |
+| Variable                                                                | Effect                                                                          |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_KINETICS_BACKEND`                                          | Use Railway for kinetics calculations (vs. local)                               |
+| `NEXT_PUBLIC_PLANETARY_HOURS_BACKEND`                                   | Use Railway for planetary hour calculations                                     |
+| `NEXT_PUBLIC_THERMODYNAMICS_BACKEND`                                    | Use Railway for thermodynamics engine                                           |
+| `CROSS_BACKEND_SYNC_ENABLED`                                            | Sync planetary positions across backends                                        |
+| `AI_GATEWAY_ENABLED`                                                    | Route Anthropic calls through an AI Gateway                                     |
+| `HISTORICAL_AGENT_DEFAULT_TIER`                                         | Default tier for historical chat (`free` if unset)                              |
+| `HISTORICAL_AGENT_MAX_TIER`                                             | Ceiling tier (`primary` if unset) — caps requested tier                         |
+| `RAG_MIN_SIMILARITY`                                                    | 0.0–1.0 threshold below which RAG chunks are dropped (0.0 default)              |
+| `GROQ_API_KEY` `CEREBRAS_API_KEY` `GEMINI_API_KEY` `OPENROUTER_API_KEY` | Free-chain providers — each is independently optional; missing keys are skipped |
+| `ALLOW_SQLITE_FALLBACK`                                                 | One-time bridge: tolerate SQLite when DIRECT_URL is unset (Railway)             |
 
 ### TypeScript Errors
 
