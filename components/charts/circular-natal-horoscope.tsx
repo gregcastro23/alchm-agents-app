@@ -55,12 +55,13 @@ async function fetchAstrologizeWheel(input: {
     }),
   })
   if (!res.ok) {
-    return { meta: { degraded: true, fallback: true, error: `astrologize proxy failed: ${res.status}` } }
+    return {
+      meta: { degraded: true, fallback: true, error: `astrologize proxy failed: ${res.status}` },
+    }
   }
   return res.json()
 }
 import { useTheme } from 'next-themes'
-import KineticsChartPane from './kinetics-chart-pane'
 
 interface CircularNatalHoroscopeProps {
   className?: string
@@ -306,14 +307,6 @@ export default function CircularNatalHoroscope({
           </div>
         </CardContent>
       </Card>
-
-      {showKinetics && (
-        <KineticsChartPane
-          birthInfo={birthInfo}
-          realTimeMode={!birthInfo}
-          className="lg:col-span-1"
-        />
-      )}
     </div>
   )
 }

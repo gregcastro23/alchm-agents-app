@@ -4,7 +4,7 @@
 // planetary hours, moon phases, and agent interactions. Stats are living vital signs!
 
 import type { CraftedAgent } from '../agent-types'
-import { AlchemicalKineticsClient } from '../kinetics-client'
+
 import { alchemize } from '../alchemizer'
 import { generateAccurateHoroscope } from '../monica/horoscope-generator'
 

@@ -166,6 +166,7 @@ import {
   gatewayAnthropic,
   gatewayGoogle,
   gatewayGroq,
+  gatewayOpenRouter,
   isGatewayEnabled,
 } from './gateway'
 
@@ -307,4 +308,16 @@ export function resolveOpenAIModel(
  */
 export function resolveEmbeddingModel(): string {
   return process.env.EMBEDDINGS_MODEL || EMBEDDINGS.OPENAI_LARGE
+}
+
+/**
+ * Resolve an OpenRouter LanguageModel.
+ * Useful when OPENROUTER_API_KEY is set and you want to access any model
+ * aggregated through OpenRouter (e.g. llama-4, phi-4, etc.).
+ *
+ * Pass a full OpenRouter model slug, e.g. "meta-llama/llama-4-scout".
+ */
+export function resolveOpenRouterModel(modelSlug: string): LanguageModel {
+  const finalModelId = isGatewayEnabled ? `openrouter/${modelSlug}` : modelSlug
+  return gatewayOpenRouter(finalModelId) as unknown as LanguageModel
 }

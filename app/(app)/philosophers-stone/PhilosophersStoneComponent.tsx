@@ -1052,11 +1052,6 @@ function PhilosophersStoneInner() {
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Alchemical Token Generation */}
-                <LazyComponentWrapper componentName="Alchemical Quantities Display">
-                  <AlchmQuantitiesDisplay />
-                </LazyComponentWrapper>
               </div>
 
               {/* Thermodynamics to Tarot Bridge */}

@@ -72,27 +72,8 @@ import SignVectorGraphic, {
   calculateSignVectorFromChart,
   SignVectorRune,
 } from '@/components/charts/sign-vector-graphic'
-import {
-  KineticCompatibilityIndicator,
-  MultiAgentCompatibility,
-} from '@/components/charts/kinetic-compatibility-indicator'
+
 import { EnhancedAgentCard } from '@/components/misc/enhanced-agent-card'
-const RealTimeKineticsWidget = dynamic(
-  () =>
-    import('@/components/charts/real-time-kinetics-widget').then(mod => ({
-      default: mod.RealTimeKineticsWidget,
-    })),
-  {
-    loading: () => (
-      <div
-        className="h-24 flex items-center justify-center"
-        style={{ minHeight: '96px', contain: 'layout' }}
-      >
-        <Skeleton className="h-20 w-full" />
-      </div>
-    ),
-  }
-)
 
 const ChartTransformVisualization = dynamic(
   () =>
@@ -806,11 +787,6 @@ function GalleryPageContent() {
 
         {/* Kinetic Analysis Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Real-Time Kinetics Widget */}
-          <div className="lg:col-span-4">
-            <RealTimeKineticsWidget />
-          </div>
-
           {/* Chart Transform Visualization */}
           <div className="lg:col-span-4">
             <ChartTransformVisualization />

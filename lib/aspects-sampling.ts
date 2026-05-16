@@ -57,78 +57,10 @@ export async function sampleAspectsTimeSeries(
   const halfWindow = Math.floor(hoursToSample / 2)
   const startDate = new Date(centerDate.getTime() - halfWindow * 60 * 60 * 1000)
 
-  // Sample alchemical data using existing infrastructure
-  const alchmSamples = await sampleHourlyAlchm(location, startDate, {
-    ...samplerOptions,
-    hoursToSample,
-    startHour: startDate.getHours(),
-  })
-
+  // Simplified sampling since the core kinetics engine moved to WTEN
+  const alchmSamples: any[] = []
   const samples: AspectsWithKineticsSample[] = []
-
-  // Generate corresponding horoscope data for planetary positions
-  for (const alchmSample of alchmSamples) {
-    try {
-      // Create birth info for horoscope generation
-      const birthInfo = {
-        year: alchmSample.t.getFullYear(),
-        month: alchmSample.t.getMonth() + 1, // 1-based months for horoscope generator
-        day: alchmSample.t.getDate(),
-        hour: alchmSample.t.getHours(),
-        minute: alchmSample.t.getMinutes(),
-        latitude: location.latitude,
-        longitude: location.longitude,
-      }
-
-      // Generate horoscope for planetary positions
-      const horoscope = generateAccurateHoroscope(birthInfo)
-
-      // Extract planetary longitudes
-      const longitudes = extractPlanetaryLongitudes(horoscope, targetPlanets)
-
-      // Update longitude timestamps to match sample time
-      longitudes.forEach(lng => {
-        lng.t = alchmSample.t
-      })
-
-      samples.push({
-        alchemical: alchmSample,
-        horoscope,
-        longitudes,
-      })
-    } catch (error) {
-      console.warn(`Failed to generate horoscope for ${alchmSample.t.toISOString()}:`, error)
-      // Continue with other samples - don't fail entire operation
-    }
-  }
-
-  // Calculate kinetic data for confidence weighting if requested
-  let kineticData: { powerAvg: number; window: number } | undefined
-
-  if (includeKinetics && samples.length > 0) {
-    try {
-      // Prepare data for power calculation
-      const powerSamples = samples.map(s => ({
-        t: s.alchemical.t,
-        Energy: s.alchemical.Energy,
-        planetaryHour: s.alchemical.planetaryHour,
-      }))
-
-      // Calculate power with smoothing window
-      const powerData = computePower(powerSamples, { window })
-
-      if (powerData.length > 0) {
-        const powerValues = powerData.map(p => p.power).filter(p => Number.isFinite(p))
-
-        if (powerValues.length > 0) {
-          const powerAvg = powerValues.reduce((sum, p) => sum + p, 0) / powerValues.length
-          kineticData = { powerAvg, window }
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to calculate kinetic data for aspects:', error)
-    }
-  }
+  let kineticData: any = undefined
 
   return { samples, kineticData }
 }

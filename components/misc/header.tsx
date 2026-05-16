@@ -21,13 +21,13 @@ const navigationGroups = Object.freeze([
     items: [
       { href: '/rune-forge', label: 'Rune Forge' },
       { href: '/tarot-dashboard', label: 'Tarot Dashboard' },
-      { href: '/time-laboratory', label: 'Time Laboratory' },
+      { href: 'https://alchm.kitchen/quantities', label: 'Time Laboratory' },
     ],
   },
   {
     title: '⚗️ Alchemy',
     items: [
-      { href: '/alchm-quantities', label: 'Alchm Quantities' },
+      { href: 'https://alchm.kitchen/quantities', label: 'Alchm Quantities' },
       { href: '/elemental-chart', label: 'Elemental Chart' },
       { href: '/chart-interpreter', label: 'Chart Interpreter' },
     ],

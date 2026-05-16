@@ -156,7 +156,10 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
         lastUpdated: new Date(),
       })
     } catch (error) {
-      console.error('usePlanetaryPositions: Error:', error)
+      console.warn(
+        'usePlanetaryPositions: Backend unavailable, using defaults:',
+        (error as Error)?.message || error
+      )
       setData(prev => ({
         ...prev,
         loading: false,

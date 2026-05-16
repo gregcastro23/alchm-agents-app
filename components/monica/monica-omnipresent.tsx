@@ -1135,7 +1135,7 @@ export function MonicaOmnipresent() {
                       variant="outline"
                       size="sm"
                       className="flex-1 text-xs bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950 dark:to-blue-950 border-cyan-300"
-                      onClick={() => router.push('/time-laboratory')}
+                      onClick={() => (window.location.href = 'https://alchm.kitchen/quantities')}
                     >
                       <Star className="w-3 h-3 mr-1" />
                       Time Lab

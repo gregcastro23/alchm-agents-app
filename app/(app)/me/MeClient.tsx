@@ -81,7 +81,7 @@ const tourCards = [
     title: 'Cosmic Tools',
     description:
       'Track planetary movements, chart the current moment, and explore cosmic timing through the Time Laboratory.',
-    href: '/time-laboratory',
+    href: 'https://alchm.kitchen/quantities',
     cta: 'Open Time Lab',
   },
   {

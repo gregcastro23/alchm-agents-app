@@ -1,37 +1,39 @@
 import { Anthropic } from '@anthropic-ai/sdk'
 import * as dotenv from 'dotenv'
 import { CLAUDE, MODEL_TIERS, resolveClaudeModel } from './models/registry'
+import { isGatewayEnabled, GATEWAY_BASE_URL } from './models/gateway'
 
 // Load environment variables
 dotenv.config()
 
-// Initialize AI Gateway status logging
+// Initialize AI Gateway status logging (dev only)
 import { logAIGatewayStatus } from './utils/ai-gateway'
 if (process.env.NODE_ENV === 'development') {
   logAIGatewayStatus()
 }
 
-// AI Gateway support
-const aiGatewayEnabled = String(process.env.AI_GATEWAY_ENABLED).toLowerCase() === 'true'
-const aiGatewayUrl = process.env.AI_GATEWAY_URL
-const aiGatewayKey = process.env.AI_GATEWAY_API_KEY
+// Single source of truth: gateway is active iff AI_GATEWAY_API_KEY is set
+// (isGatewayEnabled comes from lib/models/gateway.ts)
+const gatewayKey = process.env.AI_GATEWAY_API_KEY
+const anthropicKey = process.env.ANTHROPIC_API_KEY
 
-// Check if ANTHROPIC_API_KEY is available (or AI Gateway key when enabled)
-// Fall back to OPENAI_API_KEY only when gateway not enabled and Anthropic missing
-const apiKey = aiGatewayEnabled
-  ? aiGatewayKey
-  : process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY
+// When the gateway is on, use the gateway key + Vercel base URL.
+// Otherwise fall back to the direct Anthropic key.
+const apiKey = isGatewayEnabled ? gatewayKey : anthropicKey
 
 if (!apiKey) {
   console.warn(
-    'Warning: Neither ANTHROPIC_API_KEY nor OPENAI_API_KEY is set in environment variables'
+    '[anthropic-client] No API key available. Set AI_GATEWAY_API_KEY (preferred) or ANTHROPIC_API_KEY.'
   )
 }
 
-// Create and export the Anthropic client (route via AI Gateway when enabled)
+// Create and export the Anthropic client.
+// When the gateway is active the Vercel AI Gateway acts as an OpenAI-compat
+// proxy, but we still keep the native Anthropic SDK client here for streaming
+// calls that use the Anthropic Messages API directly.
 export const anthropic = new Anthropic({
   apiKey: apiKey || 'dummy-key',
-  baseURL: aiGatewayEnabled && aiGatewayUrl ? aiGatewayUrl : undefined,
+  baseURL: isGatewayEnabled ? `${GATEWAY_BASE_URL}/anthropic` : undefined,
 })
 
 // ============================================================================

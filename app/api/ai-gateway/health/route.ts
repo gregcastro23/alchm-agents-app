@@ -1,70 +1,57 @@
 import { NextResponse } from 'next/server'
-import {
-  getAIGatewayConfig,
-  getAIGatewayStatus,
-  validateAIGatewayConfig,
-  calculateCostSavings,
-} from '@/lib/utils/ai-gateway'
+import { isGatewayEnabled, GATEWAY_BASE_URL } from '@/lib/models/gateway'
+import { getAIGatewayStatus, validateAIGatewayConfig } from '@/lib/utils/ai-gateway'
 
 /**
  * GET /api/ai-gateway/health
  *
- * Health check endpoint for AI Gateway configuration
- * Returns status, validation, and recommendations
+ * Reports the live status of the Vercel AI Gateway integration.
+ * Use this to verify configuration before deploying or debugging inference issues.
  */
 export async function GET() {
   try {
-    const config = getAIGatewayConfig()
-    const validation = validateAIGatewayConfig()
     const status = getAIGatewayStatus()
+    const validation = validateAIGatewayConfig()
 
-    // Calculate example cost savings
-    const exampleSavings = calculateCostSavings(
-      10000, // 10k requests/month
-      0.02, // $0.02 per request
-      0.5 // 50% cache hit rate
-    )
+    const providerStatus: Record<string, boolean> = {
+      anthropic: !!process.env.ANTHROPIC_API_KEY || isGatewayEnabled,
+      openai: !!process.env.OPENAI_API_KEY || isGatewayEnabled,
+      google:
+        !!process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+        !!process.env.GEMINI_API_KEY ||
+        isGatewayEnabled,
+      groq: !!process.env.GROQ_API_KEY || isGatewayEnabled,
+      openrouter: !!process.env.OPENROUTER_API_KEY || isGatewayEnabled,
+    }
 
-    const response = {
+    const payload = {
       timestamp: new Date().toISOString(),
-      configuration: {
-        enabled: config.enabled,
-        provider: config.provider,
-        url: config.url ? new URL(config.url).hostname : null,
+      gateway: {
+        enabled: isGatewayEnabled,
+        authMode: status.authMode,
+        baseUrl: GATEWAY_BASE_URL,
+        ready: status.ready,
       },
+      providers: providerStatus,
+      activeProviders: status.activeProviders,
       validation: {
         valid: validation.valid,
         errors: validation.errors,
       },
-      status: {
-        configured: status.configured,
-        ready: status.configured && config.enabled,
-        recommendation: status.recommendation,
-      },
-      costAnalysis: {
-        example: {
-          monthlyRequests: 10000,
-          averageCostPerRequest: '$0.02',
-          estimatedCacheHitRate: '50%',
-          monthlySavings: `$${exampleSavings.monthlySavings.toFixed(2)}`,
-          annualSavings: `$${exampleSavings.annualSavings.toFixed(2)}`,
-        },
-      },
-      documentation: '/AI_GATEWAY_SETUP.md',
+      recommendation: status.recommendation,
+      docs: 'https://vercel.com/docs/ai-gateway',
     }
 
-    return NextResponse.json(response, {
-      status: validation.valid ? 200 : 503,
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-      },
+    return NextResponse.json(payload, {
+      status: isGatewayEnabled ? 200 : 200, // always 200 — disabled is a config state, not an error
+      headers: { 'Cache-Control': 'no-store' },
     })
   } catch (error) {
-    console.error('[AI Gateway Health Check] Error:', error)
+    console.error('[AI Gateway Health] Error:', error)
     return NextResponse.json(
       {
-        error: 'Failed to check AI Gateway status',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: 'Failed to retrieve AI Gateway status',
+        message: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     )

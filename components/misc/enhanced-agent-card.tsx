@@ -46,7 +46,7 @@ import SignVectorGraphic, {
   calculateSignVectorFromChart,
   SignVectorRune,
 } from '@/components/charts/sign-vector-graphic'
-import { KineticCompatibilityIndicator } from '@/components/charts/kinetic-compatibility-indicator'
+
 import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
 import { useLiveConsciousness, type BirthChartData } from '@/hooks/useLiveConsciousness'
 import { getAgentAlchemicalProperties, calculateKalchm } from '@/lib/agents/alchemical-profiles'

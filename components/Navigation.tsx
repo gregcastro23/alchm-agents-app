@@ -23,7 +23,7 @@ const navigationGroups = [
     icon: '🔭',
     links: [
       {
-        href: '/time-laboratory',
+        href: 'https://alchm.kitchen/quantities',
         label: 'Time Lab',
         description: 'Explore cosmic timing and events.',
       },
@@ -144,7 +144,7 @@ export function Navigation() {
   const { data: session, status } = useSession()
 
   const isGroupActive = (links: { href: string }[]) => {
-    return links.some((link) => pathname === link.href || pathname?.startsWith(`${link.href}/`))
+    return links.some(link => pathname === link.href || pathname?.startsWith(`${link.href}/`))
   }
 
   return (
@@ -162,7 +162,7 @@ export function Navigation() {
             <div className="nav-desktop">
               <NavigationMenu>
                 <NavigationMenuList>
-                  {navigationGroups.map((group) => (
+                  {navigationGroups.map(group => (
                     <NavigationMenuItem key={group.title}>
                       <NavigationMenuTrigger
                         className={cn(
@@ -175,7 +175,7 @@ export function Navigation() {
                       </NavigationMenuTrigger>
                       <NavigationMenuContent>
                         <ul className="nav-dropdown-grid">
-                          {group.links.map((link) => (
+                          {group.links.map(link => (
                             <ListItem
                               key={link.href}
                               title={link.label}
@@ -209,12 +209,7 @@ export function Navigation() {
             {status === 'authenticated' && session?.user ? (
               <>
                 <Link href="/me">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Profile"
-                    className="nav-icon-btn"
-                  >
+                  <Button variant="ghost" size="icon" aria-label="Profile" className="nav-icon-btn">
                     <User className="h-5 w-5" />
                   </Button>
                 </Link>
@@ -251,13 +246,13 @@ export function Navigation() {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="nav-mobile-menu">
-            {navigationGroups.map((group) => (
+            {navigationGroups.map(group => (
               <div key={group.title} className="nav-mobile-group">
                 <h3 className="nav-mobile-group-title">
                   <span>{group.icon}</span> {group.title}
                 </h3>
                 <div className="nav-mobile-links">
-                  {group.links.map((link) => {
+                  {group.links.map(link => {
                     const isActive = pathname === link.href || pathname?.startsWith(`${link.href}/`)
                     return (
                       <Link

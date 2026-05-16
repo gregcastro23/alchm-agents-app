@@ -125,7 +125,7 @@ export function CharacterVectorDashboard({
   useEffect(() => {
     async function fetchAlchemicalData() {
       try {
-        const response = await fetch('/api/alchm-quantities', {
+        const response = await fetch('https://alchm.kitchen/api/alchemical/quantities', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

@@ -147,7 +147,7 @@ const PAGE_GUIDANCE_DATABASE: Record<string, PageGuidance> = {
       },
     ],
   },
-  '/time-laboratory': {
+  'https://alchm.kitchen/quantities': {
     greeting: 'The temporal workshop where we analyze cosmic timing and planetary influences!',
     pageContext: 'time_analysis',
     primaryActions: ['view_current_chart', 'analyze_planetary_hours', 'track_consciousness'],

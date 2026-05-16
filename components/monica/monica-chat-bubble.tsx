@@ -110,7 +110,7 @@ export function MonicaChatBubble({
         'Ah, the planetary realms! I can help you assemble group chats with planetary agents, explore astrological consultations, and understand how celestial energies influence consciousness.',
       '/philosophers-stone':
         "The Philosopher's Stone - my favorite place! I can guide you through agent creation, consciousness crafting, and help you understand the Monica Constant system.",
-      '/time-laboratory':
+      'https://alchm.kitchen/quantities':
         'The Time Laboratory is where past, present, and future converge. I can help you navigate temporal explorations and understand how consciousness evolves through time.',
       '/rune-forge':
         'The Rune Forge - where ancient wisdom meets modern technology. I can help you understand sigil creation and the power of symbolic magic.',
@@ -149,7 +149,7 @@ export function MonicaChatBubble({
         'Consciousness crafting tips',
         'Agent personality development',
       ],
-      '/time-laboratory': [
+      'https://alchm.kitchen/quantities': [
         'Explore temporal patterns',
         'Time-based consciousness',
         'Future consciousness exploration',

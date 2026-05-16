@@ -33,6 +33,12 @@ This document outlines the specialized agentic workflows and LangChain integrati
 
 ## 🛠️ Configuration
 
+### Development Environment
+
+- **Package Manager:** [Bun](https://bun.sh/) is the mandatory package manager and runtime for this project.
+- **Execution:** Always use `bun` or `bun --bun` for running scripts and development servers (e.g., `bun --bun run dev`).
+- **Dependency Management:** Use `bun install`, `bun add`, and `bun remove`.
+
 To fully enable these features, ensure the following environment variables are set:
 
 - `USE_RAG_GENERATION=true`

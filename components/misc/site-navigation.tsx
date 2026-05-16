@@ -27,7 +27,7 @@ export function SiteNavigation() {
               Planetary Agents
             </Button>
           </Link>
-          <Link href="/time-laboratory">
+          <Link href="https://alchm.kitchen/quantities">
             <Button variant="ghost" size="sm" className="gap-2">
               <Clock className="w-4 h-4" />
               Time Laboratory

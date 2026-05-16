@@ -10,48 +10,6 @@ import { Sparkles, Crown, TrendingUp, Users, Zap, Settings, LogOut, Star } from 
 import dynamic from 'next/dynamic'
 import { usePerformanceMonitor } from '@/hooks/use-performance-monitor'
 
-const AgentKineticEvolution = dynamic(
-  () =>
-    import('@/components/agents/agent-kinetic-evolution').then(mod => ({
-      default: mod.AgentKineticEvolution,
-    })),
-  {
-    loading: () => (
-      <div className="h-32 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    ),
-  }
-)
-
-const GroupConsciousnessIndicator = dynamic(
-  () =>
-    import('@/components/misc/group-consciousness-indicator').then(mod => ({
-      default: mod.GroupConsciousnessIndicator,
-    })),
-  {
-    loading: () => (
-      <div className="h-24 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-      </div>
-    ),
-  }
-)
-
-const TokenDashboardKinetics = dynamic(
-  () =>
-    import('@/components/dashboards/token-dashboard-kinetics').then(mod => ({
-      default: mod.TokenDashboardKinetics,
-    })),
-  {
-    loading: () => (
-      <div className="h-40 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    ),
-  }
-)
-
 const PlanetaryPositionsMonitor = dynamic(
   () => import('@/components/dashboards/PlanetaryPositionsMonitor'),
   {
@@ -252,12 +210,6 @@ export function DashboardClient({ user, dashboardAgents }: DashboardClientProps)
 
         {/* Consciousness Evolution Dashboard */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-          {/* Agent Evolution */}
-          <AgentKineticEvolution
-            agentId={selectedAgent}
-            location={{ lat: 37.7749, lon: -122.4194 }}
-          />
-
           {/* Group Consciousness */}
           <GroupConsciousnessIndicator
             selectedAgents={dashboardAgents as any}

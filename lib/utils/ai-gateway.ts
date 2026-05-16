@@ -1,182 +1,168 @@
 /**
- * AI Gateway Utility Functions
- * Provides validation, configuration, and monitoring for AI Gateway
+ * AI Gateway Utility — Vercel AI Gateway Integration
+ *
+ * Aligned with the actual Vercel AI Gateway:
+ *   Base URL : https://ai-gateway.vercel.sh/v1
+ *   Auth     : Bearer <AI_GATEWAY_API_KEY>  (starts with "vgk_")
+ *   OIDC     : VERCEL_OIDC_TOKEN can be used in CI/CD instead of a static key
+ *
+ * Activation: set AI_GATEWAY_API_KEY in your environment.
+ * When the key is present, isGatewayEnabled = true and all AI SDK calls
+ * automatically route through the gateway (see lib/models/gateway.ts).
  */
+
+export const GATEWAY_BASE_URL = 'https://ai-gateway.vercel.sh/v1'
+
+// ─── Runtime detection ────────────────────────────────────────────────────────
 
 export interface AIGatewayConfig {
   enabled: boolean
-  url?: string
-  apiKey?: string
-  provider?: string
+  apiKey: string | undefined
+  baseUrl: string
+  /** Whether auth comes from a static API key vs OIDC token */
+  authMode: 'api-key' | 'oidc' | 'none'
 }
 
 /**
- * Get AI Gateway configuration from environment
+ * Read Vercel AI Gateway configuration from environment.
+ * Priority: AI_GATEWAY_API_KEY → VERCEL_OIDC_TOKEN (CI/CD) → disabled
  */
 export function getAIGatewayConfig(): AIGatewayConfig {
-  const enabled = String(process.env.AI_GATEWAY_ENABLED || 'false').toLowerCase() === 'true'
-  const url = process.env.AI_GATEWAY_URL
   const apiKey = process.env.AI_GATEWAY_API_KEY
+  const oidcToken = process.env.VERCEL_OIDC_TOKEN
 
-  // Detect provider from URL
-  let provider = 'custom'
-  if (url) {
-    if (url.includes('cloudflare')) provider = 'cloudflare'
-    else if (url.includes('portkey')) provider = 'portkey'
-    else if (url.includes('helicone')) provider = 'helicone'
+  const effectiveKey = apiKey || oidcToken
+  const authMode = apiKey ? 'api-key' : oidcToken ? 'oidc' : 'none'
+
+  return {
+    enabled: !!effectiveKey,
+    apiKey: effectiveKey,
+    baseUrl: GATEWAY_BASE_URL,
+    authMode,
+  }
+}
+
+/**
+ * Check if the gateway is currently active.
+ * Mirrors the check in lib/models/gateway.ts for use outside the registry.
+ */
+export function isAIGatewayConfigured(): boolean {
+  return getAIGatewayConfig().enabled
+}
+
+// ─── Model ID helpers ─────────────────────────────────────────────────────────
+
+/**
+ * Providers the Vercel AI Gateway natively understands.
+ * Use these prefixes when constructing model IDs for gateway calls.
+ */
+export const GATEWAY_PROVIDERS = [
+  'anthropic',
+  'openai',
+  'google',
+  'groq',
+  'mistral',
+  'cohere',
+  'meta',
+  'xai',
+  'perplexity',
+  'openrouter',
+] as const
+
+export type GatewayProvider = (typeof GATEWAY_PROVIDERS)[number]
+
+/**
+ * Build a gateway-prefixed model ID.
+ * e.g. toGatewayModelId('anthropic', 'claude-sonnet-4-6')
+ *      → 'anthropic/claude-sonnet-4-6'
+ */
+export function toGatewayModelId(provider: GatewayProvider, modelId: string): string {
+  return `${provider}/${modelId}`
+}
+
+// ─── Status & diagnostics ────────────────────────────────────────────────────
+
+export interface AIGatewayStatus {
+  ready: boolean
+  authMode: AIGatewayConfig['authMode']
+  baseUrl: string
+  activeProviders: string[]
+  recommendation: string
+}
+
+/**
+ * Detect which provider keys are available in the environment.
+ */
+function detectActiveProviders(): string[] {
+  const providerKeyMap: Record<string, string> = {
+    anthropic: 'ANTHROPIC_API_KEY',
+    openai: 'OPENAI_API_KEY',
+    google: 'GOOGLE_GENERATIVE_AI_API_KEY',
+    groq: 'GROQ_API_KEY',
+    openrouter: 'OPENROUTER_API_KEY',
+    cerebras: 'CEREBRAS_API_KEY',
+  }
+
+  return Object.entries(providerKeyMap)
+    .filter(([, envKey]) => !!process.env[envKey])
+    .map(([provider]) => provider)
+}
+
+export function getAIGatewayStatus(): AIGatewayStatus {
+  const config = getAIGatewayConfig()
+  const activeProviders = detectActiveProviders()
+
+  let recommendation: string
+  if (!config.enabled) {
+    recommendation =
+      'Set AI_GATEWAY_API_KEY (from Vercel Dashboard → AI Gateway → API Keys) to activate unified model routing, observability, and spend monitoring.'
+  } else if (config.authMode === 'oidc') {
+    recommendation =
+      'Running with OIDC token (CI/CD mode). For local development, set AI_GATEWAY_API_KEY explicitly.'
+  } else {
+    recommendation = `Gateway active (${config.authMode}). Traffic is being routed through Vercel AI Gateway with full observability.`
   }
 
   return {
-    enabled,
-    url,
-    apiKey,
-    provider,
+    ready: config.enabled,
+    authMode: config.authMode,
+    baseUrl: config.baseUrl,
+    activeProviders,
+    recommendation,
   }
 }
 
-/**
- * Validate AI Gateway configuration
- */
+// ─── Validation ───────────────────────────────────────────────────────────────
+
 export function validateAIGatewayConfig(): { valid: boolean; errors: string[] } {
   const config = getAIGatewayConfig()
   const errors: string[] = []
 
-  if (config.enabled) {
-    if (!config.url) {
-      errors.push('AI_GATEWAY_URL is required when AI_GATEWAY_ENABLED=true')
-    } else if (!config.url.endsWith('/v1')) {
-      errors.push('AI_GATEWAY_URL should end with /v1 (e.g., https://gateway.example.com/v1)')
-    }
-
-    if (!config.apiKey) {
-      errors.push('AI_GATEWAY_API_KEY is required when AI_GATEWAY_ENABLED=true')
-    }
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  }
-}
-
-/**
- * Check if AI Gateway is properly configured
- */
-export function isAIGatewayConfigured(): boolean {
-  const validation = validateAIGatewayConfig()
-  return validation.valid
-}
-
-/**
- * Get AI Gateway status information
- */
-export function getAIGatewayStatus() {
-  const config = getAIGatewayConfig()
-  const validation = validateAIGatewayConfig()
-
-  return {
-    configured: validation.valid,
-    enabled: config.enabled,
-    provider: config.provider,
-    url: config.url ? new URL(config.url).hostname : null,
-    errors: validation.errors,
-    recommendation: !config.enabled
-      ? 'AI Gateway is disabled. Enable it to reduce costs by 30-70% through caching.'
-      : !validation.valid
-        ? 'AI Gateway is enabled but misconfigured. Check environment variables.'
-        : 'AI Gateway is properly configured and ready to use.',
-  }
-}
-
-/**
- * Get cache hit rate estimate based on request patterns
- */
-export function estimateCacheHitRate(requestType: 'similar' | 'different' | 'variable'): number {
-  switch (requestType) {
-    case 'similar':
-      return 0.7 // 70% cache hit rate for similar requests
-    case 'different':
-      return 0.2 // 20% cache hit rate for different requests
-    case 'variable':
-      return 0.4 // 40% cache hit rate for variable requests
-    default:
-      return 0.5 // 50% average
-  }
-}
-
-/**
- * Calculate potential cost savings
- */
-export function calculateCostSavings(
-  monthlyRequests: number,
-  averageCostPerRequest: number,
-  estimatedCacheHitRate: number
-): {
-  cacheableRequests: number
-  monthlySavings: number
-  annualSavings: number
-  savingsPercentage: number
-} {
-  const cacheableRequests = Math.floor(monthlyRequests * estimatedCacheHitRate)
-  const monthlySavings = cacheableRequests * averageCostPerRequest
-  const annualSavings = monthlySavings * 12
-  const savingsPercentage = (cacheableRequests / monthlyRequests) * 100
-
-  return {
-    cacheableRequests,
-    monthlySavings,
-    annualSavings,
-    savingsPercentage,
-  }
-}
-
-/**
- * Generate AI Gateway recommendation message
- */
-export function getAIGatewayRecommendation(): string {
-  const config = getAIGatewayConfig()
-  const validation = validateAIGatewayConfig()
-
   if (!config.enabled) {
-    return `💡 AI Gateway is disabled. Enable it to:
-   • Reduce API costs by 30-70% through intelligent caching
-   • Get centralized monitoring and analytics
-   • Benefit from automatic rate limiting and DDoS protection
-   
-   Setup: Add AI_GATEWAY_ENABLED=true to your environment variables.
-   See AI_GATEWAY_SETUP.md for complete instructions.`
+    errors.push('AI_GATEWAY_API_KEY is not set — gateway is disabled.')
+  } else if (config.authMode === 'api-key') {
+    const key = config.apiKey || ''
+    // vck_ = Vercel AI Gateway static key (current format)
+    // vgk_ = legacy format (kept for backward compat)
+    // eyJ  = JWT/OIDC token (CI/CD)
+    if (!key.startsWith('vck_') && !key.startsWith('vgk_') && !key.startsWith('eyJ')) {
+      errors.push(
+        'AI_GATEWAY_API_KEY does not look like a valid Vercel gateway key (expected "vck_..." prefix).'
+      )
+    }
   }
 
-  if (!validation.valid) {
-    return `⚠️  AI Gateway is enabled but configuration has errors:
-${validation.errors.map(e => `   • ${e}`).join('\n')}
-   
-   See AI_GATEWAY_SETUP.md for troubleshooting.`
-  }
-
-  return `✅ AI Gateway is enabled and configured:
-   • Provider: ${config.provider}
-   • URL: ${config.url}
-   • Status: Ready to optimize your AI costs`
+  return { valid: errors.length === 0, errors }
 }
 
-/**
- * Log AI Gateway configuration status
- */
+// ─── Dev logging ──────────────────────────────────────────────────────────────
+
 export function logAIGatewayStatus(): void {
   const status = getAIGatewayStatus()
-  const recommendation = getAIGatewayRecommendation()
-
-  console.log('\n🤖 AI Gateway Status:')
-  console.log(recommendation)
-
-  if (status.enabled && status.configured) {
-    console.log('\n💡 Tip: Monitor your cache hit rate in the gateway dashboard')
-    console.log('   Typical cache hit rates: 40-70% for production applications')
-  }
-}
-
-// Export validation on module load for debugging
-if (process.env.NODE_ENV === 'development') {
-  logAIGatewayStatus()
+  const icon = status.ready ? '✅' : '⚠️ '
+  console.log(`\n${icon} Vercel AI Gateway:`)
+  console.log(`   Auth mode   : ${status.authMode}`)
+  console.log(`   Base URL    : ${status.baseUrl}`)
+  console.log(`   Providers   : ${status.activeProviders.join(', ') || 'none detected'}`)
+  console.log(`   Tip         : ${status.recommendation}\n`)
 }

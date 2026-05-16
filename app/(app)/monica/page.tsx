@@ -130,7 +130,7 @@ export default function MonicaPage() {
   }
 
   const navigateToTimeLaboratory = () => {
-    window.location.href = '/time-laboratory'
+    window.location.href = 'https://alchm.kitchen/quantities'
   }
 
   return (

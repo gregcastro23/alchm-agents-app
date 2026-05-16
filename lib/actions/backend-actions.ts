@@ -19,7 +19,7 @@ export async function getPlanetaryPositionsAction(
     const d = date ? new Date(date) : new Date()
     return await backend.planetary.positions(d, latitude, longitude)
   } catch (error: any) {
-    console.error('[Action] getPlanetaryPositionsAction error:', error)
+    console.warn('[Action] getPlanetaryPositionsAction:', error?.message || 'Backend unavailable')
     return { error: error.message || 'Failed to fetch planetary positions' }
   }
 }
@@ -39,7 +39,7 @@ export async function getBulkPositionsAction(
     const end = new Date(endDate)
     return await backend.planetary.bulk(start, end, intervalHours, latitude, longitude)
   } catch (error: any) {
-    console.error('[Action] getBulkPositionsAction error:', error)
+    console.warn('[Action] getBulkPositionsAction:', error?.message || 'Backend unavailable')
     return { error: error.message || 'Failed to fetch bulk planetary positions' }
   }
 }
@@ -59,7 +59,10 @@ export async function getLegacyPlanetaryPositionsAction(
     const planetaryPositions = await getLegacyPlanetaryPositions(d, latitude, longitude)
     return { planetaryPositions }
   } catch (error: any) {
-    console.error('[Action] getLegacyPlanetaryPositionsAction error:', error)
+    console.warn(
+      '[Action] getLegacyPlanetaryPositionsAction:',
+      error?.message || 'Backend unavailable'
+    )
     return { error: error.message || 'Failed to fetch planetary positions' }
   }
 }
@@ -80,7 +83,7 @@ export async function getAlchemicalQuantitiesAction(
     }
     return await backend.alchemy.alchemize(d, latitude, longitude)
   } catch (error: any) {
-    console.error('[Action] getAlchemicalQuantitiesAction error:', error)
+    console.warn('[Action] getAlchemicalQuantitiesAction:', error?.message || 'Backend unavailable')
     return { error: error.message || 'Failed to fetch alchemical quantities' }
   }
 }
