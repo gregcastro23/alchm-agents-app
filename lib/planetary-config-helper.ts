@@ -152,7 +152,15 @@ export function updatePlanetaryConfigWithLiveSky(
     return config
   }
 
-  const planetData = planetaryPositions[config.planet.toLowerCase()]
+  let planetData: any = null
+  if (Array.isArray(planetaryPositions)) {
+    planetData = planetaryPositions.find(
+      (p: any) => p.planet.toLowerCase() === config.planet.toLowerCase()
+    )
+  } else if (typeof planetaryPositions === 'object') {
+    planetData = planetaryPositions[config.planet.toLowerCase()]
+  }
+
   if (!planetData) {
     return config
   }

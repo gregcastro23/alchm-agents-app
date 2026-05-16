@@ -46,11 +46,17 @@ async function fetchAlchmizeForBirth(birth: {
   return res.json()
 }
 
-// The Railway backend no longer renders SVG natal wheels. Return an empty
-// shape so consumers that only render the SVG/imageUrl gracefully degrade.
-// TODO: restore wheel rendering when a chart-image endpoint is available.
-async function fetchWheelForBirth(_birth: any): Promise<{ svg?: string; imageUrl?: string }> {
-  return {}
+async function fetchWheelForBirth(birth: any): Promise<{ svg?: string; imageUrl?: string }> {
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || 'https://whattoeatnext-production.up.railway.app'
+  const params = new URLSearchParams({
+    year: String(birth.year),
+    month: String(birth.month + 1),
+    day: String(birth.day),
+    hour: String(birth.hour),
+    minute: String(birth.minute),
+  })
+  return { imageUrl: `${backendUrl}/api/chart-image?${params.toString()}` }
 }
 
 async function loadPreviousSession(userId: string, personalityId: string) {
@@ -170,12 +176,33 @@ function calculateModalProfile(birthDate: string): ModalProfile {
 }
 
 // Convert RelationChart to SynastryChart format with real calculations
-function createSynastryChartSkeleton(user: RelationChart, relation: RelationChart): SynastryChart {
+function createSynastryChartSkeleton(user: RelationChart, relation: any): SynastryChart {
   // Calculate real elemental and modal profiles
   const userElemental = calculateElementalProfile(user.birthDate)
   const userModal = calculateModalProfile(user.birthDate)
-  const relationElemental = calculateElementalProfile(relation.birthDate)
-  const relationModal = calculateModalProfile(relation.birthDate)
+
+  const relationElemental = relation.alchm?.dominantElement
+    ? {
+        fire: relation.alchm.elementalProperties?.Fire || 25,
+        earth: relation.alchm.elementalProperties?.Earth || 25,
+        air: relation.alchm.elementalProperties?.Air || 25,
+        water: relation.alchm.elementalProperties?.Water || 25,
+        dominant_element: relation.alchm.dominantElement.toLowerCase(),
+        secondary_element: 'air',
+      }
+    : calculateElementalProfile(relation.birthDate)
+
+  const relationModal = relation.alchm?.dominantModality
+    ? {
+        cardinal: relation.alchm.dominantModality === 'Cardinal' ? 50 : 25,
+        fixed: relation.alchm.dominantModality === 'Fixed' ? 50 : 25,
+        mutable: relation.alchm.dominantModality === 'Mutable' ? 50 : 25,
+        dominant_mode: relation.alchm.dominantModality.toLowerCase(),
+      }
+    : calculateModalProfile(relation.birthDate)
+
+  const relationAspects =
+    relation.alchm?.aspects?.map((a: any) => `${a.planet1} ${a.aspect} ${a.planet2}`) || []
 
   return {
     person1: {
@@ -183,7 +210,9 @@ function createSynastryChartSkeleton(user: RelationChart, relation: RelationChar
       birth_data: {
         date: user.birthDate,
         time: user.birthTime || null,
-        location: (user as any).location || (user.latitude && user.longitude ? `${user.latitude}, ${user.longitude}` : 'Unknown'),
+        location:
+          (user as any).location ||
+          (user.latitude && user.longitude ? `${user.latitude}, ${user.longitude}` : 'Unknown'),
       },
       chart_features: [],
       planetary_placements: [],
@@ -195,9 +224,13 @@ function createSynastryChartSkeleton(user: RelationChart, relation: RelationChar
       birth_data: {
         date: relation.birthDate,
         time: relation.birthTime || null,
-        location: (relation as any).location || (relation.latitude && relation.longitude ? `${relation.latitude}, ${relation.longitude}` : 'Unknown'),
+        location:
+          (relation as any).location ||
+          (relation.latitude && relation.longitude
+            ? `${relation.latitude}, ${relation.longitude}`
+            : 'Unknown'),
       },
-      chart_features: [],
+      chart_features: relationAspects,
       planetary_placements: [],
       elemental_emphasis: relationElemental,
       modal_emphasis: relationModal,
@@ -429,7 +462,7 @@ export function TemporalClient() {
 
       if (newRelations.length === 1) {
         const userChart = { name: 'You', birthDate: '1990-01-01' } as RelationChart
-        const synastryChart = createSynastryChartSkeleton(userChart, relation)
+        const synastryChart = createSynastryChartSkeleton(userChart, enriched)
         const report = SynastryAnalysisEngine.generateSynastryReport(synastryChart)
         setSynastryHint(
           `With ${relation.name} present: ${report.compatibility_analysis.universal_lesson}`

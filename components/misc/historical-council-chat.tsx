@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -92,6 +92,46 @@ export function HistoricalCouncilChat({
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all')
   const [tagFilter, setTagFilter] = useState<string>('all')
 
+  // Load selection from localStorage
+  useEffect(() => {
+    if (initialCouncil || initialAgents.length > 0 || filterBySelectedAgents.length > 0) return
+
+    try {
+      const stored = localStorage.getItem('historical-council-selection')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (parsed.presetId) {
+          const preset = HISTORICAL_COUNCIL_PRESETS.find(p => p.id === parsed.presetId)
+          if (preset) {
+            setSelectedPreset(preset)
+            setCustomAgents(preset.historicalAgentIds)
+            setShowPresetSelection(false)
+          }
+        } else if (parsed.customAgents && parsed.customAgents.length > 0) {
+          setCustomAgents(parsed.customAgents)
+          setShowPresetSelection(false)
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse historical council selection from localStorage', e)
+    }
+  }, [initialCouncil, initialAgents, filterBySelectedAgents])
+
+  // Save selection to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        'historical-council-selection',
+        JSON.stringify({
+          presetId: selectedPreset?.id || null,
+          customAgents,
+        })
+      )
+    } catch (e) {
+      console.warn('Failed to save to localStorage', e)
+    }
+  }, [selectedPreset, customAgents])
+
   // Memoized filtered presets
   const filteredPresets = useMemo(() => {
     let presets = HISTORICAL_COUNCIL_PRESETS
@@ -180,6 +220,16 @@ export function HistoricalCouncilChat({
         <p className="text-muted-foreground">
           Select a curated council or create your own custom assembly
         </p>
+
+        <div className="mt-4 flex justify-center">
+          <Button
+            onClick={() => handlePresetSelect(HISTORICAL_COUNCIL_PRESETS[0])}
+            className="bg-primary/20 text-primary hover:bg-primary/30"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Quick Start: {HISTORICAL_COUNCIL_PRESETS[0]?.name || 'Default Council'}
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}

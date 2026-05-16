@@ -2,28 +2,21 @@
 
 import React, { useState, useMemo, useCallback } from 'react'
 import { Calendar, Clock, Zap, Circle, Square, PlayCircle, PauseCircle } from 'lucide-react'
-import dynamic from 'next/dynamic'
 
-const ComposedChart = dynamic(() => import('recharts').then(mod => mod.ComposedChart), {
-  ssr: false,
-})
-const ScatterChart = dynamic(() => import('recharts').then(mod => mod.ScatterChart), { ssr: false })
-const XAxis = dynamic(() => import('recharts').then(mod => mod.XAxis), { ssr: false })
-const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: false })
-const CartesianGrid = dynamic(() => import('recharts').then(mod => mod.CartesianGrid), {
-  ssr: false,
-})
-const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), {
-  ssr: false,
-})
-const Scatter = dynamic(() => import('recharts').then(mod => mod.Scatter), { ssr: false })
-const Line = dynamic(() => import('recharts').then(mod => mod.Line), { ssr: false })
-const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false })
-const ReferenceLine = dynamic(() => import('recharts').then(mod => mod.ReferenceLine), {
-  ssr: false,
-})
-const Area = dynamic(() => import('recharts').then(mod => mod.Area), { ssr: false })
-const AreaChart = dynamic(() => import('recharts').then(mod => mod.AreaChart), { ssr: false })
+import {
+  ComposedChart,
+  ScatterChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+  Scatter,
+  Line,
+  Tooltip,
+  ReferenceLine,
+  Area,
+  AreaChart,
+} from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'

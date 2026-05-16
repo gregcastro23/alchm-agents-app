@@ -75,6 +75,9 @@ export function TokenDashboardKinetics({
 
         if (backendEnabled) {
           try {
+            const controller1 = new AbortController()
+            const timeout1 = setTimeout(() => controller1.abort(), 5000)
+
             const ratesResponse = await fetch(`${backendUrl}/api/tokens/calculate`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -82,7 +85,9 @@ export function TokenDashboardKinetics({
                 tokens: { Spirit: 1.0, Essence: 0.8, Matter: 0.6, Substance: 0.4 },
                 location,
               }),
+              signal: controller1.signal,
             })
+            clearTimeout(timeout1)
 
             if (ratesResponse.ok) {
               const ratesData = await ratesResponse.json()
@@ -94,11 +99,16 @@ export function TokenDashboardKinetics({
               }
             }
 
+            const controller2 = new AbortController()
+            const timeout2 = setTimeout(() => controller2.abort(), 5000)
+
             const forecastResponse = await fetch(`${backendUrl}/api/tokens/projections`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ location, timeframe: 'nearTerm' }),
+              signal: controller2.signal,
             })
+            clearTimeout(timeout2)
 
             if (forecastResponse.ok) {
               const forecastData = await forecastResponse.json()
@@ -146,9 +156,7 @@ export function TokenDashboardKinetics({
                 const optimalPoint = forecastPoints.reduce((best, point) =>
                   point.powerLevel > best.powerLevel ? point : best
                 )
-                setNextOptimalWindow(
-                  new Date(now.getTime() + optimalPoint.hour * 60 * 60 * 1000)
-                )
+                setNextOptimalWindow(new Date(now.getTime() + optimalPoint.hour * 60 * 60 * 1000))
               }
             }
           } catch {

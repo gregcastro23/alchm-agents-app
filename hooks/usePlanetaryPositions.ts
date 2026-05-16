@@ -103,12 +103,32 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
         getAlchemicalQuantitiesAction(true),
       ])
 
-      if ((posData as any).error) throw new Error((posData as any).error)
-      if ((alchmData as any).error) throw new Error((alchmData as any).error)
+      const posPayload = posData as {
+        error?: string
+        planetary_positions?: Record<
+          string,
+          { sign?: string; degree?: number; isRetrograde?: boolean }
+        >
+      }
+      const alchmPayload = alchmData as {
+        error?: string
+        spirit_score?: number
+        essence_score?: number
+        matter_score?: number
+        substance_score?: number
+        Heat?: number
+        Entropy?: number
+        Reactivity?: number
+        Energy?: number
+        'A-Number'?: number
+      }
+
+      if (posPayload.error) throw new Error(posPayload.error)
+      if (alchmPayload.error) throw new Error(alchmPayload.error)
 
       const planetaryPositions: PlanetaryPosition[] = Object.entries(
-        (posData as any)?.planetary_positions || {}
-      ).map(([name, body]: [string, any]) => ({
+        posPayload?.planetary_positions || {}
+      ).map(([name, body]) => ({
         planet: name,
         sign: body?.sign ?? '',
         degree: typeof body?.degree === 'number' ? body.degree : 0,
@@ -116,21 +136,21 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
       }))
 
       const alchmQuantities: AlchemicalQuantities = {
-        spirit: Number((alchmData as any)?.spirit_score ?? 0),
-        essence: Number((alchmData as any)?.essence_score ?? 0),
-        matter: Number((alchmData as any)?.matter_score ?? 0),
-        substance: Number((alchmData as any)?.substance_score ?? 0),
-        Heat: Number((alchmData as any)?.Heat ?? 0),
-        Entropy: Number((alchmData as any)?.Entropy ?? 0),
-        Reactivity: Number((alchmData as any)?.Reactivity ?? 0),
-        Energy: Number((alchmData as any)?.Energy ?? 0),
+        spirit: Number(alchmPayload?.spirit_score ?? 0),
+        essence: Number(alchmPayload?.essence_score ?? 0),
+        matter: Number(alchmPayload?.matter_score ?? 0),
+        substance: Number(alchmPayload?.substance_score ?? 0),
+        Heat: Number(alchmPayload?.Heat ?? 0),
+        Entropy: Number(alchmPayload?.Entropy ?? 0),
+        Reactivity: Number(alchmPayload?.Reactivity ?? 0),
+        Energy: Number(alchmPayload?.Energy ?? 0),
       }
 
       setData({
         timestamp: new Date().toISOString(),
         planetaryPositions,
         alchmQuantities,
-        monicaConstant: Number((alchmData as any)?.['A-Number'] ?? 0),
+        monicaConstant: Number(alchmPayload?.['A-Number'] ?? 0),
         loading: false,
         error: null,
         lastUpdated: new Date(),

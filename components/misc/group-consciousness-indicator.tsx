@@ -121,7 +121,9 @@ export function GroupConsciousnessIndicator({
   }
 
   return (
-    <Card className={className}>
+    <Card
+      className={`transition-all duration-300 hover:shadow-[0_0_20px_rgba(139,92,246,0.15)] hover:-translate-y-1 ${className}`}
+    >
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5" />

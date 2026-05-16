@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import ProfileOnboardingForm from '@/components/profile/onboarding-form'
 import { calculateMC } from '@/lib/monica/monica-constant-validator'
-import { getAlchemicalQuantitiesLegacy } from '@/lib/backend'
+import { backend } from '@/lib/backend'
 import { getSunSign, getZodiacTheme } from '@/lib/zodiac-utils'
 import { MeClient } from './MeClient'
 import './me.css'
@@ -108,24 +108,31 @@ export default async function MePage() {
       Date.UTC(birth.year, birth.month, birth.day, birth.hour ?? 12, birth.minute ?? 0)
     )
 
-    // Backend does not currently return Total Effect Value (Fire/Water/Air/Earth)
-    // or Dominant Element/Modality — populate neutral defaults so legacy UI works.
-    // TODO: backfill elemental decomposition once Railway exposes it.
-    const legacy = await getAlchemicalQuantitiesLegacy(
+    const rawAlchemize = await backend.alchemy.alchemize(
       birthDate,
       birth.latitude ?? 0,
       birth.longitude ?? 0
     )
+
     alchm = {
-      ...legacy,
-      'Total Effect Value': {
-        Fire: 1,
-        Water: 1,
-        Air: 1,
-        Earth: 1,
+      'Alchemy Effects': {
+        'Total Spirit': rawAlchemize.esms?.Spirit ?? 0,
+        'Total Essence': rawAlchemize.esms?.Essence ?? 0,
+        'Total Matter': rawAlchemize.esms?.Matter ?? 0,
+        'Total Substance': rawAlchemize.esms?.Substance ?? 0,
       },
-      'Dominant Element': 'Fire',
-      'Dominant Modality': 'Cardinal',
+      'Total Effect Value': {
+        Fire: rawAlchemize.elementalProperties?.Fire ?? 0,
+        Water: rawAlchemize.elementalProperties?.Water ?? 0,
+        Air: rawAlchemize.elementalProperties?.Air ?? 0,
+        Earth: rawAlchemize.elementalProperties?.Earth ?? 0,
+      },
+      'Dominant Element': rawAlchemize.dominantElement ?? 'Fire',
+      'Dominant Modality': rawAlchemize.dominantModality ?? 'Cardinal',
+      Heat: rawAlchemize.thermodynamicProperties?.Heat ?? 0,
+      Entropy: rawAlchemize.thermodynamicProperties?.Entropy ?? 0,
+      Reactivity: rawAlchemize.thermodynamicProperties?.Reactivity ?? 0,
+      Energy: rawAlchemize.thermodynamicProperties?.Energy ?? 0,
     }
   } catch (error: any) {
     console.error('Alchemical computation error:', error)

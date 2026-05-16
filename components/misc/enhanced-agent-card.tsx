@@ -49,6 +49,8 @@ import SignVectorGraphic, {
 import { KineticCompatibilityIndicator } from '@/components/charts/kinetic-compatibility-indicator'
 import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
 import { useLiveConsciousness, type BirthChartData } from '@/hooks/useLiveConsciousness'
+import { getAgentAlchemicalProperties, calculateKalchm } from '@/lib/agents/alchemical-profiles'
+import { calculateSevenSacredStats } from '@/lib/agents/sacred-stats'
 
 interface EnhancedAgentCardProps {
   agent: CraftedAgent
@@ -59,100 +61,6 @@ interface EnhancedAgentCardProps {
   currentMoment?: Date
 }
 
-// Helper function to get alchemical properties from agent performance optimizer
-function getAgentAlchemicalProperties(agentId: string): {
-  spirit: number
-  essence: number
-  matter: number
-  substance: number
-} {
-  const agentProfiles: Record<string, any> = {
-    'leonardo-da-vinci': { spirit: 6, essence: 8, matter: 7, substance: 4 },
-    'william-shakespeare': { spirit: 7, essence: 9, matter: 5, substance: 3 },
-    'albert-einstein': { spirit: 8, essence: 7, matter: 6, substance: 5 },
-    'nikola-tesla': { spirit: 9, essence: 6, matter: 8, substance: 4 },
-    'marie-curie': { spirit: 7, essence: 8, matter: 9, substance: 6 },
-    cleopatra: { spirit: 5, essence: 7, matter: 6, substance: 8 },
-    socrates: { spirit: 6, essence: 9, matter: 4, substance: 5 },
-    'carl-jung': { spirit: 7, essence: 8, matter: 5, substance: 6 },
-    'marcus-aurelius': { spirit: 6, essence: 7, matter: 5, substance: 8 },
-    'benjamin-franklin': { spirit: 8, essence: 6, matter: 7, substance: 5 },
-    'isaac-newton': { spirit: 9, essence: 5, matter: 8, substance: 6 },
-    confucius: { spirit: 5, essence: 8, matter: 6, substance: 7 },
-    plato: { spirit: 7, essence: 8, matter: 5, substance: 6 },
-    aristotle: { spirit: 6, essence: 7, matter: 8, substance: 5 },
-    'lao-tzu': { spirit: 4, essence: 9, matter: 3, substance: 8 },
-    'siddhartha-gautama': { spirit: 3, essence: 9, matter: 2, substance: 9 },
-    rumi: { spirit: 5, essence: 9, matter: 4, substance: 7 },
-    'hildegard-of-bingen': { spirit: 6, essence: 8, matter: 6, substance: 7 },
-  }
-
-  return agentProfiles[agentId] || { spirit: 4, essence: 5, matter: 5, substance: 4 }
-}
-
-// Calculate Kalchm equilibrium dynamics
-function calculateKalchm(agentId: string): number {
-  const { spirit, essence, matter, substance } = getAgentAlchemicalProperties(agentId)
-  const numerator = Math.pow(spirit, spirit) * Math.pow(essence, essence)
-  const denominator = Math.pow(matter, matter) * Math.pow(substance, substance)
-  const kalchm = numerator / denominator
-  return isFinite(kalchm) && !isNaN(kalchm) ? kalchm : 1.0
-}
-
-// Calculate the 7 Sacred Stats from agent data
-function calculateSevenSacredStats(
-  agent: CraftedAgent,
-  alchemical: ReturnType<typeof getAgentAlchemicalProperties>,
-  currentKinetics?: ReturnType<typeof calculateCurrentKinetics>
-) {
-  const mc = agent.consciousness.monicaConstant
-  const stage = agent.personality?.evolutionStage ?? 0
-  const powerAlignment = currentKinetics?.powerAlignment || 0
-
-  // Power: Based on spirit + MC + stage + current power alignment
-  const power = Math.min(100, alchemical.spirit * 10 + mc * 5 + stage * 0.5 + powerAlignment * 15)
-
-  // Resonance: Based on essence + kinetic metrics
-  const resonance = Math.min(100, alchemical.essence * 10 + (agent.stats.resonanceScore || 0) * 0.1)
-
-  // Wisdom: Based on conversations + wisdom shared
-  const wisdom = Math.min(
-    100,
-    (agent.stats.wisdomShared || 0) * 0.5 +
-      (agent.stats.conversations || 0) * 0.2 +
-      alchemical.matter * 8
-  )
-
-  // Charisma: Based on stage + essence
-  const charisma = Math.min(100, stage * 0.6 + alchemical.essence * 8)
-
-  // Intuition: Based on spirit + consciousness velocity
-  const intuition = Math.min(
-    100,
-    alchemical.spirit * 9 + (agent.stats.kineticEvolution?.consciousnessVelocity || 0) * 30
-  )
-
-  // Adaptability: Based on substance + evolution trajectory
-  const adaptability = Math.min(100, alchemical.substance * 12 + mc * 3)
-
-  // Vitality: Based on matter + interaction momentum
-  const vitality = Math.min(
-    100,
-    alchemical.matter * 9 + (agent.stats.kineticEvolution?.interactionMomentum || 0) * 40
-  )
-
-  return {
-    power: Math.round(power),
-    resonance: Math.round(resonance),
-    wisdom: Math.round(wisdom),
-    charisma: Math.round(charisma),
-    intuition: Math.round(intuition),
-    adaptability: Math.round(adaptability),
-    vitality: Math.round(vitality),
-  }
-}
-
-// Calculate current kinetic metrics for agent
 function calculateCurrentKinetics(
   agent: CraftedAgent,
   kineticProfile: any,
@@ -202,19 +110,19 @@ function calculateCurrentKinetics(
     philosophical: kineticProfile.v_philosophical || 0,
   }
 
-  // Calculate power amplification based on alignment and time
-  const baseAmplification = powerAlignment
-  const timeBonus = peakHours.includes(currentPlanetaryHour) ? 0.3 : 0
-  const powerAmplification = Math.min(2.0, baseAmplification + timeBonus + 0.5)
+  // Calculate power amplification from velocity sum
+  const velocitySum = Object.values(kineticVelocities).reduce(
+    (a, b) => (a as number) + (b as number),
+    0
+  ) as number
+  const powerAmplification = 1.0 + (velocitySum / 10) * 0.5
 
   return {
-    momentumType: kineticProfile.momentum_type || 'unknown',
+    momentumType: powerAlignment > 0.8 ? 'peak' : powerAlignment > 0.6 ? 'stable' : 'standard',
     powerAlignment,
-    aspectSensitivity: kineticProfile.aspect_sensitivity
-      ? Object.values(kineticProfile.aspect_sensitivity).reduce((a: number, b: any) => a + b, 0) / 6
-      : 0.5,
-    memoryPersistence: kineticProfile.memory_persistence || 0.5,
-    consciousnessRate: kineticProfile.consciousness_rate || 0.5,
+    aspectSensitivity: kineticProfile.sensitivityScale || 0.7,
+    memoryPersistence: 0.8,
+    consciousnessRate: 0.75,
     peakHours,
     nextOptimalWindow,
     kineticVelocities,

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { swissEphemerisService } from '@/lib/swiss-ephemeris-service'
 import { logger } from '@/lib/structured-logger'
-import { withErrorHandling } from '@/lib/error-handling'
+import { withApiErrorHandling } from '@/lib/error-handling'
 
 // Request schema
 const CalculateRequestSchema = z.object({
@@ -13,7 +13,7 @@ const CalculateRequestSchema = z.object({
 })
 
 export async function POST(req: Request) {
-  return withErrorHandling(
+  return withApiErrorHandling(
     async () => {
       const body = await req.json()
       const data = CalculateRequestSchema.parse(body)
@@ -37,13 +37,13 @@ export async function POST(req: Request) {
         data.longitude
       )
 
-      return NextResponse.json({
+      return {
         success: true,
         data: {
           ...consciousness,
           agentName: data.agentName,
         },
-      })
+      }
     },
     {
       system: 'philosophers-stone',

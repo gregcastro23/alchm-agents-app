@@ -1,4 +1,5 @@
 import { backend } from '@/lib/backend'
+import { PlanetaryHourCalculator } from '@/lib/planetary-hour'
 
 const CHALDEAN_HOURS = ['Saturn', 'Jupiter', 'Mars', 'Sun', 'Venus', 'Mercury', 'Moon'] as const
 
@@ -87,6 +88,8 @@ export class AlchemicalKineticsClient {
 
     const data: any[] = []
     const current = new Date(startTime)
+    const calculator = new PlanetaryHourCalculator(lat, lon)
+
     while (current <= endTime) {
       const targetDate = new Date(current)
       const alchm = await backend.alchemy.defaultQuantities(targetDate, lat, lon)
@@ -97,6 +100,8 @@ export class AlchemicalKineticsClient {
       const matter = toFiniteNumber(alchm?.matter_score)
       const substance = toFiniteNumber(alchm?.substance_score)
 
+      const ph = calculator.getPlanetaryHour(targetDate)
+
       data.push({
         Timestamp: targetDate.toISOString(),
         Total_Spirit: spirit,
@@ -105,6 +110,8 @@ export class AlchemicalKineticsClient {
         Total_Substance: substance,
         Heat: thermoVal,
         Entropy: kineticVal,
+        planetaryRuler: ph.planet,
+        isDaytime: ph.isDaytime,
       })
 
       current.setMinutes(current.getMinutes() + intervalMinutes)

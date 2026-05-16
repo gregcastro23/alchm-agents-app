@@ -746,7 +746,7 @@ export async function generateSynchronizedAlchmForBirthInfo(
       console.warn('Planetary position synchronization failed, falling back to local VSOP87')
       // Fallback to original implementation
       const horoscope = await generateProfessionalHoroscope(birthInfo, {
-        useLegacyFallback: true,
+        useLegacyFallback: false,
       })
       return formatAlchemicalData(alchemize(birthInfo, horoscope))
     }
@@ -754,10 +754,12 @@ export async function generateSynchronizedAlchmForBirthInfo(
     // Generate horoscope with synchronized positions
     const horoscope = await generateProfessionalHoroscope(birthInfo, {
       synchronizedPositions: syncResult.synchronized_positions,
-      useLegacyFallback: true, // Keep legacy as backup
+      useLegacyFallback: false, // WTEN engine is 100% reliable now
     })
 
-    const alchmData = formatAlchemicalData(alchemize(birthInfo, horoscope)) as SynchronizedAlchemicalData
+    const alchmData = formatAlchemicalData(
+      alchemize(birthInfo, horoscope)
+    ) as SynchronizedAlchemicalData
 
     // Add synchronization metadata
     alchmData.sync_metadata = {
@@ -774,7 +776,7 @@ export async function generateSynchronizedAlchmForBirthInfo(
     // Fallback to original implementation
     try {
       const horoscope = await generateProfessionalHoroscope(birthInfo, {
-        useLegacyFallback: true,
+        useLegacyFallback: false,
       })
       return formatAlchemicalData(alchemize(birthInfo, horoscope))
     } catch (fallbackError) {

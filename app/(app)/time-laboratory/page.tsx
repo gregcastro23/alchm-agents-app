@@ -11,7 +11,15 @@ const CosmicTimeLaboratory = dynamic(() => import('@/components/misc/cosmic-time
   ssr: false,
 })
 import TemporalOracle from '@/components/misc/temporal-oracle'
-import TemporalTimeline from '@/components/misc/temporal-timeline'
+
+const TemporalTimeline = dynamic(() => import('@/components/misc/temporal-timeline'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-96 flex items-center justify-center text-purple-300">
+      Loading temporal analysis...
+    </div>
+  ),
+})
 import AlchemicalMetricsChart from '@/components/charts/alchemical-metrics-chart'
 import { NatalChartManager } from '@/components/natal-chart-manager'
 import { TransitNotificationCenter } from '@/components/transit-notification-center'

@@ -37,7 +37,7 @@
     "node_modules",
     "backend",
     "scripts",
-    "app/api/_archive",
+    "lib/_archive",
     "test",
     "test-results",
     "examples",

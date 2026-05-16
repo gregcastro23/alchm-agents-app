@@ -95,6 +95,17 @@ export interface AlchemizeResponse {
   score: number
   normalized: boolean
   confidence: number
+  totalEffectValue?: number
+  dominantElement?: string
+  dominantModality?: string
+  aspects?: Array<{
+    planet1: string
+    planet2: string
+    aspect: string
+    angle: number
+    orb: number
+    exactness: number
+  }>
   metadata: Record<string, unknown>
 }
 

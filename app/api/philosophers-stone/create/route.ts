@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { logger } from '@/lib/structured-logger'
-import { withErrorHandling } from '@/lib/error-handling'
+import { withApiErrorHandling } from '@/lib/error-handling'
 import pg from 'pg'
 
 const { Pool } = pg
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  return withErrorHandling(
+  return withApiErrorHandling(
     async () => {
       const data = CreateAgentSchema.parse(parsedBody)
 
@@ -123,10 +123,10 @@ export async function POST(req: Request) {
         metadata: { agentId: insertedAgent.agentId },
       })
 
-      return NextResponse.json({
+      return {
         success: true,
         data: insertedAgent,
-      })
+      }
     },
     {
       system: 'philosophers-stone',
