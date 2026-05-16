@@ -29,6 +29,10 @@ import {
   Shield,
   Compass,
   Mountain,
+  Activity,
+  Brain,
+  Heart,
+  RotateCw,
 } from 'lucide-react'
 import {
   RuneGeometry,
@@ -321,6 +325,69 @@ export default function NatalSigilGenerator({
                   <div className="text-center p-2 bg-yellow-500/10 rounded">
                     <div className="font-medium">{sigilCosts.substance}</div>
                     <div className="text-xs text-muted-foreground">Substance</div>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <Label>Sacred Stats Investment Matrix</Label>
+                  <div className="grid grid-cols-7 gap-1 mt-2">
+                    {[
+                      {
+                        icon: Zap,
+                        label: 'Power',
+                        value: Math.round(sigilCosts.spirit * 0.8 + sigilCosts.essence * 0.2),
+                        color: 'text-orange-600',
+                        bg: 'bg-orange-500/10',
+                      },
+                      {
+                        icon: Activity,
+                        label: 'Reson.',
+                        value: Math.round(sigilCosts.essence * 0.9 + sigilCosts.substance * 0.1),
+                        color: 'text-purple-600',
+                        bg: 'bg-purple-500/10',
+                      },
+                      {
+                        icon: Brain,
+                        label: 'Wisdom',
+                        value: Math.round(sigilCosts.matter * 0.7 + sigilCosts.spirit * 0.3),
+                        color: 'text-indigo-600',
+                        bg: 'bg-indigo-500/10',
+                      },
+                      {
+                        icon: Heart,
+                        label: 'Charis.',
+                        value: Math.round(sigilCosts.essence * 0.6 + sigilCosts.spirit * 0.4),
+                        color: 'text-pink-600',
+                        bg: 'bg-pink-500/10',
+                      },
+                      {
+                        icon: Eye,
+                        label: 'Intuit.',
+                        value: Math.round(sigilCosts.spirit * 0.5 + sigilCosts.substance * 0.5),
+                        color: 'text-cyan-600',
+                        bg: 'bg-cyan-500/10',
+                      },
+                      {
+                        icon: RotateCw,
+                        label: 'Adapt.',
+                        value: Math.round(sigilCosts.substance * 0.8 + sigilCosts.essence * 0.2),
+                        color: 'text-teal-600',
+                        bg: 'bg-teal-500/10',
+                      },
+                      {
+                        icon: Sparkles,
+                        label: 'Vital.',
+                        value: Math.round(sigilCosts.matter * 0.9 + sigilCosts.spirit * 0.1),
+                        color: 'text-green-600',
+                        bg: 'bg-green-500/10',
+                      },
+                    ].map((stat, i) => (
+                      <div key={i} className={`text-center p-1.5 rounded ${stat.bg}`}>
+                        <stat.icon className={`h-3 w-3 mx-auto mb-1 ${stat.color}`} />
+                        <div className="font-mono text-xs">{stat.value}</div>
+                        <div className="text-[9px] text-muted-foreground">{stat.label}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

@@ -223,7 +223,7 @@
     "@langchain/anthropic": "^1.0.0",
     "@langchain/community": "^1.0.0",
     "@langchain/core": "^1.0.1",
-    "@langchain/openai": "^1.0.0",
+    "@langchain/openai": "0.3.14",
     "@llamaindex/core": "^0.6.22",
     "@llamaindex/env": "^0.1.30",
     "@llamaindex/openai": "^0.4.20",

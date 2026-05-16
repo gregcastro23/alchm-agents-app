@@ -2,20 +2,28 @@
 
 import React, { useState, useMemo, useCallback } from 'react'
 import { Calendar, Clock, Zap, Circle, Square, PlayCircle, PauseCircle } from 'lucide-react'
-import {
-  ComposedChart,
-  ScatterChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-  Scatter,
-  Line,
-  Tooltip,
-  ReferenceLine,
-  Area,
-  AreaChart,
-} from 'recharts'
+import dynamic from 'next/dynamic'
+
+const ComposedChart = dynamic(() => import('recharts').then(mod => mod.ComposedChart), {
+  ssr: false,
+})
+const ScatterChart = dynamic(() => import('recharts').then(mod => mod.ScatterChart), { ssr: false })
+const XAxis = dynamic(() => import('recharts').then(mod => mod.XAxis), { ssr: false })
+const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: false })
+const CartesianGrid = dynamic(() => import('recharts').then(mod => mod.CartesianGrid), {
+  ssr: false,
+})
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), {
+  ssr: false,
+})
+const Scatter = dynamic(() => import('recharts').then(mod => mod.Scatter), { ssr: false })
+const Line = dynamic(() => import('recharts').then(mod => mod.Line), { ssr: false })
+const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false })
+const ReferenceLine = dynamic(() => import('recharts').then(mod => mod.ReferenceLine), {
+  ssr: false,
+})
+const Area = dynamic(() => import('recharts').then(mod => mod.Area), { ssr: false })
+const AreaChart = dynamic(() => import('recharts').then(mod => mod.AreaChart), { ssr: false })
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -223,6 +231,7 @@ export default function TemporalTimeline({
     if (!active || !payload || !payload.length) return null
 
     const data = payload[0].payload
+    const isExact = data.isExact !== false // assume true if undefined for legacy compatibility, or just check explicitly. Actually let's just check data.isExact.
 
     return (
       <div className="bg-black/90 backdrop-blur border border-purple-500/30 rounded-lg p-3 text-sm">
@@ -230,10 +239,31 @@ export default function TemporalTimeline({
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: data.color }} />
             <span className="font-medium text-purple-100">{getAgentDisplayName(data.agentId)}</span>
+            {data.isExact && (
+              <Badge
+                variant="outline"
+                className="text-[10px] h-4 px-1 py-0 ml-1 border-gold/50 text-gold bg-gold/10"
+              >
+                Precision
+              </Badge>
+            )}
+            {!data.isExact && data.isExact !== undefined && (
+              <Badge
+                variant="outline"
+                className="text-[10px] h-4 px-1 py-0 ml-1 border-purple-500/50 text-purple-400 bg-purple-500/10"
+              >
+                Approx
+              </Badge>
+            )}
           </div>
 
           <div className="text-purple-300 space-y-1">
-            <div>Degree: {data.planetaryDegree?.toFixed(1)}°</div>
+            <div className="flex items-center gap-1">
+              <span>Degree:</span>
+              <span className={data.isExact ? 'text-gold font-mono' : ''}>
+                {data.planetaryDegree?.toFixed(data.isExact ? 2 : 1)}°
+              </span>
+            </div>
             <div>Time: {new Date(data.timestamp).toLocaleDateString()}</div>
             <div>Significance: {(data.significance * 100).toFixed(0)}%</div>
             <div>Element: {data.elementalDominance}</div>

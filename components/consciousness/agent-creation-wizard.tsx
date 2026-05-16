@@ -258,7 +258,19 @@ export function AgentCreationWizard({
     try {
       if (currentStep === 'activation_ritual') {
         // Final step - create the actual agent via API
-        if (agentPreview) onComplete(agentPreview as AgentPreview)
+        if (agentPreview) {
+          try {
+            await fetch('/api/philosophers-stone/create', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(agentPreview),
+            })
+          } catch (e) {
+            console.error('Failed to save agent to database', e)
+          }
+
+          onComplete(agentPreview as AgentPreview)
+        }
 
         if (onRunCreation) {
           const result = await onRunCreation({
@@ -333,7 +345,7 @@ export function AgentCreationWizard({
 
         // Generate agent preview data for consciousness analysis step
         if (currentStep === 'consciousness_analysis') {
-          const mockMetrics: ConsciousnessMetrics = {
+          let calculatedMetrics: ConsciousnessMetrics = {
             monicaConstant: 4.8 + Math.random() * 2,
             consciousnessLevel: 'Elevated',
             spiritScore: 6.2 + Math.random() * 3,
@@ -344,11 +356,59 @@ export function AgentCreationWizard({
             dominantModality: 'Cardinal',
           }
 
+          try {
+            // Attempt to get real time ISO string, default to current if parsing fails
+            let birthIso = new Date().toISOString()
+            if (birthData.date && birthData.time) {
+              const parsedDate = new Date(`${birthData.date}T${birthData.time}`)
+              if (!isNaN(parsedDate.getTime())) {
+                birthIso = parsedDate.toISOString()
+              }
+            }
+
+            const response = await fetch('/api/philosophers-stone/calculate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                birthDate: birthIso,
+                latitude: birthData.location.latitude || 37.7749, // Default to SF if 0
+                longitude: birthData.location.longitude || -122.4194,
+                agentName: birthData.name,
+              }),
+            })
+
+            const data = await response.json()
+            if (data.success && data.data) {
+              const { elements, dominantElement, monicaConstant } = data.data
+
+              calculatedMetrics = {
+                monicaConstant,
+                consciousnessLevel:
+                  monicaConstant > 0.8
+                    ? 'Illuminated'
+                    : monicaConstant > 0.5
+                      ? 'Elevated'
+                      : 'Awakening',
+                spiritScore: elements.Fire * 10,
+                essenceScore: elements.Water * 10,
+                matterScore: elements.Air * 10,
+                substanceScore: elements.Earth * 10,
+                dominantElement,
+                dominantModality: 'Cardinal',
+              }
+            }
+          } catch (e) {
+            console.error(
+              'Failed to calculate exact consciousness metrics, falling back to approximation',
+              e
+            )
+          }
+
           const preview: AgentPreview = {
             name: birthData.name || 'Consciousness Being',
             title: 'Consciousness Agent',
             specialty: 'Wisdom & Guidance',
-            consciousness: mockMetrics,
+            consciousness: calculatedMetrics,
             personality: {
               core: {
                 essence: 'Illuminated consciousness with deep wisdom',

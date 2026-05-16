@@ -65,7 +65,59 @@ router.post(
 )
 
 /**
+ * POST /api/planets/batch-positions
+ * Get planetary positions for a batch of dates and planets
+ */
+router.post(
+  '/batch-positions',
+  [
+    body('requests').isArray().withMessage('requests must be an array'),
+    body('requests.*.date').isISO8601().withMessage('Each request must have a valid ISO8601 date'),
+    body('requests.*.planet').isString().withMessage('Each request must specify a planet'),
+  ],
+  asyncHandler(async (req: Request, res: Response) => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      throw new AppError('Validation failed: ' + JSON.stringify(errors.array()), 400)
+    }
+
+    const { requests } = req.body
+    const startTime = Date.now()
+
+    try {
+      const results = requests.map((reqItem: { date: string; planet: string }) => {
+        const date = new Date(reqItem.date)
+        const planetKey = reqItem.planet.toLowerCase()
+        const pos = swissEphemerisService.getPlanetaryPositions(date, [planetKey])
+        return {
+          date: reqItem.date,
+          planet: reqItem.planet,
+          position: pos[planetKey] || null,
+        }
+      })
+
+      const computeTime = Date.now() - startTime
+
+      res.json({
+        success: true,
+        data: results,
+        metadata: {
+          computeTime,
+          totalRequests: requests.length,
+        },
+      })
+    } catch (error) {
+      throw new AppError(
+        `Batch planetary position calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        500
+      )
+    }
+  })
+)
+
+/**
  * POST /api/planets/houses
+
  * Calculate house system for a birth chart
  */
 router.post(

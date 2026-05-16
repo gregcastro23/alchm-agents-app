@@ -17,6 +17,8 @@ import {
   Shield,
   ChevronRight,
   Expand,
+  RotateCw,
+  Brain,
 } from 'lucide-react'
 import { getCurrentDecan, DECAN_TAROT_MAPPINGS, type TarotCard } from '@/lib/monica/tarot-oracle'
 import Link from 'next/link'
@@ -367,6 +369,89 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
                   <div className="flex justify-between">
                     <span>Substance:</span>
                     <span className="font-mono">{currentCard.alchemicalValues.substance}</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-purple-100">
+                  <p className="text-xs font-medium text-purple-800 mb-2">Sacred Stats Alignment</p>
+                  <div className="grid grid-cols-7 gap-1">
+                    {[
+                      {
+                        icon: Zap,
+                        label: 'Power',
+                        value: Math.round(
+                          currentCard.alchemicalValues.spirit * 80 +
+                            currentCard.alchemicalValues.essence * 20
+                        ),
+                        color: 'text-orange-600',
+                        bg: 'bg-orange-500/10',
+                      },
+                      {
+                        icon: Heart,
+                        label: 'Reson.',
+                        value: Math.round(
+                          currentCard.alchemicalValues.essence * 90 +
+                            currentCard.alchemicalValues.substance * 10
+                        ),
+                        color: 'text-purple-600',
+                        bg: 'bg-purple-500/10',
+                      },
+                      {
+                        icon: Brain,
+                        label: 'Wisdom',
+                        value: Math.round(
+                          currentCard.alchemicalValues.matter * 70 +
+                            currentCard.alchemicalValues.spirit * 30
+                        ),
+                        color: 'text-indigo-600',
+                        bg: 'bg-indigo-500/10',
+                      },
+                      {
+                        icon: Crown,
+                        label: 'Charis.',
+                        value: Math.round(
+                          currentCard.alchemicalValues.essence * 60 +
+                            currentCard.alchemicalValues.spirit * 40
+                        ),
+                        color: 'text-pink-600',
+                        bg: 'bg-pink-500/10',
+                      },
+                      {
+                        icon: Eye,
+                        label: 'Intuit.',
+                        value: Math.round(
+                          currentCard.alchemicalValues.spirit * 50 +
+                            currentCard.alchemicalValues.substance * 50
+                        ),
+                        color: 'text-cyan-600',
+                        bg: 'bg-cyan-500/10',
+                      },
+                      {
+                        icon: RotateCw,
+                        label: 'Adapt.',
+                        value: Math.round(
+                          currentCard.alchemicalValues.substance * 80 +
+                            currentCard.alchemicalValues.essence * 20
+                        ),
+                        color: 'text-teal-600',
+                        bg: 'bg-teal-500/10',
+                      },
+                      {
+                        icon: Sparkles,
+                        label: 'Vital.',
+                        value: Math.round(
+                          currentCard.alchemicalValues.matter * 90 +
+                            currentCard.alchemicalValues.spirit * 10
+                        ),
+                        color: 'text-green-600',
+                        bg: 'bg-green-500/10',
+                      },
+                    ].map((stat, i) => (
+                      <div key={i} className={`text-center p-1 rounded ${stat.bg}`}>
+                        <stat.icon className={`h-3 w-3 mx-auto mb-0.5 ${stat.color}`} />
+                        <div className="font-mono text-[9px]">{stat.value}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

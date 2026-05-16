@@ -13,6 +13,11 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000'
+  ),
   title: 'Planetary Agents - Consciousness Evolution Platform',
   description:
     'Revolutionary consciousness evolution through AI-powered planetary agents and real-time cosmic integration',

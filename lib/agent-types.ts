@@ -123,9 +123,9 @@ export interface PersonalityDelta {
 export interface Personality {
   core: PersonalityCore
   traits?: string[]
-  shadows: Shadow[]
-  gifts: Gift[]
-  challenges: Challenge[]
+  shadows?: Shadow[]
+  gifts?: Gift[]
+  challenges?: Challenge[]
   currentMood: Mood
   evolutionStage: number
 }
@@ -197,8 +197,8 @@ export type ResonanceType =
 export interface Abilities {
   specialty: string
   wisdomDomains: string[]
-  teachingStyle: TeachingStyle
-  resonanceType: ResonanceType
+  teachingStyle: string | TeachingStyle
+  resonanceType: string | ResonanceType
   uniquePower: string
 }
 
@@ -242,7 +242,7 @@ export interface Appearance {
   avatar: string
   color: string
   symbol: string
-  aura: AuraPattern
+  aura?: AuraPattern
 }
 
 export interface AgentStats {
@@ -293,6 +293,19 @@ export interface HistoricalDiet {
   beverages: string[]
   /** Notable food-related anecdotes, quotes, or lore */
   foodLore?: string
+}
+
+/**
+ * Sacred Stats representing the 7 key Alchemical attributes
+ */
+export interface SacredStats {
+  powerScore: number
+  resonanceScore7: number
+  wisdomScore: number
+  charismaScore: number
+  intuitionScore: number
+  adaptabilityScore: number
+  vitalityScore: number
 }
 
 export interface CraftedAgent {
@@ -357,6 +370,9 @@ export interface CraftedAgent {
 
   // Historically accurate diet profile
   historicalDiet?: HistoricalDiet
+
+  // The 7 Sacred Stats
+  sacredStats?: SacredStats
 
   // Additional properties used in unified agent system
   synthesis?: string

@@ -295,11 +295,11 @@ export function getConsciousnessLevel(monicaConstant: number): ConsciousnessLeve
   return 'Dormant'
 }
 
-export function getDominantElement(natalChart: any): Element {
+export function getDominantElement(natalChart: import('./agent-types').NatalChart): Element {
   // Simplified calculation - count planets in each element
   const elements = { Fire: 0, Earth: 0, Air: 0, Water: 0 }
 
-  Object.values(natalChart.planets).forEach((planet: any) => {
+  Object.values(natalChart.planets).forEach(planet => {
     const sign = planet.sign
     if (['Aries', 'Leo', 'Sagittarius'].includes(sign)) elements.Fire++
     else if (['Taurus', 'Virgo', 'Capricorn'].includes(sign)) elements.Earth++
@@ -312,11 +312,11 @@ export function getDominantElement(natalChart: any): Element {
   )[0] as Element
 }
 
-export function getDominantModality(natalChart: any): Modality {
+export function getDominantModality(natalChart: import('./agent-types').NatalChart): Modality {
   // Simplified calculation - count planets in each modality
   const modalities = { Cardinal: 0, Fixed: 0, Mutable: 0 }
 
-  Object.values(natalChart.planets).forEach((planet: any) => {
+  Object.values(natalChart.planets).forEach(planet => {
     const sign = planet.sign
     if (['Aries', 'Cancer', 'Libra', 'Capricorn'].includes(sign)) modalities.Cardinal++
     else if (['Taurus', 'Leo', 'Scorpio', 'Aquarius'].includes(sign)) modalities.Fixed++

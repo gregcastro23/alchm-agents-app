@@ -37,7 +37,7 @@ export { ALBERT_EINSTEIN } from './albert-einstein'
 export { ISAAC_ASIMOV } from './isaac-asimov'
 
 // Contemporary agents
-// export { GREG_CASTRO } from './greg-castro' // Temporarily disabled due to syntax errors
+export { GREG_CASTRO } from './greg-castro' // Temporarily disabled due to syntax errors
 
 // Additional Renaissance agents
 export { RUMI } from './rumi'
@@ -70,7 +70,43 @@ export { CARL_SAGAN } from './carl-sagan'
 export { RACHEL_CARSON } from './rachel-carson'
 export { PAULO_FREIRE } from './paulo-freire'
 
+export { HOMER } from './homer'
+export { ARISTOTLE } from './aristotle'
+export { PLATO } from './plato'
+export { JULIUS_CAESAR } from './julius-caesar'
+export { CICERO } from './cicero'
+export { HERODOTUS } from './herodotus'
+export { ARCHIMEDES } from './archimedes'
+export { ALEXANDER_THE_GREAT } from './alexander-the-great'
+export { MICHELANGELO } from './michelangelo'
+export { RAPHAEL } from './raphael'
+export { MACHIAVELLI } from './machiavelli'
+export { PETRARCH } from './petrarch'
+export { DONATELLO } from './donatello'
+export { JANE_AUSTEN } from './jane-austen'
+export { FYODOR_DOSTOEVSKY } from './fyodor-dostoevsky'
+export { OSCAR_WILDE } from './oscar-wilde'
+export { EMILY_DICKINSON } from './emily-dickinson'
+export { LEWIS_CARROLL } from './lewis-carroll'
 // Import all historical agents as a unified collection
+import { LEWIS_CARROLL } from './lewis-carroll'
+import { EMILY_DICKINSON } from './emily-dickinson'
+import { OSCAR_WILDE } from './oscar-wilde'
+import { FYODOR_DOSTOEVSKY } from './fyodor-dostoevsky'
+import { JANE_AUSTEN } from './jane-austen'
+import { DONATELLO } from './donatello'
+import { PETRARCH } from './petrarch'
+import { MACHIAVELLI } from './machiavelli'
+import { RAPHAEL } from './raphael'
+import { MICHELANGELO } from './michelangelo'
+import { ALEXANDER_THE_GREAT } from './alexander-the-great'
+import { ARCHIMEDES } from './archimedes'
+import { HERODOTUS } from './herodotus'
+import { CICERO } from './cicero'
+import { JULIUS_CAESAR } from './julius-caesar'
+import { PLATO } from './plato'
+import { ARISTOTLE } from './aristotle'
+import { HOMER } from './homer'
 import { SOCRATES } from './socrates'
 import { LEONARDO_DA_VINCI } from './leonardo-da-vinci'
 import { DANTE_ALIGHIERI } from './dante-alighieri'
@@ -96,7 +132,7 @@ import { CHARLES_DARWIN } from './charles-darwin'
 import { EDGAR_ALLAN_POE } from './edgar-allan-poe'
 import { ALBERT_EINSTEIN } from './albert-einstein'
 import { ISAAC_ASIMOV } from './isaac-asimov'
-// import { GREG_CASTRO } from './greg-castro' // Temporarily disabled
+import { GREG_CASTRO } from './greg-castro'
 import { RUMI } from './rumi'
 import { MARCUS_AURELIUS } from './marcus-aurelius'
 import { WOLFGANG_AMADEUS_MOZART } from './wolfgang-amadeus-mozart'
@@ -126,6 +162,24 @@ import { RACHEL_CARSON } from './rachel-carson'
 import { PAULO_FREIRE } from './paulo-freire'
 
 export const HISTORICAL_AGENTS = [
+  LEWIS_CARROLL,
+  EMILY_DICKINSON,
+  OSCAR_WILDE,
+  FYODOR_DOSTOEVSKY,
+  JANE_AUSTEN,
+  DONATELLO,
+  PETRARCH,
+  MACHIAVELLI,
+  RAPHAEL,
+  MICHELANGELO,
+  ALEXANDER_THE_GREAT,
+  ARCHIMEDES,
+  HERODOTUS,
+  CICERO,
+  JULIUS_CAESAR,
+  PLATO,
+  ARISTOTLE,
+  HOMER,
   SOCRATES,
   LEONARDO_DA_VINCI,
   DANTE_ALIGHIERI,
@@ -178,7 +232,7 @@ export const HISTORICAL_AGENTS = [
   CARL_SAGAN,
   RACHEL_CARSON,
   PAULO_FREIRE,
-  // GREG_CASTRO // Temporarily disabled due to syntax errors
+  GREG_CASTRO,
 ]
 
 // Helper functions for working with historical agents

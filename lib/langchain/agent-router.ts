@@ -5,19 +5,23 @@
 
 import { ChatOpenAI } from '@langchain/openai'
 import { ChatAnthropic } from '@langchain/anthropic'
-// @ts-ignore - langchain/agents imports might not resolve types under some bundler configurations
-import { AgentExecutor, createOpenAIFunctionsAgent } from 'langchain/agents'
+import { AgentExecutor, createOpenAIFunctionsAgent } from '@langchain/classic/agents'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { planetaryAgentTools } from './agent-tools'
 import { BufferMemory } from '@langchain/classic/memory'
 import type { BaseMessage } from '@langchain/core/messages'
 import { CLAUDE, OPENAI } from '../models/registry'
+import { getMemoryManager } from './memory-manager'
+import { logger } from '@/lib/structured-logger'
 
 export interface AgentRouterConfig {
-  model?: 'openai' | 'anthropic'
+  model?: 'openai' | 'anthropic' | 'groq'
   temperature?: number
   maxIterations?: number
+  timeoutMs?: number
   enableMemory?: boolean
+  sessionId?: string
+  agentId?: string
 }
 
 export interface AgentRouterResponse {
@@ -25,6 +29,12 @@ export interface AgentRouterResponse {
   intermediateSteps?: any[]
   toolCalls?: string[]
   error?: string
+  metadata?: {
+    model: string
+    iterations: number
+    duration: number
+    timedOut?: boolean
+  }
 }
 
 /**
@@ -34,13 +44,17 @@ export class AgentRouter {
   private executor: AgentExecutor | null = null
   private config: AgentRouterConfig
   private memory: BufferMemory | null = null
+  private modelName: string = ''
 
   constructor(config: AgentRouterConfig = {}) {
     this.config = {
       model: config.model || 'openai',
       temperature: config.temperature || 0.7,
       maxIterations: config.maxIterations || 5,
+      timeoutMs: config.timeoutMs || 30000,
       enableMemory: config.enableMemory !== false,
+      sessionId: config.sessionId,
+      agentId: config.agentId,
     }
   }
 
@@ -49,36 +63,59 @@ export class AgentRouter {
    */
   async initialize(): Promise<void> {
     try {
-      console.log('[AgentRouter] Initializing...')
+      logger.info('Initializing AgentRouter', {
+        system: 'langchain',
+        operation: 'initialize',
+        metadata: this.config,
+      })
 
       // Initialize LLM based on model choice
       const aiGatewayEnabled = String(process.env.AI_GATEWAY_ENABLED).toLowerCase() === 'true'
-      const llm =
-        this.config.model === 'anthropic'
-          ? new ChatAnthropic({
-              modelName: CLAUDE.SONNET,
-              temperature: this.config.temperature,
-              anthropicApiKey: aiGatewayEnabled
-                ? process.env.AI_GATEWAY_API_KEY
-                : process.env.ANTHROPIC_API_KEY,
-              // LangChain Anthropic supports baseURL
-              baseURL: aiGatewayEnabled ? process.env.AI_GATEWAY_URL : undefined,
-            } as any)
-          : new ChatOpenAI({
-              modelName: OPENAI.GPT_5_4_MINI,
-              temperature: this.config.temperature,
-              openAIApiKey: aiGatewayEnabled
-                ? process.env.AI_GATEWAY_API_KEY
-                : process.env.OPENAI_API_KEY,
-              baseURL: aiGatewayEnabled ? process.env.AI_GATEWAY_URL : undefined,
-            } as any)
+
+      let llm
+      if (this.config.model === 'anthropic') {
+        this.modelName = CLAUDE.SONNET
+        llm = new ChatAnthropic({
+          modelName: CLAUDE.SONNET,
+          temperature: this.config.temperature,
+          anthropicApiKey: aiGatewayEnabled
+            ? process.env.AI_GATEWAY_API_KEY
+            : process.env.ANTHROPIC_API_KEY,
+          baseURL: aiGatewayEnabled ? process.env.AI_GATEWAY_URL : undefined,
+        } as any)
+      } else if (this.config.model === 'groq') {
+        this.modelName = 'llama-3.3-70b-versatile'
+        llm = new ChatOpenAI({
+          modelName: 'llama-3.3-70b-versatile',
+          temperature: this.config.temperature,
+          openAIApiKey: process.env.GROQ_API_KEY,
+          configuration: {
+            baseURL: 'https://api.groq.com/openai/v1',
+          },
+        } as any)
+      } else {
+        this.modelName = OPENAI.GPT_5_4_MINI
+        llm = new ChatOpenAI({
+          modelName: OPENAI.GPT_5_4_MINI,
+          temperature: this.config.temperature,
+          openAIApiKey: aiGatewayEnabled
+            ? process.env.AI_GATEWAY_API_KEY
+            : process.env.OPENAI_API_KEY,
+          baseURL: aiGatewayEnabled ? process.env.AI_GATEWAY_URL : undefined,
+        } as any)
+      }
 
       // Initialize memory if enabled
       if (this.config.enableMemory) {
-        this.memory = new BufferMemory({
-          returnMessages: true,
-          memoryKey: 'chat_history',
-        })
+        if (this.config.sessionId && this.config.agentId) {
+          const memoryManager = getMemoryManager()
+          this.memory = await memoryManager.getMemory(this.config.sessionId, this.config.agentId)
+        } else {
+          this.memory = new BufferMemory({
+            returnMessages: true,
+            memoryKey: 'chat_history',
+          })
+        }
       }
 
       // Create agent prompt
@@ -124,10 +161,19 @@ Be thoughtful, precise, and leverage the tools effectively.`,
         verbose: true,
       })
 
-      console.log('[AgentRouter] Initialized successfully')
+      logger.info('AgentRouter initialized successfully', {
+        system: 'langchain',
+        operation: 'initialize',
+        metadata: { model: this.modelName },
+      })
     } catch (error) {
-      console.error('[AgentRouter] Initialization failed:', error)
-      throw new Error(`Agent router initialization failed: ${error}`)
+      logger.error('AgentRouter initialization failed', error, {
+        system: 'langchain',
+        operation: 'initialize',
+      })
+      throw new Error(
+        `Agent router initialization failed: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 
@@ -139,66 +185,64 @@ Be thoughtful, precise, and leverage the tools effectively.`,
       throw new Error('Agent router not initialized. Call initialize() first.')
     }
 
-    try {
-      console.log(`[AgentRouter] Executing query: "${query}"`)
+    const startTime = Date.now()
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Agent execution timed out')), this.config.timeoutMs)
+    })
 
-      const result = await this.executor.invoke({
-        input: query,
+    try {
+      logger.info('Executing agent query', {
+        system: 'langchain',
+        operation: 'execute',
+        metadata: { queryLength: query.length },
+      })
+
+      // Race against timeout
+      const result = await Promise.race([
+        this.executor.invoke({
+          input: query,
+        }),
+        timeoutPromise,
+      ])
+
+      const duration = Date.now() - startTime
+      logger.performance('agent_execute', duration, {
+        system: 'langchain',
+        metadata: { model: this.modelName, iterations: result.intermediateSteps?.length || 0 },
       })
 
       return {
         output: result.output,
         intermediateSteps: result.intermediateSteps,
         toolCalls: this.extractToolCalls(result.intermediateSteps),
-      }
-    } catch (error) {
-      console.error('[AgentRouter] Execution failed:', error)
-      return {
-        output: '',
-        error: `Execution failed: ${error}`,
-      }
-    }
-  }
-
-  /**
-   * Execute with streaming
-   */
-  async executeStream(
-    query: string,
-    onToken: (token: string) => void
-  ): Promise<AgentRouterResponse> {
-    if (!this.executor) {
-      throw new Error('Agent router not initialized. Call initialize() first.')
-    }
-
-    try {
-      console.log(`[AgentRouter] Streaming query: "${query}"`)
-
-      const result = await this.executor.invoke(
-        {
-          input: query,
+        metadata: {
+          model: this.modelName,
+          iterations: result.intermediateSteps?.length || 0,
+          duration,
         },
+      }
+    } catch (error: any) {
+      const isTimeout = error.message === 'Agent execution timed out'
+
+      logger.error(
+        isTimeout ? 'Streaming agent execution timed out' : 'Streaming agent execution failed',
+        error,
         {
-          callbacks: [
-            {
-              handleLLMNewToken(token: string) {
-                onToken(token)
-              },
-            },
-          ],
+          system: 'langchain',
+          operation: 'execute_stream',
+          metadata: { timedOut: isTimeout },
         }
       )
 
       return {
-        output: result.output,
-        intermediateSteps: result.intermediateSteps,
-        toolCalls: this.extractToolCalls(result.intermediateSteps),
-      }
-    } catch (error) {
-      console.error('[AgentRouter] Streaming execution failed:', error)
-      return {
         output: '',
-        error: `Streaming execution failed: ${error}`,
+        error: isTimeout ? 'Execution timed out' : `Streaming execution failed: ${error.message}`,
+        metadata: {
+          model: this.modelName,
+          iterations: 0,
+          duration: Date.now() - startTime,
+          timedOut: isTimeout,
+        },
       }
     }
   }
@@ -207,16 +251,14 @@ Be thoughtful, precise, and leverage the tools effectively.`,
    * Extract tool calls from intermediate steps
    */
   private extractToolCalls(intermediateSteps?: any[]): string[] {
-    if (!intermediateSteps) return []
+    if (!intermediateSteps || intermediateSteps.length === 0) return []
 
-    return intermediateSteps
-      .map(step => {
-        if (step.action && step.action.tool) {
-          return step.action.tool
-        }
-        return null
-      })
-      .filter((tool): tool is string => tool !== null)
+    return intermediateSteps.map(step => {
+      if (step.action && step.action.tool) {
+        return step.action.tool
+      }
+      return 'unknown_tool'
+    })
   }
 
   /**
@@ -225,7 +267,10 @@ Be thoughtful, precise, and leverage the tools effectively.`,
   async clearMemory(): Promise<void> {
     if (this.memory) {
       await this.memory.clear()
-      console.log('[AgentRouter] Memory cleared')
+      logger.info('Agent memory cleared', {
+        system: 'langchain',
+        operation: 'clear_memory',
+      })
     }
   }
 

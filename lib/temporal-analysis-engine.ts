@@ -12,7 +12,9 @@ import {
   HourlyAlchemicalSample,
 } from './alchemical-kinetics-sampler'
 import { agentKineticProfiles } from './agents/kinetic-profiles'
+import { planetaryAPI } from './planetary-api-client'
 import { ConsciousnessMemorySystem } from './agents/consciousness-memory'
+import { logger } from '@/lib/structured-logger'
 import {
   calculateReturnPattern,
   identifyPlanetaryThemes,
@@ -73,6 +75,7 @@ export interface AgentTransitEvent {
   planetaryHour: string
   seasonalPhase: string
   powerLevel: number
+  isExact?: boolean // Indicates if degree was calculated via Swisseph
   qualityMetrics: {
     depth: number
     clarity: number
@@ -264,16 +267,64 @@ export class TemporalAnalysisEngine {
 
     const transitEvents: AgentTransitEvent[] = []
 
-    for (const sample of samples) {
-      // Calculate planetary degree for this moment (simplified - in production would use ephemeris)
-      const dayOfYear = this.getDayOfYear(sample.t)
-      const approximateDegree = ((dayOfYear * 360) / 365) % 360
+    // Fetch actual planetary positions in batch using Swisseph via PlanetaryAPI
+    const batchRequests = samples.map(sample => ({
+      date: sample.t,
+      planet: sample.planetaryHour || 'Sun',
+    }))
+
+    let batchPositions: any[] = []
+    let fallbackCount = 0
+    let successCount = 0
+    const startTime = Date.now()
+
+    try {
+      // We chunk the requests to avoid overloading the backend
+      const CHUNK_SIZE = 50
+      for (let i = 0; i < batchRequests.length; i += CHUNK_SIZE) {
+        const chunk = batchRequests.slice(i, i + CHUNK_SIZE)
+        const res = await planetaryAPI.getBatchPlanetaryPositions(chunk)
+        batchPositions = batchPositions.concat(res)
+        successCount += chunk.length
+      }
+    } catch (e) {
+      fallbackCount = batchRequests.length - successCount
+      logger.warn('Failed to fetch exact swisseph positions, falling back to approximation', {
+        system: 'temporal-analysis',
+        operation: 'getAgentTransitHistory',
+        metadata: {
+          error: e instanceof Error ? e.message : 'Unknown error',
+          agentId,
+          totalRequested: batchRequests.length,
+          successful: successCount,
+          failed: fallbackCount,
+        },
+      })
+    }
+
+    const duration = Date.now() - startTime
+
+    let actualFallbackCount = 0
+
+    for (let i = 0; i < samples.length; i++) {
+      const sample = samples[i]
+
+      let actualDegree = 0
+      let isExact = false
+
+      if (batchPositions[i] && batchPositions[i].position) {
+        // Swisseph returns 0-360 absolute longitude
+        actualDegree = batchPositions[i].position.longitude
+        isExact = true
+      } else {
+        // Fallback approximation if Swisseph fails
+        const dayOfYear = this.getDayOfYear(sample.t)
+        actualDegree = ((dayOfYear * 360) / 365) % 360
+        actualFallbackCount++
+      }
 
       // Filter by degree range if specified
-      if (
-        degreeRange &&
-        (approximateDegree < degreeRange[0] || approximateDegree > degreeRange[1])
-      ) {
+      if (degreeRange && (actualDegree < degreeRange[0] || actualDegree > degreeRange[1])) {
         continue
       }
 
@@ -289,7 +340,7 @@ export class TemporalAnalysisEngine {
       const transitEvent: AgentTransitEvent = {
         agentId,
         timestamp: sample.t,
-        planetaryDegree: approximateDegree,
+        planetaryDegree: actualDegree,
         transitingPlanet: sample.planetaryHour || 'Sun',
         elementalAlignment,
         consciousnessImpact,
@@ -297,6 +348,7 @@ export class TemporalAnalysisEngine {
         planetaryHour: sample.planetaryHour || 'Sun',
         seasonalPhase: sample.seasonalPhase,
         powerLevel: sample.Energy,
+        isExact,
         qualityMetrics: {
           depth: Math.min(consciousnessImpact * 1.2, 1),
           clarity: Math.min(sample.Energy * 0.8, 1),
@@ -307,6 +359,22 @@ export class TemporalAnalysisEngine {
 
       transitEvents.push(transitEvent)
     }
+
+    logger.info('Swisseph batch positions fetched and processed', {
+      system: 'temporal-analysis',
+      operation: 'getAgentTransitHistory',
+      metadata: {
+        agentId,
+        durationMs: duration,
+        totalRequested: batchRequests.length,
+        actualFallbackCount,
+        successRate:
+          batchRequests.length > 0
+            ? (batchRequests.length - actualFallbackCount) / batchRequests.length
+            : 0,
+        fallbackRate: batchRequests.length > 0 ? actualFallbackCount / batchRequests.length : 0,
+      },
+    })
 
     return transitEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
   }

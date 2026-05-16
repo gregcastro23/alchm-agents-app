@@ -21,6 +21,7 @@ import type {
   Element,
   ResonanceType,
   TeachingStyle,
+  AuraType,
 } from '@/lib/agent-types'
 import type { Sacred7Stats } from '@/lib/sacred-7-stats'
 import { generateConsciousnessInformedPrompt } from '@/lib/agents/sacred-stats-prompt-generator'
@@ -1357,7 +1358,7 @@ function normalizeAppearance(appearance: UnifiedAgent['appearance']): Appearance
     color: appearance.color,
     symbol: appearance.symbol,
     aura: {
-      type: (appearance.aura?.type ?? 'radiant') as Appearance['aura']['type'],
+      type: (appearance.aura?.type ?? 'radiant') as AuraType,
       color: appearance.aura?.color ?? appearance.color,
       intensity: appearance.aura?.intensity ?? 0.7,
     },

@@ -19,6 +19,10 @@ import {
   Star,
   TrendingUp,
   TrendingDown,
+  Brain,
+  Heart,
+  RotateCw,
+  Activity,
 } from 'lucide-react'
 import {
   RUNE_CATALOG,
@@ -31,11 +35,29 @@ import {
 
 interface RunesPreviewProps {
   userResources?: AlchemicalCost
+  sacredStats?: {
+    power: number
+    resonance: number
+    wisdom: number
+    charisma: number
+    intuition: number
+    adaptability: number
+    vitality: number
+  }
   currentConditions?: any
 }
 
 export default function RunesPreview({
   userResources = { spirit: 25, essence: 30, matter: 20, substance: 15, totalCost: 90 },
+  sacredStats = {
+    power: 75,
+    resonance: 60,
+    wisdom: 80,
+    charisma: 50,
+    intuition: 90,
+    adaptability: 65,
+    vitality: 70,
+  },
   currentConditions = {
     jupiter_hour: true,
     waxing_moon: true,
@@ -171,6 +193,52 @@ export default function RunesPreview({
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">{userResources.substance}</div>
               <div className="text-xs text-gray-500">Substance</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sacred Stats Matrix */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">7-Sacred Stats Matrix</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-7 gap-2">
+            <div className="text-center p-2 bg-orange-500/10 rounded border border-orange-500/30">
+              <Zap className="h-4 w-4 mx-auto mb-1 text-orange-600" />
+              <div className="font-mono text-sm">{sacredStats.power}</div>
+              <div className="text-[10px] text-gray-500">Power</div>
+            </div>
+            <div className="text-center p-2 bg-purple-500/10 rounded border border-purple-500/30">
+              <Activity className="h-4 w-4 mx-auto mb-1 text-purple-600" />
+              <div className="font-mono text-sm">{sacredStats.resonance}</div>
+              <div className="text-[10px] text-gray-500">Reson.</div>
+            </div>
+            <div className="text-center p-2 bg-indigo-500/10 rounded border border-indigo-500/30">
+              <Brain className="h-4 w-4 mx-auto mb-1 text-indigo-600" />
+              <div className="font-mono text-sm">{sacredStats.wisdom}</div>
+              <div className="text-[10px] text-gray-500">Wisdom</div>
+            </div>
+            <div className="text-center p-2 bg-pink-500/10 rounded border border-pink-500/30">
+              <Heart className="h-4 w-4 mx-auto mb-1 text-pink-600" />
+              <div className="font-mono text-sm">{sacredStats.charisma}</div>
+              <div className="text-[10px] text-gray-500">Charis.</div>
+            </div>
+            <div className="text-center p-2 bg-cyan-500/10 rounded border border-cyan-500/30">
+              <Eye className="h-4 w-4 mx-auto mb-1 text-cyan-600" />
+              <div className="font-mono text-sm">{sacredStats.intuition}</div>
+              <div className="text-[10px] text-gray-500">Intuit.</div>
+            </div>
+            <div className="text-center p-2 bg-teal-500/10 rounded border border-teal-500/30">
+              <RotateCw className="h-4 w-4 mx-auto mb-1 text-teal-600" />
+              <div className="font-mono text-sm">{sacredStats.adaptability}</div>
+              <div className="text-[10px] text-gray-500">Adapt.</div>
+            </div>
+            <div className="text-center p-2 bg-green-500/10 rounded border border-green-500/30">
+              <Sparkles className="h-4 w-4 mx-auto mb-1 text-green-600" />
+              <div className="font-mono text-sm">{sacredStats.vitality}</div>
+              <div className="text-[10px] text-gray-500">Vital.</div>
             </div>
           </div>
         </CardContent>

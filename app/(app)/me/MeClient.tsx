@@ -1,0 +1,452 @@
+'use client'
+
+import Link from 'next/link'
+import Image from 'next/image'
+import dynamic from 'next/dynamic'
+import type { ZodiacTheme } from '@/lib/zodiac-utils'
+import {
+  Compass,
+  Users,
+  Sparkles,
+  FlaskConical,
+  BrainCircuit,
+  TrendingUp,
+  ArrowRight,
+  LogOut,
+} from 'lucide-react'
+
+const CircularNatalHoroscope = dynamic(
+  () => import('@/components/charts/circular-natal-horoscope'),
+  {
+    loading: () => (
+      <div className="h-64 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-500" />
+      </div>
+    ),
+  }
+)
+
+const LiveConsciousnessDisplay = dynamic(
+  () =>
+    import('@/components/profile/live-consciousness-display').then(mod => ({
+      default: mod.LiveConsciousnessDisplay,
+    })),
+  {
+    loading: () => (
+      <div className="h-48 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+      </div>
+    ),
+  }
+)
+
+interface MeClientProps {
+  user: {
+    name?: string | null
+    image?: string | null
+  }
+  sunSign: string
+  zodiacTheme: ZodiacTheme
+  monicaConstant: number
+  dominantElement: string
+  modality: string
+  spirit: number
+  essence: number
+  matter: number
+  substance: number
+  fire: number
+  water: number
+  air: number
+  earth: number
+  Heat: number
+  Entropy: number
+  Reactivity: number
+  EnergyValue: number
+  computationError: string | null
+  birthInfo: {
+    year: number
+    month: number
+    day: number
+    hour: number
+    minute: number
+    latitude?: number
+    longitude?: number
+  }
+  profileName: string | null
+}
+
+const tourCards = [
+  {
+    icon: Compass,
+    title: 'Cosmic Tools',
+    description:
+      'Track planetary movements, chart the current moment, and explore cosmic timing through the Time Laboratory.',
+    href: '/time-laboratory',
+    cta: 'Open Time Lab',
+  },
+  {
+    icon: Users,
+    title: 'Planetary Council',
+    description:
+      'Engage in multi-agent conversations with the planetary governing body. Each agent embodies a celestial archetype.',
+    href: '/planetary-council',
+    cta: 'Enter the Council',
+  },
+  {
+    icon: Sparkles,
+    title: 'Agent Gallery',
+    description:
+      'Explore 50+ historical and astrological AI agents — from Leonardo da Vinci to Carl Jung — each shaped by real birthcharts.',
+    href: '/gallery',
+    cta: 'Browse Agents',
+  },
+  {
+    icon: FlaskConical,
+    title: 'Mystic Arts',
+    description:
+      'Cast runes, draw tarot spreads, and perform alchemical synthesis in the Rune Forge and Synthesis Chamber.',
+    href: '/rune-forge',
+    cta: 'Begin Crafting',
+  },
+  {
+    icon: BrainCircuit,
+    title: 'Consciousness Lab',
+    description:
+      'Explore consciousness vectors, kinetic interactions, and the alchemical underpinnings of agent intelligence.',
+    href: '/consciousness-demo',
+    cta: 'Explore Consciousness',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Your Chart',
+    description:
+      'Interpret your natal chart, track transits and planetary aspects, and discover how celestial events shape your path.',
+    href: '/chart-interpreter',
+    cta: 'Interpret Chart',
+  },
+]
+
+function getConsciousnessLevel(mc: number): string {
+  if (mc < 1) return 'Foundational'
+  if (mc < 2) return 'Developing'
+  if (mc < 3) return 'Advanced'
+  return 'Transcendent'
+}
+
+export function MeClient({
+  user,
+  sunSign,
+  zodiacTheme,
+  monicaConstant,
+  dominantElement,
+  modality,
+  spirit,
+  essence,
+  matter,
+  substance,
+  fire,
+  water,
+  air,
+  earth,
+  Heat,
+  Entropy,
+  Reactivity,
+  EnergyValue,
+  computationError,
+  birthInfo,
+  profileName,
+}: MeClientProps) {
+  const maxAlchm = Math.max(spirit, essence, matter, substance, 1)
+
+  // Inject zodiac CSS custom properties via inline style on the root element
+  const zodiacCssVars = {
+    '--zodiac-gradient': zodiacTheme.gradient,
+    '--zodiac-card-gradient': zodiacTheme.cardGradient,
+    '--zodiac-accent': zodiacTheme.accentHsl,
+    '--zodiac-glow': zodiacTheme.glowColor,
+    '--zodiac-border': zodiacTheme.borderColor,
+  } as React.CSSProperties
+
+  return (
+    <div className="me-page" style={zodiacCssVars}>
+      {/* Starfield Layer */}
+      <div className="me-starfield" />
+
+      {/* Sign Out */}
+      <form action="/api/logout" method="POST">
+        <button type="submit" className="me-sign-out">
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            <LogOut size={14} />
+            Sign Out
+          </span>
+        </button>
+      </form>
+
+      {/* Computation Warning */}
+      {computationError && (
+        <div className="me-warning">
+          ⚠️ Using fallback data due to computation issue: {computationError}
+        </div>
+      )}
+
+      {/* Hero Section */}
+      <section className="me-hero">
+        <div className="me-hero-avatar-ring">
+          <div className="me-hero-avatar-inner">
+            {user.image ? (
+              <Image
+                src={user.image}
+                alt={user.name || 'You'}
+                width={96}
+                height={96}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              <span>👤</span>
+            )}
+          </div>
+        </div>
+
+        <h1>Welcome, {user.name || 'Explorer'}</h1>
+        <p className="me-hero-tagline">{zodiacTheme.tagline}</p>
+
+        <div className="me-zodiac-badge">
+          <span className="constellation">{zodiacTheme.constellation}</span>
+          {sunSign} · {zodiacTheme.element} · {zodiacTheme.rulingPlanet}
+        </div>
+
+        <div className="me-mc-display">
+          <div className="me-mc-value">
+            <div className="number">{monicaConstant.toFixed(3)}</div>
+            <div className="label">Monica Constant</div>
+          </div>
+          <div className="me-mc-level">{getConsciousnessLevel(monicaConstant)} Level</div>
+          <div className="me-mc-value">
+            <div className="number" style={{ fontSize: '1.5rem' }}>
+              {dominantElement}
+            </div>
+            <div className="label">Dominant Element</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Alchemical Strip */}
+      <section className="me-alchemy-strip">
+        <div className="me-alchemy-tile tile-spirit">
+          <div className="tile-icon">🔥</div>
+          <div className="tile-value">{spirit.toFixed(1)}</div>
+          <div className="tile-label">Spirit</div>
+          <div className="tile-bar">
+            <div
+              className="tile-bar-fill"
+              style={{ width: `${Math.min(100, (spirit / maxAlchm) * 100)}%` }}
+            />
+          </div>
+        </div>
+        <div className="me-alchemy-tile tile-essence">
+          <div className="tile-icon">💨</div>
+          <div className="tile-value">{essence.toFixed(1)}</div>
+          <div className="tile-label">Essence</div>
+          <div className="tile-bar">
+            <div
+              className="tile-bar-fill"
+              style={{ width: `${Math.min(100, (essence / maxAlchm) * 100)}%` }}
+            />
+          </div>
+        </div>
+        <div className="me-alchemy-tile tile-matter">
+          <div className="tile-icon">🌿</div>
+          <div className="tile-value">{matter.toFixed(1)}</div>
+          <div className="tile-label">Matter</div>
+          <div className="tile-bar">
+            <div
+              className="tile-bar-fill"
+              style={{ width: `${Math.min(100, (matter / maxAlchm) * 100)}%` }}
+            />
+          </div>
+        </div>
+        <div className="me-alchemy-tile tile-substance">
+          <div className="tile-icon">💧</div>
+          <div className="tile-value">{substance.toFixed(1)}</div>
+          <div className="tile-label">Substance</div>
+          <div className="tile-bar">
+            <div
+              className="tile-bar-fill"
+              style={{ width: `${Math.min(100, (substance / maxAlchm) * 100)}%` }}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Explore the Cosmos — Site Tour */}
+      <div className="me-section-title">
+        <h2>Explore the Cosmos</h2>
+        <p>Your gateway to the Planetary Agents platform</p>
+        <div className="divider" />
+      </div>
+
+      <section className="me-tour-grid">
+        {tourCards.map(card => (
+          <Link key={card.href} href={card.href} className="me-tour-card">
+            <div className="tour-icon">
+              <card.icon size={22} />
+            </div>
+            <div className="tour-title">{card.title}</div>
+            <div className="tour-desc">{card.description}</div>
+            <div className="tour-cta">
+              {card.cta}
+              <ArrowRight size={14} />
+            </div>
+          </Link>
+        ))}
+      </section>
+
+      {/* Charts & Consciousness Section */}
+      <div className="me-section-title">
+        <h2>Your Cosmic Blueprint</h2>
+        <p>Natal chart, live consciousness, and alchemical insights</p>
+        <div className="divider" />
+      </div>
+
+      <section className="me-charts-section">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
+          {/* Natal Chart */}
+          <div className="me-glass-card">
+            <CircularNatalHoroscope
+              className="w-full"
+              showKinetics={true}
+              birthInfo={{
+                name: profileName || user.name || 'You',
+                year: birthInfo.year,
+                month: birthInfo.month,
+                day: birthInfo.day,
+                hour: birthInfo.hour,
+                minute: birthInfo.minute,
+                latitude: birthInfo.latitude ?? 0,
+                longitude: birthInfo.longitude ?? 0,
+              }}
+            />
+          </div>
+
+          {/* Live Consciousness */}
+          <LiveConsciousnessDisplay
+            birthInfo={birthInfo}
+            userName={user.name || 'You'}
+            birthAlchm={{
+              spirit,
+              essence,
+              matter,
+              substance,
+              Heat,
+              Energy: EnergyValue,
+              Entropy,
+              Reactivity,
+            }}
+            birthMC={monicaConstant}
+          />
+
+          {/* Insights */}
+          <div className="me-glass-card">
+            <h3>Chart Insights</h3>
+            <p style={{ marginBottom: '1rem' }}>Key patterns and recommendations</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div className="me-insight-card">
+                <h4>Dominant Patterns</h4>
+                <p>
+                  Your {dominantElement.toLowerCase()} dominance suggests a natural affinity for{' '}
+                  {dominantElement === 'Fire'
+                    ? 'creativity and leadership'
+                    : dominantElement === 'Water'
+                      ? 'intuition and emotional depth'
+                      : dominantElement === 'Air'
+                        ? 'communication and ideas'
+                        : 'stability and practical manifestation'}
+                  .
+                </p>
+              </div>
+
+              <div className="me-insight-card">
+                <h4>Monica Constant Analysis</h4>
+                <p>
+                  At {monicaConstant.toFixed(3)}, your consciousness operates at a{' '}
+                  {getConsciousnessLevel(monicaConstant).toLowerCase()} level with strong potential
+                  for growth.
+                </p>
+              </div>
+
+              <div className="me-insight-card">
+                <h4>Alchemical Balance</h4>
+                <p>
+                  Your Spirit/Essence ratio of {(spirit / Math.max(essence, 0.1)).toFixed(2)}{' '}
+                  indicates{' '}
+                  {spirit > essence ? 'active initiation energy' : 'receptive integration capacity'}
+                  , while your Matter/Substance foundation provides{' '}
+                  {matter > substance ? 'structural stability' : 'connective flexibility'}.
+                </p>
+              </div>
+
+              {/* Thermodynamic Properties */}
+              <div className="me-insight-card">
+                <h4>Thermodynamic Properties</h4>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: '0.5rem',
+                    marginTop: '0.5rem',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      fontSize: '0.8rem',
+                    }}
+                  >
+                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>Heat:</span>
+                    <span style={{ fontFamily: 'monospace' }}>{Heat.toFixed(3)}</span>
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      fontSize: '0.8rem',
+                    }}
+                  >
+                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>Entropy:</span>
+                    <span style={{ fontFamily: 'monospace' }}>{Entropy.toFixed(3)}</span>
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      fontSize: '0.8rem',
+                    }}
+                  >
+                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>Reactivity:</span>
+                    <span style={{ fontFamily: 'monospace' }}>{Reactivity.toFixed(3)}</span>
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      fontSize: '0.8rem',
+                    }}
+                  >
+                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>Energy:</span>
+                    <span style={{ fontFamily: 'monospace' }}>{EnergyValue.toFixed(3)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="me-footer">
+        Planetary Agents · Consciousness Evolution Platform · v2.0
+      </footer>
+    </div>
+  )
+}

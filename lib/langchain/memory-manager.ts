@@ -1,11 +1,24 @@
 /**
  * Memory Manager for Agent Conversations
- * Persistent memory with vector storage
+ * Persistent memory backed by PostgreSQL (pg library)
+ *
+ * Provides long-term state for agents by storing and retrieving
+ * conversation history from the database.
  */
 
 import { BufferMemory, ChatMessageHistory } from '@langchain/classic/memory'
 import type { BaseMessage } from '@langchain/core/messages'
 import { HumanMessage, AIMessage } from '@langchain/core/messages'
+import { logger } from '@/lib/structured-logger'
+import { withErrorHandling } from '@/lib/error-handling'
+import pg from 'pg'
+
+const { Pool } = pg
+
+// Ensure a single pool instance is reused
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+})
 
 export interface ConversationMemory {
   sessionId: string
@@ -19,42 +32,34 @@ export interface ConversationMemory {
 export interface MemoryRetrievalOptions {
   limit?: number
   includeContext?: boolean
-  semanticSearch?: boolean
 }
 
 /**
- * Memory Manager with Vector Storage
+ * Memory Manager with pg Persistence
  */
 export class MemoryManager {
-  private memories: Map<string, ConversationMemory>
   private bufferMemories: Map<string, BufferMemory>
 
   constructor() {
-    this.memories = new Map()
     this.bufferMemories = new Map()
   }
 
   /**
-   * Create or get memory for a session
+   * Create or get memory for a session, loading from DB if needed
    */
   async getMemory(sessionId: string, agentId: string): Promise<BufferMemory> {
     const key = `${sessionId}_${agentId}`
 
-    // Check if buffer memory exists
+    // Check if buffer memory exists in cache
     if (this.bufferMemories.has(key)) {
       return this.bufferMemories.get(key)!
     }
 
-    // Load existing conversation memory
-    const existingMemory = this.memories.get(key)
-    let messages: BaseMessage[] = []
+    // Load existing conversation memory from database
+    const history = await this.getConversationHistory(sessionId, agentId, { limit: 20 })
 
-    if (existingMemory) {
-      messages = existingMemory.messages
-    }
-
-    // Create new buffer memory
-    const chatHistory = new ChatMessageHistory(messages)
+    // Create new buffer memory with loaded history
+    const chatHistory = new ChatMessageHistory(history)
     const bufferMemory = new BufferMemory({
       chatHistory,
       returnMessages: true,
@@ -62,53 +67,69 @@ export class MemoryManager {
     })
 
     this.bufferMemories.set(key, bufferMemory)
-
     return bufferMemory
   }
 
   /**
-   * Save conversation to memory
+   * Save conversation to database and update cache
    */
   async saveConversation(
     sessionId: string,
     agentId: string,
     userMessage: string,
-    agentResponse: string
+    agentResponse: string,
+    userId?: string
   ): Promise<void> {
-    const key = `${sessionId}_${agentId}`
+    return withErrorHandling(
+      async () => {
+        const key = `${sessionId}_${agentId}`
 
-    // Get or create memory entry
-    let memory = this.memories.get(key)
-    if (!memory) {
-      memory = {
-        sessionId,
+        // 1. Save to Database (pg)
+        const cuid = require('crypto').randomBytes(12).toString('hex') // Fallback ID if needed
+        const query = `
+          INSERT INTO "AgentConversation" (
+            id, "sessionId", "agentId", "userId", "userMessage", "agentResponse", "modelUsed", "createdAt"
+          ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, NOW()
+          )
+        `
+        const values = [
+          cuid,
+          sessionId,
+          agentId,
+          userId || null,
+          userMessage,
+          agentResponse,
+          'langchain-agent',
+        ]
+
+        await pool.query(query, values)
+
+        // 2. Update In-Memory Cache if it exists
+        const bufferMemory = this.bufferMemories.get(key)
+        if (bufferMemory) {
+          await bufferMemory.chatHistory.addUserMessage(userMessage)
+          await bufferMemory.chatHistory.addAIMessage(agentResponse)
+        }
+
+        logger.info('Conversation persisted to database via pg', {
+          system: 'langchain',
+          operation: 'save_memory',
+          agentId,
+          metadata: { sessionId, userId },
+        })
+      },
+      {
+        system: 'langchain',
+        operation: 'save_memory',
         agentId,
-        messages: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        severity: 'medium',
       }
-    }
-
-    // Add messages
-    memory.messages.push(new HumanMessage(userMessage))
-    memory.messages.push(new AIMessage(agentResponse))
-    memory.updatedAt = new Date()
-
-    // Save to map
-    this.memories.set(key, memory)
-
-    // Update buffer memory
-    const bufferMemory = this.bufferMemories.get(key)
-    if (bufferMemory) {
-      await bufferMemory.chatHistory.addUserMessage(userMessage)
-      await bufferMemory.chatHistory.addAIMessage(agentResponse)
-    }
-
-    console.log(`[MemoryManager] Saved conversation for ${sessionId}/${agentId}`)
+    ).then(() => {})
   }
 
   /**
-   * Retrieve conversation history
+   * Retrieve conversation history from database
    */
   async getConversationHistory(
     sessionId: string,
@@ -116,141 +137,81 @@ export class MemoryManager {
     options: MemoryRetrievalOptions = {}
   ): Promise<BaseMessage[]> {
     const { limit = 10 } = options
-    const key = `${sessionId}_${agentId}`
 
-    const memory = this.memories.get(key)
-    if (!memory) {
+    try {
+      const query = `
+        SELECT "userMessage", "agentResponse"
+        FROM "AgentConversation"
+        WHERE "sessionId" = $1 AND "agentId" = $2
+        ORDER BY "createdAt" ASC
+        LIMIT $3
+      `
+      const values = [sessionId, agentId, limit]
+      const result = await pool.query(query, values)
+
+      const messages: BaseMessage[] = []
+      for (const row of result.rows) {
+        messages.push(new HumanMessage(row.userMessage))
+        messages.push(new AIMessage(row.agentResponse))
+      }
+
+      return messages
+    } catch (error) {
+      logger.error('Failed to load conversation history', error, {
+        system: 'langchain',
+        operation: 'load_history',
+        agentId,
+        metadata: { sessionId },
+      })
       return []
     }
-
-    // Return last N messages
-    return memory.messages.slice(-limit)
   }
 
   /**
-   * Search conversation history semantically
-   */
-  async searchConversations(
-    query: string,
-    agentId?: string,
-    options: { topK?: number } = {}
-  ): Promise<
-    Array<{
-      sessionId: string
-      agentId: string
-      message: string
-      relevance: number
-    }>
-  > {
-    const { topK = 5 } = options
-    const results: Array<{
-      sessionId: string
-      agentId: string
-      message: string
-      relevance: number
-    }> = []
-
-    // Search through all memories
-    for (const [key, memory] of this.memories.entries()) {
-      if (agentId && memory.agentId !== agentId) continue
-
-      // Simple text matching (in production, use vector search)
-      for (const message of memory.messages) {
-        const content = message.content.toString()
-        if (content.toLowerCase().includes(query.toLowerCase())) {
-          results.push({
-            sessionId: memory.sessionId,
-            agentId: memory.agentId,
-            message: content,
-            relevance: 0.8, // Placeholder
-          })
-        }
-      }
-    }
-
-    // Sort by relevance and limit
-    return results.sort((a, b) => b.relevance - a.relevance).slice(0, topK)
-  }
-
-  /**
-   * Generate conversation summary
+   * Generate conversation summary (can be enhanced with LLM later)
    */
   async generateSummary(sessionId: string, agentId: string): Promise<string> {
-    const key = `${sessionId}_${agentId}`
-    const memory = this.memories.get(key)
+    const history = await this.getConversationHistory(sessionId, agentId)
 
-    if (!memory || memory.messages.length === 0) {
+    if (history.length === 0) {
       return 'No conversation history'
     }
 
-    // Simple summary (in production, use LLM for summarization)
-    const messageCount = memory.messages.length
-    const duration = memory.updatedAt.getTime() - memory.createdAt.getTime()
-    const durationMinutes = Math.round(duration / 60000)
-
-    return `Conversation with ${agentId}: ${messageCount} messages over ${durationMinutes} minutes`
+    return `Conversation with ${agentId}: ${history.length} messages found in history.`
   }
 
   /**
-   * Clear memory for a session
+   * Clear memory for a session (soft delete or cleanup)
    */
   async clearMemory(sessionId: string, agentId: string): Promise<void> {
     const key = `${sessionId}_${agentId}`
-
-    this.memories.delete(key)
     this.bufferMemories.delete(key)
 
-    console.log(`[MemoryManager] Cleared memory for ${sessionId}/${agentId}`)
+    logger.info('Cleared in-memory agent cache', {
+      system: 'langchain',
+      operation: 'clear_cache',
+      agentId,
+      metadata: { sessionId },
+    })
   }
 
   /**
-   * Clear all memories
+   * Get memory statistics from database
    */
-  async clearAllMemories(): Promise<void> {
-    this.memories.clear()
-    this.bufferMemories.clear()
-    console.log('[MemoryManager] Cleared all memories')
-  }
-
-  /**
-   * Get memory statistics
-   */
-  getStats(): {
+  async getStats(): Promise<{
     totalConversations: number
-    totalMessages: number
-    activeAgents: Set<string>
-  } {
-    let totalMessages = 0
-    const activeAgents = new Set<string>()
+    activeAgents: string[]
+  }> {
+    const countResult = await pool.query(`SELECT COUNT(*) FROM "AgentConversation"`)
+    const count = parseInt(countResult.rows[0].count, 10)
 
-    for (const memory of this.memories.values()) {
-      totalMessages += memory.messages.length
-      activeAgents.add(memory.agentId)
-    }
+    const agentsResult = await pool.query(`SELECT DISTINCT "agentId" FROM "AgentConversation"`)
+    const agents = agentsResult.rows.map(row => row.agentId)
 
     return {
-      totalConversations: this.memories.size,
-      totalMessages,
-      activeAgents,
+      totalConversations: count,
+      activeAgents: agents,
     }
-  }
-
-  /**
-   * Export memories for persistence
-   */
-  exportMemories(): ConversationMemory[] {
-    return Array.from(this.memories.values())
-  }
-
-  /**
-   * Import memories from persistence
-   */
-  importMemories(memories: ConversationMemory[]): void {
-    for (const memory of memories) {
-      const key = `${memory.sessionId}_${memory.agentId}`
-      this.memories.set(key, memory)
-    }
-    console.log(`[MemoryManager] Imported ${memories.length} conversations`)
   }
 }
 
@@ -276,10 +237,11 @@ export async function saveConversation(
   sessionId: string,
   agentId: string,
   userMessage: string,
-  agentResponse: string
+  agentResponse: string,
+  userId?: string
 ): Promise<void> {
   const manager = getMemoryManager()
-  await manager.saveConversation(sessionId, agentId, userMessage, agentResponse)
+  await manager.saveConversation(sessionId, agentId, userMessage, agentResponse, userId)
 }
 
 /**

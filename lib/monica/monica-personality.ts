@@ -5,7 +5,7 @@ import type {
   SignCharacterVector,
   ChartCharacterProfile,
   InteractionStylePreferences,
-} from '@/lib/astrological-character-vectors'
+} from '../astrological-character-vectors'
 
 export interface MonicaBirthData {
   name: string

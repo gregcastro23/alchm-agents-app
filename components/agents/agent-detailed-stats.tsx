@@ -158,6 +158,95 @@ export function AgentDetailedStats({
         </Card>
       </div>
 
+      {/* Sacred Stats Visualization */}
+      {agent.sacredStats && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Crown className="w-5 h-5 text-purple-500" />
+              Sacred Stats (Base Matrix)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-orange-400">
+                    <Zap className="w-4 h-4" /> Power
+                  </span>
+                  <span className="font-medium">{agent.sacredStats.powerScore.toFixed(1)}</span>
+                </div>
+                <Progress value={Math.min(100, agent.sacredStats.powerScore)} className="h-2" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-purple-400">
+                    <Activity className="w-4 h-4" /> Resonance (7)
+                  </span>
+                  <span className="font-medium">
+                    {agent.sacredStats.resonanceScore7.toFixed(1)}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, agent.sacredStats.resonanceScore7)}
+                  className="h-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-indigo-400">
+                    <Brain className="w-4 h-4" /> Wisdom
+                  </span>
+                  <span className="font-medium">{agent.sacredStats.wisdomScore.toFixed(1)}</span>
+                </div>
+                <Progress value={Math.min(100, agent.sacredStats.wisdomScore)} className="h-2" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-pink-400">
+                    <Sparkles className="w-4 h-4" /> Charisma
+                  </span>
+                  <span className="font-medium">{agent.sacredStats.charismaScore.toFixed(1)}</span>
+                </div>
+                <Progress value={Math.min(100, agent.sacredStats.charismaScore)} className="h-2" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-cyan-400">
+                    <Lightbulb className="w-4 h-4" /> Intuition
+                  </span>
+                  <span className="font-medium">{agent.sacredStats.intuitionScore.toFixed(1)}</span>
+                </div>
+                <Progress value={Math.min(100, agent.sacredStats.intuitionScore)} className="h-2" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-teal-400">
+                    <Target className="w-4 h-4" /> Adaptability
+                  </span>
+                  <span className="font-medium">
+                    {agent.sacredStats.adaptabilityScore.toFixed(1)}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, agent.sacredStats.adaptabilityScore)}
+                  className="h-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-green-400">
+                    <Activity className="w-4 h-4" /> Vitality
+                  </span>
+                  <span className="font-medium">{agent.sacredStats.vitalityScore.toFixed(1)}</span>
+                </div>
+                <Progress value={Math.min(100, agent.sacredStats.vitalityScore)} className="h-2" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Consciousness Evolution Metrics */}
       {showEvolutionMetrics && (
         <Card>

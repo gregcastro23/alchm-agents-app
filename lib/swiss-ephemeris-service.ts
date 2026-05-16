@@ -192,9 +192,88 @@ export function closeSwissEphemeris(): void {
   console.log('[SwissEphemerisService] Close called (delegated to backend)')
 }
 
+/**
+ * Calculates a consciousness profile based on planetary positions.
+ * This is the core logic for the Philosopher's Stone agent creation.
+ */
+export async function calculateConsciousness(date: Date, latitude: number, longitude: number) {
+  const positions = await getAllPlanetaryPositions(date, latitude, longitude)
+
+  // Elemental Mapping
+  const elementMap: Record<string, 'Fire' | 'Water' | 'Air' | 'Earth'> = {
+    Aries: 'Fire',
+    Leo: 'Fire',
+    Sagittarius: 'Fire',
+    Cancer: 'Water',
+    Scorpio: 'Water',
+    Pisces: 'Water',
+    Gemini: 'Air',
+    Libra: 'Air',
+    Aquarius: 'Air',
+    Taurus: 'Earth',
+    Virgo: 'Earth',
+    Capricorn: 'Earth',
+  }
+
+  const elements = { Fire: 0, Water: 0, Air: 0, Earth: 0 }
+  let totalPoints = 0
+
+  // Simple weighting system for planets
+  const weights: Record<string, number> = {
+    Sun: 3,
+    Moon: 3,
+    Ascendant: 3,
+    Mercury: 2,
+    Venus: 2,
+    Mars: 2,
+    Jupiter: 1,
+    Saturn: 1,
+    Uranus: 1,
+    Neptune: 1,
+    Pluto: 1,
+  }
+
+  for (const [planet, pos] of Object.entries(positions)) {
+    const weight = weights[planet] || 1
+    const element = elementMap[pos.sign]
+    if (element) {
+      elements[element] += weight
+      totalPoints += weight
+    }
+  }
+
+  // Normalize elements to percentages
+  const normalizedElements = {
+    Fire: totalPoints > 0 ? elements.Fire / totalPoints : 0,
+    Water: totalPoints > 0 ? elements.Water / totalPoints : 0,
+    Air: totalPoints > 0 ? elements.Air / totalPoints : 0,
+    Earth: totalPoints > 0 ? elements.Earth / totalPoints : 0,
+  }
+
+  // Determine dominant element
+  const dominantElement = Object.entries(normalizedElements).sort(([, a], [, b]) => b - a)[0][0]
+
+  // Calculate a Monica Constant (complex synthesis of planetary longitudes)
+  // For now, a pseudo-hash based on Sun, Moon, Ascendant degrees
+  let monicaSum = 0
+  if (positions['Sun']) monicaSum += positions['Sun'].longitude
+  if (positions['Moon']) monicaSum += positions['Moon'].longitude * 1.5
+  if (positions['Ascendant']) monicaSum += positions['Ascendant'].longitude * 2
+
+  const monicaConstant = (monicaSum % 360) / 360.0
+
+  return {
+    positions,
+    elements: normalizedElements,
+    dominantElement,
+    monicaConstant,
+  }
+}
+
 // Export singleton instance
 export const swissEphemerisService = {
   getAllPlanetaryPositions,
   getPlanetPosition,
+  calculateConsciousness,
   close: closeSwissEphemeris,
 }

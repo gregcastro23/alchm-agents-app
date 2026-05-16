@@ -569,7 +569,7 @@ export function AgentDetailModal({ agent, trigger, open, onOpenChange }: AgentDe
                 <CardTitle className="text-lg">Shadow Aspects</CardTitle>
               </CardHeader>
               <CardContent>
-                {agent.personality.shadows.map((shadow, index) => (
+                {agent.personality.shadows?.map((shadow: any, index: number) => (
                   <div key={index} className="space-y-2 mb-4 last:mb-0">
                     <div className="font-medium text-sm">{shadow.type}</div>
                     <div className="text-sm text-muted-foreground">{shadow.description}</div>
@@ -586,7 +586,7 @@ export function AgentDetailModal({ agent, trigger, open, onOpenChange }: AgentDe
                 <CardTitle className="text-lg">Natural Gifts</CardTitle>
               </CardHeader>
               <CardContent>
-                {agent.personality.gifts.map((gift, index) => (
+                {agent.personality.gifts?.map((gift: any, index: number) => (
                   <div key={index} className="space-y-2 mb-4 last:mb-0">
                     <div className="font-medium text-sm">{gift.type}</div>
                     <div className="text-sm text-muted-foreground">{gift.description}</div>
@@ -605,7 +605,7 @@ export function AgentDetailModal({ agent, trigger, open, onOpenChange }: AgentDe
               <CardTitle className="text-lg">Growth Challenges</CardTitle>
             </CardHeader>
             <CardContent>
-              {agent.personality.challenges.map((challenge, index) => (
+              {agent.personality.challenges?.map((challenge: any, index: number) => (
                 <div key={index} className="space-y-2 mb-4 last:mb-0">
                   <div className="font-medium">{challenge.type}</div>
                   <div className="text-sm text-muted-foreground">{challenge.description}</div>

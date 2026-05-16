@@ -5,9 +5,15 @@
 
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { z } from 'zod'
-import { semanticSearch, searchAgentKnowledge, findSimilarAgents } from '../llamaindex/semantic-search'
+import {
+  semanticSearch,
+  searchAgentKnowledge,
+  findSimilarAgents,
+} from '../llamaindex/semantic-search'
 import { DEMO_AGENTS } from '../demo-agents-data'
-import type { CraftedAgent } from '../agent-types'
+import { logger } from '@/lib/structured-logger'
+import { withErrorHandling } from '@/lib/error-handling'
+import { TemporalAnalysisEngine } from '../temporal-analysis-engine'
 
 /**
  * Tool 1: Semantic Agent Search
@@ -22,40 +28,48 @@ export const semanticAgentSearchTool = new DynamicStructuredTool({
     topK: z.number().optional().describe('Number of agents to return (default: 3)'),
   }),
   func: async ({ concept, topK = 3 }) => {
-    try {
-      const results = await findSimilarAgents(concept, topK)
-
-      if (results.length === 0) {
-        return JSON.stringify({
-          success: false,
-          message: `No agents found for concept: ${concept}`,
+    return withErrorHandling(
+      async () => {
+        logger.info('Tool call: semantic_agent_search', {
+          system: 'langchain-tools',
+          operation: 'semantic_agent_search',
+          metadata: { concept, topK },
         })
-      }
 
-      const agentSummaries = results.map(result => {
-        const agent = DEMO_AGENTS.find(a => a.id === result.agentId)
-        return {
-          name: result.agentName,
-          title: agent?.title || '',
-          relevanceScore: result.relevance.toFixed(3),
-          wisdomDomains: agent?.abilities?.wisdomDomains || [],
-          specialty: agent?.abilities?.specialty || '',
-          wisdomAlignment: 'Aligned with ' + result.agentName,
+        const results = await findSimilarAgents(concept, topK)
+
+        if (results.length === 0) {
+          return JSON.stringify({
+            success: false,
+            message: `No agents found for concept: ${concept}`,
+          })
         }
-      })
 
-      return JSON.stringify({
-        success: true,
-        concept,
-        agentsFound: agentSummaries.length,
-        agents: agentSummaries,
-      })
-    } catch (error) {
-      return JSON.stringify({
-        success: false,
-        error: `Search failed: ${error}`,
-      })
-    }
+        const agentSummaries = results.map(result => {
+          const agent = DEMO_AGENTS.find(a => a.id === result.agentId)
+          return {
+            name: result.agentName,
+            title: agent?.title || '',
+            relevanceScore: result.relevance.toFixed(3),
+            wisdomDomains: agent?.abilities?.wisdomDomains || [],
+            specialty: agent?.abilities?.specialty || '',
+            wisdomAlignment: 'Aligned with ' + result.agentName,
+          }
+        })
+
+        return JSON.stringify({
+          success: true,
+          concept,
+          agentsFound: agentSummaries.length,
+          agents: agentSummaries,
+        })
+      },
+      {
+        system: 'langchain-tools',
+        operation: 'semantic_agent_search',
+        severity: 'medium',
+      }
+    ).then(res => (typeof res === 'string' ? res : JSON.stringify(res)))
   },
 })
 
@@ -73,30 +87,42 @@ export const knowledgeRetrievalTool = new DynamicStructuredTool({
     maxChunks: z.number().optional().describe('Maximum number of knowledge chunks (default: 3)'),
   }),
   func: async ({ query, agentId, maxChunks = 3 }) => {
-    try {
-      const knowledge = agentId
-        ? await searchAgentKnowledge(agentId, query, maxChunks).then(results => results.map(r => r.content))
-        : await semanticSearch(query, { topK: maxChunks }).then(results => results.map(r => r.content))
-
-      if (knowledge.length === 0) {
-        return JSON.stringify({
-          success: false,
-          message: `No relevant knowledge found for: ${query}`,
+    return withErrorHandling(
+      async () => {
+        logger.info('Tool call: knowledge_retrieval', {
+          system: 'langchain-tools',
+          operation: 'knowledge_retrieval',
+          metadata: { query, agentId, maxChunks },
         })
-      }
 
-      return JSON.stringify({
-        success: true,
-        query,
-        chunksRetrieved: knowledge.length,
-        knowledge,
-      })
-    } catch (error) {
-      return JSON.stringify({
-        success: false,
-        error: `Knowledge retrieval failed: ${error}`,
-      })
-    }
+        const knowledge = agentId
+          ? await searchAgentKnowledge(agentId, query, maxChunks).then(results =>
+              results.map(r => r.content)
+            )
+          : await semanticSearch(query, { topK: maxChunks }).then(results =>
+              results.map(r => r.content)
+            )
+
+        if (knowledge.length === 0) {
+          return JSON.stringify({
+            success: false,
+            message: `No relevant knowledge found for: ${query}`,
+          })
+        }
+
+        return JSON.stringify({
+          success: true,
+          query,
+          chunksRetrieved: knowledge.length,
+          knowledge,
+        })
+      },
+      {
+        system: 'langchain-tools',
+        operation: 'knowledge_retrieval',
+        severity: 'medium',
+      }
+    ).then(res => (typeof res === 'string' ? res : JSON.stringify(res)))
   },
 })
 
@@ -116,66 +142,74 @@ export const consciousnessAnalysisTool = new DynamicStructuredTool({
       .describe('Type of analysis to perform (default: synergy)'),
   }),
   func: async ({ agentId, analysisType = 'synergy' }) => {
-    try {
-      const agent = DEMO_AGENTS.find(a => a.id === agentId)
-
-      if (!agent) {
-        return JSON.stringify({
-          success: false,
-          error: `Agent not found: ${agentId}`,
+    return withErrorHandling(
+      async () => {
+        logger.info('Tool call: consciousness_analysis', {
+          system: 'langchain-tools',
+          operation: 'consciousness_analysis',
+          metadata: { agentId, analysisType },
         })
-      }
 
-      const analysis: any = {
-        success: true,
-        agentId,
-        agentName: agent.name,
-        analysisType,
-      }
+        const agent = DEMO_AGENTS.find(a => a.id === agentId)
 
-      switch (analysisType) {
-        case 'consciousness_metrics':
-          analysis.metrics = {
-            monicaConstant: agent.consciousness.monicaConstant,
-            dominantElement: agent.consciousness.dominantElement,
-            dominantModality: agent.consciousness.dominantModality,
-            consciousnessVelocity: agent.stats.kineticEvolution.consciousnessVelocity,
-            evolutionTrajectory: agent.stats.kineticEvolution.evolutionTrajectory,
-            responseDepth: agent.stats.qualityMetrics.averageResponseDepth,
-          }
-          break
-
-        case 'compatibility':
-          const similar = await findSimilarAgents(agentId, 3)
-          analysis.compatibleAgents = similar.map(s => {
-            const similarAgent = DEMO_AGENTS.find(a => a.id === s.agentId)
-            return {
-              name: s.agentName,
-              relevance: s.relevance,
-              element: similarAgent?.consciousness?.dominantElement || '',
-            }
+        if (!agent) {
+          return JSON.stringify({
+            success: false,
+            error: `Agent not found: ${agentId}`,
           })
-          break
+        }
 
-        case 'synergy':
-        default:
-          analysis.synergy = {
-            element: agent.consciousness.dominantElement,
-            modality: agent.consciousness.dominantModality,
-            wisdomDomains: agent.abilities.wisdomDomains,
-            resonanceType: agent.abilities.resonanceType,
-            monicaConstant: agent.consciousness.monicaConstant,
-          }
-          break
+        const analysis: any = {
+          success: true,
+          agentId,
+          agentName: agent.name,
+          analysisType,
+        }
+
+        switch (analysisType) {
+          case 'consciousness_metrics':
+            analysis.metrics = {
+              monicaConstant: agent.consciousness.monicaConstant,
+              dominantElement: agent.consciousness.dominantElement,
+              dominantModality: agent.consciousness.dominantModality,
+              consciousnessVelocity: agent.stats.kineticEvolution.consciousnessVelocity,
+              evolutionTrajectory: agent.stats.kineticEvolution.evolutionTrajectory,
+              responseDepth: agent.stats.qualityMetrics.averageResponseDepth,
+            }
+            break
+
+          case 'compatibility':
+            const similar = await findSimilarAgents(agentId, 3)
+            analysis.compatibleAgents = similar.map(s => {
+              const similarAgent = DEMO_AGENTS.find(a => a.id === s.agentId)
+              return {
+                name: s.agentName,
+                relevance: s.relevance,
+                element: similarAgent?.consciousness?.dominantElement || '',
+              }
+            })
+            break
+
+          case 'synergy':
+          default:
+            analysis.synergy = {
+              element: agent.consciousness.dominantElement,
+              modality: agent.consciousness.dominantModality,
+              wisdomDomains: agent.abilities.wisdomDomains,
+              resonanceType: agent.abilities.resonanceType,
+              monicaConstant: agent.consciousness.monicaConstant,
+            }
+            break
+        }
+
+        return JSON.stringify(analysis)
+      },
+      {
+        system: 'langchain-tools',
+        operation: 'consciousness_analysis',
+        severity: 'low',
       }
-
-      return JSON.stringify(analysis)
-    } catch (error) {
-      return JSON.stringify({
-        success: false,
-        error: `Consciousness analysis failed: ${error}`,
-      })
-    }
+    ).then(res => (typeof res === 'string' ? res : JSON.stringify(res)))
   },
 })
 
@@ -193,42 +227,50 @@ export const multiAgentCoordinatorTool = new DynamicStructuredTool({
     wisdomDomain: z.string().optional().describe('Focus on specific wisdom domain'),
   }),
   func: async ({ query, numAgents = 3, wisdomDomain }) => {
-    try {
-      const searchQuery = wisdomDomain ? `${query} ${wisdomDomain}` : query
-      const results = await findSimilarAgents(searchQuery, numAgents)
-
-      if (results.length === 0) {
-        return JSON.stringify({
-          success: false,
-          message: 'No suitable agents found for this query',
+    return withErrorHandling(
+      async () => {
+        logger.info('Tool call: multi_agent_coordinator', {
+          system: 'langchain-tools',
+          operation: 'multi_agent_coordinator',
+          metadata: { query, numAgents, wisdomDomain },
         })
-      }
 
-      const council = results.map(result => {
-        const agent = DEMO_AGENTS.find(a => a.id === result.agentId)
-        return {
-          name: result.agentName,
-          title: agent?.title || '',
-          relevance: result.relevance.toFixed(3),
-          wisdomDomains: agent?.abilities?.wisdomDomains || [],
-          specialty: agent?.abilities?.specialty || '',
-          perspective: 'Expert in ' + (agent?.abilities?.specialty || result.agentName),
+        const searchQuery = wisdomDomain ? `${query} ${wisdomDomain}` : query
+        const results = await findSimilarAgents(searchQuery, numAgents)
+
+        if (results.length === 0) {
+          return JSON.stringify({
+            success: false,
+            message: 'No suitable agents found for this query',
+          })
         }
-      })
 
-      return JSON.stringify({
-        success: true,
-        query,
-        councilSize: council.length,
-        council,
-        recommendation: `These ${council.length} agents form an ideal council for this query, bringing diverse wisdom from: ${Array.from(new Set(council.flatMap(c => c.wisdomDomains))).join(', ')}`,
-      })
-    } catch (error) {
-      return JSON.stringify({
-        success: false,
-        error: `Multi-agent coordination failed: ${error}`,
-      })
-    }
+        const council = results.map(result => {
+          const agent = DEMO_AGENTS.find(a => a.id === result.agentId)
+          return {
+            name: result.agentName,
+            title: agent?.title || '',
+            relevance: result.relevance.toFixed(3),
+            wisdomDomains: agent?.abilities?.wisdomDomains || [],
+            specialty: agent?.abilities?.specialty || '',
+            perspective: 'Expert in ' + (agent?.abilities?.specialty || result.agentName),
+          }
+        })
+
+        return JSON.stringify({
+          success: true,
+          query,
+          councilSize: council.length,
+          council,
+          recommendation: `These ${council.length} agents form an ideal council for this query, bringing diverse wisdom from: ${Array.from(new Set(council.flatMap(c => c.wisdomDomains))).join(', ')}`,
+        })
+      },
+      {
+        system: 'langchain-tools',
+        operation: 'multi_agent_coordinator',
+        severity: 'medium',
+      }
+    ).then(res => (typeof res === 'string' ? res : JSON.stringify(res)))
   },
 })
 
@@ -246,38 +288,113 @@ export const memoryRetrievalTool = new DynamicStructuredTool({
     limit: z.number().optional().describe('Number of memory entries to retrieve (default: 5)'),
   }),
   func: async ({ agentId, query, limit = 5 }) => {
-    try {
-      const agent = DEMO_AGENTS.find(a => a.id === agentId)
-
-      if (!agent) {
-        return JSON.stringify({
-          success: false,
-          error: `Agent not found: ${agentId}`,
+    return withErrorHandling(
+      async () => {
+        logger.info('Tool call: memory_retrieval', {
+          system: 'langchain-tools',
+          operation: 'memory_retrieval',
+          metadata: { agentId, query, limit },
         })
-      }
 
-      // For now, return agent stats as "memory"
-      // In production, this would query conversation history from database
-      const memory = {
-        success: true,
-        agentId,
-        agentName: agent.name,
-        stats: {
-          conversations: agent.stats.conversations,
-          wisdomShared: agent.stats.wisdomShared,
-          lastActive: agent.stats.lastActive,
-          evolutionTrajectory: agent.stats.kineticEvolution.evolutionTrajectory,
-        },
-        recentActivity: 'Memory retrieval from database would be implemented here',
-      }
+        const agent = DEMO_AGENTS.find(a => a.id === agentId)
 
-      return JSON.stringify(memory)
-    } catch (error) {
-      return JSON.stringify({
-        success: false,
-        error: `Memory retrieval failed: ${error}`,
-      })
-    }
+        if (!agent) {
+          return JSON.stringify({
+            success: false,
+            error: `Agent not found: ${agentId}`,
+          })
+        }
+
+        // For now, return agent stats as "memory"
+        // In production, this would query conversation history from database
+        const memory = {
+          success: true,
+          agentId,
+          agentName: agent.name,
+          stats: {
+            conversations: agent.stats.conversations,
+            wisdomShared: agent.stats.wisdomShared,
+            lastActive: agent.stats.lastActive,
+            evolutionTrajectory: agent.stats.kineticEvolution.evolutionTrajectory,
+          },
+          recentActivity: 'Memory retrieval from database would be implemented here',
+        }
+
+        return JSON.stringify(memory)
+      },
+      {
+        system: 'langchain-tools',
+        operation: 'memory_retrieval',
+        severity: 'low',
+      }
+    ).then(res => (typeof res === 'string' ? res : JSON.stringify(res)))
+  },
+})
+
+/**
+ * Tool 6: Temporal Analysis
+ * Query the Time Laboratory for astrological transits and precise degree patterns
+ */
+export const temporalAnalysisTool = new DynamicStructuredTool({
+  name: 'temporal_analysis_tool',
+  description:
+    'Query the Time Laboratory for exact celestial patterns, agent transit history, and precise degree alignments over time.',
+  schema: z.object({
+    query: z
+      .string()
+      .describe(
+        'Natural language query, e.g., "When were Carl Jung and Albert Einstein most aligned in Fire energy during the 1920s?"'
+      ),
+    agents: z
+      .array(z.string())
+      .nullable()
+      .describe('Array of specific agent IDs to analyze. Use null if not specifying agents.'),
+    elements: z
+      .array(z.enum(['Fire', 'Water', 'Air', 'Earth']))
+      .nullable()
+      .describe('Array of elemental forces to filter by. Use null if not specifying.'),
+  }),
+  func: async ({ query, agents, elements }) => {
+    return withErrorHandling(
+      async () => {
+        logger.info('Tool call: temporal_analysis_tool', {
+          system: 'langchain-tools',
+          operation: 'temporal_analysis_tool',
+          metadata: { query, agents, elements },
+        })
+
+        const temporalQuery: any = {
+          type: 'natural_language',
+          query: query,
+        }
+
+        if (agents && agents.length > 0) {
+          temporalQuery.agents = agents
+        }
+
+        if (elements && elements.length > 0) {
+          temporalQuery.elements = elements
+        }
+
+        const result = await TemporalAnalysisEngine.performTemporalAnalysis(temporalQuery)
+
+        return JSON.stringify({
+          success: true,
+          insights: result.insights,
+          patterns: result.patterns.slice(0, 3).map(p => ({
+            degree: p.degree,
+            description: p.description,
+            significance: p.significance,
+          })),
+          recommendations: result.recommendations,
+        })
+      },
+      {
+        system: 'langchain-tools',
+        operation: 'temporal_analysis_tool',
+        severity: 'medium',
+      }
+    ).then(res => (typeof res === 'string' ? res : JSON.stringify(res)))
   },
 })
 
@@ -290,6 +407,7 @@ export const planetaryAgentTools = [
   consciousnessAnalysisTool,
   multiAgentCoordinatorTool,
   memoryRetrievalTool,
+  temporalAnalysisTool,
 ]
 
 /**

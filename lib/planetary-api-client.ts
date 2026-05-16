@@ -112,6 +112,44 @@ export class PlanetaryAPIClient {
   }
 
   /**
+   * Get planetary positions in batch
+   */
+  async getBatchPlanetaryPositions(
+    requests: { date: Date; planet: string }[]
+  ): Promise<Array<{ date: string; planet: string; position: PlanetaryPosition | null }>> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/planets/batch-positions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requests: requests.map(req => ({
+            date: req.date.toISOString(),
+            planet: req.planet,
+          })),
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(
+          `Failed to fetch batch planetary positions: ${response.statusText} - ${errorData.error || ''}`
+        )
+      }
+
+      const result: BackendResponse<any> = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || 'Backend returned unsuccessful response')
+      }
+
+      return result.data
+    } catch (error) {
+      console.error('[PlanetaryAPIClient] getBatchPlanetaryPositions error:', error)
+      throw error
+    }
+  }
+
+  /**
    * Calculate house system for a birth chart
    * Traditional correspondence: Divides the celestial sphere into 12 houses
    */
