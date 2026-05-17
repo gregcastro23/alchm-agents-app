@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Download, Monitor } from 'lucide-react'
 import { HISTORICAL_AGENTS, getHistoricalAgent } from '@/lib/agents/historical'
 import type { CraftedAgent, Element } from '@/lib/agent-types'
 
@@ -61,7 +62,6 @@ export default async function AgentProfilePage({ params }: { params: Promise<{ i
 
   const planets = agent.consciousness?.natalChart?.planets ?? {}
   const aspects = agent.consciousness?.natalChart?.aspects ?? []
-  const ae = agent.consciousness?.alchemicalElements
 
   return (
     <div className="min-h-screen bg-background">
@@ -102,6 +102,25 @@ export default async function AgentProfilePage({ params }: { params: Promise<{ i
               <Button asChild size="lg" style={{ backgroundColor: accent }}>
                 <Link href={`/gallery/chat/${agent.id}`}>Chat with {agent.name.split(' ')[0]}</Link>
               </Button>
+              <div className="flex gap-2">
+                <Button asChild variant="secondary" size="sm" className="flex-1 text-xs">
+                  <a
+                    href={`alchm://install?agent=${encodeURIComponent(agent.id)}&url=${encodeURIComponent(`https://cdn.alchm.kitchen/models/alchm-agent-${agent.consciousness?.dominantElement?.toLowerCase() || 'fire'}-8b.gguf`)}`}
+                  >
+                    <Monitor className="w-3 h-3 mr-1" />
+                    To Desktop
+                  </a>
+                </Button>
+                <Button asChild variant="outline" size="sm" className="flex-1 text-xs">
+                  <a
+                    href={`https://cdn.alchm.kitchen/models/alchm-agent-${agent.consciousness?.dominantElement?.toLowerCase() || 'fire'}-8b.gguf`}
+                    download
+                  >
+                    <Download className="w-3 h-3 mr-1" />
+                    .gguf Export
+                  </a>
+                </Button>
+              </div>
               <Button asChild variant="outline" size="sm">
                 <Link href="/gallery">← Back to Gallery</Link>
               </Button>
@@ -510,7 +529,7 @@ export default async function AgentProfilePage({ params }: { params: Promise<{ i
                   <p className="text-muted-foreground">{agent.historicalDiet.dietaryPhilosophy}</p>
                 )}
                 <div className="grid gap-4 md:grid-cols-3">
-                  {agent.historicalDiet.staples?.length > 0 && (
+                  {agent.historicalDiet.staples && agent.historicalDiet.staples.length > 0 && (
                     <div>
                       <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
                         Staples
@@ -522,30 +541,32 @@ export default async function AgentProfilePage({ params }: { params: Promise<{ i
                       </ul>
                     </div>
                   )}
-                  {agent.historicalDiet.favoriteFoods?.length > 0 && (
-                    <div>
-                      <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
-                        Favorites
-                      </p>
-                      <ul className="space-y-1">
-                        {agent.historicalDiet.favoriteFoods.map((s: string, i: number) => (
-                          <li key={i}>· {s}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {agent.historicalDiet.avoidedFoods?.length > 0 && (
-                    <div>
-                      <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
-                        Avoided
-                      </p>
-                      <ul className="space-y-1">
-                        {agent.historicalDiet.avoidedFoods.map((s: string, i: number) => (
-                          <li key={i}>· {s}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {agent.historicalDiet.favoriteFoods &&
+                    agent.historicalDiet.favoriteFoods.length > 0 && (
+                      <div>
+                        <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
+                          Favorites
+                        </p>
+                        <ul className="space-y-1">
+                          {agent.historicalDiet.favoriteFoods.map((s: string, i: number) => (
+                            <li key={i}>· {s}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  {agent.historicalDiet.avoidedFoods &&
+                    agent.historicalDiet.avoidedFoods.length > 0 && (
+                      <div>
+                        <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
+                          Avoided
+                        </p>
+                        <ul className="space-y-1">
+                          {agent.historicalDiet.avoidedFoods.map((s: string, i: number) => (
+                            <li key={i}>· {s}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                 </div>
                 {agent.historicalDiet.beverages && agent.historicalDiet.beverages.length > 0 && (
                   <div>

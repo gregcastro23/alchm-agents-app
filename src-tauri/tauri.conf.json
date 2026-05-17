@@ -9,6 +9,16 @@
     "productName": "Alchm",
     "version": "1.0.0"
   },
+  "app": {
+    "windows": [
+      {
+        "title": "Alchm Desktop",
+        "width": 1200,
+        "height": 800,
+        "url": "/desktop"
+      }
+    ]
+  },
   "plugins": {
     "deep-link": {
       "schemes": ["alchm"]

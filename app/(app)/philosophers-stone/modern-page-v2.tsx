@@ -28,6 +28,7 @@ import {
   Activity,
   Download,
   Archive,
+  Monitor,
 } from 'lucide-react'
 import { downloadManifest, downloadIgnitionBundle } from '@/lib/agents/ignition-bundle-generator'
 import { calculateAllPlanets } from '@/lib/enhanced-astronomical-calculator'
@@ -662,7 +663,7 @@ export default function ModernPhilosophersStone() {
                   )}
                 </Button>
 
-                <div className="grid grid-cols-2 gap-3 mt-2">
+                <div className="grid grid-cols-3 gap-3 mt-2">
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -671,10 +672,10 @@ export default function ModernPhilosophersStone() {
                         "I've generated the Alchemical Manifest. You can find the JSON file in your downloads."
                       )
                     }}
-                    className="w-full group hover:border-purple-500/50 hover:bg-purple-900/20 transition-all duration-300"
+                    className="w-full group hover:border-purple-500/50 hover:bg-purple-900/20 transition-all duration-300 text-xs px-2"
                   >
-                    <Download className="w-4 h-4 mr-2 text-purple-400 group-hover:animate-bounce" />
-                    Export Manifest (JSON)
+                    <Download className="w-3 h-3 mr-1 text-purple-400 group-hover:animate-bounce" />
+                    Manifest
                   </Button>
                   <Button
                     variant="outline"
@@ -684,10 +685,22 @@ export default function ModernPhilosophersStone() {
                         "I've prepared the Local Ignition Bundle. Extract the ZIP and follow the README to run your agent locally!"
                       )
                     }}
-                    className="w-full group hover:border-emerald-500/50 hover:bg-emerald-900/20 transition-all duration-300"
+                    className="w-full group hover:border-emerald-500/50 hover:bg-emerald-900/20 transition-all duration-300 text-xs px-2"
                   >
-                    <Archive className="w-4 h-4 mr-2 text-emerald-400 group-hover:animate-pulse" />
-                    Download Bundle (ZIP)
+                    <Archive className="w-3 h-3 mr-1 text-emerald-400 group-hover:animate-pulse" />
+                    Ollama Bundle
+                  </Button>
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="w-full group hover:border-blue-500/50 hover:bg-blue-900/20 transition-all duration-300 text-xs px-2"
+                  >
+                    <a
+                      href={`alchm://install?agent=${encodeURIComponent(agentData.name)}&url=${encodeURIComponent(`https://cdn.alchm.kitchen/models/alchm-agent-fire-8b.gguf`)}`}
+                    >
+                      <Monitor className="w-3 h-3 mr-1 text-blue-400 group-hover:scale-110" />
+                      App Install
+                    </a>
                   </Button>
                 </div>
               </div>
