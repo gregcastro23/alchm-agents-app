@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -17,6 +18,8 @@ type Message = {
   timestamp: Date
   ragSources?: RAGSource[]
   queryId?: string // For linking feedback to specific query
+  isPaymentRequired?: boolean
+  requiredTokens?: any
 }
 
 type Agent = {
@@ -172,6 +175,18 @@ export default function HistoricalAgentChatPage() {
       })
 
       const data = await response.json()
+
+      if (response.status === 402) {
+        const errorMsg: Message = {
+          role: 'agent',
+          content: data.error || 'Insufficient tokens to consult this agent.',
+          timestamp: new Date(),
+          isPaymentRequired: true,
+          requiredTokens: data.requiredTokens,
+        }
+        setMessages(prev => [...prev, errorMsg])
+        return
+      }
 
       if (response.ok && data.responses && data.responses.length > 0) {
         const agentResponse = data.responses[0]
@@ -372,10 +387,88 @@ export default function HistoricalAgentChatPage() {
                           {message.role === 'user' ? 'You' : agent.name}
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm leading-relaxed">{message.content}</p>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            {message.timestamp.toLocaleTimeString()}
-                          </p>
+                          {message.isPaymentRequired ? (
+                            <div className="bg-black/60 backdrop-blur-md border border-amber-500/30 rounded-lg p-4 space-y-3">
+                              <div className="flex items-center gap-2 text-amber-400 font-semibold">
+                                <Sparkles className="h-5 w-5 animate-pulse" />
+                                <span>Insufficient Cosmic Energy</span>
+                              </div>
+                              <p className="text-sm text-gray-300">
+                                To summon this agent right now, you need additional alchemical
+                                elements:
+                              </p>
+
+                              <div className="grid grid-cols-2 gap-2 mt-2">
+                                {Object.entries(message.requiredTokens || {}).map(
+                                  ([token, amount]) => {
+                                    if (!amount || (amount as number) === 0) return null
+                                    const tokenColors: Record<string, string> = {
+                                      Spirit:
+                                        'text-purple-400 border-purple-500/30 bg-purple-500/10',
+                                      Essence: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10',
+                                      Matter: 'text-amber-400 border-amber-500/30 bg-amber-500/10',
+                                      Substance: 'text-rose-400 border-rose-500/30 bg-rose-500/10',
+                                    }
+                                    const colorClass =
+                                      tokenColors[token] ||
+                                      'text-gray-400 border-gray-500/30 bg-gray-500/10'
+
+                                    return (
+                                      <div
+                                        key={token}
+                                        className={`flex items-center justify-between px-3 py-2 border rounded-md ${colorClass}`}
+                                      >
+                                        <span className="text-xs font-semibold">{token}</span>
+                                        <span className="text-sm font-bold">{amount as any}</span>
+                                      </div>
+                                    )
+                                  }
+                                )}
+                              </div>
+
+                              <div className="flex flex-col gap-2 pt-2">
+                                <Button
+                                  onClick={async () => {
+                                    try {
+                                      const res = await fetch('/api/economy/yield', {
+                                        method: 'POST',
+                                      })
+                                      const claimData = await res.json()
+                                      if (res.ok) {
+                                        toast.success('Cosmic yield successfully claimed!', {
+                                          description: `Spirit: ${claimData.balances.spirit}, Essence: ${claimData.balances.essence}, Matter: ${claimData.balances.matter}, Substance: ${claimData.balances.substance}`,
+                                        })
+                                        window.location.reload()
+                                      } else {
+                                        toast.error(
+                                          claimData.message ||
+                                            'Already claimed today! Get premium multipliers for larger payouts.'
+                                        )
+                                      }
+                                    } catch (err) {
+                                      toast.error('Failed to claim yield. Try again later.')
+                                    }
+                                  }}
+                                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-semibold border-none shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+                                >
+                                  Claim Cosmic Yield
+                                </Button>
+                                <a
+                                  href="/dashboard"
+                                  className="w-full text-center px-4 py-2 border border-purple-500/30 rounded-md bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 hover:text-white transition-colors text-xs font-semibold"
+                                >
+                                  Get Premium 2.0x Multiplier
+                                </a>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <p className="text-sm leading-relaxed">{message.content}</p>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                {message.timestamp.toLocaleTimeString()}
+                              </p>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>

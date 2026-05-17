@@ -247,8 +247,50 @@ export class AgentActionService {
           continue
         }
 
-        await this.claimYieldForAgent(agent.id)
+        const now = new Date()
+        let shouldClaim = false
+        const birthTimeStr = agent.user_profiles?.birthTime
+        if (birthTimeStr && typeof birthTimeStr === 'string' && birthTimeStr.includes(':')) {
+          const birthHour = parseInt(birthTimeStr.split(':')[0], 10)
+          if (now.getUTCHours() >= birthHour) {
+            shouldClaim = true
+          }
+        } else {
+          // If no birth time, default to midnight UTC
+          shouldClaim = true
+        }
+
+        if (!shouldClaim) {
+          continue
+        }
+
+        await this.claimYieldForAgent(agent.id, agent)
         summary.claimedCount++
+
+        const agentName = `${agent.name ?? agent.email.split('@')[0]} `
+        const dateStr = new Date().toISOString().split('T')[0]
+        const idempotencyKey = `agentic:yield:feed:${agent.email}:${dateStr}`
+        const agentProfilePayload = this.buildAgentProfilePayload(agent.user_profiles)
+
+        await feedPusherService
+          .pushActions([
+            {
+              agentEmail: agent.email,
+              eventType: 'claim_daily',
+              idempotencyKey,
+              metadataPayload: {
+                agentName,
+                agentProfile: agentProfilePayload ?? undefined,
+                message: 'Claimed automated cosmic yield.',
+              },
+            },
+          ])
+          .catch(err => {
+            console.error(
+              `[AgentActionService] Failed to push claim_daily feed action for ${agent.email}:`,
+              err
+            )
+          })
       } catch (err: any) {
         if (err?.message === 'Already claimed today') {
           summary.skippedCount++
@@ -271,10 +313,36 @@ export class AgentActionService {
    * transaction pattern as `EconomyService.claimAgentsYield` but
    * with the agent-specific daily yield amount.
    */
-  private async claimYieldForAgent(userId: string): Promise<void> {
-    const perType = AGENT_DAILY_YIELD / 4
+  private async claimYieldForAgent(userId: string, agent: any): Promise<void> {
+    const totalYield = AGENT_DAILY_YIELD
     const dateStr = new Date().toISOString().split('T')[0]
     const transactionGroupId = crypto.randomUUID()
+
+    const natalPositions = this.extractNatalPositions(agent)
+    let fire = 1,
+      earth = 1,
+      air = 1,
+      water = 1
+
+    if (natalPositions && natalPositions.length > 0) {
+      const positionsObj: Record<string, CurrentPlanetPosition> = {}
+      for (const p of natalPositions) {
+        positionsObj[p.planet] = { sign: p.sign, degree: p.degree } as any
+      }
+      const elementCounts = this.countElements(positionsObj)
+      fire += elementCounts.Fire || 0
+      earth += elementCounts.Earth || 0
+      air += elementCounts.Air || 0
+      water += elementCounts.Water || 0
+    }
+
+    const totalWeight = fire + earth + air + water
+    const amountsObj: Record<string, number> = {
+      spirit: (fire / totalWeight) * totalYield,
+      matter: (earth / totalWeight) * totalYield,
+      substance: (air / totalWeight) * totalYield,
+      essence: (water / totalWeight) * totalYield,
+    }
 
     await prisma.$transaction(async tx => {
       // Idempotency guard within the transaction
@@ -293,13 +361,15 @@ export class AgentActionService {
 
       const amounts: Record<string, number> = {}
       for (const token of TOKEN_TYPES) {
-        amounts[token.toLowerCase()] = perType
+        const tokenKey = token.toLowerCase() as keyof typeof amountsObj
+        const amt = amountsObj[tokenKey]
+        amounts[tokenKey] = amt
         await tx.tokenTransaction.create({
           data: {
             transactionGroupId,
             userId,
             tokenType: token,
-            amount: new Prisma.Decimal(perType),
+            amount: new Prisma.Decimal(amt),
             sourceType: 'agents_daily_yield',
             description: 'Automated Cosmic Yield (Agentic)',
             idempotencyKey: `agentic:daily:${userId}:${dateStr}:${token}`,
@@ -332,18 +402,18 @@ export class AgentActionService {
         where: { userId },
         create: {
           userId,
-          spirit: perType,
-          essence: perType,
-          matter: perType,
-          substance: perType,
+          spirit: amountsObj.spirit,
+          essence: amountsObj.essence,
+          matter: amountsObj.matter,
+          substance: amountsObj.substance,
           lastDailyClaimAgentsAt: new Date(),
           updatedAt: new Date(),
         },
         update: {
-          spirit: { increment: perType },
-          essence: { increment: perType },
-          matter: { increment: perType },
-          substance: { increment: perType },
+          spirit: { increment: amountsObj.spirit },
+          essence: { increment: amountsObj.essence },
+          matter: { increment: amountsObj.matter },
+          substance: { increment: amountsObj.substance },
           lastDailyClaimAgentsAt: new Date(),
           updatedAt: new Date(),
         },
@@ -386,13 +456,59 @@ export class AgentActionService {
         agent.user_profiles?.dominantElement ?? 'Fire'
       )
 
+      let activated = score >= AGENT_ACTIVATION_THRESHOLD
+
+      if (activated) {
+        const balances = await EconomyService.getBalances(agent.id)
+
+        let hasEnoughBalance = false
+        const specializedAction = SPECIALIZED_AGENT_ACTIONS.find(action =>
+          agent.email.includes(action.emailFragment)
+        )
+
+        if (specializedAction) {
+          const cost = AGENT_OPERATION_COSTS[specializedAction.operationKey] || {}
+          if (
+            balances.spirit >= (cost.Spirit || 0) &&
+            balances.essence >= (cost.Essence || 0) &&
+            balances.matter >= (cost.Matter || 0) &&
+            balances.substance >= (cost.Substance || 0)
+          ) {
+            hasEnoughBalance = true
+          }
+        } else {
+          const feedPostCost = AGENT_OPERATION_COSTS['agent_feed_post'] || {}
+          const transmutationCost = AGENT_OPERATION_COSTS['agent_transmutation'] || {}
+
+          const canAffordFeed =
+            balances.spirit >= (feedPostCost.Spirit || 0) &&
+            balances.essence >= (feedPostCost.Essence || 0) &&
+            balances.matter >= (feedPostCost.Matter || 0) &&
+            balances.substance >= (feedPostCost.Substance || 0)
+
+          const canAffordTransmutation =
+            balances.spirit >= (transmutationCost.Spirit || 0) &&
+            balances.essence >= (transmutationCost.Essence || 0) &&
+            balances.matter >= (transmutationCost.Matter || 0) &&
+            balances.substance >= (transmutationCost.Substance || 0)
+
+          if (canAffordFeed || canAffordTransmutation) {
+            hasEnoughBalance = true
+          }
+        }
+
+        if (!hasEnoughBalance) {
+          activated = false
+        }
+      }
+
       results.push({
         userId: agent.id,
         agentEmail: agent.email,
         agentName: `${agent.name ?? agent.email.split('@')[0]} `,
         agentProfile: agent.user_profiles,
         score,
-        activated: score >= AGENT_ACTIVATION_THRESHOLD,
+        activated,
         triggers,
         planetarySignature: this.buildPlanetarySignature(
           natalPositions,
@@ -541,7 +657,19 @@ export class AgentActionService {
         actionType = specializedAction.actionType
         operationKey = specializedAction.operationKey
       } else {
-        actionType = spiritEssence >= matterSubstance ? 'feed_post' : 'transmutation'
+        const feedPostCost = AGENT_OPERATION_COSTS['agent_feed_post'] || {}
+        const canAffordFeed =
+          balances.spirit >= (feedPostCost.Spirit || 0) &&
+          balances.essence >= (feedPostCost.Essence || 0) &&
+          balances.matter >= (feedPostCost.Matter || 0) &&
+          balances.substance >= (feedPostCost.Substance || 0)
+
+        // Prefer feed post to increase feed activity
+        if (canAffordFeed) {
+          actionType = 'feed_post'
+        } else {
+          actionType = 'transmutation'
+        }
         operationKey = actionType === 'feed_post' ? 'agent_feed_post' : 'agent_transmutation'
       }
 

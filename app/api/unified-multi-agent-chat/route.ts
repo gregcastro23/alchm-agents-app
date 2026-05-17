@@ -31,6 +31,9 @@ import {
   getRAGConfig,
   type RAGMetadata,
 } from '@/lib/rag/rag-generator'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth-options'
+import { EconomyService } from '@/lib/services/economyService'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -116,6 +119,62 @@ export async function POST(request: NextRequest) {
 
     // Generate current cosmic context
     const cosmicContext = await generateCosmicContext()
+
+    // -----------------------------------------------------------------
+    // ESMS Token Economy: Dynamic Agent Fee
+    // -----------------------------------------------------------------
+    const session = await getServerSession(authOptions)
+    const userId = (session?.user as any)?.id
+
+    if (userId) {
+      const currentAlchemy = await getAlchemicalQuantitiesLegacy()
+      const alchemyEffects = (currentAlchemy as any)['Alchemy Effects'] || {}
+
+      const elementsNow = [
+        { name: 'Fire', val: alchemyEffects['Total Spirit'] || 0 },
+        { name: 'Water', val: alchemyEffects['Total Essence'] || 0 },
+        { name: 'Earth', val: alchemyEffects['Total Matter'] || 0 },
+        { name: 'Air', val: alchemyEffects['Total Substance'] || 0 },
+      ]
+
+      elementsNow.sort((a, b) => b.val - a.val)
+      const dominantNow = elementsNow[0]?.name || 'Earth'
+
+      let totalCost = { Spirit: 0, Essence: 0, Matter: 0, Substance: 0 }
+      const baseCost = { Spirit: 2, Essence: 1, Matter: 1, Substance: 1 }
+
+      for (const agent of activeAgents) {
+        const agentElement = agent.consciousness?.dominantElement || 'Earth'
+        let multiplier = 1.0
+
+        if (agentElement === dominantNow) {
+          multiplier = 0.5 // discount when agent is in resonance
+        } else if (
+          (agentElement === 'Fire' && dominantNow === 'Water') ||
+          (agentElement === 'Water' && dominantNow === 'Fire') ||
+          (agentElement === 'Earth' && dominantNow === 'Air') ||
+          (agentElement === 'Air' && dominantNow === 'Earth')
+        ) {
+          multiplier = 1.5 // markup when agent clashes
+        }
+
+        totalCost.Spirit += Math.ceil(baseCost.Spirit * multiplier)
+        totalCost.Essence += Math.ceil(baseCost.Essence * multiplier)
+        totalCost.Matter += Math.ceil(baseCost.Matter * multiplier)
+        totalCost.Substance += Math.ceil(baseCost.Substance * multiplier)
+      }
+
+      const debitResult = await EconomyService.debitDynamic(userId, totalCost)
+      if (!debitResult.ok) {
+        return NextResponse.json(
+          {
+            error: 'Insufficient tokens to consult these agents at this time.',
+            requiredTokens: totalCost,
+          },
+          { status: 402 }
+        )
+      }
+    }
 
     // Separate Monica from regular agents for special handling
     const monicaAgent = activeAgents.find(agent => agent.type === 'monica')

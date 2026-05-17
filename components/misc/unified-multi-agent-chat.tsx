@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
 import { X, Send, Sparkles, Users, Activity, Settings, Filter, Eye, EyeOff } from 'lucide-react'
+import { toast } from 'sonner'
 
 import type {
   UnifiedAgent,
@@ -302,6 +303,24 @@ export function UnifiedMultiAgentChat({
         }),
       })
 
+      if (response.status === 402) {
+        const errorData = await response.json()
+        const errorMsg: Message = {
+          id: `msg-error-${Date.now()}`,
+          role: 'agent',
+          content: errorData.error || 'Insufficient tokens to consult these agents at this time.',
+          timestamp: new Date(),
+          agentName: 'System',
+          agentColor: '#f59e0b',
+          metadata: {
+            isPaymentRequired: true,
+            requiredTokens: errorData.requiredTokens,
+          } as any,
+        }
+        setMessages(prev => [...prev, errorMsg])
+        return
+      }
+
       if (!response.ok) throw new Error('Failed to get response')
 
       const data = await response.json()
@@ -571,30 +590,102 @@ export function UnifiedMultiAgentChat({
                 </div>
               )}
 
-              <div
-                className={`p-3 rounded-lg border backdrop-blur-md ${
-                  message.role === 'user'
-                    ? 'bg-purple-600/40 border-purple-500/30 text-white'
-                    : 'bg-black/40 border-white/10 text-purple-50'
-                }`}
-              >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              {(message.metadata as any)?.isPaymentRequired ? (
+                <div className="bg-black/60 backdrop-blur-md border border-amber-500/30 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center gap-2 text-amber-400 font-semibold">
+                    <Sparkles className="w-5 h-5 animate-pulse" />
+                    <span>Insufficient Cosmic Energy</span>
+                  </div>
+                  <p className="text-sm text-gray-300">
+                    To summon this council right now, you need additional alchemical elements:
+                  </p>
 
-                {message.metadata?.synthesizedInsights &&
-                  message.metadata.synthesizedInsights.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-white/10">
-                      <div className="text-xs font-medium text-purple-300/70 mb-1">Insights:</div>
-                      <ul className="text-xs text-purple-200/80 space-y-1">
-                        {message.metadata.synthesizedInsights.map((insight, idx) => (
-                          <li key={idx} className="flex items-start gap-1">
-                            <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                            {insight}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-              </div>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {Object.entries((message.metadata as any).requiredTokens || {}).map(
+                      ([token, amount]) => {
+                        if (!amount || (amount as number) === 0) return null
+                        const tokenColors: Record<string, string> = {
+                          Spirit: 'text-purple-400 border-purple-500/30 bg-purple-500/10',
+                          Essence: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10',
+                          Matter: 'text-amber-400 border-amber-500/30 bg-amber-500/10',
+                          Substance: 'text-rose-400 border-rose-500/30 bg-rose-500/10',
+                        }
+                        const colorClass =
+                          tokenColors[token] || 'text-gray-400 border-gray-500/30 bg-gray-500/10'
+
+                        return (
+                          <div
+                            key={token}
+                            className={`flex items-center justify-between px-3 py-2 border rounded-md ${colorClass}`}
+                          >
+                            <span className="text-xs font-semibold">{token}</span>
+                            <span className="text-sm font-bold">{amount as any}</span>
+                          </div>
+                        )
+                      }
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-2 pt-2">
+                    <Button
+                      onClick={async () => {
+                        try {
+                          const res = await fetch('/api/economy/yield', { method: 'POST' })
+                          const claimData = await res.json()
+                          if (res.ok) {
+                            toast.success('Cosmic yield successfully claimed!', {
+                              description: `Spirit: ${claimData.balances.spirit}, Essence: ${claimData.balances.essence}, Matter: ${claimData.balances.matter}, Substance: ${claimData.balances.substance}`,
+                            })
+                            // Refresh page or trigger context reload if needed
+                            window.location.reload()
+                          } else {
+                            toast.error(
+                              claimData.message ||
+                                'Already claimed today! Get premium multipliers for larger payouts.'
+                            )
+                          }
+                        } catch (err) {
+                          toast.error('Failed to claim yield. Try again later.')
+                        }
+                      }}
+                      className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-semibold border-none shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+                    >
+                      Claim Cosmic Yield
+                    </Button>
+                    <a
+                      href="/dashboard"
+                      className="w-full text-center px-4 py-2 border border-purple-500/30 rounded-md bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 hover:text-white transition-colors text-xs font-semibold"
+                    >
+                      Get Premium 2.0x Multiplier
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={`p-3 rounded-lg border backdrop-blur-md ${
+                    message.role === 'user'
+                      ? 'bg-purple-600/40 border-purple-500/30 text-white'
+                      : 'bg-black/40 border-white/10 text-purple-50'
+                  }`}
+                >
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+
+                  {message.metadata?.synthesizedInsights &&
+                    message.metadata.synthesizedInsights.length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-white/10">
+                        <div className="text-xs font-medium text-purple-300/70 mb-1">Insights:</div>
+                        <ul className="text-xs text-purple-200/80 space-y-1">
+                          {message.metadata.synthesizedInsights.map((insight, idx) => (
+                            <li key={idx} className="flex items-start gap-1">
+                              <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                              {insight}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                </div>
+              )}
 
               <div className="text-xs text-purple-300/50 mt-1">
                 {message.timestamp.toLocaleTimeString()}
@@ -695,7 +786,9 @@ export function UnifiedMultiAgentChat({
             )}
           </div>
           <div className="flex items-center gap-3">
-            <div className="text-xs bg-primary/10 text-primary px-2 py-1 rounded border border-primary/20">RAG Active</div>
+            <div className="text-xs bg-primary/10 text-primary px-2 py-1 rounded border border-primary/20">
+              RAG Active
+            </div>
             <Button
               variant="ghost"
               size="sm"

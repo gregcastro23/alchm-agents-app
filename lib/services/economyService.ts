@@ -225,4 +225,76 @@ export class EconomyService {
       },
     }
   }
+
+  static async debitDynamic(userId: string, cost: Partial<Record<TokenType, number>>) {
+    const spirit = cost.Spirit || 0
+    const essence = cost.Essence || 0
+    const matter = cost.Matter || 0
+    const substance = cost.Substance || 0
+
+    // Single atomic CTE query
+    const updatedBalanceRows = await prisma.$queryRawUnsafe<any[]>(
+      `
+      WITH updated AS (
+        UPDATE token_balances
+        SET spirit = spirit - $1,
+            essence = essence - $2,
+            matter = matter - $3,
+            substance = substance - $4,
+            updated_at = NOW()
+        WHERE user_id = $5
+          AND spirit >= $1
+          AND essence >= $2
+          AND matter >= $3
+          AND substance >= $4
+        RETURNING *
+      )
+      SELECT * FROM updated;
+    `,
+      spirit,
+      essence,
+      matter,
+      substance,
+      userId
+    )
+
+    if (!updatedBalanceRows || updatedBalanceRows.length === 0) {
+      return { ok: false, reason: 'insufficient_funds' }
+    }
+
+    const updated = updatedBalanceRows[0]
+    const transactionGroupId = crypto.randomUUID()
+
+    // Insert transaction rows for non-zero costs
+    const entries = Object.entries(cost).filter(([_, amount]) => amount && amount > 0)
+    for (const [token, amount] of entries) {
+      await prisma.$queryRawUnsafe(
+        `
+        INSERT INTO token_transactions (
+          transaction_group_id, user_id, token_type, amount, source_type, created_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, NOW()
+        )
+      `,
+        transactionGroupId,
+        userId,
+        token,
+        -amount,
+        'agents_operation'
+      )
+    }
+
+    return {
+      ok: true,
+      transactionGroupId,
+      balances: {
+        spirit: Number(updated.spirit),
+        essence: Number(updated.essence),
+        matter: Number(updated.matter),
+        substance: Number(updated.substance),
+        lastDailyClaimAt: updated.last_daily_claim_at?.toISOString() || null,
+        lastDailyClaimAgentsAt: updated.last_daily_claim_agents_at?.toISOString() || null,
+      },
+    }
+  }
 }

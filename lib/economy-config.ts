@@ -8,7 +8,7 @@ export type TokenType = (typeof TOKEN_TYPES)[number]
  * A score ≥ this value triggers an agentic user to perform an action.
  * Scale is 0–1 (normalized resonance + planetary hour alignment).
  */
-export const AGENT_ACTIVATION_THRESHOLD = 0.55
+export const AGENT_ACTIVATION_THRESHOLD = 0.4
 
 /**
  * Base daily yield amount credited to each agentic user during the
