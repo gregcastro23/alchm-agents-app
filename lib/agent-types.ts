@@ -299,13 +299,18 @@ export interface HistoricalDiet {
  * Sacred Stats representing the 7 key Alchemical attributes
  */
 export interface SacredStats {
-  powerScore: number
-  resonanceScore7: number
-  wisdomScore: number
-  charismaScore: number
-  intuitionScore: number
-  adaptabilityScore: number
-  vitalityScore: number
+  solarAgency: number
+  lunarReceptivity: number
+  mercurialVelocity: number
+  venusianCoherence: number
+  martialImpetus: number
+  jovianExpansion: number
+  saturnianStructure: number
+  chironicAdaptation: number
+  uranianSurprisal: number
+  neptunianResonance: number
+  plutonicIntegration: number
+  kineticAlignment: number
 }
 
 export interface CraftedAgent {

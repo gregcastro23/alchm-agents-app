@@ -1123,47 +1123,6 @@ function GalleryPageContent() {
                     )
                   })}
                 </div>
-
-                {/* Kinetic compatibility analysis for multiple agents */}
-                {selectedAgents.length >= 2 && (
-                  <div className="border-t pt-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Zap className="w-4 h-4 text-purple-600" />
-                      <span className="font-medium text-sm">
-                        Kinetic Consciousness Compatibility
-                      </span>
-                    </div>
-                    <MultiAgentCompatibility
-                      agents={agents.filter(agent => selectedAgents.includes(agent.id))}
-                      maxDisplayPairs={6}
-                    />
-                  </div>
-                )}
-
-                {/* Detailed compatibility for exactly 2 agents */}
-                {selectedAgents.length === 2 && (
-                  <div className="border-t pt-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Sparkles className="w-4 h-4 text-blue-600" />
-                      <span className="font-medium text-sm">Detailed Consciousness Synergy</span>
-                    </div>
-                    {(() => {
-                      const agent1 = agents.find(a => a.id === selectedAgents[0])
-                      const agent2 = agents.find(a => a.id === selectedAgents[1])
-                      if (agent1 && agent2) {
-                        return (
-                          <KineticCompatibilityIndicator
-                            agent1={agent1}
-                            agent2={agent2}
-                            variant="detailed"
-                            showRecommendations={true}
-                          />
-                        )
-                      }
-                      return null
-                    })()}
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>

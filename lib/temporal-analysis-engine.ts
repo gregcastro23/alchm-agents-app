@@ -10,6 +10,7 @@ import { agentKineticProfiles } from './agents/kinetic-profiles'
 import { planetaryAPI } from './planetary-api-client'
 import { ConsciousnessMemorySystem } from './agents/consciousness-memory'
 import { logger } from '@/lib/structured-logger'
+import { HourlyAlchemicalSample, sampleDateRange } from './alchemical-kinetics-sampler'
 import {
   calculateReturnPattern,
   identifyPlanetaryThemes,
@@ -341,7 +342,7 @@ export class TemporalAnalysisEngine {
         consciousnessImpact,
         significanceScore,
         planetaryHour: sample.planetaryHour || 'Sun',
-        seasonalPhase: sample.seasonalPhase,
+        seasonalPhase: sample.seasonalPhase || 'Neutral',
         powerLevel: sample.Energy,
         isExact,
         qualityMetrics: {

@@ -60,15 +60,20 @@ interface AgentCreationData {
   }
 }
 
-// Icon mapping for Sacred 7 Stats
+// Icon mapping for Planetary Stats
 const STAT_ICONS = {
-  power: Zap,
-  resonance: Radio,
-  wisdom: BookOpen,
-  charisma: Users,
-  intuition: Eye,
-  adaptability: Waves,
-  vitality: Activity,
+  solarAgency: Zap,
+  lunarReceptivity: Eye,
+  mercurialVelocity: Waves,
+  venusianCoherence: Users,
+  martialImpetus: Activity,
+  jovianExpansion: BookOpen,
+  saturnianStructure: BookOpen, // Or some other icon
+  chironicAdaptation: Wand2,
+  uranianSurprisal: Sparkles,
+  neptunianResonance: Radio,
+  plutonicIntegration: Atom,
+  kineticAlignment: Activity,
 } as const
 
 export default function ModernPhilosophersStone() {
@@ -86,13 +91,18 @@ export default function ModernPhilosophersStone() {
     },
     purpose: '',
     stats: {
-      power: 50,
-      resonance: 50,
-      wisdom: 50,
-      charisma: 50,
-      intuition: 50,
-      adaptability: 50,
-      vitality: 50,
+      solarAgency: 50,
+      lunarReceptivity: 50,
+      mercurialVelocity: 50,
+      venusianCoherence: 50,
+      martialImpetus: 50,
+      jovianExpansion: 50,
+      saturnianStructure: 50,
+      chironicAdaptation: 50,
+      uranianSurprisal: 50,
+      neptunianResonance: 50,
+      plutonicIntegration: 50,
+      kineticAlignment: 50,
     },
   })
   const [birthInput, setBirthInput] = useState('')

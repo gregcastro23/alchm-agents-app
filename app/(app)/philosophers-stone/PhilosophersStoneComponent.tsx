@@ -127,20 +127,6 @@ const LazyComponentWrapper = ({
   </ErrorBoundary>
 )
 
-// Optimized lazy imports with error boundaries and improved loading states
-const AlchmQuantitiesDisplay = lazy(() =>
-  import('@/components/misc/alchm-quantities-display').catch(error => {
-    console.error('Failed to load AlchmQuantitiesDisplay:', error)
-    return {
-      default: () => (
-        <div className="p-8 text-center text-red-400">
-          Failed to load alchemical quantities display
-        </div>
-      ),
-    }
-  })
-)
-
 const ConsciousnessVectorDisplay = lazy(() =>
   import('@/components/temporal/consciousness-vector-display')
     .then(module => ({

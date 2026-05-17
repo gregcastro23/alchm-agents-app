@@ -7,6 +7,7 @@
 import { agentKineticProfiles } from './kinetic-profiles'
 import type { KineticProfile } from './kinetic-profiles'
 import type { CraftedAgent } from '../agent-types'
+import { AlchemicalKineticsClient } from '../kinetics-client'
 
 export interface ConsciousnessMemorySnapshot {
   timestamp: Date

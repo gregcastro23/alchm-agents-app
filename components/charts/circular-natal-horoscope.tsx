@@ -154,13 +154,6 @@ export default function CircularNatalHoroscope({
             </div>
           </CardContent>
         </Card>
-        {showKinetics && (
-          <KineticsChartPane
-            birthInfo={birthInfo}
-            realTimeMode={!birthInfo}
-            className="lg:col-span-1"
-          />
-        )}
       </div>
     )
   }

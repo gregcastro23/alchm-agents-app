@@ -7,6 +7,7 @@ import type { CraftedAgent } from '../agent-types'
 
 import { alchemize } from '../alchemizer'
 import { generateAccurateHoroscope } from '../monica/horoscope-generator'
+import { AlchemicalKineticsClient } from '../kinetics-client'
 
 export interface LiveStats {
   // The Seven Sacred Stats - Living Vital Signs of Consciousness

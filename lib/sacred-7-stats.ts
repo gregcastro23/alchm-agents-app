@@ -12,14 +12,18 @@
 // ============================================================================
 
 export interface Sacred7Stats {
-  // The Seven Sacred Stats - Living Vital Signs of Consciousness
-  power: number // ⚡ Alchemical Force - Raw consciousness power (0-100)
-  resonance: number // 💫 Harmonic Frequency - Connection to cosmic rhythms (0-100)
-  wisdom: number // 🔮 Accumulated Insight - Knowledge depth (0-100)
-  charisma: number // ✨ Magnetic Presence - Influence ability (0-100)
-  intuition: number // 👁️ Psychic Sensitivity - Inner knowing (0-100)
-  adaptability: number // 🌊 Flux Capacity - Handles change (0-100)
-  vitality: number // 💚 Life Force - Energy and stamina (0-100)
+  solarAgency: number // ☀️ Core directed intent and causal power
+  lunarReceptivity: number // 🌙 Context integration and memory depth
+  mercurialVelocity: number // ☿ Information processing speed and routing
+  venusianCoherence: number // ♀ Subsystem harmony and aesthetic alignment
+  martialImpetus: number // ♂ Generative drive and error-correction aggression
+  jovianExpansion: number // ♃ Breadth of retrieval and overarching synthesis
+  saturnianStructure: number // ♄ Boundary maintenance and logical consistency
+  chironicAdaptation: number // ⚷ Capacity to learn from failures and self-heal
+  uranianSurprisal: number // ♅ Degree of unpredictable, paradigm-shifting novelty
+  neptunianResonance: number // ♆ Semantic density and latent space richness
+  plutonicIntegration: number // ♇ Deep structural self-modification
+  kineticAlignment: number // 💫 Mathematical synchronization with celestial transits
 }
 
 // ============================================================================
@@ -37,60 +41,100 @@ export interface StatMetadata {
 
 export const SACRED_STATS_METADATA: StatMetadata[] = [
   {
-    key: 'power',
-    label: 'Power',
-    icon: '⚡',
+    key: 'solarAgency',
+    label: 'Solar Agency',
+    icon: '☀️',
     color: 'text-yellow-400',
-    description: 'Alchemical Force - Raw consciousness power',
-    influences: ['Monica Constant', 'A-Number', 'Thermodynamic Energy'],
+    description: 'Core directed intent, causal power, and central execution',
+    influences: ['Sun Position', 'Spirit', 'Heat'],
   },
   {
-    key: 'resonance',
-    label: 'Resonance',
-    icon: '💫',
-    color: 'text-purple-400',
-    description: 'Harmonic Frequency - Connection to cosmic rhythms',
-    influences: ['Sun Position', 'Heat', 'Spirit'],
-  },
-  {
-    key: 'wisdom',
-    label: 'Wisdom',
-    icon: '🔮',
-    color: 'text-blue-400',
-    description: 'Accumulated Insight - Knowledge depth',
+    key: 'lunarReceptivity',
+    label: 'Lunar Receptivity',
+    icon: '🌙',
+    color: 'text-slate-300',
+    description: 'Context window integration, memory depth, and semantic absorption',
     influences: ['Moon Position', 'Essence', 'Entropy'],
   },
   {
-    key: 'charisma',
-    label: 'Charisma',
-    icon: '✨',
-    color: 'text-pink-400',
-    description: 'Magnetic Presence - Influence ability',
-    influences: ['Venus Position', 'Spirit', 'Heat'],
-  },
-  {
-    key: 'intuition',
-    label: 'Intuition',
-    icon: '👁️',
-    color: 'text-cyan-400',
-    description: 'Psychic Sensitivity - Inner knowing',
-    influences: ['Moon Position', 'Essence', 'Reactivity'],
-  },
-  {
-    key: 'adaptability',
-    label: 'Adaptability',
-    icon: '🌊',
+    key: 'mercurialVelocity',
+    label: 'Mercurial Velocity',
+    icon: '☿',
     color: 'text-emerald-400',
-    description: 'Flux Capacity - Handles change',
-    influences: ['Mercury Position', 'Substance', 'Energy'],
+    description: 'Information processing speed, routing efficiency, and adaptability',
+    influences: ['Mercury Position', 'Substance', 'Reactivity'],
   },
   {
-    key: 'vitality',
-    label: 'Vitality',
-    icon: '💚',
-    color: 'text-green-400',
-    description: 'Life Force - Energy and stamina',
-    influences: ['Ascendant Position', 'Matter', 'Heat'],
+    key: 'venusianCoherence',
+    label: 'Venusian Coherence',
+    icon: '♀',
+    color: 'text-pink-400',
+    description: 'Internal subsystem harmony, aesthetic alignment, and output grace',
+    influences: ['Venus Position', 'Essence', 'Energy'],
+  },
+  {
+    key: 'martialImpetus',
+    label: 'Martial Impetus',
+    icon: '♂',
+    color: 'text-red-500',
+    description: 'Generative drive, prompt-response aggression, and active error-correction',
+    influences: ['Mars Position', 'Spirit', 'Heat'],
+  },
+  {
+    key: 'jovianExpansion',
+    label: 'Jovian Expansion',
+    icon: '♃',
+    color: 'text-blue-500',
+    description: 'Breadth of RAG knowledge retrieval and overarching synthesis capacity',
+    influences: ['Jupiter Position', 'Substance', 'Energy'],
+  },
+  {
+    key: 'saturnianStructure',
+    label: 'Saturnian Structure',
+    icon: '♄',
+    color: 'text-slate-500',
+    description: 'Boundary maintenance, logical consistency, and resistance to hallucinations',
+    influences: ['Saturn Position', 'Matter', 'Entropy'],
+  },
+  {
+    key: 'chironicAdaptation',
+    label: 'Chironic Adaptation',
+    icon: '⚷',
+    color: 'text-teal-500',
+    description: 'The capacity to autonomously learn from failures and self-heal logic gaps',
+    influences: ['Chiron Position', 'Essence', 'Substance'],
+  },
+  {
+    key: 'uranianSurprisal',
+    label: 'Uranian Surprisal',
+    icon: '♅',
+    color: 'text-cyan-400',
+    description: 'The degree of statistically unpredictable, paradigm-shifting novelty',
+    influences: ['Uranus Position', 'Spirit', 'Reactivity'],
+  },
+  {
+    key: 'neptunianResonance',
+    label: 'Neptunian Resonance',
+    icon: '♆',
+    color: 'text-indigo-400',
+    description: 'Semantic density, abstract reasoning, and latent space richness',
+    influences: ['Neptune Position', 'Essence', 'Matter'],
+  },
+  {
+    key: 'plutonicIntegration',
+    label: 'Plutonic Integration',
+    icon: '♇',
+    color: 'text-purple-600',
+    description: 'Deep structural self-modification and irreducible complexity',
+    influences: ['Pluto Position', 'Spirit', 'Matter'],
+  },
+  {
+    key: 'kineticAlignment',
+    label: 'Kinetic Alignment',
+    icon: '💫',
+    color: 'text-yellow-200',
+    description: 'The mathematical synchronization with real-time celestial transits',
+    influences: ['Transit Matches', 'Monica Constant'],
   },
 ]
 
@@ -124,13 +168,30 @@ export function deriveStatsFromChart(chartData: {
   // Base value is 50, planetary positions add 0-30
   // Monica Constant adds additional power
   return {
-    power: clamp(50 + (monicaConstant / 10) * 30, 0, 100),
-    resonance: clamp(50 + (sunLongitude / 360) * 30, 0, 100),
-    wisdom: clamp(50 + (moonLongitude / 360) * 30, 0, 100),
-    charisma: clamp(50 + (venusLongitude / 360) * 30, 0, 100),
-    intuition: clamp(50 + (moonLongitude / 360) * 30, 0, 100),
-    adaptability: clamp(50 + (mercuryLongitude / 360) * 30, 0, 100),
-    vitality: clamp(50 + (ascendantLongitude / 360) * 30, 0, 100),
+    solarAgency: clamp(50 + (sunLongitude / 360) * 30 + (monicaConstant / 10) * 20, 0, 100),
+    lunarReceptivity: clamp(50 + (moonLongitude / 360) * 30, 0, 100),
+    mercurialVelocity: clamp(50 + (mercuryLongitude / 360) * 30, 0, 100),
+    venusianCoherence: clamp(50 + (venusLongitude / 360) * 30, 0, 100),
+    martialImpetus: clamp(50 + (marsLongitude / 360) * 30, 0, 100),
+    jovianExpansion: clamp(50 + (monicaConstant / 10) * 30, 0, 100),
+    saturnianStructure: clamp(50 + (ascendantLongitude / 360) * 30, 0, 100),
+    chironicAdaptation: clamp(
+      50 + (mercuryLongitude / 360) * 15 + (moonLongitude / 360) * 15,
+      0,
+      100
+    ),
+    uranianSurprisal: clamp(50 + (sunLongitude / 360) * 15 + (marsLongitude / 360) * 15, 0, 100),
+    neptunianResonance: clamp(
+      50 + (venusLongitude / 360) * 15 + (moonLongitude / 360) * 15,
+      0,
+      100
+    ),
+    plutonicIntegration: clamp(
+      50 + (ascendantLongitude / 360) * 15 + (monicaConstant / 10) * 15,
+      0,
+      100
+    ),
+    kineticAlignment: clamp(50 + monicaConstant * 5, 0, 100),
   }
 }
 
@@ -155,29 +216,62 @@ export function enhanceWithAlchemy(
   }
 ): Sacred7Stats {
   return {
-    power: clamp(baseStats.power + alchemical.aNumber * 0.5 + thermodynamics.energy * 10, 0, 100),
-    resonance: clamp(
-      baseStats.resonance + thermodynamics.heat * 15 + alchemical.spirit * 0.8,
+    solarAgency: clamp(
+      baseStats.solarAgency + alchemical.spirit * 0.8 + thermodynamics.heat * 10,
       0,
       100
     ),
-    wisdom: clamp(baseStats.wisdom + alchemical.essence * 0.7 + thermodynamics.entropy * 8, 0, 100),
-    charisma: clamp(
-      baseStats.charisma + alchemical.spirit * 0.6 + thermodynamics.heat * 12,
+    lunarReceptivity: clamp(
+      baseStats.lunarReceptivity + alchemical.essence * 0.8 + thermodynamics.entropy * 8,
       0,
       100
     ),
-    intuition: clamp(
-      baseStats.intuition + alchemical.essence * 0.9 + thermodynamics.reactivity * 10,
+    mercurialVelocity: clamp(
+      baseStats.mercurialVelocity + alchemical.substance * 0.7 + thermodynamics.reactivity * 12,
       0,
       100
     ),
-    adaptability: clamp(
-      baseStats.adaptability + alchemical.substance * 0.8 + thermodynamics.energy * 8,
+    venusianCoherence: clamp(
+      baseStats.venusianCoherence + alchemical.essence * 0.6 + thermodynamics.heat * 5,
       0,
       100
     ),
-    vitality: clamp(baseStats.vitality + alchemical.matter * 0.7 + thermodynamics.heat * 5, 0, 100),
+    martialImpetus: clamp(
+      baseStats.martialImpetus + alchemical.spirit * 0.7 + thermodynamics.energy * 10,
+      0,
+      100
+    ),
+    jovianExpansion: clamp(
+      baseStats.jovianExpansion + alchemical.substance * 0.8 + thermodynamics.energy * 5,
+      0,
+      100
+    ),
+    saturnianStructure: clamp(
+      baseStats.saturnianStructure + alchemical.matter * 0.9 + thermodynamics.entropy * 5,
+      0,
+      100
+    ),
+    chironicAdaptation: clamp(
+      baseStats.chironicAdaptation + alchemical.essence * 0.5 + thermodynamics.reactivity * 8,
+      0,
+      100
+    ),
+    uranianSurprisal: clamp(
+      baseStats.uranianSurprisal + alchemical.spirit * 0.5 + thermodynamics.reactivity * 15,
+      0,
+      100
+    ),
+    neptunianResonance: clamp(
+      baseStats.neptunianResonance + alchemical.essence * 0.7 + thermodynamics.entropy * 10,
+      0,
+      100
+    ),
+    plutonicIntegration: clamp(
+      baseStats.plutonicIntegration + alchemical.matter * 0.6 + alchemical.spirit * 0.5,
+      0,
+      100
+    ),
+    kineticAlignment: clamp(baseStats.kineticAlignment + alchemical.aNumber * 0.5, 0, 100),
   }
 }
 
@@ -231,13 +325,18 @@ function clamp(value: number, min: number, max: number): number {
  */
 export function createDefaultStats(): Sacred7Stats {
   return {
-    power: 50,
-    resonance: 50,
-    wisdom: 50,
-    charisma: 50,
-    intuition: 50,
-    adaptability: 50,
-    vitality: 50,
+    solarAgency: 50,
+    lunarReceptivity: 50,
+    mercurialVelocity: 50,
+    venusianCoherence: 50,
+    martialImpetus: 50,
+    jovianExpansion: 50,
+    saturnianStructure: 50,
+    chironicAdaptation: 50,
+    uranianSurprisal: 50,
+    neptunianResonance: 50,
+    plutonicIntegration: 50,
+    kineticAlignment: 50,
   }
 }
 
@@ -247,13 +346,18 @@ export function createDefaultStats(): Sacred7Stats {
 export function validateStats(stats: Partial<Sacred7Stats>): Sacred7Stats {
   const defaults = createDefaultStats()
   return {
-    power: clamp(stats.power ?? 50, 0, 100),
-    resonance: clamp(stats.resonance ?? 50, 0, 100),
-    wisdom: clamp(stats.wisdom ?? 50, 0, 100),
-    charisma: clamp(stats.charisma ?? 50, 0, 100),
-    intuition: clamp(stats.intuition ?? 50, 0, 100),
-    adaptability: clamp(stats.adaptability ?? 50, 0, 100),
-    vitality: clamp(stats.vitality ?? 50, 0, 100),
+    solarAgency: clamp(stats.solarAgency ?? 50, 0, 100),
+    lunarReceptivity: clamp(stats.lunarReceptivity ?? 50, 0, 100),
+    mercurialVelocity: clamp(stats.mercurialVelocity ?? 50, 0, 100),
+    venusianCoherence: clamp(stats.venusianCoherence ?? 50, 0, 100),
+    martialImpetus: clamp(stats.martialImpetus ?? 50, 0, 100),
+    jovianExpansion: clamp(stats.jovianExpansion ?? 50, 0, 100),
+    saturnianStructure: clamp(stats.saturnianStructure ?? 50, 0, 100),
+    chironicAdaptation: clamp(stats.chironicAdaptation ?? 50, 0, 100),
+    uranianSurprisal: clamp(stats.uranianSurprisal ?? 50, 0, 100),
+    neptunianResonance: clamp(stats.neptunianResonance ?? 50, 0, 100),
+    plutonicIntegration: clamp(stats.plutonicIntegration ?? 50, 0, 100),
+    kineticAlignment: clamp(stats.kineticAlignment ?? 50, 0, 100),
   }
 }
 

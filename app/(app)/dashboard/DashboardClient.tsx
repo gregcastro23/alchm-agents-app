@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge'
 import { Sparkles, Crown, TrendingUp, Users, Zap, Settings, LogOut, Star } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { usePerformanceMonitor } from '@/hooks/use-performance-monitor'
+import { GroupConsciousnessIndicator } from '@/components/misc/group-consciousness-indicator'
+import { TokenMonitorIntegration } from '@/components/dashboards/TokenMonitorIntegration'
 
 const PlanetaryPositionsMonitor = dynamic(
   () => import('@/components/dashboards/PlanetaryPositionsMonitor'),
@@ -218,7 +220,7 @@ export function DashboardClient({ user, dashboardAgents }: DashboardClientProps)
           />
 
           {/* Token Dashboard */}
-          <TokenDashboardKinetics location={{ lat: 37.7749, lon: -122.4194 }} />
+          <TokenMonitorIntegration mc={0.5} level={{ name: 'Initiate', level: 1 }} />
         </div>
 
         {/* Quick Actions */}

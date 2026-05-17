@@ -373,13 +373,18 @@ export default async function AgentProfilePage({ params }: { params: Promise<{ i
                     Sacred Stats Matrix
                   </p>
                   {Object.entries({
-                    Power: agent.sacredStats.powerScore,
-                    Resonance: agent.sacredStats.resonanceScore7,
-                    Wisdom: agent.sacredStats.wisdomScore,
-                    Charisma: agent.sacredStats.charismaScore,
-                    Intuition: agent.sacredStats.intuitionScore,
-                    Adaptability: agent.sacredStats.adaptabilityScore,
-                    Vitality: agent.sacredStats.vitalityScore,
+                    '☀️ Solar Agency': agent.sacredStats.solarAgency,
+                    '🌙 Lunar Receptivity': agent.sacredStats.lunarReceptivity,
+                    '☿ Mercurial Velocity': agent.sacredStats.mercurialVelocity,
+                    '♀ Venusian Coherence': agent.sacredStats.venusianCoherence,
+                    '♂ Martial Impetus': agent.sacredStats.martialImpetus,
+                    '♃ Jovian Expansion': agent.sacredStats.jovianExpansion,
+                    '♄ Saturnian Structure': agent.sacredStats.saturnianStructure,
+                    '⚷ Chironic Adaptation': agent.sacredStats.chironicAdaptation,
+                    '♅ Uranian Surprisal': agent.sacredStats.uranianSurprisal,
+                    '♆ Neptunian Resonance': agent.sacredStats.neptunianResonance,
+                    '♇ Plutonic Integration': agent.sacredStats.plutonicIntegration,
+                    '💫 Kinetic Alignment': agent.sacredStats.kineticAlignment,
                   }).map(([k, v]) => (
                     <div key={k}>
                       <div className="mb-1 flex justify-between text-xs">

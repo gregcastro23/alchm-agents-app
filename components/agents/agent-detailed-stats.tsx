@@ -168,79 +168,166 @@ export function AgentDetailedStats({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="flex items-center gap-2 text-orange-400">
-                    <Zap className="w-4 h-4" /> Power
-                  </span>
-                  <span className="font-medium">{agent.sacredStats.powerScore.toFixed(1)}</span>
-                </div>
-                <Progress value={Math.min(100, agent.sacredStats.powerScore)} className="h-2" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="flex items-center gap-2 text-purple-400">
-                    <Activity className="w-4 h-4" /> Resonance (7)
-                  </span>
+                  <span className="flex items-center gap-2 text-yellow-500">☀️ Solar Agency</span>
                   <span className="font-medium">
-                    {agent.sacredStats.resonanceScore7.toFixed(1)}
+                    {agent.sacredStats.solarAgency?.toFixed(1) || 50}
                   </span>
                 </div>
                 <Progress
-                  value={Math.min(100, agent.sacredStats.resonanceScore7)}
+                  value={Math.min(100, agent.sacredStats.solarAgency || 50)}
                   className="h-2"
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="flex items-center gap-2 text-indigo-400">
-                    <Brain className="w-4 h-4" /> Wisdom
-                  </span>
-                  <span className="font-medium">{agent.sacredStats.wisdomScore.toFixed(1)}</span>
-                </div>
-                <Progress value={Math.min(100, agent.sacredStats.wisdomScore)} className="h-2" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="flex items-center gap-2 text-pink-400">
-                    <Sparkles className="w-4 h-4" /> Charisma
-                  </span>
-                  <span className="font-medium">{agent.sacredStats.charismaScore.toFixed(1)}</span>
-                </div>
-                <Progress value={Math.min(100, agent.sacredStats.charismaScore)} className="h-2" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="flex items-center gap-2 text-cyan-400">
-                    <Lightbulb className="w-4 h-4" /> Intuition
-                  </span>
-                  <span className="font-medium">{agent.sacredStats.intuitionScore.toFixed(1)}</span>
-                </div>
-                <Progress value={Math.min(100, agent.sacredStats.intuitionScore)} className="h-2" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="flex items-center gap-2 text-teal-400">
-                    <Target className="w-4 h-4" /> Adaptability
+                  <span className="flex items-center gap-2 text-slate-400">
+                    🌙 Lunar Receptivity
                   </span>
                   <span className="font-medium">
-                    {agent.sacredStats.adaptabilityScore.toFixed(1)}
+                    {agent.sacredStats.lunarReceptivity?.toFixed(1) || 50}
                   </span>
                 </div>
                 <Progress
-                  value={Math.min(100, agent.sacredStats.adaptabilityScore)}
+                  value={Math.min(100, agent.sacredStats.lunarReceptivity || 50)}
                   className="h-2"
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="flex items-center gap-2 text-green-400">
-                    <Activity className="w-4 h-4" /> Vitality
+                  <span className="flex items-center gap-2 text-emerald-500">
+                    ☿ Mercurial Velocity
                   </span>
-                  <span className="font-medium">{agent.sacredStats.vitalityScore.toFixed(1)}</span>
+                  <span className="font-medium">
+                    {agent.sacredStats.mercurialVelocity?.toFixed(1) || 50}
+                  </span>
                 </div>
-                <Progress value={Math.min(100, agent.sacredStats.vitalityScore)} className="h-2" />
+                <Progress
+                  value={Math.min(100, agent.sacredStats.mercurialVelocity || 50)}
+                  className="h-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-pink-500">
+                    ♀ Venusian Coherence
+                  </span>
+                  <span className="font-medium">
+                    {agent.sacredStats.venusianCoherence?.toFixed(1) || 50}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, agent.sacredStats.venusianCoherence || 50)}
+                  className="h-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-red-500">♂ Martial Impetus</span>
+                  <span className="font-medium">
+                    {agent.sacredStats.martialImpetus?.toFixed(1) || 50}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, agent.sacredStats.martialImpetus || 50)}
+                  className="h-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-blue-500">♃ Jovian Expansion</span>
+                  <span className="font-medium">
+                    {agent.sacredStats.jovianExpansion?.toFixed(1) || 50}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, agent.sacredStats.jovianExpansion || 50)}
+                  className="h-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-slate-500">
+                    ♄ Saturnian Structure
+                  </span>
+                  <span className="font-medium">
+                    {agent.sacredStats.saturnianStructure?.toFixed(1) || 50}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, agent.sacredStats.saturnianStructure || 50)}
+                  className="h-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-teal-500">
+                    ⚷ Chironic Adaptation
+                  </span>
+                  <span className="font-medium">
+                    {agent.sacredStats.chironicAdaptation?.toFixed(1) || 50}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, agent.sacredStats.chironicAdaptation || 50)}
+                  className="h-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-cyan-500">♅ Uranian Surprisal</span>
+                  <span className="font-medium">
+                    {agent.sacredStats.uranianSurprisal?.toFixed(1) || 50}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, agent.sacredStats.uranianSurprisal || 50)}
+                  className="h-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-indigo-500">
+                    ♆ Neptunian Resonance
+                  </span>
+                  <span className="font-medium">
+                    {agent.sacredStats.neptunianResonance?.toFixed(1) || 50}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, agent.sacredStats.neptunianResonance || 50)}
+                  className="h-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-purple-600">
+                    ♇ Plutonic Integration
+                  </span>
+                  <span className="font-medium">
+                    {agent.sacredStats.plutonicIntegration?.toFixed(1) || 50}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, agent.sacredStats.plutonicIntegration || 50)}
+                  className="h-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-yellow-300">
+                    💫 Kinetic Alignment
+                  </span>
+                  <span className="font-medium">
+                    {agent.sacredStats.kineticAlignment?.toFixed(1) || 50}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, agent.sacredStats.kineticAlignment || 50)}
+                  className="h-2"
+                />
               </div>
             </div>
           </CardContent>

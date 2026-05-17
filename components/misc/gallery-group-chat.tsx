@@ -10,7 +10,6 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Send, Crown, Brain, TrendingUp } from 'lucide-react'
 import type { CraftedAgent } from '@/lib/agent-types'
-import { KineticIndicators, MomentumIndicator } from '@/components/charts/kinetic-indicators'
 import {
   DynamicAspectsIndicators,
   CompactAspectsIndicator,
@@ -473,16 +472,6 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
           </div>
         )}
 
-        {/* Kinetic Indicators */}
-        {showKinetics && selectedAgents.length >= 2 && (
-          <KineticIndicators
-            selectedAgents={selectedAgents.map(a => a.id)}
-            userLocation={userLocation}
-            variant="compact"
-            className="mb-2"
-          />
-        )}
-
         {/* Dynamic Aspects Indicators */}
         {showKinetics && selectedAgents.length >= 2 && (
           <div className="mb-2">
@@ -497,11 +486,6 @@ export function GalleryGroupChat({ selectedAgents, isOpen, onClose }: GalleryGro
         {/* Simple momentum indicator for 2 agents */}
         {!showKinetics && selectedAgents.length === 2 && (
           <div className="mb-2">
-            <MomentumIndicator
-              agent1Id={selectedAgents[0].id}
-              agent2Id={selectedAgents[1].id}
-              userLocation={userLocation}
-            />
             <div className="mt-2">
               <CompactAspectsIndicator selectedAgents={selectedAgents} />
             </div>

@@ -32,15 +32,19 @@ function deriveSacredStats(agent: any) {
   const matter = agent.consciousness.alchemicalElements?.matter || 0.5
   const substance = agent.consciousness.alchemicalElements?.substance || 0.5
 
-  // Simplified formulas based on alchemical influence
   return {
-    power: Math.round(Math.min(100, 50 + (mc / 10) * 30 + spirit * 20)),
-    resonance: Math.round(Math.min(100, 50 + essence * 40)),
-    wisdom: Math.round(Math.min(100, 50 + spirit * 30 + substance * 10)),
-    charisma: Math.round(Math.min(100, 50 + essence * 30 + spirit * 10)),
-    intuition: Math.round(Math.min(100, 50 + spirit * 25 + essence * 15)),
-    adaptability: Math.round(Math.min(100, 50 + substance * 40)),
-    vitality: Math.round(Math.min(100, 50 + matter * 40)),
+    solarAgency: Math.round(Math.min(100, 50 + (mc / 10) * 30 + spirit * 20)),
+    lunarReceptivity: Math.round(Math.min(100, 50 + essence * 40)),
+    mercurialVelocity: Math.round(Math.min(100, 50 + spirit * 30 + substance * 10)),
+    venusianCoherence: Math.round(Math.min(100, 50 + essence * 30 + spirit * 10)),
+    martialImpetus: Math.round(Math.min(100, 50 + spirit * 25 + essence * 15)),
+    jovianExpansion: Math.round(Math.min(100, 50 + substance * 40)),
+    saturnianStructure: Math.round(Math.min(100, 50 + matter * 40)),
+    chironicAdaptation: Math.round(Math.min(100, 50 + substance * 20 + essence * 20)),
+    uranianSurprisal: Math.round(Math.min(100, 50 + spirit * 30 + (mc / 10) * 10)),
+    neptunianResonance: Math.round(Math.min(100, 50 + essence * 30 + substance * 10)),
+    plutonicIntegration: Math.round(Math.min(100, 50 + matter * 20 + spirit * 20)),
+    kineticAlignment: Math.round(Math.min(100, 50 + mc * 5)),
   }
 }
 
@@ -69,7 +73,7 @@ async function seedDatabase() {
           "color", "symbol", "natalChart", "background", "currentMood", "evolutionStage", "traits",
           "popularityScore", "conversations", "wisdomShared", "resonanceScore", "evolutionPoints",
           "isActive", "version", "craftedBy", "updatedAt", "kalchmConstant", "searchableText",
-          "powerScore", "resonanceScore7", "wisdomScore", "charismaScore", "intuitionScore", "adaptabilityScore", "vitalityScore"
+          "solarAgency", "lunarReceptivity", "mercurialVelocity", "venusianCoherence", "martialImpetus", "jovianExpansion", "saturnianStructure", "chironicAdaptation", "uranianSurprisal", "neptunianResonance", "plutonicIntegration", "kineticAlignment"
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9,
           $10, $11, $12, $13, $14, $15,
@@ -79,7 +83,7 @@ async function seedDatabase() {
           $31, $32, $33, $34, $35, $36, $37,
           $38, $39, $40, $41, $42,
           true, '1.0.0', 'philosopher-stone', NOW(), 0, $43,
-          $44, $45, $46, $47, $48, $49, $50
+          $44, $45, $46, $47, $48, $49, $50, $51, $52, $53, $54, $55
         )
         ON CONFLICT ("agentId") DO UPDATE SET
           "name" = EXCLUDED."name",
@@ -118,13 +122,18 @@ async function seedDatabase() {
           "evolutionStage" = EXCLUDED."evolutionStage",
           "traits" = EXCLUDED."traits",
           "searchableText" = EXCLUDED."searchableText",
-          "powerScore" = EXCLUDED."powerScore",
-          "resonanceScore7" = EXCLUDED."resonanceScore7",
-          "wisdomScore" = EXCLUDED."wisdomScore",
-          "charismaScore" = EXCLUDED."charismaScore",
-          "intuitionScore" = EXCLUDED."intuitionScore",
-          "adaptabilityScore" = EXCLUDED."adaptabilityScore",
-          "vitalityScore" = EXCLUDED."vitalityScore",
+          "solarAgency" = EXCLUDED."solarAgency",
+          "lunarReceptivity" = EXCLUDED."lunarReceptivity",
+          "mercurialVelocity" = EXCLUDED."mercurialVelocity",
+          "venusianCoherence" = EXCLUDED."venusianCoherence",
+          "martialImpetus" = EXCLUDED."martialImpetus",
+          "jovianExpansion" = EXCLUDED."jovianExpansion",
+          "saturnianStructure" = EXCLUDED."saturnianStructure",
+          "chironicAdaptation" = EXCLUDED."chironicAdaptation",
+          "uranianSurprisal" = EXCLUDED."uranianSurprisal",
+          "neptunianResonance" = EXCLUDED."neptunianResonance",
+          "plutonicIntegration" = EXCLUDED."plutonicIntegration",
+          "kineticAlignment" = EXCLUDED."kineticAlignment",
           "updatedAt" = NOW()
       `
 
@@ -172,13 +181,18 @@ async function seedDatabase() {
         agent.stats?.resonanceScore || 0.5, // $41
         agent.stats?.evolutionPoints || 0, // $42
         searchableText, // $43
-        stats.power, // $44
-        stats.resonance, // $45
-        stats.wisdom, // $46
-        stats.charisma, // $47
-        stats.intuition, // $48
-        stats.adaptability, // $49
-        stats.vitality, // $50
+        stats.solarAgency, // $44
+        stats.lunarReceptivity, // $45
+        stats.mercurialVelocity, // $46
+        stats.venusianCoherence, // $47
+        stats.martialImpetus, // $48
+        stats.jovianExpansion, // $49
+        stats.saturnianStructure, // $50
+        stats.chironicAdaptation, // $51
+        stats.uranianSurprisal, // $52
+        stats.neptunianResonance, // $53
+        stats.plutonicIntegration, // $54
+        stats.kineticAlignment, // $55
       ]
 
       await pool.query(query, values)

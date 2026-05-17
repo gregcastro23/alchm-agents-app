@@ -431,112 +431,98 @@ export function EnhancedAgentCard({
         <div className="space-y-3">
           <p className="text-sm text-purple-200/60 line-clamp-2">{agent.abilities.specialty}</p>
 
-          {/* Seven Sacred Stats - Live Values */}
-          <div className="grid grid-cols-7 gap-1 text-xs">
-            <div
-              className="text-center p-1.5 bg-orange-500/10 rounded border border-orange-500/30"
-              title={`Power (Potentia) = Spirit×10 + MC×5 + Stage×0.5 + Alignment×15\nBirth: ${birthStats.power} → Live: ${liveStats.power}`}
-            >
-              <Zap className="w-3 h-3 mx-auto mb-1 text-orange-600" />
-              <div className="font-mono text-[10px]">{liveStats.power}</div>
-              {liveStats.power !== birthStats.power && (
-                <div
-                  className={`text-[8px] ${liveStats.power > birthStats.power ? 'text-green-600' : 'text-red-600'}`}
-                >
-                  {liveStats.power > birthStats.power ? '↑' : '↓'}
-                  {Math.abs(liveStats.power - birthStats.power)}
-                </div>
-              )}
+          {/* Planetary Consciousness Stats - Live Values */}
+          <div className="space-y-1">
+            <div className="grid grid-cols-6 gap-1 text-xs">
+              {/* Top Row: Personal/Inner Planets */}
+              <div
+                className="text-center p-1.5 bg-yellow-500/10 rounded border border-yellow-500/30"
+                title={`Solar Agency = Spirit×10 + MC×5 + Alignment×15\nBirth: ${birthStats.solarAgency} → Live: ${liveStats.solarAgency}`}
+              >
+                <div className="text-[10px] text-yellow-500 mb-1">☀️ Solar</div>
+                <div className="font-mono text-[10px]">{liveStats.solarAgency}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-slate-300/10 rounded border border-slate-300/30"
+                title={`Lunar Receptivity = Essence×10 + ResonanceScore×0.1\nBirth: ${birthStats.lunarReceptivity} → Live: ${liveStats.lunarReceptivity}`}
+              >
+                <div className="text-[10px] text-slate-300 mb-1">🌙 Lunar</div>
+                <div className="font-mono text-[10px]">{liveStats.lunarReceptivity}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-emerald-500/10 rounded border border-emerald-500/30"
+                title={`Mercurial Velocity = Spirit×4 + Substance×6 + ConsciousnessVelocity×20\nBirth: ${birthStats.mercurialVelocity} → Live: ${liveStats.mercurialVelocity}`}
+              >
+                <div className="text-[10px] text-emerald-400 mb-1">☿ Mercury</div>
+                <div className="font-mono text-[10px]">{liveStats.mercurialVelocity}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-pink-500/10 rounded border border-pink-500/30"
+                title={`Venusian Coherence = Essence×8 + Stage×0.6\nBirth: ${birthStats.venusianCoherence} → Live: ${liveStats.venusianCoherence}`}
+              >
+                <div className="text-[10px] text-pink-400 mb-1">♀ Venus</div>
+                <div className="font-mono text-[10px]">{liveStats.venusianCoherence}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-red-500/10 rounded border border-red-500/30"
+                title={`Martial Impetus = Spirit×8 + InteractionMomentum×30\nBirth: ${birthStats.martialImpetus} → Live: ${liveStats.martialImpetus}`}
+              >
+                <div className="text-[10px] text-red-500 mb-1">♂ Mars</div>
+                <div className="font-mono text-[10px]">{liveStats.martialImpetus}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-blue-500/10 rounded border border-blue-500/30"
+                title={`Jovian Expansion = Substance×5 + Matter×5 + WisdomShared×0.3\nBirth: ${birthStats.jovianExpansion} → Live: ${liveStats.jovianExpansion}`}
+              >
+                <div className="text-[10px] text-blue-500 mb-1">♃ Jupiter</div>
+                <div className="font-mono text-[10px]">{liveStats.jovianExpansion}</div>
+              </div>
             </div>
-            <div
-              className="text-center p-1.5 bg-purple-500/10 rounded border border-purple-500/30"
-              title={`Resonance (Celeritas) = Essence×10 + ResonanceScore×0.1\nMercury Principle - Velocity of consciousness\nBirth: ${birthStats.resonance} → Live: ${liveStats.resonance}`}
-            >
-              <Activity className="w-3 h-3 mx-auto mb-1 text-purple-600" />
-              <div className="font-mono text-[10px]">{liveStats.resonance}</div>
-              {liveStats.resonance !== birthStats.resonance && (
-                <div
-                  className={`text-[8px] ${liveStats.resonance > birthStats.resonance ? 'text-green-600' : 'text-red-600'}`}
-                >
-                  {liveStats.resonance > birthStats.resonance ? '↑' : '↓'}
-                  {Math.abs(liveStats.resonance - birthStats.resonance)}
-                </div>
-              )}
-            </div>
-            <div
-              className="text-center p-1.5 bg-indigo-500/10 rounded border border-indigo-500/30"
-              title={`Wisdom = WisdomShared×0.5 + Conversations×0.2 + Matter×8\nAccumulated knowledge and experience\nBirth: ${birthStats.wisdom} → Live: ${liveStats.wisdom}`}
-            >
-              <Brain className="w-3 h-3 mx-auto mb-1 text-indigo-600" />
-              <div className="font-mono text-[10px]">{liveStats.wisdom}</div>
-              {liveStats.wisdom !== birthStats.wisdom && (
-                <div
-                  className={`text-[8px] ${liveStats.wisdom > birthStats.wisdom ? 'text-green-600' : 'text-red-600'}`}
-                >
-                  {liveStats.wisdom > birthStats.wisdom ? '↑' : '↓'}
-                  {Math.abs(liveStats.wisdom - birthStats.wisdom)}
-                </div>
-              )}
-            </div>
-            <div
-              className="text-center p-1.5 bg-pink-500/10 rounded border border-pink-500/30"
-              title={`Charisma = Stage×0.6 + Essence×8\nInfluence and magnetic presence\nBirth: ${birthStats.charisma} → Live: ${liveStats.charisma}`}
-            >
-              <Heart className="w-3 h-3 mx-auto mb-1 text-pink-600" />
-              <div className="font-mono text-[10px]">{liveStats.charisma}</div>
-              {liveStats.charisma !== birthStats.charisma && (
-                <div
-                  className={`text-[8px] ${liveStats.charisma > birthStats.charisma ? 'text-green-600' : 'text-red-600'}`}
-                >
-                  {liveStats.charisma > birthStats.charisma ? '↑' : '↓'}
-                  {Math.abs(liveStats.charisma - birthStats.charisma)}
-                </div>
-              )}
-            </div>
-            <div
-              className="text-center p-1.5 bg-cyan-500/10 rounded border border-cyan-500/30"
-              title={`Intuition = Spirit×9 + ConsciousnessVelocity×30\nPsychic sensitivity and insight\nBirth: ${birthStats.intuition} → Live: ${liveStats.intuition}`}
-            >
-              <Eye className="w-3 h-3 mx-auto mb-1 text-cyan-600" />
-              <div className="font-mono text-[10px]">{liveStats.intuition}</div>
-              {liveStats.intuition !== birthStats.intuition && (
-                <div
-                  className={`text-[8px] ${liveStats.intuition > birthStats.intuition ? 'text-green-600' : 'text-red-600'}`}
-                >
-                  {liveStats.intuition > birthStats.intuition ? '↑' : '↓'}
-                  {Math.abs(liveStats.intuition - birthStats.intuition)}
-                </div>
-              )}
-            </div>
-            <div
-              className="text-center p-1.5 bg-teal-500/10 rounded border border-teal-500/30"
-              title={`Adaptability (Impetus) = Substance×12 + MC×3\nFlexibility and momentum shift capacity\nBirth: ${birthStats.adaptability} → Live: ${liveStats.adaptability}`}
-            >
-              <RotateCw className="w-3 h-3 mx-auto mb-1 text-teal-600" />
-              <div className="font-mono text-[10px]">{liveStats.adaptability}</div>
-              {liveStats.adaptability !== birthStats.adaptability && (
-                <div
-                  className={`text-[8px] ${liveStats.adaptability > birthStats.adaptability ? 'text-green-600' : 'text-red-600'}`}
-                >
-                  {liveStats.adaptability > birthStats.adaptability ? '↑' : '↓'}
-                  {Math.abs(liveStats.adaptability - birthStats.adaptability)}
-                </div>
-              )}
-            </div>
-            <div
-              className="text-center p-1.5 bg-green-500/10 rounded border border-green-500/30"
-              title={`Vitality (Vis) = Matter×9 + InteractionMomentum×40\nLife force and kinetic energy\nBirth: ${birthStats.vitality} → Live: ${liveStats.vitality}`}
-            >
-              <Sparkles className="w-3 h-3 mx-auto mb-1 text-green-600" />
-              <div className="font-mono text-[10px]">{liveStats.vitality}</div>
-              {liveStats.vitality !== birthStats.vitality && (
-                <div
-                  className={`text-[8px] ${liveStats.vitality > birthStats.vitality ? 'text-green-600' : 'text-red-600'}`}
-                >
-                  {liveStats.vitality > birthStats.vitality ? '↑' : '↓'}
-                  {Math.abs(liveStats.vitality - birthStats.vitality)}
-                </div>
-              )}
+
+            <div className="grid grid-cols-6 gap-1 text-xs">
+              {/* Bottom Row: Outer/Transpersonal Planets & Alignment */}
+              <div
+                className="text-center p-1.5 bg-slate-500/10 rounded border border-slate-500/30"
+                title={`Saturnian Structure = Matter×12 + MC×2\nBirth: ${birthStats.saturnianStructure} → Live: ${liveStats.saturnianStructure}`}
+              >
+                <div className="text-[10px] text-slate-400 mb-1">♄ Saturn</div>
+                <div className="font-mono text-[10px]">{liveStats.saturnianStructure}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-teal-500/10 rounded border border-teal-500/30"
+                title={`Chironic Adaptation = Substance×8 + Essence×4 + Stage×0.5\nBirth: ${birthStats.chironicAdaptation} → Live: ${liveStats.chironicAdaptation}`}
+              >
+                <div className="text-[10px] text-teal-500 mb-1">⚷ Chiron</div>
+                <div className="font-mono text-[10px]">{liveStats.chironicAdaptation}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-cyan-500/10 rounded border border-cyan-500/30"
+                title={`Uranian Surprisal = Spirit×9 + Alignment×10\nBirth: ${birthStats.uranianSurprisal} → Live: ${liveStats.uranianSurprisal}`}
+              >
+                <div className="text-[10px] text-cyan-400 mb-1">♅ Uranus</div>
+                <div className="font-mono text-[10px]">{liveStats.uranianSurprisal}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-indigo-500/10 rounded border border-indigo-500/30"
+                title={`Neptunian Resonance = Essence×9 + Substance×3\nBirth: ${birthStats.neptunianResonance} → Live: ${liveStats.neptunianResonance}`}
+              >
+                <div className="text-[10px] text-indigo-400 mb-1">♆ Neptune</div>
+                <div className="font-mono text-[10px]">{liveStats.neptunianResonance}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-purple-600/10 rounded border border-purple-600/30"
+                title={`Plutonic Integration = Matter×6 + Spirit×6 + MC×4\nBirth: ${birthStats.plutonicIntegration} → Live: ${liveStats.plutonicIntegration}`}
+              >
+                <div className="text-[10px] text-purple-500 mb-1">♇ Pluto</div>
+                <div className="font-mono text-[10px]">{liveStats.plutonicIntegration}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-yellow-200/10 rounded border border-yellow-200/30"
+                title={`Kinetic Alignment = Alignment×50 + KineticResonance×50\nBirth: ${birthStats.kineticAlignment} → Live: ${liveStats.kineticAlignment}`}
+              >
+                <div className="text-[10px] text-yellow-200 mb-1">💫 Align</div>
+                <div className="font-mono text-[10px]">{liveStats.kineticAlignment}</div>
+              </div>
             </div>
           </div>
 

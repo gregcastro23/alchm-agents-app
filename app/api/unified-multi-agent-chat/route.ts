@@ -889,13 +889,18 @@ function getSacred7Stats(agent: UnifiedAgent): Sacred7Stats {
 
   return (
     sacred7Stats ?? {
-      power: 50,
-      resonance: 50,
-      wisdom: 50,
-      charisma: 50,
-      intuition: 50,
-      adaptability: 50,
-      vitality: 50,
+      solarAgency: 50,
+      lunarReceptivity: 50,
+      mercurialVelocity: 50,
+      venusianCoherence: 50,
+      martialImpetus: 50,
+      jovianExpansion: 50,
+      saturnianStructure: 50,
+      chironicAdaptation: 50,
+      uranianSurprisal: 50,
+      neptunianResonance: 50,
+      plutonicIntegration: 50,
+      kineticAlignment: 50,
     }
   )
 }
