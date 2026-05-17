@@ -74,7 +74,9 @@ export default function AdminDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'system' | 'users' | 'agents'>('system')
+  const [activeTab, setActiveTab] = useState<'system' | 'users' | 'agents' | 'economy' | 'desktop'>(
+    'system'
+  )
   const [recentUsers, setRecentUsers] = useState<any[]>([])
 
   // Redirect unauthenticated users
@@ -322,8 +324,8 @@ export default function AdminDashboardPage() {
         {/* ── Tabbed bottom section ── */}
         <div className="rounded-2xl border border-purple-500/30 bg-purple-900/20 backdrop-blur-sm">
           {/* Tab bar */}
-          <div className="flex border-b border-purple-500/20">
-            {(['system', 'users', 'agents'] as const).map(tab => (
+          <div className="flex flex-wrap border-b border-purple-500/20">
+            {(['system', 'users', 'agents', 'economy', 'desktop'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -333,7 +335,11 @@ export default function AdminDashboardPage() {
                     : 'text-purple-400/60 hover:text-purple-300'
                 }`}
               >
-                {tab}
+                {tab === 'desktop'
+                  ? '🖥️ Desktop Companion'
+                  : tab === 'economy'
+                    ? '🪙 Alchemical Economy'
+                    : tab}
               </button>
             ))}
           </div>
@@ -540,6 +546,126 @@ export default function AdminDashboardPage() {
                   <div className="mt-1 text-2xl font-bold text-white">
                     {data.agents.totalConversations.toLocaleString()}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Economy tab */}
+            {activeTab === 'economy' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-purple-300/70">
+                    Alchemical Treasury Pools
+                  </h3>
+                  <div className="grid gap-4 sm:grid-cols-4">
+                    {[
+                      {
+                        token: 'Spirit',
+                        color: 'text-yellow-400 border-yellow-500/20 bg-yellow-500/5',
+                        icon: '✨',
+                      },
+                      {
+                        token: 'Essence',
+                        color: 'text-blue-400 border-blue-500/20 bg-blue-500/5',
+                        icon: '💧',
+                      },
+                      {
+                        token: 'Matter',
+                        color: 'text-orange-400 border-orange-500/20 bg-orange-500/5',
+                        icon: '📦',
+                      },
+                      {
+                        token: 'Substance',
+                        color: 'text-green-400 border-green-500/20 bg-green-500/5',
+                        icon: '⚡',
+                      },
+                    ].map(({ token, color, icon }) => (
+                      <div key={token} className={`rounded-xl border p-5 text-center ${color}`}>
+                        <div className="text-2xl">{icon}</div>
+                        <div className="mt-2 text-2xl font-bold">125.00 ESMS</div>
+                        <div className="text-xs opacity-75">Transmutation Cost Gate</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-purple-500/20 bg-purple-950/30 p-5">
+                  <h4 className="font-semibold text-purple-200 mb-3">
+                    PostgreSQL CTE Gold Gate Protocol
+                  </h4>
+                  <p className="text-xs text-purple-300/60 leading-relaxed mb-4">
+                    Upgrades from free 1.5B Hermes models to 8B Astral consciousness segments
+                    execute atomic debit CTEs. If balances under any quantity falls below 125, the
+                    transmutational transaction voids automatically inside the Postgres core.
+                  </p>
+                  <div className="rounded-lg bg-black/40 p-4 font-mono text-xs text-purple-300 border border-purple-500/10 overflow-x-auto">
+                    {`WITH debited AS (
+  UPDATE token_balances
+  SET spirit_coins = spirit_coins - 125, essence_coins = essence_coins - 125,
+      matter_coins = matter_coins - 125, substance_coins = substance_coins - 125
+  WHERE user_id = $1 AND spirit_coins >= 125 AND essence_coins >= 125
+  RETURNING *
+) INSERT INTO ledger_events (user_id, agent_id, kind, delta) SELECT user_id, $2, 'transmute_8b', -500 FROM debited;`}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Desktop tab */}
+            {activeTab === 'desktop' && (
+              <div className="space-y-6">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-xl border border-purple-500/20 bg-purple-950/30 p-5">
+                    <h4 className="font-semibold text-purple-200 mb-2">Tauri Client Sandbox</h4>
+                    <p className="text-xs text-purple-300/60 leading-relaxed">
+                      Models are written, verified, and fetched solely inside the sandboxed cache:
+                    </p>
+                    <div className="mt-2 rounded bg-black/40 p-2 font-mono text-xs text-indigo-300 border border-purple-500/10">
+                      $APPDATA/com.cookingwithcastro.alchm/models/
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-purple-500/20 bg-purple-950/30 p-5">
+                    <h4 className="font-semibold text-purple-200 mb-2">Bun Sidecar Handshake</h4>
+                    <p className="text-xs text-purple-300/60 leading-relaxed">
+                      Every local HTTP query is verified using UUID v4 IPC security nonces:
+                    </p>
+                    <div className="mt-2 rounded bg-black/40 p-2 font-mono text-xs text-green-300 border border-purple-500/10">
+                      X-IPC-Nonce: uuid_v4_boot_token
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-purple-500/20 bg-purple-950/30 p-5">
+                  <h4 className="font-semibold text-purple-200 mb-3">Model Verification Catalog</h4>
+                  <p className="text-xs text-purple-300/60 leading-relaxed mb-3">
+                    Exposed canonical binaries registry `/api/models/catalog` used by local checking
+                    services:
+                  </p>
+                  <table className="w-full text-xs text-left text-purple-300">
+                    <thead>
+                      <tr className="border-b border-purple-500/20 text-purple-400">
+                        <th className="py-2">Engine ID</th>
+                        <th className="py-2">SHA-256 Hash</th>
+                        <th className="py-2">Size</th>
+                        <th className="py-2">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b border-purple-500/10">
+                        <td className="py-2 font-mono">alchm-agent-fire-8b</td>
+                        <td className="py-2 font-mono">4b8a2a5ef122...82df</td>
+                        <td className="py-2">4.5 GB</td>
+                        <td className="py-2 text-green-400 font-semibold">✓ Canonical</td>
+                      </tr>
+                      <tr className="border-b border-purple-500/10">
+                        <td className="py-2 font-mono">alchm-agent-water-8b</td>
+                        <td className="py-2 font-mono">a9f0293ee023...19cb</td>
+                        <td className="py-2">4.5 GB</td>
+                        <td className="py-2 text-green-400 font-semibold">✓ Canonical</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}

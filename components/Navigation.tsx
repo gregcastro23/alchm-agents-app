@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Rocket, User, LogOut, Sparkles } from 'lucide-react'
+import { Menu, X, Rocket, User, LogOut, Sparkles, Monitor } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   NavigationMenu,
@@ -95,6 +95,11 @@ const navigationGroups = [
     title: 'Labs',
     icon: '⚗️',
     links: [
+      {
+        href: 'https://github.com/cookingwithcastro/alchm-desktop/releases',
+        label: 'Download Desktop',
+        description: 'Install the native Tauri desktop companion app.',
+      },
       {
         href: '/universe-learning',
         label: 'Universe Learning',
@@ -200,6 +205,21 @@ export function Navigation() {
 
           {/* Desktop Right */}
           <div className="nav-right">
+            <a
+              href="https://github.com/cookingwithcastro/alchm-desktop/releases"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Download Desktop App"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Download Desktop App"
+                className="nav-icon-btn text-violet-400 hover:text-violet-300"
+              >
+                <Monitor className="h-5 w-5" />
+              </Button>
+            </a>
             <Link href="/dashboard">
               <Button variant="ghost" size="icon" aria-label="Dashboard" className="nav-icon-btn">
                 <Rocket className="h-5 w-5" />
@@ -270,6 +290,15 @@ export function Navigation() {
             ))}
 
             <div className="nav-mobile-footer">
+              <a
+                href="https://github.com/cookingwithcastro/alchm-desktop/releases"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="nav-mobile-action text-violet-400"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Monitor className="w-4 h-4" /> Download Desktop
+              </a>
               <Link
                 href="/dashboard"
                 className="nav-mobile-action"
