@@ -2,6 +2,16 @@ import { CraftedAgent } from '@/lib/agent-types'
 import { AlchemicalProfile } from './alchemical-profiles'
 
 export interface SacredStats {
+  // ── Core Archetypes (Sacred 7) ──────────────────────────────────
+  power: number
+  resonance: number
+  wisdom: number
+  charisma: number
+  intuition: number
+  adaptability: number
+  vitality: number
+
+  // ── Celestial Dynamics (Planetary 12) ───────────────────────────
   solarAgency: number
   lunarReceptivity: number
   mercurialVelocity: number
@@ -17,7 +27,10 @@ export interface SacredStats {
 }
 
 /**
- * Calculates the 7 Sacred Stats from an agent's data and current cosmic conditions
+ * Calculates all 19 Sacred Stats from an agent's data and current cosmic conditions.
+ *
+ * Sacred 7 — archetype-level composites derived from alchemical fundamentals.
+ * Planetary 12 — celestial-cognitive mappings derived from element/kinetic data.
  */
 export function calculateSevenSacredStats(
   agent: CraftedAgent,
@@ -28,7 +41,51 @@ export function calculateSevenSacredStats(
   const stage = agent.personality?.evolutionStage ?? 0
   const powerAlignment = currentKinetics?.powerAlignment || 0
 
-  // Calculate planetary consciousness parameters
+  // ── Sacred 7: Core Archetypes ─────────────────────────────────
+  const power = Math.min(
+    100,
+    mc * 8 + alchemical.spirit * 5 + alchemical.matter * 3 + powerAlignment * 20
+  )
+  const resonanceVal = Math.min(
+    100,
+    alchemical.essence * 6 +
+      alchemical.spirit * 4 +
+      (agent.stats.resonanceScore || 0) * 0.15 +
+      powerAlignment * 10
+  )
+  const wisdomVal = Math.min(
+    100,
+    alchemical.substance * 5 +
+      alchemical.essence * 3 +
+      mc * 4 +
+      (agent.stats.wisdomShared || 0) * 0.2
+  )
+  const charismaVal = Math.min(
+    100,
+    alchemical.spirit * 5 + alchemical.essence * 4 + stage * 0.8 + mc * 2
+  )
+  const intuitionVal = Math.min(
+    100,
+    alchemical.essence * 7 +
+      alchemical.substance * 3 +
+      (agent.stats.kineticEvolution?.consciousnessVelocity || 0) * 15
+  )
+  const adaptabilityVal = Math.min(
+    100,
+    alchemical.substance * 6 +
+      alchemical.spirit * 2 +
+      (agent.stats.kineticEvolution?.interactionMomentum || 0) * 20 +
+      stage * 0.5
+  )
+  const vitalityVal = Math.min(
+    100,
+    alchemical.matter * 6 +
+      alchemical.spirit * 4 +
+      mc * 3 +
+      (agent.stats.qualityMetrics?.kineticResonance || 0) * 20
+  )
+
+  // ── Planetary 12: Celestial Dynamics ──────────────────────────
   const solarAgency = Math.min(100, alchemical.spirit * 10 + mc * 5 + powerAlignment * 15)
   const lunarReceptivity = Math.min(
     100,
@@ -63,6 +120,15 @@ export function calculateSevenSacredStats(
   )
 
   return {
+    // Sacred 7
+    power: Math.round(power),
+    resonance: Math.round(resonanceVal),
+    wisdom: Math.round(wisdomVal),
+    charisma: Math.round(charismaVal),
+    intuition: Math.round(intuitionVal),
+    adaptability: Math.round(adaptabilityVal),
+    vitality: Math.round(vitalityVal),
+    // Planetary 12
     solarAgency: Math.round(solarAgency),
     lunarReceptivity: Math.round(lunarReceptivity),
     mercurialVelocity: Math.round(mercurialVelocity),

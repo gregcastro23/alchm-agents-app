@@ -431,8 +431,69 @@ export function EnhancedAgentCard({
         <div className="space-y-3">
           <p className="text-sm text-purple-200/60 line-clamp-2">{agent.abilities.specialty}</p>
 
-          {/* Planetary Consciousness Stats - Live Values */}
+          {/* Sacred 7: Core Archetypes */}
           <div className="space-y-1">
+            <div className="text-[9px] uppercase tracking-wider text-purple-300/60 font-medium px-1">
+              Sacred 7 — Core Archetypes
+            </div>
+            <div className="grid grid-cols-7 gap-1 text-xs">
+              <div
+                className="text-center p-1.5 bg-amber-500/10 rounded border border-amber-500/30"
+                title={`Power = MC×8 + Spirit×5 + Matter×3 + Alignment×20\nBirth: ${birthStats.power} → Live: ${liveStats.power}`}
+              >
+                <div className="text-[10px] text-amber-400 mb-1">⚡ PWR</div>
+                <div className="font-mono text-[10px]">{liveStats.power}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-violet-500/10 rounded border border-violet-500/30"
+                title={`Resonance = Essence×6 + Spirit×4 + Score×0.15\nBirth: ${birthStats.resonance} → Live: ${liveStats.resonance}`}
+              >
+                <div className="text-[10px] text-violet-400 mb-1">🎵 RES</div>
+                <div className="font-mono text-[10px]">{liveStats.resonance}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-blue-400/10 rounded border border-blue-400/30"
+                title={`Wisdom = Substance×5 + Essence×3 + MC×4\nBirth: ${birthStats.wisdom} → Live: ${liveStats.wisdom}`}
+              >
+                <div className="text-[10px] text-blue-400 mb-1">📖 WIS</div>
+                <div className="font-mono text-[10px]">{liveStats.wisdom}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-rose-400/10 rounded border border-rose-400/30"
+                title={`Charisma = Spirit×5 + Essence×4 + Stage×0.8\nBirth: ${birthStats.charisma} → Live: ${liveStats.charisma}`}
+              >
+                <div className="text-[10px] text-rose-400 mb-1">✨ CHR</div>
+                <div className="font-mono text-[10px]">{liveStats.charisma}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-purple-400/10 rounded border border-purple-400/30"
+                title={`Intuition = Essence×7 + Substance×3\nBirth: ${birthStats.intuition} → Live: ${liveStats.intuition}`}
+              >
+                <div className="text-[10px] text-purple-400 mb-1">🔮 INT</div>
+                <div className="font-mono text-[10px]">{liveStats.intuition}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-teal-400/10 rounded border border-teal-400/30"
+                title={`Adaptability = Substance×6 + Spirit×2 + Momentum×20\nBirth: ${birthStats.adaptability} → Live: ${liveStats.adaptability}`}
+              >
+                <div className="text-[10px] text-teal-400 mb-1">🌊 ADP</div>
+                <div className="font-mono text-[10px]">{liveStats.adaptability}</div>
+              </div>
+              <div
+                className="text-center p-1.5 bg-green-400/10 rounded border border-green-400/30"
+                title={`Vitality = Matter×6 + Spirit×4 + MC×3\nBirth: ${birthStats.vitality} → Live: ${liveStats.vitality}`}
+              >
+                <div className="text-[10px] text-green-400 mb-1">💚 VIT</div>
+                <div className="font-mono text-[10px]">{liveStats.vitality}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Planetary 12: Celestial Dynamics */}
+          <div className="space-y-1">
+            <div className="text-[9px] uppercase tracking-wider text-purple-300/60 font-medium px-1">
+              Planetary 12 — Celestial Dynamics
+            </div>
             <div className="grid grid-cols-6 gap-1 text-xs">
               {/* Top Row: Personal/Inner Planets */}
               <div

@@ -26,7 +26,10 @@ import {
   Eye,
   Waves,
   Activity,
+  Download,
+  Archive,
 } from 'lucide-react'
+import { downloadManifest, downloadIgnitionBundle } from '@/lib/agents/ignition-bundle-generator'
 import { calculateAllPlanets } from '@/lib/enhanced-astronomical-calculator'
 import type { EnhancedBirthInfo } from '@/lib/enhanced-astronomical-calculator'
 import { parseBirthData, formatBirthData } from '@/lib/monica/birth-data-parser'
@@ -61,20 +64,29 @@ interface AgentCreationData {
 }
 
 // Icon mapping for Planetary Stats
-const STAT_ICONS = {
+const STAT_ICONS: Record<string, any> = {
+  // Sacred 7
+  power: Zap,
+  resonance: Radio,
+  wisdom: BookOpen,
+  charisma: Sparkles,
+  intuition: Eye,
+  adaptability: Waves,
+  vitality: Activity,
+  // Planetary 12
   solarAgency: Zap,
   lunarReceptivity: Eye,
   mercurialVelocity: Waves,
   venusianCoherence: Users,
   martialImpetus: Activity,
   jovianExpansion: BookOpen,
-  saturnianStructure: BookOpen, // Or some other icon
+  saturnianStructure: BookOpen,
   chironicAdaptation: Wand2,
   uranianSurprisal: Sparkles,
   neptunianResonance: Radio,
   plutonicIntegration: Atom,
   kineticAlignment: Activity,
-} as const
+}
 
 export default function ModernPhilosophersStone() {
   const [step, setStep] = useState(1)
@@ -91,6 +103,15 @@ export default function ModernPhilosophersStone() {
     },
     purpose: '',
     stats: {
+      // Sacred 7
+      power: 50,
+      resonance: 50,
+      wisdom: 50,
+      charisma: 50,
+      intuition: 50,
+      adaptability: 50,
+      vitality: 50,
+      // Planetary 12
       solarAgency: 50,
       lunarReceptivity: 50,
       mercurialVelocity: 50,
@@ -119,6 +140,33 @@ export default function ModernPhilosophersStone() {
   const [userInput, setUserInput] = useState('')
 
   const totalSteps = 5
+
+  // Load prefilled birth data from landing page if available
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedBirth = localStorage.getItem('philosophers_stone_init_birth')
+      if (savedBirth) {
+        localStorage.removeItem('philosophers_stone_init_birth')
+        setBirthInput(savedBirth)
+        const parsed = parseBirthData(savedBirth)
+        if (parsed) {
+          setAgentData(prev => ({
+            ...prev,
+            birthInfo: {
+              year: parsed.year,
+              month: parsed.month,
+              day: parsed.day,
+              hour: parsed.hour ?? 12,
+              minute: parsed.minute ?? 0,
+              latitude: parsed.latitude ?? 40.7128,
+              longitude: parsed.longitude ?? -73.9352,
+            },
+          }))
+          setStep(2) // Move directly to Step 2
+        }
+      }
+    }
+  }, [])
 
   // Calculate chart when birth info is complete
   useEffect(() => {
@@ -577,40 +625,72 @@ export default function ModernPhilosophersStone() {
                 </p>
               </div>
 
-              <Button
-                onClick={async () => {
-                  setIsCalculating(true)
-                  try {
-                    const response = await fetch('/api/create-agent', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(agentData),
-                    })
-                    await response.json()
-                    addMonicaMessage(
-                      `🎉 Success! ${agentData.name} has been crafted and is learning about you. Continue conversing to deepen the connection!`
-                    )
-                  } catch (error) {
-                    addMonicaMessage('There was an issue creating the agent. Please try again.')
-                  } finally {
-                    setIsCalculating(false)
-                  }
-                }}
-                className="w-full"
-                disabled={isCalculating}
-              >
-                {isCalculating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating Your Agent...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Create & Train Agent
-                  </>
-                )}
-              </Button>
+              <div className="flex flex-col gap-3">
+                <Button
+                  onClick={async () => {
+                    setIsCalculating(true)
+                    try {
+                      const response = await fetch('/api/create-agent', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(agentData),
+                      })
+                      await response.json()
+                      addMonicaMessage(
+                        `🎉 Success! ${agentData.name} has been crafted and is learning about you. Continue conversing to deepen the connection!`
+                      )
+                    } catch (error) {
+                      addMonicaMessage('There was an issue creating the agent. Please try again.')
+                    } finally {
+                      setIsCalculating(false)
+                    }
+                  }}
+                  className="w-full relative group overflow-hidden"
+                  disabled={isCalculating}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-yellow-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  {isCalculating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creating Your Agent...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Create & Train Agent
+                    </>
+                  )}
+                </Button>
+
+                <div className="grid grid-cols-2 gap-3 mt-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      downloadManifest(agentData)
+                      addMonicaMessage(
+                        "I've generated the Alchemical Manifest. You can find the JSON file in your downloads."
+                      )
+                    }}
+                    className="w-full group hover:border-purple-500/50 hover:bg-purple-900/20 transition-all duration-300"
+                  >
+                    <Download className="w-4 h-4 mr-2 text-purple-400 group-hover:animate-bounce" />
+                    Export Manifest (JSON)
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      downloadIgnitionBundle(agentData)
+                      addMonicaMessage(
+                        "I've prepared the Local Ignition Bundle. Extract the ZIP and follow the README to run your agent locally!"
+                      )
+                    }}
+                    className="w-full group hover:border-emerald-500/50 hover:bg-emerald-900/20 transition-all duration-300"
+                  >
+                    <Archive className="w-4 h-4 mr-2 text-emerald-400 group-hover:animate-pulse" />
+                    Download Bundle (ZIP)
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )

@@ -950,3 +950,35 @@
 .landing-float-delay-1 { animation: landing-float 6s ease-in-out 1s infinite; }
 .landing-float-delay-2 { animation: landing-float 6s ease-in-out 2s infinite; }
 .landing-float-delay-3 { animation: landing-float 6s ease-in-out 3s infinite; }
+
+/* ---------- Astro-Alchemical Transmutation Styling ---------- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 15s linear infinite;
+}
+
+/* Glassmorphism Input Focus Aura */
+.landing-glass-card input:focus {
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.25);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+

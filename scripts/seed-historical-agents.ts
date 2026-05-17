@@ -23,7 +23,7 @@ function parseDate(dateInput: Date | string): { date: Date; year: number } {
 }
 
 /**
- * Simplified Sacred 7 Stat derivation for seeding
+ * Derive all 19 Sacred Stats (Sacred 7 + Planetary 12) for seeding
  */
 function deriveSacredStats(agent: any) {
   const mc = agent.consciousness.monicaConstant || 0
@@ -33,6 +33,16 @@ function deriveSacredStats(agent: any) {
   const substance = agent.consciousness.alchemicalElements?.substance || 0.5
 
   return {
+    // Sacred 7 — Core Archetypes
+    power: Math.round(Math.min(100, 50 + (mc / 10) * 25 + spirit * 15 + matter * 10)),
+    resonance: Math.round(Math.min(100, 50 + essence * 25 + spirit * 15)),
+    wisdom: Math.round(Math.min(100, 50 + substance * 20 + essence * 15 + (mc / 10) * 10)),
+    charisma: Math.round(Math.min(100, 50 + spirit * 20 + essence * 18 + (mc / 10) * 5)),
+    intuition: Math.round(Math.min(100, 50 + essence * 30 + substance * 12)),
+    adaptability: Math.round(Math.min(100, 50 + substance * 25 + spirit * 12)),
+    vitality: Math.round(Math.min(100, 50 + matter * 25 + spirit * 18 + (mc / 10) * 5)),
+
+    // Planetary 12 — Celestial Dynamics
     solarAgency: Math.round(Math.min(100, 50 + (mc / 10) * 30 + spirit * 20)),
     lunarReceptivity: Math.round(Math.min(100, 50 + essence * 40)),
     mercurialVelocity: Math.round(Math.min(100, 50 + spirit * 30 + substance * 10)),
@@ -73,6 +83,7 @@ async function seedDatabase() {
           "color", "symbol", "natalChart", "background", "currentMood", "evolutionStage", "traits",
           "popularityScore", "conversations", "wisdomShared", "resonanceScore", "evolutionPoints",
           "isActive", "version", "craftedBy", "updatedAt", "kalchmConstant", "searchableText",
+          "powerScore", "resonanceScore7", "wisdomScore", "charismaScore", "intuitionScore", "adaptabilityScore", "vitalityScore",
           "solarAgency", "lunarReceptivity", "mercurialVelocity", "venusianCoherence", "martialImpetus", "jovianExpansion", "saturnianStructure", "chironicAdaptation", "uranianSurprisal", "neptunianResonance", "plutonicIntegration", "kineticAlignment"
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9,
@@ -83,7 +94,8 @@ async function seedDatabase() {
           $31, $32, $33, $34, $35, $36, $37,
           $38, $39, $40, $41, $42,
           true, '1.0.0', 'philosopher-stone', NOW(), 0, $43,
-          $44, $45, $46, $47, $48, $49, $50, $51, $52, $53, $54, $55
+          $44, $45, $46, $47, $48, $49, $50,
+          $51, $52, $53, $54, $55, $56, $57, $58, $59, $60, $61, $62
         )
         ON CONFLICT ("agentId") DO UPDATE SET
           "name" = EXCLUDED."name",
@@ -122,6 +134,13 @@ async function seedDatabase() {
           "evolutionStage" = EXCLUDED."evolutionStage",
           "traits" = EXCLUDED."traits",
           "searchableText" = EXCLUDED."searchableText",
+          "powerScore" = EXCLUDED."powerScore",
+          "resonanceScore7" = EXCLUDED."resonanceScore7",
+          "wisdomScore" = EXCLUDED."wisdomScore",
+          "charismaScore" = EXCLUDED."charismaScore",
+          "intuitionScore" = EXCLUDED."intuitionScore",
+          "adaptabilityScore" = EXCLUDED."adaptabilityScore",
+          "vitalityScore" = EXCLUDED."vitalityScore",
           "solarAgency" = EXCLUDED."solarAgency",
           "lunarReceptivity" = EXCLUDED."lunarReceptivity",
           "mercurialVelocity" = EXCLUDED."mercurialVelocity",
@@ -181,18 +200,27 @@ async function seedDatabase() {
         agent.stats?.resonanceScore || 0.5, // $41
         agent.stats?.evolutionPoints || 0, // $42
         searchableText, // $43
-        stats.solarAgency, // $44
-        stats.lunarReceptivity, // $45
-        stats.mercurialVelocity, // $46
-        stats.venusianCoherence, // $47
-        stats.martialImpetus, // $48
-        stats.jovianExpansion, // $49
-        stats.saturnianStructure, // $50
-        stats.chironicAdaptation, // $51
-        stats.uranianSurprisal, // $52
-        stats.neptunianResonance, // $53
-        stats.plutonicIntegration, // $54
-        stats.kineticAlignment, // $55
+        // Sacred 7
+        stats.power, // $44
+        stats.resonance, // $45
+        stats.wisdom, // $46
+        stats.charisma, // $47
+        stats.intuition, // $48
+        stats.adaptability, // $49
+        stats.vitality, // $50
+        // Planetary 12
+        stats.solarAgency, // $51
+        stats.lunarReceptivity, // $52
+        stats.mercurialVelocity, // $53
+        stats.venusianCoherence, // $54
+        stats.martialImpetus, // $55
+        stats.jovianExpansion, // $56
+        stats.saturnianStructure, // $57
+        stats.chironicAdaptation, // $58
+        stats.uranianSurprisal, // $59
+        stats.neptunianResonance, // $60
+        stats.plutonicIntegration, // $61
+        stats.kineticAlignment, // $62
       ]
 
       await pool.query(query, values)
@@ -200,7 +228,7 @@ async function seedDatabase() {
     }
 
     console.log(
-      `✅ All ${createdCount} historical agents successfully seeded/updated with 7 Sacred Stats!`
+      `✅ All ${createdCount} historical agents successfully seeded with 19 Sacred Stats (Sacred 7 + Planetary 12)!`
     )
   } catch (error) {
     console.error('❌ Error during seeding:', error)

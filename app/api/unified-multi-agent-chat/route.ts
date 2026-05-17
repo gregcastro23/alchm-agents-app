@@ -948,6 +948,15 @@ function getSacred7Stats(agent: UnifiedAgent): Sacred7Stats {
 
   return (
     sacred7Stats ?? {
+      // Sacred 7
+      power: 50,
+      resonance: 50,
+      wisdom: 50,
+      charisma: 50,
+      intuition: 50,
+      adaptability: 50,
+      vitality: 50,
+      // Planetary 12
       solarAgency: 50,
       lunarReceptivity: 50,
       mercurialVelocity: 50,

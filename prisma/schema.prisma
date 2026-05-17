@@ -621,6 +621,13 @@ model historical_agents {
   traits                 Json
   monicaCreationStory    String?
   searchableText         String?
+  powerScore             Float?                   @default(0)
+  resonanceScore7        Float?                   @default(0)
+  wisdomScore            Float?                   @default(0)
+  charismaScore          Float?                   @default(0)
+  intuitionScore         Float?                   @default(0)
+  adaptabilityScore      Float?                   @default(0)
+  vitalityScore          Float?                   @default(0)
   solarAgency            Float?                   @default(0)
   lunarReceptivity       Float?                   @default(0)
   mercurialVelocity      Float?                   @default(0)

@@ -296,9 +296,23 @@ export interface HistoricalDiet {
 }
 
 /**
- * Sacred Stats representing the 7 key Alchemical attributes
+ * Sacred Stats — Unified Consciousness Parameters
+ *
+ * Two tiers that together form a 19-parameter consciousness map:
+ *   • Core Archetypes (Sacred 7): fundamental consciousness attributes
+ *   • Celestial Dynamics (Planetary 12): planetary-cognitive state mappings
  */
 export interface SacredStats {
+  // ── Core Archetypes (Sacred 7) ──────────────────────────────────
+  power: number // ⚡ Raw consciousness force
+  resonance: number // 🎵 Connection to cosmic rhythms
+  wisdom: number // 📖 Accumulated insight depth
+  charisma: number // ✨ Magnetic influence
+  intuition: number // 🔮 Inner knowing
+  adaptability: number // 🌊 Change navigation
+  vitality: number // 💚 Life force energy
+
+  // ── Celestial Dynamics (Planetary 12) ───────────────────────────
   solarAgency: number
   lunarReceptivity: number
   mercurialVelocity: number

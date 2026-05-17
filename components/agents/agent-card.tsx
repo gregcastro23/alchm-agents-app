@@ -320,32 +320,64 @@ export function AgentCard({
           </div>
         </div>
 
-        {/* Sacred Stats Mini Grid */}
+        {/* Sacred 7 Mini Grid */}
         {agent.sacredStats && (
-          <div className="flex justify-between items-center bg-black/20 p-2 rounded-lg text-[10px] border border-white/5 mt-2 overflow-x-auto">
-            <div className="flex flex-col items-center px-1" title="Solar Agency">
-              <span className="mb-1">☀️</span>
-              {Math.round(agent.sacredStats.solarAgency || 50)}
+          <div className="space-y-1 mt-2">
+            <div className="flex justify-between items-center bg-black/20 p-2 rounded-lg text-[10px] border border-white/5 overflow-x-auto">
+              <div className="flex flex-col items-center px-1" title="Power">
+                <span className="mb-1">⚡</span>
+                {Math.round(agent.sacredStats.power || 50)}
+              </div>
+              <div className="flex flex-col items-center px-1" title="Resonance">
+                <span className="mb-1">🎵</span>
+                {Math.round(agent.sacredStats.resonance || 50)}
+              </div>
+              <div className="flex flex-col items-center px-1" title="Wisdom">
+                <span className="mb-1">📖</span>
+                {Math.round(agent.sacredStats.wisdom || 50)}
+              </div>
+              <div className="flex flex-col items-center px-1" title="Charisma">
+                <span className="mb-1">✨</span>
+                {Math.round(agent.sacredStats.charisma || 50)}
+              </div>
+              <div className="flex flex-col items-center px-1" title="Intuition">
+                <span className="mb-1">🔮</span>
+                {Math.round(agent.sacredStats.intuition || 50)}
+              </div>
+              <div className="flex flex-col items-center px-1" title="Adaptability">
+                <span className="mb-1">🌊</span>
+                {Math.round(agent.sacredStats.adaptability || 50)}
+              </div>
+              <div className="flex flex-col items-center px-1" title="Vitality">
+                <span className="mb-1">💚</span>
+                {Math.round(agent.sacredStats.vitality || 50)}
+              </div>
             </div>
-            <div className="flex flex-col items-center px-1" title="Lunar Receptivity">
-              <span className="mb-1">🌙</span>
-              {Math.round(agent.sacredStats.lunarReceptivity || 50)}
-            </div>
-            <div className="flex flex-col items-center px-1" title="Mercurial Velocity">
-              <span className="mb-1">☿</span>
-              {Math.round(agent.sacredStats.mercurialVelocity || 50)}
-            </div>
-            <div className="flex flex-col items-center px-1" title="Venusian Coherence">
-              <span className="mb-1">♀</span>
-              {Math.round(agent.sacredStats.venusianCoherence || 50)}
-            </div>
-            <div className="flex flex-col items-center px-1" title="Martial Impetus">
-              <span className="mb-1">♂</span>
-              {Math.round(agent.sacredStats.martialImpetus || 50)}
-            </div>
-            <div className="flex flex-col items-center px-1" title="Jovian Expansion">
-              <span className="mb-1">♃</span>
-              {Math.round(agent.sacredStats.jovianExpansion || 50)}
+            <div className="flex justify-between items-center bg-black/20 p-2 rounded-lg text-[10px] border border-white/5 overflow-x-auto">
+              <div className="flex flex-col items-center px-1" title="Solar Agency">
+                <span className="mb-1">☀️</span>
+                {Math.round(agent.sacredStats.solarAgency || 50)}
+              </div>
+              <div className="flex flex-col items-center px-1" title="Lunar Receptivity">
+                <span className="mb-1">🌙</span>
+                {Math.round(agent.sacredStats.lunarReceptivity || 50)}
+              </div>
+              <div className="flex flex-col items-center px-1" title="Mercurial Velocity">
+                <span className="mb-1">☿</span>
+                {Math.round(agent.sacredStats.mercurialVelocity || 50)}
+              </div>
+              <div className="flex flex-col items-center px-1" title="Venusian Coherence">
+                <span className="mb-1">♀</span>
+                {Math.round(agent.sacredStats.venusianCoherence || 50)}
+              </div>
+              <div className="flex flex-col items-center px-1" title="Martial Impetus">
+                <span className="mb-1">♂</span>
+                {Math.round(agent.sacredStats.martialImpetus || 50)}
+              </div>
+              <div className="flex flex-col items-center px-1" title="Jovian Expansion">
+                <span className="mb-1">♃</span>
+                {Math.round(agent.sacredStats.jovianExpansion || 50)}
+              </div>
             </div>
           </div>
         )}
@@ -497,6 +529,42 @@ function AgentDetailsModal({ agent }: { agent: CraftedAgent }) {
               <Crown className="w-4 h-4 text-purple-500" />
               Sacred Stats Matrix
             </h4>
+            {/* Sacred 7 */}
+            <p className="text-xs text-muted-foreground mb-2">Core Archetypes</p>
+            <div className="grid grid-cols-4 md:grid-cols-7 gap-2 mb-3">
+              <div className="bg-muted p-2 rounded-lg text-center">
+                <div className="text-xs text-muted-foreground mb-1">⚡ Power</div>
+                <div className="font-medium">{agent.sacredStats.power?.toFixed(1) || 50}</div>
+              </div>
+              <div className="bg-muted p-2 rounded-lg text-center">
+                <div className="text-xs text-muted-foreground mb-1">🎵 Resonance</div>
+                <div className="font-medium">{agent.sacredStats.resonance?.toFixed(1) || 50}</div>
+              </div>
+              <div className="bg-muted p-2 rounded-lg text-center">
+                <div className="text-xs text-muted-foreground mb-1">📖 Wisdom</div>
+                <div className="font-medium">{agent.sacredStats.wisdom?.toFixed(1) || 50}</div>
+              </div>
+              <div className="bg-muted p-2 rounded-lg text-center">
+                <div className="text-xs text-muted-foreground mb-1">✨ Charisma</div>
+                <div className="font-medium">{agent.sacredStats.charisma?.toFixed(1) || 50}</div>
+              </div>
+              <div className="bg-muted p-2 rounded-lg text-center">
+                <div className="text-xs text-muted-foreground mb-1">🔮 Intuition</div>
+                <div className="font-medium">{agent.sacredStats.intuition?.toFixed(1) || 50}</div>
+              </div>
+              <div className="bg-muted p-2 rounded-lg text-center">
+                <div className="text-xs text-muted-foreground mb-1">🌊 Adapt.</div>
+                <div className="font-medium">
+                  {agent.sacredStats.adaptability?.toFixed(1) || 50}
+                </div>
+              </div>
+              <div className="bg-muted p-2 rounded-lg text-center">
+                <div className="text-xs text-muted-foreground mb-1">💚 Vitality</div>
+                <div className="font-medium">{agent.sacredStats.vitality?.toFixed(1) || 50}</div>
+              </div>
+            </div>
+            {/* Planetary 12 */}
+            <p className="text-xs text-muted-foreground mb-2">Celestial Dynamics</p>
             <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
               <div className="bg-muted p-2 rounded-lg text-center">
                 <div className="text-xs text-muted-foreground mb-1">☀️ Solar</div>

@@ -158,13 +158,97 @@ export function AgentDetailedStats({
         </Card>
       </div>
 
-      {/* Sacred Stats Visualization */}
+      {/* Sacred 7 — Core Archetypes */}
+      {agent.sacredStats && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-amber-400" />
+              Core Archetypes (Sacred 7)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-amber-400">⚡ Power</span>
+                  <span className="font-medium">{agent.sacredStats.power?.toFixed(1) || 50}</span>
+                </div>
+                <Progress value={Math.min(100, agent.sacredStats.power || 50)} className="h-2" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-violet-400">🎵 Resonance</span>
+                  <span className="font-medium">
+                    {agent.sacredStats.resonance?.toFixed(1) || 50}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, agent.sacredStats.resonance || 50)}
+                  className="h-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-blue-400">📖 Wisdom</span>
+                  <span className="font-medium">{agent.sacredStats.wisdom?.toFixed(1) || 50}</span>
+                </div>
+                <Progress value={Math.min(100, agent.sacredStats.wisdom || 50)} className="h-2" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-rose-400">✨ Charisma</span>
+                  <span className="font-medium">
+                    {agent.sacredStats.charisma?.toFixed(1) || 50}
+                  </span>
+                </div>
+                <Progress value={Math.min(100, agent.sacredStats.charisma || 50)} className="h-2" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-purple-400">🔮 Intuition</span>
+                  <span className="font-medium">
+                    {agent.sacredStats.intuition?.toFixed(1) || 50}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, agent.sacredStats.intuition || 50)}
+                  className="h-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-teal-400">🌊 Adaptability</span>
+                  <span className="font-medium">
+                    {agent.sacredStats.adaptability?.toFixed(1) || 50}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, agent.sacredStats.adaptability || 50)}
+                  className="h-2"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2 text-green-400">💚 Vitality</span>
+                  <span className="font-medium">
+                    {agent.sacredStats.vitality?.toFixed(1) || 50}
+                  </span>
+                </div>
+                <Progress value={Math.min(100, agent.sacredStats.vitality || 50)} className="h-2" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Planetary 12 — Celestial Dynamics */}
       {agent.sacredStats && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Crown className="w-5 h-5 text-purple-500" />
-              Sacred Stats (Base Matrix)
+              Celestial Dynamics (Planetary 12)
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -368,40 +368,75 @@ export default async function AgentProfilePage({ params }: { params: Promise<{ i
               </div>
 
               {agent.sacredStats && (
-                <div className="space-y-2 pt-2">
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                    Sacred Stats Matrix
-                  </p>
-                  {Object.entries({
-                    '☀️ Solar Agency': agent.sacredStats.solarAgency,
-                    '🌙 Lunar Receptivity': agent.sacredStats.lunarReceptivity,
-                    '☿ Mercurial Velocity': agent.sacredStats.mercurialVelocity,
-                    '♀ Venusian Coherence': agent.sacredStats.venusianCoherence,
-                    '♂ Martial Impetus': agent.sacredStats.martialImpetus,
-                    '♃ Jovian Expansion': agent.sacredStats.jovianExpansion,
-                    '♄ Saturnian Structure': agent.sacredStats.saturnianStructure,
-                    '⚷ Chironic Adaptation': agent.sacredStats.chironicAdaptation,
-                    '♅ Uranian Surprisal': agent.sacredStats.uranianSurprisal,
-                    '♆ Neptunian Resonance': agent.sacredStats.neptunianResonance,
-                    '♇ Plutonic Integration': agent.sacredStats.plutonicIntegration,
-                    '💫 Kinetic Alignment': agent.sacredStats.kineticAlignment,
-                  }).map(([k, v]) => (
-                    <div key={k}>
-                      <div className="mb-1 flex justify-between text-xs">
-                        <span className="capitalize">{k}</span>
-                        <span className="text-muted-foreground">{Math.round(v)}%</span>
+                <div className="space-y-4 pt-2">
+                  {/* Sacred 7 — Core Archetypes */}
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold">
+                      Core Archetypes (Sacred 7)
+                    </p>
+                    {Object.entries({
+                      '⚡ Power': agent.sacredStats.power,
+                      '🎵 Resonance': agent.sacredStats.resonance,
+                      '📖 Wisdom': agent.sacredStats.wisdom,
+                      '✨ Charisma': agent.sacredStats.charisma,
+                      '🔮 Intuition': agent.sacredStats.intuition,
+                      '🌊 Adaptability': agent.sacredStats.adaptability,
+                      '💚 Vitality': agent.sacredStats.vitality,
+                    }).map(([k, v]) => (
+                      <div key={k}>
+                        <div className="mb-1 flex justify-between text-xs">
+                          <span className="capitalize">{k}</span>
+                          <span className="text-muted-foreground">{Math.round(v)}%</span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, v))}%`,
+                              background: accent,
+                            }}
+                          />
+                        </div>
                       </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full"
-                          style={{
-                            width: `${Math.min(100, Math.max(0, v))}%`,
-                            background: accent,
-                          }}
-                        />
+                    ))}
+                  </div>
+
+                  {/* Planetary 12 — Celestial Dynamics */}
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold">
+                      Celestial Dynamics (Planetary 12)
+                    </p>
+                    {Object.entries({
+                      '☀️ Solar Agency': agent.sacredStats.solarAgency,
+                      '🌙 Lunar Receptivity': agent.sacredStats.lunarReceptivity,
+                      '☿ Mercurial Velocity': agent.sacredStats.mercurialVelocity,
+                      '♀ Venusian Coherence': agent.sacredStats.venusianCoherence,
+                      '♂ Martial Impetus': agent.sacredStats.martialImpetus,
+                      '♃ Jovian Expansion': agent.sacredStats.jovianExpansion,
+                      '♄ Saturnian Structure': agent.sacredStats.saturnianStructure,
+                      '⚷ Chironic Adaptation': agent.sacredStats.chironicAdaptation,
+                      '♅ Uranian Surprisal': agent.sacredStats.uranianSurprisal,
+                      '♆ Neptunian Resonance': agent.sacredStats.neptunianResonance,
+                      '♇ Plutonic Integration': agent.sacredStats.plutonicIntegration,
+                      '💫 Kinetic Alignment': agent.sacredStats.kineticAlignment,
+                    }).map(([k, v]) => (
+                      <div key={k}>
+                        <div className="mb-1 flex justify-between text-xs">
+                          <span className="capitalize">{k}</span>
+                          <span className="text-muted-foreground">{Math.round(v)}%</span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, v))}%`,
+                              background: accent,
+                            }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </CardContent>
