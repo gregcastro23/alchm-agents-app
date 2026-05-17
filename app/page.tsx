@@ -365,7 +365,11 @@ export default function LandingPage() {
                 window.open('https://github.com/cookingwithcastro/alchm-desktop/releases', '_blank')
               }}
             >
-              <Monitor size={18} />
+              <img
+                src="/alchm-logo.jpg"
+                className="w-5 h-5 rounded-full object-cover mr-2 border border-violet-500/40"
+                alt="Alchm Logo"
+              />
               Alchm Desktop
             </button>
           </div>
@@ -487,7 +491,11 @@ export default function LandingPage() {
                   )
                 }}
               >
-                <Monitor className="w-4 h-4 inline mr-1.5" />
+                <img
+                  src="/alchm-logo.jpg"
+                  className="w-4 h-4 rounded-full inline mr-1.5 object-cover border border-violet-500/40"
+                  alt="Alchm Logo"
+                />
                 Get App
               </button>
               <button className="landing-secondary-btn flex-1" onClick={() => router.push('/me')}>

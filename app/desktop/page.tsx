@@ -484,8 +484,12 @@ export default function App() {
             <span className="w-3 h-3 rounded-full bg-yellow-500/80 border border-yellow-600/30" />
             <span className="w-3 h-3 rounded-full bg-green-500/80 border border-green-600/30" />
           </div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-purple-400 tracking-wider">
-            <Laptop className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-2 text-xs font-semibold text-purple-400 tracking-wider font-mono">
+            <img
+              src="/alchm-logo.jpg"
+              className="w-4 h-4 rounded-full object-cover border border-purple-500/40"
+              alt="Alchm Logo"
+            />
             MEWTWO DESKTOP COMPANION · V1.0.0
           </div>
         </div>

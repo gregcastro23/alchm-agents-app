@@ -158,8 +158,12 @@ export function Navigation() {
         <div className="nav-row">
           <div className="nav-left">
             {/* Logo */}
-            <Link href="/" className="nav-logo">
-              <span className="nav-logo-icon">✦</span>
+            <Link href="/" className="nav-logo flex items-center gap-2">
+              <img
+                src="/alchm-logo.jpg"
+                className="w-6 h-6 rounded-full object-cover border border-violet-500/40"
+                alt="Alchm Logo"
+              />
               <span className="nav-logo-text">Planetary Agents</span>
             </Link>
 
@@ -215,9 +219,13 @@ export function Navigation() {
                 variant="ghost"
                 size="icon"
                 aria-label="Download Desktop App"
-                className="nav-icon-btn text-violet-400 hover:text-violet-300"
+                className="nav-icon-btn p-0 text-violet-400 hover:text-violet-300"
               >
-                <Monitor className="h-5 w-5" />
+                <img
+                  src="/alchm-logo.jpg"
+                  className="h-6 w-6 rounded-full object-cover border border-violet-500/40 hover:scale-110 transition-transform"
+                  alt="Alchm Logo"
+                />
               </Button>
             </a>
             <Link href="/dashboard">
@@ -297,7 +305,12 @@ export function Navigation() {
                 className="nav-mobile-action text-violet-400"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Monitor className="w-4 h-4" /> Download Desktop
+                <img
+                  src="/alchm-logo.jpg"
+                  className="w-4 h-4 rounded-full object-cover inline mr-1.5 border border-violet-500/40"
+                  alt="Alchm Logo"
+                />{' '}
+                Download Desktop
               </a>
               <Link
                 href="/dashboard"
