@@ -5,6 +5,7 @@ import os
 import threading
 import uvicorn
 import httpx
+import math
 from datetime import datetime, timedelta
 import asyncio
 
@@ -141,6 +142,175 @@ async def providers_health():
     return {
         cfg.name: result
         for cfg, result in zip(providers.all_known_providers(), pings)
+    }
+
+
+# --- Frontend compatibility endpoints ---
+
+ZODIAC_SIGNS = [
+    "Aries",
+    "Taurus",
+    "Gemini",
+    "Cancer",
+    "Leo",
+    "Virgo",
+    "Libra",
+    "Scorpio",
+    "Sagittarius",
+    "Capricorn",
+    "Aquarius",
+    "Pisces",
+]
+
+PLANETARY_PERIODS_DAYS = {
+    "Sun": 365.25,
+    "Moon": 27.321661,
+    "Mercury": 87.969,
+    "Venus": 224.701,
+    "Mars": 686.98,
+    "Jupiter": 4332.59,
+    "Saturn": 10759.22,
+    "Uranus": 30685.4,
+    "Neptune": 60189.0,
+    "Pluto": 90560.0,
+}
+
+PLANETARY_OFFSETS = {
+    "Sun": 28.0,
+    "Moon": 91.0,
+    "Mercury": 74.0,
+    "Venus": 132.0,
+    "Mars": 201.0,
+    "Jupiter": 16.0,
+    "Saturn": 301.0,
+    "Uranus": 64.0,
+    "Neptune": 359.0,
+    "Pluto": 277.0,
+}
+
+
+def _request_datetime(payload: Dict[str, Any]) -> datetime:
+    now = datetime.utcnow()
+    return datetime(
+        int(payload.get("year") or now.year),
+        int(payload.get("month") or now.month),
+        int(payload.get("day") or payload.get("date") or now.day),
+        int(payload.get("hour") or 0),
+        int(payload.get("minute") or 0),
+    )
+
+
+def _planetary_positions_for(dt: datetime) -> Dict[str, Dict[str, Any]]:
+    epoch = datetime(2000, 1, 1, 12, 0)
+    elapsed_days = (dt - epoch).total_seconds() / 86400
+    positions: Dict[str, Dict[str, Any]] = {}
+
+    for planet, period in PLANETARY_PERIODS_DAYS.items():
+        longitude = (PLANETARY_OFFSETS[planet] + (elapsed_days / period) * 360) % 360
+        sign_index = int(longitude // 30)
+        degree_float = longitude % 30
+        degree = int(degree_float)
+        minute = int(round((degree_float - degree) * 60))
+        speed = 360 / period
+        positions[planet] = {
+            "sign": ZODIAC_SIGNS[sign_index],
+            "degree": degree,
+            "minute": minute,
+            "exactLongitude": round(longitude, 4),
+            "isRetrograde": False,
+            "retrogradeSymbol": "",
+            "longitudeSpeed": round(speed, 6),
+            "arcminutesPerDay": round(speed * 60, 4),
+            "speedDisplay": f"{round(speed, 3)}°/day",
+        }
+
+    return positions
+
+
+def _elemental_scores(dt: datetime) -> Dict[str, float]:
+    day_angle = ((dt.timetuple().tm_yday / 365.25) * math.tau) % math.tau
+    hour_angle = ((dt.hour + dt.minute / 60) / 24 * math.tau) % math.tau
+    return {
+        "spirit_score": round(3.5 + 1.5 * (1 + math.sin(day_angle)), 4),
+        "essence_score": round(3.5 + 1.5 * (1 + math.cos(hour_angle)), 4),
+        "matter_score": round(3.5 + 1.5 * (1 + math.cos(day_angle)), 4),
+        "substance_score": round(3.5 + 1.5 * (1 + math.sin(hour_angle)), 4),
+    }
+
+
+@app.post("/api/planetary/positions")
+async def planetary_positions(request: Dict[str, Any]):
+    dt = _request_datetime(request)
+    return {
+        "birth_info": {
+            "year": dt.year,
+            "month": dt.month,
+            "date": dt.day,
+            "hour": dt.hour,
+            "minute": dt.minute,
+        },
+        "planetary_positions": _planetary_positions_for(dt),
+    }
+
+
+@app.get("/planetary/current")
+async def current_planetary_positions():
+    dt = datetime.utcnow()
+    return {
+        "birth_info": {
+            "year": dt.year,
+            "month": dt.month,
+            "date": dt.day,
+            "hour": dt.hour,
+            "minute": dt.minute,
+        },
+        "planetary_positions": _planetary_positions_for(dt),
+    }
+
+
+@app.post("/api/planetary/positions/bulk")
+async def bulk_planetary_positions(request: schemas.BulkPositionsRequest):
+    samples = []
+    current = request.startDate
+    step = timedelta(hours=max(request.intervalHours, 0.25))
+    while current <= request.endDate and len(samples) < 500:
+        samples.append({
+            "timestamp": current.isoformat(),
+            "positions": {
+                "birth_info": {
+                    "year": current.year,
+                    "month": current.month,
+                    "date": current.day,
+                    "hour": current.hour,
+                    "minute": current.minute,
+                },
+                "planetary_positions": _planetary_positions_for(current),
+            },
+        })
+        current += step
+
+    return {"samples": samples, "count": len(samples), "degraded": True}
+
+
+@app.post("/api/alchemical/quantities")
+async def alchemical_quantities(request: Dict[str, Any]):
+    dt = _request_datetime(request)
+    scores = _elemental_scores(dt)
+    kinetic_val = float(request.get("kinetic_rating") or 0) / 10
+    thermo_val = float(request.get("thermo_rating") or 0) / 10
+    if kinetic_val == 0:
+        kinetic_val = round((scores["spirit_score"] + scores["substance_score"]) / 20, 4)
+    if thermo_val == 0:
+        thermo_val = round((scores["essence_score"] + scores["matter_score"]) / 20, 4)
+
+    return {
+        **scores,
+        "kinetic_val": kinetic_val,
+        "thermo_val": thermo_val,
+        "metadata": {
+            "source": "local-fastapi-compatibility",
+            "degraded": True,
+        },
     }
 
 # --- Agent Management ---
@@ -315,14 +485,50 @@ async def ingest_knowledge(agent_id: str, documents: List[str]):
     return {"success": True, "count": len(documents)}
 
 @app.get("/api/rag/search")
-async def search_knowledge(agent_id: str, query: str):
-    results = rag.vector_store.query(
-        collection_name="historical-agents",
-        query_text=query,
-        n_results=5,
-        where={"agentId": agent_id}
-    )
-    return results
+async def search_knowledge(agent_id: str, query: str, db: Session = Depends(database.get_db)):
+    try:
+        return rag.vector_store.query(
+            collection_name="historical-agents",
+            query_text=query,
+            n_results=5,
+            where={"agentId": agent_id}
+        )
+    except Exception as exc:
+        agent = crud.get_agent(db, agent_id)
+        if not agent:
+            raise HTTPException(status_code=404, detail="Agent not found")
+
+        fields = [
+            agent.name,
+            agent.title,
+            agent.specialty,
+            agent.historicalEra,
+            agent.culture,
+            agent.geography,
+            str(agent.personalityCore or ""),
+            str(agent.personalityGifts or ""),
+            str(agent.personalityChallenges or ""),
+        ]
+        haystack = "\n".join(field for field in fields if field)
+        terms = [term.lower() for term in query.split() if term.strip()]
+        score = sum(1 for term in terms if term in haystack.lower())
+        distance = 1.0 - min(score / max(len(terms), 1), 1.0)
+        document = (
+            f"{agent.name} — {agent.title or 'Historical Agent'}\n"
+            f"Specialty: {agent.specialty or 'General wisdom'}\n"
+            f"Era: {agent.historicalEra or 'Unknown'}\n"
+            f"Culture: {agent.culture or 'Unknown'}\n"
+            f"Knowledge fallback: {haystack[:1200]}"
+        )
+
+        return {
+            "ids": [[f"{agent_id}-lexical-fallback"]],
+            "documents": [[document]],
+            "metadatas": [[{"agentId": agent_id, "source": "lexical-db-fallback"}]],
+            "distances": [[distance]],
+            "degraded": True,
+            "error": str(exc),
+        }
 
 
 @app.post("/api/rag/rebuild")

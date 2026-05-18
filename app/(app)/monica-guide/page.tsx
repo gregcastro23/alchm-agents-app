@@ -241,7 +241,7 @@ export default function MonicaGuidePage() {
           <div className="monica-avatar mx-auto">
             <div className="relative">
               <Image
-                src="https://alchm.xyz/static/media/logo.f986535a.webp"
+                src="/alchm-logo.png"
                 alt="Monica - Alchm System Expert"
                 className="h-12 w-12 rounded-full"
                 width={48}
@@ -371,7 +371,7 @@ export default function MonicaGuidePage() {
                         {message.type === 'monica' && (
                           <div className="flex items-center gap-2 mb-2">
                             <Image
-                              src="https://alchm.xyz/static/media/logo.f986535a.webp"
+                              src="/alchm-logo.png"
                               alt="Monica"
                               className="h-4 w-4 rounded-full"
                               width={16}
@@ -395,7 +395,7 @@ export default function MonicaGuidePage() {
                       <div className="bg-background/90 dark:bg-card/90 border border-green-200 dark:border-green-700 rounded-r-lg rounded-tl-lg p-3 max-w-[80%] backdrop-blur-sm">
                         <div className="flex items-center gap-2 mb-2">
                           <Image
-                            src="https://alchm.xyz/static/media/logo.f986535a.webp"
+                            src="/alchm-logo.png"
                             alt="Monica"
                             className="h-4 w-4 rounded-full"
                             width={16}

@@ -159,7 +159,7 @@ export function Navigation() {
             {/* Logo */}
             <Link href="/" className="nav-logo flex items-center gap-2">
               <img
-                src="/alchm-logo.jpg"
+                src="/alchm-logo.png"
                 className="w-6 h-6 rounded-full object-cover border border-violet-500/40"
                 alt="Alchm Logo"
               />
@@ -221,7 +221,7 @@ export function Navigation() {
                 className="nav-icon-btn p-0 text-violet-400 hover:text-violet-300"
               >
                 <img
-                  src="/alchm-logo.jpg"
+                  src="/alchm-logo.png"
                   className="h-6 w-6 rounded-full object-cover border border-violet-500/40 hover:scale-110 transition-transform"
                   alt="Alchm Logo"
                 />
@@ -305,7 +305,7 @@ export function Navigation() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <img
-                  src="/alchm-logo.jpg"
+                  src="/alchm-logo.png"
                   className="w-4 h-4 rounded-full object-cover inline mr-1.5 border border-violet-500/40"
                   alt="Alchm Logo"
                 />{' '}

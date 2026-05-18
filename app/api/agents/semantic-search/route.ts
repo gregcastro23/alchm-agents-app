@@ -41,13 +41,46 @@ function checkRagEnabled() {
   return null
 }
 
+async function searchBackendRag(agentId: string, concept: string) {
+  const backendUrl =
+    process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+  const url = new URL('/api/rag/search', backendUrl)
+  url.searchParams.set('agent_id', agentId)
+  url.searchParams.set('query', concept)
+
+  const response = await fetch(url, { cache: 'no-store' })
+  if (!response.ok) {
+    throw new Error(`Backend RAG search failed with HTTP ${response.status}`)
+  }
+
+  const data = await response.json()
+  const documents = data.documents?.[0] || []
+  const metadatas = data.metadatas?.[0] || []
+  const distances = data.distances?.[0] || []
+  const ids = data.ids?.[0] || []
+
+  return {
+    success: true,
+    degraded: data.degraded === true,
+    source: 'backend-rag',
+    results: documents.map((document: string, index: number) => ({
+      id: ids[index] || `${agentId}-${index}`,
+      agentId,
+      agentName: metadatas[index]?.agentName || agentId,
+      content: document,
+      score: Math.max(0, 1 - Number(distances[index] || 0)),
+      metadata: metadatas[index] || {},
+    })),
+    backendError: data.error,
+  }
+}
+
 /**
  * POST /api/agents/semantic-search
  * Performs semantic search operations
  */
 export async function POST(req: NextRequest) {
   const ragDisabled = checkRagEnabled()
-  if (ragDisabled) return ragDisabled
 
   return withApiErrorHandling(
     async () => {
@@ -57,6 +90,11 @@ export async function POST(req: NextRequest) {
 
       if (!body.concept || body.concept.trim().length === 0) {
         return NextResponse.json({ success: false, error: 'concept is required' }, { status: 400 })
+      }
+
+      if (ragDisabled) {
+        if (!body.agentId || body.mode === 'multi' || body.mode === 'similar') return ragDisabled
+        return searchBackendRag(body.agentId, body.concept)
       }
 
       const { searchAgentKnowledge, multiAgentSearch, findSimilarAgents } =
@@ -84,7 +122,17 @@ export async function POST(req: NextRequest) {
             { status: 400 }
           )
         }
-        result = await searchAgentKnowledge(body.agentId, body.concept, body.options)
+        try {
+          result = await searchAgentKnowledge(body.agentId, body.concept, body.options)
+        } catch (error) {
+          logger.warn('Semantic search fell back to backend RAG', {
+            system: 'api',
+            operation: 'semantic_search_fallback',
+            agentId: body.agentId,
+            metadata: { error: error instanceof Error ? error.message : String(error) },
+          })
+          return searchBackendRag(body.agentId, body.concept)
+        }
       }
 
       return {

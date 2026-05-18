@@ -159,7 +159,7 @@ export default function MonicaPage() {
           <Card className="bg-gradient-to-br from-emerald-900/50 to-purple-900/50 border-emerald-500/50">
             <CardHeader className="text-center">
               <Avatar className="w-16 h-16 mx-auto mb-3 border-2 border-emerald-500">
-                <AvatarImage src="https://alchm.xyz/static/media/logo.f986535a.webp" alt="Monica" />
+                <AvatarImage src="/alchm-logo.png" alt="Monica" />
                 <AvatarFallback className="bg-emerald-600 text-white text-xl">⚗️</AvatarFallback>
               </Avatar>
               <CardTitle className="text-emerald-300 text-xl">Monica</CardTitle>

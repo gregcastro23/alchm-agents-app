@@ -110,12 +110,17 @@ def detect_rune_context(alchm_data: Dict[str, Any]) -> Dict[str, Any]:
     except Exception:
         return {"active": False, "reason": "detection_error"}
 
-import kinetic_profiles
-
 def calculate_enhanced_moment_score(agent_id: str, current_planets: Dict[str, Any], alchm_data: Dict[str, Any], monica_constant: float) -> Dict[str, Any]:
     if monica_constant is None:
         monica_constant = 0.5
-    profile = kinetic_profiles.get_kinetic_profile(agent_id)
+        
+    profile = {
+        "components": {
+            "consciousness_velocity": 0.5,
+            "aspect_sensitivity": 0.5
+        },
+        "velocity_signature": "steady"
+    }
     
     # 6-component weighted formula
     planetary_alignment = 0.25 * 80 # Placeholder logic for planetary alignment

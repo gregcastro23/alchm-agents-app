@@ -588,7 +588,7 @@ function PhilosophersStoneInner() {
                 <div className="relative">
                   <Avatar className="w-20 h-20 border-4 border-emerald-500 shadow-lg shadow-emerald-500/50">
                     <AvatarImage
-                      src="https://alchm.xyz/static/media/logo.f986535a.webp"
+                      src="/alchm-logo.png"
                       alt="Monica - Master Consciousness Crafter"
                     />
                     <AvatarFallback className="bg-gradient-to-br from-emerald-600 to-purple-600 text-white text-2xl">

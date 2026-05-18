@@ -891,7 +891,7 @@ export function MonicaOmnipresent() {
             className={`w-16 h-16 rounded-full border-2 border-emerald-400 bg-gradient-to-br from-emerald-50 via-green-50 to-cyan-50 dark:from-emerald-950 dark:via-green-950 dark:to-cyan-950 flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-emerald-400/50 ${hasUnreadTips ? 'animate-pulse border-yellow-400 shadow-yellow-400/50' : ''}`}
           >
             <Image
-              src="https://alchm.xyz/static/media/logo.f986535a.webp"
+              src="/alchm-logo.png"
               alt="Monica - Your Consciousness Guide"
               width={40}
               height={40}
@@ -945,7 +945,7 @@ export function MonicaOmnipresent() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Image
-                  src="https://alchm.xyz/static/media/logo.f986535a.webp"
+                  src="/alchm-logo.png"
                   alt="Monica"
                   width={32}
                   height={32}
@@ -1176,7 +1176,7 @@ export function MonicaOmnipresent() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Image
-                  src="https://alchm.xyz/static/media/logo.f986535a.webp"
+                  src="/alchm-logo.png"
                   alt="Monica"
                   width={32}
                   height={32}

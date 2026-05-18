@@ -627,7 +627,7 @@ export default function App() {
           </div>
           <div className="flex items-center gap-2 text-xs font-semibold text-purple-400 tracking-wider font-mono">
             <img
-              src="/alchm-logo.jpg"
+              src="/alchm-logo.png"
               className="w-4 h-4 rounded-full object-cover border border-purple-500/40"
               alt="Alchm Logo"
             />

@@ -279,10 +279,7 @@ export function MonicaChatBubble({
                   <div className="flex items-center gap-3">
                     <div className="relative">
                       <Avatar className="w-10 h-10 border-2 border-emerald-400 shadow-md">
-                        <AvatarImage
-                          src="https://alchm.xyz/static/media/logo.f986535a.webp"
-                          alt="Monica"
-                        />
+                        <AvatarImage src="/alchm-logo.png" alt="Monica" />
                         <AvatarFallback className="bg-gradient-to-br from-emerald-600 to-green-600 text-white text-sm">
                           ⚗️
                         </AvatarFallback>

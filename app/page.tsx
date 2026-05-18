@@ -380,7 +380,7 @@ export default function LandingPage() {
               onClick={handleGetAppClick}
             >
               <img
-                src="/alchm-logo.jpg"
+                src="/alchm-logo.png"
                 className="w-5 h-5 rounded-full object-cover mr-2 border border-violet-500/40"
                 alt="Alchm Logo"
               />
@@ -498,7 +498,7 @@ export default function LandingPage() {
               </button>
               <button className="landing-secondary-btn flex-1" onClick={handleGetAppClick}>
                 <img
-                  src="/alchm-logo.jpg"
+                  src="/alchm-logo.png"
                   className="w-4 h-4 rounded-full inline mr-1.5 object-cover border border-violet-500/40"
                   alt="Alchm Logo"
                 />
