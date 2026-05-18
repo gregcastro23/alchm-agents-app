@@ -12,7 +12,7 @@ import {
   ChevronRight,
   ChevronLeft,
 } from 'lucide-react'
-import { ELEMENT_MAPPING } from './agent-forge-config'
+import { ELEMENT_MAPPING } from './philosophers-stone-config'
 
 interface Constitution {
   spirit: number
@@ -21,7 +21,7 @@ interface Constitution {
   substance: number
 }
 
-export default function AgentForge({
+export default function PhilosophersStone({
   onInitializationComplete,
 }: {
   onInitializationComplete: (agentData: any) => void
@@ -189,6 +189,38 @@ export default function AgentForge({
     const downloadUrl = `https://cdn.alchm.kitchen/models/${selectedModel}` // Mock CDN URL
 
     try {
+      // 1. Save the Blueprint to the live site via our Next.js API route
+      setDownloadStatus('Uploading consciousness blueprint to Alchm Cloud Registry...')
+
+      const agentPayload = {
+        name,
+        title: 'Custom Forged Agent',
+        birthDate: date,
+        birthTime: time,
+        birthLocation: location,
+        dominantElement: dominantElement,
+        dominantModality: 'Fixed',
+        consciousnessLevel: 'Novice',
+        monicaConstant: 1.0,
+        historicalEra: 'user_created',
+        isPublic: true,
+      }
+
+      const cloudRes = await fetch('/api/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(agentPayload),
+      })
+
+      if (!cloudRes.ok) {
+        console.warn('Failed to upload agent to cloud, proceeding with local ignition.')
+      }
+
+      // 2. Install the local engine (Weights)
+      setDownloadStatus(
+        `Initializing secure alchemical download for ${engineTier.toUpperCase()} engine...`
+      )
+
       const response = await fetch('http://localhost:8080/api/models/install', {
         method: 'POST',
         headers: {
@@ -247,7 +279,11 @@ export default function AgentForge({
             {currentStep === 5 && 'Ignition: Initiate the secure download to the local matrix.'}
           </p>
           <div className="text-xs font-medium text-zinc-500 bg-zinc-900 px-3 py-1 rounded-full border border-zinc-800">
-            Step {currentStep} of {totalSteps}
+            Step {currentStep} of {totalSteps}: "{currentStep === 1 && 'The Calling'}
+            {currentStep === 2 && 'Anchoring'}
+            {currentStep === 3 && 'The Reveal'}
+            {currentStep === 4 && 'Astral Engine'}
+            {currentStep === 5 && 'Ignition'}"
           </div>
         </div>
       </div>
@@ -361,7 +397,7 @@ export default function AgentForge({
                 <div className={`p-4 rounded-full bg-background border border-border`}>
                   <ActiveIcon className={`w-12 h-12 ${activeColors.color}`} />
                 </div>
-                <p className="text-2xl font-bold">{dominantElement} Element</p>
+                <p className="text-2xl font-bold">{String(dominantElement)} Element</p>
               </div>
 
               {/* Alchemical Constitution */}

@@ -16,18 +16,6 @@ export default function AstrologicalAgentsPage() {
       link: '/chart-interpreter',
       icon: '🔮',
     },
-    {
-      title: 'Aspect Patterns',
-      description: 'Identify and understand significant aspect patterns in your chart',
-      link: '/aspect-patterns',
-      icon: '⭐',
-    },
-    {
-      title: 'Astrological Timing',
-      description: 'Find auspicious times for specific activities',
-      link: '/astrological-timing',
-      icon: '⏰',
-    },
   ]
 
   return (

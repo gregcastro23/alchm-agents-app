@@ -113,3 +113,21 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
     })
   }
 }
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  try {
+    const body = await request.json()
+    const result = await backend.agents.create(body)
+
+    return NextResponse.json({
+      success: true,
+      agent: result,
+    })
+  } catch (error: any) {
+    console.error('Failed to create agent via backend:', error)
+    return NextResponse.json(
+      { success: false, error: error.message || 'Failed to create agent' },
+      { status: 500 }
+    )
+  }
+}

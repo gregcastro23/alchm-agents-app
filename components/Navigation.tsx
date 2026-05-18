@@ -115,7 +115,6 @@ const navigationGroups = [
         label: 'Consciousness Demo',
         description: 'Explore agent consciousness.',
       },
-      { href: '/kinetics-demo', label: 'Kinetics Demo', description: 'Kinetic interactions.' },
     ],
   },
 ]

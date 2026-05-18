@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // Proxies requests to the WTEN backend to avoid client-side CORS issues
-// This is primarily for ingredient images and agent sync features called from the client
-export async function proxyRequest(
+async function proxyRequest(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const path = params.path.join('/')
+  const resolvedParams = await params
+  const path = resolvedParams.path.join('/')
   const searchParams = request.nextUrl.searchParams.toString()
   const query = searchParams ? `?${searchParams}` : ''
 

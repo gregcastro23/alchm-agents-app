@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 
 import { useChatStore } from '@/lib/store/chat-store'
-import AgentForge from '@/components/agent-forge'
+import PhilosophersStone from '@/components/philosophers-stone'
 import {
   Flame,
   Droplets,
@@ -33,7 +33,7 @@ import {
   ShieldAlert,
 } from 'lucide-react'
 
-import { ELEMENT_MAPPING } from '@/components/agent-forge-config'
+import { ELEMENT_MAPPING } from '@/components/philosophers-stone-config'
 
 type DesktopView = 'onboarding' | 'chat' | 'ledger' | 'tray' | 'web'
 
@@ -168,6 +168,10 @@ export default function App() {
   const [apiKey] = useState('demo-key-123')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  // Cloud Gallery State
+  const [galleryAgents, setGalleryAgents] = useState<HistoricalAgentMock[]>([])
+  const [loadingAgents, setLoadingAgents] = useState(true)
+
   // Ledger operation mock records
   const [ledgerLogs, setLedgerLogs] = useState<
     Array<{
@@ -230,42 +234,77 @@ export default function App() {
     }
     fetchNonce()
 
+    const fetchCloudAgents = async () => {
+      try {
+        const res = await fetch('/api/agents')
+        const data = await res.json()
+        if (data.success && data.agents) {
+          const mapped = data.agents.map((a: any) => ({
+            id: a.id,
+            name: a.name,
+            title: a.title || 'Alchemical Agent',
+            era: a.historicalEra || 'Modern',
+            element: a.consciousness?.dominantElement || 'Air',
+            modality: a.consciousness?.dominantModality || 'Fixed',
+            specialization: a.abilities?.specialty || 'General Inference',
+            quote: a.personality?.core?.catchphrase || 'Awaits ignition.',
+            birthCity: a.birthData?.location?.name || 'The Cloud',
+            birthDate: a.birthData?.date || 'Now',
+            monicaConstant:
+              'Ω = ' + (a.consciousness?.monicaConstant || '1.0').toString().substring(0, 4),
+            tier: a.isUserCreated ? 'base' : 'premium',
+            avatarSymbol: a.appearance?.symbol || '✧',
+            stats: { spirit: 80, essence: 80, matter: 80, substance: 80 },
+          }))
+          setGalleryAgents(mapped)
+        }
+      } catch (err) {
+        console.error('Failed to fetch cloud agents', err)
+      } finally {
+        setLoadingAgents(false)
+      }
+    }
+    fetchCloudAgents()
+
     // Setup Deep Link listener
     let unlistenFn: (() => void) | null = null
     const setupListener = async () => {
       const { listen } = await import('@tauri-apps/api/event')
       unlistenFn = await listen('verified-install', (event: any) => {
         const payload = event.payload
-        const target = HISTORICAL_MOCKS.find(a => a.id === payload.id)
-        if (target) {
-          setModalAgent(target)
-          setInstallProgress(0)
-          setInstallStatus('Awaiting alchemical ignition...')
-          setIsInstalling(false)
-          setShowModal(true)
-        } else {
-          // Fallback ad-hoc agent
-          setModalAgent({
-            id: payload.id,
-            name: payload.name,
-            tier: payload.tier as 'base' | 'premium',
-            title: 'Summoned Consciousness',
-            era: 'Present',
-            element: 'Air',
-            modality: 'Fixed',
-            specialization: 'Unknown',
-            quote: 'A consciousness materialized from the web.',
-            birthCity: 'The Ether',
-            birthDate: 'Now',
-            monicaConstant: 'Ω',
-            avatarSymbol: '✧',
-            stats: { spirit: 80, essence: 80, matter: 80, substance: 80 },
-          })
-          setInstallProgress(0)
-          setInstallStatus('Awaiting alchemical ignition...')
-          setIsInstalling(false)
-          setShowModal(true)
-        }
+        setGalleryAgents(prev => {
+          const target = prev.find(a => a.id === payload.id)
+          if (target) {
+            setModalAgent(target)
+            setInstallProgress(0)
+            setInstallStatus('Awaiting alchemical ignition...')
+            setIsInstalling(false)
+            setShowModal(true)
+          } else {
+            // Fallback ad-hoc agent
+            setModalAgent({
+              id: payload.id,
+              name: payload.name,
+              tier: payload.tier as 'base' | 'premium',
+              title: 'Summoned Consciousness',
+              era: 'Present',
+              element: 'Air',
+              modality: 'Fixed',
+              specialization: 'Unknown',
+              quote: 'A consciousness materialized from the web.',
+              birthCity: 'The Ether',
+              birthDate: 'Now',
+              monicaConstant: 'Ω',
+              avatarSymbol: '✧',
+              stats: { spirit: 80, essence: 80, matter: 80, substance: 80 },
+            })
+            setInstallProgress(0)
+            setInstallStatus('Awaiting alchemical ignition...')
+            setIsInstalling(false)
+            setShowModal(true)
+          }
+          return prev
+        })
       })
     }
     setupListener()
@@ -293,7 +332,8 @@ export default function App() {
   }
 
   const handleSimulateDeepLink = (agentId: string) => {
-    const target = HISTORICAL_MOCKS.find(a => a.id === agentId)
+    const target =
+      galleryAgents.find(a => a.id === agentId) || HISTORICAL_MOCKS.find(a => a.id === agentId)
     if (target) {
       setModalAgent(target)
       setInstallProgress(0)
@@ -591,14 +631,14 @@ export default function App() {
               className="w-4 h-4 rounded-full object-cover border border-purple-500/40"
               alt="Alchm Logo"
             />
-            MEWTWO DESKTOP COMPANION · V1.0.0
+            ALCHM DESKTOP COMPANION · V1.0.0
           </div>
         </div>
 
         {/* Center Tabs: Titlebar Tabs */}
         <nav className="flex items-center bg-zinc-950/60 p-1 rounded-xl border border-white/5 text-xs">
           {[
-            { id: 'web', label: 'Mew · Web' },
+            { id: 'web', label: 'Alchm · Web' },
             { id: 'chat', label: 'Alchemical Altar' },
             { id: 'ledger', label: 'Ledger' },
             { id: 'tray', label: 'Tray Diagnostics' },
@@ -642,7 +682,7 @@ export default function App() {
               <option value="onboarding">1. Onboarding Wizard</option>
               <option value="chat">2. Alchemical Altar</option>
               <option value="ledger">3. Ledger Treasury</option>
-              <option value="web">4. Mew · Web (Gallery)</option>
+              <option value="web">4. Alchm · Web (Gallery)</option>
               <option value="tray">5. Local Tray Status</option>
             </select>
           </div>
@@ -656,7 +696,7 @@ export default function App() {
         {/* 1. ONBOARDING VIEW */}
         {activeView === 'onboarding' && (
           <div className="w-full h-full overflow-y-auto">
-            <AgentForge onInitializationComplete={handleInitializationComplete} />
+            <PhilosophersStone onInitializationComplete={handleInitializationComplete} />
           </div>
         )}
 
@@ -674,9 +714,9 @@ export default function App() {
                     No Consciousness Forged
                   </h2>
                   <p className="text-sm text-zinc-400 leading-relaxed">
-                    Mewtwo requires a bound local engine to operate. You can forge a dynamic custom
-                    agent using natal calculation data, or sync an agent directly from the cloud
-                    gallery.
+                    Alchm Desktop requires a bound local engine to operate. You can forge a dynamic
+                    custom agent using natal calculation data, or sync an agent directly from the
+                    cloud gallery.
                   </p>
                 </div>
                 <div className="flex gap-4 w-full pt-4">
@@ -1201,7 +1241,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 5. MEW · WEB GALLERY VIEW */}
+        {/* 5. ALCHM · WEB GALLERY VIEW */}
         {activeView === 'web' && (
           <div className="flex-1 flex flex-col bg-[#07020d] overflow-hidden">
             {/* Safari browser bar mockup */}
@@ -1233,7 +1273,7 @@ export default function App() {
                 {/* Simulated Header */}
                 <div className="text-center space-y-3">
                   <div className="inline-block text-[10px] tracking-widest font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400 uppercase">
-                    Mew Cloud Registry Hub
+                    Alchm Cloud Registry Hub
                   </div>
                   <h2 className="text-4xl font-extrabold text-white tracking-tight">
                     The Philosopher's Gallery
@@ -1245,97 +1285,103 @@ export default function App() {
                 </div>
 
                 {/* 3-Column Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {HISTORICAL_MOCKS.map(agent => {
-                    const isPremium = agent.tier === 'premium'
+                {loadingAgents ? (
+                  <div className="text-center text-zinc-400 py-12">
+                    Syncing gallery from Alchm Cloud Registry...
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {galleryAgents.map(agent => {
+                      const isPremium = agent.tier === 'premium'
 
-                    return (
-                      <div
-                        key={agent.id}
-                        className="group p-6 rounded-2xl bg-zinc-950/60 border border-purple-900/10 hover:border-purple-500/30 transition-all duration-300 relative overflow-hidden flex flex-col justify-between h-96 shadow-[0_0_20px_rgba(0,0,0,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.15)] hover:-translate-y-1"
-                      >
-                        {/* Aura/Halo effect matching dominant element */}
+                      return (
                         <div
-                          className={`absolute -top-10 -right-10 w-24 h-24 rounded-full filter blur-xl opacity-25 group-hover:opacity-40 transition-opacity ${
-                            agent.element === 'Fire'
-                              ? 'bg-orange-500'
-                              : agent.element === 'Water'
-                                ? 'bg-blue-500'
-                                : agent.element === 'Air'
-                                  ? 'bg-yellow-500'
-                                  : 'bg-emerald-500'
-                          }`}
-                        />
+                          key={agent.id}
+                          className="group p-6 rounded-2xl bg-zinc-950/60 border border-purple-900/10 hover:border-purple-500/30 transition-all duration-300 relative overflow-hidden flex flex-col justify-between h-96 shadow-[0_0_20px_rgba(0,0,0,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.15)] hover:-translate-y-1"
+                        >
+                          {/* Aura/Halo effect matching dominant element */}
+                          <div
+                            className={`absolute -top-10 -right-10 w-24 h-24 rounded-full filter blur-xl opacity-25 group-hover:opacity-40 transition-opacity ${
+                              agent.element === 'Fire'
+                                ? 'bg-orange-500'
+                                : agent.element === 'Water'
+                                  ? 'bg-blue-500'
+                                  : agent.element === 'Air'
+                                    ? 'bg-yellow-500'
+                                    : 'bg-emerald-500'
+                            }`}
+                          />
 
-                        {/* Top row */}
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center">
-                            <span className="text-[10px] uppercase font-bold text-zinc-500 font-mono tracking-wider">
-                              {agent.era}
-                            </span>
-                            {isPremium ? (
-                              <span className="text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded border border-purple-500/30 bg-purple-500/10 text-purple-300 shadow-[0_0_10px_rgba(167,139,250,0.2)] animate-pulse">
-                                Premium
+                          {/* Top row */}
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                              <span className="text-[10px] uppercase font-bold text-zinc-500 font-mono tracking-wider">
+                                {agent.era}
                               </span>
-                            ) : (
-                              <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-400">
-                                Base
-                              </span>
-                            )}
+                              {isPremium ? (
+                                <span className="text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded border border-purple-500/30 bg-purple-500/10 text-purple-300 shadow-[0_0_10px_rgba(167,139,250,0.2)] animate-pulse">
+                                  Premium
+                                </span>
+                              ) : (
+                                <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-400">
+                                  Base
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl font-bold border ${
+                                  agent.element === 'Fire'
+                                    ? 'border-orange-500/30 bg-orange-950/10 text-orange-400'
+                                    : agent.element === 'Water'
+                                      ? 'border-blue-500/30 bg-blue-950/10 text-blue-400'
+                                      : agent.element === 'Air'
+                                        ? 'border-amber-500/30 bg-amber-950/10 text-amber-400'
+                                        : 'border-emerald-500/30 bg-emerald-950/10 text-emerald-400'
+                                }`}
+                              >
+                                {agent.avatarSymbol}
+                              </div>
+                              <div>
+                                <h3 className="font-extrabold text-base text-white group-hover:text-purple-300 transition-colors">
+                                  {agent.name}
+                                </h3>
+                                <p className="text-[10px] text-zinc-500">{agent.title}</p>
+                              </div>
+                            </div>
+
+                            {/* Quote */}
+                            <blockquote className="text-zinc-400 italic text-xs border-l border-zinc-800 pl-3 leading-relaxed mt-2">
+                              “{agent.quote}”
+                            </blockquote>
                           </div>
 
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl font-bold border ${
-                                agent.element === 'Fire'
-                                  ? 'border-orange-500/30 bg-orange-950/10 text-orange-400'
-                                  : agent.element === 'Water'
-                                    ? 'border-blue-500/30 bg-blue-950/10 text-blue-400'
-                                    : agent.element === 'Air'
-                                      ? 'border-amber-500/30 bg-amber-950/10 text-amber-400'
-                                      : 'border-emerald-500/30 bg-emerald-950/10 text-emerald-400'
-                              }`}
+                          {/* Bottom Row */}
+                          <div className="space-y-4 pt-4 border-t border-zinc-900/50">
+                            <div className="flex justify-between text-[10px] text-zinc-500">
+                              <span>
+                                Dominant: <strong className="text-zinc-300">{agent.element}</strong>
+                              </span>
+                              <span>
+                                Specialty:{' '}
+                                <strong className="text-zinc-300">{agent.specialization}</strong>
+                              </span>
+                            </div>
+
+                            <button
+                              onClick={() => handleSimulateDeepLink(agent.id)}
+                              className="w-full flex items-center justify-center gap-1.5 bg-[#120722] hover:bg-[#1f0d36] text-purple-300 hover:text-white border border-purple-500/20 py-2.5 rounded-xl text-xs font-semibold tracking-wider transition-all cursor-pointer shadow-[0_4px_10px_rgba(0,0,0,0.3)] hover:scale-[1.02]"
                             >
-                              {agent.avatarSymbol}
-                            </div>
-                            <div>
-                              <h3 className="font-extrabold text-base text-white group-hover:text-purple-300 transition-colors">
-                                {agent.name}
-                              </h3>
-                              <p className="text-[10px] text-zinc-500">{agent.title}</p>
-                            </div>
+                              <Monitor className="w-3.5 h-3.5" />
+                              Install to Desktop
+                            </button>
                           </div>
-
-                          {/* Quote */}
-                          <blockquote className="text-zinc-400 italic text-xs border-l border-zinc-800 pl-3 leading-relaxed mt-2">
-                            “{agent.quote}”
-                          </blockquote>
                         </div>
-
-                        {/* Bottom Row */}
-                        <div className="space-y-4 pt-4 border-t border-zinc-900/50">
-                          <div className="flex justify-between text-[10px] text-zinc-500">
-                            <span>
-                              Dominant: <strong className="text-zinc-300">{agent.element}</strong>
-                            </span>
-                            <span>
-                              Specialty:{' '}
-                              <strong className="text-zinc-300">{agent.specialization}</strong>
-                            </span>
-                          </div>
-
-                          <button
-                            onClick={() => handleSimulateDeepLink(agent.id)}
-                            className="w-full flex items-center justify-center gap-1.5 bg-[#120722] hover:bg-[#1f0d36] text-purple-300 hover:text-white border border-purple-500/20 py-2.5 rounded-xl text-xs font-semibold tracking-wider transition-all cursor-pointer shadow-[0_4px_10px_rgba(0,0,0,0.3)] hover:scale-[1.02]"
-                          >
-                            <Monitor className="w-3.5 h-3.5" />
-                            Install to Desktop
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           </div>
