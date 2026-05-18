@@ -42,6 +42,10 @@ const navigationGroups = Object.freeze([
     ],
   },
   {
+    title: '💎 Treasury',
+    items: [{ href: '/economy', label: 'Token Economy' }],
+  },
+  {
     title: '⚙️ System',
     items: [
       { href: '/astrological-agents', label: 'Agents' },

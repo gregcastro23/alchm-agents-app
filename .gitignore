@@ -71,3 +71,8 @@ AGENTS.md
 
 backend/node_modules/
 .env*.local
+src-tauri/target/
+*.DS_Store
+.DS_Store
+src-tauri/bin/llama-server*
+src-tauri/icons/icon_rgb.png

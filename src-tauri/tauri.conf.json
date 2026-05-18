@@ -1,13 +1,13 @@
 {
+  "$schema": "https://raw.githubusercontent.com/nicedrop/tauri-docs/v2-dev/src/assets/tauri-conf-v2.schema.json",
+  "productName": "Alchm",
+  "version": "1.0.0",
+  "identifier": "com.cookingwithcastro.alchm",
   "build": {
-    "beforeDevCommand": "bun run dev:all",
-    "beforeBuildCommand": "bun run build:frontend && bun run build:sidecar",
-    "devPath": "http://localhost:3000",
-    "distDir": "../out"
-  },
-  "package": {
-    "productName": "Alchm",
-    "version": "1.0.0"
+    "beforeDevCommand": "bun run dev",
+    "beforeBuildCommand": "bun run build && bun run build:sidecar",
+    "devUrl": "http://localhost:3000",
+    "frontendDist": "../out"
   },
   "app": {
     "windows": [
@@ -17,35 +17,19 @@
         "height": 800,
         "url": "/desktop"
       }
-    ]
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "externalBin": ["bin/orchestrator", "bin/llama-server"]
   },
   "plugins": {
     "deep-link": {
       "schemes": ["alchm"]
-    }
-  },
-  "tauri": {
-    "bundle": {
-      "identifier": "com.cookingwithcastro.alchm",
-      "externalBin": ["bin/orchestrator", "bin/llama-cli"]
-    },
-    "security": {
-      "csp": null,
-      "assetProtocol": {
-        "scope": ["$APPDATA/com.cookingwithcastro.alchm/models/**"]
-      }
-    },
-    "allowlist": {
-      "fs": {
-        "all": false,
-        "readFile": true,
-        "readDir": true,
-        "scope": ["$APPDATA/com.cookingwithcastro.alchm/models/**"]
-      },
-      "dialog": {
-        "all": false,
-        "open": false
-      }
     }
   }
 }

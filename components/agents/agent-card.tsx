@@ -26,8 +26,10 @@ import {
   Activity,
   Target,
   Lightbulb,
+  Monitor,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useToast } from '@/hooks/use-toast'
 import type { CraftedAgent, AgentCardVariant, Coordinates } from '@/lib/agent-types'
 import { AgentDetailedStats } from '@/components/agents/agent-detailed-stats'
 
@@ -85,6 +87,62 @@ export function AgentCard({
   showActions = true,
 }: AgentCardProps) {
   const [showDetails, setShowDetails] = useState(false)
+  const { toast } = useToast()
+  const [isInstalling, setIsInstalling] = useState(false)
+
+  const handleInstallToDesktop = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setIsInstalling(true)
+    try {
+      const res = await fetch('/api/deep-link/sign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: agent.id,
+          name: agent.name,
+          expiresAt: Date.now() + 5 * 60 * 1000,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to sign deep link')
+      const { deepLink } = await res.json()
+
+      const start = Date.now()
+      window.location.assign(deepLink)
+
+      setTimeout(() => {
+        if (Date.now() - start < 1500) {
+          toast({
+            title: 'Alchm Desktop Not Found',
+            description: 'Could not open the desktop app. Please download and install it first.',
+            action: (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  window.open(
+                    'https://github.com/gregcastro23/alchm-agents-app/releases/latest',
+                    '_blank'
+                  )
+                }
+              >
+                Get App
+              </Button>
+            ),
+          })
+        }
+      }, 1000)
+    } catch (error) {
+      console.error('Install error:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to generate install link.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsInstalling(false)
+    }
+  }
+
   const consciousnessLevel = agent.consciousness.level || 'Awakening'
 
   // Mini card variant for homepage showcase
@@ -161,6 +219,14 @@ export function AgentCard({
                       <MessageCircle className="w-3 h-3 mr-1" />
                       Chat
                     </Link>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleInstallToDesktop}
+                    disabled={isInstalling}
+                  >
+                    <Monitor className="w-3 h-3" />
                   </Button>
                   <Dialog>
                     <DialogTrigger asChild>
@@ -390,6 +456,15 @@ export function AgentCard({
                 <MessageCircle className="w-3 h-3 mr-1" />
                 Chat
               </Link>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleInstallToDesktop}
+              disabled={isInstalling}
+              title="Install to Desktop"
+            >
+              <Monitor className="w-3 h-3" />
             </Button>
             <Dialog>
               <DialogTrigger asChild>

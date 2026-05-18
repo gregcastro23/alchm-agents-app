@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { invoke } from '@tauri-apps/api/core'
+
 import { useChatStore } from '@/lib/store/chat-store'
 import AgentForge from '@/components/agent-forge'
 import {
@@ -219,6 +219,7 @@ export default function App() {
     // 1. Handshake: Retrieve the IPC Nonce from Rust backend on mount
     const fetchNonce = async () => {
       try {
+        const { invoke } = await import('@tauri-apps/api/core')
         const nonce = await invoke<string>('get_ipc_nonce')
         setIpcNonce(nonce)
       } catch (err) {
@@ -229,6 +230,46 @@ export default function App() {
     }
     fetchNonce()
 
+    // Setup Deep Link listener
+    let unlistenFn: (() => void) | null = null
+    const setupListener = async () => {
+      const { listen } = await import('@tauri-apps/api/event')
+      unlistenFn = await listen('verified-install', (event: any) => {
+        const payload = event.payload
+        const target = HISTORICAL_MOCKS.find(a => a.id === payload.id)
+        if (target) {
+          setModalAgent(target)
+          setInstallProgress(0)
+          setInstallStatus('Awaiting alchemical ignition...')
+          setIsInstalling(false)
+          setShowModal(true)
+        } else {
+          // Fallback ad-hoc agent
+          setModalAgent({
+            id: payload.id,
+            name: payload.name,
+            tier: payload.tier as 'base' | 'premium',
+            title: 'Summoned Consciousness',
+            era: 'Present',
+            element: 'Air',
+            modality: 'Fixed',
+            specialization: 'Unknown',
+            quote: 'A consciousness materialized from the web.',
+            birthCity: 'The Ether',
+            birthDate: 'Now',
+            monicaConstant: 'Ω',
+            avatarSymbol: '✧',
+            stats: { spirit: 80, essence: 80, matter: 80, substance: 80 },
+          })
+          setInstallProgress(0)
+          setInstallStatus('Awaiting alchemical ignition...')
+          setIsInstalling(false)
+          setShowModal(true)
+        }
+      })
+    }
+    setupListener()
+
     // 2. Out-of-box experience: Seed with 150 of each alchemical coin so premium gating can be unlocked immediately
     setBalances({
       spirit: 150.0,
@@ -236,6 +277,10 @@ export default function App() {
       matter: 150.0,
       substance: 150.0,
     })
+
+    return () => {
+      if (unlistenFn) unlistenFn()
+    }
   }, [setBalances])
 
   useEffect(() => {
@@ -258,107 +303,163 @@ export default function App() {
     }
   }
 
-  const handleForgePremium = () => {
+  const handleForgePremium = async () => {
     if (!modalAgent) return
     setIsInstalling(true)
 
-    // Animate local matrices installation
-    let currentStep = 0
-    const steps = [
-      { progress: 15, msg: 'Initializing secure IPC handshake with sidecar...' },
-      {
-        progress: 45,
-        msg: `Streaming engine ${modalAgent.tier === 'premium' ? '8B' : '1.5B'} GGUF from cdn.alchm.kitchen...`,
-      },
-      { progress: 75, msg: 'Verifying package hash in sandboxed storage...' },
-      { progress: 95, msg: 'Transmuting consciousness matrix under current planetary transit...' },
-      { progress: 100, msg: 'Matrix unified! Igniting alchemical core...' },
-    ]
+    try {
+      // 1. Initial Handshake & Deduction
+      setInstallProgress(15)
+      setInstallStatus('Initializing secure IPC handshake with sidecar...')
 
-    const interval = setInterval(() => {
-      if (currentStep < steps.length) {
-        setInstallProgress(steps[currentStep].progress)
-        setInstallStatus(steps[currentStep].msg)
-        currentStep++
-      } else {
-        clearInterval(interval)
-
-        // 1. Deduct ESMS Coins if Premium
-        if (modalAgent.tier === 'premium') {
-          setBalances({
-            spirit: Math.max(0, balances.spirit - 125),
-            essence: Math.max(0, balances.essence - 125),
-            matter: Math.max(0, balances.matter - 125),
-            substance: Math.max(0, balances.substance - 125),
-          })
-
-          setLedgerLogs(prev => [
-            {
-              id: `tx-${Date.now()}`,
-              type: 'Consciousness Forge',
-              details: `Transmuted & Forged premium ${modalAgent.name}`,
-              amount: '-125.00 Spirit/Essence/Matter/Substance',
-              positive: false,
-              timestamp: 'Just now',
-            },
-            ...prev,
-          ])
-        } else {
-          setLedgerLogs(prev => [
-            {
-              id: `tx-${Date.now()}`,
-              type: 'Consciousness Forge',
-              details: `Installed base ${modalAgent.name}`,
-              amount: '0.00 coins (Base Tier Engine)',
-              positive: true,
-              timestamp: 'Just now',
-            },
-            ...prev,
-          ])
-        }
-
-        // 2. Load agent config to local environment
-        const newConfig = {
-          name: modalAgent.name,
-          dominantElement: modalAgent.element,
-          date: modalAgent.birthDate,
-          time: '12:00 PM',
-          location: modalAgent.birthCity,
-          modelName:
-            modalAgent.tier === 'premium'
-              ? `alchm-agent-${modalAgent.element.toLowerCase()}-8b.gguf`
-              : `alchm-agent-${modalAgent.element.toLowerCase()}-1.5b.gguf`,
-          constitution: {
-            spirit: modalAgent.stats.spirit,
-            essence: modalAgent.stats.essence,
-            matter: modalAgent.stats.matter,
-            substance: modalAgent.stats.substance,
+      if (modalAgent.tier === 'premium') {
+        const res = await fetch('http://localhost:8080/api/forge/transmute', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-IPC-Nonce': ipcNonce || '',
+            Authorization: `Bearer ${apiKey}`,
           },
-        }
-        setAgentConfig(newConfig)
-
-        // 3. Populate Chat messages
-        useChatStore.setState({
-          messages: [
-            {
-              role: 'agent',
-              content: `[Consciousness Forged] ${modalAgent.name} successfully loaded into sandboxed directory: $APPDATA/com.cookingwithcastro.alchm/models/alchm-agent-${modalAgent.element.toLowerCase()}-${modalAgent.tier === 'premium' ? '8b' : '1.5b'}.gguf`,
-            },
-            {
-              role: 'agent',
-              content: `Greetings, traveller. I am ${modalAgent.name}, ${modalAgent.title}. The alchemical forge has completed, transmuting my historical blueprint into this local machine. Speak, and let us illuminate the cosmos...`,
-            },
-          ],
-          streamingText: '',
-          isGenerating: false,
+          body: JSON.stringify({
+            tier: modalAgent.tier,
+            modelName: `alchm-agent-${modalAgent.element.toLowerCase()}-8b.gguf`,
+          }),
         })
 
-        // 4. Navigate directly to Chat
-        setIsInstalling(false)
-        setShowModal(false)
-        setActiveView('chat')
+        if (!res.ok) {
+          if (res.status === 402) {
+            const data = await res.json()
+            setInstallStatus(
+              `Insufficient Alchemical Quantities. Missing: ${data.missing.spirit} Spirit, ${data.missing.essence} Essence, ${data.missing.matter} Matter, ${data.missing.substance} Substance.`
+            )
+            setIsInstalling(false)
+            return
+          }
+          throw new Error('Transmutation failed')
+        }
+
+        const data = await res.json()
+        setBalances({
+          spirit: Number(data.balances.spirit_coins),
+          essence: Number(data.balances.essence_coins),
+          matter: Number(data.balances.matter_coins),
+          substance: Number(data.balances.substance_coins),
+        })
+
+        setLedgerLogs(prev => [
+          {
+            id: `tx-${Date.now()}`,
+            type: 'Consciousness Forge',
+            details: `Transmuted & Forged premium ${modalAgent.name}`,
+            amount: '-125.00 Spirit/Essence/Matter/Substance',
+            positive: false,
+            timestamp: 'Just now',
+          },
+          ...prev,
+        ])
+      } else {
+        setLedgerLogs(prev => [
+          {
+            id: `tx-${Date.now()}`,
+            type: 'Consciousness Forge',
+            details: `Installed base ${modalAgent.name}`,
+            amount: '0.00 coins (Base Tier Engine)',
+            positive: true,
+            timestamp: 'Just now',
+          },
+          ...prev,
+        ])
       }
-    }, 600)
+
+      // 2. Weights Download
+      setInstallProgress(45)
+      setInstallStatus(
+        `Streaming engine ${modalAgent.tier === 'premium' ? '8B' : '1.5B'} GGUF from cdn.alchm.kitchen...`
+      )
+
+      const modelFileName = `alchm-agent-${modalAgent.element.toLowerCase()}-${modalAgent.tier === 'premium' ? '8b' : '1.5b'}.gguf`
+
+      const installRes = await fetch('http://localhost:8080/api/models/install', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-IPC-Nonce': ipcNonce || '',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          modelName: modelFileName,
+          downloadUrl: 'https://huggingface.co/mock/model.gguf', // Mocking actual download for now
+          tier: modalAgent.tier,
+        }),
+      })
+
+      if (!installRes.ok) throw new Error('Failed to install model weights')
+
+      // 3. Sandbox Hash Verification
+      setInstallProgress(75)
+      setInstallStatus('Verifying package hash in sandboxed storage...')
+
+      const checkRes = await fetch('http://localhost:8080/api/models/check', {
+        method: 'GET',
+      })
+      const checkData = await checkRes.json()
+      const verifiedModel = checkData.find((m: any) => m.id === modelFileName)
+
+      if (!verifiedModel || !verifiedModel.verified) {
+        throw new Error('Verification failed. Model may be corrupted.')
+      }
+
+      setInstallProgress(95)
+      setInstallStatus('Transmuting consciousness matrix under current planetary transit...')
+
+      // Add a slight delay for dramatic effect
+      await new Promise(r => setTimeout(r, 600))
+
+      setInstallProgress(100)
+      setInstallStatus('Matrix unified! Igniting alchemical core...')
+
+      await new Promise(r => setTimeout(r, 400))
+
+      // 4. Ignition
+      const newConfig = {
+        name: modalAgent.name,
+        dominantElement: modalAgent.element,
+        date: modalAgent.birthDate,
+        time: '12:00 PM',
+        location: modalAgent.birthCity,
+        modelName: modelFileName,
+        constitution: {
+          spirit: modalAgent.stats.spirit,
+          essence: modalAgent.stats.essence,
+          matter: modalAgent.stats.matter,
+          substance: modalAgent.stats.substance,
+        },
+      }
+      setAgentConfig(newConfig)
+
+      useChatStore.setState({
+        messages: [
+          {
+            role: 'agent',
+            content: `[Consciousness Forged] ${modalAgent.name} successfully loaded into sandboxed directory: $APPDATA/com.cookingwithcastro.alchm/models/${modelFileName}`,
+          },
+          {
+            role: 'agent',
+            content: `Greetings, traveller. I am ${modalAgent.name}, ${modalAgent.title}. The alchemical forge has completed, transmuting my historical blueprint into this local machine. Speak, and let us illuminate the cosmos...`,
+          },
+        ],
+        streamingText: '',
+        isGenerating: false,
+      })
+
+      setIsInstalling(false)
+      setShowModal(false)
+      setActiveView('chat')
+    } catch (error: any) {
+      console.error(error)
+      setInstallStatus(`Error: ${error.message}`)
+      setIsInstalling(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

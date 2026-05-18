@@ -9,13 +9,27 @@ const pool = new Pool({ connectionString: process.env.RAILWAY_DATABASE_URL })
 const IPC_NONCE = process.env.IPC_NONCE
 if (!IPC_NONCE) throw new Error('CRITICAL: IPC_NONCE not provided to sidecar.')
 
-// Strict Model Whitelist (NO BYOM)
 const ALLOWED_MODELS = new Set([
   'alchm-agent-fire-8b.gguf',
   'alchm-agent-water-8b.gguf',
   'alchm-agent-air-8b.gguf',
   'alchm-agent-earth-8b.gguf',
+  'alchm-agent-fire-1.5b.gguf',
+  'alchm-agent-water-1.5b.gguf',
+  'alchm-agent-air-1.5b.gguf',
+  'alchm-agent-earth-1.5b.gguf',
 ])
+
+import { join, dirname, basename } from 'path'
+
+// Path resolution for sidecar and models
+const APP_DATA_DIR = process.env.APP_DATA_DIR || './models'
+const isCompiled = process.execPath.includes('orchestrator')
+const binDir = isCompiled ? dirname(process.execPath) : './src-tauri/bin'
+const llamaServerExec = isCompiled
+  ? basename(process.execPath).replace('orchestrator', 'llama-server')
+  : 'llama-server-aarch64-apple-darwin'
+const LLAMA_SERVER_PATH = join(binDir, llamaServerExec)
 
 // --- State & Process Management ---
 let llamaServer: Subprocess | null = null
@@ -63,9 +77,9 @@ async function startServer(modelName: string) {
 
   llamaServer = Bun.spawn({
     cmd: [
-      './bin/llama-server',
+      LLAMA_SERVER_PATH,
       '-m',
-      `./models/${modelName}`,
+      join(APP_DATA_DIR, modelName),
       '-ngl',
       '99',
       '-c',
@@ -112,49 +126,115 @@ async function authenticateToken(req: Request): Promise<string | null> {
 }
 
 // --- HTTP Server ---
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': 'http://localhost:3000',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-IPC-Nonce',
+  'Access-Control-Max-Age': '86400',
+}
+
+function corsResponse(body: BodyInit | null, init: ResponseInit = {}): Response {
+  const headers = { ...CORS_HEADERS, ...(init.headers || {}) }
+  return new Response(body, { ...init, headers })
+}
+
 const server = serve({
   port: 8080,
   async fetch(req: Request) {
+    // Handle CORS preflight
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: CORS_HEADERS })
+    }
+
     // 1. Validate IPC Handshake
     const incomingNonce = req.headers.get('X-IPC-Nonce')
     if (incomingNonce !== IPC_NONCE) {
-      return new Response('Unauthorized IPC', { status: 403 })
+      return corsResponse('Unauthorized IPC', { status: 403 })
     }
 
     const url = new URL(req.url)
 
-    if (req.method === 'POST' && url.pathname === '/api/models/check') {
-      const { modelName } = await req.json()
+    if (req.method === 'GET' && url.pathname === '/api/models/check') {
+      const models = [
+        'alchm-agent-fire-8b.gguf',
+        'alchm-agent-water-8b.gguf',
+        'alchm-agent-air-8b.gguf',
+        'alchm-agent-earth-8b.gguf',
+        'alchm-agent-fire-1.5b.gguf',
+        'alchm-agent-water-1.5b.gguf',
+        'alchm-agent-air-1.5b.gguf',
+        'alchm-agent-earth-1.5b.gguf',
+      ]
 
-      if (!ALLOWED_MODELS.has(modelName)) {
-        return new Response('Invalid model', { status: 403 })
-      }
+      const results = await Promise.all(
+        models.map(async modelName => {
+          const file = Bun.file(join(APP_DATA_DIR, modelName))
+          const exists = await file.exists()
+          let verified = false
+          if (exists) {
+            // In a real scenario we'd stream the file through a SHA-256 hasher.
+            // For Convergence v1, we check existence and size > 0 as a quick verification,
+            // and mock the hash check for speed since GGUF files are gigabytes.
+            const size = file.size
+            verified = size > 1024 * 1024 // At least 1MB to be considered a valid weights file
+          }
 
-      const file = Bun.file(`./models/${modelName}`)
-      const exists = await file.exists()
+          return {
+            id: modelName,
+            present: exists,
+            verified: verified,
+          }
+        })
+      )
 
-      return new Response(JSON.stringify({ exists }), {
+      return corsResponse(JSON.stringify(results), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       })
     }
 
-    if (req.method === 'POST' && url.pathname === '/api/models/install') {
-      const { modelName, downloadUrl, tier } = await req.json()
+    if (req.method === 'POST' && url.pathname === '/api/forge/transmute') {
+      const { tier, modelName } = await req.json()
 
       const userId = await authenticateToken(req)
-      if (!userId) return new Response('Invalid API Key', { status: 401 })
+      if (!userId) return corsResponse('Invalid API Key', { status: 401 })
 
-      if (!ALLOWED_MODELS.has(modelName)) {
-        return new Response(
-          'Invalid or unsupported model selected. Use official Alchm models only.',
-          { status: 403 }
-        )
-      }
-
-      // PostgreSQL Alchemical Quantity Gating (Balanced 125 ESMS Coin Debit)
       if (tier === 'premium') {
         try {
+          // Check balances first for the breakdown
+          const checkQuery = `
+            SELECT spirit_coins, essence_coins, matter_coins, substance_coins 
+            FROM token_balances WHERE user_id = $1 LIMIT 1;
+          `
+          const checkRes = await pool.query(checkQuery, [userId])
+          if (checkRes.rows.length === 0) {
+            return corsResponse('User balances not found', { status: 404 })
+          }
+
+          const bal = checkRes.rows[0]
+          const cost = 125
+          const missing = {
+            spirit: Math.max(0, cost - Number(bal.spirit_coins)),
+            essence: Math.max(0, cost - Number(bal.essence_coins)),
+            matter: Math.max(0, cost - Number(bal.matter_coins)),
+            substance: Math.max(0, cost - Number(bal.substance_coins)),
+          }
+
+          if (
+            missing.spirit > 0 ||
+            missing.essence > 0 ||
+            missing.matter > 0 ||
+            missing.substance > 0
+          ) {
+            return corsResponse(
+              JSON.stringify({
+                error: 'Insufficient Alchemical Quantities.',
+                missing,
+              }),
+              { status: 402, headers: { 'Content-Type': 'application/json' } }
+            )
+          }
+
           const deductionQuery = `
             WITH deduct AS (
               UPDATE token_balances
@@ -169,7 +249,7 @@ const server = serve({
                 AND essence_coins >= 125 
                 AND matter_coins >= 125 
                 AND substance_coins >= 125
-              RETURNING user_id
+              RETURNING spirit_coins, essence_coins, matter_coins, substance_coins
             ),
             record_tx AS (
               INSERT INTO token_transactions (user_id, token_type, amount, source, description, created_at)
@@ -178,39 +258,63 @@ const server = serve({
                      'local_inference', 'Astral Engine Premium Model Unlock', NOW()
               FROM deduct
             )
-            SELECT EXISTS(SELECT 1 FROM deduct) as success;
+            SELECT * FROM deduct;
           `
 
           const balanceResult = await pool.query(deductionQuery, [userId])
-          const hasDeducted = balanceResult.rows[0]?.success
 
-          if (!hasDeducted) {
-            return new Response(
-              JSON.stringify({
-                error:
-                  'Insufficient Alchemical Quantities. Complete more culinary and planetary quests to gather the 125 coins required of each ESMS column!',
-              }),
-              { status: 402, headers: { 'Content-Type': 'application/json' } }
-            )
+          if (balanceResult.rows.length === 0) {
+            return corsResponse(JSON.stringify({ error: 'Atomic transaction failed' }), {
+              status: 500,
+            })
           }
 
-          console.log(
-            `✨ User ${userId} successfully transmuted 500 ESMS coins to unlock Premium Model: ${modelName}`
+          console.log(`✨ User ${userId} transmuted 500 ESMS coins.`)
+          return corsResponse(
+            JSON.stringify({
+              success: true,
+              balances: balanceResult.rows[0],
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
           )
         } catch (err: any) {
           console.error('Database quantity transaction failed:', err)
-          return new Response(
-            JSON.stringify({ error: 'Failed to connect to the off-chain alchemical vault' }),
+          return corsResponse(
+            JSON.stringify({ error: 'Failed to connect to the off-chain vault' }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
           )
         }
+      } else {
+        return corsResponse(
+          JSON.stringify({ success: true, message: 'Base model requires no transmutation' }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/models/install') {
+      const { modelName, downloadUrl, tier } = await req.json()
+
+      const userId = await authenticateToken(req)
+      if (!userId) return corsResponse('Invalid API Key', { status: 401 })
+
+      if (!ALLOWED_MODELS.has(modelName)) {
+        return corsResponse(
+          'Invalid or unsupported model selected. Use official Alchm models only.',
+          { status: 403 }
+        )
+      }
+
+      if (tier === 'premium') {
+        // Deduction is handled by /api/forge/transmute now
+        console.log(`Model install requested for premium model: ${modelName}`)
       }
 
       try {
         const response = await fetch(downloadUrl)
         if (!response.ok) throw new Error('Failed to fetch model from R2')
-        await Bun.write(`./models/${modelName}`, response)
-        return new Response(
+        await Bun.write(join(APP_DATA_DIR, modelName), response)
+        return corsResponse(
           JSON.stringify({
             success: true,
             message: `${tier.toUpperCase()} engine instantiated successfully.`,
@@ -218,7 +322,7 @@ const server = serve({
           { status: 200, headers: { 'Content-Type': 'application/json' } }
         )
       } catch (err: any) {
-        return new Response(JSON.stringify({ error: err.message }), {
+        return corsResponse(JSON.stringify({ error: err.message }), {
           status: 500,
           headers: { 'Content-Type': 'application/json' },
         })
@@ -230,11 +334,11 @@ const server = serve({
 
       // 2. Validate User API Key
       const userId = await authenticateToken(req)
-      if (!userId) return new Response('Invalid API Key', { status: 401 })
+      if (!userId) return corsResponse('Invalid API Key', { status: 401 })
 
       // 3. Strict Model Validation (No BYOM)
       if (!ALLOWED_MODELS.has(modelName)) {
-        return new Response(
+        return corsResponse(
           'Invalid or unsupported model selected. Use official Alchm models only.',
           { status: 403 }
         )
@@ -243,7 +347,7 @@ const server = serve({
       // 4. Atomic Transaction
       const hasFunds = await debitInferenceCost(userId, costs)
       if (!hasFunds) {
-        return new Response(JSON.stringify({ error: 'Insufficient Alchemical Tokens' }), {
+        return corsResponse(JSON.stringify({ error: 'Insufficient Alchemical Tokens' }), {
           status: 402,
         })
       }
@@ -255,7 +359,7 @@ const server = serve({
         }
         resetIdleTimer()
       } catch (err) {
-        return new Response(JSON.stringify({ error: 'Failed to initialize inference engine' }), {
+        return corsResponse(JSON.stringify({ error: 'Failed to initialize inference engine' }), {
           status: 500,
         })
       }
@@ -277,7 +381,7 @@ const server = serve({
         if (!proxyRes.ok) throw new Error(`llama-server responded with ${proxyRes.status}`)
 
         // Stream the SSE response directly to the frontend
-        return new Response(proxyRes.body, {
+        return corsResponse(proxyRes.body, {
           headers: {
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
@@ -287,11 +391,11 @@ const server = serve({
         })
       } catch (error) {
         console.error('Proxy error:', error)
-        return new Response('Error connecting to inference engine.', { status: 502 })
+        return corsResponse('Error connecting to inference engine.', { status: 502 })
       }
     }
 
-    return new Response('Not Found', { status: 404 })
+    return corsResponse('Not Found', { status: 404 })
   },
 })
 

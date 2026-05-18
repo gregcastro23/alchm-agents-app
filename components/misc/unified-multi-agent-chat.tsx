@@ -322,37 +322,109 @@ export function UnifiedMultiAgentChat({
       }
 
       if (!response.ok) throw new Error('Failed to get response')
+      if (!response.body) throw new Error('ReadableStream not supported')
 
-      const data = await response.json()
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
 
-      // Add agent responses to messages
-      const agentMessages: Message[] = data.responses.map((res: any) => ({
-        id: `msg-${Date.now()}-${res.agentId}`,
-        role: 'agent' as const,
-        content: res.content,
-        agentId: res.agentId,
-        agentName: selectedAgents.find(a => a.id === res.agentId)?.name || 'Unknown',
-        agentColor: selectedAgents.find(a => a.id === res.agentId)?.appearance.color,
-        agentSymbol: selectedAgents.find(a => a.id === res.agentId)?.appearance.symbol,
-        agentType: selectedAgents.find(a => a.id === res.agentId)?.type,
-        consciousnessLevel: selectedAgents.find(a => a.id === res.agentId)?.consciousness.level,
-        timestamp: new Date(),
-        processingTime: res.processingTime,
-        metadata: res.metadata,
-      }))
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
 
-      setMessages(prev => [...prev, ...agentMessages])
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n\n')
+        buffer = lines.pop() || '' // Keep incomplete chunk in buffer
 
-      // Update group dynamics if provided
-      if (data.groupDynamics) {
-        setGroupDynamics(data.groupDynamics)
-      }
+        for (const block of lines) {
+          const blockLines = block.split('\n')
+          const eventLine = blockLines.find(l => l.startsWith('event: '))
+          const dataLine = blockLines.find(l => l.startsWith('data: '))
 
-      // Handle agent evolution
-      if (data.agentEvolutions && onAgentEvolution) {
-        data.agentEvolutions.forEach((evolution: any) => {
-          onAgentEvolution(evolution.agentId, evolution.changes)
-        })
+          if (!eventLine || !dataLine) continue
+
+          const event = eventLine.replace('event: ', '').trim()
+          const dataStr = dataLine.replace('data: ', '').trim()
+
+          try {
+            const parsedData = JSON.parse(dataStr)
+            const allAgents = [...selectedAgents, ...(monicaAgent ? [monicaAgent] : [])]
+
+            if (event === 'agent_start') {
+              const agentId = parsedData.agentId
+              const agent = allAgents.find(a => a.id === agentId)
+
+              setMessages(prev => [
+                ...prev,
+                {
+                  id: `msg-${Date.now()}-${agentId}`,
+                  role: 'agent',
+                  content: '',
+                  agentId: agentId,
+                  agentName: agent?.name || 'Unknown',
+                  agentColor: agent?.appearance.color,
+                  agentSymbol: agent?.appearance.symbol,
+                  agentType: agent?.type,
+                  consciousnessLevel: agent?.consciousness.level,
+                  timestamp: new Date(),
+                },
+              ])
+
+              // Set active agent to 'speaking' visually
+              setSelectedAgents(prev =>
+                prev.map(a => (a.id === agentId ? { ...a, status: 'responding' as const } : a))
+              )
+            } else if (event === 'text') {
+              // Append token to the currently streaming agent's message
+              setMessages(prev => {
+                const newMessages = [...prev]
+                for (let i = newMessages.length - 1; i >= 0; i--) {
+                  if (newMessages[i].agentId === parsedData.agentId) {
+                    newMessages[i] = {
+                      ...newMessages[i],
+                      content: newMessages[i].content + parsedData.text,
+                    }
+                    break
+                  }
+                }
+                return newMessages
+              })
+            } else if (event === 'agent_complete') {
+              // Attach metadata once generation finishes
+              setMessages(prev => {
+                const newMessages = [...prev]
+                for (let i = newMessages.length - 1; i >= 0; i--) {
+                  if (newMessages[i].agentId === parsedData.agentId) {
+                    newMessages[i] = {
+                      ...newMessages[i],
+                      metadata: parsedData.metadata,
+                      processingTime: parsedData.processingTime,
+                    }
+                    break
+                  }
+                }
+                return newMessages
+              })
+
+              setSelectedAgents(prev =>
+                prev.map(a => (a.id === parsedData.agentId ? { ...a, status: 'idle' as const } : a))
+              )
+            } else if (event === 'done') {
+              if (parsedData.groupDynamics) {
+                setGroupDynamics(parsedData.groupDynamics)
+              }
+              if (parsedData.agentEvolutions && onAgentEvolution) {
+                parsedData.agentEvolutions.forEach((evolution: any) => {
+                  onAgentEvolution(evolution.agentId, evolution.changes)
+                })
+              }
+            } else if (event === 'error') {
+              throw new Error(parsedData.error)
+            }
+          } catch (e) {
+            console.error('Failed to parse SSE JSON chunk', e, dataStr)
+          }
+        }
       }
     } catch (error) {
       console.error('Failed to send message:', error)
@@ -584,6 +656,16 @@ export function UnifiedMultiAgentChat({
                       {message.consciousnessLevel}
                     </Badge>
                   )}
+                  {(message.metadata as any)?.groupImpact?.consciousnessChange ? (
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${(message.metadata as any).groupImpact.consciousnessChange > 0 ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.2)] animate-pulse' : 'bg-slate-500/20 text-slate-300 border-slate-500/50'}`}
+                    >
+                      {(message.metadata as any).groupImpact.consciousnessChange > 0 ? '+' : ''}
+                      {(message.metadata as any).groupImpact.consciousnessChange.toFixed(2)} Synergy
+                      ✦
+                    </Badge>
+                  ) : null}
                   {message.processingTime && (
                     <span className="text-xs text-purple-300/50">({message.processingTime}ms)</span>
                   )}
@@ -701,22 +783,28 @@ export function UnifiedMultiAgentChat({
         ))}
 
         {isLoading && (
-          <div className="flex gap-3">
+          <div className="flex gap-3 animate-in fade-in duration-300">
             <Avatar className="w-8 h-8">
-              <AvatarFallback>
-                <Activity className="w-4 h-4 animate-spin" />
+              <AvatarFallback className="bg-purple-900/50 border border-purple-500/50">
+                <Activity className="w-4 h-4 animate-spin text-purple-300" />
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <div className="text-sm font-medium mb-1 text-purple-200">
-                Agents are responding...
+              <div className="text-sm font-medium mb-1 text-purple-200 flex items-center gap-2">
+                The Council is in active dialogue{' '}
+                <Sparkles className="w-3 h-3 text-amber-400 animate-pulse" />
               </div>
-              <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-lg p-3">
-                <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 animate-spin text-purple-400" />
-                  <span className="text-sm text-purple-300/70">
-                    Processing consciousness patterns...
-                  </span>
+              <div className="bg-black/40 backdrop-blur-md border border-purple-500/30 rounded-lg p-3 shadow-[0_0_15px_rgba(139,92,246,0.1)]">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Activity className="w-4 h-4 animate-spin text-purple-400" />
+                    <span className="text-sm text-purple-300/90 font-medium">
+                      Synthesizing consciousness matrices sequentially...
+                    </span>
+                  </div>
+                  <div className="text-xs text-purple-300/50 pl-6">
+                    Each agent is actively analyzing the responses of their peers in this turn.
+                  </div>
                 </div>
               </div>
             </div>

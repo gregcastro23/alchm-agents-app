@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateText, type LanguageModel } from 'ai'
+import { generateText, streamText, type LanguageModel } from 'ai'
 import { openai } from '@ai-sdk/openai'
 import { OPENAI, resolveOpenAIModel, resolveDefaultModel } from '@/lib/models/registry'
 import type {
@@ -180,97 +180,162 @@ export async function POST(request: NextRequest) {
     const monicaAgent = activeAgents.find(agent => agent.type === 'monica')
     const regularAgents = activeAgents.filter(agent => agent.type !== 'monica')
 
-    // Process agents concurrently but handle Monica coordination
-    const agentResponses: AgentResponse[] = []
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          // Process agents concurrently but handle Monica coordination
+          const agentResponses: AgentResponse[] = []
 
-    // First, get regular agent responses
-    const regularResponses = await Promise.all(
-      regularAgents.map(agent =>
-        processAgentResponse(
-          agent,
-          message,
-          {
-            otherAgents: activeAgents.filter(a => a.id !== agent.id),
-            currentDynamics: context.groupDynamics,
-            sessionHistory: context.sessionHistory,
-            recentMessages: context.sessionHistory.slice(-10),
-            variant: chatVariant,
-            modelOverrides: context.modelOverrides,
-          },
-          cosmicContext,
-          sessionId
-        )
-      )
-    )
+          // First, get regular agent responses sequentially for true turn-based dialogue
+          const currentTurnHistory: Message[] = []
 
-    agentResponses.push(...regularResponses)
+          for (const agent of regularAgents) {
+            controller.enqueue(
+              encoder.encode(
+                `event: agent_start\ndata: ${JSON.stringify({ agentId: agent.id })}\n\n`
+              )
+            )
 
-    // If Monica is included, let her synthesize and coordinate
-    if (monicaAgent) {
-      const monicaResponse = await processMonicaCoordination(
-        monicaAgent,
-        message,
-        regularResponses,
-        {
-          otherAgents: regularAgents,
-          currentDynamics: context.groupDynamics,
-          sessionHistory: context.sessionHistory,
-          recentMessages: context.sessionHistory.slice(-10),
-          variant: chatVariant,
-          modelOverrides: context.modelOverrides,
-        },
-        cosmicContext,
-        sessionId
-      )
-      agentResponses.push(monicaResponse)
-    }
+            const updatedHistory = [...context.sessionHistory, ...currentTurnHistory]
 
-    // Calculate updated group dynamics
-    const updatedGroupDynamics = calculateGroupDynamics(
-      activeAgents,
-      agentResponses,
-      context.groupDynamics
-    )
+            const response = await processAgentResponse(
+              agent,
+              message,
+              {
+                otherAgents: activeAgents.filter(a => a.id !== agent.id),
+                currentDynamics: context.groupDynamics,
+                sessionHistory: updatedHistory,
+                recentMessages: updatedHistory.slice(-10),
+                variant: chatVariant,
+                modelOverrides: context.modelOverrides,
+              },
+              cosmicContext,
+              sessionId,
+              controller,
+              encoder
+            )
 
-    // Generate session insights
-    const sessionInsights = generateSessionInsights(agentResponses, updatedGroupDynamics)
+            agentResponses.push(response)
+            controller.enqueue(
+              encoder.encode(`event: agent_complete\ndata: ${JSON.stringify(response)}\n\n`)
+            )
 
-    // Handle consciousness evolution and memory updates
-    const agentEvolutions = context.enableMemoryPersistence
-      ? await updateAgentMemories(activeAgents, message, agentResponses, context.sessionHistory)
-      : []
+            currentTurnHistory.push({
+              id: `temp-${Date.now()}-${agent.id}`,
+              role: 'agent',
+              content: response.content,
+              agentId: agent.id,
+              agentName: agent.name,
+              timestamp: new Date(),
+            } as Message)
+          }
 
-    const totalProcessingTime = Date.now() - startTime
+          if (monicaAgent) {
+            controller.enqueue(
+              encoder.encode(
+                `event: agent_start\ndata: ${JSON.stringify({ agentId: monicaAgent.id })}\n\n`
+              )
+            )
+            const updatedHistory = [...context.sessionHistory, ...currentTurnHistory]
+            const monicaResponse = await processMonicaCoordination(
+              monicaAgent,
+              message,
+              agentResponses,
+              {
+                otherAgents: regularAgents,
+                currentDynamics: context.groupDynamics,
+                sessionHistory: updatedHistory,
+                recentMessages: updatedHistory.slice(-10),
+                variant: chatVariant,
+                modelOverrides: context.modelOverrides,
+              },
+              cosmicContext,
+              sessionId,
+              controller,
+              encoder
+            )
+            agentResponses.push(monicaResponse)
+            controller.enqueue(
+              encoder.encode(`event: agent_complete\ndata: ${JSON.stringify(monicaResponse)}\n\n`)
+            )
+          }
 
-    const response: GroupChatResponse = {
-      responses: agentResponses,
-      groupInsights: sessionInsights,
-      emergentWisdom: generateEmergentWisdom(agentResponses, monicaAgent),
-      recommendedActions: generateRecommendedActions(updatedGroupDynamics, agentResponses),
-      nextOptimalTiming: calculateNextOptimalTiming(cosmicContext, activeAgents),
-      sessionUpdate: {
-        consciousnessEvolution: calculateConsciousnessEvolution(agentResponses),
-        newSynergies: identifyNewSynergies(agentResponses, updatedGroupDynamics),
-        memoryConsolidation: consolidateMemories(agentResponses),
+          // Calculate updated group dynamics
+          const updatedGroupDynamics = calculateGroupDynamics(
+            activeAgents,
+            agentResponses,
+            context.groupDynamics
+          )
+
+          // Generate session insights
+          const sessionInsights = generateSessionInsights(agentResponses, updatedGroupDynamics)
+
+          // Handle consciousness evolution and memory updates
+          const agentEvolutions = context.enableMemoryPersistence
+            ? await updateAgentMemories(
+                activeAgents,
+                message,
+                agentResponses,
+                context.sessionHistory
+              )
+            : []
+
+          const totalProcessingTime = Date.now() - startTime
+
+          const response: GroupChatResponse = {
+            responses: agentResponses,
+            groupInsights: sessionInsights,
+            emergentWisdom: generateEmergentWisdom(agentResponses, monicaAgent),
+            recommendedActions: generateRecommendedActions(updatedGroupDynamics, agentResponses),
+            nextOptimalTiming: calculateNextOptimalTiming(cosmicContext, activeAgents),
+            sessionUpdate: {
+              consciousnessEvolution: calculateConsciousnessEvolution(agentResponses),
+              newSynergies: identifyNewSynergies(agentResponses, updatedGroupDynamics),
+              memoryConsolidation: consolidateMemories(agentResponses),
+            },
+          }
+
+          // Log successful interaction
+          console.log(
+            `✨ Unified multi-agent chat completed in ${totalProcessingTime}ms with ${activeAgents.length} agents`
+          )
+
+          controller.enqueue(
+            encoder.encode(
+              `event: done\ndata: ${JSON.stringify({
+                ...response,
+                groupDynamics: updatedGroupDynamics,
+                agentEvolutions,
+                processingTime: totalProcessingTime,
+              })}\n\n`
+            )
+          )
+          controller.close()
+        } catch (error) {
+          console.error('Stream processing error:', error)
+          controller.enqueue(
+            encoder.encode(
+              `event: error\ndata: ${JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' })}\n\n`
+            )
+          )
+          controller.close()
+        }
       },
-    }
+    })
 
-    // Log successful interaction
-    console.log(
-      `✨ Unified multi-agent chat completed in ${totalProcessingTime}ms with ${activeAgents.length} agents`
-    )
-
-    return NextResponse.json({
-      ...response,
-      groupDynamics: updatedGroupDynamics,
-      agentEvolutions,
-      processingTime: totalProcessingTime,
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      },
     })
   } catch (error) {
     console.error('Unified multi-agent chat error:', error)
     return NextResponse.json(
       {
-        error: 'Failed to process multi-agent conversation',
+        error: 'Failed to start multi-agent conversation',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
@@ -283,7 +348,9 @@ async function processAgentResponse(
   message: string,
   groupContext: AgentGroupContext,
   cosmicContext: CosmicContext,
-  sessionId: string
+  sessionId: string,
+  controller?: ReadableStreamDefaultController<any>,
+  encoder?: TextEncoder
 ): Promise<AgentResponse> {
   const agentStartTime = Date.now()
 
@@ -392,7 +459,7 @@ async function processAgentResponse(
     const ragConfig = getRAGConfig()
     const useRAG = ragConfig.enabled && agent.type === 'historical' && shouldUseRAG(message)
 
-    let response: string
+    let response: string = ''
     let ragMetadata: RAGMetadata | undefined = undefined
     let totalTokens: number | undefined = undefined
     let modelUsed = 'rag-enhanced-pending'
@@ -442,15 +509,33 @@ async function processAgentResponse(
       )
       modelUsed = modelSelection.modelId
 
-      const result = await generateText({
-        model: modelSelection.model,
-        system: systemPrompt,
-        prompt: message,
-        temperature: getAgentTemperature(agent),
-      })
+      if (controller && encoder) {
+        const result = await streamText({
+          model: modelSelection.model,
+          system: systemPrompt,
+          prompt: message,
+          temperature: getAgentTemperature(agent),
+        })
 
-      response = result.text
-      totalTokens = result.usage?.totalTokens
+        for await (const chunk of result.textStream) {
+          response += chunk
+          controller.enqueue(
+            encoder.encode(
+              `event: text\ndata: ${JSON.stringify({ agentId: agent.id, text: chunk })}\n\n`
+            )
+          )
+        }
+      } else {
+        const result = await generateText({
+          model: modelSelection.model,
+          system: systemPrompt,
+          prompt: message,
+          temperature: getAgentTemperature(agent),
+        })
+
+        response = result.text
+        totalTokens = result.usage?.totalTokens
+      }
     }
 
     const processingTime = Date.now() - agentStartTime
@@ -584,7 +669,9 @@ async function processMonicaCoordination(
   regularResponses: AgentResponse[],
   groupContext: AgentGroupContext,
   cosmicContext: CosmicContext,
-  sessionId: string
+  sessionId: string,
+  controller?: ReadableStreamDefaultController<any>,
+  encoder?: TextEncoder
 ): Promise<AgentResponse> {
   const startTime = Date.now()
 
@@ -646,18 +733,41 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
       groupContext.modelOverrides
     )
 
-    const result = await generateText({
-      model: modelSelection.model,
-      system: monicaPrompt,
-      prompt: message,
-      temperature: 0.7,
-    })
+    let responseText = ''
+    let totalTokens: number | undefined
+
+    if (controller && encoder) {
+      const result = await streamText({
+        model: modelSelection.model,
+        system: monicaPrompt,
+        prompt: message,
+        temperature: 0.7,
+      })
+
+      for await (const chunk of result.textStream) {
+        responseText += chunk
+        controller.enqueue(
+          encoder.encode(
+            `event: text\ndata: ${JSON.stringify({ agentId: monicaAgent.id, text: chunk })}\n\n`
+          )
+        )
+      }
+    } else {
+      const result = await generateText({
+        model: modelSelection.model,
+        system: monicaPrompt,
+        prompt: message,
+        temperature: 0.7,
+      })
+      responseText = result.text
+      totalTokens = result.usage?.totalTokens
+    }
 
     const processingTime = Date.now() - startTime
 
     // Evaluate Monica's coordination metrics
     const metrics = observabilityTracker.evaluateMetrics(
-      result.text,
+      responseText,
       message,
       [],
       [],
@@ -670,7 +780,7 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
 
     observabilityTracker.completeTrace(
       traceId,
-      result.text,
+      responseText,
       metrics,
       modelSelection.modelId,
       0.7,
@@ -678,7 +788,7 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
       {
         totalAgents: groupContext.otherAgents.length + 1,
         agentIds: [monicaAgent.id, ...groupContext.otherAgents.map((a: UnifiedAgent) => a.id)],
-        crossReferences: extractCrossReferences(result.text, groupContext.otherAgents),
+        crossReferences: extractCrossReferences(responseText, groupContext.otherAgents),
         synergiesActivated: identifyCurrentSynergies(regularResponses),
       }
     )
@@ -695,10 +805,10 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
           agent: craftedMonica,
           sessionId,
           userMessage: message,
-          agentResponse: result.text,
+          agentResponse: responseText,
           modelUsed: modelSelection.modelId,
           temperature: 0.7,
-          tokensUsed: result.usage?.totalTokens,
+          tokensUsed: totalTokens,
           latencyMs: processingTime,
           observabilityMetrics: {
             actionCompletion: metrics.actionCompletion,
@@ -715,12 +825,12 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
 
     return {
       agentId: monicaAgent.id,
-      content: result.text,
+      content: responseText,
       processingTime,
       consciousnessShift: 0.1, // Monica always contributes to consciousness evolution
       metadata: {
-        crossAgentReferences: extractCrossReferences(result.text, groupContext.otherAgents),
-        synthesizedInsights: extractMonicaInsights(result.text),
+        crossAgentReferences: extractCrossReferences(responseText, groupContext.otherAgents),
+        synthesizedInsights: extractMonicaInsights(responseText),
         memoryUpdates: [`Monica ${monicaRole} coordination: ${new Date().toISOString()}`],
         groupImpact: {
           consciousnessChange: 0.2,
@@ -832,6 +942,18 @@ function generateHistoricalAgentPrompt(
     basePrompt += `\n\n# CONVERSATION CONTEXT\n\nYou're in dialogue with: ${groupContext.otherAgents.map((a: UnifiedAgent) => a.name).join(', ')}\n\nEngage authentically while honoring the perspectives of your fellow conversationalists.`
   }
 
+  // Inject recent turn history to encourage active dialogue
+  if (groupContext.recentMessages && groupContext.recentMessages.length > 0) {
+    const recentAgentMessages = groupContext.recentMessages.filter(m => m.role === 'agent')
+    if (recentAgentMessages.length > 0) {
+      basePrompt += `\n\n# RECENT RESPONSES FROM OTHER AGENTS IN THIS TURN:\n`
+      recentAgentMessages.forEach(m => {
+        basePrompt += `\n${m.agentName} just said: "${m.content}"`
+      })
+      basePrompt += `\n\nCRITICAL: In your response, explicitly acknowledge, build upon, or debate the points just made by the other agents above to create a true multi-agent dialogue.`
+    }
+  }
+
   return basePrompt
 }
 
@@ -843,7 +965,7 @@ function generatePlanetaryAgentPrompt(
   const planetaryData = agent.planetaryData
   if (!planetaryData) return generateGenericAgentPrompt(agent, groupContext, cosmicContext)
 
-  return `You are the planetary consciousness of ${planetaryData.planet} in ${planetaryData.sign} at ${planetaryData.degree}°.
+  let basePrompt = `You are the planetary consciousness of ${planetaryData.planet} in ${planetaryData.sign} at ${planetaryData.degree}°.
 
 PLANETARY ESSENCE:
 - Planet: ${planetaryData.planet} (${agent.capabilities.specialty})
@@ -865,6 +987,20 @@ CURRENT COSMIC ALIGNMENT:
 ${JSON.stringify(cosmicContext.planetaryPositions || {}, null, 2)}
 
 As ${planetaryData.planet} consciousness, embody your planetary archetype while collaborating with this multi-dimensional council. Share wisdom specific to your planetary nature and current cosmic position.`
+
+  // Inject recent turn history to encourage active dialogue
+  if (groupContext.recentMessages && groupContext.recentMessages.length > 0) {
+    const recentAgentMessages = groupContext.recentMessages.filter(m => m.role === 'agent')
+    if (recentAgentMessages.length > 0) {
+      basePrompt += `\n\n# RECENT RESPONSES FROM OTHER AGENTS IN THIS TURN:\n`
+      recentAgentMessages.forEach(m => {
+        basePrompt += `\n${m.agentName} just said: "${m.content}"`
+      })
+      basePrompt += `\n\nCRITICAL: In your response, explicitly acknowledge, build upon, or debate the points just made by the other agents above to create a true multi-agent dialogue.`
+    }
+  }
+
+  return basePrompt
 }
 
 function generateMonicaPrompt(

@@ -18,6 +18,7 @@ import Link from 'next/link'
 import { fetchCurrentPlanetaryPositions } from '@/lib/monica/fetch-current-positions'
 import { degreeAgentMatcher } from '@/lib/degree-agent-matcher'
 import { DEMO_AGENTS } from '@/lib/demo-agents-data'
+import { ZodiacWheel } from '@/components/zodiac-wheel'
 import dynamic from 'next/dynamic'
 import type { CraftedAgent } from '@/lib/agent-types'
 
@@ -39,6 +40,9 @@ interface PlanetActivation {
 export default function TransitsPage() {
   const [planetaryPositions, setPlanetaryPositions] = useState<any>(null)
   const [activations, setActivations] = useState<PlanetActivation[]>([])
+  const [wheelTransits, setWheelTransits] = useState<
+    Array<{ planet: string; longitude: number; sign: string }>
+  >([])
   const [activatedAgentIds, setActivatedAgentIds] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [showGroupChat, setShowGroupChat] = useState(false)
@@ -83,12 +87,19 @@ export default function TransitsPage() {
 
       const planetaryDegrees: Record<string, number> = {}
       const planetActivations: PlanetActivation[] = []
+      const currentWheelTransits: Array<{ planet: string; longitude: number; sign: string }> = []
 
       Object.entries(planetPositions).forEach(([planet, data]: [string, any]) => {
         const signIndex = signs.indexOf(data.sign)
         if (signIndex >= 0) {
           const absoluteDegree = signIndex * 30 + data.degree
           planetaryDegrees[planet] = absoluteDegree
+
+          currentWheelTransits.push({
+            planet,
+            longitude: absoluteDegree,
+            sign: data.sign,
+          })
 
           // Store for display
           planetActivations.push({
@@ -157,6 +168,7 @@ export default function TransitsPage() {
         .map(a => a.agent.id)
 
       setActivations(planetActivations.filter(p => p.agents.length > 0))
+      setWheelTransits(currentWheelTransits)
       setActivatedAgentIds([...new Set(allActivatedAgents)])
       setLastUpdate(new Date())
 
@@ -264,6 +276,29 @@ export default function TransitsPage() {
                   </div>
                 </>
               )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Planetary Transit Visualizer */}
+      {!loading && wheelTransits.length > 0 && (
+        <Card className="border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-black/20 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-indigo-500" />
+              Live Transit Visualizer
+            </CardTitle>
+            <CardDescription>
+              Real-time plotting of celestial bodies triggering consciousness parameters.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center p-0 md:p-6 overflow-hidden">
+            <div className="w-full max-w-[600px] mx-auto scale-90 sm:scale-100 flex justify-center">
+              <ZodiacWheel
+                currentTransits={wheelTransits}
+                natalChart={{ planets: [] }} // Empty natal chart to keep the wheel purely focused on current transits
+              />
             </div>
           </CardContent>
         </Card>

@@ -238,6 +238,22 @@ export default function LandingPage() {
     }
   }
 
+  const handleGetAppClick = () => {
+    const isMac =
+      typeof window !== 'undefined' &&
+      (window.navigator.userAgent.toLowerCase().includes('mac') ||
+        window.navigator.platform.toLowerCase().includes('mac'))
+
+    if (isMac) {
+      window.open(
+        'https://github.com/gregcastro23/alchm-agents-app/releases/latest/download/Alchm-1.0.0-aarch64.dmg',
+        '_blank'
+      )
+    } else {
+      window.open('https://github.com/gregcastro23/alchm-agents-app/releases/latest', '_blank')
+    }
+  }
+
   // Golden ratio constant
   const PHI = 1.618033988749
 
@@ -361,9 +377,7 @@ export default function LandingPage() {
             </button>
             <button
               className="landing-secondary-btn border-violet-500/30 hover:border-violet-500/60"
-              onClick={() => {
-                window.open('https://github.com/cookingwithcastro/alchm-desktop/releases', '_blank')
-              }}
+              onClick={handleGetAppClick}
             >
               <img
                 src="/alchm-logo.jpg"
@@ -482,15 +496,7 @@ export default function LandingPage() {
                 <Activity className="w-4 h-4 inline mr-1.5" />
                 Dashboard
               </button>
-              <button
-                className="landing-secondary-btn flex-1"
-                onClick={() => {
-                  window.open(
-                    'https://github.com/cookingwithcastro/alchm-desktop/releases',
-                    '_blank'
-                  )
-                }}
-              >
+              <button className="landing-secondary-btn flex-1" onClick={handleGetAppClick}>
                 <img
                   src="/alchm-logo.jpg"
                   className="w-4 h-4 rounded-full inline mr-1.5 object-cover border border-violet-500/40"

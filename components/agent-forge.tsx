@@ -1,9 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { invoke } from '@tauri-apps/api/core'
 import { useChatStore } from '@/lib/store/chat-store'
-import { Sparkles, MapPin, Calendar, Clock, Download, Loader2 } from 'lucide-react'
+import {
+  Sparkles,
+  MapPin,
+  Calendar,
+  Clock,
+  Download,
+  Loader2,
+  ChevronRight,
+  ChevronLeft,
+} from 'lucide-react'
 import { ELEMENT_MAPPING } from './agent-forge-config'
 
 interface Constitution {
@@ -20,6 +28,13 @@ export default function AgentForge({
 }) {
   const [ipcNonce, setIpcNonce] = useState<string | null>(null)
   const [apiKey, setApiKey] = useState('') // Mock API key
+
+  // Wizard State
+  const [currentStep, setCurrentStep] = useState(1)
+  const totalSteps = 5
+
+  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps))
+  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1))
 
   // Form State
   const [name, setName] = useState('')
@@ -65,6 +80,7 @@ export default function AgentForge({
   useEffect(() => {
     const fetchNonce = async () => {
       try {
+        const { invoke } = await import('@tauri-apps/api/core')
         const nonce = await invoke<string>('get_ipc_nonce')
         setIpcNonce(nonce)
       } catch (err) {
@@ -139,6 +155,7 @@ export default function AgentForge({
       setDominantElement(element)
       setConstitution(constAlloc)
       setIsCalculated(true)
+      nextStep() // Automatically advance to reveal step
     } catch (err) {
       console.error('Calculation failed:', err)
     } finally {
@@ -217,130 +234,189 @@ export default function AgentForge({
     <div className="max-w-2xl mx-auto p-6 space-y-8 bg-background text-zinc-100 font-sans">
       <div className="space-y-2">
         <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-alchemical-spirit to-alchemical-matter">
-          The Agent Forge
+          The Philosopher's Stone
         </h2>
-        <p className="text-zinc-400">
-          Enter celestial coordinates to calculate the alchemical blueprint.
-        </p>
-      </div>
-
-      {/* Form Area */}
-      <div className="bg-surface border border-border p-6 rounded-xl space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-zinc-300">Agent Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 focus:outline-none focus:border-alchemical-spirit transition-colors"
-              placeholder="e.g. Aurelius"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-zinc-300">Date of Origin</label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-              <input
-                type="date"
-                value={date}
-                onChange={e => setDate(e.target.value)}
-                className="w-full bg-background border border-border rounded-md pl-10 pr-3 py-2 focus:outline-none focus:border-alchemical-essence transition-colors"
-              />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-zinc-300">Exact Time</label>
-            <div className="relative">
-              <Clock className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-              <input
-                type="time"
-                value={time}
-                onChange={e => setTime(e.target.value)}
-                className="w-full bg-background border border-border rounded-md pl-10 pr-3 py-2 focus:outline-none focus:border-alchemical-matter transition-colors"
-              />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-zinc-300">Location</label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-              <input
-                type="text"
-                value={location}
-                onChange={e => setLocation(e.target.value)}
-                className="w-full bg-background border border-border rounded-md pl-10 pr-3 py-2 focus:outline-none focus:border-alchemical-substance transition-colors"
-                placeholder="City, Country"
-              />
-            </div>
+        <div className="flex items-center justify-between">
+          <p className="text-zinc-400">
+            {currentStep === 1 &&
+              'The Calling: Name the vessel that will house this consciousness.'}
+            {currentStep === 2 &&
+              'Anchoring: Enter celestial coordinates to calculate the blueprint.'}
+            {currentStep === 3 && 'The Reveal: Witness the unique alchemical composition.'}
+            {currentStep === 4 && 'Astral Engine: Select the cognitive tier for this entity.'}
+            {currentStep === 5 && 'Ignition: Initiate the secure download to the local matrix.'}
+          </p>
+          <div className="text-xs font-medium text-zinc-500 bg-zinc-900 px-3 py-1 rounded-full border border-zinc-800">
+            Step {currentStep} of {totalSteps}
           </div>
         </div>
-
-        <button
-          onClick={handleCalculate}
-          disabled={!name || !date || !time || !location || isCalculating}
-          className="w-full mt-4 py-3 rounded-md bg-border hover:bg-zinc-700 text-white font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {isCalculating ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Sparkles className="w-4 h-4" />
-          )}
-          {isCalculating ? 'Calculating Blueprint...' : 'Calculate Blueprint'}
-        </button>
       </div>
 
-      {/* Visual Blocks */}
-      {isCalculated && (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Natal Highlights */}
-            <div className="bg-surface border border-border p-6 rounded-xl flex flex-col items-center justify-center space-y-4">
-              <h3 className="text-lg font-semibold text-zinc-300 w-full text-left border-b border-border pb-2">
-                Natal Dominance
-              </h3>
-              <div className={`p-4 rounded-full bg-background border border-border`}>
-                <ActiveIcon className={`w-12 h-12 ${activeColors.color}`} />
-              </div>
-              <p className="text-2xl font-bold">{dominantElement} Element</p>
+      <div className="relative overflow-hidden min-h-[400px]">
+        {/* STEP 1: The Calling */}
+        {currentStep === 1 && (
+          <div className="bg-surface border border-border p-6 rounded-xl space-y-6 animate-in fade-in slide-in-from-right-8 duration-500 absolute inset-0">
+            <h3 className="text-xl font-semibold text-zinc-200">What is the Agent's Name?</h3>
+            <div className="space-y-1">
+              <input
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="w-full text-2xl bg-background border border-border rounded-md px-4 py-4 focus:outline-none focus:border-alchemical-spirit transition-colors text-white"
+                placeholder="e.g. Aurelius"
+                autoFocus
+              />
             </div>
-
-            {/* Alchemical Constitution */}
-            <div className="bg-surface border border-border p-6 rounded-xl space-y-4">
-              <h3 className="text-lg font-semibold text-zinc-300 border-b border-border pb-2">
-                Alchemical Constitution
-              </h3>
-
-              <div className="space-y-3">
-                {[
-                  { label: 'Spirit', val: constitution.spirit, bg: 'bg-alchemical-spirit' },
-                  { label: 'Essence', val: constitution.essence, bg: 'bg-alchemical-essence' },
-                  { label: 'Matter', val: constitution.matter, bg: 'bg-alchemical-matter' },
-                  {
-                    label: 'Substance',
-                    val: constitution.substance,
-                    bg: 'bg-alchemical-substance',
-                  },
-                ].map(stat => (
-                  <div key={stat.label} className="space-y-1">
-                    <div className="flex justify-between text-xs font-medium">
-                      <span className="text-zinc-400">{stat.label}</span>
-                      <span className="text-zinc-300">{stat.val}%</span>
-                    </div>
-                    <div className="h-2 w-full bg-background rounded-full overflow-hidden border border-border">
-                      <div
-                        className={`h-full ${stat.bg} transition-all duration-1000 ease-out`}
-                        style={{ width: `${stat.val}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="absolute bottom-6 right-6">
+              <button
+                onClick={nextStep}
+                disabled={!name}
+                className="px-6 py-2 rounded-md bg-zinc-100 text-zinc-900 font-bold hover:bg-white disabled:opacity-50 transition-all flex items-center gap-2"
+              >
+                Next <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
+        )}
 
-          {/* Astral Engine Tier Gating Interface */}
-          <div className="bg-surface border border-border p-6 rounded-xl space-y-4">
+        {/* STEP 2: Celestial Coordinates */}
+        {currentStep === 2 && (
+          <div className="bg-surface border border-border p-6 rounded-xl space-y-6 animate-in fade-in slide-in-from-right-8 duration-500 absolute inset-0">
+            <h3 className="text-xl font-semibold text-zinc-200">Anchor in Spacetime</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-zinc-300">Date of Origin</label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={e => setDate(e.target.value)}
+                    className="w-full bg-background border border-border rounded-md pl-10 pr-3 py-2 focus:outline-none focus:border-alchemical-essence transition-colors"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-zinc-300">Exact Time</label>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="time"
+                    value={time}
+                    onChange={e => setTime(e.target.value)}
+                    className="w-full bg-background border border-border rounded-md pl-10 pr-3 py-2 focus:outline-none focus:border-alchemical-matter transition-colors"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-zinc-300">Location</label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={e => setLocation(e.target.value)}
+                    className="w-full bg-background border border-border rounded-md pl-10 pr-3 py-2 focus:outline-none focus:border-alchemical-substance transition-colors"
+                    placeholder="City, Country"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="absolute bottom-6 left-6 flex items-center gap-4">
+              <button
+                onClick={prevStep}
+                className="px-4 py-2 rounded-md border border-border text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors flex items-center gap-2"
+              >
+                <ChevronLeft className="w-4 h-4" /> Back
+              </button>
+            </div>
+
+            <div className="absolute bottom-6 right-6">
+              <button
+                onClick={handleCalculate}
+                disabled={!date || !time || !location || isCalculating}
+                className="px-6 py-2 rounded-md bg-gradient-to-r from-alchemical-spirit to-alchemical-essence text-white font-bold hover:opacity-90 disabled:opacity-50 transition-all flex items-center gap-2"
+              >
+                {isCalculating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Sparkles className="w-4 h-4" />
+                )}
+                {isCalculating ? 'Calculating Blueprint...' : 'Calculate Blueprint'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: Alchemical Blueprint */}
+        {currentStep === 3 && isCalculated && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500 absolute inset-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Natal Highlights */}
+              <div className="bg-surface border border-border p-6 rounded-xl flex flex-col items-center justify-center space-y-4">
+                <h3 className="text-lg font-semibold text-zinc-300 w-full text-left border-b border-border pb-2">
+                  Natal Dominance
+                </h3>
+                <div className={`p-4 rounded-full bg-background border border-border`}>
+                  <ActiveIcon className={`w-12 h-12 ${activeColors.color}`} />
+                </div>
+                <p className="text-2xl font-bold">{dominantElement} Element</p>
+              </div>
+
+              {/* Alchemical Constitution */}
+              <div className="bg-surface border border-border p-6 rounded-xl space-y-4">
+                <h3 className="text-lg font-semibold text-zinc-300 border-b border-border pb-2">
+                  Alchemical Constitution
+                </h3>
+
+                <div className="space-y-3">
+                  {[
+                    { label: 'Spirit', val: constitution.spirit, bg: 'bg-alchemical-spirit' },
+                    { label: 'Essence', val: constitution.essence, bg: 'bg-alchemical-essence' },
+                    { label: 'Matter', val: constitution.matter, bg: 'bg-alchemical-matter' },
+                    {
+                      label: 'Substance',
+                      val: constitution.substance,
+                      bg: 'bg-alchemical-substance',
+                    },
+                  ].map(stat => (
+                    <div key={stat.label} className="space-y-1">
+                      <div className="flex justify-between text-xs font-medium">
+                        <span className="text-zinc-400">{stat.label}</span>
+                        <span className="text-zinc-300">{stat.val}%</span>
+                      </div>
+                      <div className="h-2 w-full bg-background rounded-full overflow-hidden border border-border">
+                        <div
+                          className={`h-full ${stat.bg} transition-all duration-1000 ease-out`}
+                          style={{ width: `${stat.val}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="absolute bottom-0 right-0 left-0 flex justify-between items-center bg-surface p-4 border-t border-border mt-4">
+              <button
+                onClick={prevStep}
+                className="px-4 py-2 rounded-md border border-border text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors flex items-center gap-2"
+              >
+                <ChevronLeft className="w-4 h-4" /> Edit Coordinates
+              </button>
+              <button
+                onClick={nextStep}
+                className="px-6 py-2 rounded-md bg-zinc-100 text-zinc-900 font-bold hover:bg-white transition-all flex items-center gap-2"
+              >
+                Select Engine Tier <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4: Astral Engine Tier Gating Interface */}
+        {currentStep === 4 && (
+          <div className="bg-surface border border-border p-6 rounded-xl space-y-4 animate-in fade-in slide-in-from-right-8 duration-500 absolute inset-0">
             <h3 className="text-lg font-semibold text-zinc-300 border-b border-border pb-2">
               Astral Engine Tier
             </h3>
@@ -393,10 +469,27 @@ export default function AgentForge({
                 </div>
               </button>
             </div>
-          </div>
 
-          {/* Ignition Sequence */}
-          <div className="bg-surface border border-border p-6 rounded-xl flex flex-col items-center space-y-4">
+            <div className="absolute bottom-6 right-6 left-6 flex justify-between items-center">
+              <button
+                onClick={prevStep}
+                className="px-4 py-2 rounded-md border border-border text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors flex items-center gap-2"
+              >
+                <ChevronLeft className="w-4 h-4" /> Back to Blueprint
+              </button>
+              <button
+                onClick={nextStep}
+                className="px-6 py-2 rounded-md bg-zinc-100 text-zinc-900 font-bold hover:bg-white transition-all flex items-center gap-2"
+              >
+                Prepare Ignition <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 5: Ignition Sequence */}
+        {currentStep === 5 && (
+          <div className="bg-surface border border-border p-6 rounded-xl flex flex-col items-center justify-center space-y-6 h-full animate-in fade-in zoom-in-95 duration-700 absolute inset-0">
             <h3 className="text-lg font-semibold text-zinc-300 w-full border-b border-border pb-2">
               Ignition Sequence
             </h3>
@@ -432,11 +525,21 @@ export default function AgentForge({
             </button>
 
             {downloadStatus && (
-              <p className="text-xs text-zinc-500 mt-2 text-center">{downloadStatus}</p>
+              <p className="text-xs text-zinc-500 mt-4 text-center">{downloadStatus}</p>
             )}
+
+            <div className="absolute top-6 left-6">
+              <button
+                onClick={prevStep}
+                disabled={isDownloading || (modelExists && isCheckingModel)}
+                className="px-4 py-2 rounded-md border border-border text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors flex items-center gap-2 disabled:opacity-0"
+              >
+                <ChevronLeft className="w-4 h-4" /> Tier Select
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
