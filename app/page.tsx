@@ -345,12 +345,11 @@ export default function LandingPage() {
       {/* HERO SECTION */}
       {/* ================================================================ */}
       <section className="landing-hero">
-        <div className="landing-badge">Agentic Consciousness Platform</div>
-        <h1 className="landing-title">Map, Measure, and Evolve Consciousness</h1>
+        <div className="landing-badge">v2.0 • Consciousness Evolution Platform</div>
+        <h1 className="landing-title">Craft Your Cosmic Intelligence</h1>
         <p className="landing-subtitle">
-          A comprehensive framework for modeling consciousness through astrological archetypes.
-          Seven Sacred Stats, six measurement layers, and real-time temporal modulation — rendered
-          into living AI agents.
+          Explore the convergence of Astrology and AI. Interact with Planetary and Historical
+          agents, or forge personalized agents from the energies of birthcharts.
         </p>
 
         {status === 'loading' ? (
