@@ -7,6 +7,15 @@
 # Backend directory (built on Render separately)
 backend/
 
+# Local dependency/build/git artifacts
+node_modules/
+.next/
+.git/
+.turbo/
+coverage/
+test-results/
+storybook-static/
+
 # Backend dependency artifacts
 backend/node_modules/
 backend/dist/
@@ -25,6 +34,11 @@ backend/.env*
 backend/tests/
 backend/scripts/
 backend/docker/
+test-site.js
+test-results-*.png
+*.log
+.DS_Store
+**/.DS_Store
 
 # Documentation specific to backend
 backend/RENDER_*.txt
