@@ -76,3 +76,4 @@ src-tauri/target/
 .DS_Store
 src-tauri/bin/llama-server*
 src-tauri/icons/icon_rgb.png
+src-tauri/bin/orchestrator-*
