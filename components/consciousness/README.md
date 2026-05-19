@@ -22,7 +22,6 @@ Real-time consciousness state dashboard with comprehensive metrics.
 
 ```tsx
 import { ConsciousnessDashboard } from '@/components/consciousness'
-
 ;<ConsciousnessDashboard
   agentId="leonardo-da-vinci"
   userId="user-123"
@@ -64,7 +63,6 @@ Historical evolution timeline with trends and analytics.
 
 ```tsx
 import { ConsciousnessTimeline } from '@/components/consciousness'
-
 ;<ConsciousnessTimeline agentId="leonardo-da-vinci" userId="user-123" days={30} className="mt-4" />
 ```
 

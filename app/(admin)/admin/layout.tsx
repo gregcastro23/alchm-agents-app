@@ -1,11 +1,11 @@
+import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { AdminOperatorConsole } from '@/components/admin/AdminOperatorConsole'
 import { requireAdmin } from '@/lib/admin-auth'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AdminDashboardPage() {
+export default async function AdminLayout({ children }: { children: ReactNode }) {
   const admin = await requireAdmin()
 
   if (!admin.ok && admin.status === 401) {
@@ -29,5 +29,5 @@ export default async function AdminDashboardPage() {
     )
   }
 
-  return <AdminOperatorConsole initialUser={admin.user} authSource={admin.source} />
+  return children
 }

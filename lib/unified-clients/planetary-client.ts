@@ -127,7 +127,8 @@ function calculatePlanetaryInfluence(datetime: Date, planetaryHour: string) {
     },
   }
 
-  const modifiers = planetaryModifiers[planetaryHour as keyof typeof planetaryModifiers] || planetaryModifiers.Sun
+  const modifiers =
+    planetaryModifiers[planetaryHour as keyof typeof planetaryModifiers] || planetaryModifiers.Sun
 
   return {
     spirit: Math.round((1.0 + seasonal + diurnal) * modifiers.spirit * 100) / 100,

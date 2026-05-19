@@ -146,11 +146,7 @@ export async function runTransitMonitoringJob(
           enabled: true,
           significanceThreshold: significanceThreshold || 0.6,
           priorityLevels: ['medium', 'high', 'critical'],
-          categories: [
-            'personal_transit',
-            'agent_activation',
-            'consciousness_breakthrough',
-          ],
+          categories: ['personal_transit', 'agent_activation', 'consciousness_breakthrough'],
           deliveryMethods: ['in_app'],
           frequency: 'immediate',
         }

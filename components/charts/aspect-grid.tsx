@@ -106,10 +106,12 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
     }))
 
   useEffect(() => {
-    void detectPatterns(planetPositions).then(({ aspects: detectedAspects, patterns: detectedPatterns }) => {
-      setAspects(Array.isArray(detectedAspects) ? detectedAspects : [])
-      setPatterns(Array.isArray(detectedPatterns) ? detectedPatterns : [])
-    })
+    void detectPatterns(planetPositions).then(
+      ({ aspects: detectedAspects, patterns: detectedPatterns }) => {
+        setAspects(Array.isArray(detectedAspects) ? detectedAspects : [])
+        setPatterns(Array.isArray(detectedPatterns) ? detectedPatterns : [])
+      }
+    )
   }, [planets])
 
   // Create aspect matrix for grid display

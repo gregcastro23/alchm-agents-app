@@ -713,8 +713,11 @@ export class EnhancedRecommendationService {
       air: ['raw', 'light cooking', 'whipping'],
     }
 
-    const alignedMethods = methodElementMapping[rune.element as keyof typeof methodElementMapping] || []
-    return alignedMethods.some((method: string) => recipe.cookingMethod.toLowerCase().includes(method))
+    const alignedMethods =
+      methodElementMapping[rune.element as keyof typeof methodElementMapping] || []
+    return alignedMethods.some((method: string) =>
+      recipe.cookingMethod.toLowerCase().includes(method)
+    )
       ? 0.3
       : 0.1
   }

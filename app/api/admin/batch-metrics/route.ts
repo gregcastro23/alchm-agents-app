@@ -4,10 +4,29 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { adminErrorResponse, requireAdmin } from '@/lib/admin-auth'
 import { prisma } from '@/lib/db'
+
+function mapJobStatus(status: string) {
+  switch (status) {
+    case 'pending':
+      return 'queued'
+    case 'running':
+      return 'processing'
+    case 'completed':
+    case 'failed':
+    case 'cancelled':
+      return status
+    default:
+      return 'queued'
+  }
+}
 
 export async function GET(_request: NextRequest) {
   try {
+    const admin = await requireAdmin()
+    if (!admin.ok) return adminErrorResponse(admin)
+
     // Get job statistics from database
     const [allJobs, queuedJobs, processingJobs, completedJobs, failedJobs, recentJobs] =
       await Promise.all([
@@ -34,6 +53,11 @@ export async function GET(_request: NextRequest) {
     })
 
     const avgProcessingTime = completedWithTime._avg.executionTime || 4200
+    const memoryUsage =
+      process.memoryUsage().heapTotal > 0
+        ? (process.memoryUsage().heapUsed / process.memoryUsage().heapTotal) * 100
+        : null
+    const maxWorkers = Number(process.env.BATCH_MAX_WORKERS || 5)
 
     // Calculate throughput (jobs per hour)
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
@@ -53,16 +77,17 @@ export async function GET(_request: NextRequest) {
       averageProcessingTime: avgProcessingTime,
       throughputPerHour: jobsLastHour,
       resourceUtilization: {
-        cpu: 45 + Math.random() * 20, // Would come from system monitoring
-        memory: 60 + Math.random() * 15,
+        cpu: null,
+        memory: memoryUsage,
         activeWorkers: processingJobs,
-        maxWorkers: 5, // Configuration value
+        maxWorkers,
+        estimated: false,
       },
       queueHealth:
         queuedJobs < 50 && failedJobs / Math.max(1, allJobs) < 0.05
           ? 'healthy'
           : queuedJobs > 100
-            ? 'overloaded'
+            ? 'critical'
             : 'degraded',
     }
 
@@ -71,15 +96,16 @@ export async function GET(_request: NextRequest) {
       id: job.id,
       type: 'transit_monitoring',
       priority: index < 3 ? 'high' : index < 7 ? 'medium' : 'low',
-      status: job.status,
+      status: mapJobStatus(job.status),
       progress: job.status === 'completed' ? 100 : job.status === 'running' ? 50 : 0,
       createdAt: job.scheduledFor,
-      startedAt: job.status !== 'pending' ? job.scheduledFor : undefined,
+      startedAt: job.startedAt || undefined,
       completedAt: job.completedAt || undefined,
       estimatedDuration: avgProcessingTime,
       actualDuration: job.executionTime || undefined,
-      retryCount: 0,
-      maxRetries: 3,
+      retryCount: job.retryCount,
+      maxRetries: job.maxRetries,
+      error: job.lastError || undefined,
     }))
 
     return NextResponse.json({

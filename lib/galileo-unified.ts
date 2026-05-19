@@ -51,7 +51,11 @@ export class UnifiedGalileoService {
     }
 
     try {
-      const result = await withRetries(() => circuitBreaker(() => this.sendToGalileo(entry)), 3, 1000)
+      const result = await withRetries(
+        () => circuitBreaker(() => this.sendToGalileo(entry)),
+        3,
+        1000
+      )
       return result
     } catch (error) {
       this.handleLogError(error, entry)

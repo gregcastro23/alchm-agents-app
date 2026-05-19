@@ -581,7 +581,6 @@ export class CollaborativeTimeSessionManager {
     const websockets = this.websockets.get(sessionId) || []
     websockets.push(ws)
     this.websockets.set(sessionId, websockets)
-
     ;(ws as any).on('close', () => {
       const updatedSockets = websockets.filter(socket => socket !== ws)
       this.websockets.set(sessionId, updatedSockets)

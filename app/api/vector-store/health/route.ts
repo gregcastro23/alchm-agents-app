@@ -18,9 +18,8 @@ export async function GET() {
     )
   }
   // Dynamic import — chromadb/llamaindex stay out of the cold-start graph
-  const { healthCheck, listCollections, getCollectionCount, getOrCreateCollection } = await import(
-    '@/lib/llamaindex'
-  )
+  const { healthCheck, listCollections, getCollectionCount, getOrCreateCollection } =
+    await import('@/lib/llamaindex')
   try {
     const health = await healthCheck()
     const collections = await listCollections()

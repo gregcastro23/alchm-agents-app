@@ -290,21 +290,25 @@ class PerformanceOptimizationEngine {
   }
 
   async getPerformanceReport(timeRange: { start: Date; end: Date }): Promise<any> {
-    const metrics = this.metrics.filter(
-      m => {
-        const time = m.timestamp instanceof Date ? m.timestamp.getTime() : new Date(m.timestamp).getTime()
+    const metrics = this.metrics
+      .filter(m => {
+        const time =
+          m.timestamp instanceof Date ? m.timestamp.getTime() : new Date(m.timestamp).getTime()
         return time >= timeRange.start.getTime() && time <= timeRange.end.getTime()
-      }
-    ).sort((a: any, b: any) => {
-      const timeA = a.timestamp instanceof Date ? a.timestamp.getTime() : new Date(a.timestamp).getTime()
-      const timeB = b.timestamp instanceof Date ? b.timestamp.getTime() : new Date(b.timestamp).getTime()
-      return timeB - timeA
-    })
+      })
+      .sort((a: any, b: any) => {
+        const timeA =
+          a.timestamp instanceof Date ? a.timestamp.getTime() : new Date(a.timestamp).getTime()
+        const timeB =
+          b.timestamp instanceof Date ? b.timestamp.getTime() : new Date(b.timestamp).getTime()
+        return timeB - timeA
+      })
 
     const report = {
       summary: {
         totalRequests: metrics.length,
-        averageResponseTime: metrics.reduce((sum: number, m: any) => sum + m.responseTime, 0) / metrics.length,
+        averageResponseTime:
+          metrics.reduce((sum: number, m: any) => sum + m.responseTime, 0) / metrics.length,
         errorRate: metrics.filter((m: any) => m.statusCode >= 400).length / metrics.length,
         cacheHitRate: metrics.filter((m: any) => m.cacheHit).length / metrics.length,
       },

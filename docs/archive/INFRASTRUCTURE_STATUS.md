@@ -43,6 +43,7 @@ SSL Mode: Required
    - Best for: Direct database access without Accelerate
 
 3. **Direct Connection** (Migrations Only):
+
    ```
    postgresql://neondb_owner:npg_J8CabeXrf5Od@ep-mute-thunder-ahui2n87.us-east-1.aws.neon.tech/neondb?sslmode=require
    ```

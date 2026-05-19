@@ -115,7 +115,7 @@ export function ConsciousnessVectorDisplay({
 
   // Use live data if available, otherwise fall back to provided quantities
   const displayQuantities = liveData?.liveKalchm
-      ? {
+    ? {
         ...alchmQuantities, // Include thermodynamic properties
         spirit: liveData.liveKalchm.spirit,
         essence: liveData.liveKalchm.essence,
@@ -514,7 +514,10 @@ export function ConsciousnessVectorDisplay({
             <div className="h-[250px] w-full" style={{ minWidth: 100, minHeight: 250 }}>
               {isMounted && (
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={thermoWaveData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <AreaChart
+                    data={thermoWaveData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />

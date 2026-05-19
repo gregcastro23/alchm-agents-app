@@ -8,8 +8,11 @@ import {
   Activity,
   AlertTriangle,
   Bot,
+  BookOpen,
   ChevronRight,
   Cpu,
+  Database,
+  ExternalLink,
   Gauge,
   Globe2,
   HardDrive,
@@ -26,32 +29,9 @@ import {
   Zap,
   type LucideIcon,
 } from 'lucide-react'
+import { GREG_HANDLE, isGregIdentity } from '@/lib/admin-identity'
 import { cn } from '@/lib/utils'
-
-type HealthValue = 'healthy' | 'error' | 'unknown'
-
-interface DashboardData {
-  users: {
-    total: number
-    newToday: number
-    admins: number
-    recent: { id: string; email: string; name: string | null; role: string; createdAt: string }[]
-  }
-  agents: {
-    historical: number
-    planetary: number
-    created: number
-    totalConversations: number
-  }
-  system: {
-    database: 'healthy' | 'error'
-    aiProviders: { openai: boolean; anthropic: boolean; google: boolean; gateway: boolean }
-    railwayBackend: HealthValue
-    vercelDeployment: { url: string; lastDeploy: string | null }
-  }
-  recentActivity: { type: string; description: string; timestamp: string }[]
-  topAgents: { id: string; name: string; interactions: number }[]
-}
+import type { AdminDashboardData } from '@/types/admin'
 
 interface RuntimeTelemetry {
   online: boolean
@@ -60,25 +40,6 @@ interface RuntimeTelemetry {
   network: string
   heap: string
   localTime: string
-}
-
-const GREG_HANDLE = 'gregcastro23'
-const GREG_EMAIL = 'gregcastro23@gmail.com'
-
-function normalizeHandle(value?: string | null) {
-  return (value || '').toLowerCase().replace(/[^a-z0-9]/g, '')
-}
-
-function isGregIdentity(identity: {
-  email?: string | null
-  name?: string | null
-  id?: string | null
-}) {
-  const email = identity.email?.toLowerCase() || ''
-  const emailHandle = email.split('@')[0]
-  const values = [identity.id, identity.name, emailHandle].map(normalizeHandle)
-
-  return email === GREG_EMAIL || values.includes(GREG_HANDLE)
 }
 
 function parseLegacyIdentity() {
@@ -262,12 +223,54 @@ function FeatureRow({
   )
 }
 
+function QuickAction({
+  href,
+  icon: Icon,
+  label,
+  external = false,
+}: {
+  href: string
+  icon: LucideIcon
+  label: string
+  external?: boolean
+}) {
+  const className =
+    'flex items-center justify-between gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-bold text-white/75 transition hover:border-cyan-200/30 hover:bg-cyan-200/10 hover:text-cyan-50'
+  const content = (
+    <>
+      <span className="flex min-w-0 items-center gap-2">
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="truncate">{label}</span>
+      </span>
+      {external ? (
+        <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+      ) : (
+        <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+      )}
+    </>
+  )
+
+  if (external) {
+    return (
+      <a className={className} href={href} target="_blank" rel="noreferrer">
+        {content}
+      </a>
+    )
+  }
+
+  return (
+    <Link className={className} href={href}>
+      {content}
+    </Link>
+  )
+}
+
 export function FloatingAdminPanel() {
   const pathname = usePathname()
   const { data: session, status } = useSession()
   const [legacyIdentity, setLegacyIdentity] = useState<ReturnType<typeof parseLegacyIdentity>>(null)
   const [collapsed, setCollapsed] = useState(false)
-  const [data, setData] = useState<DashboardData | null>(null)
+  const [data, setData] = useState<AdminDashboardData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
@@ -334,7 +337,7 @@ export function FloatingAdminPanel() {
         throw new Error(payload?.error || `Admin API returned ${response.status}`)
       }
 
-      const payload = (await response.json()) as DashboardData
+      const payload = (await response.json()) as AdminDashboardData
       setData(payload)
       setError(null)
       setLastUpdated(new Date().toISOString())
@@ -371,11 +374,29 @@ export function FloatingAdminPanel() {
     : [telemetry.online]
   const healthScore = Math.round((healthChecks.filter(Boolean).length / healthChecks.length) * 100)
   const healthTone = healthScore >= 75 ? 'good' : healthScore >= 45 ? 'warn' : 'bad'
+  const dataAgeMs = lastUpdated ? Date.now() - new Date(lastUpdated).getTime() : null
+  const staleData = Boolean(dataAgeMs && dataAgeMs > 90_000)
+  const panelState = error
+    ? 'locked'
+    : staleData
+      ? 'stale'
+      : healthTone === 'good'
+        ? 'healthy'
+        : 'degraded'
+  const panelStateLabel = {
+    healthy: 'healthy',
+    degraded: 'degraded',
+    locked: 'locked',
+    stale: 'stale',
+  }[panelState]
+  const productionUrl = data?.system.vercelDeployment.url?.startsWith('http')
+    ? data.system.vercelDeployment.url
+    : 'https://agents.alchm.kitchen'
 
   if (collapsed) {
     return (
       <aside
-        className="fixed right-3 top-24 z-[70] flex w-16 flex-col items-center gap-3 rounded-[2rem] border border-cyan-200/20 bg-slate-950/85 px-2 py-4 text-white shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl"
+        className="fixed right-3 top-24 z-[70] flex w-16 flex-col items-center gap-3 rounded-[2rem] border border-cyan-200/20 bg-slate-950/85 px-2 py-4 text-white shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl max-md:bottom-24 max-md:left-3 max-md:right-auto max-md:top-auto"
         aria-label="Greg admin panel"
       >
         <button
@@ -393,10 +414,12 @@ export function FloatingAdminPanel() {
         <div
           className={cn(
             'h-3 w-3 rounded-full',
-            healthTone === 'good' && 'bg-emerald-300',
-            healthTone === 'warn' && 'bg-amber-300',
-            healthTone === 'bad' && 'bg-rose-300'
+            panelState === 'healthy' && 'bg-emerald-300',
+            panelState === 'degraded' && 'bg-amber-300',
+            panelState === 'stale' && 'bg-sky-300',
+            panelState === 'locked' && 'bg-rose-300'
           )}
+          title={panelStateLabel}
         />
       </aside>
     )
@@ -404,10 +427,10 @@ export function FloatingAdminPanel() {
 
   return (
     <aside
-      className="fixed bottom-5 right-4 top-24 z-[70] flex w-[min(390px,calc(100vw-2rem))] flex-col overflow-hidden rounded-[2rem] border border-white/15 bg-slate-950/88 text-white shadow-[0_30px_120px_rgba(0,0,0,0.6)] backdrop-blur-2xl"
+      className="fixed bottom-5 right-4 top-24 z-[70] flex w-[min(390px,calc(100vw-2rem))] flex-col overflow-hidden rounded-[2rem] border border-white/15 bg-slate-950/88 text-white shadow-[0_30px_120px_rgba(0,0,0,0.6)] backdrop-blur-2xl max-md:bottom-24 max-md:left-3 max-md:right-3 max-md:top-auto max-md:max-h-[68vh] max-md:w-auto"
       aria-label="Greg admin command panel"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(103,232,249,0.25),transparent_34%),radial-gradient(circle_at_100%_20%,rgba(251,191,36,0.15),transparent_28%),linear-gradient(145deg,rgba(15,23,42,0.1),rgba(2,6,23,0.8))]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(145deg,rgba(15,23,42,0.18),rgba(2,6,23,0.88)),linear-gradient(90deg,rgba(103,232,249,0.08)_1px,transparent_1px)] bg-[length:auto,22px_22px]" />
 
       <div className="relative border-b border-white/10 p-4">
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -416,10 +439,10 @@ export function FloatingAdminPanel() {
               <Sparkles className="h-3 w-3" />
               Greg Mission Control
             </div>
-            <h2 className="text-2xl font-black tracking-[-0.04em] text-white">
-              Admin Command Rail
-            </h2>
-            <p className="mt-1 text-xs text-white/50">Persistent right-side system intelligence</p>
+            <h2 className="text-2xl font-black text-white">Admin Command Rail</h2>
+            <p className="mt-1 text-xs text-white/50">
+              {panelStateLabel} · {lastUpdated ? formatRelativeTime(lastUpdated) : 'waiting'}
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -645,21 +668,33 @@ export function FloatingAdminPanel() {
       </div>
 
       <div className="relative border-t border-white/10 p-4">
+        <div className="mb-3 flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.16em] text-white/45">
+          <span>Quick actions</span>
+          <span
+            className={cn(
+              'rounded-full px-2 py-1 font-black',
+              panelState === 'healthy' && 'bg-emerald-300/10 text-emerald-100',
+              panelState === 'degraded' && 'bg-amber-300/10 text-amber-100',
+              panelState === 'stale' && 'bg-sky-300/10 text-sky-100',
+              panelState === 'locked' && 'bg-rose-300/10 text-rose-100'
+            )}
+          >
+            {panelStateLabel}
+          </span>
+        </div>
         <div className="grid grid-cols-2 gap-2">
-          <Link
-            href="/admin"
-            className="flex items-center justify-center gap-2 rounded-2xl bg-cyan-200 px-3 py-3 text-sm font-black text-slate-950 transition hover:bg-cyan-100"
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            Full Admin
-          </Link>
-          <Link
-            href="/api/health"
-            className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm font-bold text-white transition hover:bg-white/10"
-          >
-            <Globe2 className="h-4 w-4" />
-            Health API
-          </Link>
+          <QuickAction href="/admin" icon={LayoutDashboard} label="Full Admin" />
+          <QuickAction href="/api/health" icon={Globe2} label="Health API" />
+          <QuickAction href="/admin/rag-analytics" icon={Database} label="RAG Analytics" />
+          <QuickAction href="/api/knowledge-updater" icon={BookOpen} label="Knowledge" />
+          <div className="col-span-2">
+            <QuickAction
+              href={productionUrl}
+              icon={ExternalLink}
+              label="Vercel Production URL"
+              external
+            />
+          </div>
         </div>
       </div>
 
@@ -680,7 +715,7 @@ export function FloatingAdminPanel() {
         </button>
       )}
 
-      {healthTone !== 'good' && (
+      {panelState === 'degraded' && (
         <div className="pointer-events-none absolute bottom-[5.75rem] right-5 flex items-center gap-2 rounded-full border border-amber-300/25 bg-amber-300/10 px-3 py-2 text-xs font-bold text-amber-100">
           <AlertTriangle className="h-3.5 w-3.5" />
           Watch systems

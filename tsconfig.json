@@ -36,6 +36,7 @@
     "node_modules",
     "backend",
     "scripts",
+    "scratch",
     "lib/_archive",
     "test",
     "test-results",

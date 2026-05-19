@@ -1,7 +1,6 @@
 // components.jsx — shared atoms for the Alchm prototype
 // Imported globally; exports onto window so other JSX files can use them.
 
-// eslint-disable-next-line no-unused-vars
 const { useState, useEffect, useRef, useMemo } = React
 
 // ── Elemental sigils — minimal geometric glyphs, not hand-drawn art ────

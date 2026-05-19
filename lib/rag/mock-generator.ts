@@ -104,7 +104,8 @@ export function generateMockResponse(options: MockGenerationOptions): string {
     // No sources - create personality-driven response
     if (consciousness && natalChart) {
       // Reference consciousness level and astrological influences
-      const sunSign = (natalChart.planets as any)?.find((p: any) => p.name === 'Sun')?.sign || 'the cosmos'
+      const sunSign =
+        (natalChart.planets as any)?.find((p: any) => p.name === 'Sun')?.sign || 'the cosmos'
       const conscLevel = consciousness.level || 'active'
 
       response.push(

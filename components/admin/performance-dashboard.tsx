@@ -45,12 +45,13 @@ interface SystemMetrics {
   timestamp: number
   activeUsers: number
   totalSessions: number
-  averageSessionDuration: number
-  pageLoadTime: number
-  errorRate: number
+  averageSessionDuration: number | null
+  pageLoadTime: number | null
+  errorRate: number | null
   apiResponseTime: number
-  memoryUsage: number
-  cpuUsage: number
+  memoryUsage: number | null
+  cpuUsage: number | null
+  estimated?: Record<string, boolean>
 }
 
 interface UserAnalytics {
@@ -59,11 +60,11 @@ interface UserAnalytics {
   newUsersToday: number
   returningUsers: number
   userRetention: number
-  averageSessionTime: number
+  averageSessionTime: number | null
   topFeatures: Array<{
     name: string
     usage: number
-    growth: number
+    growth: number | null
   }>
   deviceBreakdown: {
     desktop: number
@@ -71,6 +72,11 @@ interface UserAnalytics {
     tablet: number
   }
   browserBreakdown: Record<string, number>
+  telemetryCoverage?: {
+    deviceSamples: number
+    browserSamples: number
+    estimated: boolean
+  }
 }
 
 interface AgentAnalytics {
@@ -80,7 +86,7 @@ interface AgentAnalytics {
   popularAgents: Array<{
     name: string
     chats: number
-    satisfaction: number
+    satisfaction: number | null
   }>
   consciousnessGrowth: number
   councilSessions: number
@@ -89,16 +95,17 @@ interface AgentAnalytics {
 
 interface PerformanceMetrics {
   systemHealth: 'excellent' | 'good' | 'fair' | 'poor'
-  uptime: number
+  uptime: number | null
   responseTime: number
   throughput: number
-  errorRate: number
+  errorRate: number | null
   alerts: Array<{
     id: string
     type: 'error' | 'warning' | 'info'
     message: string
     timestamp: number
   }>
+  estimated?: Record<string, boolean>
 }
 
 interface DashboardData {
@@ -161,11 +168,23 @@ export const PerformanceDashboard: React.FC = () => {
     return num.toString()
   }
 
-  const formatDuration = (seconds: number): string => {
+  const formatDuration = (seconds: number | null): string => {
+    if (seconds === null) return 'n/a'
+
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
     if (hours > 0) return `${hours}h ${minutes}m`
     return `${minutes}m`
+  }
+
+  const formatNullableNumber = (value: number | null, suffix = '') => {
+    if (value === null) return 'n/a'
+    return `${Number(value.toFixed(value % 1 === 0 ? 0 : 1))}${suffix}`
+  }
+
+  const formatNullablePercent = (value: number | null) => {
+    if (value === null) return 'n/a'
+    return `${value.toFixed(2)}%`
   }
 
   const getHealthColor = (health: string) => {
@@ -219,7 +238,10 @@ export const PerformanceDashboard: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <Select value={timeRange} onValueChange={(value: any) => setTimeRange(value)}>
+          <Select
+            value={timeRange}
+            onValueChange={value => setTimeRange(value as '1h' | '24h' | '7d' | '30d')}
+          >
             <SelectTrigger className="cosmic-select w-32">
               <SelectValue />
             </SelectTrigger>
@@ -286,7 +308,7 @@ export const PerformanceDashboard: React.FC = () => {
               <div>
                 <p className="text-sm text-purple-400">Uptime</p>
                 <p className="text-2xl font-bold text-green-400">
-                  {data.performanceMetrics.uptime}%
+                  {formatNullableNumber(data.performanceMetrics.uptime, '%')}
                 </p>
               </div>
               <Activity className="w-8 h-8 text-green-400" />
@@ -361,13 +383,17 @@ export const PerformanceDashboard: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-purple-300">Page Load Time</span>
                   <span className="text-gold font-semibold">
-                    {data.systemMetrics.pageLoadTime}s
+                    {formatNullableNumber(data.systemMetrics.pageLoadTime, 's')}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-purple-300">Error Rate</span>
                   <span className="text-gold font-semibold">
-                    {(data.systemMetrics.errorRate * 100).toFixed(2)}%
+                    {formatNullablePercent(
+                      data.systemMetrics.errorRate === null
+                        ? null
+                        : data.systemMetrics.errorRate * 100
+                    )}
                   </span>
                 </div>
               </CardContent>
@@ -390,12 +416,16 @@ export const PerformanceDashboard: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-gold font-semibold">{formatNumber(feature.usage)}</span>
-                      <span
-                        className={`text-sm ${feature.growth > 0 ? 'text-green-400' : 'text-red-400'}`}
-                      >
-                        {feature.growth > 0 ? '+' : ''}
-                        {feature.growth.toFixed(1)}%
-                      </span>
+                      {feature.growth === null ? (
+                        <span className="text-sm text-purple-500">tracked</span>
+                      ) : (
+                        <span
+                          className={`text-sm ${feature.growth > 0 ? 'text-green-400' : 'text-red-400'}`}
+                        >
+                          {feature.growth > 0 ? '+' : ''}
+                          {feature.growth.toFixed(1)}%
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -416,16 +446,20 @@ export const PerformanceDashboard: React.FC = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-purple-300">CPU Usage</span>
-                    <span className="text-gold">{data.systemMetrics.cpuUsage}%</span>
+                    <span className="text-gold">
+                      {formatNullableNumber(data.systemMetrics.cpuUsage, '%')}
+                    </span>
                   </div>
-                  <Progress value={data.systemMetrics.cpuUsage} className="h-2" />
+                  <Progress value={data.systemMetrics.cpuUsage ?? 0} className="h-2" />
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-purple-300">Memory Usage</span>
-                    <span className="text-gold">{data.systemMetrics.memoryUsage}%</span>
+                    <span className="text-gold">
+                      {formatNullableNumber(data.systemMetrics.memoryUsage, '%')}
+                    </span>
                   </div>
-                  <Progress value={data.systemMetrics.memoryUsage} className="h-2" />
+                  <Progress value={data.systemMetrics.memoryUsage ?? 0} className="h-2" />
                 </div>
               </CardContent>
             </Card>
@@ -453,7 +487,11 @@ export const PerformanceDashboard: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-purple-300">Error Rate</span>
                   <span className="text-gold font-semibold">
-                    {(data.performanceMetrics.errorRate * 100).toFixed(2)}%
+                    {formatNullablePercent(
+                      data.performanceMetrics.errorRate === null
+                        ? null
+                        : data.performanceMetrics.errorRate * 100
+                    )}
                   </span>
                 </div>
               </CardContent>
@@ -571,12 +609,18 @@ export const PerformanceDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {Object.entries(data.userAnalytics.browserBreakdown).map(
-                  ([browser, percentage]) => (
-                    <div key={browser} className="text-center">
-                      <div className="text-2xl font-bold text-gold">{percentage}%</div>
-                      <div className="text-sm text-purple-400">{browser}</div>
-                    </div>
+                {Object.entries(data.userAnalytics.browserBreakdown).length === 0 ? (
+                  <div className="col-span-full py-6 text-center text-sm text-purple-400">
+                    No browser telemetry captured in this range
+                  </div>
+                ) : (
+                  Object.entries(data.userAnalytics.browserBreakdown).map(
+                    ([browser, percentage]) => (
+                      <div key={browser} className="text-center">
+                        <div className="text-2xl font-bold text-gold">{percentage}%</div>
+                        <div className="text-sm text-purple-400">{browser}</div>
+                      </div>
+                    )
                   )
                 )}
               </div>
@@ -645,7 +689,7 @@ export const PerformanceDashboard: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-gold font-semibold">{formatNumber(agent.chats)}</span>
                       <Badge variant="outline" className="text-xs">
-                        {agent.satisfaction}%
+                        {agent.satisfaction === null ? 'n/a' : `${agent.satisfaction}%`}
                       </Badge>
                     </div>
                   </div>
@@ -662,7 +706,7 @@ export const PerformanceDashboard: React.FC = () => {
               <CardContent className="p-6 text-center">
                 <Clock className="w-12 h-12 text-blue-400 mx-auto mb-4" />
                 <div className="text-2xl font-bold text-gold">
-                  {data.performanceMetrics.uptime}%
+                  {formatNullableNumber(data.performanceMetrics.uptime, '%')}
                 </div>
                 <div className="text-sm text-purple-400">System Uptime</div>
               </CardContent>

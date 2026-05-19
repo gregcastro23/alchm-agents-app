@@ -281,7 +281,20 @@ export class RuneAgentClient {
     const minute = request.datetime.getMinutes()
 
     // Generate a valid ChartCharacterProfile using CharacterVectorCalculator
-    const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+    const signs = [
+      'Aries',
+      'Taurus',
+      'Gemini',
+      'Cancer',
+      'Leo',
+      'Virgo',
+      'Libra',
+      'Scorpio',
+      'Sagittarius',
+      'Capricorn',
+      'Aquarius',
+      'Pisces',
+    ]
     const placements = [
       { planet: 'sun', sign: signs[hour % 12] },
       { planet: 'moon', sign: signs[(hour + 2) % 12] },

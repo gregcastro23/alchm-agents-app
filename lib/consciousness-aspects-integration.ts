@@ -11,7 +11,10 @@ import {
   OptimalPeriod,
   dynamicAspectsEngine,
 } from './dynamic-aspects-engine'
-import { agentKineticProfiles as AgentKineticProfile, getAgentKineticProfile } from './agents/kinetic-profiles'
+import {
+  agentKineticProfiles as AgentKineticProfile,
+  getAgentKineticProfile,
+} from './agents/kinetic-profiles'
 import { KineticsIntegration, EnhancedKineticData } from './kinetics-integration'
 import { PlanetPosition } from './astrological-pattern-recognition'
 

@@ -1,7 +1,6 @@
 // app.jsx — root component. Mounts the window, manages scene + agent state,
 // drives CSS custom properties from the active agent's element.
 
-// eslint-disable-next-line no-unused-vars
 const { useState, useEffect, useRef, useMemo, useCallback } = React
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/ {

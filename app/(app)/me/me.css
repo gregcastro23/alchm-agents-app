@@ -7,13 +7,7 @@
 
 /* ---- Zodiac Custom Property Defaults ---- */
 .me-page {
-  --zodiac-gradient: linear-gradient(
-    135deg,
-    #0c0319 0%,
-    #1e0a3c 30%,
-    #2e1065 60%,
-    #0c0319 100%
-  );
+  --zodiac-gradient: linear-gradient(135deg, #0c0319 0%, #1e0a3c 30%, #2e1065 60%, #0c0319 100%);
   --zodiac-card-gradient: linear-gradient(
     135deg,
     rgba(138, 43, 226, 0.12) 0%,
@@ -45,7 +39,8 @@
   content: '';
   position: fixed;
   inset: 0;
-  background: radial-gradient(
+  background:
+    radial-gradient(
       ellipse 80% 60% at 20% 80%,
       hsla(var(--zodiac-accent) / 0.15) 0%,
       transparent 70%
@@ -76,7 +71,8 @@
   inset: 0;
   z-index: -2;
   pointer-events: none;
-  background-image: radial-gradient(2px 2px at 15% 25%, rgba(255, 255, 255, 0.7), transparent),
+  background-image:
+    radial-gradient(2px 2px at 15% 25%, rgba(255, 255, 255, 0.7), transparent),
     radial-gradient(1.5px 1.5px at 78% 12%, rgba(255, 255, 255, 0.6), transparent),
     radial-gradient(1px 1px at 35% 68%, rgba(255, 255, 255, 0.8), transparent),
     radial-gradient(2px 2px at 62% 82%, rgba(255, 255, 255, 0.5), transparent),
@@ -86,9 +82,20 @@
     radial-gradient(2px 2px at 45% 15%, hsla(var(--zodiac-accent) / 0.6), transparent),
     radial-gradient(1.5px 1.5px at 70% 70%, hsla(var(--zodiac-accent) / 0.5), transparent),
     radial-gradient(1px 1px at 25% 50%, hsla(var(--zodiac-accent) / 0.4), transparent);
-  background-size: 500% 500%, 450% 450%, 400% 400%, 380% 380%, 420% 420%, 460% 460%, 350% 350%,
-    480% 480%, 390% 390%, 410% 410%;
-  animation: star-twinkle 10s ease-in-out infinite, star-drift 25s linear infinite;
+  background-size:
+    500% 500%,
+    450% 450%,
+    400% 400%,
+    380% 380%,
+    420% 420%,
+    460% 460%,
+    350% 350%,
+    480% 480%,
+    390% 390%,
+    410% 410%;
+  animation:
+    star-twinkle 10s ease-in-out infinite,
+    star-drift 25s linear infinite;
 }
 
 @keyframes star-twinkle {
@@ -141,7 +148,9 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  box-shadow: 0 0 30px var(--zodiac-glow), 0 0 60px var(--zodiac-glow);
+  box-shadow:
+    0 0 30px var(--zodiac-glow),
+    0 0 60px var(--zodiac-glow);
   animation: avatar-pulse 3s ease-in-out infinite;
 }
 

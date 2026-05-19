@@ -214,7 +214,7 @@ function TweaksPanel({ title = 'Tweaks', noDeckControls = false, children }) {
   const [railVisible, setRailVisible] = React.useState(() => {
     try {
       return localStorage.getItem('deck-stage.railVisible') !== '0'
-    } catch {
+    } catch (e) {
       return true
     }
   })

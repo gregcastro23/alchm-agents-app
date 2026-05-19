@@ -300,12 +300,16 @@ class RAGCache {
 
         if (results && results.length > 0) {
           // Cache the results
-          await this.set(query, agentId, results.map(r => ({
-            agentId: r.agentId,
-            agentName: r.agentName,
-            excerpt: r.content.substring(0, 100),
-            relevance: r.score,
-          })))
+          await this.set(
+            query,
+            agentId,
+            results.map(r => ({
+              agentId: r.agentId,
+              agentName: r.agentName,
+              excerpt: r.content.substring(0, 100),
+              relevance: r.score,
+            }))
+          )
 
           warmed++
           console.log(

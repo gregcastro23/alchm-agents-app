@@ -1,71 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-options'
+import { adminErrorResponse, requireAdmin } from '@/lib/admin-auth'
 import { prisma } from '@/lib/db'
-
-const adminEmails = [
-  'admin@planetaryagents.com',
-  'support@planetaryagents.com',
-  'gregcastro23@gmail.com',
-]
-
-function normalizeHandle(value?: string | null) {
-  return (value || '').toLowerCase().replace(/[^a-z0-9]/g, '')
-}
-
-function isGregCastroIdentity(user?: {
-  id?: string | null
-  email?: string | null
-  name?: string | null
-}) {
-  const email = user?.email?.toLowerCase() || ''
-
-  return email === 'gregcastro23@gmail.com' || normalizeHandle(user?.id) === 'gregcastro23'
-}
-
-async function isAdminUser(user?: {
-  id?: string | null
-  email?: string | null
-  name?: string | null
-  role?: string | null
-}): Promise<boolean> {
-  if (!user) return false
-
-  if (
-    user.role === 'admin' ||
-    adminEmails.includes(user.email || '') ||
-    isGregCastroIdentity(user)
-  ) {
-    return true
-  }
-
-  if (!user.id) return false
-
-  try {
-    const dbUser = await prisma.users.findUnique({
-      where: { id: user.id },
-    })
-    return dbUser?.role === 'admin' || adminEmails.includes(dbUser?.email || '')
-  } catch {
-    return false
-  }
-}
 
 export async function GET(_req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    const sessionUser = session?.user as
-      | { id?: string; email?: string | null; name?: string | null; role?: string | null }
-      | undefined
-
-    if (!sessionUser?.id && !sessionUser?.email && !sessionUser?.name) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-    }
-
-    const adminCheck = await isAdminUser(sessionUser)
-    if (!adminCheck) {
-      return NextResponse.json({ error: 'Admin privileges required' }, { status: 403 })
-    }
+    const admin = await requireAdmin()
+    if (!admin.ok) return adminErrorResponse(admin)
 
     const now = new Date()
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -99,7 +39,7 @@ export async function GET(_req: NextRequest) {
       // leave as 0
     }
     try {
-      const convAgg = await (prisma.historical_agents as any).aggregate({
+      const convAgg = await prisma.historical_agents.aggregate({
         _sum: { conversations: true },
       })
       totalConversations = convAgg._sum?.conversations ?? 0
@@ -139,6 +79,7 @@ export async function GET(_req: NextRequest) {
     const vercelDeployment = {
       url: process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || 'localhost:3000',
       lastDeploy: process.env.VERCEL_GIT_COMMIT_SHA ? new Date().toISOString() : null,
+      commitSha: process.env.VERCEL_GIT_COMMIT_SHA || null,
     }
 
     // ── Recent activity ───────────────────────────────────────────────────────

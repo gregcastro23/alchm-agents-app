@@ -68,7 +68,7 @@ async function main() {
   const testIdempotencyPrefix = `test:agentic:daily:${sampleAgent.id}:${dateStr}`
 
   try {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async tx => {
       const transactionGroupId = crypto.randomUUID()
 
       for (const token of ['Spirit', 'Essence', 'Matter', 'Substance']) {
@@ -130,7 +130,11 @@ async function main() {
 
   console.log(`✓ Current planetary hour: ${hourPlanet} (${isDaytime ? 'daytime' : 'nighttime'})`)
   console.log(`✓ Day ruler: ${dayRuler}`)
-  console.log(`✓ Transiting planets: ${Object.entries(positions).map(([p, d]: [string, any]) => `${p} ${d.degree.toFixed(1)}° ${d.sign}`).join(', ')}`)
+  console.log(
+    `✓ Transiting planets: ${Object.entries(positions)
+      .map(([p, d]: [string, any]) => `${p} ${d.degree.toFixed(1)}° ${d.sign}`)
+      .join(', ')}`
+  )
 
   if (hasNatal && natalCount > 0) {
     const natalPositions = profile.natalPositions
@@ -138,7 +142,9 @@ async function main() {
     const hourMatch = natalPlanets.includes(hourPlanet)
     const dayMatch = natalPlanets.includes(dayRuler)
 
-    console.log(`✓ ${sampleAgent.name}: hour match=${hourMatch}, day match=${dayMatch}, element=${profile.dominantElement}`)
+    console.log(
+      `✓ ${sampleAgent.name}: hour match=${hourMatch}, day match=${dayMatch}, element=${profile.dominantElement}`
+    )
   }
 
   // 6. Test action event creation
@@ -182,7 +188,7 @@ async function main() {
   await prisma.$disconnect()
 }
 
-main().catch(async (err) => {
+main().catch(async err => {
   console.error('Fatal:', err)
   await prisma.$disconnect()
   process.exit(1)

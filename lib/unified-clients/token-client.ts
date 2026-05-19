@@ -5,12 +5,18 @@
  * falls back to existing frontend-compatible calculations.
  */
 
-  type Location = { lat: number; lon: number }
-  const frontendService = {
-    calculateTokens: async (request: any) => ({ rates: request.tokens, projections: [], events: [], harmonics: {}, metadata: {} }),
-    getHistoricalData: async (s: any, e: any, l: any, i: any) => ({ data: [] }),
-    batchAnalyze: async (input: any) => []
-  }
+type Location = { lat: number; lon: number }
+const frontendService = {
+  calculateTokens: async (request: any) => ({
+    rates: request.tokens,
+    projections: [],
+    events: [],
+    harmonics: {},
+    metadata: {},
+  }),
+  getHistoricalData: async (s: any, e: any, l: any, i: any) => ({ data: [] }),
+  batchAnalyze: async (input: any) => [],
+}
 
 export interface TokenRates {
   Spirit: number

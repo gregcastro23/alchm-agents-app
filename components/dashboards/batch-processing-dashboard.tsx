@@ -28,11 +28,17 @@ import {
   Minus,
   ChevronRight,
   ChevronDown,
+  type LucideIcon,
 } from 'lucide-react'
 
 interface BatchJob {
   id: string
-  type: 'kinetics_export' | 'agent_analysis' | 'consciousness_sync' | 'custom'
+  type:
+    | 'kinetics_export'
+    | 'agent_analysis'
+    | 'consciousness_sync'
+    | 'transit_monitoring'
+    | 'custom'
   priority: 'low' | 'medium' | 'high' | 'critical'
   status: 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled'
   progress: number
@@ -55,10 +61,11 @@ interface QueueMetrics {
   averageProcessingTime: number
   throughputPerHour: number
   resourceUtilization: {
-    cpu: number
-    memory: number
+    cpu: number | null
+    memory: number | null
     activeWorkers: number
     maxWorkers: number
+    estimated?: boolean
   }
   queueHealth: 'healthy' | 'degraded' | 'critical'
 }
@@ -83,7 +90,18 @@ interface BottleneckAnalysis {
   suggestedAction: string
 }
 
-export default function BatchProcessingDashboard() {
+const batchTabs: Array<{
+  id: 'overview' | 'jobs' | 'performance' | 'alerts'
+  label: string
+  icon: LucideIcon
+}> = [
+  { id: 'overview', label: 'Overview', icon: BarChart3 },
+  { id: 'jobs', label: 'Job Queue', icon: FileText },
+  { id: 'performance', label: 'Performance', icon: TrendingUp },
+  { id: 'alerts', label: 'Alerts', icon: AlertTriangle },
+]
+
+export default function BatchProcessingDashboard({ embedded = false }: { embedded?: boolean }) {
   const [activeTab, setActiveTab] = useState<'overview' | 'jobs' | 'performance' | 'alerts'>(
     'overview'
   )
@@ -194,9 +212,23 @@ export default function BatchProcessingDashboard() {
     return `${minutes}m ${seconds}s`
   }
 
+  const formatPercent = (value: number | null) => {
+    if (value === null) return 'n/a'
+    return `${value.toFixed(1)}%`
+  }
+
+  const getUtilizationTone = (value: number | null) => {
+    if (value === null) return 'bg-gray-400'
+    if (value > 80) return 'bg-red-500'
+    if (value > 60) return 'bg-yellow-500'
+    return 'bg-green-500'
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div
+      className={embedded ? 'bg-transparent p-0' : 'min-h-screen bg-gray-50 dark:bg-gray-900 p-6'}
+    >
+      <div className={embedded ? 'max-w-none' : 'max-w-7xl mx-auto'}>
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <div className="flex items-center justify-between">
@@ -235,15 +267,10 @@ export default function BatchProcessingDashboard() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
           <div className="border-b border-gray-200 dark:border-gray-600">
             <nav className="flex space-x-8 px-6">
-              {[
-                { id: 'overview', label: 'Overview', icon: BarChart3 },
-                { id: 'jobs', label: 'Job Queue', icon: FileText },
-                { id: 'performance', label: 'Performance', icon: TrendingUp },
-                { id: 'alerts', label: 'Alerts', icon: AlertTriangle },
-              ].map(tab => (
+              {batchTabs.map(tab => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 py-4 border-b-2 font-medium text-sm ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600 dark:text-blue-400'
@@ -321,18 +348,12 @@ export default function BatchProcessingDashboard() {
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span>CPU Usage</span>
-                      <span>{metrics.resourceUtilization.cpu.toFixed(1)}%</span>
+                      <span>{formatPercent(metrics.resourceUtilization.cpu)}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className={`h-2 rounded-full ${
-                          metrics.resourceUtilization.cpu > 80
-                            ? 'bg-red-500'
-                            : metrics.resourceUtilization.cpu > 60
-                              ? 'bg-yellow-500'
-                              : 'bg-green-500'
-                        }`}
-                        style={{ width: `${metrics.resourceUtilization.cpu}%` }}
+                        className={`h-2 rounded-full ${getUtilizationTone(metrics.resourceUtilization.cpu)}`}
+                        style={{ width: `${metrics.resourceUtilization.cpu ?? 0}%` }}
                       />
                     </div>
                   </div>
@@ -340,18 +361,12 @@ export default function BatchProcessingDashboard() {
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span>Memory Usage</span>
-                      <span>{metrics.resourceUtilization.memory.toFixed(1)}%</span>
+                      <span>{formatPercent(metrics.resourceUtilization.memory)}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className={`h-2 rounded-full ${
-                          metrics.resourceUtilization.memory > 80
-                            ? 'bg-red-500'
-                            : metrics.resourceUtilization.memory > 60
-                              ? 'bg-yellow-500'
-                              : 'bg-green-500'
-                        }`}
-                        style={{ width: `${metrics.resourceUtilization.memory}%` }}
+                        className={`h-2 rounded-full ${getUtilizationTone(metrics.resourceUtilization.memory)}`}
+                        style={{ width: `${metrics.resourceUtilization.memory ?? 0}%` }}
                       />
                     </div>
                   </div>

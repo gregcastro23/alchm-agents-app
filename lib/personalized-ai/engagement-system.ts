@@ -1,10 +1,7 @@
 // Revolutionary Gamification & Engagement System for Personalized AI Training
 // Making Consciousness Training Irresistibly Fun and Rewarding
 
-import type {
-  TrainingSession,
-  TrainingActivity,
-} from './training-interface-design'
+import type { TrainingSession, TrainingActivity } from './training-interface-design'
 
 import type { SubmissionProcessingResult } from './training-orchestration'
 import type { Achievement } from '../types/personalized-ai'

@@ -11,12 +11,11 @@ function PhilosophersStone({
   onTemp,
   onTopP,
   onTransmute,
-  _council,
+  council,
   onOpenCouncil,
   onSwapAgent,
   activeAgentId,
 }) {
-  // eslint-disable-next-line no-unused-vars
   const el = ELEMENTS[agent.element]
   // Transmute cost — 125 of each, totaling 500
   const COST = 125

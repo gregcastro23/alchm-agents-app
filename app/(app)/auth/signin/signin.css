@@ -15,7 +15,14 @@
   content: '';
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #0c0319 0%, #1a0838 25%, #2e1065 50%, #1a0838 75%, #0c0319 100%);
+  background: linear-gradient(
+    135deg,
+    #0c0319 0%,
+    #1a0838 25%,
+    #2e1065 50%,
+    #1a0838 75%,
+    #0c0319 100%
+  );
   z-index: -3;
 }
 
@@ -32,13 +39,25 @@
     radial-gradient(1px 1px at 88% 55%, rgba(255, 255, 255, 0.7), transparent),
     radial-gradient(1.5px 1.5px at 8% 90%, rgba(167, 139, 250, 0.5), transparent),
     radial-gradient(1px 1px at 52% 38%, rgba(255, 255, 255, 0.9), transparent);
-  background-size: 500% 500%, 450% 450%, 400% 400%, 380% 380%, 420% 420%, 460% 460%, 350% 350%;
+  background-size:
+    500% 500%,
+    450% 450%,
+    400% 400%,
+    380% 380%,
+    420% 420%,
+    460% 460%,
+    350% 350%;
   animation: signin-twinkle 8s ease-in-out infinite;
 }
 
 @keyframes signin-twinkle {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .signin-container {
@@ -84,7 +103,9 @@
 }
 
 @keyframes signin-glow-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .signin-logo {
@@ -108,7 +129,9 @@
 }
 
 @keyframes signin-logo-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .signin-logo-inner {
@@ -168,7 +191,9 @@
   background: rgba(255, 255, 255, 0.14);
   border-color: rgba(255, 255, 255, 0.25);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px rgba(139, 92, 246, 0.2);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(139, 92, 246, 0.2);
 }
 
 .signin-google-btn:disabled {
@@ -190,7 +215,9 @@
 }
 
 @keyframes signin-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .signin-note {

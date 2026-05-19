@@ -4,10 +4,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { adminErrorResponse, requireAdmin } from '@/lib/admin-auth'
 import { prisma } from '@/lib/db'
 
 export async function GET(_request: NextRequest) {
   try {
+    const admin = await requireAdmin()
+    if (!admin.ok) return adminErrorResponse(admin)
+
     // Get conversations from the last 7 days
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
@@ -34,7 +38,7 @@ export async function GET(_request: NextRequest) {
       { requests: number; success: number; failure: number; totalLatency: number }
     >()
 
-    conversations.forEach((conv: any) => {
+    conversations.forEach(conv => {
       const dayKey = conv.createdAt.toISOString().split('T')[0]
 
       if (!dailyMetrics.has(dayKey)) {
@@ -49,7 +53,7 @@ export async function GET(_request: NextRequest) {
 
     // Convert to chart format
     const dailyMetricsArray = Array.from(dailyMetrics.entries())
-      .map(([_date, stats]: any, index: number) => ({
+      .map(([_date, stats], index) => ({
         name: `Day ${index + 1}`,
         requests: stats.requests,
         success: stats.success,
@@ -61,7 +65,7 @@ export async function GET(_request: NextRequest) {
     // Group by agent for planetary data
     const agentMetrics = new Map<string, { requests: number; totalLatency: number }>()
 
-    conversations.forEach((conv: any) => {
+    conversations.forEach(conv => {
       if (!agentMetrics.has(conv.agentId)) {
         agentMetrics.set(conv.agentId, { requests: 0, totalLatency: 0 })
       }

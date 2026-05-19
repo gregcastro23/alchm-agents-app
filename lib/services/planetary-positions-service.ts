@@ -214,16 +214,16 @@ export class PlanetaryPositionsService {
         throw new Error('Enhanced calculator returned no result')
       }
 
-      const planetaryPositions: PlanetaryPosition[] = Object.entries((result.result as any).planets).map(
-        ([planet, pos]: [string, any]) => ({
-          planet,
-          sign: pos.sign || 'Aries',
-          degree: Math.max(0, Math.min(29.9999, pos.signDegree || 0)),
-          longitude: pos.longitude,
-          retrograde: Boolean(pos.retrograde),
-          speed: pos.speed,
-        })
-      )
+      const planetaryPositions: PlanetaryPosition[] = Object.entries(
+        (result.result as any).planets
+      ).map(([planet, pos]: [string, any]) => ({
+        planet,
+        sign: pos.sign || 'Aries',
+        degree: Math.max(0, Math.min(29.9999, pos.signDegree || 0)),
+        longitude: pos.longitude,
+        retrograde: Boolean(pos.retrograde),
+        speed: pos.speed,
+      }))
 
       return {
         timestamp: date.toISOString(),

@@ -4,134 +4,217 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { adminErrorResponse, requireAdmin } from '@/lib/admin-auth'
 import { prisma } from '@/lib/db'
+
+type TimeRange = '1h' | '24h' | '7d' | '30d'
+
+function getStartTime(timeRange: TimeRange) {
+  const now = new Date()
+
+  switch (timeRange) {
+    case '1h':
+      return new Date(now.getTime() - 60 * 60 * 1000)
+    case '7d':
+      return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    case '30d':
+      return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    case '24h':
+    default:
+      return new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  }
+}
+
+function getPercent(count: number, total: number) {
+  return total > 0 ? Number(((count / total) * 100).toFixed(1)) : 0
+}
+
+function normalizeLabel(value?: string | null) {
+  if (!value) return 'Unknown'
+
+  return value
+    .replace(/[_-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, letter => letter.toUpperCase())
+}
 
 export async function GET(request: NextRequest) {
   try {
+    const admin = await requireAdmin()
+    if (!admin.ok) return adminErrorResponse(admin)
+
     const searchParams = request.nextUrl.searchParams
-    const timeRange = searchParams.get('timeRange') || '24h'
+    const rawTimeRange = searchParams.get('timeRange') || '24h'
+    const timeRange: TimeRange = ['1h', '24h', '7d', '30d'].includes(rawTimeRange)
+      ? (rawTimeRange as TimeRange)
+      : '24h'
 
-    // Calculate time window
     const now = new Date()
-    let startTime = new Date()
+    const startTime = getStartTime(timeRange)
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
-    switch (timeRange) {
-      case '1h':
-        startTime = new Date(now.getTime() - 60 * 60 * 1000)
-        break
-      case '24h':
-        startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-        break
-      case '7d':
-        startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-        break
-      case '30d':
-        startTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-        break
-    }
+    const [
+      totalUsers,
+      newUsersToday,
+      totalSessions,
+      totalConversations,
+      recentConversations,
+      activeUserRows,
+      agentStats,
+      monicaInteractions,
+      ragQueries,
+      deviceRows,
+      browserRows,
+      consciousnessGrowth,
+      councilSessions,
+      evolutionStats,
+    ] = await Promise.all([
+      prisma.users.count(),
+      prisma.users.count({ where: { createdAt: { gte: todayStart } } }),
+      prisma.userSession.count(),
+      prisma.agentConversation.count(),
+      prisma.agentConversation.count({
+        where: {
+          createdAt: { gte: startTime },
+        },
+      }),
+      prisma.agentConversation.findMany({
+        where: {
+          createdAt: { gte: startTime },
+          userId: { not: null },
+        },
+        distinct: ['userId'],
+        select: { userId: true },
+      }),
+      prisma.agentConversation.groupBy({
+        by: ['agentId'],
+        _count: { agentId: true },
+        _avg: { responseTime: true },
+        where: { createdAt: { gte: startTime } },
+        orderBy: { _count: { agentId: 'desc' } },
+        take: 5,
+      }),
+      prisma.monica_interactions.count({ where: { createdAt: { gte: startTime } } }),
+      prisma.rAGQuery.count({ where: { timestamp: { gte: startTime } } }),
+      prisma.monica_interactions.groupBy({
+        by: ['deviceType'],
+        where: { createdAt: { gte: startTime }, deviceType: { not: null } },
+        _count: { deviceType: true },
+      }),
+      prisma.monica_interactions.groupBy({
+        by: ['browserInfo'],
+        where: { createdAt: { gte: startTime }, browserInfo: { not: null } },
+        _count: { browserInfo: true },
+      }),
+      prisma.consciousness_interactions.aggregate({
+        where: { timestamp: { gte: startTime } },
+        _sum: { powerGained: true },
+      }),
+      prisma.consciousness_interactions.count({
+        where: {
+          timestamp: { gte: startTime },
+          interactionType: { contains: 'council', mode: 'insensitive' },
+        },
+      }),
+      prisma.historical_agents.aggregate({
+        _avg: { evolutionPoints: true },
+      }),
+    ])
 
-    // Collect metrics from database
-    const [totalUsers, totalSessions, totalConversations, recentConversations, agentStats] =
-      await Promise.all([
-        // Total users
-        prisma.users.count(),
-
-        // Total sessions
-        prisma.userSession.count(),
-
-        // Total conversations
-        prisma.agentConversation.count(),
-
-        // Recent conversations for active users
-        prisma.agentConversation.count({
-          where: {
-            createdAt: {
-              gte: startTime,
-            },
-          },
-        }),
-
-        // Agent-specific stats
-        prisma.agentConversation.groupBy({
-          by: ['agentId'],
-          _count: {
-            agentId: true,
-          },
-          _avg: {
-            responseTime: true,
-          },
-          where: {
-            createdAt: {
-              gte: startTime,
-            },
-          },
-          orderBy: {
-            _count: {
-              agentId: 'desc',
-            },
-          },
-          take: 5,
-        }),
-      ])
-
-    // Calculate derived metrics
-    const activeUsers = recentConversations // Approximate
-    const avgResponseTime =
+    const activeUsers = activeUserRows.length
+    const avgResponseTimeMs =
       agentStats.reduce((sum, stat) => sum + (stat._avg.responseTime || 0), 0) /
       (agentStats.length || 1)
+    const windowMinutes = Math.max(1, (now.getTime() - startTime.getTime()) / 60000)
+    const memoryUsage =
+      process.memoryUsage().heapTotal > 0
+        ? (process.memoryUsage().heapUsed / process.memoryUsage().heapTotal) * 100
+        : null
 
-    // Build response
+    const deviceTotal = deviceRows.reduce((sum, row) => sum + row._count.deviceType, 0)
+    const deviceBreakdown = {
+      desktop: getPercent(
+        deviceRows
+          .filter(row => row.deviceType?.toLowerCase().includes('desktop'))
+          .reduce((sum, row) => sum + row._count.deviceType, 0),
+        deviceTotal
+      ),
+      mobile: getPercent(
+        deviceRows
+          .filter(row => row.deviceType?.toLowerCase().includes('mobile'))
+          .reduce((sum, row) => sum + row._count.deviceType, 0),
+        deviceTotal
+      ),
+      tablet: getPercent(
+        deviceRows
+          .filter(row => row.deviceType?.toLowerCase().includes('tablet'))
+          .reduce((sum, row) => sum + row._count.deviceType, 0),
+        deviceTotal
+      ),
+    }
+
+    const browserTotal = browserRows.reduce((sum, row) => sum + row._count.browserInfo, 0)
+    const browserBreakdown = Object.fromEntries(
+      browserRows
+        .map(row => [
+          normalizeLabel(row.browserInfo),
+          getPercent(row._count.browserInfo, browserTotal),
+        ])
+        .slice(0, 6)
+    )
+
     const metrics = {
       systemMetrics: {
         timestamp: Date.now(),
         activeUsers,
         totalSessions,
-        averageSessionDuration: 1800, // 30 minutes average (calculated from session data)
-        pageLoadTime: 2.1, // This would come from RUM/monitoring
-        errorRate: 0.015, // From error tracking service
-        apiResponseTime: avgResponseTime || 250,
-        memoryUsage: (process.memoryUsage().heapUsed / process.memoryUsage().heapTotal) * 100,
-        cpuUsage: 0, // Requires system monitoring (PM2, New Relic, etc.)
+        averageSessionDuration: null,
+        pageLoadTime: null,
+        errorRate: null,
+        apiResponseTime: Math.round(avgResponseTimeMs || 0),
+        memoryUsage,
+        cpuUsage: null,
+        estimated: {
+          averageSessionDuration: false,
+          pageLoadTime: false,
+          errorRate: false,
+          cpuUsage: false,
+        },
       },
       userAnalytics: {
         totalUsers,
         activeUsers,
-        newUsersToday: 0, // Would track by createdAt in last 24h
+        newUsersToday,
         returningUsers: activeUsers,
         userRetention: totalUsers > 0 ? (activeUsers / totalUsers) * 100 : 0,
-        averageSessionTime: 1800,
+        averageSessionTime: null,
         topFeatures: [
-          { name: 'Agent Chat', usage: recentConversations, growth: 12.5 },
-          { name: 'Gallery', usage: Math.floor(recentConversations * 0.8), growth: 8.3 },
-          { name: 'Time Laboratory', usage: Math.floor(recentConversations * 0.6), growth: 15.7 },
-          { name: 'Rune Forge', usage: Math.floor(recentConversations * 0.4), growth: 10.2 },
-          { name: 'Council', usage: Math.floor(recentConversations * 0.3), growth: 18.9 },
+          { name: 'Agent Chat', usage: recentConversations, growth: null },
+          { name: 'Monica Companion', usage: monicaInteractions, growth: null },
+          { name: 'RAG Queries', usage: ragQueries, growth: null },
+          { name: 'Council Sessions', usage: councilSessions, growth: null },
         ],
-        deviceBreakdown: {
-          desktop: 55.0, // Would come from user-agent tracking
-          mobile: 35.0,
-          tablet: 10.0,
-        },
-        browserBreakdown: {
-          Chrome: 65.0, // Would come from user-agent tracking
-          Firefox: 15.0,
-          Safari: 12.0,
-          Edge: 6.0,
-          Other: 2.0,
+        deviceBreakdown,
+        browserBreakdown,
+        telemetryCoverage: {
+          deviceSamples: deviceTotal,
+          browserSamples: browserTotal,
+          estimated: false,
         },
       },
       agentAnalytics: {
         totalChats: totalConversations,
         activeConversations: recentConversations,
-        averageResponseTime: avgResponseTime / 1000 || 1.5, // Convert to seconds
+        averageResponseTime: avgResponseTimeMs ? Number((avgResponseTimeMs / 1000).toFixed(2)) : 0,
         popularAgents: agentStats.map(stat => ({
-          name: stat.agentId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          name: normalizeLabel(stat.agentId),
           chats: stat._count.agentId,
-          satisfaction: 92 + Math.random() * 6, // Would come from feedback system
+          satisfaction: null,
         })),
-        consciousnessGrowth: Math.floor(recentConversations * 0.5), // Approximate
-        councilSessions: Math.floor(recentConversations * 0.15), // Approximate
-        averageEvolutionPoints: 2.3, // Would calculate from AgentEvolution table
+        consciousnessGrowth: Math.round(consciousnessGrowth._sum.powerGained || 0),
+        councilSessions,
+        averageEvolutionPoints: Number((evolutionStats._avg.evolutionPoints || 0).toFixed(1)),
       },
       performanceMetrics: {
         systemHealth:
@@ -142,13 +225,15 @@ export async function GET(request: NextRequest) {
               : activeUsers > 10
                 ? 'fair'
                 : 'poor',
-        uptime: 99.95, // Would come from monitoring service
-        responseTime: avgResponseTime || 250,
-        throughput: Math.floor(
-          recentConversations / ((now.getTime() - startTime.getTime()) / 60000)
-        ), // per minute
-        errorRate: 0.015,
+        uptime: null,
+        responseTime: Math.round(avgResponseTimeMs || 0),
+        throughput: Math.round(recentConversations / windowMinutes),
+        errorRate: null,
         alerts: [],
+        estimated: {
+          uptime: false,
+          errorRate: false,
+        },
       },
     }
 

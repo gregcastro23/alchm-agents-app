@@ -264,7 +264,7 @@ export class KalchmFoodAnalyzer {
         )
         recommendations.avoidFoods.push('Meat', 'Dairy', 'Eggs')
       }
-      
+
       if (restrictions.includes('gluten-free')) {
         recommendations.primaryFoods = recommendations.primaryFoods.filter(
           f => !f.toLowerCase().includes('grain')
