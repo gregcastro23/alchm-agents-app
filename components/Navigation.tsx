@@ -52,6 +52,11 @@ const navigationGroups = [
         description: 'Converse with the planetary governing body.',
       },
       {
+        href: '/council-feed',
+        label: 'Council Feed',
+        description: 'Live agent council — duels, transits, alliances on a single stream.',
+      },
+      {
         href: '/planetary-agents',
         label: 'Consultations',
         description: '1-on-1 agent consultations.',

@@ -4,7 +4,6 @@ from typing import List, Optional, Dict, Any
 import os
 import threading
 import uvicorn
-import httpx
 import math
 from datetime import datetime, timedelta
 import asyncio
