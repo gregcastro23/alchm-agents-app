@@ -292,9 +292,11 @@ export function CouncilFeedClient({
   const orderedEvents = useMemo(() => {
     const streaming = filteredEvents.filter(e => e.type === 'streaming')
     const active = filteredEvents.filter(
-      e => 'status' in e && (e as JingDuelEvent).status === 'active' && e.type !== 'streaming'
+      (e): e is JingDuelEvent => e.type === 'jing-duel' && e.status === 'active'
     )
-    const rest = filteredEvents.filter(e => !streaming.includes(e) && !active.includes(e))
+    const rest = filteredEvents.filter(
+      e => !streaming.includes(e) && !(active as FeedEvent[]).includes(e)
+    )
     return [...streaming, ...active, ...rest]
   }, [filteredEvents])
 
