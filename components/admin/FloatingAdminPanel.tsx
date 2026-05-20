@@ -267,6 +267,8 @@ function QuickAction({
 
 export function FloatingAdminPanel() {
   const pathname = usePathname()
+  const disabledForDesktopSurface =
+    pathname?.startsWith('/desktop/ghost-feed') || pathname?.startsWith('/desktop/composer')
   const { data: session, status } = useSession()
   const [legacyIdentity, setLegacyIdentity] = useState<ReturnType<typeof parseLegacyIdentity>>(null)
   const [collapsed, setCollapsed] = useState(false)
@@ -288,21 +290,27 @@ export function FloatingAdminPanel() {
     | undefined
 
   useEffect(() => {
+    if (disabledForDesktopSurface) return
+
     setLegacyIdentity(parseLegacyIdentity())
     try {
       setCollapsed(localStorage.getItem('floating-admin-panel-collapsed') === 'true')
     } catch {
       setCollapsed(false)
     }
-  }, [])
+  }, [disabledForDesktopSurface])
 
   useEffect(() => {
+    if (disabledForDesktopSurface) return
+
     try {
       localStorage.setItem('floating-admin-panel-collapsed', String(collapsed))
     } catch {}
-  }, [collapsed])
+  }, [collapsed, disabledForDesktopSurface])
 
   useEffect(() => {
+    if (disabledForDesktopSurface) return
+
     const updateTelemetry = () => setTelemetry(getRuntimeTelemetry())
 
     updateTelemetry()
@@ -317,7 +325,7 @@ export function FloatingAdminPanel() {
       window.removeEventListener('online', updateTelemetry)
       window.removeEventListener('offline', updateTelemetry)
     }
-  }, [])
+  }, [disabledForDesktopSurface])
 
   const isGregUser = useMemo(() => {
     if (sessionUser && isGregIdentity(sessionUser)) return true
@@ -327,6 +335,7 @@ export function FloatingAdminPanel() {
   }, [legacyIdentity, sessionUser])
 
   const fetchPanelData = useCallback(async () => {
+    if (disabledForDesktopSurface) return
     if (!isGregUser || status === 'loading') return
 
     setLoading(true)
@@ -346,15 +355,17 @@ export function FloatingAdminPanel() {
     } finally {
       setLoading(false)
     }
-  }, [isGregUser, status])
+  }, [disabledForDesktopSurface, isGregUser, status])
 
   useEffect(() => {
+    if (disabledForDesktopSurface) return
+
     fetchPanelData()
     const interval = window.setInterval(fetchPanelData, 30000)
     return () => window.clearInterval(interval)
-  }, [fetchPanelData])
+  }, [disabledForDesktopSurface, fetchPanelData])
 
-  if (status === 'loading' || !isGregUser) return null
+  if (disabledForDesktopSurface || status === 'loading' || !isGregUser) return null
 
   const identity = sessionUser || legacyIdentity
   const role = sessionUser?.role || (data ? 'admin' : 'operator')

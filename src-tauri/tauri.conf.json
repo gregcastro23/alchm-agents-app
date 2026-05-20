@@ -12,12 +12,49 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Alchm Desktop",
         "width": 1200,
         "height": 800,
         "url": "/desktop"
+      },
+      {
+        "label": "ghost-feed",
+        "title": "Alchm Ghost Feed",
+        "width": 420,
+        "height": 900,
+        "minWidth": 360,
+        "minHeight": 640,
+        "x": 24,
+        "y": 72,
+        "url": "/desktop/ghost-feed",
+        "transparent": true,
+        "decorations": false,
+        "resizable": false,
+        "alwaysOnTop": true,
+        "visibleOnAllWorkspaces": true,
+        "skipTaskbar": true,
+        "focus": false
+      },
+      {
+        "label": "live-composer",
+        "title": "Alchm Live Composer",
+        "width": 600,
+        "height": 120,
+        "minWidth": 520,
+        "minHeight": 112,
+        "url": "/desktop/composer",
+        "transparent": true,
+        "decorations": false,
+        "resizable": false,
+        "center": true,
+        "visible": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "focus": true
       }
     ],
+    "macOSPrivateApi": true,
     "security": {
       "csp": null
     }

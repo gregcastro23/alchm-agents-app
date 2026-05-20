@@ -1,8 +1,10 @@
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth-options'
 import { buildAgentContext } from '@/lib/agents/persona/build-agent-context'
+import { feedStreamBus } from '@/lib/agents/feed-stream-bus'
 import { backend } from '@/lib/backend'
 import { consciousnessPersistence } from '@/lib/consciousness-persistence'
+import type { JingDuelEvent, JingMoveId, StreamingEvent } from '@/components/cosmic-agents/types'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -12,6 +14,7 @@ interface CastRequest {
   moveId: string
   targetId: string
   eventId: string
+  broadcast?: boolean
 }
 
 interface MoveSpec {
@@ -88,11 +91,21 @@ export async function POST(req: Request) {
     return new Response('Bad request', { status: 400 })
   }
 
-  const { casterId, moveId, targetId, eventId } = body
+  const { casterId, moveId, targetId, eventId, broadcast = false } = body
   const move = MOVES[moveId]
   if (!move) return new Response('Unknown move', { status: 400 })
 
   const encoder = new TextEncoder()
+  const jingMoveId = moveId as JingMoveId
+  const timestamp = new Date().toISOString()
+  const beforeStat = 80
+  const afterStat = Math.max(0, beforeStat - move.costAmount)
+  const cost = {
+    stat: move.costStat,
+    spent: move.costAmount,
+    before: beforeStat,
+    after: afterStat,
+  }
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -106,6 +119,21 @@ export async function POST(req: Request) {
 
       try {
         send('streaming', { id: eventId, casterId, moveId, targetId })
+        if (broadcast) {
+          const streamingEvent: StreamingEvent = {
+            id: eventId,
+            type: 'streaming',
+            timestamp,
+            initiator: casterId,
+            target: targetId,
+            move: jingMoveId,
+            cost,
+            streamingVoice: '',
+            streamingProgress: 0,
+            confidence: 0.85,
+          }
+          feedStreamBus.publish({ event: 'feed', data: streamingEvent })
+        }
 
         // Resolve persona for in-character voice generation
         let voice = ''
@@ -139,6 +167,9 @@ export async function POST(req: Request) {
         const words = voice.split(/(\s+)/)
         for (const w of words) {
           send('token', { id: eventId, chunk: w })
+          if (broadcast) {
+            feedStreamBus.publish({ event: 'token', data: { id: eventId, chunk: w } })
+          }
           await new Promise(r => setTimeout(r, 28))
         }
 
@@ -157,17 +188,42 @@ export async function POST(req: Request) {
             .catch((err: unknown) => console.warn('[feed/cast] consciousness log failed:', err))
         }
 
-        send('resolution', {
+        const resolvedEvent: JingDuelEvent = {
           id: eventId,
+          type: 'jing-duel',
           status: 'active',
-          voice,
+          timestamp,
+          initiator: casterId,
+          target: targetId,
+          move: jingMoveId,
+          cost,
           intensity: 0.85,
+          voice,
           confidence: 0.85,
           thread: [],
+        }
+
+        if (broadcast) {
+          feedStreamBus.publish({ event: 'resolution', data: resolvedEvent })
+        }
+
+        send('resolution', {
+          id: eventId,
+          status: resolvedEvent.status,
+          voice: resolvedEvent.voice,
+          intensity: resolvedEvent.intensity,
+          confidence: resolvedEvent.confidence,
+          thread: resolvedEvent.thread,
           cost: { stat: move.costStat, amount: move.costAmount },
         })
       } catch (err) {
         console.error('[feed/cast] stream error:', err)
+        if (broadcast) {
+          feedStreamBus.publish({
+            event: 'error',
+            data: { id: eventId, message: 'cast failed' },
+          })
+        }
         send('error', { message: 'cast failed' })
       } finally {
         try {

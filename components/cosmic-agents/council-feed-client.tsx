@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react'
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { ChartWheel } from './chart-wheel'
 import { Avatar, CooldownRing, ElementalBar } from './agent-atoms'
 import { FeedCard, type CardCtx } from './feed-cards'
@@ -17,6 +17,9 @@ import type {
   PlanetName,
   StreamingEvent,
   JingDuelEvent,
+  EvolutionEvent,
+  PactEvent,
+  SystemEvent,
 } from './types'
 
 interface Props {
@@ -24,6 +27,80 @@ interface Props {
   initialAgents: CouncilAgent[]
   initialUserAgent: CouncilAgent | null
   initialFeed?: FeedEvent[]
+  desktopWidget?: boolean
+}
+
+type NativeNotificationEvent = EvolutionEvent | PactEvent | SystemEvent
+
+function isNativeNotificationEvent(event: FeedEvent): event is NativeNotificationEvent {
+  return event.type === 'evolution' || event.type === 'pact' || event.type === 'system'
+}
+
+function notificationCopy(
+  event: NativeNotificationEvent,
+  agentById: (id: string) => CouncilAgent | undefined
+) {
+  if (event.type === 'evolution') {
+    const agentName = agentById(event.agentId)?.name || event.agentId
+    return {
+      title: `Alchm: ${agentName}`,
+      body: event.body || `${agentName} evolved from ${event.from} to ${event.to}.`,
+    }
+  }
+
+  if (event.type === 'pact') {
+    return {
+      title: `Alchm: ${event.title}`,
+      body: `${event.duration} pact active. Bond ${Math.round(event.bond * 100)}%. ${event.triggers}`,
+    }
+  }
+
+  return {
+    title: `Alchm: ${event.title}`,
+    body: event.body,
+  }
+}
+
+async function sendNativeNotification(
+  event: NativeNotificationEvent,
+  agentById: (id: string) => CouncilAgent | undefined
+) {
+  try {
+    const { isTauri } = await import('@tauri-apps/api/core')
+    if (!isTauri()) return
+
+    const { isPermissionGranted, requestPermission, sendNotification } =
+      await import('@tauri-apps/plugin-notification')
+    const permitted = (await isPermissionGranted()) || (await requestPermission()) === 'granted'
+    if (!permitted) return
+
+    sendNotification(notificationCopy(event, agentById))
+  } catch (err) {
+    console.warn('[council-feed] native notification failed:', err)
+  }
+}
+
+function trayStateForFeedEvent(event: FeedEvent): 'fire' | 'water' | 'earth' | null {
+  if (event.type !== 'streaming' && event.type !== 'jing-duel') return null
+
+  const move = JING_MOVES[event.move]
+  if (!move || event.cost.spent < 15) return null
+
+  if (event.move === 'meltdown' || move.element.includes('Fire')) return 'fire'
+  if (event.move === 'freeze' || move.element.includes('Water')) return 'water'
+  if (event.move === 'tectonicRoot' || move.element.includes('Earth')) return 'earth'
+
+  return null
+}
+
+async function setNativeTrayState(state: 'idle' | 'fire' | 'water' | 'earth') {
+  try {
+    const { invoke, isTauri } = await import('@tauri-apps/api/core')
+    if (!isTauri()) return
+    await invoke('set_tray_state', { state })
+  } catch (err) {
+    console.warn('[council-feed] tray state update failed:', err)
+  }
 }
 
 export function CouncilFeedClient({
@@ -31,6 +108,7 @@ export function CouncilFeedClient({
   initialAgents,
   initialUserAgent,
   initialFeed,
+  desktopWidget = false,
 }: Props) {
   const [selectedAgent, setSelectedAgent] = useState<CouncilAgent | null>(null)
   const [activeFilter, setActiveFilter] = useState<string>('all')
@@ -41,6 +119,8 @@ export function CouncilFeedClient({
   const [statsOverlay, setStatsOverlay] = useState<
     Record<string, Partial<CouncilAgent['stats']> & { cooldown?: number }>
   >({})
+  const nativeNotificationIds = useRef<Set<string>>(new Set())
+  const trayPulseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const allAgents = useMemo<CouncilAgent[]>(() => {
     const list = initialUserAgent ? [initialUserAgent, ...initialAgents] : initialAgents
@@ -69,6 +149,27 @@ export function CouncilFeedClient({
     [agentById]
   )
 
+  const handleNativeTelemetry = useCallback(
+    (incoming: FeedEvent) => {
+      const trayState = trayStateForFeedEvent(incoming)
+      if (trayState) {
+        if (trayPulseTimeout.current) clearTimeout(trayPulseTimeout.current)
+        void setNativeTrayState(trayState)
+        trayPulseTimeout.current = setTimeout(() => {
+          void setNativeTrayState('idle')
+          trayPulseTimeout.current = null
+        }, 3000)
+      }
+
+      if (!isNativeNotificationEvent(incoming)) return
+      if (nativeNotificationIds.current.has(incoming.id)) return
+
+      nativeNotificationIds.current.add(incoming.id)
+      void sendNativeNotification(incoming, agentById)
+    },
+    [agentById]
+  )
+
   /* ── SSE feed stream subscription ── */
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -78,6 +179,7 @@ export function CouncilFeedClient({
       es.addEventListener('feed', e => {
         try {
           const incoming = JSON.parse((e as MessageEvent).data) as FeedEvent
+          handleNativeTelemetry(incoming)
           setEvents(prev => [incoming, ...prev.filter(p => p.id !== incoming.id)])
         } catch {
           /* ignore */
@@ -99,7 +201,8 @@ export function CouncilFeedClient({
       })
       es.addEventListener('resolution', e => {
         try {
-          const payload = JSON.parse((e as MessageEvent).data)
+          const payload = JSON.parse((e as MessageEvent).data) as FeedEvent
+          handleNativeTelemetry(payload)
           setEvents(prev => prev.map(p => (p.id === payload.id ? payload : p)))
         } catch {
           /* ignore */
@@ -110,8 +213,12 @@ export function CouncilFeedClient({
     }
     return () => {
       es?.close()
+      if (trayPulseTimeout.current) {
+        clearTimeout(trayPulseTimeout.current)
+        trayPulseTimeout.current = null
+      }
     }
-  }, [])
+  }, [handleNativeTelemetry])
 
   /* ── Cast handler — POSTs to /api/feed/cast which streams the SSE back ── */
   const castMove = useCallback(
@@ -301,11 +408,11 @@ export function CouncilFeedClient({
   }, [filteredEvents])
 
   return (
-    <div className="cosmic-feed-root">
+    <div className={'cosmic-feed-root' + (desktopWidget ? ' desktop-widget' : '')}>
       <div className="app">
-        <Topbar timestamp={chart.timestamp} thermo={chart.thermodynamics} />
+        {!desktopWidget && <Topbar timestamp={chart.timestamp} thermo={chart.thermodynamics} />}
         <div className="shell">
-          <ChartOfMomentColumn chart={chart} />
+          {!desktopWidget && <ChartOfMomentColumn chart={chart} />}
           <FeedColumn
             events={orderedEvents}
             agents={allAgents}
@@ -318,15 +425,17 @@ export function CouncilFeedClient({
             onAgentClick={setSelectedAgent}
             onCast={castMove}
           />
-          <RosterColumn
-            chart={chart}
-            agents={allAgents}
-            userAgent={initialUserAgent}
-            onSelect={setSelectedAgent}
-            selected={selectedAgent}
-          />
+          {!desktopWidget && (
+            <RosterColumn
+              chart={chart}
+              agents={allAgents}
+              userAgent={initialUserAgent}
+              onSelect={setSelectedAgent}
+              selected={selectedAgent}
+            />
+          )}
         </div>
-        {selectedAgent && (
+        {!desktopWidget && selectedAgent && (
           <AgentDrawer
             agent={selectedAgent}
             agents={allAgents}

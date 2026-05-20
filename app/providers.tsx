@@ -9,9 +9,14 @@ import { FloatingAdminPanel } from '@/components/admin/FloatingAdminPanel'
 
 function MonicaWrapper() {
   const pathname = usePathname()
+  const disabledForDesktopSurface =
+    pathname?.startsWith('/desktop/ghost-feed') || pathname?.startsWith('/desktop/composer')
   const { alchmQuantities, monicaConstant } = usePlanetaryPositions({
     refreshInterval: 60000,
+    enabled: !disabledForDesktopSurface,
   })
+
+  if (disabledForDesktopSurface) return null
 
   return (
     <MonicaChatBubble

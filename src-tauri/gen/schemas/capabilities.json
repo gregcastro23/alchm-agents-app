@@ -3,7 +3,7 @@
     "identifier": "default",
     "description": "Default capability for Alchm desktop app",
     "local": true,
-    "windows": ["main"],
+    "windows": ["main", "ghost-feed", "live-composer"],
     "permissions": [
       "core:default",
       "shell:allow-execute",
@@ -11,7 +11,9 @@
       "shell:allow-stdin-write",
       "shell:allow-kill",
       "shell:allow-open",
-      "deep-link:default"
+      "deep-link:default",
+      "global-shortcut:default",
+      "notification:default"
     ]
   }
 }
