@@ -22,8 +22,7 @@ const BACKEND_URL =
   process.env.BACKEND_URL ||
   'https://whattoeatnext-production.up.railway.app'
 
-const INTERNAL_API_SECRET =
-  process.env.INTERNAL_API_SECRET || '882133EA-3D06-4DF2-A63C-F4114AB4EFBC'
+const INTERNAL_API_SECRET = process.env.INTERNAL_API_SECRET
 
 // ============================================================================
 // Types — mirrors of FastAPI schemas
@@ -233,9 +232,13 @@ async function request<T>(path: string, init: RequestInit & { auth?: boolean } =
   }
   const url = `${BACKEND_URL}${path}`
 
+  if (auth !== false && !INTERNAL_API_SECRET) {
+    throw new BackendError(500, path, 'INTERNAL_API_SECRET is not configured')
+  }
+
   const finalHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
-    INTERNAL_API_SECRET: INTERNAL_API_SECRET,
+    ...(INTERNAL_API_SECRET ? { INTERNAL_API_SECRET } : {}),
     ...((headers as Record<string, string>) || {}),
   }
 

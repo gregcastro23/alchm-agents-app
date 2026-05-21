@@ -191,3 +191,100 @@ def test_is_quota_error_recognises_common_phrasings():
     # Non-quota errors must NOT trip the heuristic.
     assert not providers.is_quota_error(Exception("Connection refused"))
     assert not providers.is_quota_error(Exception("Invalid JSON"))
+
+
+def test_philosophers_stone_positions_get():
+    response = client.get("/api/philosophers-stone/positions?year=2026&month=5&day=21&hour=8&minute=0")
+    assert response.status_code == 200
+    data = response.json()
+    assert "elementalProperties" in data
+    assert "thermodynamicProperties" in data
+    assert "esms" in data
+    assert "kalchm" in data
+    assert "monica" in data
+    assert "perPlanet" in data
+    assert data["normalized"] is True
+
+def test_philosophers_stone_positions_post():
+    response = client.post("/api/philosophers-stone/positions", json={})
+    assert response.status_code == 200
+    data = response.json()
+    assert "elementalProperties" in data
+    
+    custom_planets = {
+        "Sun": {"sign": "Leo", "degree": 15, "minute": 30, "exactLongitude": 135.5},
+        "Moon": {"sign": "Cancer", "degree": 12, "minute": 0, "exactLongitude": 102.0}
+    }
+    response = client.post(
+        "/api/philosophers-stone/positions",
+        json={"year": 2026, "month": 5, "day": 21, "customPlanets": custom_planets}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "Sun" in data["perPlanet"]
+    assert data["perPlanet"]["Sun"]["sign"] == "Leo"
+
+def test_internal_agent_sync_security():
+    response = client.post("/api/internal/agent-sync", json={
+        "agentId": "sync-test-agent",
+        "displayName": "Sync Test Agent"
+    })
+    assert response.status_code == 403
+
+    response = client.post(
+        "/api/internal/agent-sync",
+        headers={"X-Sync-Secret": "wrong-secret"},
+        json={
+            "agentId": "sync-test-agent",
+            "displayName": "Sync Test Agent"
+        }
+    )
+    assert response.status_code == 403
+
+def test_internal_agent_sync_success_and_kinetics():
+    from main import INTERNAL_API_SECRET
+    
+    response = client.post(
+        "/api/internal/agent-sync",
+        headers={"X-Sync-Secret": INTERNAL_API_SECRET},
+        json={
+            "agentId": "sync-test-agent",
+            "displayName": "Original Sync Agent",
+            "title": "First Master of Sync",
+            "avatar": "sync_avatar.png",
+            "color": "#ff00ff",
+            "symbol": "Sun"
+        }
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert data["agentId"] == "sync-test-agent"
+    assert data["action"] == "created"
+
+    response = client.post(
+        "/api/internal/agent-sync",
+        headers={"X-Internal-Secret": INTERNAL_API_SECRET},
+        json={
+            "agentId": "sync-test-agent",
+            "displayName": "Updated Sync Agent",
+            "title": "Grandmaster of Sync"
+        }
+    )
+    assert response.status_code == 200
+    assert response.json()["action"] == "updated"
+
+    response = client.get("/api/agents/sync-test-agent/kinetics")
+    assert response.status_code == 200
+    data = response.json()
+    assert "velocity" in data
+    assert "momentum" in data
+    assert "potentialDifference" in data
+    assert "power" in data
+    assert "force" in data
+
+    response = client.get("/api/agents/sync-test-agent/kinetics")
+    assert response.status_code == 200
+    data2 = response.json()
+    assert "velocity" in data2
+

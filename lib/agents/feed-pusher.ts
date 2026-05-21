@@ -20,8 +20,15 @@ function getWtenApiUrl(): string {
 }
 
 const WTEN_API_URL = getWtenApiUrl()
-const INTERNAL_API_SECRET =
-  process.env.INTERNAL_API_SECRET || process.env.WHATTOEATNEXT_API_KEY || 'dev_secret'
+
+function getInternalApiSecret(): string {
+  const secret = process.env.INTERNAL_API_SECRET || process.env.WHATTOEATNEXT_API_KEY
+  if (!secret) {
+    throw new Error('INTERNAL_API_SECRET or WHATTOEATNEXT_API_KEY is required to push feed actions')
+  }
+
+  return secret
+}
 
 interface PushResult {
   success: boolean
@@ -113,7 +120,7 @@ export class FeedPusherService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${INTERNAL_API_SECRET}`,
+        Authorization: `Bearer ${getInternalApiSecret()}`,
         ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
       },
       body: JSON.stringify(action),
