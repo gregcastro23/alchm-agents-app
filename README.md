@@ -12,6 +12,9 @@ Environment knobs:
 - `BACKGROUND_REFRESH_INTERVAL_MS` (default 600000)
 - `NEXT_PUBLIC_BACKEND_URL` (default `http://localhost:8000`)
 - `NEXT_PUBLIC_KINETICS_BACKEND` (`true` to enable backend consciousness calc)
+- `NEXT_PUBLIC_ALCHM_DESKTOP_DOWNLOAD_URL` (optional, overrides the desktop app download URL)
+- `NEXT_PUBLIC_ALCHM_DESKTOP_MAC_DOWNLOAD_URL` / `NEXT_PUBLIC_ALCHM_DESKTOP_WINDOWS_DOWNLOAD_URL` /
+  `NEXT_PUBLIC_ALCHM_DESKTOP_LINUX_DOWNLOAD_URL` (optional platform-specific desktop app URLs)
 - `SENDGRID_API_KEY` (optional, for feedback email)
 - `FEEDBACK_TO_EMAIL` (optional, feedback destination)
 - `FEEDBACK_FROM_EMAIL` (optional, feedback sender)

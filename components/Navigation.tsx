@@ -8,6 +8,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Menu, X, Rocket, User, LogOut, Sparkles, Monitor } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { DESKTOP_APP_DOWNLOAD_URL } from '@/lib/desktop-download'
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -101,7 +102,7 @@ const navigationGroups = [
     icon: '⚗️',
     links: [
       {
-        href: 'https://github.com/cookingwithcastro/alchm-desktop/releases',
+        href: DESKTOP_APP_DOWNLOAD_URL,
         label: 'Download Desktop',
         description: 'Install the native Tauri desktop companion app.',
       },
@@ -214,7 +215,7 @@ export function Navigation() {
           {/* Desktop Right */}
           <div className="nav-right">
             <a
-              href="https://github.com/cookingwithcastro/alchm-desktop/releases"
+              href={DESKTOP_APP_DOWNLOAD_URL}
               target="_blank"
               rel="noopener noreferrer"
               title="Download Desktop App"
@@ -303,7 +304,7 @@ export function Navigation() {
 
             <div className="nav-mobile-footer">
               <a
-                href="https://github.com/cookingwithcastro/alchm-desktop/releases"
+                href={DESKTOP_APP_DOWNLOAD_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="nav-mobile-action text-violet-400"

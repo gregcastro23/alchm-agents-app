@@ -41,6 +41,7 @@ import {
   type Sacred7Stats,
   SACRED_STATS_METADATA,
 } from '@/lib/sacred-7-stats'
+import { openDesktopAppDownload } from '@/lib/desktop-download'
 
 // ============================================================================
 // CONSCIOUSNESS PARAMETER DEFINITIONS
@@ -239,19 +240,7 @@ export default function LandingPage() {
   }
 
   const handleGetAppClick = () => {
-    const isMac =
-      typeof window !== 'undefined' &&
-      (window.navigator.userAgent.toLowerCase().includes('mac') ||
-        window.navigator.platform.toLowerCase().includes('mac'))
-
-    if (isMac) {
-      window.open(
-        'https://github.com/gregcastro23/alchm-agents-app/releases/latest/download/Alchm-1.0.0-aarch64.dmg',
-        '_blank'
-      )
-    } else {
-      window.open('https://github.com/gregcastro23/alchm-agents-app/releases/latest', '_blank')
-    }
+    openDesktopAppDownload()
   }
 
   // Golden ratio constant

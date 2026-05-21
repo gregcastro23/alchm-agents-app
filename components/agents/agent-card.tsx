@@ -31,6 +31,7 @@ import {
 import Link from 'next/link'
 import { useToast } from '@/hooks/use-toast'
 import type { CraftedAgent, AgentCardVariant, Coordinates } from '@/lib/agent-types'
+import { openDesktopAppDownload } from '@/lib/desktop-download'
 import { AgentDetailedStats } from '@/components/agents/agent-detailed-stats'
 
 const getElementColor = (element: string) => {
@@ -115,16 +116,7 @@ export function AgentCard({
             title: 'Alchm Desktop Not Found',
             description: 'Could not open the desktop app. Please download and install it first.',
             action: (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  window.open(
-                    'https://github.com/gregcastro23/alchm-agents-app/releases/latest',
-                    '_blank'
-                  )
-                }
-              >
+              <Button variant="outline" size="sm" onClick={openDesktopAppDownload}>
                 Get App
               </Button>
             ),
