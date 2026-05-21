@@ -35,6 +35,7 @@ import { PerformanceDashboard } from '@/components/admin/performance-dashboard'
 import BatchProcessingDashboard from '@/components/dashboards/batch-processing-dashboard'
 import { RAGMonitor } from '@/components/rag/rag-monitor'
 import { cn } from '@/lib/utils'
+import { DESKTOP_APP_DOWNLOAD_URL } from '@/lib/desktop-download'
 import type { AdminDashboardData, AdminHealthValue, AdminSystemStats } from '@/types/admin'
 
 type AdminTab =
@@ -776,9 +777,9 @@ export function AdminOperatorConsole({ initialUser, authSource }: AdminOperatorC
                     <Panel title="Desktop Companion Links" icon={Monitor}>
                       <div className="flex flex-wrap gap-2">
                         <QuickLink
-                          href="https://github.com/gregcastro23/alchm-agents-app/releases/latest"
+                          href={DESKTOP_APP_DOWNLOAD_URL}
                           icon={ExternalLink}
-                          label="Latest Release"
+                          label="Desktop Releases"
                           external
                         />
                         <QuickLink

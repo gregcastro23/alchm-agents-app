@@ -59,6 +59,109 @@ interface HistoricalAgentMock {
   }
 }
 
+interface ModelCatalogEntry {
+  id: string
+  tier: 'base' | 'premium'
+  label: string
+  filename: string
+  sha256: string
+  size: number
+  url: string
+  source: string
+}
+
+type InferenceProfileName =
+  | 'balanced'
+  | 'fire-meltdown'
+  | 'water-freeze'
+  | 'earth-tectonic-root'
+  | 'air-vacuum'
+
+interface HardwareTelemetry {
+  online: boolean
+  activeModel: string | null
+  activeProfile: {
+    name: InferenceProfileName
+    label: string
+    element: string
+    contextPolicy: string
+    threads: number
+    contextSize: number
+  }
+  llamaHot: boolean
+  cpu: {
+    percent: number | null
+    logicalThreads: number
+    loadAverage: number[]
+  }
+  memory: {
+    totalBytes: number
+    usedBytes: number
+    freeBytes: number
+    usedPercent: number
+  }
+  gpu: {
+    utilizationPercent: number | null
+    rendererPercent: number | null
+    vramUsedBytes: number | null
+    vramAllocatedBytes: number | null
+  } | null
+  timestamp: string
+}
+
+const DEFAULT_HARDWARE_TELEMETRY: HardwareTelemetry = {
+  online: false,
+  activeModel: null,
+  activeProfile: {
+    name: 'balanced',
+    label: 'Balanced Local Inference',
+    element: 'Aether',
+    contextPolicy: 'Awaiting sidecar telemetry.',
+    threads: 0,
+    contextSize: 0,
+  },
+  llamaHot: false,
+  cpu: {
+    percent: null,
+    logicalThreads: 0,
+    loadAverage: [],
+  },
+  memory: {
+    totalBytes: 0,
+    usedBytes: 0,
+    freeBytes: 0,
+    usedPercent: 0,
+  },
+  gpu: null,
+  timestamp: '',
+}
+
+function formatBytes(bytes: number | null | undefined) {
+  if (!bytes) return 'n/a'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let value = bytes
+  let unit = 0
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024
+    unit++
+  }
+  return `${value.toFixed(value >= 10 || unit === 0 ? 0 : 1)} ${units[unit]}`
+}
+
+function resolveInferenceProfile(command: string, element?: string): InferenceProfileName {
+  const normalized = command.toLowerCase()
+  if (/\b(meltdown|fire|burn|ignite)\b/.test(normalized)) return 'fire-meltdown'
+  if (/\b(freeze|water|ice|chill)\b/.test(normalized)) return 'water-freeze'
+  if (/\b(tectonic|root|earth|rag|ground)\b/.test(normalized)) return 'earth-tectonic-root'
+  if (/\b(vacuum|air|oxygen|detach)\b/.test(normalized)) return 'air-vacuum'
+
+  if (element === 'Fire') return 'fire-meltdown'
+  if (element === 'Water') return 'water-freeze'
+  if (element === 'Earth') return 'earth-tectonic-root'
+  if (element === 'Air') return 'air-vacuum'
+  return 'balanced'
+}
+
 const HISTORICAL_MOCKS: HistoricalAgentMock[] = [
   {
     id: 'johannes-kepler',
@@ -166,6 +269,10 @@ export default function App() {
   const [agentConfig, setAgentConfig] = useState<any>(null)
   const [prompt, setPrompt] = useState('')
   const [apiKey] = useState('demo-key-123')
+  const [hardwareTelemetry, setHardwareTelemetry] = useState<HardwareTelemetry>(
+    DEFAULT_HARDWARE_TELEMETRY
+  )
+  const [lastInferenceProfile, setLastInferenceProfile] = useState<InferenceProfileName>('balanced')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Cloud Gallery State
@@ -323,6 +430,37 @@ export default function App() {
   }, [setBalances])
 
   useEffect(() => {
+    if (!ipcNonce || activeView !== 'tray') return
+
+    let cancelled = false
+    const loadTelemetry = async () => {
+      try {
+        const res = await fetch('http://localhost:8080/api/hardware/telemetry', {
+          headers: { 'X-IPC-Nonce': ipcNonce },
+          cache: 'no-store',
+        })
+        if (!res.ok) throw new Error(`telemetry ${res.status}`)
+        const telemetry = (await res.json()) as HardwareTelemetry
+        if (!cancelled) setHardwareTelemetry(telemetry)
+      } catch (err) {
+        if (!cancelled) {
+          setHardwareTelemetry({
+            ...DEFAULT_HARDWARE_TELEMETRY,
+            timestamp: new Date().toISOString(),
+          })
+        }
+      }
+    }
+
+    void loadTelemetry()
+    const interval = window.setInterval(loadTelemetry, 5000)
+    return () => {
+      cancelled = true
+      window.clearInterval(interval)
+    }
+  }, [activeView, ipcNonce])
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamingText])
 
@@ -411,11 +549,21 @@ export default function App() {
         ])
       }
 
+      const catalogRes = await fetch('/api/models/catalog')
+      if (!catalogRes.ok) {
+        throw new Error('Unable to load desktop model catalog')
+      }
+
+      const modelCatalog = (await catalogRes.json()) as ModelCatalogEntry[]
+      const selectedModel = modelCatalog.find(model => model.tier === modalAgent.tier)
+
+      if (!selectedModel) {
+        throw new Error(`No ${modalAgent.tier} model is available in the catalog`)
+      }
+
       // 2. Weights Download
       setInstallProgress(45)
-      setInstallStatus(
-        `Streaming engine ${modalAgent.tier === 'premium' ? '8B' : '1.5B'} GGUF from cdn.alchm.kitchen...`
-      )
+      setInstallStatus(`Streaming ${selectedModel.label} from Hugging Face...`)
 
       const modelFileName = `alchm-agent-${modalAgent.element.toLowerCase()}-${modalAgent.tier === 'premium' ? '8b' : '1.5b'}.gguf`
 
@@ -428,7 +576,11 @@ export default function App() {
         },
         body: JSON.stringify({
           modelName: modelFileName,
-          downloadUrl: 'https://huggingface.co/mock/model.gguf', // Mocking actual download for now
+          downloadUrl: selectedModel.url,
+          sha256: selectedModel.sha256,
+          size: selectedModel.size,
+          sourceModel: selectedModel.id,
+          sourceFilename: selectedModel.filename,
           tier: modalAgent.tier,
         }),
       })
@@ -507,6 +659,8 @@ export default function App() {
     if (!prompt.trim() || isGenerating || !ipcNonce || !agentConfig) return
 
     const userMessage = prompt
+    const inferenceProfile = resolveInferenceProfile(userMessage, agentConfig.dominantElement)
+    setLastInferenceProfile(inferenceProfile)
     addMessage({ role: 'user', content: userMessage })
     setPrompt('')
 
@@ -535,6 +689,7 @@ export default function App() {
           prompt: finalPrompt,
           modelName: agentConfig.modelName,
           costs: { spirit: 2, essence: 1, matter: 0, substance: 0 },
+          inferenceProfile,
         }),
       })
 
@@ -611,6 +766,10 @@ export default function App() {
       ELEMENT_MAPPING['Air']
     : ELEMENT_MAPPING['Air']
   const ActiveIcon = activeStyles.icon
+  const activeHardwareProfile = hardwareTelemetry.online
+    ? hardwareTelemetry.activeProfile
+    : DEFAULT_HARDWARE_TELEMETRY.activeProfile
+  const gpuTelemetry = hardwareTelemetry.gpu
 
   return (
     <div className="flex flex-col h-screen bg-[#07020d] text-zinc-100 font-sans overflow-hidden select-none">
@@ -1102,7 +1261,7 @@ export default function App() {
             </div>
 
             {/* Diagnostic stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
               <div className="p-6 rounded-2xl border border-purple-900/10 bg-zinc-950/50 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs uppercase font-semibold text-zinc-500">
@@ -1126,8 +1285,14 @@ export default function App() {
                   <span className="text-xs uppercase font-semibold text-zinc-500">
                     Bun sidecar server
                   </span>
-                  <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-mono font-bold">
-                    RUNNING
+                  <span
+                    className={`text-[10px] border px-2 py-0.5 rounded-full font-mono font-bold ${
+                      hardwareTelemetry.online
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                        : 'bg-red-500/10 text-red-300 border-red-500/20'
+                    }`}
+                  >
+                    {hardwareTelemetry.online ? 'RUNNING' : 'OFFLINE'}
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -1144,25 +1309,75 @@ export default function App() {
               <div className="p-6 rounded-2xl border border-purple-900/10 bg-zinc-950/50 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs uppercase font-semibold text-zinc-500">
-                    Diagnostic performance
+                    Hardware telemetry
                   </span>
                   <span className="text-[10px] bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded-full font-mono font-bold">
-                    HEALTHY
+                    LIVE
                   </span>
                 </div>
                 <div className="space-y-2 grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span className="text-zinc-500 block">CPU heap:</span>
-                    <span className="font-mono text-zinc-300">2.4%</span>
+                    <span className="text-zinc-500 block">CPU load:</span>
+                    <span className="font-mono text-zinc-300">
+                      {hardwareTelemetry.cpu.percent == null
+                        ? 'n/a'
+                        : `${hardwareTelemetry.cpu.percent.toFixed(1)}%`}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-zinc-500 block">Memory heap:</span>
-                    <span className="font-mono text-zinc-300">142 MB</span>
+                    <span className="text-zinc-500 block">Threads:</span>
+                    <span className="font-mono text-zinc-300">
+                      {hardwareTelemetry.cpu.logicalThreads || 'n/a'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block">Unified mem:</span>
+                    <span className="font-mono text-zinc-300">
+                      {formatBytes(hardwareTelemetry.memory.usedBytes)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block">GPU use:</span>
+                    <span className="font-mono text-zinc-300">
+                      {gpuTelemetry?.utilizationPercent == null
+                        ? 'n/a'
+                        : `${gpuTelemetry.utilizationPercent}%`}
+                    </span>
                   </div>
                   <div className="col-span-2 pt-1">
-                    <span className="text-zinc-500 block">Local storage directory:</span>
+                    <span className="text-zinc-500 block">VRAM / UMA in use:</span>
                     <span className="font-mono text-[9px] text-purple-400 truncate">
-                      $APPDATA/com.cookingwithcastro.alchm/models/
+                      {formatBytes(gpuTelemetry?.vramUsedBytes)} of{' '}
+                      {formatBytes(gpuTelemetry?.vramAllocatedBytes)} allocated
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 rounded-2xl border border-purple-900/10 bg-zinc-950/50 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs uppercase font-semibold text-zinc-500">
+                    Jing profile
+                  </span>
+                  <span className="text-[10px] bg-orange-500/10 text-orange-300 border border-orange-500/20 px-2 py-0.5 rounded-full font-mono font-bold">
+                    {lastInferenceProfile}
+                  </span>
+                </div>
+                <div className="space-y-2 text-xs">
+                  <div>
+                    <span className="text-zinc-500 block">Active sidecar mode:</span>
+                    <span className="font-mono text-purple-300">{activeHardwareProfile.label}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block">Context window:</span>
+                    <span className="font-mono text-zinc-300">
+                      {activeHardwareProfile.contextSize || 'n/a'} tokens
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block">Policy:</span>
+                    <span className="font-mono text-[10px] text-zinc-500">
+                      {activeHardwareProfile.contextPolicy}
                     </span>
                   </div>
                 </div>

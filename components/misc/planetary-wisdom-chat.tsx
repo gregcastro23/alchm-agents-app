@@ -35,7 +35,124 @@ import {
   getOptimalMonicaRole,
   type PlanetaryCouncilPreset,
 } from '@/lib/council-presets'
-import { usePlanetaryPositions } from '@/hooks/usePlanetaryPositions'
+import { usePlanetaryPositions, type PlanetaryPosition } from '@/hooks/usePlanetaryPositions'
+
+const SIGN_ORDER = [
+  'Aries',
+  'Taurus',
+  'Gemini',
+  'Cancer',
+  'Leo',
+  'Virgo',
+  'Libra',
+  'Scorpio',
+  'Sagittarius',
+  'Capricorn',
+  'Aquarius',
+  'Pisces',
+]
+
+const SIGN_ELEMENTS: Record<string, 'Fire' | 'Earth' | 'Air' | 'Water'> = {
+  Aries: 'Fire',
+  Leo: 'Fire',
+  Sagittarius: 'Fire',
+  Taurus: 'Earth',
+  Virgo: 'Earth',
+  Capricorn: 'Earth',
+  Gemini: 'Air',
+  Libra: 'Air',
+  Aquarius: 'Air',
+  Cancer: 'Water',
+  Scorpio: 'Water',
+  Pisces: 'Water',
+}
+
+const MAJOR_ASPECTS = [
+  { type: 'Conjunction', angle: 0, orb: 8 },
+  { type: 'Sextile', angle: 60, orb: 5 },
+  { type: 'Square', angle: 90, orb: 6 },
+  { type: 'Trine', angle: 120, orb: 6 },
+  { type: 'Opposition', angle: 180, orb: 8 },
+]
+
+function getPlanetLongitude(position: PlanetaryPosition) {
+  const signIndex = SIGN_ORDER.findIndex(sign => sign.toLowerCase() === position.sign.toLowerCase())
+  return (Math.max(signIndex, 0) * 30 + position.degree + 360) % 360
+}
+
+function getAngularDistance(a: number, b: number) {
+  const diff = Math.abs(a - b) % 360
+  return diff > 180 ? 360 - diff : diff
+}
+
+function calculateCurrentAspects(positions: PlanetaryPosition[]) {
+  const aspects: Array<{
+    planetA: string
+    planetB: string
+    type: string
+    orb: number
+    angle: number
+  }> = []
+
+  for (let i = 0; i < positions.length; i++) {
+    for (let j = i + 1; j < positions.length; j++) {
+      const first = positions[i]
+      const second = positions[j]
+      const distance = getAngularDistance(getPlanetLongitude(first), getPlanetLongitude(second))
+
+      for (const aspect of MAJOR_ASPECTS) {
+        const orb = Math.abs(distance - aspect.angle)
+        if (orb <= aspect.orb) {
+          aspects.push({
+            planetA: first.planet,
+            planetB: second.planet,
+            type: aspect.type,
+            orb,
+            angle: Math.round(distance),
+          })
+          break
+        }
+      }
+    }
+  }
+
+  return aspects.sort((a, b) => a.orb - b.orb)
+}
+
+function calculateDominantElement(positions: PlanetaryPosition[]) {
+  const scores = { Fire: 0, Earth: 0, Air: 0, Water: 0 }
+
+  for (const position of positions) {
+    const canonicalSign = SIGN_ORDER.find(
+      sign => sign.toLowerCase() === position.sign.toLowerCase()
+    )
+    const element = canonicalSign ? SIGN_ELEMENTS[canonicalSign] : null
+    if (element) scores[element] += 1
+  }
+
+  return Object.entries(scores).sort(([, a], [, b]) => b - a)[0][0]
+}
+
+function calculateLunarPhase(positions: PlanetaryPosition[]) {
+  const sun = positions.find(position => position.planet.toLowerCase() === 'sun')
+  const moon = positions.find(position => position.planet.toLowerCase() === 'moon')
+
+  if (!sun || !moon) return 'Unknown'
+
+  const angle = (getPlanetLongitude(moon) - getPlanetLongitude(sun) + 360) % 360
+  const phaseIndex = Math.round(angle / 45) % 8
+
+  return [
+    'New Moon',
+    'Waxing Crescent',
+    'First Quarter',
+    'Waxing Gibbous',
+    'Full Moon',
+    'Waning Gibbous',
+    'Last Quarter',
+    'Waning Crescent',
+  ][phaseIndex]
+}
 
 interface PlanetaryWisdomChatProps {
   // Core functionality
@@ -135,20 +252,19 @@ export function PlanetaryWisdomChat({
 
   // Calculate current astrological information
   const currentAstroInfo = useMemo(() => {
-    if (!planetaryPositions) return null
+    if (!planetaryPositions || planetaryPositions.length === 0) return null
 
-    const aspects: any[] = [] // TODO: Calculate current aspects
-    const retrogrades = Object.entries(planetaryPositions)
-      .filter(([planet, data]) => data.retrograde)
-      .map(([planet]) => planet)
+    const aspects = calculateCurrentAspects(planetaryPositions)
+    const retrogrades = planetaryPositions
+      .filter(position => position.retrograde)
+      .map(position => position.planet)
 
     return {
-      dominantElement: 'Fire', // TODO: Calculate from current positions
+      dominantElement: calculateDominantElement(planetaryPositions),
       majorAspects: aspects,
       retrogradeCount: retrogrades.length,
       retrogradePlanets: retrogrades,
-      lunarPhase:
-        (planetaryPositions.find((p: any) => p.planet === 'Moon') as any)?.phase || 'Unknown',
+      lunarPhase: calculateLunarPhase(planetaryPositions),
     }
   }, [planetaryPositions])
 

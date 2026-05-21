@@ -34,6 +34,12 @@ import {
 } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
 import type { NatalSigilRune, SigilStyle, RuneGeometry } from '@/lib/runes/natal-sigil-runes'
+import {
+  createSigilSvg,
+  downloadSigilCollection,
+  SIGIL_STYLE_SYMBOLS,
+  sigilSvgToDataUrl,
+} from '@/lib/sigil-download'
 import type { BirthInfo } from '@/lib/schemas'
 
 interface BatchSigilGeneratorProps {
@@ -177,6 +183,7 @@ export function BatchSigilGenerator({
   const [generationProgress, setGenerationProgress] = useState(0)
   const [generatedSigils, setGeneratedSigils] = useState<GeneratedSigil[]>([])
   const [currentStep, setCurrentStep] = useState('')
+  const [downloadError, setDownloadError] = useState<string | null>(null)
 
   const estimatedSigilCount = useCallback(() => {
     let count = batchOptions.styles.length
@@ -230,6 +237,11 @@ export function BatchSigilGenerator({
               const sigil: any = {
                 id: `batch-${Date.now()}-${currentStepIndex}`,
                 name: `${style} Sigil ${variation > 0 ? `v${variation}` : ''}`,
+                symbol: SIGIL_STYLE_SYMBOLS[style],
+                visualStyle: style,
+                sigilType: 'pattern-based',
+                element: elementalFocus === 'spirit' ? 'spirit' : elementalFocus,
+                runeType: 'cosmic',
                 style,
                 description: `${STYLE_DESCRIPTIONS[style].description} with ${powerLevel} power and ${elementalFocus} focus`,
                 runeStrokes: geometry.aspectLines.map((line: any) => ({
@@ -258,15 +270,49 @@ export function BatchSigilGenerator({
                   substance: Math.floor(Math.random() * 50) + 25,
                 },
                 effects: [
-                  `Enhanced ${elementalFocus} energy` as any,
-                  `${powerLevel} power activation` as any,
+                  {
+                    type: 'enhancement',
+                    power:
+                      POWER_LEVEL_DESCRIPTIONS[powerLevel as keyof typeof POWER_LEVEL_DESCRIPTIONS]
+                        ?.intensity || 50,
+                    duration: 'days',
+                    description: `Enhanced ${elementalFocus} energy`,
+                  },
+                  {
+                    type: 'active',
+                    power:
+                      POWER_LEVEL_DESCRIPTIONS[powerLevel as keyof typeof POWER_LEVEL_DESCRIPTIONS]
+                        ?.intensity || 50,
+                    duration: 'hours',
+                    description: `${powerLevel} power activation`,
+                  },
                 ],
                 activationInstructions: `Meditate on this sigil for ${powerLevel === 'minor' ? '5-10' : powerLevel === 'standard' ? '10-15' : powerLevel === 'major' ? '15-25' : '30+'} minutes to activate its ${elementalFocus} properties.`,
-                generatedImageUrl: `/api/sigil-generation?style=${style}&power=${powerLevel}&element=${elementalFocus}`,
+                personalizedMeaning: `${STYLE_DESCRIPTIONS[style].description} focused through ${elementalFocus} with ${powerLevel} activation.`,
+                meditationInstructions: [
+                  `Settle your attention on the ${style} sigil form.`,
+                  `Breathe into the ${elementalFocus} current for three slow cycles.`,
+                  'Name the transformation you are inviting, then release the image from effort.',
+                ],
+                requirements: {},
+                rarity: powerLevel === 'transcendent' ? 'legendary' : 'rare',
+                craftingTime:
+                  powerLevel === 'minor'
+                    ? 10
+                    : powerLevel === 'standard'
+                      ? 15
+                      : powerLevel === 'major'
+                        ? 25
+                        : 35,
+                powerLevel:
+                  POWER_LEVEL_DESCRIPTIONS[powerLevel as keyof typeof POWER_LEVEL_DESCRIPTIONS]
+                    ?.intensity || 50,
                 generationTime: new Date().toISOString(),
                 birthInfo,
                 variation: variation > 0 ? `v${variation}` : undefined,
               }
+              sigil.svgGeometry = createSigilSvg(sigil)
+              sigil.generatedImageUrl = sigilSvgToDataUrl(sigil.svgGeometry)
 
               sigils.push(sigil)
               currentStepIndex++
@@ -287,6 +333,19 @@ export function BatchSigilGenerator({
       setIsGenerating(false)
     }
   }, [batchOptions, geometry, birthInfo, estimatedSigilCount, onSigilsGenerated])
+
+  const downloadGeneratedCollection = useCallback(async () => {
+    setDownloadError(null)
+
+    try {
+      await downloadSigilCollection(generatedSigils, 'batch-sigil-collection')
+    } catch (error) {
+      console.error('Batch collection download error:', error)
+      setDownloadError(
+        error instanceof Error ? error.message : 'Failed to download sigil collection'
+      )
+    }
+  }, [generatedSigils])
 
   const toggleStyle = (style: SigilStyle) => {
     setBatchOptions(prev => ({
@@ -387,7 +446,10 @@ export function BatchSigilGenerator({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button className="bg-green-600 hover:bg-green-700">
+              <Button
+                className="bg-green-600 hover:bg-green-700"
+                onClick={downloadGeneratedCollection}
+              >
                 <Download className="w-4 h-4 mr-2" />
                 Download Collection
               </Button>
@@ -412,6 +474,12 @@ export function BatchSigilGenerator({
                 ))}
               </div>
             </div>
+
+            {downloadError && (
+              <Alert variant="destructive">
+                <AlertDescription>{downloadError}</AlertDescription>
+              </Alert>
+            )}
           </div>
         ) : (
           // Configuration Interface

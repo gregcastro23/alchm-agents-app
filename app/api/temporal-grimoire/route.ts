@@ -417,15 +417,3 @@ visualizations, and mystical formatting.*
     },
   })
 }
-
-// Download endpoint handler (would be in a separate file in production)
-async function handleDownload(filename: string) {
-  // In production, this would retrieve the file from cloud storage
-  // and stream it to the client with appropriate headers
-  return new Response('File download functionality not implemented in demo', {
-    status: 501,
-    headers: {
-      'Content-Type': 'text/plain',
-    },
-  })
-}

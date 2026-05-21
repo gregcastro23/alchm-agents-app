@@ -119,3 +119,39 @@ class BulkPositionsResponse(BaseModel):
     samples: List[Dict[str, Any]]
     count: int
     degraded: bool = False
+
+class PhilosophersStonePositionsRequest(BaseModel):
+    year: Optional[int] = None
+    month: Optional[int] = None
+    day: Optional[int] = None
+    hour: Optional[int] = None
+    minute: Optional[int] = None
+    customPlanets: Optional[Dict[str, Any]] = None
+
+class PhilosophersStonePositionsResponse(BaseModel):
+    elementalProperties: Dict[str, float]
+    thermodynamicProperties: Dict[str, float]
+    esms: Dict[str, float]
+    planetaryMomentum: Dict[str, float]
+    kalchm: float
+    monica: float
+    score: float
+    normalized: bool
+    confidence: float
+    metadata: Dict[str, Any]
+    perPlanet: Optional[Dict[str, Any]] = None
+
+class AgentSyncPayload(BaseModel):
+    agentId: str
+    displayName: str
+    email: Optional[str] = None
+    title: Optional[str] = None
+    avatar: Optional[str] = None
+    color: Optional[str] = None
+    symbol: Optional[str] = None
+
+class AgentSyncResponse(BaseModel):
+    success: bool
+    agentId: str
+    action: str
+

@@ -44,6 +44,7 @@ import {
 } from '@/lib/runes/natal-sigil-runes'
 import { PatternToRuneConverter } from '@/lib/runes/pattern-to-rune-converter'
 import { PatternConfiguration } from '@/lib/astrological-pattern-recognition'
+import { downloadSigilAsset } from '@/lib/sigil-download'
 import Image from 'next/image'
 
 interface NatalSigilGeneratorProps {
@@ -164,14 +165,13 @@ export default function NatalSigilGenerator({
 
   const handleDownload = useCallback(
     async (format: 'png' | 'svg' | 'pdf') => {
-      if (!generatedSigil?.generatedImageUrl) return
+      if (!generatedSigil) return
 
       try {
-        // For now, just open the image in a new tab
-        // In production, implement proper download functionality
-        window.open(generatedSigil.generatedImageUrl, '_blank')
+        await downloadSigilAsset(generatedSigil, format)
       } catch (err) {
         console.error('Error downloading sigil:', err)
+        setError(err instanceof Error ? err.message : 'Failed to download sigil')
       }
     },
     [generatedSigil]

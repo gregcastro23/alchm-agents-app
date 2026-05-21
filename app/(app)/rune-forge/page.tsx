@@ -48,6 +48,7 @@ import {
 } from '@/lib/enhanced-chart-calculator'
 import { RuneGeometry, NatalSigilRune, SigilStyle } from '@/lib/runes/natal-sigil-runes'
 import { PatternToRuneConverter } from '@/lib/runes/pattern-to-rune-converter'
+import { downloadSigilCollection } from '@/lib/sigil-download'
 import type { BirthInfo } from '@/lib/schemas'
 import Image from 'next/image'
 
@@ -258,13 +259,13 @@ export default function RuneForgePage() {
     }
   }, [geometry, birthInfo])
 
-  const handleDownloadAll = useCallback(() => {
-    // In production, implement ZIP download of all sigils
-    generatedSigils.forEach(sigil => {
-      if (sigil.generatedImageUrl) {
-        window.open(sigil.generatedImageUrl, '_blank')
-      }
-    })
+  const handleDownloadAll = useCallback(async () => {
+    try {
+      await downloadSigilCollection(generatedSigils, 'rune-forge-sigils')
+    } catch (err) {
+      console.error('Error downloading sigil collection:', err)
+      setError(err instanceof Error ? err.message : 'Failed to download sigil collection')
+    }
   }, [generatedSigils])
 
   const handleBatchSigilsGenerated = useCallback((newSigils: GeneratedSigil[]) => {

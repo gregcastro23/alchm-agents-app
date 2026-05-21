@@ -473,20 +473,43 @@ function generateFallbackConsciousnessData(birthChart: BirthChartData): LiveCons
 async function fetchBatchLiveConsciousness(
   agents: BirthChartData[]
 ): Promise<Record<string, LiveConsciousnessResult>> {
-  // For now, process individually since we only have single endpoint
-  // TODO: Add batch endpoint to frontend proxy
   const results: Record<string, LiveConsciousnessResult> = {}
 
-  for (const agent of agents) {
-    try {
-      results[agent.name] = await fetchLiveConsciousness(agent)
-    } catch (error) {
-      // Provide fallback data without spamming errors
-      setBackendDownCooldown(5)
-      logBackendUnavailableOnce()
-      results[agent.name] = generateFallbackConsciousnessData(agent)
-    }
-  }
+  try {
+    const response = await fetch('/api/consciousness/batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agents }),
+    })
 
-  return results
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      if (response.status === 503 || errorData.code === 'BACKEND_DISABLED') {
+        setBackendDownCooldown(5)
+        logBackendUnavailableOnce()
+        return Object.fromEntries(
+          agents.map(agent => [agent.name, generateFallbackConsciousnessData(agent)])
+        )
+      }
+
+      throw new Error(errorData.error || `API error: ${response.status}`)
+    }
+
+    const payload = await response.json()
+    const batchResults = payload.data?.results || payload.results || {}
+
+    for (const agent of agents) {
+      const result = batchResults[agent.name]
+      results[agent.name] =
+        result && !result.error ? result : generateFallbackConsciousnessData(agent)
+    }
+
+    return results
+  } catch (error) {
+    setBackendDownCooldown(5)
+    logBackendUnavailableOnce()
+    return Object.fromEntries(
+      agents.map(agent => [agent.name, generateFallbackConsciousnessData(agent)])
+    )
+  }
 }

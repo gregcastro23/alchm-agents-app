@@ -1,3 +1,5 @@
+import { feedStreamBus } from '@/lib/agents/feed-stream-bus'
+
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -6,42 +8,54 @@ export const revalidate = 0
  *
  * Server-Sent Events stream of FeedEvent objects.
  *
- * Currently emits keep-alive comments so the client's EventSource stays open
- * without retry-spamming. Real events will be pushed once the producer side
- * (feed-pusher, FeedActivationEngine, /api/feed/cast resolution events,
- * planetary-degree scheduled jobs) writes to a shared channel — see HANDOFF.md §3.
- *
- * Wiring suggestion: a Redis pub/sub channel (or in-memory EventEmitter for
- * single-process dev) keyed by user, with producers writing FeedEvent payloads
- * and this handler subscribing.
+ * Emits live feed events from the in-process feed bus plus keep-alive comments
+ * so the client's EventSource stays open without retry-spamming. This gives the
+ * desktop Ghost Feed an immediate producer path for local Jing casts; a Redis
+ * pub/sub channel can replace the bus when feeds need to span processes.
  */
-export async function GET() {
+export async function GET(req: Request) {
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
+      let closed = false
+      const enqueue = (chunk: string) => {
+        if (closed) return
+        try {
+          controller.enqueue(encoder.encode(chunk))
+        } catch {
+          closed = true
+        }
+      }
+
       // Open the stream with an immediate comment so proxies don't buffer
-      controller.enqueue(encoder.encode(': feed-stream open\n\n'))
+      enqueue(': feed-stream open\n\n')
+
+      const unsubscribe = feedStreamBus.subscribe(message => {
+        enqueue(`event: ${message.event}\ndata: ${JSON.stringify(message.data)}\n\n`)
+      })
 
       // Keep-alive every 25s — below the typical 30s proxy idle timeout
       const keepAlive = setInterval(() => {
-        try {
-          controller.enqueue(encoder.encode(': ka\n\n'))
-        } catch {
+        enqueue(': ka\n\n')
+        if (closed) {
           clearInterval(keepAlive)
+          unsubscribe()
         }
       }, 25_000)
 
-      // Close on client disconnect — caller's AbortController fires this
-      ;(
-        controller as ReadableStreamDefaultController & { signal?: AbortSignal }
-      ).signal?.addEventListener?.('abort', () => {
+      const closeStream = () => {
+        if (closed) return
+        closed = true
         clearInterval(keepAlive)
+        unsubscribe()
         try {
           controller.close()
         } catch {
           /* already closed */
         }
-      })
+      }
+
+      req.signal.addEventListener('abort', closeStream)
     },
   })
 

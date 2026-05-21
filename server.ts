@@ -3,6 +3,8 @@ import { serve, Subprocess } from 'bun'
 declare const Bun: any
 import { debitInferenceCost } from './lib/database/economy'
 import { Pool } from 'pg'
+import { cpus, freemem, loadavg, totalmem } from 'os'
+import { join, dirname, basename } from 'path'
 
 const pool = new Pool({ connectionString: process.env.RAILWAY_DATABASE_URL })
 
@@ -20,8 +22,6 @@ const ALLOWED_MODELS = new Set([
   'alchm-agent-earth-1.5b.gguf',
 ])
 
-import { join, dirname, basename } from 'path'
-
 // Path resolution for sidecar and models
 const APP_DATA_DIR = process.env.APP_DATA_DIR || './models'
 const isCompiled = process.execPath.includes('orchestrator')
@@ -34,8 +34,174 @@ const LLAMA_SERVER_PATH = join(binDir, llamaServerExec)
 // --- State & Process Management ---
 let llamaServer: Subprocess | null = null
 let currentModel: string | null = null
+let currentProfileName = 'balanced'
 let idleTimer: ReturnType<typeof setTimeout> | null = null
 const IDLE_TIMEOUT_MS = 5 * 60 * 1000 // 5 Minutes
+const LOGICAL_THREADS = Math.max(1, cpus().length || 1)
+
+type InferenceProfileName =
+  | 'balanced'
+  | 'fire-meltdown'
+  | 'water-freeze'
+  | 'earth-tectonic-root'
+  | 'air-vacuum'
+
+interface InferenceProfile {
+  name: InferenceProfileName
+  label: string
+  element: 'Fire' | 'Water' | 'Earth' | 'Air' | 'Aether'
+  contextPolicy: string
+  threads: number
+  batchThreads: number
+  contextSize: number
+  batchSize: number
+  ubatchSize: number
+  priority: number
+  poll: number
+  completion: {
+    nPredict: number
+    temperature: number
+    topK: number
+    topP: number
+    repeatPenalty: number
+  }
+}
+
+function clampThreads(value: number) {
+  return Math.max(1, Math.min(LOGICAL_THREADS, Math.round(value)))
+}
+
+const INFERENCE_PROFILES: Record<InferenceProfileName, InferenceProfile> = {
+  balanced: {
+    name: 'balanced',
+    label: 'Balanced Local Inference',
+    element: 'Aether',
+    contextPolicy: 'Default balanced context and throughput profile.',
+    threads: clampThreads(LOGICAL_THREADS * 0.75),
+    batchThreads: clampThreads(LOGICAL_THREADS * 0.75),
+    contextSize: 8192,
+    batchSize: 2048,
+    ubatchSize: 512,
+    priority: 0,
+    poll: 50,
+    completion: {
+      nPredict: 512,
+      temperature: 0.8,
+      topK: 40,
+      topP: 0.95,
+      repeatPenalty: 1,
+    },
+  },
+  'fire-meltdown': {
+    name: 'fire-meltdown',
+    label: 'Fire Meltdown',
+    element: 'Fire',
+    contextPolicy: 'Maximum throughput: all logical threads, high priority, large batch window.',
+    threads: LOGICAL_THREADS,
+    batchThreads: LOGICAL_THREADS,
+    contextSize: 8192,
+    batchSize: 4096,
+    ubatchSize: 1024,
+    priority: 2,
+    poll: 100,
+    completion: {
+      nPredict: 768,
+      temperature: 0.92,
+      topK: 64,
+      topP: 0.96,
+      repeatPenalty: 1,
+    },
+  },
+  'water-freeze': {
+    name: 'water-freeze',
+    label: 'Water Freeze',
+    element: 'Water',
+    contextPolicy: 'Deterministic cooling: low temperature and stable medium context.',
+    threads: clampThreads(LOGICAL_THREADS * 0.6),
+    batchThreads: clampThreads(LOGICAL_THREADS * 0.6),
+    contextSize: 4096,
+    batchSize: 1024,
+    ubatchSize: 384,
+    priority: 0,
+    poll: 25,
+    completion: {
+      nPredict: 448,
+      temperature: 0.22,
+      topK: 16,
+      topP: 0.82,
+      repeatPenalty: 1.08,
+    },
+  },
+  'earth-tectonic-root': {
+    name: 'earth-tectonic-root',
+    label: 'Earth Tectonic Root',
+    element: 'Earth',
+    contextPolicy: 'RAG-locked context: tight window, strict prompt grounding, low drift.',
+    threads: clampThreads(LOGICAL_THREADS * 0.5),
+    batchThreads: clampThreads(LOGICAL_THREADS * 0.5),
+    contextSize: 2048,
+    batchSize: 512,
+    ubatchSize: 256,
+    priority: 0,
+    poll: 0,
+    completion: {
+      nPredict: 384,
+      temperature: 0.18,
+      topK: 12,
+      topP: 0.72,
+      repeatPenalty: 1.16,
+    },
+  },
+  'air-vacuum': {
+    name: 'air-vacuum',
+    label: 'Air Vacuum',
+    element: 'Air',
+    contextPolicy: 'Lean detached execution: reduced context with crisp sampling.',
+    threads: clampThreads(LOGICAL_THREADS * 0.65),
+    batchThreads: clampThreads(LOGICAL_THREADS * 0.65),
+    contextSize: 4096,
+    batchSize: 1024,
+    ubatchSize: 384,
+    priority: 0,
+    poll: 35,
+    completion: {
+      nPredict: 448,
+      temperature: 0.52,
+      topK: 28,
+      topP: 0.9,
+      repeatPenalty: 1.04,
+    },
+  },
+}
+
+function profileFromMove(moveId?: string): InferenceProfileName {
+  switch (moveId) {
+    case 'meltdown':
+      return 'fire-meltdown'
+    case 'freeze':
+      return 'water-freeze'
+    case 'tectonicRoot':
+      return 'earth-tectonic-root'
+    case 'vacuum':
+      return 'air-vacuum'
+    default:
+      return 'balanced'
+  }
+}
+
+function resolveProfile(profileName?: string, moveId?: string): InferenceProfile {
+  const resolvedName = (profileName || profileFromMove(moveId)) as InferenceProfileName
+  return INFERENCE_PROFILES[resolvedName] || INFERENCE_PROFILES.balanced
+}
+
+function applyProfilePrompt(prompt: string, profile: InferenceProfile) {
+  if (profile.name !== 'earth-tectonic-root') return prompt
+
+  return `[Earth Tectonic Root constraints]
+Use only the context explicitly present in this prompt. If the supplied context is insufficient, say precisely what is missing. Prefer grounded, compact claims over speculation.
+
+${prompt}`
+}
 
 function stopServer() {
   if (llamaServer) {
@@ -43,6 +209,7 @@ function stopServer() {
     if (llamaServer.exitCode === null) llamaServer.kill(9)
     llamaServer = null
     currentModel = null
+    currentProfileName = 'balanced'
   }
   if (idleTimer) {
     clearTimeout(idleTimer)
@@ -71,19 +238,33 @@ async function waitForServerReady(): Promise<boolean> {
   return false
 }
 
-async function startServer(modelName: string) {
+async function startServer(modelName: string, profile: InferenceProfile) {
   stopServer() // Ensure clean slate
-  console.log(`Cold booting llama-server with model: ${modelName}`)
+  console.log(
+    `Cold booting llama-server with model: ${modelName} (${profile.label}, ${profile.threads} threads)`
+  )
 
   llamaServer = Bun.spawn({
     cmd: [
       LLAMA_SERVER_PATH,
       '-m',
       join(APP_DATA_DIR, modelName),
+      '-t',
+      String(profile.threads),
+      '-tb',
+      String(profile.batchThreads),
       '-ngl',
       '99',
       '-c',
-      '8192',
+      String(profile.contextSize),
+      '-b',
+      String(profile.batchSize),
+      '-ub',
+      String(profile.ubatchSize),
+      '--prio',
+      String(profile.priority),
+      '--poll',
+      String(profile.poll),
       '--port',
       '8081',
     ],
@@ -92,6 +273,7 @@ async function startServer(modelName: string) {
   })
 
   currentModel = modelName
+  currentProfileName = profile.name
 
   const isReady = await waitForServerReady()
   if (!isReady) {
@@ -138,6 +320,78 @@ function corsResponse(body: BodyInit | null, init: ResponseInit = {}): Response 
   return new Response(body, { ...init, headers })
 }
 
+async function commandText(cmd: string[], timeoutMs = 1500): Promise<string> {
+  const proc = Bun.spawn({
+    cmd,
+    stdout: 'pipe',
+    stderr: 'ignore',
+  })
+
+  const timeout = Bun.sleep(timeoutMs).then(() => {
+    if (proc.exitCode === null) proc.kill(9)
+    return ''
+  })
+
+  try {
+    return await Promise.race([new Response(proc.stdout).text(), timeout])
+  } catch {
+    return ''
+  }
+}
+
+async function sampleCpuPercent() {
+  const output = await commandText(['top', '-l', '1', '-n', '0', '-s', '0'])
+  const match = output.match(/CPU usage:\s*([\d.]+)% user,\s*([\d.]+)% sys,\s*([\d.]+)% idle/)
+  if (!match) return null
+
+  return Number((100 - Number(match[3])).toFixed(1))
+}
+
+async function sampleGpuTelemetry() {
+  const output = await commandText(['ioreg', '-r', '-c', 'IOAccelerator', '-d', '1'], 1200)
+  if (!output) return null
+
+  const readNumber = (label: string) => {
+    const match = output.match(new RegExp(`"${label}"=(\\d+)`))
+    return match ? Number(match[1]) : null
+  }
+
+  return {
+    utilizationPercent: readNumber('Device Utilization %'),
+    rendererPercent: readNumber('Renderer Utilization %'),
+    vramUsedBytes: readNumber('In use system memory'),
+    vramAllocatedBytes: readNumber('Alloc system memory'),
+  }
+}
+
+async function buildHardwareTelemetry() {
+  const totalMemoryBytes = totalmem()
+  const freeMemoryBytes = freemem()
+  const gpu = await sampleGpuTelemetry()
+
+  return {
+    online: true,
+    activeModel: currentModel,
+    activeProfile: INFERENCE_PROFILES[currentProfileName as InferenceProfileName],
+    llamaHot: Boolean(llamaServer && llamaServer.exitCode === null),
+    cpu: {
+      percent: await sampleCpuPercent(),
+      logicalThreads: LOGICAL_THREADS,
+      loadAverage: loadavg().map(value => Number(value.toFixed(2))),
+    },
+    memory: {
+      totalBytes: totalMemoryBytes,
+      usedBytes: totalMemoryBytes - freeMemoryBytes,
+      freeBytes: freeMemoryBytes,
+      usedPercent: Number(
+        (((totalMemoryBytes - freeMemoryBytes) / totalMemoryBytes) * 100).toFixed(1)
+      ),
+    },
+    gpu,
+    timestamp: new Date().toISOString(),
+  }
+}
+
 const server = serve({
   port: 8080,
   async fetch(req: Request) {
@@ -153,6 +407,13 @@ const server = serve({
     }
 
     const url = new URL(req.url)
+
+    if (req.method === 'GET' && url.pathname === '/api/hardware/telemetry') {
+      return corsResponse(JSON.stringify(await buildHardwareTelemetry()), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
 
     if (req.method === 'GET' && url.pathname === '/api/models/check') {
       const models = [
@@ -330,7 +591,8 @@ const server = serve({
     }
 
     if (req.method === 'POST' && url.pathname === '/api/generate') {
-      const { prompt, modelName, costs } = await req.json()
+      const { prompt, modelName, costs, inferenceProfile, jingMoveId } = await req.json()
+      const profile = resolveProfile(inferenceProfile, jingMoveId)
 
       // 2. Validate User API Key
       const userId = await authenticateToken(req)
@@ -354,8 +616,8 @@ const server = serve({
 
       // 5. Manage Model Process Lifecycle
       try {
-        if (!llamaServer || currentModel !== modelName) {
-          await startServer(modelName)
+        if (!llamaServer || currentModel !== modelName || currentProfileName !== profile.name) {
+          await startServer(modelName, profile)
         }
         resetIdleTimer()
       } catch (err) {
@@ -372,9 +634,13 @@ const server = serve({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            prompt,
+            prompt: applyProfilePrompt(prompt, profile),
             stream: true,
-            n_predict: 512, // Max tokens constraint
+            n_predict: profile.completion.nPredict,
+            temperature: profile.completion.temperature,
+            top_k: profile.completion.topK,
+            top_p: profile.completion.topP,
+            repeat_penalty: profile.completion.repeatPenalty,
           }),
         })
 

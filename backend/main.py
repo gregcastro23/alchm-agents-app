@@ -7,6 +7,8 @@ import uvicorn
 import math
 from datetime import datetime, timedelta
 import asyncio
+import time
+from collections import deque
 
 import models
 import schemas
@@ -17,6 +19,28 @@ import prompts
 import rag
 import providers
 import ingest
+
+class SlidingWindowRateLimiter:
+    def __init__(self, limit: int = 60, window: float = 60.0):
+        self.limit = limit
+        self.window = window
+        self.requests = deque()
+        self.lock = threading.Lock()
+
+    def is_allowed(self) -> bool:
+        now = time.time()
+        with self.lock:
+            while self.requests and self.requests[0] < now - self.window:
+                self.requests.popleft()
+            if len(self.requests) < self.limit:
+                self.requests.append(now)
+                return True
+            return False
+
+# Initialize rate limiter and kinetics state
+sync_rate_limiter = SlidingWindowRateLimiter(limit=60, window=60.0)
+KINETICS_STATE = {}
+KINETICS_STATE_LOCK = threading.Lock()
 
 # Initialize database
 models.Base.metadata.create_all(bind=database.engine)
@@ -604,5 +628,169 @@ async def post_moment_recommendations(request: Dict[str, Any], db: Session = Dep
 
 
 
+@app.get("/api/philosophers-stone/positions", response_model=schemas.PhilosophersStonePositionsResponse)
+async def get_philosophers_stone_positions(
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    day: Optional[int] = None,
+    hour: Optional[int] = None,
+    minute: Optional[int] = None,
+):
+    now = datetime.utcnow()
+    dt = datetime(
+        year or now.year,
+        month or now.month,
+        day or now.day,
+        hour or 0,
+        minute or 0
+    )
+    current_pos = _planetary_positions_for(dt)
+    prev_dt = dt - timedelta(days=1)
+    prev_pos = _planetary_positions_for(prev_dt)
+    
+    results = utils.alchemize_detailed(
+        planetary_positions=current_pos,
+        historical_positions=prev_pos,
+        dt=dt
+    )
+    return results
+
+@app.post("/api/philosophers-stone/positions", response_model=schemas.PhilosophersStonePositionsResponse)
+async def post_philosophers_stone_positions(request: schemas.PhilosophersStonePositionsRequest):
+    now = datetime.utcnow()
+    dt = datetime(
+        request.year or now.year,
+        request.month or now.month,
+        request.day or now.day,
+        request.hour or 0,
+        request.minute or 0
+    )
+    
+    if request.customPlanets:
+        current_pos = request.customPlanets
+    else:
+        current_pos = _planetary_positions_for(dt)
+        
+    prev_dt = dt - timedelta(days=1)
+    prev_pos = _planetary_positions_for(prev_dt)
+    
+    results = utils.alchemize_detailed(
+        planetary_positions=current_pos,
+        historical_positions=prev_pos,
+        dt=dt
+    )
+    return results
+
+@app.get("/api/agents/{agent_id}/kinetics")
+async def get_agent_kinetics(
+    agent_id: str,
+    planet: Optional[str] = None,
+    db: Session = Depends(database.get_db)
+):
+    db_agent = crud.get_agent(db, agent_id=agent_id)
+    if not db_agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+        
+    lat = 0.0
+    lon = 0.0
+    if db_agent.birthLocation and isinstance(db_agent.birthLocation, dict):
+        lat = db_agent.birthLocation.get("lat", 0.0)
+        lon = db_agent.birthLocation.get("lon", 0.0)
+        
+    now = datetime.utcnow()
+    current_pos = _planetary_positions_for(now)
+    
+    current_planet = planet or getattr(db_agent, 'symbol', 'Sun') or "Sun"
+    if current_planet not in PLANETARY_OFFSETS:
+        current_planet = "Sun"
+        
+    with KINETICS_STATE_LOCK:
+        state = KINETICS_STATE.get(agent_id)
+        if state:
+            prev_pos = state["positions"]
+            prev_time = state["timestamp"]
+            prev_metrics = state["metrics"]
+            time_interval = (now - prev_time).total_seconds()
+            if time_interval <= 0.0:
+                time_interval = 3600.0
+        else:
+            prev_time = now - timedelta(hours=1)
+            prev_pos = _planetary_positions_for(prev_time)
+            prev_metrics = None
+            time_interval = 3600.0
+            
+        metrics = utils.calculate_kinetics(
+            current_planetary_positions=current_pos,
+            previous_planetary_positions=prev_pos,
+            time_interval=time_interval,
+            current_planet=current_planet,
+            previous_metrics=prev_metrics
+        )
+        
+        KINETICS_STATE[agent_id] = {
+            "positions": current_pos,
+            "timestamp": now,
+            "metrics": metrics
+        }
+        
+    return metrics
+
+@app.post("/api/internal/agent-sync", response_model=schemas.AgentSyncResponse)
+async def agent_sync(
+    payload: schemas.AgentSyncPayload,
+    x_sync_secret: Optional[str] = Header(None, alias="X-Sync-Secret"),
+    x_internal_secret: Optional[str] = Header(None, alias="X-Internal-Secret"),
+    db: Session = Depends(database.get_db)
+):
+    secret = x_sync_secret or x_internal_secret
+    if secret != INTERNAL_API_SECRET:
+        raise HTTPException(status_code=403, detail="Forbidden: Invalid sync secret")
+        
+    if not sync_rate_limiter.is_allowed():
+        raise HTTPException(status_code=429, detail="Too Many Requests: Rate limit exceeded")
+        
+    db_agent = crud.get_agent(db, agent_id=payload.agentId)
+    if db_agent:
+        db_agent.name = payload.displayName
+        if payload.title is not None:
+            db_agent.title = payload.title
+        if payload.avatar is not None:
+            db_agent.avatar = payload.avatar
+        if payload.color is not None:
+            db_agent.color = payload.color
+        if payload.symbol is not None:
+            db_agent.symbol = payload.symbol
+        db_agent.lastActive = datetime.utcnow()
+        db.commit()
+        db.refresh(db_agent)
+        action = "updated"
+    else:
+        agent_create = schemas.AgentCreate(
+            agentId=payload.agentId,
+            name=payload.displayName,
+            title=payload.title or "Synced Agent",
+            birthDate=datetime(2000, 1, 1),
+            birthTime="12:00",
+            birthLocation=schemas.BirthLocation(lat=0.0, lon=0.0, name="Unknown"),
+            consciousnessLevel="Active",
+            monicaConstant=0.5,
+            dominantElement="Air",
+            dominantModality="Cardinal",
+            specialty="Alchemical Synchronization",
+            wisdomDomains=["Cosmology"],
+            avatar=payload.avatar,
+            color=payload.color,
+            symbol=payload.symbol
+        )
+        crud.create_agent(db=db, agent=agent_create)
+        action = "created"
+        
+    return {
+        "success": True,
+        "agentId": payload.agentId,
+        "action": action
+    }
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+

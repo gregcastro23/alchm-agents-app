@@ -5,11 +5,15 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
 import { useSession } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
 import { Sparkles, Zap, Box, Droplets } from 'lucide-react'
 import { TokenBalances } from '@/lib/services/economyService'
 
 export function TokenHUD() {
   const { data: session, status } = useSession()
+  const pathname = usePathname()
+  const disabledForDesktopSurface =
+    pathname?.startsWith('/desktop/ghost-feed') || pathname?.startsWith('/desktop/composer')
   const [balances, setBalances] = useState<
     (TokenBalances & { canClaimAgentsYield?: boolean }) | null
   >(null)
@@ -40,6 +44,11 @@ export function TokenHUD() {
   }
 
   useEffect(() => {
+    if (disabledForDesktopSurface) {
+      setLoading(false)
+      return
+    }
+
     fetchBalances()
     // Refresh periodically if authenticated
     let interval: NodeJS.Timeout | null = null
@@ -49,7 +58,9 @@ export function TokenHUD() {
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [status])
+  }, [status, disabledForDesktopSurface])
+
+  if (disabledForDesktopSurface) return null
 
   const handleClaimYield = async () => {
     setClaiming(true)

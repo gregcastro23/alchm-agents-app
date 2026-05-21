@@ -57,12 +57,14 @@ interface UsePlanetaryPositionsOptions {
   refreshInterval?: number // milliseconds, default 30000 (30 seconds)
   useApi?: boolean // Use API endpoint vs direct calculation, default true
   retryAttempts?: number // Number of retry attempts, default 3
+  enabled?: boolean // Disable all fetches for passive native widget surfaces
 }
 
 const DEFAULT_OPTIONS: Required<UsePlanetaryPositionsOptions> = {
   refreshInterval: 30000, // 30 seconds
   useApi: true, // Use API endpoint by default for consistency
   retryAttempts: 3,
+  enabled: true,
 }
 
 // Shared cache to ensure all components get the same data at the same time
@@ -95,6 +97,11 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
   })
 
   const fetchPlanetaryData = useCallback(async () => {
+    if (!opts.enabled) {
+      setData(prev => ({ ...prev, loading: false, error: null }))
+      return
+    }
+
     try {
       setData(prev => ({ ...prev, loading: true, error: null }))
 
@@ -166,7 +173,7 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
         error: error instanceof Error ? error.message : 'Unknown error',
       }))
     }
-  }, [])
+  }, [opts.enabled])
 
   // Manual refresh function
   const refresh = useCallback(() => {
@@ -175,8 +182,13 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
 
   // Initial fetch
   useEffect(() => {
+    if (!opts.enabled) {
+      setData(prev => ({ ...prev, loading: false, error: null }))
+      return
+    }
+
     fetchPlanetaryData()
-  }, [fetchPlanetaryData])
+  }, [fetchPlanetaryData, opts.enabled])
 
   return {
     ...data,

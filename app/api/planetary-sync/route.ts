@@ -8,10 +8,42 @@
  */
 
 import { planetaryPositionSyncService } from '@/lib/services/planetary-position-sync'
+import { adminErrorResponse, requireAdmin } from '@/lib/admin-auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
+}
+
+function getSyncSecret(): string | undefined {
+  return process.env.PLANETARY_SYNC_SECRET || process.env.INTERNAL_API_SECRET
+}
+
+function hasValidSyncSecret(request: NextRequest): boolean {
+  const expected = getSyncSecret()
+
+  if (!expected) {
+    return process.env.NODE_ENV !== 'production'
+  }
+
+  const authHeader = request.headers.get('authorization')
+  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined
+  const provided =
+    bearerToken ||
+    request.headers.get('x-sync-secret') ||
+    request.headers.get('x-webhook-secret') ||
+    request.headers.get('internal_api_secret')
+
+  return provided === expected
+}
+
+async function requireSyncAccess(request: NextRequest) {
+  if (hasValidSyncSecret(request)) return null
+
+  const admin = await requireAdmin()
+  if (admin.ok) return null
+
+  return adminErrorResponse(admin)
 }
 
 // GET /api/planetary-sync
@@ -41,6 +73,9 @@ export async function GET(request: NextRequest) {
 
       case 'clear-cache': {
         // Clear synchronization cache (admin operation)
+        const accessError = await requireSyncAccess(request)
+        if (accessError) return accessError
+
         planetaryPositionSyncService.clearCache()
         return NextResponse.json({ message: 'Cache cleared successfully' })
       }
@@ -76,6 +111,9 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'webhook-sync': {
         // Handle webhook updates from WhatToEatNext
+        const accessError = await requireSyncAccess(request)
+        if (accessError) return accessError
+
         if (!positions || !date) {
           return NextResponse.json(
             { error: 'Missing required fields: positions and date' },
@@ -95,6 +133,9 @@ export async function POST(request: NextRequest) {
 
       case 'emergency-sync': {
         // Emergency synchronization request
+        const accessError = await requireSyncAccess(request)
+        if (accessError) return accessError
+
         const dateParam = date ? new Date(date) : new Date()
 
         if (isNaN(dateParam.getTime())) {
@@ -110,6 +151,9 @@ export async function POST(request: NextRequest) {
 
       case 'validate-positions': {
         // Validate planetary position data
+        const accessError = await requireSyncAccess(request)
+        if (accessError) return accessError
+
         if (!positions) {
           return NextResponse.json({ error: 'Missing positions data' }, { status: 400 })
         }
@@ -174,10 +218,15 @@ export async function PUT(request: NextRequest) {
       case 'update-config': {
         // Update sync service configuration
         // This would allow runtime configuration updates in production
-        return NextResponse.json({
-          message: 'Configuration update not implemented yet',
-          received: body,
-        })
+        const accessError = await requireSyncAccess(request)
+        if (accessError) return accessError
+
+        return NextResponse.json(
+          {
+            error: 'Configuration update is not implemented',
+          },
+          { status: 501 }
+        )
       }
 
       default: {
