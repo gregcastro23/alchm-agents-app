@@ -1,12 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import type { Prisma } from '@prisma/client'
 import { authOptions } from '@/lib/auth-options'
 import { prisma } from '@/lib/db'
 
 interface NotificationRequest {
   type: 'welcome' | 'evolution_milestone' | 'power_hour' | 'weekly_summary'
-  userId?: string
-  metadata?: any
+  metadata?: Record<string, unknown>
+}
+
+interface NotificationPatchRequest {
+  notificationId?: string
+  read?: boolean
+  markAllRead?: boolean
+}
+
+function toInputJson(value: unknown): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue
 }
 
 /**
@@ -18,8 +28,18 @@ interface NotificationRequest {
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    const userId = (session?.user as any)?.id || 'anonymous'
+    const userId = (session?.user as { id?: string } | undefined)?.id
     const { type, metadata }: NotificationRequest = await req.json()
+
+    if (!userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Authentication required',
+        },
+        { status: 401 }
+      )
+    }
 
     if (!type) {
       return NextResponse.json(
@@ -48,41 +68,35 @@ export async function POST(req: NextRequest) {
 
     // Generate notification content based on type
     const notification = await generateNotificationContent(type, user, metadata)
+    const notificationData: Prisma.InputJsonObject = metadata
+      ? { channel: 'email', metadata: toInputJson(metadata) }
+      : { channel: 'email' }
 
-    // Store notification in database (for now)
-    await prisma.monica_interactions.create({
+    const storedNotification = await prisma.notifications.create({
       data: {
         userId,
-        settingsId: 'default', // TODO: Get user's actual settings ID
-        interactionType: 'notification',
-        pageUrl: '/notifications',
-        sessionId: `notification-${Date.now()}`,
-        contextData: JSON.stringify({
-          notificationType: type,
-          subject: notification.subject,
-          content: notification.content,
-          metadata,
-        }),
-        userAction: 'system_notification',
-        monicaResponse: notification.content,
-        resultedInAction: false,
+        type,
+        title: notification.subject,
+        message: notification.content,
+        data: notificationData,
       },
     })
 
-    // In production, this is where you'd send the actual email
-    // await sendEmail(user.email, notification.subject, notification.content)
+    await sendEmail(user.email, notification.subject, notification.content)
 
     console.log(`📧 Notification [${type}] for ${user.email}:`, notification.subject)
 
     return NextResponse.json({
       success: true,
       notification: {
+        id: storedNotification.id,
         type,
         subject: notification.subject,
         preview: `${notification.content.substring(0, 100)}...`,
-        sentAt: new Date().toISOString(),
+        read: storedNotification.read,
+        sentAt: storedNotification.createdAt.toISOString(),
       },
-      message: 'Notification logged (email service pending)',
+      message: 'Notification created',
     })
   } catch (error) {
     console.error('Notification error:', error)
@@ -99,42 +113,44 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    const userId = (session?.user as any)?.id || 'anonymous'
+    const userId = (session?.user as { id?: string } | undefined)?.id
     const { searchParams } = new URL(req.url)
     const type = searchParams.get('type')
 
-    // Get user's recent notifications
-    const notifications = await prisma.monica_interactions.findMany({
+    if (!userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Authentication required',
+        },
+        { status: 401 }
+      )
+    }
+
+    const notifications = await prisma.notifications.findMany({
       where: {
         userId,
-        interactionType: 'notification',
-        ...(type && {
-          contextData: {
-            path: ['notificationType'],
-            equals: type,
-          } as any,
-        }),
+        ...(type ? { type } : {}),
       },
       orderBy: { createdAt: 'desc' },
       take: 20,
     })
 
-    const formattedNotifications = notifications.map((notif: any) => {
-      const context = JSON.parse(notif.contextData as string)
-      return {
-        id: notif.id,
-        type: context.notificationType,
-        subject: context.subject,
-        preview: `${context.content.substring(0, 100)}...`,
-        sentAt: notif.createdAt,
-        read: false, // TODO: Add read status tracking
-      }
-    })
+    const formattedNotifications = notifications.map(notification => ({
+      id: notification.id,
+      type: notification.type,
+      subject: notification.title,
+      preview: `${notification.message.substring(0, 100)}...`,
+      sentAt: notification.createdAt,
+      read: notification.read,
+      data: notification.data,
+    }))
 
     return NextResponse.json({
       success: true,
       notifications: formattedNotifications,
       totalCount: notifications.length,
+      unreadCount: notifications.filter(notification => !notification.read).length,
     })
   } catch (error) {
     console.error('Get notifications error:', error)
@@ -148,7 +164,81 @@ export async function GET(req: NextRequest) {
   }
 }
 
-async function generateNotificationContent(type: string, user: any, metadata: any) {
+export async function PATCH(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    const userId = (session?.user as { id?: string } | undefined)?.id
+    const {
+      notificationId,
+      read = true,
+      markAllRead = false,
+    }: NotificationPatchRequest = await req.json()
+
+    if (!userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Authentication required',
+        },
+        { status: 401 }
+      )
+    }
+
+    if (markAllRead) {
+      const result = await prisma.notifications.updateMany({
+        where: { userId, read: false },
+        data: { read: true },
+      })
+
+      return NextResponse.json({
+        success: true,
+        updatedCount: result.count,
+      })
+    }
+
+    if (!notificationId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'notificationId is required unless markAllRead is true',
+        },
+        { status: 400 }
+      )
+    }
+
+    const notification = await prisma.notifications.update({
+      where: {
+        id: notificationId,
+        userId,
+      },
+      data: { read },
+    })
+
+    return NextResponse.json({
+      success: true,
+      notification: {
+        id: notification.id,
+        read: notification.read,
+        updatedAt: notification.updatedAt,
+      },
+    })
+  } catch (error) {
+    console.error('Update notification error:', error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to update notification',
+      },
+      { status: 500 }
+    )
+  }
+}
+
+async function generateNotificationContent(
+  type: string,
+  user: { name: string | null; email: string },
+  metadata: Record<string, unknown> = {}
+) {
   const userName = user.name || user.email.split('@')[0]
 
   switch (type) {

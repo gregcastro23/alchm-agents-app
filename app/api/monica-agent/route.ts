@@ -80,45 +80,50 @@ export async function POST(req: NextRequest) {
 
     // Conserve deleted functionality: Asynchronously log the interaction and update user progress
     if (userId && response.text) {
-      Promise.all([
-        prisma.monica_user_settings.upsert({
+      const persistInteraction = async () => {
+        const settings = await prisma.monica_user_settings.upsert({
           where: { userId },
           update: {},
           create: { userId },
-        }),
-        prisma.monica_user_progress.upsert({
-          where: { userId },
-          update: {
-            totalXP: { increment: 50 },
-            totalInteractions: { increment: 1 },
-            lastAction: 'monica_chat',
-            lastActiveDate: new Date(),
-          },
-          create: {
-            userId,
-            totalXP: 50,
-            totalInteractions: 1,
-            lastAction: 'monica_chat',
-            lastActiveDate: new Date(),
-            settingsId: 'default',
-          },
-        }),
-        prisma.monica_interactions.create({
-          data: {
-            userId,
-            settingsId: 'default',
-            pageUrl: '/monica',
-            interactionType: 'chat_response',
-            sessionId: sessionId || response.sessionId || `session-${Date.now()}`,
-            contextData: {
-              processingTimeMs: 0,
-            } as any,
-            userAction: 'user_message',
-            monicaResponse: response.text.substring(0, 500),
-            resultedInAction: false,
-          },
-        }),
-      ]).catch(err => console.warn('Failed to persist Monica interaction:', err))
+        })
+
+        await Promise.all([
+          prisma.monica_user_progress.upsert({
+            where: { userId },
+            update: {
+              totalXP: { increment: 50 },
+              totalInteractions: { increment: 1 },
+              lastAction: 'monica_chat',
+              lastActiveDate: new Date(),
+            },
+            create: {
+              userId,
+              totalXP: 50,
+              totalInteractions: 1,
+              lastAction: 'monica_chat',
+              lastActiveDate: new Date(),
+              settingsId: settings.id,
+            },
+          }),
+          prisma.monica_interactions.create({
+            data: {
+              userId,
+              settingsId: settings.id,
+              pageUrl: '/monica',
+              interactionType: 'chat_response',
+              sessionId: sessionId || response.sessionId || `session-${Date.now()}`,
+              contextData: {
+                processingTimeMs: 0,
+              } as any,
+              userAction: 'user_message',
+              monicaResponse: response.text.substring(0, 500),
+              resultedInAction: false,
+            },
+          }),
+        ])
+      }
+
+      persistInteraction().catch(err => console.warn('Failed to persist Monica interaction:', err))
     }
 
     return NextResponse.json(response)

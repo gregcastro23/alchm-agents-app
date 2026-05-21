@@ -420,11 +420,17 @@ export async function POST(req: NextRequest) {
       // GDPR Right to be Forgotten
       // In production, this would trigger a review process
 
+      const settings = await prisma.monica_user_settings.upsert({
+        where: { userId },
+        update: {},
+        create: { userId },
+      })
+
       // Log the deletion request
       await prisma.monica_interactions.create({
         data: {
           userId,
-          settingsId: 'default', // TODO: Get user's actual settings ID
+          settingsId: settings.id,
           interactionType: 'data_deletion_request',
           pageUrl: '/api/user-data-export',
           sessionId: `deletion-request-${Date.now()}`,

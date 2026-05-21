@@ -5,10 +5,11 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { withErrorHandling } from '@/lib/error-handling'
+import { prisma } from '@/lib/db'
 import { logger } from '@/lib/structured-logger'
 
 interface FeedbackData {
-  rating: number
+  rating?: number
   category: string
   message: string
   userId?: string
@@ -64,13 +65,24 @@ export async function POST(request: NextRequest) {
         userAgent: feedback.userAgent || request.headers.get('user-agent') || 'unknown',
       }
 
-      // In a real implementation, you would save to database
-      // For now, we'll just log it and return success
+      const savedFeedback = await prisma.feedback.create({
+        data: {
+          userId: feedback.userId || null,
+          category: feedback.category,
+          rating: feedback.rating ?? null,
+          message: feedback.message.trim(),
+          url: feedback.url || null,
+          userAgent: feedbackEntry.userAgent,
+          ip: feedbackEntry.ip,
+        },
+      })
 
       logger.info('User feedback received', {
         system: 'feedback',
         operation: 'collect',
+        userId: feedback.userId,
         metadata: {
+          feedbackId: savedFeedback.id,
           category: feedback.category,
           rating: feedback.rating,
           messageLength: feedback.message.length,
@@ -79,13 +91,10 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      // TODO: Save to database
-      console.log('Feedback received:', feedbackEntry)
-
       return NextResponse.json({
         success: true,
         message: 'Thank you for your feedback!',
-        feedbackId: `feedback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        feedbackId: savedFeedback.id,
       })
     },
     {
@@ -112,46 +121,60 @@ export async function POST(request: NextRequest) {
 export async function GET(_request: NextRequest) {
   const result = await withErrorHandling(
     async () => {
-      // In a real implementation, check for admin authentication
-      // For now, return mock statistics
+      const [totalFeedback, ratingStats, categoryCounts, recentFeedback] = await Promise.all([
+        prisma.feedback.count(),
+        prisma.feedback.aggregate({ _avg: { rating: true } }),
+        prisma.feedback.groupBy({
+          by: ['category'],
+          _count: { category: true },
+        }),
+        prisma.feedback.findMany({
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          select: {
+            id: true,
+            category: true,
+            rating: true,
+            message: true,
+            url: true,
+            status: true,
+            createdAt: true,
+          },
+        }),
+      ])
 
-      const mockStats = {
-        totalFeedback: 42,
-        averageRating: 4.2,
-        categories: {
-          bug: 8,
-          feature: 15,
-          ui: 12,
-          performance: 5,
-          general: 2,
-        },
-        recentFeedback: [
-          {
-            id: 'feedback_001',
-            category: 'feature',
-            rating: 5,
-            message: 'Love the new planetary positions feature!',
-            timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-          },
-          {
-            id: 'feedback_002',
-            category: 'bug',
-            rating: 2,
-            message: 'Having trouble with the chart loading on mobile',
-            timestamp: new Date(Date.now() - 43200000).toISOString(), // 12 hours ago
-          },
-        ],
+      const categories = Object.fromEntries(
+        ['bug', 'feature', 'ui', 'performance', 'general'].map(category => [category, 0])
+      )
+
+      for (const category of categoryCounts) {
+        categories[category.category] = category._count.category
+      }
+
+      const stats = {
+        totalFeedback,
+        averageRating: ratingStats._avg.rating ?? 0,
+        categories,
+        recentFeedback: recentFeedback.map(feedback => ({
+          id: feedback.id,
+          category: feedback.category,
+          rating: feedback.rating,
+          message: feedback.message,
+          url: feedback.url,
+          status: feedback.status,
+          timestamp: feedback.createdAt.toISOString(),
+        })),
       }
 
       logger.info('Feedback statistics requested', {
         system: 'feedback',
         operation: 'stats',
-        metadata: { totalFeedback: mockStats.totalFeedback },
+        metadata: { totalFeedback },
       })
 
       return NextResponse.json({
         success: true,
-        data: mockStats,
+        data: stats,
       })
     },
     {

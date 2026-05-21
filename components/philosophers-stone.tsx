@@ -21,6 +21,17 @@ interface Constitution {
   substance: number
 }
 
+interface ModelCatalogEntry {
+  id: string
+  tier: 'base' | 'premium'
+  label: string
+  filename: string
+  sha256: string
+  size: number
+  url: string
+  source: string
+}
+
 export default function PhilosophersStone({
   onInitializationComplete,
 }: {
@@ -76,6 +87,7 @@ export default function PhilosophersStone({
 
   const activeElementData = ELEMENT_MAPPING[dominantElement]
   const selectedModel = activeElementData.models[engineTier]
+  const engineSizeLabel = engineTier === 'base' ? '~2.4GB' : '~4.9GB'
 
   useEffect(() => {
     const fetchNonce = async () => {
@@ -175,6 +187,22 @@ export default function PhilosophersStone({
     })
   }
 
+  const getSelectedModelEntry = async () => {
+    const catalogRes = await fetch('/api/models/catalog')
+    if (!catalogRes.ok) {
+      throw new Error('Unable to load desktop model catalog')
+    }
+
+    const modelCatalog = (await catalogRes.json()) as ModelCatalogEntry[]
+    const selectedModelEntry = modelCatalog.find(model => model.tier === engineTier)
+
+    if (!selectedModelEntry) {
+      throw new Error(`No ${engineTier} model is available in the catalog`)
+    }
+
+    return selectedModelEntry
+  }
+
   const handleInitialize = async () => {
     if (!ipcNonce) {
       setDownloadStatus('IPC Nonce missing. Cannot verify secure connection.')
@@ -185,8 +213,6 @@ export default function PhilosophersStone({
     setDownloadStatus(
       `Initializing secure alchemical download for ${engineTier.toUpperCase()} engine...`
     )
-
-    const downloadUrl = `https://cdn.alchm.kitchen/models/${selectedModel}` // Mock CDN URL
 
     try {
       // 1. Save the Blueprint to the live site via our Next.js API route
@@ -217,9 +243,8 @@ export default function PhilosophersStone({
       }
 
       // 2. Install the local engine (Weights)
-      setDownloadStatus(
-        `Initializing secure alchemical download for ${engineTier.toUpperCase()} engine...`
-      )
+      const selectedModelEntry = await getSelectedModelEntry()
+      setDownloadStatus(`Streaming ${selectedModelEntry.label} from Hugging Face...`)
 
       const response = await fetch('http://localhost:8080/api/models/install', {
         method: 'POST',
@@ -230,7 +255,11 @@ export default function PhilosophersStone({
         },
         body: JSON.stringify({
           modelName: selectedModel,
-          downloadUrl: downloadUrl,
+          downloadUrl: selectedModelEntry.url,
+          sha256: selectedModelEntry.sha256,
+          size: selectedModelEntry.size,
+          sourceModel: selectedModelEntry.id,
+          sourceFilename: selectedModelEntry.filename,
           tier: engineTier,
         }),
       })
@@ -532,7 +561,7 @@ export default function PhilosophersStone({
             <p className="text-sm text-zinc-400 text-center max-w-md">
               {modelExists
                 ? `The local ${engineTier.toUpperCase()} engine is synchronized on disk and ready for ignition.`
-                : `Confirm download of the ${engineTier.toUpperCase()} engine (${engineTier === 'base' ? '~900MB' : '~4.5GB'}). The specific ${selectedModel} binary will be securely fetched and sandboxed.`}
+                : `Confirm download of the ${engineTier.toUpperCase()} engine (${engineSizeLabel}). The specific ${selectedModel} binary will be securely fetched and sandboxed.`}
             </p>
 
             <button

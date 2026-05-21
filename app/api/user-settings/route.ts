@@ -102,13 +102,25 @@ export async function GET(req: NextRequest) {
       const newSettings = await prisma.monica_user_settings.create({
         data: {
           userId,
-          ...defaultSettings.interface,
-          ...defaultSettings.agents,
-          ...defaultSettings.consciousness,
-          // Store additional settings as JSON
+          personality: defaultSettings.agents.preferredInteractionStyle,
+          assistanceLevel: 2,
+          proactiveTips: defaultSettings.agents.autoRecommendations,
+          explanationDepth: defaultSettings.consciousness.displayDetailedMetrics
+            ? 'detailed'
+            : 'concise',
+          position: 'bottom-right',
+          autoHide: 'never',
+          preferredTime: 'evening',
+          learningStyle: 'hands-on',
+          contextualAwareness: true,
+          adaptivePersonality: true,
+          memoryRetention: defaultSettings.agents.saveConversationHistory,
           interests: JSON.stringify({
             notifications: defaultSettings.notifications,
             privacy: defaultSettings.privacy,
+            interface: defaultSettings.interface,
+            evolutionGoals: defaultSettings.consciousness.evolutionGoals,
+            preferredGrowthAreas: defaultSettings.consciousness.preferredGrowthAreas,
           }),
         },
       })
@@ -131,11 +143,8 @@ export async function GET(req: NextRequest) {
     const userSettings: UserSettings = {
       notifications: storedExtras.notifications || defaultSettings.notifications,
       interface: {
-        theme: defaultSettings.interface.theme, // TODO: Add to schema
-        language: defaultSettings.interface.language,
-        timezone: defaultSettings.interface.timezone,
-        dateFormat: defaultSettings.interface.dateFormat,
-        elementalDisplay: defaultSettings.interface.elementalDisplay,
+        ...defaultSettings.interface,
+        ...(storedExtras.interface || {}),
       },
       privacy: storedExtras.privacy || defaultSettings.privacy,
       agents: {
@@ -262,19 +271,20 @@ export async function PUT(req: NextRequest) {
     // Send notification preferences update
     if (settings.notifications) {
       try {
-        await fetch('/api/notifications', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        await prisma.notifications.create({
+          data: {
+            userId,
             type: 'settings_updated',
-            metadata: {
+            title: 'Notification settings updated',
+            message: 'Your Planetary Agents notification preferences were updated.',
+            data: {
               notificationPrefs: settings.notifications,
               updatedAt: new Date().toISOString(),
-            },
-          }),
+            } as any,
+          },
         })
       } catch (notifError) {
-        console.warn('Failed to send settings update notification:', notifError)
+        console.warn('Failed to log settings update notification:', notifError)
       }
     }
 
@@ -317,18 +327,22 @@ export async function DELETE(req: NextRequest) {
     await prisma.monica_user_settings.upsert({
       where: { userId },
       update: {
-        ...defaultSettings.interface,
-        ...defaultSettings.agents,
+        personality: defaultSettings.agents.preferredInteractionStyle,
+        proactiveTips: defaultSettings.agents.autoRecommendations,
+        memoryRetention: defaultSettings.agents.saveConversationHistory,
+        explanationDepth: defaultSettings.consciousness.displayDetailedMetrics
+          ? 'detailed'
+          : 'concise',
         interests: JSON.stringify({
           notifications: defaultSettings.notifications,
           privacy: defaultSettings.privacy,
+          interface: defaultSettings.interface,
+          evolutionGoals: defaultSettings.consciousness.evolutionGoals,
+          preferredGrowthAreas: defaultSettings.consciousness.preferredGrowthAreas,
         }),
       },
       create: {
         userId,
-        ...defaultSettings.interface,
-        ...defaultSettings.agents,
-        ...defaultSettings.consciousness,
         personality: defaultSettings.agents.preferredInteractionStyle,
         assistanceLevel: 2,
         proactiveTips: defaultSettings.agents.autoRecommendations,
@@ -343,6 +357,9 @@ export async function DELETE(req: NextRequest) {
         interests: JSON.stringify({
           notifications: defaultSettings.notifications,
           privacy: defaultSettings.privacy,
+          interface: defaultSettings.interface,
+          evolutionGoals: defaultSettings.consciousness.evolutionGoals,
+          preferredGrowthAreas: defaultSettings.consciousness.preferredGrowthAreas,
         }),
       },
     })

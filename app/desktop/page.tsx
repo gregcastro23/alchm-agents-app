@@ -59,6 +59,17 @@ interface HistoricalAgentMock {
   }
 }
 
+interface ModelCatalogEntry {
+  id: string
+  tier: 'base' | 'premium'
+  label: string
+  filename: string
+  sha256: string
+  size: number
+  url: string
+  source: string
+}
+
 type InferenceProfileName =
   | 'balanced'
   | 'fire-meltdown'
@@ -538,11 +549,21 @@ export default function App() {
         ])
       }
 
+      const catalogRes = await fetch('/api/models/catalog')
+      if (!catalogRes.ok) {
+        throw new Error('Unable to load desktop model catalog')
+      }
+
+      const modelCatalog = (await catalogRes.json()) as ModelCatalogEntry[]
+      const selectedModel = modelCatalog.find(model => model.tier === modalAgent.tier)
+
+      if (!selectedModel) {
+        throw new Error(`No ${modalAgent.tier} model is available in the catalog`)
+      }
+
       // 2. Weights Download
       setInstallProgress(45)
-      setInstallStatus(
-        `Streaming engine ${modalAgent.tier === 'premium' ? '8B' : '1.5B'} GGUF from cdn.alchm.kitchen...`
-      )
+      setInstallStatus(`Streaming ${selectedModel.label} from Hugging Face...`)
 
       const modelFileName = `alchm-agent-${modalAgent.element.toLowerCase()}-${modalAgent.tier === 'premium' ? '8b' : '1.5b'}.gguf`
 
@@ -555,7 +576,11 @@ export default function App() {
         },
         body: JSON.stringify({
           modelName: modelFileName,
-          downloadUrl: 'https://huggingface.co/mock/model.gguf', // Mocking actual download for now
+          downloadUrl: selectedModel.url,
+          sha256: selectedModel.sha256,
+          size: selectedModel.size,
+          sourceModel: selectedModel.id,
+          sourceFilename: selectedModel.filename,
           tier: modalAgent.tier,
         }),
       })
