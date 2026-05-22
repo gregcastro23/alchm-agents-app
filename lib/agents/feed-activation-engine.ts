@@ -50,6 +50,9 @@ export interface FeedActionPayload {
     // Internal routing/confidence
     internalConfidence?: number
     internalTrigger?: string
+    actionType?: string
+    activityDetails?: Record<string, unknown>
+    timestamp?: string
     idempotencyKey?: string
     groupChatId?: string
     threadKey?: string

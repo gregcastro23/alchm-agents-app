@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 import os
 from typing import Optional
@@ -78,6 +78,145 @@ engine = create_engine(
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+def ensure_postgres_runtime_schema() -> None:
+    """Repair legacy runtime tables that predate SQLAlchemy defaults.
+
+    `Base.metadata.create_all` is intentionally non-destructive, so it will not
+    add missing sequence defaults to existing integer primary keys. It also will
+    not normalize old BCE timestamps that psycopg2 cannot deserialize into
+    Python `datetime` objects. Keep this small and idempotent so startup can
+    safely run it after `create_all`.
+    """
+    if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+        try:
+            with engine.begin() as conn:
+                columns = {
+                    row[1]
+                    for row in conn.execute(text("PRAGMA table_info(historical_agents)"))
+                }
+                if "kalchmConstant" not in columns:
+                    conn.execute(
+                        text(
+                            'ALTER TABLE historical_agents ADD COLUMN "kalchmConstant" FLOAT DEFAULT 0.5'
+                        )
+                    )
+                if "createdAt" not in columns:
+                    conn.execute(
+                        text(
+                            'ALTER TABLE historical_agents ADD COLUMN "createdAt" DATETIME'
+                        )
+                    )
+                if "updatedAt" not in columns:
+                    conn.execute(
+                        text(
+                            'ALTER TABLE historical_agents ADD COLUMN "updatedAt" DATETIME'
+                        )
+                    )
+                conn.execute(
+                    text(
+                        """
+                        UPDATE historical_agents
+                        SET "kalchmConstant" = COALESCE("kalchmConstant", "monicaConstant", 0.5),
+                            "createdAt" = COALESCE("createdAt", CURRENT_TIMESTAMP),
+                            "updatedAt" = COALESCE("updatedAt", CURRENT_TIMESTAMP)
+                        """
+                    )
+                )
+        except Exception as exc:
+            print(f"[schema] Runtime SQLite schema repair skipped: {exc}", flush=True)
+        return
+
+    if not SQLALCHEMY_DATABASE_URL.startswith("postgresql://"):
+        return
+
+    try:
+        with engine.begin() as conn:
+            conn.execute(
+                text(
+                    'ALTER TABLE historical_agents ADD COLUMN IF NOT EXISTS "kalchmConstant" DOUBLE PRECISION DEFAULT 0.5'
+                )
+            )
+            conn.execute(
+                text(
+                    'ALTER TABLE historical_agents ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP'
+                )
+            )
+            conn.execute(
+                text(
+                    'ALTER TABLE historical_agents ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP'
+                )
+            )
+            conn.execute(
+                text(
+                    """
+                    UPDATE historical_agents
+                    SET "kalchmConstant" = COALESCE("kalchmConstant", "monicaConstant", 0.5),
+                        "createdAt" = COALESCE("createdAt", NOW()),
+                        "updatedAt" = COALESCE("updatedAt", NOW())
+                    """
+                )
+            )
+
+            for table_name in ("historical_agents", "agent_conversations"):
+                id_type = conn.execute(
+                    text(
+                        """
+                        SELECT data_type
+                        FROM information_schema.columns
+                        WHERE table_name = :table_name
+                          AND column_name = 'id'
+                        """
+                    ),
+                    {"table_name": table_name},
+                ).scalar()
+
+                if id_type not in ("integer", "bigint", "smallint"):
+                    continue
+
+                sequence_name = f"{table_name}_id_seq"
+                conn.execute(text(f"CREATE SEQUENCE IF NOT EXISTS {sequence_name}"))
+                conn.execute(
+                    text(
+                        f"""
+                        SELECT setval(
+                            '{sequence_name}'::regclass,
+                            GREATEST(
+                                COALESCE((SELECT MAX(id) FROM {table_name}), 0) + 1,
+                                1
+                            ),
+                            false
+                        )
+                        """
+                    )
+                )
+                conn.execute(
+                    text(
+                        f"""
+                        ALTER TABLE {table_name}
+                        ALTER COLUMN id
+                        SET DEFAULT nextval('{sequence_name}'::regclass)
+                        """
+                    )
+                )
+                conn.execute(
+                    text(
+                        f"ALTER SEQUENCE {sequence_name} OWNED BY {table_name}.id"
+                    )
+                )
+
+            conn.execute(
+                text(
+                    """
+                    UPDATE historical_agents
+                    SET "birthDate" = TIMESTAMP '0001-01-01 00:00:00'
+                    WHERE "birthDate" < TIMESTAMP '0001-01-01 00:00:00'
+                    """
+                )
+            )
+    except Exception as exc:
+        print(f"[schema] Runtime schema repair skipped: {exc}", flush=True)
 
 
 def get_db():

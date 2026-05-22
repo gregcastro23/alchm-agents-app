@@ -27,10 +27,11 @@ class HistoricalAgent(Base):
     
     # Consciousness profile
     consciousnessLevel = Column(String)
+    kalchmConstant = Column(Float, default=0.5)
     monicaConstant = Column(Float)
     dominantElement = Column(String)
     dominantModality = Column(String)
-    signature = Column(String)
+    signature = Column(String, default="")
     
     # Monica Constant components
     spiritScore = Column(Float)
@@ -39,30 +40,30 @@ class HistoricalAgent(Base):
     substanceScore = Column(Float)
     
     # Personality data
-    personalityCore = Column(JSON)
-    personalityShadows = Column(JSON)
-    personalityGifts = Column(JSON)
-    personalityChallenges = Column(JSON)
-    currentMood = Column(String)
+    personalityCore = Column(JSON, default=dict)
+    personalityShadows = Column(JSON, default=list)
+    personalityGifts = Column(JSON, default=list)
+    personalityChallenges = Column(JSON, default=list)
+    currentMood = Column(String, default="Curious")
     evolutionStage = Column(Integer, default=0)
-    traits = Column(JSON)
+    traits = Column(JSON, default=list)
     
-    background = Column(JSON)
+    background = Column(JSON, default=dict)
     specialty = Column(String)
     wisdomDomains = Column(JSON)
-    skills = Column(JSON)
-    teachingStyle = Column(String)
-    resonanceType = Column(String)
-    uniquePower = Column(String)
+    skills = Column(JSON, default=list)
+    teachingStyle = Column(String, default="Reflective dialogue")
+    resonanceType = Column(String, default="general")
+    uniquePower = Column(String, default="Contextual wisdom")
     
     # Appearance
     avatar = Column(String)
-    color = Column(String)
-    symbol = Column(String)
+    color = Column(String, default="#64748b")
+    symbol = Column(String, default="Sun")
     aura = Column(JSON)
     
     # Birth chart
-    natalChart = Column(JSON)
+    natalChart = Column(JSON, default=dict)
     
     # Monica's creation story
     monicaCreationStory = Column(String)
@@ -82,6 +83,12 @@ class HistoricalAgent(Base):
     # Metadata
     version = Column(String, default="2.0.0")
     craftedBy = Column(String, default="philosopher-stone")
+    createdAt = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updatedAt = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
     
     # Relationships
     recentConversations = relationship("AgentConversation", back_populates="agent")

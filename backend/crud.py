@@ -11,11 +11,59 @@ def get_agents(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.HistoricalAgent).offset(skip).limit(limit).all()
 
 def create_agent(db: Session, agent: schemas.AgentCreate):
+    agent_data = agent.dict()
+    birth_date = agent.birthDate or datetime(2000, 1, 1)
+    agent_data["birthDate"] = birth_date
+    if agent_data.get("birthYear") is None:
+        agent_data["birthYear"] = birth_date.year
+    if agent_data.get("title") is None:
+        agent_data["title"] = "Historical Agent"
+    if agent_data.get("birthTime") is None:
+        agent_data["birthTime"] = "12:00"
+    if agent_data.get("birthLocation") is None:
+        agent_data["birthLocation"] = {"lat": 0.0, "lon": 0.0, "name": "Unknown"}
+    if agent_data.get("consciousnessLevel") is None:
+        agent_data["consciousnessLevel"] = "Active"
+    if agent_data.get("monicaConstant") is None:
+        agent_data["monicaConstant"] = 0.5
+    agent_data["kalchmConstant"] = agent_data["monicaConstant"]
+    if agent_data.get("dominantElement") is None:
+        agent_data["dominantElement"] = "Air"
+    if agent_data.get("dominantModality") is None:
+        agent_data["dominantModality"] = "Cardinal"
+    if agent_data.get("specialty") is None:
+        agent_data["specialty"] = "General wisdom"
+    if not agent_data.get("wisdomDomains"):
+        agent_data["wisdomDomains"] = ["General Wisdom"]
+    if agent_data.get("avatar") is None:
+        agent_data["avatar"] = ""
+    if agent_data.get("color") is None:
+        agent_data["color"] = "#64748b"
+    if agent_data.get("symbol") is None:
+        agent_data["symbol"] = "Sun"
+
+    agent_data.update({
+        "signature": agent_data.get("signature")
+        or f"{agent.agentId}-synced-agent",
+        "personalityCore": agent_data.get("personalityCore") or {},
+        "personalityShadows": agent_data.get("personalityShadows") or [],
+        "personalityGifts": agent_data.get("personalityGifts") or [],
+        "personalityChallenges": agent_data.get("personalityChallenges") or [],
+        "currentMood": agent_data.get("currentMood") or "Curious",
+        "background": agent_data.get("background") or {},
+        "skills": agent_data.get("skills") or [],
+        "teachingStyle": agent_data.get("teachingStyle") or "Reflective dialogue",
+        "resonanceType": agent_data.get("resonanceType") or "general",
+        "uniquePower": agent_data.get("uniquePower") or "Contextual wisdom",
+        "natalChart": agent_data.get("natalChart") or {},
+        "traits": agent_data.get("traits") or [],
+    })
+
     # Determine era and other metadata
-    era_info = utils.determine_historical_era(agent.birthDate.year if agent.birthDate else 2000, agent.agentId)
+    era_info = utils.determine_historical_era(agent_data["birthYear"], agent.agentId)
     
     db_agent = models.HistoricalAgent(
-        **agent.dict(),
+        **agent_data,
         historicalEra=era_info['era'],
         culture=era_info['culture'],
         geography=era_info['geography'],

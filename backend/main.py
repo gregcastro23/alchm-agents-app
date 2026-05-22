@@ -19,6 +19,7 @@ import prompts
 import rag
 import providers
 import ingest
+from feed_emitter import emit_feed_event
 
 class SlidingWindowRateLimiter:
     def __init__(self, limit: int = 60, window: float = 60.0):
@@ -44,6 +45,7 @@ KINETICS_STATE_LOCK = threading.Lock()
 
 # Initialize database
 models.Base.metadata.create_all(bind=database.engine)
+database.ensure_postgres_runtime_schema()
 
 app = FastAPI(title="Planetary Agents Core")
 
@@ -477,6 +479,21 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
         print(f"Warning: Failed to record conversation for {request.agentId}: {e}")
         db.rollback()
 
+    # 8. Emit feed event so alchm.kitchen's Live Network Feed surfaces this
+    #    chat in near-real time. Fire-and-forget; never blocks the response.
+    emit_feed_event(
+        request.agentId,
+        "agent_chat",
+        {
+            "sessionId": session_id,
+            "messagePreview": request.message[:140],
+            "responsePreview": text[:140] if text else "",
+            "provider": used_provider,
+            "model": used_model,
+            "tier": tier,
+        },
+    )
+
     return {
         "text": text,
         "agentId": request.agentId,
@@ -691,12 +708,6 @@ async def get_agent_kinetics(
     if not db_agent:
         raise HTTPException(status_code=404, detail="Agent not found")
         
-    lat = 0.0
-    lon = 0.0
-    if db_agent.birthLocation and isinstance(db_agent.birthLocation, dict):
-        lat = db_agent.birthLocation.get("lat", 0.0)
-        lon = db_agent.birthLocation.get("lon", 0.0)
-        
     now = datetime.utcnow()
     current_pos = _planetary_positions_for(now)
     
@@ -784,7 +795,21 @@ async def agent_sync(
         )
         crud.create_agent(db=db, agent=agent_create)
         action = "created"
-        
+
+    # Surface registration in alchm.kitchen's Live Network Feed. Only emit
+    # when the row was newly created so we don't spam the feed with every
+    # update.
+    if action == "created":
+        emit_feed_event(
+            payload.agentId,
+            "agent_registered",
+            {
+                "displayName": payload.displayName,
+                "title": payload.title,
+                "symbol": payload.symbol,
+            },
+        )
+
     return {
         "success": True,
         "agentId": payload.agentId,
@@ -793,4 +818,3 @@ async def agent_sync(
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-

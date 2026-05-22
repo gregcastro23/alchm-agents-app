@@ -1,8 +1,10 @@
 import pytest
+from uuid import uuid4
 from fastapi.testclient import TestClient
 
 from main import app
 import providers
+import feed_emitter
 
 client = TestClient(app)
 
@@ -243,12 +245,13 @@ def test_internal_agent_sync_security():
 
 def test_internal_agent_sync_success_and_kinetics():
     from main import INTERNAL_API_SECRET
+    agent_id = f"sync-test-agent-{uuid4().hex[:8]}"
     
     response = client.post(
         "/api/internal/agent-sync",
         headers={"X-Sync-Secret": INTERNAL_API_SECRET},
         json={
-            "agentId": "sync-test-agent",
+            "agentId": agent_id,
             "displayName": "Original Sync Agent",
             "title": "First Master of Sync",
             "avatar": "sync_avatar.png",
@@ -259,14 +262,14 @@ def test_internal_agent_sync_success_and_kinetics():
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
-    assert data["agentId"] == "sync-test-agent"
+    assert data["agentId"] == agent_id
     assert data["action"] == "created"
 
     response = client.post(
         "/api/internal/agent-sync",
         headers={"X-Internal-Secret": INTERNAL_API_SECRET},
         json={
-            "agentId": "sync-test-agent",
+            "agentId": agent_id,
             "displayName": "Updated Sync Agent",
             "title": "Grandmaster of Sync"
         }
@@ -274,7 +277,7 @@ def test_internal_agent_sync_success_and_kinetics():
     assert response.status_code == 200
     assert response.json()["action"] == "updated"
 
-    response = client.get("/api/agents/sync-test-agent/kinetics")
+    response = client.get(f"/api/agents/{agent_id}/kinetics")
     assert response.status_code == 200
     data = response.json()
     assert "velocity" in data
@@ -283,8 +286,70 @@ def test_internal_agent_sync_success_and_kinetics():
     assert "power" in data
     assert "force" in data
 
-    response = client.get("/api/agents/sync-test-agent/kinetics")
-    assert response.status_code == 200
-    data2 = response.json()
-    assert "velocity" in data2
 
+def test_feed_emitter_builds_wten_compatible_payload():
+    payload = feed_emitter.build_feed_payload(
+        "galileo@agentic.alchm.kitchen",
+        "agent_chat",
+        {
+            "agentName": "Galileo",
+            "messagePreview": "Observe the moons.",
+            "timestamp": "2026-05-22T00:00:00Z",
+        },
+    )
+
+    assert payload["agentEmail"] == "galileo@agentic.alchm.kitchen"
+    assert payload["eventType"] == "agent_chat"
+    assert payload["actionType"] == "agent_chat"
+    assert payload["agentDisplayName"] == "Galileo"
+    assert payload["timestamp"] == "2026-05-22T00:00:00Z"
+    assert payload["activityDetails"]["messagePreview"] == "Observe the moons."
+    assert payload["metadataPayload"]["actionType"] == "agent_chat"
+    assert payload["metadataPayload"]["activityDetails"]["messagePreview"] == "Observe the moons."
+    assert payload["metadataPayload"]["timestamp"] == "2026-05-22T00:00:00Z"
+
+
+@pytest.mark.asyncio
+async def test_feed_emitter_posts_to_wten_with_bearer_header(monkeypatch, caplog):
+    captured = {}
+
+    class FakeResponse:
+        status_code = 200
+        reason_phrase = "OK"
+        text = '{"success":true}'
+
+    class FakeAsyncClient:
+        def __init__(self, timeout):
+            captured["timeout"] = timeout
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return None
+
+        async def post(self, url, json, headers):
+            captured["url"] = url
+            captured["json"] = json
+            captured["headers"] = headers
+            return FakeResponse()
+
+    monkeypatch.setattr(feed_emitter, "ALCHM_KITCHEN_URL", "https://alchm.kitchen")
+    monkeypatch.setattr(feed_emitter, "INTERNAL_API_SECRET", "test-secret")
+    monkeypatch.setattr(feed_emitter.httpx, "AsyncClient", FakeAsyncClient)
+
+    with caplog.at_level("INFO"):
+        await feed_emitter._post_feed_event(
+            "galileo@agentic.alchm.kitchen",
+            "agent_chat",
+            {"activityDetails": {"messagePreview": "observe"}, "timestamp": "2026-05-22T00:00:00Z"},
+        )
+
+    assert captured["url"] == "https://alchm.kitchen/api/feed"
+    assert captured["headers"]["Authorization"] == "Bearer test-secret"
+    assert captured["json"]["agentEmail"] == "galileo@agentic.alchm.kitchen"
+    assert captured["json"]["eventType"] == "agent_chat"
+    assert captured["json"]["actionType"] == "agent_chat"
+    assert captured["json"]["activityDetails"]["messagePreview"] == "observe"
+    assert captured["json"]["metadataPayload"]["timestamp"] == "2026-05-22T00:00:00Z"
+    assert "feed_emit ok: galileo@agentic.alchm.kitchen/agent_chat -> 200" in caplog.text

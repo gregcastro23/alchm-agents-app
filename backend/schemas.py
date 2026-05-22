@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 from datetime import datetime
 
 class BirthLocation(BaseModel):
@@ -14,6 +14,8 @@ class AgentBase(BaseModel):
     birthDate: Optional[datetime] = None
     birthTime: Optional[str] = None
     birthLocation: Optional[BirthLocation] = None
+    birthYear: Optional[int] = None
+    deathYear: Optional[int] = None
     
     consciousnessLevel: Optional[str] = None
     monicaConstant: Optional[float] = None
@@ -39,7 +41,7 @@ class AgentUpdate(BaseModel):
     evolutionStage: Optional[int] = None
 
 class Agent(AgentBase):
-    id: int
+    id: Union[str, int]
     historicalEra: Optional[str] = None
     culture: Optional[str] = None
     geography: Optional[str] = None
@@ -76,7 +78,7 @@ class ConversationCreate(ConversationBase):
     tokenCount: Optional[int] = None
 
 class Conversation(ConversationBase):
-    id: int
+    id: Union[str, int]
     createdAt: datetime
     
     class Config:
@@ -154,4 +156,3 @@ class AgentSyncResponse(BaseModel):
     success: bool
     agentId: str
     action: str
-

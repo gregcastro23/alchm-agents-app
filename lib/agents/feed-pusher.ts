@@ -9,14 +9,21 @@ function getWtenApiUrl(): string {
   if (process.env.WTEN_API_URL) return process.env.WTEN_API_URL
 
   const baseUrl =
+    process.env.ALCHM_KITCHEN_SYNC_URL ||
+    process.env.ALCHM_KITCHEN_FEED_URL ||
+    process.env.ALCHM_KITCHEN_BASE_URL ||
     process.env.WHATTOEATNEXT_URL ||
-    process.env.ALCHM_KITCHEN_URL ||
     process.env.WHATTOEATNEXT_BASE_URL
   if (baseUrl) {
     return `${baseUrl.replace(/\/$/, '')}/api/feed`
   }
 
-  return 'http://localhost:3000/api/feed'
+  const legacyBaseUrl = process.env.ALCHM_KITCHEN_URL
+  if (legacyBaseUrl && !legacyBaseUrl.includes('railway.app')) {
+    return `${legacyBaseUrl.replace(/\/$/, '')}/api/feed`
+  }
+
+  return 'https://alchm.kitchen/api/feed'
 }
 
 const WTEN_API_URL = getWtenApiUrl()
@@ -116,6 +123,22 @@ export class FeedPusherService {
 
   private async pushToWTEN(action: FeedActionPayload): Promise<void> {
     const idempotencyKey = action.idempotencyKey || action.metadataPayload.idempotencyKey
+    const timestamp =
+      typeof action.metadataPayload.timestamp === 'string'
+        ? action.metadataPayload.timestamp
+        : new Date().toISOString()
+    const payload = {
+      ...action,
+      actionType: action.eventType,
+      activityDetails: action.metadataPayload,
+      timestamp,
+      metadataPayload: {
+        ...action.metadataPayload,
+        actionType: action.eventType,
+        activityDetails: action.metadataPayload,
+        timestamp,
+      },
+    }
     const response = await fetch(WTEN_API_URL, {
       method: 'POST',
       headers: {
@@ -123,7 +146,7 @@ export class FeedPusherService {
         Authorization: `Bearer ${getInternalApiSecret()}`,
         ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
       },
-      body: JSON.stringify(action),
+      body: JSON.stringify(payload),
     })
 
     if (!response.ok) {
