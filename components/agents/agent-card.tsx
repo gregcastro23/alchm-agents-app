@@ -101,6 +101,7 @@ export function AgentCard({
         body: JSON.stringify({
           id: agent.id,
           name: agent.name,
+          tier: 'base',
           expiresAt: Date.now() + 5 * 60 * 1000,
         }),
       })

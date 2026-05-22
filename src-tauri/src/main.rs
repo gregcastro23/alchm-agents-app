@@ -193,7 +193,14 @@ fn set_tray_state(app: tauri::AppHandle, state: String) -> Result<(), String> {
 }
 
 fn verify_deep_link(url_str: &str) -> Result<serde_json::Value, String> {
-    let secret = option_env!("TAURI_DEEP_LINK_SECRET").unwrap_or("DEV_SECRET_DO_NOT_USE_IN_PROD");
+    let secret = std::env::var("TAURI_DEEP_LINK_SECRET")
+        .or_else(|_| std::env::var("DEEP_LINK_SHARED_SECRET"))
+        .unwrap_or_else(|_| {
+            option_env!("TAURI_DEEP_LINK_SECRET")
+                .or(option_env!("DEEP_LINK_SHARED_SECRET"))
+                .unwrap_or("DEV_SECRET_DO_NOT_USE_IN_PROD")
+                .to_string()
+        });
 
     let parsed_url = Url::parse(url_str).map_err(|_| "Invalid URL")?;
 

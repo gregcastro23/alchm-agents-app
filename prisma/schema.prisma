@@ -22,7 +22,7 @@ model AIPersonality {
   consciousnessProfileId String?
   planetaryMemoryId      String?               @unique
   createdAt              DateTime              @default(now())
-  updatedAt              DateTime @updatedAt
+  updatedAt              DateTime              @updatedAt
   ConsciousnessProfile   ConsciousnessProfile? @relation(fields: [consciousnessProfileId], references: [id])
   PlanetaryMemory        PlanetaryMemory?      @relation(fields: [planetaryMemoryId], references: [id])
   ConsciousnessSurvey    ConsciousnessSurvey?  @relation(fields: [surveyId], references: [id])
@@ -108,7 +108,7 @@ model AgentKnowledge {
   contextTags       Json?
   relatedTopics     Json?
   createdAt         DateTime          @default(now())
-  updatedAt         DateTime @updatedAt
+  updatedAt         DateTime          @updatedAt
   historical_agents historical_agents @relation(fields: [agentId], references: [agentId])
 
   @@index([agentId])
@@ -128,7 +128,7 @@ model ConsciousnessProfile {
   conversationStarters Json
   personalitySummary   String
   createdAt            DateTime            @default(now())
-  updatedAt            DateTime @updatedAt
+  updatedAt            DateTime            @updatedAt
   AIPersonality        AIPersonality[]
   ConsciousnessSurvey  ConsciousnessSurvey @relation(fields: [surveyId], references: [id])
 
@@ -146,7 +146,7 @@ model ConsciousnessState {
   behavioralMatrix       Json
   growthTrajectory       Json
   createdAt              DateTime      @default(now())
-  updatedAt              DateTime @updatedAt
+  updatedAt              DateTime      @updatedAt
   AIPersonality          AIPersonality @relation(fields: [personalityId], references: [personalityId])
 
   @@index([personalityId])
@@ -188,7 +188,7 @@ model HistoricalEvent {
   significance     Int
   planetaryConfig  Json
   createdAt        DateTime           @default(now())
-  updatedAt        DateTime @updatedAt
+  updatedAt        DateTime           @updatedAt
   PlanetaryTransit PlanetaryTransit[] @relation("HistoricalEventToPlanetaryTransit")
 
   @@index([date])
@@ -207,7 +207,7 @@ model PlanetaryMemory {
   trainedThemes   Json
   contextualNotes String?
   createdAt       DateTime         @default(now())
-  updatedAt       DateTime @updatedAt
+  updatedAt       DateTime         @updatedAt
   AIPersonality   AIPersonality?
   TransitPattern  TransitPattern[] @relation("PlanetaryMemoryToTransitPattern")
 
@@ -226,7 +226,7 @@ model PlanetaryTransit {
   retrograde      Boolean           @default(false)
   historicalNote  String?
   createdAt       DateTime          @default(now())
-  updatedAt       DateTime @updatedAt
+  updatedAt       DateTime          @updatedAt
   HistoricalEvent HistoricalEvent[] @relation("HistoricalEventToPlanetaryTransit")
   TransitPattern  TransitPattern[]  @relation("PlanetaryTransitToTransitPattern")
 
@@ -259,7 +259,7 @@ model TransitPattern {
   themes           Json
   reliability      Float
   createdAt        DateTime           @default(now())
-  updatedAt        DateTime @updatedAt
+  updatedAt        DateTime           @updatedAt
   PlanetaryMemory  PlanetaryMemory[]  @relation("PlanetaryMemoryToTransitPattern")
   PlanetaryTransit PlanetaryTransit[] @relation("PlanetaryTransitToTransitPattern")
 
@@ -327,7 +327,7 @@ model agent_attachments {
   isActive               Boolean                  @default(true)
   priority               Int                      @default(0)
   createdAt              DateTime                 @default(now())
-  updatedAt              DateTime @updatedAt
+  updatedAt              DateTime                 @updatedAt
   agent_attachment_usage agent_attachment_usage[]
   historical_agents      historical_agents        @relation(fields: [agentId], references: [agentId])
 
@@ -353,7 +353,7 @@ model agent_consciousness {
   lastInteraction    DateTime  @default(now())
   lastEvolution      DateTime?
   createdAt          DateTime  @default(now())
-  updatedAt          DateTime @updatedAt
+  updatedAt          DateTime  @updatedAt
 
   @@unique([agentId, userId])
   @@index([agentId])
@@ -471,7 +471,7 @@ model collaborative_time_sessions {
   lastActivity                       DateTime                             @default(now())
   expiresAt                          DateTime
   createdAt                          DateTime                             @default(now())
-  updatedAt                          DateTime @updatedAt
+  updatedAt                          DateTime                             @updatedAt
   collaborative_session_participants collaborative_session_participants[]
   collaborative_session_updates      collaborative_session_updates[]
 
@@ -650,7 +650,7 @@ model historical_agents {
   version                String                   @default("1.0.0")
   craftedBy              String                   @default("philosopher-stone")
   createdAt              DateTime                 @default(now())
-  updatedAt              DateTime @updatedAt
+  updatedAt              DateTime                 @updatedAt
   AgentConversation      AgentConversation[]
   AgentEvolution         AgentEvolution[]
   AgentKnowledge         AgentKnowledge[]
@@ -689,7 +689,7 @@ model agent_action_events {
   evaluatedAt     DateTime  @default(now())
   postedAt        DateTime?
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime @updatedAt
+  updatedAt       DateTime  @updatedAt
 
   @@index([agentId])
   @@index([status])
@@ -717,7 +717,7 @@ model monica_contextual_help {
   bounceRate      Float     @default(0.0)
   conversionRate  Float     @default(0.0)
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime @updatedAt
+  updatedAt       DateTime  @updatedAt
 
   @@unique([pageUrl, tipId, version])
   @@index([contextType])
@@ -773,7 +773,7 @@ model monica_knowledge {
   supersededBy  String?
   validUntil    DateTime?
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime @updatedAt
+  updatedAt     DateTime  @updatedAt
 
   @@unique([userId, knowledgeType, key])
   @@index([category])
@@ -806,7 +806,7 @@ model monica_module_progress {
   struggledWith        Json?
   masteredConcepts     Json?
   createdAt            DateTime             @default(now())
-  updatedAt            DateTime @updatedAt
+  updatedAt            DateTime             @updatedAt
   monica_user_progress monica_user_progress @relation(fields: [progressId], references: [id], onDelete: Cascade)
 
   @@unique([userId, moduleId])
@@ -838,7 +838,7 @@ model monica_user_progress {
   preferredDifficulty    String                   @default("intermediate")
   learningVelocity       Float                    @default(1.0)
   createdAt              DateTime                 @default(now())
-  updatedAt              DateTime @updatedAt
+  updatedAt              DateTime                 @updatedAt
   monica_module_progress monica_module_progress[]
   monica_user_settings   monica_user_settings     @relation(fields: [settingsId], references: [id], onDelete: Cascade)
 
@@ -864,7 +864,7 @@ model monica_user_settings {
   adaptivePersonality  Boolean               @default(true)
   memoryRetention      Boolean               @default(true)
   createdAt            DateTime              @default(now())
-  updatedAt            DateTime @updatedAt
+  updatedAt            DateTime              @updatedAt
   monica_interactions  monica_interactions[]
   monica_user_progress monica_user_progress?
 
@@ -917,8 +917,6 @@ model profiles {
   @@index([userId])
 }
 
-
-
 model temporal_analysis_cache {
   id            String    @id @default(cuid())
   queryHash     String    @unique
@@ -931,7 +929,7 @@ model temporal_analysis_cache {
   lastHit       DateTime?
   expiresAt     DateTime
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime @updatedAt
+  updatedAt     DateTime  @updatedAt
 
   @@index([expiresAt])
   @@index([hitCount])
@@ -955,7 +953,7 @@ model temporal_bookmarks {
   executionTime Int?
   resultCount   Int?
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime @updatedAt
+  updatedAt     DateTime  @updatedAt
 
   @@index([accessCount])
   @@index([isPublic])
@@ -989,7 +987,7 @@ model temporal_patterns {
   cacheExpiry        DateTime?
   lastCalculated     DateTime  @default(now())
   createdAt          DateTime  @default(now())
-  updatedAt          DateTime @updatedAt
+  updatedAt          DateTime  @updatedAt
 
   @@index([agentCount])
   @@index([dominantElement])
@@ -1023,7 +1021,7 @@ model transit_monitoring_jobs {
   avgProcessingTime    Float?
   cacheHitRate         Float?
   createdAt            DateTime  @default(now())
-  updatedAt            DateTime @updatedAt
+  updatedAt            DateTime  @updatedAt
 
   @@index([jobType])
   @@index([scheduledFor])
@@ -1059,7 +1057,7 @@ model transit_notifications {
   expiresAt                       DateTime?
   isActive                        Boolean                           @default(true)
   createdAt                       DateTime                          @default(now())
-  updatedAt                       DateTime @updatedAt
+  updatedAt                       DateTime                          @updatedAt
   notification_interaction_events notification_interaction_events[]
   user_natal_charts               user_natal_charts                 @relation(fields: [natalChartId], references: [id], onDelete: Cascade)
   transit_significances           transit_significances?            @relation(fields: [transitSignificanceId], references: [id])
@@ -1110,7 +1108,7 @@ model transit_significances {
   userBookmarked           Boolean                 @default(false)
   userInteractionCount     Int                     @default(0)
   createdAt                DateTime                @default(now())
-  updatedAt                DateTime @updatedAt
+  updatedAt                DateTime                @updatedAt
   transit_notifications    transit_notifications[]
   user_natal_charts        user_natal_charts       @relation(fields: [natalChartId], references: [id], onDelete: Cascade)
 
@@ -1151,7 +1149,7 @@ model user_natal_charts {
   transitCount          Int                     @default(0)
   notificationOn        Boolean                 @default(true)
   createdAt             DateTime                @default(now())
-  updatedAt             DateTime @updatedAt
+  updatedAt             DateTime                @updatedAt
   transit_notifications transit_notifications[]
   transit_significances transit_significances[]
 
@@ -1176,7 +1174,7 @@ model user_profiles {
   allowPublicAgents    Boolean          @default(false)
   shareChartWithAgents Boolean          @default(true)
   createdAt            DateTime         @default(now())
-  updatedAt            DateTime @updatedAt
+  updatedAt            DateTime         @updatedAt
   created_agents       created_agents[]
   users                users            @relation(fields: [userId], references: [id])
 
@@ -1184,22 +1182,24 @@ model user_profiles {
 }
 
 model users {
-  id                   String           @id @default(cuid())
-  email                String           @unique
-  passwordHash         String?
-  name                 String?
-  provider             String?          @default("email")
-  role                 String           @default("user")
-  isAgentic            Boolean          @default(false)
-  verified             Boolean          @default(false)
-  createdAt            DateTime         @default(now())
-  lastLogin            DateTime?
-  lastActivationAt     DateTime?
-  activationCount      Int              @default(0)
-  /** alchm.kitchen's UUID for this agent — returned by sync-debit. Used to build /profile/{id} links. */
-  alchmKitchenUserId   String?          @unique
-  created_agents       created_agents[]
-  user_profiles        user_profiles?
+  id                 String           @id @default(cuid())
+  email              String           @unique
+  passwordHash       String?
+  name               String?
+  provider           String?          @default("email")
+  role               String           @default("user")
+  isAgentic          Boolean          @default(false)
+  verified           Boolean          @default(false)
+  createdAt          DateTime         @default(now())
+  lastLogin          DateTime?
+  lastActivationAt   DateTime?
+  activationCount    Int              @default(0)
+  /**
+   * alchm.kitchen's UUID for this agent — returned by sync-debit. Used to build /profile/{id} links.
+   */
+  alchmKitchenUserId String?          @unique
+  created_agents     created_agents[]
+  user_profiles      user_profiles?
 
   @@index([email])
   @@index([isAgentic])
@@ -1346,19 +1346,36 @@ model UserSubscription {
   cancelAtPeriodEnd    Boolean  @map("cancel_at_period_end")
   createdAt            DateTime @map("created_at") @db.Timestamptz
   updatedAt            DateTime @map("updated_at") @db.Timestamptz
+
   @@map("user_subscriptions")
 }
 
 model TokenBalance {
-  userId                   String    @id @map("user_id")
-  spirit                   Decimal   @db.Decimal(12, 4)
-  essence                  Decimal   @db.Decimal(12, 4)
-  matter                   Decimal   @db.Decimal(12, 4)
-  substance                Decimal   @db.Decimal(12, 4)
-  lastDailyClaimAt         DateTime? @map("last_daily_claim_at") @db.Timestamptz
-  lastDailyClaimAgentsAt   DateTime? @map("last_daily_claim_agents_at") @db.Timestamptz
-  updatedAt                DateTime  @map("updated_at") @db.Timestamptz
+  userId                 String    @id @map("user_id")
+  spirit                 Decimal   @db.Decimal(12, 4)
+  essence                Decimal   @db.Decimal(12, 4)
+  matter                 Decimal   @db.Decimal(12, 4)
+  substance              Decimal   @db.Decimal(12, 4)
+  lastDailyClaimAt       DateTime? @map("last_daily_claim_at") @db.Timestamptz
+  lastDailyClaimAgentsAt DateTime? @map("last_daily_claim_agents_at") @db.Timestamptz
+  updatedAt              DateTime  @map("updated_at") @db.Timestamptz
+
   @@map("token_balances")
+}
+
+model DesktopApiKey {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  token      String    @unique
+  label      String?
+  isActive   Boolean   @default(true) @map("is_active")
+  lastUsedAt DateTime? @map("last_used_at") @db.Timestamptz
+  expiresAt  DateTime? @map("expires_at") @db.Timestamptz
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([userId])
+  @@index([isActive])
+  @@map("desktop_api_keys")
 }
 
 model TokenTransaction {
@@ -1372,5 +1389,6 @@ model TokenTransaction {
   description        String?
   idempotencyKey     String?  @unique @map("idempotency_key") @db.VarChar(255)
   createdAt          DateTime @map("created_at") @db.Timestamptz
+
   @@map("token_transactions")
 }

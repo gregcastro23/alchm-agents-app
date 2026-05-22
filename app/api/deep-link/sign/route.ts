@@ -3,7 +3,7 @@ import crypto from 'crypto'
 
 export async function POST(req: Request) {
   try {
-    const { id, name, expiresAt, tier = 'Standard' } = await req.json()
+    const { id, name, expiresAt, tier = 'base' } = await req.json()
 
     if (!id || !name || !expiresAt) {
       return NextResponse.json(
@@ -12,7 +12,10 @@ export async function POST(req: Request) {
       )
     }
 
-    const secret = process.env.DEEP_LINK_SHARED_SECRET
+    const normalizedTier = tier === 'premium' ? 'premium' : 'base'
+    const secret =
+      process.env.DEEP_LINK_SHARED_SECRET ||
+      (process.env.NODE_ENV === 'production' ? undefined : 'DEV_SECRET_DO_NOT_USE_IN_PROD')
     if (!secret) {
       console.error('DEEP_LINK_SHARED_SECRET is not set in environment variables.')
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
@@ -20,7 +23,7 @@ export async function POST(req: Request) {
 
     // Define the exact payload structure to mirror in the Rust verifier
     // Format: id:name:tier:expiresAt
-    const payload = `${id}:${name}:${tier}:${expiresAt}`
+    const payload = `${id}:${name}:${normalizedTier}:${expiresAt}`
 
     // Generate HMAC-SHA256 signature
     const hmac = crypto.createHmac('sha256', secret)
@@ -28,9 +31,9 @@ export async function POST(req: Request) {
     const sig = hmac.digest('hex')
 
     // Construct the signed deep link
-    const deepLink = `alchm://install-agent?id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}&tier=${encodeURIComponent(tier)}&expiresAt=${encodeURIComponent(expiresAt)}&sig=${encodeURIComponent(sig)}`
+    const deepLink = `alchm://install-agent?id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}&tier=${encodeURIComponent(normalizedTier)}&expiresAt=${encodeURIComponent(expiresAt)}&sig=${encodeURIComponent(sig)}`
 
-    return NextResponse.json({ deepLink, sig, payload })
+    return NextResponse.json({ deepLink, sig, payload, tier: normalizedTier })
   } catch (error) {
     console.error('Error signing deep link:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

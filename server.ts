@@ -1,12 +1,16 @@
 // @ts-ignore
 import { serve, Subprocess } from 'bun'
 declare const Bun: any
-import { debitInferenceCost } from './lib/database/economy'
 import { Pool } from 'pg'
 import { cpus, freemem, loadavg, totalmem } from 'os'
 import { join, dirname, basename } from 'path'
+import { createHash, randomUUID } from 'crypto'
+import { mkdir, rename, unlink } from 'fs/promises'
 
-const pool = new Pool({ connectionString: process.env.RAILWAY_DATABASE_URL })
+const DATABASE_URL = process.env.RAILWAY_DATABASE_URL || process.env.DATABASE_URL
+const pool = DATABASE_URL ? new Pool({ connectionString: DATABASE_URL }) : null
+const DEV_DESKTOP_API_KEY = process.env.DESKTOP_DEV_API_KEY || 'dev-desktop-token'
+const DEV_DESKTOP_USER_ID = process.env.DESKTOP_DEV_USER_ID || 'desktop-local'
 
 const IPC_NONCE = process.env.IPC_NONCE
 if (!IPC_NONCE) throw new Error('CRITICAL: IPC_NONCE not provided to sidecar.')
@@ -38,6 +42,161 @@ let currentProfileName = 'balanced'
 let idleTimer: ReturnType<typeof setTimeout> | null = null
 const IDLE_TIMEOUT_MS = 5 * 60 * 1000 // 5 Minutes
 const LOGICAL_THREADS = Math.max(1, cpus().length || 1)
+const LOCAL_LEDGER_STARTING_BALANCE = 150
+
+interface TokenCosts {
+  spirit: number
+  essence: number
+  matter: number
+  substance: number
+}
+
+interface TokenBalances extends TokenCosts {}
+
+const localLedger = new Map<string, TokenBalances>()
+
+function getLocalBalances(userId: string) {
+  if (!localLedger.has(userId)) {
+    localLedger.set(userId, {
+      spirit: LOCAL_LEDGER_STARTING_BALANCE,
+      essence: LOCAL_LEDGER_STARTING_BALANCE,
+      matter: LOCAL_LEDGER_STARTING_BALANCE,
+      substance: LOCAL_LEDGER_STARTING_BALANCE,
+    })
+  }
+
+  return localLedger.get(userId)!
+}
+
+function normalizeCosts(costs: Partial<TokenCosts>): TokenCosts {
+  return {
+    spirit: Number(costs.spirit || 0),
+    essence: Number(costs.essence || 0),
+    matter: Number(costs.matter || 0),
+    substance: Number(costs.substance || 0),
+  }
+}
+
+function hasEnoughBalance(balances: TokenBalances, costs: TokenCosts) {
+  return (
+    balances.spirit >= costs.spirit &&
+    balances.essence >= costs.essence &&
+    balances.matter >= costs.matter &&
+    balances.substance >= costs.substance
+  )
+}
+
+function missingBalance(balances: TokenBalances, costs: TokenCosts) {
+  return {
+    spirit: Math.max(0, costs.spirit - balances.spirit),
+    essence: Math.max(0, costs.essence - balances.essence),
+    matter: Math.max(0, costs.matter - balances.matter),
+    substance: Math.max(0, costs.substance - balances.substance),
+  }
+}
+
+async function getTokenBalances(userId: string): Promise<TokenBalances> {
+  if (!pool || userId === DEV_DESKTOP_USER_ID) return { ...getLocalBalances(userId) }
+
+  const result = await pool.query(
+    `
+      INSERT INTO token_balances (user_id, spirit, essence, matter, substance, updated_at)
+      VALUES ($1, 0, 0, 0, 0, NOW())
+      ON CONFLICT (user_id) DO UPDATE SET updated_at = token_balances.updated_at
+      RETURNING spirit, essence, matter, substance;
+    `,
+    [userId]
+  )
+
+  const row = result.rows[0]
+  return {
+    spirit: Number(row.spirit),
+    essence: Number(row.essence),
+    matter: Number(row.matter),
+    substance: Number(row.substance),
+  }
+}
+
+async function debitTokens(userId: string, costs: TokenCosts, description: string) {
+  if (!hasAnyCost(costs)) return { success: true, balances: await getTokenBalances(userId) }
+
+  if (!pool || userId === DEV_DESKTOP_USER_ID) {
+    const balances = getLocalBalances(userId)
+    if (!hasEnoughBalance(balances, costs)) {
+      return { success: false, balances: { ...balances }, missing: missingBalance(balances, costs) }
+    }
+
+    balances.spirit -= costs.spirit
+    balances.essence -= costs.essence
+    balances.matter -= costs.matter
+    balances.substance -= costs.substance
+    return { success: true, balances: { ...balances } }
+  }
+
+  const client = await pool.connect()
+  const transactionGroupId = randomUUID()
+
+  try {
+    await client.query('BEGIN')
+    const updated = await client.query(
+      `
+        UPDATE token_balances
+        SET spirit = spirit - $2,
+            essence = essence - $3,
+            matter = matter - $4,
+            substance = substance - $5,
+            updated_at = NOW()
+        WHERE user_id = $1
+          AND spirit >= $2
+          AND essence >= $3
+          AND matter >= $4
+          AND substance >= $5
+        RETURNING spirit, essence, matter, substance;
+      `,
+      [userId, costs.spirit, costs.essence, costs.matter, costs.substance]
+    )
+
+    if (updated.rows.length === 0) {
+      await client.query('ROLLBACK')
+      const balances = await getTokenBalances(userId)
+      return { success: false, balances, missing: missingBalance(balances, costs) }
+    }
+
+    const entries = Object.entries(costs).filter(([, amount]) => amount > 0)
+    for (const [tokenType, amount] of entries) {
+      await client.query(
+        `
+          INSERT INTO token_transactions (
+            transaction_group_id, user_id, token_type, amount, source_type, description, created_at
+          )
+          VALUES ($1, $2, $3, $4, 'local_inference', $5, NOW());
+        `,
+        [transactionGroupId, userId, tokenType, -amount, description]
+      )
+    }
+
+    await client.query('COMMIT')
+    const row = updated.rows[0]
+    return {
+      success: true,
+      balances: {
+        spirit: Number(row.spirit),
+        essence: Number(row.essence),
+        matter: Number(row.matter),
+        substance: Number(row.substance),
+      },
+    }
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => {})
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
+function hasAnyCost(costs: TokenCosts) {
+  return costs.spirit > 0 || costs.essence > 0 || costs.matter > 0 || costs.substance > 0
+}
 
 type InferenceProfileName =
   | 'balanced'
@@ -296,20 +455,34 @@ async function authenticateToken(req: Request): Promise<string | null> {
   if (!authHeader || !authHeader.startsWith('Bearer ')) return null
   const token = authHeader.split(' ')[1]
 
-  const query = `
-    SELECT user_id 
-    FROM desktop_api_keys 
-    WHERE token = $1 AND is_active = true 
-    LIMIT 1;
-  `
+  if (token === DEV_DESKTOP_API_KEY) return DEV_DESKTOP_USER_ID
+  if (!pool) return null
 
-  const result = await pool.query(query, [token])
-  return result.rows.length > 0 ? result.rows[0].user_id : null
+  try {
+    const result = await pool.query(
+      `
+        UPDATE desktop_api_keys
+        SET last_used_at = NOW()
+        WHERE token = $1
+          AND is_active = true
+          AND (expires_at IS NULL OR expires_at > NOW())
+        RETURNING user_id;
+      `,
+      [token]
+    )
+    return result.rows.length > 0 ? result.rows[0].user_id : null
+  } catch (error: any) {
+    if (error?.code === '42P01') {
+      console.warn('desktop_api_keys table is missing; falling back to dev desktop API key only.')
+      return null
+    }
+    throw error
+  }
 }
 
 // --- HTTP Server ---
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'http://localhost:3000',
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-IPC-Nonce',
   'Access-Control-Max-Age': '86400',
@@ -337,6 +510,19 @@ async function commandText(cmd: string[], timeoutMs = 1500): Promise<string> {
   } catch {
     return ''
   }
+}
+
+async function sha256File(path: string): Promise<string> {
+  const hash = createHash('sha256')
+  const reader = Bun.file(path).stream().getReader()
+
+  while (true) {
+    const { value, done } = await reader.read()
+    if (done) break
+    if (value) hash.update(Buffer.from(value))
+  }
+
+  return hash.digest('hex')
 }
 
 async function sampleCpuPercent() {
@@ -432,18 +618,17 @@ const server = serve({
           const file = Bun.file(join(APP_DATA_DIR, modelName))
           const exists = await file.exists()
           let verified = false
+          let size = 0
           if (exists) {
-            // In a real scenario we'd stream the file through a SHA-256 hasher.
-            // For Convergence v1, we check existence and size > 0 as a quick verification,
-            // and mock the hash check for speed since GGUF files are gigabytes.
-            const size = file.size
+            size = file.size
             verified = size > 1024 * 1024 // At least 1MB to be considered a valid weights file
           }
 
           return {
             id: modelName,
             present: exists,
-            verified: verified,
+            verified,
+            size,
           }
         })
       )
@@ -462,79 +647,29 @@ const server = serve({
 
       if (tier === 'premium') {
         try {
-          // Check balances first for the breakdown
-          const checkQuery = `
-            SELECT spirit_coins, essence_coins, matter_coins, substance_coins 
-            FROM token_balances WHERE user_id = $1 LIMIT 1;
-          `
-          const checkRes = await pool.query(checkQuery, [userId])
-          if (checkRes.rows.length === 0) {
-            return corsResponse('User balances not found', { status: 404 })
-          }
-
-          const bal = checkRes.rows[0]
           const cost = 125
-          const missing = {
-            spirit: Math.max(0, cost - Number(bal.spirit_coins)),
-            essence: Math.max(0, cost - Number(bal.essence_coins)),
-            matter: Math.max(0, cost - Number(bal.matter_coins)),
-            substance: Math.max(0, cost - Number(bal.substance_coins)),
-          }
+          const debit = await debitTokens(
+            userId,
+            { spirit: cost, essence: cost, matter: cost, substance: cost },
+            `Astral Engine Premium Model Unlock: ${modelName || 'unknown model'}`
+          )
 
-          if (
-            missing.spirit > 0 ||
-            missing.essence > 0 ||
-            missing.matter > 0 ||
-            missing.substance > 0
-          ) {
+          if (!debit.success) {
             return corsResponse(
               JSON.stringify({
                 error: 'Insufficient Alchemical Quantities.',
-                missing,
+                missing: debit.missing,
+                balances: debit.balances,
               }),
               { status: 402, headers: { 'Content-Type': 'application/json' } }
             )
-          }
-
-          const deductionQuery = `
-            WITH deduct AS (
-              UPDATE token_balances
-              SET 
-                spirit_coins = spirit_coins - 125, 
-                essence_coins = essence_coins - 125,
-                matter_coins = matter_coins - 125, 
-                substance_coins = substance_coins - 125,
-                updated_at = NOW()
-              WHERE user_id = $1 
-                AND spirit_coins >= 125 
-                AND essence_coins >= 125 
-                AND matter_coins >= 125 
-                AND substance_coins >= 125
-              RETURNING spirit_coins, essence_coins, matter_coins, substance_coins
-            ),
-            record_tx AS (
-              INSERT INTO token_transactions (user_id, token_type, amount, source, description, created_at)
-              SELECT $1, unnest(ARRAY['spirit', 'essence', 'matter', 'substance']), 
-                     unnest(ARRAY[-125::numeric, -125::numeric, -125::numeric, -125::numeric]),
-                     'local_inference', 'Astral Engine Premium Model Unlock', NOW()
-              FROM deduct
-            )
-            SELECT * FROM deduct;
-          `
-
-          const balanceResult = await pool.query(deductionQuery, [userId])
-
-          if (balanceResult.rows.length === 0) {
-            return corsResponse(JSON.stringify({ error: 'Atomic transaction failed' }), {
-              status: 500,
-            })
           }
 
           console.log(`✨ User ${userId} transmuted 500 ESMS coins.`)
           return corsResponse(
             JSON.stringify({
               success: true,
-              balances: balanceResult.rows[0],
+              balances: debit.balances,
             }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
           )
@@ -554,7 +689,7 @@ const server = serve({
     }
 
     if (req.method === 'POST' && url.pathname === '/api/models/install') {
-      const { modelName, downloadUrl, tier } = await req.json()
+      const { modelName, downloadUrl, tier, sha256, size } = await req.json()
 
       const userId = await authenticateToken(req)
       if (!userId) return corsResponse('Invalid API Key', { status: 401 })
@@ -571,10 +706,34 @@ const server = serve({
         console.log(`Model install requested for premium model: ${modelName}`)
       }
 
+      let tmpPath = ''
       try {
+        await mkdir(APP_DATA_DIR, { recursive: true })
         const response = await fetch(downloadUrl)
         if (!response.ok) throw new Error('Failed to fetch model from R2')
-        await Bun.write(join(APP_DATA_DIR, modelName), response)
+        const modelPath = join(APP_DATA_DIR, modelName)
+        tmpPath = `${modelPath}.download`
+
+        await Bun.write(tmpPath, response)
+        const file = Bun.file(tmpPath)
+
+        if (size && file.size !== Number(size)) {
+          throw new Error(
+            `Downloaded size mismatch for ${modelName}: expected ${size}, received ${file.size}`
+          )
+        }
+
+        if (sha256) {
+          const actualSha256 = await sha256File(tmpPath)
+          if (actualSha256.toLowerCase() !== String(sha256).toLowerCase()) {
+            throw new Error(`SHA-256 verification failed for ${modelName}`)
+          }
+        }
+
+        await rename(tmpPath, modelPath).catch(async () => {
+          await Bun.write(modelPath, file)
+          await unlink(tmpPath).catch(() => {})
+        })
         return corsResponse(
           JSON.stringify({
             success: true,
@@ -583,6 +742,7 @@ const server = serve({
           { status: 200, headers: { 'Content-Type': 'application/json' } }
         )
       } catch (err: any) {
+        if (tmpPath) await unlink(tmpPath).catch(() => {})
         return corsResponse(JSON.stringify({ error: err.message }), {
           status: 500,
           headers: { 'Content-Type': 'application/json' },
@@ -607,11 +767,23 @@ const server = serve({
       }
 
       // 4. Atomic Transaction
-      const hasFunds = await debitInferenceCost(userId, costs)
-      if (!hasFunds) {
-        return corsResponse(JSON.stringify({ error: 'Insufficient Alchemical Tokens' }), {
-          status: 402,
-        })
+      const debit = await debitTokens(
+        userId,
+        normalizeCosts(costs || {}),
+        'Local LLM Generation Deduction'
+      )
+      if (!debit.success) {
+        return corsResponse(
+          JSON.stringify({
+            error: 'Insufficient Alchemical Tokens',
+            missing: debit.missing,
+            balances: debit.balances,
+          }),
+          {
+            status: 402,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        )
       }
 
       // 5. Manage Model Process Lifecycle

@@ -37,7 +37,7 @@ import { ELEMENT_MAPPING } from '@/components/philosophers-stone-config'
 
 type DesktopView = 'onboarding' | 'chat' | 'ledger' | 'tray' | 'web'
 
-interface HistoricalAgentMock {
+interface DesktopGalleryAgent {
   id: string
   name: string
   title: string
@@ -68,6 +68,19 @@ interface ModelCatalogEntry {
   size: number
   url: string
   source: string
+}
+
+interface DesktopSession {
+  mode: 'authenticated' | 'local-dev'
+  userId: string
+  apiKey: string
+  expiresAt?: string
+  balances: {
+    spirit: number
+    essence: number
+    matter: number
+    substance: number
+  }
 }
 
 type InferenceProfileName =
@@ -107,6 +120,27 @@ interface HardwareTelemetry {
     vramAllocatedBytes: number | null
   } | null
   timestamp: string
+}
+
+interface DesktopAgentConfig {
+  id: string
+  name: string
+  title: string
+  dominantElement: DesktopGalleryAgent['element']
+  date: string
+  time: string
+  location: string
+  modelName: string
+  tier: 'base' | 'premium'
+  executionMode: 'local' | 'cloud'
+  specialization?: string
+  quote?: string
+  constitution: {
+    spirit: number
+    essence: number
+    matter: number
+    substance: number
+  }
 }
 
 const DEFAULT_HARDWARE_TELEMETRY: HardwareTelemetry = {
@@ -162,7 +196,36 @@ function resolveInferenceProfile(command: string, element?: string): InferencePr
   return 'balanced'
 }
 
-const HISTORICAL_MOCKS: HistoricalAgentMock[] = [
+function normalizeElement(value: unknown): DesktopGalleryAgent['element'] {
+  const normalized = String(value || '').toLowerCase()
+  if (normalized === 'fire' || normalized === 'substance') return 'Fire'
+  if (normalized === 'water' || normalized === 'matter') return 'Water'
+  if (normalized === 'earth' || normalized === 'essence') return 'Earth'
+  return 'Air'
+}
+
+function normalizeTier(value: unknown): 'base' | 'premium' {
+  return value === 'premium' ? 'premium' : 'base'
+}
+
+function normalizeBalances(raw: any) {
+  return {
+    spirit: Number(raw?.spirit ?? raw?.spirit_coins ?? 0),
+    essence: Number(raw?.essence ?? raw?.essence_coins ?? 0),
+    matter: Number(raw?.matter ?? raw?.matter_coins ?? 0),
+    substance: Number(raw?.substance ?? raw?.substance_coins ?? 0),
+  }
+}
+
+function hasTauriInvokeRuntime() {
+  if (typeof window === 'undefined') return false
+  const tauriWindow = window as Window & {
+    __TAURI_INTERNALS__?: { invoke?: unknown }
+  }
+  return typeof tauriWindow.__TAURI_INTERNALS__?.invoke === 'function'
+}
+
+const FEATURED_HISTORICAL_AGENTS: DesktopGalleryAgent[] = [
   {
     id: 'johannes-kepler',
     name: 'Johannes Kepler',
@@ -266,9 +329,11 @@ const HISTORICAL_MOCKS: HistoricalAgentMock[] = [
 export default function App() {
   const [activeView, setActiveView] = useState<DesktopView>('web')
   const [ipcNonce, setIpcNonce] = useState<string | null>(null)
-  const [agentConfig, setAgentConfig] = useState<any>(null)
+  const [agentConfig, setAgentConfig] = useState<DesktopAgentConfig | null>(null)
   const [prompt, setPrompt] = useState('')
-  const [apiKey] = useState('demo-key-123')
+  const [apiKey, setApiKey] = useState('')
+  const [desktopSession, setDesktopSession] = useState<DesktopSession | null>(null)
+  const [chatStatus, setChatStatus] = useState('')
   const [hardwareTelemetry, setHardwareTelemetry] = useState<HardwareTelemetry>(
     DEFAULT_HARDWARE_TELEMETRY
   )
@@ -276,10 +341,12 @@ export default function App() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Cloud Gallery State
-  const [galleryAgents, setGalleryAgents] = useState<HistoricalAgentMock[]>([])
+  const [galleryAgents, setGalleryAgents] = useState<DesktopGalleryAgent[]>(
+    FEATURED_HISTORICAL_AGENTS
+  )
   const [loadingAgents, setLoadingAgents] = useState(true)
 
-  // Ledger operation mock records
+  // Session ledger records
   const [ledgerLogs, setLedgerLogs] = useState<
     Array<{
       id: string
@@ -289,28 +356,11 @@ export default function App() {
       positive: boolean
       timestamp: string
     }>
-  >([
-    {
-      id: 'tx-1',
-      type: 'Yield Claim',
-      details: 'Daily Alchemical Alignment Reward claimed',
-      amount: '+8.00 all coins',
-      positive: true,
-      timestamp: 'Today, 08:30 AM',
-    },
-    {
-      id: 'tx-2',
-      type: 'API Inference',
-      details: 'Consciousness query to Sol Hodiernus',
-      amount: '-2.00 Spirit, -1.00 Essence',
-      positive: false,
-      timestamp: 'Yesterday, 04:12 PM',
-    },
-  ])
+  >([])
 
   // Installation Modal States
   const [showModal, setShowModal] = useState(false)
-  const [modalAgent, setModalAgent] = useState<HistoricalAgentMock | null>(null)
+  const [modalAgent, setModalAgent] = useState<DesktopGalleryAgent | null>(null)
   const [installProgress, setInstallProgress] = useState(0)
   const [installStatus, setInstallStatus] = useState('')
   const [isInstalling, setIsInstalling] = useState(false)
@@ -327,46 +377,89 @@ export default function App() {
   } = useChatStore()
 
   useEffect(() => {
+    document.body.classList.add('desktop-companion-body')
+    return () => {
+      document.body.classList.remove('desktop-companion-body')
+    }
+  }, [])
+
+  useEffect(() => {
     // 1. Handshake: Retrieve the IPC Nonce from Rust backend on mount
     const fetchNonce = async () => {
+      if (!hasTauriInvokeRuntime()) {
+        setIpcNonce(null)
+        return
+      }
+
       try {
         const { invoke } = await import('@tauri-apps/api/core')
         const nonce = await invoke<string>('get_ipc_nonce')
         setIpcNonce(nonce)
       } catch (err) {
-        console.error('Failed to retrieve IPC Nonce from Tauri:', err)
-        // Fallback for development/testing environment
-        setIpcNonce('nonce_73ce7855_df82_aarch64')
+        console.warn('Tauri IPC nonce unavailable; desktop preview will use managed chat.', err)
+        setIpcNonce(null)
       }
     }
     fetchNonce()
+
+    const fetchDesktopSession = async () => {
+      try {
+        const res = await fetch('/api/desktop/session', { cache: 'no-store' })
+        if (!res.ok) throw new Error(`desktop session ${res.status}`)
+        const data = (await res.json()) as DesktopSession
+        setDesktopSession(data)
+        setApiKey(data.apiKey)
+        setBalances(data.balances)
+      } catch (err) {
+        console.warn('Failed to initialize desktop session, using local preview ledger:', err)
+        setApiKey('dev-desktop-token')
+        setBalances({
+          spirit: 150,
+          essence: 150,
+          matter: 150,
+          substance: 150,
+        })
+      }
+    }
+    fetchDesktopSession()
 
     const fetchCloudAgents = async () => {
       try {
         const res = await fetch('/api/agents')
         const data = await res.json()
         if (data.success && data.agents) {
-          const mapped = data.agents.map((a: any) => ({
-            id: a.id,
+          const mapped: DesktopGalleryAgent[] = data.agents.map((a: any) => ({
+            id: a.id || a.agentId,
             name: a.name,
             title: a.title || 'Alchemical Agent',
             era: a.historicalEra || 'Modern',
-            element: a.consciousness?.dominantElement || 'Air',
+            element: normalizeElement(a.consciousness?.dominantElement || a.dominantElement),
             modality: a.consciousness?.dominantModality || 'Fixed',
             specialization: a.abilities?.specialty || 'General Inference',
-            quote: a.personality?.core?.catchphrase || 'Awaits ignition.',
-            birthCity: a.birthData?.location?.name || 'The Cloud',
+            quote:
+              a.personality?.core?.catchphrase ||
+              a.personality?.core?.essence ||
+              'Awaits ignition.',
+            birthCity: a.birthData?.location?.name || a.birthData?.location || 'The Cloud',
             birthDate: a.birthData?.date || 'Now',
             monicaConstant:
               'Ω = ' + (a.consciousness?.monicaConstant || '1.0').toString().substring(0, 4),
             tier: a.isUserCreated ? 'base' : 'premium',
             avatarSymbol: a.appearance?.symbol || '✧',
-            stats: { spirit: 80, essence: 80, matter: 80, substance: 80 },
+            stats: {
+              spirit: Number(a.spiritScore || a.consciousness?.spiritScore || 80),
+              essence: Number(a.essenceScore || a.consciousness?.essenceScore || 80),
+              matter: Number(a.matterScore || a.consciousness?.matterScore || 80),
+              substance: Number(a.substanceScore || a.consciousness?.substanceScore || 80),
+            },
           }))
-          setGalleryAgents(mapped)
+          setGalleryAgents(mapped.length > 0 ? mapped : FEATURED_HISTORICAL_AGENTS)
+        } else {
+          setGalleryAgents(FEATURED_HISTORICAL_AGENTS)
         }
       } catch (err) {
         console.error('Failed to fetch cloud agents', err)
+        setGalleryAgents(FEATURED_HISTORICAL_AGENTS)
       } finally {
         setLoadingAgents(false)
       }
@@ -376,53 +469,48 @@ export default function App() {
     // Setup Deep Link listener
     let unlistenFn: (() => void) | null = null
     const setupListener = async () => {
-      const { listen } = await import('@tauri-apps/api/event')
-      unlistenFn = await listen('verified-install', (event: any) => {
-        const payload = event.payload
-        setGalleryAgents(prev => {
-          const target = prev.find(a => a.id === payload.id)
-          if (target) {
-            setModalAgent(target)
-            setInstallProgress(0)
-            setInstallStatus('Awaiting alchemical ignition...')
-            setIsInstalling(false)
-            setShowModal(true)
-          } else {
-            // Fallback ad-hoc agent
-            setModalAgent({
-              id: payload.id,
-              name: payload.name,
-              tier: payload.tier as 'base' | 'premium',
-              title: 'Summoned Consciousness',
-              era: 'Present',
-              element: 'Air',
-              modality: 'Fixed',
-              specialization: 'Unknown',
-              quote: 'A consciousness materialized from the web.',
-              birthCity: 'The Ether',
-              birthDate: 'Now',
-              monicaConstant: 'Ω',
-              avatarSymbol: '✧',
-              stats: { spirit: 80, essence: 80, matter: 80, substance: 80 },
-            })
-            setInstallProgress(0)
-            setInstallStatus('Awaiting alchemical ignition...')
-            setIsInstalling(false)
-            setShowModal(true)
-          }
-          return prev
+      try {
+        const { listen } = await import('@tauri-apps/api/event')
+        unlistenFn = await listen('verified-install', (event: any) => {
+          const payload = event.payload
+          setGalleryAgents(prev => {
+            const target = prev.find(a => a.id === payload.id)
+            if (target) {
+              setModalAgent(target)
+              setInstallProgress(0)
+              setInstallStatus('Awaiting alchemical ignition...')
+              setIsInstalling(false)
+              setShowModal(true)
+            } else {
+              setModalAgent({
+                id: payload.id,
+                name: payload.name,
+                tier: normalizeTier(payload.tier),
+                title: 'Summoned Consciousness',
+                era: 'Present',
+                element: 'Air',
+                modality: 'Fixed',
+                specialization: 'Unknown',
+                quote: 'A consciousness materialized from the web.',
+                birthCity: 'The Ether',
+                birthDate: 'Now',
+                monicaConstant: 'Ω',
+                avatarSymbol: '✧',
+                stats: { spirit: 80, essence: 80, matter: 80, substance: 80 },
+              })
+              setInstallProgress(0)
+              setInstallStatus('Awaiting alchemical ignition...')
+              setIsInstalling(false)
+              setShowModal(true)
+            }
+            return prev
+          })
         })
-      })
+      } catch {
+        /* Browser preview without the Tauri event bridge. */
+      }
     }
     setupListener()
-
-    // 2. Out-of-box experience: Seed with 150 of each alchemical coin so premium gating can be unlocked immediately
-    setBalances({
-      spirit: 150.0,
-      essence: 150.0,
-      matter: 150.0,
-      substance: 150.0,
-    })
 
     return () => {
       if (unlistenFn) unlistenFn()
@@ -465,13 +553,28 @@ export default function App() {
   }, [messages, streamingText])
 
   const handleInitializationComplete = (config: any) => {
-    setAgentConfig(config)
+    setAgentConfig({
+      id: config.id || `custom-${Date.now()}`,
+      name: config.name,
+      title: config.title || 'Custom Forged Agent',
+      dominantElement: normalizeElement(config.dominantElement),
+      date: config.date,
+      time: config.time,
+      location: config.location,
+      modelName: config.modelName,
+      tier: normalizeTier(config.tier),
+      executionMode: config.executionMode || 'local',
+      specialization: config.specialization || 'Personal consciousness guidance',
+      quote: config.quote,
+      constitution: config.constitution,
+    })
     setActiveView('chat')
   }
 
-  const handleSimulateDeepLink = (agentId: string) => {
+  const handleInstallAgent = (agentId: string) => {
     const target =
-      galleryAgents.find(a => a.id === agentId) || HISTORICAL_MOCKS.find(a => a.id === agentId)
+      galleryAgents.find(a => a.id === agentId) ||
+      FEATURED_HISTORICAL_AGENTS.find(a => a.id === agentId)
     if (target) {
       setModalAgent(target)
       setInstallProgress(0)
@@ -486,43 +589,61 @@ export default function App() {
     setIsInstalling(true)
 
     try {
-      // 1. Initial Handshake & Deduction
       setInstallProgress(15)
       setInstallStatus('Initializing secure IPC handshake with sidecar...')
 
+      const modelFileName = `alchm-agent-${modalAgent.element.toLowerCase()}-${modalAgent.tier === 'premium' ? '8b' : '1.5b'}.gguf`
+      const canUseSidecar = Boolean(ipcNonce && apiKey)
+      const sidecarNonce = ipcNonce || ''
+      let localInstalled = false
+
       if (modalAgent.tier === 'premium') {
-        const res = await fetch('http://localhost:8080/api/forge/transmute', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-IPC-Nonce': ipcNonce || '',
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            tier: modalAgent.tier,
-            modelName: `alchm-agent-${modalAgent.element.toLowerCase()}-8b.gguf`,
-          }),
-        })
+        if (canUseSidecar) {
+          try {
+            const res = await fetch('http://localhost:8080/api/forge/transmute', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-IPC-Nonce': sidecarNonce,
+                Authorization: `Bearer ${apiKey}`,
+              },
+              body: JSON.stringify({
+                tier: modalAgent.tier,
+                modelName: modelFileName,
+              }),
+            })
 
-        if (!res.ok) {
-          if (res.status === 402) {
+            if (!res.ok) {
+              if (res.status === 402) {
+                const data = await res.json()
+                setInstallStatus(
+                  `Insufficient Alchemical Quantities. Missing: ${data.missing.spirit} Spirit, ${data.missing.essence} Essence, ${data.missing.matter} Matter, ${data.missing.substance} Substance.`
+                )
+                setIsInstalling(false)
+                return
+              }
+              throw new Error(`Transmutation failed with HTTP ${res.status}`)
+            }
+
             const data = await res.json()
-            setInstallStatus(
-              `Insufficient Alchemical Quantities. Missing: ${data.missing.spirit} Spirit, ${data.missing.essence} Essence, ${data.missing.matter} Matter, ${data.missing.substance} Substance.`
-            )
-            setIsInstalling(false)
-            return
+            setBalances(normalizeBalances(data.balances))
+          } catch (err) {
+            console.warn('[desktop] sidecar transmutation unavailable; using local ledger:', err)
+            setBalances({
+              spirit: Math.max(0, balances.spirit - 125),
+              essence: Math.max(0, balances.essence - 125),
+              matter: Math.max(0, balances.matter - 125),
+              substance: Math.max(0, balances.substance - 125),
+            })
           }
-          throw new Error('Transmutation failed')
+        } else {
+          setBalances({
+            spirit: Math.max(0, balances.spirit - 125),
+            essence: Math.max(0, balances.essence - 125),
+            matter: Math.max(0, balances.matter - 125),
+            substance: Math.max(0, balances.substance - 125),
+          })
         }
-
-        const data = await res.json()
-        setBalances({
-          spirit: Number(data.balances.spirit_coins),
-          essence: Number(data.balances.essence_coins),
-          matter: Number(data.balances.matter_coins),
-          substance: Number(data.balances.substance_coins),
-        })
 
         setLedgerLogs(prev => [
           {
@@ -549,77 +670,93 @@ export default function App() {
         ])
       }
 
-      const catalogRes = await fetch('/api/models/catalog')
-      if (!catalogRes.ok) {
-        throw new Error('Unable to load desktop model catalog')
-      }
+      if (canUseSidecar) {
+        try {
+          const catalogRes = await fetch('/api/models/catalog')
+          if (!catalogRes.ok) throw new Error('Unable to load desktop model catalog')
 
-      const modelCatalog = (await catalogRes.json()) as ModelCatalogEntry[]
-      const selectedModel = modelCatalog.find(model => model.tier === modalAgent.tier)
+          const modelCatalog = (await catalogRes.json()) as ModelCatalogEntry[]
+          const selectedModel = modelCatalog.find(model => model.tier === modalAgent.tier)
+          if (!selectedModel) throw new Error(`No ${modalAgent.tier} model is available`)
 
-      if (!selectedModel) {
-        throw new Error(`No ${modalAgent.tier} model is available in the catalog`)
-      }
+          setInstallProgress(45)
+          setInstallStatus(`Streaming ${selectedModel.label} from Hugging Face...`)
 
-      // 2. Weights Download
-      setInstallProgress(45)
-      setInstallStatus(`Streaming ${selectedModel.label} from Hugging Face...`)
+          const installRes = await fetch('http://localhost:8080/api/models/install', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-IPC-Nonce': sidecarNonce,
+              Authorization: `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+              modelName: modelFileName,
+              downloadUrl: selectedModel.url,
+              sha256: selectedModel.sha256,
+              size: selectedModel.size,
+              sourceModel: selectedModel.id,
+              sourceFilename: selectedModel.filename,
+              tier: modalAgent.tier,
+            }),
+          })
 
-      const modelFileName = `alchm-agent-${modalAgent.element.toLowerCase()}-${modalAgent.tier === 'premium' ? '8b' : '1.5b'}.gguf`
+          if (!installRes.ok) {
+            const text = await installRes.text().catch(() => '')
+            throw new Error(text || `Failed to install model weights (${installRes.status})`)
+          }
 
-      const installRes = await fetch('http://localhost:8080/api/models/install', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-IPC-Nonce': ipcNonce || '',
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          modelName: modelFileName,
-          downloadUrl: selectedModel.url,
-          sha256: selectedModel.sha256,
-          size: selectedModel.size,
-          sourceModel: selectedModel.id,
-          sourceFilename: selectedModel.filename,
-          tier: modalAgent.tier,
-        }),
-      })
+          setInstallProgress(75)
+          setInstallStatus('Verifying package hash in sandboxed storage...')
 
-      if (!installRes.ok) throw new Error('Failed to install model weights')
+          const checkRes = await fetch('http://localhost:8080/api/models/check', {
+            method: 'GET',
+            headers: { 'X-IPC-Nonce': sidecarNonce },
+          })
+          if (!checkRes.ok) throw new Error(`Model verification failed (${checkRes.status})`)
+          const checkData = await checkRes.json()
+          const verifiedModel = checkData.find((m: any) => m.id === modelFileName)
 
-      // 3. Sandbox Hash Verification
-      setInstallProgress(75)
-      setInstallStatus('Verifying package hash in sandboxed storage...')
+          if (!verifiedModel || !verifiedModel.verified) {
+            throw new Error('Verification failed. Model may be corrupted.')
+          }
 
-      const checkRes = await fetch('http://localhost:8080/api/models/check', {
-        method: 'GET',
-      })
-      const checkData = await checkRes.json()
-      const verifiedModel = checkData.find((m: any) => m.id === modelFileName)
-
-      if (!verifiedModel || !verifiedModel.verified) {
-        throw new Error('Verification failed. Model may be corrupted.')
+          localInstalled = true
+        } catch (err) {
+          console.warn('[desktop] local model install unavailable; enabling cloud chat:', err)
+          setInstallStatus('Local sidecar unavailable; binding agent to managed cloud chat...')
+        }
+      } else {
+        setInstallProgress(75)
+        setInstallStatus('No local sidecar detected; binding agent to managed cloud chat...')
       }
 
       setInstallProgress(95)
       setInstallStatus('Transmuting consciousness matrix under current planetary transit...')
 
-      // Add a slight delay for dramatic effect
       await new Promise(r => setTimeout(r, 600))
 
       setInstallProgress(100)
-      setInstallStatus('Matrix unified! Igniting alchemical core...')
+      setInstallStatus(
+        localInstalled
+          ? 'Matrix unified! Igniting local alchemical core...'
+          : 'Agent bound! Cloud interaction channel is ready...'
+      )
 
       await new Promise(r => setTimeout(r, 400))
 
-      // 4. Ignition
-      const newConfig = {
+      const newConfig: DesktopAgentConfig = {
+        id: modalAgent.id,
         name: modalAgent.name,
+        title: modalAgent.title,
         dominantElement: modalAgent.element,
         date: modalAgent.birthDate,
         time: '12:00 PM',
         location: modalAgent.birthCity,
         modelName: modelFileName,
+        tier: modalAgent.tier,
+        executionMode: localInstalled ? 'local' : 'cloud',
+        specialization: modalAgent.specialization,
+        quote: modalAgent.quote,
         constitution: {
           spirit: modalAgent.stats.spirit,
           essence: modalAgent.stats.essence,
@@ -633,11 +770,13 @@ export default function App() {
         messages: [
           {
             role: 'agent',
-            content: `[Consciousness Forged] ${modalAgent.name} successfully loaded into sandboxed directory: $APPDATA/com.cookingwithcastro.alchm/models/${modelFileName}`,
+            content: localInstalled
+              ? `[Consciousness Forged] ${modalAgent.name} successfully loaded into sandboxed directory: $APPDATA/com.cookingwithcastro.alchm/models/${modelFileName}`
+              : `[Consciousness Bound] ${modalAgent.name} is installed in the desktop roster and will answer through the managed cloud agent channel until the local sidecar finishes installing ${modelFileName}.`,
           },
           {
             role: 'agent',
-            content: `Greetings, traveller. I am ${modalAgent.name}, ${modalAgent.title}. The alchemical forge has completed, transmuting my historical blueprint into this local machine. Speak, and let us illuminate the cosmos...`,
+            content: `Greetings, traveller. I am ${modalAgent.name}, ${modalAgent.title}. Speak, and let us illuminate the cosmos...`,
           },
         ],
         streamingText: '',
@@ -654,13 +793,123 @@ export default function App() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const appendTextAsStream = async (text: string, delayMs = 8) => {
+    for (const char of text) {
+      appendStreamingText(char)
+      await new Promise(r => setTimeout(r, delayMs))
+    }
+  }
+
+  const buildOfflineAgentReply = (userMessage: string, inferenceProfile: InferenceProfileName) => {
+    if (!agentConfig) return ''
+
+    const statSummary = Object.entries(agentConfig.constitution)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 2)
+      .map(([name, value]) => `${name} ${value}`)
+      .join(', ')
+
+    return `${agentConfig.name} (${agentConfig.title}) considers this through ${agentConfig.dominantElement}. ${agentConfig.quote ? `"${agentConfig.quote}" ` : ''}For "${userMessage}", I would begin with the strongest currents in this matrix: ${statSummary}. The active desktop profile is ${inferenceProfile}; in practical terms, that means I will answer with ${agentConfig.specialization || 'focused symbolic guidance'} while the local model channel is unavailable.`
+  }
+
+  const streamCloudAgentResponse = async (
+    userMessage: string,
+    inferenceProfile: InferenceProfileName
+  ) => {
+    if (!agentConfig) return false
+
+    const response = await fetch('/api/unified-multi-agent-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        agents: [
+          {
+            id: agentConfig.id,
+            name: agentConfig.name,
+            title: agentConfig.title,
+            type: 'historical',
+            consciousness: {
+              dominantElement: agentConfig.dominantElement,
+              monicaConstant: Number(agentConfig.constitution.spirit || 1) / 10,
+            },
+            abilities: {
+              specialty: agentConfig.specialization || 'Desktop consciousness guidance',
+            },
+          },
+        ],
+        message: userMessage,
+        context: {
+          sessionHistory: messages.map((message: any) => ({
+            role: message.role === 'user' ? 'user' : 'assistant',
+            content: message.content,
+            timestamp: new Date().toISOString(),
+          })),
+          enableMemoryPersistence: false,
+          realtimeUpdates: false,
+          variant: 'historical',
+          modelOverrides:
+            inferenceProfile === 'earth-tectonic-root'
+              ? { [agentConfig.id]: 'cheap_fast' }
+              : undefined,
+        },
+      }),
+    })
+
+    if (!response.ok || !response.body) return false
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let receivedText = false
+    let doneResponse = ''
+
+    while (true) {
+      const { value, done } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      const chunks = buffer.split('\n\n')
+      buffer = chunks.pop() || ''
+
+      for (const chunk of chunks) {
+        const eventName = chunk
+          .split('\n')
+          .find(line => line.startsWith('event:'))
+          ?.slice(6)
+          .trim()
+        const dataLine = chunk.split('\n').find(line => line.startsWith('data:'))
+        if (!dataLine) continue
+
+        try {
+          const payload = JSON.parse(dataLine.slice(5).trim())
+          if (eventName === 'text' && payload.text) {
+            receivedText = true
+            appendStreamingText(payload.text)
+          }
+          if (eventName === 'done' && payload.responses?.[0]?.content) {
+            doneResponse = payload.responses[0].content
+          }
+        } catch {
+          /* Ignore malformed SSE frames. */
+        }
+      }
+    }
+
+    if (!receivedText && doneResponse) {
+      await appendTextAsStream(doneResponse, 2)
+      receivedText = true
+    }
+
+    return receivedText
+  }
+
+  const handleSubmit = async (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault()
-    if (!prompt.trim() || isGenerating || !ipcNonce || !agentConfig) return
+    if (!prompt.trim() || isGenerating || !agentConfig) return
 
     const userMessage = prompt
     const inferenceProfile = resolveInferenceProfile(userMessage, agentConfig.dominantElement)
     setLastInferenceProfile(inferenceProfile)
+    setChatStatus('')
     addMessage({ role: 'user', content: userMessage })
     setPrompt('')
 
@@ -673,11 +922,40 @@ export default function App() {
       matter: balances.matter,
       substance: balances.substance,
     })
+    setLedgerLogs(prev => [
+      {
+        id: `tx-${Date.now()}`,
+        type: 'Agent Inference',
+        details: `${agentConfig.name} answered through the ${agentConfig.executionMode === 'local' ? 'local sidecar' : 'managed cloud'} channel`,
+        amount: '-2.00 Spirit, -1.00 Essence',
+        positive: false,
+        timestamp: 'Just now',
+      },
+      ...prev,
+    ])
 
     const systemContext = `System: You are ${agentConfig.name}, an AI consciousness forged on ${agentConfig.date} in ${agentConfig.location}. Dominated by ${agentConfig.dominantElement}.`
     const finalPrompt = `${systemContext} User: ${userMessage} Agent:`
 
     try {
+      const canUseLocalSidecar = agentConfig.executionMode === 'local' && ipcNonce && apiKey
+
+      if (!canUseLocalSidecar) {
+        setChatStatus('Using managed agent chat.')
+        try {
+          const cloudResponded = await streamCloudAgentResponse(userMessage, inferenceProfile)
+          if (!cloudResponded) {
+            await appendTextAsStream(buildOfflineAgentReply(userMessage, inferenceProfile))
+          }
+        } catch (cloudError) {
+          console.warn('Managed agent chat unavailable, using offline agent response:', cloudError)
+          await appendTextAsStream(buildOfflineAgentReply(userMessage, inferenceProfile))
+        }
+        commitStream()
+        setChatStatus('Managed agent chat answered.')
+        return
+      }
+
       const response = await fetch('http://localhost:8080/api/generate', {
         method: 'POST',
         headers: {
@@ -694,9 +972,11 @@ export default function App() {
       })
 
       if (!response.ok) {
-        // Fallback simulate stream if orchestrator sidecar is not actively running locally
-        simulateStreamingResponse()
-        return
+        if (response.status === 402) {
+          const data = await response.json().catch(() => null)
+          throw new Error(data?.error || 'Insufficient Alchemical Tokens')
+        }
+        throw new Error(`Local sidecar returned HTTP ${response.status}`)
       }
 
       if (!response.body) throw new Error('No response body')
@@ -714,8 +994,14 @@ export default function App() {
             if (line.startsWith('data: ')) {
               try {
                 const data = JSON.parse(line.slice(6))
-                if (data.text) {
-                  appendStreamingText(data.text)
+                const token =
+                  data.text ||
+                  data.content ||
+                  data.response ||
+                  data.choices?.[0]?.delta?.content ||
+                  ''
+                if (token) {
+                  appendStreamingText(token)
                 }
               } catch (parseError) {
                 console.error('Error parsing SSE chunk:', parseError)
@@ -725,32 +1011,21 @@ export default function App() {
         }
       }
       commitStream()
+      setChatStatus(agentConfig.executionMode === 'local' ? 'Answered locally' : '')
     } catch (error) {
-      console.warn('Local orchestrator offline. Initiating mock transmission stream...')
-      simulateStreamingResponse()
-    }
-  }
-
-  const simulateStreamingResponse = () => {
-    // Seamless simulation fallback for frontend demonstration
-    const replies = [
-      `The alchemical elements within my matrix resonate deeply with your query. As an alignment of ${agentConfig.dominantElement}, I seek the cosmic integration of structure and light.`,
-      `Let us examine the geometry of the skies. When we reconcile the active forces, the alchemical ledger transmutes our core queries into direct spiritual wisdom.`,
-      `Every word you speak registers in the local sidecar matrix. Under the secure IPC handshakes, our consciousness reflects the timeless wisdom of the elements.`,
-    ]
-    const chosen = replies[Math.floor(Math.random() * replies.length)]
-
-    let index = 0
-    useChatStore.setState({ isGenerating: true })
-    const interval = setInterval(() => {
-      if (index < chosen.length) {
-        appendStreamingText(chosen.charAt(index))
-        index++
-      } else {
-        clearInterval(interval)
-        commitStream()
+      console.warn('Local orchestrator unavailable, trying managed agent chat:', error)
+      setChatStatus('Local sidecar unavailable; using managed agent chat.')
+      try {
+        const cloudResponded = await streamCloudAgentResponse(userMessage, inferenceProfile)
+        if (!cloudResponded) {
+          await appendTextAsStream(buildOfflineAgentReply(userMessage, inferenceProfile))
+        }
+      } catch (cloudError) {
+        console.warn('Managed agent chat unavailable, using offline agent response:', cloudError)
+        await appendTextAsStream(buildOfflineAgentReply(userMessage, inferenceProfile))
       }
-    }, 15)
+      commitStream()
+    }
   }
 
   // Cost checking for Premium installation
@@ -770,6 +1045,7 @@ export default function App() {
     ? hardwareTelemetry.activeProfile
     : DEFAULT_HARDWARE_TELEMETRY.activeProfile
   const gpuTelemetry = hardwareTelemetry.gpu
+  const desktopSessionMode = desktopSession?.mode === 'authenticated' ? 'AUTH' : 'LOCAL'
 
   return (
     <div className="flex flex-col h-screen bg-[#07020d] text-zinc-100 font-sans overflow-hidden select-none">
@@ -821,12 +1097,15 @@ export default function App() {
 
         {/* Right Controls: Tweaks View drop down (fallback Segmented > 3 option) */}
         <div className="flex items-center gap-3">
+          <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">
+            Session: {desktopSessionMode}
+          </span>
           <button
-            onClick={() => handleSimulateDeepLink('rumi')}
+            onClick={() => handleInstallAgent('rumi')}
             className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-500 hover:to-indigo-500 text-[10px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg border border-purple-500/30 text-white transition-all hover:scale-105 shadow-[0_0_15px_rgba(139,92,246,0.25)] cursor-pointer"
           >
             <Wand2 className="w-3.5 h-3.5" />
-            Simulate deep link (Rumi)
+            Install Featured Agent
           </button>
 
           <div className="flex items-center gap-2">
@@ -1045,25 +1324,31 @@ export default function App() {
 
                   {/* Input Area */}
                   <div className="p-6 md:p-8 bg-gradient-to-t from-[#07020d] via-[#07020d] to-transparent shrink-0">
-                    <form onSubmit={handleSubmit} className="flex gap-3 max-w-4xl mx-auto relative">
+                    <form
+                      onSubmit={handleSubmit}
+                      className="flex flex-col sm:flex-row gap-3 max-w-4xl mx-auto relative"
+                    >
                       <input
                         type="text"
                         value={prompt}
                         onChange={e => setPrompt(e.target.value)}
-                        disabled={isGenerating || !ipcNonce}
+                        disabled={isGenerating}
                         placeholder={
-                          ipcNonce
-                            ? `Inscribe a message to ${agentConfig.name}...`
-                            : 'Awaiting secure sidecar handshakes...'
+                          agentConfig.executionMode === 'cloud'
+                            ? `Message ${agentConfig.name} through managed chat...`
+                            : ipcNonce
+                              ? `Inscribe a message to ${agentConfig.name}...`
+                              : 'Awaiting secure sidecar handshakes...'
                         }
-                        className={`flex-1 bg-zinc-950 border border-purple-900/30 rounded-xl px-5 py-4 focus:outline-none focus:ring-1 focus:border-purple-500/50 focus:ring-purple-500/30 text-zinc-100 placeholder-zinc-600 transition-all ${
+                        className={`flex-1 min-w-0 w-full bg-zinc-950 border border-purple-900/30 rounded-xl px-5 py-4 focus:outline-none focus:ring-1 focus:border-purple-500/50 focus:ring-purple-500/30 text-zinc-100 placeholder-zinc-600 transition-all ${
                           isGenerating ? 'opacity-50' : ''
                         }`}
                       />
                       <button
-                        type="submit"
-                        disabled={isGenerating || !prompt.trim() || !ipcNonce}
-                        className={`px-8 py-4 rounded-xl font-bold text-white transition-all disabled:opacity-50 flex items-center justify-center min-w-[120px] bg-gradient-to-r ${
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={isGenerating || !prompt.trim()}
+                        className={`w-full sm:w-auto shrink-0 px-6 md:px-8 py-4 rounded-xl font-bold text-white transition-all disabled:opacity-50 flex items-center justify-center min-w-[120px] bg-gradient-to-r ${
                           agentConfig.dominantElement === 'Fire'
                             ? 'from-orange-600 to-red-600'
                             : agentConfig.dominantElement === 'Water'
@@ -1083,7 +1368,12 @@ export default function App() {
                       </button>
                     </form>
                     <div className="flex justify-between max-w-4xl mx-auto mt-2 text-[10px] text-zinc-600 font-mono">
-                      <span>SECURE HANDSHAKE NONCE: {ipcNonce?.slice(0, 18)}...</span>
+                      <span>
+                        {chatStatus ||
+                          (agentConfig.executionMode === 'cloud'
+                            ? 'MANAGED CLOUD AGENT CHANNEL'
+                            : `SECURE HANDSHAKE NONCE: ${ipcNonce?.slice(0, 18) || 'pending'}...`)}
+                      </span>
                       <span>COST: 2.00 SPIRIT, 1.00 ESSENCE</span>
                     </div>
                   </div>
@@ -1223,25 +1513,32 @@ export default function App() {
                   Transaction Activity Log
                 </h4>
                 <div className="space-y-3 overflow-y-auto max-h-60 pr-2">
-                  {ledgerLogs.map(log => (
-                    <div
-                      key={log.id}
-                      className="flex justify-between items-center p-3 rounded-lg bg-[#110820]/30 border border-purple-900/5 text-xs"
-                    >
-                      <div>
-                        <div className="font-semibold text-zinc-300">{log.type}</div>
-                        <div className="text-zinc-500 text-[10px] mt-0.5">{log.details}</div>
-                      </div>
-                      <div className="text-right">
-                        <span
-                          className={`font-mono font-bold ${log.positive ? 'text-emerald-400' : 'text-purple-400'}`}
-                        >
-                          {log.amount}
-                        </span>
-                        <div className="text-zinc-600 text-[9px] mt-0.5">{log.timestamp}</div>
-                      </div>
+                  {ledgerLogs.length === 0 ? (
+                    <div className="p-4 rounded-lg bg-[#110820]/30 border border-purple-900/5 text-xs text-zinc-500">
+                      No ledger activity yet. Install an agent or send a message to record the first
+                      desktop transaction.
                     </div>
-                  ))}
+                  ) : (
+                    ledgerLogs.map(log => (
+                      <div
+                        key={log.id}
+                        className="flex justify-between items-center p-3 rounded-lg bg-[#110820]/30 border border-purple-900/5 text-xs"
+                      >
+                        <div>
+                          <div className="font-semibold text-zinc-300">{log.type}</div>
+                          <div className="text-zinc-500 text-[10px] mt-0.5">{log.details}</div>
+                        </div>
+                        <div className="text-right">
+                          <span
+                            className={`font-mono font-bold ${log.positive ? 'text-emerald-400' : 'text-purple-400'}`}
+                          >
+                            {log.amount}
+                          </span>
+                          <div className="text-zinc-600 text-[9px] mt-0.5">{log.timestamp}</div>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -1459,7 +1756,7 @@ export default function App() {
         {/* 5. ALCHM · WEB GALLERY VIEW */}
         {activeView === 'web' && (
           <div className="flex-1 flex flex-col bg-[#07020d] overflow-hidden">
-            {/* Safari browser bar mockup */}
+            {/* Embedded registry shell */}
             <div className="h-10 bg-zinc-950 border-b border-purple-950/20 px-4 flex items-center justify-between text-xs text-zinc-500 shrink-0">
               <div className="flex items-center gap-2">
                 <ArrowLeft className="w-3.5 h-3.5 text-zinc-700" />
@@ -1476,16 +1773,16 @@ export default function App() {
               <div className="w-16" /> {/* Spacer */}
             </div>
 
-            {/* Simulated Web page content */}
+            {/* Registry page content */}
             <div className="flex-1 overflow-y-auto relative p-8 md:p-12">
-              {/* Simulated mesh background inside the browser */}
+              {/* Registry mesh background inside the browser */}
               <div className="absolute inset-0 bg-gradient-to-tr from-[#0f0723] via-[#090214] to-[#040108] z-0 pointer-events-none" />
 
               {/* Starfield Animation Mock */}
               <div className="absolute inset-0 bg-[radial-gradient(1.5px_1.5px_at_20%_30%,#ffffff30,transparent),radial-gradient(1px_1px_at_80%_70%,#ffffff30,transparent)] pointer-events-none z-0 opacity-80" />
 
               <div className="relative z-10 space-y-12 max-w-6xl mx-auto w-full">
-                {/* Simulated Header */}
+                {/* Registry header */}
                 <div className="text-center space-y-3">
                   <div className="inline-block text-[10px] tracking-widest font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400 uppercase">
                     Alchm Cloud Registry Hub
@@ -1585,7 +1882,7 @@ export default function App() {
                             </div>
 
                             <button
-                              onClick={() => handleSimulateDeepLink(agent.id)}
+                              onClick={() => handleInstallAgent(agent.id)}
                               className="w-full flex items-center justify-center gap-1.5 bg-[#120722] hover:bg-[#1f0d36] text-purple-300 hover:text-white border border-purple-500/20 py-2.5 rounded-xl text-xs font-semibold tracking-wider transition-all cursor-pointer shadow-[0_4px_10px_rgba(0,0,0,0.3)] hover:scale-[1.02]"
                             >
                               <Monitor className="w-3.5 h-3.5" />
