@@ -103,7 +103,7 @@ const navigationGroups = [
     links: [
       {
         href: DESKTOP_APP_DOWNLOAD_URL,
-        label: 'Download Desktop',
+        label: 'Download App',
         description: 'Install the native Tauri desktop companion app.',
       },
       {
@@ -218,20 +218,12 @@ export function Navigation() {
               href={DESKTOP_APP_DOWNLOAD_URL}
               target="_blank"
               rel="noopener noreferrer"
+              className="nav-download-btn"
               title="Download Desktop App"
+              aria-label="Download Desktop App"
             >
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Download Desktop App"
-                className="nav-icon-btn p-0 text-violet-400 hover:text-violet-300"
-              >
-                <img
-                  src="/alchm-logo.png"
-                  className="h-6 w-6 rounded-full object-cover border border-violet-500/40 hover:scale-110 transition-transform"
-                  alt="Alchm Logo"
-                />
-              </Button>
+              <Monitor className="h-4 w-4" />
+              <span>Download App</span>
             </a>
             <Link href="/dashboard">
               <Button variant="ghost" size="icon" aria-label="Dashboard" className="nav-icon-btn">
@@ -310,12 +302,8 @@ export function Navigation() {
                 className="nav-mobile-action text-violet-400"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <img
-                  src="/alchm-logo.png"
-                  className="w-4 h-4 rounded-full object-cover inline mr-1.5 border border-violet-500/40"
-                  alt="Alchm Logo"
-                />{' '}
-                Download Desktop
+                <Monitor className="w-4 h-4" />
+                Download App
               </a>
               <Link
                 href="/dashboard"
