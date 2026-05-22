@@ -7,6 +7,9 @@
 # Backend directory (built on Render separately)
 backend/
 
+# Desktop app sources and local build output (distributed separately via releases)
+src-tauri/
+
 # Local dependency/build/git artifacts
 node_modules/
 .next/
@@ -29,6 +32,18 @@ backend/.yarn/
 .env.local
 .env.*.local
 backend/.env*
+
+# Local databases/state files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+prisma/dev.db
 
 # Test and development files
 backend/tests/
