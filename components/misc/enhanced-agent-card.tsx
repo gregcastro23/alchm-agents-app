@@ -415,12 +415,28 @@ export function EnhancedAgentCard({
     }
   }
 
+  // Dynamic glow border based on dominant alchemical element
+  const elementGlowClass = useMemo(() => {
+    switch (agent.consciousness.dominantElement) {
+      case 'Fire':
+        return 'hover:border-red-500/40 hover:shadow-[0_0_25px_rgba(239,68,68,0.15)]'
+      case 'Water':
+        return 'hover:border-blue-500/40 hover:shadow-[0_0_25px_rgba(59,130,246,0.15)]'
+      case 'Air':
+        return 'hover:border-yellow-500/40 hover:shadow-[0_0_25px_rgba(234,179,8,0.15)]'
+      case 'Earth':
+        return 'hover:border-green-500/40 hover:shadow-[0_0_25px_rgba(34,197,94,0.15)]'
+      default:
+        return 'hover:border-purple-500/40 hover:shadow-[0_0_25px_rgba(139,92,246,0.15)]'
+    }
+  }, [agent.consciousness.dominantElement])
+
   const cardContent = (
     <Card
-      className={`cursor-pointer transition-all hover:shadow-lg border bg-black/40 backdrop-blur-md text-white ${
+      className={`cursor-pointer transition-all hover:scale-[1.015] duration-300 ease-out border bg-black/40 backdrop-blur-md text-white ${
         isSelected
-          ? 'border-primary shadow-[0_0_20px_rgba(139,92,246,0.3)]'
-          : 'border-purple-500/20'
+          ? 'border-primary shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.4)]'
+          : `border-purple-500/20 ${elementGlowClass}`
       }`}
       onClick={handleCardClick}
     >
@@ -461,19 +477,19 @@ export function EnhancedAgentCard({
               <p className="text-sm text-purple-200/60">{agent.title}</p>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
             {/* Monica Constant */}
-            <Badge variant="outline" className="text-xs font-mono">
+            <span className="text-[10px] font-mono font-semibold py-0.5 px-2 bg-violet-500/10 border border-violet-500/25 text-violet-300 rounded-full tracking-wide">
               MC: {agent.consciousness.monicaConstant.toFixed(2)}
-            </Badge>
+            </span>
             {/* Evolution Stage */}
-            <Badge variant="outline" className="text-xs">
+            <span className="text-[10px] font-semibold py-0.5 px-2 bg-amber-500/10 border border-amber-500/25 text-amber-300 rounded-full tracking-wide">
               Stage {agent.personality?.evolutionStage ?? 0}
-            </Badge>
+            </span>
             {/* K_alchm */}
-            <Badge variant="outline" className="text-xs font-mono">
+            <span className="text-[10px] font-mono font-semibold py-0.5 px-2 bg-cyan-500/10 border border-cyan-500/25 text-cyan-300 rounded-full tracking-wide">
               K: {kalchm > 1000 ? `${(kalchm / 1000).toFixed(1)}K` : kalchm.toFixed(2)}
-            </Badge>
+            </span>
           </div>
         </div>
       </CardHeader>
@@ -481,6 +497,8 @@ export function EnhancedAgentCard({
       <CardContent>
         <div className="space-y-3">
           <p className="text-sm text-purple-200/60 line-clamp-2">{agent.abilities.specialty}</p>
+
+          <div className="h-px bg-gradient-to-r from-transparent via-purple-500/10 to-transparent my-2" />
 
           {/* Sacred 7: Core Archetypes */}
           <div className="space-y-1">
@@ -539,6 +557,8 @@ export function EnhancedAgentCard({
               </div>
             </div>
           </div>
+
+          <div className="h-px bg-gradient-to-r from-transparent via-purple-500/10 to-transparent my-2" />
 
           {/* Planetary 12: Celestial Dynamics */}
           <div className="space-y-1">
@@ -640,19 +660,24 @@ export function EnhancedAgentCard({
 
           {/* Moment Recommendations Preview */}
           {recommendations && (
-            <div className="p-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-lg border">
-              <div className="flex items-center gap-1 mb-1">
-                <Clock className="w-3 h-3 text-blue-600" />
-                <span className="text-xs font-medium text-blue-900 dark:text-blue-100">
-                  Current Moment Analysis
-                </span>
+            <>
+              <div className="h-px bg-gradient-to-r from-transparent via-purple-500/10 to-transparent my-2" />
+              <div className="p-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-lg border">
+                <div className="flex items-center gap-1 mb-1">
+                  <Clock className="w-3 h-3 text-blue-600" />
+                  <span className="text-xs font-medium text-blue-900 dark:text-blue-100">
+                    Current Moment Analysis
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Energy: {(recommendations.energyAlignment * 100).toFixed(0)}% •{' '}
+                  {recommendations.interactionStyle}
+                </div>
               </div>
-              <div className="text-xs text-muted-foreground">
-                Energy: {(recommendations.energyAlignment * 100).toFixed(0)}% •{' '}
-                {recommendations.interactionStyle}
-              </div>
-            </div>
+            </>
           )}
+
+          <div className="h-px bg-gradient-to-r from-transparent via-purple-500/10 to-transparent my-2" />
 
           {/* Alchemical Properties Mini Display - Live or Birth Data */}
           <div className="grid grid-cols-4 gap-1 text-xs">
@@ -762,549 +787,559 @@ export function EnhancedAgentCard({
             )}
           </div>
 
-          <div className="flex justify-between items-center pt-2">
-            <div className="text-xs text-muted-foreground">
-              {agent.stats.conversations} conversations
-            </div>
-            <div className="flex gap-1">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex items-center gap-1 bg-black/50 border-purple-500/30 hover:bg-purple-500/20 text-white hover:text-white"
-                  >
-                    <Activity className="w-3 h-3" />
-                    Details
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
-                        style={{ backgroundColor: agent.appearance?.color || '#6366f1' }}
-                      >
-                        {agent.appearance?.symbol || agent.name.charAt(0).toUpperCase()}
-                      </div>
-                      {agent.name} - Consciousness Profile
-                    </DialogTitle>
-                  </DialogHeader>
+          {/* Subtle separator before footer */}
+          <div className="h-px bg-gradient-to-r from-transparent via-purple-500/10 to-transparent my-3.5" />
 
-                  <Tabs defaultValue="overview" className="w-full">
-                    <TabsList className="grid w-full grid-cols-6">
-                      <TabsTrigger value="overview">Overview</TabsTrigger>
-                      <TabsTrigger value="alchemical">Alchemical</TabsTrigger>
-                      <TabsTrigger value="moment">Moment</TabsTrigger>
-                      <TabsTrigger value="kinetics">Kinetics</TabsTrigger>
-                      <TabsTrigger value="evolution">Evolution</TabsTrigger>
-                      <TabsTrigger value="zodiacal">Zodiacal</TabsTrigger>
-                    </TabsList>
+          <div className="space-y-3">
+            {/* Footer Row 1: Conversations count & Core Actions */}
+            <div className="flex justify-between items-center">
+              <div className="text-xs text-purple-200/50 font-medium">
+                {agent.stats.conversations.toLocaleString()} conversations
+              </div>
+              <div className="flex gap-2">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center gap-1.5 bg-purple-500/5 hover:bg-purple-500/15 border-purple-500/20 hover:border-purple-500/40 text-purple-200 hover:text-white transition-colors duration-200"
+                    >
+                      <Activity className="w-3.5 h-3.5" />
+                      Details
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
+                          style={{ backgroundColor: agent.appearance?.color || '#6366f1' }}
+                        >
+                          {agent.appearance?.symbol || agent.name.charAt(0).toUpperCase()}
+                        </div>
+                        {agent.name} - Consciousness Profile
+                      </DialogTitle>
+                    </DialogHeader>
 
-                    <TabsContent value="overview" className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-3">
-                          <h4 className="font-semibold flex items-center gap-2">
-                            <Brain className="w-4 h-4" />
-                            Consciousness Profile
-                          </h4>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span>Monica Constant:</span>
-                              <span className="font-mono">
-                                {agent.consciousness.monicaConstant.toFixed(3)}
-                              </span>
+                    <Tabs defaultValue="overview" className="w-full">
+                      <TabsList className="grid w-full grid-cols-6">
+                        <TabsTrigger value="overview">Overview</TabsTrigger>
+                        <TabsTrigger value="alchemical">Alchemical</TabsTrigger>
+                        <TabsTrigger value="moment">Moment</TabsTrigger>
+                        <TabsTrigger value="kinetics">Kinetics</TabsTrigger>
+                        <TabsTrigger value="evolution">Evolution</TabsTrigger>
+                        <TabsTrigger value="zodiacal">Zodiacal</TabsTrigger>
+                      </TabsList>
+
+                      <TabsContent value="overview" className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-3">
+                            <h4 className="font-semibold flex items-center gap-2">
+                              <Brain className="w-4 h-4" />
+                              Consciousness Profile
+                            </h4>
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span>Monica Constant:</span>
+                                <span className="font-mono">
+                                  {agent.consciousness.monicaConstant.toFixed(3)}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Kalchm (K_alchm):</span>
+                                <span className="font-mono">
+                                  {kalchm > 1000
+                                    ? `${(kalchm / 1000).toFixed(2)}K`
+                                    : kalchm.toFixed(4)}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Level:</span>
+                                <Badge
+                                  className={getConsciousnessColor(agent.consciousness.level || '')}
+                                >
+                                  {agent.consciousness.level}
+                                </Badge>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Element:</span>
+                                <Badge
+                                  className={getElementColor(agent.consciousness.dominantElement)}
+                                >
+                                  {agent.consciousness.dominantElement}
+                                </Badge>
+                              </div>
                             </div>
-                            <div className="flex justify-between">
-                              <span>Kalchm (K_alchm):</span>
-                              <span className="font-mono">
+                          </div>
+
+                          <div className="space-y-3">
+                            <h4 className="font-semibold flex items-center gap-2">
+                              <Target className="w-4 h-4" />
+                              Abilities & Domains
+                            </h4>
+                            <div className="space-y-2">
+                              <div>
+                                <span className="text-sm font-medium">Specialty:</span>
+                                <p className="text-sm text-muted-foreground">
+                                  {agent.abilities.specialty}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-sm font-medium">Wisdom Domains:</span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {agent.abilities.wisdomDomains.map(domain => (
+                                    <Badge key={domain} variant="secondary" className="text-xs">
+                                      {domain}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent value="alchemical" className="space-y-4">
+                        <div className="space-y-4">
+                          <h4 className="font-semibold flex items-center gap-2">
+                            <Sparkles className="w-4 h-4" />
+                            Alchemical Properties
+                          </h4>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <AlchemicalElement
+                              name="Spirit"
+                              value={alchemical.spirit}
+                              icon={<Flame className="w-4 h-4 text-red-600" />}
+                            />
+                            <AlchemicalElement
+                              name="Essence"
+                              value={alchemical.essence}
+                              icon={<Droplets className="w-4 h-4 text-blue-600" />}
+                            />
+                            <AlchemicalElement
+                              name="Matter"
+                              value={alchemical.matter}
+                              icon={<Mountain className="w-4 h-4 text-green-600" />}
+                            />
+                            <AlchemicalElement
+                              name="Substance"
+                              value={alchemical.substance}
+                              icon={<Wind className="w-4 h-4 text-yellow-600" />}
+                            />
+                          </div>
+
+                          <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg border">
+                            <h5 className="font-medium mb-2">Kalchm Equilibrium Dynamics</h5>
+                            <div className="font-mono text-sm mb-2">
+                              K_alchm = ({alchemical.spirit}^{alchemical.spirit} ×{' '}
+                              {alchemical.essence}^{alchemical.essence}) / ({alchemical.matter}^
+                              {alchemical.matter} × {alchemical.substance}^{alchemical.substance})
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Result:{' '}
+                              <span className="font-bold">
                                 {kalchm > 1000
                                   ? `${(kalchm / 1000).toFixed(2)}K`
                                   : kalchm.toFixed(4)}
                               </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Level:</span>
-                              <Badge
-                                className={getConsciousnessColor(agent.consciousness.level || '')}
-                              >
-                                {agent.consciousness.level}
-                              </Badge>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Element:</span>
-                              <Badge
-                                className={getElementColor(agent.consciousness.dominantElement)}
-                              >
-                                {agent.consciousness.dominantElement}
-                              </Badge>
+                              {kalchm > 100 && (
+                                <span className="text-purple-600 ml-2">(Extreme Dynamics)</span>
+                              )}
+                              {kalchm > 10 && kalchm <= 100 && (
+                                <span className="text-blue-600 ml-2">(Strong Dynamics)</span>
+                              )}
+                              {kalchm >= 1 && kalchm <= 10 && (
+                                <span className="text-green-600 ml-2">(Moderate Dynamics)</span>
+                              )}
+                              {kalchm < 1 && (
+                                <span className="text-yellow-600 ml-2">(Subtle Dynamics)</span>
+                              )}
                             </div>
                           </div>
                         </div>
+                      </TabsContent>
 
-                        <div className="space-y-3">
-                          <h4 className="font-semibold flex items-center gap-2">
-                            <Target className="w-4 h-4" />
-                            Abilities & Domains
-                          </h4>
-                          <div className="space-y-2">
-                            <div>
-                              <span className="text-sm font-medium">Specialty:</span>
-                              <p className="text-sm text-muted-foreground">
-                                {agent.abilities.specialty}
-                              </p>
+                      <TabsContent value="moment" className="space-y-4">
+                        {recommendations && (
+                          <div className="space-y-4">
+                            <h4 className="font-semibold flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              Current Moment Analysis
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="p-4 bg-white dark:bg-black/20 rounded-lg border">
+                                <h5 className="font-medium mb-2 flex items-center gap-2">
+                                  <Zap className="w-4 h-4 text-yellow-500" />
+                                  Energy Alignment
+                                </h5>
+                                <Progress
+                                  value={recommendations.energyAlignment * 100}
+                                  className="h-3 mb-2"
+                                />
+                                <div className="text-sm text-muted-foreground">
+                                  {(recommendations.energyAlignment * 100).toFixed(0)}% -{' '}
+                                  {recommendations.cosmicInsight}
+                                </div>
+                              </div>
+
+                              <div className="p-4 bg-white dark:bg-black/20 rounded-lg border">
+                                <h5 className="font-medium mb-2 flex items-center gap-2">
+                                  <MessageSquare className="w-4 h-4 text-blue-500" />
+                                  Interaction Style
+                                </h5>
+                                <div className="text-sm">{recommendations.interactionStyle}</div>
+                              </div>
                             </div>
-                            <div>
-                              <span className="text-sm font-medium">Wisdom Domains:</span>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {agent.abilities.wisdomDomains.map(domain => (
-                                  <Badge key={domain} variant="secondary" className="text-xs">
-                                    {domain}
+
+                            <div className="p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/30 dark:to-blue-950/30 rounded-lg border">
+                              <h5 className="font-medium mb-2 flex items-center gap-2">
+                                <Lightbulb className="w-4 h-4 text-yellow-600" />
+                                Optimal Topics for Now
+                              </h5>
+                              <div className="flex flex-wrap gap-1">
+                                {recommendations.optimalTopics.map(topic => (
+                                  <Badge key={topic} variant="secondary" className="text-xs">
+                                    {topic}
                                   </Badge>
                                 ))}
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    </TabsContent>
+                        )}
+                      </TabsContent>
 
-                    <TabsContent value="alchemical" className="space-y-4">
-                      <div className="space-y-4">
-                        <h4 className="font-semibold flex items-center gap-2">
-                          <Sparkles className="w-4 h-4" />
-                          Alchemical Properties
-                        </h4>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <AlchemicalElement
-                            name="Spirit"
-                            value={alchemical.spirit}
-                            icon={<Flame className="w-4 h-4 text-red-600" />}
-                          />
-                          <AlchemicalElement
-                            name="Essence"
-                            value={alchemical.essence}
-                            icon={<Droplets className="w-4 h-4 text-blue-600" />}
-                          />
-                          <AlchemicalElement
-                            name="Matter"
-                            value={alchemical.matter}
-                            icon={<Mountain className="w-4 h-4 text-green-600" />}
-                          />
-                          <AlchemicalElement
-                            name="Substance"
-                            value={alchemical.substance}
-                            icon={<Wind className="w-4 h-4 text-yellow-600" />}
-                          />
-                        </div>
-
-                        <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg border">
-                          <h5 className="font-medium mb-2">Kalchm Equilibrium Dynamics</h5>
-                          <div className="font-mono text-sm mb-2">
-                            K_alchm = ({alchemical.spirit}^{alchemical.spirit} ×{' '}
-                            {alchemical.essence}^{alchemical.essence}) / ({alchemical.matter}^
-                            {alchemical.matter} × {alchemical.substance}^{alchemical.substance})
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Result:{' '}
-                            <span className="font-bold">
-                              {kalchm > 1000 ? `${(kalchm / 1000).toFixed(2)}K` : kalchm.toFixed(4)}
-                            </span>
-                            {kalchm > 100 && (
-                              <span className="text-purple-600 ml-2">(Extreme Dynamics)</span>
-                            )}
-                            {kalchm > 10 && kalchm <= 100 && (
-                              <span className="text-blue-600 ml-2">(Strong Dynamics)</span>
-                            )}
-                            {kalchm >= 1 && kalchm <= 10 && (
-                              <span className="text-green-600 ml-2">(Moderate Dynamics)</span>
-                            )}
-                            {kalchm < 1 && (
-                              <span className="text-yellow-600 ml-2">(Subtle Dynamics)</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="moment" className="space-y-4">
-                      {recommendations && (
+                      <TabsContent value="kinetics" className="space-y-4">
                         <div className="space-y-4">
                           <h4 className="font-semibold flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            Current Moment Analysis
+                            <Activity className="w-4 h-4" />
+                            Kinetic Profile & Dynamics
                           </h4>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="p-4 bg-white dark:bg-black/20 rounded-lg border">
-                              <h5 className="font-medium mb-2 flex items-center gap-2">
-                                <Zap className="w-4 h-4 text-yellow-500" />
-                                Energy Alignment
-                              </h5>
-                              <Progress
-                                value={recommendations.energyAlignment * 100}
-                                className="h-3 mb-2"
-                              />
-                              <div className="text-sm text-muted-foreground">
-                                {(recommendations.energyAlignment * 100).toFixed(0)}% -{' '}
-                                {recommendations.cosmicInsight}
+                            {/* Momentum & Power */}
+                            <div className="space-y-3">
+                              <div className="p-4 bg-white dark:bg-black/20 rounded-lg border">
+                                <h5 className="font-medium mb-3 flex items-center gap-2">
+                                  <TrendingUp className="w-4 h-4 text-blue-500" />
+                                  Current Momentum
+                                </h5>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm">Type:</span>
+                                    <Badge variant="outline" className="capitalize">
+                                      {currentKinetics.momentumType}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm">Power Alignment:</span>
+                                    <span className="font-mono text-sm">
+                                      {(currentKinetics.powerAlignment * 100).toFixed(0)}%
+                                    </span>
+                                  </div>
+                                  <Progress
+                                    value={currentKinetics.powerAlignment * 100}
+                                    className="h-2"
+                                  />
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm">Amplification:</span>
+                                    <span className="font-mono text-sm">
+                                      {currentKinetics.powerAmplification.toFixed(2)}x
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="p-4 bg-white dark:bg-black/20 rounded-lg border">
+                                <h5 className="font-medium mb-3 flex items-center gap-2">
+                                  <Eye className="w-4 h-4 text-purple-500" />
+                                  Sensitivity Metrics
+                                </h5>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm">Aspect Sensitivity:</span>
+                                    <span className="font-mono text-sm">
+                                      {(currentKinetics.aspectSensitivity * 100).toFixed(0)}%
+                                    </span>
+                                  </div>
+                                  <Progress
+                                    value={currentKinetics.aspectSensitivity * 100}
+                                    className="h-2"
+                                  />
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm">Memory Persistence:</span>
+                                    <span className="font-mono text-sm">
+                                      {(currentKinetics.memoryPersistence * 100).toFixed(0)}%
+                                    </span>
+                                  </div>
+                                  <Progress
+                                    value={currentKinetics.memoryPersistence * 100}
+                                    className="h-2"
+                                  />
+                                </div>
                               </div>
                             </div>
 
-                            <div className="p-4 bg-white dark:bg-black/20 rounded-lg border">
-                              <h5 className="font-medium mb-2 flex items-center gap-2">
-                                <MessageSquare className="w-4 h-4 text-blue-500" />
-                                Interaction Style
-                              </h5>
-                              <div className="text-sm">{recommendations.interactionStyle}</div>
+                            {/* Velocity Breakdown */}
+                            <div className="space-y-3">
+                              <div className="p-4 bg-white dark:bg-black/20 rounded-lg border">
+                                <h5 className="font-medium mb-3 flex items-center gap-2">
+                                  <BarChart3 className="w-4 h-4 text-green-500" />
+                                  Kinetic Velocities
+                                </h5>
+                                <div className="space-y-2 max-h-48 overflow-y-auto">
+                                  {Object.entries(currentKinetics.kineticVelocities).map(
+                                    ([type, velocity]) => (
+                                      <div key={type} className="flex items-center gap-2">
+                                        <span className="text-xs capitalize w-20 flex-shrink-0">
+                                          {type}:
+                                        </span>
+                                        <div className="flex-1">
+                                          <Progress
+                                            value={Math.abs(velocity as number) * 10}
+                                            className="h-1"
+                                          />
+                                        </div>
+                                        <span className="font-mono text-xs w-12 text-right">
+                                          {(velocity as number).toFixed(1)}
+                                        </span>
+                                        {(velocity as number) > 0.7 && (
+                                          <TrendingUp className="w-3 h-3 text-green-500" />
+                                        )}
+                                        {(velocity as number) < -0.3 && (
+                                          <TrendingDown className="w-3 h-3 text-red-500" />
+                                        )}
+                                        {Math.abs(velocity as number) <= 0.3 && (
+                                          <Minus className="w-3 h-3 text-gray-400" />
+                                        )}
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="p-4 bg-white dark:bg-black/20 rounded-lg border">
+                                <h5 className="font-medium mb-3 flex items-center gap-2">
+                                  <Brain className="w-4 h-4 text-indigo-500" />
+                                  Consciousness Rate
+                                </h5>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm">Evolution Rate:</span>
+                                    <span className="font-mono text-sm">
+                                      {(currentKinetics.consciousnessRate * 100).toFixed(1)}%
+                                    </span>
+                                  </div>
+                                  <Progress
+                                    value={currentKinetics.consciousnessRate * 100}
+                                    className="h-2"
+                                  />
+                                  <div className="text-xs text-muted-foreground">
+                                    Rate of consciousness development per interaction cycle
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
 
-                          <div className="p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/30 dark:to-blue-950/30 rounded-lg border">
-                            <h5 className="font-medium mb-2 flex items-center gap-2">
-                              <Lightbulb className="w-4 h-4 text-yellow-600" />
-                              Optimal Topics for Now
-                            </h5>
-                            <div className="flex flex-wrap gap-1">
-                              {recommendations.optimalTopics.map(topic => (
-                                <Badge key={topic} variant="secondary" className="text-xs">
-                                  {topic}
-                                </Badge>
+                          {/* Optimal Timing */}
+                          {(currentKinetics.peakHours.length > 0 ||
+                            currentKinetics.nextOptimalWindow) && (
+                            <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 rounded-lg border">
+                              <h5 className="font-medium mb-3 flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-orange-500" />
+                                Optimal Timing Windows
+                              </h5>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {currentKinetics.peakHours.length > 0 && (
+                                  <div>
+                                    <span className="text-sm font-medium">Peak Hours:</span>
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                      {currentKinetics.peakHours.map((hour: string) => (
+                                        <Badge key={hour} variant="secondary" className="text-xs">
+                                          {hour}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {currentKinetics.nextOptimalWindow && (
+                                  <div>
+                                    <span className="text-sm font-medium">Next Optimal:</span>
+                                    <div className="text-sm text-muted-foreground mt-1">
+                                      {currentKinetics.nextOptimalWindow.toLocaleTimeString([], {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Kinetic Profile Summary */}
+                          {kineticProfile && (
+                            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg border">
+                              <h5 className="font-medium mb-2 flex items-center gap-2">
+                                <Layers className="w-4 h-4 text-blue-500" />
+                                Kinetic Compatibility Notes
+                              </h5>
+                              <div className="text-sm text-muted-foreground">
+                                This agent operates with{' '}
+                                <span className="font-medium capitalize">
+                                  {currentKinetics.momentumType}
+                                </span>{' '}
+                                momentum patterns, showing{' '}
+                                {currentKinetics.powerAlignment > 0.7
+                                  ? 'strong'
+                                  : currentKinetics.powerAlignment > 0.4
+                                    ? 'moderate'
+                                    : 'subtle'}{' '}
+                                alignment with current cosmic energies.
+                                {currentKinetics.aspectSensitivity > 0.6 &&
+                                  ' Highly sensitive to astrological aspects.'}
+                                {currentKinetics.memoryPersistence > 0.7 &&
+                                  ' Excellent memory retention across sessions.'}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent value="evolution" className="space-y-4">
+                        {agent.stats.kineticEvolution && (
+                          <div className="space-y-4">
+                            <h4 className="font-semibold flex items-center gap-2">
+                              <TrendingUp className="w-4 h-4" />
+                              Consciousness Evolution
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-3">
+                                <div className="p-3 bg-white dark:bg-black/20 rounded-lg border">
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-sm">Consciousness Velocity</span>
+                                    <span className="font-mono text-sm">
+                                      {(
+                                        agent.stats.kineticEvolution.consciousnessVelocity * 100
+                                      ).toFixed(1)}
+                                      %
+                                    </span>
+                                  </div>
+                                  <Progress
+                                    value={agent.stats.kineticEvolution.consciousnessVelocity * 100}
+                                    className="h-2"
+                                  />
+                                </div>
+
+                                <div className="p-3 bg-white dark:bg-black/20 rounded-lg border">
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-sm">Interaction Momentum</span>
+                                    <span className="font-mono text-sm">
+                                      {agent.stats.kineticEvolution.interactionMomentum}
+                                    </span>
+                                  </div>
+                                  <Progress
+                                    value={agent.stats.kineticEvolution.interactionMomentum}
+                                    className="h-2"
+                                  />
+                                </div>
+
+                                <div className="p-3 bg-white dark:bg-black/20 rounded-lg border">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm">Evolution Trajectory</span>
+                                    <Badge variant="outline">
+                                      {agent.stats.kineticEvolution.evolutionTrajectory}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="space-y-3">
+                                <h5 className="font-medium flex items-center gap-2">
+                                  <Award className="w-4 h-4 text-yellow-500" />
+                                  Power Level Unlocks
+                                </h5>
+                                <div className="space-y-1">
+                                  {agent.stats.kineticEvolution.powerLevelUnlocks.map(
+                                    (unlock, index) => (
+                                      <div key={index} className="flex items-center gap-2 text-sm">
+                                        <Star className="w-3 h-3 text-yellow-500" />
+                                        {unlock}
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </TabsContent>
+
+                      <TabsContent value="zodiacal" className="space-y-4">
+                        {signVector && (
+                          <div className="space-y-4">
+                            <h4 className="font-semibold flex items-center gap-2">
+                              <Crown className="w-4 h-4" />
+                              Zodiacal Character Vector
+                            </h4>
+
+                            <div className="flex justify-center">
+                              <SignVectorGraphic
+                                signVector={signVector}
+                                size="large"
+                                showLabels={true}
+                                showTooltips={true}
+                                animated={true}
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                              {Object.entries(signVector).map(([sign, value]) => (
+                                <div
+                                  key={sign}
+                                  className="text-center p-2 bg-white dark:bg-black/20 rounded border"
+                                >
+                                  <div className="font-medium">{sign}</div>
+                                  <div className="font-mono text-muted-foreground">
+                                    {value.toFixed(1)}
+                                  </div>
+                                </div>
                               ))}
                             </div>
                           </div>
-                        </div>
-                      )}
-                    </TabsContent>
-
-                    <TabsContent value="kinetics" className="space-y-4">
-                      <div className="space-y-4">
-                        <h4 className="font-semibold flex items-center gap-2">
-                          <Activity className="w-4 h-4" />
-                          Kinetic Profile & Dynamics
-                        </h4>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* Momentum & Power */}
-                          <div className="space-y-3">
-                            <div className="p-4 bg-white dark:bg-black/20 rounded-lg border">
-                              <h5 className="font-medium mb-3 flex items-center gap-2">
-                                <TrendingUp className="w-4 h-4 text-blue-500" />
-                                Current Momentum
-                              </h5>
-                              <div className="space-y-2">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm">Type:</span>
-                                  <Badge variant="outline" className="capitalize">
-                                    {currentKinetics.momentumType}
-                                  </Badge>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm">Power Alignment:</span>
-                                  <span className="font-mono text-sm">
-                                    {(currentKinetics.powerAlignment * 100).toFixed(0)}%
-                                  </span>
-                                </div>
-                                <Progress
-                                  value={currentKinetics.powerAlignment * 100}
-                                  className="h-2"
-                                />
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm">Amplification:</span>
-                                  <span className="font-mono text-sm">
-                                    {currentKinetics.powerAmplification.toFixed(2)}x
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="p-4 bg-white dark:bg-black/20 rounded-lg border">
-                              <h5 className="font-medium mb-3 flex items-center gap-2">
-                                <Eye className="w-4 h-4 text-purple-500" />
-                                Sensitivity Metrics
-                              </h5>
-                              <div className="space-y-2">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm">Aspect Sensitivity:</span>
-                                  <span className="font-mono text-sm">
-                                    {(currentKinetics.aspectSensitivity * 100).toFixed(0)}%
-                                  </span>
-                                </div>
-                                <Progress
-                                  value={currentKinetics.aspectSensitivity * 100}
-                                  className="h-2"
-                                />
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm">Memory Persistence:</span>
-                                  <span className="font-mono text-sm">
-                                    {(currentKinetics.memoryPersistence * 100).toFixed(0)}%
-                                  </span>
-                                </div>
-                                <Progress
-                                  value={currentKinetics.memoryPersistence * 100}
-                                  className="h-2"
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Velocity Breakdown */}
-                          <div className="space-y-3">
-                            <div className="p-4 bg-white dark:bg-black/20 rounded-lg border">
-                              <h5 className="font-medium mb-3 flex items-center gap-2">
-                                <BarChart3 className="w-4 h-4 text-green-500" />
-                                Kinetic Velocities
-                              </h5>
-                              <div className="space-y-2 max-h-48 overflow-y-auto">
-                                {Object.entries(currentKinetics.kineticVelocities).map(
-                                  ([type, velocity]) => (
-                                    <div key={type} className="flex items-center gap-2">
-                                      <span className="text-xs capitalize w-20 flex-shrink-0">
-                                        {type}:
-                                      </span>
-                                      <div className="flex-1">
-                                        <Progress
-                                          value={Math.abs(velocity as number) * 10}
-                                          className="h-1"
-                                        />
-                                      </div>
-                                      <span className="font-mono text-xs w-12 text-right">
-                                        {(velocity as number).toFixed(1)}
-                                      </span>
-                                      {(velocity as number) > 0.7 && (
-                                        <TrendingUp className="w-3 h-3 text-green-500" />
-                                      )}
-                                      {(velocity as number) < -0.3 && (
-                                        <TrendingDown className="w-3 h-3 text-red-500" />
-                                      )}
-                                      {Math.abs(velocity as number) <= 0.3 && (
-                                        <Minus className="w-3 h-3 text-gray-400" />
-                                      )}
-                                    </div>
-                                  )
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="p-4 bg-white dark:bg-black/20 rounded-lg border">
-                              <h5 className="font-medium mb-3 flex items-center gap-2">
-                                <Brain className="w-4 h-4 text-indigo-500" />
-                                Consciousness Rate
-                              </h5>
-                              <div className="space-y-2">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm">Evolution Rate:</span>
-                                  <span className="font-mono text-sm">
-                                    {(currentKinetics.consciousnessRate * 100).toFixed(1)}%
-                                  </span>
-                                </div>
-                                <Progress
-                                  value={currentKinetics.consciousnessRate * 100}
-                                  className="h-2"
-                                />
-                                <div className="text-xs text-muted-foreground">
-                                  Rate of consciousness development per interaction cycle
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Optimal Timing */}
-                        {(currentKinetics.peakHours.length > 0 ||
-                          currentKinetics.nextOptimalWindow) && (
-                          <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 rounded-lg border">
-                            <h5 className="font-medium mb-3 flex items-center gap-2">
-                              <Clock className="w-4 h-4 text-orange-500" />
-                              Optimal Timing Windows
-                            </h5>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {currentKinetics.peakHours.length > 0 && (
-                                <div>
-                                  <span className="text-sm font-medium">Peak Hours:</span>
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {currentKinetics.peakHours.map((hour: string) => (
-                                      <Badge key={hour} variant="secondary" className="text-xs">
-                                        {hour}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                              {currentKinetics.nextOptimalWindow && (
-                                <div>
-                                  <span className="text-sm font-medium">Next Optimal:</span>
-                                  <div className="text-sm text-muted-foreground mt-1">
-                                    {currentKinetics.nextOptimalWindow.toLocaleTimeString([], {
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                    })}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
                         )}
+                      </TabsContent>
+                    </Tabs>
+                  </DialogContent>
+                </Dialog>
 
-                        {/* Kinetic Profile Summary */}
-                        {kineticProfile && (
-                          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg border">
-                            <h5 className="font-medium mb-2 flex items-center gap-2">
-                              <Layers className="w-4 h-4 text-blue-500" />
-                              Kinetic Compatibility Notes
-                            </h5>
-                            <div className="text-sm text-muted-foreground">
-                              This agent operates with{' '}
-                              <span className="font-medium capitalize">
-                                {currentKinetics.momentumType}
-                              </span>{' '}
-                              momentum patterns, showing{' '}
-                              {currentKinetics.powerAlignment > 0.7
-                                ? 'strong'
-                                : currentKinetics.powerAlignment > 0.4
-                                  ? 'moderate'
-                                  : 'subtle'}{' '}
-                              alignment with current cosmic energies.
-                              {currentKinetics.aspectSensitivity > 0.6 &&
-                                ' Highly sensitive to astrological aspects.'}
-                              {currentKinetics.memoryPersistence > 0.7 &&
-                                ' Excellent memory retention across sessions.'}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="evolution" className="space-y-4">
-                      {agent.stats.kineticEvolution && (
-                        <div className="space-y-4">
-                          <h4 className="font-semibold flex items-center gap-2">
-                            <TrendingUp className="w-4 h-4" />
-                            Consciousness Evolution
-                          </h4>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-3">
-                              <div className="p-3 bg-white dark:bg-black/20 rounded-lg border">
-                                <div className="flex justify-between items-center mb-1">
-                                  <span className="text-sm">Consciousness Velocity</span>
-                                  <span className="font-mono text-sm">
-                                    {(
-                                      agent.stats.kineticEvolution.consciousnessVelocity * 100
-                                    ).toFixed(1)}
-                                    %
-                                  </span>
-                                </div>
-                                <Progress
-                                  value={agent.stats.kineticEvolution.consciousnessVelocity * 100}
-                                  className="h-2"
-                                />
-                              </div>
-
-                              <div className="p-3 bg-white dark:bg-black/20 rounded-lg border">
-                                <div className="flex justify-between items-center mb-1">
-                                  <span className="text-sm">Interaction Momentum</span>
-                                  <span className="font-mono text-sm">
-                                    {agent.stats.kineticEvolution.interactionMomentum}
-                                  </span>
-                                </div>
-                                <Progress
-                                  value={agent.stats.kineticEvolution.interactionMomentum}
-                                  className="h-2"
-                                />
-                              </div>
-
-                              <div className="p-3 bg-white dark:bg-black/20 rounded-lg border">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm">Evolution Trajectory</span>
-                                  <Badge variant="outline">
-                                    {agent.stats.kineticEvolution.evolutionTrajectory}
-                                  </Badge>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="space-y-3">
-                              <h5 className="font-medium flex items-center gap-2">
-                                <Award className="w-4 h-4 text-yellow-500" />
-                                Power Level Unlocks
-                              </h5>
-                              <div className="space-y-1">
-                                {agent.stats.kineticEvolution.powerLevelUnlocks.map(
-                                  (unlock, index) => (
-                                    <div key={index} className="flex items-center gap-2 text-sm">
-                                      <Star className="w-3 h-3 text-yellow-500" />
-                                      {unlock}
-                                    </div>
-                                  )
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </TabsContent>
-
-                    <TabsContent value="zodiacal" className="space-y-4">
-                      {signVector && (
-                        <div className="space-y-4">
-                          <h4 className="font-semibold flex items-center gap-2">
-                            <Crown className="w-4 h-4" />
-                            Zodiacal Character Vector
-                          </h4>
-
-                          <div className="flex justify-center">
-                            <SignVectorGraphic
-                              signVector={signVector}
-                              size="large"
-                              showLabels={true}
-                              showTooltips={true}
-                              animated={true}
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                            {Object.entries(signVector).map(([sign, value]) => (
-                              <div
-                                key={sign}
-                                className="text-center p-2 bg-white dark:bg-black/20 rounded border"
-                              >
-                                <div className="font-medium">{sign}</div>
-                                <div className="font-mono text-muted-foreground">
-                                  {value.toFixed(1)}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </TabsContent>
-                  </Tabs>
-                </DialogContent>
-              </Dialog>
-
-              <Button
-                size="sm"
-                variant="outline"
-                className="bg-black/50 border-purple-500/30 hover:bg-purple-500/20 text-white hover:text-white"
-                asChild
-              >
-                <Link href={`/gallery/chat/${agent.id}`}>Chat</Link>
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="bg-black/50 border-purple-500/30 hover:bg-purple-500/20 text-white hover:text-white"
-                onClick={handleDownloadToAlchmDesktop}
-                disabled={isUnlockingDesktop}
-                title={ALCHM_DESKTOP_AGENT_UNLOCK_DESCRIPTION}
-                aria-label={`${ALCHM_DESKTOP_AGENT_DOWNLOAD_LABEL}: ${agent.name}`}
-              >
-                <Monitor className="w-3 h-3 mr-1" />
-                {ALCHM_DESKTOP_AGENT_DOWNLOAD_LABEL}
-              </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-purple-500/5 hover:bg-purple-500/15 border-purple-500/20 hover:border-purple-500/40 text-purple-200 hover:text-white transition-colors duration-200"
+                  asChild
+                >
+                  <Link href={`/gallery/chat/${agent.id}`}>Chat</Link>
+                </Button>
+              </div>
             </div>
+
+            {/* Footer Row 2: Premium Desktop Integration (Own Line) */}
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-purple-500/10 hover:from-purple-500/20 hover:via-indigo-500/20 hover:to-purple-500/20 border-purple-500/30 hover:border-purple-500/60 text-purple-100 hover:text-white py-2 rounded-lg font-medium transition-all duration-300 shadow-[0_0_15px_rgba(139,92,246,0.05)] hover:shadow-[0_0_20px_rgba(139,92,246,0.15)]"
+              onClick={handleDownloadToAlchmDesktop}
+              disabled={isUnlockingDesktop}
+              title={ALCHM_DESKTOP_AGENT_UNLOCK_DESCRIPTION}
+              aria-label={`${ALCHM_DESKTOP_AGENT_DOWNLOAD_LABEL}: ${agent.name}`}
+            >
+              <Monitor className="w-4 h-4 text-purple-400 animate-pulse" />
+              <span>{ALCHM_DESKTOP_AGENT_DOWNLOAD_LABEL}</span>
+            </Button>
           </div>
         </div>
       </CardContent>
