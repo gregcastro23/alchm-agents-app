@@ -48,21 +48,10 @@ KINETICS_STATE_LOCK = threading.Lock()
 models.Base.metadata.create_all(bind=database.engine)
 database.ensure_postgres_runtime_schema()
 
-app = FastAPI(title="Planetary Agents Core")
+from contextlib import asynccontextmanager
 
-from fastapi.middleware.cors import CORSMiddleware
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-@app.on_event("startup")
-async def _startup_rag_ingest() -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     """Populate ChromaDB from PostgreSQL in the background on startup.
 
     Runs in a daemon thread so Railway's health check passes immediately.
@@ -77,6 +66,20 @@ async def _startup_rag_ingest() -> None:
             print(f"[startup] RAG ingest error: {exc}", flush=True)
 
     threading.Thread(target=_run, daemon=True, name="rag-ingest").start()
+    yield  # app runs here
+    # shutdown cleanup (if needed later) goes after yield
+
+app = FastAPI(title="Planetary Agents Core", lifespan=lifespan)
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # Configuration

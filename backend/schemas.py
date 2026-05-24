@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional, Dict, Any, Union
 from datetime import datetime
 
@@ -67,8 +67,7 @@ class Agent(AgentBase):
     lastActive: datetime
     isActive: bool = True
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ConversationBase(BaseModel):
     agentId: str
@@ -87,8 +86,7 @@ class Conversation(ConversationBase):
     id: Union[str, int]
     createdAt: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ChatRequest(BaseModel):
     agentId: str

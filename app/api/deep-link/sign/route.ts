@@ -17,8 +17,17 @@ export async function POST(req: Request) {
       process.env.DEEP_LINK_SHARED_SECRET ||
       (process.env.NODE_ENV === 'production' ? undefined : 'DEV_SECRET_DO_NOT_USE_IN_PROD')
     if (!secret) {
-      console.error('DEEP_LINK_SHARED_SECRET is not set in environment variables.')
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+      // Graceful degradation: desktop deep-linking is optional and not all
+      // deployments configure the shared secret.  Return 503 so the caller
+      // can surface a user-friendly "not available" state instead of an
+      // alarming 500.
+      return NextResponse.json(
+        {
+          error: 'Deep-link signing is not configured for this deployment',
+          code: 'DEEP_LINK_NOT_CONFIGURED',
+        },
+        { status: 503 }
+      )
     }
 
     // Define the exact payload structure to mirror in the Rust verifier.
