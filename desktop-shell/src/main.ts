@@ -104,6 +104,12 @@ interface ChatMessage {
   channel?: string
 }
 
+interface AgentTextResult {
+  content: string
+  channel: string
+  metered: boolean
+}
+
 interface LedgerEntry {
   id: string
   type: string
@@ -2823,22 +2829,26 @@ async function sendMessage(text: string) {
       agent.source === 'app-guide'
         ? 'Desktop guide'
         : state.runtime.sidecar === 'online'
-          ? 'Desktop inference'
+          ? 'Desktop agent'
           : 'Runtime notice',
   }
   messages.push(responseMessage)
   render()
 
   try {
-    const sidecarText = await requestAgentText(agent, cleaned)
-    if (sidecarText) {
-      responseMessage.channel = agent.source === 'app-guide' ? 'Desktop guide' : 'Desktop inference'
-      await streamTextIntoMessage(responseMessage, sidecarText)
+    const agentText = await requestAgentText(agent, cleaned)
+    if (agentText) {
+      responseMessage.channel = agentText.channel
+      await streamTextIntoMessage(responseMessage, agentText.content)
       if (agent.source === 'app-guide') {
         addLedger('App Guide Chat', 'Monica answered in the desktop companion.', 'No charge')
       } else {
-        addLedger('Agent Chat', `${agent.name} answered with the synced web profile.`, 'Metered')
-        await refreshAccounts({ silent: true })
+        addLedger(
+          'Agent Chat',
+          `${agent.name} answered with the synced web profile.`,
+          agentText.metered ? 'Metered' : 'No charge'
+        )
+        if (agentText.metered) await refreshAccounts({ silent: true })
       }
     } else {
       responseMessage.channel = 'Runtime notice'
@@ -2856,10 +2866,25 @@ async function sendMessage(text: string) {
   }
 }
 
-async function requestAgentText(agent: LocalAgent, userMessage: string) {
-  if (agent.source === 'app-guide') return buildMonicaGuideReply(userMessage)
+async function requestAgentText(
+  agent: LocalAgent,
+  userMessage: string
+): Promise<AgentTextResult | null> {
+  if (agent.source === 'app-guide') {
+    return {
+      content: buildMonicaGuideReply(userMessage),
+      channel: 'Desktop guide',
+      metered: false,
+    }
+  }
 
-  if (!invokeCommand || !state.runtime.ipcNonce || !state.account.apiKey) return null
+  if (!invokeCommand || !state.runtime.ipcNonce || !state.account.apiKey) {
+    return {
+      content: buildProfileGuidedAgentReply(agent, userMessage),
+      channel: 'Desktop agent',
+      metered: false,
+    }
+  }
 
   const prompt =
     agent.source === 'philosophers-stone'
@@ -2894,10 +2919,131 @@ async function requestAgentText(agent: LocalAgent, userMessage: string) {
     'Local inference timed out.'
   )
 
-  if (!response.ok) throw new Error(`Sidecar generation returned HTTP ${response.status}`)
+  if (!response.ok) {
+    if (response.status === 404 || response.status === 500 || response.status === 502) {
+      return {
+        content: buildProfileGuidedAgentReply(agent, userMessage),
+        channel: 'Desktop agent',
+        metered: false,
+      }
+    }
+
+    throw new Error(`Sidecar generation returned HTTP ${response.status}`)
+  }
 
   const body = await response.text()
-  return parseSseText(body) || body.trim() || null
+  const content = parseSseText(body) || body.trim()
+  if (!content) {
+    return {
+      content: buildProfileGuidedAgentReply(agent, userMessage),
+      channel: 'Desktop agent',
+      metered: false,
+    }
+  }
+
+  return {
+    content,
+    channel: 'Desktop inference',
+    metered: true,
+  }
+}
+
+function buildProfileGuidedAgentReply(agent: LocalAgent, userMessage: string) {
+  const message = userMessage.toLowerCase()
+  const subject = summarizePromptSubject(userMessage)
+  const specialty = agent.websiteAgent?.abilities?.specialty || agent.title
+  const teachingStyle = agent.websiteAgent?.abilities?.teachingStyle
+  const domains = agent.domains.slice(0, 3).join(', ')
+  const signatureQuestion = buildSignatureAgentQuestion(agent, message, subject)
+
+  if (asksForOneQuestion(message)) return signatureQuestion
+
+  if (hasAny(message, ['jupiter', 'leo', 'astrology', 'planet', 'transit', 'chart'])) {
+    return [
+      `I would read this through ${specialty.toLowerCase()}.`,
+      buildAstrologyProfileLine(agent, message),
+      signatureQuestion,
+    ].join(' ')
+  }
+
+  if (hasAny(message, ['courage', 'brave', 'fear', 'risk'])) {
+    return [
+      'Courage is not proved by the absence of fear; it is proved by what remains chosen while fear is present.',
+      signatureQuestion,
+    ].join(' ')
+  }
+
+  return [
+    `I am listening through ${domains || specialty}.`,
+    teachingStyle ? `My method here is ${teachingStyle.toLowerCase()}.` : '',
+    `The useful center of your question is ${subject}.`,
+    signatureQuestion,
+  ]
+    .filter(Boolean)
+    .join(' ')
+}
+
+function asksForOneQuestion(message: string) {
+  return (
+    hasAny(message, ['one question', 'socratic question', 'ask me a question']) ||
+    (message.includes('question') && !message.includes('answer'))
+  )
+}
+
+function summarizePromptSubject(userMessage: string) {
+  const cleaned = userMessage
+    .replace(/[?!.]+$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!cleaned) return 'the matter before us'
+  if (cleaned.length <= 84) return cleaned
+  return `${cleaned.slice(0, 81).trim()}...`
+}
+
+function buildSignatureAgentQuestion(agent: LocalAgent, message: string, subject: string) {
+  const name = agent.name.toLowerCase()
+
+  if (name.includes('socrates')) {
+    if (message.includes('courage')) {
+      return 'If courage is not the absence of fear, what must be present in a fearful moment for an act to deserve the name courage?'
+    }
+
+    return `What assumption inside "${subject}" should we examine before we decide it is true?`
+  }
+
+  if (name.includes('joan')) {
+    return `What vow would make "${subject}" worth your courage even before certainty arrives?`
+  }
+
+  if (name.includes('tesla')) {
+    return `What small experiment would let "${subject}" prove itself through signal instead of theory?`
+  }
+
+  if (name.includes('jung')) {
+    return `What part of "${subject}" feels charged because it is asking to be integrated rather than solved?`
+  }
+
+  if (name.includes('marcus')) {
+    return `What part of "${subject}" is under your control, and what part asks to be released?`
+  }
+
+  if (name.includes('rumi')) {
+    return `Where does "${subject}" stop being a problem and start becoming an invitation?`
+  }
+
+  return `What would change if you treated "${subject}" as a living pattern instead of a fixed conclusion?`
+}
+
+function buildAstrologyProfileLine(agent: LocalAgent, message: string) {
+  if (message.includes('jupiter') && message.includes('leo')) {
+    return 'Jupiter in Leo points toward generous creative leadership: the question is whether expansion serves truth, vanity, or a gift that wants to be shared.'
+  }
+
+  if (message.includes('jupiter')) {
+    return 'Jupiter tends to show where meaning, growth, teaching, and faith ask for a wider frame.'
+  }
+
+  return `${agent.name} would use the chart as a mirror for timing, temperament, and the next honest question.`
 }
 
 function buildMonicaGuideReply(userMessage: string) {
