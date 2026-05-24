@@ -102,12 +102,25 @@ interface ChatMessage {
   content: string
   timestamp: string
   channel?: string
+  agentId?: string
+  agentName?: string
 }
 
 interface AgentTextResult {
   content: string
   channel: string
   metered: boolean
+}
+
+interface AgentTurnResponse {
+  agentId: string
+  agentName: string
+  content: string
+}
+
+interface AgentTurnContext {
+  groupAgents: LocalAgent[]
+  priorResponses: AgentTurnResponse[]
 }
 
 interface LedgerEntry {
@@ -397,6 +410,7 @@ interface PersistedDesktopState {
   siteAccounts: Record<SiteKey, SiteAccount>
   roster: LocalAgent[]
   activeAgentId: string | null
+  selectedChatAgentIds: string[]
   chats: Record<string, ChatMessage[]>
   ledger: LedgerEntry[]
 }
@@ -424,6 +438,7 @@ type InvokeFn = <T>(command: string, args?: Record<string, unknown>) => Promise<
 const STORAGE_KEY = 'alchm-desktop-local-state-v1'
 const MONICA_GUIDE_ID = 'monica-app-guide'
 const GUIDE_MIGRATION_VERSION = 1
+const GROUP_CHAT_PREFIX = 'group:'
 const QA_STONE_AGENT_NAMES = new Set([
   ['Release', 'Stone', 'Agent'].join(' '),
   ['Test', 'Stone', 'Agent'].join(' '),
@@ -631,6 +646,7 @@ function loadState(): DesktopState {
     siteAccounts: { ...DEFAULT_SITE_ACCOUNTS },
     roster: [createMonicaGuideAgent()],
     activeAgentId: MONICA_GUIDE_ID,
+    selectedChatAgentIds: [MONICA_GUIDE_ID],
     chats: {},
     ledger: [
       {
@@ -680,10 +696,15 @@ function loadState(): DesktopState {
     const activeAgentId = roster.some(agent => agent.id === saved.activeAgentId)
       ? saved.activeAgentId!
       : MONICA_GUIDE_ID
+    const selectedChatAgentIds = normalizeSelectedChatAgentIds(
+      saved.selectedChatAgentIds,
+      roster,
+      activeAgentId
+    )
     const chats = sanitizeChats(saved.chats ?? fallback.chats)
     const rosterIds = new Set(roster.map(agent => agent.id))
-    for (const agentId of Object.keys(chats)) {
-      if (!rosterIds.has(agentId)) delete chats[agentId]
+    for (const chatKey of Object.keys(chats)) {
+      if (!isValidChatKey(chatKey, rosterIds)) delete chats[chatKey]
     }
 
     return {
@@ -694,6 +715,7 @@ function loadState(): DesktopState {
       siteAccounts: mergeSiteAccounts(saved.siteAccounts),
       roster,
       activeAgentId,
+      selectedChatAgentIds,
       chats,
       ledger: Array.isArray(saved.ledger) ? saved.ledger : fallback.ledger,
     }
@@ -707,13 +729,13 @@ function sanitizeChats(chats: Record<string, ChatMessage[]>) {
   const sanitized: Record<string, ChatMessage[]> = {}
   const legacyFallbackReply = ['I am answering from the local desktop', 'fallback'].join(' ')
 
-  for (const [agentId, messages] of Object.entries(chats)) {
-    const template = AGENT_LIBRARY.find(item => item.id === agentId)
+  for (const [chatKey, messages] of Object.entries(chats)) {
+    const template = AGENT_LIBRARY.find(item => item.id === chatKey)
     const runtimeNotice = template
       ? buildRuntimeNotice({ ...template, addedAt: '', source: 'web-catalog' })
       : null
 
-    sanitized[agentId] = messages
+    sanitized[chatKey] = messages
       .filter(message => !message.content.includes(legacyFallbackReply))
       .map(message => {
         if (
@@ -729,6 +751,46 @@ function sanitizeChats(chats: Record<string, ChatMessage[]>) {
   }
 
   return sanitized
+}
+
+function normalizeSelectedChatAgentIds(
+  agentIds: unknown,
+  roster: LocalAgent[],
+  fallbackAgentId?: string | null
+) {
+  const rosterIds = new Set(roster.map(agent => agent.id))
+  const selectedIds = Array.isArray(agentIds)
+    ? agentIds.filter((agentId): agentId is string => typeof agentId === 'string')
+    : []
+  const uniqueIds = [...new Set(selectedIds)].filter(agentId => rosterIds.has(agentId))
+  const fallbackId =
+    fallbackAgentId && rosterIds.has(fallbackAgentId) ? fallbackAgentId : roster[0]?.id
+
+  return uniqueIds.length ? uniqueIds : fallbackId ? [fallbackId] : []
+}
+
+function isValidChatKey(chatKey: string, rosterIds: Set<string>) {
+  if (rosterIds.has(chatKey)) return true
+  if (!chatKey.startsWith(GROUP_CHAT_PREFIX)) return false
+
+  const agentIds = parseGroupChatKey(chatKey)
+  return agentIds.length > 1 && agentIds.every(agentId => rosterIds.has(agentId))
+}
+
+function parseGroupChatKey(chatKey: string) {
+  if (!chatKey.startsWith(GROUP_CHAT_PREFIX)) return []
+
+  return chatKey
+    .slice(GROUP_CHAT_PREFIX.length)
+    .split(',')
+    .map(agentId => {
+      try {
+        return decodeURIComponent(agentId)
+      } catch {
+        return agentId
+      }
+    })
+    .filter(Boolean)
 }
 
 function hydrateRoster(roster: LocalAgent[], removeQaStoneAgents = false) {
@@ -768,6 +830,7 @@ function saveState() {
     siteAccounts: state.siteAccounts,
     roster: state.roster,
     activeAgentId: state.activeAgentId,
+    selectedChatAgentIds: getChatAgentIds(),
     chats: state.chats,
     ledger: state.ledger,
   }
@@ -835,7 +898,7 @@ function renderTab(view: View) {
 }
 
 function renderSidebar() {
-  const activeAgent = getActiveAgent()
+  const selectedAgentIds = getChatAgentIds()
 
   return `
     <aside class="sidebar">
@@ -898,7 +961,7 @@ function renderSidebar() {
         <div class="roster-list">
           ${
             state.roster.length
-              ? state.roster.map(agent => renderRosterButton(agent, activeAgent?.id)).join('')
+              ? state.roster.map(agent => renderRosterButton(agent, selectedAgentIds)).join('')
               : `<div class="panel compact-panel muted">No agents added yet.</div>`
           }
         </div>
@@ -918,10 +981,12 @@ function renderCoin(label: string, amount: number) {
   `
 }
 
-function renderRosterButton(agent: LocalAgent, activeAgentId?: string) {
+function renderRosterButton(agent: LocalAgent, selectedAgentIds: string[]) {
+  const isSelected = selectedAgentIds.includes(agent.id)
+
   return `
     <button
-      class="roster-button ${agent.id === activeAgentId ? 'active' : ''}"
+      class="roster-button ${isSelected ? 'active' : ''}"
       data-action="select-agent"
       data-agent-id="${agent.id}"
     >
@@ -955,8 +1020,8 @@ function renderActiveView() {
 }
 
 function renderChatView() {
-  const agent = getActiveAgent()
-  if (!agent) {
+  const agents = getChatAgents()
+  if (!agents.length) {
     return `
       <section class="view empty-state">
         <div class="panel">
@@ -975,27 +1040,24 @@ function renderChatView() {
     `
   }
 
-  const messages = getMessages(agent.id)
+  const messages = getMessages(getActiveChatKey())
+  const isGroupChat = agents.length > 1
 
   return `
     <section class="view">
       <div class="panel chat-layout">
         <header class="chat-header">
-          <div class="agent-heading">
-            <span class="avatar large-avatar">${escapeHtml(agent.initials)}</span>
-            <div>
-              <div class="eyebrow">${escapeHtml(agentEyebrow(agent))}</div>
-              <h1>${escapeHtml(agent.name)}</h1>
-              <p class="muted">${escapeHtml(agent.title)}</p>
-            </div>
-          </div>
-          ${renderChatHeaderActions(agent)}
+          ${renderChatHeading(agents)}
+          ${renderChatHeaderActions(agents)}
         </header>
+        ${renderChatAgentSelector(agents)}
         <div class="messages" data-messages>
           ${
             messages.length
               ? messages.map(message => renderMessage(message)).join('')
-              : renderStarterMessage(agent)
+              : isGroupChat
+                ? renderGroupStarterMessage(agents)
+                : renderStarterMessage(agents[0])
           }
         </div>
         <form class="composer" data-chat-form>
@@ -1003,7 +1065,7 @@ function renderChatView() {
             class="textarea"
             name="message"
             data-composer-input
-            placeholder="Message ${escapeHtml(agent.name)}"
+            placeholder="${escapeHtml(chatComposerPlaceholder(agents))}"
             ${state.runtime.generating ? 'disabled' : ''}
           >${escapeHtml(state.composerDraft)}</textarea>
           <button class="primary-button" type="submit" ${state.runtime.generating ? 'disabled' : ''}>
@@ -1015,13 +1077,56 @@ function renderChatView() {
   `
 }
 
+function renderChatHeading(agents: LocalAgent[]) {
+  if (agents.length === 1) {
+    const agent = agents[0]
+
+    return `
+      <div class="agent-heading">
+        <span class="avatar large-avatar">${escapeHtml(agent.initials)}</span>
+        <div>
+          <div class="eyebrow">${escapeHtml(agentEyebrow(agent))}</div>
+          <h1>${escapeHtml(agent.name)}</h1>
+          <p class="muted">${escapeHtml(agent.title)}</p>
+        </div>
+      </div>
+    `
+  }
+
+  return `
+    <div class="agent-heading">
+      <div class="avatar-stack" aria-hidden="true">
+        ${agents
+          .slice(0, 4)
+          .map(agent => `<span class="avatar">${escapeHtml(agent.initials)}</span>`)
+          .join('')}
+      </div>
+      <div>
+        <div class="eyebrow">Group Chat</div>
+        <h1>${agents.length} agents</h1>
+        <p class="muted">${escapeHtml(agents.map(agent => agent.name).join(', '))}</p>
+      </div>
+    </div>
+  `
+}
+
 function agentEyebrow(agent: LocalAgent) {
   if (agent.source === 'app-guide') return 'App guide'
   if (agent.source === 'philosophers-stone') return "Philosopher's Stone agent"
   return agent.tier === 'premium' ? 'Premium agent' : 'Synced agent'
 }
 
-function renderChatHeaderActions(agent: LocalAgent) {
+function renderChatHeaderActions(agents: LocalAgent[]) {
+  const agent = agents[0]
+  if (agents.length > 1) {
+    return `
+      <div class="button-row">
+        <button class="secondary-button" data-action="view" data-view="agents">Catalog</button>
+        <button class="secondary-button" data-action="view" data-view="stone">Stone</button>
+      </div>
+    `
+  }
+
   if (agent.source === 'app-guide') {
     return `
       <div class="button-row">
@@ -1044,6 +1149,45 @@ function renderChatHeaderActions(agent: LocalAgent) {
   `
 }
 
+function renderChatAgentSelector(agents: LocalAgent[]) {
+  const selectedIds = new Set(agents.map(agent => agent.id))
+
+  return `
+    <section class="chat-agent-selector" aria-label="Chat agents">
+      <div class="selector-summary">
+        <div>
+          <div class="eyebrow">Chat Agents</div>
+          <strong>${agents.length} selected</strong>
+        </div>
+        <span class="muted">${escapeHtml(agents.map(agent => agent.name).join(' · '))}</span>
+      </div>
+      <div class="agent-check-grid">
+        ${state.roster
+          .map(agent => renderChatAgentOption(agent, selectedIds.has(agent.id)))
+          .join('')}
+      </div>
+    </section>
+  `
+}
+
+function renderChatAgentOption(agent: LocalAgent, isSelected: boolean) {
+  return `
+    <label class="agent-check ${isSelected ? 'selected' : ''}">
+      <input
+        type="checkbox"
+        data-chat-agent-toggle
+        data-agent-id="${agent.id}"
+        ${isSelected ? 'checked' : ''}
+      />
+      <span class="avatar mini-avatar">${escapeHtml(agent.initials)}</span>
+      <span>
+        <strong class="truncate">${escapeHtml(agent.name)}</strong>
+        <small class="truncate">${escapeHtml(agentEyebrow(agent))}</small>
+      </span>
+    </label>
+  `
+}
+
 function renderStarterMessage(agent: LocalAgent) {
   const helperText =
     agent.source === 'app-guide'
@@ -1061,16 +1205,41 @@ function renderStarterMessage(agent: LocalAgent) {
   `
 }
 
+function renderGroupStarterMessage(agents: LocalAgent[]) {
+  return `
+    <article class="message agent">
+      <strong>Group Chat</strong>
+      <p>${escapeHtml(agents.map(agent => agent.name).join(', '))}</p>
+      <small class="muted">Sequential agent turn order</small>
+    </article>
+  `
+}
+
 function renderMessage(message: ChatMessage) {
+  const speakerName = message.role === 'user' ? 'You' : getMessageSpeakerName(message)
+
   return `
     <article class="message ${message.role}">
       <div class="message-meta">
-        <strong>${message.role === 'user' ? 'You' : escapeHtml(getActiveAgent()?.name || 'Agent')}</strong>
+        <strong>${escapeHtml(speakerName)}</strong>
         <small>${formatTime(message.timestamp)}${message.channel ? ` · ${escapeHtml(message.channel)}` : ''}</small>
       </div>
       <p>${escapeHtml(message.content)}</p>
     </article>
   `
+}
+
+function getMessageSpeakerName(message: ChatMessage) {
+  if (message.agentName) return message.agentName
+  if (message.agentId)
+    return state.roster.find(agent => agent.id === message.agentId)?.name || 'Agent'
+  return getActiveAgent()?.name || 'Agent'
+}
+
+function chatComposerPlaceholder(agents: LocalAgent[]) {
+  if (!agents.length) return 'Add an agent in the main window first'
+  if (agents.length === 1) return `Message ${agents[0].name}`
+  return `Ask your group of ${agents.length} agents`
 }
 
 function renderAstrologyView() {
@@ -2407,7 +2576,8 @@ function renderMetric(label: string, value: string) {
 }
 
 function renderComposerSurface() {
-  const agent = getActiveAgent()
+  const agents = getChatAgents()
+  const hasAgents = agents.length > 0
 
   return `
     <main class="surface surface-composer">
@@ -2416,10 +2586,10 @@ function renderComposerSurface() {
           class="textarea"
           name="message"
           data-composer-input
-          placeholder="${agent ? `Message ${escapeHtml(agent.name)}` : 'Add an agent in the main window first'}"
-          ${!agent || state.runtime.generating ? 'disabled' : ''}
+          placeholder="${escapeHtml(chatComposerPlaceholder(agents))}"
+          ${!hasAgents || state.runtime.generating ? 'disabled' : ''}
         >${escapeHtml(state.composerDraft)}</textarea>
-        <button class="primary-button" type="submit" ${!agent || state.runtime.generating ? 'disabled' : ''}>
+        <button class="primary-button" type="submit" ${!hasAgents || state.runtime.generating ? 'disabled' : ''}>
           Send
         </button>
       </form>
@@ -2431,9 +2601,61 @@ function getActiveAgent() {
   return state.roster.find(agent => agent.id === state.activeAgentId) ?? state.roster[0] ?? null
 }
 
-function getMessages(agentId: string) {
-  if (!state.chats[agentId]) state.chats[agentId] = []
-  return state.chats[agentId]
+function getChatAgentIds() {
+  const agentIds = normalizeSelectedChatAgentIds(
+    state.selectedChatAgentIds,
+    state.roster,
+    state.activeAgentId
+  )
+  state.selectedChatAgentIds = agentIds
+  return agentIds
+}
+
+function getChatAgents() {
+  const selectedIds = new Set(getChatAgentIds())
+  return state.roster.filter(agent => selectedIds.has(agent.id))
+}
+
+function getActiveChatKey() {
+  const agentIds = getChatAgentIds()
+  if (agentIds.length <= 1) return agentIds[0] || MONICA_GUIDE_ID
+
+  return `${GROUP_CHAT_PREFIX}${[...agentIds]
+    .sort()
+    .map(agentId => encodeURIComponent(agentId))
+    .join(',')}`
+}
+
+function getMessages(chatKey: string) {
+  if (!state.chats[chatKey]) state.chats[chatKey] = []
+  return state.chats[chatKey]
+}
+
+function setSingleChatAgent(agentId: string) {
+  state.activeAgentId = agentId
+  state.selectedChatAgentIds = [agentId]
+  state.activeView = 'chat'
+}
+
+function toggleChatAgentSelection(agentId: string, shouldSelect: boolean) {
+  if (!state.roster.some(agent => agent.id === agentId)) return
+
+  const currentIds = getChatAgentIds()
+  const nextIds = shouldSelect
+    ? [...new Set([...currentIds, agentId])]
+    : currentIds.filter(selectedId => selectedId !== agentId)
+
+  if (!nextIds.length) {
+    setNotice('At least one chat agent must stay selected.')
+    render()
+    return
+  }
+
+  state.selectedChatAgentIds = nextIds
+  state.activeAgentId = shouldSelect ? agentId : nextIds[0]
+  state.activeView = 'chat'
+  saveState()
+  render()
 }
 
 function addAgent(
@@ -2444,8 +2666,7 @@ function addAgent(
   const template = AGENT_LIBRARY.find(agent => agent.id === agentId)
   if (!template) return
   if (state.roster.some(agent => agent.id === template.id)) {
-    state.activeAgentId = template.id
-    state.activeView = 'chat'
+    setSingleChatAgent(template.id)
     saveState()
     render()
     return
@@ -2459,8 +2680,7 @@ function addAgent(
   )
 
   state.roster.push({ ...syncedAgent, addedAt: new Date().toISOString(), source })
-  state.activeAgentId = syncedAgent.id
-  state.activeView = 'chat'
+  setSingleChatAgent(syncedAgent.id)
   setNotice(`${syncedAgent.name} added to Alchm Desktop.`)
   saveState()
   render()
@@ -2478,8 +2698,7 @@ async function createStoneAgentFromForm(form: HTMLFormElement) {
 
     state.roster = state.roster.filter(agent => agent.id !== localAgent.id)
     state.roster.push(localAgent)
-    state.activeAgentId = localAgent.id
-    state.activeView = 'chat'
+    setSingleChatAgent(localAgent.id)
     addLedger(
       "Philosopher's Stone Agent",
       `${localAgent.name} was created locally from birth information and context.`,
@@ -2779,8 +2998,22 @@ function removeAgent(agentId: string) {
   }
 
   state.roster = state.roster.filter(item => item.id !== agentId)
-  delete state.chats[agentId]
-  if (state.activeAgentId === agentId) state.activeAgentId = state.roster[0]?.id ?? null
+  for (const chatKey of Object.keys(state.chats)) {
+    if (chatKey === agentId || parseGroupChatKey(chatKey).includes(agentId)) {
+      delete state.chats[chatKey]
+    }
+  }
+
+  state.selectedChatAgentIds = state.selectedChatAgentIds.filter(
+    selectedId => selectedId !== agentId
+  )
+  if (state.activeAgentId === agentId) state.activeAgentId = state.selectedChatAgentIds[0] ?? null
+  state.selectedChatAgentIds = normalizeSelectedChatAgentIds(
+    state.selectedChatAgentIds,
+    state.roster,
+    state.activeAgentId
+  )
+  state.activeAgentId = state.selectedChatAgentIds[0] ?? state.roster[0]?.id ?? null
   if (agent) addLedger('Agent Removed', `${agent.name} was removed from this device.`, 'No charge')
   saveState()
   render()
@@ -2805,14 +3038,14 @@ function saveAccountFromForm() {
 }
 
 async function sendMessage(text: string) {
-  const agent = getActiveAgent()
+  const agents = getChatAgents()
   const cleaned = text.trim()
-  if (!agent || !cleaned || state.runtime.generating) return
+  if (!agents.length || !cleaned || state.runtime.generating) return
 
   state.composerDraft = ''
   state.runtime.generating = true
 
-  const messages = getMessages(agent.id)
+  const messages = getMessages(getActiveChatKey())
   messages.push({
     id: makeId('msg'),
     role: 'user',
@@ -2820,44 +3053,80 @@ async function sendMessage(text: string) {
     timestamp: new Date().toISOString(),
   })
 
-  const responseMessage: ChatMessage = {
-    id: makeId('msg'),
-    role: 'agent',
-    content: '',
-    timestamp: new Date().toISOString(),
-    channel:
-      agent.source === 'app-guide'
-        ? 'Desktop guide'
-        : state.runtime.sidecar === 'online'
-          ? 'Desktop agent'
-          : 'Runtime notice',
-  }
-  messages.push(responseMessage)
   render()
 
+  let shouldRefreshAccounts = false
+  const priorResponses: AgentTurnResponse[] = []
+
   try {
-    const agentText = await requestAgentText(agent, cleaned)
-    if (agentText) {
-      responseMessage.channel = agentText.channel
-      await streamTextIntoMessage(responseMessage, agentText.content)
-      if (agent.source === 'app-guide') {
-        addLedger('App Guide Chat', 'Monica answered in the desktop companion.', 'No charge')
-      } else {
-        addLedger(
-          'Agent Chat',
-          `${agent.name} answered with the synced web profile.`,
-          agentText.metered ? 'Metered' : 'No charge'
-        )
-        if (agentText.metered) await refreshAccounts({ silent: true })
+    for (const agent of agents) {
+      const responseMessage: ChatMessage = {
+        id: makeId('msg'),
+        role: 'agent',
+        content: '',
+        timestamp: new Date().toISOString(),
+        channel:
+          agent.source === 'app-guide'
+            ? 'Desktop guide'
+            : state.runtime.sidecar === 'online'
+              ? 'Desktop agent'
+              : 'Runtime notice',
+        agentId: agent.id,
+        agentName: agent.name,
       }
-    } else {
-      responseMessage.channel = 'Runtime notice'
-      await streamTextIntoMessage(responseMessage, buildRuntimeNotice(agent))
+      messages.push(responseMessage)
+      render()
+
+      try {
+        const agentText = await requestAgentText(agent, cleaned, {
+          groupAgents: agents,
+          priorResponses,
+        })
+
+        if (agentText) {
+          responseMessage.channel = agentText.channel
+          await streamTextIntoMessage(responseMessage, agentText.content)
+          priorResponses.push({
+            agentId: agent.id,
+            agentName: agent.name,
+            content: agentText.content,
+          })
+
+          if (agent.source === 'app-guide') {
+            addLedger('App Guide Chat', 'Monica answered in the desktop companion.', 'No charge')
+          } else {
+            addLedger(
+              agents.length > 1 ? 'Group Agent Chat' : 'Agent Chat',
+              `${agent.name} answered with the synced web profile.`,
+              agentText.metered ? 'Metered' : 'No charge'
+            )
+            shouldRefreshAccounts = shouldRefreshAccounts || agentText.metered
+          }
+        } else {
+          responseMessage.channel = 'Runtime notice'
+          const notice = buildRuntimeNotice(agent)
+          await streamTextIntoMessage(responseMessage, notice)
+          priorResponses.push({
+            agentId: agent.id,
+            agentName: agent.name,
+            content: notice,
+          })
+        }
+      } catch (error) {
+        responseMessage.channel = 'Runtime notice'
+        state.runtime.lastError =
+          error instanceof Error ? error.message : 'Local generation failed.'
+        const notice = buildRuntimeNotice(agent)
+        await streamTextIntoMessage(responseMessage, notice)
+        priorResponses.push({
+          agentId: agent.id,
+          agentName: agent.name,
+          content: notice,
+        })
+      }
     }
-  } catch (error) {
-    responseMessage.channel = 'Runtime notice'
-    state.runtime.lastError = error instanceof Error ? error.message : 'Local generation failed.'
-    await streamTextIntoMessage(responseMessage, buildRuntimeNotice(agent))
+
+    if (shouldRefreshAccounts) await refreshAccounts({ silent: true })
   } finally {
     state.runtime.generating = false
     saveState()
@@ -2868,11 +3137,12 @@ async function sendMessage(text: string) {
 
 async function requestAgentText(
   agent: LocalAgent,
-  userMessage: string
+  userMessage: string,
+  turnContext: AgentTurnContext = { groupAgents: [agent], priorResponses: [] }
 ): Promise<AgentTextResult | null> {
   if (agent.source === 'app-guide') {
     return {
-      content: buildMonicaGuideReply(userMessage),
+      content: buildMonicaGuideReply(userMessage, turnContext),
       channel: 'Desktop guide',
       metered: false,
     }
@@ -2880,17 +3150,19 @@ async function requestAgentText(
 
   if (!invokeCommand || !state.runtime.ipcNonce || !state.account.apiKey) {
     return {
-      content: buildProfileGuidedAgentReply(agent, userMessage),
+      content: buildProfileGuidedAgentReply(agent, userMessage, turnContext),
       channel: 'Desktop agent',
       metered: false,
     }
   }
 
+  const groupContext = buildAgentGroupPromptContext(agent, turnContext)
   const prompt =
     agent.source === 'philosophers-stone'
       ? [
           `System: You are ${agent.name}, ${agent.title}, a local agent created with the Philosopher's Stone.`,
           agent.promptSeed,
+          groupContext,
           'Answer from the birth information and additional context used to create you.',
           'The desktop app is a companion chat surface. Do not describe yourself as a fallback.',
           `User: ${userMessage}`,
@@ -2899,11 +3171,14 @@ async function requestAgentText(
       : [
           `System: You are ${agent.name}, ${agent.title}, from the Alchm Agents web catalog.`,
           agent.promptSeed,
+          groupContext,
           'Answer as the same agent personality the user would meet on the Alchm Agents website.',
           'The desktop app is a companion chat surface. Do not describe yourself as a fallback.',
           `User: ${userMessage}`,
           'Agent:',
-        ].join('\n')
+        ]
+          .filter(Boolean)
+          .join('\n')
 
   const response = await withTimeout(
     requestSidecar('/api/generate', {
@@ -2922,7 +3197,7 @@ async function requestAgentText(
   if (!response.ok) {
     if (response.status === 404 || response.status === 500 || response.status === 502) {
       return {
-        content: buildProfileGuidedAgentReply(agent, userMessage),
+        content: buildProfileGuidedAgentReply(agent, userMessage, turnContext),
         channel: 'Desktop agent',
         metered: false,
       }
@@ -2935,7 +3210,7 @@ async function requestAgentText(
   const content = parseSseText(body) || body.trim()
   if (!content) {
     return {
-      content: buildProfileGuidedAgentReply(agent, userMessage),
+      content: buildProfileGuidedAgentReply(agent, userMessage, turnContext),
       channel: 'Desktop agent',
       metered: false,
     }
@@ -2948,7 +3223,36 @@ async function requestAgentText(
   }
 }
 
-function buildProfileGuidedAgentReply(agent: LocalAgent, userMessage: string) {
+function buildAgentGroupPromptContext(agent: LocalAgent, turnContext: AgentTurnContext) {
+  const peers = turnContext.groupAgents.filter(peer => peer.id !== agent.id)
+  const priorResponses = turnContext.priorResponses.filter(
+    response => response.agentId !== agent.id
+  )
+
+  if (!peers.length && !priorResponses.length) return ''
+
+  return [
+    peers.length
+      ? `Group chat: You are speaking with ${peers.map(peer => peer.name).join(', ')}.`
+      : '',
+    priorResponses.length
+      ? `Earlier responses this turn:\n${priorResponses
+          .map(response => `${response.agentName}: ${response.content.replace(/\s+/g, ' ')}`)
+          .join('\n')}`
+      : '',
+    peers.length
+      ? 'Answer in your own voice, and when useful, build on or refine the other agents instead of repeating them.'
+      : '',
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
+function buildProfileGuidedAgentReply(
+  agent: LocalAgent,
+  userMessage: string,
+  turnContext: AgentTurnContext
+) {
   const message = userMessage.toLowerCase()
   const subject = summarizePromptSubject(userMessage)
   const specialty = agent.websiteAgent?.abilities?.specialty || agent.title
@@ -2958,22 +3262,28 @@ function buildProfileGuidedAgentReply(agent: LocalAgent, userMessage: string) {
 
   if (asksForOneQuestion(message)) return signatureQuestion
 
+  let reply: string
+
   if (hasAny(message, ['jupiter', 'leo', 'astrology', 'planet', 'transit', 'chart'])) {
-    return [
+    reply = [
       `I would read this through ${specialty.toLowerCase()}.`,
       buildAstrologyProfileLine(agent, message),
       signatureQuestion,
     ].join(' ')
+
+    return addGroupContextToProfileReply(reply, turnContext)
   }
 
   if (hasAny(message, ['courage', 'brave', 'fear', 'risk'])) {
-    return [
+    reply = [
       'Courage is not proved by the absence of fear; it is proved by what remains chosen while fear is present.',
       signatureQuestion,
     ].join(' ')
+
+    return addGroupContextToProfileReply(reply, turnContext)
   }
 
-  return [
+  reply = [
     `I am listening through ${domains || specialty}.`,
     teachingStyle ? `My method here is ${teachingStyle.toLowerCase()}.` : '',
     `The useful center of your question is ${subject}.`,
@@ -2981,6 +3291,15 @@ function buildProfileGuidedAgentReply(agent: LocalAgent, userMessage: string) {
   ]
     .filter(Boolean)
     .join(' ')
+
+  return addGroupContextToProfileReply(reply, turnContext)
+}
+
+function addGroupContextToProfileReply(reply: string, turnContext: AgentTurnContext) {
+  if (turnContext.groupAgents.length <= 1 || !turnContext.priorResponses.length) return reply
+
+  const previous = turnContext.priorResponses[turnContext.priorResponses.length - 1]
+  return `Building on ${previous.agentName}: ${reply}`
 }
 
 function asksForOneQuestion(message: string) {
@@ -3046,9 +3365,18 @@ function buildAstrologyProfileLine(agent: LocalAgent, message: string) {
   return `${agent.name} would use the chart as a mirror for timing, temperament, and the next honest question.`
 }
 
-function buildMonicaGuideReply(userMessage: string) {
+function buildMonicaGuideReply(userMessage: string, turnContext: AgentTurnContext) {
   const message = userMessage.toLowerCase()
   const userAgentCount = state.roster.filter(agent => agent.source !== 'app-guide').length
+  const selectedNames = turnContext.groupAgents.map(agent => agent.name).join(', ')
+
+  if (turnContext.groupAgents.length > 1 && hasAny(message, ['group', 'chat', 'agent'])) {
+    return [
+      "I'm Monica, and this chat is in group mode.",
+      `Selected agents: ${selectedNames}.`,
+      'Each agent will answer the turn in sequence and later agents can respond to earlier answers.',
+    ].join(' ')
+  }
 
   if (hasAny(message, ['claim', 'yield', 'daily', 'balance', 'esms', 'account', 'kitchen'])) {
     return [
@@ -3593,16 +3921,14 @@ function bindEvents() {
     }
 
     if (action === 'select-agent' && agentId) {
-      state.activeAgentId = agentId
-      state.activeView = 'chat'
+      setSingleChatAgent(agentId)
       saveState()
       render()
     }
 
     if (action === 'add-agent' && agentId) addAgent(agentId)
     if (action === 'open-chat' && agentId) {
-      state.activeAgentId = agentId
-      state.activeView = 'chat'
+      setSingleChatAgent(agentId)
       saveState()
       render()
     }
@@ -3662,6 +3988,14 @@ function bindEvents() {
   })
 
   document.body.addEventListener('change', event => {
+    const chatAgentToggle = (event.target as HTMLElement).closest<HTMLInputElement>(
+      '[data-chat-agent-toggle]'
+    )
+    if (chatAgentToggle?.dataset.agentId) {
+      toggleChatAgentSelection(chatAgentToggle.dataset.agentId, chatAgentToggle.checked)
+      return
+    }
+
     updateStoneDraftFromField(event.target)
   })
 
