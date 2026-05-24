@@ -769,7 +769,11 @@ export function EnhancedAgentCard({
             <div className="flex gap-1">
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button size="sm" variant="outline" className="flex items-center gap-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex items-center gap-1 bg-black/50 border-purple-500/30 hover:bg-purple-500/20 text-white hover:text-white"
+                  >
                     <Activity className="w-3 h-3" />
                     Details
                   </Button>
@@ -1280,12 +1284,18 @@ export function EnhancedAgentCard({
                 </DialogContent>
               </Dialog>
 
-              <Button size="sm" variant="outline" asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="bg-black/50 border-purple-500/30 hover:bg-purple-500/20 text-white hover:text-white"
+                asChild
+              >
                 <Link href={`/gallery/chat/${agent.id}`}>Chat</Link>
               </Button>
               <Button
                 size="sm"
                 variant="outline"
+                className="bg-black/50 border-purple-500/30 hover:bg-purple-500/20 text-white hover:text-white"
                 onClick={handleDownloadToAlchmDesktop}
                 disabled={isUnlockingDesktop}
                 title={ALCHM_DESKTOP_AGENT_UNLOCK_DESCRIPTION}
