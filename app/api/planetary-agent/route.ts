@@ -2,6 +2,7 @@ import { generateText } from 'ai'
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyApiKeys } from '../secure-config'
 import { resolveDefaultModel } from '@/lib/models/registry'
+import { backend } from '@/lib/backend'
 import {
   logAgentConversation,
   createConversationContext,
@@ -31,20 +32,6 @@ export const revalidate = 0
 
 export async function POST(req: NextRequest) {
   try {
-    // Verify API keys are available
-    if (!verifyApiKeys()) {
-      console.error('API keys not configured. Providing fallback response instead of using OpenAI.')
-      // Return a fallback response that still provides value to the user
-      return NextResponse.json(
-        {
-          response:
-            "I'm currently experiencing connectivity issues and cannot access the planetary wisdom. Please check your environment variables or try again later when API services are restored.",
-          error: 'API_KEY_MISSING',
-        },
-        { status: 200 }
-      )
-    }
-
     const { planet, sign, degree, question, time, sessionId } = await req.json()
 
     // Create or use existing conversation context
@@ -175,17 +162,19 @@ Always provide astrological wisdom that's accurate to traditional planetary dign
 
     try {
       const startTime = Date.now()
-      const model = resolveDefaultModel('fast')
-      const modelUsed = 'fast-tier'
 
-      const { text } = await generateText({
-        model,
-        system: systemPrompt,
-        prompt: question || 'Tell me about this planetary position',
-        temperature: 0.6,
-        maxOutputTokens: 500,
-      } as any)
+      console.log(`🤖 Proxying planetary agent chat for ${planet} in ${sign} to FastAPI backend...`)
+      const chatResult = await backend.agents.chat({
+        agentId: `${planet.toLowerCase()}-${sign.toLowerCase()}`,
+        message: question || 'Tell me about this planetary position',
+        sessionId: conversationContext.sessionId,
+        userId: 'session-user',
+        systemPromptOverride: systemPrompt,
+        modelTier: 'free',
+      })
 
+      const text = chatResult.text || ''
+      const modelUsed = chatResult.metadata?.model || 'llama-3.3-70b-versatile'
       const processingTime = Date.now() - startTime
 
       // Log the conversation to Galileo

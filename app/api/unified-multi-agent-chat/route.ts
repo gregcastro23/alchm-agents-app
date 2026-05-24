@@ -10,7 +10,7 @@ import type {
   GroupDynamics,
 } from '@/lib/unified-agent-types'
 import { agentCache, buildCacheContext } from '@/lib/agent-cache-system'
-import { getAlchemicalQuantitiesLegacy } from '@/lib/backend'
+import { getAlchemicalQuantitiesLegacy, backend } from '@/lib/backend'
 import { observabilityTracker } from '@/lib/observability/tracker'
 import { v4 as uuidv4 } from 'uuid'
 import { unifiedTracker } from '@/lib/consciousness/unified-tracker'
@@ -455,93 +455,39 @@ async function processAgentResponse(
     // Generate agent-specific prompt
     const systemPrompt = generateAgentPrompt(agent, groupContext, cosmicContext)
 
-    // Check if we should use RAG for this agent/query
-    const ragConfig = getRAGConfig()
-    const useRAG = ragConfig.enabled && agent.type === 'historical' && shouldUseRAG(message)
+    console.log(`🤖 Proxying chat request for ${agent.name} (${agent.type}) to FastAPI backend...`)
+    const chatResult = await backend.agents.chat({
+      agentId: agent.id,
+      message: message,
+      sessionId: sessionId,
+      userId: 'session-user',
+      systemPromptOverride: systemPrompt,
+      modelTier: 'free',
+    })
 
-    let response: string = ''
-    let ragMetadata: RAGMetadata | undefined = undefined
-    let totalTokens: number | undefined = undefined
-    let modelUsed = 'rag-enhanced-pending'
+    const response = chatResult.text || ''
+    const modelUsed = chatResult.metadata?.model || 'llama-3.3-70b-versatile'
+    const totalTokens = undefined
+    const ragMetadata = {
+      ragUsed: chatResult.metadata?.rag_used || false,
+    }
 
-    if (useRAG) {
-      console.log(`🔍 Using RAG for ${agent.name}`)
-
-      // Use RAG-enhanced generation for historical agents
-      const ragResult = await generateWithRAG({
-        agent: agent,
-        agentId: agent.id,
-        userMessage: message,
-        systemPrompt,
-        conversationHistory: groupContext.sessionHistory.slice(-5).map(m => ({
-          role: m.role as 'user' | 'assistant',
-          content: m.content,
-        })),
-        sessionId,
-        ragConfig: {
-          enabled: true,
-          topK: 5,
-          threshold: 0.35,
-          useReranking: true,
-        },
-      })
-
-      response = ragResult.text
-      ragMetadata = ragResult.ragMetadata
-
-      // DEBUG: Log what we got from RAG
-      console.log(
-        `[DEBUG] RAG result - text length: ${response?.length ?? 0}, ragUsed: ${ragMetadata?.ragUsed}`
-      )
-      if (!response || response.length === 0) {
-        console.warn(
-          `[DEBUG] ⚠️ RAG returned empty response! ragMetadata:`,
-          JSON.stringify(ragMetadata)
-        )
-      }
-    } else {
-      // Standard generation without RAG
-      const modelSelection = selectOptimalModel(
-        agent,
-        groupContext.otherAgents.length,
-        groupContext.variant,
-        groupContext.modelOverrides
-      )
-      modelUsed = modelSelection.modelId
-
-      if (controller && encoder) {
-        const result = await streamText({
-          model: modelSelection.model,
-          system: systemPrompt,
-          prompt: message,
-          temperature: getAgentTemperature(agent),
-        })
-
-        for await (const chunk of result.textStream) {
-          response += chunk
-          controller.enqueue(
-            encoder.encode(
-              `event: text\ndata: ${JSON.stringify({ agentId: agent.id, text: chunk })}\n\n`
-            )
+    if (controller && encoder && response) {
+      // Stream the response back to the client in small chunks to simulate real-time typing
+      const words = response.split(' ')
+      for (let i = 0; i < words.length; i++) {
+        const chunk = words[i] + (i < words.length - 1 ? ' ' : '')
+        controller.enqueue(
+          encoder.encode(
+            `event: text\ndata: ${JSON.stringify({ agentId: agent.id, text: chunk })}\n\n`
           )
-        }
-      } else {
-        const result = await generateText({
-          model: modelSelection.model,
-          system: systemPrompt,
-          prompt: message,
-          temperature: getAgentTemperature(agent),
-        })
-
-        response = result.text
-        totalTokens = result.usage?.totalTokens
+        )
+        // Add a micro delay to make the streaming visual effect smooth
+        await new Promise(resolve => setTimeout(resolve, 15))
       }
     }
 
     const processingTime = Date.now() - agentStartTime
-    if (useRAG) {
-      modelUsed = `rag-enhanced-${ragMetadata?.ragUsed ? 'with-retrieval' : 'without-retrieval'}`
-    }
 
     // Cache the response
     await agentCache.cacheResponse(agent.id, message, response, processingTime, cacheContext)
@@ -726,41 +672,33 @@ As Monica in ${monicaRole} role, respond to: "${message}"
 
 Provide insights about the group dynamics, synthesize the wisdom shared by other agents, and guide the human toward deeper understanding. Include specific observations about consciousness patterns and suggest next steps.`
 
-    const modelSelection = selectOptimalModel(
-      monicaAgent,
-      groupContext.otherAgents.length,
-      groupContext.variant,
-      groupContext.modelOverrides
-    )
+    console.log(`🤖 Proxying Monica chat request to FastAPI backend...`)
+    const chatResult = await backend.agents.chat({
+      agentId: monicaAgent.id,
+      message: message,
+      sessionId: sessionId,
+      userId: 'session-user',
+      systemPromptOverride: monicaPrompt,
+      modelTier: 'free',
+    })
 
-    let responseText = ''
-    let totalTokens: number | undefined
+    const responseText = chatResult.text || ''
+    const totalTokens = undefined
+    const modelUsed = chatResult.metadata?.model || 'llama-3.3-70b-versatile'
 
-    if (controller && encoder) {
-      const result = await streamText({
-        model: modelSelection.model,
-        system: monicaPrompt,
-        prompt: message,
-        temperature: 0.7,
-      })
-
-      for await (const chunk of result.textStream) {
-        responseText += chunk
+    if (controller && encoder && responseText) {
+      // Stream the response back to the client in small chunks to simulate real-time typing
+      const words = responseText.split(' ')
+      for (let i = 0; i < words.length; i++) {
+        const chunk = words[i] + (i < words.length - 1 ? ' ' : '')
         controller.enqueue(
           encoder.encode(
             `event: text\ndata: ${JSON.stringify({ agentId: monicaAgent.id, text: chunk })}\n\n`
           )
         )
+        // Add a micro delay to make the streaming visual effect smooth
+        await new Promise(resolve => setTimeout(resolve, 15))
       }
-    } else {
-      const result = await generateText({
-        model: modelSelection.model,
-        system: monicaPrompt,
-        prompt: message,
-        temperature: 0.7,
-      })
-      responseText = result.text
-      totalTokens = result.usage?.totalTokens
     }
 
     const processingTime = Date.now() - startTime
@@ -778,20 +716,12 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
     // Enhance routing accuracy for Monica based on synthesis quality
     metrics.routingAccuracy = 0.95 // Monica's explicit coordination
 
-    observabilityTracker.completeTrace(
-      traceId,
-      responseText,
-      metrics,
-      modelSelection.modelId,
-      0.7,
-      undefined,
-      {
-        totalAgents: groupContext.otherAgents.length + 1,
-        agentIds: [monicaAgent.id, ...groupContext.otherAgents.map((a: UnifiedAgent) => a.id)],
-        crossReferences: extractCrossReferences(responseText, groupContext.otherAgents),
-        synergiesActivated: identifyCurrentSynergies(regularResponses),
-      }
-    )
+    observabilityTracker.completeTrace(traceId, responseText, metrics, modelUsed, 0.7, undefined, {
+      totalAgents: groupContext.otherAgents.length + 1,
+      agentIds: [monicaAgent.id, ...groupContext.otherAgents.map((a: UnifiedAgent) => a.id)],
+      crossReferences: extractCrossReferences(responseText, groupContext.otherAgents),
+      synergiesActivated: identifyCurrentSynergies(regularResponses),
+    })
 
     // ============================================================================
     // UNIFIED CONSCIOUSNESS TRACKING - MONICA
@@ -806,7 +736,7 @@ Provide insights about the group dynamics, synthesize the wisdom shared by other
           sessionId,
           userMessage: message,
           agentResponse: responseText,
-          modelUsed: modelSelection.modelId,
+          modelUsed: modelUsed,
           temperature: 0.7,
           tokensUsed: totalTokens,
           latencyMs: processingTime,

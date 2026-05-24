@@ -20,6 +20,18 @@ export type AdminTopAgent = {
   interactions: number
 }
 
+export type AdminRecentChat = {
+  id: string
+  agentId: string
+  agentName: string
+  sessionId: string
+  userMessage: string
+  agentResponse: string
+  responseTime: number | null
+  modelUsed: string | null
+  createdAt: string
+}
+
 export type AdminDashboardData = {
   users: {
     total: number
@@ -50,6 +62,7 @@ export type AdminDashboardData = {
   }
   recentActivity: AdminActivityItem[]
   topAgents: AdminTopAgent[]
+  recentChats: AdminRecentChat[]
 }
 
 export type AdminSystemStats = {

@@ -13,6 +13,7 @@ import {
   ChevronLeft,
 } from 'lucide-react'
 import { ELEMENT_MAPPING } from './philosophers-stone-config'
+import { hasTauriInvokeRuntime, requestDesktopSidecar } from '@/lib/desktop-sidecar'
 
 interface Constitution {
   spirit: number
@@ -95,14 +96,6 @@ function deterministicFallbackConstitution(seed: string) {
   return { dominantElement, constitution: values }
 }
 
-function hasTauriInvokeRuntime() {
-  if (typeof window === 'undefined') return false
-  const tauriWindow = window as Window & {
-    __TAURI_INTERNALS__?: { invoke?: unknown }
-  }
-  return typeof tauriWindow.__TAURI_INTERNALS__?.invoke === 'function'
-}
-
 export default function PhilosophersStone({
   onInitializationComplete,
 }: {
@@ -139,7 +132,7 @@ export default function PhilosophersStone({
   // Download State
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadStatus, setDownloadStatus] = useState<string | null>(null)
-  const [executionMode, setExecutionMode] = useState<'local' | 'cloud'>('cloud')
+  const [executionMode, setExecutionMode] = useState<'local' | 'fallback'>('fallback')
 
   // Disk Verification State
   const [modelExists, setModelExists] = useState(false)
@@ -174,7 +167,10 @@ export default function PhilosophersStone({
         const nonce = await invoke<string>('get_ipc_nonce')
         setIpcNonce(nonce)
       } catch (err) {
-        console.warn('Tauri IPC nonce unavailable; forge preview will use managed chat.', err)
+        console.warn(
+          'Tauri IPC nonce unavailable; forge preview will wait for the desktop model runtime.',
+          err
+        )
         setIpcNonce(null)
       }
     }
@@ -203,12 +199,7 @@ export default function PhilosophersStone({
     if (!ipcNonce) return
     setIsCheckingModel(true)
     try {
-      const response = await fetch('http://localhost:8080/api/models/check', {
-        method: 'GET',
-        headers: {
-          'X-IPC-Nonce': ipcNonce,
-        },
-      })
+      const response = await requestDesktopSidecar('/api/models/check', { nonce: ipcNonce })
       if (response.ok) {
         const models = await response.json()
         const targetModel = models.find((model: any) => model.id === modelName)
@@ -272,7 +263,7 @@ export default function PhilosophersStone({
     }
   }
 
-  const handleAwaken = (mode: 'local' | 'cloud' = executionMode) => {
+  const handleAwaken = (mode: 'local' | 'fallback' = executionMode) => {
     onInitializationComplete({
       id: `custom-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-') || Date.now()}`,
       name,
@@ -312,65 +303,23 @@ export default function PhilosophersStone({
     )
 
     try {
-      setDownloadStatus('Uploading consciousness blueprint to Alchm Cloud Registry...')
-
-      const coordinates = locationCoordinates || resolveLocationCoordinates(location)
-      const agentPayload = {
-        name,
-        purpose: 'Personal consciousness guidance',
-        birthInfo: {
-          year: Number(date.slice(0, 4)),
-          month: Number(date.slice(5, 7)),
-          day: Number(date.slice(8, 10)),
-          hour: Number(time.slice(0, 2)),
-          minute: Number(time.slice(3, 5)),
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude,
-        },
-        stats: {
-          power: constitution.substance,
-          resonance: constitution.essence,
-          wisdom: constitution.spirit,
-          charisma: constitution.substance,
-          intuition: constitution.matter,
-          adaptability: constitution.spirit,
-          vitality: Math.max(
-            constitution.spirit,
-            constitution.essence,
-            constitution.matter,
-            constitution.substance
-          ),
-        },
-      }
-
-      const cloudRes = await fetch('/api/create-agent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(agentPayload),
-      })
-
-      if (!cloudRes.ok) {
-        console.warn('Failed to upload agent to cloud, proceeding with local ignition.')
-      }
+      setDownloadStatus('Writing consciousness blueprint to the local desktop roster...')
 
       if (!ipcNonce || !apiKey) {
-        setExecutionMode('cloud')
-        setDownloadStatus('No local sidecar detected. Agent is ready through managed cloud chat.')
+        setExecutionMode('fallback')
+        setDownloadStatus('No local sidecar detected. Agent will wait for desktop model runtime.')
         setTimeout(() => {
-          handleAwaken('cloud')
+          handleAwaken('fallback')
         }, 900)
         return
       }
 
       if (engineTier === 'premium') {
-        const transmute = await fetch('http://localhost:8080/api/forge/transmute', {
+        const transmute = await requestDesktopSidecar('/api/forge/transmute', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`,
-            'X-IPC-Nonce': ipcNonce,
-          },
-          body: JSON.stringify({ tier: engineTier, modelName: selectedModel }),
+          apiKey,
+          nonce: ipcNonce,
+          body: { tier: engineTier, modelName: selectedModel },
         })
 
         if (!transmute.ok) {
@@ -389,14 +338,11 @@ export default function PhilosophersStone({
       const selectedModelEntry = await getSelectedModelEntry()
       setDownloadStatus(`Streaming ${selectedModelEntry.label} from Hugging Face...`)
 
-      const response = await fetch('http://localhost:8080/api/models/install', {
+      const response = await requestDesktopSidecar('/api/models/install', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-          'X-IPC-Nonce': ipcNonce,
-        },
-        body: JSON.stringify({
+        apiKey,
+        nonce: ipcNonce,
+        body: {
           modelName: selectedModel,
           downloadUrl: selectedModelEntry.url,
           sha256: selectedModelEntry.sha256,
@@ -404,7 +350,7 @@ export default function PhilosophersStone({
           sourceModel: selectedModelEntry.id,
           sourceFilename: selectedModelEntry.filename,
           tier: engineTier,
-        }),
+        },
       })
 
       if (!response.ok) {
@@ -418,10 +364,7 @@ export default function PhilosophersStone({
         throw new Error(errorMsg || `Server returned ${response.status}`)
       }
 
-      const checkRes = await fetch('http://localhost:8080/api/models/check', {
-        method: 'GET',
-        headers: { 'X-IPC-Nonce': ipcNonce },
-      })
+      const checkRes = await requestDesktopSidecar('/api/models/check', { nonce: ipcNonce })
       const models = checkRes.ok ? await checkRes.json() : []
       const verifiedModel = models.find((model: any) => model.id === selectedModel)
 
@@ -430,18 +373,18 @@ export default function PhilosophersStone({
       }
 
       setExecutionMode('local')
-      setDownloadStatus('Agent successfully instantiated to local matrix.')
+      setDownloadStatus('Agent unlocked in Alchm Desktop with a verified local engine.')
       setTimeout(() => {
         handleAwaken('local')
       }, 1500)
     } catch (error: any) {
       console.error(error)
-      setExecutionMode('cloud')
+      setExecutionMode('fallback')
       setDownloadStatus(
-        `Local download unavailable: ${error.message}. Agent is ready through managed cloud chat.`
+        `Local engine unavailable: ${error.message}. Agent will wait for desktop model runtime.`
       )
       setTimeout(() => {
-        handleAwaken('cloud')
+        handleAwaken('fallback')
       }, 1800)
     } finally {
       setIsDownloading(false)
@@ -465,7 +408,7 @@ export default function PhilosophersStone({
               'Anchoring: Enter celestial coordinates to calculate the blueprint.'}
             {currentStep === 3 && 'The Reveal: Witness the unique alchemical composition.'}
             {currentStep === 4 && 'Astral Engine: Select the cognitive tier for this entity.'}
-            {currentStep === 5 && 'Ignition: Initiate the secure download to the local matrix.'}
+            {currentStep === 5 && 'Ignition: unlock the agent in the Alchm Desktop chat interface.'}
           </p>
           <div className="text-xs font-medium text-zinc-500 bg-zinc-900 px-3 py-1 rounded-full border border-zinc-800">
             Step {currentStep} of {totalSteps}: "{currentStep === 1 && 'The Calling'}

@@ -162,6 +162,58 @@ export async function fetchImaginize(
   prompt: string,
   options: Record<string, any> = {}
 ): Promise<any> {
+  // If Cloudflare tokens are available, use them directly as the new nanobanana proxy
+  const cfToken = process.env.CLOUDFLARE_API_TOKEN
+  const cfAccountId = process.env.CLOUDFLARE_ACCOUNT_ID
+
+  if (cfToken && cfAccountId) {
+    console.log('[fetchImaginize] Using Cloudflare Workers AI for image generation')
+    try {
+      const url = `https://api.cloudflare.com/client/v4/accounts/${cfAccountId}/ai/run/@cf/stabilityai/stable-diffusion-xl-base-1.0`
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${cfToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt,
+          num_steps: options.steps || 30,
+          negative_prompt: options.negative_prompt || 'text, labels, watermarks, ugly, bad anatomy',
+        }),
+        timeout: 20000, // 20 second timeout for image generation
+      } as any)
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => '')
+        throw new Error(`Cloudflare AI error: ${res.status} ${res.statusText} - ${text}`)
+      }
+
+      const imageBlob = await res.blob()
+      const arrayBuffer = await imageBlob.arrayBuffer()
+      const base64Data = Buffer.from(arrayBuffer).toString('base64')
+      const mimeType = imageBlob.type || 'image/png'
+      const dataUri = `data:${mimeType};base64,${base64Data}`
+
+      return {
+        imageUrl: dataUri,
+        url: dataUri,
+        provider: 'cloudflare-workers-ai',
+      }
+    } catch (error) {
+      if (error instanceof TypeError || (error as any).message.includes('timeout')) {
+        return {
+          imageUrl: null,
+          fallback: true,
+          placeholder: 'Image generation timeout - sigil pattern preserved',
+          error: 'Network timeout or connection error',
+        }
+      }
+      throw error
+    }
+  }
+
+  // Fallback to old external API if Cloudflare is not configured
   const url = `${getBase()}/imaginize`
 
   try {

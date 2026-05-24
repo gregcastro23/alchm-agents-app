@@ -31,7 +31,14 @@ import {
 import Link from 'next/link'
 import { useToast } from '@/hooks/use-toast'
 import type { CraftedAgent, AgentCardVariant, Coordinates } from '@/lib/agent-types'
-import { openDesktopAppDownload } from '@/lib/desktop-download'
+import {
+  ALCHM_DESKTOP_AGENT_DOWNLOAD_LABEL,
+  ALCHM_DESKTOP_AGENT_UNLOCK_DESCRIPTION,
+  ALCHM_DESKTOP_APP_NAME,
+  ALCHM_DESKTOP_DOWNLOAD_LABEL,
+  createDesktopAgentUnlockDeepLink,
+  openDesktopAppDownload,
+} from '@/lib/desktop-download'
 import { AgentDetailedStats } from '@/components/agents/agent-detailed-stats'
 
 const getElementColor = (element: string) => {
@@ -91,22 +98,15 @@ export function AgentCard({
   const { toast } = useToast()
   const [isInstalling, setIsInstalling] = useState(false)
 
-  const handleInstallToDesktop = async (e: React.MouseEvent) => {
+  const handleDownloadToAlchmDesktop = async (e: React.MouseEvent) => {
     e.stopPropagation()
     setIsInstalling(true)
     try {
-      const res = await fetch('/api/deep-link/sign', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: agent.id,
-          name: agent.name,
-          tier: 'base',
-          expiresAt: Date.now() + 5 * 60 * 1000,
-        }),
+      const deepLink = await createDesktopAgentUnlockDeepLink({
+        id: agent.id,
+        name: agent.name,
+        tier: 'base',
       })
-      if (!res.ok) throw new Error('Failed to sign deep link')
-      const { deepLink } = await res.json()
 
       const start = Date.now()
       window.location.assign(deepLink)
@@ -114,11 +114,11 @@ export function AgentCard({
       setTimeout(() => {
         if (Date.now() - start < 1500) {
           toast({
-            title: 'Alchm Desktop Not Found',
-            description: 'Could not open the desktop app. Please download and install it first.',
+            title: `${ALCHM_DESKTOP_APP_NAME} Not Found`,
+            description: `${ALCHM_DESKTOP_AGENT_UNLOCK_DESCRIPTION} Download the app, then use this card to unlock ${agent.name}.`,
             action: (
               <Button variant="outline" size="sm" onClick={openDesktopAppDownload}>
-                Get App
+                {ALCHM_DESKTOP_DOWNLOAD_LABEL}
               </Button>
             ),
           })
@@ -127,8 +127,8 @@ export function AgentCard({
     } catch (error) {
       console.error('Install error:', error)
       toast({
-        title: 'Error',
-        description: 'Failed to generate install link.',
+        title: `Could not open ${ALCHM_DESKTOP_APP_NAME}`,
+        description: 'Failed to generate the agent unlock link.',
         variant: 'destructive',
       })
     } finally {
@@ -216,10 +216,11 @@ export function AgentCard({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={handleInstallToDesktop}
+                    onClick={handleDownloadToAlchmDesktop}
                     disabled={isInstalling}
                   >
-                    <Monitor className="w-3 h-3" />
+                    <Monitor className="w-3 h-3 mr-1" />
+                    {ALCHM_DESKTOP_AGENT_DOWNLOAD_LABEL}
                   </Button>
                   <Dialog>
                     <DialogTrigger asChild>
@@ -453,11 +454,12 @@ export function AgentCard({
             <Button
               size="sm"
               variant="outline"
-              onClick={handleInstallToDesktop}
+              onClick={handleDownloadToAlchmDesktop}
               disabled={isInstalling}
-              title="Install to Desktop"
+              title={ALCHM_DESKTOP_AGENT_UNLOCK_DESCRIPTION}
             >
-              <Monitor className="w-3 h-3" />
+              <Monitor className="w-3 h-3 mr-1" />
+              {ALCHM_DESKTOP_AGENT_DOWNLOAD_LABEL}
             </Button>
             <Dialog>
               <DialogTrigger asChild>

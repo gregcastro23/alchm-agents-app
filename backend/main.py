@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import asyncio
 import time
 from collections import deque
+import httpx
 
 import models
 import schemas
@@ -409,6 +410,336 @@ def create_agent(agent: schemas.AgentCreate, db: Session = Depends(database.get_
 async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_db)):
     # 1. Resolve agent (still needed for RAG filter and DB recording)
     db_agent = crud.get_agent(db, agent_id=request.agentId)
+    if not db_agent:
+        # Determine if it's a planetary or moon phase agent
+        is_planetary = False
+        is_moon_phase = False
+        parts = request.agentId.split("-")
+        planet_opt, sign_opt, degree_opt = "", "", 0
+        phase_name_opt = ""
+        
+        # Check if it is a moon phase agent
+        if request.agentId.startswith("moon-phase-"):
+            is_moon_phase = True
+            if len(parts) >= 4:
+                try:
+                    degree_opt = int(parts[-1])
+                except ValueError:
+                    degree_opt = 0
+                phase_slug = "-".join(parts[2:-1])
+                slug_map = {
+                    "new-moon": "New Moon",
+                    "waxing-crescent": "Waxing Crescent",
+                    "first-quarter": "First Quarter",
+                    "waxing-gibbous": "Waxing Gibbous",
+                    "full-moon": "Full Moon",
+                    "waning-gibbous": "Waning Gibbous",
+                    "last-quarter": "Last Quarter",
+                    "waning-crescent": "Waning Crescent",
+                    "dark-moon": "Dark Moon"
+                }
+                phase_name_opt = slug_map.get(phase_slug, "New Moon")
+                
+                # Derive sign from absolute degree (0-359)
+                sign_opt = ZODIAC_SIGNS[min(11, max(0, degree_opt // 30))]
+        else:
+            # Strip "planetary" prefix if present
+            offset = 1 if (len(parts) > 0 and parts[0].lower() == "planetary") else 0
+            
+            if len(parts) >= offset + 2:
+                planet_candidate = parts[offset].title()
+                sign_candidate = parts[offset + 1].title()
+                if sign_candidate == "Scorpius":
+                    sign_candidate = "Scorpio"
+                
+                if planet_candidate in PLANETARY_PERIODS_DAYS and sign_candidate in ZODIAC_SIGNS:
+                    is_planetary = True
+                    planet_opt = planet_candidate
+                    sign_opt = sign_candidate
+                    
+                    # Check for degree
+                    if len(parts) >= offset + 3:
+                        try:
+                            degree_opt = int(parts[offset + 2])
+                        except ValueError:
+                            degree_opt = 0
+
+        try:
+            # Shared moon phase profiles for moon-phase agents and Moon planetary degree agents
+            phase_personalities = {
+                "New Moon": {
+                    "archetype": "The Seed Planter",
+                    "traits": ["intuitive", "introspective", "initiating", "mysterious", "potential-focused"],
+                    "specialty": "New beginnings, setting intentions, and void-dwelling potential.",
+                    "spirit": 0.9, "essence": 0.3, "matter": 0.1, "substance": 0.1, "color": "#1e293b", "symbol": "🌑"
+                },
+                "Waxing Crescent": {
+                    "archetype": "The Young Explorer",
+                    "traits": ["curious", "hopeful", "tentative", "learning", "growing"],
+                    "specialty": "Building momentum, early growth, and hopeful exploration.",
+                    "spirit": 0.7, "essence": 0.4, "matter": 0.2, "substance": 0.2, "color": "#38bdf8", "symbol": "🌒"
+                },
+                "First Quarter": {
+                    "archetype": "The Decision Maker",
+                    "traits": ["decisive", "challenged", "determined", "active", "crisis-oriented"],
+                    "specialty": "Breaking through barriers, dynamic actions, and decisive choice.",
+                    "spirit": 0.5, "essence": 0.5, "matter": 0.3, "substance": 0.2, "color": "#0ea5e9", "symbol": "🌓"
+                },
+                "Waxing Gibbous": {
+                    "archetype": "The Refiner",
+                    "traits": ["perfecting", "analyzing", "adjusting", "preparing", "anticipating"],
+                    "specialty": "Analyzing details, fine-tuning structures, and preparing for peak expression.",
+                    "spirit": 0.4, "essence": 0.6, "matter": 0.4, "substance": 0.3, "color": "#0284c7", "symbol": "🌔"
+                },
+                "Full Moon": {
+                    "archetype": "The Illuminator",
+                    "traits": ["revealing", "emotional", "powerful", "culminating", "illuminating"],
+                    "specialty": "Emotional truths, dramatic revelations, and peak manifestation.",
+                    "spirit": 0.5, "essence": 0.7, "matter": 0.5, "substance": 0.4, "color": "#f59e0b", "symbol": "🌕"
+                },
+                "Waning Gibbous": {
+                    "archetype": "The Grateful Sage",
+                    "traits": ["grateful", "sharing", "teaching", "distributing", "wise"],
+                    "specialty": "Sharing wisdom, expressing gratitude, and distributing abundance.",
+                    "spirit": 0.4, "essence": 0.6, "matter": 0.6, "substance": 0.5, "color": "#e2e8f0", "symbol": "🌖"
+                },
+                "Last Quarter": {
+                    "archetype": "The Release Master",
+                    "traits": ["releasing", "forgiving", "clearing", "transitioning", "letting go"],
+                    "specialty": "Clearing outmoded patterns, compassionate forgiveness, and active release.",
+                    "spirit": 0.3, "essence": 0.5, "matter": 0.5, "substance": 0.4, "color": "#94a3b8", "symbol": "🌗"
+                },
+                "Waning Crescent": {
+                    "archetype": "The Dream Weaver",
+                    "traits": ["restful", "dreamy", "intuitive", "preparing", "surrendering"],
+                    "specialty": "Restful contemplation, dream integration, and peaceful surrender.",
+                    "spirit": 0.2, "essence": 0.4, "matter": 0.4, "substance": 0.3, "color": "#64748b", "symbol": "🌘"
+                },
+                "Dark Moon": {
+                    "archetype": "The Void Walker",
+                    "traits": ["mysterious", "transformative", "void-dwelling", "death-rebirth", "primal"],
+                    "specialty": "Primal void exploration, shadow integration, and deep transformation.",
+                    "spirit": 1.0, "essence": 0.1, "matter": 0.1, "substance": 0.0, "color": "#0f172a", "symbol": "⚫"
+                }
+            }
+
+            if is_moon_phase:
+                element = utils.get_zodiac_element(sign_opt)
+                SIGN_MODALITIES = {
+                    "Aries": "Cardinal", "Libra": "Cardinal", "Cancer": "Cardinal", "Capricorn": "Cardinal",
+                    "Taurus": "Fixed", "Leo": "Fixed", "Scorpio": "Fixed", "Aquarius": "Fixed",
+                    "Gemini": "Mutable", "Virgo": "Mutable", "Sagittarius": "Mutable", "Pisces": "Mutable"
+                }
+                modality = SIGN_MODALITIES.get(sign_opt, "Cardinal")
+                
+                p_data = phase_personalities.get(phase_name_opt, phase_personalities["New Moon"])
+                
+                agent_create = schemas.AgentCreate(
+                    agentId=request.agentId,
+                    name=f"{phase_name_opt} Moon in {sign_opt} {degree_opt % 30} Degree",
+                    title="Moon Phase Intelligence",
+                    birthDate=datetime(2000, 1, 1),
+                    birthTime="12:00",
+                    birthLocation=schemas.BirthLocation(lat=0.0, lon=0.0, name="Unknown"),
+                    consciousnessLevel="Active",
+                    monicaConstant=p_data["spirit"],
+                    dominantElement=element,
+                    dominantModality=modality,
+                    specialty=p_data["specialty"],
+                    wisdomDomains=["Lunar Dynamics", "Emotional Integration"],
+                    avatar="",
+                    color=p_data["color"],
+                    symbol=p_data["symbol"],
+                    personalityCore=p_data,
+                    traits=p_data["traits"]
+                )
+            elif is_planetary:
+                element = utils.get_zodiac_element(sign_opt)
+                
+                PLANET_COLORS = {
+                    "Sun": "#f59e0b",
+                    "Moon": "#3b82f6",
+                    "Mercury": "#10b981",
+                    "Venus": "#ec4899",
+                    "Mars": "#ef4444",
+                    "Jupiter": "#8b5cf6",
+                    "Saturn": "#4b5563",
+                    "Uranus": "#06b6d4",
+                    "Neptune": "#6366f1",
+                    "Pluto": "#7c3aed"
+                }
+                SIGN_MODALITIES = {
+                    "Aries": "Cardinal", "Libra": "Cardinal", "Cancer": "Cardinal", "Capricorn": "Cardinal",
+                    "Taurus": "Fixed", "Leo": "Fixed", "Scorpio": "Fixed", "Aquarius": "Fixed",
+                    "Gemini": "Mutable", "Virgo": "Mutable", "Sagittarius": "Mutable", "Pisces": "Mutable"
+                }
+                
+                modality = SIGN_MODALITIES.get(sign_opt, "Cardinal")
+                color = PLANET_COLORS.get(planet_opt, "#8b5cf6")
+                symbol = planet_opt
+                p_data = None
+                
+                # Check if the planet is Moon, to calculate its exact phase from the degree
+                if planet_opt == "Moon":
+                    zodiac_starts = {
+                        "Aries": 0, "Taurus": 30, "Gemini": 60, "Cancer": 90,
+                        "Leo": 120, "Virgo": 150, "Libra": 180, "Scorpio": 210,
+                        "Sagittarius": 240, "Capricorn": 270, "Aquarius": 300, "Pisces": 330
+                    }
+                    start_deg = zodiac_starts.get(sign_opt, 0)
+                    abs_degree = (start_deg + degree_opt) % 360
+                    
+                    if abs_degree < 11.25:
+                        phase_name = "New Moon"
+                    elif abs_degree < 78.75:
+                        phase_name = "Waxing Crescent"
+                    elif abs_degree < 101.25:
+                        phase_name = "First Quarter"
+                    elif abs_degree < 168.75:
+                        phase_name = "Waxing Gibbous"
+                    elif abs_degree < 191.25:
+                        phase_name = "Full Moon"
+                    elif abs_degree < 258.75:
+                        phase_name = "Waning Gibbous"
+                    elif abs_degree < 281.25:
+                        phase_name = "Last Quarter"
+                    elif abs_degree < 348.75:
+                        phase_name = "Waning Crescent"
+                    else:
+                        phase_name = "Dark Moon"
+                        
+                    p_data = phase_personalities.get(phase_name, phase_personalities["New Moon"])
+                    name_str = f"{phase_name} Moon in {sign_opt} {degree_opt} Degree"
+                    specialty = f"Moon ({phase_name} Phase) intelligence in {sign_opt} at {degree_opt}°"
+                    color = p_data["color"]
+                    symbol = p_data["symbol"]
+                else:
+                    name_str = f"{planet_opt} in {sign_opt} {degree_opt} Degree" if len(parts) >= offset + 3 else f"{planet_opt} in {sign_opt}"
+                    specialty = f"{planet_opt} intelligence in {sign_opt} at {degree_opt}°"
+                
+                dignity_val = utils.get_planetary_dignity(planet_opt, sign_opt)
+                if dignity_val in (1, 3):
+                    ruler_dignity = "domicile"
+                elif dignity_val == 2:
+                    ruler_dignity = "exaltation"
+                elif dignity_val in (-1, -3):
+                    ruler_dignity = "detriment"
+                elif dignity_val == -2:
+                    ruler_dignity = "fall"
+                else:
+                    ruler_dignity = "peregrine"
+                    
+                is_anaretic = (degree_opt == 29)
+                is_cardinal_degree = (degree_opt == 0 and modality == "Cardinal")
+                critical_degrees = {
+                    "Cardinal": [0, 13, 26],
+                    "Fixed": [8, 9, 21, 22],
+                    "Mutable": [4, 17]
+                }
+                is_critical_degree = degree_opt in critical_degrees.get(modality, [])
+                
+                # Consciousness level calculation
+                level_score = 3
+                if ruler_dignity == "domicile":
+                    level_score += 2
+                elif ruler_dignity == "exaltation":
+                    level_score += 3
+                elif ruler_dignity == "detriment":
+                    level_score -= 1
+                elif ruler_dignity == "fall":
+                    level_score -= 2
+                    
+                if is_anaretic:
+                    level_score += 2
+                if is_cardinal_degree:
+                    level_score += 1
+                if is_critical_degree:
+                    level_score += 1
+                    
+                if degree_opt == 0:
+                    level_score += 1
+                if degree_opt == 29:
+                    level_score += 1
+                    
+                if level_score >= 7:
+                    consciousness_level = "Transcendent"
+                elif level_score >= 6:
+                    consciousness_level = "Illuminated"
+                elif level_score >= 5:
+                    consciousness_level = "Advanced"
+                elif level_score >= 4:
+                    consciousness_level = "Elevated"
+                elif level_score >= 3:
+                    consciousness_level = "Active"
+                elif level_score >= 2:
+                    consciousness_level = "Awakening"
+                else:
+                    consciousness_level = "Dormant"
+                    
+                # Power level calculation
+                power = 0.5
+                if ruler_dignity == "domicile":
+                    power += 0.3
+                elif ruler_dignity == "exaltation":
+                    power += 0.4
+                elif ruler_dignity == "detriment":
+                    power -= 0.2
+                elif ruler_dignity == "fall":
+                    power -= 0.3
+                    
+                if is_critical_degree:
+                    power += 0.15
+                if degree_opt == 0:
+                    power += 0.1
+                if degree_opt == 29:
+                    power += 0.15
+                if modality == "Fixed":
+                    power += 0.05
+                power_level = max(0.0, min(1.0, power))
+                
+                agent_create = schemas.AgentCreate(
+                    agentId=request.agentId,
+                    name=name_str,
+                    title="Planetary Intelligence",
+                    birthDate=datetime(2000, 1, 1),
+                    birthTime="12:00",
+                    birthLocation=schemas.BirthLocation(lat=0.0, lon=0.0, name="Unknown"),
+                    consciousnessLevel=consciousness_level,
+                    monicaConstant=power_level,
+                    dominantElement=element,
+                    dominantModality=modality,
+                    specialty=specialty,
+                    wisdomDomains=["Cosmology", "Planetary Influence"],
+                    avatar="",
+                    color=color,
+                    symbol=symbol,
+                    personalityCore=p_data,
+                    traits=p_data["traits"] if p_data else []
+                )
+            else:
+                display_name = request.agentId.replace("-", " ").title()
+                agent_create = schemas.AgentCreate(
+                    agentId=request.agentId,
+                    name=display_name,
+                    title="Historical Figure",
+                    birthDate=datetime(2000, 1, 1),
+                    birthTime="12:00",
+                    birthLocation=schemas.BirthLocation(lat=0.0, lon=0.0, name="Unknown"),
+                    consciousnessLevel="Active",
+                    monicaConstant=0.5,
+                    dominantElement="Air",
+                    dominantModality="Cardinal",
+                    specialty="Historical Wisdom",
+                    wisdomDomains=["History", "Philosophical Depth"],
+                    avatar="",
+                    color="#64748b",
+                    symbol="Scroll"
+                )
+            db_agent = crud.create_agent(db=db, agent=agent_create)
+            print(f"Auto-registered missing agent dynamically: {request.agentId}", flush=True)
+        except Exception as sync_err:
+            print(f"Warning: Failed to auto-register missing agent {request.agentId}: {sync_err}", flush=True)
+            db.rollback()
 
     # 2. Build persona block.
     # Priority: caller-supplied override (canonical TS builder) > Monica template > enriched Python fallback.
@@ -421,6 +752,7 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
         persona_block = prompts.get_agent_system_prompt(db_agent.__dict__)
     else:
         raise HTTPException(status_code=404, detail="Agent not found")
+
 
     # 3. RAG — labeled reference material, augments persona without dominating.
     rag_block = ""
@@ -643,6 +975,61 @@ async def post_moment_recommendations(request: Dict[str, Any], db: Session = Dep
         
     return {"scores": scores}
 
+@app.post("/api/generate-image")
+async def generate_image(request: Dict[str, Any]):
+    prompt = request.get("prompt")
+    if not prompt:
+        raise HTTPException(status_code=400, detail="Missing prompt")
+        
+    api_token = os.getenv("CLOUDFLARE_API_TOKEN")
+    account_id = os.getenv("CLOUDFLARE_ACCOUNT_ID")
+    
+    if not api_token or not account_id:
+        raise HTTPException(
+            status_code=500, 
+            detail="Server misconfiguration: Missing Cloudflare credentials (CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID)"
+        )
+        
+    url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/@cf/stabilityai/stable-diffusion-xl-base-1.0"
+    
+    headers = {
+        "Authorization": f"Bearer {api_token}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "prompt": prompt,
+        "num_steps": request.get("steps", 30),
+        "negative_prompt": request.get("negative_prompt", "text, labels, watermarks, ugly, bad anatomy")
+    }
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, headers=headers, json=payload, timeout=60.0)
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=502, 
+                    detail=f"Cloudflare AI error: {response.status_code} {response.text}"
+                )
+                
+            # Cloudflare returns binary image data
+            import base64
+            image_data = response.content
+            b64_encoded = base64.b64encode(image_data).decode('utf-8')
+            mime_type = response.headers.get("Content-Type", "image/png")
+            data_uri = f"data:{mime_type};base64,{b64_encoded}"
+            
+            return {
+                "success": True,
+                "provider": "cloudflare-workers-ai",
+                "imageUrl": data_uri,
+                "url": data_uri,
+                "metadata": {
+                    "model": "@cf/stabilityai/stable-diffusion-xl-base-1.0"
+                }
+            }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Image generation failed: {str(e)}")
 
 
 @app.get("/api/philosophers-stone/positions", response_model=schemas.PhilosophersStonePositionsResponse)

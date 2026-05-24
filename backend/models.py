@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, Boolean, ForeignKey
 from sqlalchemy.orm import relationship, DeclarativeBase
 from datetime import datetime, timezone
+import uuid
 
 class Base(DeclarativeBase):
     pass
@@ -8,7 +9,7 @@ class Base(DeclarativeBase):
 class HistoricalAgent(Base):
     __tablename__ = "historical_agents"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
     agentId = Column(String, unique=True, index=True, nullable=False)
     name = Column(String, nullable=False)
     title = Column(String)
@@ -94,9 +95,9 @@ class HistoricalAgent(Base):
     recentConversations = relationship("AgentConversation", back_populates="agent")
 
 class AgentConversation(Base):
-    __tablename__ = "agent_conversations"
+    __tablename__ = "AgentConversation"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
     agentId = Column(String, ForeignKey("historical_agents.agentId"), nullable=False)
     sessionId = Column(String, nullable=False)
     userId = Column(String)

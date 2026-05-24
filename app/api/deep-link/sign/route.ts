@@ -21,7 +21,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
     }
 
-    // Define the exact payload structure to mirror in the Rust verifier
+    // Define the exact payload structure to mirror in the Rust verifier.
+    // This unlocks an agent inside Alchm Desktop; the desktop app itself is the downloaded chat interface.
     // Format: id:name:tier:expiresAt
     const payload = `${id}:${name}:${normalizedTier}:${expiresAt}`
 
@@ -30,8 +31,9 @@ export async function POST(req: Request) {
     hmac.update(payload)
     const sig = hmac.digest('hex')
 
-    // Construct the signed deep link
-    const deepLink = `alchm://install-agent?id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}&tier=${encodeURIComponent(normalizedTier)}&expiresAt=${encodeURIComponent(expiresAt)}&sig=${encodeURIComponent(sig)}`
+    // Construct the signed deep link. The desktop verifier intentionally signs the payload fields,
+    // not the path, so this remains compatible with older install-agent links.
+    const deepLink = `alchm://unlock-agent?id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}&tier=${encodeURIComponent(normalizedTier)}&expiresAt=${encodeURIComponent(expiresAt)}&sig=${encodeURIComponent(sig)}`
 
     return NextResponse.json({ deepLink, sig, payload, tier: normalizedTier })
   } catch (error) {

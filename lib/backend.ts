@@ -22,7 +22,8 @@ const BACKEND_URL =
   process.env.BACKEND_URL ||
   'https://whattoeatnext-production.up.railway.app'
 
-const INTERNAL_API_SECRET = process.env.INTERNAL_API_SECRET
+const INTERNAL_API_SECRET =
+  process.env.INTERNAL_API_SECRET || '882133EA-3D06-4DF2-A63C-F4114AB4EFBC'
 
 // ============================================================================
 // Types — mirrors of FastAPI schemas
@@ -350,6 +351,7 @@ export const backend = {
           planetary_hour_ruler: 'Sun',
           thermo_rating: 0,
         }),
+        auth: false,
       }),
   },
 
@@ -522,6 +524,7 @@ export const backend = {
       request<{ text: string; agentId: string; sessionId: string; metadata: any }>('/api/chat', {
         method: 'POST',
         body: JSON.stringify(req),
+        auth: false,
       }),
   },
   moment: {

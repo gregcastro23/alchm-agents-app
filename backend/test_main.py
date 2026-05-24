@@ -353,3 +353,131 @@ async def test_feed_emitter_posts_to_wten_with_bearer_header(monkeypatch, caplog
     assert captured["json"]["activityDetails"]["messagePreview"] == "observe"
     assert captured["json"]["metadataPayload"]["timestamp"] == "2026-05-22T00:00:00Z"
     assert "feed_emit ok: galileo@agentic.alchm.kitchen/agent_chat -> 200" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_chat_auto_registration(monkeypatch):
+    monkeypatch.setattr(providers, "call_provider", _selective_failure([]))
+    
+    agent_id = f"mars-gemini-{uuid4().hex[:8]}"
+    
+    # Verify agent doesn't exist yet
+    get_res = client.get(f"/api/agents/{agent_id}")
+    assert get_res.status_code == 404
+    
+    # Call /api/chat which should trigger auto-registration
+    response = client.post("/api/chat", json={
+        "agentId": agent_id,
+        "message": "What is the message?",
+        "systemPromptOverride": "Override system prompt",
+    })
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["agentId"] == agent_id
+    assert "text" in data
+    
+    # Verify agent has been successfully created in the database
+    get_res = client.get(f"/api/agents/{agent_id}")
+    assert get_res.status_code == 200
+    agent_data = get_res.json()
+    assert agent_data["agentId"] == agent_id
+    assert agent_data["title"] == "Planetary Intelligence"
+
+
+@pytest.mark.asyncio
+async def test_chat_auto_registration_historical(monkeypatch):
+    monkeypatch.setattr(providers, "call_provider", _selective_failure([]))
+    
+    agent_id = f"custom-historical-agent-{uuid4().hex[:8]}"
+    
+    # Verify agent doesn't exist yet
+    get_res = client.get(f"/api/agents/{agent_id}")
+    assert get_res.status_code == 404
+    
+    # Call /api/chat which should trigger auto-registration
+    response = client.post("/api/chat", json={
+        "agentId": agent_id,
+        "message": "What is the message?",
+        "systemPromptOverride": "Override system prompt",
+    })
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["agentId"] == agent_id
+    
+    # Verify agent has been successfully created in the database
+    get_res = client.get(f"/api/agents/{agent_id}")
+    assert get_res.status_code == 200
+    agent_data = get_res.json()
+    assert agent_data["agentId"] == agent_id
+    assert agent_data["title"] == "Historical Figure"
+
+
+@pytest.mark.asyncio
+async def test_chat_auto_registration_degree_level(monkeypatch):
+    monkeypatch.setattr(providers, "call_provider", _selective_failure([]))
+    
+    unique_suffix = uuid4().hex[:8]
+    agent_id = f"planetary-mars-aries-15-{unique_suffix}"
+    
+    # Verify agent doesn't exist yet
+    get_res = client.get(f"/api/agents/{agent_id}")
+    assert get_res.status_code == 404
+    
+    # Call /api/chat which should trigger auto-registration
+    response = client.post("/api/chat", json={
+        "agentId": agent_id,
+        "message": "What is your message?",
+        "systemPromptOverride": "Override system prompt",
+    })
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["agentId"] == agent_id
+    
+    # Verify agent has been successfully created with correct degree-level details
+    get_res = client.get(f"/api/agents/{agent_id}")
+    assert get_res.status_code == 200
+    agent_data = get_res.json()
+    assert agent_data["agentId"] == agent_id
+    assert agent_data["title"] == "Planetary Intelligence"
+    assert agent_data["dominantElement"] == "Fire"
+    assert agent_data["dominantModality"] == "Cardinal"
+    assert "Mars intelligence in Aries" in agent_data["specialty"]
+
+
+@pytest.mark.asyncio
+async def test_chat_auto_registration_moon_degree_phase(monkeypatch):
+    monkeypatch.setattr(providers, "call_provider", _selective_failure([]))
+    
+    unique_suffix = uuid4().hex[:8]
+    agent_id = f"planetary-moon-aries-15-{unique_suffix}"
+    
+    # Verify agent doesn't exist yet
+    get_res = client.get(f"/api/agents/{agent_id}")
+    assert get_res.status_code == 404
+    
+    # Call /api/chat which should trigger auto-registration with lunar phase knowledge
+    response = client.post("/api/chat", json={
+        "agentId": agent_id,
+        "message": "Hello Moon!",
+    })
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["agentId"] == agent_id
+    
+    # Verify agent has been successfully created with correct phase-level details
+    get_res = client.get(f"/api/agents/{agent_id}")
+    assert get_res.status_code == 200
+    agent_data = get_res.json()
+    assert agent_data["agentId"] == agent_id
+    assert agent_data["title"] == "Planetary Intelligence"
+    assert "Waxing Crescent" in agent_data["name"]
+    assert "Waxing Crescent Phase" in agent_data["specialty"]
+    assert agent_data["dominantElement"] == "Fire"
+    assert agent_data["dominantModality"] == "Cardinal"
+    assert agent_data["personalityCore"]["archetype"] == "The Young Explorer"
+    assert "curious" in agent_data["personalityCore"]["traits"]
+

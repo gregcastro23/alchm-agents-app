@@ -28,6 +28,12 @@ class AgentBase(BaseModel):
     avatar: Optional[str] = None
     color: Optional[str] = None
     symbol: Optional[str] = None
+    
+    personalityCore: Optional[Dict[str, Any]] = None
+    personalityShadows: Optional[List[Dict[str, Any]]] = None
+    personalityGifts: Optional[List[Dict[str, Any]]] = None
+    personalityChallenges: Optional[List[Dict[str, Any]]] = None
+    traits: Optional[Union[List[str], Dict[str, Any]]] = None
 
 class AgentCreate(AgentBase):
     pass

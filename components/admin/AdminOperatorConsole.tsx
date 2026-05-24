@@ -35,13 +35,19 @@ import { PerformanceDashboard } from '@/components/admin/performance-dashboard'
 import BatchProcessingDashboard from '@/components/dashboards/batch-processing-dashboard'
 import { RAGMonitor } from '@/components/rag/rag-monitor'
 import { cn } from '@/lib/utils'
-import { DESKTOP_APP_DOWNLOAD_URL } from '@/lib/desktop-download'
-import type { AdminDashboardData, AdminHealthValue, AdminSystemStats } from '@/types/admin'
+import { ALCHM_DESKTOP_DOWNLOAD_LABEL, DESKTOP_APP_DOWNLOAD_URL } from '@/lib/desktop-download'
+import type {
+  AdminDashboardData,
+  AdminHealthValue,
+  AdminSystemStats,
+  AdminRecentChat,
+} from '@/types/admin'
 
 type AdminTab =
   | 'overview'
   | 'users'
   | 'agents'
+  | 'chats'
   | 'rag'
   | 'infrastructure'
   | 'deployments'
@@ -63,6 +69,7 @@ const tabs: Array<{ id: AdminTab; label: string; icon: LucideIcon }> = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'users', label: 'Users', icon: Users },
   { id: 'agents', label: 'Agents', icon: Bot },
+  { id: 'chats', label: 'Chat Status', icon: TerminalSquare },
   { id: 'rag', label: 'RAG / Knowledge', icon: FileSearch },
   { id: 'infrastructure', label: 'Infrastructure', icon: Server },
   { id: 'deployments', label: 'Deployments', icon: GitBranch },
@@ -235,6 +242,7 @@ export function AdminOperatorConsole({ initialUser, authSource }: AdminOperatorC
   const [error, setError] = useState<string | null>(null)
   const [authError, setAuthError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+  const [selectedChat, setSelectedChat] = useState<AdminRecentChat | null>(null)
 
   const fetchDashboard = useCallback(async () => {
     setRefreshing(true)
@@ -591,6 +599,93 @@ export function AdminOperatorConsole({ initialUser, authSource }: AdminOperatorC
                   </div>
                 )}
 
+                {activeTab === 'chats' && (
+                  <Panel title="Agent Chats Status" icon={TerminalSquare}>
+                    {!data.recentChats || data.recentChats.length === 0 ? (
+                      <EmptyState label="No agent chats recorded" />
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-[900px] text-sm">
+                          <thead className="text-xs uppercase tracking-[0.12em] text-zinc-500">
+                            <tr className="border-b border-zinc-800">
+                              <th className="px-3 py-2 text-left font-semibold">Agent</th>
+                              <th className="px-3 py-2 text-left font-semibold">User Message</th>
+                              <th className="px-3 py-2 text-left font-semibold">Agent Response</th>
+                              <th className="px-3 py-2 text-left font-semibold">
+                                Model / Provider
+                              </th>
+                              <th className="px-3 py-2 text-left font-semibold">Latency</th>
+                              <th className="px-3 py-2 text-left font-semibold">Status</th>
+                              <th className="px-3 py-2 text-left font-semibold">Time</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-zinc-800">
+                            {data.recentChats.map(chat => {
+                              const isSuccess =
+                                chat.agentResponse &&
+                                !chat.agentResponse.includes('[All providers unavailable]')
+                              const latency = chat.responseTime ? `${chat.responseTime}ms` : 'n/a'
+
+                              return (
+                                <tr
+                                  key={chat.id}
+                                  className="hover:bg-zinc-800/40 cursor-pointer transition-colors group"
+                                  onClick={() => setSelectedChat(chat)}
+                                >
+                                  <td className="px-3 py-3">
+                                    <div className="font-semibold text-zinc-100">
+                                      {chat.agentName}
+                                    </div>
+                                    <div
+                                      className="text-xs text-zinc-500 font-mono truncate max-w-[150px]"
+                                      title={chat.agentId}
+                                    >
+                                      {chat.agentId}
+                                    </div>
+                                  </td>
+                                  <td
+                                    className="px-3 py-3 max-w-[200px] truncate text-zinc-300"
+                                    title={chat.userMessage}
+                                  >
+                                    {chat.userMessage}
+                                  </td>
+                                  <td
+                                    className="px-3 py-3 max-w-[250px] truncate text-zinc-400"
+                                    title={chat.agentResponse}
+                                  >
+                                    {chat.agentResponse}
+                                  </td>
+                                  <td className="px-3 py-3 font-mono text-xs text-zinc-400">
+                                    {chat.modelUsed || 'n/a'}
+                                  </td>
+                                  <td className="px-3 py-3 font-mono text-xs text-zinc-300">
+                                    {latency}
+                                  </td>
+                                  <td className="px-3 py-3">
+                                    <span
+                                      className={cn(
+                                        'rounded-md px-2 py-1 text-xs font-semibold uppercase border tracking-wider',
+                                        isSuccess
+                                          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                                          : 'border-rose-500/30 bg-rose-500/10 text-rose-300'
+                                      )}
+                                    >
+                                      {isSuccess ? 'Success' : 'Failed'}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-3 text-zinc-500 text-xs whitespace-nowrap">
+                                    {formatDate(chat.createdAt)}
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </Panel>
+                )}
+
                 {activeTab === 'rag' && (
                   <div className="space-y-5">
                     <Panel
@@ -779,7 +874,7 @@ export function AdminOperatorConsole({ initialUser, authSource }: AdminOperatorC
                         <QuickLink
                           href={DESKTOP_APP_DOWNLOAD_URL}
                           icon={ExternalLink}
-                          label="Desktop Releases"
+                          label={ALCHM_DESKTOP_DOWNLOAD_LABEL}
                           external
                         />
                         <QuickLink
@@ -802,6 +897,124 @@ export function AdminOperatorConsole({ initialUser, authSource }: AdminOperatorC
           <span>Last updated {lastUpdated ? formatDate(lastUpdated) : 'n/a'}</span>
           <span>Refresh interval 30s</span>
         </footer>
+
+        {/* Chat Telemetry Detail Modal */}
+        {selectedChat && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-sm transition-opacity">
+            <div className="relative w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+              {/* Header */}
+              <div className="p-5 border-b border-zinc-800 flex justify-between items-start">
+                <div>
+                  <h3 className="text-lg font-semibold text-zinc-100 flex items-center gap-2">
+                    <TerminalSquare className="w-5 h-5 text-sky-400" />
+                    Chat Telemetry Details
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-1 flex items-center gap-1.5">
+                    Agent:{' '}
+                    <span className="font-semibold text-zinc-300">{selectedChat.agentName}</span>
+                    <span className="text-zinc-600 font-mono">({selectedChat.agentId})</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedChat(null)}
+                  className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-zinc-800"
+                >
+                  <XCircle className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 overflow-y-auto space-y-5 text-sm">
+                {/* Status & Latency Info */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-zinc-950/40 p-4 border border-zinc-800/60 rounded-lg font-mono text-xs">
+                  <div>
+                    <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">
+                      Status
+                    </span>
+                    <span
+                      className={cn(
+                        'font-semibold',
+                        selectedChat.agentResponse &&
+                          !selectedChat.agentResponse.includes('[All providers unavailable]')
+                          ? 'text-emerald-400'
+                          : 'text-rose-400'
+                      )}
+                    >
+                      {selectedChat.agentResponse &&
+                      !selectedChat.agentResponse.includes('[All providers unavailable]')
+                        ? 'SUCCESS'
+                        : 'FAILED'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">
+                      Response Time
+                    </span>
+                    <span className="text-zinc-300 font-semibold">
+                      {selectedChat.responseTime ? `${selectedChat.responseTime}ms` : 'n/a'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">
+                      Model Used
+                    </span>
+                    <span className="text-zinc-300 font-semibold">
+                      {selectedChat.modelUsed || 'n/a'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">
+                      Timestamp
+                    </span>
+                    <span className="text-zinc-300">
+                      {new Date(selectedChat.createdAt).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                      })}
+                    </span>
+                  </div>
+                </div>
+
+                {/* User Message */}
+                <div className="space-y-1.5">
+                  <h4 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold">
+                    User Message
+                  </h4>
+                  <div className="bg-zinc-950/60 border border-zinc-800 p-4 rounded-lg text-zinc-200 whitespace-pre-wrap select-text">
+                    {selectedChat.userMessage}
+                  </div>
+                </div>
+
+                {/* Agent Response */}
+                <div className="space-y-1.5">
+                  <h4 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold">
+                    Agent Response
+                  </h4>
+                  <div className="bg-zinc-950/40 border border-zinc-800/80 p-4 rounded-lg text-zinc-300 whitespace-pre-wrap select-text max-h-[300px] overflow-y-auto font-sans leading-relaxed">
+                    {selectedChat.agentResponse}
+                  </div>
+                </div>
+
+                {/* Session Identification */}
+                <div className="pt-2 text-xs font-mono text-zinc-500 flex justify-between border-t border-zinc-800/60">
+                  <span>Session: {selectedChat.sessionId}</span>
+                  <span>ID: {selectedChat.id}</span>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-zinc-800 bg-zinc-900/60 flex justify-end">
+                <button
+                  onClick={() => setSelectedChat(null)}
+                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 transition-colors text-zinc-100 rounded-lg text-xs font-semibold uppercase tracking-wider"
+                >
+                  Close Details
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   )

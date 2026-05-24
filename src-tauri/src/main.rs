@@ -32,10 +32,74 @@ struct AppState {
     ipc_nonce: Mutex<String>,
 }
 
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct SidecarRequest {
+    method: String,
+    path: String,
+    body: Option<serde_json::Value>,
+    api_key: Option<String>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SidecarResponse {
+    status: u16,
+    body: String,
+    content_type: Option<String>,
+}
+
 #[tauri::command]
 fn get_ipc_nonce(state: State<'_, AppState>) -> Result<String, String> {
     let nonce = state.ipc_nonce.lock().map_err(|e| e.to_string())?.clone();
     Ok(nonce)
+}
+
+#[tauri::command]
+async fn sidecar_request(
+    state: State<'_, AppState>,
+    request: SidecarRequest,
+) -> Result<SidecarResponse, String> {
+    if !request.path.starts_with("/api/") || request.path.contains("..") {
+        return Err("Invalid sidecar path".to_string());
+    }
+
+    let nonce = state.ipc_nonce.lock().map_err(|e| e.to_string())?.clone();
+    let method = request
+        .method
+        .parse::<reqwest::Method>()
+        .map_err(|_| "Invalid sidecar method".to_string())?;
+    let url = format!("http://127.0.0.1:8080{}", request.path);
+    let client = reqwest::Client::new();
+    let mut builder = client
+        .request(method, url)
+        .header("X-IPC-Nonce", nonce)
+        .header("Content-Type", "application/json");
+
+    if let Some(api_key) = request.api_key {
+        builder = builder.bearer_auth(api_key);
+    }
+
+    if let Some(body) = request.body {
+        if !body.is_null() {
+            builder = builder.body(body.to_string());
+        }
+    }
+
+    let response = builder.send().await.map_err(|e| e.to_string())?;
+    let status = response.status().as_u16();
+    let content_type = response
+        .headers()
+        .get(reqwest::header::CONTENT_TYPE)
+        .and_then(|value| value.to_str().ok())
+        .map(|value| value.to_string());
+    let body = response.text().await.map_err(|e| e.to_string())?;
+
+    Ok(SidecarResponse {
+        status,
+        body,
+        content_type,
+    })
 }
 
 fn tint_tray_icon<R: Runtime>(app: &tauri::AppHandle<R>, state: &str) -> Option<Image<'static>> {
@@ -267,6 +331,7 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             get_ipc_nonce,
+            sidecar_request,
             hide_live_composer,
             set_tray_state
         ])

@@ -1,7 +1,7 @@
 {
   "identifier": "default",
   "description": "Default capability for Alchm desktop app",
-  "windows": ["main", "ghost-feed", "live-composer"],
+  "windows": ["main", "live-composer"],
   "permissions": [
     "core:default",
     "shell:allow-execute",

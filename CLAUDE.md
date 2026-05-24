@@ -104,21 +104,21 @@ The chat flow for historical agents was rectified in commit `0608fc0a` to fix Oc
    - Uses the override verbatim when present; falls back to enriched `backend/prompts.py:get_agent_system_prompt` otherwise.
    - Queries ChromaDB for top-3 RAG chunks, wraps them in `<reference_material>` with voice-preserving instructions.
    - Resolves model from tier (default `free` → Groq Llama 3.3 70b — Anthropic credits are reserved for development).
-   - When tier is Anthropic-based, calls with `cache_control: ephemeral` on the persona block (~85–95% cache hit rate after turn 1).
-   - Walks the provider chain on quota/billing errors: Anthropic → Groq → Cerebras → Gemini → OpenRouter → OpenAI (paid last-ditch). Each transition emits a `fallback_event` log line; OpenAI catches emit `alert_event reason=paid_fallback`.
+   - When tier is Anthropic-based, calls with `cache_control: ephemeral` on the persona block (~85–95% cach - Walks the provider chain on quota/billing errors: Anthropic → Groq → Cerebras → Gemini → OpenRouter → OpenAI (paid last-ditch). Each transition emits a `fallback_event` log line; OpenAI catches emit `alert_event reason=paid_fallback`. This fallback chain has been verified robust against real-world 401/429 errors.
    - Returns metadata: `{tier, provider, model, cache, persona_source, rag_used}`.
 
 **Key files:**
 
-| File                                          | Purpose                                                   |
-| --------------------------------------------- | --------------------------------------------------------- |
-| `lib/agents/persona/build-agent-context.ts`   | Lookup + cache, returns `{personaBlock, cacheKey, agent}` |
-| `lib/agents/persona/format-persona-block.ts`  | Pure formatter — `CraftedAgent` → structured prompt       |
-| `lib/agents/persona/derive-sacred-stats.ts`   | Sync Sacred 7 derivation from natal chart                 |
-| `lib/agents/persona/voiced-generation.ts`     | Free-tier (Groq) helper for autonomous voice-aware text   |
-| `lib/agents/sacred-stats-prompt-generator.ts` | Maps Sacred 7 values → communication-style trait phrases  |
-| `backend/prompts.py:get_agent_system_prompt`  | Python-side fallback prompt (mirrors the TS shape)        |
-| `backend/main.py:/api/chat`                   | Tiered chat orchestration with caching + fallbacks        |
+| File                                          | Purpose                                                     |
+| --------------------------------------------- | ----------------------------------------------------------- |
+| `lib/agents/persona/build-agent-context.ts`   | Lookup + cache, returns `{personaBlock, cacheKey, agent}`   |
+| `lib/agents/persona/format-persona-block.ts`  | Pure formatter — `CraftedAgent` → structured prompt         |
+| `lib/agents/persona/derive-sacred-stats.ts`   | Sync Sacred 7 derivation from natal chart                   |
+| `lib/agents/persona/voiced-generation.ts`     | Free-tier (Groq) helper for autonomous voice-aware text     |
+| `lib/agents/sacred-stats-prompt-generator.ts` | Maps Sacred 7 values → communication-style trait phrases    |
+| `backend/prompts.py:get_agent_system_prompt`  | Python-side fallback prompt (mirrors the TS shape)          |
+| `backend/main.py:/api/chat`                   | Tiered chat orchestration with caching + fallbacks          |
+| `backend/improve_moon_degree_agents.py`       | Seeding script to enrich 360 moon degree agents with phases |
 
 **Sacred 7 Stats** (power, resonance, wisdom, charisma, intuition, adaptability, vitality) inform **how** an agent speaks. They are NEVER named in responses — the closing rule in the persona block forbids referencing them, the Monica Constant, or any modern system terminology.
 
@@ -173,11 +173,13 @@ import {
 
 Tier is selectable per request and capped by env var `HISTORICAL_AGENT_MAX_TIER`. **Free chain order:** Groq → Cerebras (`gpt-oss-120b`) → Gemini (`gemini-flash-latest`) → OpenRouter (`deepseek/deepseek-v4-flash:free`) → OpenAI `gpt-4o-mini` (paid last-ditch). Skip happens automatically per missing env var. `GET /api/providers/health` pings every configured provider with a 1-token "hi" for debug visibility.
 
-### Observability (Galileo)
+### Observability (Galileo & Admin Telemetry)
 
 All AI interactions are logged through `lib/galileo-unified.ts` (`UnifiedGalileoService`). Configure with env vars `GALILEO_API_KEY`, `GALILEO_PROJECT`, `GALILEO_LOG_STREAM`. Set `GALILEO_FAIL_SILENTLY=true` to suppress errors when not configured.
 
 The chat endpoint returns `metadata.cache.{read, write}` token counts so prompt-cache hit rate can be measured.
+
+**Admin Chats Telemetry Board:** Recent conversations are logged to the shared `"AgentConversation"` PostgreSQL table. The Admin Dashboard `/admin` (rendered via `AdminOperatorConsole.tsx`) retrieves these logs in real-time under the **Chat Status** tab, displaying the agent name, user prompt preview, agent response preview, model/provider, latency, and success/failure indicators. Clicking on any row displays a premium glassmorphic modal with full, scrollable prompt/response data, relative and exact timestamps, and DB keys.
 
 ### RAG (Retrieval-Augmented Generation)
 

@@ -99,6 +99,50 @@ export async function GET(_req: NextRequest) {
       // leave as []
     }
 
+    // ── Recent Chats Telemetry ───────────────────────────────────────────────
+    let recentChats: {
+      id: string
+      agentId: string
+      agentName: string
+      sessionId: string
+      userMessage: string
+      agentResponse: string
+      responseTime: number | null
+      modelUsed: string | null
+      createdAt: string
+    }[] = []
+    try {
+      const convs = await prisma.agentConversation.findMany({
+        take: 20,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          historical_agents: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      })
+      recentChats = convs.map(c => ({
+        id: c.id,
+        agentId: c.agentId,
+        agentName:
+          c.historical_agents?.name ||
+          c.agentId
+            .split('-')
+            .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(' '),
+        sessionId: c.sessionId,
+        userMessage: c.userMessage,
+        agentResponse: c.agentResponse,
+        responseTime: c.responseTime,
+        modelUsed: c.modelUsed,
+        createdAt: c.createdAt.toISOString(),
+      }))
+    } catch (err) {
+      console.error('Failed to query recent chats for admin dashboard:', err)
+    }
+
     // ── Top agents ────────────────────────────────────────────────────────────
     let topAgents: { id: string; name: string; interactions: number }[] = []
     try {
@@ -162,6 +206,7 @@ export async function GET(_req: NextRequest) {
       },
       recentActivity,
       topAgents,
+      recentChats,
     })
   } catch (error) {
     console.error('Admin dashboard error:', error)

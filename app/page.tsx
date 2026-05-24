@@ -41,7 +41,7 @@ import {
   type Sacred7Stats,
   SACRED_STATS_METADATA,
 } from '@/lib/sacred-7-stats'
-import { openDesktopAppDownload } from '@/lib/desktop-download'
+import { ALCHM_DESKTOP_DOWNLOAD_LABEL, openDesktopAppDownload } from '@/lib/desktop-download'
 
 // ============================================================================
 // CONSCIOUSNESS PARAMETER DEFINITIONS
@@ -368,7 +368,7 @@ export default function LandingPage() {
               onClick={handleGetAppClick}
             >
               <Monitor className="w-5 h-5 mr-2" />
-              Download App
+              {ALCHM_DESKTOP_DOWNLOAD_LABEL}
             </button>
           </div>
         ) : (
@@ -482,7 +482,7 @@ export default function LandingPage() {
               </button>
               <button className="landing-secondary-btn flex-1" onClick={handleGetAppClick}>
                 <Monitor className="w-4 h-4 inline mr-1.5" />
-                Download App
+                {ALCHM_DESKTOP_DOWNLOAD_LABEL}
               </button>
               <button className="landing-secondary-btn flex-1" onClick={() => router.push('/me')}>
                 <BarChart3 className="w-4 h-4 inline mr-1.5" />

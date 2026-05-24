@@ -39,9 +39,11 @@ import {
   RotateCw,
   TrendingDown,
   Minus,
+  Monitor,
 } from 'lucide-react'
 import Link from 'next/link'
 import type { CraftedAgent } from '@/lib/agent-types'
+import { useToast } from '@/hooks/use-toast'
 import SignVectorGraphic, {
   calculateSignVectorFromChart,
   SignVectorRune,
@@ -51,6 +53,14 @@ import { getAgentKineticProfile } from '@/lib/agents/kinetic-profiles'
 import { useLiveConsciousness, type BirthChartData } from '@/hooks/useLiveConsciousness'
 import { getAgentAlchemicalProperties, calculateKalchm } from '@/lib/agents/alchemical-profiles'
 import { calculateSevenSacredStats } from '@/lib/agents/sacred-stats'
+import {
+  ALCHM_DESKTOP_AGENT_DOWNLOAD_LABEL,
+  ALCHM_DESKTOP_AGENT_UNLOCK_DESCRIPTION,
+  ALCHM_DESKTOP_APP_NAME,
+  ALCHM_DESKTOP_DOWNLOAD_LABEL,
+  createDesktopAgentUnlockDeepLink,
+  openDesktopAppDownload,
+} from '@/lib/desktop-download'
 
 interface EnhancedAgentCardProps {
   agent: CraftedAgent
@@ -293,6 +303,8 @@ export function EnhancedAgentCard({
   currentMoment = new Date(),
 }: EnhancedAgentCardProps) {
   const [showDetails, setShowDetails] = useState(false)
+  const [isUnlockingDesktop, setIsUnlockingDesktop] = useState(false)
+  const { toast } = useToast()
 
   // Create birth chart data for live consciousness calculation (memoized to prevent effect loops)
   const agentBirthData: BirthChartData = useMemo(
@@ -361,6 +373,45 @@ export function EnhancedAgentCard({
   const handleCardClick = () => {
     if (onToggleSelection) {
       onToggleSelection(agent.id)
+    }
+  }
+
+  const handleDownloadToAlchmDesktop = async (event: React.MouseEvent) => {
+    event.stopPropagation()
+    setIsUnlockingDesktop(true)
+
+    try {
+      const deepLink = await createDesktopAgentUnlockDeepLink({
+        id: agent.id,
+        name: agent.name,
+        tier: 'base',
+      })
+      const start = Date.now()
+
+      window.location.assign(deepLink)
+
+      window.setTimeout(() => {
+        if (Date.now() - start < 1500) {
+          toast({
+            title: `${ALCHM_DESKTOP_APP_NAME} Not Found`,
+            description: `${ALCHM_DESKTOP_AGENT_UNLOCK_DESCRIPTION} Download the app, then use this card to unlock ${agent.name}.`,
+            action: (
+              <Button variant="outline" size="sm" onClick={openDesktopAppDownload}>
+                {ALCHM_DESKTOP_DOWNLOAD_LABEL}
+              </Button>
+            ),
+          })
+        }
+      }, 1000)
+    } catch (error) {
+      console.error('Alchm Desktop unlock error:', error)
+      toast({
+        title: `Could not open ${ALCHM_DESKTOP_APP_NAME}`,
+        description: 'Failed to generate the agent unlock link.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsUnlockingDesktop(false)
     }
   }
 
@@ -1231,6 +1282,17 @@ export function EnhancedAgentCard({
 
               <Button size="sm" variant="outline" asChild>
                 <Link href={`/gallery/chat/${agent.id}`}>Chat</Link>
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleDownloadToAlchmDesktop}
+                disabled={isUnlockingDesktop}
+                title={ALCHM_DESKTOP_AGENT_UNLOCK_DESCRIPTION}
+                aria-label={`${ALCHM_DESKTOP_AGENT_DOWNLOAD_LABEL}: ${agent.name}`}
+              >
+                <Monitor className="w-3 h-3 mr-1" />
+                {ALCHM_DESKTOP_AGENT_DOWNLOAD_LABEL}
               </Button>
             </div>
           </div>
