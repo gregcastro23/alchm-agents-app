@@ -1,3 +1,4 @@
+import json
 import pytest
 from uuid import uuid4
 from fastapi.testclient import TestClient
@@ -5,6 +6,7 @@ from fastapi.testclient import TestClient
 from main import app
 import providers
 import feed_emitter
+import recipe_generation
 
 client = TestClient(app)
 
@@ -193,6 +195,133 @@ def test_is_quota_error_recognises_common_phrasings():
     # Non-quota errors must NOT trip the heuristic.
     assert not providers.is_quota_error(Exception("Connection refused"))
     assert not providers.is_quota_error(Exception("Invalid JSON"))
+
+
+def _sample_cosmic_recipe() -> dict:
+    return {
+        "id": "air-weekday-chicken-salad",
+        "title": "Airy Weekday Chicken Salad",
+        "short_description": "A crisp, quick dinner with bright herbs and a light citrus finish.",
+        "category": "Dinner",
+        "cuisine": "Mediterranean",
+        "difficulty": "beginner",
+        "yields": 2,
+        "total_time": 25,
+        "alignment_score": {
+            "overall": 91,
+            "ingredients_fit": 92,
+            "diet_fit": 96,
+            "time_fit": 88,
+            "astro_fit": 89,
+        },
+        "alignment_notes": [
+            "Light textures support the Air emphasis.",
+            "Chicken keeps the meal grounding without feeling heavy.",
+        ],
+        "tags": {
+            "diet": ["omnivore"],
+            "cuisine": ["Mediterranean"],
+            "meal_type": "Dinner",
+            "flavor_profile": ["bright", "herbal"],
+            "cooking_methods": ["sear", "mix"],
+            "elements": ["air", "earth"],
+            "planets": ["Mercury", "Venus"],
+        },
+        "ingredients": [
+            {
+                "name": "chicken breast",
+                "quantity": "12",
+                "unit": "oz",
+                "household_description": "2 small chicken breasts",
+                "optional": False,
+                "substitutions": ["chickpeas for a lighter vegetarian version"],
+            },
+            {
+                "name": "mixed greens",
+                "quantity": "4",
+                "unit": "cup",
+                "optional": False,
+                "substitutions": ["romaine for extra crunch"],
+            },
+        ],
+        "steps": [
+            {
+                "step_number": 1,
+                "instruction": "Season and sear the chicken until golden and cooked through.",
+                "time_minutes": 12,
+                "cooking_method": "sear",
+                "tips": ["Use medium-high heat.", "Rest before slicing."],
+            },
+            {
+                "step_number": 2,
+                "instruction": "Toss greens with citrus dressing and top with sliced chicken.",
+                "time_minutes": 8,
+                "cooking_method": "mix",
+                "tips": ["Dress just before serving."],
+            },
+        ],
+        "elementalBalance": {"fire": 20, "earth": 30, "water": 15, "air": 35},
+        "nutrition": {"calories": 430, "protein": 38, "carbohydrates": 18, "fat": 24},
+        "vitamins": ["Vitamin C", "Vitamin K"],
+        "minerals": ["Iron", "Potassium"],
+        "finishing_and_serving": {
+            "garnish_and_plating": "Finish with parsley and lemon zest.",
+            "doneness_cues": "Chicken reaches 165 F and juices run clear.",
+            "serving_suggestions": "Serve with warm pita or a small bowl of soup.",
+        },
+        "leftovers_and_storage": {
+            "can_store": True,
+            "storage_instructions": "Store chicken and greens separately in airtight containers.",
+            "storage_lifespan_days": 2,
+        },
+        "astro_explanation": {
+            "summary": "The dish leans into Air through crisp greens, herbs, and a quick method.",
+            "correspondences": [
+                "Leafy greens express Air through lightness.",
+                "Citrus brightens the Mercury-style clarity of the meal.",
+            ],
+        },
+    }
+
+
+@pytest.mark.asyncio
+async def test_generate_recipe_retries_then_returns_valid_payload(monkeypatch):
+    recipe_generation.clear_recipe_cache()
+    calls = []
+
+    async def fake_run_chain(**kwargs):
+        calls.append(kwargs)
+        if len(calls) == 1:
+            return providers.CallResult(
+                text='{"title":"missing required fields"}',
+                provider="groq",
+                model="fake-model",
+            )
+        return providers.CallResult(
+            text=json.dumps(_sample_cosmic_recipe()),
+            provider="groq",
+            model="fake-model",
+        )
+
+    monkeypatch.setattr(providers, "run_chain", fake_run_chain)
+
+    response = client.post(
+        "/api/generate-recipe",
+        json={
+            "prompt": "weekday dinner",
+            "dietPreference": "omnivore",
+            "dominantElement": "Air",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == "Airy Weekday Chicken Salad"
+    assert data["alignment_score"]["overall"] == 91
+    assert len(calls) == 2
+    assert calls[0]["response_format"] == {"type": "json_object"}
+    assert calls[0]["structured_schema"]["title"] == "CosmicRecipeResponse"
+    assert "Previous output failed validation" in calls[1]["user_message"]
 
 
 def test_philosophers_stone_positions_get():
@@ -480,4 +609,3 @@ async def test_chat_auto_registration_moon_degree_phase(monkeypatch):
     assert agent_data["dominantModality"] == "Cardinal"
     assert agent_data["personalityCore"]["archetype"] == "The Young Explorer"
     assert "curious" in agent_data["personalityCore"]["traits"]
-

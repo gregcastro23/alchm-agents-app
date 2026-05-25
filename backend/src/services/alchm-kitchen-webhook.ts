@@ -98,18 +98,17 @@ function resolveAlchmKitchenBaseUrl(): string {
 }
 
 function enrichFeedPayload(payload: AlchmKitchenFeedPayload): AlchmKitchenFeedPayload {
+  const metadata = withNarrationMetadata(payload.eventType, payload.metadataPayload)
   const actionType =
     payload.actionType ||
-    stringFromMetadata(payload.metadataPayload, 'actionType', 'action_type') ||
+    stringFromMetadata(metadata, 'actionType', 'action_type') ||
     payload.eventType
   const timestamp =
-    payload.timestamp ||
-    stringFromMetadata(payload.metadataPayload, 'timestamp') ||
-    new Date().toISOString()
+    payload.timestamp || stringFromMetadata(metadata, 'timestamp') || new Date().toISOString()
   const activityDetails =
     payload.activityDetails ||
-    objectFromMetadata(payload.metadataPayload, 'activityDetails', 'activity_details') ||
-    payload.metadataPayload
+    objectFromMetadata(metadata, 'activityDetails', 'activity_details') ||
+    metadata
 
   return {
     ...payload,
@@ -117,12 +116,62 @@ function enrichFeedPayload(payload: AlchmKitchenFeedPayload): AlchmKitchenFeedPa
     activityDetails,
     timestamp,
     metadataPayload: {
-      ...payload.metadataPayload,
+      ...metadata,
       actionType,
       activityDetails,
       timestamp,
     },
   }
+}
+
+function withNarrationMetadata(
+  eventType: string,
+  metadataPayload: Record<string, unknown>
+): Record<string, unknown> {
+  // Keep these names aligned with WTEN's eventNarration helper.
+  const metadata = { ...metadataPayload }
+  const targetName = stringFromMetadata(metadata, 'targetName', 'withAgent', 'partnerName')
+  if (targetName) {
+    metadata.targetName ??= targetName
+    metadata.withAgent ??= targetName
+  }
+
+  const topic =
+    stringFromMetadata(metadata, 'topic', 'subject', 'summary') ||
+    stringFromMetadata(metadata, 'item', 'recipeName', 'dishName', 'insightTitle', 'message')
+  if (topic) metadata.topic ??= truncateForFeed(topic, 90)
+
+  if (['agent_chat', 'chat', 'agent.chat'].includes(eventType)) {
+    const excerpt = stringFromMetadata(
+      metadata,
+      'messageExcerpt',
+      'message',
+      'responsePreview',
+      'insightContent',
+      'description'
+    )
+    if (excerpt) {
+      metadata.messageExcerpt ??= truncateForFeed(excerpt, 160)
+      metadata.message ??= truncateForFeed(excerpt, 500)
+    }
+  }
+
+  const recipeId = stringFromMetadata(metadata, 'recipeId', 'recipe_id')
+  if (recipeId) {
+    metadata.recipeId ??= recipeId
+    metadata.recipe_id ??= recipeId
+  }
+
+  const summary = stringFromMetadata(metadata, 'summary', 'insightContent', 'description', 'review')
+  if (summary) metadata.summary ??= truncateForFeed(summary, 180)
+
+  return metadata
+}
+
+function truncateForFeed(value: string, limit: number): string {
+  const compact = value.replace(/\s+/g, ' ').trim()
+  if (compact.length <= limit) return compact
+  return `${compact.slice(0, Math.max(0, limit - 3)).trim()}...`
 }
 
 function stringFromMetadata(

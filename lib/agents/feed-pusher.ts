@@ -44,6 +44,86 @@ interface PushResult {
   messages?: PlanetaryDegreeFeedMessage[]
 }
 
+export const FEED_NARRATION_METADATA_FIELDS = [
+  'targetName',
+  'withAgent',
+  'partnerName',
+  'topic',
+  'subject',
+  'summary',
+  'messageExcerpt',
+  'message',
+  'recipeName',
+  'recipeId',
+  'recipe_id',
+  'dishName',
+  'insightTitle',
+  'insightContent',
+  'rating',
+  'item',
+  'description',
+] as const
+
+function stringFromMetadata(
+  metadata: Record<string, unknown>,
+  ...keys: string[]
+): string | undefined {
+  for (const key of keys) {
+    const value = metadata[key]
+    if (typeof value === 'string' && value.trim()) return value.trim()
+  }
+  return undefined
+}
+
+function truncateForFeed(value: string, limit: number): string {
+  const compact = value.replace(/\s+/g, ' ').trim()
+  if (compact.length <= limit) return compact
+  return `${compact.slice(0, Math.max(0, limit - 3)).trim()}...`
+}
+
+function withNarrationMetadata(
+  eventType: string,
+  metadataPayload: FeedActionPayload['metadataPayload']
+): FeedActionPayload['metadataPayload'] {
+  const metadata: Record<string, unknown> = { ...metadataPayload }
+  const targetName = stringFromMetadata(metadata, 'targetName', 'withAgent', 'partnerName')
+  if (targetName) {
+    metadata.targetName ??= targetName
+    metadata.withAgent ??= targetName
+  }
+
+  const topic =
+    stringFromMetadata(metadata, 'topic', 'subject', 'summary') ||
+    stringFromMetadata(metadata, 'item', 'recipeName', 'dishName', 'insightTitle', 'message')
+  if (topic) metadata.topic ??= truncateForFeed(topic, 90)
+
+  if (['agent_chat', 'chat', 'agent.chat'].includes(eventType)) {
+    const excerpt = stringFromMetadata(
+      metadata,
+      'messageExcerpt',
+      'message',
+      'responsePreview',
+      'insightContent',
+      'description'
+    )
+    if (excerpt) {
+      metadata.messageExcerpt ??= truncateForFeed(excerpt, 160)
+      metadata.message ??= truncateForFeed(excerpt, 500)
+    }
+  }
+
+  const recipeId = stringFromMetadata(metadata, 'recipeId', 'recipe_id')
+  if (recipeId) {
+    metadata.recipeId ??= recipeId
+    metadata.recipe_id ??= recipeId
+  }
+
+  const summary = stringFromMetadata(metadata, 'summary', 'insightContent', 'description', 'review')
+  if (summary) metadata.summary ??= truncateForFeed(summary, 180)
+
+  return metadata as FeedActionPayload['metadataPayload']
+}
+
 export class FeedPusherService {
   /**
    * Evaluates current cosmic weather and pushes activated agent
@@ -122,20 +202,21 @@ export class FeedPusherService {
   }
 
   private async pushToWTEN(action: FeedActionPayload): Promise<void> {
-    const idempotencyKey = action.idempotencyKey || action.metadataPayload.idempotencyKey
+    const metadataPayload = withNarrationMetadata(action.eventType, action.metadataPayload)
+    const idempotencyKey = action.idempotencyKey || metadataPayload.idempotencyKey
     const timestamp =
-      typeof action.metadataPayload.timestamp === 'string'
-        ? action.metadataPayload.timestamp
+      typeof metadataPayload.timestamp === 'string'
+        ? metadataPayload.timestamp
         : new Date().toISOString()
     const payload = {
       ...action,
       actionType: action.eventType,
-      activityDetails: action.metadataPayload,
+      activityDetails: metadataPayload,
       timestamp,
       metadataPayload: {
-        ...action.metadataPayload,
+        ...metadataPayload,
         actionType: action.eventType,
-        activityDetails: action.metadataPayload,
+        activityDetails: metadataPayload,
         timestamp,
       },
     }

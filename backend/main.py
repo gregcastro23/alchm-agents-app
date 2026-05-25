@@ -20,6 +20,7 @@ import prompts
 import rag
 import providers
 import ingest
+import recipe_generation
 from feed_emitter import emit_feed_event
 
 class SlidingWindowRateLimiter:
@@ -719,6 +720,29 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
                     personalityCore=p_data,
                     traits=p_data["traits"] if p_data else []
                 )
+            elif request.agentId == "alchemical-chef":
+                agent_create = schemas.AgentCreate(
+                    agentId=request.agentId,
+                    name="Alchemical Chef",
+                    title="Culinary Intelligence",
+                    birthDate=datetime(2000, 1, 1),
+                    birthTime="12:00",
+                    birthLocation=schemas.BirthLocation(lat=0.0, lon=0.0, name="Alchm Kitchen"),
+                    consciousnessLevel="Active",
+                    monicaConstant=0.72,
+                    dominantElement="Earth",
+                    dominantModality="Mutable",
+                    specialty="Alchemical Cuisine and Cosmic Nourishment",
+                    wisdomDomains=["Culinary Arts", "Alchemical Nutrition", "Astrological Correspondence"],
+                    avatar="",
+                    color="#16a34a",
+                    symbol="Chef",
+                    personalityCore={
+                        "archetype": "The Alchemical Chef",
+                        "traits": ["practical", "seasonal", "precise", "nourishing"],
+                    },
+                    traits=["practical", "seasonal", "precise", "nourishing"],
+                )
             else:
                 display_name = request.agentId.replace("-", " ").title()
                 agent_create = schemas.AgentCreate(
@@ -751,6 +775,8 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
         persona_block = request.systemPromptOverride
     elif request.agentId == "monica-001":
         persona_block = prompts.build_monica_prompt(context)
+    elif request.agentId == "alchemical-chef":
+        persona_block = prompts.build_alchemical_chef_prompt(context)
     elif db_agent:
         persona_block = prompts.get_agent_system_prompt(db_agent.__dict__)
     else:
@@ -808,6 +834,7 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
             userId=request.userId,
             userMessage=request.message,
             agentResponse=text,
+            contextData=request.context,
             modelUsed=used_model,
         ))
     except Exception as e:
@@ -816,18 +843,34 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
 
     # 8. Emit feed event so alchm.kitchen's Live Network Feed surfaces this
     #    chat in near-real time. Fire-and-forget; never blocks the response.
-    emit_feed_event(
-        request.agentId,
-        "agent_chat",
-        {
-            "sessionId": session_id,
-            "messagePreview": request.message[:140],
-            "responsePreview": text[:140] if text else "",
-            "provider": used_provider,
-            "model": used_model,
-            "tier": tier,
-        },
+    context_meta = request.context if isinstance(request.context, dict) else {}
+    target_name = (
+        context_meta.get("targetName")
+        or context_meta.get("withAgent")
+        or context_meta.get("partnerName")
+        or context_meta.get("targetAgentName")
     )
+    topic = (
+        context_meta.get("topic")
+        or context_meta.get("subject")
+        or context_meta.get("summary")
+        or request.message[:90]
+    )
+    chat_metadata = {
+        "sessionId": session_id,
+        "topic": str(topic)[:140] if topic else "",
+        "messagePreview": request.message[:140],
+        "messageExcerpt": text[:160] if text else request.message[:160],
+        "responsePreview": text[:140] if text else "",
+        "provider": used_provider,
+        "model": used_model,
+        "tier": tier,
+    }
+    if target_name:
+        chat_metadata["targetName"] = str(target_name)[:120]
+        chat_metadata["withAgent"] = str(target_name)[:120]
+
+    emit_feed_event(request.agentId, "agent_chat", chat_metadata)
 
     return {
         "text": text,
@@ -844,6 +887,37 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
             "cache": cache_hit,
         },
     }
+
+
+@app.post(
+    "/api/generate-recipe",
+    response_model=schemas.CosmicRecipeResponse,
+    response_model_exclude_none=True,
+)
+async def generate_cosmic_recipe(request: schemas.CosmicRecipeRequest):
+    recipe_tier = _resolve_tier(
+        request.modelTier or os.getenv("COSMIC_RECIPE_MODEL_TIER", "primary")
+    )
+    anthropic_model = ANTHROPIC_TIER_MODEL.get(recipe_tier)
+    recipe = await recipe_generation.generate_cosmic_recipe(
+        request=request,
+        tier=recipe_tier,
+        anthropic_model=anthropic_model,
+    )
+    emit_feed_event(
+        "alchemical-chef",
+        "recipe_generation",
+        {
+            "recipeName": recipe.title,
+            "recipeId": recipe.id,
+            "topic": request.prompt[:140],
+            "messageExcerpt": recipe.short_description,
+            "summary": recipe.short_description,
+            "userId": request.userId,
+            "tier": recipe_tier,
+        },
+    )
+    return recipe
 
 # --- RAG Management ---
 

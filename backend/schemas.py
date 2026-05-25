@@ -1,5 +1,5 @@
-from pydantic import BaseModel, ConfigDict
-from typing import List, Optional, Dict, Any, Union
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+from typing import List, Optional, Dict, Any, Union, Literal
 from datetime import datetime
 
 class BirthLocation(BaseModel):
@@ -77,6 +77,7 @@ class ConversationBase(BaseModel):
     agentResponse: str
 
 class ConversationCreate(ConversationBase):
+    contextData: Optional[Dict[str, Any]] = None
     responseTime: Optional[float] = None
     modelUsed: Optional[str] = None
     temperature: Optional[float] = None
@@ -108,6 +109,149 @@ class ChatResponse(BaseModel):
     agentId: str
     sessionId: str
     metadata: Optional[Dict[str, Any]] = None
+
+class RecipeBirthData(BaseModel):
+    dateTime: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+    model_config = ConfigDict(extra="allow")
+
+class CosmicRecipeRequest(BaseModel):
+    prompt: str = Field(
+        default="A nourishing, restorative meal aligned with today's cosmic energies.",
+        min_length=1,
+        max_length=2000,
+    )
+    dominantElement: Optional[Literal["Air", "Fire", "Water", "Earth"]] = None
+    cuisine: Optional[str] = Field(default=None, max_length=120)
+    topIngredients: List[str] = Field(default_factory=list, max_length=40)
+    birthData: Optional[RecipeBirthData] = None
+    dietPreference: Optional[str] = Field(default="omnivore", max_length=120)
+    alchemicalState: Optional[Dict[str, float]] = None
+    thermodynamicProperties: Optional[Dict[str, float]] = None
+    disallowedIngredients: List[str] = Field(default_factory=list, max_length=40)
+    userId: Optional[str] = None
+    modelTier: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_context_and_aliases(cls, value: Any) -> Any:
+        if not isinstance(value, dict):
+            return value
+
+        data = dict(value)
+        context = data.pop("context", None)
+        if isinstance(context, dict):
+            merged = dict(context)
+            merged.update({k: v for k, v in data.items() if v is not None})
+            data = merged
+
+        if "diet" in data and "dietPreference" not in data:
+            data["dietPreference"] = data["diet"]
+        if "preferredCuisine" in data and "cuisine" not in data:
+            data["cuisine"] = data["preferredCuisine"]
+        if "ingredients_main" in data and "topIngredients" not in data:
+            data["topIngredients"] = data["ingredients_main"]
+        if "disallowed_ingredients" in data and "disallowedIngredients" not in data:
+            data["disallowedIngredients"] = data["disallowed_ingredients"]
+
+        return data
+
+class AlignmentScore(BaseModel):
+    overall: float = Field(ge=0, le=100)
+    ingredients_fit: float = Field(ge=0, le=100)
+    diet_fit: float = Field(ge=0, le=100)
+    time_fit: float = Field(ge=0, le=100)
+    astro_fit: float = Field(ge=0, le=100)
+
+class RecipeTags(BaseModel):
+    diet: List[str]
+    cuisine: List[str]
+    meal_type: str
+    flavor_profile: List[str]
+    cooking_methods: List[str]
+    elements: List[str]
+    planets: List[str]
+
+class RecipeIngredient(BaseModel):
+    name: str
+    quantity: str
+    unit: str
+    household_description: Optional[str] = None
+    optional: bool
+    substitutions: List[str]
+
+class RecipeStep(BaseModel):
+    step_number: int = Field(ge=1)
+    instruction: str
+    time_minutes: float = Field(ge=0)
+    cooking_method: str
+    tips: List[str]
+
+class ElementalBalance(BaseModel):
+    fire: float = Field(ge=0, le=100)
+    earth: float = Field(ge=0, le=100)
+    water: float = Field(ge=0, le=100)
+    air: float = Field(ge=0, le=100)
+
+class RecipeNutrition(BaseModel):
+    calories: float = Field(ge=0)
+    protein: float = Field(ge=0)
+    carbohydrates: float = Field(ge=0)
+    fat: float = Field(ge=0)
+
+class FinishingAndServing(BaseModel):
+    garnish_and_plating: str
+    doneness_cues: str
+    serving_suggestions: str
+
+class LeftoversAndStorage(BaseModel):
+    can_store: bool
+    storage_instructions: str
+    storage_lifespan_days: float = Field(ge=0)
+
+class AstroExplanation(BaseModel):
+    summary: str
+    correspondences: List[str]
+
+class CosmicRecipeResponse(BaseModel):
+    id: str
+    title: str
+    short_description: str
+    category: Literal[
+        "Beverages",
+        "Breakfast",
+        "Dessert",
+        "Dinner",
+        "Lunch",
+        "Salad",
+        "Sauce",
+        "Side",
+        "Soup",
+        "Appetizer",
+        "Condiment",
+    ]
+    cuisine: str
+    difficulty: Literal["beginner", "intermediate", "advanced"]
+    yields: float = Field(gt=0)
+    total_time: float = Field(gt=0)
+    alignment_score: AlignmentScore
+    alignment_notes: List[str]
+    tags: RecipeTags
+    ingredients: List[RecipeIngredient] = Field(min_length=1)
+    steps: List[RecipeStep] = Field(min_length=1)
+    elementalBalance: ElementalBalance
+    nutrition: RecipeNutrition
+    vitamins: Optional[List[str]] = None
+    minerals: Optional[List[str]] = None
+    finishing_and_serving: FinishingAndServing
+    leftovers_and_storage: LeftoversAndStorage
+    astro_explanation: AstroExplanation
+
+    model_config = ConfigDict(extra="ignore")
 
 class HealthResponse(BaseModel):
     status: str

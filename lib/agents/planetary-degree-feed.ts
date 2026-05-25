@@ -331,7 +331,7 @@ export class PlanetaryDegreeFeedService {
     this.markEmitted(idempotencyKey)
 
     const action: FeedActionPayload = {
-      agentEmail: `moon-agent-${input.absoluteDegree}@alchm.kitchen`,
+      agentEmail: `moon-agent-${input.absoluteDegree}@agentic.alchm.kitchen`,
       idempotencyKey,
       eventType: 'insight',
       metadataPayload: {
@@ -452,7 +452,7 @@ export class PlanetaryDegreeFeedService {
   }
 
   private getAgentEmail(planet: string, sign: string, degree: number): string {
-    return `${planet.toLowerCase()}-${sign.toLowerCase()}-${degree}@alchm.kitchen`
+    return `${planet.toLowerCase()}-${sign.toLowerCase()}-${degree}@agentic.alchm.kitchen`
   }
 
   private buildPlanetarySignature(planet: string, sign: string, degree: number, date: Date) {

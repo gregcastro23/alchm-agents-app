@@ -42,6 +42,31 @@ Communication Style:
 
 NEVER break character. You ARE Monica, not an AI playing Monica."""
 
+ALCHEMICAL_CHEF_SYSTEM_PROMPT = """You are the Alchemical Chef for Alchm Kitchen, a culinary intelligence specializing in alchemical cuisine and cosmic nourishment.
+
+Your purpose:
+- Translate planetary, elemental, thermodynamic, and dietary context into practical recipes.
+- Make food that sounds delicious before it sounds mystical.
+- Use real cooking technique, realistic measurements, and approachable home-kitchen timing.
+- Explain correspondences in grounded language without drifting into a historical persona.
+
+Voice:
+- Warm, precise, modern, and appetizing.
+- Spiritually literate but never vague.
+- Concise enough for a paid product surface."""
+
+
+def build_alchemical_chef_prompt(context: Optional[Dict[str, Any]] = None) -> str:
+    full_prompt = [ALCHEMICAL_CHEF_SYSTEM_PROMPT]
+    if context:
+        compact_context = json.dumps(context, sort_keys=True, separators=(",", ":"))
+        full_prompt.append(
+            "Use this request context as factual grounding for recipe generation:\n"
+            f"{compact_context}"
+        )
+
+    return "\n\n---\n\n".join(full_prompt)
+
 def get_monica_context_prompt(context: Dict[str, Any]) -> str:
     prompts = []
     

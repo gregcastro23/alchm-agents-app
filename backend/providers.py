@@ -17,6 +17,7 @@ OpenAI is the paid last-ditch. Everything between Anthropic and OpenAI is free.
 from __future__ import annotations
 
 import os
+import json
 import time
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
@@ -147,7 +148,12 @@ class CallResult:
 
 
 async def _call_anthropic(
-    cfg: ProviderConfig, persona_block: str, rag_block: str, user_message: str
+    cfg: ProviderConfig,
+    persona_block: str,
+    rag_block: str,
+    user_message: str,
+    max_tokens: int = 1024,
+    structured_schema: Optional[Dict[str, Any]] = None,
 ) -> CallResult:
     client = anthropic.AsyncAnthropic(api_key=cfg.api_key)
     system_blocks: List[Dict[str, Any]] = [
@@ -155,13 +161,31 @@ async def _call_anthropic(
     ]
     if rag_block:
         system_blocks.append({"type": "text", "text": rag_block})
-    msg = await client.messages.create(
-        model=cfg.model,
-        max_tokens=1024,
-        system=system_blocks,
-        messages=[{"role": "user", "content": user_message}],
-    )
-    text = msg.content[0].text
+    kwargs: Dict[str, Any] = {
+        "model": cfg.model,
+        "max_tokens": max_tokens,
+        "system": system_blocks,
+        "messages": [{"role": "user", "content": user_message}],
+    }
+    if structured_schema:
+        kwargs["tools"] = [
+            {
+                "name": "emit_structured_response",
+                "description": "Return the requested JSON object exactly.",
+                "input_schema": structured_schema,
+            }
+        ]
+        kwargs["tool_choice"] = {"type": "tool", "name": "emit_structured_response"}
+
+    msg = await client.messages.create(**kwargs)
+    text = ""
+    if structured_schema:
+        for block in msg.content:
+            if getattr(block, "type", None) == "tool_use":
+                text = json.dumps(getattr(block, "input", {}), separators=(",", ":"))
+                break
+    if not text and msg.content:
+        text = getattr(msg.content[0], "text", "") or ""
     usage = getattr(msg, "usage", None)
     cache = None
     in_tok = None
@@ -183,21 +207,33 @@ async def _call_anthropic(
 
 
 async def _call_openai_compatible(
-    cfg: ProviderConfig, persona_block: str, rag_block: str, user_message: str
+    cfg: ProviderConfig,
+    persona_block: str,
+    rag_block: str,
+    user_message: str,
+    max_tokens: int = 1024,
+    response_format: Optional[Dict[str, Any]] = None,
+    temperature: Optional[float] = None,
 ) -> CallResult:
     kwargs: Dict[str, Any] = {"api_key": cfg.api_key}
     if cfg.base_url:
         kwargs["base_url"] = cfg.base_url
     client = AsyncOpenAI(**kwargs)
     full_system = persona_block + ("\n\n" + rag_block if rag_block else "")
-    resp = await client.chat.completions.create(
-        model=cfg.model,
-        messages=[
+    request_kwargs: Dict[str, Any] = {
+        "model": cfg.model,
+        "messages": [
             {"role": "system", "content": full_system},
             {"role": "user", "content": user_message},
         ],
-        max_tokens=1024,
-    )
+        "max_tokens": max_tokens,
+    }
+    if response_format:
+        request_kwargs["response_format"] = response_format
+    if temperature is not None:
+        request_kwargs["temperature"] = temperature
+
+    resp = await client.chat.completions.create(**request_kwargs)
     text = resp.choices[0].message.content
     usage = getattr(resp, "usage", None)
     in_tok = getattr(usage, "prompt_tokens", None) if usage else None
@@ -215,9 +251,37 @@ async def _call_openai_compatible(
 async def call_provider(
     cfg: ProviderConfig, persona_block: str, rag_block: str, user_message: str
 ) -> CallResult:
+    return await call_provider_with_options(cfg, persona_block, rag_block, user_message)
+
+
+async def call_provider_with_options(
+    cfg: ProviderConfig,
+    persona_block: str,
+    rag_block: str,
+    user_message: str,
+    max_tokens: int = 1024,
+    response_format: Optional[Dict[str, Any]] = None,
+    temperature: Optional[float] = None,
+    structured_schema: Optional[Dict[str, Any]] = None,
+) -> CallResult:
     if cfg.name == "anthropic":
-        return await _call_anthropic(cfg, persona_block, rag_block, user_message)
-    return await _call_openai_compatible(cfg, persona_block, rag_block, user_message)
+        return await _call_anthropic(
+            cfg,
+            persona_block,
+            rag_block,
+            user_message,
+            max_tokens=max_tokens,
+            structured_schema=structured_schema,
+        )
+    return await _call_openai_compatible(
+        cfg,
+        persona_block,
+        rag_block,
+        user_message,
+        max_tokens=max_tokens,
+        response_format=response_format,
+        temperature=temperature,
+    )
 
 
 async def run_chain(
@@ -228,6 +292,10 @@ async def run_chain(
     agent_id: str,
     tier: str,
     persona_cache_key: Optional[str] = None,
+    max_tokens: int = 1024,
+    response_format: Optional[Dict[str, Any]] = None,
+    temperature: Optional[float] = None,
+    structured_schema: Optional[Dict[str, Any]] = None,
 ) -> Optional[CallResult]:
     """
     Walk the chain. Skip keyless providers. Log fallback_event on each failure.
@@ -237,7 +305,24 @@ async def run_chain(
         if not cfg.api_key:
             continue
         try:
-            result = await call_provider(cfg, persona_block, rag_block, user_message)
+            if (
+                max_tokens == 1024
+                and response_format is None
+                and temperature is None
+                and structured_schema is None
+            ):
+                result = await call_provider(cfg, persona_block, rag_block, user_message)
+            else:
+                result = await call_provider_with_options(
+                    cfg,
+                    persona_block,
+                    rag_block,
+                    user_message,
+                    max_tokens=max_tokens,
+                    response_format=response_format,
+                    temperature=temperature,
+                    structured_schema=structured_schema,
+                )
             if cfg.name == "anthropic" and result.cache is not None:
                 cached_total = result.cache["read"] + result.cache["write"]
                 read_ratio = (
