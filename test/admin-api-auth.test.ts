@@ -5,6 +5,7 @@ import { GET as batchMetricsGET } from '@/app/api/admin/batch-metrics/route'
 import { GET as conversationMetricsGET } from '@/app/api/admin/conversation-metrics/route'
 import { GET as dashboardGET } from '@/app/api/admin/dashboard/route'
 import { GET as performanceMetricsGET } from '@/app/api/admin/performance-metrics/route'
+import { GET as sharedUsersGET } from '@/app/api/admin/shared-users/route'
 import { GET as systemStatsGET } from '@/app/api/admin/system-stats/route'
 import { prisma } from '@/lib/db'
 
@@ -79,6 +80,7 @@ const adminRoutes = [
   ['/api/admin/conversation-metrics', conversationMetricsGET],
   ['/api/admin/batch-metrics', batchMetricsGET],
   ['/api/admin/system-stats', systemStatsGET],
+  ['/api/admin/shared-users', sharedUsersGET],
 ] as const
 
 describe('admin API authorization', () => {
