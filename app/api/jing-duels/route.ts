@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/db'
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-api-key',
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS })
+}
+
 /**
  * POST /api/jing-duels
  *
@@ -19,7 +29,10 @@ export async function POST(req: NextRequest) {
   try {
     body = (await req.json()) as Record<string, unknown>
   } catch {
-    return NextResponse.json({ ok: false, error: 'Invalid JSON body' }, { status: 400 })
+    return NextResponse.json(
+      { ok: false, error: 'Invalid JSON body' },
+      { status: 400, headers: CORS_HEADERS }
+    )
   }
 
   const requiredString = (key: string): string | null => {
@@ -40,7 +53,7 @@ export async function POST(req: NextRequest) {
         ok: false,
         error: 'casterId, targetId, attackMoveId, counterMoveId, and stance are required',
       },
-      { status: 422 }
+      { status: 422, headers: CORS_HEADERS }
     )
   }
 
@@ -48,7 +61,7 @@ export async function POST(req: NextRequest) {
   if (!validStances.has(stance)) {
     return NextResponse.json(
       { ok: false, error: `stance must be one of ${[...validStances].join(', ')}` },
-      { status: 422 }
+      { status: 422, headers: CORS_HEADERS }
     )
   }
 
@@ -93,7 +106,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    return NextResponse.json({ ok: true, id: duel.id })
+    return NextResponse.json({ ok: true, id: duel.id }, { headers: CORS_HEADERS })
   } catch (error) {
     // Foreign key violation is the most likely cause when an agentId
     // doesn't exist in historical_agents (e.g. a synthetic Stone agent).
@@ -106,7 +119,7 @@ export async function POST(req: NextRequest) {
         skipped: true,
         error: error instanceof Error ? error.message : 'persist-failed',
       },
-      { status: 200 }
+      { status: 200, headers: CORS_HEADERS }
     )
   }
 }
@@ -149,12 +162,12 @@ export async function GET(req: NextRequest) {
         createdAt: true,
       },
     })
-    return NextResponse.json({ ok: true, duels })
+    return NextResponse.json({ ok: true, duels }, { headers: CORS_HEADERS })
   } catch (error) {
     console.error('Failed to list Jing duels:', error)
     return NextResponse.json(
       { ok: false, duels: [], error: error instanceof Error ? error.message : 'list-failed' },
-      { status: 200 }
+      { status: 200, headers: CORS_HEADERS }
     )
   }
 }

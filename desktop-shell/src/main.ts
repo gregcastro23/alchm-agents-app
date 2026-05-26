@@ -985,7 +985,7 @@ function renderTab(view: View) {
     astrology: 'Astrology',
     physics: 'Physics',
     agents: 'Agents',
-    stone: 'Stone',
+    stone: "Philosopher's Stone",
     account: 'Account',
     diagnostics: 'Diagnostics',
   }
@@ -1229,8 +1229,8 @@ function renderChatHeaderActions(agents: LocalAgent[]) {
     return `
       <div class="button-row">
         ${jingButton}
+        <button class="secondary-button" data-action="view" data-view="stone">Philosopher's Stone</button>
         <button class="secondary-button" data-action="view" data-view="agents">Catalog</button>
-        <button class="secondary-button" data-action="view" data-view="stone">Stone</button>
       </div>
     `
   }
@@ -1241,7 +1241,7 @@ function renderChatHeaderActions(agents: LocalAgent[]) {
         <button class="secondary-button" data-action="view" data-view="astrology">Astrology</button>
         <button class="secondary-button" data-action="view" data-view="physics">Physics</button>
         <button class="secondary-button" data-action="view" data-view="account">Account</button>
-        <button class="secondary-button" data-action="view" data-view="stone">Stone</button>
+        <button class="secondary-button" data-action="view" data-view="stone">Philosopher's Stone</button>
         <button class="secondary-button" data-action="view" data-view="agents">Catalog</button>
       </div>
     `
@@ -1546,6 +1546,75 @@ function formatAspectLine(aspect: JingInterAspect): string {
   return `${aspect.planetA} ${aspect.type} ${aspect.planetB} (${aspect.orb.toFixed(1)}° orb)`
 }
 
+/**
+ * Unified Jing turn generation: try MCP (local offline), then sidecar, then return null
+ * so the caller falls back to the static one-liner.
+ */
+async function generateJingTurnText(
+  agent: LocalAgent,
+  prompt: string,
+  apiKey: string
+): Promise<string | null> {
+  // Path 1: MCP (when localOfflineMode is on and paMcpClient is running)
+  if (state.localOfflineMode) {
+    try {
+      const mcpResult = await paMcpClient.call('tools/call', {
+        name: 'chat_with_planetary_agent',
+        arguments: {
+          agentName: agent.name,
+          message: prompt,
+          _meta: { apiKey, caller: 'alchm-desktop-jing' },
+        },
+      })
+      if (mcpResult?.content?.[0]?.text) {
+        const payload = JSON.parse(mcpResult.content[0].text)
+        if (payload.text) return payload.text
+      }
+    } catch (err) {
+      console.warn(`Jing MCP failed for ${agent.name}, trying sidecar:`, err)
+    }
+  }
+
+  // Path 2: Tauri sidecar generate endpoint
+  if (invokeCommand && state.runtime.ipcNonce && state.account.apiKey) {
+    try {
+      const sidecarPrompt = [
+        `System: You are ${agent.name}, ${agent.title}. Respond to this Jing duel prompt in character. Be expressive and dramatic but concise (2-4 sentences).`,
+        agent.promptSeed,
+        `User: ${prompt}`,
+        'Agent:',
+      ]
+        .filter(Boolean)
+        .join('\n')
+
+      const response = await withTimeout(
+        requestSidecar('/api/generate', {
+          method: 'POST',
+          body: {
+            prompt: sidecarPrompt,
+            modelName: agent.modelName,
+            costs: CHAT_COST,
+            inferenceProfile: 'balanced',
+          },
+        }),
+        GENERATION_TIMEOUT_MS,
+        'Jing inference timed out.'
+      )
+
+      if (response.ok) {
+        const body = await response.text()
+        const content = parseSseText(body) || body.trim()
+        if (content) return content
+      }
+    } catch (err) {
+      console.warn(`Jing sidecar failed for ${agent.name}, using static fallback:`, err)
+    }
+  }
+
+  // Path 3: no generation available — return null so caller uses its own static text
+  return null
+}
+
 function buildJingPrompt(opts: {
   speaker: LocalAgent
   opponent: LocalAgent
@@ -1846,24 +1915,9 @@ async function castJingDuel() {
 
     let casterContent = `${move.glyph} *${caster.name} casts ${move.name} on ${target.name}!*`
 
-    if (state.localOfflineMode) {
-      try {
-        const mcpResult = await paMcpClient.call('tools/call', {
-          name: 'chat_with_planetary_agent',
-          arguments: {
-            agentName: caster.name,
-            message: casterPrompt,
-            _meta: { apiKey, caller: 'alchm-desktop-jing' },
-          },
-        })
-        if (mcpResult?.content?.[0]?.text) {
-          const payload = JSON.parse(mcpResult.content[0].text)
-          if (payload.text) casterContent = `${move.glyph} ${payload.text}`
-        }
-      } catch (err) {
-        console.warn('Jing caster MCP failed, using fallback:', err)
-      }
-    }
+    // Try MCP first (local offline mode), then sidecar, then profile-guided reply
+    const casterGenerated = await generateJingTurnText(caster, casterPrompt, apiKey)
+    if (casterGenerated) casterContent = `${move.glyph} ${casterGenerated}`
 
     await streamTextIntoMessage(casterMessage, casterContent)
     casterFinalContent = casterContent
@@ -1896,24 +1950,9 @@ async function castJingDuel() {
 
     let targetContent = `${counterMove.glyph} *${target.name} counters with ${counterMove.name}!*`
 
-    if (state.localOfflineMode) {
-      try {
-        const mcpResult = await paMcpClient.call('tools/call', {
-          name: 'chat_with_planetary_agent',
-          arguments: {
-            agentName: target.name,
-            message: targetPrompt,
-            _meta: { apiKey, caller: 'alchm-desktop-jing' },
-          },
-        })
-        if (mcpResult?.content?.[0]?.text) {
-          const payload = JSON.parse(mcpResult.content[0].text)
-          if (payload.text) targetContent = `${counterMove.glyph} ${payload.text}`
-        }
-      } catch (err) {
-        console.warn('Jing target MCP failed, using fallback:', err)
-      }
-    }
+    // Try MCP first (local offline mode), then sidecar, then profile-guided reply
+    const targetGenerated = await generateJingTurnText(target, targetPrompt, apiKey)
+    if (targetGenerated) targetContent = `${counterMove.glyph} ${targetGenerated}`
 
     await streamTextIntoMessage(targetMessage, targetContent)
     targetFinalContent = targetContent
@@ -2029,7 +2068,7 @@ async function persistJingDuel(opts: {
 function renderStarterMessage(agent: LocalAgent) {
   const helperText =
     agent.source === 'app-guide'
-      ? 'Built into Alchm Desktop for account, yield, catalog, Stone, and local runtime guidance.'
+      ? "Built into Alchm Desktop for account, yield, catalog, Philosopher's Stone, and local runtime guidance."
       : agent.source === 'philosophers-stone'
         ? "Created locally with the Philosopher's Stone from birth information and context."
         : 'Same agent profile as Alchm Agents, running in the companion app.'
@@ -3917,12 +3956,7 @@ async function sendMessage(text: string) {
         role: 'agent',
         content: '',
         timestamp: new Date().toISOString(),
-        channel:
-          agent.source === 'app-guide'
-            ? 'Desktop guide'
-            : state.runtime.sidecar === 'online'
-              ? 'Desktop agent'
-              : 'Runtime notice',
+        channel: agent.source === 'app-guide' ? 'Desktop guide' : 'Desktop agent',
         agentId: agent.id,
         agentName: agent.name,
       }
@@ -4050,70 +4084,68 @@ async function requestAgentText(
     }
   }
 
-  const groupContext = buildAgentGroupPromptContext(agent, turnContext)
-  const prompt =
-    agent.source === 'philosophers-stone'
-      ? [
-          `System: You are ${agent.name}, ${agent.title}, a local agent created with the Philosopher's Stone.`,
-          agent.promptSeed,
-          groupContext,
-          'Answer from the birth information and additional context used to create you.',
-          'The desktop app is a companion chat surface. Do not describe yourself as a fallback.',
-          `User: ${userMessage}`,
-          'Agent:',
-        ].join('\n')
-      : [
-          `System: You are ${agent.name}, ${agent.title}, from the Alchm Agents web catalog.`,
-          agent.promptSeed,
-          groupContext,
-          'Answer as the same agent personality the user would meet on the Alchm Agents website.',
-          'The desktop app is a companion chat surface. Do not describe yourself as a fallback.',
-          `User: ${userMessage}`,
-          'Agent:',
-        ]
-          .filter(Boolean)
-          .join('\n')
+  // Attempt sidecar inference; any failure gracefully falls back to the
+  // profile-guided agent reply instead of surfacing a "runtime not ready" notice.
+  try {
+    const groupContext = buildAgentGroupPromptContext(agent, turnContext)
+    const prompt =
+      agent.source === 'philosophers-stone'
+        ? [
+            `System: You are ${agent.name}, ${agent.title}, a local agent created with the Philosopher's Stone.`,
+            agent.promptSeed,
+            groupContext,
+            'Answer from the birth information and additional context used to create you.',
+            'The desktop app is a companion chat surface. Do not describe yourself as a fallback.',
+            `User: ${userMessage}`,
+            'Agent:',
+          ].join('\n')
+        : [
+            `System: You are ${agent.name}, ${agent.title}, from the Alchm Agents web catalog.`,
+            agent.promptSeed,
+            groupContext,
+            'Answer as the same agent personality the user would meet on the Alchm Agents website.',
+            'The desktop app is a companion chat surface. Do not describe yourself as a fallback.',
+            `User: ${userMessage}`,
+            'Agent:',
+          ]
+            .filter(Boolean)
+            .join('\n')
 
-  const response = await withTimeout(
-    requestSidecar('/api/generate', {
-      method: 'POST',
-      body: {
-        prompt,
-        modelName: agent.modelName,
-        costs: CHAT_COST,
-        inferenceProfile: 'balanced',
-      },
-    }),
-    GENERATION_TIMEOUT_MS,
-    'Local inference timed out.'
-  )
+    const response = await withTimeout(
+      requestSidecar('/api/generate', {
+        method: 'POST',
+        body: {
+          prompt,
+          modelName: agent.modelName,
+          costs: CHAT_COST,
+          inferenceProfile: 'balanced',
+        },
+      }),
+      GENERATION_TIMEOUT_MS,
+      'Local inference timed out.'
+    )
 
-  if (!response.ok) {
-    if (response.status === 404 || response.status === 500 || response.status === 502) {
-      return {
-        content: buildProfileGuidedAgentReply(agent, userMessage, turnContext),
-        channel: 'Desktop agent',
-        metered: false,
+    if (response.ok) {
+      const body = await response.text()
+      const content = parseSseText(body) || body.trim()
+      if (content) {
+        return {
+          content,
+          channel: 'Desktop inference',
+          metered: true,
+        }
       }
     }
-
-    throw new Error(`Sidecar generation returned HTTP ${response.status}`)
+  } catch (error) {
+    console.warn(`Sidecar generation failed for ${agent.name}, using profile-guided reply:`, error)
   }
 
-  const body = await response.text()
-  const content = parseSseText(body) || body.trim()
-  if (!content) {
-    return {
-      content: buildProfileGuidedAgentReply(agent, userMessage, turnContext),
-      channel: 'Desktop agent',
-      metered: false,
-    }
-  }
-
+  // Sidecar unavailable, returned empty, or errored – use the profile-guided
+  // reply so the agent always participates in the conversation.
   return {
-    content,
-    channel: 'Desktop inference',
-    metered: true,
+    content: buildProfileGuidedAgentReply(agent, userMessage, turnContext),
+    channel: 'Desktop agent',
+    metered: false,
   }
 }
 
@@ -4354,7 +4386,7 @@ function buildMonicaGuideReply(userMessage: string, turnContext: AgentTurnContex
   return [
     "I'm Monica, your Alchm Desktop guide.",
     `This companion manages Agents and Kitchen accounts, claims daily yield, shows the consensus astrology and Alchm physics dashboards, sends web agents into desktop chat, and creates local Philosopher's Stone agents. You currently have ${userAgentCount} user agent${userAgentCount === 1 ? '' : 's'} in the desktop roster.`,
-    'Tell me whether you want help with Astrology, Physics, Account, Catalog, Stone, or local chat runtime.',
+    "Tell me whether you want help with Astrology, Physics, Account, Catalog, Philosopher's Stone, or local chat runtime.",
   ].join(' ')
 }
 

@@ -4,8 +4,32 @@
   "windows": ["main", "live-composer"],
   "permissions": [
     "core:default",
-    "shell:allow-execute",
-    "shell:allow-spawn",
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        { "name": "bin/orchestrator", "sidecar": true, "args": true },
+        { "name": "bin/llama-server", "sidecar": true, "args": true },
+        { "name": "bin/alchm-mcp", "sidecar": true, "args": true },
+        { "name": "bin/pa-mcp", "sidecar": true, "args": true },
+        { "name": "orchestrator", "sidecar": true, "args": true },
+        { "name": "llama-server", "sidecar": true, "args": true },
+        { "name": "alchm-mcp", "sidecar": true, "args": true },
+        { "name": "pa-mcp", "sidecar": true, "args": true }
+      ]
+    },
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        { "name": "bin/orchestrator", "sidecar": true, "args": true },
+        { "name": "bin/llama-server", "sidecar": true, "args": true },
+        { "name": "bin/alchm-mcp", "sidecar": true, "args": true },
+        { "name": "bin/pa-mcp", "sidecar": true, "args": true },
+        { "name": "orchestrator", "sidecar": true, "args": true },
+        { "name": "llama-server", "sidecar": true, "args": true },
+        { "name": "alchm-mcp", "sidecar": true, "args": true },
+        { "name": "pa-mcp", "sidecar": true, "args": true }
+      ]
+    },
     "shell:allow-stdin-write",
     "shell:allow-kill",
     "shell:allow-open",

@@ -98,6 +98,29 @@ TOOLS: List[Dict[str, Any]] = [
             "required": ["ingredients"],
         },
     },
+    {
+        "name": "trigger_chart_specific_jing_duel",
+        "description": "Automatically detect birthchart synastry aspects between two agents and trigger an in-character Jing duel/clash.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "casterName": {
+                    "type": "string",
+                    "description": "Agent initiating the clash, e.g. Socrates, Rumi, Galileo, Carl Jung.",
+                },
+                "targetName": {
+                    "type": "string",
+                    "description": "Agent defending the clash, e.g. Socrates, Rumi, Galileo, Carl Jung.",
+                },
+                "modelTier": {
+                    "type": "string",
+                    "enum": ["free", "cheap_fast", "primary", "reflective"],
+                    "description": "Optional backend model tier override.",
+                },
+            },
+            "required": ["casterName", "targetName"],
+        },
+    },
 ]
 
 
@@ -117,6 +140,190 @@ def _text_result(payload: Dict[str, Any], is_error: bool = False) -> Dict[str, A
     if is_error:
         result["isError"] = True
     return result
+
+
+def _get_agent_natal_chart(agent_name: str) -> Optional[Dict[str, Any]]:
+    """Retrieve natal chart for an agent from database."""
+    try:
+        from database import SessionLocal
+        import crud
+        db = SessionLocal()
+        try:
+            agent_id = _agent_id(agent_name)
+            agent = crud.get_agent(db, agent_id)
+            if agent and agent.natalChart:
+                if isinstance(agent.natalChart, dict):
+                    return agent.natalChart
+                elif isinstance(agent.natalChart, str):
+                    return json.loads(agent.natalChart)
+        finally:
+            db.close()
+    except Exception as e:
+        _log(f"_get_agent_natal_chart failed for {agent_name}: {e}")
+    return None
+
+
+async def _detect_and_trigger_jing_interaction(
+    caster_name: str,
+    target_name: str
+) -> Optional[Dict[str, Any]]:
+    """
+    Retrieves natal charts for caster and target, calculates synastry aspects,
+    and automatically triggers a chart-specific Jing/Jong interaction.
+    """
+    caster_chart = _get_agent_natal_chart(caster_name)
+    target_chart = _get_agent_natal_chart(target_name)
+    
+    if not caster_chart or not target_chart:
+        _log(f"Auto Jing trigger: Natal charts not found for {caster_name} or {target_name}")
+        return None
+
+    try:
+        caster_id = _agent_id(caster_name)
+        target_id = _agent_id(target_name)
+        
+        synastry = await alchm_mcp.compute_synastry_overlay(
+            {"id": caster_id, "natalChart": caster_chart},
+            {"id": target_id, "natalChart": target_chart}
+        )
+        
+        if not synastry or "interchartAspects" not in synastry:
+            return None
+            
+        aspects = synastry.get("interchartAspects", [])
+        if not aspects:
+            return None
+            
+        # Sort aspects by orb to find the exact/most powerful alignment
+        sorted_aspects = sorted(aspects, key=lambda x: x.get("orb", 10.0))
+        exact_aspect = sorted_aspects[0]
+        
+        # Decide which Jing move is auto-triggered based on the aspect's harmonic and planets
+        aspect_type = exact_aspect.get("type", "conjunction")
+        harmonic = exact_aspect.get("harmonic", "intensification")
+        planet_a = exact_aspect.get("planetA", "Sun")
+        planet_b = exact_aspect.get("planetB", "Sun")
+        orb = exact_aspect.get("orb", 0.0)
+        
+        # We auto-trigger if orb is tight enough (e.g. <= 6.0 degrees)
+        if orb > 6.0:
+            return None
+            
+        # Map to an elemental Jing Move
+        # Meltdown (Fire) - friction / hot / squares
+        # Freeze (Water) - cold / rigid / oppositions
+        # Tectonic Root (Earth) - stability / barriers / conjuncts
+        # Vacuum (Air) - intellectualizing / snuffing / sextiles/trines
+        if harmonic == "friction":
+            move_id = "meltdown"
+            move_name = "Meltdown"
+            element = "Fire"
+            description = "Frictional astrological square/opposition has auto-triggered Meltdown! Shatter structural barriers and intensify debate."
+        elif harmonic == "harmony":
+            move_id = "vacuum"
+            move_name = "Vacuum"
+            element = "Air"
+            description = "Harmonious trine/sextile has auto-triggered Vacuum! Removing oxygen to calm the dialogue using airy logic."
+        else: # intensification / conjunction
+            move_id = "freeze"
+            move_name = "Freeze"
+            element = "Water"
+            description = "Intense exact conjunction has auto-triggered Freeze! Locking stances and holding previous states in rigid focus."
+            
+        return {
+            "triggered": True,
+            "caster": caster_name,
+            "casterId": caster_id,
+            "target": target_name,
+            "targetId": target_id,
+            "moveId": move_id,
+            "moveName": move_name,
+            "element": element,
+            "aspect": {
+                "type": aspect_type,
+                "planetA": planet_a,
+                "planetB": planet_b,
+                "orb": orb,
+                "harmonic": harmonic
+            },
+            "description": description,
+            "scores": synastry.get("scores", {})
+        }
+    except Exception as e:
+        _log(f"Error in _detect_and_trigger_jing_interaction: {e}")
+        return None
+
+
+async def trigger_chart_specific_jing_duel(arguments: Dict[str, Any]) -> Dict[str, Any]:
+    caster_name = str(arguments.get("casterName") or "").strip()
+    target_name = str(arguments.get("targetName") or "").strip()
+    
+    if not caster_name or not target_name:
+        return _text_result({"error": "casterName and targetName are required"}, is_error=True)
+        
+    model_tier = arguments.get("modelTier") or DEFAULT_MODEL_TIER
+    
+    triggered_jing = await _detect_and_trigger_jing_interaction(caster_name, target_name)
+    
+    if not triggered_jing:
+        return _text_result({
+            "triggered": False,
+            "reason": f"No close astrological synastry aspects (orb <= 6.0°) found between {caster_name} and {target_name} to auto-trigger a Jing clash."
+        })
+        
+    # Generate the dialogue in-character for both caster and target
+    aspect_desc = f"{triggered_jing['aspect']['planetA']} {triggered_jing['aspect']['type']} {triggered_jing['aspect']['planetB']} ({triggered_jing['aspect']['orb']:.1f}° orb)"
+    
+    caster_prompt = (
+        f"You are casting the {triggered_jing['moveName']} ({triggered_jing['element']}) Jing on {target_name} due to your powerful birthchart synastry aspect: {aspect_desc}. "
+        f"Speak ONE bold, defiant line, 1-2 sentences, in character, no greeting, no narration. Express your element!"
+    )
+    
+    target_prompt = (
+        f"You are being attacked by {caster_name}'s {triggered_jing['moveName']} ({triggered_jing['element']}) Jing due to your powerful birthchart synastry aspect: {aspect_desc}. "
+        f"Speak ONE bold, counter-line, 1-2 sentences, in character, defending yourself or responding to their element!"
+    )
+    
+    context = {
+        "caster": caster_name,
+        "target": target_name,
+        "aspect": aspect_desc,
+        "move": triggered_jing["moveName"],
+        "element": triggered_jing["element"],
+        "topic": "Jing Duel"
+    }
+    
+    # Run completions for both caster and target
+    caster_task = asyncio.create_task(_backend_chat(
+        agent_name=caster_name,
+        message=caster_prompt,
+        context=context,
+        model_tier=model_tier
+    ))
+    
+    target_task = asyncio.create_task(_backend_chat(
+        agent_name=target_name,
+        message=target_prompt,
+        context=context,
+        model_tier=model_tier
+    ))
+    
+    try:
+        caster_res = await caster_task
+        caster_text = caster_res.get("text", "")
+    except Exception as exc:
+        caster_text = f"Caster failed to respond: {exc}"
+        
+    try:
+        target_res = await target_task
+        target_text = target_res.get("text", "")
+    except Exception as exc:
+        target_text = f"Target failed to respond: {exc}"
+        
+    triggered_jing["casterVoice"] = caster_text
+    triggered_jing["targetVoice"] = target_text
+    
+    return _text_result(triggered_jing)
 
 
 async def _live_sky_context() -> Optional[Dict[str, Any]]:
@@ -292,18 +499,38 @@ async def synthesize_culinary_debate(arguments: Dict[str, Any]) -> Dict[str, Any
     except Exception as exc:
         data_errors.append(f"generate_cosmic_recipe: {exc}")
 
+    # Auto-detect and trigger a chart-specific Jing interaction between the main debating agents
+    triggered_jing = None
+    if len(agents) >= 2:
+        try:
+            triggered_jing = await _detect_and_trigger_jing_interaction(agents[0], agents[1])
+        except Exception as e:
+            _log(f"Failed to auto-trigger Jing overlay for debate: {e}")
+
     debate_prompt = (
         "Join a concise culinary debate about these ingredients: "
         f"{', '.join(ingredients)}.\n"
         "Use your own historical voice. Give one vivid stance in 2-3 sentences. "
         "Address alchemical virtue, imbalance, or transformation without mentioning system internals."
     )
+    if triggered_jing:
+        aspect_desc = f"{triggered_jing['aspect']['planetA']} {triggered_jing['aspect']['type']} {triggered_jing['aspect']['planetB']} (Orb: {triggered_jing['aspect']['orb']:.1f}°)"
+        debate_prompt += (
+            f"\n\n[Astrological Synastry Alert: A chart-specific JING move has been auto-triggered between {agents[0]} and {agents[1]}! "
+            f"Aspect: {aspect_desc}. Move: {triggered_jing['moveName']} ({triggered_jing['element']}). "
+            f"Friction/Harmonic Stance: {triggered_jing['aspect']['harmonic'].upper()}. "
+            f"Description: {triggered_jing['description']}. "
+            f"You MUST express this elemental interaction, clash, or defence in character in your stance!]"
+        )
+
     context = {
         "ingredients": ingredients,
         "alchemicalScan": alchemical_scan,
         "recipeCandidates": recipe_candidates,
         "topic": "culinary debate",
     }
+    if triggered_jing:
+        context["triggeredJing"] = triggered_jing
     if sky_state:
         context["liveSkyState"] = sky_state
 
@@ -327,6 +554,7 @@ async def synthesize_culinary_debate(arguments: Dict[str, Any]) -> Dict[str, Any
             "alchemicalScan": alchemical_scan,
             "recipeCandidates": recipe_candidates,
             "liveSkyState": sky_state,
+            "triggeredJing": triggered_jing,
             "dataErrors": data_errors,
             "dialogue": dialogue,
         }
@@ -337,6 +565,7 @@ TOOL_HANDLERS = {
     "chat_with_planetary_agent": chat_with_planetary_agent,
     "get_agent_feed_discussion": get_agent_feed_discussion,
     "synthesize_culinary_debate": synthesize_culinary_debate,
+    "trigger_chart_specific_jing_duel": trigger_chart_specific_jing_duel,
 }
 
 
@@ -401,11 +630,16 @@ async def handle_request(message: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 
                 # Resolve agentId
                 agent_id = None
-                if name in ("chat_with_planetary_agent", "synthesize_culinary_debate"):
-                    agent_name = gated_args.get("agentName") or gated_args.get("agent_name")
+                if name in ("chat_with_planetary_agent", "synthesize_culinary_debate", "trigger_chart_specific_jing_duel"):
+                    agent_name = gated_args.get("agentName") or gated_args.get("agent_name") or gated_args.get("casterName")
                     if agent_name:
                         agent_id = _agent_id(agent_name)
-                    if not agent_id and name == "synthesize_culinary_debate":
+                    if name == "trigger_chart_specific_jing_duel":
+                        caster = gated_args.get("casterName")
+                        target = gated_args.get("targetName")
+                        if caster and target:
+                            agent_id = f"{_agent_id(caster)},{_agent_id(target)}"
+                    elif not agent_id and name == "synthesize_culinary_debate":
                         agents = gated_args.get("agents")
                         if agents:
                             agent_id = ",".join([_agent_id(a) for a in agents])

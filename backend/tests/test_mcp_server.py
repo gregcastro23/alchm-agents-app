@@ -241,3 +241,53 @@ async def test_tier_gating_alchemist_key(monkeypatch):
         }
     )
     assert len(gated_args_debate["agents"]) == 3
+
+
+@pytest.mark.asyncio
+async def test_trigger_chart_specific_jing_duel(monkeypatch):
+    # Mock database retrieval of natal charts
+    def fake_get_natal_chart(agent_name):
+        return {"planets": {"Sun": {"longitude": 45}}}
+
+    # Mock synastry calculation tool
+    async def fake_synastry(*args, **kwargs):
+        return {
+            "interchartAspects": [
+                {
+                    "type": "conjunction",
+                    "planetA": "Sun",
+                    "planetB": "Sun",
+                    "orb": 1.5,
+                    "harmonic": "friction"
+                }
+            ],
+            "scores": {"tension": 85, "harmony": 15, "intensification": 50, "aspectCount": 1}
+        }
+
+    # Mock backend chat response
+    async def fake_backend_chat(agent_name, message, conversation_history=None, context=None, model_tier=None, sky_state=None):
+        return {
+            "agentName": agent_name,
+            "agentId": planetary_agents_mcp_server._agent_id(agent_name),
+            "text": f"{agent_name} responding to the Jing clash."
+        }
+
+    monkeypatch.setattr(planetary_agents_mcp_server, "_get_agent_natal_chart", fake_get_natal_chart)
+    monkeypatch.setattr(planetary_agents_mcp_server.alchm_mcp, "compute_synastry_overlay", fake_synastry)
+    monkeypatch.setattr(planetary_agents_mcp_server, "_backend_chat", fake_backend_chat)
+
+    response = await planetary_agents_mcp_server.trigger_chart_specific_jing_duel({
+        "casterName": "Socrates",
+        "targetName": "Rumi",
+        "modelTier": "free"
+    })
+
+    assert "isError" not in response
+    payload = json.loads(response["content"][0]["text"])
+    assert payload["triggered"] is True
+    assert payload["moveId"] == "meltdown"  # harmonic 'friction' maps to Meltdown
+    assert payload["caster"] == "Socrates"
+    assert payload["target"] == "Rumi"
+    assert "Socrates responding" in payload["casterVoice"]
+    assert "Rumi responding" in payload["targetVoice"]
+
