@@ -201,6 +201,22 @@ Agent knowledge is stored in ChromaDB (optional, Docker: `docker run -p 8000:800
 | `RAG_MIN_SIMILARITY`                                                    | 0.0–1.0 threshold below which RAG chunks are dropped (0.0 default)              |
 | `GROQ_API_KEY` `CEREBRAS_API_KEY` `GEMINI_API_KEY` `OPENROUTER_API_KEY` | Free-chain providers — each is independently optional; missing keys are skipped |
 | `ALLOW_SQLITE_FALLBACK`                                                 | One-time bridge: tolerate SQLite when DIRECT_URL is unset (Railway)             |
+| `ALCHM_MCP_ENABLED`                                                     | Enable the FastAPI bridge to the Alchm data MCP server (`true` by default)      |
+| `ALCHM_MCP_SERVER_PATH`                                                 | Path to the sibling `mcp-server/src/index.ts` data server                       |
+| `ALCHM_MCP_DATABASE_URL`                                                | Optional DB URL passed only to the Alchm MCP subprocess                         |
+| `ALCHM_MCP_HYDRATE_CHAT`                                                | Add live sky / ingredient / recipe MCP context to `/api/chat` (`true` default)  |
+| `COSMIC_RECIPE_USE_MCP_CATALOG`                                         | Seed `/api/generate-recipe` with deterministic catalog candidates               |
+| `PLANETARY_AGENTS_BACKEND_URL`                                          | Backend URL used by `backend/planetary_agents_mcp_server.py`                    |
+| `PLANETARY_AGENTS_FRONTEND_URL`                                         | Frontend URL used by the Planetary Agents MCP feed tool                         |
+
+### MCP Architecture
+
+Planetary Agents now participates in a two-layer MCP network:
+
+- **Alchm data MCP server** — sibling WTEN Bun server exposing `get_live_sky_transits`, `alchemize_ingredients`, and `generate_cosmic_recipe`.
+- **Planetary Agents MCP server** — `cd backend && python3 planetary_agents_mcp_server.py`, exposing `chat_with_planetary_agent`, `get_agent_feed_discussion`, and `synthesize_culinary_debate`.
+
+FastAPI consumes the Alchm server through `backend/alchm_mcp.py`, appending deterministic tool output to the chat reference block after RAG. External MCP clients can launch the Planetary Agents server directly for persona/cognitive tools.
 
 ### TypeScript Errors
 

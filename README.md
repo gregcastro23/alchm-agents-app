@@ -18,6 +18,11 @@ Environment knobs:
 - `SENDGRID_API_KEY` (optional, for feedback email)
 - `FEEDBACK_TO_EMAIL` (optional, feedback destination)
 - `FEEDBACK_FROM_EMAIL` (optional, feedback sender)
+- `ALCHM_MCP_ENABLED` (default `true`, enables the Alchm data MCP bridge in the FastAPI backend)
+- `ALCHM_MCP_SERVER_PATH` (optional, path to `mcp-server/src/index.ts`; defaults to the sibling WTEN checkout when present)
+- `ALCHM_MCP_DATABASE_URL` (optional, overrides `DATABASE_URL` only for the Alchm MCP subprocess)
+- `PLANETARY_AGENTS_BACKEND_URL` (default `http://localhost:8000`, used by the Planetary Agents MCP server)
+- `PLANETARY_AGENTS_FRONTEND_URL` (default `http://localhost:3000`, used for feed-thread lookup)
 
 Kinetics feature flags:
 
@@ -282,6 +287,22 @@ make full-stack-dev
 yarn dev                    # Frontend (port 3000)
 cd backend && yarn dev     # Backend (port 8000)
 ```
+
+### MCP Servers
+
+The backend can consume the sibling Alchm MCP data server and can also expose its own
+persona/cognitive MCP server:
+
+```bash
+# Data layer consumed by FastAPI
+ALCHM_MCP_SERVER_PATH=/Users/cookingwithcastro/Desktop/WhatToEatNext-master/mcp-server/src/index.ts
+
+# Cognitive layer exposed to external agent clients
+cd backend && python3 planetary_agents_mcp_server.py
+```
+
+The Planetary Agents MCP server exposes `chat_with_planetary_agent`,
+`get_agent_feed_discussion`, and `synthesize_culinary_debate` over stdio.
 
 ### Make Commands
 

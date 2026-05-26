@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException, Header, Depends
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
+import json
 import os
+import re
 import threading
 import uvicorn
 import math
@@ -21,6 +23,7 @@ import rag
 import providers
 import ingest
 import recipe_generation
+import alchm_mcp
 from feed_emitter import emit_feed_event
 
 class SlidingWindowRateLimiter:
@@ -67,8 +70,20 @@ async def lifespan(app: FastAPI):
             print(f"[startup] RAG ingest error: {exc}", flush=True)
 
     threading.Thread(target=_run, daemon=True, name="rag-ingest").start()
+    mcp_warmup_task = None
+    if alchm_mcp.is_enabled() and os.getenv("ALCHM_MCP_WARMUP_ON_STARTUP", "true").lower() not in {"0", "false", "no", "off"}:
+        async def _warm_alchm_mcp() -> None:
+            try:
+                await alchm_mcp.warmup()
+                print("[startup] Alchm MCP client initialized", flush=True)
+            except Exception as exc:
+                print(f"[startup] Alchm MCP warmup skipped: {exc}", flush=True)
+
+        mcp_warmup_task = asyncio.create_task(_warm_alchm_mcp())
     yield  # app runs here
-    # shutdown cleanup (if needed later) goes after yield
+    if mcp_warmup_task and not mcp_warmup_task.done():
+        mcp_warmup_task.cancel()
+    await alchm_mcp.close_client()
 
 app = FastAPI(title="Planetary Agents Core", lifespan=lifespan)
 
@@ -146,6 +161,241 @@ def _format_rag_block(documents, distances=None) -> str:
         "</reference_material>"
     )
 
+
+def _env_enabled(name: str, default: bool = True) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() not in {"0", "false", "no", "off"}
+
+
+def _as_float(value: Any) -> Optional[float]:
+    try:
+        if value is None or value == "":
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _first_float(*values: Any) -> Optional[float]:
+    for value in values:
+        converted = _as_float(value)
+        if converted is not None:
+            return converted
+    return None
+
+
+def _nested_get(data: Dict[str, Any], *path: str) -> Any:
+    current: Any = data
+    for part in path:
+        if not isinstance(current, dict):
+            return None
+        current = current.get(part)
+    return current
+
+
+def _extract_coordinates(context: Dict[str, Any]) -> tuple[Optional[float], Optional[float]]:
+    latitude = _first_float(
+        context.get("latitude"),
+        context.get("lat"),
+        _nested_get(context, "birthData", "latitude"),
+        _nested_get(context, "location", "latitude"),
+        _nested_get(context, "location", "lat"),
+        _nested_get(context, "coordinates", "latitude"),
+        _nested_get(context, "coordinates", "lat"),
+    )
+    longitude = _first_float(
+        context.get("longitude"),
+        context.get("lon"),
+        context.get("lng"),
+        _nested_get(context, "birthData", "longitude"),
+        _nested_get(context, "location", "longitude"),
+        _nested_get(context, "location", "lon"),
+        _nested_get(context, "coordinates", "longitude"),
+        _nested_get(context, "coordinates", "lon"),
+    )
+    return latitude, longitude
+
+
+def _string_list(value: Any) -> List[str]:
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    if isinstance(value, str):
+        return [item.strip() for item in re.split(r",|\band\b", value) if item.strip()]
+    return []
+
+
+def _extract_context_list(context: Dict[str, Any], keys: List[str]) -> List[str]:
+    values: List[str] = []
+    for key in keys:
+        values.extend(_string_list(context.get(key)))
+    return values
+
+
+def _dedupe_strings(values: List[str], limit: int = 12) -> List[str]:
+    seen = set()
+    result = []
+    for value in values:
+        normalized = re.sub(r"\s+", " ", value.strip(" .;:!?\n\t")).strip()
+        normalized = re.sub(r"^(?:a|an|the)\s+", "", normalized, flags=re.IGNORECASE)
+        if not normalized:
+            continue
+        key = normalized.lower()
+        if key in seen:
+            continue
+        if len(normalized) > 60 or len(normalized.split()) > 5:
+            continue
+        seen.add(key)
+        result.append(normalized)
+        if len(result) >= limit:
+            break
+    return result
+
+
+def _extract_ingredient_candidates(message: str, context: Dict[str, Any]) -> List[str]:
+    candidates = _extract_context_list(
+        context,
+        [
+            "ingredients",
+            "topIngredients",
+            "ingredients_main",
+            "pantryIngredients",
+            "selectedIngredients",
+        ],
+    )
+
+    lower = message.lower()
+    culinary_words = {
+        "recipe",
+        "cook",
+        "meal",
+        "dinner",
+        "lunch",
+        "breakfast",
+        "dish",
+        "ingredient",
+        "ingredients",
+        "pantry",
+        "fridge",
+        "eat",
+    }
+    if any(re.search(rf"\b{re.escape(word)}\b", lower) for word in culinary_words):
+        for pattern in [
+            r"\bingredients?\s*[:\-]\s*([^.;\n]+)",
+            r"\b(?:with|using)\s+([^.;?!\n]{3,160})",
+        ]:
+            match = re.search(pattern, message, flags=re.IGNORECASE)
+            if match:
+                candidates.extend(_string_list(match.group(1)))
+
+    ignored = {
+        "recipe",
+        "meal",
+        "dinner",
+        "lunch",
+        "breakfast",
+        "food",
+        "dish",
+        "please",
+        "something",
+    }
+    return [item for item in _dedupe_strings(candidates) if item.lower() not in ignored]
+
+
+def _dietary_from_context(context: Dict[str, Any], diet_preference: Optional[str] = None) -> List[str]:
+    dietary = _extract_context_list(context, ["dietary", "dietaryRestrictions", "dietary_restrictions"])
+    diet = diet_preference or context.get("dietPreference") or context.get("diet")
+    if isinstance(diet, str) and diet and diet.lower() != "omnivore":
+        dietary.append(diet)
+    return _dedupe_strings(dietary, limit=8)
+
+
+def _should_fetch_recipe_candidates(request: schemas.ChatRequest, ingredients: List[str]) -> bool:
+    if request.agentId == "alchemical-chef":
+        return True
+    lower = request.message.lower()
+    return bool(ingredients) and any(
+        re.search(rf"\b{word}\b", lower)
+        for word in ["recipe", "cook", "meal", "dinner", "lunch", "breakfast", "dish", "eat"]
+    )
+
+
+def _truncate_json(data: Any, limit: int) -> str:
+    text = json.dumps(data, sort_keys=True, ensure_ascii=True, separators=(",", ":"))
+    if len(text) <= limit:
+        return text
+    return text[: limit - 24] + "...[truncated]"
+
+
+def _format_alchm_mcp_block(results: List[Dict[str, Any]]) -> str:
+    if not results:
+        return ""
+
+    max_chars = int(os.getenv("ALCHM_MCP_CONTEXT_MAX_CHARS", "7000"))
+    per_tool_limit = max(1000, max_chars // max(len(results), 1))
+    sections = [
+        "<alchm_mcp_context>",
+        "Deterministic Alchm Kitchen MCP outputs. Treat these as factual tool results, not persona voice.",
+    ]
+    for result in results:
+        sections.append(f"Tool: {result['tool']}\nJSON: {_truncate_json(result['data'], per_tool_limit)}")
+    sections.append("</alchm_mcp_context>")
+    block = "\n\n".join(sections)
+    if len(block) > max_chars:
+        return block[: max_chars - 30] + "\n...[truncated]\n</alchm_mcp_context>"
+    return block
+
+
+async def _build_alchm_mcp_context(
+    request: schemas.ChatRequest,
+) -> tuple[str, Dict[str, Any]]:
+    metadata: Dict[str, Any] = {"enabled": alchm_mcp.is_enabled(), "tools": [], "errors": []}
+    if not metadata["enabled"] or not _env_enabled("ALCHM_MCP_HYDRATE_CHAT", True):
+        return "", metadata
+
+    context = request.context or {}
+    latitude, longitude = _extract_coordinates(context)
+    ingredients = _extract_ingredient_candidates(request.message, context)
+    results: List[Dict[str, Any]] = []
+    live_sky: Dict[str, Any] = {}
+
+    try:
+        live_sky = await alchm_mcp.get_live_sky_transits(latitude=latitude, longitude=longitude)
+        results.append({"tool": "get_live_sky_transits", "data": live_sky})
+        metadata["tools"].append("get_live_sky_transits")
+    except Exception as exc:
+        metadata["errors"].append(f"get_live_sky_transits: {str(exc)[:180]}")
+
+    if ingredients:
+        try:
+            scan = await alchm_mcp.alchemize_ingredients(ingredients)
+            results.append({"tool": "alchemize_ingredients", "data": scan})
+            metadata["tools"].append("alchemize_ingredients")
+            metadata["ingredients"] = ingredients
+        except Exception as exc:
+            metadata["errors"].append(f"alchemize_ingredients: {str(exc)[:180]}")
+
+    if _should_fetch_recipe_candidates(request, ingredients):
+        try:
+            dominant_element = (
+                context.get("dominantElement")
+                or context.get("dominant_element")
+                or live_sky.get("dominantElement")
+            )
+            recipes = await alchm_mcp.generate_cosmic_recipe(
+                prompt=request.message[:280],
+                cuisine=context.get("cuisine") or context.get("preferredCuisine"),
+                dietary=_dietary_from_context(context),
+                dominant_element=dominant_element,
+            )
+            results.append({"tool": "generate_cosmic_recipe", "data": recipes})
+            metadata["tools"].append("generate_cosmic_recipe")
+        except Exception as exc:
+            metadata["errors"].append(f"generate_cosmic_recipe: {str(exc)[:180]}")
+
+    return _format_alchm_mcp_block(results), metadata
+
 @app.get("/health", response_model=schemas.HealthResponse)
 async def health():
     return {
@@ -173,6 +423,30 @@ async def providers_health():
         cfg.name: result
         for cfg, result in zip(providers.all_known_providers(), pings)
     }
+
+
+@app.get("/api/mcp/alchm/status")
+async def alchm_mcp_status():
+    """Report Alchm MCP subprocess configuration and readiness."""
+    return await alchm_mcp.status(include_tools=True)
+
+
+@app.get("/api/mcp/alchm/tools")
+async def alchm_mcp_tools():
+    try:
+        return {"tools": await alchm_mcp.list_tools()}
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+
+
+@app.post("/api/mcp/alchm/tools/{tool_name}")
+async def call_alchm_mcp_tool(tool_name: str, payload: Dict[str, Any]):
+    try:
+        return {"tool": tool_name, "result": await alchm_mcp.call_tool_json(tool_name, payload)}
+    except alchm_mcp.AlchmMCPError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
 
 
 # --- Frontend compatibility endpoints ---
@@ -349,8 +623,6 @@ async def alchemical_quantities(request: Dict[str, Any]):
 def read_agents(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
     agents = crud.get_agents(db, skip=skip, limit=limit)
     return agents
-
-import json
 
 @app.get("/api/agents/diet-profiles")
 def get_diet_profiles():
@@ -798,12 +1070,17 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
     except Exception as e:
         print(f"RAG Error: {e}")
 
-    # 4. Pick tier and build the provider fallback chain.
+    # 4. Alchm MCP — live sky, ingredient scans, and deterministic recipe candidates.
+    mcp_block, mcp_metadata = await _build_alchm_mcp_context(request)
+    if mcp_block:
+        rag_block = "\n\n".join(part for part in [rag_block, mcp_block] if part)
+
+    # 5. Pick tier and build the provider fallback chain.
     tier = _resolve_tier(request.modelTier)
     anthropic_model = ANTHROPIC_TIER_MODEL.get(tier)  # None for tier=="free"
     chain = providers.build_chain(tier, anthropic_model)
 
-    # 5. Walk the chain. First successful provider wins; failures cascade with
+    # 6. Walk the chain. First successful provider wins; failures cascade with
     # a `fallback_event` log line (grep "fallback_event" in Railway logs).
     result = await providers.run_chain(
         chain=chain,
@@ -885,6 +1162,7 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
             "persona_source": "override" if request.systemPromptOverride else "python_template",
             "persona_cache_key": request.personaCacheKey,
             "cache": cache_hit,
+            "mcp": mcp_metadata,
         },
     }
 
@@ -899,10 +1177,25 @@ async def generate_cosmic_recipe(request: schemas.CosmicRecipeRequest):
         request.modelTier or os.getenv("COSMIC_RECIPE_MODEL_TIER", "primary")
     )
     anthropic_model = ANTHROPIC_TIER_MODEL.get(recipe_tier)
+    catalog_context = None
+    catalog_error = None
+    if _env_enabled("COSMIC_RECIPE_USE_MCP_CATALOG", True) and alchm_mcp.is_enabled():
+        try:
+            catalog_context = await alchm_mcp.generate_cosmic_recipe(
+                prompt=request.prompt,
+                cuisine=request.cuisine,
+                dietary=_dietary_from_context({"dietary": request.dietary}, request.dietPreference),
+                dominant_element=request.dominantElement,
+            )
+        except Exception as exc:
+            catalog_error = str(exc)[:240]
+            print(f"cosmic_recipe_mcp_catalog_unavailable error={catalog_error}", flush=True)
+
     recipe = await recipe_generation.generate_cosmic_recipe(
         request=request,
         tier=recipe_tier,
         anthropic_model=anthropic_model,
+        catalog_context=catalog_context,
     )
     emit_feed_event(
         "alchemical-chef",
@@ -915,6 +1208,8 @@ async def generate_cosmic_recipe(request: schemas.CosmicRecipeRequest):
             "summary": recipe.short_description,
             "userId": request.userId,
             "tier": recipe_tier,
+            "mcpCatalog": bool(catalog_context),
+            "mcpCatalogError": catalog_error,
         },
     )
     return recipe

@@ -1,12 +1,17 @@
 import json
+import os
 import pytest
 from uuid import uuid4
 from fastapi.testclient import TestClient
 
+os.environ.setdefault("ALCHM_MCP_ENABLED", "false")
+
 from main import app
+import alchm_mcp
 import providers
 import feed_emitter
 import recipe_generation
+import planetary_agents_mcp_server
 
 client = TestClient(app)
 
@@ -21,6 +26,76 @@ def test_health_check():
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json()["status"] == "healthy"
+
+
+def test_alchm_mcp_parse_tool_json():
+    result = {
+        "content": [
+            {
+                "type": "text",
+                "text": json.dumps({"dominantElement": "Fire", "ingredientCount": 3}),
+            }
+        ]
+    }
+
+    assert alchm_mcp.parse_tool_json(result) == {
+        "dominantElement": "Fire",
+        "ingredientCount": 3,
+    }
+
+
+@pytest.mark.asyncio
+async def test_alchm_mcp_status_disabled(monkeypatch):
+    monkeypatch.setenv("ALCHM_MCP_ENABLED", "false")
+
+    status = await alchm_mcp.status()
+
+    assert status["enabled"] is False
+    assert status["status"] == "disabled"
+
+
+@pytest.mark.asyncio
+async def test_planetary_agents_mcp_lists_cognitive_tools():
+    response = await planetary_agents_mcp_server.handle_request(
+        {"jsonrpc": "2.0", "id": 1, "method": "tools/list"}
+    )
+
+    assert response["result"]["tools"][0]["name"] == "chat_with_planetary_agent"
+    tool_names = {tool["name"] for tool in response["result"]["tools"]}
+    assert {
+        "chat_with_planetary_agent",
+        "get_agent_feed_discussion",
+        "synthesize_culinary_debate",
+    }.issubset(tool_names)
+
+
+@pytest.mark.asyncio
+async def test_planetary_agents_mcp_synthesizes_debate_without_network(monkeypatch):
+    async def fake_alchemize(ingredients):
+        return {"dominantElement": "Earth", "ingredientCount": len(ingredients)}
+
+    async def fake_recipe(prompt=None, cuisine=None, dietary=None, dominant_element=None):
+        return {"returnedCount": 1, "recipes": [{"name": "Test Stew"}]}
+
+    async def fake_chat(agent_name, message, conversation_history=None, context=None, model_tier=None):
+        return {
+            "agentName": agent_name,
+            "agentId": planetary_agents_mcp_server._agent_id(agent_name),
+            "text": f"{agent_name} considers the dish.",
+        }
+
+    monkeypatch.setattr(planetary_agents_mcp_server.alchm_mcp, "alchemize_ingredients", fake_alchemize)
+    monkeypatch.setattr(planetary_agents_mcp_server.alchm_mcp, "generate_cosmic_recipe", fake_recipe)
+    monkeypatch.setattr(planetary_agents_mcp_server, "_backend_chat", fake_chat)
+
+    response = await planetary_agents_mcp_server.synthesize_culinary_debate(
+        {"ingredients": ["tomato", "basil"], "agents": ["Socrates", "Rumi"]}
+    )
+
+    payload = json.loads(response["content"][0]["text"])
+    assert payload["alchemicalScan"]["dominantElement"] == "Earth"
+    assert payload["recipeCandidates"]["recipes"][0]["name"] == "Test Stew"
+    assert [turn["agentId"] for turn in payload["dialogue"]] == ["socrates", "rumi"]
 
 
 # --- Provider fallback chain rotation tests --------------------------------

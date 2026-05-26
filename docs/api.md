@@ -72,6 +72,45 @@ paths:
           description: Structured recipe JSON.
         '422':
           description: Invalid request payload.
+  /api/mcp/alchm/status:
+    get:
+      servers:
+        - url: https://api.agents.alchm.kitchen
+      summary: Report the FastAPI backend's Alchm MCP subprocess readiness.
+      responses:
+        '200':
+          description: MCP configuration, readiness, and tool metadata.
+  /api/mcp/alchm/tools:
+    get:
+      servers:
+        - url: https://api.agents.alchm.kitchen
+      summary: List tools exposed by the connected Alchm MCP data server.
+      responses:
+        '200':
+          description: MCP tool list.
+        '503':
+          description: Alchm MCP unavailable.
+  /api/mcp/alchm/tools/{tool_name}:
+    post:
+      servers:
+        - url: https://api.agents.alchm.kitchen
+      summary: Call one of the registered Alchm MCP data tools.
+      parameters:
+        - { name: tool_name, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Normalized JSON result from the MCP tool.
+        '400':
+          description: Unsupported tool or tool-level validation error.
+        '503':
+          description: Alchm MCP unavailable.
   /api/agents/{slug}/actions:
     get:
       security:

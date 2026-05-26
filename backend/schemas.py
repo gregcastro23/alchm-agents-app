@@ -128,6 +128,7 @@ class CosmicRecipeRequest(BaseModel):
     topIngredients: List[str] = Field(default_factory=list, max_length=40)
     birthData: Optional[RecipeBirthData] = None
     dietPreference: Optional[str] = Field(default="omnivore", max_length=120)
+    dietary: List[str] = Field(default_factory=list, max_length=20)
     alchemicalState: Optional[Dict[str, float]] = None
     thermodynamicProperties: Optional[Dict[str, float]] = None
     disallowedIngredients: List[str] = Field(default_factory=list, max_length=40)
@@ -151,6 +152,8 @@ class CosmicRecipeRequest(BaseModel):
 
         if "diet" in data and "dietPreference" not in data:
             data["dietPreference"] = data["diet"]
+        if "dietaryRestrictions" in data and "dietary" not in data:
+            data["dietary"] = data["dietaryRestrictions"]
         if "preferredCuisine" in data and "cuisine" not in data:
             data["cuisine"] = data["preferredCuisine"]
         if "ingredients_main" in data and "topIngredients" not in data:

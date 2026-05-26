@@ -29,12 +29,17 @@ def clear_recipe_cache() -> None:
         _CACHE.clear()
 
 
-def _stable_cache_key(request: schemas.CosmicRecipeRequest) -> str:
+def _stable_cache_key(
+    request: schemas.CosmicRecipeRequest,
+    catalog_context: Optional[Dict[str, Any]] = None,
+) -> str:
     payload = request.model_dump(
         mode="json",
         exclude_none=True,
         exclude={"userId", "modelTier"},
     )
+    if catalog_context:
+        payload["catalogContext"] = catalog_context
     raw = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
@@ -71,7 +76,10 @@ def _json_object_schema() -> Dict[str, Any]:
     return schemas.CosmicRecipeResponse.model_json_schema()
 
 
-def _format_context(request: schemas.CosmicRecipeRequest) -> str:
+def _format_context(
+    request: schemas.CosmicRecipeRequest,
+    catalog_context: Optional[Dict[str, Any]] = None,
+) -> str:
     context = {
         "dominantElement": request.dominantElement,
         "cuisine": request.cuisine,
@@ -80,10 +88,13 @@ def _format_context(request: schemas.CosmicRecipeRequest) -> str:
         if request.birthData
         else None,
         "dietPreference": request.dietPreference or "omnivore",
+        "dietary": request.dietary,
         "alchemicalState": request.alchemicalState,
         "thermodynamicProperties": request.thermodynamicProperties,
         "disallowedIngredients": request.disallowedIngredients,
     }
+    if catalog_context:
+        context["catalogCandidates"] = catalog_context
     return json.dumps(context, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
 
@@ -100,6 +111,7 @@ def _build_persona_block(request: schemas.CosmicRecipeRequest) -> str:
 
 def _build_recipe_prompt(
     request: schemas.CosmicRecipeRequest,
+    catalog_context: Optional[Dict[str, Any]] = None,
     validation_feedback: Optional[str] = None,
 ) -> str:
     retry_block = ""
@@ -112,7 +124,7 @@ def _build_recipe_prompt(
     return f"""Create one production-ready cosmic recipe for Alchm Kitchen.
 
 User request: {request.prompt}
-Context JSON: {_format_context(request)}
+Context JSON: {_format_context(request, catalog_context)}
 {retry_block}
 Rules:
 - Return exactly one JSON object matching the schema below. No markdown, no prose wrapper.
@@ -120,6 +132,7 @@ Rules:
 - Include every required field even when data is estimated.
 - Keep ingredients practical for a home cook and avoid disallowed ingredients.
 - Respect the diet preference exactly. If the context is sparse, make reasonable culinary assumptions.
+- If catalogCandidates are present, prefer adapting the strongest catalog match over inventing a dish from scratch.
 - Keep the brand voice modern, grounded, and appetizing. Do not borrow a historical-figure persona.
 - Make elementalBalance values add up to approximately 100.
 
@@ -161,8 +174,9 @@ async def generate_cosmic_recipe(
     request: schemas.CosmicRecipeRequest,
     tier: str,
     anthropic_model: Optional[str],
+    catalog_context: Optional[Dict[str, Any]] = None,
 ) -> schemas.CosmicRecipeResponse:
-    cache_key = _stable_cache_key(request)
+    cache_key = _stable_cache_key(request, catalog_context)
     cached = _get_cached_recipe(cache_key)
     if cached:
         return cached
@@ -175,6 +189,7 @@ async def generate_cosmic_recipe(
     for attempt in range(2):
         user_message = _build_recipe_prompt(
             request,
+            catalog_context=catalog_context,
             validation_feedback=last_error if attempt > 0 else None,
         )
         result = await providers.run_chain(
