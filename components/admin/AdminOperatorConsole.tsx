@@ -24,6 +24,7 @@ import {
   RefreshCw,
   Server,
   ShieldCheck,
+  Swords,
   TerminalSquare,
   UserCog,
   Users,
@@ -35,13 +36,21 @@ import { PerformanceDashboard } from '@/components/admin/performance-dashboard'
 import BatchProcessingDashboard from '@/components/dashboards/batch-processing-dashboard'
 import { RAGMonitor } from '@/components/rag/rag-monitor'
 import { cn } from '@/lib/utils'
-import { DESKTOP_APP_DOWNLOAD_URL } from '@/lib/desktop-download'
-import type { AdminDashboardData, AdminHealthValue, AdminSystemStats } from '@/types/admin'
+import { ALCHM_DESKTOP_DOWNLOAD_LABEL, DESKTOP_APP_DOWNLOAD_URL } from '@/lib/desktop-download'
+import type {
+  AdminDashboardData,
+  AdminHealthValue,
+  AdminSystemStats,
+  AdminRecentChat,
+  AdminJingDuel,
+} from '@/types/admin'
 
 type AdminTab =
   | 'overview'
   | 'users'
   | 'agents'
+  | 'chats'
+  | 'jing'
   | 'rag'
   | 'infrastructure'
   | 'deployments'
@@ -63,6 +72,8 @@ const tabs: Array<{ id: AdminTab; label: string; icon: LucideIcon }> = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'users', label: 'Users', icon: Users },
   { id: 'agents', label: 'Agents', icon: Bot },
+  { id: 'chats', label: 'Chat Status', icon: TerminalSquare },
+  { id: 'jing', label: 'Jing Arena', icon: Swords },
   { id: 'rag', label: 'RAG / Knowledge', icon: FileSearch },
   { id: 'infrastructure', label: 'Infrastructure', icon: Server },
   { id: 'deployments', label: 'Deployments', icon: GitBranch },
@@ -235,6 +246,8 @@ export function AdminOperatorConsole({ initialUser, authSource }: AdminOperatorC
   const [error, setError] = useState<string | null>(null)
   const [authError, setAuthError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+  const [selectedChat, setSelectedChat] = useState<AdminRecentChat | null>(null)
+  const [selectedDuel, setSelectedDuel] = useState<AdminJingDuel | null>(null)
 
   const fetchDashboard = useCallback(async () => {
     setRefreshing(true)
@@ -591,6 +604,333 @@ export function AdminOperatorConsole({ initialUser, authSource }: AdminOperatorC
                   </div>
                 )}
 
+                {activeTab === 'chats' && (
+                  <Panel title="Agent Chats Status" icon={TerminalSquare}>
+                    {!data.recentChats || data.recentChats.length === 0 ? (
+                      <EmptyState label="No agent chats recorded" />
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-[900px] text-sm">
+                          <thead className="text-xs uppercase tracking-[0.12em] text-zinc-500">
+                            <tr className="border-b border-zinc-800">
+                              <th className="px-3 py-2 text-left font-semibold">Agent</th>
+                              <th className="px-3 py-2 text-left font-semibold">User Message</th>
+                              <th className="px-3 py-2 text-left font-semibold">Agent Response</th>
+                              <th className="px-3 py-2 text-left font-semibold">
+                                Model / Provider
+                              </th>
+                              <th className="px-3 py-2 text-left font-semibold">Latency</th>
+                              <th className="px-3 py-2 text-left font-semibold">Status</th>
+                              <th className="px-3 py-2 text-left font-semibold">Time</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-zinc-800">
+                            {data.recentChats.map(chat => {
+                              const isSuccess =
+                                chat.agentResponse &&
+                                !chat.agentResponse.includes('[All providers unavailable]')
+                              const latency = chat.responseTime ? `${chat.responseTime}ms` : 'n/a'
+
+                              return (
+                                <tr
+                                  key={chat.id}
+                                  className="hover:bg-zinc-800/40 cursor-pointer transition-colors group"
+                                  onClick={() => setSelectedChat(chat)}
+                                >
+                                  <td className="px-3 py-3">
+                                    <div className="font-semibold text-zinc-100">
+                                      {chat.agentName}
+                                    </div>
+                                    <div
+                                      className="text-xs text-zinc-500 font-mono truncate max-w-[150px]"
+                                      title={chat.agentId}
+                                    >
+                                      {chat.agentId}
+                                    </div>
+                                  </td>
+                                  <td
+                                    className="px-3 py-3 max-w-[200px] truncate text-zinc-300"
+                                    title={chat.userMessage}
+                                  >
+                                    {chat.userMessage}
+                                  </td>
+                                  <td
+                                    className="px-3 py-3 max-w-[250px] truncate text-zinc-400"
+                                    title={chat.agentResponse}
+                                  >
+                                    {chat.agentResponse}
+                                  </td>
+                                  <td className="px-3 py-3 font-mono text-xs text-zinc-400">
+                                    {chat.modelUsed || 'n/a'}
+                                  </td>
+                                  <td className="px-3 py-3 font-mono text-xs text-zinc-300">
+                                    {latency}
+                                  </td>
+                                  <td className="px-3 py-3">
+                                    <span
+                                      className={cn(
+                                        'rounded-md px-2 py-1 text-xs font-semibold uppercase border tracking-wider',
+                                        isSuccess
+                                          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                                          : 'border-rose-500/30 bg-rose-500/10 text-rose-300'
+                                      )}
+                                    >
+                                      {isSuccess ? 'Success' : 'Failed'}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-3 text-zinc-500 text-xs whitespace-nowrap">
+                                    {formatDate(chat.createdAt)}
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </Panel>
+                )}
+
+                {activeTab === 'jing' && (
+                  <div className="space-y-5">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <MetricPanel
+                        icon={Swords}
+                        label="Total Duels"
+                        value={formatNumber(data.jingAggregates?.total ?? 0)}
+                        detail="All-time persisted casts"
+                      />
+                      <MetricPanel
+                        icon={Activity}
+                        label="Last 24h"
+                        value={formatNumber(data.jingAggregates?.last24h ?? 0)}
+                        detail="Casts in past day"
+                        tone="emerald"
+                      />
+                      <MetricPanel
+                        icon={Gauge}
+                        label="Last 7d"
+                        value={formatNumber(data.jingAggregates?.last7d ?? 0)}
+                        detail="Casts in past week"
+                        tone="amber"
+                      />
+                      <MetricPanel
+                        icon={RefreshCw}
+                        label="Avg Latency"
+                        value={
+                          data.jingAggregates?.avgLatencyMs
+                            ? `${formatNumber(data.jingAggregates.avgLatencyMs)}ms`
+                            : 'n/a'
+                        }
+                        detail="Both turns combined"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                      <Panel title="Stance Histogram" icon={Swords}>
+                        {(() => {
+                          const hist = data.jingAggregates?.stanceHistogram ?? {}
+                          const entries = ['clash', 'absorb', 'mirror'].map(stance => ({
+                            stance,
+                            count: hist[stance] ?? 0,
+                          }))
+                          const max = Math.max(1, ...entries.map(e => e.count))
+                          const stanceTone: Record<string, string> = {
+                            clash: 'bg-rose-500/40 border-rose-500/50',
+                            absorb: 'bg-sky-500/40 border-sky-500/50',
+                            mirror: 'bg-fuchsia-500/40 border-fuchsia-500/50',
+                          }
+                          return (
+                            <div className="space-y-3">
+                              {entries.map(({ stance, count }) => (
+                                <div key={stance} className="space-y-1.5">
+                                  <div className="flex justify-between text-xs">
+                                    <span className="capitalize text-zinc-200 font-semibold">
+                                      {stance}
+                                    </span>
+                                    <span className="font-mono text-zinc-400">{count}</span>
+                                  </div>
+                                  <div className="h-2 rounded-full bg-zinc-800 overflow-hidden">
+                                    <div
+                                      className={cn(
+                                        'h-full rounded-full border',
+                                        stanceTone[stance] || 'bg-zinc-600/40 border-zinc-500/50'
+                                      )}
+                                      style={{ width: `${(count / max) * 100}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        })()}
+                      </Panel>
+
+                      <Panel title="Boost Element" icon={Gauge}>
+                        {(() => {
+                          const hist = data.jingAggregates?.boostElementHistogram ?? {}
+                          const order = ['fire', 'water', 'earth', 'air', 'none']
+                          const entries = order
+                            .filter(el => hist[el] !== undefined)
+                            .map(el => ({ el, count: hist[el] ?? 0 }))
+                          if (entries.length === 0) {
+                            return <EmptyState label="No boost elements recorded yet" />
+                          }
+                          const max = Math.max(1, ...entries.map(e => e.count))
+                          const elTone: Record<string, string> = {
+                            fire: 'bg-rose-500/40 border-rose-500/50',
+                            water: 'bg-sky-500/40 border-sky-500/50',
+                            earth: 'bg-emerald-500/40 border-emerald-500/50',
+                            air: 'bg-amber-500/40 border-amber-500/50',
+                            none: 'bg-zinc-600/40 border-zinc-500/50',
+                          }
+                          return (
+                            <div className="space-y-3">
+                              {entries.map(({ el, count }) => (
+                                <div key={el} className="space-y-1.5">
+                                  <div className="flex justify-between text-xs">
+                                    <span className="capitalize text-zinc-200 font-semibold">
+                                      {el}
+                                    </span>
+                                    <span className="font-mono text-zinc-400">{count}</span>
+                                  </div>
+                                  <div className="h-2 rounded-full bg-zinc-800 overflow-hidden">
+                                    <div
+                                      className={cn(
+                                        'h-full rounded-full border',
+                                        elTone[el] || 'bg-zinc-600/40 border-zinc-500/50'
+                                      )}
+                                      style={{ width: `${(count / max) * 100}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        })()}
+                      </Panel>
+
+                      <Panel title="Top Pairs" icon={Bot}>
+                        {(() => {
+                          const pairs = data.jingAggregates?.topPairs ?? []
+                          if (pairs.length === 0) {
+                            return <EmptyState label="No duels recorded yet" />
+                          }
+                          return (
+                            <ul className="space-y-2 text-sm">
+                              {pairs.map(p => (
+                                <li
+                                  key={`${p.casterId}::${p.targetId}`}
+                                  className="flex items-center justify-between rounded-md border border-zinc-800 bg-zinc-950/60 px-3 py-2"
+                                >
+                                  <span className="text-zinc-200 truncate">
+                                    {p.casterName}
+                                    <ChevronRight className="inline h-3 w-3 mx-1 text-zinc-500" />
+                                    {p.targetName}
+                                  </span>
+                                  <span className="font-mono text-zinc-400 text-xs">{p.count}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )
+                        })()}
+                      </Panel>
+                    </div>
+
+                    <Panel title="Recent Jing Duels" icon={Swords}>
+                      {!data.recentJingDuels || data.recentJingDuels.length === 0 ? (
+                        <EmptyState label="No duels recorded — cast one in the desktop shell" />
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full min-w-[900px] text-sm">
+                            <thead className="text-xs uppercase tracking-[0.12em] text-zinc-500">
+                              <tr className="border-b border-zinc-800">
+                                <th className="px-3 py-2 text-left font-semibold">Caster</th>
+                                <th className="px-3 py-2 text-left font-semibold">Target</th>
+                                <th className="px-3 py-2 text-left font-semibold">
+                                  Move → Counter
+                                </th>
+                                <th className="px-3 py-2 text-left font-semibold">Stance</th>
+                                <th className="px-3 py-2 text-left font-semibold">Boost</th>
+                                <th className="px-3 py-2 text-left font-semibold">Latency</th>
+                                <th className="px-3 py-2 text-left font-semibold">Time</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-zinc-800">
+                              {data.recentJingDuels.map(duel => {
+                                const stanceTone: Record<string, string> = {
+                                  clash: 'border-rose-500/30 bg-rose-500/10 text-rose-300',
+                                  absorb: 'border-sky-500/30 bg-sky-500/10 text-sky-300',
+                                  mirror:
+                                    'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-300',
+                                }
+                                const boostPct = Math.round(duel.boostMagnitude * 100)
+                                return (
+                                  <tr
+                                    key={duel.id}
+                                    className="hover:bg-zinc-800/40 cursor-pointer transition-colors group"
+                                    onClick={() => setSelectedDuel(duel)}
+                                  >
+                                    <td className="px-3 py-3">
+                                      <div className="font-semibold text-zinc-100">
+                                        {duel.casterName}
+                                      </div>
+                                      <div
+                                        className="text-xs text-zinc-500 font-mono truncate max-w-[160px]"
+                                        title={duel.casterId}
+                                      >
+                                        {duel.casterId}
+                                      </div>
+                                    </td>
+                                    <td className="px-3 py-3">
+                                      <div className="font-semibold text-zinc-100">
+                                        {duel.targetName}
+                                      </div>
+                                      <div
+                                        className="text-xs text-zinc-500 font-mono truncate max-w-[160px]"
+                                        title={duel.targetId}
+                                      >
+                                        {duel.targetId}
+                                      </div>
+                                    </td>
+                                    <td className="px-3 py-3 font-mono text-xs text-zinc-300">
+                                      {duel.attackMoveId}
+                                      <ChevronRight className="inline h-3 w-3 mx-1 text-zinc-500" />
+                                      {duel.counterMoveId}
+                                    </td>
+                                    <td className="px-3 py-3">
+                                      <span
+                                        className={cn(
+                                          'rounded-md px-2 py-1 text-xs font-semibold uppercase border tracking-wider capitalize',
+                                          stanceTone[duel.stance] ||
+                                            'border-zinc-700 bg-zinc-800/40 text-zinc-300'
+                                        )}
+                                      >
+                                        {duel.stance}
+                                      </span>
+                                    </td>
+                                    <td className="px-3 py-3 font-mono text-xs text-zinc-300">
+                                      {duel.boostElement
+                                        ? `${boostPct}% ${duel.boostElement}`
+                                        : '—'}
+                                    </td>
+                                    <td className="px-3 py-3 font-mono text-xs text-zinc-300">
+                                      {duel.latencyMs ? `${duel.latencyMs}ms` : 'n/a'}
+                                    </td>
+                                    <td className="px-3 py-3 text-zinc-500 text-xs whitespace-nowrap">
+                                      {formatDate(duel.createdAt)}
+                                    </td>
+                                  </tr>
+                                )
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </Panel>
+                  </div>
+                )}
+
                 {activeTab === 'rag' && (
                   <div className="space-y-5">
                     <Panel
@@ -779,7 +1119,7 @@ export function AdminOperatorConsole({ initialUser, authSource }: AdminOperatorC
                         <QuickLink
                           href={DESKTOP_APP_DOWNLOAD_URL}
                           icon={ExternalLink}
-                          label="Desktop Releases"
+                          label={ALCHM_DESKTOP_DOWNLOAD_LABEL}
                           external
                         />
                         <QuickLink
@@ -802,7 +1142,409 @@ export function AdminOperatorConsole({ initialUser, authSource }: AdminOperatorC
           <span>Last updated {lastUpdated ? formatDate(lastUpdated) : 'n/a'}</span>
           <span>Refresh interval 30s</span>
         </footer>
+
+        {/* Chat Telemetry Detail Modal */}
+        {selectedChat && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-sm transition-opacity">
+            <div className="relative w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+              {/* Header */}
+              <div className="p-5 border-b border-zinc-800 flex justify-between items-start">
+                <div>
+                  <h3 className="text-lg font-semibold text-zinc-100 flex items-center gap-2">
+                    <TerminalSquare className="w-5 h-5 text-sky-400" />
+                    Chat Telemetry Details
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-1 flex items-center gap-1.5">
+                    Agent:{' '}
+                    <span className="font-semibold text-zinc-300">{selectedChat.agentName}</span>
+                    <span className="text-zinc-600 font-mono">({selectedChat.agentId})</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedChat(null)}
+                  className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-zinc-800"
+                >
+                  <XCircle className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 overflow-y-auto space-y-5 text-sm">
+                {/* Status & Latency Info */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-zinc-950/40 p-4 border border-zinc-800/60 rounded-lg font-mono text-xs">
+                  <div>
+                    <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">
+                      Status
+                    </span>
+                    <span
+                      className={cn(
+                        'font-semibold',
+                        selectedChat.agentResponse &&
+                          !selectedChat.agentResponse.includes('[All providers unavailable]')
+                          ? 'text-emerald-400'
+                          : 'text-rose-400'
+                      )}
+                    >
+                      {selectedChat.agentResponse &&
+                      !selectedChat.agentResponse.includes('[All providers unavailable]')
+                        ? 'SUCCESS'
+                        : 'FAILED'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">
+                      Response Time
+                    </span>
+                    <span className="text-zinc-300 font-semibold">
+                      {selectedChat.responseTime ? `${selectedChat.responseTime}ms` : 'n/a'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">
+                      Model Used
+                    </span>
+                    <span className="text-zinc-300 font-semibold">
+                      {selectedChat.modelUsed || 'n/a'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">
+                      Timestamp
+                    </span>
+                    <span className="text-zinc-300">
+                      {new Date(selectedChat.createdAt).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                      })}
+                    </span>
+                  </div>
+                </div>
+
+                {/* User Message */}
+                <div className="space-y-1.5">
+                  <h4 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold">
+                    User Message
+                  </h4>
+                  <div className="bg-zinc-950/60 border border-zinc-800 p-4 rounded-lg text-zinc-200 whitespace-pre-wrap select-text">
+                    {selectedChat.userMessage}
+                  </div>
+                </div>
+
+                {/* Agent Response */}
+                <div className="space-y-1.5">
+                  <h4 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold">
+                    Agent Response
+                  </h4>
+                  <div className="bg-zinc-950/40 border border-zinc-800/80 p-4 rounded-lg text-zinc-300 whitespace-pre-wrap select-text max-h-[300px] overflow-y-auto font-sans leading-relaxed">
+                    {selectedChat.agentResponse}
+                  </div>
+                </div>
+
+                {/* Session Identification */}
+                <div className="pt-2 text-xs font-mono text-zinc-500 flex justify-between border-t border-zinc-800/60">
+                  <span>Session: {selectedChat.sessionId}</span>
+                  <span>ID: {selectedChat.id}</span>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-zinc-800 bg-zinc-900/60 flex justify-end">
+                <button
+                  onClick={() => setSelectedChat(null)}
+                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 transition-colors text-zinc-100 rounded-lg text-xs font-semibold uppercase tracking-wider"
+                >
+                  Close Details
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Jing Duel Detail Modal */}
+        {selectedDuel && (
+          <JingDuelModal duel={selectedDuel} onClose={() => setSelectedDuel(null)} />
+        )}
       </div>
     </main>
+  )
+}
+
+function JingDuelModal({ duel, onClose }: { duel: AdminJingDuel; onClose: () => void }) {
+  const synastry = duel.synastrySnapshot as {
+    pair?: { agentA?: string; agentB?: string; cacheHit?: boolean }
+    scores?: {
+      tension?: number
+      harmony?: number
+      intensification?: number
+      aspectCount?: number
+    }
+    dominantStance?: string
+    interchartAspects?: Array<{
+      planetA: string
+      planetB: string
+      type: string
+      orb: number
+      exactness: number
+      harmonic: string
+    }>
+  } | null
+  const casterTransit = duel.casterTransitSnapshot as {
+    summary?: string
+    boostElement?: string | null
+    boostMagnitude?: number
+    stressNotes?: string[]
+    activations?: Array<{
+      transitPlanet: string
+      natalPoint: string
+      type: string
+      orb: number
+      exactness: number
+      natalElement: string
+      valence: string
+    }>
+  } | null
+  const targetTransit = duel.targetTransitSnapshot as typeof casterTransit
+  const stanceTone: Record<string, string> = {
+    clash: 'border-rose-500/30 bg-rose-500/10 text-rose-300',
+    absorb: 'border-sky-500/30 bg-sky-500/10 text-sky-300',
+    mirror: 'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-300',
+  }
+  const boostPct = Math.round(duel.boostMagnitude * 100)
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-sm transition-opacity">
+      <div className="relative w-full max-w-4xl bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        {/* Header */}
+        <div className="p-5 border-b border-zinc-800 flex justify-between items-start">
+          <div>
+            <h3 className="text-lg font-semibold text-zinc-100 flex items-center gap-2">
+              <Swords className="w-5 h-5 text-fuchsia-400" />
+              Jing Duel Ledger
+            </h3>
+            <p className="text-xs text-zinc-400 mt-1 flex items-center gap-1.5">
+              <span className="font-semibold text-zinc-200">{duel.casterName}</span>
+              <ChevronRight className="w-3 h-3 text-zinc-600" />
+              <span className="font-semibold text-zinc-200">{duel.targetName}</span>
+              <span className="text-zinc-500">·</span>
+              <span className="font-mono text-zinc-400">
+                {duel.attackMoveId} → {duel.counterMoveId}
+              </span>
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-zinc-800"
+          >
+            <XCircle className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 overflow-y-auto space-y-5 text-sm">
+          {/* Headline cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-zinc-950/40 p-4 border border-zinc-800/60 rounded-lg font-mono text-xs">
+            <div>
+              <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">
+                Stance
+              </span>
+              <span
+                className={cn(
+                  'inline-block mt-1 rounded-md px-2 py-1 text-xs font-semibold uppercase border tracking-wider capitalize',
+                  stanceTone[duel.stance] || 'border-zinc-700 bg-zinc-800/40 text-zinc-300'
+                )}
+              >
+                {duel.stance}
+              </span>
+            </div>
+            <div>
+              <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">
+                Boost
+              </span>
+              <span className="text-zinc-300 font-semibold">
+                {duel.boostElement ? `${boostPct}% ${duel.boostElement}` : '—'}
+              </span>
+            </div>
+            <div>
+              <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">
+                Latency
+              </span>
+              <span className="text-zinc-300 font-semibold">
+                {duel.latencyMs ? `${duel.latencyMs}ms` : 'n/a'}
+              </span>
+            </div>
+            <div>
+              <span className="text-zinc-500 block uppercase tracking-wider text-[10px]">
+                Cache Hit
+              </span>
+              <span
+                className={cn(
+                  'font-semibold',
+                  duel.cacheHit ? 'text-emerald-400' : 'text-zinc-500'
+                )}
+              >
+                {duel.cacheHit ? 'YES' : 'NO'}
+              </span>
+            </div>
+          </div>
+
+          {/* Synastry summary */}
+          {synastry && (
+            <div className="space-y-2">
+              <h4 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold">
+                Synastry
+              </h4>
+              <div className="bg-zinc-950/60 border border-zinc-800 p-4 rounded-lg space-y-2">
+                <div className="grid grid-cols-3 gap-3 text-xs font-mono">
+                  <div>
+                    <span className="text-zinc-500 block">Tension</span>
+                    <span className="text-rose-300">
+                      {synastry.scores?.tension?.toFixed(2) ?? '0.00'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block">Harmony</span>
+                    <span className="text-sky-300">
+                      {synastry.scores?.harmony?.toFixed(2) ?? '0.00'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block">Intensification</span>
+                    <span className="text-fuchsia-300">
+                      {synastry.scores?.intensification?.toFixed(2) ?? '0.00'}
+                    </span>
+                  </div>
+                </div>
+                {synastry.interchartAspects && synastry.interchartAspects.length > 0 && (
+                  <ul className="space-y-1 text-xs font-mono text-zinc-300 pt-2 border-t border-zinc-800/60">
+                    {synastry.interchartAspects.slice(0, 6).map((a, i) => (
+                      <li key={i} className="flex justify-between">
+                        <span>
+                          {duel.casterName.split(' ')[0]} {a.planetA}{' '}
+                          <span
+                            className={cn(
+                              'mx-1',
+                              a.harmonic === 'friction'
+                                ? 'text-rose-400'
+                                : a.harmonic === 'harmony'
+                                  ? 'text-sky-400'
+                                  : 'text-fuchsia-400'
+                            )}
+                          >
+                            {a.type}
+                          </span>
+                          {duel.targetName.split(' ')[0]} {a.planetB}
+                        </span>
+                        <span className="text-zinc-500">{a.orb.toFixed(1)}° orb</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Per-agent transit overlays */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {[
+              { label: duel.casterName, overlay: casterTransit, role: 'Caster' },
+              { label: duel.targetName, overlay: targetTransit, role: 'Target' },
+            ].map((entry, i) => (
+              <div
+                key={i}
+                className="bg-zinc-950/60 border border-zinc-800 p-4 rounded-lg space-y-2"
+              >
+                <div className="flex justify-between items-baseline">
+                  <h4 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold">
+                    {entry.role} Overlay
+                  </h4>
+                  <span className="text-xs text-zinc-300 font-semibold">{entry.label}</span>
+                </div>
+                {entry.overlay ? (
+                  <>
+                    <p className="text-xs text-zinc-300 italic">
+                      {entry.overlay.summary || 'No summary'}
+                    </p>
+                    {entry.overlay.activations && entry.overlay.activations.length > 0 && (
+                      <ul className="space-y-1 text-[11px] font-mono text-zinc-400 pt-1">
+                        {entry.overlay.activations.slice(0, 4).map((a, j) => (
+                          <li key={j}>
+                            transit {a.transitPlanet} {a.type} natal {a.natalPoint}{' '}
+                            <span className="text-zinc-600">({a.orb.toFixed(1)}°)</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {entry.overlay.stressNotes && entry.overlay.stressNotes.length > 0 && (
+                      <div className="pt-2 border-t border-zinc-800/60 space-y-0.5">
+                        {entry.overlay.stressNotes.map((note, k) => (
+                          <p key={k} className="text-[11px] text-rose-300/80">
+                            ⚠ {note}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-xs text-zinc-500 italic">No overlay captured</p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Prompts + Responses */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <h4 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold">
+                Caster Prompt
+              </h4>
+              <div className="bg-zinc-950/60 border border-zinc-800 p-3 rounded-lg text-xs text-zinc-300 whitespace-pre-wrap max-h-[180px] overflow-y-auto">
+                {duel.casterPrompt || <span className="text-zinc-600 italic">not captured</span>}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold">
+                Caster Response
+              </h4>
+              <div className="bg-zinc-950/40 border border-zinc-800/80 p-3 rounded-lg text-xs text-zinc-200 whitespace-pre-wrap max-h-[180px] overflow-y-auto">
+                {duel.casterResponse || <span className="text-zinc-600 italic">not captured</span>}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold">
+                Target Prompt
+              </h4>
+              <div className="bg-zinc-950/60 border border-zinc-800 p-3 rounded-lg text-xs text-zinc-300 whitespace-pre-wrap max-h-[180px] overflow-y-auto">
+                {duel.targetPrompt || <span className="text-zinc-600 italic">not captured</span>}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold">
+                Target Response
+              </h4>
+              <div className="bg-zinc-950/40 border border-zinc-800/80 p-3 rounded-lg text-xs text-zinc-200 whitespace-pre-wrap max-h-[180px] overflow-y-auto">
+                {duel.targetResponse || <span className="text-zinc-600 italic">not captured</span>}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer ids */}
+          <div className="pt-2 text-xs font-mono text-zinc-500 flex justify-between border-t border-zinc-800/60">
+            <span>Session: {duel.sessionId}</span>
+            <span>ID: {duel.id}</span>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-zinc-800 bg-zinc-900/60 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 transition-colors text-zinc-100 rounded-lg text-xs font-semibold uppercase tracking-wider"
+          >
+            Close Ledger
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }

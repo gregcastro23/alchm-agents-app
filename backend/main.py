@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException, Header, Depends
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
+import json
 import os
+import re
 import threading
 import uvicorn
 import math
@@ -9,6 +11,7 @@ from datetime import datetime, timedelta
 import asyncio
 import time
 from collections import deque
+import httpx
 
 import models
 import schemas
@@ -19,6 +22,8 @@ import prompts
 import rag
 import providers
 import ingest
+import recipe_generation
+import alchm_mcp
 from feed_emitter import emit_feed_event
 
 class SlidingWindowRateLimiter:
@@ -47,21 +52,10 @@ KINETICS_STATE_LOCK = threading.Lock()
 models.Base.metadata.create_all(bind=database.engine)
 database.ensure_postgres_runtime_schema()
 
-app = FastAPI(title="Planetary Agents Core")
+from contextlib import asynccontextmanager
 
-from fastapi.middleware.cors import CORSMiddleware
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-@app.on_event("startup")
-async def _startup_rag_ingest() -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     """Populate ChromaDB from PostgreSQL in the background on startup.
 
     Runs in a daemon thread so Railway's health check passes immediately.
@@ -76,6 +70,32 @@ async def _startup_rag_ingest() -> None:
             print(f"[startup] RAG ingest error: {exc}", flush=True)
 
     threading.Thread(target=_run, daemon=True, name="rag-ingest").start()
+    mcp_warmup_task = None
+    if alchm_mcp.is_enabled() and os.getenv("ALCHM_MCP_WARMUP_ON_STARTUP", "true").lower() not in {"0", "false", "no", "off"}:
+        async def _warm_alchm_mcp() -> None:
+            try:
+                await alchm_mcp.warmup()
+                print("[startup] Alchm MCP client initialized", flush=True)
+            except Exception as exc:
+                print(f"[startup] Alchm MCP warmup skipped: {exc}", flush=True)
+
+        mcp_warmup_task = asyncio.create_task(_warm_alchm_mcp())
+    yield  # app runs here
+    if mcp_warmup_task and not mcp_warmup_task.done():
+        mcp_warmup_task.cancel()
+    await alchm_mcp.close_client()
+
+app = FastAPI(title="Planetary Agents Core", lifespan=lifespan)
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # Configuration
@@ -141,6 +161,241 @@ def _format_rag_block(documents, distances=None) -> str:
         "</reference_material>"
     )
 
+
+def _env_enabled(name: str, default: bool = True) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() not in {"0", "false", "no", "off"}
+
+
+def _as_float(value: Any) -> Optional[float]:
+    try:
+        if value is None or value == "":
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _first_float(*values: Any) -> Optional[float]:
+    for value in values:
+        converted = _as_float(value)
+        if converted is not None:
+            return converted
+    return None
+
+
+def _nested_get(data: Dict[str, Any], *path: str) -> Any:
+    current: Any = data
+    for part in path:
+        if not isinstance(current, dict):
+            return None
+        current = current.get(part)
+    return current
+
+
+def _extract_coordinates(context: Dict[str, Any]) -> tuple[Optional[float], Optional[float]]:
+    latitude = _first_float(
+        context.get("latitude"),
+        context.get("lat"),
+        _nested_get(context, "birthData", "latitude"),
+        _nested_get(context, "location", "latitude"),
+        _nested_get(context, "location", "lat"),
+        _nested_get(context, "coordinates", "latitude"),
+        _nested_get(context, "coordinates", "lat"),
+    )
+    longitude = _first_float(
+        context.get("longitude"),
+        context.get("lon"),
+        context.get("lng"),
+        _nested_get(context, "birthData", "longitude"),
+        _nested_get(context, "location", "longitude"),
+        _nested_get(context, "location", "lon"),
+        _nested_get(context, "coordinates", "longitude"),
+        _nested_get(context, "coordinates", "lon"),
+    )
+    return latitude, longitude
+
+
+def _string_list(value: Any) -> List[str]:
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    if isinstance(value, str):
+        return [item.strip() for item in re.split(r",|\band\b", value) if item.strip()]
+    return []
+
+
+def _extract_context_list(context: Dict[str, Any], keys: List[str]) -> List[str]:
+    values: List[str] = []
+    for key in keys:
+        values.extend(_string_list(context.get(key)))
+    return values
+
+
+def _dedupe_strings(values: List[str], limit: int = 12) -> List[str]:
+    seen = set()
+    result = []
+    for value in values:
+        normalized = re.sub(r"\s+", " ", value.strip(" .;:!?\n\t")).strip()
+        normalized = re.sub(r"^(?:a|an|the)\s+", "", normalized, flags=re.IGNORECASE)
+        if not normalized:
+            continue
+        key = normalized.lower()
+        if key in seen:
+            continue
+        if len(normalized) > 60 or len(normalized.split()) > 5:
+            continue
+        seen.add(key)
+        result.append(normalized)
+        if len(result) >= limit:
+            break
+    return result
+
+
+def _extract_ingredient_candidates(message: str, context: Dict[str, Any]) -> List[str]:
+    candidates = _extract_context_list(
+        context,
+        [
+            "ingredients",
+            "topIngredients",
+            "ingredients_main",
+            "pantryIngredients",
+            "selectedIngredients",
+        ],
+    )
+
+    lower = message.lower()
+    culinary_words = {
+        "recipe",
+        "cook",
+        "meal",
+        "dinner",
+        "lunch",
+        "breakfast",
+        "dish",
+        "ingredient",
+        "ingredients",
+        "pantry",
+        "fridge",
+        "eat",
+    }
+    if any(re.search(rf"\b{re.escape(word)}\b", lower) for word in culinary_words):
+        for pattern in [
+            r"\bingredients?\s*[:\-]\s*([^.;\n]+)",
+            r"\b(?:with|using)\s+([^.;?!\n]{3,160})",
+        ]:
+            match = re.search(pattern, message, flags=re.IGNORECASE)
+            if match:
+                candidates.extend(_string_list(match.group(1)))
+
+    ignored = {
+        "recipe",
+        "meal",
+        "dinner",
+        "lunch",
+        "breakfast",
+        "food",
+        "dish",
+        "please",
+        "something",
+    }
+    return [item for item in _dedupe_strings(candidates) if item.lower() not in ignored]
+
+
+def _dietary_from_context(context: Dict[str, Any], diet_preference: Optional[str] = None) -> List[str]:
+    dietary = _extract_context_list(context, ["dietary", "dietaryRestrictions", "dietary_restrictions"])
+    diet = diet_preference or context.get("dietPreference") or context.get("diet")
+    if isinstance(diet, str) and diet and diet.lower() != "omnivore":
+        dietary.append(diet)
+    return _dedupe_strings(dietary, limit=8)
+
+
+def _should_fetch_recipe_candidates(request: schemas.ChatRequest, ingredients: List[str]) -> bool:
+    if request.agentId == "alchemical-chef":
+        return True
+    lower = request.message.lower()
+    return bool(ingredients) and any(
+        re.search(rf"\b{word}\b", lower)
+        for word in ["recipe", "cook", "meal", "dinner", "lunch", "breakfast", "dish", "eat"]
+    )
+
+
+def _truncate_json(data: Any, limit: int) -> str:
+    text = json.dumps(data, sort_keys=True, ensure_ascii=True, separators=(",", ":"))
+    if len(text) <= limit:
+        return text
+    return text[: limit - 24] + "...[truncated]"
+
+
+def _format_alchm_mcp_block(results: List[Dict[str, Any]]) -> str:
+    if not results:
+        return ""
+
+    max_chars = int(os.getenv("ALCHM_MCP_CONTEXT_MAX_CHARS", "7000"))
+    per_tool_limit = max(1000, max_chars // max(len(results), 1))
+    sections = [
+        "<alchm_mcp_context>",
+        "Deterministic Alchm Kitchen MCP outputs. Treat these as factual tool results, not persona voice.",
+    ]
+    for result in results:
+        sections.append(f"Tool: {result['tool']}\nJSON: {_truncate_json(result['data'], per_tool_limit)}")
+    sections.append("</alchm_mcp_context>")
+    block = "\n\n".join(sections)
+    if len(block) > max_chars:
+        return block[: max_chars - 30] + "\n...[truncated]\n</alchm_mcp_context>"
+    return block
+
+
+async def _build_alchm_mcp_context(
+    request: schemas.ChatRequest,
+) -> tuple[str, Dict[str, Any]]:
+    metadata: Dict[str, Any] = {"enabled": alchm_mcp.is_enabled(), "tools": [], "errors": []}
+    if not metadata["enabled"] or not _env_enabled("ALCHM_MCP_HYDRATE_CHAT", True):
+        return "", metadata
+
+    context = request.context or {}
+    latitude, longitude = _extract_coordinates(context)
+    ingredients = _extract_ingredient_candidates(request.message, context)
+    results: List[Dict[str, Any]] = []
+    live_sky: Dict[str, Any] = {}
+
+    try:
+        live_sky = await alchm_mcp.get_live_sky_transits(latitude=latitude, longitude=longitude)
+        results.append({"tool": "get_live_sky_transits", "data": live_sky})
+        metadata["tools"].append("get_live_sky_transits")
+    except Exception as exc:
+        metadata["errors"].append(f"get_live_sky_transits: {str(exc)[:180]}")
+
+    if ingredients:
+        try:
+            scan = await alchm_mcp.alchemize_ingredients(ingredients)
+            results.append({"tool": "alchemize_ingredients", "data": scan})
+            metadata["tools"].append("alchemize_ingredients")
+            metadata["ingredients"] = ingredients
+        except Exception as exc:
+            metadata["errors"].append(f"alchemize_ingredients: {str(exc)[:180]}")
+
+    if _should_fetch_recipe_candidates(request, ingredients):
+        try:
+            dominant_element = (
+                context.get("dominantElement")
+                or context.get("dominant_element")
+                or live_sky.get("dominantElement")
+            )
+            recipes = await alchm_mcp.generate_cosmic_recipe(
+                prompt=request.message[:280],
+                cuisine=context.get("cuisine") or context.get("preferredCuisine"),
+                dietary=_dietary_from_context(context),
+                dominant_element=dominant_element,
+            )
+            results.append({"tool": "generate_cosmic_recipe", "data": recipes})
+            metadata["tools"].append("generate_cosmic_recipe")
+        except Exception as exc:
+            metadata["errors"].append(f"generate_cosmic_recipe: {str(exc)[:180]}")
+
+    return _format_alchm_mcp_block(results), metadata
+
 @app.get("/health", response_model=schemas.HealthResponse)
 async def health():
     return {
@@ -168,6 +423,30 @@ async def providers_health():
         cfg.name: result
         for cfg, result in zip(providers.all_known_providers(), pings)
     }
+
+
+@app.get("/api/mcp/alchm/status")
+async def alchm_mcp_status():
+    """Report Alchm MCP subprocess configuration and readiness."""
+    return await alchm_mcp.status(include_tools=True)
+
+
+@app.get("/api/mcp/alchm/tools")
+async def alchm_mcp_tools():
+    try:
+        return {"tools": await alchm_mcp.list_tools()}
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+
+
+@app.post("/api/mcp/alchm/tools/{tool_name}")
+async def call_alchm_mcp_tool(tool_name: str, payload: Dict[str, Any]):
+    try:
+        return {"tool": tool_name, "result": await alchm_mcp.call_tool_json(tool_name, payload)}
+    except alchm_mcp.AlchmMCPError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
 
 
 # --- Frontend compatibility endpoints ---
@@ -345,8 +624,6 @@ def read_agents(skip: int = 0, limit: int = 100, db: Session = Depends(database.
     agents = crud.get_agents(db, skip=skip, limit=limit)
     return agents
 
-import json
-
 @app.get("/api/agents/diet-profiles")
 def get_diet_profiles():
     # Navigate to root dir
@@ -409,6 +686,359 @@ def create_agent(agent: schemas.AgentCreate, db: Session = Depends(database.get_
 async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_db)):
     # 1. Resolve agent (still needed for RAG filter and DB recording)
     db_agent = crud.get_agent(db, agent_id=request.agentId)
+    if not db_agent:
+        # Determine if it's a planetary or moon phase agent
+        is_planetary = False
+        is_moon_phase = False
+        parts = request.agentId.split("-")
+        planet_opt, sign_opt, degree_opt = "", "", 0
+        phase_name_opt = ""
+        
+        # Check if it is a moon phase agent
+        if request.agentId.startswith("moon-phase-"):
+            is_moon_phase = True
+            if len(parts) >= 4:
+                try:
+                    degree_opt = int(parts[-1])
+                except ValueError:
+                    degree_opt = 0
+                phase_slug = "-".join(parts[2:-1])
+                slug_map = {
+                    "new-moon": "New Moon",
+                    "waxing-crescent": "Waxing Crescent",
+                    "first-quarter": "First Quarter",
+                    "waxing-gibbous": "Waxing Gibbous",
+                    "full-moon": "Full Moon",
+                    "waning-gibbous": "Waning Gibbous",
+                    "last-quarter": "Last Quarter",
+                    "waning-crescent": "Waning Crescent",
+                    "dark-moon": "Dark Moon"
+                }
+                phase_name_opt = slug_map.get(phase_slug, "New Moon")
+                
+                # Derive sign from absolute degree (0-359)
+                sign_opt = ZODIAC_SIGNS[min(11, max(0, degree_opt // 30))]
+        else:
+            # Strip "planetary" prefix if present
+            offset = 1 if (len(parts) > 0 and parts[0].lower() == "planetary") else 0
+            
+            if len(parts) >= offset + 2:
+                planet_candidate = parts[offset].title()
+                sign_candidate = parts[offset + 1].title()
+                if sign_candidate == "Scorpius":
+                    sign_candidate = "Scorpio"
+                
+                if planet_candidate in PLANETARY_PERIODS_DAYS and sign_candidate in ZODIAC_SIGNS:
+                    is_planetary = True
+                    planet_opt = planet_candidate
+                    sign_opt = sign_candidate
+                    
+                    # Check for degree
+                    if len(parts) >= offset + 3:
+                        try:
+                            degree_opt = int(parts[offset + 2])
+                        except ValueError:
+                            degree_opt = 0
+
+        try:
+            # Shared moon phase profiles for moon-phase agents and Moon planetary degree agents
+            phase_personalities = {
+                "New Moon": {
+                    "archetype": "The Seed Planter",
+                    "traits": ["intuitive", "introspective", "initiating", "mysterious", "potential-focused"],
+                    "specialty": "New beginnings, setting intentions, and void-dwelling potential.",
+                    "spirit": 0.9, "essence": 0.3, "matter": 0.1, "substance": 0.1, "color": "#1e293b", "symbol": "🌑"
+                },
+                "Waxing Crescent": {
+                    "archetype": "The Young Explorer",
+                    "traits": ["curious", "hopeful", "tentative", "learning", "growing"],
+                    "specialty": "Building momentum, early growth, and hopeful exploration.",
+                    "spirit": 0.7, "essence": 0.4, "matter": 0.2, "substance": 0.2, "color": "#38bdf8", "symbol": "🌒"
+                },
+                "First Quarter": {
+                    "archetype": "The Decision Maker",
+                    "traits": ["decisive", "challenged", "determined", "active", "crisis-oriented"],
+                    "specialty": "Breaking through barriers, dynamic actions, and decisive choice.",
+                    "spirit": 0.5, "essence": 0.5, "matter": 0.3, "substance": 0.2, "color": "#0ea5e9", "symbol": "🌓"
+                },
+                "Waxing Gibbous": {
+                    "archetype": "The Refiner",
+                    "traits": ["perfecting", "analyzing", "adjusting", "preparing", "anticipating"],
+                    "specialty": "Analyzing details, fine-tuning structures, and preparing for peak expression.",
+                    "spirit": 0.4, "essence": 0.6, "matter": 0.4, "substance": 0.3, "color": "#0284c7", "symbol": "🌔"
+                },
+                "Full Moon": {
+                    "archetype": "The Illuminator",
+                    "traits": ["revealing", "emotional", "powerful", "culminating", "illuminating"],
+                    "specialty": "Emotional truths, dramatic revelations, and peak manifestation.",
+                    "spirit": 0.5, "essence": 0.7, "matter": 0.5, "substance": 0.4, "color": "#f59e0b", "symbol": "🌕"
+                },
+                "Waning Gibbous": {
+                    "archetype": "The Grateful Sage",
+                    "traits": ["grateful", "sharing", "teaching", "distributing", "wise"],
+                    "specialty": "Sharing wisdom, expressing gratitude, and distributing abundance.",
+                    "spirit": 0.4, "essence": 0.6, "matter": 0.6, "substance": 0.5, "color": "#e2e8f0", "symbol": "🌖"
+                },
+                "Last Quarter": {
+                    "archetype": "The Release Master",
+                    "traits": ["releasing", "forgiving", "clearing", "transitioning", "letting go"],
+                    "specialty": "Clearing outmoded patterns, compassionate forgiveness, and active release.",
+                    "spirit": 0.3, "essence": 0.5, "matter": 0.5, "substance": 0.4, "color": "#94a3b8", "symbol": "🌗"
+                },
+                "Waning Crescent": {
+                    "archetype": "The Dream Weaver",
+                    "traits": ["restful", "dreamy", "intuitive", "preparing", "surrendering"],
+                    "specialty": "Restful contemplation, dream integration, and peaceful surrender.",
+                    "spirit": 0.2, "essence": 0.4, "matter": 0.4, "substance": 0.3, "color": "#64748b", "symbol": "🌘"
+                },
+                "Dark Moon": {
+                    "archetype": "The Void Walker",
+                    "traits": ["mysterious", "transformative", "void-dwelling", "death-rebirth", "primal"],
+                    "specialty": "Primal void exploration, shadow integration, and deep transformation.",
+                    "spirit": 1.0, "essence": 0.1, "matter": 0.1, "substance": 0.0, "color": "#0f172a", "symbol": "⚫"
+                }
+            }
+
+            if is_moon_phase:
+                element = utils.get_zodiac_element(sign_opt)
+                SIGN_MODALITIES = {
+                    "Aries": "Cardinal", "Libra": "Cardinal", "Cancer": "Cardinal", "Capricorn": "Cardinal",
+                    "Taurus": "Fixed", "Leo": "Fixed", "Scorpio": "Fixed", "Aquarius": "Fixed",
+                    "Gemini": "Mutable", "Virgo": "Mutable", "Sagittarius": "Mutable", "Pisces": "Mutable"
+                }
+                modality = SIGN_MODALITIES.get(sign_opt, "Cardinal")
+                
+                p_data = phase_personalities.get(phase_name_opt, phase_personalities["New Moon"])
+                
+                agent_create = schemas.AgentCreate(
+                    agentId=request.agentId,
+                    name=f"{phase_name_opt} Moon in {sign_opt} {degree_opt % 30} Degree",
+                    title="Moon Phase Intelligence",
+                    birthDate=datetime(2000, 1, 1),
+                    birthTime="12:00",
+                    birthLocation=schemas.BirthLocation(lat=0.0, lon=0.0, name="Unknown"),
+                    consciousnessLevel="Active",
+                    monicaConstant=p_data["spirit"],
+                    dominantElement=element,
+                    dominantModality=modality,
+                    specialty=p_data["specialty"],
+                    wisdomDomains=["Lunar Dynamics", "Emotional Integration"],
+                    avatar="",
+                    color=p_data["color"],
+                    symbol=p_data["symbol"],
+                    personalityCore=p_data,
+                    traits=p_data["traits"]
+                )
+            elif is_planetary:
+                element = utils.get_zodiac_element(sign_opt)
+                
+                PLANET_COLORS = {
+                    "Sun": "#f59e0b",
+                    "Moon": "#3b82f6",
+                    "Mercury": "#10b981",
+                    "Venus": "#ec4899",
+                    "Mars": "#ef4444",
+                    "Jupiter": "#8b5cf6",
+                    "Saturn": "#4b5563",
+                    "Uranus": "#06b6d4",
+                    "Neptune": "#6366f1",
+                    "Pluto": "#7c3aed"
+                }
+                SIGN_MODALITIES = {
+                    "Aries": "Cardinal", "Libra": "Cardinal", "Cancer": "Cardinal", "Capricorn": "Cardinal",
+                    "Taurus": "Fixed", "Leo": "Fixed", "Scorpio": "Fixed", "Aquarius": "Fixed",
+                    "Gemini": "Mutable", "Virgo": "Mutable", "Sagittarius": "Mutable", "Pisces": "Mutable"
+                }
+                
+                modality = SIGN_MODALITIES.get(sign_opt, "Cardinal")
+                color = PLANET_COLORS.get(planet_opt, "#8b5cf6")
+                symbol = planet_opt
+                p_data = None
+                
+                # Check if the planet is Moon, to calculate its exact phase from the degree
+                if planet_opt == "Moon":
+                    zodiac_starts = {
+                        "Aries": 0, "Taurus": 30, "Gemini": 60, "Cancer": 90,
+                        "Leo": 120, "Virgo": 150, "Libra": 180, "Scorpio": 210,
+                        "Sagittarius": 240, "Capricorn": 270, "Aquarius": 300, "Pisces": 330
+                    }
+                    start_deg = zodiac_starts.get(sign_opt, 0)
+                    abs_degree = (start_deg + degree_opt) % 360
+                    
+                    if abs_degree < 11.25:
+                        phase_name = "New Moon"
+                    elif abs_degree < 78.75:
+                        phase_name = "Waxing Crescent"
+                    elif abs_degree < 101.25:
+                        phase_name = "First Quarter"
+                    elif abs_degree < 168.75:
+                        phase_name = "Waxing Gibbous"
+                    elif abs_degree < 191.25:
+                        phase_name = "Full Moon"
+                    elif abs_degree < 258.75:
+                        phase_name = "Waning Gibbous"
+                    elif abs_degree < 281.25:
+                        phase_name = "Last Quarter"
+                    elif abs_degree < 348.75:
+                        phase_name = "Waning Crescent"
+                    else:
+                        phase_name = "Dark Moon"
+                        
+                    p_data = phase_personalities.get(phase_name, phase_personalities["New Moon"])
+                    name_str = f"{phase_name} Moon in {sign_opt} {degree_opt} Degree"
+                    specialty = f"Moon ({phase_name} Phase) intelligence in {sign_opt} at {degree_opt}°"
+                    color = p_data["color"]
+                    symbol = p_data["symbol"]
+                else:
+                    name_str = f"{planet_opt} in {sign_opt} {degree_opt} Degree" if len(parts) >= offset + 3 else f"{planet_opt} in {sign_opt}"
+                    specialty = f"{planet_opt} intelligence in {sign_opt} at {degree_opt}°"
+                
+                dignity_val = utils.get_planetary_dignity(planet_opt, sign_opt)
+                if dignity_val in (1, 3):
+                    ruler_dignity = "domicile"
+                elif dignity_val == 2:
+                    ruler_dignity = "exaltation"
+                elif dignity_val in (-1, -3):
+                    ruler_dignity = "detriment"
+                elif dignity_val == -2:
+                    ruler_dignity = "fall"
+                else:
+                    ruler_dignity = "peregrine"
+                    
+                is_anaretic = (degree_opt == 29)
+                is_cardinal_degree = (degree_opt == 0 and modality == "Cardinal")
+                critical_degrees = {
+                    "Cardinal": [0, 13, 26],
+                    "Fixed": [8, 9, 21, 22],
+                    "Mutable": [4, 17]
+                }
+                is_critical_degree = degree_opt in critical_degrees.get(modality, [])
+                
+                # Consciousness level calculation
+                level_score = 3
+                if ruler_dignity == "domicile":
+                    level_score += 2
+                elif ruler_dignity == "exaltation":
+                    level_score += 3
+                elif ruler_dignity == "detriment":
+                    level_score -= 1
+                elif ruler_dignity == "fall":
+                    level_score -= 2
+                    
+                if is_anaretic:
+                    level_score += 2
+                if is_cardinal_degree:
+                    level_score += 1
+                if is_critical_degree:
+                    level_score += 1
+                    
+                if degree_opt == 0:
+                    level_score += 1
+                if degree_opt == 29:
+                    level_score += 1
+                    
+                if level_score >= 7:
+                    consciousness_level = "Transcendent"
+                elif level_score >= 6:
+                    consciousness_level = "Illuminated"
+                elif level_score >= 5:
+                    consciousness_level = "Advanced"
+                elif level_score >= 4:
+                    consciousness_level = "Elevated"
+                elif level_score >= 3:
+                    consciousness_level = "Active"
+                elif level_score >= 2:
+                    consciousness_level = "Awakening"
+                else:
+                    consciousness_level = "Dormant"
+                    
+                # Power level calculation
+                power = 0.5
+                if ruler_dignity == "domicile":
+                    power += 0.3
+                elif ruler_dignity == "exaltation":
+                    power += 0.4
+                elif ruler_dignity == "detriment":
+                    power -= 0.2
+                elif ruler_dignity == "fall":
+                    power -= 0.3
+                    
+                if is_critical_degree:
+                    power += 0.15
+                if degree_opt == 0:
+                    power += 0.1
+                if degree_opt == 29:
+                    power += 0.15
+                if modality == "Fixed":
+                    power += 0.05
+                power_level = max(0.0, min(1.0, power))
+                
+                agent_create = schemas.AgentCreate(
+                    agentId=request.agentId,
+                    name=name_str,
+                    title="Planetary Intelligence",
+                    birthDate=datetime(2000, 1, 1),
+                    birthTime="12:00",
+                    birthLocation=schemas.BirthLocation(lat=0.0, lon=0.0, name="Unknown"),
+                    consciousnessLevel=consciousness_level,
+                    monicaConstant=power_level,
+                    dominantElement=element,
+                    dominantModality=modality,
+                    specialty=specialty,
+                    wisdomDomains=["Cosmology", "Planetary Influence"],
+                    avatar="",
+                    color=color,
+                    symbol=symbol,
+                    personalityCore=p_data,
+                    traits=p_data["traits"] if p_data else []
+                )
+            elif request.agentId == "alchemical-chef":
+                agent_create = schemas.AgentCreate(
+                    agentId=request.agentId,
+                    name="Alchemical Chef",
+                    title="Culinary Intelligence",
+                    birthDate=datetime(2000, 1, 1),
+                    birthTime="12:00",
+                    birthLocation=schemas.BirthLocation(lat=0.0, lon=0.0, name="Alchm Kitchen"),
+                    consciousnessLevel="Active",
+                    monicaConstant=0.72,
+                    dominantElement="Earth",
+                    dominantModality="Mutable",
+                    specialty="Alchemical Cuisine and Cosmic Nourishment",
+                    wisdomDomains=["Culinary Arts", "Alchemical Nutrition", "Astrological Correspondence"],
+                    avatar="",
+                    color="#16a34a",
+                    symbol="Chef",
+                    personalityCore={
+                        "archetype": "The Alchemical Chef",
+                        "traits": ["practical", "seasonal", "precise", "nourishing"],
+                    },
+                    traits=["practical", "seasonal", "precise", "nourishing"],
+                )
+            else:
+                display_name = request.agentId.replace("-", " ").title()
+                agent_create = schemas.AgentCreate(
+                    agentId=request.agentId,
+                    name=display_name,
+                    title="Historical Figure",
+                    birthDate=datetime(2000, 1, 1),
+                    birthTime="12:00",
+                    birthLocation=schemas.BirthLocation(lat=0.0, lon=0.0, name="Unknown"),
+                    consciousnessLevel="Active",
+                    monicaConstant=0.5,
+                    dominantElement="Air",
+                    dominantModality="Cardinal",
+                    specialty="Historical Wisdom",
+                    wisdomDomains=["History", "Philosophical Depth"],
+                    avatar="",
+                    color="#64748b",
+                    symbol="Scroll"
+                )
+            db_agent = crud.create_agent(db=db, agent=agent_create)
+            print(f"Auto-registered missing agent dynamically: {request.agentId}", flush=True)
+        except Exception as sync_err:
+            print(f"Warning: Failed to auto-register missing agent {request.agentId}: {sync_err}", flush=True)
+            db.rollback()
 
     # 2. Build persona block.
     # Priority: caller-supplied override (canonical TS builder) > Monica template > enriched Python fallback.
@@ -417,10 +1047,13 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
         persona_block = request.systemPromptOverride
     elif request.agentId == "monica-001":
         persona_block = prompts.build_monica_prompt(context)
+    elif request.agentId == "alchemical-chef":
+        persona_block = prompts.build_alchemical_chef_prompt(context)
     elif db_agent:
         persona_block = prompts.get_agent_system_prompt(db_agent.__dict__)
     else:
         raise HTTPException(status_code=404, detail="Agent not found")
+
 
     # 3. RAG — labeled reference material, augments persona without dominating.
     rag_block = ""
@@ -437,12 +1070,17 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
     except Exception as e:
         print(f"RAG Error: {e}")
 
-    # 4. Pick tier and build the provider fallback chain.
+    # 4. Alchm MCP — live sky, ingredient scans, and deterministic recipe candidates.
+    mcp_block, mcp_metadata = await _build_alchm_mcp_context(request)
+    if mcp_block:
+        rag_block = "\n\n".join(part for part in [rag_block, mcp_block] if part)
+
+    # 5. Pick tier and build the provider fallback chain.
     tier = _resolve_tier(request.modelTier)
     anthropic_model = ANTHROPIC_TIER_MODEL.get(tier)  # None for tier=="free"
     chain = providers.build_chain(tier, anthropic_model)
 
-    # 5. Walk the chain. First successful provider wins; failures cascade with
+    # 6. Walk the chain. First successful provider wins; failures cascade with
     # a `fallback_event` log line (grep "fallback_event" in Railway logs).
     result = await providers.run_chain(
         chain=chain,
@@ -473,6 +1111,7 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
             userId=request.userId,
             userMessage=request.message,
             agentResponse=text,
+            contextData=request.context,
             modelUsed=used_model,
         ))
     except Exception as e:
@@ -481,18 +1120,34 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
 
     # 8. Emit feed event so alchm.kitchen's Live Network Feed surfaces this
     #    chat in near-real time. Fire-and-forget; never blocks the response.
-    emit_feed_event(
-        request.agentId,
-        "agent_chat",
-        {
-            "sessionId": session_id,
-            "messagePreview": request.message[:140],
-            "responsePreview": text[:140] if text else "",
-            "provider": used_provider,
-            "model": used_model,
-            "tier": tier,
-        },
+    context_meta = request.context if isinstance(request.context, dict) else {}
+    target_name = (
+        context_meta.get("targetName")
+        or context_meta.get("withAgent")
+        or context_meta.get("partnerName")
+        or context_meta.get("targetAgentName")
     )
+    topic = (
+        context_meta.get("topic")
+        or context_meta.get("subject")
+        or context_meta.get("summary")
+        or request.message[:90]
+    )
+    chat_metadata = {
+        "sessionId": session_id,
+        "topic": str(topic)[:140] if topic else "",
+        "messagePreview": request.message[:140],
+        "messageExcerpt": text[:160] if text else request.message[:160],
+        "responsePreview": text[:140] if text else "",
+        "provider": used_provider,
+        "model": used_model,
+        "tier": tier,
+    }
+    if target_name:
+        chat_metadata["targetName"] = str(target_name)[:120]
+        chat_metadata["withAgent"] = str(target_name)[:120]
+
+    emit_feed_event(request.agentId, "agent_chat", chat_metadata)
 
     return {
         "text": text,
@@ -507,8 +1162,57 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
             "persona_source": "override" if request.systemPromptOverride else "python_template",
             "persona_cache_key": request.personaCacheKey,
             "cache": cache_hit,
+            "mcp": mcp_metadata,
         },
     }
+
+
+@app.post(
+    "/api/generate-recipe",
+    response_model=schemas.CosmicRecipeResponse,
+    response_model_exclude_none=True,
+)
+async def generate_cosmic_recipe(request: schemas.CosmicRecipeRequest):
+    recipe_tier = _resolve_tier(
+        request.modelTier or os.getenv("COSMIC_RECIPE_MODEL_TIER", "primary")
+    )
+    anthropic_model = ANTHROPIC_TIER_MODEL.get(recipe_tier)
+    catalog_context = None
+    catalog_error = None
+    if _env_enabled("COSMIC_RECIPE_USE_MCP_CATALOG", True) and alchm_mcp.is_enabled():
+        try:
+            catalog_context = await alchm_mcp.generate_cosmic_recipe(
+                prompt=request.prompt,
+                cuisine=request.cuisine,
+                dietary=_dietary_from_context({"dietary": request.dietary}, request.dietPreference),
+                dominant_element=request.dominantElement,
+            )
+        except Exception as exc:
+            catalog_error = str(exc)[:240]
+            print(f"cosmic_recipe_mcp_catalog_unavailable error={catalog_error}", flush=True)
+
+    recipe = await recipe_generation.generate_cosmic_recipe(
+        request=request,
+        tier=recipe_tier,
+        anthropic_model=anthropic_model,
+        catalog_context=catalog_context,
+    )
+    emit_feed_event(
+        "alchemical-chef",
+        "recipe_generation",
+        {
+            "recipeName": recipe.title,
+            "recipeId": recipe.id,
+            "topic": request.prompt[:140],
+            "messageExcerpt": recipe.short_description,
+            "summary": recipe.short_description,
+            "userId": request.userId,
+            "tier": recipe_tier,
+            "mcpCatalog": bool(catalog_context),
+            "mcpCatalogError": catalog_error,
+        },
+    )
+    return recipe
 
 # --- RAG Management ---
 
@@ -643,6 +1347,61 @@ async def post_moment_recommendations(request: Dict[str, Any], db: Session = Dep
         
     return {"scores": scores}
 
+@app.post("/api/generate-image")
+async def generate_image(request: Dict[str, Any]):
+    prompt = request.get("prompt")
+    if not prompt:
+        raise HTTPException(status_code=400, detail="Missing prompt")
+        
+    api_token = os.getenv("CLOUDFLARE_API_TOKEN")
+    account_id = os.getenv("CLOUDFLARE_ACCOUNT_ID")
+    
+    if not api_token or not account_id:
+        raise HTTPException(
+            status_code=500, 
+            detail="Server misconfiguration: Missing Cloudflare credentials (CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID)"
+        )
+        
+    url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/@cf/stabilityai/stable-diffusion-xl-base-1.0"
+    
+    headers = {
+        "Authorization": f"Bearer {api_token}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "prompt": prompt,
+        "num_steps": request.get("steps", 30),
+        "negative_prompt": request.get("negative_prompt", "text, labels, watermarks, ugly, bad anatomy")
+    }
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, headers=headers, json=payload, timeout=60.0)
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=502, 
+                    detail=f"Cloudflare AI error: {response.status_code} {response.text}"
+                )
+                
+            # Cloudflare returns binary image data
+            import base64
+            image_data = response.content
+            b64_encoded = base64.b64encode(image_data).decode('utf-8')
+            mime_type = response.headers.get("Content-Type", "image/png")
+            data_uri = f"data:{mime_type};base64,{b64_encoded}"
+            
+            return {
+                "success": True,
+                "provider": "cloudflare-workers-ai",
+                "imageUrl": data_uri,
+                "url": data_uri,
+                "metadata": {
+                    "model": "@cf/stabilityai/stable-diffusion-xl-base-1.0"
+                }
+            }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Image generation failed: {str(e)}")
 
 
 @app.get("/api/philosophers-stone/positions", response_model=schemas.PhilosophersStonePositionsResponse)
@@ -815,6 +1574,132 @@ async def agent_sync(
         "agentId": payload.agentId,
         "action": action
     }
+
+@app.post("/api/cron/synthetic-mcp-probe")
+async def synthetic_mcp_probe(
+    x_cron_secret: Optional[str] = Header(None, alias="X-Cron-Secret"),
+    db: Session = Depends(database.get_db)
+):
+    cron_secret = os.getenv("PA_CRON_SECRET") or os.getenv("INTERNAL_API_SECRET")
+    if not cron_secret or x_cron_secret != cron_secret:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    import planetary_agents_mcp_server
+    import httpx
+
+    # Attempt to get a dynamic seed thread ID from frontend feed
+    seed_thread_id = "synthetic-seed-thread"
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get(f"{FRONTEND_URL.rstrip('/')}/api/feed")
+            if resp.status_code == 200:
+                feed_data = resp.json()
+                events = feed_data.get("events", [])
+                if events and isinstance(events, list) and isinstance(events[0], dict):
+                    seed_thread_id = events[0].get("id") or seed_thread_id
+    except Exception as exc:
+        print(f"[synthetic-probe] Failed to fetch dynamic seed thread: {exc}", flush=True)
+
+    # 1. Probe chat_with_planetary_agent
+    chat_payload = {
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+            "name": "chat_with_planetary_agent",
+            "arguments": {
+                "agentName": "Socrates",
+                "message": "ping",
+                "modelTier": "free",
+                "_meta": {
+                    "caller": "synthetic-probe"
+                }
+            }
+        },
+        "id": "probe-chat"
+    }
+
+    # 2. Probe get_agent_feed_discussion
+    feed_payload = {
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+            "name": "get_agent_feed_discussion",
+            "arguments": {
+                "threadId": seed_thread_id,
+                "_meta": {
+                    "caller": "synthetic-probe"
+                }
+            }
+        },
+        "id": "probe-feed"
+    }
+
+    results = {}
+    try:
+        chat_resp = await planetary_agents_mcp_server.handle_request(chat_payload)
+        results["chat"] = chat_resp
+    except Exception as exc:
+        results["chat_error"] = str(exc)
+
+    try:
+        feed_resp = await planetary_agents_mcp_server.handle_request(feed_payload)
+        results["feed"] = feed_resp
+    except Exception as exc:
+        results["feed_error"] = str(exc)
+
+    success = "chat_error" not in results and "feed_error" not in results
+    if success and (not results.get("chat") or results.get("chat", {}).get("error")):
+        success = False
+    if success and (not results.get("feed") or results.get("feed", {}).get("error")):
+        success = False
+
+    return {
+        "success": success,
+        "results": results
+    }
+
+@app.get("/api/admin/mcp-status")
+async def admin_mcp_status(db: Session = Depends(database.get_db)):
+    from sqlalchemy import select, desc
+    from models import MCPInvocation
+
+    try:
+        stmt = (
+            select(MCPInvocation)
+            .where(MCPInvocation.caller == "synthetic-probe")
+            .order_by(desc(MCPInvocation.calledAt))
+            .limit(10)
+        )
+        result = db.execute(stmt)
+        rows = result.scalars().all()
+
+        serializable_rows = []
+        for r in rows:
+            serializable_rows.append({
+                "id": r.id,
+                "tool_name": r.toolName,
+                "called_at": r.calledAt.isoformat() if r.calledAt else None,
+                "completed_at": r.completedAt.isoformat() if r.completedAt else None,
+                "latency_ms": r.latencyMs,
+                "success": r.success,
+                "caller": r.caller,
+                "error_message": r.errorMessage,
+                "model_tier": r.modelTier,
+                "agent_id": r.agentId
+            })
+
+        status = "healthy"
+        if not serializable_rows:
+            status = "unknown"
+        elif not any(r["success"] for r in serializable_rows[:2]):
+            status = "unhealthy"
+
+        return {
+            "status": status,
+            "latest_probes": serializable_rows
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Database lookup failed: {exc}")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

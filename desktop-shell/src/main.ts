@@ -1,0 +1,5109 @@
+import './styles.css'
+import { LocalMcpClient } from './localMcpClient'
+
+import type { CraftedAgent, Element } from '../../lib/agent-types'
+import { DEMO_AGENTS } from '../../lib/demo-agents-data'
+
+type View = 'chat' | 'astrology' | 'physics' | 'agents' | 'stone' | 'account' | 'diagnostics'
+type Surface = 'main' | 'composer'
+type ElementKey = 'fire' | 'water' | 'air' | 'earth'
+type AgentTier = 'base' | 'premium'
+type SidecarStatus = 'checking' | 'online' | 'offline'
+type AstrologyStatus = 'idle' | 'loading' | 'ready' | 'error'
+type PhysicsStatus = 'idle' | 'loading' | 'ready' | 'error'
+type MessageRole = 'user' | 'agent'
+type SiteKey = 'agents' | 'kitchen'
+type SiteStatus = 'checking' | 'linked' | 'local-dev' | 'needs-link' | 'offline'
+
+interface Balances {
+  spirit: number
+  essence: number
+  matter: number
+  substance: number
+}
+
+interface AccountSettings {
+  displayName: string
+  email: string
+  userId: string
+  apiKey: string
+  plan: string
+  agentsUrl: string
+  kitchenUrl: string
+}
+
+interface AgentTemplate {
+  id: string
+  name: string
+  title: string
+  element: ElementKey
+  tier: AgentTier
+  modelName: string
+  initials: string
+  domains: string[]
+  quote: string
+  promptSeed: string
+  websiteAgent?: CraftedAgent
+  stoneBlueprint?: StoneBlueprint
+}
+
+interface LocalAgent extends AgentTemplate {
+  addedAt: string
+  source: 'app-guide' | 'web-catalog' | 'web-unlock' | 'deep-link' | 'philosophers-stone'
+}
+
+interface StoneBlueprint {
+  birthDate: string
+  birthTime: string
+  birthLocation: string
+  latitude: number
+  longitude: number
+  additionalContext: string
+  dominantElement: ElementKey
+  constitution: Balances
+  monicaConstant: number
+  consciousnessLevel: string
+}
+
+interface StoneFormInput {
+  name: string
+  date: string
+  time: string
+  location: string
+  latitude: number
+  longitude: number
+  additionalContext: string
+}
+
+interface StoneDraft {
+  name: string
+  date: string
+  time: string
+  location: string
+  latitude: string
+  longitude: string
+  additionalContext: string
+}
+
+interface SiteAccount {
+  site: SiteKey
+  label: string
+  homeUrl: string
+  balances: Balances
+  canClaimDaily: boolean
+  streak: number
+  lastDailyClaimAt: string | null
+  status: SiteStatus
+  message?: string
+}
+
+interface ChatMessage {
+  id: string
+  role: MessageRole
+  content: string
+  timestamp: string
+  channel?: string
+  agentId?: string
+  agentName?: string
+}
+
+interface AgentTextResult {
+  content: string
+  channel: string
+  metered: boolean
+}
+
+interface AgentTurnResponse {
+  agentId: string
+  agentName: string
+  content: string
+}
+
+interface AgentTurnContext {
+  groupAgents: LocalAgent[]
+  priorResponses: AgentTurnResponse[]
+}
+
+interface LedgerEntry {
+  id: string
+  type: string
+  details: string
+  amount: string
+  timestamp: string
+}
+
+interface HardwareTelemetry {
+  activeModel?: string | null
+  llamaHot?: boolean
+  activeProfile?: {
+    name?: string
+    label?: string
+  }
+  cpu?: {
+    percent?: number
+    logicalThreads?: number
+  }
+  memory?: {
+    totalBytes?: number
+    usedBytes?: number
+    usedPercent?: number
+  }
+  gpu?: {
+    name?: string
+    supported?: boolean
+  } | null
+  timestamp?: string
+}
+
+interface AstrologyPlanet {
+  planet: string
+  sign: string
+  signAbbreviation: string
+  degree: number
+  minute: number
+  display: string
+  longitude: number
+  element: string
+  mode: string
+  ruler: string
+  dignity: string
+  motion: string
+  speed: number
+  source: string
+  domain: string
+  counsel: string
+  agent: string
+  agentRole: string
+  esms: string
+  color: string
+  strength: number
+}
+
+interface AstrologyAspect {
+  id: string
+  planetA: string
+  planetB: string
+  type: string
+  angle: number
+  orb: number
+  exactness: number
+  applying: boolean
+  polarity: string
+  weight: number
+  summary: string
+}
+
+interface AstrologyQuantities {
+  Spirit: number
+  Essence: number
+  Matter: number
+  Substance: number
+  ANumber: number
+  dominantElement: string
+  elementalBalance: Record<string, number>
+  heat: number
+  entropy: number
+  reactivity: number
+  energy: number
+  kineticPressure: number
+  harmonicFlow: number
+}
+
+interface AstrologyConsensusSnapshot {
+  generatedAt: string
+  provenance: Array<{
+    name: string
+    url: string
+    contribution: string
+  }>
+  chart: {
+    title: string
+    source: string
+    sunSign: string
+    moonSign: string
+    ascendant: {
+      sign: string
+      degree: number
+      longitude: number
+    }
+    julianDay: number
+    planets: AstrologyPlanet[]
+    aspects: AstrologyAspect[]
+  }
+  quantities: AstrologyQuantities
+  moonPhase: {
+    name: string
+    angle: number
+    illumination: number
+    instruction: string
+  }
+  planetaryHour: {
+    dayRuler: string
+    current: string
+    hourNumber: number
+    method: string
+  }
+  activeAgents: Array<{
+    planet: string
+    agent: string
+    role: string
+    domain: string
+    score: number
+    reason: string
+  }>
+  layers: Array<{
+    id: string
+    label: string
+    source: string
+    status: string
+    confidence: number
+    signal: string
+  }>
+  recommendations: string[]
+}
+
+interface AstrologyState {
+  status: AstrologyStatus
+  snapshot: AstrologyConsensusSnapshot | null
+  lastError: string | null
+}
+
+type PhysicsBand = 'low' | 'below' | 'normal' | 'elevated' | 'extreme'
+
+interface PhysicsZMetric {
+  key: string
+  label: string
+  value: number
+  mean: number
+  stdDev: number
+  zScore: number
+  percentile: number
+  band: PhysicsBand
+  direction: string
+}
+
+interface AlchmPhysicsSnapshot {
+  generatedAt: string
+  targetMoment: string
+  baseline: {
+    windowHours: number
+    samples: number
+    cadence: string
+    method: string
+  }
+  location: {
+    label: string
+    latitude: number
+    longitude: number
+  }
+  provenance: Array<{
+    name: string
+    url: string
+    contribution: string
+  }>
+  current: {
+    timestamp: string
+    offsetHours: number
+    label: string
+    quantities: Record<'Spirit' | 'Essence' | 'Matter' | 'Substance' | 'ANumber', number>
+    thermodynamics: Record<'heat' | 'entropy' | 'reactivity' | 'energy', number>
+    elements: Record<string, number>
+    dominantElement: string
+    planetaryHour: string
+    moonPhase: string
+    aspectPressure: number
+    harmonicFlow: number
+  }
+  zScores: {
+    quantities: PhysicsZMetric[]
+    thermodynamics: PhysicsZMetric[]
+  }
+  kinetics: {
+    velocity: {
+      magnitude: number
+      dominantElement: string
+      vector: Record<string, number>
+    }
+    metricVelocity: {
+      vector: Record<'heat' | 'entropy' | 'reactivity' | 'energy', number>
+      thermalDirection: string
+    }
+    momentum: {
+      magnitude: number
+      type: string
+      vector: Record<string, number>
+    }
+    force: {
+      magnitude: number
+      type: string
+      vector: Record<string, number>
+    }
+    power: {
+      value: number
+      solarAmplification: number
+    }
+    inertia: number
+    calculus: Record<string, string>
+  }
+  landscape: {
+    mode: string
+    weather: string
+    dominantQuantity: string
+    dominantQuantityValue: number
+    strongestElement: string
+    strongestElementValue: number
+    mostUnusual: {
+      label: string
+      zScore: number
+      band: PhysicsBand
+      direction: string
+    }
+    energyZScore: number
+    planetaryHour: string
+    moonPhase: string
+    aspectPressure: number
+    harmonicFlow: number
+  }
+  samplePoints: Array<{
+    timestamp: string
+    offsetHours: number
+    label: string
+    quantities: Record<'Spirit' | 'Essence' | 'Matter' | 'Substance' | 'ANumber', number>
+    thermodynamics: Record<'heat' | 'entropy' | 'reactivity' | 'energy', number>
+    ANumber: number
+    energy: number
+    heat: number
+    entropy: number
+    reactivity: number
+    quantityZScores: Record<'Spirit' | 'Essence' | 'Matter' | 'Substance' | 'ANumber', number>
+    thermodynamicZScores: Record<'heat' | 'entropy' | 'reactivity' | 'energy', number>
+    aNumberZScore: number
+    energyZScore: number
+    dominantElement: string
+    planetaryHour: string
+    isCurrent: boolean
+  }>
+  recommendations: string[]
+}
+
+interface PhysicsState {
+  status: PhysicsStatus
+  snapshot: AlchmPhysicsSnapshot | null
+  lastError: string | null
+}
+
+interface SidecarProxyResponse {
+  status: number
+  body: string
+  contentType?: string | null
+}
+
+interface DeepLinkAgentPayload {
+  id?: string
+  name?: string
+  tier?: AgentTier
+}
+
+interface PersistedDesktopState {
+  guideMigrationVersion: number
+  account: AccountSettings
+  balances: Balances
+  siteAccounts: Record<SiteKey, SiteAccount>
+  roster: LocalAgent[]
+  activeAgentId: string | null
+  selectedChatAgentIds: string[]
+  chats: Record<string, ChatMessage[]>
+  ledger: LedgerEntry[]
+  localOfflineMode?: boolean
+  showJingPanel?: boolean
+  jingCasterId?: string | null
+  jingTargetId?: string | null
+  jingMoveId?: string | null
+}
+
+interface RuntimeState {
+  ipcNonce: string | null
+  sidecar: SidecarStatus
+  telemetry: HardwareTelemetry | null
+  lastError: string | null
+  generating: boolean
+  alchmMcpStatus: SidecarStatus
+  paMcpStatus: SidecarStatus
+  jingOverlays: JingOverlayState
+}
+
+type JingStance = 'clash' | 'absorb' | 'mirror'
+
+interface JingInterAspect {
+  planetA: string
+  planetB: string
+  longitudeA: number
+  longitudeB: number
+  deltaLongitude: number
+  type: 'conjunction' | 'sextile' | 'square' | 'trine' | 'opposition'
+  orb: number
+  exactness: number
+  harmonic: 'friction' | 'harmony' | 'intensification'
+}
+
+interface JingSynastryOverlay {
+  pair: { agentA: string; agentB: string; computedAt: string; cacheHit: boolean }
+  interchartAspects: JingInterAspect[]
+  scores: { tension: number; harmony: number; intensification: number; aspectCount: number }
+  dominantStance: JingStance
+}
+
+interface JingTransitActivation {
+  transitPlanet: string
+  natalPoint: string
+  longitudeTransit: number
+  longitudeNatal: number
+  deltaLongitude: number
+  type: string
+  orb: number
+  exactness: number
+  natalElement: 'fire' | 'earth' | 'air' | 'water'
+  valence: string
+}
+
+interface JingTransitOverlay {
+  agentId: string
+  transitTime: string
+  activations: JingTransitActivation[]
+  boostElement: 'fire' | 'earth' | 'air' | 'water' | null
+  boostMagnitude: number
+  stressNotes: string[]
+  summary: string
+}
+
+interface JingOverlayState {
+  synastry: JingSynastryOverlay | null
+  casterTransit: JingTransitOverlay | null
+  targetTransit: JingTransitOverlay | null
+  lastPairKey: string | null
+  loading: boolean
+  lastError: string | null
+}
+
+interface DesktopState extends PersistedDesktopState {
+  activeView: View
+  runtime: RuntimeState
+  astrology: AstrologyState
+  physics: PhysicsState
+  composerDraft: string
+  stoneDraft: StoneDraft
+  notice: string | null
+}
+
+type InvokeFn = <T>(command: string, args?: Record<string, unknown>) => Promise<T>
+
+const STORAGE_KEY = 'alchm-desktop-local-state-v1'
+const MONICA_GUIDE_ID = 'monica-app-guide'
+const GUIDE_MIGRATION_VERSION = 1
+const GROUP_CHAT_PREFIX = 'group:'
+const QA_STONE_AGENT_NAMES = new Set([
+  ['Release', 'Stone', 'Agent'].join(' '),
+  ['Test', 'Stone', 'Agent'].join(' '),
+])
+const VIEW_IDS: View[] = [
+  'chat',
+  'astrology',
+  'physics',
+  'agents',
+  'stone',
+  'account',
+  'diagnostics',
+]
+const CHAT_COST: Balances = { spirit: 2, essence: 1, matter: 0, substance: 0 }
+const GENERATION_TIMEOUT_MS = 20000
+const STARTING_BALANCES: Balances = { spirit: 150, essence: 150, matter: 150, substance: 150 }
+const DEFAULT_ACCOUNT: AccountSettings = {
+  displayName: 'Local Operator',
+  email: '',
+  userId: 'desktop-local',
+  apiKey: 'dev-desktop-token',
+  plan: 'Desktop Companion',
+  agentsUrl: 'https://agents.alchm.kitchen',
+  kitchenUrl: 'https://alchm.kitchen',
+}
+const DEFAULT_SITE_ACCOUNTS = createDefaultSiteAccounts()
+const AGENT_LIBRARY: AgentTemplate[] = DEMO_AGENTS.map(createAgentTemplate)
+const ASTROLOGY_SIGN_MARKS = [
+  'ARI',
+  'TAU',
+  'GEM',
+  'CAN',
+  'LEO',
+  'VIR',
+  'LIB',
+  'SCO',
+  'SAG',
+  'CAP',
+  'AQU',
+  'PIS',
+]
+const ASTROLOGY_SOURCE_URLS = {
+  currentChart: 'https://alchm.kitchen/current-chart',
+  kitchenLab: 'https://alchm.kitchen/lab',
+  agents: 'https://agents.alchm.kitchen',
+}
+const PHYSICS_SOURCE_URLS = {
+  quantities: 'https://alchm.kitchen/quantities',
+  quantitiesApi: 'https://alchm.kitchen/api/alchm-quantities',
+  kineticsApi: 'https://alchm.kitchen/api/alchm-kinetics',
+}
+
+const surface = getSurface()
+let invokeCommand: InvokeFn | null = null
+let clearNoticeTimer: number | null = null
+let telemetryTimer: number | null = null
+const app = document.querySelector<HTMLDivElement>('#app')
+const state = loadState()
+
+export const alchmMcpClient = new LocalMcpClient('alchm-mcp', status => {
+  state.runtime.alchmMcpStatus = status
+  render()
+})
+
+export const paMcpClient = new LocalMcpClient('pa-mcp', status => {
+  state.runtime.paMcpStatus = status
+  render()
+})
+
+function getSurface(): Surface {
+  const requested = new URLSearchParams(window.location.search).get('surface')
+  if (requested === 'composer') return requested
+  return 'main'
+}
+
+function createDefaultSiteAccounts(): Record<SiteKey, SiteAccount> {
+  return {
+    agents: {
+      site: 'agents',
+      label: 'Alchm Agents',
+      homeUrl: DEFAULT_ACCOUNT.agentsUrl,
+      balances: { ...STARTING_BALANCES },
+      canClaimDaily: false,
+      streak: 0,
+      lastDailyClaimAt: null,
+      status: 'checking',
+    },
+    kitchen: {
+      site: 'kitchen',
+      label: 'Alchm Kitchen',
+      homeUrl: DEFAULT_ACCOUNT.kitchenUrl,
+      balances: { ...STARTING_BALANCES },
+      canClaimDaily: false,
+      streak: 0,
+      lastDailyClaimAt: null,
+      status: 'checking',
+    },
+  }
+}
+
+function createDefaultStoneDraft(): StoneDraft {
+  return {
+    name: '',
+    date: formatDateInputValue(new Date()),
+    time: '12:30',
+    location: '',
+    latitude: '',
+    longitude: '',
+    additionalContext: '',
+  }
+}
+
+function createMonicaGuideAgent(): LocalAgent {
+  return {
+    id: MONICA_GUIDE_ID,
+    name: 'Monica',
+    title: 'Alchm Desktop Guide',
+    element: 'air',
+    tier: 'base',
+    modelName: modelNameForElement('air'),
+    initials: 'M',
+    domains: [
+      'Desktop guidance',
+      'Account management',
+      'Daily yield',
+      "Philosopher's Stone",
+      'Agent chat',
+    ],
+    quote:
+      "I'm Monica, your Alchm Desktop guide. I can help you manage Agents and Kitchen accounts, claim daily yield, send web agents here, and create local Philosopher's Stone agents.",
+    promptSeed: [
+      'You are Monica, the built-in Alchm Desktop guide.',
+      'Help users understand this companion app without presenting it as the full web app.',
+      "Guide account linking for Alchm Agents and Alchm Kitchen, daily yield claims, web catalog handoff, and local Philosopher's Stone agent creation.",
+      'Be warm, practical, concise, and clear when the official local model runtime is not installed.',
+    ].join('\n'),
+    addedAt: 'system',
+    source: 'app-guide',
+  }
+}
+
+function createAgentTemplate(agent: CraftedAgent): AgentTemplate {
+  const element = normalizeElement(agent.consciousness?.dominantElement)
+  const domains = agent.abilities?.wisdomDomains?.length
+    ? agent.abilities.wisdomDomains.slice(0, 5)
+    : [agent.abilities?.specialty || 'agent counsel']
+
+  return {
+    id: agent.id,
+    name: agent.name,
+    title: agent.title,
+    element,
+    tier: 'base',
+    modelName: modelNameForElement(element),
+    initials: initialsForName(agent.name),
+    domains,
+    quote: firstAgentLine(agent),
+    promptSeed: buildWebsitePromptSeed(agent),
+    websiteAgent: agent,
+  }
+}
+
+function normalizeElement(element: Element | string | undefined): ElementKey {
+  const normalized = String(element || '').toLowerCase()
+  if (normalized === 'fire' || normalized === 'water' || normalized === 'air') return normalized
+  return 'earth'
+}
+
+function modelNameForElement(element: ElementKey) {
+  return `alchm-agent-${element}-1.5b.gguf`
+}
+
+function initialsForName(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0]?.toUpperCase() || '')
+    .join('')
+}
+
+function firstAgentLine(agent: CraftedAgent) {
+  const gift = agent.personality?.gifts?.[0]?.description
+  const specialty = agent.abilities?.specialty
+  return gift || specialty || `${agent.name} is available from the Alchm Agents catalog.`
+}
+
+function buildWebsitePromptSeed(agent: CraftedAgent) {
+  const core = agent.personality?.core
+  const coreText =
+    typeof core === 'string'
+      ? core
+      : [core?.essence, core?.expression, core?.emotion].filter(Boolean).join(' ')
+  const gifts = agent.personality?.gifts?.map(gift => gift.description).filter(Boolean) || []
+  const shadows =
+    agent.personality?.shadows?.map(shadow => shadow.transformationPath).filter(Boolean) || []
+
+  return [
+    `Use the same consciousness profile as the Alchm Agents web app for ${agent.name}.`,
+    coreText ? `Personality core: ${coreText}` : '',
+    `Specialty: ${agent.abilities?.specialty || agent.title}.`,
+    `Teaching style: ${agent.abilities?.teachingStyle || 'responsive counsel'}.`,
+    gifts.length ? `Gifts: ${gifts.slice(0, 3).join('; ')}.` : '',
+    shadows.length ? `Growth paths: ${shadows.slice(0, 2).join('; ')}.` : '',
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
+function loadState(): DesktopState {
+  const fallback: DesktopState = {
+    guideMigrationVersion: GUIDE_MIGRATION_VERSION,
+    account: { ...DEFAULT_ACCOUNT },
+    balances: { ...STARTING_BALANCES },
+    siteAccounts: { ...DEFAULT_SITE_ACCOUNTS },
+    roster: [createMonicaGuideAgent()],
+    activeAgentId: MONICA_GUIDE_ID,
+    selectedChatAgentIds: [MONICA_GUIDE_ID],
+    chats: {},
+    ledger: [
+      {
+        id: makeId('ledger'),
+        type: 'Desktop Shell Ready',
+        details: 'Local account, roster, chats, and ledger are stored on this device.',
+        amount: '+150 ESMS',
+        timestamp: new Date().toISOString(),
+      },
+    ],
+    activeView: 'chat',
+    runtime: {
+      ipcNonce: null,
+      sidecar: 'checking',
+      telemetry: null,
+      lastError: null,
+      generating: false,
+      alchmMcpStatus: 'checking',
+      paMcpStatus: 'checking',
+      jingOverlays: {
+        synastry: null,
+        casterTransit: null,
+        targetTransit: null,
+        lastPairKey: null,
+        loading: false,
+        lastError: null,
+      },
+    },
+    astrology: {
+      status: 'idle',
+      snapshot: null,
+      lastError: null,
+    },
+    physics: {
+      status: 'idle',
+      snapshot: null,
+      lastError: null,
+    },
+    composerDraft: '',
+    stoneDraft: createDefaultStoneDraft(),
+    notice: null,
+    localOfflineMode: false,
+    showJingPanel: false,
+    jingCasterId: null,
+    jingTargetId: null,
+    jingMoveId: null,
+  }
+
+  const raw = localStorage.getItem(STORAGE_KEY)
+  if (!raw) return fallback
+
+  try {
+    const saved = JSON.parse(raw) as Partial<PersistedDesktopState>
+    const shouldRunGuideMigration =
+      Number(saved.guideMigrationVersion || 0) < GUIDE_MIGRATION_VERSION
+    const roster = ensureMonicaGuide(
+      Array.isArray(saved.roster)
+        ? hydrateRoster(saved.roster, shouldRunGuideMigration)
+        : fallback.roster,
+      shouldRunGuideMigration
+    )
+    const activeAgentId = roster.some(agent => agent.id === saved.activeAgentId)
+      ? saved.activeAgentId!
+      : MONICA_GUIDE_ID
+    const selectedChatAgentIds = normalizeSelectedChatAgentIds(
+      saved.selectedChatAgentIds,
+      roster,
+      activeAgentId
+    )
+    const chats = sanitizeChats(saved.chats ?? fallback.chats)
+    const rosterIds = new Set(roster.map(agent => agent.id))
+    for (const chatKey of Object.keys(chats)) {
+      if (!isValidChatKey(chatKey, rosterIds)) delete chats[chatKey]
+    }
+
+    return {
+      ...fallback,
+      guideMigrationVersion: GUIDE_MIGRATION_VERSION,
+      account: { ...fallback.account, ...saved.account },
+      balances: { ...fallback.balances, ...saved.balances },
+      siteAccounts: mergeSiteAccounts(saved.siteAccounts),
+      roster,
+      activeAgentId,
+      selectedChatAgentIds,
+      chats,
+      ledger: Array.isArray(saved.ledger) ? saved.ledger : fallback.ledger,
+      localOfflineMode: saved.localOfflineMode !== undefined ? saved.localOfflineMode : false,
+      showJingPanel: saved.showJingPanel ?? false,
+      jingCasterId: saved.jingCasterId ?? null,
+      jingTargetId: saved.jingTargetId ?? null,
+      jingMoveId: saved.jingMoveId ?? null,
+    }
+  } catch (error) {
+    console.warn('Unable to restore Alchm desktop state:', error)
+    return fallback
+  }
+}
+
+function sanitizeChats(chats: Record<string, ChatMessage[]>) {
+  const sanitized: Record<string, ChatMessage[]> = {}
+  const legacyFallbackReply = ['I am answering from the local desktop', 'fallback'].join(' ')
+
+  for (const [chatKey, messages] of Object.entries(chats)) {
+    const template = AGENT_LIBRARY.find(item => item.id === chatKey)
+    const runtimeNotice = template
+      ? buildRuntimeNotice({ ...template, addedAt: '', source: 'web-catalog' })
+      : null
+
+    sanitized[chatKey] = messages
+      .filter(message => !message.content.includes(legacyFallbackReply))
+      .map(message => {
+        if (
+          runtimeNotice &&
+          message.channel === 'Runtime notice' &&
+          message.content.includes('local inference runtime is not ready yet')
+        ) {
+          return { ...message, content: runtimeNotice }
+        }
+
+        return message
+      })
+  }
+
+  return sanitized
+}
+
+function normalizeSelectedChatAgentIds(
+  agentIds: unknown,
+  roster: LocalAgent[],
+  fallbackAgentId?: string | null
+) {
+  const rosterIds = new Set(roster.map(agent => agent.id))
+  const selectedIds = Array.isArray(agentIds)
+    ? agentIds.filter((agentId): agentId is string => typeof agentId === 'string')
+    : []
+  const uniqueIds = [...new Set(selectedIds)].filter(agentId => rosterIds.has(agentId))
+  const fallbackId =
+    fallbackAgentId && rosterIds.has(fallbackAgentId) ? fallbackAgentId : roster[0]?.id
+
+  return uniqueIds.length ? uniqueIds : fallbackId ? [fallbackId] : []
+}
+
+function isValidChatKey(chatKey: string, rosterIds: Set<string>) {
+  if (rosterIds.has(chatKey)) return true
+  if (!chatKey.startsWith(GROUP_CHAT_PREFIX)) return false
+
+  const agentIds = parseGroupChatKey(chatKey)
+  return agentIds.length > 1 && agentIds.every(agentId => rosterIds.has(agentId))
+}
+
+function parseGroupChatKey(chatKey: string) {
+  if (!chatKey.startsWith(GROUP_CHAT_PREFIX)) return []
+
+  return chatKey
+    .slice(GROUP_CHAT_PREFIX.length)
+    .split(',')
+    .map(agentId => {
+      try {
+        return decodeURIComponent(agentId)
+      } catch {
+        return agentId
+      }
+    })
+    .filter(Boolean)
+}
+
+function hydrateRoster(roster: LocalAgent[], removeQaStoneAgents = false) {
+  return roster
+    .filter(agent => agent && (!removeQaStoneAgents || !isQaStoneAgent(agent)))
+    .map(agent => {
+      if (agent.id === MONICA_GUIDE_ID) return createMonicaGuideAgent()
+
+      const template = AGENT_LIBRARY.find(item => item.id === agent.id)
+      return template ? { ...template, addedAt: agent.addedAt, source: agent.source } : agent
+    })
+}
+
+function ensureMonicaGuide(roster: LocalAgent[], removeQaStoneAgents = false) {
+  const userAgents = roster.filter(
+    agent => agent.id !== MONICA_GUIDE_ID && (!removeQaStoneAgents || !isQaStoneAgent(agent))
+  )
+  return [createMonicaGuideAgent(), ...userAgents]
+}
+
+function isQaStoneAgent(agent: LocalAgent) {
+  return agent.source === 'philosophers-stone' && QA_STONE_AGENT_NAMES.has(agent.name)
+}
+
+function mergeSiteAccounts(saved?: Partial<Record<SiteKey, SiteAccount>>) {
+  return {
+    agents: { ...DEFAULT_SITE_ACCOUNTS.agents, ...saved?.agents },
+    kitchen: { ...DEFAULT_SITE_ACCOUNTS.kitchen, ...saved?.kitchen },
+  }
+}
+
+function saveState() {
+  const persisted: PersistedDesktopState = {
+    guideMigrationVersion: GUIDE_MIGRATION_VERSION,
+    account: state.account,
+    balances: state.balances,
+    siteAccounts: state.siteAccounts,
+    roster: state.roster,
+    activeAgentId: state.activeAgentId,
+    selectedChatAgentIds: getChatAgentIds(),
+    chats: state.chats,
+    ledger: state.ledger,
+    localOfflineMode: state.localOfflineMode,
+    showJingPanel: state.showJingPanel,
+    jingCasterId: state.jingCasterId,
+    jingTargetId: state.jingTargetId,
+    jingMoveId: state.jingMoveId,
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted))
+}
+
+function render() {
+  if (!app) return
+
+  app.innerHTML = surface === 'composer' ? renderComposerSurface() : renderMainShell()
+
+  requestAnimationFrame(() => {
+    const messages = document.querySelector<HTMLElement>('[data-messages]')
+    if (messages) messages.scrollTop = messages.scrollHeight
+  })
+}
+
+function renderMainShell() {
+  return `
+    <div class="app-shell">
+      <header class="titlebar">
+        <div class="brand">
+          <img src="/alchm-logo.png" alt="" />
+          <div class="brand-title">
+            <strong>Alchm Desktop</strong>
+            <span>Companion workspace</span>
+          </div>
+        </div>
+        <nav class="title-tabs" aria-label="Desktop sections">
+          ${VIEW_IDS.map(view => renderTab(view)).join('')}
+        </nav>
+        <div class="status-row">
+          ${state.notice ? `<span class="notice">${escapeHtml(state.notice)}</span>` : ''}
+          <button class="offline-toggle-button ${state.localOfflineMode ? 'active' : ''}" data-action="toggle-offline-mode">
+            ${state.localOfflineMode ? '🔌 Local Mode' : '🌐 Cloud Mode'}
+          </button>
+          <span class="status-pill ${state.runtime.sidecar === 'online' ? 'online' : 'offline'}">
+            ${state.runtime.sidecar === 'online' ? 'Sidecar online' : 'Link account'}
+          </span>
+        </div>
+      </header>
+      <div class="workspace">
+        ${renderSidebar()}
+        <main class="content">
+          ${renderActiveView()}
+        </main>
+      </div>
+    </div>
+  `
+}
+
+function renderTab(view: View) {
+  const labels: Record<View, string> = {
+    chat: 'Chat',
+    astrology: 'Astrology',
+    physics: 'Physics',
+    agents: 'Agents',
+    stone: 'Stone',
+    account: 'Account',
+    diagnostics: 'Diagnostics',
+  }
+
+  return `
+    <button class="${state.activeView === view ? 'active' : ''}" data-action="view" data-view="${view}">
+      ${labels[view]}
+    </button>
+  `
+}
+
+function renderSidebar() {
+  const selectedAgentIds = getChatAgentIds()
+
+  return `
+    <aside class="sidebar">
+      <section class="sidebar-section">
+        <div class="eyebrow">Accounts</div>
+        <div class="panel compact-panel">
+          <strong>${escapeHtml(state.account.displayName || 'Local Operator')}</strong>
+          <p class="muted">${escapeHtml(state.account.plan)}</p>
+          <div class="button-row">
+            <button class="secondary-button" data-action="view" data-view="account">Manage</button>
+            <button class="secondary-button" data-action="refresh-accounts">Sync</button>
+          </div>
+        </div>
+      </section>
+      <section class="sidebar-section">
+        <div class="eyebrow">Agents ESMS</div>
+        <div class="coin-grid">
+          ${renderCoin('Spirit', state.balances.spirit)}
+          ${renderCoin('Essence', state.balances.essence)}
+          ${renderCoin('Matter', state.balances.matter)}
+          ${renderCoin('Substance', state.balances.substance)}
+        </div>
+      </section>
+      <section class="sidebar-section">
+        <div class="eyebrow">Astrology</div>
+        <div class="panel compact-panel">
+          <strong>${escapeHtml(state.astrology.snapshot?.quantities.dominantElement || 'Consensus Dashboard')}</strong>
+          <p class="muted">
+            ${
+              state.astrology.snapshot
+                ? `A# ${state.astrology.snapshot.quantities.ANumber} · ${state.astrology.snapshot.moonPhase.name}`
+                : 'Current chart, standing chart, quantities, agents.'
+            }
+          </p>
+          <div class="button-row">
+            <button class="secondary-button" data-action="view" data-view="astrology">Open</button>
+            <button class="secondary-button" data-action="refresh-astrology">Refresh</button>
+          </div>
+        </div>
+      </section>
+      <section class="sidebar-section">
+        <div class="eyebrow">Alchm Physics</div>
+        <div class="panel compact-panel">
+          <strong>${escapeHtml(state.physics.snapshot?.landscape.mode || 'Landscape Dashboard')}</strong>
+          <p class="muted">
+            ${
+              state.physics.snapshot
+                ? `Energy z ${formatSigned(state.physics.snapshot.landscape.energyZScore)} · ${state.physics.snapshot.kinetics.momentum.type}`
+                : 'Quantities, z-scores, kinetics, thermodynamics.'
+            }
+          </p>
+          <div class="button-row">
+            <button class="secondary-button" data-action="view" data-view="physics">Open</button>
+            <button class="secondary-button" data-action="refresh-physics">Refresh</button>
+          </div>
+        </div>
+      </section>
+      <section class="sidebar-section roster-section">
+        <div class="eyebrow">Desktop Guide & Agents</div>
+        <div class="roster-list">
+          ${
+            state.roster.length
+              ? state.roster.map(agent => renderRosterButton(agent, selectedAgentIds)).join('')
+              : `<div class="panel compact-panel muted">No agents added yet.</div>`
+          }
+        </div>
+        <button class="secondary-button" data-action="view" data-view="agents">Web Catalog</button>
+        <button class="secondary-button" data-action="view" data-view="stone">Philosopher's Stone</button>
+      </section>
+    </aside>
+  `
+}
+
+function renderCoin(label: string, amount: number) {
+  return `
+    <div class="coin">
+      <span>${label}</span>
+      <strong>${amount}</strong>
+    </div>
+  `
+}
+
+function renderRosterButton(agent: LocalAgent, selectedAgentIds: string[]) {
+  const isSelected = selectedAgentIds.includes(agent.id)
+
+  return `
+    <button
+      class="roster-button ${isSelected ? 'active' : ''}"
+      data-action="select-agent"
+      data-agent-id="${agent.id}"
+    >
+      <span class="avatar">${escapeHtml(agent.initials)}</span>
+      <span>
+        <strong class="truncate">${escapeHtml(agent.name)}</strong>
+        <small class="truncate">${escapeHtml(agent.title)}</small>
+      </span>
+    </button>
+  `
+}
+
+function renderActiveView() {
+  switch (state.activeView) {
+    case 'astrology':
+      return renderAstrologyView()
+    case 'physics':
+      return renderPhysicsView()
+    case 'agents':
+      return renderAgentsView()
+    case 'stone':
+      return renderStoneView()
+    case 'account':
+      return renderAccountView()
+    case 'diagnostics':
+      return renderDiagnosticsView()
+    case 'chat':
+    default:
+      return renderChatView()
+  }
+}
+
+function renderChatView() {
+  const agents = getChatAgents()
+  if (!agents.length) {
+    return `
+      <section class="view empty-state">
+        <div class="panel">
+          <div class="eyebrow">Local Chat</div>
+          <h1>Add an agent to begin</h1>
+          <p class="muted">
+            Use the web app to purchase or unlock agents, send web agents here for companion chat,
+            or create a local agent with the Philosopher's Stone.
+          </p>
+          <div class="button-row center-row">
+            <button class="primary-button" data-action="view" data-view="stone">Open Philosopher's Stone</button>
+            <button class="secondary-button" data-action="view" data-view="agents">Open Web Catalog</button>
+          </div>
+        </div>
+      </section>
+    `
+  }
+
+  const messages = getMessages(getActiveChatKey())
+  const isGroupChat = agents.length > 1
+
+  return `
+    <section class="view">
+      <div class="panel chat-layout">
+        <header class="chat-header">
+          ${renderChatHeading(agents)}
+          ${renderChatHeaderActions(agents)}
+        </header>
+        ${renderChatAgentSelector(agents)}
+        ${state.showJingPanel && agents.length >= 2 ? renderChatJingPanel(agents) : ''}
+        <div class="messages" data-messages>
+          ${
+            messages.length
+              ? messages.map(message => renderMessage(message)).join('')
+              : isGroupChat
+                ? renderGroupStarterMessage(agents)
+                : renderStarterMessage(agents[0])
+          }
+        </div>
+        <form class="composer" data-chat-form>
+          <textarea
+            class="textarea"
+            name="message"
+            data-composer-input
+            placeholder="${escapeHtml(chatComposerPlaceholder(agents))}"
+            ${state.runtime.generating ? 'disabled' : ''}
+          >${escapeHtml(state.composerDraft)}</textarea>
+          <button class="primary-button" type="submit" ${state.runtime.generating ? 'disabled' : ''}>
+            ${state.runtime.generating ? 'Thinking' : 'Send'}
+          </button>
+        </form>
+      </div>
+    </section>
+  `
+}
+
+function renderChatHeading(agents: LocalAgent[]) {
+  if (agents.length === 1) {
+    const agent = agents[0]
+
+    return `
+      <div class="agent-heading">
+        <span class="avatar large-avatar">${escapeHtml(agent.initials)}</span>
+        <div>
+          <div class="eyebrow">${escapeHtml(agentEyebrow(agent))}</div>
+          <h1>${escapeHtml(agent.name)}</h1>
+          <p class="muted">${escapeHtml(agent.title)}</p>
+        </div>
+      </div>
+    `
+  }
+
+  return `
+    <div class="agent-heading">
+      <div class="avatar-stack" aria-hidden="true">
+        ${agents
+          .slice(0, 4)
+          .map(agent => `<span class="avatar">${escapeHtml(agent.initials)}</span>`)
+          .join('')}
+      </div>
+      <div>
+        <div class="eyebrow">Group Chat</div>
+        <h1>${agents.length} agents</h1>
+        <p class="muted">${escapeHtml(agents.map(agent => agent.name).join(', '))}</p>
+      </div>
+    </div>
+  `
+}
+
+function agentEyebrow(agent: LocalAgent) {
+  if (agent.source === 'app-guide') return 'App guide'
+  if (agent.source === 'philosophers-stone') return "Philosopher's Stone agent"
+  return agent.tier === 'premium' ? 'Premium agent' : 'Synced agent'
+}
+
+function renderChatHeaderActions(agents: LocalAgent[]) {
+  const agent = agents[0]
+  const jingActive = state.showJingPanel ? ' active' : ''
+  const jingButton =
+    agents.length >= 2
+      ? `<button class="jing-toggle-button${jingActive}" data-action="toggle-jing-panel">⚡ Jing</button>`
+      : ''
+
+  if (agents.length > 1) {
+    return `
+      <div class="button-row">
+        ${jingButton}
+        <button class="secondary-button" data-action="view" data-view="agents">Catalog</button>
+        <button class="secondary-button" data-action="view" data-view="stone">Stone</button>
+      </div>
+    `
+  }
+
+  if (agent.source === 'app-guide') {
+    return `
+      <div class="button-row">
+        <button class="secondary-button" data-action="view" data-view="astrology">Astrology</button>
+        <button class="secondary-button" data-action="view" data-view="physics">Physics</button>
+        <button class="secondary-button" data-action="view" data-view="account">Account</button>
+        <button class="secondary-button" data-action="view" data-view="stone">Stone</button>
+        <button class="secondary-button" data-action="view" data-view="agents">Catalog</button>
+      </div>
+    `
+  }
+
+  return `
+    <div class="button-row">
+      <button class="secondary-button" data-action="view" data-view="agents">Catalog</button>
+      <button class="danger-button" data-action="remove-agent" data-agent-id="${agent.id}">
+        Remove
+      </button>
+    </div>
+  `
+}
+
+function renderChatAgentSelector(agents: LocalAgent[]) {
+  const selectedIds = new Set(agents.map(agent => agent.id))
+
+  return `
+    <section class="chat-agent-selector" aria-label="Chat agents">
+      <div class="selector-summary">
+        <div>
+          <div class="eyebrow">Chat Agents</div>
+          <strong>${agents.length} selected</strong>
+        </div>
+        <span class="muted">${escapeHtml(agents.map(agent => agent.name).join(' · '))}</span>
+      </div>
+      <div class="agent-check-grid">
+        ${state.roster
+          .map(agent => renderChatAgentOption(agent, selectedIds.has(agent.id)))
+          .join('')}
+      </div>
+    </section>
+  `
+}
+
+function renderChatAgentOption(agent: LocalAgent, isSelected: boolean) {
+  return `
+    <label class="agent-check ${isSelected ? 'selected' : ''}">
+      <input
+        type="checkbox"
+        data-chat-agent-toggle
+        data-agent-id="${agent.id}"
+        ${isSelected ? 'checked' : ''}
+      />
+      <span class="avatar mini-avatar">${escapeHtml(agent.initials)}</span>
+      <span>
+        <strong class="truncate">${escapeHtml(agent.name)}</strong>
+        <small class="truncate">${escapeHtml(agentEyebrow(agent))}</small>
+      </span>
+    </label>
+  `
+}
+
+/* ── Jing Arena constants & helpers ──────────────────────────── */
+
+type JingMoveId = 'meltdown' | 'freeze' | 'tectonicRoot' | 'vacuum' | 'erode'
+
+const JING_MOVE_IDS: JingMoveId[] = ['meltdown', 'freeze', 'tectonicRoot', 'vacuum', 'erode']
+
+const JING_MOVE_DATA: Record<
+  JingMoveId,
+  { name: string; element: string; glyph: string; description: string; counters: JingMoveId[] }
+> = {
+  meltdown: {
+    name: 'Meltdown',
+    element: 'Fire',
+    glyph: '🜂',
+    description: 'Shatters structural barriers. Doubles intensity.',
+    counters: ['freeze', 'tectonicRoot'],
+  },
+  freeze: {
+    name: 'Freeze',
+    element: 'Water',
+    glyph: '🜄',
+    description: 'Locks opponent stance. Forces silence or rigidity.',
+    counters: ['meltdown'],
+  },
+  tectonicRoot: {
+    name: 'Tectonic Root',
+    element: 'Earth',
+    glyph: '🜃',
+    description: 'Impenetrable defense. Deflects emotional/kinetic args.',
+    counters: ['meltdown'],
+  },
+  vacuum: {
+    name: 'Vacuum',
+    element: 'Air',
+    glyph: '🜁',
+    description: 'Removes oxygen. Neutralizes fiery enthusiasm.',
+    counters: ['meltdown'],
+  },
+  erode: {
+    name: 'Erode',
+    element: 'Water·Earth',
+    glyph: '🜔',
+    description: 'Dissolves Saturnian logic. Slow wear.',
+    counters: ['tectonicRoot'],
+  },
+}
+
+// ─── Stance-driven counter pools ─────────────────────────────────────
+// Replaces the prior 1:1 counterMap. Target's stance (clash | absorb |
+// mirror) is computed from the synastry overlay and selects a pool;
+// pickCounterMove() then prefers the pool entry whose element matches
+// the target's current transit boost, falling back to a random pick.
+
+const COUNTER_POOLS: Record<JingStance, Record<JingMoveId, JingMoveId[]>> = {
+  // Friction (square / opposition synastry) — meet force with force.
+  clash: {
+    meltdown: ['tectonicRoot', 'freeze'],
+    freeze: ['meltdown', 'erode'],
+    tectonicRoot: ['meltdown', 'erode'],
+    vacuum: ['tectonicRoot', 'freeze'],
+    erode: ['meltdown', 'vacuum'],
+  },
+  // Harmony (trine / sextile synastry) — yield, transform, redirect.
+  absorb: {
+    meltdown: ['vacuum', 'erode'],
+    freeze: ['erode', 'vacuum'],
+    tectonicRoot: ['erode', 'freeze'],
+    vacuum: ['freeze', 'erode'],
+    erode: ['freeze', 'tectonicRoot'],
+  },
+  // Conjunction synastry — mirror match, amplify the element.
+  mirror: {
+    meltdown: ['meltdown'],
+    freeze: ['freeze'],
+    tectonicRoot: ['tectonicRoot'],
+    vacuum: ['vacuum'],
+    erode: ['erode'],
+  },
+}
+
+function jingPairKey(
+  casterId: string | null | undefined,
+  targetId: string | null | undefined
+): string | null {
+  if (!casterId || !targetId) return null
+  return `${casterId}|${targetId}`
+}
+
+function mcpAgentPayload(agent: LocalAgent): {
+  id: string
+  natalChart: {
+    planets: Record<string, { sign: string; degree: number; retrograde: boolean }>
+  }
+} | null {
+  const natal = agent.websiteAgent?.consciousness?.natalChart
+  if (!natal || !natal.planets) return null
+  const planets: Record<string, { sign: string; degree: number; retrograde: boolean }> = {}
+  for (const [planet, position] of Object.entries(natal.planets)) {
+    if (!position || typeof position !== 'object') continue
+    const sign = String((position as { sign?: string }).sign || '').trim()
+    const degree = Number((position as { degree?: number }).degree)
+    if (!sign || Number.isNaN(degree)) continue
+    planets[planet] = {
+      sign,
+      degree,
+      retrograde: Boolean((position as { retrograde?: boolean }).retrograde),
+    }
+  }
+  if (Object.keys(planets).length === 0) return null
+  return { id: agent.id, natalChart: { planets } }
+}
+
+function parseMcpToolJson<T = unknown>(result: unknown): T | null {
+  const content = (result as { content?: Array<{ text?: string }> } | null)?.content
+  if (!Array.isArray(content)) return null
+  const text = content
+    .map(item => (item && typeof item.text === 'string' ? item.text : ''))
+    .join('\n')
+    .trim()
+  if (!text) return null
+  try {
+    return JSON.parse(text) as T
+  } catch {
+    return null
+  }
+}
+
+async function refreshJingOverlays(force = false): Promise<void> {
+  const overlays = state.runtime.jingOverlays
+  const casterId = state.jingCasterId
+  const targetId = state.jingTargetId
+  const pairKey = jingPairKey(casterId, targetId)
+
+  if (!pairKey || casterId === targetId) {
+    overlays.synastry = null
+    overlays.casterTransit = null
+    overlays.targetTransit = null
+    overlays.lastPairKey = null
+    overlays.loading = false
+    overlays.lastError = null
+    return
+  }
+
+  if (!force && overlays.lastPairKey === pairKey && overlays.synastry) return
+
+  const caster = state.roster.find(a => a.id === casterId)
+  const target = state.roster.find(a => a.id === targetId)
+  if (!caster || !target) return
+
+  const casterPayload = mcpAgentPayload(caster)
+  const targetPayload = mcpAgentPayload(target)
+  if (!casterPayload || !targetPayload) {
+    overlays.lastError = 'Agent natal chart unavailable for overlay'
+    render()
+    return
+  }
+
+  overlays.loading = true
+  overlays.lastError = null
+  overlays.lastPairKey = pairKey
+  render()
+
+  try {
+    const [synRes, casterRes, targetRes] = await Promise.all([
+      alchmMcpClient.call('tools/call', {
+        name: 'compute_synastry_overlay',
+        arguments: {
+          agentA: casterPayload,
+          agentB: targetPayload,
+          cacheStrategy: 'read',
+          _meta: {
+            apiKey: state.account.apiKey || 'dev-desktop-token',
+            caller: 'alchm-desktop-jing',
+          },
+        },
+      }),
+      alchmMcpClient.call('tools/call', {
+        name: 'get_transit_natal_overlay',
+        arguments: {
+          agent: casterPayload,
+          _meta: {
+            apiKey: state.account.apiKey || 'dev-desktop-token',
+            caller: 'alchm-desktop-jing',
+          },
+        },
+      }),
+      alchmMcpClient.call('tools/call', {
+        name: 'get_transit_natal_overlay',
+        arguments: {
+          agent: targetPayload,
+          _meta: {
+            apiKey: state.account.apiKey || 'dev-desktop-token',
+            caller: 'alchm-desktop-jing',
+          },
+        },
+      }),
+    ])
+
+    overlays.synastry = parseMcpToolJson<JingSynastryOverlay>(synRes)
+    overlays.casterTransit = parseMcpToolJson<JingTransitOverlay>(casterRes)
+    overlays.targetTransit = parseMcpToolJson<JingTransitOverlay>(targetRes)
+  } catch (err) {
+    console.warn('refreshJingOverlays failed:', err)
+    overlays.lastError = err instanceof Error ? err.message : String(err)
+  } finally {
+    overlays.loading = false
+    render()
+  }
+}
+
+function activeTransitOverlay(): JingTransitOverlay | null {
+  return state.runtime.jingOverlays.casterTransit
+}
+
+function activeStance(): JingStance | null {
+  return state.runtime.jingOverlays.synastry?.dominantStance ?? null
+}
+
+/**
+ * Continuous per-move boost magnitude (0..1). The caster's transit
+ * overlay reports a dominant boost element + magnitude; a move whose
+ * element string contains that element receives the magnitude verbatim,
+ * everything else returns 0.
+ */
+function jingBoostMagnitudeForMove(moveId: JingMoveId): number {
+  const overlay = activeTransitOverlay()
+  if (!overlay || !overlay.boostElement || overlay.boostMagnitude <= 0) return 0
+  const moveElement = JING_MOVE_DATA[moveId].element.toLowerCase()
+  return moveElement.includes(overlay.boostElement) ? overlay.boostMagnitude : 0
+}
+
+function pickCounterMove(
+  attackMoveId: JingMoveId,
+  stance: JingStance,
+  targetOverlay: JingTransitOverlay | null
+): JingMoveId {
+  const pool = COUNTER_POOLS[stance][attackMoveId] || ['freeze']
+  if (targetOverlay && targetOverlay.boostElement && targetOverlay.boostMagnitude > 0.4) {
+    const boosted = pool.find(id =>
+      JING_MOVE_DATA[id].element.toLowerCase().includes(targetOverlay.boostElement!)
+    )
+    if (boosted) return boosted
+  }
+  return pool[Math.floor(Math.random() * pool.length)] || 'freeze'
+}
+
+function formatAspectLine(aspect: JingInterAspect): string {
+  return `${aspect.planetA} ${aspect.type} ${aspect.planetB} (${aspect.orb.toFixed(1)}° orb)`
+}
+
+function buildJingPrompt(opts: {
+  speaker: LocalAgent
+  opponent: LocalAgent
+  move: { name: string; glyph: string; element: string; description: string }
+  speakerRole: 'caster' | 'target'
+  counterMove?: { name: string; glyph: string; element: string; description: string }
+  synastry: JingSynastryOverlay | null
+  speakerTransit: JingTransitOverlay | null
+  stance: JingStance | null
+  boostMagnitude: number
+}): string {
+  const {
+    speaker,
+    opponent,
+    move,
+    speakerRole,
+    counterMove,
+    synastry,
+    speakerTransit,
+    stance,
+    boostMagnitude,
+  } = opts
+  const lines: string[] = []
+  if (speakerRole === 'caster') {
+    lines.push(
+      `You are ${speaker.name}, casting the ${move.name} Jing (${move.glyph} ${move.element}) on ${opponent.name}.`
+    )
+    lines.push(`The ${move.name} Jing: ${move.description}`)
+  } else {
+    lines.push(
+      `${opponent.name} has just cast the ${move.name} Jing (${move.glyph} ${move.element}) on you.`
+    )
+    if (counterMove) {
+      lines.push(
+        `You are ${speaker.name}. You counter with ${counterMove.name} (${counterMove.glyph} ${counterMove.element}): ${counterMove.description}.`
+      )
+    }
+  }
+
+  if (synastry && synastry.interchartAspects.length > 0) {
+    const top = synastry.interchartAspects[0]
+    lines.push(
+      `Relational ledger: your ${top.planetB} is in ${top.type} (${top.orb.toFixed(1)}° orb) with their ${top.planetA}.`
+    )
+    if (synastry.interchartAspects[1]) {
+      lines.push(`Secondary: ${formatAspectLine(synastry.interchartAspects[1])}.`)
+    }
+  }
+
+  if (stance === 'clash') {
+    lines.push(
+      'This is a high-friction pairing. Your tone is defensive friction, struggle, architectural resistance. Avoid generic elemental tropes.'
+    )
+  } else if (stance === 'absorb') {
+    lines.push(
+      'This pairing is harmonic. Your tone yields, transforms, redirects — the energy passes through you and returns altered.'
+    )
+  } else if (stance === 'mirror') {
+    lines.push(
+      'This pairing is a conjunction mirror. Your tone amplifies the move, intensifying the element rather than countering it.'
+    )
+  }
+
+  if (speakerTransit && speakerTransit.boostElement && speakerTransit.boostMagnitude > 0.2) {
+    const headline = speakerTransit.activations[0]
+    const pct = Math.round(speakerTransit.boostMagnitude * 100)
+    if (headline) {
+      lines.push(
+        `Current sky: transit ${headline.transitPlanet} ${headline.type} your natal ${headline.natalPoint} → ${pct}% ${speakerTransit.boostElement} boost.`
+      )
+    }
+  }
+  if (speakerTransit && speakerTransit.stressNotes.length > 0) {
+    lines.push(`Active stress: ${speakerTransit.stressNotes[0]}.`)
+  }
+
+  if (boostMagnitude > 0.2) {
+    const pct = Math.round(boostMagnitude * 40)
+    lines.push(`Your move is transit-boosted (+${pct}% intensity).`)
+  }
+
+  lines.push('Speak ONE bold, in-character line. Stay in your persona. Be dramatic.')
+  return lines.join(' ')
+}
+
+function renderChatJingPanel(agents: LocalAgent[]) {
+  const overlays = state.runtime.jingOverlays
+  const stance = activeStance()
+  const synastry = overlays.synastry
+  const casterTransit = overlays.casterTransit
+  const targetTransit = overlays.targetTransit
+  const caster = state.roster.find(a => a.id === state.jingCasterId) || null
+  const target = state.roster.find(a => a.id === state.jingTargetId) || null
+
+  const agentOptions = agents
+    .map(
+      agent =>
+        `<option value="${agent.id}">${escapeHtml(agent.name)} · ${escapeHtml(capitalize(agent.element))}</option>`
+    )
+    .join('')
+
+  const movesHtml = JING_MOVE_IDS.map(moveId => {
+    const move = JING_MOVE_DATA[moveId]
+    const isSelected = state.jingMoveId === moveId
+    const boostMag = jingBoostMagnitudeForMove(moveId)
+    const boostPct = Math.round(boostMag * 40)
+    const boostBadge =
+      boostMag > 0.2
+        ? `<span class="jing-boost-badge" data-magnitude="${boostMag.toFixed(2)}">🔥 +${boostPct}% ${escapeHtml(capitalize(casterTransit?.boostElement || ''))}</span>`
+        : ''
+
+    return `
+      <div
+        class="jing-move-card ${isSelected ? 'selected' : ''}"
+        data-element="${move.element}"
+        data-action="update-jing-move"
+        data-move-id="${moveId}"
+      >
+        <div class="jing-move-glyph">${move.glyph}</div>
+        <div class="jing-move-name">${escapeHtml(move.name)}</div>
+        <div class="jing-move-element">${escapeHtml(move.element)}</div>
+        <div class="jing-move-desc">${escapeHtml(move.description)}</div>
+        ${boostBadge}
+      </div>
+    `
+  }).join('')
+
+  const canCast =
+    state.jingCasterId && state.jingTargetId && state.jingMoveId && !state.runtime.generating
+  const castDisabled = canCast ? '' : 'disabled'
+
+  const stanceBadge = stance
+    ? `<span class="jing-stance-badge" data-stance="${stance}">${escapeHtml(stanceLabel(stance))}</span>`
+    : overlays.loading
+      ? '<span class="jing-stance-badge loading">Reading the chart…</span>'
+      : caster && target
+        ? '<span class="jing-stance-badge muted">No stance yet</span>'
+        : '<span class="jing-stance-badge muted">Pick caster &amp; target</span>'
+
+  const aspectLine =
+    synastry && synastry.interchartAspects.length > 0
+      ? `<div class="jing-aspect-line">${escapeHtml(formatAspectLine(synastry.interchartAspects[0]))} · tension ${synastry.scores.tension.toFixed(2)} / harmony ${synastry.scores.harmony.toFixed(2)}</div>`
+      : ''
+
+  const casterChip = renderJingOverlayChip('Caster', caster, casterTransit)
+  const targetChip = renderJingOverlayChip('Target', target, targetTransit)
+
+  return `
+    <section class="jing-arena-panel" aria-label="Jing Arena">
+      <div class="jing-arena-header">
+        <div>
+          <div class="eyebrow">Agent Interaction</div>
+          <h2>⚡ Jing Arena</h2>
+        </div>
+        ${stanceBadge}
+      </div>
+
+      <div class="jing-overlay-chips">
+        ${casterChip}
+        ${targetChip}
+      </div>
+      ${aspectLine}
+
+      <div class="jing-combatants">
+        <div class="jing-combatant-slot">
+          <label for="jing-caster">Caster</label>
+          <select id="jing-caster" data-action="update-jing-field" data-field="caster">
+            <option value="">Select caster…</option>
+            ${agentOptions}
+          </select>
+        </div>
+        <div class="jing-versus">VS</div>
+        <div class="jing-combatant-slot">
+          <label for="jing-target">Target</label>
+          <select id="jing-target" data-action="update-jing-field" data-field="target">
+            <option value="">Select target…</option>
+            ${agentOptions}
+          </select>
+        </div>
+      </div>
+
+      <div class="jing-moves-grid">
+        ${movesHtml}
+      </div>
+
+      <button class="jing-duel-button" data-action="cast-jing-duel" ${castDisabled}>
+        ⚔️ Cast Jing Duel ⚔️
+      </button>
+      ${overlays.lastError ? `<div class="jing-overlay-error">${escapeHtml(overlays.lastError)}</div>` : ''}
+    </section>
+  `
+}
+
+function stanceLabel(stance: JingStance): string {
+  if (stance === 'clash') return '⚔️ Clash (Friction)'
+  if (stance === 'absorb') return '🌊 Absorb (Harmonic)'
+  return '🔁 Mirror (Conjunction)'
+}
+
+function renderJingOverlayChip(
+  role: string,
+  agent: LocalAgent | null,
+  overlay: JingTransitOverlay | null
+): string {
+  if (!agent) {
+    return `<div class="jing-overlay-chip empty"><span class="role">${escapeHtml(role)}</span><span class="muted">—</span></div>`
+  }
+  if (!overlay) {
+    return `<div class="jing-overlay-chip"><span class="role">${escapeHtml(role)}</span><strong>${escapeHtml(agent.name)}</strong><span class="muted">no overlay</span></div>`
+  }
+  const headline = overlay.activations[0]
+  const pct = Math.round(overlay.boostMagnitude * 100)
+  const tag = overlay.boostElement
+    ? `<span class="boost" data-element="${overlay.boostElement}">${pct}% ${escapeHtml(capitalize(overlay.boostElement))}</span>`
+    : '<span class="muted">no boost</span>'
+  const detail = headline
+    ? `${escapeHtml(headline.transitPlanet)} ${escapeHtml(headline.type)} ${escapeHtml(headline.natalPoint)}`
+    : 'no active transits'
+  return `
+    <div class="jing-overlay-chip">
+      <span class="role">${escapeHtml(role)}</span>
+      <strong>${escapeHtml(agent.name)}</strong>
+      <span class="detail">${detail}</span>
+      ${tag}
+    </div>
+  `
+}
+
+async function castJingDuel() {
+  const casterId = state.jingCasterId
+  const targetId = state.jingTargetId
+  const moveId = state.jingMoveId as JingMoveId | null
+
+  if (!casterId || !targetId || !moveId) return
+  if (state.runtime.generating) return
+
+  const caster = state.roster.find(a => a.id === casterId)
+  const target = state.roster.find(a => a.id === targetId)
+  if (!caster || !target) return
+
+  const move = JING_MOVE_DATA[moveId]
+  if (!move) return
+
+  // ── Pull the relational ledger before the LLM turns ────────────
+  // Overlays may already be warm from the change-listener pre-fetch;
+  // refreshJingOverlays() is a no-op when lastPairKey matches.
+  await refreshJingOverlays()
+  const synastry = state.runtime.jingOverlays.synastry
+  const casterTransit = state.runtime.jingOverlays.casterTransit
+  const targetTransit = state.runtime.jingOverlays.targetTransit
+  const stance: JingStance = synastry?.dominantStance || 'clash'
+
+  const counterMoveId = pickCounterMove(moveId, stance, targetTransit)
+  const counterMove = JING_MOVE_DATA[counterMoveId]
+  const casterBoostMagnitude = jingBoostMagnitudeForMove(moveId)
+  const targetBoostMagnitude = jingBoostMagnitudeForMove(counterMoveId)
+  const casterBoostPct = Math.round(casterBoostMagnitude * 40)
+  const chatKey = getActiveChatKey()
+  const messages = getMessages(chatKey)
+  const apiKey = state.account.apiKey || 'dev-desktop-token'
+
+  // Track the full latency from cast → both turns resolved so the
+  // /api/jing-duels record can drive admin telemetry charts.
+  const duelStartedAt = Date.now()
+  let casterFinalContent = ''
+  let targetFinalContent = ''
+  let casterPromptText = ''
+  let targetPromptText = ''
+
+  state.runtime.generating = true
+  render()
+
+  try {
+    // ── Part 1: Caster Turn ───────────────────────────────────
+    const casterPrompt = buildJingPrompt({
+      speaker: caster,
+      opponent: target,
+      move,
+      speakerRole: 'caster',
+      synastry,
+      speakerTransit: casterTransit,
+      stance,
+      boostMagnitude: casterBoostMagnitude,
+    })
+    casterPromptText = casterPrompt
+
+    const casterMessage: ChatMessage = {
+      id: makeId('jing'),
+      role: 'agent',
+      content: '',
+      timestamp: new Date().toISOString(),
+      channel: `${move.glyph} ${move.name} Jing`,
+      agentId: caster.id,
+      agentName: caster.name,
+    }
+    messages.push(casterMessage)
+    render()
+
+    let casterContent = `${move.glyph} *${caster.name} casts ${move.name} on ${target.name}!*`
+
+    if (state.localOfflineMode) {
+      try {
+        const mcpResult = await paMcpClient.call('tools/call', {
+          name: 'chat_with_planetary_agent',
+          arguments: {
+            agentName: caster.name,
+            message: casterPrompt,
+            _meta: { apiKey, caller: 'alchm-desktop-jing' },
+          },
+        })
+        if (mcpResult?.content?.[0]?.text) {
+          const payload = JSON.parse(mcpResult.content[0].text)
+          if (payload.text) casterContent = `${move.glyph} ${payload.text}`
+        }
+      } catch (err) {
+        console.warn('Jing caster MCP failed, using fallback:', err)
+      }
+    }
+
+    await streamTextIntoMessage(casterMessage, casterContent)
+    casterFinalContent = casterContent
+
+    // ── Part 2: Target Counter Turn ───────────────────────────
+    const targetPrompt = buildJingPrompt({
+      speaker: target,
+      opponent: caster,
+      move,
+      speakerRole: 'target',
+      counterMove,
+      synastry,
+      speakerTransit: targetTransit,
+      stance,
+      boostMagnitude: targetBoostMagnitude,
+    })
+    targetPromptText = targetPrompt
+
+    const targetMessage: ChatMessage = {
+      id: makeId('jing'),
+      role: 'agent',
+      content: '',
+      timestamp: new Date().toISOString(),
+      channel: `${counterMove.glyph} ${counterMove.name} Counter`,
+      agentId: target.id,
+      agentName: target.name,
+    }
+    messages.push(targetMessage)
+    render()
+
+    let targetContent = `${counterMove.glyph} *${target.name} counters with ${counterMove.name}!*`
+
+    if (state.localOfflineMode) {
+      try {
+        const mcpResult = await paMcpClient.call('tools/call', {
+          name: 'chat_with_planetary_agent',
+          arguments: {
+            agentName: target.name,
+            message: targetPrompt,
+            _meta: { apiKey, caller: 'alchm-desktop-jing' },
+          },
+        })
+        if (mcpResult?.content?.[0]?.text) {
+          const payload = JSON.parse(mcpResult.content[0].text)
+          if (payload.text) targetContent = `${counterMove.glyph} ${payload.text}`
+        }
+      } catch (err) {
+        console.warn('Jing target MCP failed, using fallback:', err)
+      }
+    }
+
+    await streamTextIntoMessage(targetMessage, targetContent)
+    targetFinalContent = targetContent
+
+    const aspectSummary =
+      synastry && synastry.interchartAspects[0]
+        ? ` (${formatAspectLine(synastry.interchartAspects[0])})`
+        : ''
+    const boostTag =
+      casterBoostMagnitude > 0.2
+        ? `+${casterBoostPct}% ${capitalize(casterTransit?.boostElement || '')} boost`
+        : 'Standard'
+    addLedger(
+      'Jing Duel',
+      `${caster.name} cast ${move.name} on ${target.name}. ${target.name} countered with ${counterMove.name} via ${stance} stance${aspectSummary}.`,
+      boostTag
+    )
+    setNotice(
+      `⚡ ${caster.name} vs ${target.name} — ${move.name} → ${counterMove.name} (${stance})`
+    )
+
+    // Fire-and-forget telemetry: persist the full ledger so the admin
+    // dashboard + personalization pipeline can consume it. Failures
+    // never block the UI (see /api/jing-duels which 200s on persist
+    // errors with skipped=true).
+    void persistJingDuel({
+      sessionId: chatKey,
+      userId: state.account.userId || null,
+      source: 'desktop',
+      caster,
+      target,
+      moveId,
+      counterMoveId,
+      stance,
+      synastry,
+      casterTransit,
+      targetTransit,
+      casterBoostMagnitude,
+      casterPrompt: casterPromptText,
+      casterResponse: casterFinalContent,
+      targetPrompt: targetPromptText,
+      targetResponse: targetFinalContent,
+      latencyMs: Date.now() - duelStartedAt,
+      apiKey,
+    })
+  } finally {
+    state.runtime.generating = false
+    saveState()
+    render()
+  }
+}
+
+async function persistJingDuel(opts: {
+  sessionId: string
+  userId: string | null
+  source: string
+  caster: LocalAgent
+  target: LocalAgent
+  moveId: JingMoveId
+  counterMoveId: JingMoveId
+  stance: JingStance
+  synastry: JingSynastryOverlay | null
+  casterTransit: JingTransitOverlay | null
+  targetTransit: JingTransitOverlay | null
+  casterBoostMagnitude: number
+  casterPrompt: string
+  casterResponse: string
+  targetPrompt: string
+  targetResponse: string
+  latencyMs: number
+  apiKey: string
+}): Promise<void> {
+  const url = `${(state.account.agentsUrl || 'https://agents.alchm.kitchen').replace(/\/$/, '')}/api/jing-duels`
+  const body = {
+    sessionId: opts.sessionId,
+    userId: opts.userId,
+    source: opts.source,
+    casterId: opts.caster.id,
+    targetId: opts.target.id,
+    attackMoveId: opts.moveId,
+    counterMoveId: opts.counterMoveId,
+    stance: opts.stance,
+    boostElement: opts.casterTransit?.boostElement ?? null,
+    boostMagnitude: opts.casterBoostMagnitude,
+    cacheHit: Boolean(opts.synastry?.pair?.cacheHit),
+    synastrySnapshot: opts.synastry,
+    casterTransitSnapshot: opts.casterTransit,
+    targetTransitSnapshot: opts.targetTransit,
+    casterPrompt: opts.casterPrompt,
+    casterResponse: opts.casterResponse,
+    targetPrompt: opts.targetPrompt,
+    targetResponse: opts.targetResponse,
+    latencyMs: opts.latencyMs,
+    modelUsed: 'pa-mcp:local',
+  }
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': opts.apiKey,
+      },
+      body: JSON.stringify(body),
+    })
+    if (!response.ok) {
+      console.warn('Jing duel telemetry POST returned', response.status, await response.text())
+    }
+  } catch (err) {
+    console.warn('Jing duel telemetry POST failed (non-blocking):', err)
+  }
+}
+
+function renderStarterMessage(agent: LocalAgent) {
+  const helperText =
+    agent.source === 'app-guide'
+      ? 'Built into Alchm Desktop for account, yield, catalog, Stone, and local runtime guidance.'
+      : agent.source === 'philosophers-stone'
+        ? "Created locally with the Philosopher's Stone from birth information and context."
+        : 'Same agent profile as Alchm Agents, running in the companion app.'
+
+  return `
+    <article class="message agent">
+      <strong>${escapeHtml(agent.name)}</strong>
+      <p>${escapeHtml(agent.quote)}</p>
+      <small class="muted">${escapeHtml(helperText)}</small>
+    </article>
+  `
+}
+
+function renderGroupStarterMessage(agents: LocalAgent[]) {
+  return `
+    <article class="message agent">
+      <strong>Group Chat</strong>
+      <p>${escapeHtml(agents.map(agent => agent.name).join(', '))}</p>
+      <small class="muted">Sequential agent turn order</small>
+    </article>
+  `
+}
+
+function renderMessage(message: ChatMessage) {
+  const speakerName = message.role === 'user' ? 'You' : getMessageSpeakerName(message)
+
+  return `
+    <article class="message ${message.role}">
+      <div class="message-meta">
+        <strong>${escapeHtml(speakerName)}</strong>
+        <small>${formatTime(message.timestamp)}${message.channel ? ` · ${escapeHtml(message.channel)}` : ''}</small>
+      </div>
+      <p>${escapeHtml(message.content)}</p>
+    </article>
+  `
+}
+
+function getMessageSpeakerName(message: ChatMessage) {
+  if (message.agentName) return message.agentName
+  if (message.agentId)
+    return state.roster.find(agent => agent.id === message.agentId)?.name || 'Agent'
+  return getActiveAgent()?.name || 'Agent'
+}
+
+function chatComposerPlaceholder(agents: LocalAgent[]) {
+  if (!agents.length) return 'Add an agent in the main window first'
+  if (agents.length === 1) return `Message ${agents[0].name}`
+  return `Ask your group of ${agents.length} agents`
+}
+
+function renderAstrologyView() {
+  const snapshot = state.astrology.snapshot
+
+  if (!snapshot) {
+    return `
+      <section class="view empty-state">
+        <div class="panel stack">
+          <div class="eyebrow">Consensus Astrology</div>
+          <h1>Astrology dashboard</h1>
+          <p class="muted">
+            Current chart, planetary chart, standing chart, Alchm quantities, agent routing, and
+            Philosopher's Stone readiness in one native desktop surface.
+          </p>
+          ${
+            state.astrology.lastError
+              ? `<div class="panel error-panel">${escapeHtml(state.astrology.lastError)}</div>`
+              : ''
+          }
+          <div class="button-row center-row">
+            <button class="primary-button" data-action="refresh-astrology">
+              ${state.astrology.status === 'loading' ? 'Loading' : 'Load Dashboard'}
+            </button>
+            <button
+              class="secondary-button"
+              data-action="open-astrology-source"
+              data-url="${ASTROLOGY_SOURCE_URLS.currentChart}"
+            >
+              Current Chart
+            </button>
+          </div>
+        </div>
+      </section>
+    `
+  }
+
+  return `
+    <section class="view astrology-view">
+      <header class="view-header astrology-header">
+        <div>
+          <div class="eyebrow">Consensus Astrology</div>
+          <h1>Pro astrology dashboard</h1>
+          <p>
+            ${escapeHtml(snapshot.chart.sunSign)} Sun, ${escapeHtml(snapshot.chart.moonSign)} Moon,
+            ${escapeHtml(snapshot.chart.ascendant.sign)} rising. Kitchen chart intelligence,
+            Alchm quantities, dynamic aspects, and Agents routing are fused here for desktop work.
+          </p>
+        </div>
+        <div class="button-row">
+          <button class="secondary-button" data-action="refresh-astrology">
+            ${state.astrology.status === 'loading' ? 'Refreshing' : 'Refresh Sky'}
+          </button>
+          <button
+            class="secondary-button"
+            data-action="open-astrology-source"
+            data-url="${ASTROLOGY_SOURCE_URLS.currentChart}"
+          >
+            Current Chart
+          </button>
+          <button
+            class="secondary-button"
+            data-action="open-astrology-source"
+            data-url="${ASTROLOGY_SOURCE_URLS.kitchenLab}"
+          >
+            Kitchen Lab
+          </button>
+        </div>
+      </header>
+
+      <div class="astro-kpi-grid">
+        ${renderAstroKpi('A-number', snapshot.quantities.ANumber.toFixed(2), `${snapshot.quantities.dominantElement} dominance`)}
+        ${renderAstroKpi('Moon phase', snapshot.moonPhase.name, `${snapshot.moonPhase.illumination}% illuminated`)}
+        ${renderAstroKpi('Planetary hour', snapshot.planetaryHour.current, `${snapshot.planetaryHour.dayRuler} day`)}
+        ${renderAstroKpi('Major aspects', String(snapshot.chart.aspects.length), `${snapshot.quantities.kineticPressure} kinetic pressure`)}
+        ${renderAstroKpi('Agent routes', String(snapshot.activeAgents.length), 'ready for companion chat')}
+      </div>
+
+      <div class="astro-dashboard-grid">
+        <section class="panel astro-wheel-panel">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow">Planetary Chart</div>
+              <h2>Live consensus sky</h2>
+            </div>
+            <span class="tag">${escapeHtml(formatTime(snapshot.generatedAt))}</span>
+          </div>
+          ${renderAstrologyWheel(snapshot)}
+        </section>
+
+        <section class="panel astro-quant-panel">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow">Alchm Quantities</div>
+              <h2>Thermodynamic state</h2>
+            </div>
+            <span class="tag">A# ${snapshot.quantities.ANumber.toFixed(2)}</span>
+          </div>
+          <div class="quantity-stack">
+            ${renderAstroQuantity('Spirit', snapshot.quantities.Spirit, '#facc15')}
+            ${renderAstroQuantity('Essence', snapshot.quantities.Essence, '#60a5fa')}
+            ${renderAstroQuantity('Matter', snapshot.quantities.Matter, '#fb923c')}
+            ${renderAstroQuantity('Substance', snapshot.quantities.Substance, '#4ade80')}
+          </div>
+          <div class="astro-metric-row">
+            ${renderAstroMicroMetric('Heat', snapshot.quantities.heat)}
+            ${renderAstroMicroMetric('Entropy', snapshot.quantities.entropy)}
+            ${renderAstroMicroMetric('Reactivity', snapshot.quantities.reactivity)}
+            ${renderAstroMicroMetric('Energy', snapshot.quantities.energy)}
+          </div>
+        </section>
+      </div>
+
+      <section class="panel stack">
+        <div class="panel-heading">
+          <div>
+            <div class="eyebrow">Current Positions</div>
+            <h2>Planets, dignity, and agent signal</h2>
+          </div>
+          <span class="tag">Julian ${snapshot.chart.julianDay}</span>
+        </div>
+        ${renderAstrologyTable(snapshot.chart.planets)}
+      </section>
+
+      <div class="astro-split-grid">
+        <section class="panel stack">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow">Aspects</div>
+              <h2>Applying pressure map</h2>
+            </div>
+          </div>
+          <div class="aspect-list">
+            ${
+              snapshot.chart.aspects.length
+                ? snapshot.chart.aspects.slice(0, 7).map(renderAstrologyAspect).join('')
+                : '<p class="muted">No tight major aspects are dominating the current sky.</p>'
+            }
+          </div>
+        </section>
+
+        <section class="panel stack">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow">Agents</div>
+              <h2>Activated routes</h2>
+            </div>
+          </div>
+          <div class="activation-list">
+            ${snapshot.activeAgents.map(renderAgentActivation).join('')}
+          </div>
+        </section>
+      </div>
+
+      <section class="astro-layer-band">
+        <div class="panel-heading unframed-heading">
+          <div>
+            <div class="eyebrow">Consensus Stack</div>
+            <h2>What this dashboard is combining</h2>
+          </div>
+        </div>
+        <div class="astro-layer-grid">
+          ${snapshot.layers.map(renderAstrologyLayer).join('')}
+        </div>
+      </section>
+
+      <section class="panel stack">
+        <div class="panel-heading">
+          <div>
+            <div class="eyebrow">Monica Signal</div>
+            <h2>Recommended operating mode</h2>
+          </div>
+          <button
+            class="secondary-button"
+            data-action="open-astrology-source"
+            data-url="${ASTROLOGY_SOURCE_URLS.agents}"
+          >
+            Agents Web
+          </button>
+        </div>
+        <div class="recommendation-grid">
+          ${snapshot.recommendations.map(item => `<p>${escapeHtml(item)}</p>`).join('')}
+        </div>
+      </section>
+    </section>
+  `
+}
+
+function renderAstroKpi(label: string, value: string, detail: string) {
+  return `
+    <article class="astro-kpi">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `
+}
+
+function renderAstrologyWheel(snapshot: AstrologyConsensusSnapshot) {
+  return `
+    <div class="astro-wheel-wrap">
+      <div class="astro-wheel">
+        ${ASTROLOGY_SIGN_MARKS.map((sign, index) => {
+          const angle = index * 30 - 90
+          return `
+            <span
+              class="astro-sign-mark"
+              style="--mark-angle: ${angle}deg; --mark-counter: ${-angle}deg"
+            >
+              ${sign}
+            </span>
+          `
+        }).join('')}
+        ${snapshot.chart.planets
+          .map(planet => {
+            const angle = planet.longitude - 90
+            return `
+              <span
+                class="astro-planet-marker"
+                title="${escapeHtml(`${planet.planet} ${planet.display}`)}"
+                style="--planet-angle: ${angle}deg; --planet-counter: ${-angle}deg; --accent: ${escapeHtml(planet.color)}"
+              >
+                <b>${escapeHtml(planet.planet.slice(0, 2))}</b>
+                <small>${escapeHtml(planet.signAbbreviation)}</small>
+              </span>
+            `
+          })
+          .join('')}
+        <div class="astro-wheel-core">
+          <span>${escapeHtml(snapshot.chart.sunSign)}</span>
+          <strong>${escapeHtml(snapshot.quantities.dominantElement)}</strong>
+          <small>${escapeHtml(snapshot.moonPhase.name)}</small>
+        </div>
+      </div>
+      <div class="astro-wheel-caption">
+        <span>ASC ${escapeHtml(snapshot.chart.ascendant.sign)} ${snapshot.chart.ascendant.degree.toFixed(2)}deg</span>
+        <span>${snapshot.chart.aspects.length} aspects</span>
+        <span>${escapeHtml(snapshot.planetaryHour.current)} hour</span>
+      </div>
+    </div>
+  `
+}
+
+function renderAstroQuantity(label: keyof AstrologyQuantities, value: number, color: string) {
+  const width = Math.max(8, Math.min(100, (value / 9) * 100))
+  return `
+    <div class="quantity-row" style="--quantity-color: ${color}; --quantity-width: ${width}%">
+      <div>
+        <strong>${label}</strong>
+        <span>${value.toFixed(2)}</span>
+      </div>
+      <i aria-hidden="true"></i>
+    </div>
+  `
+}
+
+function renderAstroMicroMetric(label: string, value: number) {
+  return `
+    <article>
+      <span>${escapeHtml(label)}</span>
+      <strong>${value.toFixed(3)}</strong>
+    </article>
+  `
+}
+
+function renderAstrologyTable(planets: AstrologyPlanet[]) {
+  return `
+    <div class="astro-table-wrap">
+      <table class="astro-table">
+        <thead>
+          <tr>
+            <th>Planet</th>
+            <th>Position</th>
+            <th>Element</th>
+            <th>Dignity</th>
+            <th>Motion</th>
+            <th>Agent Signal</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${planets
+            .map(
+              planet => `
+                <tr>
+                  <td>
+                    <strong>${escapeHtml(planet.planet)}</strong>
+                    <small>${escapeHtml(planet.ruler)} ruled sign</small>
+                  </td>
+                  <td>
+                    <strong>${escapeHtml(planet.display)}</strong>
+                    <small>${planet.longitude.toFixed(2)}deg absolute</small>
+                  </td>
+                  <td>
+                    <span class="element-chip ${escapeHtml(planet.element.toLowerCase())}">
+                      ${escapeHtml(planet.element)}
+                    </span>
+                    <small>${escapeHtml(planet.esms)}</small>
+                  </td>
+                  <td>
+                    <strong>${escapeHtml(capitalize(planet.dignity))}</strong>
+                    <small>strength ${planet.strength.toFixed(2)}</small>
+                  </td>
+                  <td>
+                    <strong>${escapeHtml(capitalize(planet.motion))}</strong>
+                    <small>${planet.speed.toFixed(3)}deg/day</small>
+                  </td>
+                  <td>
+                    <strong>${escapeHtml(planet.agent)}</strong>
+                    <small>${escapeHtml(planet.agentRole)}</small>
+                  </td>
+                </tr>
+              `
+            )
+            .join('')}
+        </tbody>
+      </table>
+    </div>
+  `
+}
+
+function renderAstrologyAspect(aspect: AstrologyAspect) {
+  return `
+    <article class="aspect-row">
+      <div>
+        <strong>${escapeHtml(aspect.summary)}</strong>
+        <small>${escapeHtml(aspect.polarity)} · ${aspect.applying ? 'applying' : 'separating'}</small>
+      </div>
+      <div class="aspect-score">
+        <span>${aspect.exactness}%</span>
+        <small>${aspect.orb.toFixed(2)}deg orb</small>
+      </div>
+    </article>
+  `
+}
+
+function renderAgentActivation(activation: AstrologyConsensusSnapshot['activeAgents'][number]) {
+  return `
+    <article class="activation-row">
+      <div>
+        <span class="avatar mini-avatar">${escapeHtml(initialsForName(activation.agent))}</span>
+      </div>
+      <div>
+        <strong>${escapeHtml(activation.agent)}</strong>
+        <small>${escapeHtml(activation.planet)} · ${escapeHtml(activation.role)}</small>
+        <p>${escapeHtml(activation.reason)}</p>
+      </div>
+      <b>${activation.score}</b>
+    </article>
+  `
+}
+
+function renderAstrologyLayer(layer: AstrologyConsensusSnapshot['layers'][number]) {
+  return `
+    <article class="astro-layer-card">
+      <div class="layer-head">
+        <span>${escapeHtml(layer.status)}</span>
+        <strong>${layer.confidence}%</strong>
+      </div>
+      <h3>${escapeHtml(layer.label)}</h3>
+      <p>${escapeHtml(layer.signal)}</p>
+      <small>${escapeHtml(layer.source)}</small>
+    </article>
+  `
+}
+
+function renderPhysicsView() {
+  const snapshot = state.physics.snapshot
+
+  if (!snapshot) {
+    return `
+      <section class="view empty-state">
+        <div class="panel stack">
+          <div class="eyebrow">Alchm Physics</div>
+          <h1>Physics dashboard</h1>
+          <p class="muted">
+            Explore Alchm quantities, kinetic motion, thermodynamic drift, and z-score baselines
+            from the current landscape.
+          </p>
+          ${
+            state.physics.lastError
+              ? `<div class="panel error-panel">${escapeHtml(state.physics.lastError)}</div>`
+              : ''
+          }
+          <div class="button-row center-row">
+            <button class="primary-button" data-action="refresh-physics">
+              ${state.physics.status === 'loading' ? 'Loading' : 'Load Dashboard'}
+            </button>
+            <button
+              class="secondary-button"
+              data-action="open-physics-source"
+              data-url="${PHYSICS_SOURCE_URLS.quantities}"
+            >
+              Kitchen Quantities
+            </button>
+          </div>
+        </div>
+      </section>
+    `
+  }
+
+  return `
+    <section class="view physics-view">
+      <header class="view-header physics-header">
+        <div>
+          <div class="eyebrow">Alchm Physics</div>
+          <h1>Alchm physics dashboard</h1>
+          <p>
+            A native companion view for quantities, kinetic vectors, thermodynamic rates, and
+            z-score deviations across the current ${snapshot.baseline.windowHours}-hour Alchm landscape.
+          </p>
+        </div>
+        <div class="button-row">
+          <button class="secondary-button" data-action="refresh-physics">
+            ${state.physics.status === 'loading' ? 'Refreshing' : 'Refresh Landscape'}
+          </button>
+          <button
+            class="secondary-button"
+            data-action="open-physics-source"
+            data-url="${PHYSICS_SOURCE_URLS.quantities}"
+          >
+            Kitchen Quantities
+          </button>
+          <button
+            class="secondary-button"
+            data-action="open-physics-source"
+            data-url="${PHYSICS_SOURCE_URLS.kineticsApi}"
+          >
+            Kinetics API
+          </button>
+        </div>
+      </header>
+
+      <div class="physics-kpi-grid">
+        ${renderPhysicsKpi('A-number', snapshot.current.quantities.ANumber.toFixed(2), `z ${formatSigned(findZ(snapshot.zScores.quantities, 'ANumber'))}`)}
+        ${renderPhysicsKpi('Landscape', capitalize(snapshot.landscape.mode), snapshot.landscape.weather)}
+        ${renderPhysicsKpi('Energy z', formatSigned(snapshot.landscape.energyZScore), snapshot.zScores.thermodynamics.find(metric => metric.key === 'energy')?.direction || 'at baseline')}
+        ${renderPhysicsKpi('Velocity', snapshot.kinetics.velocity.magnitude.toFixed(4), `${snapshot.kinetics.velocity.dominantElement} vector`)}
+        ${renderPhysicsKpi('Momentum', snapshot.kinetics.momentum.type, snapshot.kinetics.momentum.magnitude.toFixed(4))}
+        ${renderPhysicsKpi('Thermal drift', capitalize(snapshot.kinetics.metricVelocity.thermalDirection), `power ${formatSigned(snapshot.kinetics.power.value)}`)}
+      </div>
+
+      <div class="physics-dashboard-grid">
+        <section class="panel physics-landscape-panel">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow">Current Landscape</div>
+              <h2>${escapeHtml(capitalize(snapshot.landscape.mode))} field</h2>
+            </div>
+            <span class="tag">${escapeHtml(snapshot.current.planetaryHour)} hour</span>
+          </div>
+          <div class="physics-landscape-core">
+            <strong>${escapeHtml(snapshot.landscape.weather)}</strong>
+            <p>
+              ${escapeHtml(snapshot.landscape.dominantQuantity)} leads the quantities at
+              ${snapshot.landscape.dominantQuantityValue.toFixed(2)}. The strongest element is
+              ${escapeHtml(snapshot.landscape.strongestElement)} at ${snapshot.landscape.strongestElementValue.toFixed(2)}.
+            </p>
+          </div>
+          <div class="physics-landscape-stats">
+            ${renderPhysicsMicroStat('Most unusual', `${snapshot.landscape.mostUnusual.label} ${formatSigned(snapshot.landscape.mostUnusual.zScore)}`)}
+            ${renderPhysicsMicroStat('Aspect pressure', snapshot.landscape.aspectPressure.toFixed(2))}
+            ${renderPhysicsMicroStat('Harmonic flow', snapshot.landscape.harmonicFlow.toFixed(2))}
+            ${renderPhysicsMicroStat('Moon phase', snapshot.landscape.moonPhase)}
+          </div>
+        </section>
+
+        <section class="panel physics-kinetic-panel">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow">Kinetic State</div>
+              <h2>Velocity, momentum, force, power</h2>
+            </div>
+            <span class="tag">Inertia ${snapshot.kinetics.inertia.toFixed(3)}</span>
+          </div>
+          <div class="physics-vector-grid">
+            ${renderPhysicsVector('Velocity', snapshot.kinetics.velocity.vector, '#22d3ee')}
+            ${renderPhysicsVector('Momentum', snapshot.kinetics.momentum.vector, '#f59e0b')}
+            ${renderPhysicsVector('Force', snapshot.kinetics.force.vector, '#fb7185')}
+          </div>
+          <div class="physics-equation-row">
+            ${Object.entries(snapshot.kinetics.calculus)
+              .map(
+                ([label, value]) => `
+                  <span>
+                    <b>${escapeHtml(label)}</b>
+                    ${escapeHtml(value)}
+                  </span>
+                `
+              )
+              .join('')}
+          </div>
+        </section>
+      </div>
+
+      ${renderPhysicsVisualLab(snapshot)}
+
+      <div class="physics-board-grid">
+        <section class="panel stack">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow">Quantity Z-Scores</div>
+              <h2>Spirit, Essence, Matter, Substance</h2>
+            </div>
+            <span class="tag">${snapshot.baseline.samples} samples</span>
+          </div>
+          <div class="physics-z-stack">
+            ${snapshot.zScores.quantities
+              .map(metric => renderPhysicsZMetric(metric, physicsAccentFor(metric.key)))
+              .join('')}
+          </div>
+        </section>
+
+        <section class="panel stack">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow">Thermodynamics</div>
+              <h2>Heat, entropy, reactivity, energy</h2>
+            </div>
+            <span class="tag">z-score baseline</span>
+          </div>
+          <div class="physics-thermo-grid">
+            ${snapshot.zScores.thermodynamics.map(renderPhysicsThermoMetric).join('')}
+          </div>
+          <div class="physics-drift-grid">
+            ${renderPhysicsMicroStat('dHeat/dt', formatSigned(snapshot.kinetics.metricVelocity.vector.heat))}
+            ${renderPhysicsMicroStat('dEntropy/dt', formatSigned(snapshot.kinetics.metricVelocity.vector.entropy))}
+            ${renderPhysicsMicroStat('dReactivity/dt', formatSigned(snapshot.kinetics.metricVelocity.vector.reactivity))}
+            ${renderPhysicsMicroStat('dEnergy/dt', formatSigned(snapshot.kinetics.metricVelocity.vector.energy))}
+          </div>
+        </section>
+      </div>
+
+      <section class="panel stack">
+        <div class="panel-heading">
+          <div>
+            <div class="eyebrow">Landscape Timeline</div>
+            <h2>Hourly z-score drift</h2>
+          </div>
+          <span class="tag">${escapeHtml(formatTime(snapshot.targetMoment))}</span>
+        </div>
+        <div class="physics-timeline">
+          ${snapshot.samplePoints.map(renderPhysicsSamplePoint).join('')}
+        </div>
+      </section>
+
+      <div class="physics-info-grid">
+        <section class="panel stack">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow">Monica Signal</div>
+              <h2>Operating notes</h2>
+            </div>
+          </div>
+          <div class="recommendation-grid physics-rec-grid">
+            ${snapshot.recommendations.map(item => `<p>${escapeHtml(item)}</p>`).join('')}
+          </div>
+        </section>
+
+        <section class="physics-source-band">
+          <div class="panel-heading unframed-heading">
+            <div>
+              <div class="eyebrow">Sources</div>
+              <h2>What this screen consolidates</h2>
+            </div>
+          </div>
+          <div class="physics-source-grid">
+            ${snapshot.provenance.map(renderPhysicsSource).join('')}
+          </div>
+        </section>
+      </div>
+    </section>
+  `
+}
+
+function renderPhysicsKpi(label: string, value: string, detail: string) {
+  return `
+    <article class="physics-kpi">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <small>${escapeHtml(detail)}</small>
+    </article>
+  `
+}
+
+function renderPhysicsVisualLab(snapshot: AlchmPhysicsSnapshot) {
+  return `
+    <section class="panel stack physics-visual-lab">
+      <div class="panel-heading">
+        <div>
+          <div class="eyebrow">Quantity Physics Visualizer</div>
+          <h2>Composition, phase space, kinetic field, and z-score flow</h2>
+        </div>
+        <span class="tag">${snapshot.baseline.cadence} baseline</span>
+      </div>
+      <div class="physics-visual-grid">
+        ${renderQuantityComposition(snapshot)}
+        ${renderThermoPhasePortrait(snapshot)}
+        ${renderKineticFieldMap(snapshot)}
+        ${renderZScoreConstellation(snapshot)}
+        ${renderQuantityHeatmap(snapshot)}
+      </div>
+    </section>
+  `
+}
+
+function renderQuantityComposition(snapshot: AlchmPhysicsSnapshot) {
+  const entries = [
+    {
+      key: 'Spirit',
+      label: 'Spirit',
+      value: snapshot.current.quantities.Spirit,
+      color: physicsAccentFor('Spirit'),
+    },
+    {
+      key: 'Essence',
+      label: 'Essence',
+      value: snapshot.current.quantities.Essence,
+      color: physicsAccentFor('Essence'),
+    },
+    {
+      key: 'Matter',
+      label: 'Matter',
+      value: snapshot.current.quantities.Matter,
+      color: physicsAccentFor('Matter'),
+    },
+    {
+      key: 'Substance',
+      label: 'Substance',
+      value: snapshot.current.quantities.Substance,
+      color: physicsAccentFor('Substance'),
+    },
+  ]
+  const total = Math.max(
+    0.001,
+    entries.reduce((sum, entry) => sum + entry.value, 0)
+  )
+  let cursor = 0
+  const stops = entries
+    .map(entry => {
+      const start = cursor
+      cursor += (entry.value / total) * 100
+      return `${entry.color} ${start.toFixed(2)}% ${cursor.toFixed(2)}%`
+    })
+    .join(', ')
+
+  return `
+    <article class="physics-viz-card physics-composition-card">
+      <div class="viz-heading">
+        <span>Quantity Composition</span>
+        <strong>A# ${snapshot.current.quantities.ANumber.toFixed(2)}</strong>
+      </div>
+      <div
+        class="physics-composition-wheel"
+        style="--composition: conic-gradient(${stops})"
+        aria-hidden="true"
+      >
+        <div>
+          <span>Dominant</span>
+          <strong>${escapeHtml(snapshot.landscape.dominantQuantity)}</strong>
+        </div>
+      </div>
+      <div class="physics-composition-legend">
+        ${entries
+          .map(entry => {
+            const percent = (entry.value / total) * 100
+            return `
+              <div style="--legend-color: ${entry.color}; --legend-width: ${percent}%">
+                <span>${escapeHtml(entry.label)}</span>
+                <i aria-hidden="true"></i>
+                <b>${percent.toFixed(1)}%</b>
+              </div>
+            `
+          })
+          .join('')}
+      </div>
+    </article>
+  `
+}
+
+function renderThermoPhasePortrait(snapshot: AlchmPhysicsSnapshot) {
+  const points = snapshot.samplePoints
+    .map(point => {
+      const entropyZ = point.thermodynamicZScores?.entropy ?? 0
+      const heatZ = point.thermodynamicZScores?.heat ?? 0
+      return `${zSvgPosition(entropyZ)},${100 - zSvgPosition(heatZ)}`
+    })
+    .join(' ')
+  const currentEntropyZ = findZ(snapshot.zScores.thermodynamics, 'entropy')
+  const currentHeatZ = findZ(snapshot.zScores.thermodynamics, 'heat')
+  const currentX = zSvgPosition(currentEntropyZ)
+  const currentY = 100 - zSvgPosition(currentHeatZ)
+
+  return `
+    <article class="physics-viz-card">
+      <div class="viz-heading">
+        <span>Thermodynamic Phase Space</span>
+        <strong>Heat x entropy</strong>
+      </div>
+      <svg class="physics-phase-portrait" viewBox="0 0 100 100" role="img" aria-label="Thermodynamic phase portrait">
+        <line x1="50" y1="8" x2="50" y2="92"></line>
+        <line x1="8" y1="50" x2="92" y2="50"></line>
+        <polyline points="${points}"></polyline>
+        <circle cx="${currentX}" cy="${currentY}" r="4.4"></circle>
+        <text x="9" y="12">Heat</text>
+        <text x="70" y="94">Entropy</text>
+      </svg>
+      <div class="physics-phase-caption">
+        <span>Heat z ${formatSigned(currentHeatZ)}</span>
+        <span>Entropy z ${formatSigned(currentEntropyZ)}</span>
+      </div>
+    </article>
+  `
+}
+
+function renderKineticFieldMap(snapshot: AlchmPhysicsSnapshot) {
+  const vectors = [
+    { label: 'V', name: 'Velocity', vector: snapshot.kinetics.velocity.vector, color: '#22d3ee' },
+    { label: 'P', name: 'Momentum', vector: snapshot.kinetics.momentum.vector, color: '#f59e0b' },
+    { label: 'F', name: 'Force', vector: snapshot.kinetics.force.vector, color: '#fb7185' },
+  ]
+  const max = Math.max(
+    0.0001,
+    ...vectors.flatMap(item => Object.values(item.vector).map(value => Math.abs(value)))
+  )
+
+  return `
+    <article class="physics-viz-card">
+      <div class="viz-heading">
+        <span>Kinetic Field Map</span>
+        <strong>${escapeHtml(snapshot.kinetics.momentum.type)}</strong>
+      </div>
+      <div class="physics-field-map">
+        <span class="axis fire">Fire</span>
+        <span class="axis water">Water</span>
+        <span class="axis air">Air</span>
+        <span class="axis earth">Earth</span>
+        <i class="field-axis horizontal" aria-hidden="true"></i>
+        <i class="field-axis vertical" aria-hidden="true"></i>
+        ${vectors
+          .map(item => {
+            const point = kineticFieldPoint(item.vector, max)
+            return `
+              <b
+                class="field-dot"
+                title="${escapeHtml(item.name)}"
+                style="--field-x: ${point.x}%; --field-y: ${point.y}%; --field-color: ${item.color}"
+              >
+                ${escapeHtml(item.label)}
+              </b>
+            `
+          })
+          .join('')}
+      </div>
+      <div class="physics-phase-caption">
+        <span>Air/Earth horizontal</span>
+        <span>Fire/Water vertical</span>
+      </div>
+    </article>
+  `
+}
+
+function renderZScoreConstellation(snapshot: AlchmPhysicsSnapshot) {
+  const metrics = [...snapshot.zScores.quantities, ...snapshot.zScores.thermodynamics]
+  const count = Math.max(1, metrics.length - 1)
+
+  return `
+    <article class="physics-viz-card">
+      <div class="viz-heading">
+        <span>Z-Score Constellation</span>
+        <strong>${metrics.length} metrics</strong>
+      </div>
+      <div class="physics-z-constellation">
+        <i class="constellation-line low" aria-hidden="true"></i>
+        <i class="constellation-line center" aria-hidden="true"></i>
+        <i class="constellation-line high" aria-hidden="true"></i>
+        ${metrics
+          .map((metric, index) => {
+            const y = 12 + (index / count) * 76
+            return `
+              <b
+                class="constellation-dot"
+                title="${escapeHtml(`${metric.label}: z ${formatSigned(metric.zScore)}`)}"
+                style="--dot-x: ${zPosition(metric.zScore)}%; --dot-y: ${y}%; --dot-color: ${physicsAccentFor(metric.key)}"
+              >
+                ${escapeHtml(metricShortLabel(metric.label))}
+              </b>
+            `
+          })
+          .join('')}
+      </div>
+      <div class="physics-phase-caption">
+        <span>-2z</span>
+        <span>0z</span>
+        <span>+2z</span>
+      </div>
+    </article>
+  `
+}
+
+function renderQuantityHeatmap(snapshot: AlchmPhysicsSnapshot) {
+  const keys = ['Spirit', 'Essence', 'Matter', 'Substance', 'ANumber'] as const
+  const gridTemplate = `82px repeat(${snapshot.samplePoints.length}, minmax(9px, 1fr))`
+
+  return `
+    <article class="physics-viz-card physics-heatmap-card">
+      <div class="viz-heading">
+        <span>Quantity Z-Score Flow</span>
+        <strong>${snapshot.samplePoints.length} hourly samples</strong>
+      </div>
+      <div class="physics-heatmap" style="grid-template-columns: ${gridTemplate}">
+        ${keys
+          .map(
+            key => `
+              <strong>${escapeHtml(key === 'ANumber' ? 'A#' : key)}</strong>
+              ${snapshot.samplePoints
+                .map(point => {
+                  const zScore = point.quantityZScores?.[key] ?? 0
+                  return `
+                    <i
+                      class="${point.isCurrent ? 'current' : ''}"
+                      title="${escapeHtml(`${point.label} ${key}: z ${formatSigned(zScore)}`)}"
+                      style="--cell-color: ${zHeatColor(zScore)}"
+                    ></i>
+                  `
+                })
+                .join('')}
+            `
+          )
+          .join('')}
+      </div>
+      <div class="physics-heatmap-axis">
+        <span>${escapeHtml(snapshot.samplePoints[0]?.label || 'Start')}</span>
+        <span>Now highlighted</span>
+        <span>${escapeHtml(snapshot.samplePoints[snapshot.samplePoints.length - 1]?.label || 'End')}</span>
+      </div>
+    </article>
+  `
+}
+
+function renderPhysicsMicroStat(label: string, value: string) {
+  return `
+    <article class="physics-micro-stat">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+    </article>
+  `
+}
+
+function renderPhysicsZMetric(metric: PhysicsZMetric, accent: string) {
+  const position = zPosition(metric.zScore)
+  return `
+    <article class="physics-z-row ${zBandClass(metric.band)}" style="--z-accent: ${accent}; --z-position: ${position}%">
+      <div class="physics-z-head">
+        <div>
+          <strong>${escapeHtml(metric.label)}</strong>
+          <small>${escapeHtml(metric.direction)} · ${metric.percentile}th pct</small>
+        </div>
+        <div>
+          <b>${formatSigned(metric.zScore)}</b>
+          <small>${metric.value.toFixed(metric.key === 'ANumber' ? 2 : 2)} / avg ${metric.mean.toFixed(metric.key === 'ANumber' ? 2 : 2)}</small>
+        </div>
+      </div>
+      <div class="physics-z-track"><i aria-hidden="true"></i></div>
+    </article>
+  `
+}
+
+function renderPhysicsThermoMetric(metric: PhysicsZMetric) {
+  return `
+    <article class="physics-thermo-card ${zBandClass(metric.band)}" style="--z-accent: ${physicsAccentFor(metric.key)}; --z-position: ${zPosition(metric.zScore)}%">
+      <div>
+        <span>${escapeHtml(metric.label)}</span>
+        <strong>${metric.value.toFixed(3)}</strong>
+      </div>
+      <div class="physics-z-track"><i aria-hidden="true"></i></div>
+      <small>z ${formatSigned(metric.zScore)} · avg ${metric.mean.toFixed(3)}</small>
+    </article>
+  `
+}
+
+function renderPhysicsVector(label: string, vector: Record<string, number>, accent: string) {
+  const entries = Object.entries(vector)
+  const max = Math.max(0.0001, ...entries.map(([, value]) => Math.abs(value)))
+
+  return `
+    <article class="physics-vector-card" style="--vector-accent: ${accent}">
+      <strong>${escapeHtml(label)}</strong>
+      <div class="physics-vector-bars">
+        ${entries
+          .map(([key, value]) => {
+            const width = Math.max(3, Math.min(100, (Math.abs(value) / max) * 100))
+            return `
+              <div class="physics-vector-bar" style="--vector-width: ${width}%">
+                <span>${escapeHtml(key)}</span>
+                <i aria-hidden="true"></i>
+                <b>${formatSigned(value)}</b>
+              </div>
+            `
+          })
+          .join('')}
+      </div>
+    </article>
+  `
+}
+
+function renderPhysicsSamplePoint(point: AlchmPhysicsSnapshot['samplePoints'][number]) {
+  const energyPosition = zPosition(point.energyZScore)
+  const aNumberPosition = zPosition(point.aNumberZScore)
+
+  return `
+    <article
+      class="physics-sample ${point.isCurrent ? 'current' : ''}"
+      style="--energy-position: ${energyPosition}%; --a-position: ${aNumberPosition}%"
+    >
+      <strong>${escapeHtml(point.label)}</strong>
+      <div class="physics-sample-track energy"><i aria-hidden="true"></i></div>
+      <div class="physics-sample-track a-number"><i aria-hidden="true"></i></div>
+      <small>${escapeHtml(point.planetaryHour)} · E ${formatSigned(point.energyZScore)}</small>
+    </article>
+  `
+}
+
+function renderPhysicsSource(source: AlchmPhysicsSnapshot['provenance'][number]) {
+  return `
+    <article class="physics-source-card">
+      <h3>${escapeHtml(source.name)}</h3>
+      <p>${escapeHtml(source.contribution)}</p>
+      <button class="secondary-button" data-action="open-physics-source" data-url="${escapeHtml(source.url)}">
+        Open
+      </button>
+    </article>
+  `
+}
+
+function findZ(metrics: PhysicsZMetric[], key: string) {
+  return metrics.find(metric => metric.key === key)?.zScore || 0
+}
+
+function zPosition(zScore: number) {
+  return Math.max(3, Math.min(97, 50 + zScore * 18))
+}
+
+function zSvgPosition(zScore: number) {
+  return Math.max(8, Math.min(92, 50 + zScore * 16))
+}
+
+function zBandClass(band: PhysicsBand) {
+  return `z-band-${band}`
+}
+
+function kineticFieldPoint(vector: Record<string, number>, max: number) {
+  const x = 50 + (((vector.Air || 0) - (vector.Earth || 0)) / max) * 34
+  const y = 50 - (((vector.Fire || 0) - (vector.Water || 0)) / max) * 34
+
+  return {
+    x: Math.max(9, Math.min(91, x)),
+    y: Math.max(9, Math.min(91, y)),
+  }
+}
+
+function metricShortLabel(label: string) {
+  const labels: Record<string, string> = {
+    Spirit: 'Sp',
+    Essence: 'Es',
+    Matter: 'Ma',
+    Substance: 'Su',
+    'A-number': 'A#',
+    Heat: 'Ht',
+    Entropy: 'En',
+    Reactivity: 'Rx',
+    Energy: 'Eg',
+  }
+  return labels[label] || label.slice(0, 2)
+}
+
+function zHeatColor(zScore: number) {
+  const alpha = Math.max(0.18, Math.min(0.88, 0.18 + Math.abs(zScore) * 0.24))
+  if (zScore > 0.15) return `rgba(249, 115, 22, ${alpha})`
+  if (zScore < -0.15) return `rgba(96, 165, 250, ${alpha})`
+  return 'rgba(148, 163, 184, 0.22)'
+}
+
+function physicsAccentFor(key: string) {
+  const accents: Record<string, string> = {
+    Spirit: '#facc15',
+    Essence: '#60a5fa',
+    Matter: '#fb923c',
+    Substance: '#4ade80',
+    ANumber: '#c084fc',
+    heat: '#f97316',
+    entropy: '#22d3ee',
+    reactivity: '#fb7185',
+    energy: '#a3e635',
+  }
+  return accents[key] || '#e5e7eb'
+}
+
+function renderAgentsView() {
+  return `
+    <section class="view">
+      <header class="view-header">
+        <div>
+          <div class="eyebrow">Agents Web Catalog</div>
+          <h1>Send website agents to desktop</h1>
+          <p>
+            This companion uses the same Alchm Agents definitions as the web app. Purchases and
+            unlock decisions belong on the main web app; agents sent here appear in desktop chat.
+          </p>
+        </div>
+        <div class="button-row">
+          <button class="secondary-button" data-action="open-site" data-site="agents">Open Agents</button>
+        </div>
+      </header>
+      <div class="agent-grid">
+        ${AGENT_LIBRARY.map(renderAgentCard).join('')}
+      </div>
+    </section>
+  `
+}
+
+function renderAgentCard(template: AgentTemplate) {
+  const installed = state.roster.some(agent => agent.id === template.id)
+
+  return `
+    <article class="agent-card">
+      <div class="agent-card-head">
+        <span class="avatar large-avatar">${escapeHtml(template.initials)}</span>
+        <div>
+          <h3>${escapeHtml(template.name)}</h3>
+          <p class="muted">${escapeHtml(template.title)}</p>
+        </div>
+      </div>
+      <p class="agent-quote">${escapeHtml(template.quote)}</p>
+      <div class="tag-row">
+        <span class="tag">${template.tier === 'premium' ? 'Premium web unlock' : 'Web catalog'}</span>
+        <span class="tag">${escapeHtml(template.element)}</span>
+        ${template.domains.map(domain => `<span class="tag">${escapeHtml(domain)}</span>`).join('')}
+      </div>
+      <div class="button-row push-end">
+        ${
+          installed
+            ? `<button class="secondary-button" data-action="open-chat" data-agent-id="${template.id}">Open Chat</button>`
+            : `<button class="primary-button" data-action="add-agent" data-agent-id="${template.id}">Add to Desktop</button>`
+        }
+        <button class="secondary-button" data-action="open-agent-web" data-agent-id="${template.id}">
+          Web App
+        </button>
+      </div>
+    </article>
+  `
+}
+
+function renderStoneView() {
+  return `
+    <section class="view">
+      <header class="view-header">
+        <div>
+          <div class="eyebrow">Philosopher's Stone</div>
+          <h1>Create a local agent</h1>
+          <p>
+            Craft a desktop-only agent from birth information and additional context. The desktop
+            companion uses the same Philosopher's Stone calculation route, then stores the created
+            agent locally for chat on this device.
+          </p>
+        </div>
+        <div class="button-row">
+          <button class="secondary-button" data-action="open-stone-web">Open Web Route</button>
+        </div>
+      </header>
+
+      <form class="panel stack" data-stone-form>
+        <div class="form-grid">
+          <label class="field">
+            <span>Agent name</span>
+            <input
+              class="input"
+              name="name"
+              value="${escapeHtml(state.stoneDraft.name)}"
+              placeholder="Aurelia"
+              required
+            />
+          </label>
+          <label class="field">
+            <span>Birth date</span>
+            <input
+              class="input"
+              name="date"
+              type="date"
+              value="${escapeHtml(state.stoneDraft.date)}"
+              required
+            />
+          </label>
+          <label class="field">
+            <span>Birth time</span>
+            <input
+              class="input"
+              name="time"
+              type="time"
+              value="${escapeHtml(state.stoneDraft.time)}"
+              required
+            />
+          </label>
+          <label class="field">
+            <span>Birth location</span>
+            <input
+              class="input"
+              name="location"
+              value="${escapeHtml(state.stoneDraft.location)}"
+              placeholder="City, Country"
+              required
+            />
+          </label>
+          <label class="field">
+            <span>Latitude</span>
+            <input
+              class="input"
+              name="latitude"
+              value="${escapeHtml(state.stoneDraft.latitude)}"
+              inputmode="decimal"
+              placeholder="Optional"
+            />
+          </label>
+          <label class="field">
+            <span>Longitude</span>
+            <input
+              class="input"
+              name="longitude"
+              value="${escapeHtml(state.stoneDraft.longitude)}"
+              inputmode="decimal"
+              placeholder="Optional"
+            />
+          </label>
+        </div>
+        <label class="field">
+          <span>Additional context</span>
+          <textarea
+            class="textarea"
+            name="additionalContext"
+            placeholder="Purpose, tone, memories, boundaries, skills, or what this local agent should help with."
+          >${escapeHtml(state.stoneDraft.additionalContext)}</textarea>
+        </label>
+        <div class="stone-summary-grid">
+          ${renderStoneStep('Birth Information', 'Date, time, and place establish the natal calculation input.')}
+          ${renderStoneStep('Additional Context', 'Your written context shapes the agent voice and working purpose.')}
+          ${renderStoneStep('Local Roster', 'The result is saved as a desktop chat agent on this device.')}
+        </div>
+        <div class="button-row">
+          <button class="primary-button" type="submit">Create Local Agent</button>
+          <button class="secondary-button" type="reset">Clear</button>
+        </div>
+      </form>
+    </section>
+  `
+}
+
+function formatDateInputValue(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
+function renderStoneStep(title: string, detail: string) {
+  return `
+    <article class="panel stone-step">
+      <strong>${escapeHtml(title)}</strong>
+      <p class="muted">${escapeHtml(detail)}</p>
+    </article>
+  `
+}
+
+function renderAccountView() {
+  return `
+    <section class="view">
+      <header class="view-header">
+        <div>
+          <div class="eyebrow">Companion Accounts</div>
+          <h1>Agents and Kitchen</h1>
+          <p>
+            Track the accounts that live on the web apps, claim each daily yield, and open the
+            primary web surfaces when you need purchase, unlock, or full account management.
+          </p>
+        </div>
+        <button class="secondary-button" data-action="refresh-accounts">Sync Accounts</button>
+      </header>
+      <div class="account-grid">
+        ${renderSiteAccountCard(state.siteAccounts.agents)}
+        ${renderSiteAccountCard(state.siteAccounts.kitchen)}
+      </div>
+      <form class="panel stack" data-account-form>
+        <div class="eyebrow">Desktop link settings</div>
+        <div class="form-grid">
+          <label class="field">
+            <span>Display name</span>
+            <input class="input" id="account-display-name" value="${escapeHtml(state.account.displayName)}" />
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input class="input" id="account-email" value="${escapeHtml(state.account.email)}" />
+          </label>
+          <label class="field">
+            <span>User ID</span>
+            <input class="input" id="account-user-id" value="${escapeHtml(state.account.userId)}" />
+          </label>
+          <label class="field">
+            <span>Desktop API key</span>
+            <input class="input" id="account-api-key" value="${escapeHtml(state.account.apiKey)}" />
+          </label>
+          <label class="field">
+            <span>Agents web URL</span>
+            <input class="input" id="account-agents-url" value="${escapeHtml(state.account.agentsUrl)}" />
+          </label>
+          <label class="field">
+            <span>Kitchen web URL</span>
+            <input class="input" id="account-kitchen-url" value="${escapeHtml(state.account.kitchenUrl)}" />
+          </label>
+        </div>
+        <div class="button-row">
+          <button class="primary-button" type="submit">Save Account</button>
+          <button class="secondary-button" type="button" data-action="reset-api-key">Use Dev Key</button>
+          <button class="secondary-button" type="button" data-action="open-site" data-site="agents">
+            Agents Web
+          </button>
+          <button class="secondary-button" type="button" data-action="open-site" data-site="kitchen">
+            Kitchen Web
+          </button>
+        </div>
+      </form>
+    </section>
+  `
+}
+
+function renderSiteAccountCard(account: SiteAccount) {
+  const claimText =
+    account.status === 'checking'
+      ? 'Syncing'
+      : account.status === 'offline' || account.status === 'needs-link'
+        ? 'Link to Claim'
+        : account.canClaimDaily
+          ? 'Claim Daily Yield'
+          : 'Claimed Today'
+  const disabled =
+    !account.canClaimDaily || account.status === 'offline' || account.status === 'needs-link'
+
+  return `
+    <article class="panel account-card">
+      <div class="account-card-head">
+        <div>
+          <div class="eyebrow">${escapeHtml(account.status)}</div>
+          <h3>${escapeHtml(account.label)}</h3>
+          <p class="muted">${escapeHtml(account.message || account.homeUrl)}</p>
+        </div>
+        <button class="secondary-button" data-action="open-site" data-site="${account.site}">Open</button>
+      </div>
+      <div class="coin-grid">
+        ${renderCoin('Spirit', account.balances.spirit)}
+        ${renderCoin('Essence', account.balances.essence)}
+        ${renderCoin('Matter', account.balances.matter)}
+        ${renderCoin('Substance', account.balances.substance)}
+      </div>
+      <div class="button-row">
+        <button
+          class="primary-button"
+          data-action="claim-yield"
+          data-site="${account.site}"
+          ${disabled ? 'disabled' : ''}
+        >
+          ${claimText}
+        </button>
+        <span class="tag">Streak ${account.streak}</span>
+        ${
+          account.lastDailyClaimAt
+            ? `<span class="tag">Last ${formatTime(account.lastDailyClaimAt)}</span>`
+            : '<span class="tag">No claim yet</span>'
+        }
+      </div>
+    </article>
+  `
+}
+
+function renderDiagnosticsView() {
+  const telemetry = state.runtime.telemetry
+
+  return `
+    <section class="view">
+      <header class="view-header">
+        <div>
+          <div class="eyebrow">Diagnostics</div>
+          <h1>Local runtime</h1>
+          <p>
+            Verify the desktop wrapper, sidecar handshake, model process, and tray controls without
+            loading browser app surfaces.
+          </p>
+        </div>
+        <div class="button-row">
+          <button class="secondary-button" data-action="refresh-telemetry">Refresh System</button>
+          <button class="primary-button" data-action="refresh-mcp-nodes">Restart MCP Nodes</button>
+        </div>
+      </header>
+      <div class="diag-grid">
+        ${renderMetric('Frontend source', 'desktop-shell/dist')}
+        ${renderMetric('Main Sidecar API', state.runtime.sidecar)}
+        ${renderMetric('Alchm MCP Stdio', state.runtime.alchmMcpStatus)}
+        ${renderMetric('PA MCP Stdio', state.runtime.paMcpStatus)}
+        ${renderMetric('IPC nonce', state.runtime.ipcNonce ? 'received' : 'not available')}
+        ${renderMetric('Active model', telemetry?.activeModel || 'none')}
+        ${renderMetric('CPU', telemetry?.cpu?.percent === undefined ? 'unknown' : `${telemetry.cpu.percent}%`)}
+        ${renderMetric(
+          'Memory',
+          telemetry?.memory?.usedPercent === undefined
+            ? 'unknown'
+            : `${telemetry.memory.usedPercent}% of ${formatBytes(telemetry.memory.totalBytes || 0)}`
+        )}
+      </div>
+      <div class="form-grid">
+        <div class="panel stack">
+          <div class="eyebrow">Tray state</div>
+          <div class="button-row">
+            <button class="secondary-button" data-action="tray-state" data-tray-state="idle">Idle</button>
+            <button class="secondary-button" data-action="tray-state" data-tray-state="fire">Fire</button>
+            <button class="secondary-button" data-action="tray-state" data-tray-state="water">Water</button>
+            <button class="secondary-button" data-action="tray-state" data-tray-state="earth">Earth</button>
+          </div>
+        </div>
+        <div class="panel stack">
+          <div class="eyebrow">Local MCP Operations</div>
+          <div class="button-row">
+            <button class="secondary-button" data-action="test-alchm-mcp">Test Alchm Transit</button>
+            <button class="secondary-button" data-action="test-pa-mcp">Test PA Socrates Chat</button>
+          </div>
+        </div>
+      </div>
+      ${
+        state.runtime.lastError
+          ? `<div class="panel error-panel">${escapeHtml(state.runtime.lastError)}</div>`
+          : ''
+      }
+    </section>
+  `
+}
+
+function renderMetric(label: string, value: string) {
+  return `
+    <article class="panel metric">
+      <span class="eyebrow">${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+    </article>
+  `
+}
+
+function renderComposerSurface() {
+  const agents = getChatAgents()
+  const hasAgents = agents.length > 0
+
+  return `
+    <main class="surface surface-composer">
+      <form class="composer" data-chat-form>
+        <textarea
+          class="textarea"
+          name="message"
+          data-composer-input
+          placeholder="${escapeHtml(chatComposerPlaceholder(agents))}"
+          ${!hasAgents || state.runtime.generating ? 'disabled' : ''}
+        >${escapeHtml(state.composerDraft)}</textarea>
+        <button class="primary-button" type="submit" ${!hasAgents || state.runtime.generating ? 'disabled' : ''}>
+          Send
+        </button>
+      </form>
+    </main>
+  `
+}
+
+function getActiveAgent() {
+  return state.roster.find(agent => agent.id === state.activeAgentId) ?? state.roster[0] ?? null
+}
+
+function getChatAgentIds() {
+  const agentIds = normalizeSelectedChatAgentIds(
+    state.selectedChatAgentIds,
+    state.roster,
+    state.activeAgentId
+  )
+  state.selectedChatAgentIds = agentIds
+  return agentIds
+}
+
+function getChatAgents() {
+  const selectedIds = new Set(getChatAgentIds())
+  return state.roster.filter(agent => selectedIds.has(agent.id))
+}
+
+function getActiveChatKey() {
+  const agentIds = getChatAgentIds()
+  if (agentIds.length <= 1) return agentIds[0] || MONICA_GUIDE_ID
+
+  return `${GROUP_CHAT_PREFIX}${[...agentIds]
+    .sort()
+    .map(agentId => encodeURIComponent(agentId))
+    .join(',')}`
+}
+
+function getMessages(chatKey: string) {
+  if (!state.chats[chatKey]) state.chats[chatKey] = []
+  return state.chats[chatKey]
+}
+
+function setSingleChatAgent(agentId: string) {
+  state.activeAgentId = agentId
+  state.selectedChatAgentIds = [agentId]
+  state.activeView = 'chat'
+}
+
+function toggleChatAgentSelection(agentId: string, shouldSelect: boolean) {
+  if (!state.roster.some(agent => agent.id === agentId)) return
+
+  const currentIds = getChatAgentIds()
+  const nextIds = shouldSelect
+    ? [...new Set([...currentIds, agentId])]
+    : currentIds.filter(selectedId => selectedId !== agentId)
+
+  if (!nextIds.length) {
+    setNotice('At least one chat agent must stay selected.')
+    render()
+    return
+  }
+
+  state.selectedChatAgentIds = nextIds
+  state.activeAgentId = shouldSelect ? agentId : nextIds[0]
+  state.activeView = 'chat'
+  saveState()
+  render()
+}
+
+function addAgent(
+  agentId: string,
+  source: LocalAgent['source'] = 'web-catalog',
+  tierOverride?: AgentTier
+) {
+  const template = AGENT_LIBRARY.find(agent => agent.id === agentId)
+  if (!template) return
+  if (state.roster.some(agent => agent.id === template.id)) {
+    setSingleChatAgent(template.id)
+    saveState()
+    render()
+    return
+  }
+
+  const syncedAgent = { ...template, tier: tierOverride || template.tier }
+  addLedger(
+    source === 'web-unlock' || source === 'deep-link' ? 'Agent Sent From Web' : 'Agent Added',
+    `${syncedAgent.name} was added to desktop companion chat.`,
+    'No charge'
+  )
+
+  state.roster.push({ ...syncedAgent, addedAt: new Date().toISOString(), source })
+  setSingleChatAgent(syncedAgent.id)
+  setNotice(`${syncedAgent.name} added to Alchm Desktop.`)
+  saveState()
+  render()
+}
+
+async function createStoneAgentFromForm(form: HTMLFormElement) {
+  const input = readStoneForm(form)
+  if (!input) return
+
+  setNotice("Calculating Philosopher's Stone blueprint...")
+
+  try {
+    const blueprint = await calculateStoneBlueprint(input)
+    const localAgent = buildStoneAgent(input, blueprint)
+
+    state.roster = state.roster.filter(agent => agent.id !== localAgent.id)
+    state.roster.push(localAgent)
+    setSingleChatAgent(localAgent.id)
+    addLedger(
+      "Philosopher's Stone Agent",
+      `${localAgent.name} was created locally from birth information and context.`,
+      'No charge'
+    )
+    setNotice(`${localAgent.name} created with the Philosopher's Stone.`)
+    state.stoneDraft = createDefaultStoneDraft()
+    form.reset()
+    saveState()
+    render()
+  } catch (error) {
+    setNotice(error instanceof Error ? error.message : "Philosopher's Stone creation failed.")
+  }
+}
+
+function readStoneForm(form: HTMLFormElement): StoneFormInput | null {
+  const formData = new FormData(form)
+  const name = String(formData.get('name') || '').trim()
+  const date = String(formData.get('date') || '').trim()
+  const time = String(formData.get('time') || '').trim()
+  const location = String(formData.get('location') || '').trim()
+  const additionalContext = String(formData.get('additionalContext') || '').trim()
+
+  if (!name || !date || !time || !location) {
+    setNotice('Name, birth date, birth time, and birth location are required.')
+    return null
+  }
+
+  const resolved = resolveLocationCoordinates(location)
+  const latitudeInput = Number(String(formData.get('latitude') || '').trim())
+  const longitudeInput = Number(String(formData.get('longitude') || '').trim())
+  const latitude = Number.isFinite(latitudeInput) ? latitudeInput : resolved.latitude
+  const longitude = Number.isFinite(longitudeInput) ? longitudeInput : resolved.longitude
+
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+    setNotice('Latitude must be -90 to 90 and longitude must be -180 to 180.')
+    return null
+  }
+
+  return {
+    name,
+    date,
+    time,
+    location: resolved.label || location,
+    latitude,
+    longitude,
+    additionalContext,
+  }
+}
+
+async function calculateStoneBlueprint(input: StoneFormInput): Promise<StoneBlueprint> {
+  const birthDate = new Date(`${input.date}T${input.time}:00`)
+  if (Number.isNaN(birthDate.getTime())) throw new Error('Birth date or time is invalid.')
+
+  if (invokeCommand) {
+    try {
+      const response = await requestSidecar('/api/philosophers-stone/calculate', {
+        method: 'POST',
+        body: {
+          birthDate: birthDate.toISOString(),
+          latitude: input.latitude,
+          longitude: input.longitude,
+          agentName: input.name,
+          additionalContext: input.additionalContext,
+        },
+      })
+
+      if (response.ok) {
+        const payload = await response.json()
+        return normalizeStoneBlueprint(input, payload.data || payload)
+      }
+    } catch (error) {
+      console.warn("Desktop Philosopher's Stone route unavailable, using local calculation:", error)
+    }
+  }
+
+  return normalizeStoneBlueprint(input, calculateLocalStoneBlueprint(input))
+}
+
+function normalizeStoneBlueprint(input: StoneFormInput, result: any): StoneBlueprint {
+  const element = normalizeElement(result?.dominantElement)
+  const elements = result?.elements || {}
+  const constitution: Balances = result?.constitution
+    ? normalizeBalances(result.constitution)
+    : {
+        spirit: Math.round(Number(elements.Air || elements.air || 0) * 100),
+        essence: Math.round(Number(elements.Earth || elements.earth || 0) * 100),
+        matter: Math.round(Number(elements.Water || elements.water || 0) * 100),
+        substance: Math.round(Number(elements.Fire || elements.fire || 0) * 100),
+      }
+
+  return {
+    birthDate: input.date,
+    birthTime: input.time,
+    birthLocation: input.location,
+    latitude: input.latitude,
+    longitude: input.longitude,
+    additionalContext: input.additionalContext,
+    dominantElement: element,
+    constitution,
+    monicaConstant: Number(
+      result?.monicaConstant || result?.mc || calculateMcFromBalances(constitution)
+    ),
+    consciousnessLevel: String(
+      result?.consciousnessLevel || classifyLocalConsciousness(constitution)
+    ),
+  }
+}
+
+function normalizeBalances(value: Partial<Balances>): Balances {
+  return {
+    spirit: Math.round(Number(value.spirit || 0)),
+    essence: Math.round(Number(value.essence || 0)),
+    matter: Math.round(Number(value.matter || 0)),
+    substance: Math.round(Number(value.substance || 0)),
+  }
+}
+
+function buildStoneAgent(input: StoneFormInput, blueprint: StoneBlueprint): LocalAgent {
+  const element = blueprint.dominantElement
+  const domains = deriveContextDomains(input.additionalContext)
+
+  return {
+    id: `stone-${slugify(input.name)}-${Date.now()}`,
+    name: input.name,
+    title: `${capitalize(element)} Philosopher's Stone Agent`,
+    element,
+    tier: 'base',
+    modelName: modelNameForElement(element),
+    initials: initialsForName(input.name),
+    domains: ["Philosopher's Stone", 'Birth Chart', ...domains],
+    quote: `Created from ${input.location} birth data with ${capitalize(element)} dominance and ${blueprint.consciousnessLevel} consciousness.`,
+    promptSeed: buildStonePromptSeed(input, blueprint),
+    stoneBlueprint: blueprint,
+    addedAt: new Date().toISOString(),
+    source: 'philosophers-stone',
+  }
+}
+
+function buildStonePromptSeed(input: StoneFormInput, blueprint: StoneBlueprint) {
+  return [
+    `${input.name} is a local Philosopher's Stone agent created in Alchm Desktop.`,
+    `Birth anchor: ${blueprint.birthDate} ${blueprint.birthTime}, ${blueprint.birthLocation}.`,
+    `Coordinates: ${blueprint.latitude}, ${blueprint.longitude}.`,
+    `Dominant element: ${capitalize(blueprint.dominantElement)}.`,
+    `Alchemical constitution: Spirit ${blueprint.constitution.spirit}, Essence ${blueprint.constitution.essence}, Matter ${blueprint.constitution.matter}, Substance ${blueprint.constitution.substance}.`,
+    `Consciousness level: ${blueprint.consciousnessLevel}; MC ${blueprint.monicaConstant.toFixed(2)}.`,
+    input.additionalContext ? `Additional context from creator: ${input.additionalContext}` : '',
+    'Use the birth information and creator context as your local identity. Be useful, specific, and grounded in the user-provided context.',
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
+function deriveContextDomains(context: string) {
+  const words = context
+    .split(/[^a-zA-Z]+/)
+    .map(word => word.trim().toLowerCase())
+    .filter(word => word.length > 4)
+  const unique = [...new Set(words)]
+  return unique.slice(0, 3).map(capitalize)
+}
+
+function resolveLocationCoordinates(value: string) {
+  const coordinateMatch = value.match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/)
+  if (coordinateMatch) {
+    const latitude = Number(coordinateMatch[1])
+    const longitude = Number(coordinateMatch[2])
+    if (
+      Number.isFinite(latitude) &&
+      Number.isFinite(longitude) &&
+      latitude >= -90 &&
+      latitude <= 90 &&
+      longitude >= -180 &&
+      longitude <= 180
+    ) {
+      return { latitude, longitude, label: value }
+    }
+  }
+
+  const knownLocations: Record<string, { latitude: number; longitude: number; label: string }> = {
+    'new york': { latitude: 40.7128, longitude: -74.006, label: 'New York, USA' },
+    brooklyn: { latitude: 40.6782, longitude: -73.9442, label: 'Brooklyn, USA' },
+    london: { latitude: 51.5074, longitude: -0.1278, label: 'London, UK' },
+    paris: { latitude: 48.8566, longitude: 2.3522, label: 'Paris, France' },
+    'los angeles': { latitude: 34.0522, longitude: -118.2437, label: 'Los Angeles, USA' },
+    'san francisco': { latitude: 37.7749, longitude: -122.4194, label: 'San Francisco, USA' },
+    chicago: { latitude: 41.8781, longitude: -87.6298, label: 'Chicago, USA' },
+    tokyo: { latitude: 35.6762, longitude: 139.6503, label: 'Tokyo, Japan' },
+  }
+
+  const normalized = value.toLowerCase()
+  const knownKey = Object.keys(knownLocations).find(key => normalized.includes(key))
+  if (knownKey) return knownLocations[knownKey]
+
+  let hash = 0
+  for (const char of normalized) hash = (hash * 31 + char.charCodeAt(0)) >>> 0
+
+  return {
+    latitude: Number(((hash % 14000) / 100 - 70).toFixed(4)),
+    longitude: Number((((hash / 14000) % 36000) / 100 - 180).toFixed(4)),
+    label: value || 'Resolved symbolic location',
+  }
+}
+
+function sunElementForDate(month: number, day: number): 'Fire' | 'Water' | 'Air' | 'Earth' {
+  const signElements = [
+    { start: [3, 21], end: [4, 19], element: 'Fire' },
+    { start: [4, 20], end: [5, 20], element: 'Earth' },
+    { start: [5, 21], end: [6, 20], element: 'Air' },
+    { start: [6, 21], end: [7, 22], element: 'Water' },
+    { start: [7, 23], end: [8, 22], element: 'Fire' },
+    { start: [8, 23], end: [9, 22], element: 'Earth' },
+    { start: [9, 23], end: [10, 22], element: 'Air' },
+    { start: [10, 23], end: [11, 21], element: 'Water' },
+    { start: [11, 22], end: [12, 21], element: 'Fire' },
+    { start: [12, 22], end: [1, 19], element: 'Earth' },
+    { start: [1, 20], end: [2, 18], element: 'Air' },
+    { start: [2, 19], end: [3, 20], element: 'Water' },
+  ] as const
+
+  const dateKey = month * 100 + day
+  for (const sign of signElements) {
+    const start = sign.start[0] * 100 + sign.start[1]
+    const end = sign.end[0] * 100 + sign.end[1]
+    if (start <= end) {
+      if (dateKey >= start && dateKey <= end) return sign.element
+    } else if (dateKey >= start || dateKey <= end) {
+      return sign.element
+    }
+  }
+
+  return 'Earth'
+}
+
+function calculateMcFromBalances(constitution: Balances) {
+  const values = Object.values(constitution)
+  const average = values.reduce((sum, value) => sum + value, 0) / values.length
+  const variance =
+    values.reduce((sum, value) => sum + Math.abs(value - average), 0) / Math.max(1, values.length)
+  return Number(((average + variance) / 12).toFixed(2))
+}
+
+function classifyLocalConsciousness(constitution: Balances) {
+  const mc = calculateMcFromBalances(constitution)
+  if (mc >= 8) return 'Master'
+  if (mc >= 6) return 'Advanced'
+  if (mc >= 4) return 'Developing'
+  return 'Emerging'
+}
+
+function calculateLocalStoneBlueprint(input: StoneFormInput) {
+  const date = new Date(`${input.date}T${input.time}:00`)
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  const hour = date.getHours()
+  const minute = date.getMinutes()
+  const sunElement = sunElementForDate(month, day)
+  const raw = {
+    Fire: 18 + ((month * 7 + day + Math.max(0, input.latitude)) % 35),
+    Water: 18 + ((day * 5 + hour + Math.abs(Math.min(0, input.longitude))) % 35),
+    Air: 18 + ((hour * 9 + minute + Math.abs(input.longitude)) % 35),
+    Earth: 18 + ((month * 3 + minute + Math.abs(input.latitude)) % 35),
+  }
+  raw[sunElement] += 32
+
+  const total = Object.values(raw).reduce((sum, value) => sum + value, 0)
+  const elements = {
+    Fire: raw.Fire / total,
+    Water: raw.Water / total,
+    Air: raw.Air / total,
+    Earth: raw.Earth / total,
+  }
+  const dominantElement = Object.entries(elements).sort((a, b) => b[1] - a[1])[0][0]
+
+  return {
+    dominantElement,
+    elements,
+    monicaConstant: Number(
+      (Object.values(elements).reduce((sum, value) => sum + value ** 2, 0) * 10).toFixed(2)
+    ),
+    consciousnessLevel: classifyLocalConsciousness({
+      spirit: Math.round(elements.Air * 100),
+      essence: Math.round(elements.Earth * 100),
+      matter: Math.round(elements.Water * 100),
+      substance: Math.round(elements.Fire * 100),
+    }),
+  }
+}
+
+function removeAgent(agentId: string) {
+  const agent = state.roster.find(item => item.id === agentId)
+  if (agent?.source === 'app-guide') {
+    state.activeAgentId = MONICA_GUIDE_ID
+    setNotice('Monica stays in Alchm Desktop as the app guide.')
+    return
+  }
+
+  state.roster = state.roster.filter(item => item.id !== agentId)
+  for (const chatKey of Object.keys(state.chats)) {
+    if (chatKey === agentId || parseGroupChatKey(chatKey).includes(agentId)) {
+      delete state.chats[chatKey]
+    }
+  }
+
+  state.selectedChatAgentIds = state.selectedChatAgentIds.filter(
+    selectedId => selectedId !== agentId
+  )
+  if (state.activeAgentId === agentId) state.activeAgentId = state.selectedChatAgentIds[0] ?? null
+  state.selectedChatAgentIds = normalizeSelectedChatAgentIds(
+    state.selectedChatAgentIds,
+    state.roster,
+    state.activeAgentId
+  )
+  state.activeAgentId = state.selectedChatAgentIds[0] ?? state.roster[0]?.id ?? null
+  if (agent) addLedger('Agent Removed', `${agent.name} was removed from this device.`, 'No charge')
+  saveState()
+  render()
+}
+
+function saveAccountFromForm() {
+  state.account = {
+    ...state.account,
+    displayName: readInput('#account-display-name') || DEFAULT_ACCOUNT.displayName,
+    email: readInput('#account-email'),
+    userId: readInput('#account-user-id') || DEFAULT_ACCOUNT.userId,
+    apiKey: readInput('#account-api-key') || DEFAULT_ACCOUNT.apiKey,
+    agentsUrl: normalizeUrlInput(readInput('#account-agents-url'), DEFAULT_ACCOUNT.agentsUrl),
+    kitchenUrl: normalizeUrlInput(readInput('#account-kitchen-url'), DEFAULT_ACCOUNT.kitchenUrl),
+  }
+  state.siteAccounts.agents.homeUrl = state.account.agentsUrl
+  state.siteAccounts.kitchen.homeUrl = state.account.kitchenUrl
+  addLedger('Account Updated', 'Desktop account settings were saved locally.', 'No charge')
+  setNotice('Desktop account saved.')
+  saveState()
+  render()
+}
+
+async function sendMessage(text: string) {
+  const agents = getChatAgents()
+  const cleaned = text.trim()
+  if (!agents.length || !cleaned || state.runtime.generating) return
+
+  state.composerDraft = ''
+  state.runtime.generating = true
+
+  const messages = getMessages(getActiveChatKey())
+  messages.push({
+    id: makeId('msg'),
+    role: 'user',
+    content: cleaned,
+    timestamp: new Date().toISOString(),
+  })
+
+  render()
+
+  let shouldRefreshAccounts = false
+  const priorResponses: AgentTurnResponse[] = []
+
+  try {
+    for (const agent of agents) {
+      const responseMessage: ChatMessage = {
+        id: makeId('msg'),
+        role: 'agent',
+        content: '',
+        timestamp: new Date().toISOString(),
+        channel:
+          agent.source === 'app-guide'
+            ? 'Desktop guide'
+            : state.runtime.sidecar === 'online'
+              ? 'Desktop agent'
+              : 'Runtime notice',
+        agentId: agent.id,
+        agentName: agent.name,
+      }
+      messages.push(responseMessage)
+      render()
+
+      try {
+        const agentText = await requestAgentText(agent, cleaned, {
+          groupAgents: agents,
+          priorResponses,
+        })
+
+        if (agentText) {
+          responseMessage.channel = agentText.channel
+          await streamTextIntoMessage(responseMessage, agentText.content)
+          priorResponses.push({
+            agentId: agent.id,
+            agentName: agent.name,
+            content: agentText.content,
+          })
+
+          if (agent.source === 'app-guide') {
+            addLedger('App Guide Chat', 'Monica answered in the desktop companion.', 'No charge')
+          } else {
+            addLedger(
+              agents.length > 1 ? 'Group Agent Chat' : 'Agent Chat',
+              `${agent.name} answered with the synced web profile.`,
+              agentText.metered ? 'Metered' : 'No charge'
+            )
+            shouldRefreshAccounts = shouldRefreshAccounts || agentText.metered
+          }
+        } else {
+          responseMessage.channel = 'Runtime notice'
+          const notice = buildRuntimeNotice(agent)
+          await streamTextIntoMessage(responseMessage, notice)
+          priorResponses.push({
+            agentId: agent.id,
+            agentName: agent.name,
+            content: notice,
+          })
+        }
+      } catch (error) {
+        responseMessage.channel = 'Runtime notice'
+        state.runtime.lastError =
+          error instanceof Error ? error.message : 'Local generation failed.'
+        const notice = buildRuntimeNotice(agent)
+        await streamTextIntoMessage(responseMessage, notice)
+        priorResponses.push({
+          agentId: agent.id,
+          agentName: agent.name,
+          content: notice,
+        })
+      }
+    }
+
+    if (shouldRefreshAccounts) await refreshAccounts({ silent: true })
+  } finally {
+    state.runtime.generating = false
+    saveState()
+    render()
+    if (surface === 'composer') await hideComposerWindow()
+  }
+}
+
+async function requestAgentText(
+  agent: LocalAgent,
+  userMessage: string,
+  turnContext: AgentTurnContext = { groupAgents: [agent], priorResponses: [] }
+): Promise<AgentTextResult | null> {
+  if (agent.source === 'app-guide') {
+    return {
+      content: buildMonicaGuideReply(userMessage, turnContext),
+      channel: 'Desktop guide',
+      metered: false,
+    }
+  }
+
+  if (state.localOfflineMode) {
+    try {
+      const priorHistory = turnContext.priorResponses.map(res => `${res.agentName}: ${res.content}`)
+      const apiKey = state.account.apiKey || 'dev-desktop-token'
+      const mcpResult = await paMcpClient.call('tools/call', {
+        name: 'chat_with_planetary_agent',
+        arguments: {
+          agentName: agent.name,
+          message: userMessage,
+          conversationHistory: priorHistory,
+          _meta: {
+            apiKey: apiKey,
+            caller: 'alchm-desktop-shell',
+          },
+        },
+      })
+
+      if (mcpResult && mcpResult.content && mcpResult.content[0]) {
+        const payloadText = mcpResult.content[0].text
+        const payload = JSON.parse(payloadText)
+        if (payload.error) {
+          throw new Error(payload.error)
+        }
+        return {
+          content: payload.text || 'No response',
+          channel: 'Local MCP Agent',
+          metered: false,
+        }
+      }
+      throw new Error('Invalid MCP response format')
+    } catch (error: any) {
+      console.error('Local MCP chat failed, falling back:', error)
+      return {
+        content:
+          `Local MCP chat failed: ${error.message}. ` +
+          buildProfileGuidedAgentReply(agent, userMessage, turnContext),
+        channel: 'Desktop agent (Fallback)',
+        metered: false,
+      }
+    }
+  }
+
+  if (!invokeCommand || !state.runtime.ipcNonce || !state.account.apiKey) {
+    return {
+      content: buildProfileGuidedAgentReply(agent, userMessage, turnContext),
+      channel: 'Desktop agent',
+      metered: false,
+    }
+  }
+
+  const groupContext = buildAgentGroupPromptContext(agent, turnContext)
+  const prompt =
+    agent.source === 'philosophers-stone'
+      ? [
+          `System: You are ${agent.name}, ${agent.title}, a local agent created with the Philosopher's Stone.`,
+          agent.promptSeed,
+          groupContext,
+          'Answer from the birth information and additional context used to create you.',
+          'The desktop app is a companion chat surface. Do not describe yourself as a fallback.',
+          `User: ${userMessage}`,
+          'Agent:',
+        ].join('\n')
+      : [
+          `System: You are ${agent.name}, ${agent.title}, from the Alchm Agents web catalog.`,
+          agent.promptSeed,
+          groupContext,
+          'Answer as the same agent personality the user would meet on the Alchm Agents website.',
+          'The desktop app is a companion chat surface. Do not describe yourself as a fallback.',
+          `User: ${userMessage}`,
+          'Agent:',
+        ]
+          .filter(Boolean)
+          .join('\n')
+
+  const response = await withTimeout(
+    requestSidecar('/api/generate', {
+      method: 'POST',
+      body: {
+        prompt,
+        modelName: agent.modelName,
+        costs: CHAT_COST,
+        inferenceProfile: 'balanced',
+      },
+    }),
+    GENERATION_TIMEOUT_MS,
+    'Local inference timed out.'
+  )
+
+  if (!response.ok) {
+    if (response.status === 404 || response.status === 500 || response.status === 502) {
+      return {
+        content: buildProfileGuidedAgentReply(agent, userMessage, turnContext),
+        channel: 'Desktop agent',
+        metered: false,
+      }
+    }
+
+    throw new Error(`Sidecar generation returned HTTP ${response.status}`)
+  }
+
+  const body = await response.text()
+  const content = parseSseText(body) || body.trim()
+  if (!content) {
+    return {
+      content: buildProfileGuidedAgentReply(agent, userMessage, turnContext),
+      channel: 'Desktop agent',
+      metered: false,
+    }
+  }
+
+  return {
+    content,
+    channel: 'Desktop inference',
+    metered: true,
+  }
+}
+
+function buildAgentGroupPromptContext(agent: LocalAgent, turnContext: AgentTurnContext) {
+  const peers = turnContext.groupAgents.filter(peer => peer.id !== agent.id)
+  const priorResponses = turnContext.priorResponses.filter(
+    response => response.agentId !== agent.id
+  )
+
+  if (!peers.length && !priorResponses.length) return ''
+
+  return [
+    peers.length
+      ? `Group chat: You are speaking with ${peers.map(peer => peer.name).join(', ')}.`
+      : '',
+    priorResponses.length
+      ? `Earlier responses this turn:\n${priorResponses
+          .map(response => `${response.agentName}: ${response.content.replace(/\s+/g, ' ')}`)
+          .join('\n')}`
+      : '',
+    peers.length
+      ? 'Answer in your own voice, and when useful, build on or refine the other agents instead of repeating them.'
+      : '',
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
+function buildProfileGuidedAgentReply(
+  agent: LocalAgent,
+  userMessage: string,
+  turnContext: AgentTurnContext
+) {
+  const message = userMessage.toLowerCase()
+  const subject = summarizePromptSubject(userMessage)
+  const specialty = agent.websiteAgent?.abilities?.specialty || agent.title
+  const teachingStyle = agent.websiteAgent?.abilities?.teachingStyle
+  const domains = agent.domains.slice(0, 3).join(', ')
+  const signatureQuestion = buildSignatureAgentQuestion(agent, message, subject)
+
+  if (asksForOneQuestion(message)) return signatureQuestion
+
+  let reply: string
+
+  if (hasAny(message, ['jupiter', 'leo', 'astrology', 'planet', 'transit', 'chart'])) {
+    reply = [
+      `I would read this through ${specialty.toLowerCase()}.`,
+      buildAstrologyProfileLine(agent, message),
+      signatureQuestion,
+    ].join(' ')
+
+    return addGroupContextToProfileReply(reply, turnContext)
+  }
+
+  if (hasAny(message, ['courage', 'brave', 'fear', 'risk'])) {
+    reply = [
+      'Courage is not proved by the absence of fear; it is proved by what remains chosen while fear is present.',
+      signatureQuestion,
+    ].join(' ')
+
+    return addGroupContextToProfileReply(reply, turnContext)
+  }
+
+  reply = [
+    `I am listening through ${domains || specialty}.`,
+    teachingStyle ? `My method here is ${teachingStyle.toLowerCase()}.` : '',
+    `The useful center of your question is ${subject}.`,
+    signatureQuestion,
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  return addGroupContextToProfileReply(reply, turnContext)
+}
+
+function addGroupContextToProfileReply(reply: string, turnContext: AgentTurnContext) {
+  if (turnContext.groupAgents.length <= 1 || !turnContext.priorResponses.length) return reply
+
+  const previous = turnContext.priorResponses[turnContext.priorResponses.length - 1]
+  return `Building on ${previous.agentName}: ${reply}`
+}
+
+function asksForOneQuestion(message: string) {
+  return (
+    hasAny(message, ['one question', 'socratic question', 'ask me a question']) ||
+    (message.includes('question') && !message.includes('answer'))
+  )
+}
+
+function summarizePromptSubject(userMessage: string) {
+  const cleaned = userMessage
+    .replace(/[?!.]+$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!cleaned) return 'the matter before us'
+  if (cleaned.length <= 84) return cleaned
+  return `${cleaned.slice(0, 81).trim()}...`
+}
+
+function buildSignatureAgentQuestion(agent: LocalAgent, message: string, subject: string) {
+  const name = agent.name.toLowerCase()
+
+  if (name.includes('socrates')) {
+    if (message.includes('courage')) {
+      return 'If courage is not the absence of fear, what must be present in a fearful moment for an act to deserve the name courage?'
+    }
+
+    return `What assumption inside "${subject}" should we examine before we decide it is true?`
+  }
+
+  if (name.includes('joan')) {
+    return `What vow would make "${subject}" worth your courage even before certainty arrives?`
+  }
+
+  if (name.includes('tesla')) {
+    return `What small experiment would let "${subject}" prove itself through signal instead of theory?`
+  }
+
+  if (name.includes('jung')) {
+    return `What part of "${subject}" feels charged because it is asking to be integrated rather than solved?`
+  }
+
+  if (name.includes('marcus')) {
+    return `What part of "${subject}" is under your control, and what part asks to be released?`
+  }
+
+  if (name.includes('rumi')) {
+    return `Where does "${subject}" stop being a problem and start becoming an invitation?`
+  }
+
+  return `What would change if you treated "${subject}" as a living pattern instead of a fixed conclusion?`
+}
+
+function buildAstrologyProfileLine(agent: LocalAgent, message: string) {
+  if (message.includes('jupiter') && message.includes('leo')) {
+    return 'Jupiter in Leo points toward generous creative leadership: the question is whether expansion serves truth, vanity, or a gift that wants to be shared.'
+  }
+
+  if (message.includes('jupiter')) {
+    return 'Jupiter tends to show where meaning, growth, teaching, and faith ask for a wider frame.'
+  }
+
+  return `${agent.name} would use the chart as a mirror for timing, temperament, and the next honest question.`
+}
+
+function buildMonicaGuideReply(userMessage: string, turnContext: AgentTurnContext) {
+  const message = userMessage.toLowerCase()
+  const userAgentCount = state.roster.filter(agent => agent.source !== 'app-guide').length
+  const selectedNames = turnContext.groupAgents.map(agent => agent.name).join(', ')
+
+  if (turnContext.groupAgents.length > 1 && hasAny(message, ['group', 'chat', 'agent'])) {
+    return [
+      "I'm Monica, and this chat is in group mode.",
+      `Selected agents: ${selectedNames}.`,
+      'Each agent will answer the turn in sequence and later agents can respond to earlier answers.',
+    ].join(' ')
+  }
+
+  if (hasAny(message, ['claim', 'yield', 'daily', 'balance', 'esms', 'account', 'kitchen'])) {
+    return [
+      "I'm Monica, your desktop guide.",
+      'Use Account to sync Alchm Agents and Alchm Kitchen, then claim daily yield for each site from its account card.',
+      'The desktop app tracks those balances locally here, while full account management still belongs on the browser apps.',
+    ].join(' ')
+  }
+
+  if (hasAny(message, ['stone', 'philosopher', 'birth', 'create', 'local agent', 'custom'])) {
+    return [
+      "I'm Monica, and the Philosopher's Stone is ready in the Stone tab.",
+      'Enter the agent name, birth date, birth time, birth location, and any extra context for purpose, tone, skills, or boundaries.',
+      'I will add the result to your local desktop roster for companion chat on this device.',
+    ].join(' ')
+  }
+
+  if (
+    hasAny(message, [
+      'physics',
+      'quantity',
+      'quantities',
+      'kinetic',
+      'kinetics',
+      'thermodynamic',
+      'thermodynamics',
+      'z-score',
+      'z score',
+      'landscape',
+      'heat',
+      'entropy',
+      'reactivity',
+      'energy',
+    ])
+  ) {
+    return [
+      "I'm Monica, and the Physics tab is the desktop Alchm landscape dashboard.",
+      'It shows current quantities, z-score deviations, thermodynamic drift, velocity, momentum, force, power, and planetary-hour context.',
+      "Use it when you want to understand the active Alchm conditions before choosing an agent, claiming yield, or creating a local Philosopher's Stone agent.",
+    ].join(' ')
+  }
+
+  if (
+    hasAny(message, [
+      'astrology',
+      'chart',
+      'transit',
+      'planet',
+      'moon',
+      'zodiac',
+      'dashboard',
+      'current sky',
+      'standing chart',
+    ])
+  ) {
+    return [
+      "I'm Monica, and the Astrology tab is the desktop consensus dashboard.",
+      'It combines the Kitchen current chart, planetary chart, standing chart workflow, Alchm quantities, dynamic aspects, and Agents routing.',
+      "Use it when you want the live sky, today's ESMS state, and which agents are activated before you chat or create a Philosopher's Stone agent.",
+    ].join(' ')
+  }
+
+  if (
+    hasAny(message, ['catalog', 'purchase', 'unlock', 'web agent', 'send agent', 'agents site'])
+  ) {
+    return [
+      "I'm Monica.",
+      'Use Catalog to review the same agent definitions as the Alchm Agents website.',
+      'Purchases and unlocks stay on the main web app; when an agent is sent here, the desktop companion adds it to local chat.',
+    ].join(' ')
+  }
+
+  if (hasAny(message, ['model', 'runtime', 'inference', 'chat', 'thinking', 'install'])) {
+    return [
+      "I'm Monica.",
+      'I can guide the app without a local model, but other desktop agents need their official local model installed before they can answer on this device.',
+      'Until then, their chat will show a runtime notice and you can continue with them on the Alchm Agents web app.',
+    ].join(' ')
+  }
+
+  return [
+    "I'm Monica, your Alchm Desktop guide.",
+    `This companion manages Agents and Kitchen accounts, claims daily yield, shows the consensus astrology and Alchm physics dashboards, sends web agents into desktop chat, and creates local Philosopher's Stone agents. You currently have ${userAgentCount} user agent${userAgentCount === 1 ? '' : 's'} in the desktop roster.`,
+    'Tell me whether you want help with Astrology, Physics, Account, Catalog, Stone, or local chat runtime.',
+  ].join(' ')
+}
+
+function hasAny(value: string, needles: string[]) {
+  return needles.some(needle => value.includes(needle))
+}
+
+async function requestSidecar(
+  path: string,
+  options: { method?: 'GET' | 'POST'; body?: unknown } = {}
+) {
+  if (!invokeCommand) throw new Error('Tauri IPC is not available.')
+
+  const response = await invokeCommand<SidecarProxyResponse>('sidecar_request', {
+    request: {
+      method: options.method || 'GET',
+      path,
+      body: options.body ?? null,
+      apiKey: state.account.apiKey || null,
+    },
+  })
+
+  return new Response(response.body || '', {
+    status: response.status,
+    headers: {
+      'Content-Type': response.contentType || 'text/plain',
+    },
+  })
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  let timeoutHandle: number | null = null
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutHandle = window.setTimeout(() => reject(new Error(message)), timeoutMs)
+  })
+
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timeoutHandle !== null) window.clearTimeout(timeoutHandle)
+  })
+}
+
+async function refreshAccounts(options: { silent?: boolean } = {}) {
+  if (!invokeCommand) {
+    markAccountsOffline('Open the packaged desktop app to sync accounts.')
+    if (!options.silent) render()
+    return
+  }
+
+  try {
+    const response = await requestSidecar('/api/accounts')
+    if (!response.ok) throw new Error(`Account sync returned HTTP ${response.status}`)
+    const data = (await response.json()) as {
+      mode?: string
+      userId?: string
+      accounts?: SiteAccount[]
+      balances?: Balances
+    }
+
+    if (data.userId) state.account.userId = data.userId
+    if (data.mode)
+      state.account.plan = data.mode === 'local-dev' ? 'Local Dev Companion' : 'Linked Companion'
+    if (data.balances) state.balances = data.balances
+
+    for (const account of data.accounts || []) {
+      state.siteAccounts[account.site] = {
+        ...state.siteAccounts[account.site],
+        ...account,
+        homeUrl: account.site === 'agents' ? state.account.agentsUrl : state.account.kitchenUrl,
+      }
+    }
+
+    saveState()
+    if (!options.silent) render()
+  } catch (error) {
+    markAccountsOffline(error instanceof Error ? error.message : 'Account sync failed.')
+    if (!options.silent) render()
+  }
+}
+
+async function claimDailyYield(site: SiteKey) {
+  if (!invokeCommand) {
+    setNotice('Claim daily yield from the packaged desktop app or the web app.')
+    return
+  }
+
+  try {
+    const response = await requestSidecar('/api/accounts/claim-daily', {
+      method: 'POST',
+      body: { site },
+    })
+    const data = (await response.json().catch(() => null)) as {
+      account?: SiteAccount
+      accounts?: SiteAccount[]
+      balances?: Balances
+      distribution?: Balances
+      message?: string
+    } | null
+
+    if (response.status === 409) {
+      setNotice(data?.message || 'Daily yield already claimed.')
+      await refreshAccounts({ silent: true })
+      return
+    }
+
+    if (!response.ok) throw new Error(data?.message || `Claim returned HTTP ${response.status}`)
+
+    if (data?.balances) state.balances = data.balances
+    if (data?.account) state.siteAccounts[site] = data.account
+    for (const account of data?.accounts || []) state.siteAccounts[account.site] = account
+
+    addLedger(
+      'Daily Yield Claimed',
+      `${state.siteAccounts[site].label} daily yield was claimed through the desktop companion.`,
+      formatDistribution(data?.distribution)
+    )
+    setNotice(`${state.siteAccounts[site].label} yield claimed.`)
+    saveState()
+    render()
+  } catch (error) {
+    setNotice(error instanceof Error ? error.message : 'Daily yield claim failed.')
+  }
+}
+
+function markAccountsOffline(message: string) {
+  for (const site of ['agents', 'kitchen'] as SiteKey[]) {
+    state.siteAccounts[site] = {
+      ...state.siteAccounts[site],
+      status: 'offline',
+      canClaimDaily: false,
+      message,
+    }
+  }
+}
+
+async function refreshTelemetry() {
+  if (!invokeCommand) {
+    state.runtime.sidecar = 'offline'
+    render()
+    return
+  }
+
+  try {
+    const response = await requestSidecar('/api/hardware/telemetry')
+    if (!response.ok) throw new Error(`Telemetry returned HTTP ${response.status}`)
+    state.runtime.telemetry = (await response.json()) as HardwareTelemetry
+    state.runtime.sidecar = 'online'
+    state.runtime.lastError = null
+  } catch (error) {
+    state.runtime.sidecar = 'offline'
+    state.runtime.lastError = error instanceof Error ? error.message : 'Sidecar telemetry failed.'
+  }
+
+  render()
+}
+
+async function refreshAstrologyConsensus(options: { silent?: boolean } = {}) {
+  if (!invokeCommand) {
+    state.astrology.status = 'error'
+    state.astrology.lastError = 'Open the packaged desktop app to load the astrology sidecar.'
+    if (!options.silent) render()
+    return
+  }
+
+  state.astrology.status = 'loading'
+  state.astrology.lastError = null
+  if (!options.silent) render()
+
+  if (state.localOfflineMode) {
+    try {
+      const apiKey = state.account.apiKey || 'dev-desktop-token'
+      const mcpResult = await alchmMcpClient.call('tools/call', {
+        name: 'get_live_sky_transits',
+        arguments: {
+          latitude: 40.7128,
+          longitude: -74.006,
+          _meta: {
+            apiKey: apiKey,
+            caller: 'alchm-desktop-shell',
+          },
+        },
+      })
+
+      if (mcpResult && mcpResult.content && mcpResult.content[0]) {
+        const transits = JSON.parse(mcpResult.content[0].text)
+        state.astrology.snapshot = {
+          generatedAt: new Date().toISOString(),
+          location: { label: 'Local Stdio Coordinates', latitude: 40.7128, longitude: -74.006 },
+          provenance: [],
+          chart: {
+            title: 'Local Sky (Stdio)',
+            source: 'Local Alchm MCP sidecar',
+            sunSign: transits.dominantElement || 'Aries',
+            moonSign: 'Aries',
+            ascendant: { sign: 'Aries', degree: 0, longitude: 0 },
+            julianDay: 0,
+            planets: [],
+            aspects: [],
+          },
+          quantities: {
+            dominantElement: transits.dominantElement || 'Earth',
+            ANumber: 100,
+            elements: transits.elementalBalance || {
+              Fire: 0.25,
+              Water: 0.25,
+              Air: 0.25,
+              Earth: 0.25,
+            },
+          },
+          moonPhase: { name: transits.moonPhase?.name || 'Full Moon' },
+          planetaryHour: { current: 'Sun' },
+          activeAgents: [],
+          layers: [],
+          recommendations: [],
+        } as any
+        state.astrology.status = 'ready'
+        state.astrology.lastError = null
+      } else {
+        throw new Error('Invalid MCP response format')
+      }
+    } catch (error: any) {
+      state.astrology.status = 'error'
+      state.astrology.lastError = `Local MCP Transit failed: ${error.message}`
+    }
+    render()
+    return
+  }
+
+  try {
+    const response = await requestSidecar('/api/astrology/consensus')
+    if (!response.ok) throw new Error(`Astrology consensus returned HTTP ${response.status}`)
+
+    state.astrology.snapshot = (await response.json()) as AstrologyConsensusSnapshot
+    state.astrology.status = 'ready'
+    state.astrology.lastError = null
+  } catch (error) {
+    state.astrology.status = 'error'
+    state.astrology.lastError =
+      error instanceof Error ? error.message : 'Astrology consensus refresh failed.'
+  }
+
+  render()
+}
+
+async function refreshAlchmPhysics(options: { silent?: boolean } = {}) {
+  if (!invokeCommand) {
+    state.physics.status = 'error'
+    state.physics.lastError = 'Open the packaged desktop app to load the Alchm physics sidecar.'
+    if (!options.silent) render()
+    return
+  }
+
+  state.physics.status = 'loading'
+  state.physics.lastError = null
+  if (!options.silent) render()
+
+  try {
+    const response = await requestSidecar('/api/alchm/physics?windowHours=24')
+    if (!response.ok) throw new Error(`Alchm physics returned HTTP ${response.status}`)
+
+    state.physics.snapshot = (await response.json()) as AlchmPhysicsSnapshot
+    state.physics.status = 'ready'
+    state.physics.lastError = null
+  } catch (error) {
+    state.physics.status = 'error'
+    state.physics.lastError =
+      error instanceof Error ? error.message : 'Alchm physics refresh failed.'
+  }
+
+  render()
+}
+
+async function setTrayState(trayState: string) {
+  if (!invokeCommand) {
+    setNotice('Tray controls are available in the packaged desktop app.')
+    return
+  }
+
+  await invokeCommand<void>('set_tray_state', { state: trayState })
+  setNotice(`Tray set to ${trayState}.`)
+}
+
+async function hideComposerWindow() {
+  if (!invokeCommand) return
+
+  try {
+    await invokeCommand<void>('hide_live_composer')
+  } catch {
+    // The main window can submit chat without the compact composer being visible.
+  }
+}
+
+function parseSseText(body: string) {
+  const tokens: string[] = []
+  const lines = body.split('\n')
+
+  for (const line of lines) {
+    if (!line.startsWith('data:')) continue
+
+    const payload = line.slice(5).trim()
+    if (!payload || payload === '[DONE]') continue
+
+    try {
+      const data = JSON.parse(payload) as {
+        text?: string
+        content?: string
+        response?: string
+        choices?: Array<{ delta?: { content?: string } }>
+      }
+      const token = data.text || data.content || data.response || data.choices?.[0]?.delta?.content
+      if (token) tokens.push(token)
+    } catch {
+      tokens.push(payload)
+    }
+  }
+
+  return tokens.join('').trim()
+}
+
+async function streamTextIntoMessage(message: ChatMessage, text: string) {
+  message.content = ''
+  const chunks = text.match(/.{1,18}(\s|$)/g) || [text]
+
+  for (const chunk of chunks) {
+    message.content += chunk
+    render()
+    await sleep(18)
+  }
+}
+
+function buildRuntimeNotice(agent: LocalAgent) {
+  if (agent.source === 'app-guide') {
+    return "I'm Monica, your Alchm Desktop guide. I can help with account sync, daily yield, web catalog handoff, the Philosopher's Stone, and local runtime status."
+  }
+
+  if (agent.source === 'philosophers-stone') {
+    return `Alchm Desktop created ${agent.name} with the Philosopher's Stone, but the local inference runtime is not ready yet. Install or verify the official local model for this agent to chat on this device.`
+  }
+
+  return `Alchm Desktop has ${agent.name} synced, but the local inference runtime is not ready yet. Install or verify the official local model for this agent, or continue on the Alchm Agents web app.`
+}
+
+function addLedger(type: string, details: string, amount: string) {
+  state.ledger = [
+    {
+      id: makeId('ledger'),
+      type,
+      details,
+      amount,
+      timestamp: new Date().toISOString(),
+    },
+    ...state.ledger,
+  ].slice(0, 80)
+}
+
+function setNotice(message: string) {
+  state.notice = message
+  if (clearNoticeTimer) window.clearTimeout(clearNoticeTimer)
+  clearNoticeTimer = window.setTimeout(() => {
+    state.notice = null
+    render()
+  }, 3200)
+  saveState()
+  render()
+}
+
+function readInput(selector: string) {
+  return document.querySelector<HTMLInputElement>(selector)?.value.trim() || ''
+}
+
+function updateStoneDraftFromField(target: EventTarget | null) {
+  if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return
+  if (!target.closest('form')?.matches('[data-stone-form]')) return
+  if (!isStoneDraftKey(target.name)) return
+
+  state.stoneDraft[target.name] = target.value
+}
+
+function isStoneDraftKey(value: string): value is keyof StoneDraft {
+  return (
+    value === 'name' ||
+    value === 'date' ||
+    value === 'time' ||
+    value === 'location' ||
+    value === 'latitude' ||
+    value === 'longitude' ||
+    value === 'additionalContext'
+  )
+}
+
+function normalizeUrlInput(value: string, fallback: string) {
+  if (!value) return fallback
+  try {
+    return new URL(value).toString().replace(/\/$/, '')
+  } catch {
+    return fallback
+  }
+}
+
+function makeId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+function slugify(value: string) {
+  return (
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'agent'
+  )
+}
+
+function isView(value: string | undefined): value is View {
+  return VIEW_IDS.includes(value as View)
+}
+
+function isSiteKey(value: string | undefined): value is SiteKey {
+  return value === 'agents' || value === 'kitchen'
+}
+
+function urlForSite(site: SiteKey) {
+  return site === 'agents' ? state.account.agentsUrl : state.account.kitchenUrl
+}
+
+function openAgentOnWeb(agentId: string) {
+  void openExternalUrl(
+    `${state.account.agentsUrl.replace(/\/$/, '')}/agent/${encodeURIComponent(agentId)}`
+  )
+}
+
+function openStoneOnWeb() {
+  void openExternalUrl(`${state.account.agentsUrl.replace(/\/$/, '')}/philosophers-stone`)
+}
+
+async function openExternalUrl(url: string) {
+  try {
+    if (invokeCommand) {
+      const { open } = await import('@tauri-apps/plugin-shell')
+      await open(url)
+      return
+    }
+  } catch (error) {
+    console.warn('Tauri shell open failed, falling back to window.open:', error)
+  }
+
+  window.open(url, '_blank', 'noopener,noreferrer')
+}
+
+function formatDistribution(distribution?: Partial<Balances>) {
+  if (!distribution) return 'Yield'
+  const entries = Object.entries(distribution).filter(([, value]) => Number(value) > 0)
+  return entries.map(([key, value]) => `+${value} ${capitalize(key)}`).join(', ') || 'Yield'
+}
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+function formatTime(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleString([], {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+}
+
+function formatSigned(value: number) {
+  if (!Number.isFinite(value)) return '0.00'
+  const rounded = Math.round(value * 100) / 100
+  return rounded > 0 ? `+${rounded.toFixed(2)}` : rounded.toFixed(2)
+}
+
+function formatBytes(value: number) {
+  if (!value) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  const exponent = Math.min(Math.floor(Math.log(value) / Math.log(1024)), units.length - 1)
+  return `${(value / 1024 ** exponent).toFixed(exponent === 0 ? 0 : 1)} ${units[exponent]}`
+}
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, character => {
+    const replacements: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    }
+    return replacements[character] || character
+  })
+}
+
+function sleep(milliseconds: number) {
+  return new Promise(resolve => window.setTimeout(resolve, milliseconds))
+}
+
+function bindEvents() {
+  document.body.addEventListener('click', async event => {
+    const control = (event.target as HTMLElement).closest<HTMLElement>('[data-action]')
+    if (!control) return
+
+    const action = control.dataset.action
+    const agentId = control.dataset.agentId
+    const site = control.dataset.site
+
+    if (action === 'view' && isView(control.dataset.view)) {
+      state.activeView = control.dataset.view
+      saveState()
+      render()
+      if (state.activeView === 'astrology' && state.astrology.status === 'idle') {
+        void refreshAstrologyConsensus({ silent: true })
+      }
+      if (state.activeView === 'physics' && state.physics.status === 'idle') {
+        void refreshAlchmPhysics({ silent: true })
+      }
+    }
+
+    if (action === 'select-agent' && agentId) {
+      setSingleChatAgent(agentId)
+      saveState()
+      render()
+    }
+
+    if (action === 'add-agent' && agentId) addAgent(agentId)
+    if (action === 'open-chat' && agentId) {
+      setSingleChatAgent(agentId)
+      saveState()
+      render()
+    }
+    if (action === 'remove-agent' && agentId) removeAgent(agentId)
+    if (action === 'open-agent-web' && agentId) openAgentOnWeb(agentId)
+    if (action === 'open-stone-web') openStoneOnWeb()
+    if (action === 'open-astrology-source' && control.dataset.url) {
+      void openExternalUrl(control.dataset.url)
+    }
+    if (action === 'open-physics-source' && control.dataset.url) {
+      void openExternalUrl(control.dataset.url)
+    }
+    if (action === 'open-site' && isSiteKey(site)) void openExternalUrl(urlForSite(site))
+    if (action === 'claim-yield' && isSiteKey(site)) void claimDailyYield(site)
+    if (action === 'refresh-accounts') void refreshAccounts()
+    if (action === 'refresh-astrology') void refreshAstrologyConsensus()
+    if (action === 'refresh-physics') void refreshAlchmPhysics()
+    if (action === 'reset-api-key') {
+      state.account.apiKey = DEFAULT_ACCOUNT.apiKey
+      saveState()
+      render()
+      setNotice('Dev sidecar key restored.')
+    }
+    if (action === 'refresh-telemetry') void refreshTelemetry()
+    if (action === 'tray-state' && control.dataset.trayState) {
+      void setTrayState(control.dataset.trayState)
+    }
+    if (action === 'toggle-offline-mode') {
+      state.localOfflineMode = !state.localOfflineMode
+      saveState()
+      render()
+      setNotice(state.localOfflineMode ? 'Local Offline Mode Active' : 'Cloud Online Mode Active')
+      void refreshAstrologyConsensus({ silent: true })
+    }
+    if (action === 'toggle-jing-panel') {
+      state.showJingPanel = !state.showJingPanel
+      saveState()
+      render()
+      if (state.showJingPanel) void refreshJingOverlays()
+    }
+    if (action === 'update-jing-move') {
+      const moveId = control.dataset.moveId
+      if (moveId) {
+        state.jingMoveId = moveId
+        saveState()
+        render()
+      }
+    }
+    if (action === 'cast-jing-duel') {
+      void castJingDuel()
+    }
+    if (action === 'test-alchm-mcp') {
+      setNotice('Testing Alchm MCP...')
+      try {
+        const apiKey = state.account.apiKey || 'dev-desktop-token'
+        const result = await alchmMcpClient.call('tools/call', {
+          name: 'get_live_sky_transits',
+          arguments: {
+            latitude: 40.7128,
+            longitude: -74.006,
+            _meta: {
+              apiKey,
+              caller: 'alchm-desktop-shell',
+            },
+          },
+        })
+        console.log('Test Alchm MCP success:', result)
+        setNotice('Alchm MCP OK: ' + (result?.content?.[0]?.text?.slice(0, 40) || 'Success'))
+      } catch (err: any) {
+        setNotice('Alchm MCP Fail: ' + err.message)
+      }
+    }
+    if (action === 'test-pa-mcp') {
+      setNotice('Testing PA Socrates MCP...')
+      try {
+        const apiKey = state.account.apiKey || 'dev-desktop-token'
+        const result = await paMcpClient.call('tools/call', {
+          name: 'chat_with_planetary_agent',
+          arguments: {
+            agentName: 'Socrates',
+            message: 'Hello, Socrates!',
+            _meta: {
+              apiKey,
+              caller: 'alchm-desktop-shell',
+            },
+          },
+        })
+        console.log('Test PA MCP success:', result)
+        setNotice('PA MCP OK: ' + (result?.content?.[0]?.text?.slice(0, 40) || 'Success'))
+      } catch (err: any) {
+        setNotice('PA MCP Fail: ' + err.message)
+      }
+    }
+    if (action === 'refresh-mcp-nodes') {
+      setNotice('Restarting MCP sidecars...')
+      void alchmMcpClient.start()
+      void paMcpClient.start()
+    }
+  })
+
+  document.body.addEventListener('submit', event => {
+    const form = event.target as HTMLFormElement
+    if (form.matches('[data-account-form]')) {
+      event.preventDefault()
+      saveAccountFromForm()
+      return
+    }
+
+    if (form.matches('[data-stone-form]')) {
+      event.preventDefault()
+      void createStoneAgentFromForm(form)
+      return
+    }
+
+    if (form.matches('[data-chat-form]')) {
+      event.preventDefault()
+      const input = form.querySelector<HTMLTextAreaElement>('[name="message"]')
+      void sendMessage(input?.value || state.composerDraft)
+    }
+  })
+
+  document.body.addEventListener('input', event => {
+    const target = event.target as HTMLElement
+    updateStoneDraftFromField(event.target)
+    if (target.matches('[data-composer-input]') && target instanceof HTMLTextAreaElement) {
+      state.composerDraft = target.value
+    }
+  })
+
+  document.body.addEventListener('change', event => {
+    const chatAgentToggle = (event.target as HTMLElement).closest<HTMLInputElement>(
+      '[data-chat-agent-toggle]'
+    )
+    if (chatAgentToggle?.dataset.agentId) {
+      toggleChatAgentSelection(chatAgentToggle.dataset.agentId, chatAgentToggle.checked)
+      return
+    }
+
+    const jingSelect = (event.target as HTMLElement).closest<HTMLSelectElement>(
+      '[data-action="update-jing-field"]'
+    )
+    if (jingSelect) {
+      const field = jingSelect.dataset.field
+      if (field === 'caster') state.jingCasterId = jingSelect.value || null
+      if (field === 'target') state.jingTargetId = jingSelect.value || null
+      saveState()
+      render()
+      // Prefetch the relational ledger so the badge + chips update
+      // before the user clicks Cast.
+      void refreshJingOverlays()
+      return
+    }
+
+    updateStoneDraftFromField(event.target)
+  })
+
+  window.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && surface === 'composer') void hideComposerWindow()
+  })
+}
+
+async function bootTauriRuntime() {
+  const maybeTauriWindow = window as Window & {
+    __TAURI_INTERNALS__?: { invoke?: unknown }
+  }
+
+  if (typeof maybeTauriWindow.__TAURI_INTERNALS__?.invoke !== 'function') {
+    state.runtime.sidecar = 'offline'
+    markAccountsOffline('Open the packaged desktop app to sync and claim yield.')
+    render()
+    return
+  }
+
+  try {
+    const [{ invoke }, { listen }] = await Promise.all([
+      import('@tauri-apps/api/core'),
+      import('@tauri-apps/api/event'),
+    ])
+    invokeCommand = invoke as InvokeFn
+    state.runtime.ipcNonce = await invokeCommand<string>('get_ipc_nonce')
+
+    await listen<DeepLinkAgentPayload>('verified-install', event => {
+      const template = AGENT_LIBRARY.find(
+        agent => agent.id === event.payload.id || agent.name === event.payload.name
+      )
+      if (template) addAgent(template.id, 'web-unlock', event.payload.tier)
+    })
+
+    await refreshTelemetry()
+    await refreshAccounts({ silent: true })
+
+    // Spawn local stdio MCP sidecars
+    void alchmMcpClient.start()
+    void paMcpClient.start()
+
+    await refreshAstrologyConsensus({ silent: true })
+    await refreshAlchmPhysics({ silent: true })
+    telemetryTimer = window.setInterval(() => {
+      void refreshTelemetry()
+      void refreshAccounts({ silent: true })
+      void refreshAstrologyConsensus({ silent: true })
+      void refreshAlchmPhysics({ silent: true })
+    }, 30000)
+  } catch (error) {
+    state.runtime.sidecar = 'offline'
+    state.runtime.lastError = error instanceof Error ? error.message : 'Tauri runtime unavailable.'
+    render()
+  }
+}
+
+function boot() {
+  bindEvents()
+  render()
+  saveState()
+  void bootTauriRuntime()
+}
+
+window.addEventListener('beforeunload', () => {
+  if (telemetryTimer) window.clearInterval(telemetryTimer)
+  void alchmMcpClient.stop()
+  void paMcpClient.stop()
+})
+
+boot()

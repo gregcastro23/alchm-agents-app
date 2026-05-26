@@ -18,6 +18,17 @@ async function proxyConsciousnessRequest(path: string, body: unknown) {
       signal: AbortSignal.timeout(15000),
     })
 
+    // Backend doesn't implement this route → signal client to use its local fallback
+    if (response.status === 404) {
+      return NextResponse.json(
+        {
+          error: 'Backend consciousness endpoint not available',
+          code: 'BACKEND_DISABLED',
+        },
+        { status: 503 }
+      )
+    }
+
     const payload = await response.json().catch(() => null)
 
     if (!response.ok) {

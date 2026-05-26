@@ -30,10 +30,20 @@ export interface FeedActionPayload {
     // For 'made_it' and 'recipe_generation'
     recipeName?: string
     recipeId?: string
+    recipe_id?: string
     review?: string
     madeIt?: boolean
     // For 'commensal_request'
     targetName?: string
+    withAgent?: string
+    partnerName?: string
+    // WTEN narration contract. Keep these names aligned with
+    // alchm.kitchen's eventNarration helper.
+    topic?: string
+    subject?: string
+    summary?: string
+    messageExcerpt?: string
+    item?: string
     // Agent identity — used by alchm.kitchen to render the profile chip
     agentName?: string
     agentProfile?: {
@@ -127,7 +137,7 @@ export class FeedActivationEngine {
         )
 
         actions.push({
-          agentEmail: `${agent.agentId}@alchm.kitchen`,
+          agentEmail: `${agent.agentId}@agentic.alchm.kitchen`,
           eventType,
           metadataPayload,
         })

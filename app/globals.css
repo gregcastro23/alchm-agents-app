@@ -456,3 +456,13 @@ body::after {
 .dark ::-webkit-scrollbar-thumb:hover {
   background: rgba(167, 139, 250, 0.7);
 }
+
+body.desktop-companion-body {
+  overflow: hidden;
+}
+
+body.desktop-companion-body .nav-cosmic,
+body.desktop-companion-body .fixed.bottom-4.right-4.z-50,
+body.desktop-companion-body .fixed.bottom-4.right-4.z-\[100\] {
+  display: none !important;
+}

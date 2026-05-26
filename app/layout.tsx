@@ -4,6 +4,7 @@ import './globals.css'
 import './navigation.css'
 import { Providers } from './providers'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { RootChrome } from '@/components/RootChrome'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -30,17 +31,12 @@ export const viewport = {
   userScalable: true,
 }
 
-import { TokenHUD } from '@/components/TokenHUD'
-import { Navigation } from '@/components/Navigation'
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={`${inter.className} flex flex-col min-h-screen`}>
         <Providers>
-          <Navigation />
-          <main className="flex-1">{children}</main>
-          <TokenHUD />
+          <RootChrome>{children}</RootChrome>
         </Providers>
         <SpeedInsights />
       </body>

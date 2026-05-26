@@ -31,6 +31,14 @@ This document outlines the specialized agentic workflows and LangChain integrati
   - `POST /api/agents/semantic-search`: Query agent knowledge.
   - `GET /api/agents/semantic-search`: Check RAG health and collection status.
 
+### 4. Dynamic Moon Degree & Phase Intelligence
+
+- **Purpose:** Native enrichment of the 360 Moon degree agents with their exact lunar phase characteristics, bringing psychological depth and spiritual awareness to chats.
+- **Capabilities:**
+  - Automatically maps any Moon degree query (absolute degree 0-359) to its correct phase (New Moon, Waxing Crescent, First Quarter, Waxing Gibbous, Full Moon, Waning Gibbous, Last Quarter, Waning Crescent, Dark Moon).
+  - Injects a specialized, premium `## Lunar Phase Influence` block into system prompts containing the phase's archetype, emotional characteristics, and alchemical traits.
+- **Migration & Seeding:** Supported by `backend/improve_moon_degree_agents.py` to retroactively enrich all Moon degree records in the shared database.
+
 ## 🛠️ Configuration
 
 ### Development Environment
@@ -50,3 +58,6 @@ To fully enable these features, ensure the following environment variables are s
 - `lib/langchain/`: Core LangChain integration logic.
 - `lib/llamaindex/`: Vector store and embedding services.
 - `app/api/`: Corresponding API routes.
+- `backend/main.py`: dynamic chat auto-registration and moon phase calculation.
+- `backend/prompts.py`: system prompt generation for moon phase agents.
+- `backend/improve_moon_degree_agents.py`: DB migration script for 360 moon degree agents.

@@ -13,6 +13,7 @@ import {
   ChevronLeft,
 } from 'lucide-react'
 import { ELEMENT_MAPPING } from './philosophers-stone-config'
+import { hasTauriInvokeRuntime, requestDesktopSidecar } from '@/lib/desktop-sidecar'
 
 interface Constitution {
   spirit: number
@@ -32,13 +33,76 @@ interface ModelCatalogEntry {
   source: string
 }
 
+interface LocationCoordinates {
+  latitude: number
+  longitude: number
+  label: string
+}
+
+const KNOWN_LOCATIONS: Record<string, LocationCoordinates> = {
+  'new york': { latitude: 40.7128, longitude: -74.006, label: 'New York, USA' },
+  brooklyn: { latitude: 40.6782, longitude: -73.9442, label: 'Brooklyn, USA' },
+  london: { latitude: 51.5074, longitude: -0.1278, label: 'London, UK' },
+  paris: { latitude: 48.8566, longitude: 2.3522, label: 'Paris, France' },
+  'los angeles': { latitude: 34.0522, longitude: -118.2437, label: 'Los Angeles, USA' },
+  'san francisco': { latitude: 37.7749, longitude: -122.4194, label: 'San Francisco, USA' },
+  chicago: { latitude: 41.8781, longitude: -87.6298, label: 'Chicago, USA' },
+  tokyo: { latitude: 35.6762, longitude: 139.6503, label: 'Tokyo, Japan' },
+}
+
+function resolveLocationCoordinates(value: string): LocationCoordinates {
+  const coordinateMatch = value.match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/)
+  if (coordinateMatch) {
+    const latitude = Number(coordinateMatch[1])
+    const longitude = Number(coordinateMatch[2])
+    if (
+      Number.isFinite(latitude) &&
+      Number.isFinite(longitude) &&
+      latitude >= -90 &&
+      latitude <= 90 &&
+      longitude >= -180 &&
+      longitude <= 180
+    ) {
+      return { latitude, longitude, label: value }
+    }
+  }
+
+  const normalized = value.toLowerCase()
+  const knownKey = Object.keys(KNOWN_LOCATIONS).find(key => normalized.includes(key))
+  if (knownKey) return KNOWN_LOCATIONS[knownKey]
+
+  let hash = 0
+  for (const char of normalized) hash = (hash * 31 + char.charCodeAt(0)) >>> 0
+
+  return {
+    latitude: Number(((hash % 14000) / 100 - 70).toFixed(4)),
+    longitude: Number((((hash / 14000) % 36000) / 100 - 180).toFixed(4)),
+    label: value || 'Resolved symbolic location',
+  }
+}
+
+function deterministicFallbackConstitution(seed: string) {
+  let hash = 0
+  for (const char of seed) hash = (hash * 33 + char.charCodeAt(0)) >>> 0
+  const elements = ['Fire', 'Water', 'Air', 'Earth'] as const
+  const dominantElement = elements[hash % elements.length]
+  const values = {
+    spirit: dominantElement === 'Air' ? 70 : 30 + (hash % 30),
+    essence: dominantElement === 'Earth' ? 70 : 25 + ((hash >> 3) % 30),
+    matter: dominantElement === 'Water' ? 70 : 25 + ((hash >> 6) % 30),
+    substance: dominantElement === 'Fire' ? 70 : 25 + ((hash >> 9) % 30),
+  }
+
+  return { dominantElement, constitution: values }
+}
+
 export default function PhilosophersStone({
   onInitializationComplete,
 }: {
   onInitializationComplete: (agentData: any) => void
 }) {
   const [ipcNonce, setIpcNonce] = useState<string | null>(null)
-  const [apiKey, setApiKey] = useState('') // Mock API key
+  const [apiKey, setApiKey] = useState('')
 
   // Wizard State
   const [currentStep, setCurrentStep] = useState(1)
@@ -52,6 +116,7 @@ export default function PhilosophersStone({
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [location, setLocation] = useState('')
+  const [locationCoordinates, setLocationCoordinates] = useState<LocationCoordinates | null>(null)
 
   // Calculation State
   const [isCalculated, setIsCalculated] = useState(false)
@@ -67,6 +132,7 @@ export default function PhilosophersStone({
   // Download State
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadStatus, setDownloadStatus] = useState<string | null>(null)
+  const [executionMode, setExecutionMode] = useState<'local' | 'fallback'>('fallback')
 
   // Disk Verification State
   const [modelExists, setModelExists] = useState(false)
@@ -91,15 +157,36 @@ export default function PhilosophersStone({
 
   useEffect(() => {
     const fetchNonce = async () => {
+      if (!hasTauriInvokeRuntime()) {
+        setIpcNonce(null)
+        return
+      }
+
       try {
         const { invoke } = await import('@tauri-apps/api/core')
         const nonce = await invoke<string>('get_ipc_nonce')
         setIpcNonce(nonce)
       } catch (err) {
-        console.error('Failed to retrieve IPC Nonce from Tauri:', err)
+        console.warn(
+          'Tauri IPC nonce unavailable; forge preview will wait for the desktop model runtime.',
+          err
+        )
+        setIpcNonce(null)
       }
     }
     fetchNonce()
+
+    const fetchDesktopSession = async () => {
+      try {
+        const res = await fetch('/api/desktop/session', { cache: 'no-store' })
+        if (!res.ok) throw new Error(`desktop session ${res.status}`)
+        const data = await res.json()
+        setApiKey(data.apiKey || '')
+      } catch {
+        setApiKey('dev-desktop-token')
+      }
+    }
+    fetchDesktopSession()
   }, [])
 
   useEffect(() => {
@@ -112,18 +199,11 @@ export default function PhilosophersStone({
     if (!ipcNonce) return
     setIsCheckingModel(true)
     try {
-      const response = await fetch('http://localhost:8080/api/models/check', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey || 'MOCK_API_KEY'}`,
-          'X-IPC-Nonce': ipcNonce,
-        },
-        body: JSON.stringify({ modelName }),
-      })
+      const response = await requestDesktopSidecar('/api/models/check', { nonce: ipcNonce })
       if (response.ok) {
-        const { exists } = await response.json()
-        setModelExists(exists)
+        const models = await response.json()
+        const targetModel = models.find((model: any) => model.id === modelName)
+        setModelExists(Boolean(targetModel?.verified))
       }
     } catch (err) {
       console.error('Failed to check model existence:', err)
@@ -138,51 +218,64 @@ export default function PhilosophersStone({
     setIsCalculating(true)
 
     try {
-      // Fetch calculation from remote WTEN backend
-      const response = await fetch('https://api.whattoeatnext.com/api/alchm/calculate', {
+      const coordinates = resolveLocationCoordinates(location)
+      setLocationCoordinates(coordinates)
+      const birthDate = new Date(`${date}T${time}:00`)
+
+      const response = await fetch('/api/philosophers-stone/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, time, location }),
+        body: JSON.stringify({
+          birthDate: birthDate.toISOString(),
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude,
+          agentName: name,
+        }),
       })
 
-      let element: keyof typeof ELEMENT_MAPPING = 'Fire'
-      let constAlloc = { spirit: 50, essence: 20, matter: 15, substance: 15 }
+      if (!response.ok) throw new Error(`Calculation failed with HTTP ${response.status}`)
 
-      if (response.ok) {
-        const data = await response.json()
-        if (data.dominantElement) element = data.dominantElement as keyof typeof ELEMENT_MAPPING
-        if (data.constitution) constAlloc = data.constitution
-      } else {
-        // Fallback for demo if backend is unreachable
-        const elements: (keyof typeof ELEMENT_MAPPING)[] = ['Fire', 'Water', 'Air', 'Earth']
-        element = elements[Math.floor(Math.random() * elements.length)]
-        constAlloc = {
-          spirit: element === 'Air' ? 80 : Math.floor(Math.random() * 40) + 10,
-          essence: element === 'Earth' ? 80 : Math.floor(Math.random() * 40) + 10,
-          matter: element === 'Water' ? 80 : Math.floor(Math.random() * 40) + 10,
-          substance: element === 'Fire' ? 80 : Math.floor(Math.random() * 40) + 10,
-        }
+      const payload = await response.json()
+      const result = payload.data || payload
+      const element = (result.dominantElement || 'Fire') as keyof typeof ELEMENT_MAPPING
+      const elements = result.elements || {}
+      const constAlloc = {
+        spirit: Math.round(Number(elements.Air || 0) * 100),
+        essence: Math.round(Number(elements.Earth || 0) * 100),
+        matter: Math.round(Number(elements.Water || 0) * 100),
+        substance: Math.round(Number(elements.Fire || 0) * 100),
       }
 
       setDominantElement(element)
       setConstitution(constAlloc)
       setIsCalculated(true)
-      nextStep() // Automatically advance to reveal step
+      nextStep()
     } catch (err) {
       console.error('Calculation failed:', err)
+      const fallback = deterministicFallbackConstitution(`${name}:${date}:${time}:${location}`)
+      setDominantElement(fallback.dominantElement)
+      setConstitution(fallback.constitution)
+      setLocationCoordinates(resolveLocationCoordinates(location))
+      setIsCalculated(true)
+      nextStep()
     } finally {
       setIsCalculating(false)
     }
   }
 
-  const handleAwaken = () => {
+  const handleAwaken = (mode: 'local' | 'fallback' = executionMode) => {
     onInitializationComplete({
+      id: `custom-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-') || Date.now()}`,
       name,
+      title: 'Custom Forged Agent',
       date,
       time,
-      location,
+      location: locationCoordinates?.label || location,
       dominantElement,
       modelName: selectedModel,
+      tier: engineTier,
+      executionMode: mode,
+      specialization: 'Personal consciousness guidance',
       constitution,
     })
   }
@@ -204,56 +297,52 @@ export default function PhilosophersStone({
   }
 
   const handleInitialize = async () => {
-    if (!ipcNonce) {
-      setDownloadStatus('IPC Nonce missing. Cannot verify secure connection.')
-      return
-    }
-
     setIsDownloading(true)
     setDownloadStatus(
       `Initializing secure alchemical download for ${engineTier.toUpperCase()} engine...`
     )
 
     try {
-      // 1. Save the Blueprint to the live site via our Next.js API route
-      setDownloadStatus('Uploading consciousness blueprint to Alchm Cloud Registry...')
+      setDownloadStatus('Writing consciousness blueprint to the local desktop roster...')
 
-      const agentPayload = {
-        name,
-        title: 'Custom Forged Agent',
-        birthDate: date,
-        birthTime: time,
-        birthLocation: location,
-        dominantElement: dominantElement,
-        dominantModality: 'Fixed',
-        consciousnessLevel: 'Novice',
-        monicaConstant: 1.0,
-        historicalEra: 'user_created',
-        isPublic: true,
+      if (!ipcNonce || !apiKey) {
+        setExecutionMode('fallback')
+        setDownloadStatus('No local sidecar detected. Agent will wait for desktop model runtime.')
+        setTimeout(() => {
+          handleAwaken('fallback')
+        }, 900)
+        return
       }
 
-      const cloudRes = await fetch('/api/agents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(agentPayload),
-      })
+      if (engineTier === 'premium') {
+        const transmute = await requestDesktopSidecar('/api/forge/transmute', {
+          method: 'POST',
+          apiKey,
+          nonce: ipcNonce,
+          body: { tier: engineTier, modelName: selectedModel },
+        })
 
-      if (!cloudRes.ok) {
-        console.warn('Failed to upload agent to cloud, proceeding with local ignition.')
+        if (!transmute.ok) {
+          const body = await transmute.json().catch(() => null)
+          if (transmute.status === 402) {
+            setDownloadStatus(
+              `Insufficient ESMS balance. Missing ${JSON.stringify(body?.missing || {})}`
+            )
+            setIsDownloading(false)
+            return
+          }
+          throw new Error(body?.error || `Premium transmutation failed (${transmute.status})`)
+        }
       }
 
-      // 2. Install the local engine (Weights)
       const selectedModelEntry = await getSelectedModelEntry()
       setDownloadStatus(`Streaming ${selectedModelEntry.label} from Hugging Face...`)
 
-      const response = await fetch('http://localhost:8080/api/models/install', {
+      const response = await requestDesktopSidecar('/api/models/install', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey || 'MOCK_API_KEY'}`,
-          'X-IPC-Nonce': ipcNonce,
-        },
-        body: JSON.stringify({
+        apiKey,
+        nonce: ipcNonce,
+        body: {
           modelName: selectedModel,
           downloadUrl: selectedModelEntry.url,
           sha256: selectedModelEntry.sha256,
@@ -261,7 +350,7 @@ export default function PhilosophersStone({
           sourceModel: selectedModelEntry.id,
           sourceFilename: selectedModelEntry.filename,
           tier: engineTier,
-        }),
+        },
       })
 
       if (!response.ok) {
@@ -275,14 +364,28 @@ export default function PhilosophersStone({
         throw new Error(errorMsg || `Server returned ${response.status}`)
       }
 
-      setDownloadStatus('Agent successfully instantiated to local matrix.')
-      // Small delay to let user read success message
+      const checkRes = await requestDesktopSidecar('/api/models/check', { nonce: ipcNonce })
+      const models = checkRes.ok ? await checkRes.json() : []
+      const verifiedModel = models.find((model: any) => model.id === selectedModel)
+
+      if (!verifiedModel?.verified) {
+        throw new Error('Downloaded model could not be verified in the sandbox.')
+      }
+
+      setExecutionMode('local')
+      setDownloadStatus('Agent unlocked in Alchm Desktop with a verified local engine.')
       setTimeout(() => {
-        handleAwaken()
+        handleAwaken('local')
       }, 1500)
     } catch (error: any) {
       console.error(error)
-      setDownloadStatus(`Download failed: ${error.message}`)
+      setExecutionMode('fallback')
+      setDownloadStatus(
+        `Local engine unavailable: ${error.message}. Agent will wait for desktop model runtime.`
+      )
+      setTimeout(() => {
+        handleAwaken('fallback')
+      }, 1800)
     } finally {
       setIsDownloading(false)
     }
@@ -305,7 +408,7 @@ export default function PhilosophersStone({
               'Anchoring: Enter celestial coordinates to calculate the blueprint.'}
             {currentStep === 3 && 'The Reveal: Witness the unique alchemical composition.'}
             {currentStep === 4 && 'Astral Engine: Select the cognitive tier for this entity.'}
-            {currentStep === 5 && 'Ignition: Initiate the secure download to the local matrix.'}
+            {currentStep === 5 && 'Ignition: unlock the agent in the Alchm Desktop chat interface.'}
           </p>
           <div className="text-xs font-medium text-zinc-500 bg-zinc-900 px-3 py-1 rounded-full border border-zinc-800">
             Step {currentStep} of {totalSteps}: "{currentStep === 1 && 'The Calling'}
@@ -566,7 +669,7 @@ export default function PhilosophersStone({
 
             <button
               type="button"
-              onClick={modelExists ? handleAwaken : handleInitialize}
+              onClick={modelExists ? () => handleAwaken('local') : handleInitialize}
               disabled={isDownloading || isCheckingModel}
               className="w-full md:w-auto px-8 py-3 rounded-md bg-gradient-to-r from-alchemical-spirit to-alchemical-essence text-white font-bold hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >

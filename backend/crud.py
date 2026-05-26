@@ -11,7 +11,7 @@ def get_agents(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.HistoricalAgent).offset(skip).limit(limit).all()
 
 def create_agent(db: Session, agent: schemas.AgentCreate):
-    agent_data = agent.dict()
+    agent_data = agent.model_dump()
     birth_date = agent.birthDate or datetime(2000, 1, 1)
     agent_data["birthDate"] = birth_date
     if agent_data.get("birthYear") is None:
@@ -79,7 +79,7 @@ def update_agent(db: Session, agent_id: str, agent_update: schemas.AgentUpdate):
     if not db_agent:
         return None
     
-    update_data = agent_update.dict(exclude_unset=True)
+    update_data = agent_update.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_agent, key, value)
     
@@ -89,7 +89,7 @@ def update_agent(db: Session, agent_id: str, agent_update: schemas.AgentUpdate):
     return db_agent
 
 def create_conversation(db: Session, conversation: schemas.ConversationCreate):
-    db_conversation = models.AgentConversation(**conversation.dict())
+    db_conversation = models.AgentConversation(**conversation.model_dump())
     db.add(db_conversation)
     
     # Update agent stats

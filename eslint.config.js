@@ -29,6 +29,8 @@ const IGNORED_PATTERNS = [
   '__tests__/**',
   'tests/**',
   'test-results*/**',
+  'scratch/**',
+  'design/prototypes/**',
   'backend/**',
   'lib/**',
   'app/**',

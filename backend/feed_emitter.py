@@ -22,6 +22,12 @@ Contract (must match src/app/api/feed/route.ts on the WTEN side):
     Authorization: Bearer {INTERNAL_API_SECRET}
     Body: { agentEmail, eventType, metadataPayload }
 
+WTEN narration contract for metadataPayload:
+    chat events: targetName/withAgent/partnerName, topic/subject/summary,
+        messageExcerpt/message
+    artifacts: recipeName, recipeId/recipe_id, dishName, insightTitle,
+        insightContent, rating, item, description
+
 Required env:
     ALCHM_KITCHEN_SYNC_URL or ALCHM_KITCHEN_URL
         alchm.kitchen Next.js base URL (NOT the Python backend URL — the feed
@@ -86,6 +92,62 @@ def _string_from_metadata(metadata_payload: Dict[str, Any], *keys: str) -> Optio
     return None
 
 
+def _truncate(value: str, limit: int = 160) -> str:
+    compact = " ".join(value.split())
+    if len(compact) <= limit:
+        return compact
+    return compact[: max(0, limit - 3)].rstrip() + "..."
+
+
+def _with_narration_contract(event_type: str, metadata: Dict[str, Any]) -> Dict[str, Any]:
+    """Fill WTEN narration fields from older PA aliases.
+
+    Keep this additive: callers may still pass richer values, and those should
+    always win. Field names are consumed by WTEN's eventNarration helper.
+    """
+    enriched = dict(metadata)
+    normalized_event = event_type.replace(".", "_")
+
+    target_name = _string_from_metadata(enriched, "targetName", "withAgent", "partnerName")
+    if target_name:
+        enriched.setdefault("targetName", target_name)
+        enriched.setdefault("withAgent", target_name)
+
+    topic = _string_from_metadata(enriched, "topic", "subject", "summary")
+    if not topic:
+        topic = _string_from_metadata(enriched, "messagePreview", "userMessage", "prompt")
+    if topic:
+        enriched.setdefault("topic", _truncate(topic, 90))
+
+    if normalized_event in {"agent_chat", "chat"} or event_type == "agent.chat":
+        excerpt = _string_from_metadata(
+            enriched,
+            "messageExcerpt",
+            "message",
+            "responsePreview",
+            "agentResponse",
+            "messagePreview",
+        )
+        if excerpt:
+            enriched.setdefault("messageExcerpt", _truncate(excerpt, 160))
+            enriched.setdefault("message", _truncate(excerpt, 500))
+
+    recipe_id = _string_from_metadata(enriched, "recipeId", "recipe_id")
+    if recipe_id:
+        enriched.setdefault("recipeId", recipe_id)
+        enriched.setdefault("recipe_id", recipe_id)
+
+    insight_content = _string_from_metadata(enriched, "insightContent")
+    if insight_content:
+        enriched.setdefault("summary", _truncate(insight_content, 160))
+
+    description = _string_from_metadata(enriched, "description")
+    if description:
+        enriched.setdefault("summary", _truncate(description, 160))
+
+    return enriched
+
+
 def build_feed_payload(
     agent_email: str,
     event_type: str,
@@ -98,7 +160,7 @@ def build_feed_payload(
     included for the admin control surface and for older PA dispatchers that
     still reason in action-language rather than feed-event-language.
     """
-    metadata = dict(metadata_payload or {})
+    metadata = _with_narration_contract(event_type, dict(metadata_payload or {}))
     action_type = _string_from_metadata(metadata, "actionType", "action_type") or event_type
     timestamp = _string_from_metadata(metadata, "timestamp") or _utc_timestamp()
     activity_details = metadata.get("activityDetails") or metadata.get("activity_details")

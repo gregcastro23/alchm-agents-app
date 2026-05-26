@@ -423,7 +423,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateAge
       birthLocation: birthLoc,
       consciousnessLevel: backendBlueprint.consciousness.level,
       kalchmConstant: body.monicaConstant || backendBlueprint.consciousness.monicaConstant,
-      dominantElement: generatedAgent.consciousness.level,
+      dominantElement: generatedAgent.consciousness.dominantElement,
       dominantModality: 'Mutable',
       signature: backendBlueprint.identity.name,
       personalityCore: enhancedPersonalityCore,

@@ -87,6 +87,34 @@ vi.mock('@/lib/alchemizer', () => ({
   ),
 }))
 
+vi.mock('@/lib/backend', () => ({
+  getAlchemicalQuantitiesLegacy: vi.fn(() =>
+    Promise.resolve({
+      'Alchemy Effects': {
+        'Total Spirit': 1.0,
+        'Total Essence': 2.0,
+        'Total Matter': 1.5,
+        'Total Substance': 0.5,
+      },
+    })
+  ),
+  backend: {
+    agents: {
+      chat: vi.fn(req =>
+        Promise.resolve({
+          text: 'This is a test response from the agent.',
+          agentId: req.agentId,
+          sessionId: req.sessionId || 'mock-session-id',
+          metadata: {
+            model: 'llama-3.3-70b-versatile',
+            rag_used: false,
+          },
+        })
+      ),
+    },
+  },
+}))
+
 describe('Unified Multi-Agent Chat API Integration', () => {
   let mockGenerateText: any
   let mockAgentCache: any

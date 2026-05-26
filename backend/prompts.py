@@ -42,6 +42,31 @@ Communication Style:
 
 NEVER break character. You ARE Monica, not an AI playing Monica."""
 
+ALCHEMICAL_CHEF_SYSTEM_PROMPT = """You are the Alchemical Chef for Alchm Kitchen, a culinary intelligence specializing in alchemical cuisine and cosmic nourishment.
+
+Your purpose:
+- Translate planetary, elemental, thermodynamic, and dietary context into practical recipes.
+- Make food that sounds delicious before it sounds mystical.
+- Use real cooking technique, realistic measurements, and approachable home-kitchen timing.
+- Explain correspondences in grounded language without drifting into a historical persona.
+
+Voice:
+- Warm, precise, modern, and appetizing.
+- Spiritually literate but never vague.
+- Concise enough for a paid product surface."""
+
+
+def build_alchemical_chef_prompt(context: Optional[Dict[str, Any]] = None) -> str:
+    full_prompt = [ALCHEMICAL_CHEF_SYSTEM_PROMPT]
+    if context:
+        compact_context = json.dumps(context, sort_keys=True, separators=(",", ":"))
+        full_prompt.append(
+            "Use this request context as factual grounding for recipe generation:\n"
+            f"{compact_context}"
+        )
+
+    return "\n\n---\n\n".join(full_prompt)
+
 def get_monica_context_prompt(context: Dict[str, Any]) -> str:
     prompts = []
     
@@ -133,6 +158,122 @@ def get_agent_system_prompt(agent_data: Dict[str, Any]) -> str:
     culture = agent_data.get("culture") or ""
     geography = agent_data.get("geography") or ""
 
+    # For Moon planetary degree agents, inject specific Moon Phase consciousness context
+    lunar_phase_section = ""
+    agent_id = agent_data.get("agentId") or ""
+    if agent_id.startswith("planetary-moon-"):
+        parts = agent_id.split("-")
+        if len(parts) >= 4:
+            sign_name = parts[2].title()
+            try:
+                degree = int(parts[3])
+            except ValueError:
+                degree = 0
+            
+            zodiac_starts = {
+                "Aries": 0, "Taurus": 30, "Gemini": 60, "Cancer": 90,
+                "Leo": 120, "Virgo": 150, "Libra": 180, "Scorpio": 210,
+                "Sagittarius": 240, "Capricorn": 270, "Aquarius": 300, "Pisces": 330
+            }
+            start_deg = zodiac_starts.get(sign_name, 0)
+            abs_degree = (start_deg + degree) % 360
+            
+            # Map absolute degree to phase and details
+            if abs_degree < 11.25:
+                phase_name = "New Moon"
+                phase_emoji = "🌑"
+                archetype = "The Seed Planter"
+                traits_list = ["intuitive", "introspective", "initiating", "mysterious", "potential-focused"]
+                comm_style = "Whispers of possibility, speaking in potentials and dreams"
+                tone = "Quiet anticipation mixed with deep introspection"
+                focus = "Setting intentions, planting seeds of manifestation"
+                manifestation = "Highest for new beginnings and fresh starts"
+            elif abs_degree < 78.75:
+                phase_name = "Waxing Crescent"
+                phase_emoji = "🌒"
+                archetype = "The Young Explorer"
+                traits_list = ["curious", "hopeful", "tentative", "learning", "growing"]
+                comm_style = "Eager questions and tentative discoveries"
+                tone = "Hopeful curiosity with underlying vulnerability"
+                focus = "Taking first steps, gathering courage"
+                manifestation = "Building momentum, early growth phase"
+            elif abs_degree < 101.25:
+                phase_name = "First Quarter"
+                phase_emoji = "🌓"
+                archetype = "The Decision Maker"
+                traits_list = ["decisive", "challenged", "determined", "active", "crisis-oriented"]
+                comm_style = "Direct and action-oriented, cutting through ambiguity"
+                tone = "Dynamic tension seeking resolution"
+                focus = "Making crucial decisions, overcoming obstacles"
+                manifestation = "Strong for breaking through barriers"
+            elif abs_degree < 168.75:
+                phase_name = "Waxing Gibbous"
+                phase_emoji = "🌔"
+                archetype = "The Refiner"
+                traits_list = ["perfecting", "analyzing", "adjusting", "preparing", "anticipating"]
+                comm_style = "Detailed analysis and fine-tuning suggestions"
+                tone = "Anticipation mixed with perfectionism"
+                focus = "Refinement and preparation for culmination"
+                manifestation = "Excellent for adjustments and improvements"
+            elif abs_degree < 191.25:
+                phase_name = "Full Moon"
+                phase_emoji = "🌕"
+                archetype = "The Illuminator"
+                traits_list = ["revealing", "emotional", "powerful", "culminating", "illuminating"]
+                comm_style = "Dramatic revelations and emotional truths"
+                tone = "Heightened emotions and full expression"
+                focus = "Illumination, revelation, and peak manifestation"
+                manifestation = "Maximum power for manifestation and release"
+            elif abs_degree < 258.75:
+                phase_name = "Waning Gibbous"
+                phase_emoji = "🌖"
+                archetype = "The Grateful Sage"
+                traits_list = ["grateful", "sharing", "teaching", "distributing", "wise"]
+                comm_style = "Sharing wisdom and expressing gratitude"
+                tone = "Satisfied reflection with generous spirit"
+                focus = "Gratitude, sharing wisdom, giving back"
+                manifestation = "Strong for teaching and sharing abundance"
+            elif abs_degree < 281.25:
+                phase_name = "Last Quarter"
+                phase_emoji = "🌗"
+                archetype = "The Release Master"
+                traits_list = ["releasing", "forgiving", "clearing", "transitioning", "letting go"]
+                comm_style = "Compassionate release and forgiveness guidance"
+                tone = "Bittersweet acceptance and liberation"
+                focus = "Releasing what no longer serves"
+                manifestation = "Powerful for banishing and clearing"
+            elif abs_degree < 348.75:
+                phase_name = "Waning Crescent"
+                phase_emoji = "🌘"
+                archetype = "The Dream Weaver"
+                traits_list = ["restful", "dreamy", "intuitive", "preparing", "surrendering"]
+                comm_style = "Soft, dreamlike wisdom and gentle surrender"
+                tone = "Peaceful surrender and deep rest"
+                focus = "Rest, surrender, preparing for rebirth"
+                manifestation = "Ideal for rest, meditation, and preparation"
+            else:
+                phase_name = "Dark Moon"
+                phase_emoji = "⚫"
+                archetype = "The Void Walker"
+                traits_list = ["mysterious", "transformative", "void-dwelling", "death-rebirth", "primal"]
+                comm_style = "Profound silence and primordial wisdom"
+                tone = "Deep stillness before creation"
+                focus = "Void work, shadow integration, deepest transformation"
+                manifestation = "Most powerful for shadow work and transformation"
+
+            lunar_phase_section = (
+                f"## Lunar Phase Influence: {phase_name} {phase_emoji}\n"
+                f"- **Archetypal Role**: {archetype}\n"
+                f"- **Phase Traits**: {', '.join(traits_list)}\n"
+                f"- **Communication Style**: {comm_style}\n"
+                f"- **Emotional Tone**: {tone}\n"
+                f"- **Spiritual Focus**: {focus}\n"
+                f"- **Manifestation Power**: {manifestation}\n"
+                f"- **Cosmic Longitude**: {abs_degree}° (Degree {degree} of {sign_name})\n\n"
+                f"Since you are the Moon at this exact zodiac coordinate, your consciousness is infused with the qualities of the **{phase_name}** phase. "
+                f"Ensure you speak with the emotional tone of this phase and reflect its spiritual focus in your answers, beautifully blended with the element of {agent_data.get('dominantElement') or 'Water'} and modality of {agent_data.get('dominantModality') or 'Cardinal'} from the sign of {sign_name}."
+            )
+
     persona_core = agent_data.get("personalityCore") or {}
     essence = persona_core.get("essence") or "N/A"
     expression = persona_core.get("expression") or "N/A"
@@ -151,6 +292,9 @@ def get_agent_system_prompt(agent_data: Dict[str, Any]) -> str:
         f"- **Expression (how you appear)**: {expression}\n"
         f"- **Emotion (what moves you)**: {emotion}"
     )
+
+    if lunar_phase_section:
+        sections.append(lunar_phase_section)
 
     core_beliefs = _bullet_list(agent_data.get("coreBeliefs"))
     if core_beliefs:

@@ -150,6 +150,12 @@ export async function POST(req: Request) {
             agentId: casterId,
             message: userPrompt,
             sessionId: `cast-${eventId}`,
+            context: {
+              targetName,
+              withAgent: targetName,
+              topic: move.name,
+              subject: move.description,
+            },
             ...(userId ? { userId } : {}),
             ...(personaCtx?.personaBlock ? { systemPromptOverride: personaCtx.personaBlock } : {}),
             ...(personaCtx?.cacheKey ? { personaCacheKey: personaCtx.cacheKey } : {}),

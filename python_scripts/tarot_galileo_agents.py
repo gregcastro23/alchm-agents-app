@@ -315,7 +315,7 @@ ASTROLOGICAL TIMING:
 SYMBOLIC MEANINGS:
 - Upright: Manifestation, willpower, skill, focused intention, "as above so below"
 - Reversed: Manipulation, trickery, lack of focus, misuse of power
-- Key Visual Symbols: Infinity symbol, four suit symbols, raised wand, altar
+- Key Visual Symbols: Infinity symbol, four suit symbols, raised wand, worktable
 - Archetypal Theme: The conscious creator, divine will in action
 
 PRACTICAL APPLICATIONS:

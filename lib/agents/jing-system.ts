@@ -22,7 +22,8 @@ export const JING_MOVES: Record<string, JingMove> = {
     name: 'Meltdown',
     element: 'fire',
     jingType: 'Positive',
-    description: 'Shatters an opponent\'s structural barriers, melts ice, or aggressively doubles discussion intensity.',
+    description:
+      "Shatters an opponent's structural barriers, melts ice, or aggressively doubles discussion intensity.",
     costDescription: 'Burns 15 Vitality and drains Spirit.',
     affectedStat: 'vitality',
     costValue: 15,
@@ -31,7 +32,8 @@ export const JING_MOVES: Record<string, JingMove> = {
     name: 'Freeze',
     element: 'water',
     jingType: 'Dynamic',
-    description: 'Locks an opponent\'s argument, forcing them to remain silent or maintain state in their next turn.',
+    description:
+      "Locks an opponent's argument, forcing them to remain silent or maintain state in their next turn.",
     costDescription: 'Drains 15 Adaptability as water turns into rigid, brittle ice.',
     affectedStat: 'adaptability',
     costValue: 15,
@@ -40,7 +42,8 @@ export const JING_MOVES: Record<string, JingMove> = {
     name: 'Tectonic Root',
     element: 'earth',
     jingType: 'Neutral',
-    description: 'Creates an impenetrable intellectual barrier, deflecting emotional or direct energetic attacks.',
+    description:
+      'Creates an impenetrable intellectual barrier, deflecting emotional or direct energetic attacks.',
     costDescription: 'Drains 15 Adaptability (specifically reduces Mercurial Velocity to 0).',
     affectedStat: 'adaptability',
     costValue: 15,
@@ -49,7 +52,8 @@ export const JING_MOVES: Record<string, JingMove> = {
     name: 'Vacuum',
     element: 'air',
     jingType: 'Negative',
-    description: 'Removes oxygen from the conversational space, instantly neutralizing enthusiastic or fiery declarations.',
+    description:
+      'Removes oxygen from the conversational space, instantly neutralizing enthusiastic or fiery declarations.',
     costDescription: 'Drains 15 Charisma, making the speaker cold and detached.',
     affectedStat: 'charisma',
     costValue: 15,
@@ -89,7 +93,7 @@ export function getAvailableJings(composition: AgentElementalComposition): JingM
   if (composition.water >= 30) moves.push(JING_MOVES.freeze)
   if (composition.earth >= 30) moves.push(JING_MOVES.tectonicRoot)
   if (composition.air >= 30) moves.push(JING_MOVES.vacuum)
-  
+
   return moves
 }
 
@@ -105,7 +109,7 @@ export function appendJingRulesToPrompt(config: {
 }): string {
   const composition = getElementalCompositionFromStats(config.elementalBalance)
   const availableMoves = getAvailableJings(composition)
-  
+
   const jingSection = `
 # THE JING ELEMENTAL INTERACTION METAGAME (MTG MODE)
 

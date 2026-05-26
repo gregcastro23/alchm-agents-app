@@ -91,7 +91,7 @@ function getStats(agent: HistoricalAgentRecord): NormalizedStats {
 }
 
 function agentEmail(agentId: string): string {
-  return `${agentId}@agents.alchm.kitchen`
+  return `${agentId}@agentic.alchm.kitchen`
 }
 
 function roundScore(score: number): number {
@@ -198,13 +198,17 @@ function metadataFor(
     return {
       ...base,
       recipeName: recipeNameFor(agent, trigger, sky),
+      topic: trigger.summary,
     }
   }
 
   if (eventType === 'commensal_request') {
+    const invitationTheme = `${agent.name} requests a ${sky.lunar.moon.element.toLowerCase()}-aligned table`
     return {
       ...base,
-      invitationTheme: `${agent.name} requests a ${sky.lunar.moon.element.toLowerCase()}-aligned table`,
+      invitationTheme,
+      topic: invitationTheme,
+      targetName: 'Alchm Kitchen community',
     }
   }
 

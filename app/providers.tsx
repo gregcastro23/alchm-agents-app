@@ -9,8 +9,7 @@ import { FloatingAdminPanel } from '@/components/admin/FloatingAdminPanel'
 
 function MonicaWrapper() {
   const pathname = usePathname()
-  const disabledForDesktopSurface =
-    pathname?.startsWith('/desktop/ghost-feed') || pathname?.startsWith('/desktop/composer')
+  const disabledForDesktopSurface = pathname?.startsWith('/desktop')
   const { alchmQuantities, monicaConstant } = usePlanetaryPositions({
     refreshInterval: 60000,
     enabled: !disabledForDesktopSurface,
@@ -27,12 +26,18 @@ function MonicaWrapper() {
   )
 }
 
+function DesktopAwareAdminPanel() {
+  const pathname = usePathname()
+  if (pathname?.startsWith('/desktop')) return null
+  return <FloatingAdminPanel />
+}
+
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       {children}
       <Toaster />
-      <FloatingAdminPanel />
+      <DesktopAwareAdminPanel />
       <MonicaWrapper />
     </SessionProvider>
   )

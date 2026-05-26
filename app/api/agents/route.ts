@@ -102,7 +102,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
       total: allAgents.length,
     })
   } catch (error: any) {
-    console.error('Failed to fetch agents from backend:', error)
+    console.warn('Backend agent fetch unavailable, using demo fallback:', error.message)
 
     // Fallback to demo agents if backend fails
     return NextResponse.json({

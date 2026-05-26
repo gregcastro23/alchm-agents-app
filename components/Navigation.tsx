@@ -8,7 +8,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Menu, X, Rocket, User, LogOut, Sparkles, Monitor } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { DESKTOP_APP_DOWNLOAD_URL } from '@/lib/desktop-download'
+import { ALCHM_DESKTOP_DOWNLOAD_LABEL, DESKTOP_APP_DOWNLOAD_URL } from '@/lib/desktop-download'
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -103,8 +103,8 @@ const navigationGroups = [
     links: [
       {
         href: DESKTOP_APP_DOWNLOAD_URL,
-        label: 'Download App',
-        description: 'Install the native Tauri desktop companion app.',
+        label: ALCHM_DESKTOP_DOWNLOAD_LABEL,
+        description: 'Install the native Alchm Desktop chat interface.',
       },
       {
         href: '/universe-learning',
@@ -219,11 +219,11 @@ export function Navigation() {
               target="_blank"
               rel="noopener noreferrer"
               className="nav-download-btn"
-              title="Download Desktop App"
-              aria-label="Download Desktop App"
+              title={ALCHM_DESKTOP_DOWNLOAD_LABEL}
+              aria-label={ALCHM_DESKTOP_DOWNLOAD_LABEL}
             >
               <Monitor className="h-4 w-4" />
-              <span>Download App</span>
+              <span>{ALCHM_DESKTOP_DOWNLOAD_LABEL}</span>
             </a>
             <Link href="/dashboard">
               <Button variant="ghost" size="icon" aria-label="Dashboard" className="nav-icon-btn">
@@ -303,7 +303,7 @@ export function Navigation() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <Monitor className="w-4 h-4" />
-                Download App
+                {ALCHM_DESKTOP_DOWNLOAD_LABEL}
               </a>
               <Link
                 href="/dashboard"
