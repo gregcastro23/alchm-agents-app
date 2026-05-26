@@ -9,6 +9,9 @@ from typing import Any, Dict, List, Optional
 import httpx
 
 import alchm_mcp
+from datetime import datetime
+import mcp_invocation_log
+
 
 
 PROTOCOL_VERSION = os.getenv("PLANETARY_AGENTS_MCP_PROTOCOL_VERSION", "2025-06-18")
@@ -359,10 +362,89 @@ async def handle_request(message: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             params = message.get("params") if isinstance(message.get("params"), dict) else {}
             name = params.get("name")
             arguments = params.get("arguments") if isinstance(params.get("arguments"), dict) else {}
+
+            # Gate and validate before dispatching
+            gated_args, api_key_id, user_id, auth_tier, resolved_model_tier = mcp_invocation_log.validate_and_gate_invocation(name, arguments)
+
             handler = TOOL_HANDLERS.get(name)
             if handler is None:
                 raise ValueError(f"Unknown tool: {name}")
-            result = await handler(arguments)
+
+            called_at = datetime.utcnow()
+            success = True
+            error_message = None
+            result = None
+
+            try:
+                result = await handler(gated_args)
+                if isinstance(result, dict) and result.get("isError"):
+                    success = False
+                    try:
+                        content_list = result.get("content", [])
+                        if content_list and isinstance(content_list[0], dict):
+                            err_txt = content_list[0].get("text", "")
+                            err_json = json.loads(err_txt)
+                            error_message = err_json.get("error") or err_json.get("message")
+                    except Exception:
+                        error_message = "Tool returned an error status"
+            except Exception as exc:
+                success = False
+                error_message = str(exc)
+                raise exc
+            finally:
+                completed_at = datetime.utcnow()
+                latency_ms = int((completed_at - called_at).total_seconds() * 1000)
+
+                # Extract caller
+                meta = arguments.get("_meta") or {}
+                caller = meta.get("caller") or "anonymous"
+
+                # Resolve agentId
+                agent_id = None
+                if name in ("chat_with_planetary_agent", "synthesize_culinary_debate"):
+                    agent_name = gated_args.get("agentName") or gated_args.get("agent_name")
+                    if agent_name:
+                        agent_id = _agent_id(agent_name)
+                    if not agent_id and name == "synthesize_culinary_debate":
+                        agents = gated_args.get("agents")
+                        if agents:
+                            agent_id = ",".join([_agent_id(a) for a in agents])
+
+                # Extract concise result summary
+                result_summary = {}
+                if result and isinstance(result, dict):
+                    content = result.get("content")
+                    if content and isinstance(content, list) and len(content) > 0:
+                        try:
+                            summary_text = content[0].get("text", "")
+                            parsed_res = json.loads(summary_text)
+                            if isinstance(parsed_res, dict):
+                                result_summary = {
+                                    "success": not parsed_res.get("error"),
+                                    "text_length": len(parsed_res.get("text", "")),
+                                    "has_history": "conversationHistory" in gated_args,
+                                    "dialogue_count": len(parsed_res.get("dialogue", [])) if "dialogue" in parsed_res else None,
+                                    "found": parsed_res.get("found"),
+                                    "keys": list(parsed_res.keys())
+                                }
+                        except Exception:
+                            result_summary = {"text_preview": str(content[0].get("text", ""))[:200]}
+
+                await mcp_invocation_log.record_invocation(
+                    tool_name=name,
+                    called_at=called_at,
+                    completed_at=completed_at,
+                    latency_ms=latency_ms,
+                    success=success,
+                    caller=caller,
+                    arguments=arguments,
+                    result_summary=result_summary,
+                    error_message=error_message,
+                    agent_id=agent_id,
+                    model_tier=resolved_model_tier,
+                    api_key_id=api_key_id,
+                    user_id=user_id
+                )
         else:
             return {
                 "jsonrpc": "2.0",

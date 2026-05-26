@@ -1575,5 +1575,131 @@ async def agent_sync(
         "action": action
     }
 
+@app.post("/api/cron/synthetic-mcp-probe")
+async def synthetic_mcp_probe(
+    x_cron_secret: Optional[str] = Header(None, alias="X-Cron-Secret"),
+    db: Session = Depends(database.get_db)
+):
+    cron_secret = os.getenv("PA_CRON_SECRET") or os.getenv("INTERNAL_API_SECRET")
+    if not cron_secret or x_cron_secret != cron_secret:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    import planetary_agents_mcp_server
+    import httpx
+
+    # Attempt to get a dynamic seed thread ID from frontend feed
+    seed_thread_id = "synthetic-seed-thread"
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get(f"{FRONTEND_URL.rstrip('/')}/api/feed")
+            if resp.status_code == 200:
+                feed_data = resp.json()
+                events = feed_data.get("events", [])
+                if events and isinstance(events, list) and isinstance(events[0], dict):
+                    seed_thread_id = events[0].get("id") or seed_thread_id
+    except Exception as exc:
+        print(f"[synthetic-probe] Failed to fetch dynamic seed thread: {exc}", flush=True)
+
+    # 1. Probe chat_with_planetary_agent
+    chat_payload = {
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+            "name": "chat_with_planetary_agent",
+            "arguments": {
+                "agentName": "Socrates",
+                "message": "ping",
+                "modelTier": "free",
+                "_meta": {
+                    "caller": "synthetic-probe"
+                }
+            }
+        },
+        "id": "probe-chat"
+    }
+
+    # 2. Probe get_agent_feed_discussion
+    feed_payload = {
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+            "name": "get_agent_feed_discussion",
+            "arguments": {
+                "threadId": seed_thread_id,
+                "_meta": {
+                    "caller": "synthetic-probe"
+                }
+            }
+        },
+        "id": "probe-feed"
+    }
+
+    results = {}
+    try:
+        chat_resp = await planetary_agents_mcp_server.handle_request(chat_payload)
+        results["chat"] = chat_resp
+    except Exception as exc:
+        results["chat_error"] = str(exc)
+
+    try:
+        feed_resp = await planetary_agents_mcp_server.handle_request(feed_payload)
+        results["feed"] = feed_resp
+    except Exception as exc:
+        results["feed_error"] = str(exc)
+
+    success = "chat_error" not in results and "feed_error" not in results
+    if success and (not results.get("chat") or results.get("chat", {}).get("error")):
+        success = False
+    if success and (not results.get("feed") or results.get("feed", {}).get("error")):
+        success = False
+
+    return {
+        "success": success,
+        "results": results
+    }
+
+@app.get("/api/admin/mcp-status")
+async def admin_mcp_status(db: Session = Depends(database.get_db)):
+    from sqlalchemy import select, desc
+    from models import MCPInvocation
+
+    try:
+        stmt = (
+            select(MCPInvocation)
+            .where(MCPInvocation.caller == "synthetic-probe")
+            .order_by(desc(MCPInvocation.calledAt))
+            .limit(10)
+        )
+        result = db.execute(stmt)
+        rows = result.scalars().all()
+
+        serializable_rows = []
+        for r in rows:
+            serializable_rows.append({
+                "id": r.id,
+                "tool_name": r.toolName,
+                "called_at": r.calledAt.isoformat() if r.calledAt else None,
+                "completed_at": r.completedAt.isoformat() if r.completedAt else None,
+                "latency_ms": r.latencyMs,
+                "success": r.success,
+                "caller": r.caller,
+                "error_message": r.errorMessage,
+                "model_tier": r.modelTier,
+                "agent_id": r.agentId
+            })
+
+        status = "healthy"
+        if not serializable_rows:
+            status = "unknown"
+        elif not any(r["success"] for r in serializable_rows[:2]):
+            status = "unhealthy"
+
+        return {
+            "status": status,
+            "latest_probes": serializable_rows
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Database lookup failed: {exc}")
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

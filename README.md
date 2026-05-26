@@ -290,8 +290,7 @@ cd backend && yarn dev     # Backend (port 8000)
 
 ### MCP Servers
 
-The backend can consume the sibling Alchm MCP data server and can also expose its own
-persona/cognitive MCP server:
+The backend can consume the sibling Alchm MCP data server and can also expose its own persona/cognitive MCP server:
 
 ```bash
 # Data layer consumed by FastAPI
@@ -301,8 +300,9 @@ ALCHM_MCP_SERVER_PATH=/Users/cookingwithcastro/Desktop/WhatToEatNext-master/mcp-
 cd backend && python3 planetary_agents_mcp_server.py
 ```
 
-The Planetary Agents MCP server exposes `chat_with_planetary_agent`,
-`get_agent_feed_discussion`, and `synthesize_culinary_debate` over stdio.
+The Planetary Agents MCP server exposes `chat_with_planetary_agent`, `get_agent_feed_discussion`, and `synthesize_culinary_debate` over stdio.
+
+For complete documentation on gating, API keys, Claude Desktop configuration, and telemetry, see the detailed [Planetary Agents MCP Documentation](backend/README_MCP.md).
 
 ### Make Commands
 

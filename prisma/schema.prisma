@@ -656,6 +656,7 @@ model historical_agents {
   AgentKnowledge         AgentKnowledge[]
   agent_attachment_usage agent_attachment_usage[]
   agent_attachments      agent_attachments[]
+  mcp_invocations        mcp_invocations[]
 
   @@index([agentId])
   @@index([birthYear, culture])
@@ -1197,9 +1198,10 @@ model users {
   /**
    * alchm.kitchen's UUID for this agent — returned by sync-debit. Used to build /profile/{id} links.
    */
-  alchmKitchenUserId String?          @unique
+  alchmKitchenUserId String?           @unique
   created_agents     created_agents[]
   user_profiles      user_profiles?
+  mcp_invocations    mcp_invocations[]
 
   @@index([email])
   @@index([isAgentic])
@@ -1371,7 +1373,8 @@ model DesktopApiKey {
   isActive   Boolean   @default(true) @map("is_active")
   lastUsedAt DateTime? @map("last_used_at") @db.Timestamptz
   expiresAt  DateTime? @map("expires_at") @db.Timestamptz
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  mcp_invocations mcp_invocations[]
 
   @@index([userId])
   @@index([isActive])
@@ -1391,4 +1394,31 @@ model TokenTransaction {
   createdAt          DateTime @map("created_at") @db.Timestamptz
 
   @@map("token_transactions")
+}
+
+model mcp_invocations {
+  id            BigInt    @id @default(autoincrement())
+  toolName      String    @map("tool_name")
+  calledAt      DateTime  @default(now()) @map("called_at") @db.Timestamptz
+  completedAt   DateTime? @map("completed_at") @db.Timestamptz
+  latencyMs     Int?      @map("latency_ms")
+  success       Boolean
+  userId        String?   @map("user_id")
+  apiKeyId      String?   @map("api_key_id")
+  caller        String?
+  arguments     Json?     @default("{}")
+  resultSummary Json?     @default("{}") @map("result_summary")
+  errorMessage  String?   @map("error_message")
+  agentId       String?   @map("agent_id")
+  modelTier     String?   @map("model_tier")
+
+  user          users?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  apiKey        DesktopApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  agent         historical_agents? @relation(fields: [agentId], references: [agentId], onDelete: SetNull)
+
+  @@index([toolName, calledAt(sort: Desc)])
+  @@index([agentId, calledAt(sort: Desc)])
+  @@index([userId, calledAt(sort: Desc)])
+  @@index([calledAt(sort: Desc)])
+  @@map("mcp_invocations")
 }

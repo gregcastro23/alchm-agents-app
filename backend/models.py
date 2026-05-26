@@ -117,3 +117,67 @@ class AgentConversation(Base):
     consciousnessLevel = Column(String)
     
     agent = relationship("HistoricalAgent", back_populates="recentConversations")
+
+class DesktopApiKey(Base):
+    __tablename__ = "desktop_api_keys"
+
+    id = Column(String, primary_key=True)
+    userId = Column(String, name="user_id", nullable=False)
+    token = Column(String, unique=True, nullable=False)
+    label = Column(String)
+    isActive = Column(Boolean, default=True, name="is_active")
+    lastUsedAt = Column(DateTime, name="last_used_at")
+    expiresAt = Column(DateTime, name="expires_at")
+    createdAt = Column(DateTime, name="created_at", default=datetime.utcnow)
+
+class MCPInvocation(Base):
+    __tablename__ = "mcp_invocations"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    toolName = Column(String, name="tool_name", nullable=False)
+    calledAt = Column(DateTime, name="called_at", default=datetime.utcnow)
+    completedAt = Column(DateTime, name="completed_at")
+    latencyMs = Column(Integer, name="latency_ms")
+    success = Column(Boolean, nullable=False)
+    userId = Column(String, name="user_id")
+    apiKeyId = Column(String, name="api_key_id")
+    caller = Column(String)
+    arguments = Column(JSON, default=dict)
+    resultSummary = Column(JSON, name="result_summary", default=dict)
+    errorMessage = Column(String, name="error_message")
+    agentId = Column(String, name="agent_id")
+    modelTier = Column(String, name="model_tier")
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(String, primary_key=True)
+    email = Column(String, unique=True, nullable=False)
+    passwordHash = Column(String)
+    name = Column(String)
+    provider = Column(String, default="email")
+    role = Column(String, default="user")
+    isAgentic = Column(Boolean, default=False)
+    verified = Column(Boolean, default=False)
+    createdAt = Column(DateTime, default=datetime.utcnow)
+    lastLogin = Column(DateTime)
+    lastActivationAt = Column(DateTime)
+    activationCount = Column(Integer, default=0)
+    alchmKitchenUserId = Column(String, unique=True)
+
+class UserSubscription(Base):
+    __tablename__ = "user_subscriptions"
+
+    id = Column(String, primary_key=True)
+    userId = Column(String, name="user_id", unique=True, nullable=False)
+    tier = Column(String, nullable=False)
+    status = Column(String, nullable=False)
+    stripeCustomerId = Column(String, name="stripe_customer_id")
+    stripeSubscriptionId = Column(String, name="stripe_subscription_id", unique=True)
+    currentPeriodStart = Column(DateTime, name="current_period_start")
+    currentPeriodEnd = Column(DateTime, name="current_period_end")
+    cancelAtPeriodEnd = Column(Boolean, name="cancel_at_period_end", default=False)
+    createdAt = Column(DateTime, name="created_at", default=datetime.utcnow)
+    updatedAt = Column(DateTime, name="updated_at", default=datetime.utcnow)
+
+
