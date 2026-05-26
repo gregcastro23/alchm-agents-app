@@ -116,18 +116,48 @@ def _text_result(payload: Dict[str, Any], is_error: bool = False) -> Dict[str, A
     return result
 
 
+async def _live_sky_context() -> Optional[Dict[str, Any]]:
+    """Fetch the current sky elemental balance + dominant element so
+    every persona response can be grounded in real planetary state.
+
+    Returns a small dict (dominantElement + elementalBalance + timestamp)
+    or None when the Alchm MCP is unreachable — callers degrade silently
+    rather than blocking the chat.
+    """
+    try:
+        transits = await alchm_mcp.get_live_sky_transits()
+    except Exception as exc:  # noqa: BLE001 — degrade silently on any failure
+        _log(f"_live_sky_context: alchm transits failed: {exc}")
+        return None
+
+    if not isinstance(transits, dict) or not transits:
+        return None
+
+    return {
+        "timestamp": transits.get("timestamp"),
+        "dominantElement": transits.get("dominantElement"),
+        "elementalBalance": transits.get("elementalBalance"),
+    }
+
+
 async def _backend_chat(
     agent_name: str,
     message: str,
     conversation_history: Optional[List[str]] = None,
     context: Optional[Dict[str, Any]] = None,
     model_tier: Optional[str] = None,
+    sky_state: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     agent_id = _agent_id(agent_name)
     merged_context = dict(context or {})
     if conversation_history:
         merged_context["conversationHistory"] = conversation_history[-12:]
     merged_context["mcpTool"] = "chat_with_planetary_agent"
+    if sky_state and "liveSkyState" not in merged_context:
+        # Personas always read from a fresh sky snapshot. We only set the
+        # field when the caller didn't already provide one (allows the
+        # culinary-debate flow to pass the scan-derived state through).
+        merged_context["liveSkyState"] = sky_state
 
     payload = {
         "agentId": agent_id,
@@ -157,6 +187,8 @@ async def chat_with_planetary_agent(arguments: Dict[str, Any]) -> Dict[str, Any]
     if not agent_name or not message:
         return _text_result({"error": "agentName and message are required"}, is_error=True)
 
+    sky_state = await _live_sky_context()
+
     try:
         result = await _backend_chat(
             agent_name=agent_name,
@@ -164,7 +196,12 @@ async def chat_with_planetary_agent(arguments: Dict[str, Any]) -> Dict[str, Any]
             conversation_history=arguments.get("conversationHistory"),
             context=arguments.get("context") if isinstance(arguments.get("context"), dict) else None,
             model_tier=arguments.get("modelTier"),
+            sky_state=sky_state,
         )
+        # Surface the sky snapshot in the tool result so the calling LLM
+        # can quote it directly without a second round-trip.
+        if sky_state:
+            result["liveSkyState"] = sky_state
         return _text_result(result)
     except Exception as exc:
         return _text_result(
@@ -172,6 +209,7 @@ async def chat_with_planetary_agent(arguments: Dict[str, Any]) -> Dict[str, Any]
                 "error": "chat_with_planetary_agent failed",
                 "message": str(exc),
                 "backendUrl": BACKEND_URL,
+                "liveSkyState": sky_state,
             },
             is_error=True,
         )
@@ -226,10 +264,22 @@ async def synthesize_culinary_debate(arguments: Dict[str, Any]) -> Dict[str, Any
     recipe_candidates: Dict[str, Any] = {}
     data_errors: List[str] = []
 
+    # Pull all three sources in parallel so the debate is grounded in live
+    # state before personas open their mouths. Each call is independent —
+    # one failure is captured in data_errors and doesn't stall the others.
+    scan_task = asyncio.create_task(alchm_mcp.alchemize_ingredients(ingredients))
+    transits_task = asyncio.create_task(_live_sky_context())
+
     try:
-        alchemical_scan = await alchm_mcp.alchemize_ingredients(ingredients)
+        alchemical_scan = await scan_task
     except Exception as exc:
         data_errors.append(f"alchemize_ingredients: {exc}")
+
+    try:
+        sky_state = await transits_task
+    except Exception as exc:
+        data_errors.append(f"get_live_sky_transits: {exc}")
+        sky_state = None
 
     try:
         recipe_candidates = await alchm_mcp.generate_cosmic_recipe(
@@ -251,6 +301,8 @@ async def synthesize_culinary_debate(arguments: Dict[str, Any]) -> Dict[str, Any
         "recipeCandidates": recipe_candidates,
         "topic": "culinary debate",
     }
+    if sky_state:
+        context["liveSkyState"] = sky_state
 
     async def _stance(agent: str) -> Dict[str, Any]:
         try:
@@ -259,6 +311,7 @@ async def synthesize_culinary_debate(arguments: Dict[str, Any]) -> Dict[str, Any
                 message=debate_prompt,
                 context=context,
                 model_tier=model_tier,
+                sky_state=sky_state,
             )
         except Exception as exc:
             return {"agentName": agent, "agentId": _agent_id(agent), "error": str(exc)}
@@ -270,6 +323,7 @@ async def synthesize_culinary_debate(arguments: Dict[str, Any]) -> Dict[str, Any
             "agents": agents,
             "alchemicalScan": alchemical_scan,
             "recipeCandidates": recipe_candidates,
+            "liveSkyState": sky_state,
             "dataErrors": data_errors,
             "dialogue": dialogue,
         }
