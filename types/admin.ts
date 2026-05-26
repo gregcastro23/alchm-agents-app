@@ -32,6 +32,49 @@ export type AdminRecentChat = {
   createdAt: string
 }
 
+export type AdminJingDuel = {
+  id: string
+  sessionId: string
+  userId: string | null
+  source: string
+  casterId: string
+  casterName: string
+  targetId: string
+  targetName: string
+  attackMoveId: string
+  counterMoveId: string
+  stance: string
+  boostElement: string | null
+  boostMagnitude: number
+  cacheHit: boolean
+  latencyMs: number | null
+  modelUsed: string | null
+  createdAt: string
+  synastrySnapshot: unknown
+  casterTransitSnapshot: unknown
+  targetTransitSnapshot: unknown
+  casterPrompt: string | null
+  casterResponse: string | null
+  targetPrompt: string | null
+  targetResponse: string | null
+}
+
+export type AdminJingAggregates = {
+  total: number
+  last24h: number
+  last7d: number
+  stanceHistogram: Record<string, number>
+  boostElementHistogram: Record<string, number>
+  topPairs: {
+    casterId: string
+    targetId: string
+    casterName: string
+    targetName: string
+    count: number
+  }[]
+  avgLatencyMs: number | null
+}
+
 export type AdminDashboardData = {
   users: {
     total: number
@@ -63,6 +106,8 @@ export type AdminDashboardData = {
   recentActivity: AdminActivityItem[]
   topAgents: AdminTopAgent[]
   recentChats: AdminRecentChat[]
+  recentJingDuels: AdminJingDuel[]
+  jingAggregates: AdminJingAggregates
 }
 
 export type AdminSystemStats = {

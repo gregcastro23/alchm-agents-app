@@ -1,4 +1,5 @@
 import './styles.css'
+import { LocalMcpClient } from './localMcpClient'
 
 import type { CraftedAgent, Element } from '../../lib/agent-types'
 import { DEMO_AGENTS } from '../../lib/demo-agents-data'
@@ -413,6 +414,11 @@ interface PersistedDesktopState {
   selectedChatAgentIds: string[]
   chats: Record<string, ChatMessage[]>
   ledger: LedgerEntry[]
+  localOfflineMode?: boolean
+  showJingPanel?: boolean
+  jingCasterId?: string | null
+  jingTargetId?: string | null
+  jingMoveId?: string | null
 }
 
 interface RuntimeState {
@@ -421,6 +427,62 @@ interface RuntimeState {
   telemetry: HardwareTelemetry | null
   lastError: string | null
   generating: boolean
+  alchmMcpStatus: SidecarStatus
+  paMcpStatus: SidecarStatus
+  jingOverlays: JingOverlayState
+}
+
+type JingStance = 'clash' | 'absorb' | 'mirror'
+
+interface JingInterAspect {
+  planetA: string
+  planetB: string
+  longitudeA: number
+  longitudeB: number
+  deltaLongitude: number
+  type: 'conjunction' | 'sextile' | 'square' | 'trine' | 'opposition'
+  orb: number
+  exactness: number
+  harmonic: 'friction' | 'harmony' | 'intensification'
+}
+
+interface JingSynastryOverlay {
+  pair: { agentA: string; agentB: string; computedAt: string; cacheHit: boolean }
+  interchartAspects: JingInterAspect[]
+  scores: { tension: number; harmony: number; intensification: number; aspectCount: number }
+  dominantStance: JingStance
+}
+
+interface JingTransitActivation {
+  transitPlanet: string
+  natalPoint: string
+  longitudeTransit: number
+  longitudeNatal: number
+  deltaLongitude: number
+  type: string
+  orb: number
+  exactness: number
+  natalElement: 'fire' | 'earth' | 'air' | 'water'
+  valence: string
+}
+
+interface JingTransitOverlay {
+  agentId: string
+  transitTime: string
+  activations: JingTransitActivation[]
+  boostElement: 'fire' | 'earth' | 'air' | 'water' | null
+  boostMagnitude: number
+  stressNotes: string[]
+  summary: string
+}
+
+interface JingOverlayState {
+  synastry: JingSynastryOverlay | null
+  casterTransit: JingTransitOverlay | null
+  targetTransit: JingTransitOverlay | null
+  lastPairKey: string | null
+  loading: boolean
+  lastError: string | null
 }
 
 interface DesktopState extends PersistedDesktopState {
@@ -497,6 +559,16 @@ let clearNoticeTimer: number | null = null
 let telemetryTimer: number | null = null
 const app = document.querySelector<HTMLDivElement>('#app')
 const state = loadState()
+
+export const alchmMcpClient = new LocalMcpClient('alchm-mcp', status => {
+  state.runtime.alchmMcpStatus = status
+  render()
+})
+
+export const paMcpClient = new LocalMcpClient('pa-mcp', status => {
+  state.runtime.paMcpStatus = status
+  render()
+})
 
 function getSurface(): Surface {
   const requested = new URLSearchParams(window.location.search).get('surface')
@@ -664,6 +736,16 @@ function loadState(): DesktopState {
       telemetry: null,
       lastError: null,
       generating: false,
+      alchmMcpStatus: 'checking',
+      paMcpStatus: 'checking',
+      jingOverlays: {
+        synastry: null,
+        casterTransit: null,
+        targetTransit: null,
+        lastPairKey: null,
+        loading: false,
+        lastError: null,
+      },
     },
     astrology: {
       status: 'idle',
@@ -678,6 +760,11 @@ function loadState(): DesktopState {
     composerDraft: '',
     stoneDraft: createDefaultStoneDraft(),
     notice: null,
+    localOfflineMode: false,
+    showJingPanel: false,
+    jingCasterId: null,
+    jingTargetId: null,
+    jingMoveId: null,
   }
 
   const raw = localStorage.getItem(STORAGE_KEY)
@@ -718,6 +805,11 @@ function loadState(): DesktopState {
       selectedChatAgentIds,
       chats,
       ledger: Array.isArray(saved.ledger) ? saved.ledger : fallback.ledger,
+      localOfflineMode: saved.localOfflineMode !== undefined ? saved.localOfflineMode : false,
+      showJingPanel: saved.showJingPanel ?? false,
+      jingCasterId: saved.jingCasterId ?? null,
+      jingTargetId: saved.jingTargetId ?? null,
+      jingMoveId: saved.jingMoveId ?? null,
     }
   } catch (error) {
     console.warn('Unable to restore Alchm desktop state:', error)
@@ -833,6 +925,11 @@ function saveState() {
     selectedChatAgentIds: getChatAgentIds(),
     chats: state.chats,
     ledger: state.ledger,
+    localOfflineMode: state.localOfflineMode,
+    showJingPanel: state.showJingPanel,
+    jingCasterId: state.jingCasterId,
+    jingTargetId: state.jingTargetId,
+    jingMoveId: state.jingMoveId,
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted))
 }
@@ -864,6 +961,9 @@ function renderMainShell() {
         </nav>
         <div class="status-row">
           ${state.notice ? `<span class="notice">${escapeHtml(state.notice)}</span>` : ''}
+          <button class="offline-toggle-button ${state.localOfflineMode ? 'active' : ''}" data-action="toggle-offline-mode">
+            ${state.localOfflineMode ? '🔌 Local Mode' : '🌐 Cloud Mode'}
+          </button>
           <span class="status-pill ${state.runtime.sidecar === 'online' ? 'online' : 'offline'}">
             ${state.runtime.sidecar === 'online' ? 'Sidecar online' : 'Link account'}
           </span>
@@ -1051,6 +1151,7 @@ function renderChatView() {
           ${renderChatHeaderActions(agents)}
         </header>
         ${renderChatAgentSelector(agents)}
+        ${state.showJingPanel && agents.length >= 2 ? renderChatJingPanel(agents) : ''}
         <div class="messages" data-messages>
           ${
             messages.length
@@ -1118,9 +1219,16 @@ function agentEyebrow(agent: LocalAgent) {
 
 function renderChatHeaderActions(agents: LocalAgent[]) {
   const agent = agents[0]
+  const jingActive = state.showJingPanel ? ' active' : ''
+  const jingButton =
+    agents.length >= 2
+      ? `<button class="jing-toggle-button${jingActive}" data-action="toggle-jing-panel">⚡ Jing</button>`
+      : ''
+
   if (agents.length > 1) {
     return `
       <div class="button-row">
+        ${jingButton}
         <button class="secondary-button" data-action="view" data-view="agents">Catalog</button>
         <button class="secondary-button" data-action="view" data-view="stone">Stone</button>
       </div>
@@ -1186,6 +1294,736 @@ function renderChatAgentOption(agent: LocalAgent, isSelected: boolean) {
       </span>
     </label>
   `
+}
+
+/* ── Jing Arena constants & helpers ──────────────────────────── */
+
+type JingMoveId = 'meltdown' | 'freeze' | 'tectonicRoot' | 'vacuum' | 'erode'
+
+const JING_MOVE_IDS: JingMoveId[] = ['meltdown', 'freeze', 'tectonicRoot', 'vacuum', 'erode']
+
+const JING_MOVE_DATA: Record<
+  JingMoveId,
+  { name: string; element: string; glyph: string; description: string; counters: JingMoveId[] }
+> = {
+  meltdown: {
+    name: 'Meltdown',
+    element: 'Fire',
+    glyph: '🜂',
+    description: 'Shatters structural barriers. Doubles intensity.',
+    counters: ['freeze', 'tectonicRoot'],
+  },
+  freeze: {
+    name: 'Freeze',
+    element: 'Water',
+    glyph: '🜄',
+    description: 'Locks opponent stance. Forces silence or rigidity.',
+    counters: ['meltdown'],
+  },
+  tectonicRoot: {
+    name: 'Tectonic Root',
+    element: 'Earth',
+    glyph: '🜃',
+    description: 'Impenetrable defense. Deflects emotional/kinetic args.',
+    counters: ['meltdown'],
+  },
+  vacuum: {
+    name: 'Vacuum',
+    element: 'Air',
+    glyph: '🜁',
+    description: 'Removes oxygen. Neutralizes fiery enthusiasm.',
+    counters: ['meltdown'],
+  },
+  erode: {
+    name: 'Erode',
+    element: 'Water·Earth',
+    glyph: '🜔',
+    description: 'Dissolves Saturnian logic. Slow wear.',
+    counters: ['tectonicRoot'],
+  },
+}
+
+// ─── Stance-driven counter pools ─────────────────────────────────────
+// Replaces the prior 1:1 counterMap. Target's stance (clash | absorb |
+// mirror) is computed from the synastry overlay and selects a pool;
+// pickCounterMove() then prefers the pool entry whose element matches
+// the target's current transit boost, falling back to a random pick.
+
+const COUNTER_POOLS: Record<JingStance, Record<JingMoveId, JingMoveId[]>> = {
+  // Friction (square / opposition synastry) — meet force with force.
+  clash: {
+    meltdown: ['tectonicRoot', 'freeze'],
+    freeze: ['meltdown', 'erode'],
+    tectonicRoot: ['meltdown', 'erode'],
+    vacuum: ['tectonicRoot', 'freeze'],
+    erode: ['meltdown', 'vacuum'],
+  },
+  // Harmony (trine / sextile synastry) — yield, transform, redirect.
+  absorb: {
+    meltdown: ['vacuum', 'erode'],
+    freeze: ['erode', 'vacuum'],
+    tectonicRoot: ['erode', 'freeze'],
+    vacuum: ['freeze', 'erode'],
+    erode: ['freeze', 'tectonicRoot'],
+  },
+  // Conjunction synastry — mirror match, amplify the element.
+  mirror: {
+    meltdown: ['meltdown'],
+    freeze: ['freeze'],
+    tectonicRoot: ['tectonicRoot'],
+    vacuum: ['vacuum'],
+    erode: ['erode'],
+  },
+}
+
+function jingPairKey(
+  casterId: string | null | undefined,
+  targetId: string | null | undefined
+): string | null {
+  if (!casterId || !targetId) return null
+  return `${casterId}|${targetId}`
+}
+
+function mcpAgentPayload(agent: LocalAgent): {
+  id: string
+  natalChart: {
+    planets: Record<string, { sign: string; degree: number; retrograde: boolean }>
+  }
+} | null {
+  const natal = agent.websiteAgent?.consciousness?.natalChart
+  if (!natal || !natal.planets) return null
+  const planets: Record<string, { sign: string; degree: number; retrograde: boolean }> = {}
+  for (const [planet, position] of Object.entries(natal.planets)) {
+    if (!position || typeof position !== 'object') continue
+    const sign = String((position as { sign?: string }).sign || '').trim()
+    const degree = Number((position as { degree?: number }).degree)
+    if (!sign || Number.isNaN(degree)) continue
+    planets[planet] = {
+      sign,
+      degree,
+      retrograde: Boolean((position as { retrograde?: boolean }).retrograde),
+    }
+  }
+  if (Object.keys(planets).length === 0) return null
+  return { id: agent.id, natalChart: { planets } }
+}
+
+function parseMcpToolJson<T = unknown>(result: unknown): T | null {
+  const content = (result as { content?: Array<{ text?: string }> } | null)?.content
+  if (!Array.isArray(content)) return null
+  const text = content
+    .map(item => (item && typeof item.text === 'string' ? item.text : ''))
+    .join('\n')
+    .trim()
+  if (!text) return null
+  try {
+    return JSON.parse(text) as T
+  } catch {
+    return null
+  }
+}
+
+async function refreshJingOverlays(force = false): Promise<void> {
+  const overlays = state.runtime.jingOverlays
+  const casterId = state.jingCasterId
+  const targetId = state.jingTargetId
+  const pairKey = jingPairKey(casterId, targetId)
+
+  if (!pairKey || casterId === targetId) {
+    overlays.synastry = null
+    overlays.casterTransit = null
+    overlays.targetTransit = null
+    overlays.lastPairKey = null
+    overlays.loading = false
+    overlays.lastError = null
+    return
+  }
+
+  if (!force && overlays.lastPairKey === pairKey && overlays.synastry) return
+
+  const caster = state.roster.find(a => a.id === casterId)
+  const target = state.roster.find(a => a.id === targetId)
+  if (!caster || !target) return
+
+  const casterPayload = mcpAgentPayload(caster)
+  const targetPayload = mcpAgentPayload(target)
+  if (!casterPayload || !targetPayload) {
+    overlays.lastError = 'Agent natal chart unavailable for overlay'
+    render()
+    return
+  }
+
+  overlays.loading = true
+  overlays.lastError = null
+  overlays.lastPairKey = pairKey
+  render()
+
+  try {
+    const [synRes, casterRes, targetRes] = await Promise.all([
+      alchmMcpClient.call('tools/call', {
+        name: 'compute_synastry_overlay',
+        arguments: {
+          agentA: casterPayload,
+          agentB: targetPayload,
+          cacheStrategy: 'read',
+          _meta: {
+            apiKey: state.account.apiKey || 'dev-desktop-token',
+            caller: 'alchm-desktop-jing',
+          },
+        },
+      }),
+      alchmMcpClient.call('tools/call', {
+        name: 'get_transit_natal_overlay',
+        arguments: {
+          agent: casterPayload,
+          _meta: {
+            apiKey: state.account.apiKey || 'dev-desktop-token',
+            caller: 'alchm-desktop-jing',
+          },
+        },
+      }),
+      alchmMcpClient.call('tools/call', {
+        name: 'get_transit_natal_overlay',
+        arguments: {
+          agent: targetPayload,
+          _meta: {
+            apiKey: state.account.apiKey || 'dev-desktop-token',
+            caller: 'alchm-desktop-jing',
+          },
+        },
+      }),
+    ])
+
+    overlays.synastry = parseMcpToolJson<JingSynastryOverlay>(synRes)
+    overlays.casterTransit = parseMcpToolJson<JingTransitOverlay>(casterRes)
+    overlays.targetTransit = parseMcpToolJson<JingTransitOverlay>(targetRes)
+  } catch (err) {
+    console.warn('refreshJingOverlays failed:', err)
+    overlays.lastError = err instanceof Error ? err.message : String(err)
+  } finally {
+    overlays.loading = false
+    render()
+  }
+}
+
+function activeTransitOverlay(): JingTransitOverlay | null {
+  return state.runtime.jingOverlays.casterTransit
+}
+
+function activeStance(): JingStance | null {
+  return state.runtime.jingOverlays.synastry?.dominantStance ?? null
+}
+
+/**
+ * Continuous per-move boost magnitude (0..1). The caster's transit
+ * overlay reports a dominant boost element + magnitude; a move whose
+ * element string contains that element receives the magnitude verbatim,
+ * everything else returns 0.
+ */
+function jingBoostMagnitudeForMove(moveId: JingMoveId): number {
+  const overlay = activeTransitOverlay()
+  if (!overlay || !overlay.boostElement || overlay.boostMagnitude <= 0) return 0
+  const moveElement = JING_MOVE_DATA[moveId].element.toLowerCase()
+  return moveElement.includes(overlay.boostElement) ? overlay.boostMagnitude : 0
+}
+
+function pickCounterMove(
+  attackMoveId: JingMoveId,
+  stance: JingStance,
+  targetOverlay: JingTransitOverlay | null
+): JingMoveId {
+  const pool = COUNTER_POOLS[stance][attackMoveId] || ['freeze']
+  if (targetOverlay && targetOverlay.boostElement && targetOverlay.boostMagnitude > 0.4) {
+    const boosted = pool.find(id =>
+      JING_MOVE_DATA[id].element.toLowerCase().includes(targetOverlay.boostElement!)
+    )
+    if (boosted) return boosted
+  }
+  return pool[Math.floor(Math.random() * pool.length)] || 'freeze'
+}
+
+function formatAspectLine(aspect: JingInterAspect): string {
+  return `${aspect.planetA} ${aspect.type} ${aspect.planetB} (${aspect.orb.toFixed(1)}° orb)`
+}
+
+function buildJingPrompt(opts: {
+  speaker: LocalAgent
+  opponent: LocalAgent
+  move: { name: string; glyph: string; element: string; description: string }
+  speakerRole: 'caster' | 'target'
+  counterMove?: { name: string; glyph: string; element: string; description: string }
+  synastry: JingSynastryOverlay | null
+  speakerTransit: JingTransitOverlay | null
+  stance: JingStance | null
+  boostMagnitude: number
+}): string {
+  const {
+    speaker,
+    opponent,
+    move,
+    speakerRole,
+    counterMove,
+    synastry,
+    speakerTransit,
+    stance,
+    boostMagnitude,
+  } = opts
+  const lines: string[] = []
+  if (speakerRole === 'caster') {
+    lines.push(
+      `You are ${speaker.name}, casting the ${move.name} Jing (${move.glyph} ${move.element}) on ${opponent.name}.`
+    )
+    lines.push(`The ${move.name} Jing: ${move.description}`)
+  } else {
+    lines.push(
+      `${opponent.name} has just cast the ${move.name} Jing (${move.glyph} ${move.element}) on you.`
+    )
+    if (counterMove) {
+      lines.push(
+        `You are ${speaker.name}. You counter with ${counterMove.name} (${counterMove.glyph} ${counterMove.element}): ${counterMove.description}.`
+      )
+    }
+  }
+
+  if (synastry && synastry.interchartAspects.length > 0) {
+    const top = synastry.interchartAspects[0]
+    lines.push(
+      `Relational ledger: your ${top.planetB} is in ${top.type} (${top.orb.toFixed(1)}° orb) with their ${top.planetA}.`
+    )
+    if (synastry.interchartAspects[1]) {
+      lines.push(`Secondary: ${formatAspectLine(synastry.interchartAspects[1])}.`)
+    }
+  }
+
+  if (stance === 'clash') {
+    lines.push(
+      'This is a high-friction pairing. Your tone is defensive friction, struggle, architectural resistance. Avoid generic elemental tropes.'
+    )
+  } else if (stance === 'absorb') {
+    lines.push(
+      'This pairing is harmonic. Your tone yields, transforms, redirects — the energy passes through you and returns altered.'
+    )
+  } else if (stance === 'mirror') {
+    lines.push(
+      'This pairing is a conjunction mirror. Your tone amplifies the move, intensifying the element rather than countering it.'
+    )
+  }
+
+  if (speakerTransit && speakerTransit.boostElement && speakerTransit.boostMagnitude > 0.2) {
+    const headline = speakerTransit.activations[0]
+    const pct = Math.round(speakerTransit.boostMagnitude * 100)
+    if (headline) {
+      lines.push(
+        `Current sky: transit ${headline.transitPlanet} ${headline.type} your natal ${headline.natalPoint} → ${pct}% ${speakerTransit.boostElement} boost.`
+      )
+    }
+  }
+  if (speakerTransit && speakerTransit.stressNotes.length > 0) {
+    lines.push(`Active stress: ${speakerTransit.stressNotes[0]}.`)
+  }
+
+  if (boostMagnitude > 0.2) {
+    const pct = Math.round(boostMagnitude * 40)
+    lines.push(`Your move is transit-boosted (+${pct}% intensity).`)
+  }
+
+  lines.push('Speak ONE bold, in-character line. Stay in your persona. Be dramatic.')
+  return lines.join(' ')
+}
+
+function renderChatJingPanel(agents: LocalAgent[]) {
+  const overlays = state.runtime.jingOverlays
+  const stance = activeStance()
+  const synastry = overlays.synastry
+  const casterTransit = overlays.casterTransit
+  const targetTransit = overlays.targetTransit
+  const caster = state.roster.find(a => a.id === state.jingCasterId) || null
+  const target = state.roster.find(a => a.id === state.jingTargetId) || null
+
+  const agentOptions = agents
+    .map(
+      agent =>
+        `<option value="${agent.id}">${escapeHtml(agent.name)} · ${escapeHtml(capitalize(agent.element))}</option>`
+    )
+    .join('')
+
+  const movesHtml = JING_MOVE_IDS.map(moveId => {
+    const move = JING_MOVE_DATA[moveId]
+    const isSelected = state.jingMoveId === moveId
+    const boostMag = jingBoostMagnitudeForMove(moveId)
+    const boostPct = Math.round(boostMag * 40)
+    const boostBadge =
+      boostMag > 0.2
+        ? `<span class="jing-boost-badge" data-magnitude="${boostMag.toFixed(2)}">🔥 +${boostPct}% ${escapeHtml(capitalize(casterTransit?.boostElement || ''))}</span>`
+        : ''
+
+    return `
+      <div
+        class="jing-move-card ${isSelected ? 'selected' : ''}"
+        data-element="${move.element}"
+        data-action="update-jing-move"
+        data-move-id="${moveId}"
+      >
+        <div class="jing-move-glyph">${move.glyph}</div>
+        <div class="jing-move-name">${escapeHtml(move.name)}</div>
+        <div class="jing-move-element">${escapeHtml(move.element)}</div>
+        <div class="jing-move-desc">${escapeHtml(move.description)}</div>
+        ${boostBadge}
+      </div>
+    `
+  }).join('')
+
+  const canCast =
+    state.jingCasterId && state.jingTargetId && state.jingMoveId && !state.runtime.generating
+  const castDisabled = canCast ? '' : 'disabled'
+
+  const stanceBadge = stance
+    ? `<span class="jing-stance-badge" data-stance="${stance}">${escapeHtml(stanceLabel(stance))}</span>`
+    : overlays.loading
+      ? '<span class="jing-stance-badge loading">Reading the chart…</span>'
+      : caster && target
+        ? '<span class="jing-stance-badge muted">No stance yet</span>'
+        : '<span class="jing-stance-badge muted">Pick caster &amp; target</span>'
+
+  const aspectLine =
+    synastry && synastry.interchartAspects.length > 0
+      ? `<div class="jing-aspect-line">${escapeHtml(formatAspectLine(synastry.interchartAspects[0]))} · tension ${synastry.scores.tension.toFixed(2)} / harmony ${synastry.scores.harmony.toFixed(2)}</div>`
+      : ''
+
+  const casterChip = renderJingOverlayChip('Caster', caster, casterTransit)
+  const targetChip = renderJingOverlayChip('Target', target, targetTransit)
+
+  return `
+    <section class="jing-arena-panel" aria-label="Jing Arena">
+      <div class="jing-arena-header">
+        <div>
+          <div class="eyebrow">Agent Interaction</div>
+          <h2>⚡ Jing Arena</h2>
+        </div>
+        ${stanceBadge}
+      </div>
+
+      <div class="jing-overlay-chips">
+        ${casterChip}
+        ${targetChip}
+      </div>
+      ${aspectLine}
+
+      <div class="jing-combatants">
+        <div class="jing-combatant-slot">
+          <label for="jing-caster">Caster</label>
+          <select id="jing-caster" data-action="update-jing-field" data-field="caster">
+            <option value="">Select caster…</option>
+            ${agentOptions}
+          </select>
+        </div>
+        <div class="jing-versus">VS</div>
+        <div class="jing-combatant-slot">
+          <label for="jing-target">Target</label>
+          <select id="jing-target" data-action="update-jing-field" data-field="target">
+            <option value="">Select target…</option>
+            ${agentOptions}
+          </select>
+        </div>
+      </div>
+
+      <div class="jing-moves-grid">
+        ${movesHtml}
+      </div>
+
+      <button class="jing-duel-button" data-action="cast-jing-duel" ${castDisabled}>
+        ⚔️ Cast Jing Duel ⚔️
+      </button>
+      ${overlays.lastError ? `<div class="jing-overlay-error">${escapeHtml(overlays.lastError)}</div>` : ''}
+    </section>
+  `
+}
+
+function stanceLabel(stance: JingStance): string {
+  if (stance === 'clash') return '⚔️ Clash (Friction)'
+  if (stance === 'absorb') return '🌊 Absorb (Harmonic)'
+  return '🔁 Mirror (Conjunction)'
+}
+
+function renderJingOverlayChip(
+  role: string,
+  agent: LocalAgent | null,
+  overlay: JingTransitOverlay | null
+): string {
+  if (!agent) {
+    return `<div class="jing-overlay-chip empty"><span class="role">${escapeHtml(role)}</span><span class="muted">—</span></div>`
+  }
+  if (!overlay) {
+    return `<div class="jing-overlay-chip"><span class="role">${escapeHtml(role)}</span><strong>${escapeHtml(agent.name)}</strong><span class="muted">no overlay</span></div>`
+  }
+  const headline = overlay.activations[0]
+  const pct = Math.round(overlay.boostMagnitude * 100)
+  const tag = overlay.boostElement
+    ? `<span class="boost" data-element="${overlay.boostElement}">${pct}% ${escapeHtml(capitalize(overlay.boostElement))}</span>`
+    : '<span class="muted">no boost</span>'
+  const detail = headline
+    ? `${escapeHtml(headline.transitPlanet)} ${escapeHtml(headline.type)} ${escapeHtml(headline.natalPoint)}`
+    : 'no active transits'
+  return `
+    <div class="jing-overlay-chip">
+      <span class="role">${escapeHtml(role)}</span>
+      <strong>${escapeHtml(agent.name)}</strong>
+      <span class="detail">${detail}</span>
+      ${tag}
+    </div>
+  `
+}
+
+async function castJingDuel() {
+  const casterId = state.jingCasterId
+  const targetId = state.jingTargetId
+  const moveId = state.jingMoveId as JingMoveId | null
+
+  if (!casterId || !targetId || !moveId) return
+  if (state.runtime.generating) return
+
+  const caster = state.roster.find(a => a.id === casterId)
+  const target = state.roster.find(a => a.id === targetId)
+  if (!caster || !target) return
+
+  const move = JING_MOVE_DATA[moveId]
+  if (!move) return
+
+  // ── Pull the relational ledger before the LLM turns ────────────
+  // Overlays may already be warm from the change-listener pre-fetch;
+  // refreshJingOverlays() is a no-op when lastPairKey matches.
+  await refreshJingOverlays()
+  const synastry = state.runtime.jingOverlays.synastry
+  const casterTransit = state.runtime.jingOverlays.casterTransit
+  const targetTransit = state.runtime.jingOverlays.targetTransit
+  const stance: JingStance = synastry?.dominantStance || 'clash'
+
+  const counterMoveId = pickCounterMove(moveId, stance, targetTransit)
+  const counterMove = JING_MOVE_DATA[counterMoveId]
+  const casterBoostMagnitude = jingBoostMagnitudeForMove(moveId)
+  const targetBoostMagnitude = jingBoostMagnitudeForMove(counterMoveId)
+  const casterBoostPct = Math.round(casterBoostMagnitude * 40)
+  const chatKey = getActiveChatKey()
+  const messages = getMessages(chatKey)
+  const apiKey = state.account.apiKey || 'dev-desktop-token'
+
+  // Track the full latency from cast → both turns resolved so the
+  // /api/jing-duels record can drive admin telemetry charts.
+  const duelStartedAt = Date.now()
+  let casterFinalContent = ''
+  let targetFinalContent = ''
+  let casterPromptText = ''
+  let targetPromptText = ''
+
+  state.runtime.generating = true
+  render()
+
+  try {
+    // ── Part 1: Caster Turn ───────────────────────────────────
+    const casterPrompt = buildJingPrompt({
+      speaker: caster,
+      opponent: target,
+      move,
+      speakerRole: 'caster',
+      synastry,
+      speakerTransit: casterTransit,
+      stance,
+      boostMagnitude: casterBoostMagnitude,
+    })
+    casterPromptText = casterPrompt
+
+    const casterMessage: ChatMessage = {
+      id: makeId('jing'),
+      role: 'agent',
+      content: '',
+      timestamp: new Date().toISOString(),
+      channel: `${move.glyph} ${move.name} Jing`,
+      agentId: caster.id,
+      agentName: caster.name,
+    }
+    messages.push(casterMessage)
+    render()
+
+    let casterContent = `${move.glyph} *${caster.name} casts ${move.name} on ${target.name}!*`
+
+    if (state.localOfflineMode) {
+      try {
+        const mcpResult = await paMcpClient.call('tools/call', {
+          name: 'chat_with_planetary_agent',
+          arguments: {
+            agentName: caster.name,
+            message: casterPrompt,
+            _meta: { apiKey, caller: 'alchm-desktop-jing' },
+          },
+        })
+        if (mcpResult?.content?.[0]?.text) {
+          const payload = JSON.parse(mcpResult.content[0].text)
+          if (payload.text) casterContent = `${move.glyph} ${payload.text}`
+        }
+      } catch (err) {
+        console.warn('Jing caster MCP failed, using fallback:', err)
+      }
+    }
+
+    await streamTextIntoMessage(casterMessage, casterContent)
+    casterFinalContent = casterContent
+
+    // ── Part 2: Target Counter Turn ───────────────────────────
+    const targetPrompt = buildJingPrompt({
+      speaker: target,
+      opponent: caster,
+      move,
+      speakerRole: 'target',
+      counterMove,
+      synastry,
+      speakerTransit: targetTransit,
+      stance,
+      boostMagnitude: targetBoostMagnitude,
+    })
+    targetPromptText = targetPrompt
+
+    const targetMessage: ChatMessage = {
+      id: makeId('jing'),
+      role: 'agent',
+      content: '',
+      timestamp: new Date().toISOString(),
+      channel: `${counterMove.glyph} ${counterMove.name} Counter`,
+      agentId: target.id,
+      agentName: target.name,
+    }
+    messages.push(targetMessage)
+    render()
+
+    let targetContent = `${counterMove.glyph} *${target.name} counters with ${counterMove.name}!*`
+
+    if (state.localOfflineMode) {
+      try {
+        const mcpResult = await paMcpClient.call('tools/call', {
+          name: 'chat_with_planetary_agent',
+          arguments: {
+            agentName: target.name,
+            message: targetPrompt,
+            _meta: { apiKey, caller: 'alchm-desktop-jing' },
+          },
+        })
+        if (mcpResult?.content?.[0]?.text) {
+          const payload = JSON.parse(mcpResult.content[0].text)
+          if (payload.text) targetContent = `${counterMove.glyph} ${payload.text}`
+        }
+      } catch (err) {
+        console.warn('Jing target MCP failed, using fallback:', err)
+      }
+    }
+
+    await streamTextIntoMessage(targetMessage, targetContent)
+    targetFinalContent = targetContent
+
+    const aspectSummary =
+      synastry && synastry.interchartAspects[0]
+        ? ` (${formatAspectLine(synastry.interchartAspects[0])})`
+        : ''
+    const boostTag =
+      casterBoostMagnitude > 0.2
+        ? `+${casterBoostPct}% ${capitalize(casterTransit?.boostElement || '')} boost`
+        : 'Standard'
+    addLedger(
+      'Jing Duel',
+      `${caster.name} cast ${move.name} on ${target.name}. ${target.name} countered with ${counterMove.name} via ${stance} stance${aspectSummary}.`,
+      boostTag
+    )
+    setNotice(
+      `⚡ ${caster.name} vs ${target.name} — ${move.name} → ${counterMove.name} (${stance})`
+    )
+
+    // Fire-and-forget telemetry: persist the full ledger so the admin
+    // dashboard + personalization pipeline can consume it. Failures
+    // never block the UI (see /api/jing-duels which 200s on persist
+    // errors with skipped=true).
+    void persistJingDuel({
+      sessionId: chatKey,
+      userId: state.account.userId || null,
+      source: 'desktop',
+      caster,
+      target,
+      moveId,
+      counterMoveId,
+      stance,
+      synastry,
+      casterTransit,
+      targetTransit,
+      casterBoostMagnitude,
+      casterPrompt: casterPromptText,
+      casterResponse: casterFinalContent,
+      targetPrompt: targetPromptText,
+      targetResponse: targetFinalContent,
+      latencyMs: Date.now() - duelStartedAt,
+      apiKey,
+    })
+  } finally {
+    state.runtime.generating = false
+    saveState()
+    render()
+  }
+}
+
+async function persistJingDuel(opts: {
+  sessionId: string
+  userId: string | null
+  source: string
+  caster: LocalAgent
+  target: LocalAgent
+  moveId: JingMoveId
+  counterMoveId: JingMoveId
+  stance: JingStance
+  synastry: JingSynastryOverlay | null
+  casterTransit: JingTransitOverlay | null
+  targetTransit: JingTransitOverlay | null
+  casterBoostMagnitude: number
+  casterPrompt: string
+  casterResponse: string
+  targetPrompt: string
+  targetResponse: string
+  latencyMs: number
+  apiKey: string
+}): Promise<void> {
+  const url = `${(state.account.agentsUrl || 'https://agents.alchm.kitchen').replace(/\/$/, '')}/api/jing-duels`
+  const body = {
+    sessionId: opts.sessionId,
+    userId: opts.userId,
+    source: opts.source,
+    casterId: opts.caster.id,
+    targetId: opts.target.id,
+    attackMoveId: opts.moveId,
+    counterMoveId: opts.counterMoveId,
+    stance: opts.stance,
+    boostElement: opts.casterTransit?.boostElement ?? null,
+    boostMagnitude: opts.casterBoostMagnitude,
+    cacheHit: Boolean(opts.synastry?.pair?.cacheHit),
+    synastrySnapshot: opts.synastry,
+    casterTransitSnapshot: opts.casterTransit,
+    targetTransitSnapshot: opts.targetTransit,
+    casterPrompt: opts.casterPrompt,
+    casterResponse: opts.casterResponse,
+    targetPrompt: opts.targetPrompt,
+    targetResponse: opts.targetResponse,
+    latencyMs: opts.latencyMs,
+    modelUsed: 'pa-mcp:local',
+  }
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': opts.apiKey,
+      },
+      body: JSON.stringify(body),
+    })
+    if (!response.ok) {
+      console.warn('Jing duel telemetry POST returned', response.status, await response.text())
+    }
+  } catch (err) {
+    console.warn('Jing duel telemetry POST failed (non-blocking):', err)
+  }
 }
 
 function renderStarterMessage(agent: LocalAgent) {
@@ -2533,11 +3371,16 @@ function renderDiagnosticsView() {
             loading browser app surfaces.
           </p>
         </div>
-        <button class="secondary-button" data-action="refresh-telemetry">Refresh</button>
+        <div class="button-row">
+          <button class="secondary-button" data-action="refresh-telemetry">Refresh System</button>
+          <button class="primary-button" data-action="refresh-mcp-nodes">Restart MCP Nodes</button>
+        </div>
       </header>
       <div class="diag-grid">
         ${renderMetric('Frontend source', 'desktop-shell/dist')}
-        ${renderMetric('Sidecar', state.runtime.sidecar)}
+        ${renderMetric('Main Sidecar API', state.runtime.sidecar)}
+        ${renderMetric('Alchm MCP Stdio', state.runtime.alchmMcpStatus)}
+        ${renderMetric('PA MCP Stdio', state.runtime.paMcpStatus)}
         ${renderMetric('IPC nonce', state.runtime.ipcNonce ? 'received' : 'not available')}
         ${renderMetric('Active model', telemetry?.activeModel || 'none')}
         ${renderMetric('CPU', telemetry?.cpu?.percent === undefined ? 'unknown' : `${telemetry.cpu.percent}%`)}
@@ -2548,13 +3391,22 @@ function renderDiagnosticsView() {
             : `${telemetry.memory.usedPercent}% of ${formatBytes(telemetry.memory.totalBytes || 0)}`
         )}
       </div>
-      <div class="panel stack">
-        <div class="eyebrow">Tray state</div>
-        <div class="button-row">
-          <button class="secondary-button" data-action="tray-state" data-tray-state="idle">Idle</button>
-          <button class="secondary-button" data-action="tray-state" data-tray-state="fire">Fire</button>
-          <button class="secondary-button" data-action="tray-state" data-tray-state="water">Water</button>
-          <button class="secondary-button" data-action="tray-state" data-tray-state="earth">Earth</button>
+      <div class="form-grid">
+        <div class="panel stack">
+          <div class="eyebrow">Tray state</div>
+          <div class="button-row">
+            <button class="secondary-button" data-action="tray-state" data-tray-state="idle">Idle</button>
+            <button class="secondary-button" data-action="tray-state" data-tray-state="fire">Fire</button>
+            <button class="secondary-button" data-action="tray-state" data-tray-state="water">Water</button>
+            <button class="secondary-button" data-action="tray-state" data-tray-state="earth">Earth</button>
+          </div>
+        </div>
+        <div class="panel stack">
+          <div class="eyebrow">Local MCP Operations</div>
+          <div class="button-row">
+            <button class="secondary-button" data-action="test-alchm-mcp">Test Alchm Transit</button>
+            <button class="secondary-button" data-action="test-pa-mcp">Test PA Socrates Chat</button>
+          </div>
         </div>
       </div>
       ${
@@ -3148,6 +4000,48 @@ async function requestAgentText(
     }
   }
 
+  if (state.localOfflineMode) {
+    try {
+      const priorHistory = turnContext.priorResponses.map(res => `${res.agentName}: ${res.content}`)
+      const apiKey = state.account.apiKey || 'dev-desktop-token'
+      const mcpResult = await paMcpClient.call('tools/call', {
+        name: 'chat_with_planetary_agent',
+        arguments: {
+          agentName: agent.name,
+          message: userMessage,
+          conversationHistory: priorHistory,
+          _meta: {
+            apiKey: apiKey,
+            caller: 'alchm-desktop-shell',
+          },
+        },
+      })
+
+      if (mcpResult && mcpResult.content && mcpResult.content[0]) {
+        const payloadText = mcpResult.content[0].text
+        const payload = JSON.parse(payloadText)
+        if (payload.error) {
+          throw new Error(payload.error)
+        }
+        return {
+          content: payload.text || 'No response',
+          channel: 'Local MCP Agent',
+          metered: false,
+        }
+      }
+      throw new Error('Invalid MCP response format')
+    } catch (error: any) {
+      console.error('Local MCP chat failed, falling back:', error)
+      return {
+        content:
+          `Local MCP chat failed: ${error.message}. ` +
+          buildProfileGuidedAgentReply(agent, userMessage, turnContext),
+        channel: 'Desktop agent (Fallback)',
+        metered: false,
+      }
+    }
+  }
+
   if (!invokeCommand || !state.runtime.ipcNonce || !state.account.apiKey) {
     return {
       content: buildProfileGuidedAgentReply(agent, userMessage, turnContext),
@@ -3628,6 +4522,66 @@ async function refreshAstrologyConsensus(options: { silent?: boolean } = {}) {
   state.astrology.lastError = null
   if (!options.silent) render()
 
+  if (state.localOfflineMode) {
+    try {
+      const apiKey = state.account.apiKey || 'dev-desktop-token'
+      const mcpResult = await alchmMcpClient.call('tools/call', {
+        name: 'get_live_sky_transits',
+        arguments: {
+          latitude: 40.7128,
+          longitude: -74.006,
+          _meta: {
+            apiKey: apiKey,
+            caller: 'alchm-desktop-shell',
+          },
+        },
+      })
+
+      if (mcpResult && mcpResult.content && mcpResult.content[0]) {
+        const transits = JSON.parse(mcpResult.content[0].text)
+        state.astrology.snapshot = {
+          generatedAt: new Date().toISOString(),
+          location: { label: 'Local Stdio Coordinates', latitude: 40.7128, longitude: -74.006 },
+          provenance: [],
+          chart: {
+            title: 'Local Sky (Stdio)',
+            source: 'Local Alchm MCP sidecar',
+            sunSign: transits.dominantElement || 'Aries',
+            moonSign: 'Aries',
+            ascendant: { sign: 'Aries', degree: 0, longitude: 0 },
+            julianDay: 0,
+            planets: [],
+            aspects: [],
+          },
+          quantities: {
+            dominantElement: transits.dominantElement || 'Earth',
+            ANumber: 100,
+            elements: transits.elementalBalance || {
+              Fire: 0.25,
+              Water: 0.25,
+              Air: 0.25,
+              Earth: 0.25,
+            },
+          },
+          moonPhase: { name: transits.moonPhase?.name || 'Full Moon' },
+          planetaryHour: { current: 'Sun' },
+          activeAgents: [],
+          layers: [],
+          recommendations: [],
+        } as any
+        state.astrology.status = 'ready'
+        state.astrology.lastError = null
+      } else {
+        throw new Error('Invalid MCP response format')
+      }
+    } catch (error: any) {
+      state.astrology.status = 'error'
+      state.astrology.lastError = `Local MCP Transit failed: ${error.message}`
+    }
+    render()
+    return
+  }
+
   try {
     const response = await requestSidecar('/api/astrology/consensus')
     if (!response.ok) throw new Error(`Astrology consensus returned HTTP ${response.status}`)
@@ -3900,7 +4854,7 @@ function sleep(milliseconds: number) {
 }
 
 function bindEvents() {
-  document.body.addEventListener('click', event => {
+  document.body.addEventListener('click', async event => {
     const control = (event.target as HTMLElement).closest<HTMLElement>('[data-action]')
     if (!control) return
 
@@ -3956,6 +4910,77 @@ function bindEvents() {
     if (action === 'tray-state' && control.dataset.trayState) {
       void setTrayState(control.dataset.trayState)
     }
+    if (action === 'toggle-offline-mode') {
+      state.localOfflineMode = !state.localOfflineMode
+      saveState()
+      render()
+      setNotice(state.localOfflineMode ? 'Local Offline Mode Active' : 'Cloud Online Mode Active')
+      void refreshAstrologyConsensus({ silent: true })
+    }
+    if (action === 'toggle-jing-panel') {
+      state.showJingPanel = !state.showJingPanel
+      saveState()
+      render()
+      if (state.showJingPanel) void refreshJingOverlays()
+    }
+    if (action === 'update-jing-move') {
+      const moveId = control.dataset.moveId
+      if (moveId) {
+        state.jingMoveId = moveId
+        saveState()
+        render()
+      }
+    }
+    if (action === 'cast-jing-duel') {
+      void castJingDuel()
+    }
+    if (action === 'test-alchm-mcp') {
+      setNotice('Testing Alchm MCP...')
+      try {
+        const apiKey = state.account.apiKey || 'dev-desktop-token'
+        const result = await alchmMcpClient.call('tools/call', {
+          name: 'get_live_sky_transits',
+          arguments: {
+            latitude: 40.7128,
+            longitude: -74.006,
+            _meta: {
+              apiKey,
+              caller: 'alchm-desktop-shell',
+            },
+          },
+        })
+        console.log('Test Alchm MCP success:', result)
+        setNotice('Alchm MCP OK: ' + (result?.content?.[0]?.text?.slice(0, 40) || 'Success'))
+      } catch (err: any) {
+        setNotice('Alchm MCP Fail: ' + err.message)
+      }
+    }
+    if (action === 'test-pa-mcp') {
+      setNotice('Testing PA Socrates MCP...')
+      try {
+        const apiKey = state.account.apiKey || 'dev-desktop-token'
+        const result = await paMcpClient.call('tools/call', {
+          name: 'chat_with_planetary_agent',
+          arguments: {
+            agentName: 'Socrates',
+            message: 'Hello, Socrates!',
+            _meta: {
+              apiKey,
+              caller: 'alchm-desktop-shell',
+            },
+          },
+        })
+        console.log('Test PA MCP success:', result)
+        setNotice('PA MCP OK: ' + (result?.content?.[0]?.text?.slice(0, 40) || 'Success'))
+      } catch (err: any) {
+        setNotice('PA MCP Fail: ' + err.message)
+      }
+    }
+    if (action === 'refresh-mcp-nodes') {
+      setNotice('Restarting MCP sidecars...')
+      void alchmMcpClient.start()
+      void paMcpClient.start()
+    }
   })
 
   document.body.addEventListener('submit', event => {
@@ -3996,6 +5021,21 @@ function bindEvents() {
       return
     }
 
+    const jingSelect = (event.target as HTMLElement).closest<HTMLSelectElement>(
+      '[data-action="update-jing-field"]'
+    )
+    if (jingSelect) {
+      const field = jingSelect.dataset.field
+      if (field === 'caster') state.jingCasterId = jingSelect.value || null
+      if (field === 'target') state.jingTargetId = jingSelect.value || null
+      saveState()
+      render()
+      // Prefetch the relational ledger so the badge + chips update
+      // before the user clicks Cast.
+      void refreshJingOverlays()
+      return
+    }
+
     updateStoneDraftFromField(event.target)
   })
 
@@ -4033,6 +5073,11 @@ async function bootTauriRuntime() {
 
     await refreshTelemetry()
     await refreshAccounts({ silent: true })
+
+    // Spawn local stdio MCP sidecars
+    void alchmMcpClient.start()
+    void paMcpClient.start()
+
     await refreshAstrologyConsensus({ silent: true })
     await refreshAlchmPhysics({ silent: true })
     telemetryTimer = window.setInterval(() => {
@@ -4057,6 +5102,8 @@ function boot() {
 
 window.addEventListener('beforeunload', () => {
   if (telemetryTimer) window.clearInterval(telemetryTimer)
+  void alchmMcpClient.stop()
+  void paMcpClient.stop()
 })
 
 boot()

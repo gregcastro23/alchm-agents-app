@@ -73,6 +73,47 @@ model AgentConversation {
   @@index([userId])
 }
 
+/// Each Jing Arena duel — caster casts an elemental move on target, target
+/// counters with a stance-driven pick from the pool. Full relational ledger
+/// (synastry between the pair + each agent's transit overlay at cast time)
+/// is captured so personalized recommendations can be derived from accumulated
+/// duel history.
+model AgentJingDuel {
+  id                     String   @id @default(cuid())
+  sessionId              String
+  userId                 String?
+  source                 String   @default("desktop") // desktop | web | api
+  casterId               String
+  targetId               String
+  attackMoveId           String
+  counterMoveId          String
+  stance                 String   // clash | absorb | mirror
+  boostElement           String?  // fire | earth | air | water | null
+  boostMagnitude         Float    @default(0)
+  cacheHit               Boolean  @default(false)
+  synastrySnapshot       Json?
+  casterTransitSnapshot  Json?
+  targetTransitSnapshot  Json?
+  casterPrompt           String?
+  casterResponse         String?
+  targetPrompt           String?
+  targetResponse         String?
+  latencyMs              Int?
+  modelUsed              String?
+  createdAt              DateTime @default(now())
+
+  caster historical_agents @relation("JingCaster", fields: [casterId], references: [agentId])
+  target historical_agents @relation("JingTarget", fields: [targetId], references: [agentId])
+
+  @@index([casterId])
+  @@index([targetId])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([stance])
+  @@index([createdAt])
+  @@index([casterId, targetId])
+}
+
 model AgentEvolution {
   id                String            @id @default(cuid())
   agentId           String
@@ -657,6 +698,8 @@ model historical_agents {
   agent_attachment_usage agent_attachment_usage[]
   agent_attachments      agent_attachments[]
   mcp_invocations        mcp_invocations[]
+  jingDuelsAsCaster      AgentJingDuel[]          @relation("JingCaster")
+  jingDuelsAsTarget      AgentJingDuel[]          @relation("JingTarget")
 
   @@index([agentId])
   @@index([birthYear, culture])

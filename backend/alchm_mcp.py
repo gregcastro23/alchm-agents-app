@@ -13,6 +13,8 @@ ALCHM_MCP_TOOL_NAMES = {
     "get_live_sky_transits",
     "alchemize_ingredients",
     "generate_cosmic_recipe",
+    "compute_synastry_overlay",
+    "get_transit_natal_overlay",
 }
 
 DEFAULT_PROTOCOL_VERSION = "2025-06-18"
@@ -334,6 +336,47 @@ async def generate_cosmic_recipe(
     if dominant_element:
         args["dominantElement"] = dominant_element
     return await call_tool_json("generate_cosmic_recipe", args)
+
+
+async def compute_synastry_overlay(
+    agent_a: Dict[str, Any],
+    agent_b: Dict[str, Any],
+    focus_planets: Optional[List[str]] = None,
+    cache_strategy: str = "read",
+) -> Dict[str, Any]:
+    """Inter-aspect ledger + tension/harmony/intensification scores + stance.
+
+    Each agent dict must carry {id, natalChart}, where natalChart.planets
+    is {planet: {sign, degree, retrograde?, house?}}.
+    """
+    args: Dict[str, Any] = {
+        "agentA": agent_a,
+        "agentB": agent_b,
+        "cacheStrategy": cache_strategy,
+    }
+    if focus_planets:
+        args["focusPlanets"] = focus_planets
+    return await call_tool_json("compute_synastry_overlay", args)
+
+
+async def get_transit_natal_overlay(
+    agent: Dict[str, Any],
+    transit_time: Optional[str] = None,
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+    focus_planets: Optional[List[str]] = None,
+) -> Dict[str, Any]:
+    """Current sky × one agent's natal chart → boost element + magnitude."""
+    args: Dict[str, Any] = {"agent": agent}
+    if transit_time:
+        args["transitTime"] = transit_time
+    if latitude is not None:
+        args["latitude"] = latitude
+    if longitude is not None:
+        args["longitude"] = longitude
+    if focus_planets:
+        args["focusPlanets"] = focus_planets
+    return await call_tool_json("get_transit_natal_overlay", args)
 
 
 async def status(include_tools: bool = True) -> Dict[str, Any]:
