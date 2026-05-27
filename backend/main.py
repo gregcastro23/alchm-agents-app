@@ -1701,5 +1701,326 @@ async def admin_mcp_status(db: Session = Depends(database.get_db)):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Database lookup failed: {exc}")
 
+
+# ---------------------------------------------------------------------------
+# /api/admin/mcp-summary — aggregate telemetry for WTEN's cross-server panel
+# ---------------------------------------------------------------------------
+
+from pydantic import BaseModel as _SummaryBaseModel
+
+
+class McpSummaryTotals(_SummaryBaseModel):
+    calls: int
+    success: int
+    failures: int
+    errorRate: float
+    p50LatencyMs: Optional[int] = None
+    p95LatencyMs: Optional[int] = None
+    p99LatencyMs: Optional[int] = None
+
+
+class McpSummaryByTool(_SummaryBaseModel):
+    tool: str
+    calls: int
+    failures: int
+    p95LatencyMs: Optional[int] = None
+
+
+class McpSummaryByAgent(_SummaryBaseModel):
+    agentId: str
+    calls: int
+    modelTierMix: Dict[str, int]
+
+
+class McpSummaryByCaller(_SummaryBaseModel):
+    caller: str
+    calls: int
+
+
+class McpSummarySyntheticProbe(_SummaryBaseModel):
+    verdict: str
+    lastCalledAt: Optional[str] = None
+    lastSuccess: Optional[bool] = None
+    consecutiveFailures: int = 0
+
+
+class McpSummaryResponse(_SummaryBaseModel):
+    live: bool
+    generatedAt: str
+    windowMinutes: int
+    verdict: str
+    totals: McpSummaryTotals
+    byTool: List[McpSummaryByTool]
+    byAgent: List[McpSummaryByAgent]
+    byCaller: List[McpSummaryByCaller]
+    syntheticProbe: McpSummarySyntheticProbe
+
+
+# ---- Auth -----------------------------------------------------------------
+
+def _admin_mcp_secret() -> str:
+    """Return the secret used to gate /api/admin/mcp-summary.
+
+    Accepts PA_INTERNAL_API_SECRET (the name the WTEN-side proxy ships with)
+    and falls back to INTERNAL_API_SECRET (the long-standing PA convention).
+    """
+    return os.getenv("PA_INTERNAL_API_SECRET") or INTERNAL_API_SECRET
+
+
+def _require_admin_secret(provided: Optional[str]) -> None:
+    import secrets
+    expected = _admin_mcp_secret()
+    if not provided or not expected or not secrets.compare_digest(provided, expected):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+# ---- Percentile helper ----------------------------------------------------
+
+def _percentile(values: List[int], p: float) -> Optional[int]:
+    """Linear-interpolation percentile (mirrors Postgres percentile_cont)."""
+    if not values:
+        return None
+    sorted_values = sorted(values)
+    if len(sorted_values) == 1:
+        return int(sorted_values[0])
+    rank = (len(sorted_values) - 1) * p
+    lo = int(rank)
+    hi = min(lo + 1, len(sorted_values) - 1)
+    frac = rank - lo
+    return int(round(sorted_values[lo] + (sorted_values[hi] - sorted_values[lo]) * frac))
+
+
+# ---- Synthetic probe verdict (shared with mcp-status) ---------------------
+
+def _compute_synthetic_verdict(db: Session) -> McpSummarySyntheticProbe:
+    from sqlalchemy import select, desc
+    from models import MCPInvocation
+
+    stmt = (
+        select(MCPInvocation)
+        .where(MCPInvocation.caller == "synthetic-probe")
+        .order_by(desc(MCPInvocation.calledAt))
+        .limit(4)
+    )
+    rows = db.execute(stmt).scalars().all()
+
+    if not rows:
+        return McpSummarySyntheticProbe(verdict="UNKNOWN")
+
+    latest = rows[0]
+    last_called_at_dt = latest.calledAt
+    last_called_at = last_called_at_dt.isoformat() if last_called_at_dt else None
+    last_success = bool(latest.success)
+    consecutive_failures = 0
+    for r in rows:
+        if r.success:
+            break
+        consecutive_failures += 1
+
+    failures = sum(1 for r in rows if not r.success)
+    now = datetime.utcnow()
+    is_stale = last_called_at_dt is not None and (now - last_called_at_dt) > timedelta(minutes=60)
+
+    if failures >= 2:
+        verdict = "INCIDENT"
+    elif is_stale:
+        verdict = "DEGRADED"
+    elif last_success:
+        verdict = "OK"
+    else:
+        verdict = "DEGRADED"
+
+    return McpSummarySyntheticProbe(
+        verdict=verdict,
+        lastCalledAt=last_called_at,
+        lastSuccess=last_success,
+        consecutiveFailures=consecutive_failures,
+    )
+
+
+# ---- Aggregation ----------------------------------------------------------
+
+def _aggregate_mcp_summary(db: Session, window_minutes: int) -> Dict[str, Any]:
+    from sqlalchemy import select
+    from models import MCPInvocation
+
+    cutoff = datetime.utcnow() - timedelta(minutes=window_minutes)
+    base_where = MCPInvocation.calledAt >= cutoff
+
+    # Totals + per-tool latencies in a single scan. We pull the latency column
+    # into Python and compute percentiles there so the same code path works for
+    # both Postgres (prod) and SQLite (tests). The window is capped at 1 day
+    # and the (tool_name, called_at DESC) index keeps the scan cheap.
+    rows = db.execute(
+        select(
+            MCPInvocation.toolName,
+            MCPInvocation.success,
+            MCPInvocation.latencyMs,
+            MCPInvocation.agentId,
+            MCPInvocation.modelTier,
+            MCPInvocation.caller,
+        ).where(base_where)
+    ).all()
+
+    total_calls = len(rows)
+    success_count = sum(1 for r in rows if r.success)
+    failure_count = total_calls - success_count
+    error_rate = (failure_count / total_calls) if total_calls > 0 else 0.0
+    all_latencies = [int(r.latencyMs) for r in rows if r.latencyMs is not None]
+
+    totals = McpSummaryTotals(
+        calls=total_calls,
+        success=success_count,
+        failures=failure_count,
+        errorRate=round(error_rate, 6),
+        p50LatencyMs=_percentile(all_latencies, 0.50),
+        p95LatencyMs=_percentile(all_latencies, 0.95),
+        p99LatencyMs=_percentile(all_latencies, 0.99),
+    )
+
+    by_tool_acc: Dict[str, Dict[str, Any]] = {}
+    for r in rows:
+        bucket = by_tool_acc.setdefault(r.toolName, {"calls": 0, "failures": 0, "latencies": []})
+        bucket["calls"] += 1
+        if not r.success:
+            bucket["failures"] += 1
+        if r.latencyMs is not None:
+            bucket["latencies"].append(int(r.latencyMs))
+
+    by_tool = [
+        McpSummaryByTool(
+            tool=tool,
+            calls=acc["calls"],
+            failures=acc["failures"],
+            p95LatencyMs=_percentile(acc["latencies"], 0.95),
+        )
+        for tool, acc in by_tool_acc.items()
+    ]
+    by_tool.sort(key=lambda b: b.calls, reverse=True)
+
+    # byAgent: drop NULL agent_id, top 10 by calls
+    by_agent_acc: Dict[str, Dict[str, Any]] = {}
+    for r in rows:
+        if not r.agentId:
+            continue
+        bucket = by_agent_acc.setdefault(r.agentId, {"calls": 0, "tier_mix": {}})
+        bucket["calls"] += 1
+        tier_key = r.modelTier or "unknown"
+        bucket["tier_mix"][tier_key] = bucket["tier_mix"].get(tier_key, 0) + 1
+
+    by_agent = [
+        McpSummaryByAgent(
+            agentId=agent_id,
+            calls=acc["calls"],
+            modelTierMix=acc["tier_mix"],
+        )
+        for agent_id, acc in by_agent_acc.items()
+    ]
+    by_agent.sort(key=lambda b: b.calls, reverse=True)
+    by_agent = by_agent[:10]
+
+    # byCaller: top 10 by calls (NULL caller becomes "unknown")
+    by_caller_acc: Dict[str, int] = {}
+    for r in rows:
+        caller_key = r.caller or "unknown"
+        by_caller_acc[caller_key] = by_caller_acc.get(caller_key, 0) + 1
+
+    by_caller = [McpSummaryByCaller(caller=c, calls=n) for c, n in by_caller_acc.items()]
+    by_caller.sort(key=lambda b: b.calls, reverse=True)
+    by_caller = by_caller[:10]
+
+    synthetic = _compute_synthetic_verdict(db)
+
+    # Overall verdict — mirrors WTEN's systemStatusService taxonomy
+    if total_calls == 0:
+        # Distinguish UNKNOWN (no traffic AND no probes) from OK (idle but probed)
+        now = datetime.utcnow()
+        synth_called_at = (
+            datetime.fromisoformat(synthetic.lastCalledAt)
+            if synthetic.lastCalledAt
+            else None
+        )
+        probe_stale = synth_called_at is None or (now - synth_called_at) > timedelta(hours=2)
+        if probe_stale:
+            verdict = "UNKNOWN"
+        else:
+            verdict = synthetic.verdict
+    else:
+        if error_rate >= 0.05 or synthetic.verdict == "INCIDENT":
+            verdict = "INCIDENT"
+        elif (
+            error_rate >= 0.01
+            or (totals.p95LatencyMs is not None and totals.p95LatencyMs > 2000)
+            or synthetic.verdict == "DEGRADED"
+        ):
+            verdict = "DEGRADED"
+        elif synthetic.verdict == "UNKNOWN":
+            # Traffic exists, no probe seen — still report verdict from traffic only
+            verdict = "OK"
+        else:
+            verdict = "OK"
+
+    return {
+        "live": True,
+        "generatedAt": datetime.utcnow().isoformat() + "Z",
+        "windowMinutes": window_minutes,
+        "verdict": verdict,
+        "totals": totals.model_dump(),
+        "byTool": [b.model_dump() for b in by_tool],
+        "byAgent": [b.model_dump() for b in by_agent],
+        "byCaller": [b.model_dump() for b in by_caller],
+        "syntheticProbe": synthetic.model_dump(),
+    }
+
+
+# ---- 10-second in-process cache ------------------------------------------
+
+_SUMMARY_CACHE_TTL_SECONDS = 10.0
+_summary_cache: Dict[int, tuple] = {}  # window_minutes -> (expires_at, payload)
+_summary_cache_lock = threading.Lock()
+
+
+def _get_cached_summary(db: Session, window_minutes: int) -> Dict[str, Any]:
+    now = time.monotonic()
+    with _summary_cache_lock:
+        entry = _summary_cache.get(window_minutes)
+        if entry and entry[0] > now:
+            return entry[1]
+
+    # Compute outside the lock so concurrent windows don't serialize on each other
+    payload = _aggregate_mcp_summary(db, window_minutes)
+
+    with _summary_cache_lock:
+        _summary_cache[window_minutes] = (now + _SUMMARY_CACHE_TTL_SECONDS, payload)
+    return payload
+
+
+@app.get(
+    "/api/admin/mcp-summary",
+    response_model=McpSummaryResponse,
+    tags=["admin"],
+)
+async def admin_mcp_summary(
+    windowMinutes: int = 60,
+    x_internal_secret: Optional[str] = Header(None, alias="X-Internal-Secret"),
+    db: Session = Depends(database.get_db),
+):
+    """Aggregate MCP telemetry for WTEN's cross-server admin panel.
+
+    Auth: X-Internal-Secret header must match PA_INTERNAL_API_SECRET (falls
+    back to INTERNAL_API_SECRET). Returns a 401 on mismatch.
+
+    Query: windowMinutes (5–1440, default 60). Out-of-range → 422.
+    """
+    _require_admin_secret(x_internal_secret)
+    if windowMinutes < 5 or windowMinutes > 1440:
+        raise HTTPException(status_code=422, detail="windowMinutes must be between 5 and 1440")
+
+    try:
+        return _get_cached_summary(db, windowMinutes)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"mcp-summary aggregation failed: {exc}")
+
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
