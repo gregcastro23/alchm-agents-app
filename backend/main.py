@@ -101,6 +101,7 @@ app.add_middleware(
 # Configuration
 ALCHM_KITCHEN_URL = os.getenv("ALCHM_KITCHEN_URL", "https://whattoeatnext-production.up.railway.app")
 INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", "882133EA-3D06-4DF2-A63C-F4114AB4EFBC")
+FRONTEND_URL = os.getenv("PLANETARY_AGENTS_FRONTEND_URL", "http://localhost:3000")
 
 # Cost-tiered model selection for historical agent chat.
 # Tier maps to the model the *first* provider in the chain will try.
