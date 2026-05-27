@@ -257,64 +257,137 @@ fn set_tray_state(app: tauri::AppHandle, state: String) -> Result<(), String> {
 }
 
 fn verify_deep_link(url_str: &str) -> Result<serde_json::Value, String> {
-    let secret = std::env::var("TAURI_DEEP_LINK_SECRET")
+    // Prefer runtime env vars, then build-time env vars. In release builds we
+    // refuse to fall back to the well-known dev secret — an attacker who knows
+    // it could otherwise forge deep links that the Tauri app accepts.
+    let runtime_secret = std::env::var("TAURI_DEEP_LINK_SECRET")
         .or_else(|_| std::env::var("DEEP_LINK_SHARED_SECRET"))
-        .unwrap_or_else(|_| {
-            option_env!("TAURI_DEEP_LINK_SECRET")
-                .or(option_env!("DEEP_LINK_SHARED_SECRET"))
-                .unwrap_or("DEV_SECRET_DO_NOT_USE_IN_PROD")
-                .to_string()
-        });
+        .ok();
+    let build_secret = option_env!("TAURI_DEEP_LINK_SECRET")
+        .or(option_env!("DEEP_LINK_SHARED_SECRET"))
+        .map(|s| s.to_string());
+    let secret = match runtime_secret.or(build_secret) {
+        Some(s) => s,
+        None => {
+            #[cfg(debug_assertions)]
+            {
+                "DEV_SECRET_DO_NOT_USE_IN_PROD".to_string()
+            }
+            #[cfg(not(debug_assertions))]
+            {
+                return Err(
+                    "Deep-link secret not configured (TAURI_DEEP_LINK_SECRET / DEEP_LINK_SHARED_SECRET)"
+                        .to_string(),
+                );
+            }
+        }
+    };
 
     let parsed_url = Url::parse(url_str).map_err(|_| "Invalid URL")?;
+    let host = parsed_url.host_str().unwrap_or("");
 
-    let mut id = String::new();
-    let mut name = String::new();
-    let mut tier = String::new();
-    let mut expires_at_str = String::new();
-    let mut provided_sig = String::new();
+    if host == "link-account" {
+        let mut user_id = String::new();
+        let mut api_key = String::new();
+        let mut display_name = String::new();
+        let mut email = String::new();
+        let mut expires_at_str = String::new();
+        let mut provided_sig = String::new();
 
-    for (k, v) in parsed_url.query_pairs() {
-        match k.as_ref() {
-            "id" => id = v.into_owned(),
-            "name" => name = v.into_owned(),
-            "tier" => tier = v.into_owned(),
-            "expiresAt" => expires_at_str = v.into_owned(),
-            "sig" => provided_sig = v.into_owned(),
-            _ => {}
+        for (k, v) in parsed_url.query_pairs() {
+            match k.as_ref() {
+                "userId" => user_id = v.into_owned(),
+                "apiKey" => api_key = v.into_owned(),
+                "displayName" => display_name = v.into_owned(),
+                "email" => email = v.into_owned(),
+                "expiresAt" => expires_at_str = v.into_owned(),
+                "sig" => provided_sig = v.into_owned(),
+                _ => {}
+            }
         }
+
+        if provided_sig.is_empty() {
+            return Err("Missing signature".to_string());
+        }
+
+        let expires_at: u64 = expires_at_str.parse().map_err(|_| "Invalid expiresAt")?;
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis() as u64;
+
+        if now > expires_at {
+            return Err("Deep link expired".to_string());
+        }
+
+        let payload = format!("{}:{}:{}:{}:{}", user_id, api_key, display_name, email, expires_at_str);
+
+        let mut mac =
+            HmacSha256::new_from_slice(secret.as_bytes()).map_err(|_| "Invalid secret key length")?;
+        mac.update(payload.as_bytes());
+        let expected_sig = hex::encode(mac.finalize().into_bytes());
+
+        if provided_sig != expected_sig {
+            return Err("Invalid signature".to_string());
+        }
+
+        Ok(serde_json::json!({
+            "type": "link",
+            "userId": user_id,
+            "apiKey": api_key,
+            "displayName": display_name,
+            "email": email
+        }))
+    } else {
+        let mut id = String::new();
+        let mut name = String::new();
+        let mut tier = String::new();
+        let mut expires_at_str = String::new();
+        let mut provided_sig = String::new();
+
+        for (k, v) in parsed_url.query_pairs() {
+            match k.as_ref() {
+                "id" => id = v.into_owned(),
+                "name" => name = v.into_owned(),
+                "tier" => tier = v.into_owned(),
+                "expiresAt" => expires_at_str = v.into_owned(),
+                "sig" => provided_sig = v.into_owned(),
+                _ => {}
+            }
+        }
+
+        if provided_sig.is_empty() {
+            return Err("Missing signature".to_string());
+        }
+
+        let expires_at: u64 = expires_at_str.parse().map_err(|_| "Invalid expiresAt")?;
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis() as u64;
+
+        if now > expires_at {
+            return Err("Deep link expired".to_string());
+        }
+
+        let payload = format!("{}:{}:{}:{}", id, name, tier, expires_at_str);
+
+        let mut mac =
+            HmacSha256::new_from_slice(secret.as_bytes()).map_err(|_| "Invalid secret key length")?;
+        mac.update(payload.as_bytes());
+        let expected_sig = hex::encode(mac.finalize().into_bytes());
+
+        if provided_sig != expected_sig {
+            return Err("Invalid signature".to_string());
+        }
+
+        Ok(serde_json::json!({
+            "type": "install",
+            "id": id,
+            "name": name,
+            "tier": tier
+        }))
     }
-
-    if provided_sig.is_empty() {
-        return Err("Missing signature".to_string());
-    }
-
-    let expires_at: u64 = expires_at_str.parse().map_err(|_| "Invalid expiresAt")?;
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_millis() as u64;
-
-    if now > expires_at {
-        return Err("Deep link expired".to_string());
-    }
-
-    let payload = format!("{}:{}:{}:{}", id, name, tier, expires_at_str);
-
-    let mut mac =
-        HmacSha256::new_from_slice(secret.as_bytes()).map_err(|_| "Invalid secret key length")?;
-    mac.update(payload.as_bytes());
-    let expected_sig = hex::encode(mac.finalize().into_bytes());
-
-    if provided_sig != expected_sig {
-        return Err("Invalid signature".to_string());
-    }
-
-    Ok(serde_json::json!({
-        "id": id,
-        "name": name,
-        "tier": tier
-    }))
 }
 
 fn main() {
@@ -373,7 +446,15 @@ fn main() {
                         Ok(verified_payload) => {
                             println!("Deep link verified successfully");
                             if let Some(window) = handle.get_webview_window("main") {
-                                let _ = window.emit("verified-install", verified_payload);
+                                if let Some(type_str) = verified_payload.get("type").and_then(|v| v.as_str()) {
+                                    if type_str == "link" {
+                                        let _ = window.emit("verified-link", verified_payload);
+                                    } else {
+                                        let _ = window.emit("verified-install", verified_payload);
+                                    }
+                                } else {
+                                    let _ = window.emit("verified-install", verified_payload);
+                                }
                             }
                         }
                         Err(e) => {
@@ -391,12 +472,31 @@ fn main() {
                 .unwrap()
                 .to_string_lossy()
                 .to_string();
-            let sidecar_command = app
+            let mut sidecar_command = app
                 .shell()
                 .sidecar("orchestrator")
                 .expect("failed to create `orchestrator` binary command")
                 .env("IPC_NONCE", &sidecar_nonce)
                 .env("APP_DATA_DIR", &app_data_dir);
+
+            if let Ok(db_url) = std::env::var("DATABASE_URL") {
+                sidecar_command = sidecar_command.env("DATABASE_URL", &db_url);
+            }
+
+            let runtime_secret = std::env::var("TAURI_DEEP_LINK_SECRET")
+                .or_else(|_| std::env::var("DEEP_LINK_SHARED_SECRET"))
+                .ok();
+            let build_secret = option_env!("TAURI_DEEP_LINK_SECRET")
+                .or(option_env!("DEEP_LINK_SHARED_SECRET"))
+                .map(|s| s.to_string());
+            if let Some(link_secret) = runtime_secret.or(build_secret) {
+                sidecar_command = sidecar_command.env("TAURI_DEEP_LINK_SECRET", &link_secret);
+            } else if cfg!(debug_assertions) {
+                sidecar_command =
+                    sidecar_command.env("TAURI_DEEP_LINK_SECRET", "DEV_SECRET_DO_NOT_USE_IN_PROD");
+            }
+            // In release with no configured secret, the sidecar will refuse to
+            // sign deep links — matching `verify_deep_link` above.
 
             let (mut rx, _child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
 

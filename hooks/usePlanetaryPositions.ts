@@ -2,7 +2,7 @@
 // Enhanced with Chrome DevTools MCP integration and backend API calls
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   defaultAlchemicalMCPConfig,
   validateTokenEquilibrium,
@@ -96,6 +96,10 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
     lastUpdated: null,
   })
 
+  // Suppress repeated backend-unavailable warnings — first failure per hook
+  // mount is enough; subsequent retries shouldn't flood the console.
+  const backendWarnedRef = useRef(false)
+
   const fetchPlanetaryData = useCallback(async () => {
     if (!opts.enabled) {
       setData(prev => ({ ...prev, loading: false, error: null }))
@@ -153,6 +157,8 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
         Energy: Number(alchmPayload?.Energy ?? 0),
       }
 
+      // Backend recovered — re-arm the warning so a future outage gets logged once.
+      backendWarnedRef.current = false
       setData({
         timestamp: new Date().toISOString(),
         planetaryPositions,
@@ -163,10 +169,13 @@ export function usePlanetaryPositions(options: UsePlanetaryPositionsOptions = {}
         lastUpdated: new Date(),
       })
     } catch (error) {
-      console.warn(
-        'usePlanetaryPositions: Backend unavailable, using defaults:',
-        (error as Error)?.message || error
-      )
+      if (!backendWarnedRef.current) {
+        backendWarnedRef.current = true
+        console.warn(
+          'usePlanetaryPositions: Backend unavailable, using defaults (silenced for further retries):',
+          (error as Error)?.message || error
+        )
+      }
       setData(prev => ({
         ...prev,
         loading: false,

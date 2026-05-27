@@ -961,12 +961,18 @@ function renderMainShell() {
         </nav>
         <div class="status-row">
           ${state.notice ? `<span class="notice">${escapeHtml(state.notice)}</span>` : ''}
-          <button class="offline-toggle-button ${state.localOfflineMode ? 'active' : ''}" data-action="toggle-offline-mode">
+          <button
+            class="offline-toggle-button ${state.localOfflineMode ? 'active' : ''}"
+            data-action="toggle-offline-mode"
+            title="${state.localOfflineMode ? 'Local Offline Mode: astrology + chat route through the bundled MCP sidecar. Click to switch to Cloud Mode (Kitchen + Agents APIs).' : 'Cloud Mode: astrology + chat route through alchm.kitchen and agents.alchm.kitchen. Click to switch to Local Offline Mode.'}"
+          >
             ${state.localOfflineMode ? '🔌 Local Mode' : '🌐 Cloud Mode'}
           </button>
-          <span class="status-pill ${state.runtime.sidecar === 'online' ? 'online' : 'offline'}">
-            ${state.runtime.sidecar === 'online' ? 'Sidecar online' : 'Link account'}
-          </span>
+          ${
+            state.runtime.sidecar === 'online'
+              ? '<span class="status-pill online">Sidecar online</span>'
+              : `<button class="status-pill offline" data-action="link-account-web" title="Open the web yield hub in your browser to link this desktop to your Alchm account.">Link account</button>`
+          }
         </div>
       </header>
       <div class="workspace">
@@ -999,6 +1005,8 @@ function renderTab(view: View) {
 
 function renderSidebar() {
   const selectedAgentIds = getChatAgentIds()
+  const isLinked =
+    state.siteAccounts.agents.status === 'linked' || state.siteAccounts.kitchen.status === 'linked'
 
   return `
     <aside class="sidebar">
@@ -1009,7 +1017,11 @@ function renderSidebar() {
           <p class="muted">${escapeHtml(state.account.plan)}</p>
           <div class="button-row">
             <button class="secondary-button" data-action="view" data-view="account">Manage</button>
-            <button class="secondary-button" data-action="refresh-accounts">Sync</button>
+            ${
+              isLinked
+                ? '<button class="secondary-button" data-action="refresh-accounts">Sync</button>'
+                : ''
+            }
           </div>
         </div>
       </section>
@@ -3288,62 +3300,169 @@ function renderStoneStep(title: string, detail: string) {
 }
 
 function renderAccountView() {
+  const isLinked = state.account.plan === 'Linked Companion'
+  const statusBadge = isLinked
+    ? `<span class="tag" style="background: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.3); color: #4ade80; gap: 6px;"><span class="pulse-green"></span>Linked with Google SSO</span>`
+    : `<span class="tag" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); color: #fbbf24; gap: 6px;"><span class="pulse-yellow"></span>Local Operator Mode</span>`
+
   return `
+    <style>
+      .pulse-green {
+        width: 8px;
+        height: 8px;
+        background-color: #22c55e;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+        animation: pulse-g 1.6s infinite;
+      }
+      @keyframes pulse-g {
+        0% {
+          transform: scale(0.95);
+          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+        }
+        70% {
+          transform: scale(1);
+          box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+        }
+        100% {
+          transform: scale(0.95);
+          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+        }
+      }
+
+      .pulse-yellow {
+        width: 8px;
+        height: 8px;
+        background-color: #eab308;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
+        animation: pulse-y 1.6s infinite;
+      }
+      @keyframes pulse-y {
+        0% {
+          transform: scale(0.95);
+          box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
+        }
+        70% {
+          transform: scale(1);
+          box-shadow: 0 0 0 6px rgba(234, 179, 8, 0);
+        }
+        100% {
+          transform: scale(0.95);
+          box-shadow: 0 0 0 0 rgba(234, 179, 8, 0);
+        }
+      }
+
+      .pulse-red {
+        width: 8px;
+        height: 8px;
+        background-color: #ef4444;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        animation: pulse-r 1.6s infinite;
+      }
+      @keyframes pulse-r {
+        0% {
+          transform: scale(0.95);
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+        70% {
+          transform: scale(1);
+          box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+        }
+        100% {
+          transform: scale(0.95);
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        }
+      }
+    </style>
+
     <section class="view">
       <header class="view-header">
         <div>
-          <div class="eyebrow">Companion Accounts</div>
-          <h1>Agents and Kitchen</h1>
+          <div class="eyebrow">Alchemical Integration</div>
+          <h1>Account Hub</h1>
           <p>
-            Track the accounts that live on the web apps, claim each daily yield, and open the
-            primary web surfaces when you need purchase, unlock, or full account management.
+            Seamlessly synchronize your identity and alchemical balances between your local Tauri companion and the online platforms.
           </p>
         </div>
-        <button class="secondary-button" data-action="refresh-accounts">Sync Accounts</button>
+        <div class="button-row">
+          <button class="secondary-button" data-action="refresh-accounts">Sync Both Accounts</button>
+        </div>
       </header>
+
+      <!-- Premium Identity Panel -->
+      <div class="panel stack" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.05), rgba(99, 102, 241, 0.05)); border: 1px solid rgba(167, 139, 250, 0.15); position: relative; overflow: hidden; border-radius: 12px; padding: 24px;">
+        <div style="position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, transparent 70%); pointer-events: none;"></div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; width: 100%;">
+          <div style="display: flex; gap: 16px; align-items: center;">
+            <div style="width: 52px; height: 52px; border-radius: 12px; background: linear-gradient(135deg, #a855f7, #6366f1); display: grid; place-items: center; box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);">
+              <span style="font-size: 24px; font-weight: 900; color: #fff;">✦</span>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <h2 style="margin: 0; font-size: 20px; color: #f4f0ff;">${escapeHtml(state.account.displayName)}</h2>
+                ${statusBadge}
+              </div>
+              <p class="muted" style="margin: 4px 0 0; font-size: 13px;">
+                ${escapeHtml(state.account.email || 'No email associated with local session.')}
+              </p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; margin-left: auto;">
+            <button class="primary-button" type="button" data-action="link-account-web" style="background: linear-gradient(135deg, #a855f7, #6366f1); border: none; color: #fff; font-weight: bold; box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);">🔗 Authenticate & Sync</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Domain Portals -->
       <div class="account-grid">
         ${renderSiteAccountCard(state.siteAccounts.agents)}
         ${renderSiteAccountCard(state.siteAccounts.kitchen)}
       </div>
-      <form class="panel stack" data-account-form>
-        <div class="eyebrow">Desktop link settings</div>
-        <div class="form-grid">
-          <label class="field">
-            <span>Display name</span>
-            <input class="input" id="account-display-name" value="${escapeHtml(state.account.displayName)}" />
-          </label>
-          <label class="field">
-            <span>Email</span>
-            <input class="input" id="account-email" value="${escapeHtml(state.account.email)}" />
-          </label>
-          <label class="field">
-            <span>User ID</span>
-            <input class="input" id="account-user-id" value="${escapeHtml(state.account.userId)}" />
-          </label>
-          <label class="field">
-            <span>Desktop API key</span>
-            <input class="input" id="account-api-key" value="${escapeHtml(state.account.apiKey)}" />
-          </label>
-          <label class="field">
-            <span>Agents web URL</span>
-            <input class="input" id="account-agents-url" value="${escapeHtml(state.account.agentsUrl)}" />
-          </label>
-          <label class="field">
-            <span>Kitchen web URL</span>
-            <input class="input" id="account-kitchen-url" value="${escapeHtml(state.account.kitchenUrl)}" />
-          </label>
-        </div>
-        <div class="button-row">
-          <button class="primary-button" type="submit">Save Account</button>
-          <button class="secondary-button" type="button" data-action="reset-api-key">Use Dev Key</button>
-          <button class="secondary-button" type="button" data-action="open-site" data-site="agents">
-            Agents Web
-          </button>
-          <button class="secondary-button" type="button" data-action="open-site" data-site="kitchen">
-            Kitchen Web
-          </button>
-        </div>
-      </form>
+
+      <!-- Advanced Technical Credentials -->
+      <details class="panel" style="border: 1px solid rgba(255, 255, 255, 0.05); background: rgba(5, 5, 10, 0.4); border-radius: 8px;">
+        <summary style="cursor: pointer; color: #a1a1aa; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 0; outline: none; user-select: none;">
+          ⚙️ Advanced Integration Parameters
+        </summary>
+        <form class="stack" style="margin-top: 18px;" data-account-form>
+          <div class="form-grid">
+            <label class="field">
+              <span>Display name</span>
+              <input class="input" id="account-display-name" value="${escapeHtml(state.account.displayName)}" />
+            </label>
+            <label class="field">
+              <span>Email</span>
+              <input class="input" id="account-email" value="${escapeHtml(state.account.email)}" />
+            </label>
+            <label class="field">
+              <span>User ID</span>
+              <input class="input" id="account-user-id" value="${escapeHtml(state.account.userId)}" />
+            </label>
+            <label class="field">
+              <span>Desktop API key</span>
+              <input class="input" id="account-api-key" value="${escapeHtml(state.account.apiKey)}" />
+            </label>
+            <label class="field">
+              <span>Agents web URL</span>
+              <input class="input" id="account-agents-url" value="${escapeHtml(state.account.agentsUrl)}" />
+            </label>
+            <label class="field">
+              <span>Kitchen web URL</span>
+              <input class="input" id="account-kitchen-url" value="${escapeHtml(state.account.kitchenUrl)}" />
+            </label>
+          </div>
+          <div class="button-row" style="margin-top: 10px;">
+            <button class="primary-button" type="submit">Save Settings</button>
+            <button class="secondary-button" type="button" data-action="reset-api-key">Use Dev Key</button>
+          </div>
+        </form>
+      </details>
     </section>
   `
 }
@@ -3351,46 +3470,74 @@ function renderAccountView() {
 function renderSiteAccountCard(account: SiteAccount) {
   const claimText =
     account.status === 'checking'
-      ? 'Syncing'
+      ? 'Syncing...'
       : account.status === 'offline' || account.status === 'needs-link'
-        ? 'Link to Claim'
+        ? '🔗 Link account to claim yield'
         : account.canClaimDaily
-          ? 'Claim Daily Yield'
-          : 'Claimed Today'
+          ? '✨ Claim Daily Cosmic Yield'
+          : '✓ Cosmic Yield Claimed'
   const disabled =
     !account.canClaimDaily || account.status === 'offline' || account.status === 'needs-link'
 
+  const isAgents = account.site === 'agents'
+  const cardGradient = isAgents
+    ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(10, 7, 18, 0.72) 100%)'
+    : 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(10, 7, 18, 0.72) 100%)'
+  const cardBorder = isAgents ? 'rgba(99, 102, 241, 0.22)' : 'rgba(245, 158, 11, 0.22)'
+
+  const statusBadge =
+    account.status === 'linked'
+      ? `<span class="tag" style="background: rgba(34, 197, 94, 0.12); border-color: rgba(34, 197, 94, 0.25); color: #86efac; font-size: 9px; gap: 4px;"><span class="pulse-green"></span>Active Sync</span>`
+      : account.status === 'checking'
+        ? `<span class="tag" style="background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.25); color: #fde047; font-size: 9px; gap: 4px;"><span class="pulse-yellow"></span>Syncing</span>`
+        : `<span class="tag" style="background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.25); color: #fca5a5; font-size: 9px; gap: 4px;"><span class="pulse-red"></span>Unlinked</span>`
+
+  const claimButtonColor = isAgents
+    ? 'linear-gradient(135deg, #6366f1, #4f46e5)'
+    : 'linear-gradient(135deg, #f59e0b, #d97706)'
+
   return `
-    <article class="panel account-card">
-      <div class="account-card-head">
-        <div>
-          <div class="eyebrow">${escapeHtml(account.status)}</div>
-          <h3>${escapeHtml(account.label)}</h3>
-          <p class="muted">${escapeHtml(account.message || account.homeUrl)}</p>
+    <article class="panel account-card" style="background: ${cardGradient}; border: 1px solid ${cardBorder}; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; height: 100%; transition: all 0.25s ease;">
+      <div>
+        <div class="account-card-head" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; width: 100%;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+              <h3 style="margin: 0; font-size: 20px; font-weight: 800; color: #fff;">${escapeHtml(account.label)}</h3>
+              ${statusBadge}
+            </div>
+            <p class="muted" style="margin: 2px 0 0; font-size: 12px; font-family: ui-monospace, SFMono-Regular, monospace; word-break: break-all;">
+              ${escapeHtml(account.message || account.homeUrl)}
+            </p>
+          </div>
+          <button class="secondary-button" data-action="open-site" data-site="${account.site}" style="padding: 0 10px; min-height: 28px; font-size: 11px;">Open</button>
         </div>
-        <button class="secondary-button" data-action="open-site" data-site="${account.site}">Open</button>
+        
+        <div class="coin-grid" style="margin: 18px 0; gap: 8px;">
+          ${renderCoin('Spirit', account.balances.spirit)}
+          ${renderCoin('Essence', account.balances.essence)}
+          ${renderCoin('Matter', account.balances.matter)}
+          ${renderCoin('Substance', account.balances.substance)}
+        </div>
       </div>
-      <div class="coin-grid">
-        ${renderCoin('Spirit', account.balances.spirit)}
-        ${renderCoin('Essence', account.balances.essence)}
-        ${renderCoin('Matter', account.balances.matter)}
-        ${renderCoin('Substance', account.balances.substance)}
-      </div>
-      <div class="button-row">
+      
+      <div style="margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; width: 100%;">
         <button
           class="primary-button"
           data-action="claim-yield"
           data-site="${account.site}"
           ${disabled ? 'disabled' : ''}
+          style="${disabled ? 'opacity: 0.55; cursor: not-allowed; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);' : `background: ${claimButtonColor}; border: none; font-weight: bold; box-shadow: 0 0 12px rgba(99,102,241,0.2);`} min-height: 34px; padding: 0 16px; font-size: 11px; flex: 1;"
         >
           ${claimText}
         </button>
-        <span class="tag">Streak ${account.streak}</span>
-        ${
-          account.lastDailyClaimAt
-            ? `<span class="tag">Last ${formatTime(account.lastDailyClaimAt)}</span>`
-            : '<span class="tag">No claim yet</span>'
-        }
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <span class="tag" style="background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.2); color: #c084fc; font-weight: bold;">🔥 Streak ${account.streak}</span>
+          ${
+            account.lastDailyClaimAt
+              ? `<span class="tag" style="font-size: 10px; color: #a1a1aa;">Last: ${formatTime(account.lastDailyClaimAt)}</span>`
+              : '<span class="tag" style="font-size: 10px; color: #71717a;">No Claim</span>'
+          }
+        </div>
       </div>
     </article>
   `
@@ -3418,8 +3565,14 @@ function renderDiagnosticsView() {
       <div class="diag-grid">
         ${renderMetric('Frontend source', 'desktop-shell/dist')}
         ${renderMetric('Main Sidecar API', state.runtime.sidecar)}
-        ${renderMetric('Alchm MCP Stdio', state.runtime.alchmMcpStatus)}
-        ${renderMetric('PA MCP Stdio', state.runtime.paMcpStatus)}
+        ${renderMetric(
+          'Alchm MCP Stdio',
+          state.runtime.ipcNonce ? state.runtime.alchmMcpStatus : 'browser preview'
+        )}
+        ${renderMetric(
+          'PA MCP Stdio',
+          state.runtime.ipcNonce ? state.runtime.paMcpStatus : 'browser preview'
+        )}
         ${renderMetric('IPC nonce', state.runtime.ipcNonce ? 'received' : 'not available')}
         ${renderMetric('Active model', telemetry?.activeModel || 'none')}
         ${renderMetric('CPU', telemetry?.cpu?.percent === undefined ? 'unknown' : `${telemetry.cpu.percent}%`)}
@@ -4930,6 +5083,9 @@ function bindEvents() {
     if (action === 'open-site' && isSiteKey(site)) void openExternalUrl(urlForSite(site))
     if (action === 'claim-yield' && isSiteKey(site)) void claimDailyYield(site)
     if (action === 'refresh-accounts') void refreshAccounts()
+    if (action === 'link-account-web') {
+      void openExternalUrl(`${state.account.agentsUrl.replace(/\/$/, '')}/yield?link=true`)
+    }
     if (action === 'refresh-astrology') void refreshAstrologyConsensus()
     if (action === 'refresh-physics') void refreshAlchmPhysics()
     if (action === 'reset-api-key') {
@@ -5083,7 +5239,7 @@ async function bootTauriRuntime() {
 
   if (typeof maybeTauriWindow.__TAURI_INTERNALS__?.invoke !== 'function') {
     state.runtime.sidecar = 'offline'
-    markAccountsOffline('Open the packaged desktop app to sync and claim yield.')
+    markAccountsOffline('Open the packaged desktop app, or claim yield at /yield in the browser.')
     render()
     return
   }
@@ -5102,6 +5258,21 @@ async function bootTauriRuntime() {
       )
       if (template) addAgent(template.id, 'web-unlock', event.payload.tier)
     })
+
+    await listen<{ userId: string; apiKey: string; displayName: string; email: string }>(
+      'verified-link',
+      event => {
+        state.account.userId = event.payload.userId
+        state.account.apiKey = event.payload.apiKey
+        state.account.displayName = event.payload.displayName
+        state.account.email = event.payload.email
+        state.account.plan = 'Linked Companion'
+
+        saveState()
+        setNotice(`Successfully linked Alchm Account: ${event.payload.displayName}`)
+        void refreshAccounts()
+      }
+    )
 
     await refreshTelemetry()
     await refreshAccounts({ silent: true })

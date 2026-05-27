@@ -1,17 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { useSearchParams } from 'next/navigation'
+import { buildKitchenSignInUrl } from '@/lib/kitchen-signin'
 import './signin.css'
 
 export default function SignInPage() {
   const [loading, setLoading] = useState(false)
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl') || '/me'
 
   const handleGoogleSignIn = async (e: React.MouseEvent) => {
     e.preventDefault()
     setLoading(true)
     try {
-      await signIn('google', { callbackUrl: '/me' })
+      window.location.href = buildKitchenSignInUrl(callbackUrl)
     } catch {
       setLoading(false)
     }
