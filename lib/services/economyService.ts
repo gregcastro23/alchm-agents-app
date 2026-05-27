@@ -8,7 +8,23 @@ import {
   AGENT_OPERATION_COSTS,
 } from '@/lib/economy-config'
 
-export type TransactionSourceType = 'agents_yield' | 'agents_daily_yield' | 'agents_operation'
+export type TransactionSourceType =
+  | 'agents_yield'
+  | 'agents_daily_yield'
+  | 'kitchen_daily_yield'
+  | 'agents_operation'
+
+function isSameUtcDay(iso: string | null | undefined): boolean {
+  if (!iso) return false
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return false
+  const today = new Date()
+  return (
+    date.getUTCFullYear() === today.getUTCFullYear() &&
+    date.getUTCMonth() === today.getUTCMonth() &&
+    date.getUTCDate() === today.getUTCDate()
+  )
+}
 
 export interface TokenBalances {
   spirit: number
@@ -63,16 +79,80 @@ export class EconomyService {
 
   static async hasClaimedAgentsYieldToday(userId: string): Promise<boolean> {
     const balances = await this.getBalances(userId)
-    if (!balances.lastDailyClaimAgentsAt) return false
+    return isSameUtcDay(balances.lastDailyClaimAgentsAt)
+  }
 
-    const lastClaim = new Date(balances.lastDailyClaimAgentsAt)
-    const today = new Date()
+  static async hasClaimedKitchenYieldToday(userId: string): Promise<boolean> {
+    const balances = await this.getBalances(userId)
+    return isSameUtcDay(balances.lastDailyClaimAt)
+  }
 
-    return (
-      lastClaim.getUTCFullYear() === today.getUTCFullYear() &&
-      lastClaim.getUTCMonth() === today.getUTCMonth() &&
-      lastClaim.getUTCDate() === today.getUTCDate()
-    )
+  /**
+   * Claim the daily Kitchen-side yield. Mirrors `claimAgentsYield` but bumps
+   * `lastDailyClaimAt` and tags transactions as `kitchen_daily_yield` so the
+   * desktop and `/yield` page hand out the same amount with the same multiplier
+   * rules as the Agents-side claim.
+   */
+  static async claimKitchenYield(userId: string, isPremium: boolean) {
+    try {
+      return await prisma.$transaction(async tx => {
+        const balances = await tx.tokenBalance.findUnique({ where: { userId } })
+        if (isSameUtcDay(balances?.lastDailyClaimAt?.toISOString())) {
+          throw new Error('Already claimed today')
+        }
+
+        const total = BASE_AGENTS_YIELD * (isPremium ? PREMIUM_MULTIPLIER : 1)
+        const perType = total / 4
+        const dateStr = new Date().toISOString().split('T')[0]
+        const distribution: Record<string, number> = {}
+        const transactionGroupId = crypto.randomUUID()
+
+        for (const token of TOKEN_TYPES) {
+          distribution[token] = perType
+          await tx.tokenTransaction.create({
+            data: {
+              transactionGroupId,
+              userId,
+              tokenType: token,
+              amount: new Prisma.Decimal(perType),
+              sourceType: 'kitchen_daily_yield',
+              description: 'Cosmic Yield from Kitchen',
+              idempotencyKey: `daily:kitchen:${userId}:${dateStr}:${token}`,
+              createdAt: new Date(),
+            },
+          })
+        }
+
+        const updated = await tx.tokenBalance.update({
+          where: { userId },
+          data: {
+            spirit: { increment: perType },
+            essence: { increment: perType },
+            matter: { increment: perType },
+            substance: { increment: perType },
+            lastDailyClaimAt: new Date(),
+            updatedAt: new Date(),
+          },
+        })
+
+        return {
+          distribution,
+          balances: {
+            spirit: Number(updated.spirit),
+            essence: Number(updated.essence),
+            matter: Number(updated.matter),
+            substance: Number(updated.substance),
+            lastDailyClaimAt: updated.lastDailyClaimAt?.toISOString() || null,
+            lastDailyClaimAgentsAt: updated.lastDailyClaimAgentsAt?.toISOString() || null,
+          },
+        }
+      })
+    } catch (error: any) {
+      if (error.code === 'P2002' || error.message === 'Already claimed today') {
+        throw new Error('Already claimed today')
+      }
+      throw error
+    }
   }
 
   static async claimAgentsYield(userId: string, isPremium: boolean) {

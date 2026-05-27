@@ -10,7 +10,6 @@ import {
   Wind,
   Mountain,
   Wallet,
-  Coins,
   Sparkles,
   Zap,
   Box,
@@ -25,6 +24,7 @@ import {
   Activity,
   ShieldAlert,
   RefreshCw,
+  Link2,
 } from 'lucide-react'
 
 import { ELEMENT_MAPPING } from '@/components/philosophers-stone-config'
@@ -922,6 +922,15 @@ export default function App() {
           <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">
             Session: {desktopSessionMode}
           </span>
+          {!hasTauriInvokeRuntime() && (
+            <a
+              href="/yield?link=true"
+              className="flex items-center gap-1.5 bg-gradient-to-r from-yellow-500/80 to-amber-600/80 hover:from-yellow-400 hover:to-amber-500 text-[10px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg border border-yellow-500/30 text-white transition-all hover:scale-105 shadow-[0_0_15px_rgba(245,158,11,0.25)] cursor-pointer"
+            >
+              <Link2 className="w-3.5 h-3.5" />
+              Link to Desktop App
+            </a>
+          )}
           <button
             onClick={() => handleInstallAgent('rumi')}
             className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-500 hover:to-indigo-500 text-[10px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg border border-purple-500/30 text-white transition-all hover:scale-105 shadow-[0_0_15px_rgba(139,92,246,0.25)] cursor-pointer"

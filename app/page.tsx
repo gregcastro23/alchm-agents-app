@@ -42,6 +42,7 @@ import {
   SACRED_STATS_METADATA,
 } from '@/lib/sacred-7-stats'
 import { ALCHM_DESKTOP_DOWNLOAD_LABEL, openDesktopAppDownload } from '@/lib/desktop-download'
+import { buildKitchenSignInUrl } from '@/lib/kitchen-signin'
 
 // ============================================================================
 // CONSCIOUSNESS PARAMETER DEFINITIONS
@@ -349,7 +350,7 @@ export default function LandingPage() {
               className="landing-primary-btn"
               onClick={() => {
                 setLoading(true)
-                window.location.href = `https://alchm.kitchen/api/auth/signin/google?callbackUrl=${encodeURIComponent(window.location.origin)}`
+                window.location.href = buildKitchenSignInUrl('/')
               }}
               disabled={loading}
             >
@@ -671,7 +672,7 @@ export default function LandingPage() {
               className="landing-primary-btn"
               onClick={() => {
                 setLoading(true)
-                window.location.href = `https://alchm.kitchen/api/auth/signin/google?callbackUrl=${encodeURIComponent(window.location.origin)}`
+                window.location.href = buildKitchenSignInUrl('/')
               }}
               disabled={loading}
             >

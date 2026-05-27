@@ -2429,6 +2429,43 @@ const server = serve({
     }
 
     if (req.method === 'GET' && url.pathname === '/api/accounts') {
+      const authHeader = req.headers.get('Authorization')
+      const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null
+
+      if (!pool && token && token !== DEV_DESKTOP_API_KEY) {
+        try {
+          const agentsUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://agents.alchm.kitchen'
+          const res = await fetch(`${agentsUrl.replace(/\/$/, '')}/api/desktop/session`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+          if (res.ok) {
+            const data = await res.json()
+            if (data.mode === 'authenticated') {
+              return corsResponse(
+                JSON.stringify({
+                  mode: 'linked',
+                  userId: data.userId,
+                  balances: data.balances,
+                  accounts: data.accounts,
+                }),
+                {
+                  status: 200,
+                  headers: { 'Content-Type': 'application/json' },
+                }
+              )
+            }
+          }
+          return corsResponse('Session verification failed on online portal', {
+            status: res.status || 401,
+          })
+        } catch (err) {
+          console.error('Failed to proxy accounts fetch to online portal:', err)
+          return corsResponse('Failed to reach online portal', { status: 502 })
+        }
+      }
+
       const userId = await authenticateToken(req)
       if (!userId) return corsResponse('Invalid API Key', { status: 401 })
 
@@ -2439,6 +2476,53 @@ const server = serve({
     }
 
     if (req.method === 'POST' && url.pathname === '/api/accounts/claim-daily') {
+      const authHeader = req.headers.get('Authorization')
+      const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null
+
+      if (!pool && token && token !== DEV_DESKTOP_API_KEY) {
+        try {
+          const body = await req.json().catch(() => ({}))
+          const agentsUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://agents.alchm.kitchen'
+          const res = await fetch(`${agentsUrl.replace(/\/$/, '')}/api/desktop/claim-yield`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+          })
+          if (res.ok) {
+            const data = await res.json()
+            return corsResponse(
+              JSON.stringify({
+                success: true,
+                distribution: data.distribution,
+                balances: data.balances,
+              }),
+              {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' },
+              }
+            )
+          } else {
+            const errData = await res.json().catch(() => ({}))
+            return corsResponse(
+              JSON.stringify({ message: errData.message || 'Daily claim failed' }),
+              {
+                status: res.status,
+                headers: { 'Content-Type': 'application/json' },
+              }
+            )
+          }
+        } catch (err) {
+          console.error('Failed to proxy claim-daily request to online portal:', err)
+          return corsResponse(JSON.stringify({ message: 'Failed to reach online portal' }), {
+            status: 502,
+            headers: { 'Content-Type': 'application/json' },
+          })
+        }
+      }
+
       const userId = await authenticateToken(req)
       if (!userId) return corsResponse('Invalid API Key', { status: 401 })
 
