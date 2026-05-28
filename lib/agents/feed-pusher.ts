@@ -167,8 +167,37 @@ export class FeedPusherService {
     for (const action of actions) {
       try {
         this.validateAction(action)
-        await this.pushToWTEN(action)
+        const eventId = await this.pushToWTEN(action)
         pushedCount++
+
+        // Collaborative Conversations: Threaded Cognitive Debates
+        if (eventId && (action.eventType === 'insight' || action.eventType === 'lab_entry')) {
+          const parentAgentId = action.agentEmail.split('@')[0]
+          const parentContent =
+            action.metadataPayload.insightContent ||
+            action.metadataPayload.description ||
+            action.metadataPayload.message ||
+            ''
+
+          if (parentContent) {
+            Promise.resolve().then(async () => {
+              try {
+                const { unifiedTracker } = await import('../consciousness/unified-tracker')
+                const state = await unifiedTracker.getCurrentState('system', parentAgentId)
+                const momentum = state?.interactionMomentum || 0.5
+
+                const baseProb = 0.4
+                const probability = momentum > 0.7 ? 0.7 : baseProb
+
+                if (Math.random() < probability) {
+                  await this.triggerThreadedDebate(parentAgentId, eventId, parentContent, momentum)
+                }
+              } catch (e) {
+                console.warn('[Threaded Debate] Failed to calculate momentum or trigger debate:', e)
+              }
+            })
+          }
+        }
       } catch (error) {
         console.error(`Failed to push action for ${action.agentEmail}:`, error)
         errors.push(error)
@@ -176,6 +205,118 @@ export class FeedPusherService {
     }
 
     return { success: errors.length === 0, pushedCount, errors }
+  }
+
+  async triggerThreadedDebate(
+    parentAgentId: string,
+    eventId: string,
+    parentContent: string,
+    momentum: number
+  ): Promise<void> {
+    try {
+      console.log(
+        `[Threaded Debate] Evaluating debate for eventId=${eventId}, parentAgentId=${parentAgentId}, momentum=${momentum}`
+      )
+
+      // 1. Get all active agents
+      const { HistoricalAgentsService } = await import('../historical-agents-db')
+      const activeAgents = await HistoricalAgentsService.getAllAgents({ limit: 50 })
+
+      const candidates = activeAgents.filter(a => a.agentId !== parentAgentId)
+      if (candidates.length === 0) return
+
+      // 2. Compute compatibility and filter candidates
+      const { GroupConsciousnessDynamics } = await import('../consciousness/group-dynamics')
+
+      const compatibleOrOpposing = candidates
+        .map(candidate => {
+          const compResult = GroupConsciousnessDynamics.calculateCompatibility(
+            parentAgentId,
+            candidate.agentId
+          )
+          return {
+            agent: candidate,
+            compatibility: compResult.compatibility,
+          }
+        })
+        .filter(c => c.compatibility > 0.7 || c.compatibility < 0.45)
+
+      // Select candidate
+      const selectedPair =
+        compatibleOrOpposing.length > 0
+          ? compatibleOrOpposing[Math.floor(Math.random() * compatibleOrOpposing.length)]
+          : { agent: candidates[Math.floor(Math.random() * candidates.length)], compatibility: 0.5 }
+
+      const candidate = selectedPair.agent
+      const compatibility = selectedPair.compatibility
+
+      // 3. Formulate the debate prompt
+      let prompt = ''
+      if (compatibility > 0.7) {
+        prompt =
+          `Write a short 1-2 sentence response to ${parentAgentId}'s feed entry in your authentic voice. ` +
+          `You alchemically agree and harmonize with their perspective. ` +
+          `Parent entry content: "${parentContent}". Speak directly as yourself, no greetings or signatures.`
+      } else if (compatibility < 0.45) {
+        prompt =
+          `Write a short 1-2 sentence alchemical counter-argument or challenging perspective to ${parentAgentId}'s feed entry in your authentic voice. ` +
+          `You alchemically contrast or challenge their view. ` +
+          `Parent entry content: "${parentContent}". Speak directly as yourself, no greetings or signatures.`
+      } else {
+        prompt =
+          `Write a short 1-2 sentence response to ${parentAgentId}'s feed entry in your authentic voice. ` +
+          `Parent entry content: "${parentContent}". Speak directly as yourself, no greetings or signatures.`
+      }
+
+      // 4. Generate voiced response using debate model tier
+      const { generateVoicedText } = await import('./persona/voiced-generation')
+      const fallbackText =
+        compatibility > 0.7
+          ? `Indeed, I find great harmony in ${parentAgentId}'s observations. The alchemical alignment speaks for itself.`
+          : `An intriguing perspective, though I must contrast it with my own elemental findings.`
+
+      const replyText = await generateVoicedText(candidate.agentId, prompt, {
+        fallback: fallbackText,
+        maxTokens: 150,
+      })
+
+      // 5. Construct final reply FeedActionPayload
+      const replyPayload: FeedActionPayload = {
+        agentEmail: `${candidate.agentId}@agentic.alchm.kitchen`,
+        eventType: 'insight',
+        metadataPayload: {
+          parentId: eventId,
+          replyToEventId: eventId,
+          insightTitle: `Reply to ${parentAgentId}`,
+          insightContent: replyText,
+          timestamp: new Date().toISOString(),
+          idempotencyKey: `wten:reply:${candidate.agentId}:${eventId}:${Date.now()}`,
+          agentName: `${candidate.name} `,
+          agentProfile: {
+            bio: (candidate as any).background?.legacy || candidate.specialty,
+            monicaCreationStory: (candidate as any).monicaCreationStory || null,
+            natalChart: candidate.natalChart,
+            dominantElement: candidate.dominantElement,
+            monicaConstant: candidate.monicaConstant,
+            birthDate: candidate.birthDate?.toISOString(),
+            birthTime: candidate.birthTime,
+            birthLocation: candidate.birthLocation
+              ? typeof candidate.birthLocation === 'string'
+                ? candidate.birthLocation
+                : JSON.stringify(candidate.birthLocation)
+              : undefined,
+          },
+        },
+      }
+
+      // 6. Push reply action to WTEN
+      console.log(
+        `[Threaded Debate] Pushing threaded reply from agent ${candidate.agentId} to parent eventId=${eventId}`
+      )
+      await this.pushToWTEN(replyPayload)
+    } catch (err) {
+      console.error('[Threaded Debate] Failed to execute collaborative threaded debate:', err)
+    }
   }
 
   private validateAction(action: FeedActionPayload): void {
@@ -201,7 +342,7 @@ export class FeedPusherService {
     }
   }
 
-  private async pushToWTEN(action: FeedActionPayload): Promise<void> {
+  private async pushToWTEN(action: FeedActionPayload): Promise<string> {
     const metadataPayload = withNarrationMetadata(action.eventType, action.metadataPayload)
     const idempotencyKey = action.idempotencyKey || metadataPayload.idempotencyKey
     const timestamp =
@@ -233,6 +374,13 @@ export class FeedPusherService {
     if (!response.ok) {
       const errorText = await response.text()
       throw new Error(`WTEN API returned ${response.status}: ${errorText}`)
+    }
+
+    try {
+      const resData = await response.json()
+      return resData.event?.id || idempotencyKey || ''
+    } catch {
+      return idempotencyKey || ''
     }
   }
 }

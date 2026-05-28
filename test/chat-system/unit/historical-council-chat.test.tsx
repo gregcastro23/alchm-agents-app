@@ -49,6 +49,7 @@ describe('HistoricalCouncilChat Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear()
   })
 
   describe('Initial Rendering', () => {

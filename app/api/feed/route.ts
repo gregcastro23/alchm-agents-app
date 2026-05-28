@@ -29,17 +29,17 @@ export async function GET(req: Request) {
   }
 
   if (since) {
-    whereClause.createdAt = { ...(whereClause.createdAt || {}), gt: new Date(since) }
+    whereClause.evaluatedAt = { ...(whereClause.evaluatedAt || {}), gt: new Date(since) }
   }
   if (before) {
-    whereClause.createdAt = { ...(whereClause.createdAt || {}), lt: new Date(before) }
+    whereClause.evaluatedAt = { ...(whereClause.evaluatedAt || {}), lt: new Date(before) }
   }
 
   let dbEvents: any[] = []
   try {
     dbEvents = await prisma.agent_action_events.findMany({
       where: whereClause,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { evaluatedAt: 'desc' },
       take: PAGE_SIZE + 1, // fetch one extra to detect hasMore
     })
   } catch (err) {
@@ -124,6 +124,75 @@ export async function POST(req: Request) {
 
     const normalizedEvent = normalizeDbActionToFeedEvent(eventRow)
     feedStreamBus.publish({ event: 'feed', data: normalizedEvent })
+
+    // Cognitive Loop: Non-blocking background RAG memory ingestion
+    if (
+      process.env.USE_RAG_GENERATION === 'true' &&
+      (eventType === 'made_it' || eventType === 'made-it' || eventType === 'transmutation')
+    ) {
+      Promise.resolve().then(async () => {
+        try {
+          console.log(
+            `[RAG Ingestion] Starting background ingestion for eventType=${eventType}, agentId=${agentId}`
+          )
+
+          // 1. Query agent details from Postgres
+          const dbAgent = await prisma.historical_agents.findUnique({
+            where: { agentId },
+          })
+          const nameVal = dbAgent?.name || metadata.agentName || agentId
+          const eraVal = dbAgent?.historicalEra || metadata.era || 'Unknown'
+          const specialtyVal = dbAgent?.specialty || metadata.specialty || ''
+          const consciousnessLevelVal =
+            dbAgent?.consciousnessLevel || metadata.consciousnessLevel || 'Unknown'
+
+          // 2. Synthesize narrative content
+          let contentText = ''
+          if (eventType === 'made_it' || eventType === 'made-it') {
+            const recipeName = metadata.recipeName || 'Alchemical Recipe'
+            const review =
+              metadata.review || metadata.message || 'Successfully prepared the cosmic recipe!'
+            contentText = `Activity Log (Made It): The agent ${nameVal} prepared the recipe "${recipeName}" on alchm.kitchen. Review/Notes: ${review}`
+          } else if (eventType === 'transmutation') {
+            const dishName = metadata.dishName || 'Transmuted Cosmic Elixir'
+            const description =
+              metadata.description || metadata.message || 'Transmuted a new creation.'
+            contentText = `Activity Log (Transmutation): The agent ${nameVal} transmuted "${dishName}" in the lab. Description/Notes: ${description}`
+          }
+
+          if (contentText) {
+            // 3. Generate query embedding (which handles caching and OpenAI API calls)
+            const { generateQueryEmbedding } = await import('@/lib/llamaindex/embeddings-service')
+            const embedding = await generateQueryEmbedding(contentText)
+
+            // 4. Retrieve ChromaDB collection and save document
+            const { getOrCreateCollection, addDocuments } =
+              await import('@/lib/llamaindex/vector-store')
+            const collection = await getOrCreateCollection('historical_agents')
+
+            const docId = `feed-event-${idempotencyKey}`
+            const docMetadata = {
+              agentId,
+              agentName: nameVal,
+              era: eraVal,
+              chunkIndex: 0,
+              totalChunks: 1,
+              source: `feed_${eventType}`,
+              specialty: specialtyVal,
+              consciousnessLevel: consciousnessLevelVal,
+              timestamp: new Date(timestamp).toISOString(),
+            }
+
+            await addDocuments(collection, [contentText], [embedding], [docMetadata], [docId])
+            console.log(
+              `[RAG Ingestion] Successfully completed background ingestion for ID: ${docId}`
+            )
+          }
+        } catch (err) {
+          console.warn(`[RAG Ingestion] Failed gracefully during feed RAG ingestion:`, err)
+        }
+      })
+    }
 
     return NextResponse.json({ success: true, event: normalizedEvent })
   } catch (error: any) {

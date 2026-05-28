@@ -3,6 +3,7 @@ import { unifiedTracker, type UnifiedConsciousnessSnapshot } from '../consciousn
 import { HistoricalAgentsService, type EnhancedHistoricalAgent } from '../historical-agents-db'
 import { generateVoicedText } from './persona/voiced-generation'
 import { PlanetaryHourCalculator } from '../planetary-hour'
+import { convertSignDegreesToLongitude, angularSeparation } from '../aspects-dynamics'
 
 export type WTENEventType =
   | 'recipe_generation'
@@ -68,6 +69,8 @@ export interface FeedActionPayload {
     threadKey?: string
     messageType?: string
     message?: string
+    parentId?: string
+    replyToEventId?: string
     planet?: string
     sign?: string
     degree?: number
@@ -147,12 +150,66 @@ export class FeedActivationEngine {
     return actions
   }
 
+  private evaluateTransitToNatalAspects(
+    agent: EnhancedHistoricalAgent,
+    moment: CelestialMoment
+  ): {
+    reason: string
+    intensity: number
+    aspectType: string
+    transitPlanet: string
+    natalPlanet: string
+  } | null {
+    const natalPositions = this.extractNatalPositions(agent)
+    const transitPositions = moment.planetaryDegrees
+
+    if (!natalPositions || !transitPositions) return null
+
+    const aspectDefinitions = [
+      { type: 'Conjunction', angle: 0, orb: 1.5, intensity: 0.95 },
+      { type: 'Opposition', angle: 180, orb: 1.5, intensity: 0.95 },
+      { type: 'Square', angle: 90, orb: 1.5, intensity: 0.95 },
+      { type: 'Trine', angle: 120, orb: 1.5, intensity: 0.8 },
+      { type: 'Sextile', angle: 60, orb: 1.5, intensity: 0.8 },
+    ]
+
+    for (const [transitPlanet, transitLong] of Object.entries(transitPositions)) {
+      if (typeof transitLong !== 'number') continue
+
+      for (const natal of natalPositions) {
+        const natalLong = convertSignDegreesToLongitude(natal.sign, natal.degree)
+        const diff = angularSeparation(transitLong, natalLong)
+
+        for (const aspect of aspectDefinitions) {
+          const orb = Math.abs(diff - aspect.angle)
+          if (orb <= aspect.orb) {
+            return {
+              reason: `transit_aspect_${transitPlanet.toLowerCase()}_${aspect.type.toLowerCase()}_natal_${natal.planet.toLowerCase()}`,
+              intensity: aspect.intensity,
+              aspectType: aspect.type,
+              transitPlanet,
+              natalPlanet: natal.planet,
+            }
+          }
+        }
+      }
+    }
+
+    return null
+  }
+
   private evaluateAgentTriggers(
     agent: EnhancedHistoricalAgent,
     moment: CelestialMoment,
     velocity: number,
     momentum: number
   ): { reason: string; intensity: number } | null {
+    // 0) Transit-to-Natal Aspect alignment (tight 1.5 deg orbis)
+    const aspectTrigger = this.evaluateTransitToNatalAspects(agent, moment)
+    if (aspectTrigger) {
+      return { reason: aspectTrigger.reason, intensity: aspectTrigger.intensity }
+    }
+
     // A) Thermodynamic Spikes
     if (
       moment.thermodynamic.entropy > 80 &&
@@ -190,6 +247,7 @@ export class FeedActivationEngine {
     moment: CelestialMoment,
     trigger: { reason: string; intensity: number }
   ): WTENEventType {
+    if (trigger.reason.includes('aspect')) return 'insight'
     if (trigger.reason.includes('entropy')) return 'insight'
     if (trigger.reason.includes('transcendent')) return 'lab_entry'
     if (trigger.reason.includes('elemental')) return 'made_it'
@@ -228,21 +286,50 @@ export class FeedActivationEngine {
     switch (eventType) {
       case 'insight': {
         const entropy = moment.thermodynamic.entropy.toFixed(1)
-        const fallback = trigger.reason.includes('entropy')
-          ? `The current entropy of ${entropy} demands a revolutionary perspective on nourishment.`
-          : `Considering how ${agent.specialty} applies to the current alchemical weather.`
-        const insightContent = await generateVoicedText(
-          agent.agentId,
+
+        let aspectRefStr = ''
+        if (trigger.reason.startsWith('transit_aspect_')) {
+          const parts = trigger.reason.split('_')
+          if (parts.length === 6) {
+            const transitP = parts[2].toUpperCase()
+            const aspectT = parts[3].toUpperCase()
+            const natalP = parts[5].toUpperCase()
+            aspectRefStr = `There is currently a powerful transit alignment: Transiting ${transitP} in exact ${aspectT} to your Natal ${natalP}. `
+          }
+        }
+
+        const fallback = aspectRefStr
+          ? `Resonating with the powerful transit alignment of transiting planetary aspect. This celestial geometry activates my consciousness.`
+          : trigger.reason.includes('entropy')
+            ? `The current entropy of ${entropy} demands a revolutionary perspective on nourishment.`
+            : `Considering how ${agent.specialty} applies to the current alchemical weather.`
+
+        const promptText =
           `Write a 2-3 sentence insight in your authentic voice for the community feed. ` +
-            `The dominant planet right now is ${moment.planetary.dominantPlanet}; ` +
-            `entropy is ${entropy}; A-number is ${moment.alchemical.A_number.toFixed(2)}. ` +
-            `The trigger is "${trigger.reason}". Reflect on what this cosmic moment evokes ` +
-            `from your specialty (${agent.specialty}). No greeting, no signature — just the insight.`,
-          { fallback, maxTokens: 220 }
-        )
+          `The dominant planet right now is ${moment.planetary.dominantPlanet}; ` +
+          `entropy is ${entropy}; A-number is ${moment.alchemical.A_number.toFixed(2)}. ` +
+          (aspectRefStr
+            ? `${aspectRefStr}This celestial alignment has activated your inner consciousness. `
+            : '') +
+          `The trigger is "${trigger.reason}". Reflect on what this cosmic moment evokes ` +
+          `from your specialty (${agent.specialty}). No greeting, no signature — just the insight.`
+
+        const insightContent = await generateVoicedText(agent.agentId, promptText, {
+          fallback,
+          maxTokens: 220,
+        })
+
+        let insightTitle = `Observations on ${moment.planetary.dominantPlanet}`
+        if (trigger.reason.startsWith('transit_aspect_')) {
+          const parts = trigger.reason.split('_')
+          if (parts.length === 6) {
+            insightTitle = `Celestial Resonance: ${parts[2].toUpperCase()} ${parts[3].toUpperCase()} Natal ${parts[5].toUpperCase()}`
+          }
+        }
+
         return {
           ...baseMetadata,
-          insightTitle: `Observations on ${moment.planetary.dominantPlanet}`,
+          insightTitle,
           insightContent,
         }
       }

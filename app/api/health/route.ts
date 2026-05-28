@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { backend } from '@/lib/backend'
+import { feedStreamBus } from '@/lib/agents/feed-stream-bus'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,6 +19,7 @@ interface HealthCheck {
     redis: { status: HealthStatus; error: string | null }
     memory: { usage: number; percentage: number }
     uptime: number
+    feed: { activeListeners: number; pendingQueueCount: number }
   }
 }
 
@@ -38,6 +40,7 @@ export async function GET() {
       redis: { status: 'unknown', error: null },
       memory: { usage: 0, percentage: 0 },
       uptime: process.uptime(),
+      feed: { activeListeners: 0, pendingQueueCount: 0 },
     },
   }
 
@@ -79,6 +82,23 @@ export async function GET() {
       status: 'unhealthy',
       latency: 0,
       error: error instanceof Error ? error.message : 'Backend connection failed',
+    }
+  }
+
+  // Feed telemetry check
+  try {
+    const pendingQueueCount = await prisma.agent_action_events.count({
+      where: { status: 'pending' },
+    })
+    healthCheck.checks.feed = {
+      activeListeners: feedStreamBus.listenerCount,
+      pendingQueueCount,
+    }
+  } catch (error) {
+    console.error('[health] failed to query feed pending events:', error)
+    healthCheck.checks.feed = {
+      activeListeners: feedStreamBus.listenerCount,
+      pendingQueueCount: 0,
     }
   }
 

@@ -238,6 +238,8 @@ export interface PersonalizedAIChatRequest {
   trainingFocus?: TrainingCategory
   feedbackData?: UserFeedback
   context?: InteractionContext
+  cosmicTokenBalance?: number
+  unlockTranscendentTier?: boolean
 }
 
 export interface TrainingUpdate {
@@ -260,6 +262,7 @@ export interface PersonalizedAIChatResponse {
     dominantThemes: string[]
     recommendedTraining: string[]
   }
+  usedTranscendentTier?: boolean
 }
 
 // Session Types

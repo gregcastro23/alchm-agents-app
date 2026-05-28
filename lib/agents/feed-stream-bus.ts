@@ -11,6 +11,10 @@ type FeedStreamListener = (message: FeedStreamMessage) => void
 class FeedStreamBus {
   private listeners = new Set<FeedStreamListener>()
 
+  get listenerCount(): number {
+    return this.listeners.size
+  }
+
   subscribe(listener: FeedStreamListener) {
     this.listeners.add(listener)
     return () => {

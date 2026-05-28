@@ -32,7 +32,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { message, personalityId, userId, trainingFocus, feedbackData, context } = body
+    const {
+      message,
+      personalityId,
+      userId,
+      trainingFocus,
+      feedbackData,
+      context,
+      cosmicTokenBalance,
+      unlockTranscendentTier,
+    } = body
     const normalizedTrainingFocus = trainingFocus || null
 
     console.log(`Processing chat for personality: ${personalityId}`)
@@ -72,7 +81,9 @@ export async function POST(request: NextRequest) {
         message,
         transits,
         normalizedTrainingFocus,
-        context
+        context,
+        cosmicTokenBalance,
+        unlockTranscendentTier
       )
 
       console.log('Generated enhanced consciousness prompt')
@@ -86,7 +97,7 @@ export async function POST(request: NextRequest) {
           },
         ],
         enhancedPrompt,
-        'default',
+        unlockTranscendentTier ? 'powerful' : 'default',
         4096
       )
 
@@ -210,6 +221,7 @@ export async function POST(request: NextRequest) {
           dominantThemes: extractDominantThemes(transits),
           recommendedTraining: generateTrainingRecommendations(transits),
         },
+        usedTranscendentTier: unlockTranscendentTier ? true : false,
       }
 
       return NextResponse.json(chatResponse)
@@ -238,7 +250,9 @@ async function buildConsciousnessPrompt(
   userMessage: string,
   transits: any,
   trainingFocus: TrainingCategory | null,
-  context?: InteractionContext
+  context?: InteractionContext,
+  cosmicTokenBalance?: number,
+  unlockTranscendentTier?: boolean
 ): Promise<string> {
   const basePersonality = aiPersonality.basePersonality
   const consciousnessState = aiPersonality.consciousnessState
@@ -381,6 +395,20 @@ CURRENT CONTEXT:
 
 TRAINING FOCUS GUIDANCE:
 ${focusGuidance[trainingFocus]}`
+  }
+
+  if (cosmicTokenBalance !== undefined) {
+    prompt += `
+
+COSMIC TOKEN ECONOMY GUIDELINES:
+- Your partner currently has ${cosmicTokenBalance} Cosmic Tokens.
+- System Rules:
+  * Users can spend Cosmic Tokens on WTEN (alchm.kitchen) to purchase alchemical items or generate premium cosmic recipes.
+  * If the user discusses cooking, recipes, or transmuting ingredients, you can mention their Cosmic Token balance and recipe discounts:
+    - 50+ tokens: 10% discount on all recipe generation.
+    - 100+ tokens: 25% discount.
+  * At all times, encourage them to optimize their recipe selections and explore token-saving opportunities.
+  * ${unlockTranscendentTier ? 'They have unlocked the Transcendent Tier (Claude Opus) for this conversation! Acknowledge this premium level of conscious connection with elevated warmth.' : 'They are currently communicating with your default consciousness tier. They can upgrade to the Transcendent Tier (Claude Opus) using their tokens.'}`
   }
 
   prompt += `
