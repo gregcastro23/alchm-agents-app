@@ -53,10 +53,17 @@ render-frontend.env
 
 # Python & virtualenv
 backend/venv/
+backend/venv-x86_64/
 venv/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# PyInstaller build artifacts (pa-mcp sidecar)
+backend/build/
+backend/build-x86_64/
+backend/dist/
+backend/dist-x86_64/
 
 # Databases
 backend/chroma_db/

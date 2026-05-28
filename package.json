@@ -8,6 +8,8 @@
     "dev:desktop-shell": "vite --config desktop-shell/vite.config.ts --host 127.0.0.1",
     "build:desktop-shell": "vite build --config desktop-shell/vite.config.ts",
     "build:sidecar": "bash scripts/build-sidecar.sh",
+    "build:sidecar:mac-universal": "bash scripts/build-sidecar.sh --all-mac-archs",
+    "build:sidecar:pa-mcp": "bash scripts/build-sidecar.sh --skip-orchestrator --skip-alchm-mcp",
     "release:desktop:mac": "bunx tauri build --bundles app && bash scripts/package-tauri-macos.sh",
     "dev:tauri": "bunx tauri dev",
     "build": "next build",
