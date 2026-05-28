@@ -216,17 +216,46 @@ export async function PUT(request: NextRequest) {
 
     switch (action) {
       case 'update-config': {
-        // Update sync service configuration
-        // This would allow runtime configuration updates in production
         const accessError = await requireSyncAccess(request)
         if (accessError) return accessError
 
-        return NextResponse.json(
-          {
-            error: 'Configuration update is not implemented',
+        // Only one runtime-mutable knob exists today: cacheTtlMs. The
+        // service's other settings (whattoeatnextBaseUrl, apiKey) are
+        // resolved from env at construction time and intentionally
+        // immutable — changing them at runtime would let an admin
+        // accidentally aim sync at the wrong cluster mid-incident.
+        //
+        // Accepted shape:
+        //   { action: 'update-config', cacheTtlMs?: number }
+        //
+        // The setter clamps to [1s, 1h] so a typo can't disable
+        // caching entirely. Returns the applied value plus the
+        // previous one so the caller can diff.
+        const updates: Record<string, unknown> = {}
+
+        if (typeof body.cacheTtlMs === 'number') {
+          const { applied, previous } = planetaryPositionSyncService.setCacheTtl(body.cacheTtlMs)
+          updates.cacheTtlMs = { applied, previous }
+        }
+
+        if (Object.keys(updates).length === 0) {
+          return NextResponse.json(
+            {
+              error: 'No supported config keys provided.',
+              supportedKeys: ['cacheTtlMs'],
+              note: 'Other sync settings are env-driven and require a redeploy to change.',
+            },
+            { status: 400 }
+          )
+        }
+
+        return NextResponse.json({
+          message: 'Configuration updated.',
+          updates,
+          currentConfig: {
+            cacheTtlMs: planetaryPositionSyncService.getCacheTtl(),
           },
-          { status: 501 }
-        )
+        })
       }
 
       default: {

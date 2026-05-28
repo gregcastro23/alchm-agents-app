@@ -681,6 +681,83 @@ def create_agent(agent: schemas.AgentCreate, db: Session = Depends(database.get_
         raise HTTPException(status_code=400, detail="Agent ID already registered")
     return crud.create_agent(db=db, agent=agent)
 
+
+@app.put("/api/agents/{agent_id}", response_model=schemas.Agent)
+def update_agent_endpoint(
+    agent_id: str,
+    agent_update: schemas.AgentUpdate,
+    db: Session = Depends(database.get_db),
+):
+    """Partial update for a historical agent.
+
+    Only fields enumerated in `schemas.AgentUpdate` are mutable —
+    intentionally narrow so callers can't accidentally rewrite a
+    persona's birth chart or canonical biography. To extend, add
+    fields to the schema rather than passing arbitrary dicts here.
+    """
+    updated = crud.update_agent(db, agent_id=agent_id, agent_update=agent_update)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    return updated
+
+
+@app.delete("/api/agents/{agent_id}")
+def delete_agent_endpoint(agent_id: str, db: Session = Depends(database.get_db)):
+    """Remove a historical agent record.
+
+    Note that this only removes the SQL row — ChromaDB chunks for the
+    agent remain until /api/rag/cache?agentId=... is invalidated. The
+    unified Next.js route is expected to fire both operations together
+    when deletion is user-initiated.
+    """
+    deleted = crud.delete_agent(db, agent_id=agent_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    return {"success": True, "agentId": agent_id}
+
+
+@app.get("/api/agents-stats")
+def agents_stats(db: Session = Depends(database.get_db)):
+    """Aggregate counts for the admin dashboard.
+
+    Lives at `/api/agents-stats` (not `/api/agents/stats`) because
+    FastAPI routes nest by prefix and `/api/agents/{agent_id}` would
+    otherwise greedily eat the `stats` literal. The Next.js client
+    layer keeps the natural `agents.stats()` naming.
+    """
+    return crud.get_agent_stats(db)
+
+
+@app.get("/api/agents-search")
+def agents_search(
+    q: str,
+    limit: int = 25,
+    db: Session = Depends(database.get_db),
+):
+    """Cheap SQL ILIKE search across name, title, culture.
+
+    Lives under `/api/agents-search` for the same routing-collision
+    reason as agents-stats above. For semantic search, use the
+    existing `/api/rag/search` endpoint backed by ChromaDB.
+    """
+    rows = crud.search_agents(db, query=q, limit=limit)
+    return {
+        "query": q,
+        "count": len(rows),
+        "agents": [
+            {
+                "agentId": a.agentId,
+                "name": a.name,
+                "title": a.title,
+                "historicalEra": a.historicalEra,
+                "culture": a.culture,
+                "consciousnessLevel": a.consciousnessLevel,
+            }
+            for a in rows
+        ],
+    }
+
+
 # --- Chat Orchestration ---
 
 @app.post("/api/chat", response_model=schemas.ChatResponse)
@@ -1274,6 +1351,50 @@ async def search_knowledge(agent_id: str, query: str, db: Session = Depends(data
             "degraded": True,
             "error": str(exc),
         }
+
+
+@app.delete("/api/rag/agents/{agent_id}")
+async def invalidate_rag_for_agent(
+    agent_id: str,
+    x_internal_secret: Optional[str] = Header(None, alias="X-Internal-Secret"),
+):
+    """Delete all ChromaDB chunks for a single agent.
+
+    Paired with the Next.js /api/rag/cache POST handler: when an
+    agent's persona is updated or removed, the in-memory rag-cache
+    invalidates its query→result entries and this endpoint flushes
+    the underlying vector chunks so the next chat doesn't pull stale
+    embeddings.
+
+    Internal-only — gated by X-Internal-Secret matching
+    INTERNAL_API_SECRET. The Next.js proxy supplies that header.
+
+    Returns the count of deleted chunks so callers can sanity-check
+    that the agent actually had ingested content.
+    """
+    if x_internal_secret != INTERNAL_API_SECRET:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    try:
+        collection = rag.vector_store.get_or_create_collection(ingest.COLLECTION_NAME)
+
+        # ChromaDB's delete(where=...) doesn't return the count of
+        # deleted rows, so we measure size before + after. Acceptable
+        # for an admin-rate operation; we wouldn't do this in a hot
+        # path.
+        before = collection.count()
+        collection.delete(where={"agent_id": agent_id})
+        after = collection.count()
+        deleted = max(0, before - after)
+
+        return {
+            "agentId": agent_id,
+            "deletedChunks": deleted,
+            "remainingChunks": after,
+        }
+    except Exception as exc:
+        print(f"[rag/invalidate-agent] {agent_id}: {exc}", flush=True)
+        raise HTTPException(status_code=500, detail=f"ChromaDB invalidation failed: {exc}")
 
 
 @app.post("/api/rag/rebuild")
