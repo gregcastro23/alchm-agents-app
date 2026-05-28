@@ -28,7 +28,7 @@ export async function GET(req: Request) {
       }
 
       // Open the stream with an immediate comment so proxies don't buffer
-      enqueue(': feed-stream open\n\n')
+      enqueue('retry: 5000\n: feed-stream open\n\n')
 
       const unsubscribe = feedStreamBus.subscribe(message => {
         enqueue(`event: ${message.event}\ndata: ${JSON.stringify(message.data)}\n\n`)

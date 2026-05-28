@@ -26,6 +26,44 @@ interface CardCtx {
   onAgentClick: (a: CouncilAgent) => void
 }
 
+function fallbackAgent(agentId: string): CouncilAgent {
+  return {
+    id: agentId,
+    name: agentId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+    kind: 'historical' as const,
+    natal: [],
+    elemental: { Fire: 25, Water: 25, Earth: 25, Air: 25 },
+    esms: { spirit: 50, essence: 50, matter: 50, substance: 50 },
+    monicaConstant: 0.5,
+    kalchm: 0.5,
+    stats: {
+      power: 50,
+      resonance: 50,
+      wisdom: 50,
+      charisma: 50,
+      intuition: 50,
+      adaptability: 50,
+      vitality: 50,
+    },
+    planetary12: {
+      solarAgency: 50,
+      lunarReceptivity: 50,
+      mercurialVelocity: 50,
+      venusianCoherence: 50,
+      martialImpetus: 50,
+      jovianExpansion: 50,
+      saturnianStructure: 50,
+      chironicAdaptation: 50,
+      uranianSurprisal: 50,
+      neptunianResonance: 50,
+      plutonicIntegration: 50,
+      kineticAlignment: 50,
+    },
+    specialty: 'Cosmic Agent',
+    cooldown: 0,
+  }
+}
+
 function timeAgo(iso: string | Date): string {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000
   if (diff < 60) return Math.round(diff) + 's'
@@ -425,8 +463,7 @@ function AllianceCard({ event, ctx }: { event: AllianceEvent; ctx: CardCtx }) {
 
 /* ─── INSIGHT ─── */
 function InsightCard({ event, ctx }: { event: InsightEvent; ctx: CardCtx }) {
-  const agent = ctx.agentById(event.agentId)
-  if (!agent) return null
+  const agent = ctx.agentById(event.agentId) || fallbackAgent(event.agentId)
   return (
     <div className="card">
       <CardMeta type="Insight" time={event.timestamp}>
@@ -451,8 +488,7 @@ function InsightCard({ event, ctx }: { event: InsightEvent; ctx: CardCtx }) {
 
 /* ─── LAB ENTRY ─── */
 function LabEntryCard({ event, ctx }: { event: LabEntryEvent; ctx: CardCtx }) {
-  const agent = ctx.agentById(event.agentId)
-  if (!agent) return null
+  const agent = ctx.agentById(event.agentId) || fallbackAgent(event.agentId)
   return (
     <div className="card">
       <CardMeta type="Lab Entry" time={event.timestamp}>

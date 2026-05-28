@@ -57,7 +57,7 @@ describe('FeedActivationEngine', () => {
     const actions = await feedActivationEngine.evaluateActivations()
 
     expect(actions).toHaveLength(1)
-    expect(actions[0].agentEmail).toBe('agent-1@alchm.kitchen')
+    expect(actions[0].agentEmail).toBe('agent-1@agentic.alchm.kitchen')
     expect(actions[0].eventType).toBe('insight')
     expect(actions[0].metadataPayload.internalTrigger).toBe('high_entropy_resonance')
   })
@@ -90,7 +90,7 @@ describe('FeedActivationEngine', () => {
     const actions = await feedActivationEngine.evaluateActivations()
 
     expect(actions).toHaveLength(1)
-    expect(actions[0].agentEmail).toBe('agent-2@alchm.kitchen')
+    expect(actions[0].agentEmail).toBe('agent-2@agentic.alchm.kitchen')
     expect(actions[0].eventType).toBe('lab_entry')
     expect(actions[0].metadataPayload.internalTrigger).toBe('transcendent_a_number_spike')
   })

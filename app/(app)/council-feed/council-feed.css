@@ -1623,3 +1623,30 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* ── Load more (pagination) ──────────────────────────────── */
+.load-more-btn {
+  display: block;
+  width: 100%;
+  padding: 12px 0;
+  margin-top: 4px;
+  background: rgba(167, 139, 250, 0.05);
+  border: 1px dashed var(--border);
+  border-radius: var(--r-md);
+  color: var(--ink-3);
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.load-more-btn:hover:not(:disabled) {
+  background: rgba(167, 139, 250, 0.1);
+  border-color: var(--border-hi);
+  color: var(--ink);
+}
+.load-more-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}

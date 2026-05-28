@@ -122,6 +122,12 @@ export function CouncilFeedClient({
   const nativeNotificationIds = useRef<Set<string>>(new Set())
   const trayPulseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  /* ── Pagination & reconnection state ── */
+  const latestTimestamp = useRef<string | null>(events.length ? String(events[0].timestamp) : null)
+  const [feedCursor, setFeedCursor] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+
   const allAgents = useMemo<CouncilAgent[]>(() => {
     const list = initialUserAgent ? [initialUserAgent, ...initialAgents] : initialAgents
     return list.map(a => {
@@ -176,9 +182,32 @@ export function CouncilFeedClient({
     let es: EventSource | null = null
     try {
       es = new EventSource('/api/feed/stream')
+
+      /* On reconnect (open fires again), catch up missed events */
+      es.addEventListener('open', () => {
+        if (!latestTimestamp.current) return
+        fetch(`/api/feed?since=${encodeURIComponent(latestTimestamp.current)}`)
+          .then(r => r.json())
+          .then(({ events: missed }: { events: FeedEvent[] }) => {
+            if (!missed?.length) return
+            setEvents(prev => {
+              const existingIds = new Set(prev.map(p => p.id))
+              const fresh = missed.filter(m => !existingIds.has(m.id))
+              if (!fresh.length) return prev
+              return [...fresh, ...prev].sort(
+                (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+              )
+            })
+          })
+          .catch(() => {
+            /* catch-up failed; will retry on next reconnect */
+          })
+      })
+
       es.addEventListener('feed', e => {
         try {
           const incoming = JSON.parse((e as MessageEvent).data) as FeedEvent
+          latestTimestamp.current = String(incoming.timestamp)
           handleNativeTelemetry(incoming)
           setEvents(prev => [incoming, ...prev.filter(p => p.id !== incoming.id)])
         } catch {
@@ -219,6 +248,34 @@ export function CouncilFeedClient({
       }
     }
   }, [handleNativeTelemetry])
+
+  /* ── Load older events (cursor pagination) ── */
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return
+    setLoadingMore(true)
+    try {
+      const oldest = feedCursor || events[events.length - 1]?.timestamp
+      if (!oldest) {
+        setHasMore(false)
+        return
+      }
+      const res = await fetch(`/api/feed?before=${encodeURIComponent(String(oldest))}`)
+      const { events: older, cursor, hasMore: more } = await res.json()
+      if (older?.length) {
+        setEvents(prev => {
+          const existingIds = new Set(prev.map(p => p.id))
+          const fresh = (older as FeedEvent[]).filter(o => !existingIds.has(o.id))
+          return [...prev, ...fresh]
+        })
+        setFeedCursor(cursor)
+      }
+      setHasMore(!!more)
+    } catch {
+      /* pagination fetch failed — user can retry */
+    } finally {
+      setLoadingMore(false)
+    }
+  }, [events, feedCursor, hasMore, loadingMore])
 
   /* ── Cast handler — POSTs to /api/feed/cast which streams the SSE back ── */
   const castMove = useCallback(
@@ -424,6 +481,9 @@ export function CouncilFeedClient({
             cardCtx={cardCtx}
             onAgentClick={setSelectedAgent}
             onCast={castMove}
+            hasMore={hasMore}
+            loadingMore={loadingMore}
+            onLoadMore={loadMore}
           />
           {!desktopWidget && (
             <RosterColumn
@@ -626,6 +686,9 @@ function FeedColumn({
   cardCtx,
   onAgentClick,
   onCast,
+  hasMore,
+  loadingMore,
+  onLoadMore,
 }: {
   events: FeedEvent[]
   agents: CouncilAgent[]
@@ -637,6 +700,9 @@ function FeedColumn({
   cardCtx: CardCtx
   onAgentClick: (a: CouncilAgent) => void
   onCast: (casterId: string, moveId: JingMoveId, targetId: string) => void
+  hasMore: boolean
+  loadingMore: boolean
+  onLoadMore: () => void
 }) {
   const eligible = agents.filter(a => a.id !== 'user-self' && a.cooldown === 0)
   const [castAgent, setCastAgent] = useState<CouncilAgent | undefined>(eligible[0])
@@ -692,6 +758,16 @@ function FeedColumn({
               <FeedCard event={e} ctx={cardCtx} />
             </div>
           ))}
+          {hasMore && (
+            <button
+              type="button"
+              className="load-more-btn"
+              disabled={loadingMore}
+              onClick={onLoadMore}
+            >
+              {loadingMore ? 'Loading…' : 'Load earlier'}
+            </button>
+          )}
         </div>
         <div className="composer">
           <span className="label">Cast</span>
