@@ -38,6 +38,15 @@ import database  # noqa: E402
 import main  # noqa: E402
 from models import Base, MCPInvocation  # noqa: E402
 
+# main.py captures INTERNAL_API_SECRET into a module constant at import
+# time. When another test module (e.g. backend/test_main.py) imports
+# main *before* this file runs its os.environ setup above, that constant
+# is frozen to main.py's default and _admin_mcp_secret() returns it —
+# making our HEADERS_OK secret mismatch (401) under full-suite
+# collection order. Pin the constant explicitly so these tests are
+# import-order-independent regardless of which test module loads first.
+main.INTERNAL_API_SECRET = "test-secret-internal"
+
 
 # ---- Isolated test database ------------------------------------------------
 
