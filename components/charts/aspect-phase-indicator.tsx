@@ -113,7 +113,9 @@ const analyzeAspectsWithKinetics = async (samples: any[], location: any) => {
 // Browser-safe replacement for the deleted `sampleHourlyAlchm`. Uses the
 // `/api/astrologize/bulk` proxy to fetch planetary positions over a small
 // time window. Returns samples in the legacy shape `{ planets: { [name]: { longitude } } }`.
-// TODO: when backend resumes emitting alchm samples, augment with elemental data.
+// Positions-only is the intended shape: the backend doesn't emit
+// elemental decomposition (it's ESMS-native), so this indicator works
+// off longitudes alone. No elemental augmentation is pending.
 async function sampleHourlyAlchm(
   location: { latitude: number; longitude: number },
   end: Date,

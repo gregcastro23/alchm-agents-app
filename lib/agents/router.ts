@@ -20,7 +20,13 @@ async function fetchKineticsEnvelope(_lat: number, _lon: number) {
   const matter = Number(alchm?.matter_score ?? 0)
   const substance = Number(alchm?.substance_score ?? 0)
   const planetaryHour = CHALDEAN_HOURS[new Date().getUTCHours() % 7]
-  // TODO: backend does not yet return elemental totals; map alchemical scores as a stand-in.
+  // The alchm backend is ESMS-native: /api/alchemy returns Spirit /
+  // Essence / Matter / Substance scores plus a single dominantElement,
+  // never Fire/Water/Earth/Air *totals*. That's deliberate — elemental
+  // totals aren't part of the canonical data model. We map ESMS →
+  // FWEA here as the agreed stand-in (Spirit→Fire, Essence→Water,
+  // Matter→Earth, Substance→Air). This is the long-term shape, not a
+  // placeholder awaiting a backend endpoint.
   return {
     timing: { planetaryHours: [planetaryHour] },
     elemental: { totals: { Fire: spirit, Water: essence, Earth: matter, Air: substance } },
