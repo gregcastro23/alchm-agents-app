@@ -38,6 +38,15 @@ import database  # noqa: E402
 import main  # noqa: E402
 from models import Base, MCPInvocation  # noqa: E402
 
+# main.py captures INTERNAL_API_SECRET into a module constant at import
+# time. When another test module (e.g. backend/test_main.py) imports
+# main *before* this file runs its os.environ setup above, that constant
+# is frozen to main.py's default and _admin_mcp_secret() returns it —
+# making our HEADERS_OK secret mismatch (401) under full-suite
+# collection order. Pin the constant explicitly so these tests are
+# import-order-independent regardless of which test module loads first.
+main.INTERNAL_API_SECRET = "test-secret-internal"
+
 
 # ---- Isolated test database ------------------------------------------------
 
@@ -88,8 +97,14 @@ def _insert(
     model_tier: str = "free",
     latency_ms: int = 100,
     called_at: Optional[datetime] = None,
+    arguments: Optional[dict] = None,
 ):
-    """Insert n MCPInvocation rows. Defaults are healthy chat calls."""
+    """Insert n MCPInvocation rows. Defaults are healthy chat calls.
+
+    `model_tier` is the *resolved* tier; pass `arguments={"modelTier": ...}`
+    to simulate the original requested tier so tierDowngrades can be
+    exercised (a downgrade = requested rank > resolved rank).
+    """
     db = TestSessionLocal()
     try:
         base = called_at or (datetime.utcnow() - timedelta(minutes=5))
@@ -104,7 +119,7 @@ def _insert(
                     caller=caller,
                     agentId=agent_id,
                     modelTier=model_tier,
-                    arguments={},
+                    arguments=arguments if arguments is not None else {},
                     resultSummary={},
                     errorMessage=None if success else "boom",
                 )
@@ -197,6 +212,31 @@ def test_empty_db_verdict_unknown():
     assert body["totals"]["calls"] == 0
     assert body["totals"]["errorRate"] == 0.0
     assert body["syntheticProbe"]["verdict"] == "UNKNOWN"
+    # tierDowngrades present even on an empty DB (E4)
+    assert body["tierDowngrades"]["total"] == 0
+    assert body["tierDowngrades"]["byRequestedTier"] == {}
+
+
+def test_tier_downgrades_counted_when_resolved_below_requested():
+    """E4: a row whose resolved modelTier ranks below the requested
+    tier (stored in arguments.modelTier) counts as a downgrade."""
+    # 5 anonymous "reflective" asks knocked down to free.
+    _insert(5, model_tier="free", arguments={"modelTier": "reflective"})
+    # 3 standard "primary" asks knocked to cheap_fast.
+    _insert(3, model_tier="cheap_fast", arguments={"modelTier": "primary"})
+    # 7 honest free calls — no downgrade.
+    _insert(7, model_tier="free", arguments={"modelTier": "free"})
+    # 2 calls with no requested tier at all — defaults to free, no downgrade.
+    _insert(2, model_tier="free", arguments={})
+
+    resp = client.get("/api/admin/mcp-summary", headers=HEADERS_OK)
+    body = resp.json()
+    assert resp.status_code == 200
+    assert body["tierDowngrades"]["total"] == 8
+    assert body["tierDowngrades"]["byRequestedTier"]["reflective"] == 5
+    assert body["tierDowngrades"]["byRequestedTier"]["primary"] == 3
+    # free→free and missing-tier rows must NOT appear
+    assert "free" not in body["tierDowngrades"]["byRequestedTier"]
 
 
 def test_100_success_verdict_ok():

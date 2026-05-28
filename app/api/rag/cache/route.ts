@@ -79,14 +79,56 @@ export async function POST(request: NextRequest) {
 
     // Support invalidating by agent or query pattern
     if (body.agentId) {
-      // This would require implementing an invalidateByAgent method
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Agent-specific invalidation not yet implemented',
-        },
-        { status: 501 }
-      )
+      const agentId: string = String(body.agentId)
+
+      // 1. Clear the in-memory rag-cache entries for this agent. This
+      //    is the fast path that affects subsequent chats on this Next
+      //    instance immediately.
+      const inMemoryRemoved = await ragCache.invalidateAgent(agentId)
+
+      // 2. Fire-and-not-quite-forget the backend ChromaDB invalidation.
+      //    Failure here doesn't break the in-memory invalidation that
+      //    already succeeded — we report the partial result so the
+      //    caller can decide to retry the backend hop separately.
+      let backendResult: { deletedChunks: number; remainingChunks: number } | null = null
+      let backendError: string | null = null
+      try {
+        const backendUrl =
+          process.env.NEXT_PUBLIC_BACKEND_URL ||
+          process.env.PLANETARY_AGENTS_BACKEND_URL ||
+          'http://localhost:8000'
+        const internalSecret = process.env.INTERNAL_API_SECRET
+        if (!internalSecret) {
+          backendError = 'INTERNAL_API_SECRET missing — ChromaDB invalidation skipped.'
+        } else {
+          const response = await fetch(
+            `${backendUrl.replace(/\/$/, '')}/api/rag/agents/${encodeURIComponent(agentId)}`,
+            {
+              method: 'DELETE',
+              headers: {
+                'X-Internal-Secret': internalSecret,
+              },
+            }
+          )
+          if (response.ok) {
+            backendResult = (await response.json()) as {
+              deletedChunks: number
+              remainingChunks: number
+            }
+          } else {
+            backendError = `Backend responded ${response.status}: ${await response.text()}`
+          }
+        }
+      } catch (err) {
+        backendError = err instanceof Error ? err.message : String(err)
+      }
+
+      return NextResponse.json({
+        success: backendError === null,
+        agentId,
+        inMemoryRemoved,
+        chromaDb: backendResult ?? { error: backendError },
+      })
     }
 
     if (body.clearAll) {

@@ -15,6 +15,7 @@ import { calculateXP, calculateInteractionQuality } from './xp-system'
 import { calculateLevel } from './level-system'
 import { CLAUDE_MODELS, createClaudeMessage } from '../anthropic-client'
 import { checkAchievements } from './achievements'
+import { prisma } from '@/lib/db'
 
 // ============================================================================
 // MAIN ORCHESTRATION ENGINE
@@ -290,7 +291,24 @@ export class TrainingOrchestrator {
       'harmonious' // Default to harmonious
     )
 
-    // 7. Check for achievements
+    // 7. Check for achievements.
+    // Load the personality's already-unlocked achievement types so
+    // checkAchievements() doesn't re-award them. The Achievement table
+    // already exists (unique on [personalityId, achievementType]); we
+    // just hadn't been reading from it. Fail-open to an empty list so a
+    // DB hiccup degrades to "might re-award" rather than crashing the
+    // submission pipeline.
+    let previousAchievements: string[] = []
+    try {
+      const prior = await prisma.achievement.findMany({
+        where: { personalityId: session.personalityId },
+        select: { achievementType: true },
+      })
+      previousAchievements = prior.map(a => a.achievementType)
+    } catch (err) {
+      console.error('Failed to load previous achievements:', err)
+    }
+
     const achievementCheckData = {
       totalInteractions: session.progress.completedActivities + 1,
       currentStreak: session.engagementMetrics.sessionCount,
@@ -298,10 +316,30 @@ export class TrainingOrchestrator {
       dailyXPGained: xpCalculation.totalXP,
       currentLevel: calculateLevel(session.progress.completedActivities * 100), // Simplified
       harmoniousTransitInteractions: 0, // Can be enhanced later
-      previousAchievements: [], // TODO: Track and retrieve previous achievements
+      previousAchievements,
     }
 
     const newAchievements = checkAchievements(achievementCheckData, session.personalityId)
+
+    // Persist newly-unlocked achievements so subsequent submissions see
+    // them in previousAchievements. createMany with skipDuplicates
+    // leans on the [personalityId, achievementType] unique constraint
+    // to make this idempotent under a race.
+    if (newAchievements.length > 0) {
+      try {
+        await prisma.achievement.createMany({
+          data: newAchievements.map(a => ({
+            id: a.id,
+            personalityId: a.personalityId,
+            achievementType: a.achievementType,
+            achievementData: a.achievementData as any,
+          })),
+          skipDuplicates: true,
+        })
+      } catch (err) {
+        console.error('Failed to persist new achievements:', err)
+      }
+    }
 
     // 8. Store artifacts
     const artifacts = await this.storeSubmissionArtifacts(

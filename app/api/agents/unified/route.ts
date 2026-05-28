@@ -108,17 +108,60 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
         })
       }
 
-      // Extended actions placeholder for further backend endpoints
-      case 'update':
-      case 'delete':
-      case 'stats':
-      case 'dashboard':
-      case 'search':
+      case 'update': {
+        if (!parameters.agentId) throw new Error('Missing agentId')
+        const { agentId, ...patch } = parameters
+        const updated = await backend.agents.update(agentId, patch)
+        return NextResponse.json({ success: true, data: updated, timestamp })
+      }
+
+      case 'delete': {
+        if (!parameters.agentId) throw new Error('Missing agentId')
+        const result = await backend.agents.delete(parameters.agentId)
+        return NextResponse.json({ success: true, data: result, timestamp })
+      }
+
+      case 'stats': {
+        const data = await backend.agents.stats()
+        return NextResponse.json({ success: true, data, timestamp })
+      }
+
+      case 'search': {
+        const query = parameters.query || parameters.q
+        if (!query) throw new Error('Missing query parameter')
+        const limit = typeof parameters.limit === 'number' ? parameters.limit : 25
+        const data = await backend.agents.search(query, limit)
+        return NextResponse.json({ success: true, data, timestamp })
+      }
+
+      case 'dashboard': {
+        // Composite call — stats + the most recent N agents in one
+        // response so the admin UI can render with a single request.
+        // Kept Next-side rather than backend because the shape is a
+        // UI concern that may evolve faster than the FastAPI schema.
+        const [stats, agents] = await Promise.all([
+          backend.agents.stats(),
+          backend.agents.list({ skip: 0, limit: 12 }),
+        ])
+        return NextResponse.json({
+          success: true,
+          data: { stats, recentAgents: agents },
+          timestamp,
+        })
+      }
+
       case 'evolve':
+        // Agent evolution interacts with the agent_consciousness table
+        // and its Prisma model is the canonical source. The Python
+        // backend doesn't own that schema. Until the design for
+        // backend-side evolution is settled, callers should use the
+        // dedicated /api/consciousness/evolve route instead.
         return NextResponse.json(
           {
             success: false,
-            error: `Action ${action} is pending Python backend migration.`,
+            error:
+              "Action 'evolve' is owned by /api/consciousness/evolve, not this unified surface. " +
+              'Update the caller to hit that route directly.',
             timestamp,
           },
           { status: 501 }

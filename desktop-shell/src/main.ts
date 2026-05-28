@@ -414,7 +414,25 @@ interface PersistedDesktopState {
   selectedChatAgentIds: string[]
   chats: Record<string, ChatMessage[]>
   ledger: LedgerEntry[]
+  /**
+   * "Use local MCP" toggle: when true, chat + astrology prefer the
+   * bundled MCP sidecar over the cloud APIs. Historically misnamed
+   * (it implied no network, but in practice only changes the chat
+   * source). Storage key stays `localOfflineMode` for backward compat
+   * with stored desktop state; new code should prefer the helper
+   * `usesLocalMcp(state)` for intent clarity.
+   */
   localOfflineMode?: boolean
+  /**
+   * Hard offline switch: when true, the shell refuses to make
+   * outbound network requests (cloud APIs, image fetches, etc.).
+   * Independent of `localOfflineMode` so a user can ask for "use
+   * sidecar but still let it sync to the cloud" (false/false-ish) or
+   * "true airplane mode" (true). When enabled while localOfflineMode
+   * is off, chat will fail with a clear error rather than silently
+   * falling back, since there's no working path.
+   */
+  disableNetwork?: boolean
   showJingPanel?: boolean
   jingCasterId?: string | null
   jingTargetId?: string | null
@@ -574,6 +592,31 @@ function getSurface(): Surface {
   const requested = new URLSearchParams(window.location.search).get('surface')
   if (requested === 'composer') return requested
   return 'main'
+}
+
+/**
+ * True when the shell is permitted to make outbound network calls.
+ * Use at the boundary of any direct fetch() or any operation that
+ * triggers cloud egress. requestSidecar() goes through the local
+ * orchestrator sidecar; whether the orchestrator then talks to the
+ * network is its own concern.
+ *
+ * Pair with usesLocalMcp() to express intent at call sites:
+ *   if (usesLocalMcp()) ...   // prefer the local MCP path
+ *   if (canCallNetwork()) ... // permitted to call out to the cloud
+ */
+function canCallNetwork(): boolean {
+  return !state.disableNetwork
+}
+
+/**
+ * True when the user has asked the shell to prefer the local MCP
+ * sidecar over cloud APIs for chat + astrology. Wraps the historical
+ * `localOfflineMode` flag so future call sites can read intent
+ * instead of the legacy storage name.
+ */
+function usesLocalMcp(): boolean {
+  return Boolean(state.localOfflineMode)
 }
 
 function createDefaultSiteAccounts(): Record<SiteKey, SiteAccount> {
@@ -761,6 +804,7 @@ function loadState(): DesktopState {
     stoneDraft: createDefaultStoneDraft(),
     notice: null,
     localOfflineMode: false,
+    disableNetwork: false,
     showJingPanel: false,
     jingCasterId: null,
     jingTargetId: null,
@@ -806,6 +850,7 @@ function loadState(): DesktopState {
       chats,
       ledger: Array.isArray(saved.ledger) ? saved.ledger : fallback.ledger,
       localOfflineMode: saved.localOfflineMode !== undefined ? saved.localOfflineMode : false,
+      disableNetwork: saved.disableNetwork !== undefined ? saved.disableNetwork : false,
       showJingPanel: saved.showJingPanel ?? false,
       jingCasterId: saved.jingCasterId ?? null,
       jingTargetId: saved.jingTargetId ?? null,
@@ -926,6 +971,7 @@ function saveState() {
     chats: state.chats,
     ledger: state.ledger,
     localOfflineMode: state.localOfflineMode,
+    disableNetwork: state.disableNetwork,
     showJingPanel: state.showJingPanel,
     jingCasterId: state.jingCasterId,
     jingTargetId: state.jingTargetId,
@@ -963,10 +1009,17 @@ function renderMainShell() {
           ${state.notice ? `<span class="notice">${escapeHtml(state.notice)}</span>` : ''}
           <button
             class="offline-toggle-button ${state.localOfflineMode ? 'active' : ''}"
-            data-action="toggle-offline-mode"
-            title="${state.localOfflineMode ? 'Local Offline Mode: astrology + chat route through the bundled MCP sidecar. Click to switch to Cloud Mode (Kitchen + Agents APIs).' : 'Cloud Mode: astrology + chat route through alchm.kitchen and agents.alchm.kitchen. Click to switch to Local Offline Mode.'}"
+            data-action="toggle-use-local-mcp"
+            title="${state.localOfflineMode ? 'Use local MCP: chat and astrology route through the bundled MCP sidecar. Click to use cloud APIs instead.' : 'Cloud routing: chat and astrology hit agents.alchm.kitchen and alchm.kitchen. Click to switch to the bundled MCP sidecar.'}"
           >
-            ${state.localOfflineMode ? '🔌 Local Mode' : '🌐 Cloud Mode'}
+            ${state.localOfflineMode ? '🔌 Use Local MCP' : '🌐 Use Cloud APIs'}
+          </button>
+          <button
+            class="offline-toggle-button ${state.disableNetwork ? 'active' : ''}"
+            data-action="toggle-disable-network"
+            title="${state.disableNetwork ? 'Network disabled: outbound HTTP calls are blocked. Local MCP still works. Click to re-enable network.' : 'Network enabled. Click to disable outbound HTTP (airplane mode).'}"
+          >
+            ${state.disableNetwork ? '✈️ Offline' : '📡 Online'}
           </button>
           ${
             state.runtime.sidecar === 'online'
@@ -2059,6 +2112,12 @@ async function persistJingDuel(opts: {
     targetResponse: opts.targetResponse,
     latencyMs: opts.latencyMs,
     modelUsed: 'pa-mcp:local',
+  }
+  if (!canCallNetwork()) {
+    // Airplane mode: skip telemetry POST silently. The duel still
+    // happened locally; the cloud just won't know about it. This is a
+    // non-blocking call by design — see the catch block below.
+    return
   }
   try {
     const response = await fetch(url, {
@@ -5098,11 +5157,30 @@ function bindEvents() {
     if (action === 'tray-state' && control.dataset.trayState) {
       void setTrayState(control.dataset.trayState)
     }
-    if (action === 'toggle-offline-mode') {
+    if (action === 'toggle-offline-mode' || action === 'toggle-use-local-mcp') {
+      // toggle-offline-mode is the legacy data-action name; kept as an
+      // alias so any cached HTML or muscle-memory shortcuts keep
+      // working. The new conceptual name is toggle-use-local-mcp.
       state.localOfflineMode = !state.localOfflineMode
       saveState()
       render()
-      setNotice(state.localOfflineMode ? 'Local Offline Mode Active' : 'Cloud Online Mode Active')
+      setNotice(state.localOfflineMode ? 'Using local MCP sidecar.' : 'Using cloud APIs.')
+      void refreshAstrologyConsensus({ silent: true })
+    }
+    if (action === 'toggle-disable-network') {
+      state.disableNetwork = !state.disableNetwork
+      // If the user just disabled the network while still configured
+      // for cloud chat, auto-flip to local MCP so chat keeps working.
+      // The combo (network disabled + cloud chat) is unreachable, so
+      // silently fixing it is friendlier than letting it error later.
+      if (state.disableNetwork && !state.localOfflineMode) {
+        state.localOfflineMode = true
+        setNotice('Network disabled — also switched to local MCP so chat keeps working.')
+      } else {
+        setNotice(state.disableNetwork ? 'Network disabled (airplane mode).' : 'Network enabled.')
+      }
+      saveState()
+      render()
       void refreshAstrologyConsensus({ silent: true })
     }
     if (action === 'toggle-jing-panel') {
@@ -5137,7 +5215,9 @@ function bindEvents() {
             },
           },
         })
-        console.log('Test Alchm MCP success:', result)
+        // The setNotice below is the user-facing channel; gate the
+        // verbose dump behind dev mode so production logs stay quiet.
+        if (import.meta.env.DEV) console.log('Test Alchm MCP success:', result)
         setNotice('Alchm MCP OK: ' + (result?.content?.[0]?.text?.slice(0, 40) || 'Success'))
       } catch (err: any) {
         setNotice('Alchm MCP Fail: ' + err.message)
@@ -5158,7 +5238,7 @@ function bindEvents() {
             },
           },
         })
-        console.log('Test PA MCP success:', result)
+        if (import.meta.env.DEV) console.log('Test PA MCP success:', result)
         setNotice('PA MCP OK: ' + (result?.content?.[0]?.text?.slice(0, 40) || 'Success'))
       } catch (err: any) {
         setNotice('PA MCP Fail: ' + err.message)

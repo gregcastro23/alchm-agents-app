@@ -377,8 +377,11 @@ export function TemporalClient() {
           } catch {
             usedBackend = false
             // No local fallback — alchemizer module was removed. Provide a
-            // neutral structure so downstream UI keeps rendering.
-            // TODO: revisit once the backend exposes elemental decomposition.
+            // neutral structure so downstream UI keeps rendering. The
+            // backend is ESMS-native and does not emit elemental
+            // (Fire/Water/Earth/Air) decomposition, so a zeroed
+            // Alchemy-Effects block is the correct degraded state here —
+            // not a stopgap awaiting a new endpoint.
             const fallback = {
               'Alchemy Effects': {
                 'Total Spirit': 0,

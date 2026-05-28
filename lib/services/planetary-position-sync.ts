@@ -71,7 +71,12 @@ export class PlanetaryPositionSyncService {
   private readonly whattoeatnextBaseUrl: string
   private readonly apiKey: string
   private readonly cache = new Map<string, { data: SyncResult; timestamp: number }>()
-  private readonly CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+  /**
+   * Cache TTL in ms. Mutable at runtime via setCacheTtl() so an
+   * operator can shrink the window during incident response without
+   * a redeploy. Default 5 minutes — same as the original constant.
+   */
+  private cacheTtlMs = 5 * 60 * 1000
   private lastSyncAttempt?: string
   private lastSuccessfulSync?: string
   private lastSyncResult?: SyncResult
@@ -110,7 +115,7 @@ export class PlanetaryPositionSyncService {
 
     // Check cache first
     const cached = this.cache.get(cacheKey)
-    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
+    if (cached && Date.now() - cached.timestamp < this.cacheTtlMs) {
       return cached.data
     }
 
@@ -504,6 +509,25 @@ export class PlanetaryPositionSyncService {
       hitRate:
         this.metrics.total_syncs > 0 ? this.metrics.successful_syncs / this.metrics.total_syncs : 0,
     }
+  }
+
+  /**
+   * Runtime cache TTL adjustment. Clamped to [1s, 1h] — anything
+   * outside that range is almost certainly a unit confusion or a
+   * footgun. The new value is in-memory and resets on restart, which
+   * is intentional: persistent config belongs in env vars, this is
+   * for incident-response tuning.
+   */
+  setCacheTtl(ttlMs: number): { applied: number; previous: number } {
+    const previous = this.cacheTtlMs
+    const clamped = Math.min(Math.max(1_000, Math.round(ttlMs)), 60 * 60 * 1000)
+    this.cacheTtlMs = clamped
+    return { applied: clamped, previous }
+  }
+
+  /** Read the current runtime cache TTL in ms. */
+  getCacheTtl(): number {
+    return this.cacheTtlMs
   }
 }
 

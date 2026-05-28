@@ -292,18 +292,29 @@ export async function todayHourlyAlchemize(
       if (!response.ok) throw new Error('Batch API failed')
       const { data } = await response.json()
 
+      // The batch alchemy API returns ESMS scores but no planetary
+      // hour. That's fine — the planetary ruler is a pure function of
+      // timestamp + location, so we compute it client-side from each
+      // row's Timestamp rather than asking the batch endpoint to
+      // bundle it. Same PlanetaryHourCalculator the fallback path uses.
+      const batchHourCalculator = new PlanetaryHourCalculator(location.latitude, location.longitude)
+
       // Transform batch data to match original samples format
-      const samples = data.map((row: any) => ({
-        hour: new Date(row.Timestamp).getHours(),
-        spirit: row.Total_Spirit,
-        essence: row.Total_Essence,
-        matter: row.Total_Matter,
-        substance: row.Total_Substance,
-        heat: row.Heat,
-        entropy: row.Entropy,
-        planetaryRuler: 'Unknown', // Batch API doesn't include planetary hour yet - TODO
-        isDaytime: true, // Placeholder
-      }))
+      const samples = data.map((row: any) => {
+        const rowDate = new Date(row.Timestamp)
+        const planetaryHour = batchHourCalculator.getPlanetaryHour(rowDate)
+        return {
+          hour: rowDate.getHours(),
+          spirit: row.Total_Spirit,
+          essence: row.Total_Essence,
+          matter: row.Total_Matter,
+          substance: row.Total_Substance,
+          heat: row.Heat,
+          entropy: row.Entropy,
+          planetaryRuler: planetaryHour.planet,
+          isDaytime: planetaryHour.isDaytime,
+        }
+      })
 
       // Proceed with analysis...
       // (copy the analysis code here)

@@ -88,6 +88,81 @@ def update_agent(db: Session, agent_id: str, agent_update: schemas.AgentUpdate):
     db.refresh(db_agent)
     return db_agent
 
+def delete_agent(db: Session, agent_id: str) -> bool:
+    """Remove a historical agent by its public agentId.
+
+    Returns True on success, False when no row matched. We delete by
+    agentId rather than the synthetic primary-key id because every
+    upstream caller addresses agents by their stable slug.
+    """
+    db_agent = get_agent(db, agent_id)
+    if not db_agent:
+        return False
+    db.delete(db_agent)
+    db.commit()
+    return True
+
+
+def get_agent_stats(db: Session) -> dict:
+    """Aggregate counts used by the admin dashboard's /api/agents/stats.
+
+    Kept intentionally cheap — three COUNT queries — so it stays usable
+    from a high-frequency status panel without paging through the full
+    historical_agents table.
+    """
+    total = db.query(models.HistoricalAgent).count()
+
+    by_era_rows = (
+        db.query(models.HistoricalAgent.historicalEra)
+        .filter(models.HistoricalAgent.historicalEra.isnot(None))
+        .all()
+    )
+    by_era: dict[str, int] = {}
+    for (era,) in by_era_rows:
+        if not era:
+            continue
+        by_era[era] = by_era.get(era, 0) + 1
+
+    by_consciousness_rows = (
+        db.query(models.HistoricalAgent.consciousnessLevel)
+        .filter(models.HistoricalAgent.consciousnessLevel.isnot(None))
+        .all()
+    )
+    by_consciousness: dict[str, int] = {}
+    for (level,) in by_consciousness_rows:
+        if not level:
+            continue
+        by_consciousness[level] = by_consciousness.get(level, 0) + 1
+
+    return {
+        "total": total,
+        "byEra": by_era,
+        "byConsciousnessLevel": by_consciousness,
+    }
+
+
+def search_agents(db: Session, query: str, limit: int = 25):
+    """Case-insensitive ILIKE search across name, title, and culture.
+
+    Intentionally a SQL prefilter — the heavyweight semantic search
+    lives behind /api/rag/search via ChromaDB. This is the cheap
+    name-lookup fallback used by the unified agent route.
+    """
+    if not query:
+        return []
+    needle = f"%{query.lower()}%"
+    return (
+        db.query(models.HistoricalAgent)
+        .filter(
+            (models.HistoricalAgent.name.ilike(needle))
+            | (models.HistoricalAgent.title.ilike(needle))
+            | (models.HistoricalAgent.culture.ilike(needle))
+        )
+        .limit(max(1, min(limit, 100)))
+        .all()
+    )
+
+
 def create_conversation(db: Session, conversation: schemas.ConversationCreate):
     db_conversation = models.AgentConversation(**conversation.model_dump())
     db.add(db_conversation)

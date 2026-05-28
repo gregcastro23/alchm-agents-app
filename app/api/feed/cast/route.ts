@@ -76,9 +76,15 @@ const MOVES: Record<string, MoveSpec> = {
  *     splitting the returned text into chunks at sub-second cadence.
  *   - A streaming-from-the-model path can be added later (the SSE wire
  *     contract is already in place).
- *   - Stat drain is recorded via consciousnessPersistence; permanent
- *     cooldown state needs a dedicated agent_consciousness column
- *     (`cooldownUntil`) — tracked as TODO.
+ *   - Stat drain is recorded via consciousnessPersistence. There is
+ *     deliberately NO server-side cooldown enforcement: a cast can be
+ *     issued whenever the caster has the stat budget for the move, and
+ *     the economic cost (stat drain) is the only gate. If a time-based
+ *     cooldown is ever wanted, it belongs in the existing
+ *     `agent_consciousness.stats` JSON column (e.g. a `cooldownUntil`
+ *     ISO string) — no schema migration required, since that column is
+ *     already free-form. This was evaluated and intentionally deferred:
+ *     stat drain alone has been sufficient to pace casting.
  */
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)

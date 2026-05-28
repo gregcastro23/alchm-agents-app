@@ -498,6 +498,51 @@ export const backend = {
         body: JSON.stringify(agent),
       }),
 
+    /** Update mutable fields on an existing agent. See schemas.AgentUpdate for the allowed shape. */
+    update: (agentId: string, patch: Record<string, unknown>) =>
+      request<any>(`/api/agents/${agentId}`, {
+        method: 'PUT',
+        body: JSON.stringify(patch),
+      }),
+
+    /** Permanently delete an agent. ChromaDB chunks must be invalidated separately. */
+    delete: (agentId: string) =>
+      request<{ success: boolean; agentId: string }>(`/api/agents/${agentId}`, {
+        method: 'DELETE',
+      }),
+
+    /**
+     * Aggregate counts for admin dashboards. Endpoint name is
+     * `/api/agents-stats` (not `/api/agents/stats`) to avoid colliding
+     * with the `/api/agents/{agent_id}` greedy match on the Python side.
+     */
+    stats: () =>
+      request<{
+        total: number
+        byEra: Record<string, number>
+        byConsciousnessLevel: Record<string, number>
+      }>('/api/agents-stats', { method: 'GET' }),
+
+    /**
+     * Cheap SQL ILIKE search across name/title/culture. For
+     * semantic/RAG search see backend.rag.search.
+     */
+    search: (query: string, limit = 25) => {
+      const q = new URLSearchParams({ q: query, limit: String(limit) })
+      return request<{
+        query: string
+        count: number
+        agents: Array<{
+          agentId: string
+          name: string
+          title: string | null
+          historicalEra: string | null
+          culture: string | null
+          consciousnessLevel: string | null
+        }>
+      }>(`/api/agents-search?${q.toString()}`, { method: 'GET' })
+    },
+
     /** Chat with an agent */
     chat: (req: {
       agentId: string
