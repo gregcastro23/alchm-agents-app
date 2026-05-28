@@ -5215,7 +5215,9 @@ function bindEvents() {
             },
           },
         })
-        console.log('Test Alchm MCP success:', result)
+        // The setNotice below is the user-facing channel; gate the
+        // verbose dump behind dev mode so production logs stay quiet.
+        if (import.meta.env.DEV) console.log('Test Alchm MCP success:', result)
         setNotice('Alchm MCP OK: ' + (result?.content?.[0]?.text?.slice(0, 40) || 'Success'))
       } catch (err: any) {
         setNotice('Alchm MCP Fail: ' + err.message)
@@ -5236,7 +5238,7 @@ function bindEvents() {
             },
           },
         })
-        console.log('Test PA MCP success:', result)
+        if (import.meta.env.DEV) console.log('Test PA MCP success:', result)
         setNotice('PA MCP OK: ' + (result?.content?.[0]?.text?.slice(0, 40) || 'Success'))
       } catch (err: any) {
         setNotice('PA MCP Fail: ' + err.message)

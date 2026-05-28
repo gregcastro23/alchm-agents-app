@@ -68,6 +68,7 @@ backend/dist-x86_64/
 # Databases
 backend/chroma_db/
 backend/planetary_agents.db
+chroma_db/
 *.db
 
 # Temporary Logs and Scratch files
