@@ -365,8 +365,10 @@ async def _build_alchm_mcp_context(
         live_sky = await alchm_mcp.get_live_sky_transits(latitude=latitude, longitude=longitude)
         results.append({"tool": "get_live_sky_transits", "data": live_sky})
         metadata["tools"].append("get_live_sky_transits")
+        alchm_mcp.record_success("get_live_sky_transits")
     except Exception as exc:
         metadata["errors"].append(f"get_live_sky_transits: {str(exc)[:180]}")
+        alchm_mcp.record_error("get_live_sky_transits", exc)
 
     if ingredients:
         try:
@@ -374,8 +376,10 @@ async def _build_alchm_mcp_context(
             results.append({"tool": "alchemize_ingredients", "data": scan})
             metadata["tools"].append("alchemize_ingredients")
             metadata["ingredients"] = ingredients
+            alchm_mcp.record_success("alchemize_ingredients")
         except Exception as exc:
             metadata["errors"].append(f"alchemize_ingredients: {str(exc)[:180]}")
+            alchm_mcp.record_error("alchemize_ingredients", exc)
 
     if _should_fetch_recipe_candidates(request, ingredients):
         try:
@@ -392,8 +396,10 @@ async def _build_alchm_mcp_context(
             )
             results.append({"tool": "generate_cosmic_recipe", "data": recipes})
             metadata["tools"].append("generate_cosmic_recipe")
+            alchm_mcp.record_success("generate_cosmic_recipe")
         except Exception as exc:
             metadata["errors"].append(f"generate_cosmic_recipe: {str(exc)[:180]}")
+            alchm_mcp.record_error("generate_cosmic_recipe", exc)
 
     return _format_alchm_mcp_block(results), metadata
 
@@ -430,6 +436,40 @@ async def providers_health():
 async def alchm_mcp_status():
     """Report Alchm MCP subprocess configuration and readiness."""
     return await alchm_mcp.status(include_tools=True)
+
+
+@app.get("/api/admin/alchm-mcp-errors")
+async def alchm_mcp_errors(
+    windowMinutes: int = 5,
+    x_internal_secret: Optional[str] = Header(None, alias="X-Internal-Secret"),
+):
+    """Rolling Alchm MCP failure telemetry for the admin panel (E3).
+
+    The chat-hydration path catches Alchm MCP failures and degrades to
+    persona+RAG, so a chat can return 200 while every Alchm tool call
+    silently fails. This endpoint exposes the aggregated failure rate
+    that the admin panel thresholds on (>1 error/min over the window →
+    the "PA MCP" row turns yellow).
+
+    Internal-only: gated by X-Internal-Secret. Returns 403 otherwise.
+    """
+    if x_internal_secret != INTERNAL_API_SECRET:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    window_seconds = max(60, min(windowMinutes, 1440) * 60)
+    stats = alchm_mcp.get_error_stats(window_seconds=window_seconds)
+
+    # Verdict mirrors the mcp-summary convention so the panel can color
+    # both rows the same way.
+    rate = stats["errorRatePerMin"]
+    if rate > 1.0:
+        verdict = "DEGRADED"
+    elif rate > 0:
+        verdict = "WARN"
+    else:
+        verdict = "OK"
+    stats["verdict"] = verdict
+    return stats
 
 
 @app.get("/api/mcp/alchm/tools")
@@ -1866,6 +1906,20 @@ class McpSummarySyntheticProbe(_SummaryBaseModel):
     consecutiveFailures: int = 0
 
 
+class McpSummaryTierDowngrades(_SummaryBaseModel):
+    """Tier-gating telemetry (E4).
+
+    validate_and_gate_invocation silently downgrades anon/standard-tier
+    requests. `total` is the count of invocations in the window whose
+    resolved modelTier was lower than what the caller requested.
+    `byRequestedTier` breaks that down by the tier the caller asked for
+    (the one that got knocked down), so we can tell whether the limits
+    are biting `reflective` asks specifically vs everything.
+    """
+    total: int = 0
+    byRequestedTier: Dict[str, int] = {}
+
+
 class McpSummaryResponse(_SummaryBaseModel):
     live: bool
     generatedAt: str
@@ -1875,6 +1929,7 @@ class McpSummaryResponse(_SummaryBaseModel):
     byTool: List[McpSummaryByTool]
     byAgent: List[McpSummaryByAgent]
     byCaller: List[McpSummaryByCaller]
+    tierDowngrades: McpSummaryTierDowngrades
     syntheticProbe: McpSummarySyntheticProbe
 
 
@@ -1981,6 +2036,7 @@ def _aggregate_mcp_summary(db: Session, window_minutes: int) -> Dict[str, Any]:
             MCPInvocation.agentId,
             MCPInvocation.modelTier,
             MCPInvocation.caller,
+            MCPInvocation.arguments,
         ).where(base_where)
     ).all()
 
@@ -2051,6 +2107,27 @@ def _aggregate_mcp_summary(db: Session, window_minutes: int) -> Dict[str, Any]:
     by_caller.sort(key=lambda b: b.calls, reverse=True)
     by_caller = by_caller[:10]
 
+    # tierDowngrades (E4): a row was downgraded when its resolved
+    # modelTier ranks below the tier the caller originally requested
+    # (stored in the un-gated arguments.modelTier). Anonymous/standard
+    # callers get knocked to free/cheap_fast by
+    # validate_and_gate_invocation; this surfaces how often that bites.
+    tier_rank = {"free": 0, "cheap_fast": 1, "primary": 2, "reflective": 3}
+    downgrade_total = 0
+    downgrade_by_requested: Dict[str, int] = {}
+    for r in rows:
+        args = r.arguments if isinstance(r.arguments, dict) else {}
+        requested = args.get("modelTier") or "free"
+        resolved = r.modelTier or "free"
+        if tier_rank.get(resolved, 0) < tier_rank.get(requested, 0):
+            downgrade_total += 1
+            downgrade_by_requested[requested] = downgrade_by_requested.get(requested, 0) + 1
+
+    tier_downgrades = McpSummaryTierDowngrades(
+        total=downgrade_total,
+        byRequestedTier=downgrade_by_requested,
+    )
+
     synthetic = _compute_synthetic_verdict(db)
 
     # Overall verdict — mirrors WTEN's systemStatusService taxonomy
@@ -2091,6 +2168,7 @@ def _aggregate_mcp_summary(db: Session, window_minutes: int) -> Dict[str, Any]:
         "byTool": [b.model_dump() for b in by_tool],
         "byAgent": [b.model_dump() for b in by_agent],
         "byCaller": [b.model_dump() for b in by_caller],
+        "tierDowngrades": tier_downgrades.model_dump(),
         "syntheticProbe": synthetic.model_dump(),
     }
 

@@ -4,6 +4,7 @@ import asyncio
 import json
 import os
 import shlex
+import time
 from collections import deque
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -22,6 +23,78 @@ DEFAULT_PROTOCOL_VERSION = "2025-06-18"
 
 class AlchmMCPError(RuntimeError):
     pass
+
+
+# ---------------------------------------------------------------------------
+# Failure telemetry (E3)
+#
+# The chat-hydration call sites in main.py catch Alchm MCP failures and
+# degrade gracefully (chat still works on persona + RAG). That's the
+# right behavior, but it made outages invisible above the per-request
+# level — a chat could succeed while every Alchm tool call silently
+# failed. These ring buffers give the admin panel a rolling view so the
+# "PA MCP" status row can turn yellow when the failure rate climbs even
+# though individual chats keep returning 200.
+#
+# In-memory + per-process: good enough for a single-container Railway
+# deploy. If PA ever scales horizontally, promote this to a shared
+# store (Redis) or an OTel counter.
+# ---------------------------------------------------------------------------
+
+_ERROR_RING_SIZE = 200
+# Each entry: {"ts": epoch_seconds, "tool": str, "error": str}
+_ERROR_LOG: "deque[Dict[str, Any]]" = deque(maxlen=_ERROR_RING_SIZE)
+# Per-tool success/failure tallies since process start (monotonic).
+_CALL_TALLY: Dict[str, Dict[str, int]] = {}
+
+
+def record_success(tool: str) -> None:
+    bucket = _CALL_TALLY.setdefault(tool, {"success": 0, "error": 0})
+    bucket["success"] += 1
+
+
+def record_error(tool: str, error: Any) -> None:
+    bucket = _CALL_TALLY.setdefault(tool, {"success": 0, "error": 0})
+    bucket["error"] += 1
+    _ERROR_LOG.append(
+        {
+            "ts": time.time(),
+            "tool": tool,
+            "error": str(error)[:300],
+        }
+    )
+
+
+def get_error_stats(window_seconds: int = 300) -> Dict[str, Any]:
+    """Rolling error view for the admin panel.
+
+    Returns lifetime per-tool tallies plus a windowed error count and
+    rate. `errorRatePerMin` over the window is what the panel thresholds
+    on (>1/min → yellow). `recentErrors` is the tail of the ring for
+    drill-down.
+    """
+    now = time.time()
+    cutoff = now - max(1, window_seconds)
+    windowed = [e for e in _ERROR_LOG if e["ts"] >= cutoff]
+
+    total_success = sum(b["success"] for b in _CALL_TALLY.values())
+    total_error = sum(b["error"] for b in _CALL_TALLY.values())
+    total_calls = total_success + total_error
+
+    window_minutes = max(window_seconds / 60.0, 1 / 60.0)
+
+    return {
+        "windowSeconds": window_seconds,
+        "windowedErrorCount": len(windowed),
+        "errorRatePerMin": round(len(windowed) / window_minutes, 3),
+        "lifetime": {
+            "totalCalls": total_calls,
+            "totalErrors": total_error,
+            "errorRate": round(total_error / total_calls, 4) if total_calls else 0.0,
+            "byTool": _CALL_TALLY,
+        },
+        "recentErrors": list(_ERROR_LOG)[-25:],
+    }
 
 
 def _env_bool(name: str, default: bool) -> bool:
