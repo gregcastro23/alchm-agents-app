@@ -335,6 +335,13 @@ export interface CraftedAgent {
   era?: string
   specialization?: string
 
+  // Cosmic EV & Leveling (optional; hydrated from the historical_agents row)
+  level?: number
+  xp?: number
+  evolutionValues?: Record<string, number>
+  evTotal?: number
+  ivSnapshot?: Record<string, number> | null
+
   // Historical Data
   quotes?: string[]
   coreBeliefs?: string[]

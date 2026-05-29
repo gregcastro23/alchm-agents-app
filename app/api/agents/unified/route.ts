@@ -100,6 +100,29 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
             .catch(err => console.warn('Failed to log unified agent interaction:', err))
         }
 
+        // Cosmic Leveling: award XP/EVs from this conversation. Fire-and-forget
+        // so leveling never blocks or fails the chat response.
+        if (chatData?.text && parameters.agentId) {
+          const { HistoricalAgentsService } = await import('@/lib/historical-agents-db')
+          // Deeper / longer answers earn a little more XP (0.5x–2x of base).
+          const qualityMultiplier = Math.min(2, Math.max(0.5, (chatData.text.length || 0) / 600))
+
+          // The agent the user spoke with gains XP.
+          HistoricalAgentsService.awardXp(parameters.agentId, { qualityMultiplier }).catch(err =>
+            console.warn('awardXp failed:', err)
+          )
+
+          // Training session: a crafted agent (trainerAgentId) grouped with this
+          // partner earns XP and EVs in the partner's dominant Sacred 7 stat.
+          const trainerId = parameters.trainerAgentId
+          if (trainerId && trainerId !== parameters.agentId) {
+            HistoricalAgentsService.awardXp(trainerId, { qualityMultiplier }).catch(() => {})
+            HistoricalAgentsService.awardEvs(trainerId, parameters.agentId).catch(err =>
+              console.warn('awardEvs failed:', err)
+            )
+          }
+        }
+
         return NextResponse.json({
           success: true,
           data: chatData,

@@ -36,7 +36,13 @@ class AgentBase(BaseModel):
     traits: Optional[Union[List[str], Dict[str, Any]]] = None
 
 class AgentCreate(AgentBase):
-    pass
+    # Cosmic EV & Leveling — optional; planetary agents are created at the cap.
+    # Left None for ordinary agents so model/DB defaults apply (see crud.create_agent).
+    level: Optional[int] = None
+    xp: Optional[int] = None
+    evolutionStage: Optional[int] = None
+    evolutionValues: Optional[Dict[str, Any]] = None
+    evTotal: Optional[int] = None
 
 class AgentUpdate(BaseModel):
     name: Optional[str] = None
@@ -64,6 +70,14 @@ class Agent(AgentBase):
     wisdomShared: int = 0
     resonanceScore: float = 0.5
     evolutionPoints: int = 0
+
+    # Cosmic EV & Leveling
+    level: int = 1
+    xp: int = 0
+    evolutionValues: Optional[Dict[str, Any]] = None
+    evTotal: int = 0
+    ivSnapshot: Optional[Dict[str, Any]] = None
+
     lastActive: datetime
     isActive: bool = True
 

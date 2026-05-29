@@ -60,8 +60,14 @@ def create_agent(db: Session, agent: schemas.AgentCreate):
     })
 
     # Determine era and other metadata
+    # Cosmic Leveling: drop unset leveling fields so model/DB defaults apply.
+    # Passing None would explicitly insert NULL into NOT NULL columns and fail.
+    for _lvl_key in ("level", "xp", "evolutionStage", "evolutionValues", "evTotal"):
+        if agent_data.get(_lvl_key) is None:
+            agent_data.pop(_lvl_key, None)
+
     era_info = utils.determine_historical_era(agent_data["birthYear"], agent.agentId)
-    
+
     db_agent = models.HistoricalAgent(
         **agent_data,
         historicalEra=era_info['era'],

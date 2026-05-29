@@ -20,6 +20,8 @@ export const AGENT_DAILY_YIELD = 8
 export const AGENT_OPERATION_COSTS: Record<string, Partial<Record<TokenType, number>>> = {
   unified_chat: { Spirit: 5, Essence: 2 },
   report_generation: { Spirit: 10, Substance: 5 },
+  // Cosmic Leveling — wipe an agent's Evolution Values to re-spec (50 ESMS total).
+  ev_reset: { Spirit: 20, Essence: 10, Matter: 10, Substance: 10 },
   // Agentic action costs
   agent_feed_post: { Spirit: 2, Essence: 1 },
   agent_transmutation: { Matter: 3, Substance: 2 },

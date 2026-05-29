@@ -278,6 +278,113 @@ export async function updateAgentKnowledge(
 }
 
 /**
+ * Ingest a single already-extracted text document (from TXT / MD / JSON / DOCX /
+ * PDF uploads) into an agent's ChromaDB knowledge collection. Mirrors
+ * {@link updateAgentKnowledge}'s chunk → embed → upsert pipeline, but for raw
+ * text rather than a fetched URL. Degrades the same way (ChromaDB / embeddings
+ * outage surfaces as a thrown error the caller can catch).
+ */
+export async function ingestAgentText(
+  agentId: string,
+  text: string,
+  opts?: {
+    fileName?: string
+    contentType?: string
+    agentName?: string
+    chunkSize?: number
+    chunkOverlap?: number
+    collectionName?: string
+  }
+): Promise<KnowledgeUpdateResult> {
+  const startTime = Date.now()
+
+  if (!agentId || agentId.trim().length === 0) {
+    throw new Error('Agent ID is required')
+  }
+
+  const cleaned = (text || '').trim()
+  if (cleaned.length === 0) {
+    return {
+      success: false,
+      agentId,
+      documentsAdded: 0,
+      urls: 0,
+      chunks: 0,
+      errors: [`Empty document${opts?.fileName ? `: ${opts.fileName}` : ''}`],
+      timestamp: new Date().toISOString(),
+    }
+  }
+
+  const textSplitter = new RecursiveCharacterTextSplitter({
+    chunkSize: opts?.chunkSize || DEFAULT_CHUNK_SIZE,
+    chunkOverlap: opts?.chunkOverlap || DEFAULT_CHUNK_OVERLAP,
+    separators: ['\n\n', '\n', '. ', ' ', ''],
+  })
+
+  const chunks = await textSplitter.splitText(cleaned)
+  if (chunks.length === 0) {
+    return {
+      success: false,
+      agentId,
+      documentsAdded: 0,
+      urls: 0,
+      chunks: 0,
+      errors: ['No chunks produced from document'],
+      timestamp: new Date().toISOString(),
+    }
+  }
+
+  const allDocuments: string[] = []
+  const allMetadata: DocumentMetadata[] = []
+  const allIds: string[] = []
+  const stamp = Date.now()
+
+  for (let i = 0; i < chunks.length; i++) {
+    allDocuments.push(chunks[i])
+    allMetadata.push({
+      agentId,
+      agentName: opts?.agentName || agentId,
+      era: 'External',
+      chunkIndex: i,
+      totalChunks: chunks.length,
+      source: 'file',
+      sourceUrl: opts?.fileName || 'upload',
+      ingestedAt: new Date().toISOString(),
+      contentType: opts?.contentType || 'file_upload',
+    })
+    allIds.push(`${agentId}-file-${stamp}-${i}`)
+  }
+
+  logger.info(`Ingesting ${chunks.length} chunks from ${opts?.fileName || 'upload'}`, {
+    system: 'langchain',
+    operation: 'ingest_agent_text',
+    agentId,
+    metadata: { chunks: chunks.length },
+  })
+
+  const embeddings = await generateEmbeddings(allDocuments)
+  const collectionName = opts?.collectionName || DEFAULT_COLLECTION_NAME
+  const collection = await getOrCreateCollection(collectionName)
+  const addResult = await addDocuments(collection, allDocuments, embeddings, allMetadata, allIds)
+
+  logger.performance('ingest_agent_text', Date.now() - startTime, {
+    system: 'langchain',
+    agentId,
+    metadata: { documentsAdded: addResult.documentsAdded, chunks: chunks.length },
+  })
+
+  return {
+    success: addResult.success,
+    agentId,
+    documentsAdded: addResult.documentsAdded,
+    urls: 0,
+    chunks: chunks.length,
+    errors: addResult.errors,
+    timestamp: new Date().toISOString(),
+  }
+}
+
+/**
  * Validate and sanitize URLs
  *
  * @param urls - Array of URLs to validate
