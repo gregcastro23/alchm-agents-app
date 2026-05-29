@@ -511,6 +511,9 @@ interface DesktopState extends PersistedDesktopState {
   composerDraft: string
   stoneDraft: StoneDraft
   notice: string | null
+  // Cosmic leveling fetched from the agents web app (keyed by agentId).
+  // Runtime-only — never persisted; refreshed from /api/agents/leveling.
+  leveling: Record<string, { level: number; xp: number; evTotal: number }>
 }
 
 type InvokeFn = <T>(command: string, args?: Record<string, unknown>) => Promise<T>
@@ -803,6 +806,7 @@ function loadState(): DesktopState {
     composerDraft: '',
     stoneDraft: createDefaultStoneDraft(),
     notice: null,
+    leveling: {},
     localOfflineMode: false,
     disableNetwork: false,
     showJingPanel: false,
@@ -1148,6 +1152,7 @@ function renderCoin(label: string, amount: number) {
 
 function renderRosterButton(agent: LocalAgent, selectedAgentIds: string[]) {
   const isSelected = selectedAgentIds.includes(agent.id)
+  const lvl = agentLevel(agent.id)
 
   return `
     <button
@@ -1156,10 +1161,11 @@ function renderRosterButton(agent: LocalAgent, selectedAgentIds: string[]) {
       data-agent-id="${agent.id}"
     >
       <span class="avatar">${escapeHtml(agent.initials)}</span>
-      <span>
+      <span class="roster-button-body">
         <strong class="truncate">${escapeHtml(agent.name)}</strong>
         <small class="truncate">${escapeHtml(agent.title)}</small>
       </span>
+      ${lvl != null ? `<span class="level-badge" title="Cosmic level">Lv.${lvl}</span>` : ''}
     </button>
   `
 }
@@ -3210,6 +3216,7 @@ function renderAgentsView() {
 
 function renderAgentCard(template: AgentTemplate) {
   const installed = state.roster.some(agent => agent.id === template.id)
+  const lvl = agentLevel(template.id)
 
   return `
     <article class="agent-card">
@@ -3219,6 +3226,7 @@ function renderAgentCard(template: AgentTemplate) {
           <h3>${escapeHtml(template.name)}</h3>
           <p class="muted">${escapeHtml(template.title)}</p>
         </div>
+        ${lvl != null ? `<span class="level-badge" title="Cosmic level">Lv.${lvl}</span>` : ''}
       </div>
       <p class="agent-quote">${escapeHtml(template.quote)}</p>
       <div class="tag-row">
@@ -5368,6 +5376,7 @@ async function bootTauriRuntime() {
       void refreshAccounts({ silent: true })
       void refreshAstrologyConsensus({ silent: true })
       void refreshAlchmPhysics({ silent: true })
+      void fetchLeveling()
     }, 30000)
   } catch (error) {
     state.runtime.sidecar = 'offline'
@@ -5376,10 +5385,38 @@ async function bootTauriRuntime() {
   }
 }
 
+/**
+ * Pull Cosmic leveling (level/xp/EV) from the agents web app and cache it in
+ * runtime state, keyed by agentId. Non-blocking and network-guarded — the
+ * desktop works fine offline; levels just won't show.
+ */
+async function fetchLeveling() {
+  if (!canCallNetwork()) return
+  const base = (state.account.agentsUrl || DEFAULT_ACCOUNT.agentsUrl).replace(/\/$/, '')
+  try {
+    const response = await fetch(`${base}/api/agents/leveling`)
+    if (!response.ok) return
+    const payload = await response.json()
+    if (payload && typeof payload.leveling === 'object' && payload.leveling) {
+      state.leveling = payload.leveling
+      render()
+    }
+  } catch (err) {
+    console.warn('Leveling fetch failed (non-blocking):', err)
+  }
+}
+
+/** Cosmic level for an agent if known, else null. */
+function agentLevel(agentId: string): number | null {
+  const entry = state.leveling[agentId]
+  return entry ? entry.level : null
+}
+
 function boot() {
   bindEvents()
   render()
   saveState()
+  void fetchLeveling()
   void bootTauriRuntime()
 }
 
