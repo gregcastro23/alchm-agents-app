@@ -686,6 +686,14 @@ model historical_agents {
   wisdomShared           Int                      @default(0)
   resonanceScore         Float                    @default(0.5)
   evolutionPoints        Int                      @default(0)
+  // === Cosmic EV & Leveling System ===
+  level                  Int                      @default(1)
+  xp                     Int                      @default(0)
+  evolutionValues        Json                     @default("{}") // e.g. {"wisdom":120,"charisma":40,...}
+  evTotal                Int                      @default(0) // running sum, max 510
+  ivSnapshot             Json? // cached IV derivation for quick reads
+  lastTrainingPartner    String? // agentId of last cross-training partner
+  lastXpGain             DateTime? // timestamp of last XP award
   lastActive             DateTime                 @default(now())
   isActive               Boolean                  @default(true)
   version                String                   @default("1.0.0")

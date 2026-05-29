@@ -451,6 +451,7 @@ export function getMonicaCreationStory(agentId: string): string | null {
 
 // Agent sorting utilities for Gallery
 export type AgentSortCriteria =
+  | 'level'
   | 'monicaConstant'
   | 'consciousnessVelocity'
   | 'evolutionPoints'
@@ -473,6 +474,11 @@ export function sortAgents(
     let bValue: any
 
     switch (criteria) {
+      case 'level':
+        // Cosmic level (hydrated from historical_agents); falls back to 0 when absent.
+        aValue = a.level ?? 0
+        bValue = b.level ?? 0
+        break
       case 'monicaConstant':
         aValue = a.consciousness.monicaConstant
         bValue = b.consciousness.monicaConstant
@@ -580,6 +586,11 @@ export function getSortingOptions() {
       value: 'relevanceScore',
       label: 'Relevance Score',
       description: 'Current cosmic alignment & development',
+    },
+    {
+      value: 'level',
+      label: 'Cosmic Level',
+      description: 'Training level (1–100)',
     },
     {
       value: 'monicaConstant',

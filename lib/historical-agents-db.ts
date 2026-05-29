@@ -3,6 +3,15 @@
 
 import { prisma } from './db'
 import { DEMO_AGENTS } from './demo-agents-data'
+import {
+  calculateXpGain,
+  calculateEvGain,
+  levelFromXp,
+  normalizeEvs,
+  evTotal as sumEvs,
+  type Sacred7Key,
+  type EvolutionValues,
+} from './consciousness-engine'
 import type { CraftedAgent } from './agent-types'
 import type {
   historical_agents as HistoricalAgent,
@@ -525,6 +534,117 @@ export class HistoricalAgentsService {
     return {
       totalAgents: allAgents.length,
       byEra,
+    }
+  }
+
+  /**
+   * Cosmic Leveling — award XP for a conversation turn, recompute level, persist.
+   * XP comes from ALL conversations (solo or grouped). Safe no-op when the agent
+   * row does not exist (e.g. synthetic multi-agent council IDs), so callers can
+   * fire this without first checking the population.
+   */
+  static async awardXp(
+    agentId: string,
+    opts: { messageCount?: number; qualityMultiplier?: number } = {}
+  ): Promise<{
+    agentId: string
+    awarded: number
+    xp: number
+    level: number
+    leveledUp: boolean
+  } | null> {
+    if (!agentId) return null
+
+    const agent = await (prisma.historical_agents as any).findUnique({
+      where: { agentId },
+      select: { xp: true, level: true },
+    })
+    if (!agent) return null
+
+    const awarded = calculateXpGain(opts.messageCount ?? 1, opts.qualityMultiplier ?? 1)
+    const prevXp = agent.xp ?? 0
+    const prevLevel = agent.level ?? levelFromXp(prevXp)
+    const newXp = prevXp + awarded
+    const newLevel = levelFromXp(newXp)
+
+    await (prisma.historical_agents as any).update({
+      where: { agentId },
+      data: {
+        xp: newXp,
+        level: newLevel,
+        // Keep the legacy evolutionStage mirror in sync with level.
+        evolutionStage: newLevel,
+        lastXpGain: new Date(),
+        lastActive: new Date(),
+      },
+    })
+
+    return { agentId, awarded, xp: newXp, level: newLevel, leveledUp: newLevel > prevLevel }
+  }
+
+  /**
+   * Cosmic Leveling — award EVs to a (crafted/trainee) agent based on a training
+   * partner's dominant Sacred 7 stat. Respects the 252/stat and 510 total caps.
+   * Safe no-op if either agent is missing or they are the same agent.
+   */
+  static async awardEvs(
+    agentId: string,
+    partnerAgentId: string,
+    opts: { evPerInteraction?: number } = {}
+  ): Promise<{
+    agentId: string
+    partnerAgentId: string
+    stat: Sacred7Key
+    gain: number
+    evTotal: number
+    evolutionValues: EvolutionValues
+  } | null> {
+    if (!agentId || !partnerAgentId || agentId === partnerAgentId) return null
+
+    const [agent, partner] = await Promise.all([
+      (prisma.historical_agents as any).findUnique({
+        where: { agentId },
+        select: { evolutionValues: true, evTotal: true },
+      }),
+      (prisma.historical_agents as any).findUnique({
+        where: { agentId: partnerAgentId },
+        select: {
+          wisdomScore: true,
+          charismaScore: true,
+          intuitionScore: true,
+          adaptabilityScore: true,
+          vitalityScore: true,
+          venusianCoherence: true,
+          neptunianResonance: true,
+          lunarReceptivity: true,
+          chironicAdaptation: true,
+        },
+      }),
+    ])
+    if (!agent || !partner) return null
+
+    const currentEvs = normalizeEvs(agent.evolutionValues)
+    const currentTotal = agent.evTotal ?? sumEvs(currentEvs)
+    const result = calculateEvGain(partner, currentEvs, currentTotal, opts.evPerInteraction ?? 4)
+
+    await (prisma.historical_agents as any).update({
+      where: { agentId },
+      data: {
+        // calculateEvGain returns the unchanged maps when capped, so this is safe either way.
+        evolutionValues: result.newEvs,
+        evTotal: result.newTotal,
+        lastTrainingPartner: partnerAgentId,
+        lastActive: new Date(),
+      },
+    })
+
+    return {
+      agentId,
+      partnerAgentId,
+      stat: result.stat,
+      gain: result.gain,
+      evTotal: result.newTotal,
+      evolutionValues: result.newEvs,
     }
   }
 

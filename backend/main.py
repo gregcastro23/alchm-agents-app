@@ -1159,6 +1159,13 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
                     color="#64748b",
                     symbol="Scroll"
                 )
+            # Cosmic Leveling: planetary & moon-phase agents are born at the cap.
+            if is_moon_phase or is_planetary:
+                agent_create.level = 100
+                agent_create.xp = 10_000_000  # 10 * 100^3
+                agent_create.evolutionStage = 100
+                agent_create.evolutionValues = {}
+                agent_create.evTotal = 0
             db_agent = crud.create_agent(db=db, agent=agent_create)
             print(f"Auto-registered missing agent dynamically: {request.agentId}", flush=True)
         except Exception as sync_err:
