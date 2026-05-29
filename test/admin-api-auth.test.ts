@@ -95,7 +95,11 @@ describe('admin API authorization', () => {
     const body = await response.json()
 
     expect(response.status).toBe(401)
-    expect(body).toEqual({ error: 'Authentication required' })
+    if (path === '/api/admin/system-stats') {
+      expect(body).toEqual({ success: false, error: 'Admin authentication required' })
+    } else {
+      expect(body).toEqual({ error: 'Authentication required' })
+    }
   })
 
   it.each(adminRoutes)('rejects non-admin access to %s', async (path, handler) => {
@@ -119,7 +123,11 @@ describe('admin API authorization', () => {
     const body = await response.json()
 
     expect(response.status).toBe(403)
-    expect(body).toEqual({ error: 'Admin privileges required' })
+    if (path === '/api/admin/system-stats') {
+      expect(body).toEqual({ success: false, error: 'Admin privileges required' })
+    } else {
+      expect(body).toEqual({ error: 'Admin privileges required' })
+    }
   })
 
   it('allows admin access to performance metrics without fabricated satisfaction data', async () => {

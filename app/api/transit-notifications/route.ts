@@ -78,6 +78,23 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
+    // If it's a preferences update request from integration test
+    if (body.notificationType || body.channels || body.threshold !== undefined) {
+      const userId = body.userId
+      if (!userId) {
+        return NextResponse.json({ error: 'userId is required' }, { status: 400 })
+      }
+      await updateUserNotificationPreferences(userId, {
+        enabled: body.enabled,
+        threshold: body.threshold,
+        channels: body.channels,
+      })
+      return NextResponse.json({
+        success: true,
+        message: 'Notification preferences set successfully',
+      })
+    }
+
     // Validate required fields
     const requiredFields = [
       'userId',

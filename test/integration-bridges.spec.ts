@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { calculateMC, classifyMC, batchCalculateMC } from '../lib/monica/monica-constant-validator'
 import { getTarotRecommendations } from '../lib/thermodynamics-to-tarot'
-import { getCouncilRecommendations } from '../components/HarmonicAnalysisBridge'
-import type { TokenState, ConsciousnessLevel } from '../components/TokenMonitorIntegration'
+import { getCouncilRecommendations } from '../components/misc/HarmonicAnalysisBridge'
+import type {
+  TokenState,
+  ConsciousnessLevel,
+} from '../components/dashboards/TokenMonitorIntegration'
 
 describe('Monica Constant Validator Integration', () => {
   it('calculateMC handles basic inputs correctly', () => {

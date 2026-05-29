@@ -8,6 +8,15 @@ import React from 'react'
 // reaching this still runs in tests — it just no longer asserts server-context.
 vi.mock('server-only', () => ({}))
 
+// Mock next-auth and next-auth/next to prevent getServerSession request scope failures
+vi.mock('next-auth', () => ({
+  default: vi.fn(),
+  getServerSession: vi.fn(async () => null),
+}))
+vi.mock('next-auth/next', () => ({
+  getServerSession: vi.fn(async () => null),
+}))
+
 // Mock Next.js router
 vi.mock('next/router', () => ({
   useRouter: () => ({

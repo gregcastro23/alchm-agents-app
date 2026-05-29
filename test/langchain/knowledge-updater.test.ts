@@ -11,48 +11,39 @@ import {
   type KnowledgeUpdateResult,
 } from '@/lib/langchain/knowledge-updater'
 
-// Mock dependencies
-vi.mock('@langchain/community/document_loaders/web/cheerio')
-vi.mock('@langchain/textsplitters')
-vi.mock('@/lib/llamaindex/vector-store')
-vi.mock('@/lib/llamaindex/embeddings-service')
-vi.mock('@/lib/structured-logger')
-
 // Mock CheerioWebBaseLoader
 const mockLoad = vi.fn()
 vi.mock('@langchain/community/document_loaders/web/cheerio', () => ({
-  CheerioWebBaseLoader: vi.fn().mockImplementation(() => ({
-    load: mockLoad,
-  })),
+  CheerioWebBaseLoader: class {
+    load() {
+      return mockLoad()
+    }
+  },
 }))
 
 // Mock RecursiveCharacterTextSplitter
 const mockSplitText = vi.fn()
+const mockSplitterConstructor = vi.fn()
 vi.mock('@langchain/textsplitters', () => ({
-  RecursiveCharacterTextSplitter: vi.fn().mockImplementation(() => ({
-    splitText: mockSplitText,
-  })),
+  RecursiveCharacterTextSplitter: class {
+    constructor(...args: any[]) {
+      mockSplitterConstructor(...args)
+    }
+    splitText(text: string) {
+      return mockSplitText(text)
+    }
+  },
 }))
 
 // Mock vector store
 vi.mock('@/lib/llamaindex/vector-store', () => ({
-  getOrCreateCollection: vi.fn().mockResolvedValue({
-    name: 'test-collection',
-  }),
-  addDocuments: vi.fn().mockResolvedValue({
-    success: true,
-    documentsAdded: 5,
-    errors: [],
-  }),
+  getOrCreateCollection: vi.fn(),
+  addDocuments: vi.fn(),
 }))
 
 // Mock embeddings service
 vi.mock('@/lib/llamaindex/embeddings-service', () => ({
-  generateEmbeddings: vi.fn().mockResolvedValue([
-    [0.1, 0.2, 0.3], // Mock embeddings
-    [0.4, 0.5, 0.6],
-    [0.7, 0.8, 0.9],
-  ]),
+  generateEmbeddings: vi.fn(),
 }))
 
 // Mock logger
@@ -67,8 +58,27 @@ vi.mock('@/lib/structured-logger', () => ({
 }))
 
 describe('Knowledge Updater', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+
+    const { getOrCreateCollection, addDocuments } = await import('@/lib/llamaindex/vector-store')
+    const { generateEmbeddings } = await import('@/lib/llamaindex/embeddings-service')
+
+    vi.mocked(getOrCreateCollection).mockResolvedValue({
+      name: 'test-collection',
+    } as any)
+
+    vi.mocked(addDocuments).mockResolvedValue({
+      success: true,
+      documentsAdded: 5,
+      errors: [],
+    })
+
+    vi.mocked(generateEmbeddings).mockResolvedValue([
+      [0.1, 0.2, 0.3],
+      [0.4, 0.5, 0.6],
+      [0.7, 0.8, 0.9],
+    ])
 
     // Set up default mock behaviors
     mockLoad.mockResolvedValue([
@@ -132,10 +142,9 @@ describe('Knowledge Updater', () => {
     })
 
     it('should block localhost URLs', async () => {
-      const result = await updateAgentKnowledge('plato', ['http://localhost:3000'])
-
-      expect(result.success).toBe(false)
-      expect(result.urls).toBe(0)
+      await expect(updateAgentKnowledge('plato', ['http://localhost:3000'])).rejects.toThrow(
+        'No valid URLs provided'
+      )
     })
 
     it('should block private IP addresses', async () => {
@@ -146,19 +155,17 @@ describe('Knowledge Updater', () => {
         'http://127.0.0.1',
       ]
 
-      const result = await updateAgentKnowledge('plato', privateUrls)
-
-      expect(result.success).toBe(false)
-      expect(result.urls).toBe(0)
+      await expect(updateAgentKnowledge('plato', privateUrls)).rejects.toThrow(
+        'No valid URLs provided'
+      )
     })
 
     it('should only allow HTTP and HTTPS protocols', async () => {
       const invalidUrls = ['ftp://example.com', 'file:///etc/passwd', 'javascript:alert(1)']
 
-      const result = await updateAgentKnowledge('plato', invalidUrls)
-
-      expect(result.success).toBe(false)
-      expect(result.urls).toBe(0)
+      await expect(updateAgentKnowledge('plato', invalidUrls)).rejects.toThrow(
+        'No valid URLs provided'
+      )
     })
 
     it('should handle loading errors gracefully', async () => {
@@ -192,8 +199,7 @@ describe('Knowledge Updater', () => {
       })
 
       // Verify RecursiveCharacterTextSplitter was called with custom options
-      const { RecursiveCharacterTextSplitter } = await import('@langchain/textsplitters')
-      expect(RecursiveCharacterTextSplitter).toHaveBeenCalledWith(
+      expect(mockSplitterConstructor).toHaveBeenCalledWith(
         expect.objectContaining({
           chunkSize: 500,
           chunkOverlap: 100,
