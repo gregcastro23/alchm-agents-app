@@ -34,7 +34,7 @@ def resolve_api_key_sync(db, api_key: str) -> Tuple[Optional[str], Optional[str]
     try:
         stmt = select(DesktopApiKey).where(
             DesktopApiKey.token == api_key,
-            DesktopApiKey.isActive == True
+            DesktopApiKey.isActive.is_(True)
         )
         result = db.execute(stmt)
         key_row = result.scalar_one_or_none()
@@ -84,7 +84,6 @@ def validate_and_gate_invocation(
     # Extract _meta properties
     meta = arguments.get("_meta") or {}
     api_key = meta.get("apiKey") or meta.get("api_key")
-    caller = meta.get("caller")
 
     # Resolve authorization
     db = SessionLocal()

@@ -2,7 +2,6 @@ import json
 import os
 import subprocess
 import sys
-import time
 import pytest
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import threading

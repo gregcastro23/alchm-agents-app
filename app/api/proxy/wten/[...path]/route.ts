@@ -10,9 +10,12 @@ async function proxyRequest(
   const searchParams = request.nextUrl.searchParams.toString()
   const query = searchParams ? `?${searchParams}` : ''
 
+  // WTEN (culinary) backend only. Do NOT fall back to BACKEND_URL/NEXT_PUBLIC_BACKEND_URL —
+  // those point at the PA agents backend, which 404s every culinary path. Mirror the
+  // canonical WTEN var used by lib/backend.ts (KITCHEN_BACKEND_URL).
   const backendUrl =
     process.env.WTEN_API_BASE_URL ||
-    process.env.BACKEND_URL ||
+    process.env.NEXT_PUBLIC_WTEN_BACKEND_URL ||
     'https://whattoeatnext-production.up.railway.app'
 
   const targetUrl = `${backendUrl.replace(/\/$/, '')}/${path}${query}`

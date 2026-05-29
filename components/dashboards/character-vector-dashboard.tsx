@@ -125,7 +125,11 @@ export function CharacterVectorDashboard({
   useEffect(() => {
     async function fetchAlchemicalData() {
       try {
-        const response = await fetch('https://alchm.kitchen/api/alchemical/quantities', {
+        // WTEN frontend serves this birth-chart alchemy endpoint. Keep it configurable
+        // rather than pinning the prod host (breaks staging/preview); default preserves
+        // current behavior.
+        const alchmKitchenUrl = process.env.NEXT_PUBLIC_ALCHM_KITCHEN_URL || 'https://alchm.kitchen'
+        const response = await fetch(`${alchmKitchenUrl}/api/alchemical/quantities`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

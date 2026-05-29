@@ -75,7 +75,14 @@ The app has two distinct backends that must stay in sync:
 
 1. **Next.js API routes** (`app/api/`) — the frontend's server layer. Most routes are thin proxies to the Railway backend, but some contain local logic (auth, Galileo logging, consciousness calculations). Chat and streaming endpoints live here.
 
-2. **FastAPI Python backend** (`backend/`) — deployed on Railway at the URL in `NEXT_PUBLIC_BACKEND_URL`. Owns chat orchestration with RAG and planetary position calculations. The `lib/backend.ts` client is the single point of contact from Next.js server code.
+2. **FastAPI Python backend** (`backend/`) — deployed on Railway. Owns chat orchestration with RAG and planetary position calculations. The `lib/backend.ts` client is the single point of contact from Next.js server code.
+
+`lib/backend.ts` splits traffic across the **two** backends by env var:
+
+- `agentRequest` → **`NEXT_PUBLIC_BACKEND_URL`** (falls back to `BACKEND_URL`), the PA agents backend — default `https://api.agents.alchm.kitchen`. Serves agents / chat / moment-recommendations / RAG / MCP.
+- plain `request` → **`NEXT_PUBLIC_WTEN_BACKEND_URL`**, the WTEN culinary backend — default `https://whattoeatnext-production.up.railway.app`. Serves cuisines / ingredients / recipes / user / groups.
+
+⚠️ `api.alchm.kitchen` does **not** resolve publicly — never use it as a backend URL. Both vars default correctly when unset, so prod works without them set; set them only to override per environment.
 
 When touching agent data or chat logic, check both layers to understand which one is authoritative.
 
@@ -83,7 +90,7 @@ When touching agent data or chat logic, check both layers to understand which on
 
 Three agent types are unified through `lib/unified-agent-types.ts` and `lib/unified-agent-factory.ts`:
 
-- **Historical agents** — real historical figures. Canonical source is **the in-memory `HISTORICAL_AGENTS` array** built from individual per-agent files at `lib/agents/historical/*.ts` (~50 agents, ~12K lines). Mirrored into the `historical_agents` Prisma table via `scripts/seed-historical-agents.ts`, and into ChromaDB for RAG.
+- **Historical agents** — real historical figures. Canonical source is **the in-memory `HISTORICAL_AGENTS` array** built from individual per-agent files at `lib/agents/historical/*.ts` (~70 agents, ~12K lines). Mirrored into the `historical_agents` Prisma table via `scripts/seed-historical-agents.ts`, and into ChromaDB for RAG.
 - **Planetary agents** — synthetic agents tied to current planetary positions (Sun, Moon, Mercury, etc.). Configs in `lib/demo-agents.ts`.
 - **Monica** — the onboarding/guide agent. Streaming endpoint at `app/api/monica-agent/stream/route.ts`; non-streaming at `app/api/monica-agent/route.ts`. Has its own hardcoded prompt in `backend/prompts.py` (not yet unified under the persona builder).
 
