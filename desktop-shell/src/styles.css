@@ -2735,3 +2735,39 @@ button {
 .agent-card-head .level-badge {
   margin-left: auto;
 }
+
+/* Train & Teach panel (chat view). */
+.train-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px solid rgba(217, 70, 239, 0.25);
+  border-radius: 10px;
+  background: rgba(88, 28, 135, 0.12);
+}
+
+.train-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.train-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.train-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.train-controls .input {
+  flex: 1;
+  min-width: 0;
+}

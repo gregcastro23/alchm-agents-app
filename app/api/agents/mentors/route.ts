@@ -10,6 +10,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { HISTORICAL_AGENTS } from '@/lib/agents/historical'
 import { deriveIVs, SACRED_7_KEYS, type Sacred7Key } from '@/lib/consciousness-engine'
+import { CORS_HEADERS, corsPreflight } from '@/lib/cors'
+
+export function OPTIONS() {
+  return corsPreflight()
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,7 +54,10 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.level - a.level)
       .slice(0, limit)
 
-    return NextResponse.json({ success: true, count: mentors.length, mentors })
+    return NextResponse.json(
+      { success: true, count: mentors.length, mentors },
+      { headers: CORS_HEADERS }
+    )
   } catch (error) {
     console.error('mentors GET error:', error)
     return NextResponse.json(
@@ -58,7 +66,7 @@ export async function GET(request: NextRequest) {
         error: error instanceof Error ? error.message : 'Internal server error',
         mentors: [],
       },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     )
   }
 }

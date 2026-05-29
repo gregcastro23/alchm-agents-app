@@ -10,8 +10,13 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/structured-logger'
+import { CORS_HEADERS, corsPreflight } from '@/lib/cors'
 
 export const runtime = 'nodejs'
+
+export function OPTIONS() {
+  return corsPreflight()
+}
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024 // 10 MB per file
 const SUPPORTED = ['pdf', 'txt', 'md', 'json', 'docx'] as const
@@ -27,7 +32,7 @@ function checkRagEnabled() {
         message:
           'Knowledge ingestion requires RAG. Set USE_RAG_GENERATION=true in your environment.',
       },
-      { status: 503 }
+      { status: 503, headers: CORS_HEADERS }
     )
   }
   return null
@@ -74,20 +79,23 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json(
       { success: false, error: 'Expected multipart/form-data with agentId and files.' },
-      { status: 400 }
+      { status: 400, headers: CORS_HEADERS }
     )
   }
 
   const agentId = String(form.get('agentId') || '').trim()
   if (!agentId) {
-    return NextResponse.json({ success: false, error: 'agentId is required' }, { status: 400 })
+    return NextResponse.json(
+      { success: false, error: 'agentId is required' },
+      { status: 400, headers: CORS_HEADERS }
+    )
   }
 
   const files = form.getAll('files').filter((f): f is File => f instanceof File)
   if (files.length === 0) {
     return NextResponse.json(
       { success: false, error: 'At least one file is required' },
-      { status: 400 }
+      { status: 400, headers: CORS_HEADERS }
     )
   }
 
@@ -143,13 +151,16 @@ export async function POST(req: NextRequest) {
   const succeeded = results.filter(r => r.success).length
   const totalChunks = results.reduce((sum, r) => sum + (r.chunks || 0), 0)
 
-  return NextResponse.json({
-    success: succeeded > 0,
-    agentId,
-    filesProcessed: files.length,
-    filesSucceeded: succeeded,
-    totalChunks,
-    results,
-    timestamp: new Date().toISOString(),
-  })
+  return NextResponse.json(
+    {
+      success: succeeded > 0,
+      agentId,
+      filesProcessed: files.length,
+      filesSucceeded: succeeded,
+      totalChunks,
+      results,
+      timestamp: new Date().toISOString(),
+    },
+    { headers: CORS_HEADERS }
+  )
 }

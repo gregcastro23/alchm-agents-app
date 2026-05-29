@@ -503,6 +503,21 @@ interface JingOverlayState {
   lastError: string | null
 }
 
+interface DesktopMentor {
+  agentId: string
+  name: string
+  level: number
+  dominantStat: string
+}
+
+interface TrainState {
+  show: boolean
+  mentors: DesktopMentor[]
+  mentorId: string | null
+  busy: boolean
+  ingesting: boolean
+}
+
 interface DesktopState extends PersistedDesktopState {
   activeView: View
   runtime: RuntimeState
@@ -514,6 +529,8 @@ interface DesktopState extends PersistedDesktopState {
   // Cosmic leveling fetched from the agents web app (keyed by agentId).
   // Runtime-only — never persisted; refreshed from /api/agents/leveling.
   leveling: Record<string, { level: number; xp: number; evTotal: number }>
+  // Train & Teach panel state (runtime-only).
+  train: TrainState
 }
 
 type InvokeFn = <T>(command: string, args?: Record<string, unknown>) => Promise<T>
@@ -807,6 +824,7 @@ function loadState(): DesktopState {
     stoneDraft: createDefaultStoneDraft(),
     notice: null,
     leveling: {},
+    train: { show: false, mentors: [], mentorId: null, busy: false, ingesting: false },
     localOfflineMode: false,
     disableNetwork: false,
     showJingPanel: false,
@@ -1223,6 +1241,7 @@ function renderChatView() {
         </header>
         ${renderChatAgentSelector(agents)}
         ${state.showJingPanel && agents.length >= 2 ? renderChatJingPanel(agents) : ''}
+        ${state.train.show && agents.length === 1 ? renderChatTrainPanel(agents[0]) : ''}
         <div class="messages" data-messages>
           ${
             messages.length
@@ -1320,11 +1339,61 @@ function renderChatHeaderActions(agents: LocalAgent[]) {
 
   return `
     <div class="button-row">
+      <button class="jing-toggle-button${state.train.show ? ' active' : ''}" data-action="toggle-train-panel">🎓 Train &amp; Teach</button>
       <button class="secondary-button" data-action="view" data-view="agents">Catalog</button>
       <button class="danger-button" data-action="remove-agent" data-agent-id="${agent.id}">
         Remove
       </button>
     </div>
+  `
+}
+
+function renderChatTrainPanel(agent: LocalAgent) {
+  const lvl = agentLevel(agent.id)
+  const mentors = state.train.mentors.filter(m => m.agentId !== agent.id)
+  const selectedId =
+    state.train.mentorId && state.train.mentorId !== agent.id
+      ? state.train.mentorId
+      : mentors[0]?.agentId
+
+  return `
+    <section class="train-panel">
+      <div class="train-panel-head">
+        <strong>🎓 Train &amp; Teach</strong>
+        <span class="muted">${escapeHtml(agent.name)}${lvl != null ? ` · Lv.${lvl}` : ''}</span>
+      </div>
+
+      <div class="train-row">
+        <label class="muted" for="train-mentor-select">Train with a mentor — earns XP &amp; EVs in their dominant stat</label>
+        ${
+          mentors.length
+            ? `<div class="train-controls">
+                 <select id="train-mentor-select" class="input">
+                   ${mentors
+                     .map(
+                       m =>
+                         `<option value="${escapeHtml(m.agentId)}"${m.agentId === selectedId ? ' selected' : ''}>${escapeHtml(m.name)} · Lv.${m.level} · →${escapeHtml(m.dominantStat)}</option>`
+                     )
+                     .join('')}
+                 </select>
+                 <button class="primary-button" data-action="train-active-agent" data-agent-id="${agent.id}"${state.train.busy ? ' disabled' : ''}>
+                   ${state.train.busy ? 'Training…' : 'Train'}
+                 </button>
+               </div>`
+            : `<p class="muted">Loading mentors…</p>`
+        }
+      </div>
+
+      <div class="train-row">
+        <label class="muted" for="train-ingest-files">Teach from files — embeds into this agent's knowledge (PDF · TXT · MD · JSON · DOCX)</label>
+        <div class="train-controls">
+          <input id="train-ingest-files" class="input" type="file" multiple accept=".pdf,.txt,.md,.json,.docx" />
+          <button class="secondary-button" data-action="ingest-knowledge" data-agent-id="${agent.id}"${state.train.ingesting ? ' disabled' : ''}>
+            ${state.train.ingesting ? 'Infusing…' : 'Infuse'}
+          </button>
+        </div>
+      </div>
+    </section>
   `
 }
 
@@ -5197,6 +5266,17 @@ function bindEvents() {
       render()
       if (state.showJingPanel) void refreshJingOverlays()
     }
+    if (action === 'toggle-train-panel') {
+      state.train.show = !state.train.show
+      render()
+      if (state.train.show && state.train.mentors.length === 0) void fetchMentors()
+    }
+    if (action === 'train-active-agent' && agentId) {
+      void trainActiveAgent(agentId)
+    }
+    if (action === 'ingest-knowledge' && agentId) {
+      void ingestKnowledge(agentId)
+    }
     if (action === 'update-jing-move') {
       const moveId = control.dataset.moveId
       if (moveId) {
@@ -5410,6 +5490,120 @@ async function fetchLeveling() {
 function agentLevel(agentId: string): number | null {
   const entry = state.leveling[agentId]
   return entry ? entry.level : null
+}
+
+/** Fetch the mentor roster (canonical figures + their dominant Sacred 7 stat). */
+async function fetchMentors() {
+  if (!canCallNetwork()) return
+  const base = (state.account.agentsUrl || DEFAULT_ACCOUNT.agentsUrl).replace(/\/$/, '')
+  try {
+    const response = await fetch(`${base}/api/agents/mentors?limit=40`)
+    if (!response.ok) return
+    const payload = await response.json()
+    if (Array.isArray(payload?.mentors)) {
+      state.train.mentors = payload.mentors
+      if (!state.train.mentorId && payload.mentors[0]) {
+        state.train.mentorId = payload.mentors[0].agentId
+      }
+      render()
+    }
+  } catch (err) {
+    console.warn('Mentors fetch failed (non-blocking):', err)
+  }
+}
+
+/** Train the active agent with the selected mentor (cloud-awards XP + EVs). */
+async function trainActiveAgent(traineeId: string) {
+  if (state.train.busy) return
+  const select = document.querySelector<HTMLSelectElement>('#train-mentor-select')
+  const mentorId = select?.value || state.train.mentorId
+  if (!mentorId) {
+    setNotice('Pick a mentor to train with.')
+    return
+  }
+  if (mentorId === traineeId) {
+    setNotice('An agent cannot train with itself.')
+    return
+  }
+  if (!canCallNetwork()) {
+    setNotice('Training needs a connection to the agents cloud.')
+    return
+  }
+  state.train.mentorId = mentorId
+  state.train.busy = true
+  render()
+  const base = (state.account.agentsUrl || DEFAULT_ACCOUNT.agentsUrl).replace(/\/$/, '')
+  try {
+    const response = await fetch(`${base}/api/agents/train`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': state.account.apiKey },
+      body: JSON.stringify({ traineeAgentId: traineeId, mentorAgentId: mentorId }),
+    })
+    const payload = await response.json().catch(() => null)
+    if (!response.ok || !payload?.success) {
+      setNotice(payload?.error || `Training failed (${response.status}).`)
+      return
+    }
+    const t = payload.trainee
+    const mentorName = state.train.mentors.find(m => m.agentId === mentorId)?.name || 'mentor'
+    setNotice(
+      `Trained with ${mentorName}: +${t.xpGained} XP` +
+        `${t.stat ? `, +${t.evGained} ${t.stat} EVs` : ''}` +
+        `${t.leveledUp ? ` — leveled up to ${t.level}!` : ''}.`
+    )
+    void fetchLeveling()
+  } catch (err) {
+    setNotice(err instanceof Error ? err.message : 'Training failed.')
+  } finally {
+    state.train.busy = false
+    render()
+  }
+}
+
+/** Upload knowledge files for the active agent to the cloud ingestion route. */
+async function ingestKnowledge(traineeId: string) {
+  if (state.train.ingesting) return
+  const input = document.querySelector<HTMLInputElement>('#train-ingest-files')
+  const files = input?.files
+  if (!files || files.length === 0) {
+    setNotice('Choose one or more files (PDF / TXT / MD / JSON / DOCX) first.')
+    return
+  }
+  if (!canCallNetwork()) {
+    setNotice('Knowledge upload needs a connection to the agents cloud.')
+    return
+  }
+  const captured = Array.from(files)
+  state.train.ingesting = true
+  render()
+  const base = (state.account.agentsUrl || DEFAULT_ACCOUNT.agentsUrl).replace(/\/$/, '')
+  try {
+    const fd = new FormData()
+    fd.append('agentId', traineeId)
+    for (const f of captured) fd.append('files', f)
+    const response = await fetch(`${base}/api/knowledge-updater/ingest`, {
+      method: 'POST',
+      headers: { 'x-api-key': state.account.apiKey },
+      body: fd,
+    })
+    const payload = await response.json().catch(() => null)
+    if (payload?.status === 'disabled') {
+      setNotice('Knowledge ingestion is disabled on the server (RAG off).')
+      return
+    }
+    if (!response.ok || !payload?.success) {
+      setNotice(payload?.error || `Ingestion failed (${response.status}).`)
+      return
+    }
+    setNotice(
+      `Infused ${payload.filesSucceeded}/${payload.filesProcessed} file(s) — ${payload.totalChunks} chunks embedded.`
+    )
+  } catch (err) {
+    setNotice(err instanceof Error ? err.message : 'Ingestion failed.')
+  } finally {
+    state.train.ingesting = false
+    render()
+  }
 }
 
 function boot() {

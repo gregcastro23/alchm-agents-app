@@ -8,6 +8,11 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { CORS_HEADERS, corsPreflight } from '@/lib/cors'
+
+export function OPTIONS() {
+  return corsPreflight()
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,7 +39,10 @@ export async function GET(request: NextRequest) {
       map[r.agentId] = { level: r.level ?? 1, xp: r.xp ?? 0, evTotal: r.evTotal ?? 0 }
     }
 
-    return NextResponse.json({ success: true, count: rows.length, leveling: map })
+    return NextResponse.json(
+      { success: true, count: rows.length, leveling: map },
+      { headers: CORS_HEADERS }
+    )
   } catch (error) {
     console.error('bulk leveling GET error:', error)
     return NextResponse.json(
@@ -43,7 +51,7 @@ export async function GET(request: NextRequest) {
         error: error instanceof Error ? error.message : 'Internal server error',
         leveling: {},
       },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     )
   }
 }
