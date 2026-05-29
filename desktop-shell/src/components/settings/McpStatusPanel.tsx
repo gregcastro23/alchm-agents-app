@@ -9,9 +9,9 @@
  *
  * NOT YET BUNDLED. The desktop shell (desktop-shell/src/main.ts) is
  * currently vanilla TypeScript with a string-template render loop.
- * This component is authored ahead of the React migration called out
- * in NEXT_SESSION_PROMPT_DESKTOP_MCP.md item 5 so that when the shell
- * gains a React mount point, this is ready to drop in.
+ * This component is authored ahead of the React migration documented
+ * in desktop-shell/README.md so that when the shell gains a React
+ * mount point, this is ready to drop in.
  *
  * To wire up later, you need:
  *

@@ -305,7 +305,9 @@ export function FloatingAdminPanel() {
 
     try {
       localStorage.setItem('floating-admin-panel-collapsed', String(collapsed))
-    } catch {}
+    } catch {
+      // Best-effort persistence — ignore quota / private-mode failures.
+    }
   }, [collapsed, disabledForDesktopSurface])
 
   useEffect(() => {

@@ -233,7 +233,9 @@ export default function MonicaChatInterface({
                 followUps: evt.payload.followUps || [],
               }
             }
-          } catch {}
+          } catch {
+            // Skip partial / non-JSON SSE fragments — logging here would spam per chunk.
+          }
         }
       }
       const monicaMsg: MonicaChatMessage = {

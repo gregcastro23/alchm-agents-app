@@ -111,7 +111,9 @@ const TarotCosmicWidget: React.FC<TarotCosmicWidgetProps> = ({
       // and make downstream handling clearer.
       try {
         abortController.abort('component-unmount')
-      } catch {}
+      } catch {
+        // abort() can throw if the controller already settled — safe to ignore.
+      }
     }
   }, [])
 

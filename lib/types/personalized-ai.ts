@@ -49,6 +49,8 @@ export interface CurrentMomentChart {
     NightEssence: number
   }
   aspects?: AspectData[]
+  /** 'live' = real ephemeris for the current moment; 'fallback' = static positions (calc failed/degraded) */
+  dataSource?: 'live' | 'fallback'
 }
 
 export interface AspectData {

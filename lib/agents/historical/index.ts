@@ -237,7 +237,28 @@ export const HISTORICAL_AGENTS = [
 
 // Helper functions for working with historical agents
 export const getHistoricalAgent = (id: string) => {
-  return HISTORICAL_AGENTS.find(agent => agent.id === id)
+  // 1. Exact id match — canonical, fast path. Never changes existing behavior.
+  const exact = HISTORICAL_AGENTS.find(agent => agent.id === id)
+  if (exact) return exact
+
+  // 2. Slug-tolerant fallback for links that drop an id's disambiguator suffix
+  //    (e.g. `/gallery/chat/greg-castro` when the canonical id is
+  //    `greg-castro-1991`). Match case-insensitively, and only resolve when the
+  //    candidate is unambiguous — never map a short slug onto the wrong agent.
+  const slug = id.trim().toLowerCase()
+  if (!slug) return undefined
+
+  // 2a. Case-insensitive exact id (only if unique).
+  const caseInsensitive = HISTORICAL_AGENTS.filter(agent => agent.id.toLowerCase() === slug)
+  if (caseInsensitive.length === 1) return caseInsensitive[0]
+
+  // 2b. Id with a trailing `-<digits>` disambiguator stripped (only if unique).
+  const suffixStripped = HISTORICAL_AGENTS.filter(
+    agent => agent.id.toLowerCase().replace(/-\d+$/, '') === slug
+  )
+  if (suffixStripped.length === 1) return suffixStripped[0]
+
+  return undefined
 }
 
 export const getAllHistoricalAgents = () => {

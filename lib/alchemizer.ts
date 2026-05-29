@@ -376,7 +376,9 @@ export function alchemize(
       if (v === 'true') uiOverride = true
       else if (v === 'false') uiOverride = false
     }
-  } catch {}
+  } catch {
+    // localStorage may be unavailable (SSR/private mode) — fall back to the env flag.
+  }
 
   const envFlag =
     (typeof process !== 'undefined' &&

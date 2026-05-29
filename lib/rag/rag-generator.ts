@@ -67,6 +67,10 @@ export interface RAGMetadata {
   cacheLatency?: number
   retrievalTime?: number
   generationTime?: number
+  /** True when the response text came from the offline mock generator, not a real LLM. */
+  mock?: boolean
+  /** Human-readable reason the result is degraded (e.g. mock/offline mode, API error). */
+  degradedReason?: string
 }
 
 export interface RAGResult {
@@ -202,6 +206,8 @@ export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGR
           retrievalTime,
           generationTime,
           cacheHit: false,
+          mock: useMock,
+          degradedReason: useMock ? getMockGenerationStatus() : undefined,
         },
       }
     }
@@ -253,6 +259,10 @@ export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGR
 
     let responseText: string
     let generationTime: number
+    // Track whether the text is mock-generated so the caller can surface a
+    // "degraded/offline" signal instead of presenting canned text as a real reply.
+    let servedMock = useMock
+    let degradedReason: string | undefined = useMock ? getMockGenerationStatus() : undefined
 
     if (useMock) {
       console.log('[RAG] ⚠️  Using mock generation (Anthropic API unavailable)')
@@ -282,6 +292,8 @@ export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGR
         // Fallback to mock on API error
         console.log('[RAG] ⚠️  API error, falling back to mock generation')
         console.error('[RAG] API Error:', error)
+        servedMock = true
+        degradedReason = 'Anthropic API unavailable — served offline mock response'
         await simulateGenerationDelay()
         responseText = generateMockResponse({
           agent: options.agent, // Pass full agent object
@@ -334,6 +346,8 @@ export async function generateWithRAG(options: RAGGenerateOptions): Promise<RAGR
         generationTime,
         totalTime,
         cacheHit: false,
+        mock: servedMock,
+        degradedReason,
       },
     }
   } catch (error) {
