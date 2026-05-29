@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { RotateCw, Sparkles, Loader2 } from 'lucide-react'
+import { RotateCw, Sparkles, Loader2, Dumbbell } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import {
   SACRED_7_KEYS,
@@ -35,6 +35,13 @@ interface LevelingData {
   evs: Partial<Record<Sacred7Key, number>>
   evTotal: number
   effectiveStats: Record<Sacred7Key, number>
+}
+
+interface Mentor {
+  agentId: string
+  name: string
+  level: number
+  dominantStat: Sacred7Key
 }
 
 const STAT_LABELS: { key: Sacred7Key; short: string; full: string }[] = [
@@ -67,6 +74,9 @@ export function AgentLevelPanel({ agentId }: { agentId: string }) {
   const [loading, setLoading] = useState(true)
   const [resetting, setResetting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [mentors, setMentors] = useState<Mentor[]>([])
+  const [mentorId, setMentorId] = useState('')
+  const [training, setTraining] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -86,6 +96,20 @@ export function AgentLevelPanel({ agentId }: { agentId: string }) {
   useEffect(() => {
     load()
   }, [load])
+
+  // Mentor roster for the training picker (excludes this agent).
+  useEffect(() => {
+    fetch('/api/agents/mentors?limit=40')
+      .then(r => r.json())
+      .then(j => {
+        if (Array.isArray(j?.mentors)) {
+          const list: Mentor[] = j.mentors.filter((m: Mentor) => m.agentId !== agentId)
+          setMentors(list)
+          if (list[0]) setMentorId(list[0].agentId)
+        }
+      })
+      .catch(() => {})
+  }, [agentId])
 
   const handleReset = useCallback(async () => {
     if (resetting) return
@@ -129,6 +153,64 @@ export function AgentLevelPanel({ agentId }: { agentId: string }) {
       setResetting(false)
     }
   }, [agentId, resetting, toast, load])
+
+  const handleTrain = useCallback(async () => {
+    if (training || !mentorId) return
+    const mentor = mentors.find(m => m.agentId === mentorId)
+    setTraining(true)
+    try {
+      // Train = chat with the mentor while crediting this agent as the trainee.
+      // The unified route awards XP to the trainee and EVs in the mentor's
+      // dominant Sacred 7 stat. Free tier keeps training cheap.
+      const res = await fetch('/api/agents/unified', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'chat',
+          parameters: {
+            agentId: mentorId,
+            trainerAgentId: agentId,
+            message: 'Mentor me with your wisdom — I am training to grow.',
+            modelTier: 'free',
+          },
+        }),
+      })
+      const json = await res.json()
+      if (res.status === 401) {
+        toast({
+          title: 'Sign in required',
+          description: 'Log in to train.',
+          variant: 'destructive',
+        })
+        return
+      }
+      if (res.status === 402) {
+        toast({
+          title: 'Not enough ESMS',
+          description: 'Training costs ESMS tokens.',
+          variant: 'destructive',
+        })
+        return
+      }
+      if (!json?.success) throw new Error(json?.error || 'Training failed')
+      const statLabel =
+        STAT_LABELS.find(s => s.key === mentor?.dominantStat)?.full ?? mentor?.dominantStat
+      toast({
+        title: 'Training complete',
+        description: `Trained with ${mentor?.name ?? 'mentor'} — earned XP and ${statLabel} EVs.`,
+      })
+      // The XP/EV award is fire-and-forget server-side; refresh after a beat.
+      setTimeout(() => load(), 800)
+    } catch (e) {
+      toast({
+        title: 'Training failed',
+        description: e instanceof Error ? e.message : 'Unknown error',
+        variant: 'destructive',
+      })
+    } finally {
+      setTraining(false)
+    }
+  }, [agentId, mentorId, mentors, training, toast, load])
 
   if (loading) {
     return (
@@ -296,6 +378,41 @@ export function AgentLevelPanel({ agentId }: { agentId: string }) {
           })}
         </div>
       </div>
+
+      {/* Train */}
+      {mentors.length > 0 && (
+        <div className="space-y-2 rounded-lg border border-white/10 bg-white/5 p-3">
+          <div className="flex items-center gap-2 text-xs font-medium">
+            <Dumbbell className="h-3.5 w-3.5 text-fuchsia-300" /> Train this agent
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Train with a mentor to earn XP and EVs in their dominant stat.
+          </p>
+          <div className="flex items-center gap-2">
+            <select
+              value={mentorId}
+              onChange={e => setMentorId(e.target.value)}
+              disabled={training}
+              className="min-w-0 flex-1 rounded-md border border-white/15 bg-black/30 px-2 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-fuchsia-500/50"
+            >
+              {mentors.map(m => (
+                <option key={m.agentId} value={m.agentId} className="bg-zinc-900">
+                  {m.name} · Lv.{m.level} · →
+                  {STAT_LABELS.find(s => s.key === m.dominantStat)?.full ?? m.dominantStat}
+                </option>
+              ))}
+            </select>
+            <Button
+              size="sm"
+              disabled={training || !mentorId}
+              onClick={handleTrain}
+              className="shrink-0 border-0 bg-gradient-to-r from-amber-500 to-fuchsia-600 text-white"
+            >
+              {training ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Train'}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Reset */}
       <Button

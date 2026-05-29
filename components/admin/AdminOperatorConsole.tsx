@@ -51,6 +51,7 @@ type AdminTab =
   | 'agents'
   | 'chats'
   | 'jing'
+  | 'leveling'
   | 'rag'
   | 'infrastructure'
   | 'deployments'
@@ -68,12 +69,34 @@ type AdminOperatorConsoleProps = {
   authSource: string
 }
 
+interface AdminLevelingSummary {
+  totals: {
+    agents: number
+    maxedLevel100: number
+    untrainedLevel1: number
+    avgLevel: number
+    totalEvsTrained: number
+    evTotalCap: number
+    agentsInTraining: number
+  }
+  distribution: Array<{ band: string; count: number }>
+  topAgents: Array<{ agentId: string; name: string; level: number; xp: number }>
+  inTraining: Array<{
+    agentId: string
+    name: string
+    level: number
+    evTotal: number
+    lastTrainingPartner: string | null
+  }>
+}
+
 const tabs: Array<{ id: AdminTab; label: string; icon: LucideIcon }> = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'users', label: 'Users', icon: Users },
   { id: 'agents', label: 'Agents', icon: Bot },
   { id: 'chats', label: 'Chat Status', icon: TerminalSquare },
   { id: 'jing', label: 'Jing Arena', icon: Swords },
+  { id: 'leveling', label: 'Cosmic Leveling', icon: Gauge },
   { id: 'rag', label: 'RAG / Knowledge', icon: FileSearch },
   { id: 'infrastructure', label: 'Infrastructure', icon: Server },
   { id: 'deployments', label: 'Deployments', icon: GitBranch },
@@ -248,6 +271,8 @@ export function AdminOperatorConsole({ initialUser, authSource }: AdminOperatorC
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const [selectedChat, setSelectedChat] = useState<AdminRecentChat | null>(null)
   const [selectedDuel, setSelectedDuel] = useState<AdminJingDuel | null>(null)
+  const [leveling, setLeveling] = useState<AdminLevelingSummary | null>(null)
+  const [levelingLoading, setLevelingLoading] = useState(false)
 
   const fetchDashboard = useCallback(async () => {
     setRefreshing(true)
@@ -298,11 +323,28 @@ export function AdminOperatorConsole({ initialUser, authSource }: AdminOperatorC
     return () => window.clearInterval(interval)
   }, [fetchDashboard])
 
+  const fetchLeveling = useCallback(async () => {
+    setLevelingLoading(true)
+    try {
+      const response = await fetch('/api/admin/leveling-summary', { cache: 'no-store' })
+      const payload = await response.json().catch(() => null)
+      if (response.ok && payload?.success) setLeveling(payload as AdminLevelingSummary)
+    } finally {
+      setLevelingLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     if (activeTab === 'infrastructure' && !systemStats && !statsLoading) {
       fetchSystemStats()
     }
   }, [activeTab, fetchSystemStats, statsLoading, systemStats])
+
+  useEffect(() => {
+    if (activeTab === 'leveling' && !leveling && !levelingLoading) {
+      fetchLeveling()
+    }
+  }, [activeTab, fetchLeveling, leveling, levelingLoading])
 
   const totalAgents = data
     ? data.agents.historical + data.agents.planetary + data.agents.created
@@ -928,6 +970,123 @@ export function AdminOperatorConsole({ initialUser, authSource }: AdminOperatorC
                         </div>
                       )}
                     </Panel>
+                  </div>
+                )}
+
+                {activeTab === 'leveling' && (
+                  <div className="space-y-6">
+                    {!leveling ? (
+                      <EmptyState
+                        label={levelingLoading ? 'Loading cosmic leveling…' : 'No leveling data.'}
+                      />
+                    ) : (
+                      <>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                          <MetricPanel
+                            icon={Bot}
+                            label="Total Agents"
+                            value={leveling.totals.agents.toLocaleString()}
+                            tone="sky"
+                          />
+                          <MetricPanel
+                            icon={Gauge}
+                            label="Avg Level"
+                            value={String(leveling.totals.avgLevel)}
+                            detail={`${leveling.totals.maxedLevel100.toLocaleString()} at Lv.100`}
+                            tone="emerald"
+                          />
+                          <MetricPanel
+                            icon={Activity}
+                            label="In Training"
+                            value={leveling.totals.agentsInTraining.toLocaleString()}
+                            detail="agents with EVs > 0"
+                            tone="amber"
+                          />
+                          <MetricPanel
+                            icon={Swords}
+                            label="EVs Trained"
+                            value={leveling.totals.totalEvsTrained.toLocaleString()}
+                            detail="total across roster"
+                            tone="rose"
+                          />
+                        </div>
+
+                        <div className="grid gap-4 lg:grid-cols-2">
+                          <Panel title="Level Distribution" icon={Gauge}>
+                            <div className="space-y-2">
+                              {leveling.distribution.map(b => {
+                                const pct = leveling.totals.agents
+                                  ? Math.round((b.count / leveling.totals.agents) * 100)
+                                  : 0
+                                return (
+                                  <div key={b.band}>
+                                    <div className="flex items-center justify-between text-xs text-zinc-400">
+                                      <span>{b.band}</span>
+                                      <span className="tabular-nums">
+                                        {b.count.toLocaleString()} ({pct}%)
+                                      </span>
+                                    </div>
+                                    <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+                                      <div
+                                        className="h-full rounded-full bg-sky-500"
+                                        style={{ width: `${pct}%` }}
+                                      />
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </Panel>
+
+                          <Panel title="Legends Leaderboard" icon={Bot}>
+                            {leveling.topAgents.length === 0 ? (
+                              <EmptyState label="No ranked agents." />
+                            ) : (
+                              <ol className="space-y-1.5 text-sm">
+                                {leveling.topAgents.map((a, i) => (
+                                  <li
+                                    key={a.agentId}
+                                    className="flex items-center justify-between gap-2"
+                                  >
+                                    <span className="truncate text-zinc-200">
+                                      <span className="text-zinc-500">{i + 1}.</span> {a.name}
+                                    </span>
+                                    <span className="shrink-0 text-xs tabular-nums text-zinc-400">
+                                      Lv.{a.level} · {a.xp.toLocaleString()} XP
+                                    </span>
+                                  </li>
+                                ))}
+                              </ol>
+                            )}
+                          </Panel>
+                        </div>
+
+                        <Panel title="Currently Training" icon={Activity}>
+                          {leveling.inTraining.length === 0 ? (
+                            <EmptyState label="No agents are training yet (no EVs earned)." />
+                          ) : (
+                            <div className="space-y-1.5 text-sm">
+                              {leveling.inTraining.map(a => (
+                                <div
+                                  key={a.agentId}
+                                  className="flex items-center justify-between gap-2"
+                                >
+                                  <span className="truncate text-zinc-200">
+                                    {a.name} <span className="text-zinc-500">Lv.{a.level}</span>
+                                  </span>
+                                  <span className="shrink-0 text-xs tabular-nums text-zinc-400">
+                                    {a.evTotal} EVs
+                                    {a.lastTrainingPartner
+                                      ? ` · last: ${a.lastTrainingPartner}`
+                                      : ''}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </Panel>
+                      </>
+                    )}
                   </div>
                 )}
 
