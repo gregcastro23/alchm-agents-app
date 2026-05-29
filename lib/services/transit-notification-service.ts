@@ -175,22 +175,31 @@ export async function dismissNotification(notificationId: string, userId: string
   }
 }
 
+// A process-wide global Map to persist preferences in memory for tests/runs
+const preferencesStore = new Map<string, any>()
+
 /**
  * Get user notification preferences (with defaults)
  */
-export async function getUserNotificationPreferences(
-  _userId: string
-): Promise<NotificationPreferences> {
+export async function getUserNotificationPreferences(userId: string): Promise<any> {
   try {
-    // For now, return sensible defaults
-    // In a real implementation, this would be stored in user preferences
-    const defaultPreferences: NotificationPreferences = {
+    const defaultPreferences = {
       enabled: true,
       significanceThreshold: 0.6,
       priorityLevels: ['medium', 'high', 'critical'],
       categories: ['personal_transit', 'agent_activation', 'consciousness_breakthrough'],
       deliveryMethods: ['in_app'],
       frequency: 'immediate',
+      threshold: 0.6,
+      channels: ['in_app'],
+    }
+
+    const stored = preferencesStore.get(userId)
+    if (stored) {
+      return {
+        ...defaultPreferences,
+        ...stored,
+      }
     }
 
     return defaultPreferences
@@ -205,11 +214,14 @@ export async function getUserNotificationPreferences(
  */
 export async function updateUserNotificationPreferences(
   userId: string,
-  preferences: Partial<NotificationPreferences>
+  preferences: any
 ): Promise<void> {
   try {
-    // In a real implementation, this would update user preferences in the database
-    // For now, we'll just validate the input
+    const existing = preferencesStore.get(userId) || {}
+    preferencesStore.set(userId, {
+      ...existing,
+      ...preferences,
+    })
     console.log('Updating notification preferences for user:', userId, preferences)
   } catch (error) {
     console.error('Error updating notification preferences:', error)

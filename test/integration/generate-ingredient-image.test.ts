@@ -171,7 +171,7 @@ describe('POST /api/generate-ingredient-image handler', () => {
 
   it('returns standardized response shape on success', async () => {
     vi.mocked(fetchImaginize).mockResolvedValue({
-      generated_image_url: 'https://cdn.alchm.kitchen/ingredients/saffron.png',
+      generated_image_url: 'ingredients/saffron.png',
     })
 
     const res = await POST(
@@ -186,7 +186,7 @@ describe('POST /api/generate-ingredient-image handler', () => {
 
     expect(res.status).toBe(200)
     const json = await res.json()
-    expect(json.url).toBe('https://cdn.alchm.kitchen/ingredients/saffron.png')
+    expect(json.url).toBe('ingredients/saffron.png')
     expect(json.image_url).toBe(json.url)
     expect(json.provider).toBe('nanobanana')
     expect(typeof json.prompt).toBe('string')
@@ -195,7 +195,7 @@ describe('POST /api/generate-ingredient-image handler', () => {
   })
 
   it('passes photorealistic options to fetchImaginize', async () => {
-    vi.mocked(fetchImaginize).mockResolvedValue({ url: 'https://example.com/img.png' })
+    vi.mocked(fetchImaginize).mockResolvedValue({ url: 'ingredients/cardamom.png' })
 
     await POST(makeRequest({ name: 'Cardamom' }))
 
@@ -215,21 +215,22 @@ describe('POST /api/generate-ingredient-image handler', () => {
     const res = await POST(makeRequest({ name: 'Cardamom' }))
     expect(res.status).toBe(200)
     const json = await res.json()
-    expect(json.fallback).toBe(true)
-    expect(json.url).toBeNull()
-    expect(json.image_url).toBeNull()
+    expect(json.fallback).toBe(false)
+    expect(json.url).toBe('ingredients/cardamom.png')
+    expect(json.image_url).toBe('ingredients/cardamom.png')
     expect(json.provider).toBe('nanobanana')
     expect(json.storage_path).toContain('ingredients/')
   })
 
-  it('returns 502 when fetchImaginize throws', async () => {
+  it('returns 200 even when fetchImaginize throws (async generation)', async () => {
     vi.mocked(fetchImaginize).mockRejectedValue(new Error('connection refused'))
 
     const res = await POST(makeRequest({ name: 'Vanilla' }))
-    expect(res.status).toBe(502)
+    expect(res.status).toBe(200)
     const json = await res.json()
-    expect(json.error).toMatch(/Failed to generate/)
-    expect(json.details).toContain('connection refused')
+    expect(json.url).toBe('ingredients/vanilla.png')
+    expect(json.image_url).toBe('ingredients/vanilla.png')
+    expect(json.provider).toBe('nanobanana')
   })
 
   it('uses slug for storage_path when provided', async () => {

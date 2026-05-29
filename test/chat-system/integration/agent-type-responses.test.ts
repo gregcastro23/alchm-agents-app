@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { generateText } from 'ai'
 import { POST } from '@/app/api/unified-multi-agent-chat/route'
 import { mockMonicaAgent, mockUnifiedAgents } from '../fixtures/mock-data'
+import { parseStreamResponse } from '../stream-helper'
 
 vi.mock('ai', () => ({
   generateText: vi.fn(),
@@ -52,6 +53,34 @@ vi.mock('@/lib/rag/rag-generator', () => ({
   getRAGConfig: vi.fn(() => ({ enabled: false })),
 }))
 
+vi.mock('@/lib/backend', () => ({
+  getAlchemicalQuantitiesLegacy: vi.fn(() =>
+    Promise.resolve({
+      'Alchemy Effects': {
+        'Total Spirit': 1.0,
+        'Total Essence': 2.0,
+        'Total Matter': 1.5,
+        'Total Substance': 0.5,
+      },
+    })
+  ),
+  backend: {
+    agents: {
+      chat: vi.fn(req =>
+        Promise.resolve({
+          text: 'Validated response from the requested agent type.',
+          agentId: req.agentId,
+          sessionId: req.sessionId || 'mock-session-id',
+          metadata: {
+            model: 'llama-3.3-70b-versatile',
+            rag_used: false,
+          },
+        })
+      ),
+    },
+  },
+}))
+
 describe('Agent Type Response Validation', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
@@ -84,7 +113,7 @@ describe('Agent Type Response Validation', () => {
     })
 
     const response = await POST(request)
-    const data = await response.json()
+    const data = await parseStreamResponse(response)
 
     expect(response.status).toBe(200)
     expect(data.responses).toHaveLength(1)
@@ -111,7 +140,7 @@ describe('Agent Type Response Validation', () => {
     })
 
     const response = await POST(request)
-    const data = await response.json()
+    const data = await parseStreamResponse(response)
 
     expect(response.status).toBe(200)
     expect(data.responses).toHaveLength(1)
@@ -135,7 +164,7 @@ describe('Agent Type Response Validation', () => {
     })
 
     const response = await POST(request)
-    const data = await response.json()
+    const data = await parseStreamResponse(response)
 
     expect(response.status).toBe(200)
     expect(data.responses).toHaveLength(1)

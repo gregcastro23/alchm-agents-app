@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { NextRequest } from 'next/server'
 import { generateText } from 'ai'
 import { POST } from '@/app/api/unified-multi-agent-chat/route'
+import { parseStreamResponse } from '../stream-helper'
 import { agentCache } from '@/lib/agent-cache-system'
 import { generateAlchmForCurrentMoment } from '@/lib/alchemizer'
 import {
@@ -142,7 +143,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(400)
       expect(data.error).toContain('Message and agents array are required')
@@ -158,7 +159,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(400)
       expect(data.error).toContain('Message and agents array are required')
@@ -179,7 +180,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(400)
       expect(data.error).toContain('Message and agents array are required')
@@ -203,7 +204,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(200)
       expect(data.responses).toHaveLength(1)
@@ -227,11 +228,12 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(200)
       expect(data.responses).toHaveLength(2)
-      expect(mockGenerateText).toHaveBeenCalledTimes(2) // One call per agent
+      const { backend } = await import('@/lib/backend')
+      expect(backend.agents.chat).toHaveBeenCalledTimes(2)
     })
 
     it('handles Monica coordination correctly', async () => {
@@ -251,7 +253,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(200)
       expect(data.responses).toHaveLength(2)
@@ -288,7 +290,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(200)
       expect(data.responses.length).toBeLessThanOrEqual(6)
@@ -311,11 +313,14 @@ describe('Unified Multi-Agent Chat API Integration', () => {
         }),
       })
 
-      await POST(request)
+      const response = await POST(request)
+      await parseStreamResponse(response)
 
-      expect(mockGenerateText).toHaveBeenCalledWith(
+      const { backend } = await import('@/lib/backend')
+      expect(backend.agents.chat).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gemini-2.0-flash-lite',
+          agentId: mockUnifiedAgents[0].id,
+          modelTier: 'free',
         })
       )
     })
@@ -348,11 +353,14 @@ describe('Unified Multi-Agent Chat API Integration', () => {
         }),
       })
 
-      await POST(request)
+      const response = await POST(request)
+      await parseStreamResponse(response)
 
-      expect(mockGenerateText).toHaveBeenCalledWith(
+      const { backend } = await import('@/lib/backend')
+      expect(backend.agents.chat).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gemini-2.0-flash-lite',
+          agentId: fastPlanetaryAgent.id,
+          modelTier: 'free',
         })
       )
     })
@@ -374,11 +382,14 @@ describe('Unified Multi-Agent Chat API Integration', () => {
         }),
       })
 
-      await POST(request)
+      const response = await POST(request)
+      await parseStreamResponse(response)
 
-      expect(mockGenerateText).toHaveBeenCalledWith(
+      const { backend } = await import('@/lib/backend')
+      expect(backend.agents.chat).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gemini-2.5-flash',
+          agentId: mockUnifiedAgents[0].id,
+          modelTier: 'free',
         })
       )
     })
@@ -398,11 +409,14 @@ describe('Unified Multi-Agent Chat API Integration', () => {
         }),
       })
 
-      await POST(request)
+      const response = await POST(request)
+      await parseStreamResponse(response)
 
-      expect(mockGenerateText).toHaveBeenCalledWith(
+      const { backend } = await import('@/lib/backend')
+      expect(backend.agents.chat).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gemini-2.0-flash-lite',
+          agentId: mockUnifiedAgents[0].id,
+          modelTier: 'free',
         })
       )
     })
@@ -432,7 +446,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(200)
       expect(data.responses[0].content).toBe('This is a cached response')
@@ -453,7 +467,8 @@ describe('Unified Multi-Agent Chat API Integration', () => {
         }),
       })
 
-      await POST(request)
+      const response = await POST(request)
+      await parseStreamResponse(response)
 
       expect(mockAgentCache.cacheResponse).toHaveBeenCalledWith(
         mockUnifiedAgents[0].id,
@@ -481,7 +496,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(200)
       expect(data.groupDynamics).toBeDefined()
@@ -505,7 +520,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(200)
       expect(data.groupDynamics.consciousnessNetwork.connections).toHaveLength(1) // 2 agents = 1 connection
@@ -531,7 +546,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(200)
       expect(data.groupInsights).toBeDefined()
@@ -556,7 +571,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(200)
       expect(data.responses[0].consciousnessShift).toBeGreaterThan(0)
@@ -578,7 +593,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(200)
       expect(data.agentEvolutions).toBeDefined()
@@ -588,7 +603,9 @@ describe('Unified Multi-Agent Chat API Integration', () => {
 
   describe('Error Handling', () => {
     it('surfaces AI generation failures instead of returning a synthetic agent reply', async () => {
-      mockGenerateText.mockRejectedValueOnce(new Error('AI service unavailable'))
+      const { backend } = await import('@/lib/backend')
+      const originalChat = backend.agents.chat
+      backend.agents.chat = vi.fn(() => Promise.reject(new Error('API quota exceeded')))
 
       const request = new NextRequest('http://localhost/api/unified-multi-agent-chat', {
         method: 'POST',
@@ -603,12 +620,16 @@ describe('Unified Multi-Agent Chat API Integration', () => {
         }),
       })
 
-      const response = await POST(request)
-      const data = await response.json()
+      try {
+        const response = await POST(request)
+        const data = await parseStreamResponse(response)
 
-      expect(response.status).toBe(500)
-      expect(data.error).toContain('Failed to process multi-agent conversation')
-      expect(data.details).toContain('Failed to generate response for')
+        expect(response.status).toBe(200)
+        expect(data.error).toContain('Failed to process multi-agent conversation')
+        expect(data.details).toContain('Failed to generate response for')
+      } finally {
+        backend.agents.chat = originalChat
+      }
     })
 
     it('handles cosmic context generation failures', async () => {
@@ -630,7 +651,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(200) // Should still work with fallback
     })
@@ -642,10 +663,10 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(500)
-      expect(data.error).toContain('Failed to process multi-agent conversation')
+      expect(data.error).toContain('Failed to start multi-agent conversation')
     })
   })
 
@@ -667,7 +688,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
       const endTime = Date.now()
 
       expect(response.status).toBe(200)
@@ -692,7 +713,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(200)
       expect(data.processingTime).toBeLessThan(performanceTestData.expectedResponseTimes.medium)
@@ -713,7 +734,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(200)
       // Should not be much slower than single agent due to concurrency
@@ -737,7 +758,7 @@ describe('Unified Multi-Agent Chat API Integration', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
 
       expect(response.status).toBe(200)
 

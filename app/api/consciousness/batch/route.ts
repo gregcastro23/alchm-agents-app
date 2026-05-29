@@ -61,3 +61,28 @@ export async function POST(request: NextRequest) {
   const body = await request.json()
   return proxyConsciousnessRequest('/api/consciousness/batch', body)
 }
+
+export async function GET(request: NextRequest) {
+  try {
+    const defaultBody = {
+      agents: [
+        {
+          name: 'Current Moment',
+          birthDate: new Date().toISOString().slice(0, 10),
+          birthTime: '12:00',
+          birthLocation: { name: 'Greenwich, UK', lat: 51.4779, lon: 0.0 },
+        },
+      ],
+    }
+    return proxyConsciousnessRequest('/api/consciousness/batch', defaultBody)
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: 'Backend consciousness service unavailable',
+        code: 'BACKEND_DISABLED',
+        message: error instanceof Error ? error.message : String(error),
+      },
+      { status: 503 }
+    )
+  }
+}

@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { NextRequest } from 'next/server'
-import { generateText } from 'ai'
 import { mockUnifiedAgents } from '../fixtures/mock-data'
+import { backend } from '@/lib/backend'
+import { parseStreamResponse } from '../stream-helper'
 
 vi.mock('ai', () => ({
   generateText: vi.fn(),
@@ -16,6 +17,24 @@ vi.mock('@/lib/models/registry', () => ({
   },
   resolveDefaultModel: vi.fn((tier: string) => `mock-${tier}-model`),
   resolveOpenAIModel: vi.fn((tier: string) => `mock-openai-${tier}-model`),
+}))
+
+vi.mock('@/lib/backend', () => ({
+  backend: {
+    agents: {
+      chat: vi.fn(req =>
+        Promise.resolve({
+          text: 'Valid planetary LLM response routed through the fast model tier.',
+          agentId: req.agentId,
+          sessionId: req.sessionId || 'mock-session-id',
+          metadata: {
+            model: 'fast-tier',
+            rag_used: false,
+          },
+        })
+      ),
+    },
+  },
 }))
 
 vi.mock('@ai-sdk/openai', () => ({
@@ -108,11 +127,6 @@ describe('Planetary agent model routing', () => {
     process.env.OPENAI_API_KEY = 'test-openai-key'
     process.env.ANTHROPIC_API_KEY = 'test-anthropic-key'
 
-    vi.mocked(generateText).mockResolvedValue({
-      text: 'Valid planetary LLM response routed through the fast model tier.',
-      usage: { totalTokens: 24 },
-    } as any)
-
     const { agentCache } = await import('@/lib/agent-cache-system')
     vi.mocked(agentCache.getCachedResponse).mockResolvedValue(null)
     vi.mocked(agentCache.cacheResponse).mockResolvedValue(undefined)
@@ -120,7 +134,6 @@ describe('Planetary agent model routing', () => {
 
   it('routes unified planetary chat agents through the fast model tier', async () => {
     const { POST } = await import('@/app/api/unified-multi-agent-chat/route')
-    const { resolveDefaultModel } = await import('@/lib/models/registry')
     const planetaryAgent = mockUnifiedAgents.find(agent => agent.type === 'planetary')
 
     const request = new NextRequest('http://localhost/api/unified-multi-agent-chat', {
@@ -138,24 +151,22 @@ describe('Planetary agent model routing', () => {
     })
 
     const response = await POST(request)
-    const data = await response.json()
+    const data = await parseStreamResponse(response)
 
     expect(response.status).toBe(200)
     expect(data.responses).toHaveLength(1)
     expect(data.responses[0].content).toContain('Valid planetary LLM response')
-    expect(resolveDefaultModel).toHaveBeenCalledWith('fast')
-    expect(generateText).toHaveBeenCalledWith(
+    expect(backend.agents.chat).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: 'mock-fast-model',
-        prompt: 'What should humans do with this transit?',
-        temperature: expect.any(Number),
+        agentId: planetaryAgent?.id,
+        message: 'What should humans do with this transit?',
+        modelTier: 'free',
       })
     )
   })
 
   it('routes direct planetary-agent API responses through the fast model tier', async () => {
     const { POST } = await import('@/app/api/planetary-agent/route')
-    const { resolveDefaultModel } = await import('@/lib/models/registry')
 
     const request = new NextRequest('http://localhost/api/planetary-agent', {
       method: 'POST',
@@ -174,12 +185,11 @@ describe('Planetary agent model routing', () => {
     expect(response.status).toBe(200)
     expect(data.response).toContain('Valid planetary LLM response')
     expect(data.modelUsed).toBe('fast-tier')
-    expect(resolveDefaultModel).toHaveBeenCalledWith('fast')
-    expect(generateText).toHaveBeenCalledWith(
+    expect(backend.agents.chat).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: 'mock-fast-model',
-        prompt: 'Give guidance for this transit.',
-        temperature: 0.6,
+        agentId: 'sun-leo',
+        message: 'Give guidance for this transit.',
+        modelTier: 'free',
       })
     )
   })

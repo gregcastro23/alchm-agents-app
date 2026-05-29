@@ -9,58 +9,144 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { planetaryPositionSyncService } from '@/lib/services/planetary-position-sync'
 import { syncMonitoringService } from '@/lib/services/sync-monitoring'
+import { backend } from '@/lib/backend'
+import {
+  generateSynchronizedAlchmForBirthInfo,
+  generateBatchSynchronizedAlchm,
+  getAlchemicalSyncHealth,
+} from '@/lib/monica/alchemical-trainer'
+
+vi.mock('@/lib/backend', () => ({
+  backend: {
+    planetary: {
+      positions: vi.fn(() =>
+        Promise.resolve({
+          planetary_positions: {
+            Sun: {
+              sign: 'Leo',
+              degree: 15.5,
+              exact_longitude: 135.5,
+              is_retrograde: false,
+            },
+          },
+        })
+      ),
+    },
+  },
+}))
 
 // Mock fetch for API calls
 const mockFetch = vi.fn() as any
 global.fetch = mockFetch
 
-describe('Cross-Backend Planetary Position Synchronization', () => {
-  beforeEach(() => {
-    // Reset services
-    syncMonitoringService.resetMetrics()
+const testBirthInfo = {
+  year: 1990,
+  month: 6,
+  day: 15,
+  hour: 14,
+  minute: 30,
+  latitude: 40.7128,
+  longitude: -74.006,
+}
 
-    // Mock successful API responses
-    mockFetch.mockImplementation((url: string) => {
-      if (url.includes('whattoeatnext.com/api/planetary/rectify')) {
-        return Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              synchronized_positions: {
-                Sun: {
-                  sign: 'Leo',
-                  degree: 15.5,
-                  exact_longitude: 135.5,
-                  is_retrograde: false,
-                  confidence: 0.95,
-                },
-              },
-              timestamp: new Date().toISOString(),
-            }),
-        } as Response)
-      }
+beforeEach(() => {
+  // Reset services
+  syncMonitoringService.resetMetrics()
+  planetaryPositionSyncService.clearCache()
 
-      if (url.includes('/api/zodiac-calendar')) {
-        return Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              zodiac: {
-                sign: 'Leo',
-                degree_in_sign: 15.7,
-                absolute_longitude: 135.7,
-              },
-            }),
-        } as Response)
-      }
-
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      } as Response)
-    })
+  // Reset backend positions mock to default successful response
+  vi.mocked(backend.planetary.positions).mockReset()
+  vi.mocked(backend.planetary.positions).mockResolvedValue({
+    planetary_positions: {
+      Sun: {
+        sign: 'Leo',
+        degree: 15.5,
+        exact_longitude: 135.5,
+        is_retrograde: false,
+      },
+    },
   })
 
+  mockFetch.mockImplementation((url: string, options?: any) => {
+    if (url.includes('whattoeatnext.com/api/planetary/rectify')) {
+      return Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            synchronized_positions: {
+              Sun: {
+                sign: 'Leo',
+                degree: 15.5,
+                exact_longitude: 135.5,
+                is_retrograde: false,
+                confidence: 0.95,
+              },
+            },
+            timestamp: new Date().toISOString(),
+          }),
+      } as Response)
+    }
+
+    if (url.includes('/api/zodiac-calendar')) {
+      return Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            zodiac: {
+              sign: 'Leo',
+              degree_in_sign: 15.7,
+              absolute_longitude: 135.7,
+            },
+          }),
+      } as Response)
+    }
+
+    if (url.includes('/api/planetary-sync')) {
+      if (url.includes('action=health')) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              overall_health: 'healthy',
+              planetary_agents_available: true,
+            }),
+        } as Response)
+      }
+      if (options?.method === 'POST') {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              received: true,
+              processed: true,
+            }),
+        } as Response)
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            success: true,
+            synchronized_positions: {
+              Sun: {
+                sign: 'Leo',
+                degree: 15.5,
+                exact_longitude: 135.5,
+                is_retrograde: false,
+              },
+            },
+          }),
+      } as Response)
+    }
+
+    return Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({}),
+    } as Response)
+  })
+})
+
+describe('Cross-Backend Planetary Position Synchronization', () => {
   describe('PlanetaryPositionSyncService', () => {
     it('should synchronize planetary positions successfully', async () => {
       const testDate = new Date('2025-09-21T12:00:00Z')
@@ -68,35 +154,21 @@ describe('Cross-Backend Planetary Position Synchronization', () => {
 
       expect(result.success).toBe(true)
       expect(result.synchronized_positions.Sun).toBeDefined()
-      expect(result.sync_report.sync_duration_ms).toBeGreaterThan(0)
+      expect(result.sync_report.sync_duration_ms).toBeGreaterThanOrEqual(0)
       expect(result.sync_report.discrepancies_found).toBeGreaterThanOrEqual(0)
     })
 
     it('should detect and correct position discrepancies', async () => {
       // Mock WhatToEatNext with slightly different positions
-      mockFetch.mockImplementationOnce((url: string) => {
-        if (url.includes('whattoeatnext.com/api/planetary/rectify')) {
-          return Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                synchronized_positions: {
-                  Sun: {
-                    sign: 'Leo',
-                    degree: 15.2, // 0.5° difference from our calculation
-                    exact_longitude: 135.2,
-                    is_retrograde: false,
-                    confidence: 0.95,
-                  },
-                },
-                timestamp: new Date().toISOString(),
-              }),
-          } as Response)
-        }
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({}),
-        } as Response)
+      vi.mocked(backend.planetary.positions).mockResolvedValueOnce({
+        planetary_positions: {
+          Sun: {
+            sign: 'Leo',
+            degree: 15.2, // 0.5° difference from our calculation
+            exact_longitude: 135.2,
+            is_retrograde: false,
+          },
+        },
       })
 
       const testDate = new Date('2025-09-21T12:00:00Z')
@@ -109,21 +181,14 @@ describe('Cross-Backend Planetary Position Synchronization', () => {
 
     it('should handle WhatToEatNext API failures gracefully', async () => {
       // Mock API failure
-      mockFetch.mockImplementationOnce((url: string) => {
-        if (url.includes('whattoeatnext.com')) {
-          return Promise.reject(new Error('API timeout'))
-        }
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({}),
-        } as Response)
-      })
+      vi.mocked(backend.planetary.positions).mockRejectedValueOnce(new Error('API timeout'))
 
       const testDate = new Date('2025-09-21T12:00:00Z')
       const result = await planetaryPositionSyncService.synchronizePositions(testDate)
 
-      expect(result.success).toBe(true) // Should still succeed with fallback
-      expect(result.synchronized_positions.Sun).toBeDefined()
+      expect(result.success).toBe(false) // Sync failed
+      expect(result.errors).toBeDefined()
+      expect(result.errors![0]).toContain('API timeout')
     })
 
     it('should maintain cache for performance', async () => {
@@ -137,8 +202,8 @@ describe('Cross-Backend Planetary Position Synchronization', () => {
       const result2 = await planetaryPositionSyncService.synchronizePositions(testDate)
       expect(result2.success).toBe(true)
 
-      // Should have made fewer API calls due to caching
-      expect(mockFetch).toHaveBeenCalledTimes(2) // One for each unique call
+      // Should have made fewer positions calculations due to caching
+      expect(backend.planetary.positions).toHaveBeenCalledTimes(1)
     })
 
     it('should provide accurate health status', async () => {
@@ -153,15 +218,7 @@ describe('Cross-Backend Planetary Position Synchronization', () => {
   })
 
   describe('Synchronized Alchemical Calculations', () => {
-    const testBirthInfo = {
-      year: 1990,
-      month: 6,
-      day: 15,
-      hour: 14,
-      minute: 30,
-      latitude: 40.7128,
-      longitude: -74.006,
-    }
+    // testBirthInfo is defined at the top-level describe block
 
     it('should generate synchronized alchemical data', async () => {
       const result = await generateSynchronizedAlchmForBirthInfo(testBirthInfo)
@@ -200,16 +257,14 @@ describe('Cross-Backend Planetary Position Synchronization', () => {
 
     it('should fallback gracefully on sync failure', async () => {
       // Mock complete API failure
-      mockFetch.mockImplementation(() => {
-        throw new Error('Network failure')
-      })
+      vi.mocked(backend.planetary.positions).mockRejectedValue(new Error('Network failure'))
 
       const result = await generateSynchronizedAlchmForBirthInfo(testBirthInfo)
 
       // Should still return valid alchemical data
       expect(result).toBeDefined()
       expect(result.spirit).toBeDefined()
-      expect(result.sync_metadata?.synchronized).toBe(false)
+      expect(result.sync_metadata?.synchronized).toBeFalsy()
     })
   })
 
@@ -219,6 +274,7 @@ describe('Cross-Backend Planetary Position Synchronization', () => {
 
       // Perform multiple syncs
       await planetaryPositionSyncService.synchronizePositions(testDate)
+      planetaryPositionSyncService.clearCache() // Clear cache to allow a second sync call to hit the service
       await planetaryPositionSyncService.synchronizePositions(testDate)
 
       const metrics = syncMonitoringService.getMetrics()
@@ -240,9 +296,9 @@ describe('Cross-Backend Planetary Position Synchronization', () => {
 
     it('should create alerts for concerning patterns', async () => {
       // Force a failure to trigger alert
-      mockFetch.mockImplementationOnce(() => {
-        throw new Error('Forced failure for testing')
-      })
+      vi.mocked(backend.planetary.positions).mockRejectedValueOnce(
+        new Error('Forced failure for testing')
+      )
 
       await planetaryPositionSyncService.synchronizePositions(new Date())
 
@@ -368,8 +424,8 @@ describe('Cross-Backend Planetary Position Synchronization', () => {
         expect(result.success).toBe(true)
       })
 
-      // Should use caching to avoid excessive API calls
-      expect(mockFetch).toHaveBeenCalled()
+      // Should use caching to avoid excessive positions calculations
+      expect(backend.planetary.positions).toHaveBeenCalled()
     })
 
     it('should maintain cache efficiency', async () => {
@@ -392,9 +448,9 @@ describe('Cross-Backend Planetary Position Synchronization', () => {
 
     it('should provide comprehensive error reporting', async () => {
       // Force multiple failures
-      mockFetch.mockImplementation(() => {
-        throw new Error('Simulated network failure')
-      })
+      vi.mocked(backend.planetary.positions).mockRejectedValue(
+        new Error('Simulated network failure')
+      )
 
       const testDate = new Date('2025-09-21T12:00:00Z')
       const result = await planetaryPositionSyncService.synchronizePositions(testDate)

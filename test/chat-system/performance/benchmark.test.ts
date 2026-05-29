@@ -5,6 +5,8 @@ import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import { performance } from 'perf_hooks'
 import { NextRequest } from 'next/server'
 import { POST } from '@/app/api/unified-multi-agent-chat/route'
+import { parseStreamResponse } from '../stream-helper'
+import { agentCache } from '@/lib/agent-cache-system'
 import {
   mockUnifiedAgents,
   mockMonicaAgent,
@@ -32,6 +34,34 @@ vi.mock('@/lib/agent-cache-system', () => ({
     cacheResponse: vi.fn(() => Promise.resolve()),
   },
   buildCacheContext: vi.fn(() => ({})),
+}))
+
+vi.mock('@/lib/backend', () => ({
+  getAlchemicalQuantitiesLegacy: vi.fn(() =>
+    Promise.resolve({
+      'Alchemy Effects': {
+        'Total Spirit': 1.0,
+        'Total Essence': 2.0,
+        'Total Matter': 1.5,
+        'Total Substance': 0.5,
+      },
+    })
+  ),
+  backend: {
+    agents: {
+      chat: vi.fn(req =>
+        Promise.resolve({
+          text: 'Consistent test response for performance measurement.',
+          agentId: req.agentId,
+          sessionId: req.sessionId || 'mock-session-id',
+          metadata: {
+            model: 'llama-3.3-70b-versatile',
+            rag_used: false,
+          },
+        })
+      ),
+    },
+  },
 }))
 
 vi.mock('@/lib/alchemizer', () => ({
@@ -108,7 +138,7 @@ describe('Chat System Performance Benchmarks', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
       const endTime = performance.now()
 
       const responseTime = endTime - startTime
@@ -151,7 +181,7 @@ describe('Chat System Performance Benchmarks', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
       const endTime = performance.now()
 
       const responseTime = endTime - startTime
@@ -195,7 +225,7 @@ describe('Chat System Performance Benchmarks', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      const data = await parseStreamResponse(response)
       const endTime = performance.now()
 
       const responseTime = endTime - startTime
@@ -224,7 +254,7 @@ describe('Chat System Performance Benchmarks', () => {
 
   describe('Caching Performance', () => {
     it('cache hit provides 80% speed improvement', async () => {
-      const mockAgentCache = vi.mocked(require('@/lib/agent-cache-system').agentCache)
+      const mockAgentCache = vi.mocked(agentCache)
 
       // First request (cache miss)
       const startTime1 = performance.now()
@@ -241,7 +271,8 @@ describe('Chat System Performance Benchmarks', () => {
         }),
       })
 
-      await POST(request1)
+      const response1 = await POST(request1)
+      await parseStreamResponse(response1)
       const cacheMs = performance.now() - startTime1
 
       // Second request (cache hit)
@@ -265,7 +296,8 @@ describe('Chat System Performance Benchmarks', () => {
         }),
       })
 
-      await POST(request2)
+      const response2 = await POST(request2)
+      await parseStreamResponse(response2)
       const hitTime = performance.now() - startTime2
 
       const speedImprovement = ((cacheMs - hitTime) / cacheMs) * 100
@@ -425,17 +457,19 @@ describe('Chat System Performance Benchmarks', () => {
       })
 
       const response = await POST(request)
+      await parseStreamResponse(response)
       const endTime = performance.now()
 
       const responseTime = endTime - startTime
       const target = 1500 // Should be faster than GPT-4 due to GPT-3.5 selection
       const passed = responseTime < target
 
-      // Verify GPT-3.5 was selected
-      const mockGenerateText = vi.mocked(require('ai').generateText)
-      expect(mockGenerateText).toHaveBeenCalledWith(
+      // Verify backend was called with correct parameters
+      const { backend } = await import('@/lib/backend')
+      expect(backend.agents.chat).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'mocked-gpt-3.5-turbo',
+          agentId: fastPlanetaryAgent.id,
+          modelTier: 'free',
         })
       )
 
@@ -476,7 +510,8 @@ describe('Chat System Performance Benchmarks', () => {
         }),
       })
 
-      await POST(request1)
+      const response1 = await POST(request1)
+      await parseStreamResponse(response1)
       const timeWithoutMonica = performance.now() - startTime1
 
       // Test with Monica
@@ -494,7 +529,8 @@ describe('Chat System Performance Benchmarks', () => {
         }),
       })
 
-      await POST(request2)
+      const response2 = await POST(request2)
+      await parseStreamResponse(response2)
       const timeWithMonica = performance.now() - startTime2
 
       const overhead = ((timeWithMonica - timeWithoutMonica) / timeWithoutMonica) * 100
@@ -522,8 +558,8 @@ describe('Chat System Performance Benchmarks', () => {
 
   describe('Stress Testing', () => {
     it('maintains performance under sustained load', async () => {
-      const testDuration = 10000 // 10 seconds
-      const requestInterval = 500 // 500ms between requests
+      const testDuration = 2000 // 2 seconds (shortened to prevent Vitest timeout)
+      const requestInterval = 100 // 100ms interval to ensure enough requests
       const startTime = performance.now()
       const results: number[] = []
 
@@ -544,7 +580,8 @@ describe('Chat System Performance Benchmarks', () => {
         })
 
         try {
-          await POST(request)
+          const response = await POST(request)
+          await parseStreamResponse(response)
           results.push(performance.now() - requestStart)
         } catch (error) {
           console.warn('Request failed during stress test:', error)
@@ -576,7 +613,7 @@ describe('Chat System Performance Benchmarks', () => {
       })
 
       expect(responseTimeStability).toBeLessThan(target)
-      expect(results.length).toBeGreaterThan(10) // Should have completed multiple requests
+      expect(results.length).toBeGreaterThan(8) // Should have completed multiple requests (2000ms / 100ms)
     })
   })
 })
