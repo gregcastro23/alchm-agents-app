@@ -359,7 +359,9 @@ export default function PhilosophersStone({
         try {
           const errJson = JSON.parse(errText)
           if (errJson.error) errorMsg = errJson.error
-        } catch (e) {}
+        } catch {
+          // Non-JSON error body — keep the raw text as the message.
+        }
 
         throw new Error(errorMsg || `Server returned ${response.status}`)
       }

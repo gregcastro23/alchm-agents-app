@@ -783,7 +783,9 @@ export function MonicaOmnipresent() {
   useEffect(() => {
     try {
       localStorage.setItem('additiveOnlyElements', additiveOnly ? 'true' : 'false')
-    } catch {}
+    } catch {
+      // Best-effort persistence — ignore quota / private-mode failures.
+    }
   }, [additiveOnly])
 
   // Minimal feedback sender (frontend API proxy)

@@ -3,8 +3,8 @@
  *
  * The desktop shell is currently vanilla TypeScript (see main.ts), so
  * this hook isn't consumed today. It exists so that when React panels
- * are added — particularly the MCP Status Panel called out in
- * NEXT_SESSION_PROMPT_DESKTOP_MCP.md item 5 — they can subscribe to a
+ * are added — particularly the MCP Status Panel documented in
+ * desktop-shell/README.md — they can subscribe to a
  * client's snapshot via useSyncExternalStore without reinventing
  * boilerplate or risking torn reads.
  *

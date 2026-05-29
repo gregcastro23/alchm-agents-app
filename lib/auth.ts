@@ -22,7 +22,11 @@ export async function auth(): Promise<Session | null> {
         return { user: { id: u.id, name: u.name ?? null, image: u.image ?? null } }
       }
     }
-  } catch {}
+  } catch (err) {
+    // A NextAuth provider/config error shouldn't block login — we fall back to
+    // cookie-based auth below — but surface it so a misconfig isn't invisible.
+    console.warn('[auth] getServerSession failed; falling back to cookie auth', err)
+  }
 
   // Fall back to legacy cookie-based auth (manual login flow)
   try {

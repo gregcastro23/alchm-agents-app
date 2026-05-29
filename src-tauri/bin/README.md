@@ -14,6 +14,24 @@ one matching the build target automatically.
 | `pa-mcp`       | `backend/planetary_agents_mcp_server.py`          | PyInstaller (see `pa-mcp.spec`) |
 | `llama-server` | User-supplied Metal-compiled `llama-cli`          | Drop-in (see below)             |
 
+## Current platform coverage
+
+What is actually checked into this directory today. **The desktop app is
+effectively Apple-Silicon-only right now** — only `aarch64-apple-darwin` has a
+complete sidecar set, so a universal/Intel DMG cannot be produced yet.
+
+| Sidecar        | macOS arm64 (aarch64) | macOS x86_64 (Intel) | Windows | Linux |
+| -------------- | :-------------------: | :------------------: | :-----: | :---: |
+| `orchestrator` |          ✅           |          ❌          |   ❌    |  ❌   |
+| `alchm-mcp`    |          ✅           |          ❌          |   ❌    |  ❌   |
+| `pa-mcp`       |          ✅           |          ✅          |   ❌    |  ❌   |
+| `llama-server` |          ✅           |          ❌          |   ❌    |  ❌   |
+
+To extend coverage, build the missing triples per the sections below and commit
+them here — Intel-Mac support needs `orchestrator` + `alchm-mcp` + `llama-server`
+for `x86_64-apple-darwin`; Windows/Linux need the full set per target. Wiring the
+GitHub Actions matrix (Path A) is the durable way to keep all triples current.
+
 ## Build commands
 
 The driver script is `scripts/build-sidecar.sh`.

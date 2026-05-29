@@ -225,6 +225,8 @@ Planetary Agents now participates in a two-layer MCP network:
 
 FastAPI consumes the Alchm server through `backend/alchm_mcp.py`, appending deterministic tool output to the chat reference block after RAG. External MCP clients can launch the Planetary Agents server directly for persona/cognitive tools.
 
+**MCP telemetry — cross-repo dependency, no in-repo UI consumer (by design, for now).** The backend exposes operator telemetry at `/api/admin/mcp-summary`, `/api/admin/mcp-status`, and `/api/admin/alchm-mcp-errors` (all gated by `INTERNAL_API_SECRET`). These are consumed by **WTEN's external admin panel**, not by this repo's `/admin` console — there is **no Next.js proxy route** for them today. To add an in-repo tile: create a secret-gated proxy route under `app/api/admin/` and a tab/panel in `AdminOperatorConsole.tsx` (which already has the tab + `MetricPanel`/`Panel` pattern). It depends on `INTERNAL_API_SECRET` being set and matched on the backend (see deploy ops), so build it after that secret is in place.
+
 ### TypeScript Errors
 
 `next.config.mjs` sets `typescript: { ignoreBuildErrors: true }` — production builds succeed despite TS errors. The repo has a tracked linting campaign (`bun run linting-campaign:*` scripts) for gradual resolution. Do not let this become an excuse to introduce new type errors.

@@ -30,7 +30,10 @@ export async function POST(req: Request) {
       galileoLogger.endSpan(spanId, { ok: true, id: created.id }, 'success')
       galileoLogger.endTrace()
       await galileoLogger.endSession()
-    } catch {}
+    } catch (e) {
+      // Galileo tracing is best-effort; the session row is already persisted.
+      console.debug('[ps-session] galileo trace failed (non-fatal)', e)
+    }
 
     return NextResponse.json({ id: created.id })
   } catch (error) {

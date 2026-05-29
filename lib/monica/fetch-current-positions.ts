@@ -141,7 +141,9 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
             const label = getEssentialDignityLabel(planet.planet, sign)
             ;(transformedData as any)['Dignities'] = (transformedData as any)['Dignities'] || {}
             ;(transformedData as any)['Dignities'][planet.planet] = label
-          } catch {}
+          } catch {
+            // Dignity labels are optional UI decoration — skip on lookup failure.
+          }
         }
       })
     }
@@ -165,7 +167,9 @@ async function performFetch(signal?: AbortSignal): Promise<AlchemizeApiResponse 
             if (pos?.sign) dignities[planet] = getEssentialDignityLabel(planet, pos.sign)
           })
           ;(transformedData as any)['Dignities'] = dignities
-        } catch {}
+        } catch {
+          // Dignity labels are optional UI decoration — skip on lookup failure.
+        }
       }
     }
 

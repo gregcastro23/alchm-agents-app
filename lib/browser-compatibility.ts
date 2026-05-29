@@ -83,7 +83,9 @@ export const detectBrowser = (): BrowserInfo => {
   let hasWebGL = false
   try {
     hasWebGL = !!(window.WebGLRenderingContext && canvas.getContext('webgl'))
-  } catch (e) {}
+  } catch {
+    // Context creation can throw on blocked/headless GPUs — treat as unsupported.
+  }
   if (!hasWebGL) missingFeatures.push('WebGL')
 
   // Minimum version requirements

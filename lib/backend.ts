@@ -283,7 +283,9 @@ async function request<T>(
     try {
       const body = await res.text()
       msg = body || msg
-    } catch {}
+    } catch {
+      // Body unreadable — statusText is already set as the fallback message.
+    }
     throw new BackendError(res.status, path, msg)
   }
 

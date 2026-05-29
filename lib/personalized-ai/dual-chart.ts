@@ -11,6 +11,10 @@ import type {
 } from '../types/personalized-ai'
 
 import { alchemize } from '../alchemizer'
+import {
+  dateToJulianDay,
+  calculateEnhancedPlanetPosition,
+} from '../enhanced-astronomical-calculator'
 
 // Aspect configurations
 const ASPECT_ORBS = {
@@ -79,9 +83,11 @@ export async function generateCurrentMomentChart(): Promise<CurrentMomentChart> 
     name: 'Current Moment',
   }
 
-  // Generate horoscope data for current moment
-  // This would normally call an astrology API
-  const horoscopeData = await generateMockHoroscopeData(currentMomentInfo)
+  // Real geocentric positions for the current moment. Falls back to static
+  // positions only if the ephemeris calc throws — and flags the chart as
+  // degraded (dataSource) rather than silently substituting mock data.
+  const { planets: currentPlanets, source } = await generateCurrentMomentHoroscope()
+  const horoscopeData = { planets: currentPlanets }
 
   const alchemicalData = await alchemize(currentMomentInfo, horoscopeData)
 
@@ -98,6 +104,49 @@ export async function generateCurrentMomentChart(): Promise<CurrentMomentChart> 
       NightEssence: alchemicalData.NightEssence || 0,
     },
     aspects: calculateAspects(horoscopeData),
+    dataSource: source,
+  }
+}
+
+const CURRENT_MOMENT_PLANETS = [
+  'Sun',
+  'Moon',
+  'Mercury',
+  'Venus',
+  'Mars',
+  'Jupiter',
+  'Saturn',
+  'Uranus',
+  'Neptune',
+  'Pluto',
+]
+
+/**
+ * Compute real geocentric planet positions for "now" via the VSOP87 calculator.
+ * Planet ecliptic longitudes are location-independent (only the ascendant needs
+ * coordinates, which the current-moment chart doesn't use), so no location is
+ * required. On calc failure we fall back to static positions but say so loudly
+ * and mark the result `fallback`, instead of silently returning mock data.
+ */
+async function generateCurrentMomentHoroscope(): Promise<{
+  planets: Record<string, { sign: string; degree: number }>
+  source: 'live' | 'fallback'
+}> {
+  try {
+    const jd = dateToJulianDay(new Date())
+    const planets: Record<string, { sign: string; degree: number }> = {}
+    for (const name of CURRENT_MOMENT_PLANETS) {
+      const pos = calculateEnhancedPlanetPosition(name, jd)
+      planets[name] = { sign: pos.sign, degree: pos.signDegree }
+    }
+    return { planets, source: 'live' }
+  } catch (err) {
+    console.warn(
+      '[dual-chart] live planetary calculation failed; using static fallback positions (chart marked degraded)',
+      err
+    )
+    const mock = await generateMockHoroscopeData()
+    return { planets: mock.planets, source: 'fallback' }
   }
 }
 
@@ -468,8 +517,9 @@ function calculatePersonalityAdjustments(
   return adjustments
 }
 
-// Mock function for generating horoscope data (replace with actual API)
-async function generateMockHoroscopeData(info: any): Promise<any> {
+// Static fallback positions — used only when the live ephemeris calc fails
+// (see generateCurrentMomentHoroscope, which flags such charts as `fallback`).
+async function generateMockHoroscopeData(): Promise<any> {
   return {
     planets: {
       Sun: { sign: 'Aries', degree: 15 },
