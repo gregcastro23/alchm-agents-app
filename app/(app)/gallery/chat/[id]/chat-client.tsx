@@ -174,9 +174,9 @@ export default function HistoricalAgentChatPage() {
         }),
       })
 
-      const data = await response.json()
-
+      // Insufficient-token (402) and other non-OK responses return JSON, not a stream.
       if (response.status === 402) {
+        const data = await response.json()
         const errorMsg: Message = {
           role: 'agent',
           content: data.error || 'Insufficient tokens to consult this agent.',
@@ -188,66 +188,149 @@ export default function HistoricalAgentChatPage() {
         return
       }
 
-      if (response.ok && data.responses && data.responses.length > 0) {
-        const agentResponse = data.responses[0]
-
-        // Extract RAG sources if available
-        const ragSources: RAGSource[] | undefined = agentResponse.ragMetadata?.sources?.map(
-          (source: any) => ({
-            id: source.id || `source-${Math.random()}`,
-            agentId: agent.id,
-            agentName: agent.name,
-            title: source.title || 'Historical Knowledge',
-            content: source.content || '',
-            relevanceScore: source.score || 0,
-            metadata: source.metadata,
-          })
-        )
-
-        // Log analytics and get query ID for feedback
-        const totalTime = Date.now() - queryStartTime
-        const queryId = ragAnalytics.logQuery(
-          {
-            agentId: agent.id,
-            agentName: agent.name,
-            query: userMessage.content,
-            queryLength: userMessage.content.length,
-            ragUsed: ragEnabled && (ragSources?.length || 0) > 0,
-            sourcesRetrieved: ragSources?.length || 0,
-            retrievalTime: agentResponse.ragMetadata?.retrievalTime || 0,
-            generationTime: agentResponse.ragMetadata?.generationTime,
-            totalTime,
-            success: true,
-            relevanceScores: ragSources?.map(s => s.relevanceScore) || [],
-            averageRelevance:
-              ragSources && ragSources.length > 0
-                ? ragSources.reduce((sum, s) => sum + s.relevanceScore, 0) / ragSources.length
-                : 0,
-            sessionId,
-          },
-          // Pass sources for database persistence
-          ragSources?.map(source => ({
-            documentId: (source.metadata as any)?.documentId || source.id,
-            agentId: source.agentId,
-            agentName: source.agentName,
-            title: source.title,
-            content: source.content,
-            relevanceScore: source.relevanceScore,
-            metadata: source.metadata,
-          }))
-        )
-
-        const agentMessage: Message = {
-          role: 'agent',
-          content: agentResponse.content || agentResponse.response || '', // Support both property names
-          timestamp: new Date(),
-          ragSources,
-          queryId, // Attach queryId for feedback linking
-        }
-        setMessages(prev => [...prev, agentMessage])
-      } else {
-        throw new Error(data.error || 'Failed to get response')
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}) as any)
+        throw new Error(data.error || data.details || 'Failed to get response')
       }
+
+      if (!response.body) throw new Error('ReadableStream not supported')
+
+      // The endpoint streams Server-Sent Events: agent_start / text / agent_complete / done / error.
+      // (This page chats with a single agent, so we track one streaming message.)
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let streamedContent = ''
+      let finalContent = ''
+      let ragSources: RAGSource[] | undefined
+      let retrievalTime = 0
+      let generationTime: number | undefined
+      let placeholderAdded = false
+      let streamError: string | null = null
+
+      const ensureAgentMessage = () => {
+        if (placeholderAdded) return
+        placeholderAdded = true
+        setMessages(prev => [...prev, { role: 'agent', content: '', timestamp: new Date() }])
+      }
+
+      const setAgentContent = (content: string) => {
+        setMessages(prev => {
+          const next = [...prev]
+          for (let i = next.length - 1; i >= 0; i--) {
+            if (next[i].role === 'agent') {
+              next[i] = { ...next[i], content }
+              break
+            }
+          }
+          return next
+        })
+      }
+
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const blocks = buffer.split('\n\n')
+        buffer = blocks.pop() || '' // keep the incomplete trailing chunk
+
+        for (const block of blocks) {
+          const lines = block.split('\n')
+          const eventLine = lines.find(l => l.startsWith('event: '))
+          const dataLine = lines.find(l => l.startsWith('data: '))
+          if (!eventLine || !dataLine) continue
+
+          const event = eventLine.slice(7).trim()
+          let parsed: any
+          try {
+            parsed = JSON.parse(dataLine.slice(6).trim())
+          } catch {
+            continue
+          }
+
+          // Ignore stray events addressed to a different agent.
+          if (parsed.agentId && parsed.agentId !== agent.id) continue
+
+          if (event === 'agent_start') {
+            ensureAgentMessage()
+          } else if (event === 'text') {
+            ensureAgentMessage()
+            streamedContent += parsed.text || ''
+            setAgentContent(streamedContent)
+          } else if (event === 'agent_complete') {
+            finalContent = parsed.content || streamedContent
+            generationTime = parsed.processingTime
+            const sources = parsed.ragMetadata?.sources
+            if (Array.isArray(sources) && sources.length > 0) {
+              retrievalTime = parsed.ragMetadata?.retrievalTime || 0
+              ragSources = sources.map((source: any) => ({
+                id: source.id || `source-${Math.random()}`,
+                agentId: agent.id,
+                agentName: agent.name,
+                title: source.title || 'Historical Knowledge',
+                content: source.content || '',
+                relevanceScore: source.score || 0,
+                metadata: source.metadata,
+              }))
+            }
+            ensureAgentMessage()
+            setAgentContent(finalContent)
+          } else if (event === 'error') {
+            streamError = parsed.error || 'Unknown error'
+          }
+        }
+      }
+
+      if (streamError) throw new Error(streamError)
+
+      const responseContent = finalContent || streamedContent
+      if (!responseContent.trim()) throw new Error('No response received from agent')
+
+      // Log analytics and get query ID for feedback
+      const totalTime = Date.now() - queryStartTime
+      const queryId = ragAnalytics.logQuery(
+        {
+          agentId: agent.id,
+          agentName: agent.name,
+          query: userMessage.content,
+          queryLength: userMessage.content.length,
+          ragUsed: ragEnabled && (ragSources?.length || 0) > 0,
+          sourcesRetrieved: ragSources?.length || 0,
+          retrievalTime,
+          generationTime,
+          totalTime,
+          success: true,
+          relevanceScores: ragSources?.map(s => s.relevanceScore) || [],
+          averageRelevance:
+            ragSources && ragSources.length > 0
+              ? ragSources.reduce((sum, s) => sum + s.relevanceScore, 0) / ragSources.length
+              : 0,
+          sessionId,
+        },
+        // Pass sources for database persistence
+        ragSources?.map(source => ({
+          documentId: (source.metadata as any)?.documentId || source.id,
+          agentId: source.agentId,
+          agentName: source.agentName,
+          title: source.title,
+          content: source.content,
+          relevanceScore: source.relevanceScore,
+          metadata: source.metadata,
+        }))
+      )
+
+      // Attach RAG sources + queryId to the streamed message for citations/feedback linking.
+      setMessages(prev => {
+        const next = [...prev]
+        for (let i = next.length - 1; i >= 0; i--) {
+          if (next[i].role === 'agent') {
+            next[i] = { ...next[i], content: responseContent, ragSources, queryId }
+            break
+          }
+        }
+        return next
+      })
     } catch (error) {
       const errorMessage: Message = {
         role: 'agent',

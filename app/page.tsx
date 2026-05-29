@@ -43,6 +43,7 @@ import {
 } from '@/lib/sacred-7-stats'
 import { ALCHM_DESKTOP_DOWNLOAD_LABEL, openDesktopAppDownload } from '@/lib/desktop-download'
 import { buildKitchenSignInUrl } from '@/lib/kitchen-signin'
+import TopAgentsOfTheMoment from '@/components/landing/top-agents-of-the-moment'
 
 // ============================================================================
 // CONSCIOUSNESS PARAMETER DEFINITIONS
@@ -284,7 +285,9 @@ export default function LandingPage() {
         'Aquarius',
         'Pisces',
       ]
-      const idx = signOrder.indexOf(p.sign)
+      // Backend returns lowercase sign names ("gemini"); normalize to match.
+      const sign = p.sign ? p.sign.charAt(0).toUpperCase() + p.sign.slice(1) : p.sign
+      const idx = signOrder.indexOf(sign)
       return (idx >= 0 ? idx * 30 : 0) + (p.degree || 0)
     }
 
@@ -656,6 +659,14 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      {/* ================================================================ */}
+      {/* TOP AGENTS OF THE MOMENT */}
+      {/* ================================================================ */}
+      <TopAgentsOfTheMoment
+        positions={planetaryData.planetaryPositions}
+        loading={planetaryData.loading}
+      />
 
       {/* ================================================================ */}
       {/* CTA SECTION */}

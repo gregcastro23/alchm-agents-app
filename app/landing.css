@@ -1102,3 +1102,225 @@
   box-shadow: 0 0 25px rgba(139, 92, 246, 0.25);
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
 }
+
+/* ---------- Top Agents of the Moment ---------- */
+.landing-moment-grid {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 900px) {
+  .landing-moment-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.landing-moment-col {
+  padding: 1.75rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-moment-col-head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.landing-moment-col-icon {
+  flex: 0 0 auto;
+  width: 2.4rem;
+  height: 2.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.landing-moment-col-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.landing-moment-col-sub {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 0.15rem;
+}
+
+.landing-moment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex: 1;
+}
+
+.landing-moment-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.landing-moment-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(139, 92, 246, 0.35);
+  transform: translateY(-2px);
+}
+
+.landing-moment-glyph {
+  flex: 0 0 auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 1.35rem;
+  line-height: 1;
+  border: 1px solid;
+}
+
+.landing-moment-rank {
+  flex: 0 0 auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f472b6;
+  background: rgba(244, 114, 182, 0.1);
+  border: 1px solid rgba(244, 114, 182, 0.33);
+}
+
+.landing-moment-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.landing-moment-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.landing-moment-name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.landing-moment-chip {
+  flex: 0 0 auto;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.12rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid;
+}
+
+.landing-moment-score {
+  flex: 0 0 auto;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f472b6;
+}
+
+.landing-moment-score-unit {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(244, 114, 182, 0.6);
+  margin-left: 1px;
+}
+
+.landing-moment-meta {
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.42);
+  margin: 0.2rem 0 0.45rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+}
+
+.landing-moment-bar {
+  height: 4px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.landing-moment-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.landing-moment-bar-pink {
+  background: linear-gradient(90deg, #a855f7, #f472b6);
+}
+
+.landing-moment-skeleton {
+  height: 4rem;
+  border-radius: 14px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(139, 92, 246, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: landing-moment-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes landing-moment-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.landing-moment-empty {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  padding: 1.5rem 0.5rem;
+}
+
+.landing-moment-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1.1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(168, 85, 247, 0.9);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.landing-moment-cta:hover {
+  color: #c084fc;
+}

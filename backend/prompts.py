@@ -122,6 +122,14 @@ def build_monica_prompt(context: Optional[Dict[str, Any]] = None) -> str:
 def _bullet_list(items, limit=None):
     if not items:
         return ""
+    if isinstance(items, str):
+        items = [items]
+    elif isinstance(items, dict):
+        # Some agents persist traits/beliefs as a JSON object instead of a list.
+        # Render "key: value" so slicing below operates on a real list.
+        items = [f"{key}: {value}" if value else str(key) for key, value in items.items()]
+    elif not isinstance(items, (list, tuple)):
+        items = list(items)
     seq = items[:limit] if limit else items
     return "\n".join(f"- {item}" for item in seq if item)
 
