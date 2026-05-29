@@ -17,10 +17,23 @@
  * In Client Components, wrap in a Server Action.
  */
 
-const BACKEND_URL =
+// The frontend talks to TWO backends and a single base URL cannot serve both:
+//   • Planetary Agents Core (api.agents.alchm.kitchen) — chat, agents, moment-
+//     recommendations. The kitchen backend has NO /api/chat → chat 404s there.
+//   • alchm.kitchen / WhatToEatNext (whattoeatnext-production.up.railway.app) —
+//     culinary catalog, alchemize, astrology, groups, user/onboarding, images.
+// Alchemical/planetary endpoints exist on both; `request` defaults to the
+// kitchen backend to preserve existing behavior, and `agentRequest` overrides
+// the base for the agents domain. Cross-site sync is separate (lib/alchm-*).
+// NOTE: the `api.alchm.kitchen` hostname does NOT resolve publicly — use the
+// Railway host below (verified to serve /health and /api/v1/cuisines).
+const AGENTS_BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ||
   process.env.BACKEND_URL ||
-  'https://whattoeatnext-production.up.railway.app'
+  'https://api.agents.alchm.kitchen'
+
+const KITCHEN_BACKEND_URL =
+  process.env.NEXT_PUBLIC_WTEN_BACKEND_URL || 'https://whattoeatnext-production.up.railway.app'
 
 const INTERNAL_API_SECRET =
   process.env.INTERNAL_API_SECRET || '882133EA-3D06-4DF2-A63C-F4114AB4EFBC'
@@ -221,17 +234,22 @@ class BackendError extends Error {
   }
 }
 
-async function request<T>(path: string, init: RequestInit & { auth?: boolean } = {}): Promise<T> {
+async function request<T>(
+  path: string,
+  init: RequestInit & { auth?: boolean; baseUrl?: string } = {}
+): Promise<T> {
   const {
     auth,
     headers,
     signal: callerSignal,
+    baseUrl,
     ...rest
   } = init as RequestInit & {
     auth?: boolean
     signal?: AbortSignal
+    baseUrl?: string
   }
-  const url = `${BACKEND_URL}${path}`
+  const url = `${baseUrl || KITCHEN_BACKEND_URL}${path}`
 
   if (auth !== false && !INTERNAL_API_SECRET) {
     throw new BackendError(500, path, 'INTERNAL_API_SECRET is not configured')
@@ -270,6 +288,15 @@ async function request<T>(path: string, init: RequestInit & { auth?: boolean } =
   }
 
   return (await res.json()) as T
+}
+
+/**
+ * Same as `request`, but targets the Planetary Agents backend. Use for the
+ * agents / chat / moment-recommendations domain; everything else stays on the
+ * kitchen backend (the `request` default).
+ */
+function agentRequest<T>(path: string, init: RequestInit & { auth?: boolean } = {}): Promise<T> {
+  return request<T>(path, { ...init, baseUrl: AGENTS_BACKEND_URL })
 }
 
 // ============================================================================
@@ -485,29 +512,29 @@ export const backend = {
       const q = new URLSearchParams()
       if (params.skip !== undefined) q.set('skip', String(params.skip))
       if (params.limit !== undefined) q.set('limit', String(params.limit))
-      return request<any[]>('/api/agents?' + q.toString(), { method: 'GET' })
+      return agentRequest<any[]>('/api/agents?' + q.toString(), { method: 'GET' })
     },
 
     /** Get a specific agent by ID */
-    get: (agentId: string) => request<any>(`/api/agents/${agentId}`, { method: 'GET' }),
+    get: (agentId: string) => agentRequest<any>(`/api/agents/${agentId}`, { method: 'GET' }),
 
     /** Create a new agent */
     create: (agent: any) =>
-      request<any>('/api/agents', {
+      agentRequest<any>('/api/agents', {
         method: 'POST',
         body: JSON.stringify(agent),
       }),
 
     /** Update mutable fields on an existing agent. See schemas.AgentUpdate for the allowed shape. */
     update: (agentId: string, patch: Record<string, unknown>) =>
-      request<any>(`/api/agents/${agentId}`, {
+      agentRequest<any>(`/api/agents/${agentId}`, {
         method: 'PUT',
         body: JSON.stringify(patch),
       }),
 
     /** Permanently delete an agent. ChromaDB chunks must be invalidated separately. */
     delete: (agentId: string) =>
-      request<{ success: boolean; agentId: string }>(`/api/agents/${agentId}`, {
+      agentRequest<{ success: boolean; agentId: string }>(`/api/agents/${agentId}`, {
         method: 'DELETE',
       }),
 
@@ -517,7 +544,7 @@ export const backend = {
      * with the `/api/agents/{agent_id}` greedy match on the Python side.
      */
     stats: () =>
-      request<{
+      agentRequest<{
         total: number
         byEra: Record<string, number>
         byConsciousnessLevel: Record<string, number>
@@ -529,7 +556,7 @@ export const backend = {
      */
     search: (query: string, limit = 25) => {
       const q = new URLSearchParams({ q: query, limit: String(limit) })
-      return request<{
+      return agentRequest<{
         query: string
         count: number
         agents: Array<{
@@ -566,20 +593,23 @@ export const backend = {
       /** Preferred model tier. Server default is `free` (Groq → Cerebras → Gemini → OpenRouter → OpenAI last-ditch). */
       modelTier?: 'free' | 'cheap_fast' | 'primary' | 'reflective'
     }) =>
-      request<{ text: string; agentId: string; sessionId: string; metadata: any }>('/api/chat', {
-        method: 'POST',
-        body: JSON.stringify(req),
-        auth: false,
-      }),
+      agentRequest<{ text: string; agentId: string; sessionId: string; metadata: any }>(
+        '/api/chat',
+        {
+          method: 'POST',
+          body: JSON.stringify(req),
+          auth: false,
+        }
+      ),
   },
   moment: {
     recommendations: (limit: number = 5) =>
-      request<{ recommendations: any[]; summary: string }>(
+      agentRequest<{ recommendations: any[]; summary: string }>(
         `/api/moment-recommendations?limit=${limit}`,
         { method: 'GET' }
       ),
     detailed: (agentIds: string[], alchmData: any, currentPlanets: any) =>
-      request<{ scores: any[] }>('/api/moment-recommendations', {
+      agentRequest<{ scores: any[] }>('/api/moment-recommendations', {
         method: 'POST',
         body: JSON.stringify({ agentIds, alchmData, currentPlanets }),
       }),
