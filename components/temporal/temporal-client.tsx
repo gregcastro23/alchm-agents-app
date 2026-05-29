@@ -47,8 +47,9 @@ async function fetchAlchmizeForBirth(birth: {
 }
 
 async function fetchWheelForBirth(birth: any): Promise<{ svg?: string; imageUrl?: string }> {
+  // Chart wheel imagery is WTEN-served — use the WTEN var, not the PA agents backend.
   const backendUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL || 'https://whattoeatnext-production.up.railway.app'
+    process.env.NEXT_PUBLIC_WTEN_BACKEND_URL || 'https://whattoeatnext-production.up.railway.app'
   const params = new URLSearchParams({
     year: String(birth.year),
     month: String(birth.month + 1),

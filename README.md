@@ -31,7 +31,7 @@ Kinetics feature flags:
 Run:
 
 ```
-yarn dev
+bun dev
 ```
 
 # Planetary Agents - ✅ Production Ready
@@ -67,7 +67,7 @@ Planetary Agents is the most advanced consciousness crafting platform, combining
 - **Accessibility**: WCAG 2.1 AA compliance with ARIA labels, keyboard navigation, and screen reader support
 - **Bundle Optimization**: 20-30% size reduction through component deduplication
 
-See [BETA_OPTIMIZATION_SUMMARY.md](BETA_OPTIMIZATION_SUMMARY.md) for complete details.
+See [BETA_OPTIMIZATION_SUMMARY.md](docs/archive/BETA_OPTIMIZATION_SUMMARY.md) for complete details.
 
 ## 🚀 Features
 
@@ -211,7 +211,7 @@ Get detailed interpretations of astrological charts:
 - **Planetary Calculations**: Unified PlanetaryPositionsService with multi-level fallback hierarchy
 - **Agent Creation**: Chart synthesis engine with element-based personality generation
 - **Package Management**: Yarn 4.0.0 (migrated from npm September 21, 2025)
-- **Testing Framework**: Vitest 3.2.4 with comprehensive yarn-based test suite (25 new tests added)
+- **Testing Framework**: Vitest 3.2.4 with comprehensive bun-based test suite (25 new tests added)
 - **Production Status**: ✅ Fully stable, zero critical errors, comprehensive fallback systems
 
 ## 🧪 Testing System (Yarn-Based)
@@ -231,51 +231,48 @@ Get detailed interpretations of astrological charts:
 
 ```bash
 # Comprehensive Testing
-yarn test:chat                    # Run complete test suite
-yarn test:chat:unit              # Unit tests for chat components
-yarn test:chat:integration       # API integration tests
-yarn test:chat:performance       # Performance benchmarks
-yarn test:chat:coverage          # Coverage report generation
+bun run test:chat                    # Run complete test suite
+bun run test:chat:unit               # Unit tests for chat components
+bun run test:chat:integration        # API integration tests
+bun run test:chat:performance        # Performance benchmarks
+bun run test:chat:coverage           # Coverage report generation
 
 # Individual Component Testing
-yarn test:historical             # Historical Council Chat tests
-yarn test:planetary              # Planetary Wisdom Chat tests
-yarn test:laboratory             # Consciousness Laboratory Chat tests
+bun run test:historical              # Historical Council Chat tests
+bun run test:planetary               # Planetary Wisdom Chat tests
+bun run test:laboratory              # Consciousness Laboratory Chat tests
 
 # Development & CI/CD
-yarn test:chat:watch             # Watch mode for development
-yarn test:chat:clean             # Clean test artifacts
-yarn test:ci:chat                # CI/CD pipeline testing
-yarn test:chat:report            # Display latest test summary
+bun run test:chat:watch              # Watch mode for development
+bun run test:chat:clean              # Clean test artifacts
+bun run test:ci:chat                 # CI/CD pipeline testing
+bun run test:chat:report             # Display latest test summary
 ```
 
 ## 📦 Development Guidelines
 
 ### Yarn and NPX Usage
 
-This project uses **Yarn exclusively** for package management. All scripts and commands should use Yarn:
+This project uses **Bun exclusively** for package management (`packageManager: bun@1.3.13`). Yarn fails with a Corepack mismatch on this repo and npm triggers strict-peer warnings — use Bun for installs, scripts, and the dev server:
 
 ```bash
 # ✅ Correct usage
-yarn install          # Install dependencies
-yarn dev             # Start development server
-yarn build           # Build for production
-yarn test            # Run tests
-npx tsx script.ts    # Execute TypeScript files
+bun install              # Install dependencies
+bun dev                  # Start development server
+bun run build            # Build for production
+bun run test:chat        # Run the chat test suite
+bun run scripts/foo.ts   # Execute TypeScript files (bunx tsx is broken in this env)
 
-# ❌ Avoid npm commands
-npm install          # Don't use npm
-npm run dev          # Don't use npm run
-node script.js       # Use npx tsx for TypeScript files
+# ❌ Avoid npm / yarn
+npm install              # Don't use npm
+yarn install             # Don't use yarn (Corepack mismatch)
 ```
 
 ### Package Management Rules
 
-- **Use Yarn 4.x** for all dependency management
-- **Use `npx tsx`** for executing TypeScript files in scripts
-- **Never use direct `node` calls** for TypeScript execution
-- **Keep `yarn.lock` synchronized** across all environments
-- **Use `yarn why <package>`** to audit dependencies
+- **Use Bun 1.3.x** for all dependency management
+- **Use `bun run scripts/<file>.ts`** for executing TypeScript files (`bunx tsx` is currently broken in this env)
+- **Keep `bun.lock` synchronized** across all environments
 
 ### Full-Stack Development
 
@@ -284,8 +281,8 @@ node script.js       # Use npx tsx for TypeScript files
 make full-stack-dev
 
 # Or manually:
-yarn dev                    # Frontend (port 3000)
-cd backend && yarn dev     # Backend (port 8000)
+bun dev                                              # Frontend (port 3000)
+cd backend && uvicorn main:app --reload --port 8000  # Backend (FastAPI)
 ```
 
 ### MCP Servers
@@ -339,13 +336,13 @@ cd planetary-agents
 2. Install dependencies:
 
 ```bash
-yarn install
+bun install
 ```
 
 3. Run the development server:
 
 ```bash
-yarn dev
+bun dev
 ```
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -361,7 +358,7 @@ This application leverages the latest Claude 3.5 models for enhanced astrologica
 - **200K Context Window**: Process entire birth charts and comprehensive planetary data
 - **Enhanced Reasoning**: More accurate astrological calculations and interpretations
 
-For detailed information about the Claude upgrade, see [CLAUDE_UPGRADE_GUIDE.md](./CLAUDE_UPGRADE_GUIDE.md).
+For detailed information about the Claude upgrade, see [CLAUDE_UPGRADE_GUIDE.md](docs/archive/CLAUDE_UPGRADE_GUIDE.md).
 
 ## 🌟 Usage
 

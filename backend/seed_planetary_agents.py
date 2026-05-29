@@ -6,7 +6,6 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import database
-import models
 import crud
 import schemas
 import utils

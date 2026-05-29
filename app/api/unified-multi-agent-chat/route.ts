@@ -34,6 +34,8 @@ import {
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth-options'
 import { EconomyService } from '@/lib/services/economyService'
+import { getHistoricalAgent, getHistoricalAgentByName } from '@/lib/agents/historical'
+import { unifiedAgentFactory } from '@/lib/unified-agent-factory'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -93,14 +95,42 @@ interface AgentStatsWithSacred7 {
   sacred7Stats?: Sacred7Stats
 }
 
+/**
+ * Rehydrate historical agents that arrive without their CraftedAgent payload.
+ *
+ * Lightweight clients (notably the gallery single-agent chat at
+ * app/(app)/gallery/chat/[id]) post only { id, name, type:'historical' }. Without
+ * `historicalData`, generateHistoricalAgentPrompt bails to generateGenericAgentPrompt —
+ * a 5-line placeholder prompt — which is then sent to the backend as a verbatim
+ * systemPromptOverride, so the rich persona never engages on either side. Looking the
+ * agent up in the canonical HISTORICAL_AGENTS source and running it through the factory
+ * restores the persona-first prompt. Unknown ids are passed through untouched.
+ */
+function hydrateHistoricalAgents(agents: UnifiedAgent[]): UnifiedAgent[] {
+  return agents.map(agent => {
+    if (agent?.type === 'historical' && !agent.historicalData) {
+      const crafted =
+        getHistoricalAgent(agent.id) ||
+        (agent.name ? getHistoricalAgentByName(agent.name) : undefined)
+      if (crafted) return unifiedAgentFactory.createFromHistorical(crafted)
+    }
+    return agent
+  })
+}
+
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
 
   try {
     const body: UnifiedChatRequest = await request.json()
-    const { agents, message, context } = body
+    const { agents: requestedAgents, message, context } = body
 
-    if (!message || !agents || !Array.isArray(agents) || agents.length === 0) {
+    if (
+      !message ||
+      !requestedAgents ||
+      !Array.isArray(requestedAgents) ||
+      requestedAgents.length === 0
+    ) {
       return NextResponse.json(
         {
           error: 'Message and agents array are required',
@@ -108,6 +138,12 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Rehydrate lightweight historical agents from the canonical source. The gallery
+    // single-agent chat posts only { id, name, type:'historical' }; without historicalData
+    // generateHistoricalAgentPrompt falls back to a near-empty generic prompt (which the
+    // backend then uses verbatim), flattening the persona. See hydrateHistoricalAgents.
+    const agents = hydrateHistoricalAgents(requestedAgents)
 
     // Generate session ID for observability tracking
     const sessionId = uuidv4()

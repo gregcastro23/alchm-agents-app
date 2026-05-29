@@ -8,8 +8,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import database
 import models
-import crud
-import schemas
 import utils
 
 PHASES = ["New Moon", "Waxing Crescent", "First Quarter", "Waxing Gibbous", "Full Moon", "Waning Gibbous", "Last Quarter", "Waning Crescent", "Dark Moon"]

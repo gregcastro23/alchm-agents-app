@@ -37,7 +37,7 @@ export { ALBERT_EINSTEIN } from './albert-einstein'
 export { ISAAC_ASIMOV } from './isaac-asimov'
 
 // Contemporary agents
-export { GREG_CASTRO } from './greg-castro' // Temporarily disabled due to syntax errors
+export { GREG_CASTRO } from './greg-castro'
 
 // Additional Renaissance agents
 export { RUMI } from './rumi'

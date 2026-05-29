@@ -215,7 +215,8 @@ export async function POST(req: NextRequest) {
       try {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
         const startTime = Date.now()
-        const response = await fetch(`${backendUrl}/api/health`, {
+        // PA backend exposes /health (not /api/health) — see backend/main.py.
+        const response = await fetch(`${backendUrl}/health`, {
           signal: AbortSignal.timeout(5000),
         })
         const responseTime = Date.now() - startTime

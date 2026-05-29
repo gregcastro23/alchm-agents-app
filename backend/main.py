@@ -100,7 +100,20 @@ app.add_middleware(
 
 # Configuration
 ALCHM_KITCHEN_URL = os.getenv("ALCHM_KITCHEN_URL", "https://whattoeatnext-production.up.railway.app")
-INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", "882133EA-3D06-4DF2-A63C-F4114AB4EFBC")
+INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET")
+if not INTERNAL_API_SECRET:
+    # Fail closed: no committed default. Internal/admin endpoints (mcp-summary,
+    # alchm-mcp-errors, rag/cache, agent-sync) compare the request header against this
+    # value. Without the env var we substitute an unguessable per-boot token so every
+    # request is rejected, rather than honoring a literal that would live in git history.
+    import secrets as _secrets
+
+    INTERNAL_API_SECRET = _secrets.token_urlsafe(48)
+    print(
+        "[startup] WARNING: INTERNAL_API_SECRET is not set — internal/admin endpoints "
+        "will reject ALL requests until it is configured.",
+        flush=True,
+    )
 FRONTEND_URL = os.getenv("PLANETARY_AGENTS_FRONTEND_URL", "http://localhost:3000")
 
 # Cost-tiered model selection for historical agent chat.
@@ -365,10 +378,8 @@ async def _build_alchm_mcp_context(
         live_sky = await alchm_mcp.get_live_sky_transits(latitude=latitude, longitude=longitude)
         results.append({"tool": "get_live_sky_transits", "data": live_sky})
         metadata["tools"].append("get_live_sky_transits")
-        alchm_mcp.record_success("get_live_sky_transits")
     except Exception as exc:
         metadata["errors"].append(f"get_live_sky_transits: {str(exc)[:180]}")
-        alchm_mcp.record_error("get_live_sky_transits", exc)
 
     if ingredients:
         try:
@@ -376,10 +387,8 @@ async def _build_alchm_mcp_context(
             results.append({"tool": "alchemize_ingredients", "data": scan})
             metadata["tools"].append("alchemize_ingredients")
             metadata["ingredients"] = ingredients
-            alchm_mcp.record_success("alchemize_ingredients")
         except Exception as exc:
             metadata["errors"].append(f"alchemize_ingredients: {str(exc)[:180]}")
-            alchm_mcp.record_error("alchemize_ingredients", exc)
 
     if _should_fetch_recipe_candidates(request, ingredients):
         try:
@@ -396,10 +405,8 @@ async def _build_alchm_mcp_context(
             )
             results.append({"tool": "generate_cosmic_recipe", "data": recipes})
             metadata["tools"].append("generate_cosmic_recipe")
-            alchm_mcp.record_success("generate_cosmic_recipe")
         except Exception as exc:
             metadata["errors"].append(f"generate_cosmic_recipe: {str(exc)[:180]}")
-            alchm_mcp.record_error("generate_cosmic_recipe", exc)
 
     return _format_alchm_mcp_block(results), metadata
 
@@ -1814,6 +1821,15 @@ async def synthetic_mcp_probe(
         success = False
     if success and (not results.get("feed") or results.get("feed", {}).get("error")):
         success = False
+
+    # Piggyback retention on the 30-min probe: prune mcp_invocations older than the
+    # retention window so the table doesn't grow unbounded (nothing else calls this).
+    try:
+        import mcp_invocation_log
+        retain_days = int(os.getenv("MCP_INVOCATIONS_RETAIN_DAYS", "30"))
+        results["pruned"] = await mcp_invocation_log.prune_mcp_invocations(retain_days=retain_days)
+    except Exception as exc:
+        results["prune_error"] = str(exc)
 
     return {
         "success": success,

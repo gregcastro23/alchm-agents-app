@@ -374,7 +374,16 @@ async def list_tools() -> List[Dict[str, Any]]:
 
 
 async def call_tool_json(name: str, arguments: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    return await _CLIENT.call_tool_json(name, arguments)
+    # Single telemetry chokepoint: every public tool wrapper and both call paths
+    # (main.py chat hydration + the PA MCP server's debate/jing tools) route through
+    # here, so recording success/error here covers all call sites uniformly.
+    try:
+        result = await _CLIENT.call_tool_json(name, arguments)
+    except Exception as exc:
+        record_error(name, exc)
+        raise
+    record_success(name)
+    return result
 
 
 async def get_live_sky_transits(

@@ -245,7 +245,7 @@ The mission is complete when all of the following are true:
 | Variable                   | Value                                                        | Where        |
 | -------------------------- | ------------------------------------------------------------ | ------------ |
 | `PLANETARY_IMAGE_ENDPOINT` | `https://agents.alchm.kitchen/api/generate-ingredient-image` | `.env.local` |
-| `WHATTOEATNEXT_BASE_URL`   | `https://api.alchm.kitchen`                                  | already set  |
+| `WHATTOEATNEXT_BASE_URL`   | `https://whattoeatnext-production.up.railway.app`            | already set  |
 | `DATABASE_URL`             | existing Prisma connection                                   | already set  |
 
 No new secrets are required. The image endpoint has no API key (rate limiting is
