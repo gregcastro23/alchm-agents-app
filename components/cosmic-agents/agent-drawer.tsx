@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 import { JING_MOVES } from './constants'
 import {
   Avatar,
@@ -125,7 +126,9 @@ export function AgentDrawer({ agent, agents, onClose }: Props) {
 
           <div className="section">
             <div className="action-row">
-              <button className="btn primary">Trigger Action</button>
+              <Link href={`/agent/${agent.id}`} className="btn primary" onClick={onClose}>
+                View full profile
+              </Link>
               <button className="btn">Pair for Duel</button>
               <button className="btn ghost">Follow</button>
             </div>

@@ -6,10 +6,21 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Download, Monitor } from 'lucide-react'
-import { HISTORICAL_AGENTS, getHistoricalAgent } from '@/lib/agents/historical'
+import { HISTORICAL_AGENTS } from '@/lib/agents/historical'
+import { resolveAnyAgent } from '@/lib/agents/resolve-any-agent'
+import {
+  getAgentActions,
+  getAgentInteractions,
+  getAgentArtifacts,
+} from '@/lib/agents/activity-surfaces'
+import { AgentActivity } from '@/components/agent-profile/AgentActivity'
 import type { CraftedAgent, Element } from '@/lib/agent-types'
 
-export const dynamic = 'force-static'
+// Pre-render the 71 canonical agents at build time; resolve everything else
+// (the ~3,637 planetary/moon + DB-only crafted agents) on demand. Without
+// dynamicParams this route 404'd for ~98% of agents.
+export const dynamicParams = true
+export const revalidate = 3600
 
 export async function generateStaticParams() {
   return HISTORICAL_AGENTS.map(a => ({ id: a.id }))
@@ -21,7 +32,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>
 }): Promise<Metadata> {
   const { id } = await params
-  const agent = getHistoricalAgent(id)
+  const agent = await resolveAnyAgent(id)
   if (!agent) return { title: 'Agent profile not found' }
   return {
     title: `${agent.name} — ${agent.title}`,
@@ -52,7 +63,7 @@ function formatBirth(agent: CraftedAgent): string {
 
 export default async function AgentProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const agent = getHistoricalAgent(id)
+  const agent = await resolveAnyAgent(id)
   if (!agent) notFound()
 
   const accent = agent.appearance?.color || '#7c3aed'
@@ -63,8 +74,22 @@ export default async function AgentProfilePage({ params }: { params: Promise<{ i
   const planets = agent.consciousness?.natalChart?.planets ?? {}
   const aspects = agent.consciousness?.natalChart?.aspects ?? []
 
+  // Activity surfaces, fetched server-side. The /api/agents/[slug]/* routes are
+  // bearer-gated (INTERNAL_API_SECRET), so we call the underlying functions
+  // directly and keep the secret off the client. Each degrades to empty.
+  const noParams = new URLSearchParams()
+  const [actionsRes, interactionsRes, artifactsRes] = await Promise.all([
+    getAgentActions(agent.id, noParams).catch(() => ({ actions: [] as any[] })),
+    getAgentInteractions(agent.id, noParams).catch(() => ({ interactions: [] as any[] })),
+    getAgentArtifacts(agent.id, noParams).catch(() => ({ artifacts: [] as any[] })),
+  ])
+  // Real ESMS balances are wired in Phase 4 (after agentic users are seeded +
+  // the token_balances migration); tiles render zeros until then.
+  const balances = { spirit: 0, essence: 0, matter: 0, substance: 0 }
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="dark relative min-h-screen bg-[#08080e] text-white">
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_rgba(124,58,237,0.14),_transparent_55%)]" />
       {/* Hero */}
       <section className={`relative overflow-hidden border-b bg-gradient-to-br ${tint}`}>
         <div className="mx-auto max-w-5xl px-6 py-12 md:py-16">
@@ -612,6 +637,15 @@ export default async function AgentProfilePage({ params }: { params: Promise<{ i
             </CardContent>
           </Card>
         </section>
+
+        {/* Activity surfaces — balances, recipes, discourses, action history */}
+        <AgentActivity
+          agentName={agent.name}
+          balances={balances}
+          interactions={(interactionsRes as any).interactions ?? []}
+          artifacts={(artifactsRes as any).artifacts ?? []}
+          actions={(actionsRes as any).actions ?? []}
+        />
 
         {/* Footer CTA */}
         <section className="border-t pt-8">
