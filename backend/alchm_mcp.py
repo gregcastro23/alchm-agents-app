@@ -20,6 +20,22 @@ ALCHM_MCP_TOOL_NAMES = {
 
 DEFAULT_PROTOCOL_VERSION = "2025-06-18"
 
+# Published npm package for the Alchm data MCP server (io.github.gregcastro23/
+# alchm-kitchen → @alchm/mcp-server). Used as the launch fallback when no local
+# WhatToEatNext source tree is checked out, so deploys and the bundled pa-mcp
+# desktop sidecar can still reach live transits/recipes instead of degrading to
+# no Alchm data. Pin a version by setting ALCHM_MCP_PACKAGE=@alchm/mcp-server@1.1.1.
+DEFAULT_PACKAGE = "@alchm/mcp-server"
+
+# Launch circuit-breaker. When a launcher fails to boot (missing `bun`/`node`
+# runtime, or a published package that crashes on startup — e.g. an undeclared
+# `pg` dependency), we must not re-spawn and re-time-out on every chat. After a
+# failure the breaker opens for an exponentially backed-off window so callers
+# degrade fast (chat continues on persona + RAG) instead of eating the launch
+# cost each request. A single success resets it.
+_LAUNCH_COOLDOWN_BASE = float(os.getenv("ALCHM_MCP_LAUNCH_COOLDOWN_BASE", "30"))
+_LAUNCH_COOLDOWN_MAX = float(os.getenv("ALCHM_MCP_LAUNCH_COOLDOWN_MAX", "300"))
+
 
 class AlchmMCPError(RuntimeError):
     pass
@@ -124,23 +140,80 @@ def _default_server_path() -> Path:
     return candidates[-1]
 
 
-def _command_args(server_path: Path) -> tuple[str, List[str]]:
-    command = os.getenv("ALCHM_MCP_COMMAND", "bun")
+def _published_package() -> str:
+    return os.getenv("ALCHM_MCP_PACKAGE", DEFAULT_PACKAGE)
+
+
+def _resolve_launch() -> Dict[str, Any]:
+    """Decide how to launch the Alchm MCP server, in priority order:
+
+    1. Explicit override — ALCHM_MCP_ARGS (with optional ALCHM_MCP_COMMAND).
+       Full manual control, used verbatim.
+    2. Local dev source — the WhatToEatNext `mcp-server/src/index.ts` checked
+       out as a sibling repo, run via `bun run <path>`. Preferred in dev so
+       local edits to the data server are picked up without a publish.
+    3. Published package — `bunx @alchm/mcp-server` (npm). The path that lets
+       any deploy WITHOUT the sibling source tree — including the bundled
+       pa-mcp desktop sidecar — still reach live transits/recipes rather than
+       silently degrading to no Alchm data.
+
+    Returns {command, args, cwd, mode, target}. `mode`/`target` are surfaced
+    in config_status() so the admin panel can tell which source is live.
+    """
+    runner = os.getenv("ALCHM_MCP_COMMAND", "bun")
+
+    # 1. Explicit override (highest priority).
     args_env = os.getenv("ALCHM_MCP_ARGS")
     if args_env:
-        return command, shlex.split(args_env)
-    return command, ["run", str(server_path)]
+        return {
+            "command": runner,
+            "args": shlex.split(args_env),
+            "cwd": None,
+            "mode": "explicit",
+            "target": f"{runner} {args_env}",
+        }
+
+    # 2. Local dev source, when the sibling WTEN repo is present.
+    server_path = _default_server_path()
+    if server_path.exists():
+        return {
+            "command": runner,
+            "args": ["run", str(server_path)],
+            "cwd": str(server_path.parents[1]),
+            "mode": "local-source",
+            "target": str(server_path),
+        }
+
+    # 3. Published npm package via the runner's ephemeral exec.
+    package = _published_package()
+    if runner == "bun":
+        args = ["x", package]            # `bun x` == bunx
+    elif runner in ("npx", "node"):
+        args = ["-y", package]           # npx -y <package>
+        runner = "npx"
+    else:
+        args = [package]                 # custom runner: best-effort
+    return {
+        "command": runner,
+        "args": args,
+        "cwd": None,
+        "mode": "published-package",
+        "target": package,
+    }
 
 
 def config_status() -> Dict[str, Any]:
     server_path = _default_server_path()
-    command, args = _command_args(server_path)
+    launch = _resolve_launch()
     return {
         "enabled": is_enabled(),
-        "command": command,
-        "args": args,
+        "command": launch["command"],
+        "args": launch["args"],
+        "launchMode": launch["mode"],
+        "launchTarget": launch["target"],
         "serverPath": str(server_path),
         "serverPathExists": server_path.exists(),
+        "publishedPackage": _published_package(),
         "databaseUrlConfigured": bool(os.getenv("ALCHM_MCP_DATABASE_URL") or os.getenv("DATABASE_URL")),
         "protocolVersion": os.getenv("ALCHM_MCP_PROTOCOL_VERSION", DEFAULT_PROTOCOL_VERSION),
     }
@@ -182,6 +255,8 @@ class AlchmMCPClient:
         self._stderr_tail: deque[str] = deque(maxlen=20)
         self._stdout_tail: deque[str] = deque(maxlen=20)
         self._tools: Optional[List[Dict[str, Any]]] = None
+        self._launch_failures = 0
+        self._launch_cooldown_until = 0.0
 
     @property
     def connected(self) -> bool:
@@ -197,35 +272,62 @@ class AlchmMCPClient:
             if not is_enabled():
                 raise AlchmMCPError("Alchm MCP integration is disabled")
 
-            server_path = _default_server_path()
-            if not server_path.exists():
-                raise AlchmMCPError(f"Alchm MCP server not found at {server_path}")
+            # Circuit-breaker: skip the launch entirely while the cooldown from a
+            # recent failure is still open, so a missing runtime or a broken
+            # published package can't add launch latency to every chat.
+            now = time.monotonic()
+            if now < self._launch_cooldown_until:
+                raise AlchmMCPError(
+                    f"Alchm MCP launch suppressed: {self._launch_failures} consecutive "
+                    f"failure(s); retrying in {self._launch_cooldown_until - now:.0f}s"
+                )
 
-            command, args = _command_args(server_path)
+            # Resolve the launch plan: explicit override → local dev source →
+            # published npm package. No longer hard-fails when the sibling WTEN
+            # source is absent; it falls back to `bunx @alchm/mcp-server`.
+            launch = _resolve_launch()
+            command, args = launch["command"], launch["args"]
             env = os.environ.copy()
             database_url = os.getenv("ALCHM_MCP_DATABASE_URL") or os.getenv("DATABASE_URL")
             if database_url:
                 env["DATABASE_URL"] = database_url
 
             try:
-                self._proc = await asyncio.create_subprocess_exec(
-                    command,
-                    *args,
-                    stdin=asyncio.subprocess.PIPE,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                    cwd=str(server_path.parents[1]),
-                    env=env,
-                )
-            except FileNotFoundError as exc:
-                raise AlchmMCPError(f"Unable to start Alchm MCP command: {command}") from exc
+                try:
+                    self._proc = await asyncio.create_subprocess_exec(
+                        command,
+                        *args,
+                        stdin=asyncio.subprocess.PIPE,
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.PIPE,
+                        cwd=launch["cwd"],
+                        env=env,
+                    )
+                except FileNotFoundError as exc:
+                    raise AlchmMCPError(
+                        f"Unable to start Alchm MCP via {launch['mode']} "
+                        f"({command} {' '.join(args)}). Install the '{command}' runtime, "
+                        f"check out the WTEN sibling repo, or set ALCHM_MCP_COMMAND/ALCHM_MCP_ARGS."
+                    ) from exc
 
-            self._stderr_task = asyncio.create_task(self._drain_stderr())
-            try:
+                self._stderr_task = asyncio.create_task(self._drain_stderr())
                 await self._initialize()
             except Exception:
+                # Open the breaker with exponential backoff, then re-raise so the
+                # caller degrades gracefully (the call-site wrappers catch it and
+                # record_error() for the admin panel).
+                self._launch_failures += 1
+                backoff = min(
+                    _LAUNCH_COOLDOWN_BASE * (2 ** (self._launch_failures - 1)),
+                    _LAUNCH_COOLDOWN_MAX,
+                )
+                self._launch_cooldown_until = time.monotonic() + backoff
                 await self.close()
                 raise
+
+            # Success — reset the breaker.
+            self._launch_failures = 0
+            self._launch_cooldown_until = 0.0
 
     async def _drain_stderr(self) -> None:
         proc = self._proc

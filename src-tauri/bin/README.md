@@ -16,21 +16,35 @@ one matching the build target automatically.
 
 ## Current platform coverage
 
-What is actually checked into this directory today. **The desktop app is
-effectively Apple-Silicon-only right now** — only `aarch64-apple-darwin` has a
-complete sidecar set, so a universal/Intel DMG cannot be produced yet.
+**These binaries are gitignored build artifacts** (see `.gitignore` —
+`src-tauri/bin/{orchestrator,alchm-mcp,pa-mcp,llama-server}-*` are all
+excluded), so nothing is committed to this directory. The table below is
+therefore "which triples we can _produce_," not "what is checked in." Run
+`scripts/build-sidecar.sh` (local) or the CI workflow to materialize them
+before packaging.
+
+Legend: ✅ local build script · 🤖 CI (`.github/workflows/sidecar-release.yml`) ·
+❌ no coverage yet.
 
 | Sidecar        | macOS arm64 (aarch64) | macOS x86_64 (Intel) | Windows | Linux |
 | -------------- | :-------------------: | :------------------: | :-----: | :---: |
-| `orchestrator` |          ✅           |          ❌          |   ❌    |  ❌   |
-| `alchm-mcp`    |          ✅           |          ❌          |   ❌    |  ❌   |
-| `pa-mcp`       |          ✅           |          ✅          |   ❌    |  ❌   |
-| `llama-server` |          ✅           |          ❌          |   ❌    |  ❌   |
+| `orchestrator` |          ✅           |         ✅¹          |   ❌    |  ❌   |
+| `alchm-mcp`    |          ✅           |         ✅¹          |   ❌    |  ❌   |
+| `pa-mcp`       |         ✅ 🤖         |        ✅ 🤖         |   🤖    |  🤖   |
+| `llama-server` |          ✅²          |          ❌          |   ❌    |  ❌   |
 
-To extend coverage, build the missing triples per the sections below and commit
-them here — Intel-Mac support needs `orchestrator` + `alchm-mcp` + `llama-server`
-for `x86_64-apple-darwin`; Windows/Linux need the full set per target. Wiring the
-GitHub Actions matrix (Path A) is the durable way to keep all triples current.
+¹ `orchestrator` / `alchm-mcp` are Bun-compiled; `--all-mac-archs` produces
+both macOS arches locally. Windows/Linux need a Bun build on the target OS.
+² `llama-server` is a drop-in (not built by the script). See below.
+
+`pa-mcp` now has full four-triple coverage via CI: PyInstaller cannot
+cross-compile, so the `sidecar-release.yml` matrix builds each triple on its
+matching runner (macOS arm64, macOS Intel, Windows, Linux) and uploads one
+artifact per triple. Locally, `scripts/build-sidecar.sh --all-mac-archs`
+covers the two macOS arches (the Intel one via Rosetta). To extend the other
+three sidecars to Windows/Linux, add them to the CI matrix or build on the
+target OS — Wiring more of the GitHub Actions matrix (Path A) is the durable
+way to keep all triples current.
 
 ## Build commands
 
@@ -76,11 +90,16 @@ PyInstaller cannot cross-compile to Windows or Linux from macOS — the
 bootloader is platform-native and the wheel resolution must happen on
 the target OS. Two paths:
 
-### Path A — GitHub Actions matrix (recommended)
+### Path A — GitHub Actions matrix (recommended, now implemented for pa-mcp)
 
-A matrix workflow with `windows-latest`, `ubuntu-latest`, and
-`macos-latest` runners produces all four target binaries on every tag.
-The runner-side commands match what `build-sidecar.sh` does locally:
+This is **live** for `pa-mcp` at `.github/workflows/sidecar-release.yml`. It
+fans out across `macos-latest` (arm64), `macos-13` (Intel), `windows-latest`,
+and `ubuntu-latest`, builds the spec on each, drives a real MCP
+`initialize` + `tools/list` handshake as a smoke test, and uploads one
+`pa-mcp-<triple>` artifact per platform. Trigger it by pushing a `v*` /
+`sidecar-*` tag, or manually via the Actions tab (`workflow_dispatch`). The
+sketch below is the underlying shape (the other three sidecars are not yet in
+the matrix):
 
 ```yaml
 # .github/workflows/sidecar-release.yml (sketch)

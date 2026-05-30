@@ -128,6 +128,29 @@ def _log(message: str) -> None:
     print(message, file=sys.stderr, flush=True)
 
 
+def _ensure_local_storage() -> None:
+    """Create telemetry tables when running as the frozen desktop sidecar.
+
+    Only the frozen pa-mcp binary starts against an empty local SQLite file
+    (see database._frozen_sqlite_dsn). The FastAPI server and the Railway
+    `python3` run of this module already have their tables created by main.py /
+    migrations against Postgres, so this is scoped to frozen mode and is a
+    no-op there. Without it, mcp_invocation_log.record_invocation() would hit a
+    missing `mcp_invocations` table and log a caught error on every tool call.
+    Wrapped so a failure can never stop the stdio server from booting —
+    telemetry then simply degrades to noop, which is acceptable for a sidecar.
+    """
+    if not getattr(sys, "frozen", False):
+        return
+    try:
+        import database
+        import models
+
+        models.Base.metadata.create_all(bind=database.engine)
+    except Exception as exc:  # noqa: BLE001 — local telemetry is best-effort
+        _log(f"_ensure_local_storage: local telemetry schema unavailable: {exc}")
+
+
 def _agent_id(agent_name: str) -> str:
     key = agent_name.strip().lower()
     return AGENT_ALIASES.get(key, key.replace(" ", "-"))
@@ -705,6 +728,7 @@ async def write_message(message: Dict[str, Any]) -> None:
 
 
 async def main() -> None:
+    _ensure_local_storage()
     _log("Planetary Agents MCP Server started on stdio")
     loop = asyncio.get_running_loop()
 

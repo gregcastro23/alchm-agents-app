@@ -11,6 +11,13 @@ from models import DesktopApiKey, MCPInvocation, User, UserSubscription
 PA_USER_API_KEY = os.getenv("PA_USER_API_KEY")
 PA_CRON_SECRET = os.getenv("PA_CRON_SECRET")
 
+# Strong references to in-flight fire-and-forget telemetry writes. asyncio only
+# keeps WEAK references to tasks created with create_task(), so a write task
+# with no other referent can be garbage-collected before it commits — silently
+# dropping the mcp_invocations row and leaving the admin summary stuck on
+# UNKNOWN. Holding the task here until its done-callback fires closes that gap.
+_INFLIGHT_WRITES: "set[asyncio.Task]" = set()
+
 def _log(msg: str) -> None:
     import sys
     print(msg, file=sys.stderr, flush=True)
@@ -201,8 +208,9 @@ async def record_invocation(
     user_id: Optional[str]
 ) -> None:
     """Fire-and-forget logging function that writes MCP tool invocations to Postgres."""
-    # Spawn a background task so DB write does not block the tool execution
-    asyncio.create_task(
+    # Spawn a background task so DB write does not block the tool execution.
+    # Keep a strong reference until completion so the task can't be GC'd mid-write.
+    task = asyncio.create_task(
         _record_in_db(
             tool_name=tool_name,
             called_at=called_at,
@@ -219,6 +227,8 @@ async def record_invocation(
             user_id=user_id
         )
     )
+    _INFLIGHT_WRITES.add(task)
+    task.add_done_callback(_INFLIGHT_WRITES.discard)
 
 
 async def prune_mcp_invocations(retain_days: int = 7) -> int:
