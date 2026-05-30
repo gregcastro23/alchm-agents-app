@@ -49,6 +49,7 @@ export default function HistoricalAgentChatPage() {
   const [agentLoading, setAgentLoading] = useState(true)
   const [momentSynergy, setMomentSynergy] = useState<MomentSynergy | null>(null)
   const [ragEnabled, setRagEnabled] = useState(true) // RAG enabled by default
+  const [level, setLevel] = useState<number | null>(null)
 
   // Static agent mapping to avoid server-side imports
   useEffect(() => {
@@ -97,6 +98,21 @@ export default function HistoricalAgentChatPage() {
       })
     }
     setAgentLoading(false)
+  }, [agentId])
+
+  // Cosmic level for the header badge — Prisma-backed, independent of the
+  // static agent map above. Resilient: on any failure the badge just hides.
+  useEffect(() => {
+    let cancelled = false
+    fetch(`/api/agents/${agentId}/leveling`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        if (!cancelled && d && typeof d.level === 'number') setLevel(d.level)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
   }, [agentId])
 
   useEffect(() => {
@@ -406,7 +422,14 @@ export default function HistoricalAgentChatPage() {
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">{agent.name}</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-bold">
+            {agent.name}
+            {typeof level === 'number' && (
+              <span className="rounded-full border border-fuchsia-400/40 bg-gradient-to-r from-amber-400/20 to-fuchsia-500/20 px-2 py-0.5 text-xs font-bold text-fuchsia-200">
+                Lv. {level}
+              </span>
+            )}
+          </h1>
           <p className="text-muted-foreground">{agent.title}</p>
         </div>
 
