@@ -768,8 +768,19 @@ async def main() -> None:
     await alchm_mcp.close_client()
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """Console-script entry point for the packaged MCP server.
+
+    Referenced by [project.scripts] in pyproject.toml so the published
+    distribution exposes a `planetary-agents-mcp` command (and `uvx
+    alchm-planetary-agents-mcp`). Kept as a thin sync wrapper around the async
+    main loop so the same entry works for the binary sidecar and PyPI install.
+    """
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         pass
+
+
+if __name__ == "__main__":
+    run()

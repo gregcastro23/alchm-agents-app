@@ -65,6 +65,10 @@ backend/build-x86_64/
 backend/dist/
 backend/dist-x86_64/
 
+# Python packaging build artifacts (alchm-planetary-agents-mcp)
+*.egg-info/
+backend/*.egg-info/
+
 # Databases
 backend/chroma_db/
 backend/planetary_agents.db
