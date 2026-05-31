@@ -28,6 +28,22 @@ function getWtenApiUrl(): string {
 
 const WTEN_API_URL = getWtenApiUrl()
 
+// PA's OWN feed ingestion endpoint. System B (historical/planetary agents)
+// previously pushed only to WTEN's feed, so its agents never appeared in PA's
+// own council feed (which reads the local agent_action_events table). We now
+// fan out to this too.
+function getLocalApiUrl(): string {
+  const base =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    process.env.AGENTS_PUBLIC_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '') ||
+    'https://agents.alchm.kitchen'
+  return `${base.replace(/\/$/, '')}/api/feed`
+}
+
+const LOCAL_API_URL = getLocalApiUrl()
+
 function getInternalApiSecret(): string {
   const secret = process.env.INTERNAL_API_SECRET || process.env.WHATTOEATNEXT_API_KEY
   if (!secret) {
@@ -168,6 +184,7 @@ export class FeedPusherService {
       try {
         this.validateAction(action)
         const eventId = await this.pushToWTEN(action)
+        await this.pushToLocal(action)
         pushedCount++
 
         // Collaborative Conversations: Threaded Cognitive Debates
@@ -381,6 +398,47 @@ export class FeedPusherService {
       return resData.event?.id || idempotencyKey || ''
     } catch {
       return idempotencyKey || ''
+    }
+  }
+
+  // Also write PA's OWN feed so the agent appears in the council feed (which
+  // reads the local agent_action_events table). Best-effort + idempotent: the
+  // local /api/feed upserts on idempotencyKey, and failures here never block the
+  // primary WTEN push.
+  private async pushToLocal(action: FeedActionPayload): Promise<void> {
+    try {
+      const metadataPayload = withNarrationMetadata(action.eventType, action.metadataPayload)
+      const idempotencyKey = action.idempotencyKey || metadataPayload.idempotencyKey
+      const timestamp =
+        typeof metadataPayload.timestamp === 'string'
+          ? metadataPayload.timestamp
+          : new Date().toISOString()
+      const payload = {
+        ...action,
+        actionType: action.eventType,
+        activityDetails: metadataPayload,
+        timestamp,
+        metadataPayload: {
+          ...metadataPayload,
+          actionType: action.eventType,
+          activityDetails: metadataPayload,
+          timestamp,
+        },
+      }
+      const response = await fetch(LOCAL_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getInternalApiSecret()}`,
+          ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
+        },
+        body: JSON.stringify(payload),
+      })
+      if (!response.ok) {
+        console.warn(`[feed-pusher] local /api/feed returned ${response.status}`)
+      }
+    } catch (err) {
+      console.warn('[feed-pusher] local feed push failed (non-fatal):', err)
     }
   }
 }
