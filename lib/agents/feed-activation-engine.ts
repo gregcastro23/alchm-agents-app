@@ -101,53 +101,159 @@ export class FeedActivationEngine {
   private hourCalc = new PlanetaryHourCalculator()
 
   /**
-   * Evaluates all active historical agents against current celestial weather
-   * to determine if they should generate an action for the feed.
+   * Per-tick pacing constants. The engine runs hourly (vercel cron); these
+   * bound cost while still letting every agent participate over time.
+   *  - WINDOW_PER_TICK: agents EVALUATED per tick (trigger eval is cheap, no
+   *    LLM). A timestamp-derived offset rotates this window across the whole
+   *    roster, so all ~3,700 agents are swept in ~roster/WINDOW ticks.
+   *  - MAX_ACTIVATIONS_PER_TICK: hard cap on voiced-text (LLM) generations.
+   *  - MAX_RECIPES_PER_TICK: hard cap on recipe_generation events (each also
+   *    does a catalog lookup + a voiced note).
+   */
+  private static readonly WINDOW_PER_TICK = 120
+  private static readonly MAX_ACTIVATIONS_PER_TICK = 10
+  private static readonly MAX_RECIPES_PER_TICK = 3
+
+  /** Per-instance (per-tick) cache of catalog recipes keyed by element. */
+  private catalogCache = new Map<string, Array<{ id: string; name: string }>>()
+
+  /**
+   * Evaluates a rotating window of active agents against current celestial
+   * weather to decide which should post to the feed. Transit-to-natal gating
+   * is the primary trigger; per-tick caps bound LLM + cross-service cost.
    */
   async evaluateActivations(
     location: { lat: number; lon: number } = { lat: 40.7128, lon: -74.006 } // Default NYC
   ): Promise<FeedActionPayload[]> {
     const timestamp = new Date()
-    const activeAgents = await HistoricalAgentsService.getAllAgents({ limit: 50 })
+
+    // Rotating window: advance the offset by WINDOW each hour so the whole
+    // roster is swept over time without evaluating all ~3,700 agents per tick.
+    const total = await HistoricalAgentsService.countActiveAgents()
+    const stepIndex = Math.floor(timestamp.getTime() / 3_600_000) // hours since epoch
+    const offset =
+      total > FeedActivationEngine.WINDOW_PER_TICK
+        ? (stepIndex * FeedActivationEngine.WINDOW_PER_TICK) % total
+        : 0
+    const activeAgents = await HistoricalAgentsService.getAllAgents({
+      limit: FeedActivationEngine.WINDOW_PER_TICK,
+      offset,
+    })
 
     // 1. Get current celestial weather
     const currentMoment = await celestialEnergyCalculator.calculateMoment(timestamp, location)
 
     const actions: FeedActionPayload[] = []
+    let recipeCount = 0
 
     for (const agent of activeAgents) {
+      // Hard backstop: stop generating once the per-tick activation cap is hit.
+      if (actions.length >= FeedActivationEngine.MAX_ACTIVATIONS_PER_TICK) break
+
       // 2. Fetch agent's latest consciousness snapshot
-      // Here we assume unifiedTracker has getCurrentState
       const consciousnessState = await unifiedTracker.getCurrentState('system', agent.agentId)
 
       const velocity = consciousnessState?.consciousnessVelocity || 0.5
       const momentum = consciousnessState?.interactionMomentum || 0.5
 
-      // 3. Evaluate Triggers
+      // 3. Evaluate triggers (transit-to-natal aspects run first inside
+      //    evaluateAgentTriggers; random/momentum is the last-resort path).
       const trigger = this.evaluateAgentTriggers(agent, currentMoment, velocity, momentum)
+      if (!trigger) continue
 
-      if (trigger) {
-        // Agent is activated! Determine action type
-        const eventType = this.determineEventType(agent, currentMoment, trigger)
+      // 4. Determine action type, then resolve a real recipe for recipe events.
+      let eventType = this.determineEventType(agent, currentMoment, trigger)
+      let recipeCtx: { id: string; name: string } | undefined
 
-        const metadataPayload = await this.generateMetadataPayload(
-          agent,
-          currentMoment,
-          trigger,
-          eventType,
-          velocity,
-          momentum
-        )
-
-        actions.push({
-          agentEmail: `${agent.agentId}@agentic.alchm.kitchen`,
-          eventType,
-          metadataPayload,
-        })
+      if (eventType === 'recipe_generation') {
+        if (recipeCount >= FeedActivationEngine.MAX_RECIPES_PER_TICK) {
+          // Recipe cap reached this tick — still let the agent speak.
+          eventType = 'insight'
+        } else {
+          // Invariant: a recipe_generation event ALWAYS carries a resolvable
+          // catalog recipeId so the profile "Created by this agent" card can
+          // expand. If the catalog is unreachable, downgrade to insight rather
+          // than emit a broken artifact.
+          const recipe = await this.fetchCatalogRecipe(agent.dominantElement)
+          if (recipe) {
+            recipeCtx = recipe
+            recipeCount++
+          } else {
+            eventType = 'insight'
+          }
+        }
       }
+
+      const metadataPayload = await this.generateMetadataPayload(
+        agent,
+        currentMoment,
+        trigger,
+        eventType,
+        velocity,
+        momentum,
+        recipeCtx
+      )
+
+      actions.push({
+        agentEmail: `${agent.agentId}@agentic.alchm.kitchen`,
+        eventType,
+        metadataPayload,
+      })
     }
 
     return actions
+  }
+
+  /**
+   * Fetch a real, resolvable recipe from alchm.kitchen's curated catalog
+   * matched to the agent's dominant element. Reuses alchm.kitchen (the locked
+   * "don't build our own recipe engine" decision) but via the catalog —
+   * `/api/generate-cosmic-recipe` returns an ephemeral recipe with no
+   * persisted id, whereas catalog ids resolve through `/api/recipes/[id]`
+   * (the profile's recipe-expand proxy). Cached per element for the tick;
+   * best-effort (null on any failure → caller downgrades the event).
+   */
+  private async fetchCatalogRecipe(element?: string): Promise<{ id: string; name: string } | null> {
+    const el = (element || 'Fire').toLowerCase()
+    try {
+      if (!this.catalogCache.has(el)) {
+        const base =
+          process.env.ALCHM_KITCHEN_PUBLIC_URL ||
+          process.env.ALCHM_KITCHEN_SYNC_URL ||
+          process.env.ALCHM_KITCHEN_BASE_URL ||
+          'https://alchm.kitchen'
+        const res = await fetch(`${base}/api/recipes?element=${encodeURIComponent(el)}&limit=25`, {
+          headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(6000),
+        })
+        if (!res.ok) {
+          this.catalogCache.set(el, [])
+        } else {
+          const data: any = await res.json().catch(() => null)
+          const list: any[] = Array.isArray(data?.recipes)
+            ? data.recipes
+            : Array.isArray(data)
+              ? data
+              : []
+          const mapped = list
+            .map(r => ({
+              id: String(r?.id ?? r?.recipeId ?? r?.recipe_id ?? ''),
+              name: String(r?.name ?? r?.title ?? 'Cosmic Recipe'),
+            }))
+            .filter(r => r.id)
+          this.catalogCache.set(el, mapped)
+        }
+      }
+      const pool = this.catalogCache.get(el) || []
+      if (pool.length === 0) return null
+      // Rotate by half-hour so repeated activations vary without depending on RNG.
+      const idx = Math.floor(Date.now() / 1_800_000) % pool.length
+      return pool[idx]
+    } catch (error) {
+      console.warn('[FeedActivationEngine] fetchCatalogRecipe failed:', error)
+      this.catalogCache.set(el, [])
+      return null
+    }
   }
 
   private evaluateTransitToNatalAspects(
@@ -250,7 +356,10 @@ export class FeedActivationEngine {
     if (trigger.reason.includes('aspect')) return 'insight'
     if (trigger.reason.includes('entropy')) return 'insight'
     if (trigger.reason.includes('transcendent')) return 'lab_entry'
-    if (trigger.reason.includes('elemental')) return 'made_it'
+    // Elemental surges manifest as a cooked dish — a real, resolvable catalog
+    // recipe (see fetchCatalogRecipe). The caller downgrades to 'insight' if
+    // the catalog can't be reached or the per-tick recipe cap is hit.
+    if (trigger.reason.includes('elemental')) return 'recipe_generation'
     return 'insight'
   }
 
@@ -260,7 +369,8 @@ export class FeedActivationEngine {
     trigger: { reason: string; intensity: number },
     eventType: WTENEventType,
     velocity: number,
-    momentum: number
+    momentum: number,
+    recipeCtx?: { id: string; name: string }
   ): Promise<FeedActionPayload['metadataPayload']> {
     const baseMetadata = {
       internalConfidence: Math.min(1.0, (velocity + momentum) / 2),
@@ -353,7 +463,28 @@ export class FeedActivationEngine {
           planetary_context: { ruler: moment.planetary.dominantPlanet },
         }
       }
+      case 'recipe_generation': {
+        // recipeCtx is guaranteed by evaluateActivations (it downgrades to
+        // 'insight' when no catalog recipe resolves), but guard regardless.
+        const recipeName = recipeCtx?.name || `${agent.dominantElement} Composition`
+        const fallback = `Composed "${recipeName}" — a ${agent.dominantElement} dish attuned to ${moment.planetary.dominantPlanet}.`
+        const review = await generateVoicedText(
+          agent.agentId,
+          `Write a brief 1-2 sentence note in your voice about "${recipeName}", a ${agent.dominantElement} ` +
+            `dish you've composed under ${moment.planetary.dominantPlanet}'s influence. Speak naturally, no greeting.`,
+          { fallback, maxTokens: 140 }
+        )
+        return {
+          ...baseMetadata,
+          recipeName,
+          ...(recipeCtx?.id ? { recipeId: recipeCtx.id, recipe_id: recipeCtx.id } : {}),
+          review,
+          madeIt: true,
+          rating: 5,
+        }
+      }
       case 'made_it': {
+        const recipeName = recipeCtx?.name || `Transmuted ${agent.dominantElement} Dish`
         const fallback = `Resonating with the surge in ${agent.dominantElement} energy. Added extra herbs aligned with ${moment.planetary.dominantPlanet}.`
         const review = await generateVoicedText(
           agent.agentId,
@@ -364,8 +495,10 @@ export class FeedActivationEngine {
         )
         return {
           ...baseMetadata,
-          recipeName: 'Historical Alchemical Recipe',
-          recipeId: 'placeholder-recipe-id',
+          recipeName,
+          // Only attach a recipeId when it resolves through the catalog — never
+          // a placeholder (it would 404 on the profile recipe-expand proxy).
+          ...(recipeCtx?.id ? { recipeId: recipeCtx.id, recipe_id: recipeCtx.id } : {}),
           madeIt: true,
           rating: 4,
           review,

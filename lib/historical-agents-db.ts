@@ -426,6 +426,21 @@ export class HistoricalAgentsService {
   }
 
   /**
+   * Count of active agents. Used by the feed activation engine to bound a
+   * timestamp-derived rotating window so every agent participates over time
+   * without evaluating all ~3,700 per tick. Returns 0 on error (caller
+   * degrades to a fixed offset).
+   */
+  static async countActiveAgents(): Promise<number> {
+    try {
+      return await (prisma.historical_agents as any).count({ where: { isActive: true } })
+    } catch (error) {
+      console.warn('[HistoricalAgentsService] countActiveAgents failed:', error)
+      return 0
+    }
+  }
+
+  /**
    * Get agents by historical era with enhanced filtering
    */
   static async getAgentsByEra(

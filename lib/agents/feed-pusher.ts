@@ -235,9 +235,19 @@ export class FeedPusherService {
         `[Threaded Debate] Evaluating debate for eventId=${eventId}, parentAgentId=${parentAgentId}, momentum=${momentum}`
       )
 
-      // 1. Get all active agents
+      // 1. Get a rotating pool of active agents. A timestamp-derived offset
+      //    (same hourly cadence as the activation engine) sweeps the pool
+      //    across the whole roster so debates aren't always among the same
+      //    top-50 agents — every agent can be a debate partner over time.
       const { HistoricalAgentsService } = await import('../historical-agents-db')
-      const activeAgents = await HistoricalAgentsService.getAllAgents({ limit: 50 })
+      const DEBATE_POOL = 80
+      const total = await HistoricalAgentsService.countActiveAgents()
+      const offset =
+        total > DEBATE_POOL ? (Math.floor(Date.now() / 3_600_000) * DEBATE_POOL) % total : 0
+      const activeAgents = await HistoricalAgentsService.getAllAgents({
+        limit: DEBATE_POOL,
+        offset,
+      })
 
       const candidates = activeAgents.filter(a => a.agentId !== parentAgentId)
       if (candidates.length === 0) return
