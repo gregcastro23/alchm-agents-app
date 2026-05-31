@@ -306,6 +306,67 @@ export async function resolveAgent(slug: string): Promise<AgentReference> {
   return { slug, name: demoAgent?.name || titleCaseSlug(slug) }
 }
 
+/**
+ * A single conceptual agent can have feed events stored under more than one
+ * agentId form: the seeded DB slug carries a `planetary-` prefix
+ * (`planetary-mars-aries-12`), while planetary-degree-feed derives the id from
+ * the agent email's local part WITHOUT it (`mars-aries-12`). Querying every
+ * known variant ensures a profile surfaces all the events the agent produced,
+ * not just the ones whose id happens to match the clicked slug.
+ */
+export function agentIdVariants(slug: string): string[] {
+  const base = (slug || '').trim()
+  const lower = base.toLowerCase()
+  const variants = new Set<string>([base, lower].filter(Boolean))
+  if (lower.startsWith('planetary-')) variants.add(lower.slice('planetary-'.length))
+  else if (lower) variants.add(`planetary-${lower}`)
+  return [...variants]
+}
+
+export interface AgentBalances {
+  spirit: number
+  essence: number
+  matter: number
+  substance: number
+}
+
+/**
+ * Real ESMS token balances for an agent's agentic user
+ * (`<agentId>@agentic.alchm.kitchen`). Returns null when the agent hasn't been
+ * provisioned yet, or when `token_balances.user_id` is still a UUID column
+ * (pre-economy-migration → P2023). The profile renders zeros for null, so this
+ * degrades gracefully both before and after the 4a/4b production steps.
+ */
+export async function getAgentBalances(slug: string): Promise<AgentBalances | null> {
+  try {
+    const emails = agentIdVariants(slug).map(s => `${s}@agentic.alchm.kitchen`)
+    const user = await prisma.users.findFirst({
+      where: { email: { in: emails } },
+      select: { id: true },
+    })
+    if (!user) return null
+    const bal = await prisma.tokenBalance.findUnique({ where: { userId: user.id } })
+    if (!bal) return null
+    return {
+      spirit: Number(bal.spirit),
+      essence: Number(bal.essence),
+      matter: Number(bal.matter),
+      substance: Number(bal.substance),
+    }
+  } catch (err: any) {
+    if (
+      err?.code === 'P2023' ||
+      String(err?.message || '')
+        .toLowerCase()
+        .includes('uuid')
+    ) {
+      return null // token_balances.user_id still UUID (pre-4a migration) — show zeros
+    }
+    console.warn('[activity-surfaces] getAgentBalances failed:', err)
+    return null
+  }
+}
+
 export async function getAgentActions(
   slug: string,
   searchParams: URLSearchParams
@@ -326,12 +387,12 @@ export async function getAgentActions(
   const createdAtFilter = Object.keys(createdAt).length ? { createdAt } : {}
   const [eventRows, conversationRows] = await Promise.all([
     prisma.agent_action_events.findMany({
-      where: { agentId: slug, ...createdAtFilter },
+      where: { agentId: { in: agentIdVariants(slug) }, ...createdAtFilter },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: limit + 1,
     }),
     prisma.agentConversation.findMany({
-      where: { agentId: slug, ...createdAtFilter },
+      where: { agentId: { in: agentIdVariants(slug) }, ...createdAtFilter },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: limit + 1,
     }),
@@ -388,8 +449,9 @@ export async function getAgentInteractions(
     if (cursorDate) createdAt.lt = cursorDate
   }
   const createdAtFilter = Object.keys(createdAt).length ? { createdAt } : {}
+  const variants = agentIdVariants(slug)
   const rows = await prisma.agentConversation.findMany({
-    where: { agentId: slug, ...createdAtFilter },
+    where: { agentId: { in: variants }, ...createdAtFilter },
     orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     take: Math.max(limit * 8, 50),
   })
@@ -399,7 +461,7 @@ export async function getAgentInteractions(
     ? await prisma.agentConversation.findMany({
         where: {
           sessionId: { in: sessionIds },
-          agentId: { not: slug },
+          agentId: { notIn: variants },
         },
         select: {
           agentId: true,
@@ -526,7 +588,7 @@ export async function getAgentArtifacts(
 
   const rows = await prisma.agent_action_events.findMany({
     where: {
-      agentId: slug,
+      agentId: { in: agentIdVariants(slug) },
       eventType: { in: eventTypes },
       ...createdAtFilter,
     },
