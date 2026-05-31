@@ -78,6 +78,16 @@ class HistoricalAgent(Base):
     wisdomShared = Column(Integer, default=0)
     resonanceScore = Column(Float, default=0.5)
     evolutionPoints = Column(Integer, default=0)
+
+    # === Cosmic EV & Leveling System ===
+    level = Column(Integer, default=1)
+    xp = Column(Integer, default=0)
+    evolutionValues = Column(JSON, default=dict)
+    evTotal = Column(Integer, default=0)
+    ivSnapshot = Column(JSON)
+    lastTrainingPartner = Column(String)
+    lastXpGain = Column(DateTime)
+
     lastActive = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     isActive = Column(Boolean, default=True)
     

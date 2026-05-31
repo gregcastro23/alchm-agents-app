@@ -210,9 +210,23 @@ function GalleryPageContent() {
       const result = await response.json()
 
       if (result.success && result.agents) {
-        setAgents(result.agents)
+        // Hydrate Cosmic levels from Neon (Prisma-backed; independent of Railway,
+        // which doesn't surface level/xp). Resilient: on failure, render without badges.
+        let agentsWithLevels = result.agents
+        try {
+          const lvlRes = await fetch('/api/agents/leveling')
+          const lvlJson = await lvlRes.json()
+          const map = lvlJson?.leveling || {}
+          agentsWithLevels = result.agents.map((a: any) => {
+            const lv = map[a.id]
+            return lv ? { ...a, level: lv.level, xp: lv.xp, evTotal: lv.evTotal } : a
+          })
+        } catch (e) {
+          console.warn('Leveling hydrate failed (badges/sort disabled):', e)
+        }
+        setAgents(agentsWithLevels)
         console.log(
-          `Loaded ${result.agents.length} agents (${result.agents.filter((a: any) => a.isUserCreated).length} user-created)`
+          `Loaded ${agentsWithLevels.length} agents (${agentsWithLevels.filter((a: any) => a.isUserCreated).length} user-created)`
         )
       } else {
         console.warn('Failed to fetch agents, using fallback')

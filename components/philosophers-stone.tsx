@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { ELEMENT_MAPPING } from './philosophers-stone-config'
 import { hasTauriInvokeRuntime, requestDesktopSidecar } from '@/lib/desktop-sidecar'
+import { KnowledgeInfusionStep } from '@/components/misc/knowledge-infusion-step'
 
 interface Constitution {
   spirit: number
@@ -106,7 +107,7 @@ export default function PhilosophersStone({
 
   // Wizard State
   const [currentStep, setCurrentStep] = useState(1)
-  const totalSteps = 5
+  const totalSteps = 6
 
   const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps))
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1))
@@ -410,14 +411,17 @@ export default function PhilosophersStone({
               'Anchoring: Enter celestial coordinates to calculate the blueprint.'}
             {currentStep === 3 && 'The Reveal: Witness the unique alchemical composition.'}
             {currentStep === 4 && 'Astral Engine: Select the cognitive tier for this entity.'}
-            {currentStep === 5 && 'Ignition: unlock the agent in the Alchm Desktop chat interface.'}
+            {currentStep === 5 &&
+              'Knowledge Infusion: feed source texts to ground the agent (optional).'}
+            {currentStep === 6 && 'Ignition: unlock the agent in the Alchm Desktop chat interface.'}
           </p>
           <div className="text-xs font-medium text-zinc-500 bg-zinc-900 px-3 py-1 rounded-full border border-zinc-800">
             Step {currentStep} of {totalSteps}: "{currentStep === 1 && 'The Calling'}
             {currentStep === 2 && 'Anchoring'}
             {currentStep === 3 && 'The Reveal'}
             {currentStep === 4 && 'Astral Engine'}
-            {currentStep === 5 && 'Ignition'}"
+            {currentStep === 5 && 'Knowledge Infusion'}
+            {currentStep === 6 && 'Ignition'}"
           </div>
         </div>
       </div>
@@ -651,14 +655,23 @@ export default function PhilosophersStone({
                 onClick={nextStep}
                 className="px-6 py-2 rounded-md bg-zinc-100 text-zinc-900 font-bold hover:bg-white transition-all flex items-center gap-2"
               >
-                Prepare Ignition <ChevronRight className="w-4 h-4" />
+                Infuse Knowledge <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
 
-        {/* STEP 5: Ignition Sequence */}
+        {/* STEP 5: Knowledge Infusion (multi-format ingestion) */}
         {currentStep === 5 && (
+          <KnowledgeInfusionStep
+            agentId={`custom-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'agent'}`}
+            onBack={prevStep}
+            onContinue={nextStep}
+          />
+        )}
+
+        {/* STEP 6: Ignition Sequence */}
+        {currentStep === 6 && (
           <div className="bg-surface border border-border p-6 rounded-xl flex flex-col items-center justify-center space-y-6 h-full animate-in fade-in zoom-in-95 duration-700 absolute inset-0">
             <h3 className="text-lg font-semibold text-zinc-300 w-full border-b border-border pb-2">
               Ignition Sequence

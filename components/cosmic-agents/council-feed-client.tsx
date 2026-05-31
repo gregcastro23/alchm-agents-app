@@ -111,6 +111,7 @@ export function CouncilFeedClient({
   desktopWidget = false,
 }: Props) {
   const [selectedAgent, setSelectedAgent] = useState<CouncilAgent | null>(null)
+  const [levels, setLevels] = useState<Record<string, number>>({})
   const [activeFilter, setActiveFilter] = useState<string>('all')
   const [chart] = useState<ChartOfMoment>(initialChart)
   const [events, setEvents] = useState<FeedEvent[]>(
@@ -154,6 +155,26 @@ export function CouncilFeedClient({
     }),
     [agentById]
   )
+
+  // Cosmic levels for the roster badges — bulk, Prisma-backed, resilient.
+  // On any failure the badges simply don't render.
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/agents/leveling')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        if (cancelled || !d?.leveling) return
+        const m: Record<string, number> = {}
+        for (const [id, v] of Object.entries(d.leveling as Record<string, { level?: number }>)) {
+          if (typeof v?.level === 'number') m[id] = v.level
+        }
+        setLevels(m)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handleNativeTelemetry = useCallback(
     (incoming: FeedEvent) => {
@@ -492,6 +513,7 @@ export function CouncilFeedClient({
               userAgent={initialUserAgent}
               onSelect={setSelectedAgent}
               selected={selectedAgent}
+              levels={levels}
             />
           )}
         </div>
@@ -842,12 +864,14 @@ function RosterColumn({
   userAgent,
   onSelect,
   selected,
+  levels,
 }: {
   chart: ChartOfMoment
   agents: CouncilAgent[]
   userAgent: CouncilAgent | null
   onSelect: (a: CouncilAgent) => void
   selected: CouncilAgent | null
+  levels: Record<string, number>
 }) {
   const ranked = useMemo(() => {
     return agents
@@ -918,6 +942,24 @@ function RosterColumn({
                     style={{ fontSize: 14, fontFamily: 'var(--ff-display)', lineHeight: 1.1 }}
                   >
                     {agent.name}
+                    {typeof levels[agent.id] === 'number' && (
+                      <span
+                        style={{
+                          marginLeft: 6,
+                          fontSize: 9,
+                          fontFamily: 'var(--ff-mono)',
+                          padding: '1px 5px',
+                          borderRadius: 999,
+                          background:
+                            'linear-gradient(90deg, rgba(250,204,21,.18), rgba(217,70,239,.18))',
+                          border: '1px solid rgba(217,70,239,.45)',
+                          color: '#f0abfc',
+                          verticalAlign: 'middle',
+                        }}
+                      >
+                        Lv.{levels[agent.id]}
+                      </span>
+                    )}
                   </div>
                   <div
                     className="sub"

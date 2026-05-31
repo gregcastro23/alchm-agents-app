@@ -197,7 +197,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { agents, question, sessionId } = await req.json()
+    const { agents, question, sessionId, trainerAgentId, partnerAgentIds } = await req.json()
 
     // Validate question parameter
     if (!question || typeof question !== 'string' || question.trim() === '') {
@@ -364,6 +364,27 @@ export async function POST(req: NextRequest) {
     } catch (dbError) {
       console.error('Failed to log multi-agent interactions to database:', dbError)
       // Don't fail the request if database logging fails
+    }
+
+    // Cosmic Leveling — optional in-council training. When the caller names a
+    // trainee (real agentId) and partner agentIds, the trainee earns XP for
+    // participating plus EVs from each partner's dominant Sacred 7 stat. Council
+    // agents (AgentConfig) carry no DB id, so EVs require explicit partnerAgentIds.
+    // Existing council callers omit both and are unaffected. Fire-and-forget.
+    if (trainerAgentId) {
+      const { HistoricalAgentsService } = await import('@/lib/historical-agents-db')
+      HistoricalAgentsService.awardXp(trainerAgentId, {
+        messageCount: responses.length || 1,
+      }).catch(err => console.warn('multi-agent awardXp failed:', err))
+
+      const partners: string[] = Array.isArray(partnerAgentIds) ? partnerAgentIds : []
+      for (const partnerId of partners) {
+        if (partnerId && partnerId !== trainerAgentId) {
+          HistoricalAgentsService.awardEvs(trainerAgentId, partnerId).catch(err =>
+            console.warn('multi-agent awardEvs failed:', err)
+          )
+        }
+      }
     }
 
     return NextResponse.json({

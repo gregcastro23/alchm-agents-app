@@ -44,6 +44,7 @@ import {
 import Link from 'next/link'
 import type { CraftedAgent } from '@/lib/agent-types'
 import { useToast } from '@/hooks/use-toast'
+import { AgentLevelPanel } from '@/components/misc/agent-level-panel'
 import SignVectorGraphic, {
   calculateSignVectorFromChart,
   SignVectorRune,
@@ -482,6 +483,12 @@ export function EnhancedAgentCard({
             <span className="text-[10px] font-mono font-semibold py-0.5 px-2 bg-violet-500/10 border border-violet-500/25 text-violet-300 rounded-full tracking-wide">
               MC: {agent.consciousness.monicaConstant.toFixed(2)}
             </span>
+            {/* Cosmic Level */}
+            {typeof agent.level === 'number' && (
+              <span className="text-[10px] font-semibold py-0.5 px-2 bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-200 rounded-full tracking-wide">
+                Lv. {agent.level}
+              </span>
+            )}
             {/* Evolution Stage */}
             <span className="text-[10px] font-semibold py-0.5 px-2 bg-amber-500/10 border border-amber-500/25 text-amber-300 rounded-full tracking-wide">
               Stage {agent.personality?.evolutionStage ?? 0}
@@ -822,8 +829,9 @@ export function EnhancedAgentCard({
                     </DialogHeader>
 
                     <Tabs defaultValue="overview" className="w-full">
-                      <TabsList className="grid w-full grid-cols-6">
+                      <TabsList className="grid w-full grid-cols-7">
                         <TabsTrigger value="overview">Overview</TabsTrigger>
+                        <TabsTrigger value="cosmic">Cosmic</TabsTrigger>
                         <TabsTrigger value="alchemical">Alchemical</TabsTrigger>
                         <TabsTrigger value="moment">Moment</TabsTrigger>
                         <TabsTrigger value="kinetics">Kinetics</TabsTrigger>
@@ -1311,6 +1319,16 @@ export function EnhancedAgentCard({
                             </div>
                           </div>
                         )}
+                      </TabsContent>
+
+                      <TabsContent value="cosmic" className="space-y-4">
+                        <div className="space-y-3">
+                          <h4 className="font-semibold flex items-center gap-2">
+                            <Sparkles className="w-4 h-4" />
+                            Cosmic Training — EVs, IVs &amp; Level
+                          </h4>
+                          <AgentLevelPanel agentId={agent.id} />
+                        </div>
                       </TabsContent>
                     </Tabs>
                   </DialogContent>

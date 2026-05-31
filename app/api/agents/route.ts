@@ -85,6 +85,13 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetAgentsR
           kineticResonance: 0.5,
         },
       },
+      // Cosmic EV & Leveling (present once the backend exposes them; the gallery
+      // also hydrates these directly from Neon via /api/agents/leveling).
+      level: agent.level,
+      xp: agent.xp,
+      evolutionValues: agent.evolutionValues,
+      evTotal: agent.evTotal,
+      ivSnapshot: agent.ivSnapshot,
       isUserCreated: agent.historicalEra === 'user_created',
       craftedBy: agent.craftedBy || 'philosopher-stone',
       historicalEra: agent.historicalEra,
