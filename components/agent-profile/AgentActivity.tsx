@@ -151,15 +151,10 @@ function RecipeCard({ artifact }: { artifact: ActivityArtifact }) {
                   </ul>
                 </div>
               )}
-              {artifact.alchmKitchenPath && (
-                <Link
-                  href={artifact.alchmKitchenPath}
-                  className="inline-block text-xs font-medium text-fuchsia-300 hover:text-fuchsia-200"
-                  target="_blank"
-                >
-                  Open on alchm.kitchen ↗
-                </Link>
-              )}
+              {/* External "open on alchm.kitchen" link intentionally omitted:
+                  the inline expand above already shows the full recipe via the
+                  /api/recipes/[id] proxy, and alchm.kitchen's /recipes/[id] page
+                  currently 500s. Re-add once that page is fixed. */}
             </div>
           )}
         </div>
@@ -196,7 +191,7 @@ export function AgentActivity({ agentName, balances, interactions, artifacts, ac
 
       {/* Created by this agent */}
       <section className="glass-card-premium rounded-3xl border-white/8 p-6 md:p-8">
-        <SectionLabel>Created by {agentName}</SectionLabel>
+        <SectionLabel>Featured by {agentName}</SectionLabel>
         {artifacts.length === 0 ? (
           <p className="text-sm text-white/40">
             No recipes or lab entries yet — they appear here as {agentName} acts on their transits.

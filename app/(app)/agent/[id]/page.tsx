@@ -12,6 +12,7 @@ import {
   getAgentActions,
   getAgentInteractions,
   getAgentArtifacts,
+  getAgentBalances,
 } from '@/lib/agents/activity-surfaces'
 import { AgentActivity } from '@/components/agent-profile/AgentActivity'
 import type { CraftedAgent, Element } from '@/lib/agent-types'
@@ -78,14 +79,14 @@ export default async function AgentProfilePage({ params }: { params: Promise<{ i
   // bearer-gated (INTERNAL_API_SECRET), so we call the underlying functions
   // directly and keep the secret off the client. Each degrades to empty.
   const noParams = new URLSearchParams()
-  const [actionsRes, interactionsRes, artifactsRes] = await Promise.all([
+  const [actionsRes, interactionsRes, artifactsRes, balances] = await Promise.all([
     getAgentActions(agent.id, noParams).catch(() => ({ actions: [] as any[] })),
     getAgentInteractions(agent.id, noParams).catch(() => ({ interactions: [] as any[] })),
     getAgentArtifacts(agent.id, noParams).catch(() => ({ artifacts: [] as any[] })),
+    // Real ESMS balances once the agent is provisioned (4b) + the economy
+    // UUID→TEXT migration (4a) is applied; null until then → tiles render zeros.
+    getAgentBalances(agent.id).catch(() => null),
   ])
-  // Real ESMS balances are wired in Phase 4 (after agentic users are seeded +
-  // the token_balances migration); tiles render zeros until then.
-  const balances = { spirit: 0, essence: 0, matter: 0, substance: 0 }
 
   return (
     <div className="dark relative min-h-screen bg-[#08080e] text-white">
