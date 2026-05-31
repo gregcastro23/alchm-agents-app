@@ -106,7 +106,15 @@ export class PlanetaryAPIClient {
 
       return result.data
     } catch (error) {
-      console.error('[PlanetaryAPIClient] getPlanetaryPositions error:', error)
+      // The backend planetary endpoint is OPTIONAL. When it's unavailable,
+      // callers (planetaryPositionsService) fall back to the local VSOP87
+      // calculator — which is actually MORE accurate (±0.1°) than the backend's
+      // linear approximation — so this is an expected, handled condition, not a
+      // failure. Log at warn so it doesn't surface as a (misleading) error.
+      console.warn(
+        '[PlanetaryAPIClient] backend positions unavailable; caller will fall back to the local calculator:',
+        error instanceof Error ? error.message : String(error)
+      )
       throw error
     }
   }
