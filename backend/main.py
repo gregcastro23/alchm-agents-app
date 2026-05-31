@@ -543,10 +543,19 @@ PLANETARY_OFFSETS = {
 
 def _request_datetime(payload: Dict[str, Any]) -> datetime:
     now = datetime.utcnow()
+    # Clients commonly send an ISO datetime in `date` (e.g.
+    # "2026-05-31T06:00:00Z"); parse that directly. Previously this did
+    # int(payload.get("date")), which raised ValueError on an ISO string → 500.
+    raw_date = payload.get("date")
+    if isinstance(raw_date, str) and raw_date.strip():
+        try:
+            return datetime.fromisoformat(raw_date.replace("Z", "+00:00")).replace(tzinfo=None)
+        except ValueError:
+            pass
     return datetime(
         int(payload.get("year") or now.year),
         int(payload.get("month") or now.month),
-        int(payload.get("day") or payload.get("date") or now.day),
+        int(payload.get("day") or (raw_date if isinstance(raw_date, int) else None) or now.day),
         int(payload.get("hour") or 0),
         int(payload.get("minute") or 0),
     )
