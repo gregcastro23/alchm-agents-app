@@ -113,6 +113,12 @@ export class FeedActivationEngine {
   private static readonly WINDOW_PER_TICK = 120
   private static readonly MAX_ACTIVATIONS_PER_TICK = 10
   private static readonly MAX_RECIPES_PER_TICK = 3
+  /**
+   * Minimum activations per tick. Keeps the feed reliably alive even at
+   * balanced celestial moments (when no surge/transit fires). Bounded above by
+   * MAX_ACTIVATIONS_PER_TICK, so total cost stays capped.
+   */
+  private static readonly BASELINE_PER_TICK = 4
 
   /** Per-instance (per-tick) cache of catalog recipes keyed by element. */
   private catalogCache = new Map<string, Array<{ id: string; name: string }>>()
@@ -150,11 +156,13 @@ export class FeedActivationEngine {
       // Hard backstop: stop generating once the per-tick activation cap is hit.
       if (actions.length >= FeedActivationEngine.MAX_ACTIVATIONS_PER_TICK) break
 
-      // 2. Fetch agent's latest consciousness snapshot
+      // 2. Fetch agent's latest consciousness snapshot. Most seeded agents have
+      //    none, so fall back to a derived (not flat-0.5) value — otherwise the
+      //    momentum-gated trigger could never fire for them.
       const consciousnessState = await unifiedTracker.getCurrentState('system', agent.agentId)
 
-      const velocity = consciousnessState?.consciousnessVelocity || 0.5
-      const momentum = consciousnessState?.interactionMomentum || 0.5
+      const velocity = consciousnessState?.consciousnessVelocity ?? this.deriveVelocity(agent)
+      const momentum = consciousnessState?.interactionMomentum ?? this.deriveMomentum(agent)
 
       // 3. Evaluate triggers (transit-to-natal aspects run first inside
       //    evaluateAgentTriggers; random/momentum is the last-resort path).
@@ -201,7 +209,76 @@ export class FeedActivationEngine {
       })
     }
 
+    // 5. Guaranteed baseline: keep the feed reliably alive even when the moment
+    //    is balanced and nothing surged/transited. Fill up to BASELINE_PER_TICK
+    //    with the highest-resonance agents in this window that didn't already
+    //    activate. Still well under MAX_ACTIVATIONS_PER_TICK.
+    if (actions.length < FeedActivationEngine.BASELINE_PER_TICK) {
+      const activated = new Set(actions.map(a => a.agentEmail))
+      const candidates = [...activeAgents]
+        .filter(a => !activated.has(`${a.agentId}@agentic.alchm.kitchen`))
+        .sort((x, y) => (Number(y.resonanceScore) || 0) - (Number(x.resonanceScore) || 0))
+
+      for (const agent of candidates) {
+        if (actions.length >= FeedActivationEngine.BASELINE_PER_TICK) break
+        const trigger = { reason: 'daily_reflection', intensity: 0.55 }
+        const eventType = this.determineEventType(agent, currentMoment, trigger) // → 'insight'
+        const metadataPayload = await this.generateMetadataPayload(
+          agent,
+          currentMoment,
+          trigger,
+          eventType,
+          this.deriveVelocity(agent),
+          this.deriveMomentum(agent)
+        )
+        actions.push({
+          agentEmail: `${agent.agentId}@agentic.alchm.kitchen`,
+          eventType,
+          metadataPayload,
+        })
+      }
+    }
+
     return actions
+  }
+
+  /**
+   * Most of the ~3,700 seeded agents have no consciousness snapshot, so
+   * velocity/momentum used to default to a flat 0.5 — which silently disabled
+   * the momentum-gated trigger (needs > 0.8). Derive a usable, agent-specific
+   * value from static data (consciousness level + resonance + a stable
+   * per-agent jitter) so triggers can fire and the spread lets some agents
+   * clear the 0.8 bar.
+   */
+  private deriveMomentum(agent: EnhancedHistoricalAgent): number {
+    const levelBase: Record<string, number> = {
+      Transcendent: 0.85,
+      Cosmic: 0.85,
+      Enlightened: 0.8,
+      Awakened: 0.72,
+      Aware: 0.64,
+      Conscious: 0.58,
+      Emerging: 0.52,
+      Dormant: 0.46,
+    }
+    const base = levelBase[String(agent.consciousnessLevel)] ?? 0.56
+    const resonance =
+      typeof agent.resonanceScore === 'number'
+        ? Math.max(0, Math.min(1, agent.resonanceScore))
+        : 0.5
+    const jitter = (this.hashFraction(agent.agentId) - 0.5) * 0.18 // ±0.09, stable per agent
+    return Math.max(0.3, Math.min(0.97, base * 0.7 + resonance * 0.2 + 0.1 + jitter))
+  }
+
+  private deriveVelocity(agent: EnhancedHistoricalAgent): number {
+    return Math.max(0.3, Math.min(0.95, this.deriveMomentum(agent) * 0.9 + 0.05))
+  }
+
+  /** Stable 0–1 fraction from a string (deterministic per-agent jitter). */
+  private hashFraction(s: string): number {
+    let h = 0
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
+    return (h % 1000) / 1000
   }
 
   /**
@@ -333,7 +410,9 @@ export class FeedActivationEngine {
     // C) Direct Planetary Resonance
     // Simplistic check for dominant planet alignment (e.g., if it's Venus hour and agent is Venus dominant)
     const agentElement = agent.dominantElement as keyof typeof moment.kinetic.velocity
-    if (moment.elemental && agentElement && moment.elemental[agentElement] > 40) {
+    // Threshold 30 (was 40): on a 0–100 scale the average element is ~25, so >40
+    // only fired at strong surges and left the feed silent at balanced moments.
+    if (moment.elemental && agentElement && moment.elemental[agentElement] > 30) {
       // Elemental surge
       if (momentum > 0.4) {
         return { reason: 'elemental_surge_resonance', intensity: 0.75 }
