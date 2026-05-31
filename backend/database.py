@@ -1,10 +1,19 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 import os
+import sys
 from typing import Optional
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# True when running inside the PyInstaller-frozen pa-mcp desktop sidecar.
+# That bundle (backend/pa-mcp.spec) intentionally EXCLUDES the Postgres
+# dialect + psycopg2 to stay small and cross-arch buildable, so SQLAlchemy
+# physically cannot speak Postgres there. PyInstaller sets both attributes;
+# the FastAPI server / plain `python3` runs leave them unset, so their
+# strict Postgres behavior below is completely unchanged.
+IS_FROZEN_SIDECAR = bool(getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"))
 
 # DSN resolution order:
 #   1. DIRECT_URL  — preferred. Should be the raw postgres:// URL from Prisma's
@@ -44,7 +53,34 @@ def _normalize_postgres_scheme(url: str) -> str:
     return url
 
 
+def _frozen_sqlite_dsn() -> str:
+    """Stable local SQLite path for the frozen pa-mcp desktop sidecar.
+
+    A Postgres DSN discovered from the environment or a stray .env can never
+    be honored inside the frozen bundle (the dialect + psycopg2 were excluded),
+    so we keep a small SQLite file in a stable per-user dir instead of letting
+    create_engine raise NoSuchModuleError and crash the stdio server before it
+    serves a single request. The sidecar's telemetry is local-only anyway — the
+    canonical mcp_invocations table lives in the Railway Postgres the desktop
+    app has no credentials for. A CWD-relative path is avoided because Tauri
+    spawns the sidecar with an unpredictable working directory.
+    """
+    base = os.path.join(os.path.expanduser("~"), ".alchm")
+    try:
+        os.makedirs(base, exist_ok=True)
+        return "sqlite:///" + os.path.join(base, "pa-mcp-telemetry.db")
+    except Exception:
+        import tempfile
+
+        return "sqlite:///" + os.path.join(tempfile.gettempdir(), "pa-mcp-telemetry.db")
+
+
 def _resolve_dsn() -> str:
+    # Frozen pa-mcp sidecar: honoring a Postgres DSN is impossible (dialect
+    # excluded from the bundle), so force local SQLite rather than crashing at
+    # create_engine. Non-frozen runs fall through to the strict logic below.
+    if IS_FROZEN_SIDECAR:
+        return _frozen_sqlite_dsn()
     if _looks_like_sqlalchemy_postgres(DIRECT_URL):
         return _normalize_postgres_scheme(DIRECT_URL)  # type: ignore[arg-type]
     if _looks_like_sqlalchemy_postgres(DATABASE_URL):
