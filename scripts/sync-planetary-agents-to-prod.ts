@@ -69,7 +69,14 @@ async function main() {
     let p = 1
     for (const row of slice) {
       tuples.push(`(${shared.map(() => `$${p++}`).join(',')})`)
-      for (const c of shared) params.push(row[c])
+      for (const c of shared) {
+        const val = row[c]
+        params.push(
+          val !== null && typeof val === 'object' && !(val instanceof Date)
+            ? JSON.stringify(val)
+            : val
+        )
+      }
     }
     await dst.query(
       `INSERT INTO historical_agents (${quoted}) VALUES ${tuples.join(',')}
