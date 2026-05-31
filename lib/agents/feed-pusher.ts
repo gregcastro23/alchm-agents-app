@@ -147,11 +147,31 @@ export class FeedPusherService {
    */
   async evaluateAndPush(): Promise<PushResult> {
     try {
-      // 1. Evaluate what actions should be taken
-      const [historicalActions, planetaryMessages] = await Promise.all([
+      // Evaluate both feeds INDEPENDENTLY. Promise.all rejects on the first
+      // throw, so a failure in one branch previously discarded the entire tick —
+      // e.g. the planetary-degree feed's positions API returning 404 zeroed the
+      // whole feed, including the historical-agent activations, which use the
+      // LOCAL calculator and succeed. Settle each so one can't kill the other.
+      const [historicalSettled, planetarySettled] = await Promise.allSettled([
         feedActivationEngine.evaluateActivations(),
         planetaryDegreeFeedService.evaluateDegreeChanges(),
       ])
+
+      const historicalActions =
+        historicalSettled.status === 'fulfilled' ? historicalSettled.value : []
+      if (historicalSettled.status === 'rejected') {
+        console.error('[evaluateAndPush] historical activations failed:', historicalSettled.reason)
+      }
+
+      const planetaryMessages =
+        planetarySettled.status === 'fulfilled' ? planetarySettled.value : []
+      if (planetarySettled.status === 'rejected') {
+        console.error(
+          '[evaluateAndPush] planetary degree feed failed (continuing with historical actions):',
+          planetarySettled.reason
+        )
+      }
+
       const actions = [...historicalActions, ...planetaryMessages.map(message => message.action)]
 
       if (actions.length === 0) {
