@@ -29,6 +29,12 @@ import {
 const CONJUNCTION_ORB = 1.5 // degrees — a transiting planet within this of a natal point "hits" it
 const AGENTIC_DOMAIN = '@agentic.alchm.kitchen'
 
+// convertSignDegreesToLongitude matches Title-case signs ("Aries") via indexOf;
+// a lowercase/mixed sign silently maps to longitude 0 and would false-match every
+// conjunction (over-bestowing). Normalize before any longitude conversion.
+const toTitleSign = (s: string | undefined): string =>
+  s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : ''
+
 export interface AttunementSummary {
   walletsChecked: number
   attunements: number
@@ -61,7 +67,7 @@ export async function runTransitAttunements(): Promise<AttunementSummary> {
     liveLon[p] = {
       sign: pos.sign,
       degree: pos.degree,
-      lon: convertSignDegreesToLongitude(pos.sign, pos.degree),
+      lon: convertSignDegreesToLongitude(toTitleSign(pos.sign), pos.degree),
     }
   }
 
@@ -79,7 +85,7 @@ export async function runTransitAttunements(): Promise<AttunementSummary> {
     if (!Array.isArray(natal) || natal.length === 0) continue
     const natalLons = natal
       .filter(n => n.sign && typeof n.degree === 'number')
-      .map(n => convertSignDegreesToLongitude(n.sign!, n.degree!))
+      .map(n => convertSignDegreesToLongitude(toTitleSign(n.sign), n.degree!))
     if (!natalLons.length) continue
 
     for (const [planet, t] of Object.entries(liveLon)) {
