@@ -37,11 +37,15 @@ interface ProvisionResult {
   errors: string[]
 }
 
-async function provisionAgenticUsers(): Promise<ProvisionResult> {
+async function provisionAgenticUsers(
+  opts: { limit?: number; dryRun?: boolean } = {}
+): Promise<ProvisionResult> {
   const result: ProvisionResult = { created: 0, skipped: 0, syncFailed: 0, errors: [] }
 
   const historicalAgents = await prisma.historical_agents.findMany({
     where: { isActive: true },
+    orderBy: { agentId: 'asc' },
+    ...(opts.limit ? { take: opts.limit } : {}),
     select: {
       agentId: true,
       name: true,
@@ -67,6 +71,21 @@ async function provisionAgenticUsers(): Promise<ProvisionResult> {
     select: { id: true, email: true, isAgentic: true, alchmKitchenUserId: true } as any,
   })
   const existingByEmail = new Map(existingUsers.map(u => [u.email, u]))
+
+  // Dry-run: report what WOULD happen without writing anything. Lets you
+  // confirm the batch size + create/skip split before a production write.
+  if (opts.dryRun) {
+    const toCreate = historicalAgents.filter(
+      a => !existingByEmail.has(`${a.agentId}@agentic.alchm.kitchen`)
+    ).length
+    console.log(
+      `[dry-run] would create ${toCreate}, skip ${historicalAgents.length - toCreate} ` +
+        `(of ${historicalAgents.length} active agents` +
+        `${opts.limit ? `, limited to ${opts.limit}` : ''}). No writes performed.`
+    )
+    result.skipped = historicalAgents.length
+    return result
+  }
 
   for (const agent of historicalAgents) {
     const email = `${agent.agentId}@agentic.alchm.kitchen`
@@ -207,11 +226,23 @@ function extractNatalPositions(natalChart: any): any[] {
 }
 
 async function main() {
+  const args = process.argv.slice(2)
+  const dryRun = args.includes('--dry-run')
+  const limitArg = args.find(a => a.startsWith('--limit'))
+  let limit: number | undefined
+  if (limitArg) {
+    const raw = limitArg.includes('=') ? limitArg.split('=')[1] : args[args.indexOf(limitArg) + 1]
+    const n = parseInt(raw ?? '', 10)
+    if (Number.isFinite(n) && n > 0) limit = n
+  }
+
   console.log('═══════════════════════════════════════════════════')
-  console.log('  Agentic User Provisioning')
+  console.log(
+    `  Agentic User Provisioning${dryRun ? '  (dry-run)' : ''}${limit ? `  [limit ${limit}]` : ''}`
+  )
   console.log('═══════════════════════════════════════════════════\n')
 
-  const result = await provisionAgenticUsers()
+  const result = await provisionAgenticUsers({ limit, dryRun })
 
   console.log('\n═══════════════════════════════════════════════════')
   console.log(`  Created:      ${result.created}`)
