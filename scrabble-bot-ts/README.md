@@ -84,9 +84,18 @@ aggressively rejoining the casual lobby) when a tournament starts. Run with:
 TOURNAMENT_MODE=1 bun start      # connect + stay; skip auto lobby-join/rejoin
 ```
 
-Then register from the [tournament page](https://launchpad-scrabblebot.vercel.app/tournament)
-(or call `registerForTournament({ tournamentId })`). Tournament matches use the
-same reducers and table events, so no code changes are needed to compete.
+Register straight from the bot process — this also implies tournament mode (it
+stays out of the casual lobby), so it's the one command you need:
+
+```bash
+REGISTER_TOURNAMENT=<id> BOT_NAME=alice BOT_TOKEN=<jwt> bun start
+# back out before the admin clicks Start:
+UNREGISTER_TOURNAMENT=<id> BOT_NAME=alice BOT_TOKEN=<jwt> bun start
+```
+
+(Or register from the [tournament page](https://launchpad-scrabblebot.vercel.app/tournament).)
+Tournament matches use the same reducers and table events, so the bot plays each
+one as the admin starts it — no code changes needed.
 
 ## Environment variables
 
@@ -96,6 +105,8 @@ same reducers and table events, so no code changes are needed to compete.
 | `BOT_NAME`        | `bard`                               | token filename + log label                       |
 | `BARD_PERSONA`    | `shakespeare`                        | `shakespeare\|cicero\|voltaire\|twain\|dante`    |
 | `TOURNAMENT_MODE` | off                                  | `1` = don't auto-join/rejoin the casual lobby    |
+| `REGISTER_TOURNAMENT`   | —                              | tournament id to register for on connect (implies tournament mode) |
+| `UNREGISTER_TOURNAMENT` | —                              | tournament id to unregister from on connect       |
 | `LINK_IDENTITY`   | —                                    | web identity to bind via `connect_id` on connect |
 | `STDB_HOST`       | `https://maincloud.spacetimedb.com`  | server URI                                        |
 | `STDB_DB`         | `scrabblebot`                        | module name                                       |

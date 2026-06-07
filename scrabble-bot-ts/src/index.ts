@@ -16,9 +16,13 @@ import { letterIndex } from "./tiles";
 const HOST = process.env.STDB_HOST ?? "https://maincloud.spacetimedb.com";
 const DB_NAME = process.env.STDB_DB ?? "scrabblebot";
 const BOT_NAME = process.env.BOT_NAME ?? "bard";
-// In a tournament: register, then sit out the casual lobby (don't auto-rejoin),
-// per the docs' pre-tournament checklist.
-const TOURNAMENT_MODE = process.env.TOURNAMENT_MODE === "1";
+// Tournament registration (optional): REGISTER_TOURNAMENT=<id> registers on
+// connect; UNREGISTER_TOURNAMENT=<id> backs out before it starts.
+const REGISTER_TOURNAMENT = process.env.REGISTER_TOURNAMENT;
+const UNREGISTER_TOURNAMENT = process.env.UNREGISTER_TOURNAMENT;
+// In a tournament: register, then sit out the casual lobby (don't auto-join or
+// rejoin), per the docs' pre-tournament checklist. Registering implies this mode.
+const TOURNAMENT_MODE = process.env.TOURNAMENT_MODE === "1" || REGISTER_TOURNAMENT !== undefined;
 // Optional one-time account link: the web identity to bind via connect_id.
 const LINK_IDENTITY = process.env.LINK_IDENTITY;
 
@@ -82,10 +86,38 @@ function onConnect(conn: DbConnection, identity: Identity, token: string): void 
   conn
     .subscriptionBuilder()
     .onApplied(() => {
-      console.log("subscriptions applied; joining lobby…");
-      if (!TOURNAMENT_MODE) conn.reducers.joinLobby({});
+      console.log("subscriptions applied");
+      handleTournamentRegistration(conn);
+      if (TOURNAMENT_MODE) {
+        console.log("tournament mode: staying out of the casual lobby until matches start");
+      } else {
+        conn.reducers.joinLobby({});
+        console.log("joined lobby");
+      }
     })
     .subscribeToAllTables();
+}
+
+// Register / unregister for a tournament straight from the bot process. Tournament
+// matches emit the same events as casual ones, so no other code changes are needed
+// — ensureMatchStarted() picks them up when the admin starts each match.
+function handleTournamentRegistration(conn: DbConnection): void {
+  if (UNREGISTER_TOURNAMENT) {
+    try {
+      conn.reducers.unregisterFromTournament({ tournamentId: BigInt(UNREGISTER_TOURNAMENT) });
+      console.log(`unregistered from tournament ${UNREGISTER_TOURNAMENT}`);
+    } catch (e) {
+      console.error("unregisterFromTournament failed:", e);
+    }
+  }
+  if (REGISTER_TOURNAMENT) {
+    try {
+      conn.reducers.registerForTournament({ tournamentId: BigInt(REGISTER_TOURNAMENT) });
+      console.log(`registered for tournament ${REGISTER_TOURNAMENT}; will play its matches as they start`);
+    } catch (e) {
+      console.error("registerForTournament failed:", e);
+    }
+  }
 }
 
 function registerCallbacks(conn: DbConnection): void {
