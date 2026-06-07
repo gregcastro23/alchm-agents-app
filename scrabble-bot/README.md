@@ -192,3 +192,9 @@ All live decisions are delegated to `bridge.rs` (`LiveBridge`), which is fully
 unit-tested without any SpacetimeDB dependency — so the only thing the SDK glue in
 `net/spacetime.rs` does is move data in and reducer calls out. If a future module
 rename shifts a field name, fix it there; the strategy never changes.
+
+> **Prefer TypeScript/Bun?** A faithful port of this engine — same lexicon,
+> personas, valuation and Vickrey bidding — lives in
+> [`../scrabble-bot-ts`](../scrabble-bot-ts). It matches the official starter's
+> toolchain (`spacetime generate --lang typescript`) and verifiably reproduces
+> this bot's analysis and self-play results.

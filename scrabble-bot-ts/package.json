@@ -1,0 +1,25 @@
+{
+  "name": "bard-scrabble-bot-ts",
+  "version": "0.1.0",
+  "description": "The Bard — Bun/TypeScript live client for the SpacetimeDB scrabblebot challenge, backed by the validated opponent-aware engine.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "generate": "spacetime generate --lang typescript --out-dir src/module_bindings --project-path ../scrabblebot/spacetimedb",
+    "info": "bun run src/cli.ts info",
+    "analyze": "bun run src/cli.ts analyze",
+    "sim": "bun run src/cli.ts sim",
+    "bench": "bun run src/cli.ts bench",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "spacetimedb": "^2.2.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.6.0"
+  }
+}

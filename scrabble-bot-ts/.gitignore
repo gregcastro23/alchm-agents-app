@@ -1,0 +1,6 @@
+node_modules
+# SpacetimeDB JWTs — never commit credentials
+.token-*
+# Generated SDK bindings (produced locally via `bun run generate`)
+src/module_bindings
+bun.lockb
