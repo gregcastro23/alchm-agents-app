@@ -1,0 +1,5 @@
+/target
+# SpacetimeDB JWTs (never commit credentials)
+.token-*
+# Generated module bindings (produced locally via `spacetime generate`)
+/src/net/module_bindings

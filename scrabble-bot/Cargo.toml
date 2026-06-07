@@ -1,0 +1,33 @@
+[package]
+name = "bard-scrabble-bot"
+version = "0.1.0"
+edition = "2021"
+description = "The Bard — a sub-15ms Vickrey-auction Scrabble bot for the SpacetimeDB ScrabbleBot challenge, with a persona engine inspired by the alchm grammatical-master agents (Shakespeare et al.)."
+license = "MIT"
+readme = "README.md"
+
+[lib]
+name = "bard"
+path = "src/lib.rs"
+
+[[bin]]
+name = "bard"
+path = "src/main.rs"
+
+[features]
+default = []
+# `live` pulls in the SpacetimeDB client SDK for the real tournament connection.
+# The core engine, simulator, analyzer, tests and benches build with ZERO
+# external dependencies, so they always compile and run offline.
+live = ["dep:spacetimedb-sdk"]
+
+[dependencies]
+# Only needed for `--features live`. The module is built on the 2.x SDK
+# (TS starter pins ^2.2.0; the Rust SDK workspace is 2.4.x). Match your local
+# `spacetime` CLI version when you generate bindings.
+spacetimedb-sdk = { version = "2", optional = true }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
