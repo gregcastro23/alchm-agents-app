@@ -177,7 +177,7 @@ curl -sSf https://install.spacetimedb.com | sh
 # 2. generate the Rust bindings INTO this crate
 spacetime generate --lang rust \
   --out-dir scrabble-bot/src/net/module_bindings \
-  --project-path <path-to>/scrabblebot/spacetimedb
+  --module-path <path-to>/scrabblebot/spacetimedb
 
 # 3. get your team JWT from the challenge site, then:
 BOT_TOKEN=<jwt> BARD_PERSONA=shakespeare \

@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "start": "bun run src/index.ts",
-    "generate": "spacetime generate --lang typescript --out-dir src/module_bindings --project-path ../scrabblebot/spacetimedb",
+    "generate": "spacetime generate --lang typescript --out-dir src/module_bindings --module-path ../scrabblebot/spacetimedb",
     "info": "bun run src/cli.ts info",
     "analyze": "bun run src/cli.ts analyze",
     "sim": "bun run src/cli.ts sim",

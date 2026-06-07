@@ -291,7 +291,7 @@ fn cmd_play(_args: &[String]) {
                1. Install the SpacetimeDB CLI:  curl -sSf https://install.spacetimedb.com | sh\n  \
                2. Generate Rust bindings for the module:\n     \
                   spacetime generate --lang rust --out-dir src/net/module_bindings \\\n       \
-                    --project-path <path-to>/scrabblebot/spacetimedb\n  \
+                    --module-path <path-to>/scrabblebot/spacetimedb\n  \
                3. Get your team JWT from the challenge site and save it to .token-bard\n  \
                4. Build & run:\n     \
                   cargo run --release --features live -- play\n\

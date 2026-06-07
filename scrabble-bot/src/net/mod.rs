@@ -12,7 +12,7 @@
 //! # 2. generate the typed Rust bindings INTO this directory
 //! spacetime generate --lang rust \
 //!   --out-dir scrabble-bot/src/net/module_bindings \
-//!   --project-path <path-to>/scrabblebot/spacetimedb
+//!   --module-path <path-to>/scrabblebot/spacetimedb
 //! # 3. build with the feature on
 //! cargo run --release --features live -- play
 //! ```

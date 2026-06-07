@@ -48,7 +48,7 @@ bun install                       # spacetimedb SDK + ws
 # generate typed bindings from the module (one time / when schema changes)
 bun run generate
 #   = spacetime generate --lang typescript \
-#       --out-dir src/module_bindings --project-path ../scrabblebot/spacetimedb
+#       --out-dir src/module_bindings --module-path ../scrabblebot/spacetimedb
 
 # get your team JWT from https://launchpad-scrabblebot.vercel.app/team, then:
 BOT_NAME=alice BOT_TOKEN=<jwt> BARD_PERSONA=shakespeare bun start
