@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_PATH="$ROOT_DIR/src-tauri/target/release/bundle/macos/Alchm.app"
-DMG_PATH="$ROOT_DIR/src-tauri/target/release/bundle/dmg/Alchm_1.0.0_aarch64.dmg"
+DMG_PATH="$ROOT_DIR/src-tauri/target/release/bundle/dmg/Alchm_1.1.0_aarch64.dmg"
 SIGNING_IDENTITY="${ALCHM_MACOS_SIGNING_IDENTITY:--}"
 NOTARY_PROFILE="${ALCHM_NOTARY_PROFILE:-}"
 TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/alchm-release.XXXXXX")"
@@ -82,7 +82,7 @@ sign_app_bundle() {
 
 SIGNED_APP="$TMP_ROOT/Alchm.app"
 STAGING_DIR="$TMP_ROOT/dmg"
-TMP_DMG="$TMP_ROOT/Alchm_1.0.0_aarch64.dmg"
+TMP_DMG="$TMP_ROOT/Alchm_1.1.0_aarch64.dmg"
 
 copy_without_resource_forks "$APP_PATH" "$SIGNED_APP"
 sign_app_bundle "$SIGNED_APP"
