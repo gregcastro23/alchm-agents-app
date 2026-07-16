@@ -326,3 +326,29 @@ class AgentSyncResponse(BaseModel):
     success: bool
     agentId: str
     action: str
+
+# --- Agent duel brains (Pentacles companion endpoints) ---
+# Fields are deliberately Any + extra-allow: validation (and the exact 400/422
+# bodies the Next.js brain returned) happens in the route handlers so the
+# Pentacles feeders see byte-identical contract behavior, not FastAPI's
+# {"detail": [...]} shape.
+
+class WordDuelRequest(BaseModel):
+    planet: Optional[Any] = None
+    rack: Optional[Any] = None  # string or {letter: count} map
+    candidates: Optional[Any] = None  # string[] or {word, score}[]
+    context: Optional[Any] = None  # {playerWord?, playerScore?, round?, seasonDegree?, agentId?}
+    agentId: Optional[Any] = None
+    sessionId: Optional[Any] = None
+    userId: Optional[Any] = None
+    source: Optional[Any] = None
+
+    model_config = ConfigDict(extra="allow")
+
+class JingDuelRequest(BaseModel):
+    planet: Optional[Any] = None
+    opening: Optional[Any] = None  # Meltdown|Freeze|TectonicRoot|Vacuum|Erode
+    agentId: Optional[Any] = None
+    source: Optional[Any] = None
+
+    model_config = ConfigDict(extra="allow")

@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 import json
@@ -24,6 +25,7 @@ import providers
 import ingest
 import recipe_generation
 import alchm_mcp
+import duel_brain
 from feed_emitter import emit_feed_event
 
 class SlidingWindowRateLimiter:
@@ -812,6 +814,179 @@ def agents_search(
             for a in rows
         ],
     }
+
+
+# --- Agent Duel Brains (Pentacles companion endpoints) ---
+# Ports of the AlchmAgents Next.js brains (app/api/agents/{word-duel,jing}).
+# Consumed by the Pentacles feeders (feeder/duel-service.ts reads
+# move.{word,rationale,score}; feeder/jing-service.ts reads {move,voice}).
+# Both are called in a game loop: they must degrade to a deterministic move
+# rather than 5xx when no LLM provider key is configured. Registered as POST
+# only, so they do not collide with GET /api/agents/{agent_id}.
+
+
+@app.post("/api/agents/word-duel")
+async def agents_word_duel(
+    request: schemas.WordDuelRequest, db: Session = Depends(database.get_db)
+):
+    """In-character Word Duel move brain.
+
+    Request: { planet, rack, candidates: [{word,score}] | string[], context?,
+               agentId?, sessionId?, userId?, source? }
+    Response: { success, planet, move: { word, rationale, score, source,
+                provider?, model?, latencyMs }, timestamp }
+    Error bodies mirror the Next.js brain: 400 (planet/rack), 422 (candidates),
+    500 { success, error, message }. An *empty* candidates[] is legitimate
+    ("no legal words") and resolves to a yield move.
+    """
+    try:
+        planet = request.planet
+        if not duel_brain.is_planet(planet):
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False,
+                    "error": "Invalid or missing planet. Must be one of the ten spheres.",
+                },
+            )
+
+        rack = request.rack
+        # JS semantics: null/undefined/"" are falsy (rejected); {} is a valid map.
+        if rack is None or not isinstance(rack, (str, dict)) or rack == "":
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False,
+                    "error": "Invalid or missing rack. Must be a string or {letter:count} map.",
+                },
+            )
+
+        # Thin brain: the caller MUST supply candidates (PA owns no dictionary).
+        if not isinstance(request.candidates, list):
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "success": False,
+                    "error": "Missing candidates[]. Send the legal words from your solver (string[] or {word,score}[]).",
+                },
+            )
+
+        context = request.context if isinstance(request.context, dict) else None
+        agent_id = request.agentId if isinstance(request.agentId, str) else None
+        if not agent_id and context and isinstance(context.get("agentId"), str):
+            agent_id = context["agentId"]
+
+        # Optional persona channeling — a known historical agent lends its voice.
+        agent_channel = None
+        if agent_id:
+            try:
+                row = crud.get_agent(db, agent_id=agent_id)
+                if row:
+                    agent_channel = {
+                        "agentId": row.agentId,
+                        "name": row.name,
+                        "title": row.title,
+                        "personalityCore": row.personalityCore or {},
+                    }
+            except Exception as lookup_err:
+                print(f"[word-duel] agent lookup skipped: {lookup_err}", flush=True)
+
+        move = await duel_brain.choose_word_move(
+            planet=planet,
+            rack=rack,
+            candidates=request.candidates,
+            context=context,
+            agent=agent_channel,
+        )
+        # Match JSON.stringify: absent (undefined) optional keys are omitted.
+        move = {k: v for k, v in move.items() if v is not None}
+
+        return {
+            "success": True,
+            "planet": planet,
+            "move": move,
+            "timestamp": duel_brain.now_iso_z(),
+        }
+    except Exception as error:
+        print(f"[word-duel] Error handling duel move: {error}", flush=True)
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "Internal server error.",
+                "message": str(error) or "Unknown error",
+            },
+        )
+
+
+@app.post("/api/agents/jing")
+async def agents_jing(
+    request: schemas.JingDuelRequest, db: Session = Depends(database.get_db)
+):
+    """In-character Jing Arena counter brain.
+
+    Given a planet and the player's OPENING move, returns the move that planet
+    plays to counter it (the winning reply on the fixed counter graph) plus a
+    one-line voice. Deterministic unless agentId names a known agent (then an
+    LLM voice is attempted, with the counter voice kept as fallback).
+
+    Request:  { planet, opening, agentId?, source? }
+    Response: { success, planet, move, voice, element, source, timestamp }
+    """
+    try:
+        planet = request.planet
+        if not duel_brain.is_planet(planet):
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False,
+                    "error": "Invalid or missing planet. Must be one of the ten spheres.",
+                },
+            )
+        opening = request.opening
+        if not duel_brain.is_jing_move(opening):
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False,
+                    "error": "Invalid or missing opening. Must be Meltdown|Freeze|TectonicRoot|Vacuum|Erode.",
+                },
+            )
+
+        persona_block = None
+        agent_name = None
+        agent_id = request.agentId if isinstance(request.agentId, str) else None
+        if agent_id:
+            try:
+                row = crud.get_agent(db, agent_id=agent_id)
+                if row:
+                    persona_block = prompts.get_agent_system_prompt(row.__dict__)
+                    agent_name = row.name
+            except Exception as lookup_err:
+                print(f"[jing] agent lookup skipped: {lookup_err}", flush=True)
+
+        result = await duel_brain.choose_jing_move(
+            planet, opening, persona_block=persona_block, agent_name=agent_name
+        )
+        return {
+            "success": True,
+            "planet": planet,
+            "move": result["move"],
+            "voice": result["voice"],
+            "element": result["element"],
+            "source": "counter",
+            "timestamp": duel_brain.now_iso_z(),
+        }
+    except Exception as error:
+        print(f"[jing] Error handling jing move: {error}", flush=True)
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "Internal server error.",
+                "message": str(error) or "Unknown error",
+            },
+        )
 
 
 # --- Chat Orchestration ---
