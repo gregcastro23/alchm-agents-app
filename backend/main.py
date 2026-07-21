@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException, Header, Depends
-from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 import json
@@ -24,8 +23,8 @@ import rag
 import providers
 import ingest
 import recipe_generation
+import tilt_skillet_generation
 import alchm_mcp
-import duel_brain
 from feed_emitter import emit_feed_event
 
 class SlidingWindowRateLimiter:
@@ -816,179 +815,6 @@ def agents_search(
     }
 
 
-# --- Agent Duel Brains (Pentacles companion endpoints) ---
-# Ports of the AlchmAgents Next.js brains (app/api/agents/{word-duel,jing}).
-# Consumed by the Pentacles feeders (feeder/duel-service.ts reads
-# move.{word,rationale,score}; feeder/jing-service.ts reads {move,voice}).
-# Both are called in a game loop: they must degrade to a deterministic move
-# rather than 5xx when no LLM provider key is configured. Registered as POST
-# only, so they do not collide with GET /api/agents/{agent_id}.
-
-
-@app.post("/api/agents/word-duel")
-async def agents_word_duel(
-    request: schemas.WordDuelRequest, db: Session = Depends(database.get_db)
-):
-    """In-character Word Duel move brain.
-
-    Request: { planet, rack, candidates: [{word,score}] | string[], context?,
-               agentId?, sessionId?, userId?, source? }
-    Response: { success, planet, move: { word, rationale, score, source,
-                provider?, model?, latencyMs }, timestamp }
-    Error bodies mirror the Next.js brain: 400 (planet/rack), 422 (candidates),
-    500 { success, error, message }. An *empty* candidates[] is legitimate
-    ("no legal words") and resolves to a yield move.
-    """
-    try:
-        planet = request.planet
-        if not duel_brain.is_planet(planet):
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "success": False,
-                    "error": "Invalid or missing planet. Must be one of the ten spheres.",
-                },
-            )
-
-        rack = request.rack
-        # JS semantics: null/undefined/"" are falsy (rejected); {} is a valid map.
-        if rack is None or not isinstance(rack, (str, dict)) or rack == "":
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "success": False,
-                    "error": "Invalid or missing rack. Must be a string or {letter:count} map.",
-                },
-            )
-
-        # Thin brain: the caller MUST supply candidates (PA owns no dictionary).
-        if not isinstance(request.candidates, list):
-            return JSONResponse(
-                status_code=422,
-                content={
-                    "success": False,
-                    "error": "Missing candidates[]. Send the legal words from your solver (string[] or {word,score}[]).",
-                },
-            )
-
-        context = request.context if isinstance(request.context, dict) else None
-        agent_id = request.agentId if isinstance(request.agentId, str) else None
-        if not agent_id and context and isinstance(context.get("agentId"), str):
-            agent_id = context["agentId"]
-
-        # Optional persona channeling — a known historical agent lends its voice.
-        agent_channel = None
-        if agent_id:
-            try:
-                row = crud.get_agent(db, agent_id=agent_id)
-                if row:
-                    agent_channel = {
-                        "agentId": row.agentId,
-                        "name": row.name,
-                        "title": row.title,
-                        "personalityCore": row.personalityCore or {},
-                    }
-            except Exception as lookup_err:
-                print(f"[word-duel] agent lookup skipped: {lookup_err}", flush=True)
-
-        move = await duel_brain.choose_word_move(
-            planet=planet,
-            rack=rack,
-            candidates=request.candidates,
-            context=context,
-            agent=agent_channel,
-        )
-        # Match JSON.stringify: absent (undefined) optional keys are omitted.
-        move = {k: v for k, v in move.items() if v is not None}
-
-        return {
-            "success": True,
-            "planet": planet,
-            "move": move,
-            "timestamp": duel_brain.now_iso_z(),
-        }
-    except Exception as error:
-        print(f"[word-duel] Error handling duel move: {error}", flush=True)
-        return JSONResponse(
-            status_code=500,
-            content={
-                "success": False,
-                "error": "Internal server error.",
-                "message": str(error) or "Unknown error",
-            },
-        )
-
-
-@app.post("/api/agents/jing")
-async def agents_jing(
-    request: schemas.JingDuelRequest, db: Session = Depends(database.get_db)
-):
-    """In-character Jing Arena counter brain.
-
-    Given a planet and the player's OPENING move, returns the move that planet
-    plays to counter it (the winning reply on the fixed counter graph) plus a
-    one-line voice. Deterministic unless agentId names a known agent (then an
-    LLM voice is attempted, with the counter voice kept as fallback).
-
-    Request:  { planet, opening, agentId?, source? }
-    Response: { success, planet, move, voice, element, source, timestamp }
-    """
-    try:
-        planet = request.planet
-        if not duel_brain.is_planet(planet):
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "success": False,
-                    "error": "Invalid or missing planet. Must be one of the ten spheres.",
-                },
-            )
-        opening = request.opening
-        if not duel_brain.is_jing_move(opening):
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "success": False,
-                    "error": "Invalid or missing opening. Must be Meltdown|Freeze|TectonicRoot|Vacuum|Erode.",
-                },
-            )
-
-        persona_block = None
-        agent_name = None
-        agent_id = request.agentId if isinstance(request.agentId, str) else None
-        if agent_id:
-            try:
-                row = crud.get_agent(db, agent_id=agent_id)
-                if row:
-                    persona_block = prompts.get_agent_system_prompt(row.__dict__)
-                    agent_name = row.name
-            except Exception as lookup_err:
-                print(f"[jing] agent lookup skipped: {lookup_err}", flush=True)
-
-        result = await duel_brain.choose_jing_move(
-            planet, opening, persona_block=persona_block, agent_name=agent_name
-        )
-        return {
-            "success": True,
-            "planet": planet,
-            "move": result["move"],
-            "voice": result["voice"],
-            "element": result["element"],
-            "source": "counter",
-            "timestamp": duel_brain.now_iso_z(),
-        }
-    except Exception as error:
-        print(f"[jing] Error handling jing move: {error}", flush=True)
-        return JSONResponse(
-            status_code=500,
-            content={
-                "success": False,
-                "error": "Internal server error.",
-                "message": str(error) or "Unknown error",
-            },
-        )
-
-
 # --- Chat Orchestration ---
 
 @app.post("/api/chat", response_model=schemas.ChatResponse)
@@ -1365,6 +1191,8 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
         persona_block = prompts.build_monica_prompt(context)
     elif request.agentId == "alchemical-chef":
         persona_block = prompts.build_alchemical_chef_prompt(context)
+    elif request.agentId.lower() in ("sirius", "arcturus", "vega", "polaris"):
+        persona_block = prompts.build_star_agent_prompt(request.agentId, context)
     elif db_agent:
         persona_block = prompts.get_agent_system_prompt(db_agent.__dict__)
     else:
@@ -1490,6 +1318,96 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(database.get_
     }
 
 
+STAR_AGENT_ELEMENTS = {
+    "sirius": "Fire",
+    "arcturus": "Air",
+    "vega": "Water",
+    "polaris": "Earth",
+}
+
+STAR_AGENT_NAMES = {
+    "sirius": "Sirius",
+    "arcturus": "Arcturus",
+    "vega": "Vega",
+    "polaris": "Polaris",
+}
+
+@app.post("/api/multi_agent_chat", response_model=schemas.MultiAgentChatResponse)
+async def multi_agent_chat(request: schemas.MultiAgentChatRequest, db: Session = Depends(database.get_db)):
+    session_id = request.sessionId or f"council-session-{datetime.utcnow().timestamp()}"
+    agent_ids = request.agentIds or ["sirius", "arcturus", "vega", "polaris"]
+    tier = _resolve_tier(request.modelTier)
+    anthropic_model = ANTHROPIC_TIER_MODEL.get(tier)
+    chain = providers.build_chain(tier, anthropic_model)
+
+    overrides = request.systemPromptOverrides or {}
+    context = request.context or {}
+
+    responses: List[schemas.MultiAgentTurn] = []
+    dialogue_history = []
+
+    for agent_id in agent_ids:
+        lowered_id = agent_id.lower().strip()
+        agent_name = STAR_AGENT_NAMES.get(lowered_id, agent_id.replace("-", " ").title())
+        element = STAR_AGENT_ELEMENTS.get(lowered_id, "Spirit")
+
+        # System prompt for this agent turn
+        if lowered_id in overrides:
+            p_block = overrides[lowered_id]
+        elif lowered_id in prompts.STAR_AGENT_PROMPTS:
+            p_block = prompts.build_star_agent_prompt(lowered_id, context)
+        else:
+            db_a = crud.get_agent(db, agent_id=agent_id)
+            if db_a:
+                p_block = prompts.get_agent_system_prompt(db_a.__dict__)
+            else:
+                p_block = f"You are {agent_name}, a wise celestial star agent."
+
+        # Dynamic turn message includes prior agents' contributions
+        if dialogue_history:
+            history_str = "\n".join(f"{h['name']} ({h['element']}): \"{h['text']}\"" for h in dialogue_history)
+            turn_message = (
+                f"Original User Question: \"{request.message}\"\n\n"
+                f"Prior Council Contributions:\n{history_str}\n\n"
+                f"As {agent_name} ({element} element), provide your concise perspective in 2-3 sentences responding to the seeker and building upon the council's dialogue."
+            )
+        else:
+            turn_message = (
+                f"User Inquiry to the Constellation Council: \"{request.message}\"\n\n"
+                f"As {agent_name} ({element} element), initiate the council's response in 2-3 sentences presenting your elemental perspective and staking vault guidance."
+            )
+
+        res = await providers.run_chain(
+            chain=chain,
+            persona_block=p_block,
+            rag_block="",
+            user_message=turn_message,
+            agent_id=agent_id,
+            tier=tier,
+        )
+
+        reply_text = res.text if res and res.text else f"{agent_name}: Channeling {element} essence into your celestial vault."
+        turn = schemas.MultiAgentTurn(
+            agentId=agent_id,
+            name=agent_name,
+            element=element,
+            text=reply_text,
+        )
+        responses.append(turn)
+        dialogue_history.append({"name": agent_name, "element": element, "text": reply_text})
+
+    return {
+        "responses": responses,
+        "sessionId": session_id,
+        "metadata": {
+            "timestamp": datetime.utcnow().isoformat(),
+            "tier": tier,
+            "agentCount": len(responses),
+        },
+    }
+
+
+
 @app.post(
     "/api/generate-recipe",
     response_model=schemas.CosmicRecipeResponse,
@@ -1520,8 +1438,9 @@ async def generate_cosmic_recipe(request: schemas.CosmicRecipeRequest):
         anthropic_model=anthropic_model,
         catalog_context=catalog_context,
     )
+    emitting_agent = getattr(request, "agentId", None) or "alchemical-chef"
     emit_feed_event(
-        "alchemical-chef",
+        emitting_agent,
         "recipe_generation",
         {
             "recipeName": recipe.title,
@@ -1536,6 +1455,39 @@ async def generate_cosmic_recipe(request: schemas.CosmicRecipeRequest):
         },
     )
     return recipe
+
+
+@app.post(
+    "/api/tilt-skillet-plan",
+    response_model=schemas.TiltSkilletPlanResponse,
+    response_model_exclude_none=True,
+)
+async def generate_tilt_skillet_plan(request: schemas.TiltSkilletRequest):
+    plan_tier = _resolve_tier(
+        request.modelTier or os.getenv("TILT_SKILLET_MODEL_TIER", "primary")
+    )
+    anthropic_model = ANTHROPIC_TIER_MODEL.get(plan_tier)
+    plan = await tilt_skillet_generation.generate_tilt_skillet_plan(
+        request=request,
+        tier=plan_tier,
+        anthropic_model=anthropic_model,
+    )
+    emitting_agent = getattr(request, "agentId", None) or "alchemical-chef"
+    emit_feed_event(
+        emitting_agent,
+        "tilt_skillet_plan",
+        {
+            "recipeName": plan.title,
+            "recipeId": plan.id,
+            "topic": request.prompt[:140],
+            "messageExcerpt": plan.summary,
+            "summary": plan.summary,
+            "userId": request.userId,
+            "tier": plan_tier,
+            "stageCount": len(plan.stages),
+        },
+    )
+    return plan
 
 # --- RAG Management ---
 
@@ -1678,18 +1630,28 @@ async def get_moment_recommendations(limit: int = 5, db: Session = Depends(datab
     agents = crud.get_all_agents(db)
     if not agents:
         return {"recommendations": [], "summary": "No agents found"}
-        
-    alchm_data = {"Alchemy Effects": {"Total Spirit": 1.0, "Total Essence": 2.0, "Total Matter": 1.5, "Total Substance": 0.5}} # Mock
-    current_planets = {} # Mock
-    
+
+    # Real, time-varying inputs: the current computed sky + the moment's
+    # alchemical totals (no mocks — scores now differ by agent and by moment).
+    now = datetime.utcnow()
+    current_planets = _planetary_positions_for(now)
+    moment = _elemental_scores(now)
+    alchm_data = {"Alchemy Effects": {
+        "Total Spirit": moment["spirit_score"],
+        "Total Essence": moment["essence_score"],
+        "Total Matter": moment["matter_score"],
+        "Total Substance": moment["substance_score"],
+    }}
+
     scored_agents = []
     for agent in agents:
         mc = agent.monicaConstant if getattr(agent, 'monicaConstant', None) is not None else 0.5
         score = utils.calculate_enhanced_moment_score(
-            agent.agentId, 
-            current_planets, 
-            alchm_data, 
-            mc
+            agent.agentId,
+            current_planets,
+            alchm_data,
+            mc,
+            agent=agent,
         )
         scored_agents.append({
             "agent": {
@@ -1713,13 +1675,14 @@ async def post_moment_recommendations(request: Dict[str, Any], db: Session = Dep
         return {"scores": []}
         
     alchm_data = request.get("alchmData", {})
-    current_planets = request.get("currentPlanets", {})
-    
+    # Fall back to the real computed sky when the caller doesn't supply one.
+    current_planets = request.get("currentPlanets") or _planetary_positions_for(datetime.utcnow())
+
     scores = []
     for agent_id in agent_ids:
         agent = crud.get_agent(db, agent_id)
         mc = agent.monicaConstant if agent and getattr(agent, 'monicaConstant', None) is not None else 0.5
-        score = utils.calculate_enhanced_moment_score(agent_id, current_planets, alchm_data, mc)
+        score = utils.calculate_enhanced_moment_score(agent_id, current_planets, alchm_data, mc, agent=agent)
         scores.append(score)
         
     return {"scores": scores}
@@ -2444,6 +2407,91 @@ async def admin_mcp_summary(
         return _get_cached_summary(db, windowMinutes)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"mcp-summary aggregation failed: {exc}")
+
+
+# ── A2A (Agent2Agent) server — expose agents over A2A, x402-paid (USDC) ──────
+async def _a2a_run_chat(agent_id: str, message: str) -> str:
+    """In-process chat call for the A2A executor (reuses the full orchestration)."""
+    req = schemas.ChatRequest(agentId=agent_id, message=message)
+    gen = database.get_db()
+    db = next(gen)
+    try:
+        resp = await chat(req, db)
+    finally:
+        gen.close()
+    return resp.get("text", "") if isinstance(resp, dict) else getattr(resp, "text", "")
+
+
+async def _a2a_run_chat_stream(agent_id: str, message: str):
+    """Streaming in-process chat for the A2A executor — yields text deltas.
+
+    Persona-only (skips RAG/MCP hydration for low-latency token streaming); the
+    non-streaming path (_a2a_run_chat → /api/chat) keeps the full augmentation.
+    """
+    gen = database.get_db()
+    db = next(gen)
+    try:
+        db_agent = crud.get_agent(db, agent_id)
+        if not db_agent:
+            yield f"(agent {agent_id} not found)"
+            return
+        persona_block = prompts.get_agent_system_prompt(db_agent.__dict__)
+        tier = _resolve_tier(None)
+        anthropic_model = ANTHROPIC_TIER_MODEL.get(tier)
+        chain = providers.build_chain(tier, anthropic_model)
+        async for delta in providers.run_chain_stream(
+            chain=chain,
+            persona_block=persona_block,
+            rag_block="",
+            user_message=message,
+            agent_id=agent_id,
+            tier=tier,
+        ):
+            yield delta
+    finally:
+        gen.close()
+
+
+def _a2a_agent_list() -> List[Dict[str, Any]]:
+    """Agents to expose over A2A. Default = a flagship set; override via A2A_AGENT_IDS."""
+    ids_env = os.getenv("A2A_AGENT_IDS")
+    flagship = ["plato", "aristotle", "socrates", "homer", "marie-curie", "leonardo-da-vinci"]
+    ids = [s.strip() for s in ids_env.split(",") if s.strip()] if ids_env else flagship
+    agents: List[Dict[str, Any]] = []
+    gen = database.get_db()
+    db = next(gen)
+    try:
+        for aid in ids:
+            try:
+                row = crud.get_agent(db, aid)
+            except Exception:
+                row = None
+            name = getattr(row, "name", None) or aid.replace("-", " ").title()
+            title = getattr(row, "title", None) if row is not None else None
+            description = f"{name} — {title}" if title else f"{name}, an Alchm planetary/historical agent."
+            agents.append({"id": aid, "name": name, "description": description})
+    finally:
+        gen.close()
+    return agents
+
+
+if os.getenv("A2A_ENABLED", "true").lower() == "true":
+    try:
+        from x402_middleware import add_x402_gate
+
+        add_x402_gate(app)
+        print("[x402] payment gate active on /a2a/ (enforced when X402_PAY_TO is set)", flush=True)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[x402] gate not added: {exc}", flush=True)
+    try:
+        from a2a_server import register_a2a_routes
+
+        _mounted = register_a2a_routes(
+            app, _a2a_run_chat, _a2a_agent_list(), run_chat_stream=_a2a_run_chat_stream
+        )
+        print(f"[a2a] mounted {_mounted} agent(s) at /a2a/<agentId>/.well-known/agent-card.json", flush=True)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[a2a] A2A server not mounted ({exc}); install a2a-sdk[fastapi] to enable", flush=True)
 
 
 if __name__ == "__main__":
