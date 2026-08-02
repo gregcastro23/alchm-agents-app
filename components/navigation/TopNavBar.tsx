@@ -45,6 +45,16 @@ export function TopNavBar() {
       </div>
       <div className="flex items-center gap-4">
         <Link
+          href="/pentacles"
+          aria-label="Pentacle Star Vaults"
+          title="Pentacle Star Vaults"
+          className="text-on-surface-variant hover:text-st-primary transition-colors flex items-center gap-1"
+        >
+          <span className="material-symbols-outlined text-[20px]" aria-hidden>
+            stars
+          </span>
+        </Link>
+        <Link
           href="/attunement-circle"
           aria-label="Attune"
           className="text-on-surface-variant hover:text-st-primary transition-colors"
@@ -60,6 +70,15 @@ export function TopNavBar() {
         >
           <span className="material-symbols-outlined" aria-hidden>
             account_balance_wallet
+          </span>
+        </Link>
+        <Link
+          href="/shop"
+          aria-label="ESMS Bazaar"
+          className="text-on-surface-variant hover:text-st-primary transition-colors"
+        >
+          <span className="material-symbols-outlined" aria-hidden>
+            redeem
           </span>
         </Link>
         <Link

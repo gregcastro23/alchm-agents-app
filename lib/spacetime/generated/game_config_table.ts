@@ -17,4 +17,5 @@ export default __t.row({
   ascendantDegree: __t.u16().name('ascendant_degree'),
   seeded: __t.bool(),
   starSeedCursor: __t.u32().name('star_seed_cursor'),
+  constellationsSeeded: __t.bool().name('constellations_seeded'),
 })

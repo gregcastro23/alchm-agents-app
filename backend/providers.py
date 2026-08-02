@@ -81,6 +81,13 @@ FREE_CHAIN: List[ProviderConfig] = [
         base_url="https://api.cerebras.ai/v1",
     ),
     ProviderConfig(
+        # Qwen 2.5 72B Instruct via OpenRouter. Free-tier endpoint.
+        name="qwen",
+        model=os.getenv("QWEN_FREE_MODEL", "qwen/qwen-2.5-72b-instruct:free"),
+        api_key_env="OPENROUTER_API_KEY",
+        base_url="https://openrouter.ai/api/v1",
+    ),
+    ProviderConfig(
         # `gemini-flash-latest` auto-tracks the newest stable flash model, so
         # we do not get pinned to a versioned name (e.g. `-exp`, `-001`) that
         # Google later retires. As of 2026-05 it resolves to gemini-2.5-flash.
@@ -90,15 +97,11 @@ FREE_CHAIN: List[ProviderConfig] = [
         base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
     ),
     ProviderConfig(
-        # Avoid meta-llama/llama-3.3-70b-instruct:free — heavily oversubscribed on
-        # the free tier (429s). The prior pick deepseek/deepseek-v4-flash:free was
-        # retired by OpenRouter (404 "No endpoints found", caught live via
-        # /api/providers/health on 2026-06-01). Kimi K2.6 is a different family
-        # (less contention), has a 262K-token context, and live-served a 1-token
-        # ping cleanly. This is the 4th free fallback (Groq → Cerebras → Gemini →
-        # here), so it's rarely reached and an occasional free-tier 429 is tolerable.
+        # OpenRouter retired the free Kimi K2.6 endpoint in June 2026. Its free
+        # gpt-oss-120b route is live-verified and provides a strong general-purpose
+        # fourth fallback after Groq, Cerebras, and Gemini.
         name="openrouter",
-        model=os.getenv("OPENROUTER_FREE_MODEL", "moonshotai/kimi-k2.6:free"),
+        model=os.getenv("OPENROUTER_FREE_MODEL", "openai/gpt-oss-120b:free"),
         api_key_env="OPENROUTER_API_KEY",
         base_url="https://openrouter.ai/api/v1",
     ),
@@ -396,6 +399,128 @@ async def run_chain(
             )
             continue
     return None
+
+
+# ── Streaming variants (true token streaming for the A2A message/stream path) ──
+
+async def _call_anthropic_stream(
+    cfg: ProviderConfig,
+    persona_block: str,
+    rag_block: str,
+    user_message: str,
+    max_tokens: int = 1024,
+):
+    """Yield text deltas from Anthropic via the streaming helper."""
+    client = anthropic.AsyncAnthropic(api_key=cfg.api_key)
+    system_blocks: List[Dict[str, Any]] = [
+        {"type": "text", "text": persona_block, "cache_control": {"type": "ephemeral"}}
+    ]
+    if rag_block:
+        system_blocks.append({"type": "text", "text": rag_block})
+    async with client.messages.stream(
+        model=cfg.model,
+        max_tokens=max_tokens,
+        system=system_blocks,
+        messages=[{"role": "user", "content": user_message}],
+    ) as stream:
+        async for text in stream.text_stream:
+            if text:
+                yield text
+
+
+async def _call_openai_compatible_stream(
+    cfg: ProviderConfig,
+    persona_block: str,
+    rag_block: str,
+    user_message: str,
+    max_tokens: int = 1024,
+):
+    """Yield text deltas from an OpenAI-compatible provider (Groq/Cerebras/Gemini/…)."""
+    kwargs: Dict[str, Any] = {"api_key": cfg.api_key}
+    if cfg.base_url:
+        kwargs["base_url"] = cfg.base_url
+    client = AsyncOpenAI(**kwargs)
+    full_system = persona_block + ("\n\n" + rag_block if rag_block else "")
+    stream = await client.chat.completions.create(
+        model=cfg.model,
+        messages=[
+            {"role": "system", "content": full_system},
+            {"role": "user", "content": user_message},
+        ],
+        max_tokens=max_tokens,
+        stream=True,
+    )
+    async for chunk in stream:
+        choices = getattr(chunk, "choices", None)
+        if not choices:
+            continue
+        delta = getattr(choices[0].delta, "content", None)
+        if delta:
+            yield delta
+
+
+async def _stream_provider(
+    cfg: ProviderConfig, persona_block: str, rag_block: str, user_message: str, max_tokens: int = 1024
+):
+    if cfg.name == "anthropic":
+        async for t in _call_anthropic_stream(cfg, persona_block, rag_block, user_message, max_tokens):
+            yield t
+    else:
+        async for t in _call_openai_compatible_stream(cfg, persona_block, rag_block, user_message, max_tokens):
+            yield t
+
+
+async def run_chain_stream(
+    chain: List[ProviderConfig],
+    persona_block: str,
+    rag_block: str,
+    user_message: str,
+    agent_id: str,
+    tier: str,
+    max_tokens: int = 1024,
+):
+    """
+    Streaming analog of run_chain. Yields text deltas from the first provider that
+    starts streaming. Connect-time failures (quota/billing/no key) fall through to
+    the next provider exactly like run_chain; a mid-stream failure ends the stream
+    gracefully (partial output already delivered). Yields a sentinel string if every
+    provider fails to start.
+    """
+    for i, cfg in enumerate(chain):
+        if not cfg.api_key:
+            continue
+        gen = _stream_provider(cfg, persona_block, rag_block, user_message, max_tokens)
+        # Pull the first delta to confirm the stream actually started.
+        try:
+            first = await gen.__anext__()
+        except StopAsyncIteration:
+            print(f"fallback_event provider={cfg.name} reason=empty_stream agentId={agent_id}", flush=True)
+            continue
+        except Exception as e:  # noqa: BLE001
+            reason = "rate_limit" if is_quota_error(e) else "error"
+            next_name = next((n.name for n in chain[i + 1 :] if n.api_key), "none")
+            print(
+                f"fallback_event provider={cfg.name} reason={reason} next={next_name} "
+                f"agentId={agent_id} error={str(e)[:200]}",
+                flush=True,
+            )
+            continue
+        if cfg.is_paid_lastditch:
+            print(
+                f"alert_event reason=paid_fallback provider={cfg.name} model={cfg.model} "
+                f"agentId={agent_id} tier={tier}",
+                flush=True,
+            )
+        if first:
+            yield first
+        try:
+            async for delta in gen:
+                if delta:
+                    yield delta
+        except Exception as e:  # noqa: BLE001 — partial output already sent; end stream
+            print(f"stream_interrupt provider={cfg.name} agentId={agent_id} error={str(e)[:200]}", flush=True)
+        return
+    yield "[All providers unavailable]"
 
 
 async def health_check(cfg: ProviderConfig, timeout_s: float = 5.0) -> Dict[str, Any]:

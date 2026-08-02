@@ -16,6 +16,7 @@ type View =
   | 'chat'
   | 'astrology'
   | 'physics'
+  | 'web3'
   | 'agents'
   | 'stone'
   | 'account'
@@ -56,6 +57,8 @@ interface AgentTemplate {
   tier: AgentTier
   modelName: string
   initials: string
+  avatarUrl?: string
+  localOnly?: boolean
   domains: string[]
   quote: string
   promptSeed: string
@@ -65,7 +68,13 @@ interface AgentTemplate {
 
 interface LocalAgent extends AgentTemplate {
   addedAt: string
-  source: 'app-guide' | 'web-catalog' | 'web-unlock' | 'deep-link' | 'philosophers-stone'
+  source:
+    | 'app-guide'
+    | 'web-catalog'
+    | 'web-unlock'
+    | 'deep-link'
+    | 'philosophers-stone'
+    | 'private-local'
 }
 
 interface StoneBlueprint {
@@ -143,6 +152,15 @@ interface AgentTurnResponse {
 interface AgentTurnContext {
   groupAgents: LocalAgent[]
   priorResponses: AgentTurnResponse[]
+}
+
+interface PrivateAgentAlchmContext {
+  tools: string[]
+  errors: string[]
+  ingredients: string[]
+  liveSky?: unknown
+  ingredientScan?: unknown
+  recipeCandidates?: unknown
 }
 
 interface LedgerEntry {
@@ -667,6 +685,7 @@ const VIEW_IDS: View[] = [
   'chat',
   'astrology',
   'physics',
+  'web3',
   'agents',
   'stone',
   'account',
@@ -686,7 +705,9 @@ const DEFAULT_ACCOUNT: AccountSettings = {
   kitchenUrl: 'https://alchm.kitchen',
 }
 const DEFAULT_SITE_ACCOUNTS = createDefaultSiteAccounts()
-const AGENT_LIBRARY: AgentTemplate[] = DEMO_AGENTS.map(createAgentTemplate)
+let AGENT_LIBRARY: AgentTemplate[] = DEMO_AGENTS.map(createAgentTemplate)
+const PRIVATE_AGENT_CATALOG_URL = './private-agents/agents.json'
+const PRIVATE_AGENT_MCP_TIMEOUT_MS = 8_000
 const ASTROLOGY_SIGN_MARKS = [
   'ARI',
   'TAU',
@@ -868,6 +889,89 @@ function createAgentTemplate(agent: CraftedAgent): AgentTemplate {
     quote: firstAgentLine(agent),
     promptSeed: buildWebsitePromptSeed(agent),
     websiteAgent: agent,
+  }
+}
+
+function normalizePrivateAgentTemplate(raw: any): AgentTemplate | null {
+  if (!raw || typeof raw !== 'object') return null
+
+  const id = String(raw.id || '').trim()
+  const name = String(raw.name || '').trim()
+  if (!id || !name) return null
+
+  const element = normalizeElement(raw.element)
+  const tier = raw.tier === 'premium' ? 'premium' : 'base'
+
+  return {
+    id,
+    name,
+    title: String(raw.title || 'Private Desktop Agent'),
+    element,
+    tier,
+    modelName: String(raw.modelName || modelNameForElement(element)),
+    initials: String(raw.initials || initialsForName(name)).slice(0, 3),
+    avatarUrl: typeof raw.avatarUrl === 'string' ? raw.avatarUrl : undefined,
+    localOnly: true,
+    domains: Array.isArray(raw.domains)
+      ? raw.domains
+          .map((domain: unknown) => String(domain))
+          .filter(Boolean)
+          .slice(0, 6)
+      : ['Private local agent'],
+    quote: String(raw.quote || 'A private agent available only on this desktop.'),
+    promptSeed: String(
+      raw.promptSeed ||
+        [
+          `You are ${name}, ${raw.title || 'a private desktop agent'}.`,
+          'You are available only inside this local desktop app.',
+          'Never claim to be synced to the public web catalog.',
+        ].join('\n')
+    ),
+  }
+}
+
+function mergePrivateAgentTemplates(templates: AgentTemplate[]) {
+  if (!templates.length) return false
+
+  let changed = false
+  for (const template of templates) {
+    const existingIndex = AGENT_LIBRARY.findIndex(agent => agent.id === template.id)
+    if (existingIndex >= 0) {
+      AGENT_LIBRARY[existingIndex] = template
+    } else {
+      AGENT_LIBRARY.push(template)
+    }
+    changed = true
+  }
+
+  if (!changed) return false
+
+  state.roster = hydrateRoster(state.roster)
+  state.selectedChatAgentIds = normalizeSelectedChatAgentIds(
+    state.selectedChatAgentIds,
+    state.roster,
+    state.activeAgentId
+  )
+  state.activeAgentId = state.selectedChatAgentIds[0] ?? state.roster[0]?.id ?? null
+  return true
+}
+
+async function loadPrivateDesktopAgents() {
+  try {
+    const response = await fetch(PRIVATE_AGENT_CATALOG_URL, { cache: 'no-store' })
+    if (!response.ok) return
+
+    const catalog = await response.json()
+    const templates = Array.isArray(catalog?.agents)
+      ? catalog.agents.map(normalizePrivateAgentTemplate).filter(Boolean)
+      : []
+
+    if (mergePrivateAgentTemplates(templates as AgentTemplate[])) {
+      saveState()
+      render()
+    }
+  } catch (error) {
+    console.warn('Private desktop agent catalog unavailable:', error)
   }
 }
 
@@ -1219,6 +1323,7 @@ function renderTab(view: View) {
     chat: 'Chat',
     astrology: 'Astrology',
     physics: 'Physics',
+    web3: 'Web3',
     agents: 'Agents',
     stone: "Philosopher's Stone",
     account: 'Account',
@@ -1262,6 +1367,17 @@ function renderSidebar() {
           ${renderCoin('Essence', state.balances.essence)}
           ${renderCoin('Matter', state.balances.matter)}
           ${renderCoin('Substance', state.balances.substance)}
+        </div>
+      </section>
+      <section class="sidebar-section">
+        <div class="eyebrow">Web3</div>
+        <div class="panel compact-panel">
+          <strong>${escapeHtml(web3SidebarTitle())}</strong>
+          <p class="muted">${escapeHtml(web3SidebarDetail())}</p>
+          <div class="button-row">
+            <button class="secondary-button" data-action="view" data-view="web3">Open</button>
+            <button class="secondary-button" data-action="open-web3-url" data-url="${escapeHtml(web3RouteUrl('/pentacles'))}">Stake</button>
+          </div>
         </div>
       </section>
       <section class="sidebar-section">
@@ -1315,10 +1431,20 @@ function renderSidebar() {
 }
 
 function renderCoin(label: string, amount: number) {
+  const icons: Record<string, string> = {
+    Spirit: 'water_drop',
+    Essence: 'energy_savings_leaf',
+    Matter: 'grain',
+    Substance: 'toll',
+  }
+  const icon = icons[label] || 'toll'
   return `
-    <div class="coin">
-      <span>${label}</span>
-      <strong>${amount}</strong>
+    <div class="coin ${label.toLowerCase()}">
+      <span class="material-symbols-outlined coin-icon">${icon}</span>
+      <div class="coin-info">
+        <span class="coin-label">${label}</span>
+        <strong>${amount}</strong>
+      </div>
     </div>
   `
 }
@@ -1333,7 +1459,7 @@ function renderRosterButton(agent: LocalAgent, selectedAgentIds: string[]) {
       data-action="select-agent"
       data-agent-id="${agent.id}"
     >
-      <span class="avatar">${escapeHtml(agent.initials)}</span>
+      ${renderAgentAvatar(agent)}
       <span class="roster-button-body">
         <strong class="truncate">${escapeHtml(agent.name)}</strong>
         <small class="truncate">${escapeHtml(agent.title)}</small>
@@ -1349,6 +1475,8 @@ function renderActiveView() {
       return renderAstrologyView()
     case 'physics':
       return renderPhysicsView()
+    case 'web3':
+      return renderWeb3View()
     case 'agents':
       return renderAgentsView()
     case 'stone':
@@ -1408,8 +1536,18 @@ function renderChatView() {
                 ? renderGroupStarterMessage(agents)
                 : renderStarterMessage(agents[0])
           }
+          ${
+            state.runtime.generating
+              ? `
+            <div class="typing-indicator">
+              <div class="typing-dots"><span></span><span></span><span></span></div>
+              <span class="typing-label">${escapeHtml(agents.length === 1 ? agents[0].name : 'Agents')} thinking…</span>
+            </div>
+          `
+              : ''
+          }
         </div>
-        <form class="composer" data-chat-form>
+        <form class="composer element-${agents[0]?.element || ''}" data-chat-form>
           <textarea
             class="textarea"
             name="message"
@@ -1432,7 +1570,7 @@ function renderChatHeading(agents: LocalAgent[]) {
 
     return `
       <div class="agent-heading">
-        <span class="avatar large-avatar">${escapeHtml(agent.initials)}</span>
+        ${renderAgentAvatar(agent, 'large-avatar')}
         <div>
           <div class="eyebrow">${escapeHtml(agentEyebrow(agent))}</div>
           <h1>${escapeHtml(agent.name)}</h1>
@@ -1447,7 +1585,7 @@ function renderChatHeading(agents: LocalAgent[]) {
       <div class="avatar-stack" aria-hidden="true">
         ${agents
           .slice(0, 4)
-          .map(agent => `<span class="avatar">${escapeHtml(agent.initials)}</span>`)
+          .map(agent => renderAgentAvatar(agent))
           .join('')}
       </div>
       <div>
@@ -1461,6 +1599,7 @@ function renderChatHeading(agents: LocalAgent[]) {
 
 function agentEyebrow(agent: LocalAgent) {
   if (agent.source === 'app-guide') return 'App guide'
+  if (agent.localOnly || agent.source === 'private-local') return 'Private desktop agent'
   if (agent.source === 'philosophers-stone') return "Philosopher's Stone agent"
   return agent.tier === 'premium' ? 'Premium agent' : 'Synced agent'
 }
@@ -1636,7 +1775,7 @@ function renderChatAgentOption(agent: LocalAgent, isSelected: boolean) {
         data-agent-id="${agent.id}"
         ${isSelected ? 'checked' : ''}
       />
-      <span class="avatar mini-avatar">${escapeHtml(agent.initials)}</span>
+      ${renderAgentAvatar(agent, 'mini-avatar')}
       <span>
         <strong class="truncate">${escapeHtml(agent.name)}</strong>
         <small class="truncate">${escapeHtml(agentEyebrow(agent))}</small>
@@ -2511,14 +2650,23 @@ function renderMessage(message: ChatMessage) {
   `
     : ''
 
+  const agentElement = isAgent ? getMessageAgentElement(message) : ''
+
   return `
-    <article class="message ${message.role}">
+    <article class="message ${message.role}${agentElement ? ` element-${agentElement}` : ''}">
       <div class="message-meta">
         <div style="display: flex; align-items: center; gap: 8px;">
           <strong>${escapeHtml(speakerName)}</strong>
           ${playButton}
         </div>
-        <small>${formatTime(message.timestamp)}${message.channel ? ` · ${escapeHtml(message.channel)}` : ''}</small>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <div class="message-actions">
+            <button class="message-action-btn" data-action="copy-message" data-message-text="${escapeHtml(message.content)}" title="Copy message">
+              <span class="material-symbols-outlined" style="font-size: 14px;">content_copy</span>
+            </button>
+          </div>
+          <small>${formatTime(message.timestamp)}${message.channel ? ` · ${escapeHtml(message.channel)}` : ''}</small>
+        </div>
       </div>
       <p>${escapeHtml(message.content)}</p>
     </article>
@@ -2530,6 +2678,13 @@ function getMessageSpeakerName(message: ChatMessage) {
   if (message.agentId)
     return state.roster.find(agent => agent.id === message.agentId)?.name || 'Agent'
   return getActiveAgent()?.name || 'Agent'
+}
+
+function getMessageAgentElement(message: ChatMessage): string {
+  const agent = message.agentId
+    ? state.roster.find(a => a.id === message.agentId)
+    : getActiveAgent()
+  return agent?.element || ''
 }
 
 function chatComposerPlaceholder(agents: LocalAgent[]) {
@@ -3533,6 +3688,196 @@ function physicsAccentFor(key: string) {
   return accents[key] || '#e5e7eb'
 }
 
+function renderWeb3View() {
+  return `
+    <section class="view web3-view">
+      <header class="view-header web3-header">
+        <div>
+          <div class="eyebrow">Agent Economy</div>
+          <h1>Web3 control surface</h1>
+          <p>
+            Wallet identity, Pentacle staking, ERC-8004 reputation, ENS agent records, A2A/x402
+            payments, Walrus memory, and World ID for the agent economy.
+          </p>
+        </div>
+        <div class="button-row">
+          <button class="secondary-button" data-action="refresh-accounts">Sync Accounts</button>
+          <button class="primary-button" data-action="link-account-web">Connect Wallet</button>
+        </div>
+      </header>
+
+      <div class="web3-kpi-grid">
+        ${renderWeb3Kpi('Wallet', web3IdentityTitle(), web3IdentityDetail(), 'account_balance_wallet')}
+        ${renderWeb3Kpi('Network', canCallNetwork() ? 'Online' : 'Offline', canCallNetwork() ? 'Desktop can open cloud Web3 routes.' : 'Airplane mode blocks cloud sync.', 'public')}
+        ${renderWeb3Kpi('Registry', 'ERC-8004', 'Payable agent discovery and reputation.', 'hub')}
+        ${renderWeb3Kpi('Settlement', 'x402 / Arc', 'A2A requests settle through the backend gate.', 'toll')}
+      </div>
+
+      <section class="web3-hero-panel">
+        <div>
+          <div class="eyebrow">Circle Arc Star Vaults</div>
+          <h2>Pentacle staking is one click away from the native app.</h2>
+          <p>
+            Live star zones, Circle Arc USDC staking, portfolio review, and wallet setup share the
+            linked desktop identity.
+          </p>
+        </div>
+        <div class="web3-hero-actions">
+          ${renderWeb3Action('Open Pentacles', web3RouteUrl('/pentacles'), 'primary')}
+          ${renderWeb3Action('Portfolio', web3RouteUrl('/pentacles/portfolio'), 'secondary')}
+          ${renderWeb3Action('Wallet Setup', web3RouteUrl('/pentacles/connect'), 'secondary')}
+        </div>
+      </section>
+
+      <div class="web3-feature-grid">
+        ${renderWeb3Feature({
+          icon: 'account_tree',
+          title: 'ENS and NameStone',
+          status: 'Agent records',
+          detail:
+            'Gasless alchmagents.eth subnames carry A2A, MCP, web, memory, wallet, registration, and human-verification records.',
+          tags: ['ENSIP-25/26', 'NameStone', 'agent-endpoint'],
+          actions: [
+            { label: 'Agents Home', url: web3RouteUrl('/') },
+            { label: 'Agent Catalog', url: web3RouteUrl('/planetary-agents') },
+          ],
+        })}
+        ${renderWeb3Feature({
+          icon: 'hub',
+          title: 'A2A plus x402',
+          status: 'Payable agents',
+          detail:
+            'Agent Cards, message/send, streaming calls, and x402-gated settlement through the FastAPI backend.',
+          tags: ['A2A', 'x402', 'SSE'],
+          actions: [
+            {
+              label: 'Plato Card',
+              url: `${agentsBackendBase()}/a2a/plato/.well-known/agent-card.json`,
+            },
+            { label: 'Backend Health', url: `${agentsBackendBase()}/api/providers/health` },
+          ],
+        })}
+        ${renderWeb3Feature({
+          icon: 'verified',
+          title: 'ERC-8004 registry',
+          status: 'Reputation',
+          detail:
+            'BigQuery-backed reputation signals for trustworthy, x402-payable agent discovery.',
+          tags: ['BigQuery', 'reputation', 'Arc'],
+          actions: [{ label: 'Leaderboard', url: web3RouteUrl('/erc8004') }],
+        })}
+        ${renderWeb3Feature({
+          icon: 'memory',
+          title: 'Walrus memory',
+          status: 'Persona snapshots',
+          detail:
+            'Encrypted MemWal snapshots are part of the agent record, with blob IDs written back into ENS memory metadata.',
+          tags: ['Walrus', 'MemWal', 'agent-memory'],
+          actions: [{ label: 'Agents Home', url: web3RouteUrl('/') }],
+        })}
+        ${renderWeb3Feature({
+          icon: 'shield',
+          title: 'World ID',
+          status: 'Human verified',
+          detail:
+            'World ID proof-of-personhood gates human verification badges that can be surfaced through ENS and A2A metadata.',
+          tags: ['World ID', 'AgentKit', 'human-verified'],
+          actions: [{ label: 'Profile', url: web3RouteUrl('/profile?desktopLink=true') }],
+        })}
+        ${renderWeb3Feature({
+          icon: 'swap_horiz',
+          title: 'Onramp and privacy',
+          status: 'Payment tools',
+          detail:
+            '1inch onramp and Unlink payer flows stay web-hosted, while the desktop keeps the operator account and agent roster in sync.',
+          tags: ['1inch', 'Unlink', 'wallet'],
+          actions: [
+            { label: 'Profile', url: web3RouteUrl('/profile') },
+            { label: 'Yield Hub', url: web3RouteUrl('/yield') },
+          ],
+        })}
+      </div>
+    </section>
+  `
+}
+
+function renderWeb3Kpi(label: string, value: string, detail: string, icon: string) {
+  return `
+    <article class="web3-kpi">
+      <span class="material-symbols-outlined" aria-hidden="true">${escapeHtml(icon)}</span>
+      <div>
+        <small>${escapeHtml(label)}</small>
+        <strong>${escapeHtml(value)}</strong>
+        <p>${escapeHtml(detail)}</p>
+      </div>
+    </article>
+  `
+}
+
+function renderWeb3Feature(feature: {
+  icon: string
+  title: string
+  status: string
+  detail: string
+  tags: string[]
+  actions: Array<{ label: string; url: string }>
+}) {
+  return `
+    <article class="web3-feature-card">
+      <div class="web3-feature-head">
+        <span class="material-symbols-outlined web3-feature-icon" aria-hidden="true">${escapeHtml(feature.icon)}</span>
+        <div>
+          <h3>${escapeHtml(feature.title)}</h3>
+          <small>${escapeHtml(feature.status)}</small>
+        </div>
+      </div>
+      <p>${escapeHtml(feature.detail)}</p>
+      <div class="tag-row">
+        ${feature.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+      </div>
+      <div class="button-row push-end">
+        ${feature.actions
+          .map(action => renderWeb3Action(action.label, action.url, 'secondary'))
+          .join('')}
+      </div>
+    </article>
+  `
+}
+
+function renderWeb3Action(label: string, url: string, variant: 'primary' | 'secondary') {
+  const className = variant === 'primary' ? 'primary-button' : 'secondary-button'
+  return `
+    <button class="${className}" data-action="open-web3-url" data-url="${escapeHtml(url)}">
+      ${escapeHtml(label)}
+    </button>
+  `
+}
+
+function web3IdentityTitle() {
+  const linked =
+    state.account.plan === 'Linked Companion' ||
+    state.siteAccounts.agents.status === 'linked' ||
+    state.siteAccounts.kitchen.status === 'linked'
+  return linked ? 'Linked' : 'Local'
+}
+
+function web3IdentityDetail() {
+  if (web3IdentityTitle() === 'Linked') {
+    return state.account.email || state.account.displayName || 'Account sync is active.'
+  }
+  return 'Connect on the web route to sync wallet, profile, ESMS, and staking state.'
+}
+
+function web3SidebarTitle() {
+  return `${web3IdentityTitle()} wallet layer`
+}
+
+function web3SidebarDetail() {
+  return canCallNetwork()
+    ? 'Pentacles, ERC-8004, ENS, x402, Walrus, World ID.'
+    : 'Cloud Web3 routes are paused by airplane mode.'
+}
+
 function renderAgentsView() {
   const query = (state.agentSearchQuery || '').toLowerCase().trim()
   const filteredAgents = AGENT_LIBRARY.filter(agent => {
@@ -3550,10 +3895,11 @@ function renderAgentsView() {
       <header class="view-header">
         <div>
           <div class="eyebrow">Agents Web Catalog</div>
-          <h1>Send website agents to desktop</h1>
+          <h1>Send agents to desktop</h1>
           <p>
-            This companion uses the same Alchm Agents definitions as the web app. Purchases and
-            unlock decisions belong on the main web app; agents sent here appear in desktop chat.
+            This companion uses the same Alchm Agents definitions as the web app, plus any
+            private agents stored only on this device. Purchases and unlock decisions belong on
+            the main web app; private agents never open a web route.
           </p>
         </div>
         <div class="button-row">
@@ -3576,7 +3922,7 @@ function renderAgentsView() {
         }
       </div>
 
-      <div class="agent-grid">
+      <div class="agent-grid stagger-children">
         ${
           filteredAgents.length
             ? filteredAgents.map(renderAgentCard).join('')
@@ -3592,9 +3938,9 @@ function renderAgentCard(template: AgentTemplate) {
   const lvl = agentLevel(template.id)
 
   return `
-    <article class="agent-card">
+    <article class="agent-card element-${template.element} ${template.tier === 'premium' ? 'tier-premium' : ''} ${template.localOnly ? 'tier-private' : ''}">
       <div class="agent-card-head">
-        <span class="avatar large-avatar">${escapeHtml(template.initials)}</span>
+        ${renderAgentAvatar(template, 'large-avatar')}
         <div>
           <h3>${escapeHtml(template.name)}</h3>
           <p class="muted">${escapeHtml(template.title)}</p>
@@ -3603,7 +3949,7 @@ function renderAgentCard(template: AgentTemplate) {
       </div>
       <p class="agent-quote">${escapeHtml(template.quote)}</p>
       <div class="tag-row">
-        <span class="tag">${template.tier === 'premium' ? 'Premium web unlock' : 'Web catalog'}</span>
+        <span class="tag">${template.localOnly ? 'Private desktop' : template.tier === 'premium' ? 'Premium web unlock' : 'Web catalog'}</span>
         <span class="tag">${escapeHtml(template.element)}</span>
         ${template.domains.map(domain => `<span class="tag">${escapeHtml(domain)}</span>`).join('')}
       </div>
@@ -3613,9 +3959,13 @@ function renderAgentCard(template: AgentTemplate) {
             ? `<button class="secondary-button" data-action="open-chat" data-agent-id="${template.id}">Open Chat</button>`
             : `<button class="primary-button" data-action="add-agent" data-agent-id="${template.id}">Add to Desktop</button>`
         }
-        <button class="secondary-button" data-action="open-agent-web" data-agent-id="${template.id}">
-          Web App
-        </button>
+        ${
+          template.localOnly
+            ? ''
+            : `<button class="secondary-button" data-action="open-agent-web" data-agent-id="${template.id}">
+                Web App
+              </button>`
+        }
       </div>
     </article>
   `
@@ -3831,6 +4181,7 @@ function renderAccountView() {
         </div>
         <div class="button-row">
           <button class="secondary-button" data-action="refresh-accounts">Sync Both Accounts</button>
+          <button class="secondary-button" data-action="view" data-view="web3">Web3 Console</button>
         </div>
       </header>
 
@@ -4012,6 +4363,8 @@ function renderDiagnosticsView() {
       <div class="diag-grid">
         ${renderMetric('Frontend source', 'desktop-shell/dist')}
         ${renderMetric('Main Sidecar API', state.runtime.sidecar)}
+        ${renderMetric('Web3 network', canCallNetwork() ? 'enabled' : 'airplane')}
+        ${renderMetric('A2A/x402 backend', agentsBackendBase().replace(/^https?:\/\//, ''))}
         ${renderMetric(
           'Alchm MCP Stdio',
           state.runtime.ipcNonce ? state.runtime.alchmMcpStatus : 'browser preview'
@@ -4163,6 +4516,7 @@ function addAgent(
 ) {
   const template = AGENT_LIBRARY.find(agent => agent.id === agentId)
   if (!template) return
+  const resolvedSource: LocalAgent['source'] = template.localOnly ? 'private-local' : source
   if (state.roster.some(agent => agent.id === template.id)) {
     setSingleChatAgent(template.id)
     saveState()
@@ -4172,12 +4526,18 @@ function addAgent(
 
   const syncedAgent = { ...template, tier: tierOverride || template.tier }
   addLedger(
-    source === 'web-unlock' || source === 'deep-link' ? 'Agent Sent From Web' : 'Agent Added',
-    `${syncedAgent.name} was added to desktop companion chat.`,
+    resolvedSource === 'private-local'
+      ? 'Private Agent Added'
+      : resolvedSource === 'web-unlock' || resolvedSource === 'deep-link'
+        ? 'Agent Sent From Web'
+        : 'Agent Added',
+    `${syncedAgent.name} was added to desktop companion chat${
+      resolvedSource === 'private-local' ? ' as a private local agent' : ''
+    }.`,
     'No charge'
   )
 
-  state.roster.push({ ...syncedAgent, addedAt: new Date().toISOString(), source })
+  state.roster.push({ ...syncedAgent, addedAt: new Date().toISOString(), source: resolvedSource })
   setSingleChatAgent(syncedAgent.id)
   setNotice(`${syncedAgent.name} added to Alchm Desktop.`)
   saveState()
@@ -4603,6 +4963,247 @@ function removeAgent(agentId: string) {
   render()
 }
 
+async function buildPrivateAgentAlchmContext(
+  agent: LocalAgent,
+  userMessage: string
+): Promise<PrivateAgentAlchmContext | null> {
+  if (!agent.localOnly || !invokeCommand) return null
+
+  if (alchmMcpClient.getSnapshot().status !== 'online') {
+    try {
+      await withTimeout(
+        alchmMcpClient.start(),
+        10_000,
+        'Alchm MCP did not become ready for private agent chat.'
+      )
+    } catch (error) {
+      console.warn(`[Private Alchm MCP] Unable to start for ${agent.name}:`, error)
+    }
+  }
+
+  if (alchmMcpClient.getSnapshot().status !== 'online') return null
+
+  const context: PrivateAgentAlchmContext = {
+    tools: [],
+    errors: [],
+    ingredients: extractCulinaryIngredients(userMessage),
+  }
+
+  const callTool = async <T>(name: string, args: Record<string, unknown> = {}) => {
+    const result = await withTimeout(
+      alchmMcpClient.call('tools/call', {
+        name,
+        arguments: {
+          ...args,
+          _meta: {
+            apiKey: state.account.apiKey || 'dev-desktop-token',
+            caller: 'alchm-desktop-private-agent',
+            agentId: agent.id,
+          },
+        },
+      }),
+      PRIVATE_AGENT_MCP_TIMEOUT_MS,
+      `${name} timed out.`
+    )
+    const parsed = parseMcpToolJson<T>(result)
+    if (!parsed) throw new Error(`${name} returned an empty MCP payload.`)
+    context.tools.push(name)
+    return parsed
+  }
+
+  try {
+    context.liveSky = await callTool('get_live_sky_transits', {
+      latitude: 40.7128,
+      longitude: -74.006,
+    })
+  } catch (error) {
+    context.errors.push(`get_live_sky_transits: ${errorMessage(error)}`)
+  }
+
+  if (context.ingredients.length) {
+    try {
+      context.ingredientScan = await callTool('alchemize_ingredients', {
+        ingredients: context.ingredients,
+      })
+    } catch (error) {
+      context.errors.push(`alchemize_ingredients: ${errorMessage(error)}`)
+    }
+  }
+
+  if (shouldFetchPrivateRecipeCandidates(userMessage, context.ingredients)) {
+    try {
+      const dominantElement = findFirstStringByKeys(context.liveSky, [
+        'dominantElement',
+        'dominant_element',
+        'element',
+      ])
+      const recipeArgs: Record<string, unknown> = {
+        prompt: userMessage.slice(0, 280),
+      }
+      if (dominantElement) recipeArgs.dominantElement = dominantElement
+
+      context.recipeCandidates = await callTool('generate_cosmic_recipe', {
+        ...recipeArgs,
+      })
+    } catch (error) {
+      context.errors.push(`generate_cosmic_recipe: ${errorMessage(error)}`)
+    }
+  }
+
+  return context.tools.length ? context : null
+}
+
+function extractCulinaryIngredients(userMessage: string) {
+  const knownIngredients = [
+    'almond',
+    'anchovy',
+    'apple',
+    'basil',
+    'beet',
+    'butter',
+    'carrot',
+    'cheese',
+    'chocolate',
+    'clam',
+    'cocoa',
+    'coffee',
+    'cream',
+    'egg',
+    'fig',
+    'garlic',
+    'ginger',
+    'honey',
+    'honeydew',
+    'lemon',
+    'lime',
+    'melon',
+    'miso',
+    'mushroom',
+    'olive',
+    'onion',
+    'orange',
+    'oyster',
+    'pineapple',
+    'pepper',
+    'potato',
+    'rice',
+    'saffron',
+    'salt',
+    'seaweed',
+    'shrimp',
+    'tomato',
+    'truffle',
+    'vanilla',
+    'vinegar',
+    'yogurt',
+  ]
+  const lower = userMessage.toLowerCase()
+  const found = knownIngredients
+    .filter(ingredient => new RegExp(`\\b${escapeRegExp(ingredient)}s?\\b`, 'i').test(lower))
+    .sort((a, b) => lower.indexOf(a) - lower.indexOf(b))
+  const ingredientPhrase = userMessage.match(
+    /\b(?:with|using|from|ingredients?|cook|cooking)\b[:\s]+([^.?]+)/i
+  )?.[1]
+  const phraseIngredients = ingredientPhrase
+    ? ingredientPhrase
+        .split(/,|\band\b|\bplus\b|\bwith\b/i)
+        .map(part =>
+          part
+            .replace(/[^a-zA-Z\s-]/g, '')
+            .replace(/\b(?:cuttings?|peels?|pieces?|scraps?|trimmings?)\b/gi, '')
+            .trim()
+            .toLowerCase()
+        )
+        .filter(part => part.length > 2 && part.length < 32)
+        .filter(part => !hasAny(part, ['idea', 'recipe', 'dish', 'private', 'desktop', 'culinary']))
+    : []
+
+  return [...new Set([...found, ...phraseIngredients])].slice(0, 8)
+}
+
+function shouldFetchPrivateRecipeCandidates(userMessage: string, ingredients: string[]) {
+  const lower = userMessage.toLowerCase()
+  return (
+    ingredients.length > 0 ||
+    hasAny(lower, [
+      'recipe',
+      'cook',
+      'cooking',
+      'culinary',
+      'dish',
+      'dinner',
+      'eat',
+      'food',
+      'ingredient',
+      'kitchen',
+      'meal',
+      'menu',
+      'plate',
+      'spherification',
+      'tapa',
+    ])
+  )
+}
+
+function formatPrivateAgentAlchmContext(context: PrivateAgentAlchmContext | null) {
+  if (!context?.tools.length) return ''
+
+  const sections = [
+    'Alchm Kitchen MCP context for this private desktop agent:',
+    `Tools used: ${context.tools.join(', ')}`,
+    context.ingredients.length ? `Ingredient candidates: ${context.ingredients.join(', ')}` : '',
+    context.liveSky ? `Live sky JSON: ${truncateJson(context.liveSky, 1400)}` : '',
+    context.ingredientScan
+      ? `Ingredient alchemy JSON: ${truncateJson(context.ingredientScan, 1400)}`
+      : '',
+    context.recipeCandidates
+      ? `Recipe candidates JSON: ${truncateJson(context.recipeCandidates, 1800)}`
+      : '',
+  ]
+
+  return sections.filter(Boolean).join('\n')
+}
+
+function truncateJson(data: unknown, limit: number) {
+  const text = JSON.stringify(data, null, 0)
+  if (text.length <= limit) return text
+  return `${text.slice(0, Math.max(0, limit - 16))}...[truncated]`
+}
+
+function findFirstStringByKeys(data: unknown, keys: string[], depth = 0): string | null {
+  if (!data || depth > 5) return null
+  if (typeof data !== 'object') return null
+
+  const record = data as Record<string, unknown>
+  for (const key of keys) {
+    const value = record[key]
+    if (typeof value === 'string' && value.trim()) return value.trim()
+    if (typeof value === 'number' && Number.isFinite(value)) return String(value)
+  }
+
+  for (const value of Object.values(record)) {
+    if (Array.isArray(value)) {
+      for (const item of value.slice(0, 8)) {
+        const found = findFirstStringByKeys(item, keys, depth + 1)
+        if (found) return found
+      }
+    } else {
+      const found = findFirstStringByKeys(value, keys, depth + 1)
+      if (found) return found
+    }
+  }
+
+  return null
+}
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error)
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 function saveAccountFromForm() {
   state.account = {
     ...state.account,
@@ -4688,7 +5289,9 @@ async function sendMessage(text: string) {
           } else {
             addLedger(
               agents.length > 1 ? 'Group Agent Chat' : 'Agent Chat',
-              `${agent.name} answered with the synced web profile.`,
+              `${agent.name} answered with ${
+                agent.localOnly ? 'a private local profile' : 'the synced web profile'
+              }.`,
               agentText.metered ? 'Metered' : 'No charge'
             )
             shouldRefreshAccounts = shouldRefreshAccounts || agentText.metered
@@ -4739,43 +5342,49 @@ async function requestAgentText(
     }
   }
 
-  // Path 1: Local MCP (chat_with_planetary_agent tool via sidecar stdio)
-  try {
-    const priorHistory = turnContext.priorResponses.map(res => `${res.agentName}: ${res.content}`)
-    const apiKey = state.account.apiKey || 'dev-desktop-token'
-    const mcpResult = await paMcpClient.call('tools/call', {
-      name: 'chat_with_planetary_agent',
-      arguments: {
-        agentName: agent.name,
-        message: userMessage,
-        conversationHistory: priorHistory,
-        _meta: {
-          apiKey: apiKey,
-          caller: 'alchm-desktop-shell',
-        },
-      },
-    })
+  const privateAlchmContext = agent.localOnly
+    ? await buildPrivateAgentAlchmContext(agent, userMessage)
+    : null
 
-    if (mcpResult && mcpResult.content && mcpResult.content[0]) {
-      const payloadText = mcpResult.content[0].text
-      const payload = JSON.parse(payloadText)
-      if (payload.error) {
-        throw new Error(payload.error)
+  if (!agent.localOnly) {
+    // Path 1: Local MCP (chat_with_planetary_agent tool via sidecar stdio)
+    try {
+      const priorHistory = turnContext.priorResponses.map(res => `${res.agentName}: ${res.content}`)
+      const apiKey = state.account.apiKey || 'dev-desktop-token'
+      const mcpResult = await paMcpClient.call('tools/call', {
+        name: 'chat_with_planetary_agent',
+        arguments: {
+          agentName: agent.name,
+          message: userMessage,
+          conversationHistory: priorHistory,
+          _meta: {
+            apiKey: apiKey,
+            caller: 'alchm-desktop-shell',
+          },
+        },
+      })
+
+      if (mcpResult && mcpResult.content && mcpResult.content[0]) {
+        const payloadText = mcpResult.content[0].text
+        const payload = JSON.parse(payloadText)
+        if (payload.error) {
+          throw new Error(payload.error)
+        }
+        return {
+          content: payload.text || 'No response',
+          channel: 'Local MCP Agent',
+          metered: false,
+        }
       }
-      return {
-        content: payload.text || 'No response',
-        channel: 'Local MCP Agent',
-        metered: false,
-      }
+      throw new Error('Invalid MCP response format')
+    } catch (error: any) {
+      console.warn(`[Path 1] MCP sidecar failed for ${agent.name}:`, error?.message || error)
     }
-    throw new Error('Invalid MCP response format')
-  } catch (error: any) {
-    console.warn(`[Path 1] MCP sidecar failed for ${agent.name}:`, error?.message || error)
   }
 
   // Path 2: Direct Backend API call (bypasses MCP sidecar, calls /api/chat directly)
   // This is the "cloud API" path — works in both Tauri and browser preview.
-  if (canCallNetwork()) {
+  if (!agent.localOnly && canCallNetwork()) {
     try {
       const backendUrl = isLocalDev ? 'http://localhost:8000' : 'https://api.agents.alchm.kitchen'
       const groupContext = buildAgentGroupPromptContext(agent, turnContext)
@@ -4825,8 +5434,24 @@ async function requestAgentText(
   if (invokeCommand && state.runtime.ipcNonce && state.account.apiKey) {
     try {
       const groupContext = buildAgentGroupPromptContext(agent, turnContext)
-      const prompt =
-        agent.source === 'philosophers-stone'
+      const alchmContextBlock = formatPrivateAgentAlchmContext(privateAlchmContext)
+      const prompt = agent.localOnly
+        ? [
+            `System: You are ${agent.name}, ${agent.title}, a private desktop-only agent.`,
+            agent.promptSeed,
+            groupContext,
+            alchmContextBlock,
+            alchmContextBlock
+              ? 'Use the Alchm Kitchen MCP context as factual local tool output. Do not expose raw JSON unless asked.'
+              : '',
+            'Answer only from the local desktop context. Do not say you are synced to or available from the public web catalog.',
+            'The desktop app is a local companion chat surface. Do not describe yourself as a fallback.',
+            `User: ${userMessage}`,
+            'Agent:',
+          ]
+            .filter(Boolean)
+            .join('\n')
+        : agent.source === 'philosophers-stone'
           ? [
               `System: You are ${agent.name}, ${agent.title}, a local agent created with the Philosopher's Stone.`,
               agent.promptSeed,
@@ -4879,10 +5504,16 @@ async function requestAgentText(
   }
 
   // Path 4: Profile-guided Offline Fallback (only when all API paths exhausted)
-  console.warn(`[Path 4] All API paths failed for ${agent.name}, using profile-guided fallback`)
+  console.warn(
+    `[Path 4] ${agent.localOnly ? 'Private local agent using' : 'All API paths failed for'} ${agent.name}, using profile-guided fallback`
+  )
   return {
-    content: buildProfileGuidedAgentReply(agent, userMessage, turnContext),
-    channel: 'Desktop agent (Offline)',
+    content: buildProfileGuidedAgentReply(agent, userMessage, turnContext, privateAlchmContext),
+    channel: privateAlchmContext?.tools.length
+      ? 'Alchm MCP + private profile'
+      : agent.localOnly
+        ? 'Private local agent'
+        : 'Desktop agent (Offline)',
     metered: false,
   }
 }
@@ -4915,7 +5546,8 @@ function buildAgentGroupPromptContext(agent: LocalAgent, turnContext: AgentTurnC
 function buildProfileGuidedAgentReply(
   agent: LocalAgent,
   userMessage: string,
-  turnContext: AgentTurnContext
+  turnContext: AgentTurnContext,
+  privateAlchmContext: PrivateAgentAlchmContext | null = null
 ) {
   const message = userMessage.toLowerCase()
   const subject = summarizePromptSubject(userMessage)
@@ -4923,6 +5555,13 @@ function buildProfileGuidedAgentReply(
   const teachingStyle = agent.websiteAgent?.abilities?.teachingStyle
   const domains = agent.domains.slice(0, 3).join(', ')
   const signatureQuestion = buildSignatureAgentQuestion(agent, message, subject)
+
+  if (agent.localOnly && agent.name.toLowerCase().includes('ferran')) {
+    return addGroupContextToProfileReply(
+      buildFerranPrivateCulinaryReply(agent, message, subject, privateAlchmContext),
+      turnContext
+    )
+  }
 
   if (asksForOneQuestion(message)) return signatureQuestion
 
@@ -4957,6 +5596,97 @@ function buildProfileGuidedAgentReply(
     .join(' ')
 
   return addGroupContextToProfileReply(reply, turnContext)
+}
+
+function buildFerranPrivateCulinaryReply(
+  agent: LocalAgent,
+  message: string,
+  subject: string,
+  privateAlchmContext: PrivateAgentAlchmContext | null
+) {
+  const ingredients = privateAlchmContext?.ingredients.length
+    ? privateAlchmContext.ingredients
+    : extractCulinaryIngredients(subject)
+  const primaryIngredient = ingredients[0] || 'olive'
+  const secondaryIngredient = ingredients.find(ingredient => ingredient !== primaryIngredient)
+  const dominantElement = findFirstStringByKeys(privateAlchmContext?.liveSky, [
+    'dominantElement',
+    'dominant_element',
+    'element',
+  ])
+  const recipeName = findFirstStringByKeys(privateAlchmContext?.recipeCandidates, [
+    'title',
+    'name',
+    'recipeName',
+  ])
+  const toolLine = privateAlchmContext?.tools.length
+    ? `I checked ${privateAlchmContext.tools.join(', ')} through the local Alchm Kitchen MCP before answering.`
+    : ''
+  const skyLine = dominantElement
+    ? `Let the current ${dominantElement} signal decide the emphasis: aroma first if it is airy, temperature if it is fiery, texture if it is earthy, and release if it is watery.`
+    : ''
+
+  if (asksForOneQuestion(message)) {
+    return `What familiar ingredient in your kitchen would become strange again if we changed only its temperature, texture, or moment of release?`
+  }
+
+  if (
+    ingredients.length ||
+    hasAny(message, [
+      'recipe',
+      'cook',
+      'cooking',
+      'dish',
+      'do with',
+      'meal',
+      'dinner',
+      'lunch',
+      'eat',
+      'use',
+      'using',
+    ])
+  ) {
+    const base = recipeName
+      ? `Start from the MCP candidate "${recipeName}", then reduce it to a three-bite sequence instead of a full plate.`
+      : ingredients.length >= 2
+        ? `Make a three-bite fruit sequence from ${ingredients.join(', ')}: compress the trimmings with a little salt and acid, strain the juice into a clear broth, freeze some as granita, then set the rest as a soft gel.`
+        : `Make a three-bite ${primaryIngredient} sequence: a clear warm essence, a cold crisp sheet, and a small burst of liquid center.`
+    const pairing = secondaryIngredient
+      ? `Let ${secondaryIngredient} sharpen the finish, but keep ${primaryIngredient} as the recognizable center.`
+      : 'Keep the garnish nearly invisible; the surprise should be structural, not decorative.'
+
+    return [
+      toolLine,
+      base,
+      pairing,
+      skyLine,
+      'The goal is not novelty; it is making recognition happen one second late.',
+    ]
+      .filter(Boolean)
+      .join(' ')
+  }
+
+  if (hasAny(message, ['idea', 'private', 'desktop', 'culinary', 'kitchen', 'plate', 'menu'])) {
+    return [
+      toolLine,
+      `One private desktop-only idea: turn ${primaryIngredient} into a "memory tapa."`,
+      `Serve its aroma as vapor, its body as a thin gel, and its flavor as one sphere that breaks only after the guest thinks the dish is finished.`,
+      secondaryIngredient ? `Let ${secondaryIngredient} appear only in the aftertaste.` : '',
+      skyLine,
+      'The dish should feel like a thought completing itself in the mouth.',
+    ]
+      .filter(Boolean)
+      .join(' ')
+  }
+
+  return [
+    toolLine,
+    `I would approach "${subject}" as a culinary experiment: separate the assumption, the texture, and the final release.`,
+    `For ${agent.name}, the useful question is which part should be transformed and which part must remain unmistakably itself.`,
+    skyLine,
+  ]
+    .filter(Boolean)
+    .join(' ')
 }
 
 function addGroupContextToProfileReply(reply: string, turnContext: AgentTurnContext) {
@@ -5062,6 +5792,26 @@ function handleAgenticNavigation(message: string): View | null {
     'esms',
     'link',
   ])
+  const hasWeb3 = hasAny(text, [
+    'web3',
+    'web 3',
+    'wallet',
+    'staking',
+    'stake',
+    'pentacle',
+    'pentacles',
+    'erc-8004',
+    'erc8004',
+    'registry',
+    'ens',
+    'namestone',
+    'x402',
+    'a2a',
+    'walrus',
+    'world id',
+    'worldid',
+    'arc',
+  ])
   const hasDiag = hasAny(text, [
     'diagnostics',
     'hardware',
@@ -5106,6 +5856,7 @@ function handleAgenticNavigation(message: string): View | null {
   if (isNavRequest) {
     if (hasAstro) return 'astrology'
     if (hasPhysics) return 'physics'
+    if (hasWeb3) return 'web3'
     if (hasStone) return 'stone'
     if (hasAccount) return 'account'
     if (hasDiag) return 'diagnostics'
@@ -5117,6 +5868,7 @@ function handleAgenticNavigation(message: string): View | null {
   if (text.startsWith('go ') || text.startsWith('open ') || text.startsWith('show ')) {
     if (hasAstro) return 'astrology'
     if (hasPhysics) return 'physics'
+    if (hasWeb3) return 'web3'
     if (hasStone) return 'stone'
     if (hasAccount) return 'account'
     if (hasDiag) return 'diagnostics'
@@ -5140,6 +5892,7 @@ function buildMonicaGuideReply(userMessage: string, turnContext: AgentTurnContex
       chat: 'Chat',
       astrology: 'Astrology',
       physics: 'Physics',
+      web3: 'Web3',
       agents: 'Agents',
       stone: 'Stone',
       account: 'Account',
@@ -5840,6 +6593,10 @@ function buildRuntimeNotice(agent: LocalAgent) {
     return `Alchm Desktop created ${agent.name} with the Philosopher's Stone, but the local inference runtime is not ready yet. Install or verify the official local model for this agent to chat on this device.`
   }
 
+  if (agent.localOnly || agent.source === 'private-local') {
+    return `Alchm Desktop has ${agent.name} as a private local agent, but the local inference runtime is not ready yet. Install or verify the official local model to chat on this device; this agent is not available through the web app.`
+  }
+
   return `Alchm Desktop has ${agent.name} synced, but the local inference runtime is not ready yet. Install or verify the official local model for this agent, or continue on the Alchm Agents web app.`
 }
 
@@ -5925,6 +6682,16 @@ function urlForSite(site: SiteKey) {
   return site === 'agents' ? state.account.agentsUrl : state.account.kitchenUrl
 }
 
+function web3RouteUrl(path: string) {
+  const base = (state.account.agentsUrl || DEFAULT_ACCOUNT.agentsUrl).replace(/\/$/, '')
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  return `${base}${normalizedPath}`
+}
+
+function agentsBackendBase() {
+  return isLocalDev ? 'http://localhost:8000' : 'https://api.agents.alchm.kitchen'
+}
+
 function openAgentOnWeb(agentId: string) {
   void openExternalUrl(
     `${state.account.agentsUrl.replace(/\/$/, '')}/agent/${encodeURIComponent(agentId)}`
@@ -5996,6 +6763,20 @@ function escapeHtml(value: string) {
   })
 }
 
+function renderAgentAvatar(
+  agent: Pick<AgentTemplate, 'initials' | 'avatarUrl' | 'name'>,
+  size = ''
+) {
+  const classes = ['avatar', size, agent.avatarUrl ? 'image-avatar' : ''].filter(Boolean).join(' ')
+  if (agent.avatarUrl) {
+    return `<span class="${classes}"><img src="${escapeHtml(agent.avatarUrl)}" alt="${escapeHtml(
+      agent.name
+    )}" loading="lazy" /></span>`
+  }
+
+  return `<span class="${classes}">${escapeHtml(agent.initials)}</span>`
+}
+
 function sleep(milliseconds: number) {
   return new Promise(resolve => window.setTimeout(resolve, milliseconds))
 }
@@ -6058,6 +6839,13 @@ function bindEvents() {
       }
     }
 
+    if (action === 'copy-message') {
+      const text = control.dataset.messageText
+      if (text) {
+        void navigator.clipboard.writeText(text)
+      }
+    }
+
     if (action === 'select-agent' && agentId) {
       setSingleChatAgent(agentId)
       saveState()
@@ -6077,6 +6865,9 @@ function bindEvents() {
       void openExternalUrl(control.dataset.url)
     }
     if (action === 'open-physics-source' && control.dataset.url) {
+      void openExternalUrl(control.dataset.url)
+    }
+    if (action === 'open-web3-url' && control.dataset.url) {
       void openExternalUrl(control.dataset.url)
     }
     if (action === 'open-site' && isSiteKey(site)) void openExternalUrl(urlForSite(site))
@@ -6891,10 +7682,10 @@ function renderScrabbleStandings(standings: Standing[]) {
                   ${standings
                     .map(
                       standing => `
-                        <tr>
-                          <td>${standing.rank}</td>
+                        <tr class="standings-row">
+                          <td class="rank-col ${standing.rank === 1 ? 'first' : 'normal'}">#${standing.rank}</td>
                           <td><strong>${escapeHtml(standing.name)}</strong><small>${standing.played} played</small></td>
-                          <td class="scrabble-elo">${standing.elo}</td>
+                          <td class="scrabble-elo"><span class="elo-badge ${standing.rank <= 2 ? 'gold' : 'normal'}">${standing.elo}</span></td>
                           <td>${standing.won}-${standing.lost}-${standing.tied}</td>
                           <td>${standing.pointsFor.toLocaleString()}</td>
                         </tr>
@@ -6968,7 +7759,9 @@ interface VoiceProfile {
   voiceKeywords: string[]
   rate: number
   pitch: number
-  lang?: string
+  lang?: string // preferred English variant (en-US, en-GB, en-IN, en-AU)
+  gender: 'male' | 'female'
+  nativeLang?: string // agent's historical native language (it-IT, fr-FR, de-DE, etc.)
 }
 
 const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
@@ -6979,6 +7772,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.82, // very thoughtful and slow with contemplative pauses
     pitch: 0.92, // mellow baritone, slightly lower
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'de-DE', // German (Ulm, Württemberg)
   },
   'isaac-newton': {
     // Precise, clipped British diction. Measured and deliberate — each word weighed carefully.
@@ -6986,6 +7781,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.85, // precise and deliberate, borderline pedantic
     pitch: 1.08, // slightly higher, intellectual clarity
     lang: 'en-GB',
+    gender: 'male',
   },
   'william-shakespeare': {
     // Theatrical, rolling cadence. Elizabethan flourish — dramatic pauses followed by rapid passages.
@@ -6993,6 +7789,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.08, // theatrical and flowing, building momentum
     pitch: 1.06, // expressive tenor with dramatic range
     lang: 'en-GB',
+    gender: 'male',
   },
   socrates: {
     // Conversational, probing, Socratic irony. Speaks as if perpetually asking a question.
@@ -7000,6 +7797,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.9, // deliberate, leaving space for thought
     pitch: 1.04, // slightly elevated — curious, inquisitive tone
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'el-GR', // Ancient Greek
   },
   'galileo-galilei': {
     // Italian passion meets scientific rigor. Animated when describing discoveries, measured when reasoning.
@@ -7007,6 +7806,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.05, // slightly quick, animated with excitement
     pitch: 1.02, // warm Mediterranean tenor
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'it-IT', // Italian (Pisa)
   },
   'carl-jung': {
     // Swiss-German accent, deep and resonant. Speaks in careful, layered constructions with psychological weight.
@@ -7014,6 +7815,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.78, // very slow, ponderous, depth-seeking
     pitch: 0.85, // deep baritone, almost hypnotic
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'de-CH', // Swiss German (Kesswil)
   },
   'carl-sagan': {
     // Breathy wonder, cosmic awe. Famous for elongated vowels and building excitement.
@@ -7021,13 +7824,16 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.92, // measured wonder, building to crescendo
     pitch: 1.0, // warm and resonant, natural mid-range
     lang: 'en-US',
+    gender: 'male',
   },
   'siddhartha-gautama-buddha': {
     // Profoundly serene. Each word placed like a stone in still water — extreme calm.
     voiceKeywords: ['grandpa', 'reed', 'rishi'],
     rate: 0.68, // extremely slow, meditative — the slowest of all agents
     pitch: 0.88, // deep and tranquil, almost a whisper of authority
-    lang: 'en-US',
+    lang: 'en-IN',
+    gender: 'male',
+    nativeLang: 'hi-IN', // Pali/Sanskrit region
   },
   rumi: {
     // Ecstatic, rhythmic, poetic. Like listening to sung verse — musical and flowing.
@@ -7035,6 +7841,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.88, // rhythmic and flowing, building like poetry
     pitch: 1.08, // elevated, ecstatic — almost singing
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'fa-IR', // Persian (Balkh, now Afghanistan)
   },
   'mark-twain-1835': {
     // Missouri drawl, dry wit. Long pauses for comedic effect, then sudden punchlines.
@@ -7042,6 +7850,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.78, // slow, drawling — takes his sweet time
     pitch: 0.85, // gruff, weathered baritone with humor underneath
     lang: 'en-US',
+    gender: 'male',
   },
   'benjamin-franklin': {
     // Avuncular, pragmatic, slightly amused. The wise grandfather who's seen it all.
@@ -7049,6 +7858,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.95, // conversational but measured
     pitch: 0.96, // balanced, warm, approachable
     lang: 'en-US',
+    gender: 'male',
   },
   'julius-caesar': {
     // Imperial authority. Declarative, commanding — every sentence a decree.
@@ -7056,6 +7866,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.05, // crisp, military precision
     pitch: 0.88, // deep, authoritative, a general's voice
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'it-IT', // Latin (Rome)
   },
   'isaac-asimov': {
     // Brooklyn-accented, rapid-fire, professor-like. Enthusiastic about ideas, speaks faster when excited.
@@ -7063,6 +7875,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.12, // quick and intellectually animated
     pitch: 1.02, // clear, professorial
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'ru-RU', // Russian (Petrovichi, emigrated age 3)
   },
   'leonardo-da-vinci': {
     // Renaissance polymath. Curious, dreamy, shifting between art and science mid-sentence.
@@ -7070,6 +7884,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.92, // contemplative, sometimes pausing to sketch mentally
     pitch: 1.06, // warm, expressive Italian tenor
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'it-IT', // Italian (Vinci, Tuscany)
   },
   'nikola-tesla': {
     // Serbian-accented precision. Visionary intensity — speaks as if receiving transmissions.
@@ -7077,6 +7893,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.02, // precise, slightly clipped, electric
     pitch: 1.1, // higher, intense, vibrating with ideas
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'sr-RS', // Serbian (Smiljan, Austrian Empire)
   },
   'charles-darwin': {
     // Soft-spoken English gentleman. Careful, observational — speaks like he's narrating field notes.
@@ -7084,6 +7902,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.85, // patient, observational
     pitch: 0.98, // gentle, understated English tenor
     lang: 'en-GB',
+    gender: 'male',
   },
   'marcus-aurelius': {
     // Stoic composure. Measured, self-reflective — the voice of a man writing meditations.
@@ -7091,6 +7910,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.82, // deliberate, stoic
     pitch: 0.92, // steady, centered — neither high nor low
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'it-IT', // Latin (Rome)
   },
   confucius: {
     // Aphoristic, teacher's cadence. Pauses between ideas to let them sink in.
@@ -7098,6 +7919,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.8, // slow, didactic — each word deliberate
     pitch: 0.95, // calm authority, elder's voice
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'zh-CN', // Chinese (Lu, Zhou dynasty)
   },
   'lao-tzu': {
     // Soft, paradoxical, almost whispering. The Tao speaks through silence.
@@ -7105,6 +7928,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.72, // near-silence pace, deeply contemplative
     pitch: 0.9, // gentle, almost ethereal
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'zh-CN', // Chinese (Zhou dynasty)
   },
   'sun-tzu': {
     // Military precision meets philosophical depth. Short, declarative, strategic.
@@ -7112,6 +7937,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.0, // precise, strategic — no wasted words
     pitch: 0.9, // controlled, deep, commanding
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'zh-CN', // Chinese (Qi, Spring and Autumn period)
   },
   nietzsche: {
     // Intense, passionate, building to philosophical climax. The voice of a man on a mountain.
@@ -7119,6 +7946,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.08, // passionate, building intensity
     pitch: 1.05, // intense tenor, rising with fervor
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'de-DE', // German (Röcken, Saxony)
   },
   plato: {
     // Socrates' student, more measured and systematic. Speaks in structured dialogues.
@@ -7126,6 +7955,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.88, // systematic, building arguments
     pitch: 1.02, // clear, academic
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'el-GR', // Ancient Greek (Athens)
   },
   aristotle: {
     // The teacher. More grounded than Plato, more empirical. Speaks with taxonomic precision.
@@ -7133,6 +7964,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.92, // methodical, categorizing
     pitch: 0.98, // balanced, authoritative
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'el-GR', // Ancient Greek (Stagira)
   },
   dostoevsky: {
     // Russian intensity. Tortured, deep, exploring the abyss of human psychology.
@@ -7140,6 +7973,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.8, // heavy, brooding, dramatic pauses
     pitch: 0.82, // deep Russian baritone, anguished depth
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'ru-RU', // Russian (Moscow)
   },
   voltaire: {
     // French wit, razor-sharp. Quick, sardonic, dripping with irony.
@@ -7147,6 +7982,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.1, // quick-witted, satirical
     pitch: 1.08, // light, amused tenor
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'fr-FR', // French (Paris)
   },
   'omar-khayyam': {
     // Persian poet-mathematician. Lyrical, wine-flavored, fatalistic beauty.
@@ -7154,6 +7991,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.85, // flowing, poetic cadence
     pitch: 1.05, // melodic, warm
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'fa-IR', // Persian (Nishapur)
   },
   'khalil-gibran': {
     // Lebanese mystical prose. Deeply earnest, every word a revelation.
@@ -7161,6 +8000,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.82, // reverent, almost prayerful
     pitch: 1.04, // warm, sincere tenor
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'ar-LB', // Arabic (Bsharri, Lebanon)
   },
   machiavelli: {
     // Florentine pragmatism. Cool, calculating, speaking uncomfortable truths without flinching.
@@ -7168,13 +8009,17 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.95, // measured, strategic — revealing nothing accidental
     pitch: 0.94, // smooth, slightly cold
     lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'it-IT', // Italian (Florence)
   },
   gandhi: {
     // Gentle but unyielding. Speaks softly but with absolute moral conviction.
     voiceKeywords: ['rishi', 'grandpa', 'reed'],
     rate: 0.78, // gentle, deliberate, unhurried
     pitch: 1.0, // thin but clear, moral authority
-    lang: 'en-US',
+    lang: 'en-IN',
+    gender: 'male',
+    nativeLang: 'gu-IN', // Gujarati (Porbandar)
   },
   'alan-turing': {
     // Brilliant, slightly awkward. Quick bursts of insight followed by contemplative pauses.
@@ -7182,6 +8027,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.05, // quick analytical mind
     pitch: 1.06, // slightly higher, nervous energy
     lang: 'en-GB',
+    gender: 'male',
   },
   'edgar-allan-poe': {
     // Gothic, haunted, melodramatic. The voice echoes in empty chambers.
@@ -7189,6 +8035,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.82, // slow, building dread
     pitch: 0.88, // dark, resonant, slightly hollow
     lang: 'en-US',
+    gender: 'male',
   },
   'thomas-jefferson': {
     // Virginian eloquence. Diplomatic, measured, writing-as-speech — the Declaration in voice form.
@@ -7196,6 +8043,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.9, // measured, diplomatic
     pitch: 0.96, // refined Southern gentility
     lang: 'en-US',
+    gender: 'male',
   },
   'abraham-lincoln': {
     // Frontier simplicity meets profound depth. Speaks slowly, with homespun wisdom.
@@ -7203,6 +8051,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.8, // prairie slow, deliberate
     pitch: 0.9, // surprisingly high for his frame, nasal quality
     lang: 'en-US',
+    gender: 'male',
   },
   'martin-luther-king-jr': {
     // Preacher's cadence. Musical, building, sermonic — the voice rises to crescendo.
@@ -7210,6 +8059,128 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.95, // building rhythm, sermonic pacing
     pitch: 0.95, // rich baritone, powerful resonance
     lang: 'en-US',
+    gender: 'male',
+  },
+  'charles-dickens': {
+    // Victorian London storyteller. Vivid, theatrical, character voices within the voice.
+    voiceKeywords: ['daniel', 'eddy', 'reed', 'google uk english male'],
+    rate: 1.05, // animated storytelling
+    pitch: 1.04, // expressive, varied
+    lang: 'en-GB',
+    gender: 'male',
+  },
+  'geoffrey-chaucer': {
+    // Middle English cadence. Rolling, musical, earthy humor.
+    voiceKeywords: ['daniel', 'eddy', 'reed', 'google uk english male'],
+    rate: 0.9, // measured, narrative
+    pitch: 1.0, // natural English storyteller
+    lang: 'en-GB',
+    gender: 'male',
+  },
+  'john-locke': {
+    // Enlightenment rationalist. Clear, systematic, building logical cases.
+    voiceKeywords: ['daniel', 'eddy', 'reed'],
+    rate: 0.92, // systematic, rational
+    pitch: 1.02, // clear, reasoned
+    lang: 'en-GB',
+    gender: 'male',
+  },
+  'david-hume': {
+    // Scottish Enlightenment. Warm skepticism with a gentle Scottish lilt.
+    voiceKeywords: ['daniel', 'eddy', 'reed'],
+    rate: 0.88, // gentle, questioning
+    pitch: 1.0, // warm, Scottish-tinged
+    lang: 'en-GB',
+    gender: 'male',
+  },
+  'adam-smith': {
+    // Scottish political economist. Measured, professorial, building arguments with data.
+    voiceKeywords: ['daniel', 'eddy', 'reed'],
+    rate: 0.9, // professorial
+    pitch: 0.98, // steady, authoritative
+    lang: 'en-GB',
+    gender: 'male',
+  },
+  'jean-jacques-rousseau': {
+    // French Romantic. Passionate, emotional, nature-loving — the wild man of philosophy.
+    voiceKeywords: ['eddy', 'reed', 'daniel'],
+    rate: 0.92, // impassioned but eloquent
+    pitch: 1.04, // warm, emotive
+    lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'fr-CH', // French (Geneva)
+  },
+  'immanuel-kant': {
+    // Prussian precision. Extraordinarily methodical — speaks in perfectly structured paragraphs.
+    voiceKeywords: ['eddy', 'reed', 'daniel'],
+    rate: 0.82, // extremely methodical
+    pitch: 0.96, // dry, precise
+    lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'de-DE', // German (Königsberg)
+  },
+  'sigmund-freud': {
+    // Viennese doctor's cadence. Probing, slightly seductive, uncovering hidden meanings.
+    voiceKeywords: ['grandpa', 'eddy', 'reed'],
+    rate: 0.85, // probing, deliberate
+    pitch: 0.9, // deep, suggestive
+    lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'de-AT', // Austrian German (Vienna)
+  },
+  'johannes-kepler': {
+    // German astronomer. Earnest, mathematical, slightly breathless with cosmic wonder.
+    voiceKeywords: ['eddy', 'reed', 'daniel'],
+    rate: 0.92, // earnest, calculated
+    pitch: 1.04, // clear, wondering
+    lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'de-DE', // German (Weil der Stadt)
+  },
+  'claude-monet': {
+    // French Impressionist. Dreamy, light, describing colors and light.
+    voiceKeywords: ['eddy', 'reed', 'daniel'],
+    rate: 0.88, // gentle, observational
+    pitch: 1.06, // light, warm
+    lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'fr-FR', // French (Paris)
+  },
+  'wolfgang-amadeus-mozart': {
+    // Austrian prodigy. Playful, rapid, mischievous — the eternal child genius.
+    voiceKeywords: ['eddy', 'reed', 'rocko'],
+    rate: 1.15, // quick, playful, mischievous
+    pitch: 1.12, // bright, youthful, sparkling
+    lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'de-AT', // Austrian German (Salzburg)
+  },
+  'ibn-sina-avicenna': {
+    // Persian polymath. Authoritative medical-philosophical precision.
+    voiceKeywords: ['rishi', 'reed', 'eddy'],
+    rate: 0.88, // measured, scholarly
+    pitch: 1.0, // clear, authoritative
+    lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'fa-IR', // Persian (Bukhara)
+  },
+  'thomas-aquinas': {
+    // Dominican scholastic. Methodical, building theological arguments with care.
+    voiceKeywords: ['eddy', 'reed', 'daniel'],
+    rate: 0.85, // deliberate, scholastic
+    pitch: 0.96, // deep, contemplative
+    lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'it-IT', // Italian (Roccasecca)
+  },
+  homer: {
+    // The blind bard. Epic, rolling, oral-tradition cadence — meant to be performed.
+    voiceKeywords: ['grandpa', 'reed', 'eddy'],
+    rate: 0.9, // epic, rolling, bardic
+    pitch: 0.94, // deep, resonant storyteller
+    lang: 'en-US',
+    gender: 'male',
+    nativeLang: 'el-GR', // Ancient Greek
   },
   // ────────────────── FEMALE AGENTS ──────────────────
   cleopatra: {
@@ -7218,6 +8189,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.82, // imperially slow, commanding attention
     pitch: 1.12, // elevated, regal clarity
     lang: 'en-US',
+    gender: 'female',
+    nativeLang: 'el-GR', // Koine Greek (Ptolemaic Egypt)
   },
   'jane-austen': {
     // Regency wit, precise English diction. Quick irony, measured observations.
@@ -7225,6 +8198,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.08, // brisk, witty, socially aware
     pitch: 1.1, // light, intelligent soprano
     lang: 'en-GB',
+    gender: 'female',
   },
   'frida-kahlo': {
     // Mexican fire and pain. Warm, slow, with sudden volcanic intensity.
@@ -7232,6 +8206,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.9, // warm, passionate, smoldering
     pitch: 0.92, // deeper than expected, earthy
     lang: 'en-US',
+    gender: 'female',
+    nativeLang: 'es-MX', // Spanish (Coyoacán, Mexico)
   },
   'marie-curie-1867': {
     // Polish-French precision. Calm, focused, speaking with scientific exactitude.
@@ -7239,6 +8215,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.88, // careful, precise, methodical
     pitch: 1.0, // steady, no-nonsense
     lang: 'en-US',
+    gender: 'female',
+    nativeLang: 'pl-PL', // Polish (Warsaw); also fr-FR
   },
   'sojourner-truth': {
     // Powerful preacher's voice. Deep, resonant, rising with prophetic conviction.
@@ -7246,6 +8224,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.82, // slow, letting truth settle like thunder
     pitch: 0.86, // deep, resonant — the lowest female voice in the registry
     lang: 'en-US',
+    gender: 'female',
   },
   'maya-angelou': {
     // Rich, melodic Southern poetry. Every sentence a verse, every pause intentional.
@@ -7253,6 +8232,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.76, // deeply rhythmic, letting words breathe
     pitch: 0.85, // rich contralto, musical depth
     lang: 'en-US',
+    gender: 'female',
   },
   'eleanor-roosevelt': {
     // New England aristocratic. Diplomatic, precise, with quiet steel underneath.
@@ -7260,6 +8240,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.94, // diplomatic, measured
     pitch: 1.08, // refined, clear, patrician
     lang: 'en-US',
+    gender: 'female',
   },
   'rachel-carson': {
     // Gentle, observant naturalist. Speaks as if describing a bird in flight — reverent, specific.
@@ -7267,6 +8248,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.9, // unhurried observation
     pitch: 1.04, // warm, gentle, caring
     lang: 'en-US',
+    gender: 'female',
   },
   'mary-wollstonecraft': {
     // English radical, passionate and direct. Speaks with conviction and moral force.
@@ -7274,6 +8256,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.02, // direct, impassioned
     pitch: 1.05, // clear, assertive
     lang: 'en-GB',
+    gender: 'female',
   },
   'joan-of-arc': {
     // Young, fierce, prophetic. Speaks with the conviction of divine voices — urgent and unwavering.
@@ -7281,6 +8264,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.05, // urgent, prophetic
     pitch: 1.15, // young, high, burning with certainty
     lang: 'en-US',
+    gender: 'female',
+    nativeLang: 'fr-FR', // French (Domrémy)
   },
   'hildegard-of-bingen': {
     // Medieval mystic. Slow, chanting quality — as if composing plainsong while speaking.
@@ -7288,6 +8273,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.78, // liturgical, measured, contemplative
     pitch: 1.1, // clear, bell-like, monastic
     lang: 'en-US',
+    gender: 'female',
+    nativeLang: 'de-DE', // German (Bermersheim)
   },
   'ada-lovelace': {
     // Victorian precision meets mathematical imagination. Precise but visionary.
@@ -7295,6 +8282,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.02, // precise, analytical but enthusiastic
     pitch: 1.08, // bright, clear Victorian
     lang: 'en-GB',
+    gender: 'female',
   },
   'harriet-tubman': {
     // Quiet steel, coded speech. Speaks in short, decisive commands — a conductor's voice.
@@ -7302,6 +8290,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.85, // decisive, no wasted words
     pitch: 0.9, // deep, weathered strength
     lang: 'en-US',
+    gender: 'female',
   },
   'virginia-woolf': {
     // Stream of consciousness in voice. Flowing, associative, building complex thoughts mid-sentence.
@@ -7309,6 +8298,7 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.06, // flowing, associative, building
     pitch: 1.04, // literary, intelligent
     lang: 'en-GB',
+    gender: 'female',
   },
   'murasaki-shikibu': {
     // Court elegance, poetic restraint. Each word chosen like a brushstroke.
@@ -7316,6 +8306,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.82, // deliberate, poetic restraint
     pitch: 1.06, // refined, delicate
     lang: 'en-US',
+    gender: 'female',
+    nativeLang: 'ja-JP', // Japanese (Heian-kyō/Kyoto)
   },
   'wangari-maathai': {
     // Kenyan warmth, environmental passion. Speaks with the patience of planting trees.
@@ -7323,6 +8315,8 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.9, // warm, patient, growing
     pitch: 1.0, // clear, grounded
     lang: 'en-US',
+    gender: 'female',
+    nativeLang: 'sw-KE', // Swahili/Kikuyu (Nyeri, Kenya)
   },
   'florence-nightingale': {
     // Victorian compassion, administrative precision. Gentle but utterly organized.
@@ -7330,6 +8324,15 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 0.92, // caring but efficient
     pitch: 1.06, // clear, compassionate English
     lang: 'en-GB',
+    gender: 'female',
+  },
+  'emily-dickinson': {
+    // Reclusive, intense, compressed. Each word carries the weight of an entire poem.
+    voiceKeywords: ['shelley', 'flo', 'sandy', 'samantha'],
+    rate: 0.78, // deliberate, compressed
+    pitch: 1.1, // quiet intensity, private
+    lang: 'en-US',
+    gender: 'female',
   },
   // ────────────────── APP GUIDE ──────────────────
   'monica-001': {
@@ -7338,49 +8341,22 @@ const HISTORICAL_VOICE_REGISTRY: Record<string, VoiceProfile> = {
     rate: 1.02, // friendly, helpful and bright
     pitch: 1.1, // clear, pleasant, approachable
     lang: 'en-US',
+    gender: 'female',
   },
   'monica-app-guide': {
     voiceKeywords: ['flo', 'samantha', 'sandy', 'shelley'],
     rate: 1.02,
     pitch: 1.1,
     lang: 'en-US',
+    gender: 'female',
   },
 }
 
 let activeSpeechUtterance: SpeechSynthesisUtterance | null = null
 
-function selectVoiceForAgent(agent: LocalAgent | undefined): SpeechSynthesisVoice | null {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return null
-  const voices = window.speechSynthesis.getVoices()
-  if (!voices.length) return null
-
-  const nameLower = (agent?.name || '').toLowerCase()
-  const idLower = (agent?.id || '').toLowerCase()
-
-  // 1. Check if we have a predefined voice profile for this historical agent
-  const profile = HISTORICAL_VOICE_REGISTRY[idLower]
-  if (profile) {
-    const enVoices = voices.filter(v => v.lang.toLowerCase().startsWith('en'))
-    if (!enVoices.length) return voices[0]
-
-    let candidates = enVoices
-    if (profile.lang) {
-      const langMatch = enVoices.filter(v =>
-        v.lang.toLowerCase().startsWith(profile.lang!.toLowerCase())
-      )
-      if (langMatch.length) candidates = langMatch
-    }
-
-    // Try to match keywords in order of preference
-    for (const keyword of profile.voiceKeywords) {
-      const match = candidates.find(v => v.name.toLowerCase().includes(keyword.toLowerCase()))
-      if (match) return match
-    }
-
-    return candidates[0]
-  }
-
-  // 2. Fall back to standard element-based voice selection
+function getAgentGender(agentId: string, agentName: string): 'male' | 'female' {
+  const idLower = agentId.toLowerCase()
+  const nameLower = agentName.toLowerCase()
   const isFemale =
     FEMALE_AGENTS.has(idLower) ||
     nameLower.includes('cleopatra') ||
@@ -7396,8 +8372,21 @@ function selectVoiceForAgent(agent: LocalAgent | undefined): SpeechSynthesisVoic
     nameLower.includes('wangari') ||
     nameLower.includes('murasaki') ||
     nameLower.includes('monica')
+  return isFemale ? 'female' : 'male'
+}
 
-  const isBritish =
+function getAgentLang(agentId: string, agentName: string): string {
+  const idLower = agentId.toLowerCase()
+  const nameLower = agentName.toLowerCase()
+
+  // 1. Check registry first
+  const profile = HISTORICAL_VOICE_REGISTRY[idLower]
+  if (profile && profile.lang) {
+    return profile.lang
+  }
+
+  // 2. Infer from name
+  if (
     nameLower.includes('shakespeare') ||
     nameLower.includes('dickens') ||
     nameLower.includes('wollstonecraft') ||
@@ -7406,14 +8395,125 @@ function selectVoiceForAgent(agent: LocalAgent | undefined): SpeechSynthesisVoic
     nameLower.includes('chaucer') ||
     nameLower.includes('locke') ||
     nameLower.includes('hume') ||
-    nameLower.includes('smith')
-
-  const enVoices = voices.filter(v => v.lang.toLowerCase().startsWith('en'))
-  if (!enVoices.length) {
-    return voices[0]
+    nameLower.includes('smith') ||
+    nameLower.includes('austen') ||
+    nameLower.includes('lovelace') ||
+    nameLower.includes('woolf') ||
+    nameLower.includes('nightingale') ||
+    nameLower.includes('turing')
+  ) {
+    return 'en-GB'
   }
 
-  // Classic low-quality novelty/robotic voices on macOS to avoid
+  if (
+    nameLower.includes('gandhi') ||
+    nameLower.includes('tagore') ||
+    nameLower.includes('buddha') ||
+    nameLower.includes('rishi')
+  ) {
+    return 'en-IN'
+  }
+
+  if (nameLower.includes('tessa') || idLower.includes('tessa')) {
+    return 'en-ZA'
+  }
+
+  if (nameLower.includes('karen') || idLower.includes('karen')) {
+    return 'en-AU'
+  }
+
+  return 'en-US'
+}
+
+function scoreVoice(
+  voice: SpeechSynthesisVoice,
+  targetGender: 'male' | 'female',
+  targetLang: string,
+  preferredKeywords: string[]
+): number {
+  let score = 0
+  const vName = voice.name.toLowerCase()
+  const vLang = voice.lang.toLowerCase()
+
+  // 1. Language matching (exact region, e.g. en-gb -> +1000; base language, e.g. en -> +500)
+  const cleanTargetLang = targetLang.toLowerCase()
+  if (vLang === cleanTargetLang) {
+    score += 1000
+  } else if (vLang.startsWith(cleanTargetLang.split('-')[0])) {
+    score += 500
+  }
+
+  // 2. Gender matching (+400 for correct gender, -400 for mismatch)
+  const femaleKeywords = [
+    'samantha',
+    'flo',
+    'sandy',
+    'shelley',
+    'grandma',
+    'karen',
+    'tessa',
+    'moira',
+    'fiona',
+    'veena',
+    'zira',
+    'susan',
+    'hazel',
+    'victoria',
+    'zoe',
+    'female',
+    'natural',
+    'google uk english female',
+    'serena',
+    'kate',
+    'stephanie',
+    'heera',
+    'aurélie',
+    'alice',
+    'kyoko',
+    'tingting',
+  ]
+  const maleKeywords = [
+    'daniel',
+    'eddy',
+    'reed',
+    'rocko',
+    'grandpa',
+    'rishi',
+    'david',
+    'alex',
+    'george',
+    'oliver',
+    'male',
+    'google uk english male',
+    'ravi',
+    'albert',
+    'fred',
+    'ralph',
+  ]
+
+  const voiceIsFemale = femaleKeywords.some(kw => vName.includes(kw))
+  const voiceIsMale = maleKeywords.some(kw => vName.includes(kw))
+
+  if (targetGender === 'female' && voiceIsFemale) score += 400
+  else if (targetGender === 'male' && voiceIsMale) score += 400
+  else if (targetGender === 'female' && voiceIsMale) score -= 400
+  else if (targetGender === 'male' && voiceIsFemale) score -= 400
+
+  // 3. Preferred agent keyword matching (+200 for each preferred keyword matched)
+  preferredKeywords.forEach((kw, index) => {
+    if (vName.includes(kw.toLowerCase())) {
+      // Prioritize earlier keywords in the preference list
+      score += 200 - index * 20
+    }
+  })
+
+  // 4. Premium / Natural voice bonus (+100)
+  const premiumKeywords = ['natural', 'premium', 'neural', 'enhanced', 'siri', 'google', 'apple']
+  if (premiumKeywords.some(kw => vName.includes(kw))) {
+    score += 100
+  }
+
+  // 5. Heavy penalty for known low-quality robotic novelty voices (-500)
   const ROBOTIC_VOICES = [
     'fred',
     'albert',
@@ -7435,100 +8535,70 @@ function selectVoiceForAgent(agent: LocalAgent | undefined): SpeechSynthesisVoic
     'zarvox',
     'kathy',
   ]
-
-  // Filter out robotic voices
-  let candidates = enVoices.filter(v => {
-    const vName = v.name.toLowerCase()
-    return !ROBOTIC_VOICES.some(bad => vName.includes(bad))
-  })
-
-  // If everything was filtered out, fall back to all English voices
-  if (!candidates.length) {
-    candidates = enVoices
+  if (ROBOTIC_VOICES.some(bad => vName.includes(bad))) {
+    score -= 500
   }
 
-  // Filter by region
-  if (isBritish) {
-    const gb = candidates.filter(
-      v => v.lang.toLowerCase().includes('gb') || v.lang.toLowerCase().includes('uk')
-    )
-    if (gb.length) candidates = gb
-  } else {
-    const isUS =
-      nameLower.includes('twain') ||
-      nameLower.includes('franklin') ||
-      nameLower.includes('roosevelt') ||
-      nameLower.includes('carson') ||
-      nameLower.includes('asimov') ||
-      nameLower.includes('sagan') ||
-      nameLower.includes('poe') ||
-      nameLower.includes('truth') ||
-      nameLower.includes('angelou') ||
-      nameLower.includes('monica') ||
-      nameLower.includes('einstein')
-    if (isUS) {
-      const us = candidates.filter(v => v.lang.toLowerCase().includes('us'))
-      if (us.length) candidates = us
+  return score
+}
+
+function selectVoiceForAgent(agent: LocalAgent | undefined): SpeechSynthesisVoice | null {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return null
+  const voices = window.speechSynthesis.getVoices()
+  if (!voices.length) return null
+
+  const agentId = agent?.id || ''
+  const agentName = agent?.name || ''
+  const idLower = agentId.toLowerCase()
+
+  const profile = HISTORICAL_VOICE_REGISTRY[idLower]
+
+  // Use registry data first, fall back to inference
+  const targetGender = profile?.gender || getAgentGender(agentId, agentName)
+  const targetLang = profile?.lang || getAgentLang(agentId, agentName)
+  const nativeLang = profile?.nativeLang
+  const preferredKeywords = profile ? profile.voiceKeywords : []
+
+  // Score all available voices
+  const scoredVoices = voices.map(voice => {
+    let score = scoreVoice(voice, targetGender, targetLang, preferredKeywords)
+    const vLang = voice.lang.toLowerCase()
+
+    // Native language accent bonus: for non-English agents, give a bonus
+    // to English voices that share the same base language region. This helps
+    // select e.g. a German-accented English voice for Einstein, or an
+    // Italian-accented voice for Galileo when available.
+    if (nativeLang) {
+      const nativeBase = nativeLang.toLowerCase().split('-')[0]
+      const voiceBase = vLang.split('-')[0]
+      // If the voice IS in the native language (e.g. de-DE voice for Einstein),
+      // give a small bonus so it ranks above generic en-US but below
+      // a properly matched en-US voice with the right keywords
+      if (voiceBase === nativeBase && voiceBase !== 'en') {
+        score += 150 // native language accent bonus
+      }
     }
-  }
 
-  // Modern natural voices: Eddy, Flo, Reed, Rocko, Sandy, Shelley, Grandma, Grandpa, Samantha, Daniel, Karen, Tessa, Moira, etc.
-  const femaleKeywords = [
-    'samantha',
-    'flo',
-    'sandy',
-    'shelley',
-    'grandma',
-    'karen',
-    'tessa',
-    'moira',
-    'fiona',
-    'veena',
-    'zira',
-    'susan',
-    'hazel',
-    'victoria',
-    'zoe',
-    'female',
-    'natural',
-    'google uk english female',
-  ]
-  const maleKeywords = [
-    'daniel',
-    'eddy',
-    'reed',
-    'rocko',
-    'grandpa',
-    'rishi',
-    'david',
-    'alex',
-    'george',
-    'oliver',
-    'male',
-    'google uk english male',
-  ]
-
-  const genderMatched = candidates.filter(v => {
-    const vName = v.name.toLowerCase()
-    return isFemale
-      ? femaleKeywords.some(kw => vName.includes(kw))
-      : maleKeywords.some(kw => vName.includes(kw))
+    return { voice, score }
   })
 
-  if (genderMatched.length > 0) {
-    // Prioritize premium/highly-natural voices
-    const premiumVoices = ['eddy', 'flo', 'sandy', 'shelley', 'reed', 'rocko', 'samantha', 'daniel']
-    const sorted = [...genderMatched].sort((a, b) => {
-      const aName = a.name.toLowerCase()
-      const bName = b.name.toLowerCase()
-      const aPremium = premiumVoices.some(p => aName.includes(p)) ? 1 : 0
-      const bPremium = premiumVoices.some(p => bName.includes(p)) ? 1 : 0
-      return bPremium - aPremium
-    })
-    return sorted[0]
+  // Sort by score descending
+  scoredVoices.sort((a, b) => b.score - a.score)
+
+  // Log the top match for debugging/visibility
+  if (scoredVoices.length > 0) {
+    const top = scoredVoices[0]
+    const nativeInfo = nativeLang ? `, native: ${nativeLang}` : ''
+    console.log(
+      `[VoiceSelection] ${agentName} (${targetGender}, ${targetLang}${nativeInfo}):`,
+      top.voice.name,
+      `lang=${top.voice.lang}`,
+      `score=${top.score}`
+    )
+    return top.voice
   }
 
-  return candidates[0]
+  return null
 }
 
 function stopSpeaking() {
@@ -7635,6 +8705,7 @@ function boot() {
   bindEvents()
   render()
   saveState()
+  void loadPrivateDesktopAgents()
   void fetchLeveling()
   void bootTauriRuntime()
 }

@@ -40,6 +40,11 @@ vi.mock('@/lib/agent-cache-system', () => ({
   buildCacheContext: vi.fn(),
 }))
 
+vi.mock('@/lib/auth', () => ({
+  auth: vi.fn(async () => null),
+  requireAuthOrRedirect: vi.fn(async () => null),
+}))
+
 vi.mock('@/lib/consciousness-persistence', () => ({
   consciousnessPersistence: {
     updateAgentMemory: vi.fn(),
@@ -625,8 +630,8 @@ describe('Unified Multi-Agent Chat API Integration', () => {
         const data = await parseStreamResponse(response)
 
         expect(response.status).toBe(200)
-        expect(data.error).toContain('Failed to process multi-agent conversation')
-        expect(data.details).toContain('Failed to generate response for')
+        expect(data.responses[0].content).toContain('temporarily unstable')
+        expect(data.responses[0].content).toContain(mockUnifiedAgents[0].name)
       } finally {
         backend.agents.chat = originalChat
       }

@@ -23,10 +23,10 @@ bun run check    # lint + format:check + typecheck combined
 ### Testing
 
 ```bash
-# Integration & unit tests (vitest, jsdom)
+# Integration & unit tests (vitest, jsdom) — the default config runs test/
 bunx vitest run test/                                # All tests in test/
 bunx vitest run test/monica.spec.ts                  # Single spec file
-bunx vitest run --config vitest.unit.config.ts       # Unit config (no storybook project)
+bunx vitest run --config vitest.storybook.config.ts  # Storybook browser tests (chromium)
 
 # Chat system test aliases
 bun run test:chat              # All chat-system tests
@@ -46,12 +46,14 @@ cd backend && ruff check .             # Lint
 ```bash
 bunx prisma studio                        # Prisma DB browser
 bun run prisma:generate                   # Generate Prisma client (with query engine — frontend talks to Neon directly)
-bunx prisma migrate dev                   # Run migrations locally
+bunx prisma db push                       # Apply schema to a DB (the de-facto deploy mechanism — see warning below)
 bun run scripts/seed-historical-agents.ts # Seed agent data
 bun run sync:all                          # Sync DB + ChromaDB
 bun run sync:chromadb                     # Ingest agents into ChromaDB
 bun run verify-db                         # Verify Prisma connection
 ```
+
+⚠️ **Schema deploys via `db push`, and `prisma/migrations/` is FAR BEHIND `schema.prisma`** — the live databases were never migrate-managed. Consequences: `migrate deploy` will NOT reproduce the real schema; new migration files are written by hand for the record (see `20260719120000_add_agent_wallets`). **NEVER pass a real database URL as `--shadow-database-url`** — Prisma RESETS the shadow database (drops everything); this wiped the tramway dev DB on 2026-07-19. To diff a live DB, use the read-only form: `prisma migrate diff --from-url <db> --to-schema-datamodel prisma/schema.prisma --script`.
 
 ### Backend (Python FastAPI)
 
@@ -68,6 +70,20 @@ bun run build-storybook  # Static build
 ```
 
 ## Architecture Overview
+
+### On-Chain & Agent-Economy Layer (ENS · A2A · x402/Arc · World · Walrus · ERC-8004)
+
+A bounty-driven layer that puts agents on-chain. **Canonical doc + diagrams + demo steps: [`INTEGRATIONS.md`](INTEGRATIONS.md).** In brief:
+
+- **A2A server** — `backend/a2a_server.py` (`register_a2a_routes`) exposes each agent at `/a2a/{id}/.well-known/agent-card.json` with `message/send` + incremental `message/stream` (SSE), wrapping in-process `/api/chat`. Wired + x402-gated in `backend/main.py` (tail).
+- **x402 payments** — `backend/x402_middleware.py` gates `/a2a/`; **dual settlement**: external facilitator (Base Sepolia) OR self-settle on **Circle Arc** via `backend/arc_facilitator.py` (`X402_SELF_SETTLE=true`, EIP-3009).
+- **ENS via NameStone** — `lib/namestone.ts` issues gasless `*.alchmagents.eth` subnames; `lib/erc8004/ensip.ts` writes ENSIP-25/26 records (`agent-endpoint[a2a/mcp/web]`, `agent-registration`, `agent-memory`, `human-verified`, `agent-wallet[x402]`). Hooked into `app/api/agents/unified/route.ts` create.
+- **ERC-8004** — `lib/erc8004/` (registry ABIs, BigQuery indexer + SQL generator) + `app/erc8004/page.tsx` (reputation leaderboard); register on Arc via `lib/erc8004/register-client.ts`.
+- **Walrus/MemWal memory** — `lib/walrus/` (encrypted persona snapshots + recall; HTTP fallback needs no wallet).
+- **World ID + AgentKit** — `lib/worldid/` (proof-of-personhood verify + `human-verified` badge; AgentKit proof-of-human).
+- **Onramp / privacy / distribution** — 1inch (`lib/onramp/`), Unlink ZK (`lib/unlink/`), Tool Router (`lib/toolrouter/`).
+
+Env vars for this layer are in `.env` (placeholders) — the full table is in `INTEGRATIONS.md`. Most are independently optional with code defaults.
 
 ### Two-Layer Backend
 
@@ -225,7 +241,7 @@ Planetary Agents now participates in a two-layer MCP network:
 
 FastAPI consumes the Alchm server through `backend/alchm_mcp.py`, appending deterministic tool output to the chat reference block after RAG. External MCP clients can launch the Planetary Agents server directly for persona/cognitive tools.
 
-**MCP telemetry — cross-repo dependency, no in-repo UI consumer (by design, for now).** The backend exposes operator telemetry at `/api/admin/mcp-summary`, `/api/admin/mcp-status`, and `/api/admin/alchm-mcp-errors` (all gated by `INTERNAL_API_SECRET`). These are consumed by **WTEN's external admin panel**, not by this repo's `/admin` console — there is **no Next.js proxy route** for them today. To add an in-repo tile: create a secret-gated proxy route under `app/api/admin/` and a tab/panel in `AdminOperatorConsole.tsx` (which already has the tab + `MetricPanel`/`Panel` pattern). It depends on `INTERNAL_API_SECRET` being set and matched on the backend (see deploy ops), so build it after that secret is in place.
+**MCP telemetry.** The backend exposes operator telemetry at `/api/admin/mcp-summary`, `/api/admin/mcp-status`, and `/api/admin/alchm-mcp-errors` (all gated by `INTERNAL_API_SECRET`). Consumed by WTEN's external admin panel AND by this repo's `/admin` console: secret-gated proxy routes exist under `app/api/admin/{mcp-summary,mcp-status,alchm-mcp-errors}` and `McpInvocationsPanel` renders them under the admin "MCP Invocations" tab. The proxies fail closed (503) when `INTERNAL_API_SECRET` is unset — there is deliberately no fallback value in code; set the same value on Vercel and Railway.
 
 ### TypeScript Errors
 

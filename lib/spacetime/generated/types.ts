@@ -10,6 +10,26 @@ import {
   type Infer as __Infer,
 } from 'spacetimedb'
 
+export const AgentChart = __t.object('AgentChart', {
+  identity: __t.identity(),
+  handle: __t.string(),
+  birthUnix: __t.i64(),
+  birthLat: __t.f64(),
+  birthLon: __t.f64(),
+  timeKnown: __t.bool(),
+  get placements() {
+    return __t.array(Placement)
+  },
+  ascendant: __t.u16(),
+  midheaven: __t.u16(),
+  houseCusps: __t.option(__t.array(__t.u16())),
+  get houseSystem() {
+    return HouseSystem
+  },
+  interceptedSigns: __t.option(__t.byteArray()),
+})
+export type AgentChart = __Infer<typeof AgentChart>
+
 export const Battle = __t.object('Battle', {
   battleId: __t.u64(),
   starId: __t.u32(),
@@ -52,11 +72,74 @@ export const Card = __t.object('Card', {
 export type Card = __Infer<typeof Card>
 
 // The tagged union or sum type for the algebraic type `CombatModel`.
-export const CombatModel = __t.enum('CombatModel', {
-  LaneSkirmish: __t.unit(),
-  AutoSiege: __t.unit(),
-})
+export const CombatModel = __t.enum('CombatModel', ['LaneSkirmish', 'AutoSiege'])
 export type CombatModel = __Infer<typeof CombatModel>
+
+export const Comet = __t.object('Comet', {
+  cometId: __t.u16(),
+  name: __t.string(),
+  designation: __t.string(),
+  element: __t.u8(),
+  composition: __t.array(__t.u16()),
+  specialty: __t.string(),
+  semiMajorAu: __t.f64(),
+  eccentricity: __t.f64(),
+  inclinationDeg: __t.f64(),
+  meanLongDeg: __t.f64(),
+  longPeriDeg: __t.f64(),
+  longNodeDeg: __t.f64(),
+  meanLongRate: __t.f64(),
+  active: __t.bool(),
+})
+export type Comet = __Infer<typeof Comet>
+
+export const Constellation = __t.object('Constellation', {
+  constellationId: __t.u16(),
+  abbr: __t.string(),
+  name: __t.string(),
+  elemA: __t.u8(),
+  elemB: __t.u8(),
+  degenerate: __t.bool(),
+  feeBps: __t.u16(),
+  memberCount: __t.u16(),
+  visibleThreshold: __t.u16(),
+})
+export type Constellation = __Infer<typeof Constellation>
+
+export const ConstellationBlock = __t.object('ConstellationBlock', {
+  blockId: __t.u64(),
+  constellationId: __t.u16(),
+  minter: __t.identity(),
+  hipId: __t.u32(),
+  levelAfter: __t.u16(),
+  onchainBlock: __t.option(__t.u64()),
+  createdAt: __t.timestamp(),
+})
+export type ConstellationBlock = __Infer<typeof ConstellationBlock>
+
+export const ConstellationLine = __t.object('ConstellationLine', {
+  id: __t.u64(),
+  constellationId: __t.u16(),
+  hipA: __t.u32(),
+  hipB: __t.u32(),
+})
+export type ConstellationLine = __Infer<typeof ConstellationLine>
+
+export const ConstellationResolution = __t.object('ConstellationResolution', {
+  constellationId: __t.u16(),
+  baselineMembers: __t.u16(),
+  addedMembers: __t.u16(),
+  resolutionLevel: __t.u16(),
+  updatedAt: __t.timestamp(),
+})
+export type ConstellationResolution = __Infer<typeof ConstellationResolution>
+
+export const ConstellationStar = __t.object('ConstellationStar', {
+  id: __t.u64(),
+  constellationId: __t.u16(),
+  hipId: __t.u32(),
+})
+export type ConstellationStar = __Infer<typeof ConstellationStar>
 
 export const DeckSlot = __t.object('DeckSlot', {
   slotId: __t.u64(),
@@ -117,11 +200,16 @@ export const DuelQueue = __t.object('DuelQueue', {
 })
 export type DuelQueue = __Infer<typeof DuelQueue>
 
-// The tagged union or sum type for the algebraic type `DuelState`.
-export const DuelState = __t.enum('DuelState', {
-  Active: __t.unit(),
-  Resolved: __t.unit(),
+export const DuelRound = __t.object('DuelRound', {
+  roundId: __t.u64(),
+  playsCount: __t.u32(),
+  targetPlays: __t.u32(),
+  createdAt: __t.timestamp(),
 })
+export type DuelRound = __Infer<typeof DuelRound>
+
+// The tagged union or sum type for the algebraic type `DuelState`.
+export const DuelState = __t.enum('DuelState', ['Active', 'Resolved'])
 export type DuelState = __Infer<typeof DuelState>
 
 export const Ephemeris = __t.object('Ephemeris', {
@@ -143,22 +231,84 @@ export const GameConfig = __t.object('GameConfig', {
   ascendantDegree: __t.u16(),
   seeded: __t.bool(),
   starSeedCursor: __t.u32(),
+  constellationsSeeded: __t.bool(),
 })
 export type GameConfig = __Infer<typeof GameConfig>
 
 // The tagged union or sum type for the algebraic type `HouseSystem`.
-export const HouseSystem = __t.enum('HouseSystem', {
-  Placidus: __t.unit(),
-  WholeSign: __t.unit(),
-})
+export const HouseSystem = __t.enum('HouseSystem', ['Placidus', 'WholeSign'])
 export type HouseSystem = __Infer<typeof HouseSystem>
 
-// The tagged union or sum type for the algebraic type `Loadout`.
-export const Loadout = __t.enum('Loadout', {
-  Active: __t.unit(),
-  Defense: __t.unit(),
-  Bench: __t.unit(),
+export const JingCast = __t.object('JingCast', {
+  castId: __t.u64(),
+  duelId: __t.u64(),
+  caster: __t.identity(),
+  get casterAgent() {
+    return __t.option(Planet)
+  },
+  get mv() {
+    return JingMove
+  },
+  costSacred7: __t.u8(),
+  costEsms: __t.u8(),
+  get deflects() {
+    return __t.option(JingMove)
+  },
+  voice: __t.string(),
+  createdAt: __t.timestamp(),
 })
+export type JingCast = __Infer<typeof JingCast>
+
+export const JingDuel = __t.object('JingDuel', {
+  duelId: __t.u64(),
+  initiator: __t.identity(),
+  targetPlayer: __t.option(__t.identity()),
+  get targetAgent() {
+    return __t.option(Planet)
+  },
+  get openingMove() {
+    return JingMove
+  },
+  get state() {
+    return JingState
+  },
+  winnerIsInitiator: __t.option(__t.bool()),
+  createdAt: __t.timestamp(),
+  updatedAt: __t.timestamp(),
+})
+export type JingDuel = __Infer<typeof JingDuel>
+
+// The tagged union or sum type for the algebraic type `JingMove`.
+export const JingMove = __t.enum('JingMove', [
+  'Meltdown',
+  'Freeze',
+  'TectonicRoot',
+  'Vacuum',
+  'Erode',
+])
+export type JingMove = __Infer<typeof JingMove>
+
+export const JingPool = __t.object('JingPool', {
+  identity: __t.identity(),
+  sacred7: __t.array(__t.u16()),
+  esms: __t.array(__t.u16()),
+  updatedAt: __t.timestamp(),
+})
+export type JingPool = __Infer<typeof JingPool>
+
+export const JingRate = __t.object('JingRate', {
+  identity: __t.identity(),
+  lastAt: __t.timestamp(),
+  casts: __t.u32(),
+})
+export type JingRate = __Infer<typeof JingRate>
+
+// The tagged union or sum type for the algebraic type `JingState`.
+export const JingState = __t.enum('JingState', ['Open', 'Countered', 'Resolved'])
+export type JingState = __Infer<typeof JingState>
+
+// The tagged union or sum type for the algebraic type `Loadout`.
+export const Loadout = __t.enum('Loadout', ['Active', 'Defense', 'Bench'])
 export type Loadout = __Infer<typeof Loadout>
 
 export const NatalChart = __t.object('NatalChart', {
@@ -179,6 +329,26 @@ export const NatalChart = __t.object('NatalChart', {
   interceptedSigns: __t.option(__t.byteArray()),
 })
 export type NatalChart = __Infer<typeof NatalChart>
+
+export const NatalDecan = __t.object('NatalDecan', {
+  decanId: __t.u64(),
+  owner: __t.identity(),
+  get body() {
+    return Planet
+  },
+  sign: __t.u8(),
+  decan: __t.u8(),
+  absDecan: __t.u8(),
+  get suit() {
+    return Suit
+  },
+  rank: __t.u8(),
+  get decanRuler() {
+    return Planet
+  },
+  retrograde: __t.bool(),
+})
+export type NatalDecan = __Infer<typeof NatalDecan>
 
 export const OracleCache = __t.object('OracleCache', {
   qhash: __t.u64(),
@@ -240,7 +410,7 @@ export const Planet = __t.enum('Planet', [
   'Uranus',
   'Neptune',
   'Pluto',
-] as const)
+])
 export type Planet = __Infer<typeof Planet>
 
 export const Player = __t.object('Player', {
@@ -265,6 +435,15 @@ export const PlayerLocation = __t.object('PlayerLocation', {
 })
 export type PlayerLocation = __Infer<typeof PlayerLocation>
 
+export const RoundParticipant = __t.object('RoundParticipant', {
+  id: __t.u64(),
+  roundId: __t.u64(),
+  identity: __t.identity(),
+  element: __t.u8(),
+  weight: __t.u32(),
+})
+export type RoundParticipant = __Infer<typeof RoundParticipant>
+
 export const RoundState = __t.object('RoundState', {
   identity: __t.identity(),
   roundIndex: __t.u64(),
@@ -287,6 +466,16 @@ export const SkyTickTimer = __t.object('SkyTickTimer', {
 })
 export type SkyTickTimer = __Infer<typeof SkyTickTimer>
 
+export const StarAgent = __t.object('StarAgent', {
+  hipId: __t.u32(),
+  displayName: __t.string(),
+  element: __t.u8(),
+  composition: __t.array(__t.u16()),
+  specialty: __t.string(),
+  active: __t.bool(),
+})
+export type StarAgent = __Infer<typeof StarAgent>
+
 export const StarNode = __t.object('StarNode', {
   hipId: __t.u32(),
   name: __t.string(),
@@ -300,14 +489,54 @@ export const StarNode = __t.object('StarNode', {
 })
 export type StarNode = __Infer<typeof StarNode>
 
-// The tagged union or sum type for the algebraic type `Suit`.
-export const Suit = __t.enum('Suit', {
-  Cups: __t.unit(),
-  Swords: __t.unit(),
-  Pentacles: __t.unit(),
-  Wands: __t.unit(),
+export const StarStake = __t.object('StarStake', {
+  stakeId: __t.u64(),
+  staker: __t.identity(),
+  starId: __t.u32(),
+  element: __t.u8(),
+  principalUsdc: __t.u64(),
+  shares: __t.u128(),
+  accruedEssence: __t.u128(),
+  claimedEssence: __t.u128(),
+  stakedAt: __t.timestamp(),
+  lastAccrualAt: __t.timestamp(),
 })
+export type StarStake = __Infer<typeof StarStake>
+
+export const StarStakePool = __t.object('StarStakePool', {
+  starId: __t.u32(),
+  totalPrincipalUsdc: __t.u64(),
+  totalShares: __t.u128(),
+})
+export type StarStakePool = __Infer<typeof StarStakePool>
+
+// The tagged union or sum type for the algebraic type `Suit`.
+export const Suit = __t.enum('Suit', ['Cups', 'Swords', 'Pentacles', 'Wands'])
 export type Suit = __Infer<typeof Suit>
+
+export const TraceAttestation = __t.object('TraceAttestation', {
+  intentId: __t.u64(),
+  trader: __t.identity(),
+  constellationId: __t.u16(),
+  regionCommit: __t.string(),
+  visibleStars: __t.u8(),
+  nonce: __t.u64(),
+  deadline: __t.u64(),
+  signature: __t.string(),
+  createdAt: __t.timestamp(),
+})
+export type TraceAttestation = __Infer<typeof TraceAttestation>
+
+export const TraceIntent = __t.object('TraceIntent', {
+  intentId: __t.u64(),
+  trader: __t.identity(),
+  evmAddress: __t.string(),
+  constellationId: __t.u16(),
+  visibleStars: __t.u16(),
+  attested: __t.bool(),
+  createdAt: __t.timestamp(),
+})
+export type TraceIntent = __Infer<typeof TraceIntent>
 
 export const Trade = __t.object('Trade', {
   tradeId: __t.u64(),
@@ -326,11 +555,7 @@ export const Trade = __t.object('Trade', {
 export type Trade = __Infer<typeof Trade>
 
 // The tagged union or sum type for the algebraic type `TradeState`.
-export const TradeState = __t.enum('TradeState', {
-  Open: __t.unit(),
-  Committed: __t.unit(),
-  Cancelled: __t.unit(),
-})
+export const TradeState = __t.enum('TradeState', ['Open', 'Committed', 'Cancelled'])
 export type TradeState = __Infer<typeof TradeState>
 
 export const WordDuel = __t.object('WordDuel', {
@@ -371,9 +596,5 @@ export const Zone = __t.object('Zone', {
 export type Zone = __Infer<typeof Zone>
 
 // The tagged union or sum type for the algebraic type `ZoneKind`.
-export const ZoneKind = __t.enum('ZoneKind', {
-  House: __t.unit(),
-  Spire: __t.unit(),
-  Crown: __t.unit(),
-})
+export const ZoneKind = __t.enum('ZoneKind', ['House', 'Spire', 'Crown'])
 export type ZoneKind = __Infer<typeof ZoneKind>

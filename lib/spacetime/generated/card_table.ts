@@ -9,7 +9,7 @@ import {
   type AlgebraicTypeType as __AlgebraicTypeType,
   type Infer as __Infer,
 } from 'spacetimedb'
-import { Suit, Planet } from './types'
+import { Planet, Suit } from './types'
 
 export default __t.row({
   cardId: __t.u64().primaryKey().name('card_id'),

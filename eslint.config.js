@@ -32,6 +32,7 @@ const IGNORED_PATTERNS = [
   'scratch/**',
   'design/prototypes/**',
   'backend/**',
+  'contracts/**',
 
   // Ignore all contents under lib/ and app/ by default to prevent noisy legacy lint issues
   'lib/**/*',
@@ -44,9 +45,11 @@ const IGNORED_PATTERNS = [
   '!app/api/agent-attachments/route.ts',
   '!app/api/agent-evolution/route.ts',
   '!app/api/agents/unified/route.ts',
+  '!app/api/feed/historical-agents/route.ts',
   '!app/api/notifications/route.ts',
   '!app/api/transit-monitoring-jobs/route.ts',
   '!components/misc/temporal-timeline.tsx',
+  '!lib/agents/historical-feed-contract.ts',
   '!lib/demo-agents-data.ts',
   '!lib/langchain/agent-tools.ts',
   '!lib/personalized-ai/training-interface-design.ts',
@@ -248,6 +251,42 @@ const config = [
     rules: {
       'no-console': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
+  // Client-bundle boundary. Everything under components/ can end up in a client
+  // component, and webpack must resolve its whole import graph for the browser.
+  // A `node:` builtin anywhere in that graph fails the build outright with
+  // `UnhandledSchemeError: Reading from "node:crypto" is not handled by plugins`,
+  // which is what took /arena (and every Vercel deploy) down.
+  {
+    files: ['components/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['node:*'],
+              message:
+                'Node builtins cannot be bundled for the browser. Use a Web API equivalent, or move this behind a route handler / server action.',
+            },
+            {
+              group: [
+                '@/lib/agents/persona/*',
+                '**/lib/agents/persona/*',
+                '@/lib/agents/duel/jing-move',
+                '**/lib/agents/duel/jing-move',
+                '@/lib/agents/duel/word-duel',
+                '**/lib/agents/duel/word-duel',
+                '@/lib/walrus/*',
+                '**/lib/walrus/*',
+              ],
+              message:
+                'Server-only: these modules reach node: builtins or the model SDKs, so importing them from components/ breaks the webpack browser build. For Jing constants and types import @/lib/agents/duel/jing-rules; otherwise call this through a route handler.',
+            },
+          ],
+        },
+      ],
     },
   },
   prettierConfig,

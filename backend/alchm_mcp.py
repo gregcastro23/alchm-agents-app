@@ -4,7 +4,6 @@ import asyncio
 import json
 import os
 import shlex
-import sys
 import time
 from collections import deque
 from pathlib import Path
@@ -131,9 +130,11 @@ def _default_server_path() -> Path:
         return Path(explicit).expanduser()
 
     here = Path(__file__).resolve()
+    module_dir = here.parent
+    project_root = module_dir.parent if module_dir.name == "backend" else module_dir
     candidates = [
-        here.parents[1] / "mcp-server" / "src" / "index.ts",
-        here.parents[2] / "WhatToEatNext-master" / "mcp-server" / "src" / "index.ts",
+        project_root / "mcp-server" / "src" / "index.ts",
+        project_root.parent / "WhatToEatNext-master" / "mcp-server" / "src" / "index.ts",
     ]
     for candidate in candidates:
         if candidate.exists():
@@ -173,29 +174,6 @@ def _resolve_launch() -> Dict[str, Any]:
             "mode": "explicit",
             "target": f"{runner} {args_env}",
         }
-
-    # 1.5. Frozen sibling binary (highest priority when packaged).
-    if getattr(sys, "frozen", False):
-        exe_dir = os.path.dirname(sys.executable)
-        try:
-            if os.path.exists(exe_dir):
-                for name in os.listdir(exe_dir):
-                    if name.startswith("alchm-mcp") and not (
-                        name.endswith(".py")
-                        or "bak" in name
-                        or "prefix" in name
-                    ):
-                        sibling_path = os.path.join(exe_dir, name)
-                        if os.path.isfile(sibling_path) and os.access(sibling_path, os.X_OK):
-                            return {
-                                "command": sibling_path,
-                                "args": [],
-                                "cwd": exe_dir,
-                                "mode": "bundled-sibling",
-                                "target": sibling_path,
-                            }
-        except Exception:
-            pass
 
     # 2. Local dev source, when the sibling WTEN repo is present.
     server_path = _default_server_path()
@@ -315,12 +293,6 @@ class AlchmMCPClient:
             database_url = os.getenv("ALCHM_MCP_DATABASE_URL") or os.getenv("DATABASE_URL")
             if database_url:
                 env["DATABASE_URL"] = database_url
-
-            if getattr(sys, "frozen", False):
-                if "ALCHM_MCP_BACKEND_URL" not in env:
-                    env["ALCHM_MCP_BACKEND_URL"] = "https://alchm.kitchen"
-                if "NEXT_PUBLIC_SITE_URL" not in env:
-                    env["NEXT_PUBLIC_SITE_URL"] = "https://alchm.kitchen"
 
             try:
                 try:

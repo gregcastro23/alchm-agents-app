@@ -19,6 +19,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Keep heavy server SDKs available to functions WITHOUT folding their large
+  // (and sometimes non-bundlable) dependency trees into the shared server bundle.
+  serverExternalPackages: ['@google-cloud/bigquery', '@coinbase/cdp-sdk'],
   // Disable source maps completely to avoid Next.js internal source-map module issues
   productionBrowserSourceMaps: false,
   // Docker optimization - standalone output (only for production builds)
@@ -110,6 +113,10 @@ const nextConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       'react-remove-scroll-bar/constants': 'react-remove-scroll-bar/dist/es2015/constants',
+      // @privy-io/react-auth references optional Farcaster-miniapp Solana integrations
+      // that aren't installed (this app uses Dynamic/EVM, not Privy's Solana path).
+      // Stub them so a clean CI install doesn't hard-fail with "Module not found".
+      '@farcaster/mini-app-solana': false,
     }
 
     // Code splitting for large libraries

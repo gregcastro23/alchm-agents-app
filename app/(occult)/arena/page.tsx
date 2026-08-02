@@ -2,22 +2,20 @@
 
 import { useState } from 'react'
 
-import JingArenaTokenEconomySacredStats from '@/components/stitch/jing_arena_token_economy_sacred_stats'
 import { SynastryAssembly } from '@/components/alchemy/SynastryAssembly'
 import { DuelChat } from '@/components/alchemy/DuelChat'
+import { JingWordDuelClash } from '@/components/alchemy/JingWordDuelClash'
 import { cn } from '@/lib/utils'
 
 /**
  * Mystic Arts — Jing Arena (Stitch realization plan, Phase 4 + 5, Module 3).
- * Synastry and the Duel are LIVE: real agents paired via the occult store,
- * true turn-taking through /api/unified-multi-agent-chat (SSE, free chain).
- * Sacred Stats remains a design showcase pending its own binding.
+ * Synastry, active duels, and interactive Jing/Word clash minigames.
  */
 
 const TABS = [
   { key: 'synastry', label: 'Synastry' },
   { key: 'duel', label: 'Active Duel' },
-  { key: 'stats', label: 'Sacred Stats (showcase)' },
+  { key: 'clash', label: 'Jing & Word Clash' },
 ] as const
 
 export default function ArenaPage() {
@@ -49,17 +47,14 @@ export default function ArenaPage() {
         ))}
       </div>
 
-      {/* Panels stay mounted and toggle visibility: unmounting DuelChat
-          mid-round destroyed the transcript while its SSE stream kept
-          writing into an unmounted component. */}
       <div hidden={tab !== 'synastry'}>
         <SynastryAssembly onCommence={() => setTab('duel')} />
       </div>
       <div hidden={tab !== 'duel'}>
         <DuelChat onAssemble={() => setTab('synastry')} />
       </div>
-      <div hidden={tab !== 'stats'}>
-        <JingArenaTokenEconomySacredStats />
+      <div hidden={tab !== 'clash'}>
+        <JingWordDuelClash />
       </div>
     </div>
   )

@@ -11,6 +11,8 @@ anthropic
 langchain
 chromadb
 galileo-sdk
+a2a-sdk[fastapi]
 pytest
 pytest-asyncio
 ruff
+web3

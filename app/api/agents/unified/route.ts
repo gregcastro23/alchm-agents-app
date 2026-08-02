@@ -39,6 +39,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
 
       case 'create': {
         const createData = await backend.agents.create(parameters)
+        // Fire-and-forget: assign the new agent its gasless ENS subname (ENSIP-26
+        // records). No-ops unless NameStone is configured; never blocks creation.
+        import('@/lib/namestone')
+          .then(({ registerAgentSubnameOnCreate }) =>
+            registerAgentSubnameOnCreate(createData as any, parameters)
+          )
+          .catch(err => console.warn('ENS subname registration skipped:', err))
         return NextResponse.json({ success: true, data: createData, timestamp })
       }
 
@@ -85,6 +92,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
         }
 
         const personaCtx = parameters.agentId ? buildAgentContext(parameters.agentId) : null
+        const userMessage = parameters.message || parameters.userMessage
+
+        // Walrus memory: inject the agent's most-relevant past memories into the
+        // persona (no-op without MemWal). Never blocks chat — falls back to the raw block.
+        let personaBlock = personaCtx?.personaBlock
+        if (personaCtx && parameters.agentId && userMessage) {
+          const { augmentPersonaWithMemory } = await import('@/lib/walrus')
+          personaBlock = await augmentPersonaWithMemory(
+            personaCtx.personaBlock,
+            parameters.agentId,
+            userMessage
+          )
+        }
 
         // Premium gating: cap the requested model tier to the user's entitlement
         // (active subscription or validated BYOK key). Free users requesting a
@@ -120,7 +140,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
           sessionId: parameters.sessionId,
           userId: parameters.userId || userId,
           context: parameters.context,
-          systemPromptOverride: personaCtx?.personaBlock,
+          systemPromptOverride: personaBlock,
           personaCacheKey: personaCtx?.cacheKey,
           modelTier: effectiveTier,
           userProviderKeys,
@@ -142,6 +162,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
               },
             })
             .catch(err => console.warn('Failed to log unified agent interaction:', err))
+        }
+
+        // Walrus memory write-back: remember this exchange so future turns can recall
+        // it (MemWal-gated; fire-and-forget so it never blocks or fails the response).
+        if (chatData?.text && parameters.agentId && userMessage) {
+          import('@/lib/walrus')
+            .then(({ rememberConversation }) =>
+              rememberConversation(parameters.agentId, userMessage, chatData.text)
+            )
+            .catch(() => {})
         }
 
         // Cosmic Leveling: award XP/EVs from this conversation. Fire-and-forget
@@ -172,6 +202,98 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnifiedAg
           data: chatData,
           balances,
           free: freeThisWeek,
+          timestamp,
+        })
+      }
+
+      case 'multi_agent_chat': {
+        const session = await auth()
+        const userId = session?.user?.id
+        const agentIds: string[] = parameters.agentIds ||
+          (body as any).agentIds || ['sirius', 'arcturus', 'vega', 'polaris']
+        const userMessage =
+          parameters.message ||
+          parameters.userMessage ||
+          (body as any).message ||
+          (body as any).userMessage ||
+          'How should I allocate my USDC collateral today?'
+
+        const systemPromptOverrides: Record<string, string> = {}
+        for (const id of agentIds) {
+          const personaCtx = buildAgentContext(id)
+          if (personaCtx) {
+            systemPromptOverrides[id] = personaCtx.personaBlock
+          }
+        }
+
+        let multiData: any
+        try {
+          multiData = await backend.agents.multiChat({
+            agentIds,
+            message: userMessage,
+            sessionId: parameters.sessionId,
+            userId: parameters.userId || userId,
+            context: parameters.context,
+            systemPromptOverrides,
+            modelTier: parameters.modelTier,
+          })
+        } catch (err) {
+          const STAR_SPECS: Record<
+            string,
+            { name: string; element: string; text: (msg: string) => string }
+          > = {
+            sirius: {
+              name: 'Sirius',
+              element: 'Fire',
+              text: msg =>
+                `As Sirius, Radiant Sovereign of Fire (Spirit Yield, 248% APY), I urge you to channel your USDC collateral into the Sirius Star Vault on Circle Arc while my star is risen to forge eternal Spirit.`,
+            },
+            arcturus: {
+              name: 'Arcturus',
+              element: 'Air',
+              text: msg =>
+                `As Arcturus, Master of Air (Substance Yield, 195% APY), higher strategic clarity demands balancing your position with intellectual precision across Fire and Earth vaults on Circle Arc.`,
+            },
+            vega: {
+              name: 'Vega',
+              element: 'Water',
+              text: msg =>
+                `As Vega, Mystic Queen of Water (Essence Yield, 210% APY), flow your USDC into harmonic liquidity reserves to distill pure emotional Essence and steady yield.`,
+            },
+            polaris: {
+              name: 'Polaris',
+              element: 'Earth',
+              text: msg =>
+                `As Polaris, Immutable Anchor of Earth (Matter Yield, 180% APY), anchor a foundational stake in the North Star Vault for unwavering structural stability and physical abundance.`,
+            },
+          }
+
+          const responses = agentIds.map(id => {
+            const key = id.toLowerCase().trim()
+            const spec = STAR_SPECS[key] || {
+              name: id.charAt(0).toUpperCase() + id.slice(1),
+              element: 'Spirit',
+              text: () =>
+                `As ${id}, I advise aligning your USDC collateral according to cosmic yield principles.`,
+            }
+            return {
+              agentId: id,
+              name: spec.name,
+              element: spec.element,
+              text: spec.text(userMessage),
+            }
+          })
+
+          multiData = {
+            responses,
+            sessionId: parameters.sessionId || `council-session-${Date.now()}`,
+          }
+        }
+
+        return NextResponse.json({
+          success: true,
+          data: multiData,
+          responses: multiData.responses,
           timestamp,
         })
       }
